@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+
+/**
+ * Design tokens — stubs. Day 4 replaces every value here with the real scale
+ * and adds the primitives (Button, Input, Badge...) that consume them.
+ *
+ * Tailwind v4 generates utilities straight from these custom properties:
+ *   --color-brand-500  ->  bg-brand-500  text-brand-500  border-brand-500
+ * so nothing outside this block should ever hard-code a hex value.
+ */
+@theme {
+  /* brand — placeholder greys until Day 4 */
+  --color-brand-50: oklch(0.97 0.01 250);
+  --color-brand-100: oklch(0.93 0.02 250);
+  --color-brand-300: oklch(0.78 0.06 250);
+  --color-brand-500: oklch(0.55 0.14 250);
+  --color-brand-600: oklch(0.48 0.14 250);
+  --color-brand-700: oklch(0.4 0.12 250);
+  --color-brand-900: oklch(0.25 0.07 250);
+
+  /* semantic surfaces */
+  --color-surface: oklch(1 0 0);
+  --color-surface-muted: oklch(0.97 0 0);
+  --color-ink: oklch(0.22 0 0);
+  --color-ink-muted: oklch(0.52 0 0);
+  --color-line: oklch(0.9 0 0);
+
+  /* status — approval states and listing badges lean on these */
+  --color-success: oklch(0.62 0.16 145);
+  --color-warning: oklch(0.75 0.16 80);
+  --color-danger: oklch(0.58 0.2 25);
+
+  /* type */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* radii */
+  --radius-card: 0.75rem;
+  --radius-control: 0.5rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@dealers-drive/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dealers-Drive API — Express 5 modular monolith",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@dealers-drive/contracts": "workspace:*",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "nanoid": "^6.0.1",
+    "pino": "^10.3.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@dealers-drive/config": "workspace:*",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.15.0",
+    "eslint": "^9.39.5",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.3"
+  }
+}

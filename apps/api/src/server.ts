@@ -1,0 +1,58 @@
+import cors from 'cors';
+import express, { type Express } from 'express';
+import helmet from 'helmet';
+
+import { env } from './config/env.js';
+import type { Container } from './container.js';
+import { errorHandler } from './middleware/error-handler.js';
+import { notFound } from './middleware/not-found.js';
+import { requestContext } from './middleware/request-context.js';
+import { requestLogger } from './middleware/request-logger.js';
+import { createRoutes } from './routes.js';
+
+/**
+ * Express app assembly, and nothing else. No routes are defined here, no
+ * business logic, no listening — that is index.ts's job, which keeps the app
+ * importable from tests without opening a port.
+ *
+ * The middleware order IS the security model. Do not reorder casually:
+ *   1. request-context  — first, so everything below has a traceId, including
+ *                         errors thrown by the body parser
+ *   2. helmet / cors    — reject before doing any work
+ *   3. body parsers     — bounded, so a huge body cannot exhaust memory
+ *   4. request-logger   — after context, so its lines carry the traceId
+ *   5. routes
+ *   6. not-found        — anything unmatched becomes a NotFoundError
+ *   7. error-handler    — last, always
+ */
+export function createApp(container: Container): Express {
+  const app = express();
+
+  // Behind Render/Cloudflare: trust exactly one proxy hop so req.ip is the
+  // real client, not the load balancer.
+  app.set('trust proxy', 1);
+  app.disable('x-powered-by');
+
+  app.use(requestContext);
+
+  app.use(helmet());
+  app.use(
+    cors({
+      origin: env.webOrigins,
+      credentials: true,
+      maxAge: 86_400,
+    }),
+  );
+
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+  app.use(requestLogger);
+
+  app.use(createRoutes(container));
+
+  app.use(notFound);
+  app.use(errorHandler);
+
+  return app;
+}
