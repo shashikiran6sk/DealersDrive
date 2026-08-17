@@ -1,5 +1,5 @@
 import type { Express } from 'express';
-import type { PrismaClient } from '@prisma/client';
+import type { DealerRole, PrismaClient } from '@prisma/client';
 import request from 'supertest';
 
 import { buildContainer } from '../src/container.js';
@@ -22,9 +22,23 @@ import { createApp } from '../src/server.js';
 export interface Harness {
   app: Express;
   prisma: PrismaClient;
-  /** Act as this dealer for every subsequent request. */
-  actAs(slug: string): void;
+  /**
+   * Act as this dealer for every subsequent request, optionally as a member of
+   * a given role. The role seam exists because §8.3's permission table is only
+   * meaningfully tested from a seat that lacks the permission.
+   */
+  actAs(slug: string, role?: DealerRole): void;
   agent(): request.Agent;
+  /**
+   * Runs the outbox to exhaustion.
+   *
+   * Indexing, notification and revalidation are deliberately asynchronous — an
+   * approval must not roll back because a search write failed (§10) — so a test
+   * that asserts on the catalogue has to advance the pipeline first. With
+   * `JOBS_ENABLED=false` the queue runs handlers inline, so one drain is the
+   * whole chain: outbox → bus → job handler → `listing_search`.
+   */
+  drain(): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -34,9 +48,10 @@ export const DEALER_B = 'velavan-cars';
 
 export async function createHarness(): Promise<Harness> {
   let currentSlug = DEALER_A;
+  let currentRole: DealerRole = 'OWNER';
 
   const container = await buildContainer({
-    sessions: switchableSessions(() => currentSlug),
+    sessions: switchableSessions(() => ({ slug: currentSlug, role: currentRole })),
   });
 
   const app = createApp(container);
@@ -44,10 +59,17 @@ export async function createHarness(): Promise<Harness> {
   return {
     app,
     prisma: container.prisma,
-    actAs(slug: string) {
+    actAs(slug: string, role: DealerRole = 'OWNER') {
       currentSlug = slug;
+      currentRole = role;
     },
     agent: () => request.agent(app),
+    async drain() {
+      // A handler can enqueue further work, so drain until the table is quiet.
+      for (let pass = 0; pass < 10; pass += 1) {
+        if ((await container.outbox.drain()) === 0) return;
+      }
+    },
     async close() {
       await container.prisma.$disconnect();
     },
@@ -60,7 +82,7 @@ export async function createHarness(): Promise<Harness> {
  * from the database on every request, so a dealer suspended mid-test loses
  * access on the next call, exactly as production sessions will.
  */
-function switchableSessions(slugOf: () => string): SessionResolver {
+function switchableSessions(seatOf: () => { slug: string; role: DealerRole }): SessionResolver {
   let prisma: PrismaClient | null = null;
 
   const client = async (): Promise<PrismaClient> => {
@@ -74,10 +96,15 @@ function switchableSessions(slugOf: () => string): SessionResolver {
   return {
     async resolveDealer() {
       const db = await client();
+      const seat = seatOf();
       const dealer = await db.dealer.findUnique({
-        where: { slug: slugOf() },
+        where: { slug: seat.slug },
         include: {
-          members: { where: { status: 'ACTIVE', role: 'OWNER' }, take: 1, orderBy: { id: 'asc' } },
+          members: {
+            where: { status: 'ACTIVE', role: seat.role },
+            take: 1,
+            orderBy: { id: 'asc' },
+          },
         },
       });
 

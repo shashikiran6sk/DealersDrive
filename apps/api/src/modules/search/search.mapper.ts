@@ -11,7 +11,7 @@ import {
   type VehicleCard,
 } from '@dealers-drive/contracts';
 
-import { env } from '../../config/env.js';
+import { mediaUrl, srcsetFor } from '../../platform/media/urls.js';
 import type { SearchRow } from './search.repository.js';
 
 /**
@@ -22,14 +22,6 @@ import type { SearchRow } from './search.repository.js';
  * detail page and the saved list cannot disagree about Lakh rounding
  * (API-SPEC §0.4).
  */
-export function mediaUrl(mediaId: string, width: number): string {
-  return `${env.MEDIA_BASE_URL}/vehicles/by-media/${mediaId}/${width}.webp`;
-}
-
-export function srcsetFor(mediaId: string): string {
-  return [320, 640, 1024, 1600].map((w) => `${mediaUrl(mediaId, w)} ${w}w`).join(', ');
-}
-
 export function toVehicleCard(row: SearchRow): VehicleCard {
   const price = Number(row.price_paise);
   const emi = emiPaise(price);

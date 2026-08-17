@@ -13,7 +13,6 @@ import {
   type DocumentPresignInput,
   type PresignResponse,
   type SessionResponse,
-  type StatusTone,
   type UpdateDealerInput,
 } from '@dealers-drive/contracts';
 import type { DealerDocType, PrismaClient } from '@prisma/client';
@@ -24,8 +23,8 @@ import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { DomainError, NotFoundError } from '../../platform/errors.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
-import type { EnquiriesRepository } from '../enquiries/enquiries.repository.js';
-import type { DealerPrincipal } from '../auth/session.port.js';
+import type { EnquiriesRepository } from '../enquiries/enquiries.facade.js';
+import type { DealerPrincipal } from '../auth/auth.facade.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 
 export interface DealersDeps {
@@ -454,7 +453,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
             value: dealer.activeListings,
             valueLabel: String(dealer.activeListings),
             delta: addedThisWeek > 0 ? `+${addedThisWeek} this week` : 'No change this week',
-            deltaTone: (addedThisWeek > 0 ? 'ok' : 'neutral') as StatusTone,
+            deltaTone: (addedThisWeek > 0 ? 'ok' : 'neutral'),
           },
           {
             key: 'credits',
@@ -462,7 +461,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
             value: dealer.creditBalance,
             valueLabel: dealer.creditBalance.toLocaleString('en-IN'),
             delta: `${usedThisMonth} used this month`,
-            deltaTone: 'neutral' as StatusTone,
+            deltaTone: 'neutral',
           },
           {
             key: 'newEnquiries',
@@ -475,7 +474,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
                 : `${newEnquiries - previousEnquiries >= 0 ? '+' : '−'}${Math.abs(
                     newEnquiries - previousEnquiries,
                   )} vs last week`,
-            deltaTone: (newEnquiries >= previousEnquiries ? 'ok' : 'warn') as StatusTone,
+            deltaTone: (newEnquiries >= previousEnquiries ? 'ok' : 'warn'),
           },
           {
             key: 'views',
@@ -486,7 +485,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
               viewDelta === null
                 ? 'No data for last week'
                 : `${viewDelta >= 0 ? '+' : '−'}${Math.abs(viewDelta)}% vs last week`,
-            deltaTone: (viewDelta === null || viewDelta >= 0 ? 'ok' : 'warn') as StatusTone,
+            deltaTone: (viewDelta === null || viewDelta >= 0 ? 'ok' : 'warn'),
           },
         ],
         viewsChart: {

@@ -28,26 +28,40 @@ export interface HandlerDeps {
  * idempotent and assumes it will run twice; payloads carry ids, never PII, and
  * each handler re-fetches what it needs.
  */
+/**
+ * Reads an id out of a job payload.
+ *
+ * The payload comes back from the queue as JSON, so it is `unknown` per key.
+ * `String(data.listingId)` would happily turn an object into `[object Object]`
+ * and pass it on as an id — a lookup that then fails somewhere far away. Anything
+ * that is not a string reads as absent, which every handler already treats as
+ * "nothing to do".
+ */
+function jobId(data: Record<string, unknown>, key: string): string {
+  const value = data[key];
+  return typeof value === 'string' ? value : '';
+}
+
 export async function registerHandlers(deps: HandlerDeps): Promise<void> {
   const { prisma, queue, bus, search, media, mailer, sms } = deps;
 
   await queue.work('media.process', async (data) => {
-    const mediaId = String(data.mediaId ?? '');
+    const mediaId = jobId(data, 'mediaId');
     if (mediaId) await media.process(mediaId);
   });
 
   await queue.work('search.index-listing', async (data) => {
-    const listingId = String(data.listingId ?? '');
+    const listingId = jobId(data, 'listingId');
     if (listingId) await search.index(listingId);
   });
 
   await queue.work('search.remove-listing', async (data) => {
-    const listingId = String(data.listingId ?? '');
+    const listingId = jobId(data, 'listingId');
     if (listingId) await search.remove(listingId);
   });
 
   await queue.work('search.reindex-dealer', async (data) => {
-    const dealerId = String(data.dealerId ?? '');
+    const dealerId = jobId(data, 'dealerId');
     if (!dealerId) return;
     const listingIds = await search.listListingIdsForDealer(dealerId);
     for (const listingId of listingIds) await search.index(listingId);
@@ -59,7 +73,7 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
    * (§14.5).
    */
   await queue.work('notification.enquiry-to-dealer', async (data) => {
-    const enquiryId = String(data.enquiryId ?? '');
+    const enquiryId = jobId(data, 'enquiryId');
     if (!enquiryId) return;
 
     const enquiry = await prisma.enquiry.findUnique({
@@ -117,7 +131,7 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
   });
 
   await queue.work('notification.listing-reviewed', async (data) => {
-    const listingId = String(data.listingId ?? '');
+    const listingId = jobId(data, 'listingId');
     if (!listingId) return;
 
     const listing = await prisma.listing.findUnique({
@@ -145,7 +159,7 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
   });
 
   await queue.work('notification.dealer-reviewed', async (data) => {
-    const dealerId = String(data.dealerId ?? '');
+    const dealerId = jobId(data, 'dealerId');
     if (!dealerId) return;
     const dealer = await prisma.dealer.findUnique({
       where: { id: dealerId },
@@ -164,7 +178,7 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
   });
 
   await queue.work('notification.invoice', async (data) => {
-    const orderId = String(data.orderId ?? '');
+    const orderId = jobId(data, 'orderId');
     if (!orderId) return;
     const invoice = await prisma.invoice.findFirst({
       where: { orderId },

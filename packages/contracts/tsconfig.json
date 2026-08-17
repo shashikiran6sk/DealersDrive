@@ -1,12 +1,10 @@
 {
   "extends": "@dealers-drive/config/tsconfig/node.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
-    "declaration": true,
-    "declarationMap": true,
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "noEmit": true,
+    "types": ["node"]
   },
-  "include": ["src/**/*.ts"],
+  "//": "The checking project: src plus tests, so the linter can see both. `tsconfig.build.json` emits dist.",
+  "include": ["src/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

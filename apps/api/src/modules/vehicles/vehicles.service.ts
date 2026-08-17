@@ -34,12 +34,12 @@ import {
   moveCredits,
   refreshActiveListings,
   refreshHeldCount,
-} from '../billing/credits.service.js';
-import type { DealersRepository } from '../dealers/dealers.repository.js';
-import { displayStatus, transition } from '../listings/listing.state.js';
-import { toMediaStatus } from '../media/media.service.js';
-import { mediaUrl } from '../search/search.mapper.js';
-import { decodeCursor, encodeCursor } from '../enquiries/enquiries.service.js';
+} from '../billing/billing.facade.js';
+import type { DealersRepository } from '../dealers/dealers.facade.js';
+import { displayStatus, transition } from '../listings/listings.facade.js';
+import { toMediaStatus } from '../media/media.facade.js';
+import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import { mediaUrl } from '../../platform/media/urls.js';
 import type { VehiclesRepository, VehicleWithRelations } from './vehicles.repository.js';
 
 export interface VehiclesDeps {

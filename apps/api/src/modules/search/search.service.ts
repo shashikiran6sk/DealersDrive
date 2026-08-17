@@ -13,7 +13,6 @@ import {
   type FacetsResponse,
   type FuelType,
   type HomeResponse,
-  type InsuranceType,
   type SimilarQuery,
   type Transmission,
   type VehicleBatchResponse,
@@ -25,10 +24,11 @@ import {
 
 import { env } from '../../config/env.js';
 import { NotFoundError } from '../../platform/errors.js';
-import type { CatalogRepository } from '../catalog/catalog.repository.js';
-import type { DealersRepository } from '../dealers/dealers.repository.js';
-import type { VehiclesRepository } from '../vehicles/vehicles.repository.js';
-import { bodyTypeLabel, carCountLabel, mediaUrl, srcsetFor, toVehicleCard } from './search.mapper.js';
+import type { CatalogRepository } from '../catalog/catalog.facade.js';
+import type { DealersRepository } from '../dealers/dealers.facade.js';
+import type { VehiclesRepository } from '../vehicles/vehicles.facade.js';
+import { mediaUrl, srcsetFor } from '../../platform/media/urls.js';
+import { bodyTypeLabel, carCountLabel, toVehicleCard } from './search.mapper.js';
 import type { FacetColumn, SearchRepository } from './search.repository.js';
 
 export interface SearchDeps {
@@ -276,7 +276,7 @@ export function createSearchService({ repo, catalog, dealers, vehicles }: Search
         specs.push({
           key: 'insurance',
           label: 'Insurance',
-          value: `${INSURANCE_LABELS[vehicle.insuranceType as InsuranceType]}${validity}`,
+          value: `${INSURANCE_LABELS[vehicle.insuranceType]}${validity}`,
         });
       }
       specs.push({ key: 'bodyType', label: 'Body type', value: bodyTypeLabel(row.body_type) });

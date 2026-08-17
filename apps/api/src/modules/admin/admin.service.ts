@@ -33,7 +33,6 @@ import {
   type ModerationQueueResponse,
   type RejectListingResponse,
   type RequestChangesResponse,
-  type StatusTone,
   type TakedownInput,
   type TakedownResponse,
   type VerifyDocumentResponse,
@@ -48,16 +47,17 @@ import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { DomainError, ForbiddenError, NotFoundError } from '../../platform/errors.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
-import { bodyTypeLabel, mediaUrl } from '../search/search.mapper.js';
-import { decodeCursor, encodeCursor } from '../enquiries/enquiries.service.js';
+import { mediaUrl } from '../../platform/media/urls.js';
+import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import { bodyTypeLabel } from '../search/search.facade.js';
 import {
   currentBalance,
   moveCredits,
   refreshActiveListings,
   refreshHeldCount,
-} from '../billing/credits.service.js';
-import { displayStatus, transition } from '../listings/listing.state.js';
-import type { AdminPrincipal } from '../auth/session.port.js';
+} from '../billing/billing.facade.js';
+import { displayStatus, transition } from '../listings/listings.facade.js';
+import type { AdminPrincipal } from '../auth/auth.facade.js';
 
 export interface AdminDeps {
   prisma: PrismaClient;
@@ -136,7 +136,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         headerBadge: {
           count: pending,
           label: `${pending} awaiting review`,
-          tone: (pending > 0 ? 'warn' : 'neutral') as StatusTone,
+          tone: (pending > 0 ? 'warn' : 'neutral'),
         },
       };
     },
@@ -1106,7 +1106,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
             ? 'ok'
             : payment.status === 'FAILED'
               ? 'err'
-              : 'neutral') as StatusTone,
+              : 'neutral'),
           capturedAt: payment.capturedAt?.toISOString() ?? null,
           dateLabel: formatDate(payment.capturedAt ?? payment.createdAt),
         })),

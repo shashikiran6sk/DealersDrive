@@ -9,11 +9,10 @@ import {
   type CursorQuery,
   type InvoicesResponse,
   type LedgerResponse,
-  type StatusTone,
   type VerifyOrderInput,
   type VerifyOrderResponse,
 } from '@dealers-drive/contracts';
-import { Prisma, type PrismaClient } from '@prisma/client';
+import { type Prisma, type PrismaClient } from '@prisma/client';
 
 import { getContext } from '../../middleware/request-context.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
@@ -21,13 +20,13 @@ import { withTenant } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { DomainError, NotFoundError } from '../../platform/errors.js';
 import type { GatewayCapture, PaymentProvider } from '../../platform/payments/payment.port.js';
-import type { DealersRepository } from '../dealers/dealers.repository.js';
+import type { DealersRepository } from '../dealers/dealers.facade.js';
 import {
   decodeCursor,
   decodeSeqCursor,
   encodeCursor,
   encodeSeqCursor,
-} from '../enquiries/enquiries.service.js';
+} from '../../platform/pagination.js';
 import { moveCredits } from './credits.service.js';
 
 export interface BillingDeps {
@@ -342,7 +341,7 @@ export function createBillingService({ prisma, dealers, payments, config }: Bill
           id: row.id,
           delta: row.delta,
           deltaLabel: row.delta > 0 ? `+${row.delta}` : row.delta === 0 ? '0' : `−${-row.delta}`,
-          tone: (row.delta > 0 ? 'ok' : row.delta === 0 ? 'neutral' : 'err') as StatusTone,
+          tone: (row.delta > 0 ? 'ok' : row.delta === 0 ? 'neutral' : 'err'),
           label: row.label,
           reason: row.reason,
           createdAt: row.createdAt.toISOString(),
@@ -381,7 +380,7 @@ export function createBillingService({ prisma, dealers, payments, config }: Bill
           amountLabel: formatRupees(invoice.amountPaise),
           status: invoice.status,
           statusLabel: INVOICE_STATUS_LABELS[invoice.status],
-          statusTone: (invoice.status === 'CAPTURED' ? 'ok' : 'err') as StatusTone,
+          statusTone: (invoice.status === 'CAPTURED' ? 'ok' : 'err'),
           credits: invoice.credits,
           // A failed payment keeps its invoice row and has no PDF, so the
           // dealer can see the attempt rather than wondering (§26.5).

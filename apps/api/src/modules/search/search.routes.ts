@@ -22,7 +22,7 @@ import { rateLimit } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
 import { carCountLabel } from './search.mapper.js';
 import type { SearchService } from './search.service.js';
-import type { DealersPublicService } from '../dealers/dealers.public.service.js';
+import type { DealersPublicService } from '../dealers/dealers.facade.js';
 
 /**
  * A1–A6, A8–A11. Public, IP rate-limited, CDN-cacheable.

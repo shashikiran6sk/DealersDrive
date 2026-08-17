@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
+import type { Prisma } from '@prisma/client';
+
 import type { Tx } from '../db/prisma.js';
 import { logger } from '../telemetry/logger.js';
 
@@ -118,7 +120,11 @@ export async function enqueueOutbox(tx: Tx, write: OutboxWrite): Promise<void> {
       aggregateType: write.aggregateType,
       aggregateId: write.aggregateId,
       eventType: write.type,
-      payload: event as unknown as object,
+      // Prisma's `InputJsonValue` demands an index signature, which a named
+      // interface does not have even when every field in it is serialisable.
+      // The cast is the assertion that this event is JSON — it is, by
+      // construction — and not a widening of the type.
+      payload: event as unknown as Prisma.InputJsonObject,
     },
   });
 }

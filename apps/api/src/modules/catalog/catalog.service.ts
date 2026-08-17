@@ -15,7 +15,7 @@ import {
 
 import { env } from '../../config/env.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
-import type { SearchRepository } from '../search/search.repository.js';
+import type { SearchRepository } from '../search/search.facade.js';
 import type { CatalogRepository } from './catalog.repository.js';
 
 export interface CatalogDeps {
