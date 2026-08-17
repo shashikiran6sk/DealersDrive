@@ -87,6 +87,20 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((value) => value === 'true'),
+
+  /**
+   * Serves the OpenAPI reference at `/api/docs`.
+   *
+   * On outside production, off inside it: the document lists every endpoint,
+   * every permission and every error code, which is a useful map for a
+   * developer and an equally useful one for anybody probing the live API.
+   * Turning it on in production is a deliberate `DOCS_ENABLED=true`, not a
+   * default. Also off under test — building it 7 times to serve it 0 is waste.
+   */
+  DOCS_ENABLED: z
+    .enum(['true', 'false'])
+    .default(isProduction || process.env.NODE_ENV === 'test' ? 'false' : 'true')
+    .transform((value) => value === 'true'),
 });
 
 export type Env = z.infer<typeof envSchema> & {

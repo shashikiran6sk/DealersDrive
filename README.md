@@ -38,6 +38,7 @@ pnpm dev
 | ------------- | ------------------------------------------------- |
 | Web           | http://localhost:3000                             |
 | API           | http://localhost:4000/health/live                 |
+| API reference | http://localhost:4000/api/docs                    |
 | Postgres      | postgresql://dealersdrive@localhost:5432          |
 | MinIO console | http://localhost:9001 (dealersdrive/dealersdrive) |
 | Mailpit inbox | http://localhost:8025                             |
@@ -50,6 +51,7 @@ pnpm dev
 | `pnpm build`       | builds every workspace package       |
 | `pnpm lint`        | eslint, type-aware, across the repo  |
 | `pnpm typecheck`   | tsc across the repo                  |
+| `pnpm test`        | vitest across the repo               |
 | `pnpm format`      | prettier write                       |
 | `pnpm infra:up`    | `docker compose up -d`               |
 | `pnpm infra:reset` | wipes the local volumes and restarts |

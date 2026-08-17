@@ -1,6 +1,8 @@
 import { Router } from 'express';
 
+import { env } from './config/env.js';
 import type { Container } from './container.js';
+import { createDocsRouter } from './docs/docs.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
 import { createAuthRouter, createDealersRouter } from './modules/dealers/dealers.routes.js';
@@ -27,13 +29,21 @@ import { createHealthRouter } from './modules/health/health.routes.js';
  *
  * Health lives outside /v1: infrastructure probes it, not clients, so it must
  * never move when the API version does. So does `/uploads`, which is storage
- * standing in for R2 rather than API surface.
+ * standing in for R2 rather than API surface, and `/api/docs`, which documents
+ * every version rather than belonging to one.
  */
 export function createRoutes(container: Container): Router {
   const router = Router();
 
   router.use('/health', createHealthRouter(container));
   router.use(createStorageRouter(container.storage, container.media));
+
+  // The OpenAPI reference. Outside /v1 for the same reason /health is: it is not
+  // versioned API surface. Off in production by default (`DOCS_ENABLED`), and
+  // skipped under test so the suite does not pay to build it 7 times.
+  if (env.DOCS_ENABLED) {
+    router.use('/api/docs', createDocsRouter());
+  }
 
   const v1 = Router();
 
