@@ -5,15 +5,18 @@
  * defined here is parsed by the API (`validate({ body })`) and reused by the
  * web app for form validation and typed responses — one definition, both ends.
  *
- * Filled in from Day 5 onwards:
- *   common.ts    — Pagination, IdParam, ProblemDetails, Money
- *   vehicle.ts   — CreateVehicleInput, VehicleQuery, VehicleDto
- *   dealer.ts    — SignupInput, DealerProfileDto
- *   listing.ts   — ListingDto, ListingStatus
- *   search.ts    — the 13 public filters
- *
- * Empty today by design — Day 1 only proves the wiring.
+ * Two rules govern everything in this package:
+ *   1. Every input schema is `.strict()`. An unknown field is a 400, never a
+ *      silent ignore (CLAUDE.md rule 2).
+ *   2. No input schema accepts `dealerId`, `status` or `slug`. Those come from
+ *      the session and from the state machine (CLAUDE.md rules 1 and 5).
  */
 
+export * from './common.js';
+export * from './enums.js';
+export * from './public.js';
+export * from './dealer.js';
+export * from './admin.js';
+
 /** Bumped when a breaking change ships; surfaced in the API's /health/ready. */
-export const CONTRACTS_VERSION = '0.0.0';
+export const CONTRACTS_VERSION = '1.0.0';

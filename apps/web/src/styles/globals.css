@@ -1,53 +1,685 @@
 @import 'tailwindcss';
 
 /**
- * Design tokens — stubs. Day 4 replaces every value here with the real scale
- * and adds the primitives (Button, Input, Badge...) that consume them.
+ * Dealers-Drive design system.
  *
- * Tailwind v4 generates utilities straight from these custom properties:
- *   --color-brand-500  ->  bg-brand-500  text-brand-500  border-brand-500
- * so nothing outside this block should ever hard-code a hex value.
+ * Transcribed from `docs/DESIGN-SPEC.md` and the prototype's own stylesheet
+ * (`docs/Dealers-Drive-UI/ds/industry.css` plus the `:root` overrides in
+ * `Dealers-Drive.dc.html`). The prototype is the source of truth for anything
+ * visual, so the component classes below carry the same names and the same
+ * values it uses — `.btn`, `.card`, `.tag`, `.dd-plate`, `.blueprint` — and
+ * Tailwind utilities handle layout on top.
+ *
+ * Three rules govern the whole system and are worth stating once:
+ *   · Square corners are the default. Radius 0 everywhere (§4.3).
+ *   · Depth comes from 1px hairlines, not shadows. Exactly three elements
+ *     carry a shadow: the city dropdown, the dialog, the mobile sheet (§4.1).
+ *   · Cobalt is the only decorative colour. Green/amber/red are status, never
+ *     emphasis (§4.8).
  */
+
 @theme {
-  /* brand — placeholder greys until Day 4 */
-  --color-brand-50: oklch(0.97 0.01 250);
-  --color-brand-100: oklch(0.93 0.02 250);
-  --color-brand-300: oklch(0.78 0.06 250);
-  --color-brand-500: oklch(0.55 0.14 250);
-  --color-brand-600: oklch(0.48 0.14 250);
-  --color-brand-700: oklch(0.4 0.12 250);
-  --color-brand-900: oklch(0.25 0.07 250);
+  /* ── cobalt: the brand, and the only decorative colour ─────────────── */
+  --color-accent-100: #eef2ff;
+  --color-accent-200: #dbe3ff;
+  --color-accent-300: #b9c8ff;
+  --color-accent-400: #8ba3f7;
+  --color-accent-500: #5a79ec;
+  --color-accent-600: #2f55dd;
+  --color-accent-700: #1e3fae;
+  --color-accent-800: #172f7d;
+  --color-accent-900: #101f4f;
 
-  /* semantic surfaces */
-  --color-surface: oklch(1 0 0);
-  --color-surface-muted: oklch(0.97 0 0);
-  --color-ink: oklch(0.22 0 0);
-  --color-ink-muted: oklch(0.52 0 0);
-  --color-line: oklch(0.9 0 0);
+  --color-neutral-100: #f5f5f8;
+  --color-neutral-200: #e7e7ea;
+  --color-neutral-300: #d4d4d7;
+  --color-neutral-400: #b7b7ba;
+  --color-neutral-500: #98989b;
+  --color-neutral-600: #7a7a7d;
+  --color-neutral-700: #5d5d60;
+  --color-neutral-800: #424244;
+  --color-neutral-900: #2b2b2d;
 
-  /* status — approval states and listing badges lean on these */
-  --color-success: oklch(0.62 0.16 145);
-  --color-warning: oklch(0.75 0.16 80);
-  --color-danger: oklch(0.58 0.2 25);
+  --color-bg: #f4f5f7;
+  --color-surface: #eaecf0;
+  --color-ink: #14171c;
+  --color-accent: #2f55dd;
 
-  /* type */
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --color-ok: #0f7a5a;
+  --color-ok-bg: #e6f4ef;
+  --color-warn: #a15c00;
+  --color-warn-bg: #fbf0dd;
+  --color-err: #b3261e;
+  --color-err-bg: #fbe9e7;
 
-  /* radii */
-  --radius-card: 0.75rem;
-  --radius-control: 0.5rem;
+  --color-lightbox: #0d1017;
+  --color-lightbox-stage: #151a23;
+  --color-lightbox-cell: #1a1f29;
+
+  --font-heading: 'Cabinet Grotesk', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /**
+   * Square is the product default (§1.5, §4.3). The only rounded things are the
+   * four inherited base classes: `.btn` / `.input` / `.card` / `.seg` at 4px,
+   * `.tag` at 3px, `.dialog` at 7px. Everything authored — plates, image
+   * frames, thumbnails, stat tiles, tables, badges, banners, avatars, lightbox
+   * chrome, arrows — stays at 0.
+   */
+  --radius-md: 4px;
+  --radius-tag: 3px;
+  --radius-lg: 7px;
+
+  /* Only three elements in the product carry one (§4.1). */
+  --shadow-lg: 0 12px 32px rgb(43 43 45 / 0.22);
 }
 
+:root {
+  --color-divider: color-mix(in srgb, #14171c 15%, transparent);
+  --color-rule: color-mix(in srgb, #14171c 8%, transparent);
+}
+
+/* ── base ─────────────────────────────────────────────────────────────── */
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    background-color: var(--color-surface);
+    margin: 0;
+    background: var(--color-bg);
     color: var(--color-ink);
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  h6 {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Focus is never removed, only restyled (§4.15). */
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  }
+
+  /* prefers-reduced-motion → all 0ms (§1.7). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0ms !important;
+      animation-duration: 0ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ── components ───────────────────────────────────────────────────────── */
+@layer components {
+  /* Buttons — §2.1. Natural height ≈ 32px; sizes are overridden per context. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--color-ink);
+    background: transparent;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+    padding: 6.8px 12.24px;
+    transition: background-color 120ms ease-out, color 120ms ease-out;
+  }
+  .btn:disabled,
+  .btn[aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg);
+  }
+  .btn-primary:not(:disabled):hover {
+    background: var(--color-accent-600);
+  }
+  .btn-primary:not(:disabled):active {
+    background: var(--color-accent-700);
+  }
+
+  .btn-secondary:not(:disabled):hover {
+    background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  }
+  .btn-secondary:not(:disabled):active {
+    background: color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+
+  .btn-ghost {
+    color: var(--color-accent-700);
+    border-color: transparent;
+    padding-inline: 3.4px;
+  }
+  .btn-ghost:not(:disabled):hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+  .btn-ghost:not(:disabled):active {
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+
+  .btn-destructive {
+    color: var(--color-err);
+    border-color: color-mix(in srgb, #b3261e 40%, transparent);
+  }
+  .btn-destructive:not(:disabled):hover {
+    background: color-mix(in srgb, #b3261e 7%, transparent);
+  }
+
+  .btn-danger-solid {
+    background: var(--color-err);
+    border-color: var(--color-err);
+    color: #fff;
+  }
+  .btn-danger-solid:not(:disabled):hover {
+    filter: brightness(0.92);
+  }
+
+  .btn-block {
+    width: 100%;
+  }
+
+  /* Inputs — §2.3. */
+  .input {
+    width: 100%;
+    min-height: 36px;
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--color-ink);
+    caret-color: var(--color-accent);
+    background: var(--color-surface);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+  }
+  .input::placeholder {
+    color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+  .input:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+  .input:focus-visible {
+    border-color: var(--color-accent);
+    outline-offset: 0;
+  }
+  .input:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .input[aria-invalid='true'] {
+    border-color: var(--color-err);
+  }
+  textarea.input {
+    min-height: 90px;
+    resize: vertical;
+  }
+  select.input {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-ink) 50%),
+      linear-gradient(135deg, var(--color-ink) 50%, transparent 50%);
+    background-position:
+      calc(100% - 15px) calc(50% + 1px),
+      calc(100% - 10px) calc(50% + 1px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 28px;
+  }
+
+  .field > label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+
+  /* Cards — §2.7. White on the cool grey ground; a border, never a shadow. */
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 6.8px;
+    padding: 10.2px;
+    background: #fff;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+  }
+  .card-kicker {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent-700);
+  }
+
+  /* Tags and status badges — §2.5. */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    padding: 3px 10px;
+    border-radius: var(--radius-tag);
+    white-space: nowrap;
+  }
+  .tag-accent {
+    background: var(--color-accent-100);
+    color: var(--color-accent-800);
+  }
+  .tag-neutral {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-800);
+  }
+  .tag-outline {
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent-700);
+    background: transparent;
+  }
+  .tag-ok {
+    background: var(--color-ok-bg);
+    color: var(--color-ok);
+  }
+  .tag-warn {
+    background: var(--color-warn-bg);
+    color: var(--color-warn);
+  }
+  .tag-err {
+    background: var(--color-err-bg);
+    color: var(--color-err);
+  }
+  /* Draft / Expired share the neutral fill; Expired takes the lighter ink. */
+  .tag-draft {
+    background: var(--color-neutral-200);
+    color: var(--color-neutral-800);
+  }
+  .tag-expired {
+    background: var(--color-neutral-200);
+    color: var(--color-neutral-700);
+  }
+  .tag-sold {
+    background: var(--color-accent-100);
+    color: var(--color-accent-800);
+  }
+
+  /**
+   * The registration plate — §2.2. The signature element, and it appears in
+   * exactly four places: the logo, the year badge on a vehicle card, the
+   * verified-dealer chip and the PRIMARY photo marker (§4.5). Nowhere else.
+   */
+  .dd-plate {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--color-ink);
+    background: var(--color-bg);
+    padding: 2px 9px 2px 0;
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    line-height: 1.5;
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+  .dd-plate::before {
+    content: '';
+    width: 5px;
+    align-self: stretch;
+    background: var(--color-accent);
+  }
+
+  /**
+   * The blueprint frame — §2.6. Four registration marks, always. A
+   * `.blueprint` missing a corner is a bug the design spec calls out by name.
+   */
+  .blueprint {
+    position: relative;
+    border: 1px solid var(--color-divider);
+    border-radius: 0;
+  }
+  .blueprint > .corner {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    pointer-events: none;
+  }
+  .blueprint > .corner::before,
+  .blueprint > .corner::after {
+    content: '';
+    position: absolute;
+    background: currentColor;
+  }
+  .blueprint > .corner::before {
+    left: 5px;
+    top: 0;
+    width: 1px;
+    height: 100%;
+  }
+  .blueprint > .corner::after {
+    top: 5px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+  }
+  .blueprint > .corner.tl {
+    top: -6px;
+    left: -6px;
+  }
+  .blueprint > .corner.tr {
+    top: -6px;
+    right: -6px;
+  }
+  .blueprint > .corner.bl {
+    bottom: -6px;
+    left: -6px;
+  }
+  .blueprint > .corner.br {
+    bottom: -6px;
+    right: -6px;
+  }
+
+  /* Segmented control — §2.4. Radio-group semantics, arrow keys move. */
+  .seg {
+    display: inline-flex;
+    overflow: hidden;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+  }
+  .seg-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    font-family: inherit;
+    color: inherit;
+  }
+  .seg-opt + .seg-opt {
+    border-left: 1px solid var(--color-divider);
+  }
+  .seg-opt[aria-selected='true'] {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+  .seg-opt:not([aria-selected='true']):hover {
+    background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  }
+
+  /* Nav item — §2.17. */
+  .dd-nav-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    padding: 5px 10px;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    transition: background-color 120ms ease-out, color 120ms ease-out;
+  }
+  .dd-nav-item:hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+    color: var(--color-ink);
+  }
+  .dd-nav-item[aria-current='true'],
+  .dd-nav-item[aria-current='page'] {
+    background: var(--color-accent);
+    color: #fff;
+  }
+
+  /* Admin sidebar sits on the cobalt-900 field. */
+  .dd-nav-item-dark {
+    color: rgb(255 255 255 / 0.7);
+    padding: 6px 10px;
+  }
+  .dd-nav-item-dark:hover {
+    background: rgb(255 255 255 / 0.1);
+    color: #fff;
+  }
+  .dd-nav-item-dark[aria-current='true'],
+  .dd-nav-item-dark[aria-current='page'] {
+    background: rgb(255 255 255 / 0.16);
+    color: #fff;
+  }
+
+  /* Table — §2.13. */
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .table th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+    padding: 6.8px;
+    border-bottom: 1px solid var(--color-divider);
+    white-space: nowrap;
+  }
+  .table td {
+    padding: 6.8px;
+    border-bottom: 1px solid var(--color-rule);
+    vertical-align: middle;
+  }
+  .table tbody tr:hover {
+    background: color-mix(in srgb, var(--color-ink) 3%, transparent);
+  }
+  .table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* Gallery strip and arrows — §2.9. */
+  .dd-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .dd-strip::-webkit-scrollbar {
+    display: none;
+  }
+  .dd-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--color-divider);
+    background: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    line-height: 1;
+    z-index: 3;
+    padding: 0;
+    transition: background-color 120ms ease-out, color 120ms ease-out;
+  }
+  .dd-arrow:hover {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+  }
+  .dd-arrow:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .dd-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  /**
+   * Image placeholder — the prototype's `<image-slot>`. Every photograph in
+   * the design is a flat surface panel naming the shot, and the seeded media
+   * reproduces that; this is the fallback when a vehicle has no photo at all.
+   */
+  .image-slot {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    background: var(--color-surface);
+    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+    font-size: 12px;
+    text-align: center;
+    padding: 8px;
+  }
+
+  /* Skeletons — static bars, no shimmer (§1.7, §2.20). */
+  .skeleton {
+    height: 11px;
+    background: var(--color-neutral-300);
+  }
+
+  /* Dialog — §2.14, one of the three shadowed elements. */
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 13.6px;
+    background: rgb(43 43 45 / 0.5);
+    z-index: 70;
+  }
+  .dialog {
+    width: min(440px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 10.2px;
+    padding: 13.6px;
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* ── utilities ────────────────────────────────────────────────────────── */
+@layer utilities {
+  /**
+   * Mandatory on prices, EMIs, KM, credit counts, stat values, filter counts,
+   * table numeric columns, invoice amounts, ledger deltas, city counts and
+   * gallery counters. Never on prose (§4.2).
+   */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* The text opacity ladder — §1.2, used in this order. */
+  .ink-body {
+    color: color-mix(in srgb, var(--color-ink) 75%, transparent);
+  }
+  .ink-secondary {
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+  .ink-muted {
+    color: color-mix(in srgb, var(--color-ink) 62%, transparent);
+  }
+  .ink-subtle {
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+  .ink-faint {
+    color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+
+  .divider {
+    border-color: var(--color-divider);
+  }
+  .rule {
+    border-color: var(--color-rule);
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-ink) 52%, transparent);
+  }
+
+  /* Any column holding an image strip, a table or ellipsised text (§4.12). */
+  .min-w-0 {
+    min-width: 0;
   }
 }

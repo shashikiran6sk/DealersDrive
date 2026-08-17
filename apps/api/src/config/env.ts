@@ -26,15 +26,67 @@ const required = (localDefault: string) =>
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  APP_ENV: z.enum(['local', 'preview', 'dev', 'production']).default('local'),
   PORT: z.coerce.number().int().positive().max(65535).default(4000),
   HOST: z.string().min(1).default('0.0.0.0'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
   /** Comma-separated browser origins allowed to call this API with credentials. */
   WEB_ORIGIN: required('http://localhost:3000'),
+  /** Absolute base of the public site — used for canonical URLs and SEO. */
+  WEB_BASE_URL: required('http://localhost:3000'),
+  /** Absolute base of this API — used to build presign and media URLs. */
+  API_BASE_URL: required('http://localhost:4000'),
 
-  /** Unused until Day 3 — validated now so a broken deploy fails at boot, not at first query. */
   DATABASE_URL: required('postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'),
+
+  /**
+   * Local development identity (CLAUDE.md §5, §17). Production auth replaces
+   * the resolver, not these values — nothing downstream of `resolvePrincipal`
+   * knows the difference, and no route ever reads an identity from a client.
+   */
+  DEV_DEALER_SLUG: z.string().min(1).default('sri-lakshmi-motors'),
+  DEV_ADMIN_EMAIL: z.string().min(1).default('ops@dealers-drive.in'),
+
+  /** `development` settles instantly; `razorpay` is the production adapter. */
+  PAYMENT_PROVIDER: z.enum(['development', 'razorpay']).default('development'),
+
+  /** Local disk stands in for R2. Same port, same presign→PUT→commit contract. */
+  STORAGE_DRIVER: z.enum(['local', 'r2']).default('local'),
+  STORAGE_LOCAL_DIR: z.string().min(1).default('.storage'),
+  /** Signs local presigned upload URLs. Any secret works locally. */
+  UPLOAD_SIGNING_SECRET: z.string().min(8).default('dealers-drive-local-upload-secret'),
+  MEDIA_BASE_URL: required('http://localhost:4000/media'),
+
+  MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
+  SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
+  MAIL_FROM: z.string().min(1).default('Dealers-Drive <no-reply@dealers-drive.com>'),
+
+  SUPPORT_EMAIL: z.string().min(1).default('support@dealers-drive.com'),
+  SUPPORT_PHONE: z.string().min(1).default('+914162248890'),
+
+  /**
+   * One image, two process types. `WORKER_INLINE=true` runs the handlers in
+   * the HTTP process so `pnpm dev` stays a single command (§19.1).
+   */
+  WORKER_INLINE: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
+  WORKER: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  /** Turns pg-boss off entirely — used by the integration suite. */
+  JOBS_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
+
+  RATE_LIMIT_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
 });
 
 export type Env = z.infer<typeof envSchema> & {

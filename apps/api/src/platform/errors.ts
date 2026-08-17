@@ -3,13 +3,13 @@
  *
  * Services throw these; the error handler is the only thing that turns them
  * into HTTP. A service that builds a response, sets a status code, or touches
- * `res` is doing the error handler's job (MVP-SCOPE §4.4 rule 1).
+ * `res` is doing the error handler's job.
  */
 
 /** Base for the RFC 9457 `type` URI. Each code gets a stable, documentable URL. */
-export const PROBLEM_TYPE_BASE = 'https://dealersdrive.com/errors';
+export const PROBLEM_TYPE_BASE = 'https://dealers-drive.com/errors';
 
-/** One invalid field. Mirrors the `errors[]` array in ARCHITECTURE §10.3. */
+/** One invalid field. Mirrors the `errors[]` array in API-SPEC §0.2. */
 export interface FieldError {
   field: string;
   code: string;
@@ -19,6 +19,8 @@ export interface FieldError {
 export interface AppErrorOptions {
   cause?: unknown;
   errors?: FieldError[];
+  /** Extra top-level keys the spec puts in a specific problem body. */
+  extra?: Record<string, unknown>;
 }
 
 export abstract class AppError extends Error {
@@ -29,12 +31,16 @@ export abstract class AppError extends Error {
   abstract readonly title: string;
 
   readonly errors?: FieldError[];
+  readonly extra?: Record<string, unknown>;
 
   constructor(detail: string, options?: AppErrorOptions) {
     super(detail, options?.cause === undefined ? undefined : { cause: options.cause });
     this.name = new.target.name;
     if (options?.errors) {
       this.errors = options.errors;
+    }
+    if (options?.extra) {
+      this.extra = options.extra;
     }
     Error.captureStackTrace(this, new.target);
   }
@@ -45,36 +51,59 @@ export abstract class AppError extends Error {
   }
 }
 
-/** 404 — the resource does not exist, or the caller may not know that it does. */
+/**
+ * 404 — the resource does not exist, or the caller may not know that it does.
+ * Cross-tenant access answers 404, never 403, so existence is not leaked (§7).
+ */
 export class NotFoundError extends AppError {
   readonly status = 404;
-  readonly code = 'NOT_FOUND';
+  readonly code: string;
   readonly title = 'Not found';
 
-  constructor(detail = 'The requested resource does not exist.', options?: AppErrorOptions) {
+  constructor(detail = 'The requested resource does not exist.', options?: AppErrorOptions & { code?: string }) {
     super(detail, options);
+    this.code = options?.code ?? 'NOT_FOUND';
   }
 }
 
-/** 401 — no valid session. Used from Day 8. */
+/** 401 — no valid session. */
 export class UnauthorizedError extends AppError {
   readonly status = 401;
-  readonly code = 'UNAUTHORIZED';
+  readonly code: string;
   readonly title = 'Authentication required';
 
-  constructor(detail = 'You must be signed in to do that.', options?: AppErrorOptions) {
+  constructor(detail = 'You must be signed in to do that.', options?: AppErrorOptions & { code?: string }) {
     super(detail, options);
+    this.code = options?.code ?? 'NOT_AUTHENTICATED';
   }
 }
 
-/** 403 — authenticated, but not allowed. Also the answer to cross-tenant access. */
+/** 403 — authenticated, but not allowed. */
 export class ForbiddenError extends AppError {
   readonly status = 403;
-  readonly code = 'FORBIDDEN';
+  readonly code: string;
   readonly title = 'Forbidden';
 
-  constructor(detail = 'You do not have permission to do that.', options?: AppErrorOptions) {
+  constructor(detail = 'You do not have permission to do that.', options?: AppErrorOptions & { code?: string }) {
     super(detail, options);
+    this.code = options?.code ?? 'FORBIDDEN';
+  }
+}
+
+/**
+ * 409 — the request collides with the current state. Two moderators opening
+ * the same card is expected; the second one gets a clear error rather than a
+ * double approval.
+ */
+export class ConflictError extends AppError {
+  readonly status = 409;
+  readonly code: string;
+  readonly title: string;
+
+  constructor(code: string, detail: string, options?: AppErrorOptions & { title?: string }) {
+    super(detail, options);
+    this.code = code;
+    this.title = options?.title ?? titleFromCode(code);
   }
 }
 
@@ -82,7 +111,7 @@ export class ForbiddenError extends AppError {
  * 422 — the request was well-formed and the caller was allowed, but a business
  * rule said no. The code travels with the error:
  *
- *   throw new DomainError('INSUFFICIENT_CREDITS', 'Publishing requires 1 credit; your balance is 0.');
+ *   throw new DomainError('INSUFFICIENT_CREDITS', 'Publishing needs 1 credit; your balance is 0.');
  */
 export class DomainError extends AppError {
   readonly status = 422;
@@ -96,7 +125,25 @@ export class DomainError extends AppError {
   }
 }
 
-/** `NOT_FOUND` -> `https://dealersdrive.com/errors/not-found` */
+/** 429 — over a limit. Always accompanied by `Retry-After`. */
+export class RateLimitError extends AppError {
+  readonly status = 429;
+  readonly code: string;
+  readonly title = 'Too many requests';
+  readonly retryAfterSeconds: number;
+
+  constructor(
+    detail: string,
+    retryAfterSeconds: number,
+    options?: AppErrorOptions & { code?: string },
+  ) {
+    super(detail, options);
+    this.code = options?.code ?? 'RATE_LIMITED';
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
+/** `NOT_FOUND` -> `https://dealers-drive.com/errors/not-found` */
 export function problemTypeFromCode(code: string): string {
   return `${PROBLEM_TYPE_BASE}/${code.toLowerCase().replaceAll('_', '-')}`;
 }

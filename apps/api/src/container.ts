@@ -1,49 +1,177 @@
+import type { PrismaClient } from '@prisma/client';
 import type { Logger } from 'pino';
 
 import { env, type Env } from './config/env.js';
+import { createAuthMiddleware } from './middleware/auth.js';
+import { createAdminService, type AdminService } from './modules/admin/admin.service.js';
+import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
+import type { SessionResolver } from './modules/auth/session.port.js';
+import { createBillingService, type BillingService } from './modules/billing/billing.service.js';
+import { createCatalogRepository } from './modules/catalog/catalog.repository.js';
+import { createCatalogService, type CatalogService } from './modules/catalog/catalog.service.js';
+import { createDealersPublicService, type DealersPublicService } from './modules/dealers/dealers.public.service.js';
+import { createDealersRepository } from './modules/dealers/dealers.repository.js';
+import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
+import { createEnquiriesRepository } from './modules/enquiries/enquiries.repository.js';
+import { createEnquiriesService, type EnquiriesService } from './modules/enquiries/enquiries.service.js';
+import { createMediaService, type MediaService } from './modules/media/media.service.js';
+import { createSearchRepository, type SearchRepository } from './modules/search/search.repository.js';
+import { createSearchService, type SearchService } from './modules/search/search.service.js';
+import { createVehiclesRepository } from './modules/vehicles/vehicles.repository.js';
+import { createVehiclesService, type VehiclesService } from './modules/vehicles/vehicles.service.js';
+import { createAuditService } from './platform/audit/audit.service.js';
+import { createPlatformConfig, type PlatformConfigService } from './platform/config/platform-config.js';
+import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
+import { createEventBus, type EventBus } from './platform/events/bus.js';
+import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
+import { registerHandlers, registerSchedules } from './platform/jobs/handlers.js';
+import { createQueue, type Queue } from './platform/jobs/queue.js';
+import { createConsoleMailer, createConsoleSms } from './platform/notify/notify.port.js';
+import { createDevelopmentPaymentProvider } from './platform/payments/development.provider.js';
+import type { PaymentProvider } from './platform/payments/payment.port.js';
+import { createLocalStorage } from './platform/storage/local.adapter.js';
+import type { StoragePort } from './platform/storage/storage.port.js';
 import { logger } from './platform/telemetry/logger.js';
 
 /**
- * The composition root — this replaces DI (MVP-SCOPE §4.2).
+ * The composition root — this replaces DI (ARCHITECTURE §5.3).
  *
- * Every dependency in the system is constructed here, by hand, in dependency
- * order, and passed down as plain arguments. Explicit, greppable, and trivially
- * testable: pass fakes in, get a module out. No decorators, no reflection, no
- * framework magic to debug at 2am.
+ * Every dependency is constructed here, by hand, in dependency order, and
+ * passed down as plain arguments. Explicit, greppable, and trivially testable:
+ * pass fakes in, get a module out. The two seams that matter for the current
+ * build are visible in one place:
  *
- * Nothing is wired yet. The shape it grows into:
+ *   sessions  — `createDevSessionResolver` today, a cookie resolver later
+ *   payments  — `createDevelopmentPaymentProvider` today, Razorpay later
  *
- *   export function buildContainer(prisma: PrismaClient) {
- *     const storage = createR2Storage(env);
- *     const mailer  = createResendMailer(env);
- *     const queue   = createQueue(env.DATABASE_URL);
- *     const events  = createEventBus(queue);
- *
- *     const auth     = createAuthModule({ prisma, mailer, sms, audit });
- *     const vehicles = createVehiclesModule({ prisma, catalog: catalog.facade, events });
- *     ...
- *     return { auth, vehicles, ..., queue, events };
- *   }
- *
- * Each module returns `{ router, facade }`: the router is mounted in routes.ts,
- * the facade is the only thing other modules are allowed to import.
+ * Neither change touches a module.
  */
 export interface Container {
   readonly env: Env;
   readonly logger: Logger;
+  readonly prisma: PrismaClient;
+  readonly queue: Queue;
+  readonly bus: EventBus;
+  readonly outbox: OutboxPublisher;
+  readonly storage: StoragePort;
+  readonly payments: PaymentProvider;
+  readonly config: PlatformConfigService;
+  readonly sessions: SessionResolver;
+  readonly auth: ReturnType<typeof createAuthMiddleware>;
+  readonly search: SearchService;
+  readonly searchRepo: SearchRepository;
+  readonly catalog: CatalogService;
+  readonly dealers: DealersService;
+  readonly dealersPublic: DealersPublicService;
+  readonly vehicles: VehiclesService;
+  readonly media: MediaService;
+  readonly enquiries: EnquiriesService;
+  readonly billing: BillingService;
+  readonly admin: AdminService;
 }
 
-export function buildContainer(): Container {
+export interface ContainerOverrides {
+  prisma?: PrismaClient;
+  sessions?: SessionResolver;
+  payments?: PaymentProvider;
+  queue?: Queue;
+  storage?: StoragePort;
+}
+
+export async function buildContainer(overrides: ContainerOverrides = {}): Promise<Container> {
+  installBigIntJson();
+
+  const prisma = overrides.prisma ?? createPrisma();
+  const queue = overrides.queue ?? createQueue();
+  const bus = createEventBus();
+  const outbox = createOutboxPublisher(prisma, bus);
+  const storage = overrides.storage ?? createLocalStorage();
+  const payments = overrides.payments ?? createDevelopmentPaymentProvider();
+  const config = createPlatformConfig(prisma);
+  const audit = createAuditService(prisma);
+  const mailer = createConsoleMailer();
+  const sms = createConsoleSms();
+
+  const sessions = overrides.sessions ?? createDevSessionResolver(prisma);
+  const auth = createAuthMiddleware(sessions);
+
+  const catalogRepo = createCatalogRepository(prisma);
+  const dealersRepo = createDealersRepository(prisma);
+  const vehiclesRepo = createVehiclesRepository(prisma);
+  const enquiriesRepo = createEnquiriesRepository(prisma);
+  const searchRepo = createSearchRepository(prisma);
+
+  const catalog = createCatalogService({ repo: catalogRepo, search: searchRepo, config });
+  const search = createSearchService({
+    repo: searchRepo,
+    catalog: catalogRepo,
+    dealers: dealersRepo,
+    vehicles: vehiclesRepo,
+  });
+  const dealersPublic = createDealersPublicService({ repo: dealersRepo, search: searchRepo });
+  const media = createMediaService({ prisma, storage, queue, config });
+  const enquiries = createEnquiriesService({
+    prisma,
+    repo: enquiriesRepo,
+    dealers: dealersRepo,
+    search: searchRepo,
+    config,
+  });
+  const dealers = createDealersService({
+    prisma,
+    repo: dealersRepo,
+    enquiries: enquiriesRepo,
+    storage,
+  });
+  const vehicles = createVehiclesService({ prisma, repo: vehiclesRepo, dealers: dealersRepo, config });
+  const billing = createBillingService({ prisma, dealers: dealersRepo, payments, config });
+  const admin = createAdminService({ prisma, audit, config, storage });
+
+  await registerHandlers({ prisma, queue, bus, search: searchRepo, media, mailer, sms });
+
   return {
     env,
     logger,
+    prisma,
+    queue,
+    bus,
+    outbox,
+    storage,
+    payments,
+    config,
+    sessions,
+    auth,
+    search,
+    searchRepo,
+    catalog,
+    dealers,
+    dealersPublic,
+    vehicles,
+    media,
+    enquiries,
+    billing,
+    admin,
   };
 }
 
-/**
- * Releases anything the container holds open. Called on SIGTERM before the
- * process exits — Day 3 closes the Prisma pool here, Day 21 stops pg-boss.
- */
-export async function closeContainer(_container: Container): Promise<void> {
-  await Promise.resolve();
+/** Starts the background machinery. Not called by tests, which drain inline. */
+export async function startBackground(container: Container): Promise<void> {
+  if (!env.JOBS_ENABLED) return;
+
+  await container.queue.start();
+  if (env.WORKER_INLINE || env.WORKER) {
+    await registerSchedules(container.queue);
+  }
+  container.outbox.start();
+}
+
+/** Releases everything the container holds open. Called on SIGTERM. */
+export async function closeContainer(container: Container): Promise<void> {
+  container.outbox.stop();
+  try {
+    await container.queue.stop();
+  } catch (error) {
+    logger.warn({ err: error }, 'queue stop failed');
+  }
+  await container.prisma.$disconnect();
 }

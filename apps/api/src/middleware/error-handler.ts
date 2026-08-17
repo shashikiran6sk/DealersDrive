@@ -6,6 +6,7 @@ import { env } from '../config/env.js';
 import {
   AppError,
   problemTypeFromCode,
+  RateLimitError,
   type FieldError,
   titleFromCode,
 } from '../platform/errors.js';
@@ -34,6 +35,8 @@ export interface ProblemDetails {
   traceId: string;
   detail?: string;
   errors?: FieldError[];
+  /** Spec-mandated extras such as `creditBalance` on INSUFFICIENT_CREDITS. */
+  [key: string]: unknown;
 }
 
 /** Zod's `invalid_type` becomes `INVALID_TYPE` — machine-readable per field. */
@@ -117,7 +120,10 @@ function toProblem(error: unknown, traceId: string): ProblemDetails {
   // NotFoundError -> 404, ForbiddenError -> 403, UnauthorizedError -> 401,
   // DomainError -> 422 with its own code. Each error carries its own mapping.
   if (error instanceof AppError) {
-    return build(error.status, error.code, traceId, error.detail, error.errors, error.title);
+    return {
+      ...build(error.status, error.code, traceId, error.detail, error.errors, error.title),
+      ...(error.extra ?? {}),
+    };
   }
 
   if (isBodyParserError(error)) {
@@ -175,6 +181,10 @@ export function errorHandler(
     logger.error({ ...logBindings, err: error }, 'request failed');
   } else {
     logger.warn(logBindings, 'request rejected');
+  }
+
+  if (error instanceof RateLimitError) {
+    res.setHeader('Retry-After', String(error.retryAfterSeconds));
   }
 
   res.status(problem.status).type(PROBLEM_CONTENT_TYPE).json(problem);

@@ -37,3 +37,5 @@ coverage/
 
 # local docker volumes (named volumes live in docker, this is a safety net)
 .docker-data/
+
+apps/api/.storage/

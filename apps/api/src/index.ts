@@ -1,19 +1,29 @@
 import process from 'node:process';
 
 import { env } from './config/env.js';
-import { buildContainer, closeContainer } from './container.js';
+import { buildContainer, closeContainer, startBackground } from './container.js';
 import { logger } from './platform/telemetry/logger.js';
 import { createApp } from './server.js';
 
 /** How long a shutdown may take before the process is killed anyway. */
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
-const container = buildContainer();
+const container = await buildContainer();
+await startBackground(container);
+
 const app = createApp(container);
 
 const server = app.listen(env.PORT, env.HOST, () => {
   logger.info(
-    { port: env.PORT, host: env.HOST, nodeEnv: env.NODE_ENV },
+    {
+      port: env.PORT,
+      host: env.HOST,
+      nodeEnv: env.NODE_ENV,
+      appEnv: env.APP_ENV,
+      payments: env.PAYMENT_PROVIDER,
+      storage: env.STORAGE_DRIVER,
+      devDealer: env.DEV_DEALER_SLUG,
+    },
     'dealers-drive api listening',
   );
 });
