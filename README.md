@@ -9,6 +9,7 @@ authenticate.
 | **Specs**           | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/API-SPEC.md`](docs/API-SPEC.md) · [`docs/DESIGN-SPEC.md`](docs/DESIGN-SPEC.md) |
 | **Engineering log** | [`CONTEXT.md`](CONTEXT.md) — read this before changing `apps/api`                                                                      |
 | **API reference**   | http://localhost:4000/api/docs once running                                                                                            |
+| **Postman**         | [`docs/postman/`](docs/postman) — import the collection + environment and run the whole API                                             |
 
 ## Layout
 
@@ -70,7 +71,7 @@ legitimately returns nothing. That looks like a bug and is not one.
 | `pnpm build`       | builds every workspace package       |
 | `pnpm lint`        | eslint, type-aware, across the repo  |
 | `pnpm typecheck`   | tsc across the repo                  |
-| `pnpm test`        | vitest across the repo (114 tests)   |
+| `pnpm test`        | vitest across the repo (129 tests)   |
 | `pnpm format`      | prettier write                       |
 | `pnpm infra:up`    | `docker compose up -d`               |
 | `pnpm infra:reset` | wipes the local volumes and restarts |
@@ -84,6 +85,7 @@ In `apps/api`:
 | `pnpm db:reset`   | migrate reset + seed                                        |
 | `pnpm db:studio`  | Prisma Studio                                               |
 | `pnpm test`       | the integration suite (needs Postgres running)              |
+| `pnpm docs:postman` | regenerates `docs/postman/` from the OpenAPI document     |
 
 `pnpm lint && pnpm typecheck && pnpm test && pnpm build` **must all pass** before
 calling anything done.
@@ -170,6 +172,57 @@ while the credit ledger itself is append-only, row-locked and real.
 
 See [`CONTEXT.md` §6](CONTEXT.md) for the full boundary between what is mocked
 and what is not.
+
+## Testing the API in Postman
+
+```bash
+pnpm dev                                   # or: cd apps/api && pnpm dev
+```
+
+Import both files from [`docs/postman/`](docs/postman) — **Import → Files**:
+
+| File                                     | What it is                                         |
+| ---------------------------------------- | -------------------------------------------------- |
+| `dealers-drive.postman_collection.json`  | 73 requests in 10 folders, one per documented route |
+| `dealers-drive.postman_environment.json` | 21 variables, `baseUrl` = `http://localhost:4000`   |
+
+Then select the environment and press **Run collection**. It passes from a clean
+seed with no manual editing.
+
+- **There is nothing to authorize.** No `Authorization` header, no bearer token —
+  the API reads a server-configured identity (see [Authentication](#authentication)).
+  To test as another dealership, restart the API with a different `DEV_DEALER_SLUG`.
+- **The requests chain.** Test scripts capture ids as they appear —
+  `GET /v1/catalog/bundle` fills in `makeId`/`modelId`/`colorId`/`cityId`, creating
+  a vehicle fills `vehicleId`, submitting it fills `listingId`, and the moderation
+  queue picks it up. Run the folders in order the first time; after that any single
+  request works on its own.
+- **Every response is checked against the error contract.** A collection-level
+  test asserts that any status ≥ 400 is `application/problem+json` carrying `code`
+  and `traceId`, with a matching `status` and no `stack` — so a leak shows up as a
+  failed assertion rather than as a body nobody read.
+- Optional query parameters ship **disabled**. The API is `.strict()`: an empty
+  `?q=` filters for the empty string rather than meaning "no filter".
+- **Thirteen of the 73 are non-2xx on a clean seed, and all thirteen are correct.**
+  Each says so in its own description: a collection cannot PUT the file a presign
+  was issued for, so both `commit` steps answer 422 `UPLOAD_MISSING` and the draft
+  it creates has no photos (`TOO_FEW_PHOTOS`) and therefore nothing to publish,
+  mark sold or reorder; renewing finds nothing expired; the invoice PDF is still
+  rendering (`PDF_NOT_READY`); and the admin folder approves a listing before the
+  reject and request-changes requests reach it. Open the request in Postman and the
+  reason is under the description.
+
+Headless, in CI or a terminal:
+
+```bash
+pnpm dlx newman run docs/postman/dealers-drive.postman_collection.json
+```
+
+The collection is **generated** from the same OpenAPI document Swagger UI serves —
+`pnpm docs:postman` in `apps/api` rewrites it, and `tests/postman.test.ts` fails if
+the committed file has drifted from the routes. Postman can also import
+`http://localhost:4000/api/docs/openapi.json` directly, but that gives you neither
+the id chaining nor the error-contract assertions.
 
 ## Roadmap
 

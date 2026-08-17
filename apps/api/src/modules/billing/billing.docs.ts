@@ -242,7 +242,9 @@ export const billingDocs: ModuleDocs = {
         '**302 redirect** to a signed URL valid for five minutes — the PDF is not streamed ' +
         'through the API, and the signed link expires so a copied URL is not a permanent hole ' +
         'in another dealer\'s billing.\n\n' +
-        'Scoped to the caller\'s own invoices; another dealer\'s invoice id is a 404.\n\n' +
+        'Scoped to the caller\'s own invoices; another dealer\'s invoice id is a 404 — as is an ' +
+        'invoice whose PDF has not been rendered yet, which answers 404 `PDF_NOT_READY` rather ' +
+        'than a redirect to a URL that would 404 on arrival.\n\n' +
         '*Swagger UI follows the redirect automatically, so "Try it out" shows the PDF bytes ' +
         'rather than the 302.*',
       audience: 'dealer',

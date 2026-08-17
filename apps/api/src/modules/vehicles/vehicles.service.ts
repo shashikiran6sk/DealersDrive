@@ -55,6 +55,34 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
     return vehicle.listings[0] ?? null;
   }
 
+  /**
+   * Validates catalogue references before they reach Prisma.
+   *
+   * Without this, an id that is a well-formed uuid but names nothing becomes a
+   * foreign-key violation, which surfaces as an unhandled Prisma error and a
+   * **500** — a client mistake reported as a server fault, and in development
+   * with the query text attached. The schema cannot catch it: `Uuid` says the
+   * shape is right, not that the row exists.
+   *
+   * 404 rather than 422, because that is what the rest of the API answers for an
+   * id that names nothing, and `field` says which one.
+   */
+  async function assertCatalogue(refs: {
+    makeId?: string | undefined;
+    modelId?: string | undefined;
+    variantId?: string | null | undefined;
+    colorId?: string | null | undefined;
+    cityId?: string | undefined;
+  }): Promise<void> {
+    const broken = await repo.findBrokenCatalogueRef(refs);
+    if (!broken) return;
+
+    throw new NotFoundError(
+      `That ${FIELD_LABELS[broken] ?? broken} is not in the catalogue. Pick one from GET /v1/catalog/bundle.`,
+      { errors: [{ field: broken, code: 'NOT_IN_CATALOGUE', message: 'Not a known catalogue entry.' }] },
+    );
+  }
+
   async function completeness(vehicle: VehicleWithRelations): Promise<VehicleCompleteness> {
     const minPhotos = await config.number('listing.minPhotos');
     const readyPhotos = vehicle.media.filter((entry) => entry.media.status === 'READY').length;
@@ -207,6 +235,12 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
     },
 
     async create(dealerId: string, input: CreateVehicleInput): Promise<DealerVehicleDto> {
+      await assertCatalogue({
+        makeId: input.makeId,
+        modelId: input.modelId,
+        variantId: input.variantId ?? null,
+      });
+
       const vehicle = await repo.create(dealerId, {
         dealerId,
         makeId: input.makeId,
@@ -236,6 +270,31 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
           'This listing is with our team. It can be edited once the review is done.',
         );
       }
+
+      /**
+       * Coherence is checked against the row **as it will be**, not as it was
+       * sent. A PATCH may move the model without naming the make, or the make
+       * without naming the model, and either way the pair that ends up stored
+       * has to hold together.
+       *
+       * Skipped entirely when none of the three is being touched: whatever is
+       * already stored passed this same check on the way in, so re-reading it on
+       * every wizard step would be three queries to learn nothing.
+       */
+      const touchesTaxonomy =
+        input.makeId !== undefined || input.modelId !== undefined || input.variantId !== undefined;
+
+      await assertCatalogue({
+        ...(touchesTaxonomy
+          ? {
+              makeId: input.makeId ?? existing.makeId,
+              modelId: input.modelId ?? existing.modelId,
+              variantId: input.variantId === undefined ? existing.variantId : input.variantId,
+            }
+          : {}),
+        ...(input.colorId === undefined ? {} : { colorId: input.colorId }),
+        ...(input.cityId === undefined ? {} : { cityId: input.cityId }),
+      });
 
       const updated = await repo.update(dealerId, vehicleId, {
         ...(input.makeId === undefined ? {} : { makeId: input.makeId }),
@@ -610,6 +669,7 @@ export type VehiclesService = ReturnType<typeof createVehiclesService>;
 const FIELD_LABELS: Record<string, string> = {
   makeId: 'Make',
   modelId: 'Model',
+  variantId: 'Variant',
   year: 'Year',
   kmDriven: 'KM driven',
   ownerNumber: 'Ownership',

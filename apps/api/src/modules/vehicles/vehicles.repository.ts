@@ -66,6 +66,70 @@ export function createVehiclesRepository(prisma: PrismaClient) {
     },
 
     /**
+     * Checks that a catalogue reference exists **and is coherent** — that the
+     * model really belongs to the make, and the variant to the model.
+     *
+     * Existence alone would not be enough. ARCHITECTURE §6.2 constrains dealers
+     * to dropdowns precisely because a Kia Seltos filed under Maruti Suzuki
+     * takes search, filters and SEO down with it, and nothing downstream
+     * re-checks the pairing. One query answers both questions, so there is no
+     * reason to answer only the easy one.
+     *
+     * Returns the first reference that fails, or `null` when they all hold.
+     */
+    async findBrokenCatalogueRef(refs: {
+      makeId?: string | undefined;
+      modelId?: string | undefined;
+      variantId?: string | null | undefined;
+      colorId?: string | null | undefined;
+      cityId?: string | undefined;
+    }): Promise<string | null> {
+      if (refs.makeId !== undefined) {
+        const make = await prisma.make.findUnique({ where: { id: refs.makeId }, select: { id: true } });
+        if (!make) return 'makeId';
+      }
+
+      if (refs.modelId !== undefined) {
+        const model = await prisma.model.findFirst({
+          // The make constraint is the coherence check: a real model id filed
+          // under the wrong make fails here rather than corrupting the facets.
+          where: { id: refs.modelId, ...(refs.makeId === undefined ? {} : { makeId: refs.makeId }) },
+          select: { id: true },
+        });
+        if (!model) return 'modelId';
+      }
+
+      if (refs.variantId !== undefined && refs.variantId !== null) {
+        const variant = await prisma.variant.findFirst({
+          where: {
+            id: refs.variantId,
+            ...(refs.modelId === undefined ? {} : { modelId: refs.modelId }),
+          },
+          select: { id: true },
+        });
+        if (!variant) return 'variantId';
+      }
+
+      if (refs.colorId !== undefined && refs.colorId !== null) {
+        const color = await prisma.color.findUnique({
+          where: { id: refs.colorId },
+          select: { id: true },
+        });
+        if (!color) return 'colorId';
+      }
+
+      if (refs.cityId !== undefined) {
+        const city = await prisma.city.findUnique({
+          where: { id: refs.cityId },
+          select: { id: true },
+        });
+        if (!city) return 'cityId';
+      }
+
+      return null;
+    },
+
+    /**
      * The `dealerId` in the WHERE clause is not redundant with the guard: the
      * service re-checks ownership inside the transaction that performs the
      * write, so there is no gap between "you may" and "this row is yours".

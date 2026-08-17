@@ -249,3 +249,108 @@ describe('listing lifecycle over HTTP', () => {
     await h.agent().get(`/v1/vehicles/${slug}`).expect(404);
   });
 });
+
+/**
+ * Found by running the generated Postman collection with newman: a `makeId` that
+ * is a well-formed uuid but names nothing produced a **500** with a Prisma error
+ * attached, because the ids went straight into the insert and the foreign-key
+ * violation was never caught. A client mistake reported as a server fault.
+ *
+ * The schema cannot catch this — `Uuid` says the shape is right, not that the
+ * row exists — so the check belongs in the service.
+ */
+describe('catalogue references', () => {
+  let h: Harness;
+  let real: { makeId: string; modelId: string };
+
+  beforeAll(async () => {
+    h = await createHarness();
+    h.actAs(DEALER_A);
+    const model = await h.prisma.model.findFirstOrThrow({ orderBy: { name: 'asc' } });
+    real = { makeId: model.makeId, modelId: model.id };
+  });
+
+  afterAll(async () => {
+    await h.close();
+  });
+
+  const UNKNOWN = '2f9a6f1e-0000-4000-8000-000000000000';
+
+  const draft = (overrides: Record<string, unknown>) => ({
+    makeId: real.makeId,
+    modelId: real.modelId,
+    year: 2021,
+    fuel: 'PETROL',
+    transmission: 'MANUAL',
+    bodyType: 'HATCHBACK',
+    ...overrides,
+  });
+
+  it('404s an unknown make rather than 500ing', async () => {
+    const response = await h
+      .agent()
+      .post('/v1/dealer/vehicles')
+      .send(draft({ makeId: UNKNOWN }))
+      .expect(404);
+
+    expect(response.body.code).toBe('NOT_FOUND');
+    expect(response.body.errors?.[0]?.field).toBe('makeId');
+    // The whole point: no Prisma, no SQL, no file path.
+    expect(JSON.stringify(response.body)).not.toMatch(/prisma|invocation|\.ts:/i);
+  });
+
+  it('404s an unknown model', async () => {
+    const response = await h
+      .agent()
+      .post('/v1/dealer/vehicles')
+      .send(draft({ modelId: UNKNOWN }))
+      .expect(404);
+    expect(response.body.errors?.[0]?.field).toBe('modelId');
+  });
+
+  /**
+   * Existence alone would not be enough. Dealers are constrained to dropdowns
+   * because a Kia Seltos filed under Maruti Suzuki takes search, filters and SEO
+   * down with it (ARCHITECTURE §6.2), and nothing downstream re-checks the pair.
+   */
+  it('404s a real model that belongs to a different make', async () => {
+    const other = await h.prisma.model.findFirstOrThrow({
+      where: { makeId: { not: real.makeId } },
+    });
+
+    const response = await h
+      .agent()
+      .post('/v1/dealer/vehicles')
+      .send(draft({ modelId: other.id }))
+      .expect(404);
+
+    expect(response.body.errors?.[0]?.field).toBe('modelId');
+  });
+
+  it('404s a colour or city that is not in the catalogue', async () => {
+    const created = await h.agent().post('/v1/dealer/vehicles').send(draft({})).expect(201);
+
+    await h
+      .agent()
+      .patch(`/v1/dealer/vehicles/${created.body.id}`)
+      .send({ colorId: UNKNOWN })
+      .expect(404);
+
+    await h
+      .agent()
+      .patch(`/v1/dealer/vehicles/${created.body.id}`)
+      .send({ cityId: UNKNOWN })
+      .expect(404);
+  });
+
+  it('still accepts a real combination, and leaves untouched edits alone', async () => {
+    const created = await h.agent().post('/v1/dealer/vehicles').send(draft({})).expect(201);
+
+    // A PATCH that names none of make/model/variant must not re-validate them.
+    await h
+      .agent()
+      .patch(`/v1/dealer/vehicles/${created.body.id}`)
+      .send({ kmDriven: 12_000 })
+      .expect(200);
+  });
+});
