@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { formatLakh, formatRupees, initialsOf, slugify } from '@dealers-drive/contracts';
-import { PrismaClient, type CreditReason, type Prisma } from '@prisma/client';
+import { PrismaClient, type CreditReason } from '@prisma/client';
 
 import { CONFIG_DEFAULTS } from '../../src/platform/config/platform-config.js';
 import { createLocalStorage } from '../../src/platform/storage/local.adapter.js';
@@ -64,7 +64,7 @@ async function seedConfig(): Promise<void> {
     await prisma.platformConfig.create({
       data: {
         key: entry.key,
-        value: entry.value as Prisma.InputJsonValue,
+        value: entry.value,
         label: entry.label,
         valueType: entry.type,
       },
@@ -636,8 +636,10 @@ async function seedEnquiries(
     if (!dealer) continue;
     const vehicle = enquiry.vehicleRef ? byRef.get(enquiry.vehicleRef) : undefined;
 
-    const [{ reference }] = await prisma.$queryRaw<{ reference: string }[]>`
+    const rows = await prisma.$queryRaw<{ reference: string }[]>`
       SELECT 'DD-EN-' || nextval('enquiry_reference_seq')::text AS reference`;
+    const reference = rows[0]?.reference;
+    if (!reference) throw new Error('enquiry_reference_seq returned no row');
 
     const createdAt = minutesAgo(enquiry.minutesAgo);
 

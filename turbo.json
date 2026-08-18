@@ -21,6 +21,11 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "*.tsbuildinfo"]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
     "clean": {
       "cache": false
     }

@@ -3,7 +3,7 @@
 import type { CitiesResponse } from '@dealers-drive/contracts';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useId, useRef, useState } from 'react';
+import { Suspense, useEffect, useId, useRef, useState } from 'react';
 
 import { Plate } from '@/components/ui/primitives';
 import { useSavedCars } from '@/features/saved/saved-store';
@@ -17,12 +17,7 @@ import { cn } from '@/lib/cn';
  */
 export function CustomerHeader({ cities }: { cities: CitiesResponse }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { count, hydrated } = useSavedCars();
-
-  const activeCity = searchParams.get('city') ?? cities.default;
-  const cityName =
-    cities.data.find((city) => city.slug === activeCity)?.name ?? 'All of Tamil Nadu';
 
   return (
     <header className="sticky top-0 z-20 border-b border-(--color-divider) bg-white">
@@ -45,7 +40,17 @@ export function CustomerHeader({ cities }: { cities: CitiesResponse }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <CitySelector cities={cities} activeCity={activeCity} cityName={cityName} />
+          {/*
+            The city chip is the only part of the header that reads the URL's
+            query string, and `useSearchParams` opts a route out of static
+            prerendering unless it sits behind a boundary. Keeping the boundary
+            this tight means the rest of the header — logo, nav, the two buttons —
+            still renders on the server, and the chip arrives with the same
+            markup a moment later.
+          */}
+          <Suspense fallback={<CityChipFallback />}>
+            <CitySelector cities={cities} />
+          </Suspense>
           <Link href="/dealer" className="btn btn-secondary hidden border-transparent sm:inline-flex">
             <span className="hidden lg:inline">Dealer login</span>
             <span className="lg:hidden">Login</span>
@@ -81,23 +86,33 @@ function HeaderLink({
 }
 
 /**
+ * The chip's own footprint, so the header does not reflow when the real one
+ * arrives. It says "Tamil Nadu" rather than nothing because that is what the
+ * chip reads for every visitor who has not chosen a city.
+ */
+function CityChipFallback() {
+  return (
+    <span className="btn btn-secondary flex items-center gap-[7px]" aria-hidden="true">
+      <span className="block h-[14px] w-[5px] bg-(--color-accent)" />
+      All of Tamil Nadu <span>▾</span>
+    </span>
+  );
+}
+
+/**
  * DESIGN-SPEC §2.18. Enter/Space opens, arrows move, Esc closes and returns
  * focus to the trigger; an outside click closes it too. One of the three
  * elements in the product that carries a shadow.
  */
-function CitySelector({
-  cities,
-  activeCity,
-  cityName,
-}: {
-  cities: CitiesResponse;
-  activeCity: string;
-  cityName: string;
-}) {
+function CitySelector({ cities }: { cities: CitiesResponse }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const activeCity = searchParams.get('city') ?? cities.default;
+  const cityName =
+    cities.data.find((city) => city.slug === activeCity)?.name ?? 'All of Tamil Nadu';
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();

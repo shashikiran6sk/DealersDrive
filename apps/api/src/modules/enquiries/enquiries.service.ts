@@ -24,9 +24,10 @@ import type { PlatformConfigService } from '../../platform/config/platform-confi
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, NotFoundError, RateLimitError } from '../../platform/errors.js';
-import type { DealersRepository } from '../dealers/dealers.repository.js';
-import type { SearchRepository } from '../search/search.repository.js';
-import { mediaUrl } from '../search/search.mapper.js';
+import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import type { DealersRepository } from '../dealers/dealers.facade.js';
+import { mediaUrl } from '../../platform/media/urls.js';
+import type { SearchRepository } from '../search/search.facade.js';
 import type { EnquiriesRepository, EnquiryWithVehicle } from './enquiries.repository.js';
 
 export interface EnquiriesDeps {
@@ -414,29 +415,4 @@ function responseTimeLabel(medianMins: number | null): string {
   const hours = Math.round(medianMins / 60);
   if (hours >= 24) return 'typically responds within a day';
   return `typically responds within ${hours} hours`;
-}
-
-export function encodeCursor(date: Date): string {
-  return Buffer.from(date.toISOString()).toString('base64url');
-}
-
-/** The ledger paginates on its append sequence, not on a timestamp. */
-export function encodeSeqCursor(seq: bigint): string {
-  return Buffer.from(String(seq)).toString('base64url');
-}
-
-export function decodeSeqCursor(cursor: string): string {
-  const value = Buffer.from(cursor, 'base64url').toString('utf8');
-  if (!/^\d+$/.test(value)) {
-    throw new ConflictError('MALFORMED_CURSOR', 'That page cursor is not valid.');
-  }
-  return value;
-}
-
-export function decodeCursor(cursor: string): Date {
-  const value = new Date(Buffer.from(cursor, 'base64url').toString('utf8'));
-  if (Number.isNaN(value.getTime())) {
-    throw new ConflictError('MALFORMED_CURSOR', 'That page cursor is not valid.');
-  }
-  return value;
 }

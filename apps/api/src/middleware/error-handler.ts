@@ -41,11 +41,32 @@ export interface ProblemDetails {
 
 /** Zod's `invalid_type` becomes `INVALID_TYPE` — machine-readable per field. */
 function fieldErrorsFromZod(error: ZodError): FieldError[] {
-  return error.issues.map((issue) => ({
-    field: issue.path.map((segment) => String(segment)).join('.') || '(root)',
-    code: issue.code.toUpperCase(),
-    message: issue.message,
-  }));
+  return error.issues.flatMap((issue) => {
+    const base = issue.path.map((segment) => String(segment));
+
+    /**
+     * An unrecognized key carries its own name in `keys`, not in `path` — the
+     * path points at the *object* that had the surplus field. Naming the object
+     * would defeat the point of `.strict()`: the reason an unknown parameter is
+     * a 400 rather than a silent ignore is so the caller can find their typo
+     * (ARCHITECTURE §9.2). One error per stray key, each naming the key.
+     */
+    if (issue.code === 'unrecognized_keys') {
+      return issue.keys.map((key) => ({
+        field: [...base, key].join('.') || key,
+        code: 'UNRECOGNIZED_KEY',
+        message: `\`${key}\` is not a recognised field.`,
+      }));
+    }
+
+    return [
+      {
+        field: base.join('.') || '(root)',
+        code: issue.code.toUpperCase(),
+        message: issue.message,
+      },
+    ];
+  });
 }
 
 /**

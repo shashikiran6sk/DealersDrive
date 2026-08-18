@@ -9,7 +9,7 @@ import {
 
 import { env } from '../../config/env.js';
 import { NotFoundError } from '../../platform/errors.js';
-import type { SearchRepository } from '../search/search.repository.js';
+import type { SearchRepository } from '../search/search.facade.js';
 import type { DealersRepository } from './dealers.repository.js';
 
 export interface DealersPublicDeps {

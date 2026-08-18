@@ -10,7 +10,7 @@ import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
-import { mediaUrl } from '../search/search.mapper.js';
+import { mediaUrl } from '../../platform/media/urls.js';
 
 export interface MediaDeps {
   prisma: PrismaClient;
