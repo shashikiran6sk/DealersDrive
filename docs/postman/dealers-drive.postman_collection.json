@@ -1,0 +1,4337 @@
+{
+  "info": {
+    "name": "Dealers-Drive API",
+    "description": "The REST API behind Dealers-Drive — a B2B2C used-car marketplace for Tamil Nadu, where\nverified dealers list their inventory and buyers browse it without an account.\n\n**This reference is generated from the code.** Every schema below is converted from\n`@dealers-drive/contracts`, the same Zod schemas the API validates requests with and the web\napp parses responses with. A renamed field cannot drift out of this document, because there is\nno second copy of it to drift from.\n\n### Three mount points, three guard chains\n\n| Prefix | Who | Notes |\n| --- | --- | --- |\n| `/v1/…` | anyone | No session. IP rate-limited. Never returns a dealer's phone number. |\n| `/v1/dealer/…` | a dealer seat | Scoped to one dealership, resolved server-side. |\n| `/v1/admin/…` | a platform admin | Cross-tenant, and every write is audit-logged. |\n\n`/health` and the storage routes sit outside `/v1` on purpose: infrastructure probes them,\nnot clients, so they must not move when the API version does.\n\n### Conventions worth knowing before you read further\n\n- **Money is integer paise.** `pricePaise: 645000` is ₹6,450. There are no float amounts\n  anywhere, in either direction.\n- **Formatted values travel with raw ones.** Responses carry `pricePaise` *and*\n  `priceLabel: \"₹6.45 Lakh\"`, so the four surfaces that show a price cannot disagree about\n  rounding.\n- **Every input schema is `.strict()`.** An unknown field or query parameter is a 400 naming\n  it, never a silent ignore — silent ignoring hides client bugs for months.\n- **One error shape.** Every failure is an RFC 9457 problem document with\n  `application/problem+json` and a machine-readable `code`. Switch on `code`, never on\n  `detail`.\n- **Public visibility has one rule.** A car appears publicly only when\n  `listing.status = APPROVED` **and** `dealer.status = ACTIVE`. Anything else is a 404 to a\n  buyer, and every count in the public API is derived from the same rows.\n- **A dealer's phone number appears in exactly one response**, from\n  `POST /v1/vehicles/{id}/reveal-contact`.\n\n### Payments are mocked\n\n`PAYMENT_PROVIDER=development` settles an order inline through the same internal function a\ngateway webhook would call, so buying credits adds them immediately and no gateway page is\ninvolved. The credit *ledger* is production-grade: append-only, row-locked, and the balance is\nread from the newest row rather than a column.\n\n---\n\n## How to use this collection\n\n1. Start the stack — `docker compose up -d`, then `pnpm db:migrate && pnpm db:seed` in\n`apps/api`, then `pnpm dev`.\n2. Check `baseUrl` points at your API (default `http://localhost:4000`).\n3. **There is nothing to authorize.** Identity is resolved server-side from\n`DEV_DEALER_SLUG` / `DEV_ADMIN_EMAIL`, so the dealer and admin folders work with no token,\nno cookie and no header. Send *Who am I* first to see which dealership you are acting as.\nTo act as a different dealership, restart the API with a different `DEV_DEALER_SLUG` —\nthere is no header that could do it.\n\n### Variables chain themselves\n\nRequests that mint an id capture it into a collection variable, so a flow runs in order\nwithout copying uuids. A good first pass:\n\n| # | Request | Sets |\n| --- | --- | --- |\n| 1 | *Who am I* | `dealerId` |\n| 2 | *Search and filter the catalogue* | `publicVehicleId`, `vehicleSlug`, `dealerSlug` |\n| 3 | *Create a draft vehicle* | `vehicleId` |\n| 4 | *Update a vehicle* | — fills in price, km, description |\n| 5 | *Get a signed upload URL for a photo* | `mediaId`, `uploadUrl` |\n| 6 | *Submit for review* | `listingId` — and holds one credit |\n| 7 | *Approve a listing* (Admin) | spends the held credit |\n| 8 | *Credit history* | shows `HOLD_SUBMIT` then `CONSUME_APPROVE` |\n\nStep 6 will refuse with 422 until the vehicle is complete and has six processed photos —\nthat is the real rule, not a quirk of the collection. `GET /v1/dealer/vehicles/{{vehicleId}}`\nreports exactly what is missing in `completeness.blockers`.\n\n### Every request tests the error contract\n\nA collection-level script asserts that any 4xx or 5xx is a genuine RFC 9457 problem\ndocument with a machine-readable `code`, a `traceId`, a matching `status`, and no stack\ntrace. You get that for free on every request, so deliberately breaking one is a useful\ntest rather than a dead end.\n\n### Things worth trying deliberately\n\n- Send `?colour=red` to *Search* — every input schema is `.strict()`, so an unknown\n  parameter is a 400 that **names** the parameter.\n- Put `\"status\": \"APPROVED\"` in *Update a vehicle* — also a 400. A listing's status changes\n  only through the state machine.\n- Approve the same listing twice — the second is 409 `INVALID_TRANSITION`, not a double\n  approval.\n- Set `vehicleId` to a uuid belonging to another dealership — **404, not 403**. A 403 would\n  confirm the id is real.\n\n### Query parameters are disabled by default\n\nOptional parameters are present but switched off, because this API is `.strict()` and an\nempty `?q=` is a filter for the empty string rather than the absence of a filter. Tick the\nones you want.\n\n---\n\nGenerated from the OpenAPI document by `pnpm docs:postman`. Do not edit by hand — the\nsame document is served live at `/api/docs`, and a test fails if this file drifts from it.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string",
+      "description": "The API origin. Change this one value to point at another environment."
+    },
+    {
+      "key": "makeId",
+      "value": "",
+      "type": "string",
+      "description": "A catalogue make. Captured by `The whole taxonomy in one response` — run that first, because a vehicle is created from ids and dealers never free-type a make."
+    },
+    {
+      "key": "modelId",
+      "value": "",
+      "type": "string",
+      "description": "A model **belonging to `makeId`**. Captured alongside it; a real model filed under the wrong make is a 404, not a silently corrupt listing."
+    },
+    {
+      "key": "colorId",
+      "value": "",
+      "type": "string",
+      "description": "A catalogue colour. Captured by `The whole taxonomy in one response`."
+    },
+    {
+      "key": "cityId",
+      "value": "",
+      "type": "string",
+      "description": "A city uuid, for the vehicle location. Captured with the rest of the catalogue."
+    },
+    {
+      "key": "vehicleId",
+      "value": "",
+      "type": "string",
+      "description": "A vehicle **the acting dealer owns**. Captured by `Create a draft vehicle` and by `List the dealer's inventory`. Another dealer's id answers 404 by design."
+    },
+    {
+      "key": "disposableVehicleId",
+      "value": "",
+      "type": "string",
+      "description": "Only `Delete a vehicle` reads this, and nothing sets it — so a `Run all` cannot destroy the draft the rest of the collection is using. Paste in a vehicle you actually want gone."
+    },
+    {
+      "key": "publicVehicleId",
+      "value": "",
+      "type": "string",
+      "description": "A publicly visible car. Captured by `Search and filter the catalogue`."
+    },
+    {
+      "key": "vehicleSlug",
+      "value": "",
+      "type": "string",
+      "description": "The SEO slug of a live car. Captured by `Search and filter the catalogue`."
+    },
+    {
+      "key": "dealerSlug",
+      "value": "sri-lakshmi-motors",
+      "type": "string",
+      "description": "A dealership slug for the public profile endpoints."
+    },
+    {
+      "key": "dealerId",
+      "value": "",
+      "type": "string",
+      "description": "The acting dealership's uuid, for the admin endpoints. Captured by `Who am I`."
+    },
+    {
+      "key": "listingId",
+      "value": "",
+      "type": "string",
+      "description": "Captured by `Submit for review` and by `The moderation queue`."
+    },
+    {
+      "key": "mediaId",
+      "value": "",
+      "type": "string",
+      "description": "Captured by `Get a signed upload URL for a photo` and by `One vehicle`."
+    },
+    {
+      "key": "enquiryId",
+      "value": "",
+      "type": "string",
+      "description": "Captured by `The dealer's inbox`."
+    },
+    {
+      "key": "packId",
+      "value": "",
+      "type": "string",
+      "description": "Captured by `Credit packs for sale`."
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string",
+      "description": "Captured by `Buy a credit pack`."
+    },
+    {
+      "key": "invoiceId",
+      "value": "",
+      "type": "string",
+      "description": "Captured by `Confirm an order after checkout` and by `GST invoices`."
+    },
+    {
+      "key": "documentId",
+      "value": "",
+      "type": "string",
+      "description": "Captured by `Get an upload URL for a KYC document`."
+    },
+    {
+      "key": "documentType",
+      "value": "GST_CERTIFICATE",
+      "type": "string",
+      "description": "One of GST_CERTIFICATE, PAN_CARD, ADDRESS_PROOF."
+    },
+    {
+      "key": "configKey",
+      "value": "listing.minPhotos",
+      "type": "string",
+      "description": "A platform-config key. `GET /v1/admin/config` lists them all."
+    },
+    {
+      "key": "uploadUrl",
+      "value": "",
+      "type": "string",
+      "description": "The signed URL from a presign response, captured so the raw `PUT /uploads` step can use it. Note that Postman must send the exact bytes the signature was issued for."
+    }
+  ],
+  "item": [
+    {
+      "name": "Public catalogue",
+      "description": "Search, vehicle detail and dealer profiles, for anonymous buyers. No session, no account, and **no dealer phone number** — `POST /v1/vehicles/{id}/reveal-contact` is the only endpoint that returns one. IP rate-limited at 120 requests/minute.",
+      "item": [
+        {
+          "name": "Homepage payload for one city",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/home",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "home"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "string · max 60 chars",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Featured cars, body-type tiles with counts, a dealer strip and the live count for the chosen city. Omit `city` and the platform default is used — the same slug `GET /v1/cities` returns as `default`.\n\n`activeCount` is scoped to the city in the response, not to the whole state.\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": []
+        },
+        {
+          "name": "Search and filter the catalogue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vehicles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "string · max 120 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "make",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "model",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "variant",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "priceMin",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "priceMax",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "yearMin",
+                  "value": "",
+                  "description": "integer · 1950…2100",
+                  "disabled": true
+                },
+                {
+                  "key": "yearMax",
+                  "value": "",
+                  "description": "integer · 1950…2100",
+                  "disabled": true
+                },
+                {
+                  "key": "kmMax",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "fuel",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "transmission",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "bodyType",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "owners",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "seats",
+                  "value": "",
+                  "description": "integer · 2…10",
+                  "disabled": true
+                },
+                {
+                  "key": "airbagsMin",
+                  "value": "",
+                  "description": "integer · 0…12",
+                  "disabled": true
+                },
+                {
+                  "key": "color",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "rtoState",
+                  "value": "",
+                  "description": "string · matching `^[A-Za-z]{2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "rto",
+                  "value": "",
+                  "description": "string · matching `^[A-Za-z]{2}-?\\d{1,2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "dealer",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance",
+                  "description": "one of: relevance, price_asc, price_desc, year_desc, km_asc, newest · default `relevance`",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "integer · 1…40 · default `1`",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "24",
+                  "description": "integer · 1…48 · default `24`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "The main search endpoint. Offset-paginated, because SEO needs linkable pages.\n\n**The query grammar is `.strict()`** — an unrecognised parameter is a 400 naming the parameter, never a silent ignore, so a broken filter surfaces immediately instead of quietly returning everything.\n\nMulti-value filters take a comma-separated list of lowercase slugs: `?fuel=petrol,diesel&make=maruti-suzuki,hyundai`. Note the case — `fuel=PETROL` is a 400. Prices are **paise** everywhere, including `priceMin`/`priceMax`.\n\n`appliedFilters[]` comes back with a `removeHref` per active filter so the chip row does not have to rebuild query strings on the client.\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const publicVehicleId = read('data.0.id');",
+                  "  if (publicVehicleId) pm.collectionVariables.set('publicVehicleId', publicVehicleId);",
+                  "  const vehicleSlug = read('data.0.slug');",
+                  "  if (vehicleSlug) pm.collectionVariables.set('vehicleSlug', vehicleSlug);",
+                  "  const dealerSlug = read('data.0.dealer.slug');",
+                  "  if (dealerSlug) pm.collectionVariables.set('dealerSlug', dealerSlug);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Facet counts for the current filter set",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vehicles/facets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "facets"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "string · max 120 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "make",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "model",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "variant",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "priceMin",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "priceMax",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "yearMin",
+                  "value": "",
+                  "description": "integer · 1950…2100",
+                  "disabled": true
+                },
+                {
+                  "key": "yearMax",
+                  "value": "",
+                  "description": "integer · 1950…2100",
+                  "disabled": true
+                },
+                {
+                  "key": "kmMax",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "fuel",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "transmission",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "bodyType",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "owners",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "seats",
+                  "value": "",
+                  "description": "integer · 2…10",
+                  "disabled": true
+                },
+                {
+                  "key": "airbagsMin",
+                  "value": "",
+                  "description": "integer · 0…12",
+                  "disabled": true
+                },
+                {
+                  "key": "color",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "rtoState",
+                  "value": "",
+                  "description": "string · matching `^[A-Za-z]{2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "rto",
+                  "value": "",
+                  "description": "string · matching `^[A-Za-z]{2}-?\\d{1,2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "dealer",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance",
+                  "description": "one of: relevance, price_asc, price_desc, year_desc, km_asc, newest · default `relevance`",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "integer · 1…40 · default `1`",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "24",
+                  "description": "integer · 1…48 · default `24`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "The counts beside each filter checkbox, plus the budget slider bounds, for the same query `GET /v1/vehicles` accepts. Options whose count is zero **are** returned so the panel can render them disabled — omitting them would make the filter list jump as a buyer types.\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": []
+        },
+        {
+          "name": "Hydrate saved cars by id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vehicles/batch",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "batch"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{publicVehicleId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Saved cars live in the browser's `localStorage`, so the ids arrive in a body rather than a URL. A POST because the list can be up to 100 ids — not because it writes anything.\n\nA car that has left the catalogue **must not fail the whole request**: it comes back in `unavailable[]` with a reason, so the saved list can show \"sold\" instead of losing every other card.\n\n**Rate limit** 60 requests per minute per IP."
+          },
+          "response": []
+        },
+        {
+          "name": "Vehicle detail page",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vehicles/{{vehicleSlug}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "{{vehicleSlug}}"
+              ]
+            },
+            "description": "Accepts either the uuid or the SEO slug (`2021-maruti-suzuki-swift-vxi-vellore-3f2a1b`), so a card can link by slug and a saved-car id still resolves.\n\n**The dealer's phone number is not in this response.** `dealer.contact[]` carries a masked placeholder with `masked: true`; the real number comes only from `POST /v1/vehicles/{id}/reveal-contact`, which is rate-limited and logged.\n\nA car that is not publicly visible — pending review, rejected, sold, or belonging to a suspended dealer — is a **404**, the same as one that never existed.\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": []
+        },
+        {
+          "name": "Similar cars",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vehicles/{{publicVehicleId}}/similar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "{{publicVehicleId}}",
+                "similar"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "4",
+                  "description": "integer · 1…12 · default `4`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Cars comparable to this one by model, price band and city. Returns `{ data }` only — no pagination, because the strip is a fixed length.\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": []
+        },
+        {
+          "name": "Dealer directory",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealers"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "string · max 120 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "integer · 1…40 · default `1`",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "24",
+                  "description": "integer · 1…48 · default `24`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Verified dealerships with their live car counts and cheapest car. Only dealers whose status is ACTIVE appear, and `carCount` counts only their publicly visible cars — a suspended dealer disappears from this list entirely.\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const dealerSlug = read('data.0.slug');",
+                  "  if (dealerSlug) pm.collectionVariables.set('dealerSlug', dealerSlug);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Public dealer profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealers/{{dealerSlug}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealers",
+                "{{dealerSlug}}"
+              ]
+            },
+            "description": "The showroom page: address, services, stats and contact rows. As with vehicle detail, `contact[]` masks the phone number (`masked: true`) — this endpoint never returns one.\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": []
+        },
+        {
+          "name": "One dealer's cars",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealers/{{dealerSlug}}/vehicles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealers",
+                "{{dealerSlug}}",
+                "vehicles"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "string · max 120 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "make",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "model",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "variant",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "priceMin",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "priceMax",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "yearMin",
+                  "value": "",
+                  "description": "integer · 1950…2100",
+                  "disabled": true
+                },
+                {
+                  "key": "yearMax",
+                  "value": "",
+                  "description": "integer · 1950…2100",
+                  "disabled": true
+                },
+                {
+                  "key": "kmMax",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "fuel",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "transmission",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "bodyType",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "owners",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "seats",
+                  "value": "",
+                  "description": "integer · 2…10",
+                  "disabled": true
+                },
+                {
+                  "key": "airbagsMin",
+                  "value": "",
+                  "description": "integer · 0…12",
+                  "disabled": true
+                },
+                {
+                  "key": "color",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "rtoState",
+                  "value": "",
+                  "description": "string · matching `^[A-Za-z]{2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "rto",
+                  "value": "",
+                  "description": "string · matching `^[A-Za-z]{2}-?\\d{1,2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "dealer",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance",
+                  "description": "one of: relevance, price_asc, price_desc, year_desc, km_asc, newest · default `relevance`",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "integer · 1…40 · default `1`",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "24",
+                  "description": "integer · 1…48 · default `24`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "The dealer's own portfolio, filterable with the same query grammar as `GET /v1/vehicles` (the `dealer` parameter is redundant here and simply narrows further).\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": []
+        },
+        {
+          "name": "Facet counts within one dealer's cars",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealers/{{dealerSlug}}/facets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealers",
+                "{{dealerSlug}}",
+                "facets"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "string · max 120 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "make",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "model",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "variant",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "priceMin",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "priceMax",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "yearMin",
+                  "value": "",
+                  "description": "integer · 1950…2100",
+                  "disabled": true
+                },
+                {
+                  "key": "yearMax",
+                  "value": "",
+                  "description": "integer · 1950…2100",
+                  "disabled": true
+                },
+                {
+                  "key": "kmMax",
+                  "value": "",
+                  "description": "integer · 0…∞",
+                  "disabled": true
+                },
+                {
+                  "key": "fuel",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "transmission",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "bodyType",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "owners",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "seats",
+                  "value": "",
+                  "description": "integer · 2…10",
+                  "disabled": true
+                },
+                {
+                  "key": "airbagsMin",
+                  "value": "",
+                  "description": "integer · 0…12",
+                  "disabled": true
+                },
+                {
+                  "key": "color",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "rtoState",
+                  "value": "",
+                  "description": "string · matching `^[A-Za-z]{2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "rto",
+                  "value": "",
+                  "description": "string · matching `^[A-Za-z]{2}-?\\d{1,2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "dealer",
+                  "value": "",
+                  "description": "string",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance",
+                  "description": "one of: relevance, price_asc, price_desc, year_desc, km_asc, newest · default `relevance`",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "integer · 1…40 · default `1`",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "24",
+                  "description": "integer · 1…48 · default `24`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Facets scoped to this dealership. The portfolio page shows fuel, body type and transmission from this response — a dealer facet inside one dealer's page would be a list of one.\n\n**Rate limit** 120 requests per minute per IP."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Catalogue",
+      "description": "Curated reference data: makes, models, variants, cities, colours and RTO codes. Dealers never free-type a make or model — they pick from this taxonomy, which is why search facets can be exact. All three responses are edge-cacheable and carry no dealer-specific or session-specific data.",
+      "item": [
+        {
+          "name": "The whole taxonomy in one response",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/catalog/bundle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "catalog",
+                "bundle"
+              ]
+            },
+            "description": "Makes with their models and variants, cities, colours, RTO codes and the body/fuel/transmission vocabularies. One request rather than five, because the search page needs all of it before it can render a filter panel.\n\n`Cache-Control: public, max-age=3600, stale-while-revalidate=600`."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const makeId = read('makes.0.id');",
+                  "  if (makeId) pm.collectionVariables.set('makeId', makeId);",
+                  "  const modelId = read('makes.0.models.0.id');",
+                  "  if (modelId) pm.collectionVariables.set('modelId', modelId);",
+                  "  const colorId = read('colors.0.id');",
+                  "  if (colorId) pm.collectionVariables.set('colorId', colorId);",
+                  "  const cityId = read('cities.0.id');",
+                  "  if (cityId) pm.collectionVariables.set('cityId', cityId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cities with live-listing counts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/cities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "cities"
+              ]
+            },
+            "description": "Every city that has a presence, each with the number of cars currently visible in it, plus the default city the homepage opens on. The counts come from the `listing_search` read model, so they obey the one visibility rule and are never hard-coded.\n\n`Cache-Control: public, max-age=60, stale-while-revalidate=300`."
+          },
+          "response": []
+        },
+        {
+          "name": "Client-safe platform configuration",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/config/public",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "config",
+                "public"
+              ]
+            },
+            "description": "The subset of `platform_config` a browser is allowed to see — listing duration, minimum photo count, support contacts, EMI assumptions. Deliberately a *subset*: the admin-only keys never appear here.\n\n`Cache-Control: public, max-age=60`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Enquiries",
+      "description": "Buyer enquiries and phone reveals, plus the dealer's inbox. The two public endpoints need no account — asking a dealer about a car must not require a signup — so they carry the hardest rate limits in the API and a honeypot field.",
+      "item": [
+        {
+          "name": "Submit an enquiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/enquiries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "enquiries"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleId\": \"{{publicVehicleId}}\",\n  \"name\": \"Ravi Kumar\",\n  \"phone\": \"9876543210\",\n  \"email\": \"ravi@example.com\",\n  \"message\": \"Is this still available for a test drive this weekend?\",\n  \"source\": \"LISTING_PAGE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Creates a lead against **either** a vehicle or a dealership — exactly one of `vehicleId` and `dealerSlug`, never both and never neither (a 400 if you send the wrong combination).\n\n**Deduplicated.** The same phone number asking about the same car within 24 hours returns `200` with `isDuplicate: true` and the *original* reference, and sends the dealer no second notification. Tapping submit twice must not produce two leads, and must not look like a failure to the buyer either — hence 200 rather than 409.\n\n**`website` is a honeypot.** It is not a real field. A bot that fills it gets a normal 201 with a plausible reference and nothing is written — a bot is told nothing.\n\nPhone numbers are accepted as `9876543210`, `+919876543210` or `+91 98765 43210` and normalised to E.164 on the way in.\n\n**Rate limit** 5 enquiries per hour per IP."
+          },
+          "response": []
+        },
+        {
+          "name": "Reveal the dealer's phone number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vehicles/{{publicVehicleId}}/reveal-contact",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "{{publicVehicleId}}",
+                "reveal-contact"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ravi Kumar\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**The only endpoint in the API that returns a dealer's phone number.** No ordinary public response carries one (rule 7).\n\nA reveal is a lead: it writes a `PhoneReveal` row for abuse analysis *and* an `Enquiry` with `source: CALL_BUTTON`, so the dealer sees the tap in their inbox. Deduplicated per network and vehicle over 24 hours, so tapping Call three times is one lead.\n\nTwo independent caps apply per IP — an hourly one and a daily one — because each reveal is the thing competitors want and every notification costs real money. Both answer 429.\n\nOnly works for a car that is publicly visible; anything else is a 404. `Cache-Control: no-store`.\n\n**Rate limit** 10 reveals per hour and 20 per day per IP (`reveal.hourlyCapPerIp`, `reveal.dailyCapPerIp`)."
+          },
+          "response": []
+        },
+        {
+          "name": "The dealer's inbox",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/enquiries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "enquiries"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "one of: NEW, CONTACTED, CLOSED, SPAM",
+                  "disabled": true
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "string · max 500 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "integer · 1…100 · default `20`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Leads for the acting dealership, newest first, cursor-paginated so the list stays stable while new leads arrive. Scoped to the session's dealer — there is no parameter that could widen it.\n\n**Permission** `enquiry:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const enquiryId = read('data.0.id');",
+                  "  if (enquiryId) pm.collectionVariables.set('enquiryId', enquiryId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inbox tab counts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/enquiries/counts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "enquiries",
+                "counts"
+              ]
+            },
+            "description": "The number beside each inbox tab (new, contacted, closed, spam) plus the total, so the tabs can update without refetching every list.\n\n**Permission** `enquiry:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Update a lead's status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/enquiries/{{enquiryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "enquiries",
+                "{{enquiryId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CLOSED\",\n  \"closeReason\": \"SOLD\",\n  \"note\": \"Sold to this buyer on Saturday.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Move a lead through the inbox — contacted, closed with a reason, or marked spam — and attach a private note.\n\nAnother dealer's enquiry id answers **404**, not 403.\n\n**Permission** `enquiry:update` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dealer account",
+      "description": "The acting dealership: profile, KYC documents, verification submission, dashboard and session. Every one of these reads and writes exactly one dealership — the one the session resolves to. **No endpoint here takes a `dealerId`**, and because the schemas are `.strict()`, sending one is a 400 rather than a quiet no-op (rule 1).",
+      "item": [
+        {
+          "name": "Who am I",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "The resolved session: the user, their dealership, their role, the permissions that role carries (§8.3) and the two badge counts the console header shows.\n\nThis is the endpoint to call first from Swagger UI — it tells you which dealership the other operations will act on. Locally that is `DEV_DEALER_SLUG`.\n\n`Cache-Control: no-store`."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const dealerId = read('dealer.id');",
+                  "  if (dealerId) pm.collectionVariables.set('dealerId', dealerId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "End the session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Returns 204 and revokes nothing. The session is server-configured in this build (CLAUDE.md §5), so there is no token to invalidate — the route exists so the client contract does not change on the day there is one."
+          },
+          "response": []
+        },
+        {
+          "name": "The dealership record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer"
+              ]
+            },
+            "description": "The full private profile — including the fields the public profile withholds, such as GSTIN, PAN and the credit balance. Any dealer seat may read it."
+          },
+          "response": []
+        },
+        {
+          "name": "Update the dealership",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brandName\": \"Sri Lakshmi Motors\",\n  \"tagline\": \"Family-run since 2009\",\n  \"gstin\": \"33AABCS1429P1Z5\",\n  \"address\": {\n    \"line\": \"142 Katpadi Main Road\",\n    \"pincode\": \"632007\"\n  },\n  \"contact\": {\n    \"fullName\": \"Karthik Raman\",\n    \"roleTitle\": \"Proprietor\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Partial by design.** The onboarding wizard PATCHes only the fields on the current step, so `Back` never blanks what another step filled in.\n\nNotable absences, all deliberate: `phone` (it is the login identity — changing it needs an OTP round-trip on the new number), `status`, `slug` and `dealerId`. GSTIN and PAN are validated against their real formats and upper-cased.\n\nOWNER only (`dealer:update`) — a manager or salesperson gets a 403.\n\n**Permission** `dealer:update` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Onboarding progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/completeness",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "completeness"
+              ]
+            },
+            "description": "Which onboarding steps are done, what is missing from each, and whether the dealership can be submitted for verification yet. Drives the progress meter, and `canSubmit` is the same condition `POST /v1/dealer/submit` enforces server-side."
+          },
+          "response": []
+        },
+        {
+          "name": "Submit for verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "submit"
+              ]
+            },
+            "description": "Hands the dealership to the moderation queue. Takes no body — everything it needs is already on the record.\n\nRejected with 422 if the profile or the KYC documents are incomplete; `GET /v1/dealer/completeness` says what is missing before you try.\n\nOWNER only (`dealer:update`).\n\n**Permission** `dealer:update` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**422 on a clean seed.** The development dealer is already verified, and its KYC set is incomplete either way. `GET /v1/dealer/completeness` lists what is missing."
+          },
+          "response": []
+        },
+        {
+          "name": "KYC document status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "documents"
+              ]
+            },
+            "description": "All three required documents — GST certificate, PAN card, address proof — each with its status and rejection reason if it has one. Rows are returned for documents that have not been uploaded yet, so the checklist is complete rather than growing."
+          },
+          "response": []
+        },
+        {
+          "name": "Get an upload URL for a KYC document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/documents/presign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "documents",
+                "presign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"GST_CERTIFICATE\",\n  \"fileName\": \"gst-certificate.pdf\",\n  \"mimeType\": \"application/pdf\",\n  \"bytes\": 284512\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Step 1 of 2. Returns a short-lived signed `PUT` URL; the file goes **straight to storage**, never through this API, so a 5 MB PDF never occupies a request worker.\n\nThe declared `mimeType` and `bytes` are baked into the signature, so the upload is rejected at the storage edge if the actual file disagrees — the limits are not advisory.\n\nThen `PUT` the bytes to `uploadUrl` with the returned `headers`, and finish with `POST /v1/dealer/documents/{type}/commit`.\n\nAccepts PDF, JPEG and PNG up to 5 MB. OWNER only (`document:upload`).\n\n**Permission** `document:upload` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const documentId = read('documentId');",
+                  "  if (documentId) pm.collectionVariables.set('documentId', documentId);",
+                  "  const uploadUrl = read('uploadUrl');",
+                  "  if (uploadUrl) pm.collectionVariables.set('uploadUrl', uploadUrl);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm a KYC upload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/documents/{{documentType}}/commit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "documents",
+                "{{documentType}}",
+                "commit"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentId\": \"{{documentId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Step 2 of 2. Verifies the object actually landed in storage before marking the document uploaded — a presign that was never followed by a `PUT` must not leave a document looking complete. A missing object is a 422 `UPLOAD_MISSING`.\n\n`type` in the path must match the type the document was presigned as.\n\n**Permission** `document:upload` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**422 `UPLOAD_MISSING` on a clean seed.** Presign issues a signed URL, but a collection cannot ship the file that has to be PUT to it, so there is nothing to confirm."
+          },
+          "response": []
+        },
+        {
+          "name": "Console dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "dashboard"
+              ]
+            },
+            "description": "The console landing page in one response: headline stats, the credit balance, recent leads, listings needing attention and any account-level banner. `Cache-Control: no-store` — a stale credit balance is worse than a slow one."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove a KYC document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/documents/{{documentType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "documents",
+                "{{documentType}}"
+              ]
+            },
+            "description": "Deletes the row and the stored object, so a wrong file can be replaced. OWNER only (`document:upload`).\n\n**Permission** `document:upload` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dealer inventory",
+      "description": "The dealer's cars and the listings that publish them. Scoped to the session's dealership throughout — another dealer's vehicle id answers **404, not 403**, because a 403 would confirm the id is real.\n\n**Money is always integer paise.** `pricePaise: 645000` is ₹6,450 — not ₹6.45 Lakh. A fractional value is a 400.",
+      "item": [
+        {
+          "name": "List the dealer's inventory",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "one of: DRAFT, PENDING, CHANGES_REQUESTED, ACTIVE, REJECTED, EXPIRED, SOLD, REMOVED",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "string · max 120 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "string · max 500 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "integer · 1…100 · default `20`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Cursor-paginated inventory, filterable by the derived `displayStatus` — the same value the tabs in the console show (DRAFT, PENDING, ACTIVE, SOLD and so on) rather than the raw vehicle or listing status.\n\n`q` searches make, model and variant.\n\n**Permission** `vehicle:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const vehicleId = read('data.0.vehicleId');",
+                  "  if (vehicleId) pm.collectionVariables.set('vehicleId', vehicleId);",
+                  "  const listingId = read('data.*.listingId');",
+                  "  if (listingId) pm.collectionVariables.set('listingId', listingId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create a draft vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"makeId\": \"{{makeId}}\",\n  \"modelId\": \"{{modelId}}\",\n  \"year\": 2021,\n  \"fuel\": \"PETROL\",\n  \"transmission\": \"MANUAL\",\n  \"bodyType\": \"HATCHBACK\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Step 1 of the add-vehicle wizard. Takes only the identity of the car — make, model, year, fuel, transmission, body type — all of them ids from the catalogue, never free text, which is what makes search facets exact.\n\nCreates a **DRAFT**. Nothing is published and no credit is touched; price, kilometres, photos and description arrive via PATCH, and publishing is a separate call.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const vehicleId = read('id');",
+                  "  if (vehicleId) pm.collectionVariables.set('vehicleId', vehicleId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "One vehicle, with completeness and credit preview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}"
+              ]
+            },
+            "description": "The dealer's own view of a car, including three things the public view has no equivalent of:\n\n- `completeness` — percent done, what is missing, and `canSubmit`, plus `blockers[]` phrased for a dealer to act on\n- `creditPreview` — the balance now, what publishing costs, and the balance after, so step 4 of the wizard can say \"credits after publish · 22\"\n- `media[]` — every photo with its processing status\n\nAnother dealer's id is a 404.\n\n**Permission** `vehicle:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const mediaId = read('media.0.mediaId');",
+                  "  if (mediaId) pm.collectionVariables.set('mediaId', mediaId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update a vehicle",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kmDriven\": 42180,\n  \"ownerNumber\": 1,\n  \"pricePaise\": 64500000,\n  \"priceNegotiable\": \"SLIGHTLY\",\n  \"description\": \"Single-owner car with full service history and four new tyres. Non-accidental, available for inspection at the showroom any day.\",\n  \"features\": [\n    \"Power steering\",\n    \"Air conditioning\",\n    \"Rear camera\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Partial, so each wizard step sends only its own fields and an untouched step never blanks another's.\n\n`pricePaise` is **paise** and must be an integer — `450000.5` is a 400. `status`, `slug` and `dealerId` are not in the schema at all: a listing's status changes only through the state machine, so posting `{\"status\":\"APPROVED\"}` is a 400 rather than a silent success (rules 1 and 5).\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Submit for review (holds one credit)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "submit"
+              ]
+            },
+            "description": "Creates a listing in **PENDING_REVIEW** and **holds one listing credit** in the same database transaction. Takes no body.\n\nWhat happens to that credit is the whole lifecycle:\n\n| Outcome | Ledger | Balance |\n| --- | --- | --- |\n| submit | `HOLD_SUBMIT` −1 | drops by one |\n| approved | `CONSUME_APPROVE` 0 | unchanged — the credit is spent |\n| rejected | `RELEASE_REJECT` +1 | returned |\n| changes requested | *no row* | unchanged, **still held** |\n\nThat last row is the one to notice: a resubmission after CHANGES_REQUESTED reuses the existing hold and is **not** charged again. The surviving hold is the only thing separating \"request changes\" from \"reject\".\n\nRefused with 422 when the vehicle is incomplete (`VEHICLE_INCOMPLETE`), has too few photos (`TOO_FEW_PHOTOS`), the profile is incomplete (`PROFILE_INCOMPLETE`) or the balance is zero (`INSUFFICIENT_CREDITS`); 409 `ALREADY_SUBMITTED` when a listing is already live or in review; 403 `DEALER_NOT_ACTIVE` when the dealership is not approved yet.\n\n**Permission** `listing:submit` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n**Requires an ACTIVE dealership.** A dealer awaiting verification or under suspension can still read their console but cannot publish; this returns 403 `DEALER_NOT_ACTIVE`.\n\n---\n\n**422 `TOO_FEW_PHOTOS` on a clean seed**, for the same reason: the draft this collection creates has no photos. Upload three through the dealer console and this returns 201 with one credit held."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const listingId = read('listingId');",
+                  "  if (listingId) pm.collectionVariables.set('listingId', listingId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Renew an expired listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/listings/{{listingId}}/renew",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "listings",
+                "{{listingId}}",
+                "renew"
+              ]
+            },
+            "description": "Puts an **EXPIRED** listing back into review, holding a fresh credit — a renewal is a new publication, not a free extension. Only an expired listing can be renewed; anything else is a 409 `INVALID_TRANSITION`.\n\nNote the path: this one takes a **listing** id, not a vehicle id.\n\n**Permission** `listing:renew` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n**Requires an ACTIVE dealership.** A dealer awaiting verification or under suspension can still read their console but cannot publish; this returns 403 `DEALER_NOT_ACTIVE`.\n\n---\n\n**409 on a clean seed** — nothing has expired yet. Listings run 30 days from approval."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark a car sold",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/mark-sold",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "mark-sold"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"soldPricePaise\": 62500000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Removes the car from the catalogue immediately and records the sale. The sold price is optional and private — it is never shown publicly.\n\nNo credit is returned: the listing did its job.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**409 on a clean seed.** Only a published car can be marked sold, and the draft this collection creates never got published."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a vehicle",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{disposableVehicleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{disposableVehicleId}}"
+              ]
+            },
+            "description": "Soft-deletes the vehicle and removes it from the catalogue. Requires `vehicle:delete`, which is a narrower permission than `vehicle:write` — a salesperson can neither write nor delete, and the two are separate so a future role can edit without being able to destroy.\n\n**Permission** `vehicle:delete` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**Deliberately unwired.** `{{disposableVehicleId}}` is empty, so this 404s rather than destroying the draft the Media and Billing folders still need. Paste an id in when you mean it."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Media",
+      "description": "Vehicle photos: signed direct-to-storage uploads, ordering, and delivery.\n\n**The flow is three calls.** `POST /v1/dealer/media/presign` returns a signed URL; the client `PUT`s the bytes straight to storage; `POST /v1/dealer/media/{id}/commit` hands the file to the processor, which re-encodes it, strips EXIF (a phone photo carries the seller's GPS coordinates) and computes a blurhash. Commit returns **202** — the file is accepted, not ready — with a `poll` URL.",
+      "item": [
+        {
+          "name": "Get a signed upload URL for a photo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/media/presign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "media",
+                "presign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerType\": \"VEHICLE\",\n  \"ownerId\": \"{{vehicleId}}\",\n  \"fileName\": \"front-three-quarter.jpg\",\n  \"mimeType\": \"image/jpeg\",\n  \"bytes\": 1284512,\n  \"width\": 2400,\n  \"height\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Step 1 of 3. `ownerId` must be a vehicle (or dealership) **the acting dealer owns** — presigning against another dealer's vehicle is a 404, so the upload path cannot be used to attach photos to someone else's car.\n\nThe declared `mimeType` and `bytes` are signed into the URL, so storage rejects a file that does not match what was declared. JPEG, PNG and WebP up to 10 MB.\n\nClients are expected to down-scale before uploading (the web app compresses to 2400px at q0.85); the cap is a backstop, not the target.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const mediaId = read('mediaId');",
+                  "  if (mediaId) pm.collectionVariables.set('mediaId', mediaId);",
+                  "  const uploadUrl = read('uploadUrl');",
+                  "  if (uploadUrl) pm.collectionVariables.set('uploadUrl', uploadUrl);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm an upload and queue processing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/media/{{mediaId}}/commit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "media",
+                "{{mediaId}}",
+                "commit"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Step 3 of 3. Confirms the bytes landed and queues re-encoding, EXIF stripping and blurhash generation.\n\n**202, not 200.** The photo is accepted but not yet renderable: poll the returned `poll` URL (`GET /v1/dealer/media/{id}`) until `status` is `READY`. A photo only counts towards the minimum-photo requirement once it is READY, which is why the wizard cannot publish the instant the last upload finishes.\n\n`position` is optional; omit it and the photo is appended.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**422 `UPLOAD_MISSING` on a clean seed** — see *Get a signed upload URL for a photo*. Nothing was PUT to the signed URL."
+          },
+          "response": []
+        },
+        {
+          "name": "Poll one photo's processing status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/media/{{mediaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "media",
+                "{{mediaId}}"
+              ]
+            },
+            "description": "The poll target from commit. `status` moves PENDING → READY, or → FAILED with `warnings[]` explaining why (too small, corrupt, unsupported). `url` is null until the derivatives exist.\n\n**Permission** `vehicle:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Reorder a vehicle's photos",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/media/order",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "media",
+                "order"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mediaIds\": [\n    \"{{mediaId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Send the complete ordered array every time**, not the pair that moved. A partial swap is how two concurrent drags leave the gallery in an order neither user chose.\n\nPosition 0 becomes the primary image buyers see in search results, denormalised onto the vehicle so result cards need no join.\n\nEvery id must belong to this vehicle; one that does not is a 404 for the whole request, and nothing is reordered.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**404 on a clean seed.** `{{mediaId}}` is a presigned record that was never committed, so it is not attached to the vehicle whose order you are setting."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a photo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/media/{{mediaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "media",
+                "{{mediaId}}"
+              ]
+            },
+            "description": "Removes the photo and its derivatives. Another dealer's photo id is a 404.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Billing & credits",
+      "description": "Listing credits, credit-pack purchases, the credit ledger and GST invoices.\n\n**Payments are mocked in this build.** `PAYMENT_PROVIDER=development` settles an order inline through the same function a gateway webhook would call — so buying credits adds them immediately and there is no gateway page in the flow. The credit *accounting* is not mocked: the ledger, the row locking and the invoice are exactly what production runs.\n\nAll amounts are integer **paise**. `pricePaise: 450000` is ₹4,500.",
+      "item": [
+        {
+          "name": "Credit balance and usage",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/billing/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "summary"
+              ]
+            },
+            "description": "The wallet panel: balance, how many credits are currently **held** by listings in review, how many are available to spend, and how many were used this month.\n\n`creditsHeld` is the count of listings sitting in PENDING_REVIEW or CHANGES_REQUESTED — a credit that is held is neither spent nor available.\n\n**Permission** `billing:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Credit packs for sale",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/billing/packs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "packs"
+              ]
+            },
+            "description": "The packs a dealer can buy, with per-listing pricing derived by division rather than stored — a stored per-unit rate that disagrees with the division is a support ticket.\n\nPrices exclude GST; the tax is computed at order time.\n\n**Permission** `billing:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const packId = read('data.0.id');",
+                  "  if (packId) pm.collectionVariables.set('packId', packId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buy a credit pack",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/billing/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"packId\": \"{{packId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**The client sends a `packId` and nothing else.** No amount, no credit count — the server prices the pack and computes GST, because a client-supplied amount is how marketplaces give inventory away.\n\nWith `PAYMENT_PROVIDER=development` the order settles inline: by the time this returns 201 the credits are in the ledger as a `PURCHASE` row and an invoice exists. The settlement goes through the same internal function a Razorpay webhook would call, so there is no second implementation of \"add credits\" to keep in step.\n\nOWNER only (`billing:purchase`) — a manager can read the balance but not spend money.\n\n**Permission** `billing:purchase` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n**Rate limit** 10 orders per hour per dealer (not per IP — two dealers on one showroom connection must not throttle each other)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const orderId = read('orderId');",
+                  "  if (orderId) pm.collectionVariables.set('orderId', orderId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm an order after checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/billing/orders/{{orderId}}/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "orders",
+                "{{orderId}}",
+                "verify"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "The client's post-checkout handshake. In production it carries the gateway's `paymentId` and `signature`; with the development provider the body may be empty (`{}`) because the order already settled.\n\n**200** when the order is PAID — the response carries the credits added and the invoice. **202** when payment has been received but the webhook has not landed yet, with `pollAfterSeconds`: credits appear when the webhook is processed, never because a client said so. Verification alone therefore never grants credits.\n\nA signature that does not verify is a 422 `SIGNATURE_MISMATCH`. Another dealer's order id is a 404.\n\n**Permission** `billing:purchase` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const invoiceId = read('invoice.id');",
+                  "  if (invoiceId) pm.collectionVariables.set('invoiceId', invoiceId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Credit history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/billing/ledger",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "ledger"
+              ],
+              "query": [
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "string · max 500 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "integer · 1…100 · default `20`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Every credit movement, newest first, cursor-paginated on the ledger's append sequence rather than a timestamp — two movements committed in one transaction share a `now()`, so paginating on time could skip a row.\n\n`balanceAfter` is **read from the row, never summed**, so the history a dealer sees is the arithmetic the system actually performed.\n\nReasons: `PURCHASE`, `ADMIN_GRANT`, `HOLD_SUBMIT`, `CONSUME_APPROVE`, `RELEASE_REJECT`, `RELEASE_EXPIRED_UNREVIEWED`, `ADMIN_ADJUSTMENT`, `REVERSAL`. A `CONSUME_APPROVE` row has `delta: 0` — the credit was already deducted when it was held — and it is written anyway, because the ledger has to be able to answer \"what happened to that credit?\" and silence is not an answer a dealer can read.\n\n**Permission** `billing:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "GST invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/billing/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "invoices"
+              ],
+              "query": [
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "string · max 500 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "integer · 1…100 · default `20`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Invoices for this dealership, newest first. Cursor-paginated on issue date.\n\n**Permission** `billing:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const invoiceId = read('data.0.id');",
+                  "  if (invoiceId) pm.collectionVariables.set('invoiceId', invoiceId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Download an invoice PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/billing/invoices/{{invoiceId}}/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "invoices",
+                "{{invoiceId}}",
+                "pdf"
+              ]
+            },
+            "description": "**302 redirect** to a signed URL valid for five minutes — the PDF is not streamed through the API, and the signed link expires so a copied URL is not a permanent hole in another dealer's billing.\n\nScoped to the caller's own invoices; another dealer's invoice id is a 404 — as is an invoice whose PDF has not been rendered yet, which answers 404 `PDF_NOT_READY` rather than a redirect to a URL that would 404 on arrival.\n\n*Swagger UI follows the redirect automatically, so \"Try it out\" shows the PDF bytes rather than the 302.*\n\n**Permission** `billing:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**404 `PDF_NOT_READY` on a clean seed.** Rendering is queued on purchase; the code is the signal to poll rather than to retry the purchase."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Platform moderation: dealer verification, KYC review, the listing queue, payments, configuration and the audit log.\n\n**Cross-tenant by design**, which is why every write records who did it. Permissions are per-operation rather than per-role-blanket: `admin:credit:grant` and `admin:config:write` are SUPER_ADMIN only, while a SUPPORT admin can read payments and audit logs and nothing else. Locally the admin is `DEV_ADMIN_EMAIL`, seeded as SUPER_ADMIN.\n\nEvery response here is `Cache-Control: no-store`.",
+      "item": [
+        {
+          "name": "Platform metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/metrics/overview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "metrics",
+                "overview"
+              ]
+            },
+            "description": "The admin landing page: dealer and listing counts, payments and revenue over the last 30 days, and the moderation queue depth with how long the oldest item has waited.\n\n`payments30d` is gross captured; `revenue30d` is net of GST. They differ on purpose — reporting one as the other is the kind of mistake that reaches a board deck.\n\n**Permission** `admin:metrics:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "All dealerships",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/dealers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "one of: DRAFT, PENDING_APPROVAL, ACTIVE, SUSPENDED, REJECTED, CLOSED",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "string · max 120 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "string · max 500 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "integer · 1…100 · default `20`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Every dealership, filterable by status, city or free text, cursor-paginated. `counts` gives the total per status so the tabs do not need a second request.\n\n**Permission** `admin:dealer:approve` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "One dealership, with review context",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}"
+              ]
+            },
+            "description": "Everything a moderator needs on one screen: the profile, the KYC documents with view links, listing and credit history, and an `actions` block saying which decisions are available from the current state — so the UI does not have to re-derive the state machine.\n\n**Permission** `admin:dealer:approve` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Approve a dealership",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "approve"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grantCredits\": 5,\n  \"note\": \"GST and address proof both verified.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sets the dealership ACTIVE, which is what makes its listings eligible to appear publicly at all (rule 6).\n\n`grantCredits` optionally seeds an onboarding bonus in the same transaction — and like every other credit movement it writes an `ADMIN_GRANT` ledger row rather than incrementing a column.\n\n**Permission** `admin:dealer:approve` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**422 on a clean seed** — this dealership is already approved. Suspend and reinstate it instead to watch its cars leave and re-enter the catalogue."
+          },
+          "response": []
+        },
+        {
+          "name": "Reject a dealership",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "reject"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"The GST certificate does not match the legal name on the PAN card.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Rejects the application. The reason is required and at least six characters, because it is shown to the dealer — \"no\" without a reason generates a support call.\n\n**Permission** `admin:dealer:approve` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Suspend a dealership",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/suspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "suspend"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Three buyer reports of misrepresented kilometres. Under review.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Pulls every one of the dealership's cars out of the catalogue at once**, because public visibility requires `dealer.status = ACTIVE` as well as an approved listing. The dealer keeps read access to their own console — they need to see why — but can publish nothing.\n\n`listingsAffected` in the response is how many listings left the catalogue. Reversible with reinstate.\n\n**Permission** `admin:dealer:approve` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Reinstate a suspended dealership",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/reinstate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "reinstate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Reports resolved; dealer corrected the two listings.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sets the dealership ACTIVE again and re-indexes its listings, so the cars that were approved before the suspension come back — the suspension hid them, it did not un-approve them.\n\n**Permission** `admin:dealer:approve` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Grant or deduct credits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/credits/grant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "credits",
+                "grant"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credits\": 10,\n  \"label\": \"Goodwill credit — listing outage on 12 Aug\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "A manual credit adjustment. `credits` is signed: positive grants (`ADMIN_GRANT`), negative deducts (`ADMIN_ADJUSTMENT`). Zero is rejected, and a negative adjustment requires a reason of at least six characters — taking credits away without a written reason is not something the API will do.\n\nCannot drive a balance below zero: the ledger floors at zero and returns 422 `INSUFFICIENT_CREDITS`.\n\n`label` is shown verbatim in the dealer's own credit history, so write it for them.\n\nSUPER_ADMIN only (`admin:credit:grant`).\n\n**Permission** `admin:credit:grant` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Verify a KYC document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/documents/{{documentId}}/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "documents",
+                "{{documentId}}",
+                "verify"
+              ]
+            },
+            "description": "Marks one document verified. `allVerified` in the response says whether that was the last one outstanding, which is the moderator's cue that the dealership can now be approved.\n\nTakes no body.\n\n**Permission** `admin:document:review` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Reject a KYC document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/documents/{{documentId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "documents",
+                "{{documentId}}",
+                "reject"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"The address proof is older than three months. Send a recent bill.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Rejects one document with a reason the dealer sees, so they know what to re-upload rather than guessing. Minimum six characters.\n\n**Permission** `admin:document:review` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "The moderation queue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/listings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING_REVIEW",
+                  "description": "one of: PENDING_REVIEW, CHANGES_REQUESTED, APPROVED, REJECTED, EXPIRED, SOLD, REMOVED · default `PENDING_REVIEW`",
+                  "disabled": true
+                },
+                {
+                  "key": "dealer",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "string · max 500 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "integer · 1…100 · default `20`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Listings awaiting a decision, oldest first — a review queue sorted newest-first is a queue that starves. `status` defaults to `PENDING_REVIEW`; pass another to review past decisions.\n\n**Permission** `admin:listing:moderate` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const listingId = read('data.0.listingId');",
+                  "  if (listingId) pm.collectionVariables.set('listingId', listingId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "One listing, with review context",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}"
+              ]
+            },
+            "description": "The review screen: full-size photos, the specification table, the dealer's standing, and `flags[]` — automated checks such as too few photos, a price outside the band for the model, or a phone number in the description.\n\n**Flags are advisory.** Nothing here auto-rejects anything; a human decides.\n\n**Permission** `admin:listing:moderate` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Approve a listing (spends the held credit)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}",
+                "approve"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Publishes the listing and **consumes** the credit that was held at submission. The ledger gets a `CONSUME_APPROVE` row with `delta: 0` — the deduction already happened when the credit was held — because a movement with no row would leave the dealer unable to see where their credit went.\n\nSets `expiresAt` to `listing.durationDays` from now. Indexing into the public catalogue, the dealer email and cache revalidation all happen **asynchronously**: none of them can roll back an approval.\n\nOnly a PENDING_REVIEW listing can be approved. A second moderator clicking approve on the same card gets 409 `INVALID_TRANSITION` rather than a double approval.\n\nThe body is optional, but note that `.strict()` rejects `undefined` — send `{}` rather than no body at all.\n\n**Permission** `admin:listing:moderate` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Reject a listing (returns the credit)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}",
+                "reject"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"The photos show a different vehicle to the one described.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Rejects the listing and **returns** the held credit with a `RELEASE_REJECT` +1 ledger row. The dealer is not charged for a listing that was never published.\n\nThe reason is required and shown to the dealer. After rejection the dealer may fix and resubmit, which takes a **fresh** credit — contrast request-changes below.\n\n**Permission** `admin:listing:moderate` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**409 on a clean seed.** *Approve a listing* ran a moment earlier, and an approved listing cannot be rejected — use *Take a listing down*."
+          },
+          "response": []
+        },
+        {
+          "name": "Request changes (credit stays held)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}/request-changes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}",
+                "request-changes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Add an interior photo and confirm the odometer reading.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sends the listing back to the dealer **without releasing the credit** — and writes no ledger row at all, because nothing moved.\n\n**That surviving hold is the entire difference between this and rejection.** The dealer fixes the listing, resubmits, and is not charged a second time; the resubmit reuses the same hold. Charging again would make them pay twice for one listing.\n\nThe note is required and shown to the dealer — it is the instruction they act on.\n\n**Permission** `admin:listing:moderate` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**409 on a clean seed**, same reason as *Reject a listing*. On a listing that is still in review this returns 200 and the held credit **stays held** — that is what separates it from a rejection."
+          },
+          "response": []
+        },
+        {
+          "name": "Take a published listing down",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}/takedown",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}",
+                "takedown"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Duplicate of another live listing from the same dealer.\",\n  \"refundCredit\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Removes an already-published listing from the catalogue — the lever for a listing that turns out to be fraudulent after approval.\n\n`refundCredit` is an explicit decision, defaulting to **false**: a takedown for the dealer's own misconduct should not also refund them. When true, a `REVERSAL` +1 row is written.\n\nWorks from APPROVED, PENDING_REVIEW or CHANGES_REQUESTED.\n\n**Permission** `admin:listing:moderate` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Payments across all dealers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "payments"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "one of: CREATED, AUTHORIZED, CAPTURED, FAILED, REFUNDED",
+                  "disabled": true
+                },
+                {
+                  "key": "dealer",
+                  "value": "",
+                  "description": "string · matching `^[a-z0-9-]+$`",
+                  "disabled": true
+                },
+                {
+                  "key": "from",
+                  "value": "",
+                  "description": "string · matching `^\\d{4}-\\d{2}-\\d{2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "",
+                  "description": "string · matching `^\\d{4}-\\d{2}-\\d{2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "string · max 500 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "integer · 1…100 · default `20`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Every payment, filterable by status, dealer and date range (`from`/`to` as `YYYY-MM-DD`), with the totals for the filtered set. Readable by SUPPORT admins — this is the screen a support call is answered from.\n\n**Permission** `admin:payment:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Platform configuration",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "config"
+              ]
+            },
+            "description": "Every `platform_config` entry with its type, current value and default — including the keys `GET /v1/config/public` withholds. This is where the listing duration, minimum photo count, GST percentage and reveal caps come from, so behaviour can be tuned without a deploy.\n\n**Permission** `admin:config:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Change one configuration value",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/config/{{configKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "config",
+                "{{configKey}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": 8\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sets one key. `value` is a number, boolean, string or string array, and is validated against the key's declared type — a string where a number belongs is a 422, not a silently broken platform.\n\nAudit-logged with the before and after values. SUPER_ADMIN only (`admin:config:write`).\n\n**Permission** `admin:config:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "The audit log",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "entityType",
+                  "value": "",
+                  "description": "string · max 60 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "entityId",
+                  "value": "",
+                  "description": "string · max 80 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "dealerId",
+                  "value": "",
+                  "description": "string · matching `^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$`",
+                  "disabled": true
+                },
+                {
+                  "key": "actorId",
+                  "value": "",
+                  "description": "string · matching `^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$`",
+                  "disabled": true
+                },
+                {
+                  "key": "action",
+                  "value": "",
+                  "description": "string · max 60 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "from",
+                  "value": "",
+                  "description": "string · matching `^\\d{4}-\\d{2}-\\d{2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "",
+                  "description": "string · matching `^\\d{4}-\\d{2}-\\d{2}$`",
+                  "disabled": true
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "string · max 500 chars",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "integer · 1…100 · default `20`",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Who did what, to which entity, with the before and after state. Filterable by entity, dealer, actor, action and date range.\n\nThis is the fourth layer of the tenancy model: session scoping, repository scoping and tests prevent cross-tenant access, and this makes every deliberate cross-tenant action — every admin write — reviewable after the fact.\n\n**Permission** `admin:audit:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "description": "Liveness and readiness probes. Two endpoints rather than one because they answer different questions: whether the process is alive, and whether it can serve traffic. Conflating them means a database blip gets the container killed and restarted, which helps nobody.",
+      "item": [
+        {
+          "name": "Liveness probe",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health/live",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "live"
+              ]
+            },
+            "description": "Returns 200 whenever the process is running. **Touches no dependency** — that is the point. If this checked the database, a database blip would restart a perfectly healthy container."
+          },
+          "response": []
+        },
+        {
+          "name": "Readiness probe",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
+            },
+            "description": "Checks the dependencies and names the ones that are down. **503 with a body**, not a bare 503 — deploys gate on this, and a failed deploy should say which dependency failed.\n\n`contracts` is the shared contract version, so a mismatched web and API deploy is visible from outside the process."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Storage (local only)",
+      "description": "The local stand-ins for object storage. `PUT /uploads` terminates a presigned upload; `GET /media/…` serves processed images. Both are replaced by R2 and the Cloudflare Images origin in every deployed environment, which is why they live outside `/v1` and take no session.",
+      "item": [
+        {
+          "name": "Terminate a presigned upload",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/uploads?key=&contentType=&contentLength=&expiresAt=&signature=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "",
+                  "description": "Storage object key. — string · max 300 chars",
+                  "disabled": false
+                },
+                {
+                  "key": "contentType",
+                  "value": "",
+                  "description": "Must equal the type that was signed. — string · max 120 chars",
+                  "disabled": false
+                },
+                {
+                  "key": "contentLength",
+                  "value": "",
+                  "description": "Must equal the body length exactly. — integer · 1…∞",
+                  "disabled": false
+                },
+                {
+                  "key": "expiresAt",
+                  "value": "",
+                  "description": "Unix seconds; past this the URL is dead. — integer",
+                  "disabled": false
+                },
+                {
+                  "key": "signature",
+                  "value": "",
+                  "description": "HMAC over the four fields above. — string · max 256 chars",
+                  "disabled": false
+                }
+              ]
+            },
+            "body": {
+              "mode": "file",
+              "file": {
+                "src": ""
+              }
+            },
+            "description": "Step 2 of the upload flow, and the only endpoint in the API that takes raw bytes.\n\nDo not call this by hand: every query parameter comes from the `uploadUrl` that `POST /v1/dealer/media/presign` returned, already signed. Before a byte is written it verifies the HMAC, the expiry, the declared content-type **and** the declared content-length — the same conditions an S3 presigned PUT enforces, so a client that works locally works against R2 unchanged.\n\nA body whose length disagrees with the signature is a 422 `UPLOAD_LENGTH_MISMATCH`; an expired or tampered signature is a 422 `UPLOAD_SIGNATURE_INVALID`. Bodies are capped at 12 MB.\n\n*Swagger UI cannot exercise this usefully — the body must be the exact bytes the signature was issued for.*\n\n---\n\n**400 by design.** This documents the storage route the presign points at; the query string carries a signature this request has no way to produce. Use `{{uploadUrl}}` from a presign response."
+          },
+          "response": []
+        },
+        {
+          "name": "Serve a processed image",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/media/vehicles/by-media/{{mediaId}}/640.webp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "media",
+                "vehicles",
+                "by-media",
+                "{{mediaId}}",
+                "640.webp"
+              ]
+            },
+            "description": "Content-addressed image delivery. A new upload is a new id and therefore a new URL, so a cache never has to be invalidated — hence `Cache-Control: public, max-age=31536000, immutable`.\n\nAvailable widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the JSON API this route sends `Cross-Origin-Resource-Policy: cross-origin`, because a media origin is a different host from the web app in every environment and the strict default would stop the browser embedding the image.\n\n*The path ends in a literal `.webp`, which is why the width parameter is documented as `width.webp`.*\n\n---\n\n**404 on a clean seed** — no image was uploaded, so nothing was processed into a rendition."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const status = pm.response.code;",
+          "",
+          "if (status >= 400) {",
+          "  pm.test(`${status} is application/problem+json`, () => {",
+          "    pm.expect(pm.response.headers.get('content-type') || '').to.include(",
+          "      'application/problem+json',",
+          "    );",
+          "  });",
+          "",
+          "  pm.test(`${status} carries a machine-readable code and a traceId`, () => {",
+          "    const problem = pm.response.json();",
+          "    pm.expect(problem).to.have.property('code');",
+          "    pm.expect(problem).to.have.property('traceId');",
+          "    pm.expect(problem.status, 'body.status should match the HTTP status').to.eql(status);",
+          "    // `detail` is for humans; clients switch on `code`.",
+          "    pm.expect(problem, 'a problem body must never carry a stack trace').to.not.have.property(",
+          "      'stack',",
+          "    );",
+          "  });",
+          "}",
+          "",
+          "pm.test(`${status} is not a server error`, () => {",
+          "  pm.expect(status, pm.response.text().slice(0, 300)).to.be.below(500);",
+          "});"
+        ]
+      }
+    }
+  ]
+}

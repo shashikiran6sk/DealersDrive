@@ -1,0 +1,265 @@
+import type { ModuleDocs } from '../../docs/spec.js';
+
+/** B4–B5 and C1–C5, C18. The dealership's own record and its console. */
+export const dealersDocs: ModuleDocs = {
+  tag: 'Dealer account',
+  description:
+    'The acting dealership: profile, KYC documents, verification submission, dashboard and ' +
+    'session. Every one of these reads and writes exactly one dealership — the one the ' +
+    'session resolves to. **No endpoint here takes a `dealerId`**, and because the schemas ' +
+    'are `.strict()`, sending one is a 400 rather than a quiet no-op (rule 1).',
+  operations: [
+    {
+      method: 'get',
+      path: '/v1/auth/me',
+      operationId: 'getSession',
+      tag: 'Dealer account',
+      summary: 'Who am I',
+      description:
+        'The resolved session: the user, their dealership, their role, the permissions that ' +
+        'role carries (§8.3) and the two badge counts the console header shows.\n\n' +
+        'This is the endpoint to call first from Swagger UI — it tells you which dealership ' +
+        'the other operations will act on. Locally that is `DEV_DEALER_SLUG`.\n\n' +
+        '`Cache-Control: no-store`.',
+      audience: 'dealer',
+      responses: [
+        {
+          status: 200,
+          description: 'The current session.',
+          schema: 'SessionResponse',
+          example: {
+            user: {
+              id: '9a2f1d44-1111-4000-8000-000000000001',
+              fullName: 'Karthik Raman',
+              roleTitle: 'Proprietor',
+              phone: '+919840012345',
+              phoneDisplay: '+91 98400 12345',
+              email: 'karthik@srilakshmimotors.in',
+              emailVerified: true,
+            },
+            dealer: {
+              id: '3c8f2b10-2222-4000-8000-000000000002',
+              slug: 'sri-lakshmi-motors',
+              brandName: 'Sri Lakshmi Motors',
+              status: 'ACTIVE',
+              statusLabel: 'Verified dealer',
+              isVerified: true,
+              creditBalance: 39,
+              creditsHeld: 1,
+            },
+            role: 'OWNER',
+            permissions: ['vehicle:read', 'vehicle:write', 'listing:submit', 'billing:purchase'],
+            counts: { newEnquiries: 4, pendingListings: 1 },
+          },
+        },
+      ],
+      errors: [401],
+    },
+    {
+      method: 'post',
+      path: '/v1/auth/logout',
+      operationId: 'logout',
+      tag: 'Dealer account',
+      summary: 'End the session',
+      description:
+        'Returns 204 and revokes nothing. The session is server-configured in this build ' +
+        '(CLAUDE.md §5), so there is no token to invalidate — the route exists so the client ' +
+        'contract does not change on the day there is one.',
+      audience: 'dealer',
+      responses: [{ status: 204, description: 'Always. Nothing was revoked.' }],
+      errors: [401],
+    },
+    {
+      method: 'get',
+      path: '/v1/dealer',
+      operationId: 'getDealerProfile',
+      tag: 'Dealer account',
+      summary: 'The dealership record',
+      description:
+        'The full private profile — including the fields the public profile withholds, such ' +
+        'as GSTIN, PAN and the credit balance. Any dealer seat may read it.',
+      audience: 'dealer',
+      responses: [{ status: 200, description: 'The dealership.', schema: 'DealerProfile' }],
+      errors: [401, 404],
+    },
+    {
+      method: 'patch',
+      path: '/v1/dealer',
+      operationId: 'updateDealerProfile',
+      tag: 'Dealer account',
+      summary: 'Update the dealership',
+      description:
+        '**Partial by design.** The onboarding wizard PATCHes only the fields on the current ' +
+        'step, so `Back` never blanks what another step filled in.\n\n' +
+        'Notable absences, all deliberate: `phone` (it is the login identity — changing it ' +
+        'needs an OTP round-trip on the new number), `status`, `slug` and `dealerId`. GSTIN ' +
+        'and PAN are validated against their real formats and upper-cased.\n\n' +
+        'OWNER only (`dealer:update`) — a manager or salesperson gets a 403.',
+      audience: 'dealer',
+      permission: 'dealer:update',
+      requestBody: {
+        schema: 'UpdateDealerInput',
+        description: 'Only the fields being changed.',
+        example: {
+          brandName: 'Sri Lakshmi Motors',
+          tagline: 'Family-run since 2009',
+          gstin: '33AABCS1429P1Z5',
+          address: { line: '142 Katpadi Main Road', pincode: '632007' },
+          contact: { fullName: 'Karthik Raman', roleTitle: 'Proprietor' },
+        },
+      },
+      responses: [{ status: 200, description: 'The updated dealership.', schema: 'DealerProfile' }],
+      errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'get',
+      path: '/v1/dealer/completeness',
+      operationId: 'getDealerCompleteness',
+      tag: 'Dealer account',
+      summary: 'Onboarding progress',
+      description:
+        'Which onboarding steps are done, what is missing from each, and whether the ' +
+        'dealership can be submitted for verification yet. Drives the progress meter, and ' +
+        '`canSubmit` is the same condition `POST /v1/dealer/submit` enforces server-side.',
+      audience: 'dealer',
+      responses: [
+        { status: 200, description: 'Step-by-step completeness.', schema: 'CompletenessResponse' },
+      ],
+      errors: [401, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/submit',
+      operationId: 'submitDealerForVerification',
+      tag: 'Dealer account',
+      summary: 'Submit for verification',
+      description:
+        'Hands the dealership to the moderation queue. Takes no body — everything it needs ' +
+        'is already on the record.\n\n' +
+        'Rejected with 422 if the profile or the KYC documents are incomplete; ' +
+        '`GET /v1/dealer/completeness` says what is missing before you try.\n\n' +
+        'OWNER only (`dealer:update`).',
+      audience: 'dealer',
+      permission: 'dealer:update',
+      responses: [
+        {
+          status: 200,
+          description: 'Submitted. The response carries the expected decision date.',
+          schema: 'DealerSubmitResponse',
+        },
+      ],
+      errors: [401, 403, 404, 422],
+    },
+    {
+      method: 'get',
+      path: '/v1/dealer/documents',
+      operationId: 'listDealerDocuments',
+      tag: 'Dealer account',
+      summary: 'KYC document status',
+      description:
+        'All three required documents — GST certificate, PAN card, address proof — each with ' +
+        'its status and rejection reason if it has one. Rows are returned for documents that ' +
+        'have not been uploaded yet, so the checklist is complete rather than growing.',
+      audience: 'dealer',
+      responses: [
+        { status: 200, description: 'The document checklist.', schema: 'DealerDocumentsResponse' },
+      ],
+      errors: [401, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/documents/presign',
+      operationId: 'presignDealerDocument',
+      tag: 'Dealer account',
+      summary: 'Get an upload URL for a KYC document',
+      description:
+        'Step 1 of 2. Returns a short-lived signed `PUT` URL; the file goes **straight to ' +
+        'storage**, never through this API, so a 5 MB PDF never occupies a request worker.\n\n' +
+        'The declared `mimeType` and `bytes` are baked into the signature, so the upload is ' +
+        'rejected at the storage edge if the actual file disagrees — the limits are not ' +
+        'advisory.\n\n' +
+        'Then `PUT` the bytes to `uploadUrl` with the returned `headers`, and finish with ' +
+        '`POST /v1/dealer/documents/{type}/commit`.\n\n' +
+        'Accepts PDF, JPEG and PNG up to 5 MB. OWNER only (`document:upload`).',
+      audience: 'dealer',
+      permission: 'document:upload',
+      requestBody: {
+        schema: 'DocumentPresignInput',
+        description: 'What is about to be uploaded.',
+        example: {
+          type: 'GST_CERTIFICATE',
+          fileName: 'gst-certificate.pdf',
+          mimeType: 'application/pdf',
+          bytes: 284_512,
+        },
+      },
+      responses: [
+        {
+          status: 201,
+          description: 'A signed upload URL. `documentId` identifies the row to commit.',
+          schema: 'PresignResponse',
+        },
+      ],
+      errors: [400, 401, 403, 404, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/documents/:type/commit',
+      operationId: 'commitDealerDocument',
+      tag: 'Dealer account',
+      summary: 'Confirm a KYC upload',
+      description:
+        'Step 2 of 2. Verifies the object actually landed in storage before marking the ' +
+        'document uploaded — a presign that was never followed by a `PUT` must not leave a ' +
+        'document looking complete. A missing object is a 422 `UPLOAD_MISSING`.\n\n' +
+        '`type` in the path must match the type the document was presigned as.',
+      audience: 'dealer',
+      permission: 'document:upload',
+      params: 'DocTypeParam',
+      requestBody: {
+        schema: 'DocumentCommitInput',
+        description: 'The `documentId` returned by presign.',
+        example: { documentId: '7f3c9a21-4444-4000-8000-000000000004' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The document row, now awaiting review.',
+          schema: 'DealerDocumentDto',
+        },
+      ],
+      errors: [400, 401, 403, 404, 422],
+    },
+    {
+      method: 'delete',
+      path: '/v1/dealer/documents/:type',
+      operationId: 'deleteDealerDocument',
+      tag: 'Dealer account',
+      summary: 'Remove a KYC document',
+      description:
+        'Deletes the row and the stored object, so a wrong file can be replaced. OWNER only ' +
+        '(`document:upload`).',
+      audience: 'dealer',
+      permission: 'document:upload',
+      params: 'DocTypeParam',
+      responses: [{ status: 204, description: 'Deleted.' }],
+      errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'get',
+      path: '/v1/dealer/dashboard',
+      operationId: 'getDealerDashboard',
+      tag: 'Dealer account',
+      summary: 'Console dashboard',
+      description:
+        'The console landing page in one response: headline stats, the credit balance, ' +
+        'recent leads, listings needing attention and any account-level banner. ' +
+        '`Cache-Control: no-store` — a stale credit balance is worse than a slow one.',
+      audience: 'dealer',
+      responses: [
+        { status: 200, description: 'Dashboard payload.', schema: 'DashboardResponse' },
+      ],
+      errors: [401, 404],
+    },
+  ],
+};
