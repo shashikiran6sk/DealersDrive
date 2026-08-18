@@ -1,4 +1,4 @@
-import { pino, type Logger } from 'pino';
+import { pino, type Logger, type LoggerOptions } from 'pino';
 
 import { env } from '../../config/env.js';
 import { getContext } from '../../middleware/request-context.js';
@@ -10,8 +10,14 @@ import { getContext } from '../../middleware/request-context.js';
  * request — controller, service, repository, error handler — automatically
  * carries that request's traceId, plus userId/dealerId once auth has run. No
  * call site ever has to remember to pass it.
+ *
+ * The options are exported because pino fixes its destination at construction:
+ * there is no way to ask the live `logger` what it would have written. A test
+ * builds a second logger from *these* options and a capturing stream, so what it
+ * asserts on is the real redaction list and the real mixin rather than a copy of
+ * them that can drift.
  */
-export const logger: Logger = pino({
+export const LOGGER_OPTIONS: LoggerOptions = {
   level: env.LOG_LEVEL,
   base: {
     service: 'dealers-drive-api',
@@ -47,7 +53,9 @@ export const logger: Logger = pino({
       ...(context.dealerId ? { dealerId: context.dealerId } : {}),
     };
   },
-});
+};
+
+export const logger: Logger = pino(LOGGER_OPTIONS);
 
 /** Child logger for a subsystem: `const log = childLogger('jobs')`. */
 export function childLogger(component: string): Logger {

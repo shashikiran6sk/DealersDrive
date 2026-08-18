@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Dealers-Drive API \u2014 Express 5 modular monolith",
+  "description": "Dealers-Drive API — Express 5 modular monolith",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
@@ -19,8 +19,8 @@
     "db:reset": "prisma migrate reset --force --skip-seed && tsx prisma/seed/index.ts",
     "db:studio": "prisma studio",
     "docs:postman": "tsx src/docs/generate-postman.ts",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --coverage",
+    "test:watch": "vitest --project unit"
   },
   "dependencies": {
     "@dealers-drive/contracts": "workspace:*",
@@ -45,6 +45,7 @@
     "@types/node": "^22.15.0",
     "@types/supertest": "^7.2.1",
     "@types/swagger-ui-express": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.39.5",
     "prisma": "^6.19.3",
     "supertest": "^7.2.2",

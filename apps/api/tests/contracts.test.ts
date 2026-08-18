@@ -281,13 +281,8 @@ describe('API responses satisfy the shared contracts', () => {
       expect(pack).toBeDefined();
       const order = conforms(
         CreateOrderResponse,
-        (
-          await h
-            .agent()
-            .post('/v1/dealer/billing/orders')
-            .send({ packId: pack?.id })
-            .expect(201)
-        ).body,
+        (await h.agent().post('/v1/dealer/billing/orders').send({ packId: pack?.id }).expect(201))
+          .body,
       );
       conforms(
         VerifyOrderResponse,

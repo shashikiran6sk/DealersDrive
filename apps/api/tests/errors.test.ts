@@ -53,18 +53,15 @@ describe('the error contract', () => {
     });
 
     it('rejects an unknown body field rather than dropping it', async () => {
-      const response = await h
-        .agent()
-        .post('/v1/dealer/vehicles')
-        .send({
-          makeId: '2f9a6f1e-0000-4000-8000-000000000000',
-          modelId: '2f9a6f1e-0000-4000-8000-000000000001',
-          year: 2020,
-          fuel: 'PETROL',
-          transmission: 'MANUAL',
-          bodyType: 'HATCHBACK',
-          isFeatured: true,
-        });
+      const response = await h.agent().post('/v1/dealer/vehicles').send({
+        makeId: '2f9a6f1e-0000-4000-8000-000000000000',
+        modelId: '2f9a6f1e-0000-4000-8000-000000000001',
+        year: 2020,
+        fuel: 'PETROL',
+        transmission: 'MANUAL',
+        bodyType: 'HATCHBACK',
+        isFeatured: true,
+      });
 
       assertProblem(response, 400, 'VALIDATION_FAILED');
       expect((response.body.errors as { field: string }[]).map((e) => e.field)).toContain(
@@ -161,7 +158,11 @@ describe('the error contract', () => {
         403,
         'FORBIDDEN',
       );
-      assertProblem(await h.agent().patch('/v1/dealer').send({ brandName: 'Nope' }), 403, 'FORBIDDEN');
+      assertProblem(
+        await h.agent().patch('/v1/dealer').send({ brandName: 'Nope' }),
+        403,
+        'FORBIDDEN',
+      );
 
       h.actAs(DEALER_A);
     });

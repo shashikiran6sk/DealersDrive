@@ -124,11 +124,19 @@ export function formatMonthYear(value: Date | string): string {
   return `${MONTHS[date.getUTCMonth()] ?? ''} ${date.getUTCFullYear()}`;
 }
 
-/** `+919840012345` -> `+91 98400 12345`. */
+/**
+ * `+919840012345` -> `+91 98400 12345`.
+ *
+ * An empty input returns an empty string rather than a bare `+91`. Several
+ * responses legitimately carry `phone: ''` — a dealership with no contact number
+ * on file yet — and pairing that with `phoneDisplay: '+91'` renders a country
+ * code next to a `tel:` link that dials nothing.
+ */
 export function formatPhone(e164: string): string {
   const digits = e164.replace(/\D/g, '');
+  if (digits.length === 0) return '';
   const local = digits.length > 10 ? digits.slice(-10) : digits;
-  return `+91 ${local.slice(0, 5)} ${local.slice(5)}`;
+  return `+91 ${local.slice(0, 5)} ${local.slice(5)}`.trimEnd();
 }
 
 /** Any Indian input -> E.164. Bare 10-digit numbers get the +91 they omitted. */

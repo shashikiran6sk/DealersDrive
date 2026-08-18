@@ -62,7 +62,9 @@ export function createRoutes(container: Container): Router {
   dealer.use(createBillingRouter(container.billing, container.storage));
   v1.use('/dealer', dealer);
 
-  v1.use(container.auth.requireDealer, createAuthRouter(container.dealers));
+  // Scoped to `/auth`, not mounted at the v1 root: an unprefixed mount would
+  // run requireDealer for every /v1 path that reached it, admin included.
+  v1.use('/auth', container.auth.requireDealer, createAuthRouter(container.dealers));
 
   // ── admin ─────────────────────────────────────────────────────────────
   const admin = Router();

@@ -115,7 +115,10 @@ describe('the OpenAPI document', () => {
 
       // Every operation documents at least one success and the 500.
       const statuses = Object.keys(operation.responses).map(Number);
-      expect(statuses.some((status) => status < 400), `${where} documents no success`).toBe(true);
+      expect(
+        statuses.some((status) => status < 400),
+        `${where} documents no success`,
+      ).toBe(true);
       expect(statuses, `${where} does not document 500`).toContain(500);
 
       // Path parameters must all be declared, or Swagger UI cannot build a URL.
@@ -167,14 +170,14 @@ describe('the OpenAPI document', () => {
 
     for (const { path, method, operation } of operations) {
       const body = operation.requestBody?.content['application/json']?.schema as
-        | { $ref?: string }
-        | undefined;
+        { $ref?: string } | undefined;
       if (!body?.$ref) continue;
 
       const name = body.$ref.replace('#/components/schemas/', '');
-      expect(schemas, `${method.toUpperCase()} ${path} references a missing ${name}`).toHaveProperty(
-        name,
-      );
+      expect(
+        schemas,
+        `${method.toUpperCase()} ${path} references a missing ${name}`,
+      ).toHaveProperty(name);
     }
   });
 
@@ -255,9 +258,7 @@ describe('the OpenAPI document against the running app', () => {
     const json = await h.agent().get('/api/docs/openapi.json').expect(200);
     expect(json.headers['content-type']).toContain('application/json');
     expect(json.body.openapi).toBe('3.0.3');
-    expect(Object.keys(json.body.paths as object)).toHaveLength(
-      Object.keys(document.paths).length,
-    );
+    expect(Object.keys(json.body.paths as object)).toHaveLength(Object.keys(document.paths).length);
 
     const yaml = await h.agent().get('/api/docs/openapi.yaml').expect(200);
     expect(yaml.headers['content-type']).toContain('yaml');
@@ -309,7 +310,9 @@ describe('the OpenAPI document against the running app', () => {
    * above is what confirms the prefixes.
    */
   it('documents every route the app registers', () => {
-    const MOUNTS = ['/v1/dealer', '/v1/admin', '/v1', '/health', ''];
+    // Longest first: `/v1/auth` has to beat `/v1`, or `/v1/auth/me` would be
+    // reduced to `/auth/me` and never match the router's own `/me`.
+    const MOUNTS = ['/v1/dealer', '/v1/admin', '/v1/auth', '/v1', '/health', ''];
 
     const documented = new Set<string>();
     for (const { path, method } of operations) {

@@ -15,6 +15,21 @@ export default [
      *
      * The seed is a script, not the server, so the module-boundary rules that
      * keep the modules apart do not apply to it.
+     *
+     * Two more are off for the unit suite specifically, and for the same
+     * reason — they are false positives by construction rather than findings:
+     *
+     *   `require-await`  — a test double standing in for an async port has to
+     *     return a promise and has nothing to await. `async () => rows` is the
+     *     clearest way to write that; rewriting each one as
+     *     `() => Promise.resolve(rows)` obscures what is being stubbed and
+     *     changes nothing about the code under test.
+     *
+     *   `unbound-method`  — `expect(prisma.findMany).toHaveBeenCalledWith(…)`
+     *     is how a vitest mock is asserted on. The rule is warning about a
+     *     `this` binding that a mock does not have and never uses.
+     *
+     * Both stay on for `src/`, where they do catch real mistakes.
      */
     files: ['tests/**/*.ts', 'prisma/**/*.ts'],
     rules: {
@@ -23,6 +38,8 @@ export default [
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/unbound-method': 'off',
       'no-console': 'off',
     },
   },
