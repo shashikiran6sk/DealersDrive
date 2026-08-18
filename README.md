@@ -69,6 +69,10 @@ password with Argon2id; the plaintext is never stored.
 | MinIO console                  | http://localhost:9001 (dealersdrive / dealersdrive)                  |
 | Mailpit inbox                  | http://localhost:8025                                                |
 
+Deploying this to a server with a domain? See
+[`deploy/README.md`](deploy/README.md) — one EC2 instance, nginx, Let's Encrypt,
+about twenty minutes.
+
 The seed models the **Vellore district** — `vellore`, `katpadi`, `arcot`,
 `ranipet`, `gudiyattam`. There is no `chennai`, so `/cars?city=chennai`
 legitimately returns nothing. That looks like a bug and is not one.
@@ -374,11 +378,18 @@ hook waiting — the migration that creates them is not written.
 
 ### 5. Deployment
 
-`apps/api/Dockerfile` exists and its `HEALTHCHECK` already polls
-`/health/ready`. Still needed: a separate worker entrypoint — today
+A single-box deployment is done and documented in [`deploy/`](deploy/README.md):
+nginx terminating TLS in front of Next.js and the API on one hostname, Postgres
+and MinIO in Docker on loopback, systemd units, and a release script that
+migrates and seeds in the order the ISR build requires. Good enough to demo, and
+honest about what is demo-grade — see that file's closing section.
+
+`apps/api/Dockerfile` also exists and its `HEALTHCHECK` polls `/health/ready`.
+
+Still needed for real production: a separate worker entrypoint — today
 `WORKER_INLINE=true` runs job handlers inside the HTTP process, so scaling the
-API horizontally would run them N times over — and `prisma migrate deploy` in the
-release step.
+API horizontally would run them N times over — managed Postgres instead of a
+container, and R2 instead of on-box MinIO.
 
 ### 6. Product work not started
 
