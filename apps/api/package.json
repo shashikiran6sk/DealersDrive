@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Dealers-Drive API — Express 5 modular monolith",
+  "description": "Dealers-Drive API \u2014 Express 5 modular monolith",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
@@ -23,9 +23,13 @@
     "test:watch": "vitest --project unit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3",
+    "@aws-sdk/s3-request-presigner": "^3",
     "@dealers-drive/contracts": "workspace:*",
+    "@node-rs/argon2": "^2",
     "@prisma/client": "^6.19.3",
     "blurhash": "^2.0.5",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -40,6 +44,7 @@
   },
   "devDependencies": {
     "@dealers-drive/config": "workspace:*",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.15.0",
@@ -52,8 +57,5 @@
     "tsx": "^4.23.12",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed/index.ts"
   }
 }

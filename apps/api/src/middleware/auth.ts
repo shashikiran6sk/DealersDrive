@@ -3,6 +3,7 @@ import type { Request, RequestHandler } from 'express';
 import type {
   AdminPrincipal,
   DealerPrincipal,
+  PendingPrincipal,
   SessionResolver,
 } from '../modules/auth/session.port.js';
 import { ForbiddenError, UnauthorizedError } from '../platform/errors.js';
@@ -25,14 +26,30 @@ export function createAuthMiddleware(sessions: SessionResolver) {
     void (async () => {
       try {
         const principal = await sessions.resolveDealer(req);
-        if (!principal) {
-          throw new UnauthorizedError(
-            'No dealer session. Seed the database with `pnpm db:seed` so the development dealer exists.',
-          );
-        }
+        if (!principal) throw new UnauthorizedError();
         req.principal = principal;
         setContextValue('userId', principal.userId);
         setContextValue('dealerId', principal.dealerId);
+        next();
+      } catch (error) {
+        next(error);
+      }
+    })();
+  };
+
+  /**
+   * Signed in, dealership or not. The guard for the three routes that exist
+   * *because* a dealership does not: `GET /v1/auth/me`, `POST
+   * /v1/auth/onboarding` and `POST /v1/auth/logout`.
+   */
+  const requireSignedIn: RequestHandler = (req, _res, next) => {
+    void (async () => {
+      try {
+        const principal = await sessions.resolveSignedIn(req);
+        if (!principal) throw new UnauthorizedError();
+        req.principal = principal;
+        setContextValue('userId', principal.userId);
+        if (principal.kind === 'DEALER') setContextValue('dealerId', principal.dealerId);
         next();
       } catch (error) {
         next(error);
@@ -44,11 +61,7 @@ export function createAuthMiddleware(sessions: SessionResolver) {
     void (async () => {
       try {
         const principal = await sessions.resolveAdmin(req);
-        if (!principal) {
-          throw new UnauthorizedError(
-            'No admin session. Seed the database with `pnpm db:seed` so the development admin exists.',
-          );
-        }
+        if (!principal) throw new UnauthorizedError('Sign in to the admin console to do that.');
         req.principal = principal;
         setContextValue('userId', principal.userId);
         next();
@@ -58,7 +71,7 @@ export function createAuthMiddleware(sessions: SessionResolver) {
     })();
   };
 
-  return { requireDealer, requireAdmin };
+  return { requireDealer, requireSignedIn, requireAdmin };
 }
 
 /**
@@ -102,6 +115,15 @@ export function dealerPrincipal(req: Request): DealerPrincipal {
   const principal = req.principal;
   if (!principal || principal.kind !== 'DEALER') {
     throw new Error('dealerPrincipal() without requireDealer on the route.');
+  }
+  return principal;
+}
+
+/** The signed-in person, dealership or not. Throws if `requireSignedIn` is missing. */
+export function signedInPrincipal(req: Request): DealerPrincipal | PendingPrincipal {
+  const principal = req.principal;
+  if (!principal || (principal.kind !== 'DEALER' && principal.kind !== 'PENDING')) {
+    throw new Error('signedInPrincipal() without requireSignedIn on the route.');
   }
   return principal;
 }

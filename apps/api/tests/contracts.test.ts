@@ -1,5 +1,6 @@
 import {
   AdminDealersResponse,
+  AuthSession,
   ApproveListingResponse,
   BillingSummary,
   CatalogBundle,
@@ -24,7 +25,6 @@ import {
   ModerationQueueResponse,
   PublicConfig,
   RevealContactResponse,
-  SessionResponse,
   SubmitListingResponse,
   VehicleBatchResponse,
   VehicleDetail,
@@ -192,7 +192,7 @@ describe('API responses satisfy the shared contracts', () => {
     });
 
     it('GET /v1/auth/me', async () => {
-      conforms(SessionResponse, (await h.agent().get('/v1/auth/me').expect(200)).body);
+      conforms(AuthSession, (await h.agent().get('/v1/auth/me').expect(200)).body);
     });
 
     it('GET /v1/dealer/dashboard', async () => {

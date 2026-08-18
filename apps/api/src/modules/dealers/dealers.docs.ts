@@ -1,74 +1,14 @@
 import type { ModuleDocs } from '../../docs/spec.js';
 
-/** B4–B5 and C1–C5, C18. The dealership's own record and its console. */
+/** C1–C5 and C18. The dealership's own record and its console. */
 export const dealersDocs: ModuleDocs = {
   tag: 'Dealer account',
   description:
-    'The acting dealership: profile, KYC documents, verification submission, dashboard and ' +
-    'session. Every one of these reads and writes exactly one dealership — the one the ' +
+    'The acting dealership: profile, KYC documents, verification submission and dashboard. ' +
+    'Every one of these reads and writes exactly one dealership — the one the ' +
     'session resolves to. **No endpoint here takes a `dealerId`**, and because the schemas ' +
     'are `.strict()`, sending one is a 400 rather than a quiet no-op (rule 1).',
   operations: [
-    {
-      method: 'get',
-      path: '/v1/auth/me',
-      operationId: 'getSession',
-      tag: 'Dealer account',
-      summary: 'Who am I',
-      description:
-        'The resolved session: the user, their dealership, their role, the permissions that ' +
-        'role carries (§8.3) and the two badge counts the console header shows.\n\n' +
-        'This is the endpoint to call first from Swagger UI — it tells you which dealership ' +
-        'the other operations will act on. Locally that is `DEV_DEALER_SLUG`.\n\n' +
-        '`Cache-Control: no-store`.',
-      audience: 'dealer',
-      responses: [
-        {
-          status: 200,
-          description: 'The current session.',
-          schema: 'SessionResponse',
-          example: {
-            user: {
-              id: '9a2f1d44-1111-4000-8000-000000000001',
-              fullName: 'Karthik Raman',
-              roleTitle: 'Proprietor',
-              phone: '+919840012345',
-              phoneDisplay: '+91 98400 12345',
-              email: 'karthik@srilakshmimotors.in',
-              emailVerified: true,
-            },
-            dealer: {
-              id: '3c8f2b10-2222-4000-8000-000000000002',
-              slug: 'sri-lakshmi-motors',
-              brandName: 'Sri Lakshmi Motors',
-              status: 'ACTIVE',
-              statusLabel: 'Verified dealer',
-              isVerified: true,
-              creditBalance: 39,
-              creditsHeld: 1,
-            },
-            role: 'OWNER',
-            permissions: ['vehicle:read', 'vehicle:write', 'listing:submit', 'billing:purchase'],
-            counts: { newEnquiries: 4, pendingListings: 1 },
-          },
-        },
-      ],
-      errors: [401],
-    },
-    {
-      method: 'post',
-      path: '/v1/auth/logout',
-      operationId: 'logout',
-      tag: 'Dealer account',
-      summary: 'End the session',
-      description:
-        'Returns 204 and revokes nothing. The session is server-configured in this build ' +
-        '(CLAUDE.md §5), so there is no token to invalidate — the route exists so the client ' +
-        'contract does not change on the day there is one.',
-      audience: 'dealer',
-      responses: [{ status: 204, description: 'Always. Nothing was revoked.' }],
-      errors: [401],
-    },
     {
       method: 'get',
       path: '/v1/dealer',

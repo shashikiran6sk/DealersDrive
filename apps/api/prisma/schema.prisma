@@ -18,8 +18,11 @@ model User {
   fullName        String?
   roleTitle       String?
   email           String?    @unique
-  phone           String     @unique
-  passwordHash    String? // ADMINS ONLY. Dealers are passwordless.
+  /// Optional until onboarding collects it: a dealer arrives from Google with a
+  /// verified email and nothing else, and an unverified placeholder must never
+  /// occupy the unique index (ARCHITECTURE §8.1).
+  phone           String?    @unique
+  passwordHash    String? // ADMINS ONLY. Dealers sign in with Google.
   emailVerifiedAt DateTime?
   phoneVerifiedAt DateTime?
   status          UserStatus @default(ACTIVE)
@@ -32,25 +35,54 @@ model User {
 
   sessions    Session[]
   memberships DealerMember[]
+  identities  OAuthIdentity[]
 
   @@map("users")
 }
 
 model Session {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @db.Uuid
-  tokenHash String    @unique
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @db.Uuid
+  tokenHash String       @unique
+  /// A dealer session can never satisfy `requireAdmin`, and an admin session can
+  /// never satisfy `requireDealer` — even when one human holds both seats.
+  scope     SessionScope @default(DEALER)
   expiresAt DateTime
   revokedAt DateTime?
   ip        String?
   userAgent String?
-  createdAt DateTime  @default(now())
+  createdAt DateTime     @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt])
   @@index([expiresAt])
   @@map("sessions")
+}
+
+/// A verified third-party identity. Dealers sign in with Google and are found
+/// by `provider + providerSubject` — Google's `sub`, which is stable — never by
+/// the email, which the account holder can change (ARCHITECTURE §8.1 r3).
+model OAuthIdentity {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @db.Uuid
+  provider        OAuthProvider
+  providerSubject String
+  /// The address Google asserted at the last sign-in. Informational: it is
+  /// refreshed on every login and is never the thing looked up.
+  email           String
+  emailVerified   Boolean       @default(false)
+  displayName     String?
+  pictureUrl      String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@index([userId])
+  @@map("oauth_identities")
 }
 
 // ─────────── DEALERS (the tenant) ────────────────────────────────────────
@@ -461,7 +493,7 @@ model CreditPack {
 /// The ledger. Append-only. The truth. Never UPDATEd, never DELETEd —
 /// a mistake is corrected with a REVERSAL row that references the original.
 model CreditTransaction {
-  id String @id @default(uuid()) @db.Uuid
+  id             String       @id @default(uuid()) @db.Uuid
   /// Append order, and the only safe way to find "the newest row". `createdAt`
   /// is not enough: Postgres gives every statement in one transaction the same
   /// `now()`, so two movements committed together would tie and the running
@@ -632,6 +664,15 @@ enum UserStatus {
   ACTIVE
   SUSPENDED
   DELETED
+}
+
+enum SessionScope {
+  DEALER
+  ADMIN
+}
+
+enum OAuthProvider {
+  GOOGLE
 }
 
 enum AdminRole {

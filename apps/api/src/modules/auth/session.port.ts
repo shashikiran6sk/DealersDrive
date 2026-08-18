@@ -20,6 +20,24 @@ export interface DealerPrincipal {
   permissions: readonly string[];
 }
 
+/**
+ * A verified human with no dealership yet.
+ *
+ * This is the state between "Google says this is really them" and "they have
+ * told us about their business" — the only state in which `POST /v1/auth/
+ * onboarding` may be called, and one that carries no permissions at all, so a
+ * half-finished sign-up can reach nothing a dealer can reach.
+ */
+export interface PendingPrincipal {
+  kind: 'PENDING';
+  userId: string;
+  email: string | null;
+  fullName: string | null;
+  phone: string | null;
+  /** Always empty. Present so `requirePermission` reads one shape, not two. */
+  permissions: readonly string[];
+}
+
 export interface AdminPrincipal {
   kind: 'ADMIN';
   userId: string;
@@ -28,12 +46,13 @@ export interface AdminPrincipal {
   permissions: readonly string[];
 }
 
-export type Principal = DealerPrincipal | AdminPrincipal;
+export type Principal = DealerPrincipal | PendingPrincipal | AdminPrincipal;
 
 /**
- * The seam production auth replaces. `DevSessionResolver` reads a
- * server-configured identity; `CookieSessionResolver` will read the
- * `dd_session` cookie, look up the `sessions` row and hydrate the same shape.
+ * The seam that decides identity. `CookieSessionResolver` reads the
+ * `dd_session` cookie, looks up the `sessions` row and hydrates these shapes;
+ * `DevSessionResolver` reads a server-configured identity instead, for a
+ * developer with no Google credentials (`AUTH_MODE=dev`).
  *
  * Note what the signature does *not* offer: no way to pass an identity in.
  * The request is available only so a cookie can be read from it.
@@ -41,6 +60,12 @@ export type Principal = DealerPrincipal | AdminPrincipal;
 export interface SessionResolver {
   resolveDealer(req: Request): Promise<DealerPrincipal | null>;
   resolveAdmin(req: Request): Promise<AdminPrincipal | null>;
+  /**
+   * Anyone holding a valid dealer-scope session, whether or not they have a
+   * dealership. `resolveDealer` is this, narrowed — which is why a route that
+   * needs a tenant can never accidentally be satisfied by a pending account.
+   */
+  resolveSignedIn(req: Request): Promise<DealerPrincipal | PendingPrincipal | null>;
 }
 
 /** ARCHITECTURE §8.3, verbatim. */

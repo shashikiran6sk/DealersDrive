@@ -6,7 +6,6 @@ import {
   CloseReason,
   CreditReason,
   DealerDocType,
-  DealerRole,
   DealerStatus,
   DisplayStatus,
   DocStatus,
@@ -29,33 +28,6 @@ import {
  * `.strict()` turns an attempt to send one into a 400 rather than a silent
  * success (ARCHITECTURE §10, CLAUDE.md rules 1 and 5).
  */
-
-// ─────────── B4 session ────────────────────────────────────────────────────
-export const SessionResponse = z.object({
-  user: z.object({
-    id: Uuid,
-    fullName: z.string().nullable(),
-    roleTitle: z.string().nullable(),
-    phone: z.string(),
-    phoneDisplay: z.string(),
-    email: z.string().nullable(),
-    emailVerified: z.boolean(),
-  }),
-  dealer: z.object({
-    id: Uuid,
-    slug: z.string(),
-    brandName: z.string(),
-    status: DealerStatus,
-    statusLabel: z.string(),
-    isVerified: z.boolean(),
-    creditBalance: z.number().int(),
-    creditsHeld: z.number().int(),
-  }),
-  role: DealerRole,
-  permissions: z.array(z.string()),
-  counts: z.object({ newEnquiries: z.number().int(), pendingListings: z.number().int() }),
-});
-export type SessionResponse = z.infer<typeof SessionResponse>;
 
 // ─────────── C1/C2 dealer profile ──────────────────────────────────────────
 export const DealerProfile = z.object({

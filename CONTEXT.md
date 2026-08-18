@@ -145,20 +145,42 @@ suggestion under concurrency.
 
 ## 6. What is bypassed or mocked, and what is not
 
-The brief scoped this to local development. Two things are deliberately not
-real. **Neither weakens the security model** — that distinction matters if you
-are about to "finish" one of them.
+One thing is still deliberately not real — the payment gateway. **It does not
+weaken the security model**, and that distinction matters if you are about to
+"finish" it.
 
-### Authentication — the identity step only
+### Authentication — real, as of r3
 
-There is **no signup, sign-in, OTP, password or JWT**. `SessionResolver`
-(`modules/auth/session.port.ts`) is the seam: the development resolver reads a
-server-configured identity (`DEV_DEALER_SLUG`, `DEV_ADMIN_EMAIL`) and rebuilds
-the principal from the database on every request. A production
-`CookieSessionResolver` reads the `dd_session` cookie and hydrates the same
-shape; nothing downstream changes.
+Dealers sign in with **Google** (OAuth 2.0 authorization code + PKCE + OIDC
+nonce); admins sign in with an **email and an Argon2id password**. Both end in an
+opaque `dd_session` cookie backed by a row in `sessions`, so revocation is an
+UPDATE that takes effect on the very next request.
 
-What still runs, exactly as it will in production:
+`SessionResolver` (`modules/auth/session.port.ts`) is still the seam, and now has
+three implementations' worth of behaviour behind it:
+
+- `CookieSessionResolver` — the real one. Cookie → session row → principal,
+  rebuilt from the database on every request.
+- `DevSessionResolver` — `AUTH_MODE=dev`, for a developer with no Google client.
+  Refused in production, and it warns on every boot.
+- the harness's switchable resolver, which is how tenant-isolation tests act as
+  a different dealership.
+
+Three properties are worth stating because everything else rests on them:
+
+- **The account is the `sub`, not the email.** `OAuthIdentity` is unique on
+  `(provider, providerSubject)`. The email is refreshed on every sign-in and is
+  never used to find an account — matching on it would let an expired domain
+  become somebody else's inventory. An unlinked email collision is refused with
+  `ACCOUNT_LINK_REQUIRED` rather than silently merged.
+- **A verified identity is not a tenant.** A Google account with no
+  `DealerMember` row is a `PendingPrincipal`: a real session that can reach
+  exactly one endpoint, `POST /v1/auth/onboarding`. It holds no permissions.
+- **The two consoles are separate scopes.** `sessions.scope` is `DEALER` or
+  `ADMIN`; a dealer's cookie cannot reach `/v1/admin/**` and an admin's cannot
+  reach `/v1/dealer/**`, even for one human holding both seats.
+
+What was already true, and still is:
 
 - `requireDealer` → `requireDealerActive` → `requirePermission`, then the
   service re-checks ownership inside the transaction that writes. Both checks,
@@ -172,6 +194,9 @@ The signature of `SessionResolver` offers **no way to pass an identity in** — 
 request is available only so a cookie can be read from it. That property is what
 makes tenant-isolation testing possible at all: a test swaps the resolver through
 `buildContainer({ sessions })`, because there is no header it could set instead.
+Sign-in itself is tested the same way, one seam lower: `buildContainer({ oauth })`
+replaces Google, and everything above it — the transaction cookie, the state
+check, the session row — runs unmodified (`tests/auth.test.ts`, 44 tests).
 
 ### Payments — the gateway only
 
@@ -182,15 +207,26 @@ append-only ledger, row locking, materialised `balanceAfter`, GST invoice.
 
 ### Also console-only for now
 
-`MailerPort` and `SmsPort` (`platform/notify/notify.port.ts`) log what would have
-been sent. That is enough to prove the outbox fires and the lead-notification
-path is wired. `StoragePort` has a local-disk adapter that implements the same
-presign → PUT → commit contract as R2, including HMAC verification of
-content-type and content-length before a byte is written.
+`MailerPort` logs what would have been sent, which is enough to prove the outbox
+fires and the lead-notification path is wired. Nothing in authentication depends
+on it: Google verifies the address and there is no email OTP.
+
+`SmsPort` has a real MSG91 adapter (`SMS_DRIVER=msg91`) written against the
+documented API and unit-tested with a stubbed `fetch` — **never exercised against
+a real account**, and DLT registration comes before the first send. `console` is
+the local default. Mobile OTP is out of scope: onboarding collects a phone
+number, nothing sends a code to it.
+
+`StoragePort` has three deployments and two implementations: local disk, and one
+S3 adapter serving both MinIO (`STORAGE_DRIVER=minio`) and Cloudflare R2
+(`STORAGE_DRIVER=r2`). Local development runs on MinIO — the seed writes its
+~100 images there — and the presign → PUT → commit contract is identical in all
+three, including the signed content-type and content-length that make the commit
+step's trust in what it finds well founded.
 
 ## 7. Test suite
 
-`pnpm test` — 114 tests. Vitest, `pool: 'forks'`, `maxWorkers: 1`,
+`pnpm test` — 2 097 tests. Vitest, `pool: 'forks'`, `maxWorkers: 1`,
 `fileParallelism: false`: the files share one database and a parallel run would
 have two suites moving the same dealer's credits.
 
@@ -422,23 +458,23 @@ decision from whoever owns the specs.
 Ordered by what unblocks the most. Each entry says where the seam already is,
 because in every case the abstraction exists and only the adapter is missing.
 
-### 12.1 Real authentication — the one prerequisite for everything else
+### 12.1 Authentication — what is left
 
-Nothing can be deployed for real users while identity is an environment
-variable. The work is contained:
+Sign-in itself is done (§6). Three follow-ups, none of them blocking:
 
-1. Implement `CookieSessionResolver` against `SessionResolver`. Read
-   `dd_session`, hash it, look up the `sessions` row (the Prisma model and
-   `tokenHash` column already exist), hydrate the same `DealerPrincipal`.
-2. Add the OTP round trip: `POST /v1/auth/request-otp`, `/verify-otp`,
-   `/resend-otp`. MSG91 delivers it (§12.3). Rate-limit hard — this is the
-   endpoint that costs money per request.
-3. Swap the resolver in `buildContainer`. **Nothing else changes.** Every
-   authorization check downstream already runs.
-4. Point the OpenAPI security schemes at the now-real cookie and delete the "not
-   required by this build" wording in `docs/openapi.ts`.
-5. Keep the dev resolver available behind `APP_ENV=local`, or the test harness
-   and the isolation suite lose their seam.
+1. **Account linking.** A Google identity whose verified email already belongs to
+   an account is refused with `ACCOUNT_LINK_REQUIRED` — deliberately, because
+   merging on a matching string is a takeover primitive. What is missing is the
+   *deliberate* path: an admin-initiated link, or a confirmation sent to the
+   existing address. Until then, support links an account by inserting the
+   `oauth_identities` row.
+2. **Team seats.** `DealerMember` already carries `MANAGER` and `SALES`, and the
+   permission table distinguishes them. There is no invite flow, so every
+   dealership has exactly one member — the owner who signed up.
+3. **CSRF tokens.** `SameSite=Lax` plus a CORS allow-list naming one origin is
+   what protects state-changing routes today; API-SPEC §0.3 also specifies a
+   double-submit `X-CSRF-Token`, which is not implemented. Worth adding before
+   any third-party origin is allowed to call the API with credentials.
 
 ### 12.2 Razorpay
 
@@ -460,10 +496,14 @@ variable. The work is contained:
 
 ### 12.3 Notifications
 
-`ResendMailer` and `Msg91Sms` against the existing ports. The handlers, the
-priorities (`notification.enquiry-to-dealer` is priority 100 — it is the
-product) and the retry policy are already wired. Add a template layer; the
-30-second p95 target for the lead notification is in ARCHITECTURE §14.5.
+`Msg91Sms` exists behind `SmsPort` (`SMS_DRIVER=msg91`), written against MSG91's
+documented API and unit-tested with a stubbed `fetch` — it has never sent a real
+message, and India's DLT registration of the entity, sender header and every
+template must land first. `ResendMailer` against `MailerPort` is still to write.
+
+The handlers, the priorities (`notification.enquiry-to-dealer` is priority 100 —
+it is the product) and the retry policy are already wired. Add a template layer;
+the 30-second p95 target for the lead notification is in ARCHITECTURE §14.5.
 
 ### 12.4 Monitoring, logging and observability
 
@@ -474,9 +514,11 @@ emitted anywhere in a request, and a redact list covering `authorization`,
 remember to pass a correlation id. What is missing is everywhere for those logs
 to go and anything watching them:
 
-1. **Error tracking.** Sentry, at the marked TODO in `error-handler.ts`. Tag
-   with `traceId` so a report links to the log line. Only 5xx — a 422
-   `INSUFFICIENT_CREDITS` is not an exception.
+1. **Error tracking.** `SENTRY_DSN` is accepted and validated by `env.ts`, and
+   **no SDK is installed** — setting it today does nothing. Install
+   `@sentry/node`, initialise it in `index.ts`, and report from the marked TODO
+   in `error-handler.ts`. Tag with `traceId` so a report links to the log line.
+   Only 5xx — a 422 `INSUFFICIENT_CREDITS` is not an exception.
 2. **Log shipping.** Ship stdout to a hosted sink (Better Stack, Axiom,
    Datadog). Do not add a transport inside the process; the container's stdout
    is the interface.
@@ -556,3 +598,14 @@ isolation tests), `velavan-cars` (Dealer B), `anbu-auto-hub`, `mrv-motors` — a
 ACTIVE — and `gokul-cars`, which is `PENDING_APPROVAL` on purpose so the
 verification queue and the `DEALER_NOT_ACTIVE` guard have something real to act
 on.
+
+**None of the seeded dealers can sign in with Google.** Their email addresses are
+fictional, so nobody owns the Google account behind them, and the seed creates no
+`oauth_identities` row. The first real dealer on a fresh database is whoever
+presses "Continue with Google" and completes onboarding — which is also the way
+to see the new-dealer path. `AUTH_MODE=dev` is the shortcut into
+`sri-lakshmi-motors`'s console without any of that.
+
+The one seeded account that *can* sign in is the admin: `DEV_ADMIN_EMAIL` with
+`DEV_ADMIN_PASSWORD`, hashed with Argon2id at seed time. Change the variable and
+re-seed to rotate it; the plaintext is never stored, logged or returned.

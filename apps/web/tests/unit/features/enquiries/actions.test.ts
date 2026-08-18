@@ -160,9 +160,7 @@ describe('when the API refuses', () => {
   });
 
   it('reports a network failure in words a dealer can act on', async () => {
-    globalThis.fetch = vi.fn(() =>
-      Promise.reject(new Error('ECONNREFUSED')),
-    ) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error('ECONNREFUSED')));
 
     expect(await updateEnquiryStatusAction('e1', { status: 'CLOSED' })).toEqual({
       ok: false,

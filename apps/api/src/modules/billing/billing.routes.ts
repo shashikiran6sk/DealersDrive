@@ -127,7 +127,7 @@ export function createBillingRouter(service: BillingService, storage: StoragePor
           const { dealerId } = dealerPrincipal(req);
           const params = validated<IdParamType>(req, 'params');
           const key = await service.invoicePdfKey(dealerId, params.id);
-          res.redirect(302, storage.signedReadUrl(key, 300));
+          res.redirect(302, await storage.signedReadUrl(key, 300));
         } catch (error) {
           next(error);
         }

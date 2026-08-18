@@ -30,10 +30,12 @@ function app(): Express {
   const service = new Proxy({}, { get: () => () => Promise.resolve({}) }) as never;
 
   return createApp({
-    auth: {
+    guards: {
       requireDealer: (_req: Request, _res: Response, next: NextFunction) => next(),
+      requireSignedIn: (_req: Request, _res: Response, next: NextFunction) => next(),
       requireAdmin: (_req: Request, _res: Response, next: NextFunction) => next(),
     },
+    auth: service,
     storage: service,
     media: service,
     catalog: service,

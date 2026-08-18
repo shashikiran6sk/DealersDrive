@@ -4,7 +4,12 @@ import type { Logger } from 'pino';
 import { env, type Env } from './config/env.js';
 import { createAuthMiddleware } from './middleware/auth.js';
 import { createAdminService, type AdminService } from './modules/admin/admin.service.js';
+import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
+import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
 import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
+import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
+import type { OAuthProvider } from './modules/auth/oauth.port.js';
+import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
 import { createBillingService, type BillingService } from './modules/billing/billing.service.js';
 import { createCatalogRepository } from './modules/catalog/catalog.repository.js';
@@ -26,10 +31,12 @@ import { createEventBus, type EventBus } from './platform/events/bus.js';
 import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
 import { registerHandlers, registerSchedules } from './platform/jobs/handlers.js';
 import { createQueue, type Queue } from './platform/jobs/queue.js';
+import { createMsg91Sms } from './platform/notify/msg91.adapter.js';
 import { createConsoleMailer, createConsoleSms } from './platform/notify/notify.port.js';
 import { createDevelopmentPaymentProvider } from './platform/payments/development.provider.js';
 import type { PaymentProvider } from './platform/payments/payment.port.js';
-import { createLocalStorage } from './platform/storage/local.adapter.js';
+import { createStorage } from './platform/storage/factory.js';
+import { ensureBucket } from './platform/storage/s3.adapter.js';
 import type { StoragePort } from './platform/storage/storage.port.js';
 import { logger } from './platform/telemetry/logger.js';
 
@@ -38,13 +45,16 @@ import { logger } from './platform/telemetry/logger.js';
  *
  * Every dependency is constructed here, by hand, in dependency order, and
  * passed down as plain arguments. Explicit, greppable, and trivially testable:
- * pass fakes in, get a module out. The two seams that matter for the current
- * build are visible in one place:
+ * pass fakes in, get a module out. Every provider seam is visible in one place,
+ * and each is chosen by configuration rather than by code:
  *
- *   sessions  — `createDevSessionResolver` today, a cookie resolver later
+ *   sessions  — `CookieSessionResolver`, or the dev identity under AUTH_MODE=dev
+ *   oauth     — Google; a fake is injected by the sign-in tests
+ *   storage   — local disk · MinIO · R2, by STORAGE_DRIVER
+ *   sms       — console · MSG91, by SMS_DRIVER
  *   payments  — `createDevelopmentPaymentProvider` today, Razorpay later
  *
- * Neither change touches a module.
+ * None of those choices reaches a module: they are all made here.
  */
 export interface Container {
   readonly env: Env;
@@ -57,7 +67,11 @@ export interface Container {
   readonly payments: PaymentProvider;
   readonly config: PlatformConfigService;
   readonly sessions: SessionResolver;
-  readonly auth: ReturnType<typeof createAuthMiddleware>;
+  readonly sessionStore: SessionService;
+  readonly oauth: OAuthProvider;
+  /** The guard chain. `auth` below is the module that issues the sessions. */
+  readonly guards: ReturnType<typeof createAuthMiddleware>;
+  readonly auth: AuthService;
   readonly search: SearchService;
   readonly searchRepo: SearchRepository;
   readonly catalog: CatalogService;
@@ -73,6 +87,8 @@ export interface Container {
 export interface ContainerOverrides {
   prisma?: PrismaClient;
   sessions?: SessionResolver;
+  /** The seam the sign-in tests replace, so no test ever talks to Google. */
+  oauth?: OAuthProvider;
   payments?: PaymentProvider;
   queue?: Queue;
   storage?: StoragePort;
@@ -85,15 +101,17 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const queue = overrides.queue ?? createQueue();
   const bus = createEventBus();
   const outbox = createOutboxPublisher(prisma, bus);
-  const storage = overrides.storage ?? createLocalStorage();
+  const storage = overrides.storage ?? createStorage();
   const payments = overrides.payments ?? createDevelopmentPaymentProvider();
   const config = createPlatformConfig(prisma);
   const audit = createAuditService(prisma);
   const mailer = createConsoleMailer();
-  const sms = createConsoleSms();
+  const sms = env.SMS_DRIVER === 'msg91' ? createMsg91Sms() : createConsoleSms();
 
-  const sessions = overrides.sessions ?? createDevSessionResolver(prisma);
-  const auth = createAuthMiddleware(sessions);
+  const sessionStore = createSessionService(prisma);
+  const oauth = overrides.oauth ?? createGoogleOAuthProvider();
+  const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
+  const guards = createAuthMiddleware(sessions);
 
   const catalogRepo = createCatalogRepository(prisma);
   const dealersRepo = createDealersRepository(prisma);
@@ -126,6 +144,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const vehicles = createVehiclesService({ prisma, repo: vehiclesRepo, dealers: dealersRepo, config });
   const billing = createBillingService({ prisma, dealers: dealersRepo, payments, config });
   const admin = createAdminService({ prisma, audit, config, storage });
+  const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
 
   await registerHandlers({ prisma, queue, bus, search: searchRepo, media, mailer, sms });
 
@@ -140,6 +159,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     payments,
     config,
     sessions,
+    sessionStore,
+    oauth,
+    guards,
     auth,
     search,
     searchRepo,
@@ -154,8 +176,32 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   };
 }
 
+/**
+ * `AUTH_MODE=dev` is a documented escape hatch for a developer who has not
+ * registered a Google OAuth client yet, and it is loud on purpose: it replaces
+ * identity verification with a server-configured identity. `env.ts` refuses it
+ * in production, so this branch cannot be reached there.
+ */
+function createResolver(prisma: PrismaClient, sessionStore: SessionService): SessionResolver {
+  if (env.AUTH_MODE === 'dev') {
+    logger.warn(
+      { devDealer: env.DEV_DEALER_SLUG },
+      'AUTH_MODE=dev — sign-in is bypassed and every request acts as the configured dealer',
+    );
+    return createDevSessionResolver(prisma);
+  }
+  return createCookieSessionResolver(prisma, sessionStore);
+}
+
 /** Starts the background machinery. Not called by tests, which drain inline. */
 export async function startBackground(container: Container): Promise<void> {
+  // A fresh MinIO volume has no bucket, and the first photo upload should not be
+  // the thing that discovers that.
+  if (env.STORAGE_DRIVER !== 'local') {
+    await ensureBucket();
+    logger.info({ bucket: env.S3_BUCKET, endpoint: env.S3_ENDPOINT }, 'object storage ready');
+  }
+
   if (!env.JOBS_ENABLED) return;
 
   await container.queue.start();

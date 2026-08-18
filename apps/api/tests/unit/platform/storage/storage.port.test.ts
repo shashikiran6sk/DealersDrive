@@ -33,8 +33,8 @@ describe.each(implementations)('%s satisfies StoragePort', (_name, storage) => {
     }
   });
 
-  it('presigns synchronously — a signature is arithmetic, not a network call', () => {
-    const presigned = storage.presignPut({
+  it('presigns synchronously — a signature is arithmetic, not a network call', async () => {
+    const presigned = await storage.presignPut({
       key: 'vehicles/a/original.jpg',
       contentType: 'image/jpeg',
       contentLength: 1,
@@ -44,8 +44,8 @@ describe.each(implementations)('%s satisfies StoragePort', (_name, storage) => {
     expect(presigned.method).toBe('PUT');
   });
 
-  it('bakes content type and length into the upload, not just the key', () => {
-    const presigned = storage.presignPut({
+  it('bakes content type and length into the upload, not just the key', async () => {
+    const presigned = await storage.presignPut({
       key: 'vehicles/a/original.jpg',
       contentType: 'image/jpeg',
       contentLength: 4096,
@@ -56,8 +56,8 @@ describe.each(implementations)('%s satisfies StoragePort', (_name, storage) => {
     expect(presigned.headers['Content-Length']).toBe('4096');
   });
 
-  it('returns an expiry with every presign', () => {
-    const presigned = storage.presignPut({ key: 'k', contentType: 'image/jpeg', contentLength: 1 });
+  it('returns an expiry with every presign', async () => {
+    const presigned = await storage.presignPut({ key: 'k', contentType: 'image/jpeg', contentLength: 1 });
 
     expect(presigned.expiresInSeconds).toBeGreaterThan(0);
   });
@@ -70,16 +70,16 @@ describe.each(implementations)('%s satisfies StoragePort', (_name, storage) => {
     expect(absent).toBeNull();
   });
 
-  it('builds URLs without requiring a round trip', () => {
+  it('builds URLs without requiring a round trip', async () => {
     expect(typeof storage.publicUrl('a/b.webp')).toBe('string');
-    expect(typeof storage.signedReadUrl('a/b.pdf', 60)).toBe('string');
+    expect(typeof await storage.signedReadUrl('a/b.pdf', 60)).toBe('string');
   });
 
-  it('separates public delivery from signed reads', () => {
+  it('separates public delivery from signed reads', async () => {
     // KYC documents have no public route at all; conflating the two would put a
     // GST certificate behind a guessable URL.
-    expect(storage.publicUrl('k')).not.toBe(storage.signedReadUrl('k', 60));
-    expect(storage.signedReadUrl('k', 60)).toContain('signature=');
+    expect(storage.publicUrl('k')).not.toBe(await storage.signedReadUrl('k', 60));
+    expect(await storage.signedReadUrl('k', 60)).toContain('signature=');
     expect(storage.publicUrl('k')).not.toContain('signature=');
   });
 });

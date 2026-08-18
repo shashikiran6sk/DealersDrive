@@ -146,36 +146,3 @@ export function createDealersRouter(service: DealersService): Router {
 
   return router;
 }
-
-/**
- * B4 · B5 — session shape. Identity itself comes from the session resolver.
- *
- * Mounted at `/v1/auth`, so the paths here are relative to it. That prefix is
- * load-bearing: `requireDealer` sits in front of this router, and mounting it
- * at the `/v1` root instead would run the dealer guard for *every* `/v1`
- * request that reached the layer — `/v1/admin/**` included. An admin who is
- * not also a dealer would then be refused their own console, with a message
- * about seeding a dealership.
- */
-export function createAuthRouter(service: DealersService): Router {
-  const router = Router();
-
-  router.get('/me', (req, res, next) => {
-    void (async () => {
-      try {
-        res.set('Cache-Control', 'no-store');
-        res.json(await service.session(dealerPrincipal(req)));
-      } catch (error) {
-        next(error);
-      }
-    })();
-  });
-
-  router.post('/logout', (_req, res) => {
-    // Nothing to revoke while the session is server-configured (CLAUDE.md §5).
-    // The route exists so the client contract does not change when it is.
-    res.status(204).end();
-  });
-
-  return router;
-}

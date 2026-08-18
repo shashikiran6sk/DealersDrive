@@ -60,6 +60,8 @@ const INPUT_SCHEMA_NAMES = [
   'AdminPaymentQuery',
   'AuditQuery',
   // bodies
+  'OnboardingInput',
+  'AdminLoginInput',
   'CreateEnquiryInput',
   'RevealContactInput',
   'VehicleBatchInput',

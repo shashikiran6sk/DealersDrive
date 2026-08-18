@@ -11,8 +11,8 @@ import {
   type DealerSubmitResponse,
   type DocumentCommitInput,
   type DocumentPresignInput,
+  type AuthSession,
   type PresignResponse,
-  type SessionResponse,
   type UpdateDealerInput,
 } from '@dealers-drive/contracts';
 import type { DealerDocType, PrismaClient } from '@prisma/client';
@@ -90,7 +90,12 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
   return {
     toProfile,
 
-    async session(principal: DealerPrincipal): Promise<SessionResponse> {
+    /**
+     * The dealer half of B4. `identity` is filled in by the auth module, which
+     * owns the OAuth tables — this service knows about dealerships, not about
+     * how the person at the keyboard proved who they are.
+     */
+    async session(principal: DealerPrincipal): Promise<AuthSession> {
       const dealer = await requireDealer(principal.dealerId);
       const owner = dealer.members.find((member) => member.userId === principal.userId);
       const [newEnquiries, pendingListings] = await Promise.all([
@@ -101,6 +106,15 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
       const phone = owner?.user.phone ?? dealer.contactPhone ?? '';
 
       return {
+        // A dealership still in DRAFT has not finished onboarding, whatever the
+        // client remembers; PENDING_APPROVAL is waiting on a human at our end.
+        next:
+          dealer.status === 'DRAFT'
+            ? 'ONBOARDING'
+            : dealer.status === 'PENDING_APPROVAL'
+              ? 'PENDING_APPROVAL'
+              : 'DASHBOARD',
+        identity: null,
         user: {
           id: principal.userId,
           fullName: owner?.user.fullName ?? null,
@@ -327,7 +341,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
         rejectionReason: null,
       });
 
-      const presigned = storage.presignPut({
+      const presigned = await storage.presignPut({
         key,
         contentType: input.mimeType,
         contentLength: input.bytes,

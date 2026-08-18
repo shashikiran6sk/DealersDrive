@@ -325,6 +325,14 @@ describe('unknown throwables', () => {
     vi.stubEnv('API_BASE_URL', 'https://api.dealers-drive.com');
     vi.stubEnv('DATABASE_URL', 'postgresql://u:p@db:5432/d');
     vi.stubEnv('MEDIA_BASE_URL', 'https://api.dealers-drive.com/media');
+    // Production refuses to boot without these; see `env.test.ts`.
+    vi.stubEnv('GOOGLE_CLIENT_ID', 'client.apps.googleusercontent.com');
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', 'google-secret');
+    vi.stubEnv('STORAGE_DRIVER', 'r2');
+    vi.stubEnv('S3_ACCESS_KEY_ID', 'r2-key');
+    vi.stubEnv('S3_SECRET_ACCESS_KEY', 'r2-secret');
+    vi.stubEnv('SESSION_SECRET', 'a-real-production-session-secret');
+    vi.stubEnv('UPLOAD_SIGNING_SECRET', 'a-real-production-upload-secret');
 
     try {
       const { errorHandler: productionHandler } =

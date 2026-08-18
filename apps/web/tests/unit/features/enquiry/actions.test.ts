@@ -319,7 +319,7 @@ describe('submitEnquiryAction — failures', () => {
    * something they can act on rather than a stack trace or silence.
    */
   it('shows a plain message when the API could not be reached at all', async () => {
-    globalThis.fetch = vi.fn(() => Promise.reject(new Error('ECONNREFUSED'))) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error('ECONNREFUSED')));
 
     const { state } = await submit(validFields);
 
@@ -453,7 +453,7 @@ describe('revealContactAction', () => {
 
   /** A thrown network error must not surface as an unhandled rejection in a click handler. */
   it('reports a network failure as an ordinary error', async () => {
-    globalThis.fetch = vi.fn(() => Promise.reject(new Error('ECONNREFUSED'))) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error('ECONNREFUSED')));
 
     expect(await revealContactAction(VEHICLE)).toEqual({
       status: 'error',

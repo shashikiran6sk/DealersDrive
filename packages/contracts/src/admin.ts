@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { CursorPage, Uuid } from './common.js';
 import {
+  AdminRole,
   DealerStatus,
   DisplayStatus,
   DocStatus,
@@ -40,6 +41,12 @@ export const AdminOverview = z.object({
     label: z.string(),
     tone: StatusTone,
   }),
+  /**
+   * Who is signed in, for the console's top bar (DESIGN-SPEC §3.17). It comes
+   * from the session, so the header cannot show one operator while the audit
+   * log records another.
+   */
+  operator: z.object({ email: z.string(), adminRole: AdminRole }),
 });
 export type AdminOverview = z.infer<typeof AdminOverview>;
 

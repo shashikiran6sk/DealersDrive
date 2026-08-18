@@ -17,12 +17,26 @@ import { env } from '../../../src/config/env.js';
  * localhost. That is the difference between a loud failure and a silent one.
  */
 
+/**
+ * Everything production refuses to start without. The list is longer than the
+ * plain `required()` defaults because several variables are only mandatory in
+ * combination — R2 keys because the storage driver is not `local`, the Google
+ * client because dealers sign in with it — which is the whole point of the
+ * cross-field checks below.
+ */
 const PRODUCTION_REQUIRED = {
   WEB_ORIGIN: 'https://dealers-drive.com',
   WEB_BASE_URL: 'https://dealers-drive.com',
   API_BASE_URL: 'https://api.dealers-drive.com',
   DATABASE_URL: 'postgresql://u:p@db:5432/d',
   MEDIA_BASE_URL: 'https://api.dealers-drive.com/media',
+  GOOGLE_CLIENT_ID: 'client.apps.googleusercontent.com',
+  GOOGLE_CLIENT_SECRET: 'google-secret',
+  STORAGE_DRIVER: 'r2',
+  S3_ACCESS_KEY_ID: 'r2-key',
+  S3_SECRET_ACCESS_KEY: 'r2-secret',
+  SESSION_SECRET: 'a-real-production-session-secret',
+  UPLOAD_SIGNING_SECRET: 'a-real-production-upload-secret',
 };
 
 /**
@@ -67,6 +81,22 @@ const SCHEMA_KEYS = [
   'JOBS_ENABLED',
   'RATE_LIMIT_ENABLED',
   'DOCS_ENABLED',
+  'AUTH_MODE',
+  'DEV_ADMIN_PASSWORD',
+  'GOOGLE_CLIENT_ID',
+  'GOOGLE_CLIENT_SECRET',
+  'GOOGLE_CALLBACK_URL',
+  'SESSION_SECRET',
+  'SESSION_COOKIE_DOMAIN',
+  'S3_ENDPOINT',
+  'S3_REGION',
+  'S3_BUCKET',
+  'S3_ACCESS_KEY_ID',
+  'S3_SECRET_ACCESS_KEY',
+  'S3_FORCE_PATH_STYLE',
+  'MSG91_AUTH_KEY',
+  'MSG91_SENDER_ID',
+  'SENTRY_DSN',
 ];
 
 const saved = new Map<string, string | undefined>();
@@ -367,5 +397,153 @@ describe('validation', () => {
     expect(loaded.JOBS_ENABLED).toBe(false);
     expect(loaded.RATE_LIMIT_ENABLED).toBe(false);
     expect(loaded.WORKER_INLINE).toBe(false);
+  });
+});
+
+/**
+ * The cross-field rules — "this variable is required *because* of that one".
+ *
+ * They are the difference between a deployment that fails at boot with the
+ * variable named and one that starts, serves for an hour, and then discovers
+ * at the first dealer sign-in that it has no Google client. Each case below is
+ * a configuration that must not be allowed to start.
+ */
+describe('configurations that must not boot', () => {
+  async function refuses(vars: Record<string, string>): Promise<string> {
+    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit');
+    });
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    try {
+      await expect(loadEnv(vars)).rejects.toThrow('process.exit');
+      return error.mock.calls.map((call) => String(call[0])).join('\n');
+    } finally {
+      exit.mockRestore();
+      error.mockRestore();
+    }
+  }
+
+  it('refuses object storage without credentials, whatever the environment', async () => {
+    const message = await refuses({ STORAGE_DRIVER: 'minio' });
+
+    expect(message).toContain('S3_ACCESS_KEY_ID');
+    expect(message).toContain('S3_SECRET_ACCESS_KEY');
+  });
+
+  it('refuses MSG91 without an auth key and sender id', async () => {
+    const message = await refuses({ SMS_DRIVER: 'msg91' });
+
+    expect(message).toContain('MSG91_AUTH_KEY');
+    expect(message).toContain('MSG91_SENDER_ID');
+  });
+
+  it('refuses production without a Google client, because dealers sign in with it', async () => {
+    const { GOOGLE_CLIENT_ID: _id, GOOGLE_CLIENT_SECRET: _secret, ...rest } = PRODUCTION_REQUIRED;
+    const message = await refuses({ NODE_ENV: 'production', ...rest });
+
+    expect(message).toContain('GOOGLE_CLIENT_ID');
+    expect(message).toContain('GOOGLE_CLIENT_SECRET');
+  });
+
+  /** A container filesystem is not durable storage, and it is not shared. */
+  it('refuses production on local disk storage', async () => {
+    const message = await refuses({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      STORAGE_DRIVER: 'local',
+    });
+
+    expect(message).toContain('STORAGE_DRIVER');
+  });
+
+  it('refuses production still carrying the local development secrets', async () => {
+    const message = await refuses({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      SESSION_SECRET: 'dealers-drive-local-session-secret',
+      UPLOAD_SIGNING_SECRET: 'dealers-drive-local-upload-secret',
+    });
+
+    expect(message).toContain('SESSION_SECRET');
+    expect(message).toContain('UPLOAD_SIGNING_SECRET');
+  });
+
+  /** The sign-in bypass is a development affordance and nothing else. */
+  it('refuses AUTH_MODE=dev in production', async () => {
+    const message = await refuses({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      AUTH_MODE: 'dev',
+    });
+
+    expect(message).toContain('AUTH_MODE');
+  });
+
+  it('accepts a complete production configuration', async () => {
+    const loaded = await loadEnv({ NODE_ENV: 'production', ...PRODUCTION_REQUIRED });
+
+    expect(loaded.STORAGE_DRIVER).toBe('r2');
+    expect(loaded.AUTH_MODE).toBe('cookie');
+  });
+});
+
+describe('blank means unset', () => {
+  /**
+   * `.env.example` lists every production credential with an empty value so a
+   * developer can see what exists. dotenv reads `GOOGLE_CLIENT_ID=` as `""`,
+   * and `""` would otherwise fail `.min(1)` on a variable nobody set.
+   */
+  it('treats an empty optional variable as absent rather than invalid', async () => {
+    const loaded = await loadEnv({
+      GOOGLE_CLIENT_ID: '',
+      GOOGLE_CLIENT_SECRET: '',
+      SENTRY_DSN: '',
+      SESSION_COOKIE_DOMAIN: '',
+      MSG91_AUTH_KEY: '',
+    });
+
+    expect(loaded.GOOGLE_CLIENT_ID).toBeUndefined();
+    expect(loaded.SENTRY_DSN).toBeUndefined();
+    expect(loaded.SESSION_COOKIE_DOMAIN).toBeUndefined();
+  });
+});
+
+describe('the Google credentials helper', () => {
+  it('returns the configured client', async () => {
+    vi.resetModules();
+    for (const key of SCHEMA_KEYS) {
+      if (!saved.has(key)) saved.set(key, process.env[key]);
+      delete process.env[key];
+    }
+    process.env.GOOGLE_CLIENT_ID = 'client-id';
+    process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
+
+    const module = await import('../../../src/config/env.js');
+
+    expect(module.isGoogleConfigured()).toBe(true);
+    expect(module.googleCredentials()).toMatchObject({
+      clientId: 'client-id',
+      clientSecret: 'client-secret',
+    });
+  });
+
+  /**
+   * The message is the feature. A developer who has not registered an OAuth
+   * client should learn the two variable names and the exact redirect URI to
+   * paste into the Google console, not "something went wrong".
+   */
+  it('explains exactly what to configure when it is not', async () => {
+    vi.resetModules();
+    for (const key of SCHEMA_KEYS) {
+      if (!saved.has(key)) saved.set(key, process.env[key]);
+      delete process.env[key];
+    }
+
+    const module = await import('../../../src/config/env.js');
+
+    expect(module.isGoogleConfigured()).toBe(false);
+    expect(() => module.googleCredentials()).toThrow(/GOOGLE_CLIENT_ID/);
+    expect(() => module.googleCredentials()).toThrow(/redirect URI/);
   });
 });

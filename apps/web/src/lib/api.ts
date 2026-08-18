@@ -1,6 +1,10 @@
 import type { ProblemDetails } from '@dealers-drive/contracts';
+import { cookies } from 'next/headers';
 
 import { serverConfig } from './config';
+
+/** The session cookie the API issues. Named here so one file forwards it. */
+export const SESSION_COOKIE = 'dd_session';
 
 /**
  * The one place the web app talks to the API.
@@ -11,6 +15,14 @@ import { serverConfig } from './config';
  * cannot be expressed as a navigation — the direct-to-storage upload and the
  * enquiry-inbox tab switch — and those go through `/api/*` BFF handlers so no
  * `NEXT_PUBLIC_*` variable is ever needed (Rule 9, ARCHITECTURE §15.3).
+ *
+ * Because the fetch happens on the Next server rather than in the browser, the
+ * dealer's `dd_session` cookie is not attached automatically — this file
+ * forwards it. It does so only for uncached requests, which is not a
+ * convenience: reading a cookie makes a route dynamic, and attaching a session
+ * to a *cached* fetch is how one dealer's console ends up in another's browser
+ * (ARCHITECTURE §18). Public pages therefore stay anonymous and cacheable, and
+ * anything behind a session is `revalidate: false` and never shared.
  */
 export class ApiError extends Error {
   readonly status: number;
@@ -70,9 +82,15 @@ async function request<T>(
     ...(options.signal ? { signal: options.signal } : {}),
   };
 
-  if (options.revalidate === false || method !== 'GET') {
+  const uncached = options.revalidate === false || method !== 'GET';
+
+  if (uncached) {
     init.cache = 'no-store';
-  } else if (options.revalidate !== undefined) {
+    const session = await sessionCookie();
+    if (session) {
+      init.headers = { ...init.headers, Cookie: `${SESSION_COOKIE}=${session}` };
+    }
+  } else if (typeof options.revalidate === 'number') {
     init.next = {
       revalidate: options.revalidate,
       ...(options.tags ? { tags: options.tags } : {}),
@@ -98,6 +116,83 @@ async function request<T>(
   }
 
   return payload as T;
+}
+
+/**
+ * The session token, or undefined outside a request scope.
+ *
+ * `cookies()` throws during static generation — the sitemap and the cached
+ * public pages are rendered with no request at all — and that is a legitimate
+ * state, not an error: those pages have no session to forward.
+ */
+async function sessionCookie(): Promise<string | undefined> {
+  try {
+    return (await cookies()).get(SESSION_COOKIE)?.value;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * A sign-in call, which is the one place the API's *response* headers matter.
+ *
+ * Ordinary calls only need the body. This one also needs the `Set-Cookie` the
+ * API issued, because the cookie has to be re-issued by *this* origin: the
+ * fetch happened on the Next server, so nothing reached the browser on its own.
+ * Returning it rather than setting it keeps this file free of `next/headers`
+ * side effects — the Server Action decides what to do with it.
+ */
+export interface IssuedSession {
+  value: string;
+  expires?: Date;
+}
+
+export async function apiSignIn<T>(
+  path: string,
+  body: unknown,
+): Promise<{ data: T; session: IssuedSession | null }> {
+  const response = await fetch(`${serverConfig().apiBaseUrl}${path}`, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  const text = await response.text();
+  const payload: unknown = text.length > 0 ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    throw new ApiError(
+      (payload as ProblemDetails | null) ?? {
+        type: 'about:blank',
+        title: 'Request failed',
+        status: response.status,
+        code: 'INTERNAL',
+      },
+    );
+  }
+
+  return { data: payload as T, session: sessionFrom(response.headers.getSetCookie()) };
+}
+
+/** Pulls `dd_session` and its expiry out of the API's Set-Cookie headers. */
+export function sessionFrom(setCookie: string[]): IssuedSession | null {
+  const header = setCookie.find((value) => value.startsWith(`${SESSION_COOKIE}=`));
+  if (!header) return null;
+
+  const [pair, ...attributes] = header.split(';');
+  const value = pair?.slice(SESSION_COOKIE.length + 1) ?? '';
+  if (!value) return null;
+
+  const expiresAttribute = attributes
+    .map((attribute) => attribute.trim())
+    .find((attribute) => attribute.toLowerCase().startsWith('expires='));
+  const expires = expiresAttribute ? new Date(expiresAttribute.slice('expires='.length)) : undefined;
+
+  return {
+    value,
+    ...(expires && !Number.isNaN(expires.getTime()) ? { expires } : {}),
+  };
 }
 
 export function apiGet<T>(path: string, options?: RequestOptions): Promise<T> {

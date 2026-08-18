@@ -6,6 +6,7 @@ import { buildContainer } from '../src/container.js';
 import {
   permissionsForAdminRole,
   permissionsForRole,
+  type DealerPrincipal,
   type SessionResolver,
 } from '../src/modules/auth/session.port.js';
 import { createApp } from '../src/server.js';
@@ -93,34 +94,39 @@ function switchableSessions(seatOf: () => { slug: string; role: DealerRole }): S
     return prisma;
   };
 
-  return {
-    async resolveDealer() {
-      const db = await client();
-      const seat = seatOf();
-      const dealer = await db.dealer.findUnique({
-        where: { slug: seat.slug },
-        include: {
-          members: {
-            where: { status: 'ACTIVE', role: seat.role },
-            take: 1,
-            orderBy: { id: 'asc' },
-          },
+  async function resolveDealer(): Promise<DealerPrincipal | null> {
+    const db = await client();
+    const seat = seatOf();
+    const dealer = await db.dealer.findUnique({
+      where: { slug: seat.slug },
+      include: {
+        members: {
+          where: { status: 'ACTIVE', role: seat.role },
+          take: 1,
+          orderBy: { id: 'asc' },
         },
-      });
+      },
+    });
 
-      const membership = dealer?.members[0];
-      if (!dealer || !membership) return null;
+    const membership = dealer?.members[0];
+    if (!dealer || !membership) return null;
 
-      return {
-        kind: 'DEALER',
-        userId: membership.userId,
-        dealerId: dealer.id,
-        dealerSlug: dealer.slug,
-        role: membership.role,
-        dealerStatus: dealer.status,
-        permissions: permissionsForRole(membership.role),
-      };
-    },
+    return {
+      kind: 'DEALER',
+      userId: membership.userId,
+      dealerId: dealer.id,
+      dealerSlug: dealer.slug,
+      role: membership.role,
+      dealerStatus: dealer.status,
+      permissions: permissionsForRole(membership.role),
+    };
+  }
+
+  return {
+    resolveDealer,
+    // The selected dealer always exists, so the harness has no pending state to
+    // model. `tests/auth.test.ts` drives the real resolver for that.
+    resolveSignedIn: resolveDealer,
 
     async resolveAdmin() {
       const db = await client();

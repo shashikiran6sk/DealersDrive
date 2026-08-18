@@ -55,7 +55,11 @@ Unknown query parameters are a **400**, never silently ignored.
 
 ### 0.3 Auth
 
-Session cookie `dd_session` — `HttpOnly; Secure; SameSite=Lax; Domain=.dealers-drive.com; Max-Age=2592000`. Every state-changing request also carries `X-CSRF-Token` (double-submit). `dealerId` is **always** taken from the session and **never** read from a request body or path — a body containing `dealerId` is a 400.
+Session cookie `dd_session` — `HttpOnly; Secure; SameSite=Lax; Domain=.dealers-drive.com; Max-Age=2592000` for a dealer, 12 hours for an admin. Its value is 32 random bytes; only the SHA-256 is stored, and the row it points at is what makes revocation immediate.
+
+`dealerId` is **always** taken from the session and **never** read from a request body or path — a body containing `dealerId` is a 400.
+
+> `X-CSRF-Token` (double-submit) is specified here but **not implemented**. What protects state-changing routes today is `SameSite=Lax` — the browser will not attach the cookie to a cross-site POST — plus a CORS allow-list naming one origin. Add the token before allowing any third-party origin to call this API with credentials.
 
 ### 0.4 Money, dates, phones
 
@@ -637,132 +641,200 @@ Same phone + same vehicle within 24 h returns `200` with the **original** refere
 
 # PART B — AUTH
 
+> **Revised, r3.** Dealer sign-in was specified as phone OTP with an email
+> fallback, and admin sign-in as password + mandatory TOTP. Both were replaced
+> before implementation: **dealers sign in with Google**, and **admins sign in
+> with an email and a password, with no second factor**. The OTP endpoints
+> (`B1`–`B3`) and the 2FA challenge (`B7`) do not exist. This part describes what
+> is implemented; `docs/CLAUDE.md §5` records the decision.
+
+Both flows end in the same place: an opaque `dd_session` cookie backed by a row
+in `sessions`, revocable on the next request (ARCHITECTURE §8.2).
+
 ---
 
-## B1. `POST /v1/auth/otp/start`
-**Screens:** Sign in · Sign up
+## B1. `GET /v1/auth/providers`
+**Screen:** Dealer sign-in
 
-**Request — sign up**
-```json
-{ "phone": "9840012345", "email": "owner@srilakshmimotors.in", "purpose": "SIGNUP" }
-```
-**Request — sign in**
-```json
-{ "phone": "9840012345", "purpose": "SIGNIN" }
-```
-**Request — email fallback ("Use email instead")**
-```json
-{ "email": "owner@srilakshmimotors.in", "purpose": "SIGNIN" }
-```
+Lets the sign-in screen render a working button or an explanation, rather than a
+button that fails on click.
 
 **Response `200`**
 ```json
 {
-  "channel": "PHONE",
-  "destinationMasked": "+91 98400 •••45",
-  "expiresInSeconds": 600,
-  "resendAfterSeconds": 60,
-  "attemptsAllowed": 3,
-  "message": "Sent to +91 98400 12345. It expires in 10 minutes."
+  "google": {
+    "enabled": true,
+    "startUrl": "http://localhost:4000/v1/auth/google/start",
+    "reason": null
+  }
 }
 ```
-
-`message` is returned pre-composed because sign-in and sign-up show different sublines ("Sent to the registered number …" vs "Sent to …") and that wording should live in one place.
-
-**`404 PHONE_NOT_REGISTERED`** on `SIGNIN` for an unknown number — the UI then offers `Create a dealer account`.
-**`409 PHONE_ALREADY_REGISTERED`** on `SIGNUP` for a known number — the UI offers `Sign in instead`.
-**`429 RATE_LIMITED`** with `Retry-After`.
+`enabled` is false when the deployment has no Google client configured; `reason`
+then names the missing variables. `Cache-Control: no-store`.
 
 ---
 
-## B2. `POST /v1/auth/otp/verify`
-**Screen:** Sign up & OTP
+## B2. `GET /v1/auth/google/start`
+**Screen:** Dealer sign-in — `[ Continue with Google ]`
 
-**Request**
-```json
-{ "phone": "9840012345", "code": "418065", "purpose": "SIGNIN" }
-```
+A browser navigation, not an API call. Mints `state`, an OIDC `nonce` and a PKCE
+verifier, seals all three into a 10-minute HttpOnly `dd_oauth` cookie, and
+redirects to Google's authorization endpoint with `code_challenge_method=S256`,
+`scope=openid email profile`, `access_type=online` and `prompt=select_account`.
 
-**Response `200`** — sets `dd_session`
-```json
-{
-  "next": "DASHBOARD",
-  "csrfToken": "Yz3k…",
-  "user": {
-    "id": "c41f…", "fullName": "R. Manikandan", "roleTitle": "Proprietor",
-    "phone": "+919840012345", "phoneDisplay": "+91 98400 12345",
-    "email": "owner@srilakshmimotors.in", "emailVerified": false
-  },
-  "dealer": {
-    "id": "8d20…", "slug": "sri-lakshmi-motors", "brandName": "Sri Lakshmi Motors",
-    "status": "ACTIVE", "isVerified": true,
-    "creditBalance": 23, "creditsHeld": 1
-  },
-  "role": "OWNER"
-}
-```
+**Query** `?returnTo=/dealer/inventory` — optional, and a **path**. An absolute
+URL, a protocol-relative `//host`, or anything containing a backslash or newline
+is replaced with `/dealer`: a callback that redirects wherever the caller asks is
+an open redirect, and an open redirect on an OAuth callback leaks sessions.
 
-`next` is `DASHBOARD` · `ONBOARDING` (profile incomplete) · `PENDING_APPROVAL` (submitted, awaiting admin). On `SIGNUP` it is always `ONBOARDING`, `dealer.status` is `DRAFT` and `creditBalance` is `0`.
+**Response `302`** — `Location: https://accounts.google.com/o/oauth2/v2/auth?…`,
+`Set-Cookie: dd_oauth=…; HttpOnly; SameSite=Lax; Max-Age=600`
 
-**`401 INVALID_OTP`**
-```json
-{
-  "type": "https://dealers-drive.com/errors/invalid-otp",
-  "title": "That OTP is incorrect or expired",
-  "status": 401, "code": "INVALID_OTP",
-  "detail": "That OTP is incorrect or expired. Two attempts remaining.",
-  "attemptsRemaining": 2
-}
-```
-At `attemptsRemaining: 0` the code is invalidated and the client must call B1 again.
+**`503 OAUTH_NOT_CONFIGURED`** when the deployment holds no Google credentials.
+The `detail` names the two variables and the redirect URI to register — it is
+written for the developer who has to fix it.
 
 ---
 
-## B3. `POST /v1/auth/otp/resend`
-**Screen:** OTP step — `Resend OTP (00:24)`
+## B3. `GET /v1/auth/google/callback`
+**Screen:** none — Google redirects the browser here
 
-**Request** `{ "phone": "9840012345", "purpose": "SIGNIN" }`
-**Response `200`** `{ "resendAfterSeconds": 60, "expiresInSeconds": 600, "resendsRemaining": 4 }`
-**`429 RESEND_TOO_SOON`** `{ "retryAfterSeconds": 36 }` — the server enforces the countdown the button displays.
+**Query** `?code=…&state=…`, or `?error=access_denied` when the person declined
+at Google.
+
+1. `state` is compared with the sealed `dd_oauth` cookie, which is then spent —
+   a callback with no cookie, a stale cookie or somebody else's state is refused
+   before the code is worth anything.
+2. The code is redeemed at Google's token endpoint with the PKCE verifier and
+   the client secret, server-to-server.
+3. The identity token's `iss`, `aud`, `exp` and `nonce` are checked. Its
+   signature is not, and that is correct rather than a shortcut: OpenID Connect
+   Core §3.1.3.7 item 6 permits it for a token received directly from the token
+   endpoint over validated TLS, which is exactly this position.
+4. `email_verified` must be true. An unverified Google email is an address
+   somebody typed, not one Google checked.
+5. The account is found by `(provider, sub)` — **never by email**. A `sub` is
+   stable; an email address is not, and matching on it would let an expired
+   domain become somebody else's inventory.
+
+**Response `302`** — `Set-Cookie: dd_session=…; HttpOnly; SameSite=Lax`, then:
+
+| Situation | Location |
+|---|---|
+| Known identity, dealership active | the requested `returnTo`, default `/dealer` |
+| Known identity, dealership `DRAFT` or `PENDING_APPROVAL` | `/dealer/onboarding` |
+| First sign-in — no dealership yet | `/dealer/onboarding` |
+
+Every failure redirects to `/dealer/login?error=<code>` instead, so the person
+sees the product's own error state rather than a JSON body in the address bar:
+`sign_in_failed` · `identity_unverified` · `google_declined` ·
+`invalid_callback` · `account_link_required` · `account_suspended`.
+
+`account_link_required` is the account-linking policy: a verified Google email
+that already belongs to an account is **not** a way into it. Linking is
+deliberate, and is not self-service.
 
 ---
 
 ## B4. `GET /v1/auth/me`
-**Screen:** every authenticated shell (top bar credits, sidebar, verified tag)
+**Screen:** every authenticated shell (top bar credits, sidebar, verified tag),
+and the onboarding wizard
 
-**Response `200`** — same body as B2 minus `next`/`csrfToken`, plus:
-```json
-{
-  "permissions": ["vehicle:read","vehicle:write","listing:submit","enquiry:read",
-                  "enquiry:update","dealer:update","document:upload",
-                  "billing:read","billing:purchase","member:manage"],
-  "counts": { "newEnquiries": 12, "pendingListings": 1 }
-}
-```
-**`401 NOT_AUTHENTICATED`** when there is no valid session.
+One shape covers both states, because the client has one branch to write.
 
-## B5. `POST /v1/auth/logout`
-**Response `204`** — revokes the session row and clears the cookie.
-
-## B6. `POST /v1/auth/admin/login`
-**Request** `{ "email": "ops@dealers-drive.in", "password": "…" }`
-**Response `200`** `{ "next": "TWO_FACTOR", "challengeToken": "…", "expiresInSeconds": 300 }`
-No session cookie is issued until 2FA passes.
-
-## B7. `POST /v1/auth/admin/2fa/verify`
-**Request** `{ "challengeToken": "…", "code": "418065" }` *(or `"backupCode"`)*
 **Response `200`**
 ```json
 {
-  "csrfToken": "…",
-  "admin": { "id": "…", "email": "ops@dealers-drive.in", "adminRole": "SUPER_ADMIN" },
-  "permissions": ["admin:dealer:approve","admin:document:review","admin:listing:moderate",
-                  "admin:media:upload","admin:credit:grant","admin:payment:read",
-                  "admin:payment:refund","admin:config:write"],
-  "sessionExpiresAt": "2026-08-16T21:11:42Z"
+  "next": "DASHBOARD",
+  "user": {
+    "id": "c41f…", "fullName": "R. Manikandan", "roleTitle": "Proprietor",
+    "phone": "+919840012345", "phoneDisplay": "+91 98400 12345",
+    "email": "owner@srilakshmimotors.in", "emailVerified": true
+  },
+  "identity": {
+    "provider": "GOOGLE", "email": "owner@srilakshmimotors.in",
+    "name": "R. Manikandan", "pictureUrl": null
+  },
+  "dealer": {
+    "id": "8d20…", "slug": "sri-lakshmi-motors", "brandName": "Sri Lakshmi Motors",
+    "status": "ACTIVE", "statusLabel": "Verified", "isVerified": true,
+    "creditBalance": 23, "creditsHeld": 1
+  },
+  "role": "OWNER",
+  "permissions": ["vehicle:read", "vehicle:write", "…"],
+  "counts": { "newEnquiries": 12, "pendingListings": 1 }
 }
 ```
-Admin sessions are 12 hours, not 30 days.
+
+`next` is `DASHBOARD` · `ONBOARDING` (no dealership yet, or still `DRAFT`) ·
+`PENDING_APPROVAL` (submitted, awaiting an admin). Before onboarding, `dealer`
+and `role` are `null` and `permissions` is empty — a verified identity is not a
+tenant. `identity` is the Google account, which is what the onboarding screen
+displays instead of asking for an email again.
+
+**`401 NOT_AUTHENTICATED`** when there is no valid session. `Cache-Control:
+no-store`.
+
+---
+
+## B5. `POST /v1/auth/onboarding`
+**Screen:** Dealer onboarding, steps 1–2
+
+The one endpoint a session with no dealership may call.
+
+**Request**
+```json
+{
+  "fullName": "R. Manikandan", "roleTitle": "Proprietor", "phone": "9840012345",
+  "brandName": "Sri Lakshmi Motors", "legalName": "Sri Lakshmi Automobiles Pvt Ltd",
+  "addressLine": "14, Katpadi Main Road, Gandhi Nagar",
+  "citySlug": "vellore", "pincode": "632006", "landline": "0416 224 8890"
+}
+```
+
+No `email` — it comes from the Google identity on the session, and accepting one
+here would let a caller claim an address Google never verified. No `status` and
+no `slug`: approval is the admin's decision and the slug is derived from the
+brand name (rules 1 and 5).
+
+**Response `201`** — the B4 body. One transaction creates the user's details, the
+dealership in `DRAFT`, the `OWNER` membership and the three KYC placeholders.
+
+**`403 DEALER_ALREADY_EXISTS`** · **`409 PHONE_ALREADY_REGISTERED`** ·
+**`422 UNKNOWN_CITY`**
+
+---
+
+## B6. `POST /v1/auth/logout`
+**Response `204`** — revokes the `sessions` row behind the presented cookie and
+clears the cookie. The row is what makes it real: the token stops working
+everywhere, rather than being forgotten by one browser.
+
+---
+
+## B7. `POST /v1/auth/admin/login`
+**Screen:** `/admin/login`
+
+**Request** `{ "email": "ops@dealers-drive.in", "password": "…" }`
+
+**Response `200`** — sets `dd_session` with `scope = ADMIN` and a 12-hour expiry
+```json
+{
+  "admin": { "id": "…", "email": "ops@dealers-drive.in", "fullName": "…", "adminRole": "SUPER_ADMIN" },
+  "permissions": ["admin:dealer:approve", "admin:listing:moderate", "…"],
+  "sessionExpiresAt": "2026-08-19T03:52:38.000Z"
+}
+```
+
+**`401 INVALID_CREDENTIALS`** for a wrong password *and* for an unknown account —
+same status, same message, and a decoy Argon2id verification so the timing
+matches too. There is no admin sign-up endpoint, and there never should be.
+
+**Rate limits:** 5 attempts per email per 15 minutes, 20 per IP per 15 minutes.
+
+## B8. `POST /v1/auth/admin/logout`
+**Response `204`** — as B6. Unguarded: signing out has to work after the session
+has already expired, and it can only ever revoke the caller's own token.
 
 ---
 

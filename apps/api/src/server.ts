@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
@@ -20,6 +21,7 @@ import { createRoutes } from './routes.js';
  *                         errors thrown by the body parser
  *   2. helmet / cors    — reject before doing any work
  *   3. body parsers     — bounded, so a huge body cannot exhaust memory
+ *      + cookie parser    — before routes, so the session resolver can read it
  *   4. request-logger   — after context, so its lines carry the traceId
  *   5. routes
  *   6. not-found        — anything unmatched becomes a NotFoundError
@@ -46,6 +48,11 @@ export function createApp(container: Container): Express {
 
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+  // Unsigned: the session cookie's value is a random token verified against the
+  // database, and the OAuth cookie carries its own HMAC. Neither needs express
+  // to sign anything, and a signing secret here would imply a guarantee the
+  // session design does not rely on.
+  app.use(cookieParser());
 
   app.use(requestLogger);
 

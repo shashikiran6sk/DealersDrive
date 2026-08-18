@@ -4,8 +4,12 @@ import { env } from './config/env.js';
 import type { Container } from './container.js';
 import { createDocsRouter } from './docs/docs.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
+import {
+  createPublicAuthRouter,
+  createSessionAuthRouter,
+} from './modules/auth/auth.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
-import { createAuthRouter, createDealersRouter } from './modules/dealers/dealers.routes.js';
+import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import {
   createDealerEnquiriesRouter,
   createPublicEnquiriesRouter,
@@ -24,6 +28,8 @@ import { createHealthRouter } from './modules/health/health.routes.js';
  * whole authorization model at a glance:
  *
  *   /v1/…          public, IP rate-limited, no principal
+ *   /v1/auth/…     mixed, and the only mount where that is true — sign-in has
+ *                  to be reachable without a session, and `/me` must not be
  *   /v1/dealer/…   requireDealer  — dealerId enters the request context here
  *   /v1/admin/…    requireAdmin
  *
@@ -52,9 +58,18 @@ export function createRoutes(container: Container): Router {
   v1.use(createSearchRouter(container.search, container.dealersPublic));
   v1.use(createPublicEnquiriesRouter(container.enquiries));
 
+  // ── auth ──────────────────────────────────────────────────────────────
+  // Two routers on one prefix, in this order. The first answers the paths that
+  // must work without a session — sign-in cannot require being signed in — and
+  // falls through for everything else; the second guards what is left. Order is
+  // the security boundary here: swapping these two lines would leave
+  // `/onboarding` open.
+  v1.use('/auth', createPublicAuthRouter(container.auth));
+  v1.use('/auth', container.guards.requireSignedIn, createSessionAuthRouter(container.auth));
+
   // ── dealer ────────────────────────────────────────────────────────────
   const dealer = Router();
-  dealer.use(container.auth.requireDealer);
+  dealer.use(container.guards.requireDealer);
   dealer.use(createDealersRouter(container.dealers));
   dealer.use(createVehiclesRouter(container.vehicles));
   dealer.use(createMediaRouter(container.media));
@@ -62,13 +77,9 @@ export function createRoutes(container: Container): Router {
   dealer.use(createBillingRouter(container.billing, container.storage));
   v1.use('/dealer', dealer);
 
-  // Scoped to `/auth`, not mounted at the v1 root: an unprefixed mount would
-  // run requireDealer for every /v1 path that reached it, admin included.
-  v1.use('/auth', container.auth.requireDealer, createAuthRouter(container.dealers));
-
   // ── admin ─────────────────────────────────────────────────────────────
   const admin = Router();
-  admin.use(container.auth.requireAdmin);
+  admin.use(container.guards.requireAdmin);
   admin.use(createAdminRouter(container.admin));
   v1.use('/admin', admin);
 

@@ -52,6 +52,7 @@ const ADMIN: AdminPrincipal = {
 function resolver(overrides: Partial<SessionResolver> = {}): SessionResolver {
   return {
     resolveDealer: vi.fn(() => Promise.resolve(DEALER)),
+    resolveSignedIn: vi.fn(() => Promise.resolve(DEALER)),
     resolveAdmin: vi.fn(() => Promise.resolve(ADMIN)),
     ...overrides,
   };
@@ -125,14 +126,17 @@ describe('requireDealer', () => {
     expect((error as UnauthorizedError).status).toBe(401);
   });
 
-  it('points an unseeded developer at `pnpm db:seed`', async () => {
+  it('answers 401 with the generic message when no session resolves', async () => {
     const { requireDealer } = createAuthMiddleware(
       resolver({ resolveDealer: vi.fn(() => Promise.resolve(null)) }),
     );
 
     const { error } = await run(requireDealer);
 
-    expect((error as UnauthorizedError).detail).toContain('pnpm db:seed');
+    // Nothing about *why*: "no session", "expired session" and "signed in but
+    // not a dealer" are one answer, so a caller learns nothing from probing.
+    expect(error).toBeInstanceOf(UnauthorizedError);
+    expect((error as UnauthorizedError).code).toBe('NOT_AUTHENTICATED');
   });
 
   it('leaves req.principal unset when the session fails', async () => {
@@ -201,7 +205,7 @@ describe('requireAdmin', () => {
     const { error } = await run(requireAdmin);
 
     expect(error).toBeInstanceOf(UnauthorizedError);
-    expect((error as UnauthorizedError).detail).toContain('pnpm db:seed');
+    expect((error as UnauthorizedError).detail).toContain('admin console');
   });
 
   it('forwards a thrown resolver error', async () => {

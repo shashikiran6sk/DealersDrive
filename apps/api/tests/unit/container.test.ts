@@ -89,11 +89,12 @@ describe('buildContainer', () => {
     }
   });
 
-  it('exposes both guards from the auth middleware', async () => {
+  it('exposes every guard from the auth middleware', async () => {
     const { container } = await build();
 
-    expect(typeof container.auth.requireDealer).toBe('function');
-    expect(typeof container.auth.requireAdmin).toBe('function');
+    expect(typeof container.guards.requireDealer).toBe('function');
+    expect(typeof container.guards.requireSignedIn).toBe('function');
+    expect(typeof container.guards.requireAdmin).toBe('function');
   });
 
   it('hands the same prisma instance to everything', async () => {
@@ -111,6 +112,7 @@ describe('buildContainer', () => {
   it('accepts a replacement session resolver', async () => {
     const sessions: SessionResolver = {
       resolveDealer: vi.fn(() => Promise.resolve(null)),
+      resolveSignedIn: vi.fn(() => Promise.resolve(null)),
       resolveAdmin: vi.fn(() => Promise.resolve(null)),
     };
 
@@ -122,11 +124,15 @@ describe('buildContainer', () => {
   it('wires the replacement resolver into the guards, not just the field', async () => {
     const resolveDealer = vi.fn(() => Promise.resolve(null));
     const { container } = await build({
-      sessions: { resolveDealer, resolveAdmin: vi.fn(() => Promise.resolve(null)) },
+      sessions: {
+        resolveDealer,
+        resolveSignedIn: vi.fn(() => Promise.resolve(null)),
+        resolveAdmin: vi.fn(() => Promise.resolve(null)),
+      },
     });
 
     await new Promise<void>((done) => {
-      container.auth.requireDealer(
+      container.guards.requireDealer(
         {} as never,
         {} as never,
         (() => {

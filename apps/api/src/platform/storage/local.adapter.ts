@@ -25,7 +25,9 @@ const ROOT = resolve(process.cwd(), env.STORAGE_LOCAL_DIR);
 
 export function createLocalStorage(): StoragePort {
   return {
-    presignPut({ key, contentType, contentLength, expiresInSeconds = 300 }): PresignedUpload {
+    // Not `async`: signing against local disk is arithmetic. The port is
+    // promise-returning because signing against S3 is not.
+    presignPut({ key, contentType, contentLength, expiresInSeconds = 300 }): Promise<PresignedUpload> {
       const expiresAt = Date.now() + expiresInSeconds * 1000;
       const signature = sign({ key, contentType, contentLength, expiresAt });
       const params = new URLSearchParams({
@@ -36,15 +38,15 @@ export function createLocalStorage(): StoragePort {
         signature,
       });
 
-      return {
+      return Promise.resolve({
         uploadUrl: `${env.API_BASE_URL}/uploads?${params.toString()}`,
-        method: 'PUT',
+        method: 'PUT' as const,
         headers: {
           'Content-Type': contentType,
           'Content-Length': String(contentLength),
         },
         expiresInSeconds,
-      };
+      });
     },
 
     async head(key) {
@@ -82,7 +84,7 @@ export function createLocalStorage(): StoragePort {
       const expiresAt = Date.now() + expiresInSeconds * 1000;
       const signature = sign({ key, contentType: 'read', contentLength: 0, expiresAt });
       const params = new URLSearchParams({ expiresAt: String(expiresAt), signature });
-      return `${env.API_BASE_URL}/private/${key}?${params.toString()}`;
+      return Promise.resolve(`${env.API_BASE_URL}/private/${key}?${params.toString()}`);
     },
   };
 }

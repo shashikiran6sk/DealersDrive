@@ -1,9 +1,15 @@
 /**
  * The seam between the application and object storage.
  *
- * `LocalDiskStorage` implements it now; `R2Storage` implements it later. No
- * S3 concept leaks through this interface, which is what makes the swap a
- * one-line provider change in the container (ARCHITECTURE §5.1).
+ * `LocalDiskStorage`, MinIO and Cloudflare R2 all implement it. No S3 concept
+ * leaks through this interface — no bucket, no region, no SigV4 — which is what
+ * makes the swap a one-line provider change in the container (§5.1) and an
+ * environment variable everywhere else.
+ *
+ * `presignPut` and `signedReadUrl` are asynchronous because signing against a
+ * real object store is: the local adapter is the only implementation that could
+ * answer synchronously, and shaping the port around the exception would have
+ * cost every caller a rewrite the day R2 arrived.
  */
 export interface PresignedUpload {
   uploadUrl: string;
@@ -29,7 +35,7 @@ export interface StoragePort {
     contentType: string;
     contentLength: number;
     expiresInSeconds?: number;
-  }): PresignedUpload;
+  }): Promise<PresignedUpload>;
 
   /** HEAD the object after commit — verify what actually landed. */
   head(key: string): Promise<StoredObject | null>;
@@ -45,5 +51,5 @@ export interface StoragePort {
    * Short-lived signed read. The only way a KYC document is ever served, and
    * every issue of one is audit-logged (§26.6).
    */
-  signedReadUrl(key: string, expiresInSeconds: number): string;
+  signedReadUrl(key: string, expiresInSeconds: number): Promise<string>;
 }

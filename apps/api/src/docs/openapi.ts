@@ -2,6 +2,7 @@ import { CONTRACTS_VERSION } from '@dealers-drive/contracts';
 
 import { env } from '../config/env.js';
 import { adminDocs } from '../modules/admin/admin.docs.js';
+import { authDocs } from '../modules/auth/auth.docs.js';
 import { billingDocs } from '../modules/billing/billing.docs.js';
 import { catalogDocs } from '../modules/catalog/catalog.docs.js';
 import { dealersDocs } from '../modules/dealers/dealers.docs.js';
@@ -26,6 +27,7 @@ import type { Audience, ModuleDocs, OperationSpec, ResponseSpec } from './spec.j
  */
 
 const MODULES: ModuleDocs[] = [
+  authDocs,
   searchDocs,
   catalogDocs,
   enquiriesDocs,
@@ -40,6 +42,7 @@ const MODULES: ModuleDocs[] = [
 
 /** Tag order in the UI: buyer-facing, then dealer, then admin, then plumbing. */
 const TAG_ORDER = [
+  'Authentication',
   'Public catalogue',
   'Catalogue',
   'Enquiries',

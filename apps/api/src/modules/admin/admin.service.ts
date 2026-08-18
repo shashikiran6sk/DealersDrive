@@ -74,7 +74,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
   }
 
   return {
-    async overview(): Promise<AdminOverview> {
+    async overview(admin: AdminPrincipal): Promise<AdminOverview> {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000);
 
       const [
@@ -138,6 +138,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
           label: `${pending} awaiting review`,
           tone: (pending > 0 ? 'warn' : 'neutral'),
         },
+        operator: { email: admin.email, adminRole: admin.adminRole },
       };
     },
 
@@ -225,7 +226,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
 
       // Every signed document URL issued is audit-logged with the admin's
       // identity — that is the whole access control on KYC media (§26.6).
-      const documents = dealer.documents.map((doc) => {
+      const documents = await Promise.all(dealer.documents.map(async (doc) => {
         const readable = doc.status === 'UPLOADED' || doc.status === 'VERIFIED';
         return {
           id: doc.id,
@@ -236,12 +237,12 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
           bytes: null,
           uploadedAt: doc.createdAt.toISOString(),
           viewUrl: readable
-            ? storage.signedReadUrl(`kyc/${dealerId}/${doc.type}/${doc.id}`, 300)
+            ? await storage.signedReadUrl(`kyc/${dealerId}/${doc.type}/${doc.id}`, 300)
             : null,
           viewUrlExpiresAt: readable ? new Date(Date.now() + 300_000).toISOString() : null,
           rejectionReason: doc.rejectionReason,
         };
-      });
+      }));
 
       if (documents.some((doc) => doc.viewUrl)) {
         await audit.recordDetached({

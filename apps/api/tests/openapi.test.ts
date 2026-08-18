@@ -139,7 +139,13 @@ describe('the OpenAPI document', () => {
       // the *public* directory and merely shares a prefix as a string.
       const isDealerConsole = path === '/v1/dealer' || path.startsWith('/v1/dealer/');
 
-      if (isDealerConsole || path === '/v1/auth/me' || path === '/v1/auth/logout') {
+      // The three `/v1/auth` paths behind `requireSignedIn`. The rest of that
+      // prefix — the Google redirects and the admin sign-in — must be public,
+      // and the `else` below is what proves it.
+      const isGuardedSession =
+        path === '/v1/auth/me' || path === '/v1/auth/logout' || path === '/v1/auth/onboarding';
+
+      if (isDealerConsole || isGuardedSession) {
         expect(operation.security, `${where} should require a dealer session`).toEqual([
           { dealerSession: [] },
         ]);
@@ -208,6 +214,7 @@ describe('the OpenAPI document', () => {
       'Forbidden',
       'InternalServerError',
       'NotFound',
+      'ServiceUnavailable',
       'TooManyRequests',
       'Unauthorized',
       'UnprocessableEntity',

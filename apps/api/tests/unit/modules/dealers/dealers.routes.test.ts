@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  createAuthRouter,
-  createDealersRouter,
-} from '../../../../src/modules/dealers/dealers.routes.js';
+import { createDealersRouter } from '../../../../src/modules/dealers/dealers.routes.js';
 import {
   permissionsOn,
   routeFor,
@@ -23,7 +20,6 @@ import {
  */
 
 const router = createDealersRouter({} as never);
-const auth = createAuthRouter({} as never);
 
 describe('the surface', () => {
   it('declares exactly the account endpoints', () => {
@@ -101,34 +97,10 @@ describe('validation', () => {
   });
 });
 
-describe('the session router', () => {
-  /** Paths are relative to the `/v1/auth` mount, so the URLs stay `/v1/auth/me`. */
-  it('declares only who-am-I and sign-out', () => {
-    expect(signaturesOf(auth).sort()).toEqual(['GET /me', 'POST /logout'].sort());
-  });
-
-  /**
-   * Both sit behind `requireDealer` at the mount point. Asking for a
-   * permission on top would mean a seat could be signed in and unable to
-   * discover that it is.
-   */
-  it('asks for no permission on either', () => {
-    for (const route of routesOf(auth)) {
-      expect(permissionsOn(route), `${route.method} ${route.path}`).toEqual([]);
-    }
-  });
-
-  it('takes no input at all — the identity comes from the session', () => {
-    for (const route of routesOf(auth)) {
-      expect(validatedSources(route), `${route.method} ${route.path}`).toEqual([]);
-    }
-  });
-});
-
 describe('what the router must not accept', () => {
   /** Rule 1: the tenant is the session's, so no path may name one. */
-  it('declares no dealer id in any path, in either router', () => {
-    for (const { path } of [...routesOf(router), ...routesOf(auth)]) {
+  it('declares no dealer id in any path', () => {
+    for (const { path } of routesOf(router)) {
       expect(path.toLowerCase(), path).not.toContain('dealerid');
     }
   });
