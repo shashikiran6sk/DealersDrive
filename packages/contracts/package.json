@@ -21,8 +21,9 @@
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "clean": "rm -rf dist .turbo *.tsbuildinfo"
+    "test": "vitest run --coverage",
+    "clean": "rm -rf dist .turbo *.tsbuildinfo",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "zod": "^4.4.3"
@@ -30,7 +31,9 @@
   "devDependencies": {
     "@dealers-drive/config": "workspace:*",
     "@types/node": "^22.15.0",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.39.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
   }
 }

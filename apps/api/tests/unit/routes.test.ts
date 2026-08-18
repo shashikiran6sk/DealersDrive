@@ -1,0 +1,241 @@
+import type { Request, Response } from 'express';
+import { describe, expect, it } from 'vitest';
+
+import type { Container } from '../../src/container.js';
+import { createRoutes } from '../../src/routes.js';
+
+/**
+ * One file to read to know the whole surface area of the API — and one file
+ * where the three guard chains are visible together:
+ *
+ *   /v1/…          public, no principal
+ *   /v1/dealer/…   requireDealer  — dealerId enters the request context here
+ *   /v1/admin/…    requireAdmin
+ *
+ * The mount point *is* the authorization boundary, so what has to be proven is
+ * that no dealer or admin path is reachable without passing its guard first.
+ *
+ * These tests dispatch real requests through the assembled router rather than
+ * reading Express's layer internals. That costs nothing here and asks the
+ * question the way the runtime asks it: given this URL, did the guard run?
+ * A refactor that reorganises the mounts but keeps the boundary intact should
+ * not fail this file — and one that leaves a path unguarded should.
+ */
+
+interface Dispatch {
+  dealerGuard: boolean;
+  adminGuard: boolean;
+  /** A handler ran — including one that then rejected its input. */
+  reached: boolean;
+}
+
+function harness() {
+  const calls = { dealer: 0, admin: 0 };
+
+  const requireDealer = (_req: Request, _res: Response, next: () => void) => {
+    calls.dealer += 1;
+    next();
+  };
+  const requireAdmin = (_req: Request, _res: Response, next: () => void) => {
+    calls.admin += 1;
+    next();
+  };
+
+  /**
+   * Every service is a Proxy that answers any method with a promise. The
+   * handlers are reached but do no work, so a route can be dispatched without
+   * a database — and a missing stub cannot make a guard test pass by throwing
+   * before the guard runs.
+   */
+  const service = new Proxy({}, { get: () => () => Promise.resolve({}) }) as never;
+
+  const container = {
+    auth: { requireDealer, requireAdmin },
+    storage: service,
+    media: service,
+    catalog: service,
+    search: service,
+    dealersPublic: service,
+    enquiries: service,
+    dealers: service,
+    vehicles: service,
+    billing: service,
+    admin: service,
+    prisma: { $queryRaw: () => Promise.resolve([]) },
+  } as unknown as Container;
+
+  const routes = createRoutes(container);
+
+  /**
+   * Express 5 unwinds a nested router asynchronously, so the final `next` —
+   * the one that says "nothing matched" — arrives well after the synchronous
+   * call returns, and deeper mounts take more turns than shallow ones.
+   * Draining the queue is what makes "nothing matched" distinguishable from
+   * "a handler is still working".
+   */
+  async function dispatch(method: string, url: string): Promise<Dispatch> {
+    calls.dealer = 0;
+    calls.admin = 0;
+    let unmatched = false;
+
+    const req = {
+      method,
+      url,
+      originalUrl: url,
+      baseUrl: '',
+      path: url.split('?')[0],
+      query: {},
+      body: {},
+      params: {},
+      headers: {},
+      get: () => undefined,
+    } as unknown as Request;
+
+    const res = new Proxy({} as Response, {
+      get: (_target, key) => {
+        if (key === 'headersSent') return false;
+        return () => res;
+      },
+    });
+
+    routes(req, res, (error?: unknown) => {
+      // An error means a handler ran and refused its input — reached, not missing.
+      if (error === undefined) unmatched = true;
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    return { dealerGuard: calls.dealer > 0, adminGuard: calls.admin > 0, reached: !unmatched };
+  }
+
+  return { dispatch };
+}
+
+const { dispatch } = harness();
+
+describe('the dealer boundary', () => {
+  /**
+   * The property the whole tenant model rests on. `requireDealer` is what puts
+   * a real `dealerId` into the request context; a console path that skipped it
+   * would reach a service with no tenant at all.
+   */
+  it.each([
+    'GET /v1/dealer',
+    'GET /v1/dealer/vehicles',
+    'POST /v1/dealer/vehicles',
+    'GET /v1/dealer/dashboard',
+    'GET /v1/dealer/documents',
+    'GET /v1/dealer/enquiries',
+    'GET /v1/dealer/billing/summary',
+    'POST /v1/dealer/media/presign',
+  ])('runs requireDealer for %s', async (signature) => {
+    const [method, url] = signature.split(' ') as [string, string];
+
+    expect((await dispatch(method, url)).dealerGuard).toBe(true);
+  });
+
+  it('runs the dealer guard for the session routes too', async () => {
+    expect((await dispatch('GET', '/v1/auth/me')).dealerGuard).toBe(true);
+  });
+
+  it('never runs the admin guard on a dealer path', async () => {
+    expect((await dispatch('GET', '/v1/dealer/vehicles')).adminGuard).toBe(false);
+  });
+
+  /** One guard, not one per module — the mount point owns the boundary. */
+  it('reaches the handler once the guard has run', async () => {
+    expect((await dispatch('GET', '/v1/dealer/vehicles')).reached).toBe(true);
+  });
+});
+
+describe('the admin boundary', () => {
+  it.each([
+    'GET /v1/admin/metrics/overview',
+    'GET /v1/admin/dealers',
+    'GET /v1/admin/listings',
+    'GET /v1/admin/payments',
+    'GET /v1/admin/config',
+    'GET /v1/admin/audit-logs',
+  ])('runs requireAdmin for %s', async (signature) => {
+    const [method, url] = signature.split(' ') as [string, string];
+
+    expect((await dispatch(method, url)).adminGuard).toBe(true);
+  });
+
+  /** Resolving a dealer principal on an admin path would be the wrong identity entirely. */
+  it('never runs the dealer guard on an admin path', async () => {
+    expect((await dispatch('GET', '/v1/admin/dealers')).dealerGuard).toBe(false);
+  });
+});
+
+describe('the public surface', () => {
+  /**
+   * Deliberately unguarded. `/v1/dealers` is one character from `/v1/dealer`
+   * and is the *public* directory — a prefix mount that conflated them would
+   * put the anonymous catalogue behind a 401, or worse, the console in front
+   * of it.
+   */
+  it.each([
+    'GET /v1/home',
+    'GET /v1/vehicles',
+    'GET /v1/vehicles/facets',
+    'GET /v1/dealers',
+    'GET /v1/cities',
+    'GET /v1/catalog/bundle',
+    'GET /v1/config/public',
+    'POST /v1/enquiries',
+  ])('runs no guard for %s', async (signature) => {
+    const [method, url] = signature.split(' ') as [string, string];
+    const result = await dispatch(method, url);
+
+    expect(result.dealerGuard, signature).toBe(false);
+    expect(result.adminGuard, signature).toBe(false);
+  });
+
+  it('still reaches the public handlers', async () => {
+    expect((await dispatch('GET', '/v1/vehicles')).reached).toBe(true);
+  });
+});
+
+describe('what sits outside /v1', () => {
+  /**
+   * Infrastructure probes `/health`, not clients. Under `/v1` a version bump
+   * would need the load balancer reconfigured with it, which is how a routine
+   * deploy takes a service down.
+   */
+  it.each(['/health/live', '/health/ready'])('serves %s unversioned and unguarded', async (url) => {
+    const result = await dispatch('GET', url);
+
+    expect(result.reached).toBe(true);
+    expect(result.dealerGuard).toBe(false);
+    expect(result.adminGuard).toBe(false);
+  });
+
+  /** Storage stands in for R2; its authority is the HMAC in the URL, not a session. */
+  it('serves the presigned upload without a session guard', async () => {
+    const result = await dispatch('PUT', '/uploads?key=x');
+
+    expect(result.reached).toBe(true);
+    expect(result.dealerGuard).toBe(false);
+  });
+
+  /** Built 7 times to be served 0 times is waste, so the suite turns it off. */
+  it('does not mount the docs router under test', async () => {
+    expect((await dispatch('GET', '/api/docs/openapi.json')).reached).toBe(false);
+  });
+});
+
+describe('unmatched paths', () => {
+  it('falls through rather than matching something adjacent', async () => {
+    expect((await dispatch('GET', '/v1/nope')).reached).toBe(false);
+    expect((await dispatch('GET', '/v2/vehicles')).reached).toBe(false);
+  });
+
+  /** A typo under the console must still hit the guard before it 404s. */
+  it('still runs the dealer guard for an unmatched console path', async () => {
+    const result = await dispatch('GET', '/v1/dealer/nope');
+
+    expect(result.dealerGuard).toBe(true);
+    expect(result.reached).toBe(false);
+  });
+});

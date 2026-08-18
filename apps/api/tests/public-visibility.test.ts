@@ -67,10 +67,7 @@ describe('public visibility and contact privacy', () => {
     expect(ids).not.toContain(vehicleId);
 
     // And a search for its exact price finds nothing.
-    const priced = await h
-      .agent()
-      .get('/v1/vehicles?priceMin=333333&priceMax=333333')
-      .expect(200);
+    const priced = await h.agent().get('/v1/vehicles?priceMin=333333&priceMax=333333').expect(200);
     expect(priced.body.page.total).toBe(0);
 
     await h
@@ -108,9 +105,7 @@ describe('public visibility and contact privacy', () => {
       JSON.stringify((await h.agent().get('/v1/home').expect(200)).body),
       JSON.stringify((await h.agent().get('/v1/dealers?limit=24').expect(200)).body),
       JSON.stringify((await h.agent().get(`/v1/dealers/${DEALER_A}`).expect(200)).body),
-      JSON.stringify(
-        (await h.agent().get(`/v1/vehicles/${vehicleId}/similar`).expect(200)).body,
-      ),
+      JSON.stringify((await h.agent().get(`/v1/vehicles/${vehicleId}/similar`).expect(200)).body),
     ];
 
     for (const body of responses) {
@@ -158,7 +153,7 @@ describe('public visibility and contact privacy', () => {
       .expect(404);
   });
 
-  it('removes a suspended dealer\'s cars from the catalogue and restores them', async () => {
+  it("removes a suspended dealer's cars from the catalogue and restores them", async () => {
     const dealerB = await h.prisma.dealer.findUniqueOrThrow({
       where: { slug: DEALER_B },
       select: { id: true },

@@ -133,7 +133,10 @@ describe('the Postman collection', () => {
       const raw = request.request.body?.raw ?? '';
       // Parsing it is the assertion: an example that is not valid JSON is worse
       // than no example, because Postman will send it.
-      expect(() => JSON.parse(raw) as unknown, `${request.name} body is not valid JSON`).not.toThrow();
+      expect(
+        () => JSON.parse(raw) as unknown,
+        `${request.name} body is not valid JSON`,
+      ).not.toThrow();
       expect(request.request.header.map((header) => header.key)).toContain('Content-Type');
     }
   });

@@ -37,33 +37,29 @@ describe('tenant isolation', () => {
     await h.close();
   });
 
-  it('does not list another dealer\'s vehicles', async () => {
+  it("does not list another dealer's vehicles", async () => {
     const response = await h.agent().get('/v1/dealer/vehicles').expect(200);
     const ids = response.body.data.map((row: { vehicleId: string }) => row.vehicleId);
     expect(ids).not.toContain(vehicleOfB);
   });
 
-  it('404s reading another dealer\'s vehicle', async () => {
+  it("404s reading another dealer's vehicle", async () => {
     await h.agent().get(`/v1/dealer/vehicles/${vehicleOfB}`).expect(404);
   });
 
-  it('404s editing another dealer\'s vehicle', async () => {
-    await h
-      .agent()
-      .patch(`/v1/dealer/vehicles/${vehicleOfB}`)
-      .send({ kmDriven: 1 })
-      .expect(404);
+  it("404s editing another dealer's vehicle", async () => {
+    await h.agent().patch(`/v1/dealer/vehicles/${vehicleOfB}`).send({ kmDriven: 1 }).expect(404);
   });
 
-  it('404s submitting another dealer\'s vehicle', async () => {
+  it("404s submitting another dealer's vehicle", async () => {
     await h.agent().post(`/v1/dealer/vehicles/${vehicleOfB}/submit`).send({}).expect(404);
   });
 
-  it('404s deleting another dealer\'s vehicle', async () => {
+  it("404s deleting another dealer's vehicle", async () => {
     await h.agent().delete(`/v1/dealer/vehicles/${vehicleOfB}`).expect(404);
   });
 
-  it('404s updating another dealer\'s enquiry', async () => {
+  it("404s updating another dealer's enquiry", async () => {
     if (!enquiryOfB) return;
     await h
       .agent()
@@ -72,18 +68,18 @@ describe('tenant isolation', () => {
       .expect(404);
   });
 
-  it('does not return another dealer\'s enquiries', async () => {
+  it("does not return another dealer's enquiries", async () => {
     const response = await h.agent().get('/v1/dealer/enquiries?limit=100').expect(200);
     const ids = response.body.data.map((row: { id: string }) => row.id);
     expect(ids).not.toContain(enquiryOfB);
   });
 
-  it('404s deleting another dealer\'s media', async () => {
+  it("404s deleting another dealer's media", async () => {
     if (!mediaOfB) return;
     await h.agent().delete(`/v1/dealer/media/${mediaOfB}`).expect(404);
   });
 
-  it('refuses to attach media to another dealer\'s vehicle', async () => {
+  it("refuses to attach media to another dealer's vehicle", async () => {
     const response = await h.agent().post('/v1/dealer/media/presign').send({
       ownerType: 'VEHICLE',
       ownerId: vehicleOfB,
