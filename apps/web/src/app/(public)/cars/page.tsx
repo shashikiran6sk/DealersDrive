@@ -12,8 +12,16 @@ import { serverConfig } from '@/lib/config';
 import { hasFilterParams, seoMetadata } from '@/lib/seo';
 import { buildSearchUrl, toApiQuery, type SearchParamsInput } from '@/lib/url';
 
-/** RSC + ISR 60s + SWR. Filters live in the URL, so every state renders (§15.1). */
-export const revalidate = 60;
+/**
+ * Filters live in the URL, so every state renders (§15.1). Rendered per
+ * request; the *data* is cached for 60s by the fetches below.
+ *
+ * Not `revalidate`: that prerenders the unfiltered page at build time, which
+ * calls the API and bakes one environment's inventory into the image. See the
+ * note on the home page — build-once / promote-many (§20.1) requires that this
+ * image contain no environment's data.
+ */
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   searchParams,

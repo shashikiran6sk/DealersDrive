@@ -7,14 +7,11 @@
 #                                             MinIO, Mailpit). Run the apps on
 #                                             the host with `pnpm dev`.
 #
-#   docker compose --profile app up -d api    backing services + migrations +
-#   docker compose --profile app up -d --build web
-#                                             API, then the web app. Two steps,
-#                                             because `next build` prerenders
-#                                             the ISR marketplace pages and so
-#                                             calls the API — which has to be
-#                                             answering before web is BUILT.
-#                                             `pnpm app:up` runs both in order.
+#   docker compose --profile app up -d --build
+#                                             backing services + migrations +
+#                                             API + the web app, in one command.
+#                                             `pnpm app:up` adds the readiness
+#                                             wait and the optional seed.
 #
 # The app services carry `profiles: [app]`, which is why the first command
 # still starts exactly what it always started. `pnpm infra:up` is unchanged.
@@ -221,25 +218,16 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  # Built LAST, and after the API is already answering.
+  # Builds offline: every data-reading route is `force-dynamic`, so `next build`
+  # calls nothing. The image is identical to the one CI builds and promotes.
   #
-  # The public marketplace pages are ISR, so `next build` prerenders them, which
-  # calls the API. Compose builds every image before it starts anything, so
-  # `--profile app up --build` in one shot cannot work: bring the API up first,
-  # then build this. `pnpm app:up` does both in order.
+  # `depends_on` is about *runtime*, not the build: a web container that starts
+  # before the API is answering serves 500s on its first requests.
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
       target: runner
-      args:
-        # The API as seen from the *build* container, which is not on this
-        # network — it reaches the port the api service publishes on the host.
-        BUILD_API_BASE_URL: http://host.docker.internal:4000
-      extra_hosts:
-        # A no-op on Docker Desktop, which already resolves this name; required
-        # on Linux, where it does not exist unless it is mapped.
-        - 'host.docker.internal:host-gateway'
     image: dealers-drive-web:local
     container_name: dd-web
     profiles: [app]

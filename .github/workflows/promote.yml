@@ -1,0 +1,128 @@
+# ---------------------------------------------------------------------------
+# Promote to production — the manual trigger, and the rollback.
+#
+# There is no build step in this workflow. That is the point: production runs
+# the images release.yml already built and development has already been running
+# (ARCHITECTURE §20.1). Promoting is a lookup and a rollout, not a rebuild, so
+# it takes minutes and cannot produce different bytes.
+#
+# HOW A MAINTAINER RUNS IT
+#   Actions → "Promote to Production" → Run workflow
+#     · sha    the commit to promote. Leave blank to promote whatever is
+#              currently live and healthy on dev — the common case.
+#     · reason one line, for the deployment record.
+#   Then GitHub pauses and asks for an approval, because the `production`
+#   environment has required reviewers. Approve it in the UI (or the mobile
+#   app) and the rollout runs.
+#
+# ROLLING BACK is this same workflow with an older SHA, plus
+# `skip_dev_check: true` — because the SHA you want back is, by definition, not
+# the one dev is running. That is the only reason that switch exists, and it is
+# why it is not the default.
+# ---------------------------------------------------------------------------
+name: Promote to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit SHA to promote. Blank = whatever dev is running now.'
+        required: false
+        type: string
+      skip_dev_check:
+        description: 'Rollback only: promote a SHA that is not currently on dev.'
+        required: false
+        default: false
+        type: boolean
+      reason:
+        description: 'Why (one line, recorded on the deployment).'
+        required: false
+        type: string
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+  deployments: write
+
+jobs:
+  # Everything that can be checked before a person is asked to approve is
+  # checked here, so an approval is never spent on a promotion that was going
+  # to fail on a typo. This job enters no environment and holds no production
+  # secret — it only reads a public health endpoint.
+  preflight:
+    name: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - name: Resolve the SHA against what dev is actually running
+        id: resolve
+        env:
+          DEV_API_BASE_URL: ${{ vars.DEV_API_BASE_URL }}
+          REQUESTED: ${{ inputs.sha }}
+          SKIP: ${{ inputs.skip_dev_check }}
+          # Free text, typed by whoever ran the workflow. Bound to a variable
+          # rather than interpolated into the script — a `run:` block executes
+          # what is interpolated into it.
+          REASON: ${{ inputs.reason }}
+        run: |
+          set -euo pipefail
+
+          READY=$(curl -fsS --max-time 15 "$DEV_API_BASE_URL/health/ready") || {
+            echo "::error::dev is not answering /health/ready. Fix dev before promoting it."
+            exit 1
+          }
+          LIVE_SHA=$(echo "$READY" | jq -r '.version')
+          STATUS=$(echo "$READY" | jq -r '.status')
+          echo "dev: status=$STATUS version=$LIVE_SHA"
+
+          # A blank input means "ship what I have been testing", which is the
+          # normal case and the one least likely to be typed wrong.
+          SHA="${REQUESTED:-$LIVE_SHA}"
+
+          if [ "$SKIP" = "true" ]; then
+            echo "::warning::Dev verification skipped — this is a rollback to $SHA."
+          else
+            if [ "$STATUS" != "ok" ]; then
+              echo "::error::dev reports status=$STATUS. Promoting a degraded build is how an outage spreads."
+              exit 1
+            fi
+            if [ "$SHA" != "$LIVE_SHA" ]; then
+              echo "::error::$SHA is not what dev is running ($LIVE_SHA). Verify it on dev first, or use skip_dev_check for a rollback."
+              exit 1
+            fi
+          fi
+
+          if [ -z "$SHA" ] || [ "$SHA" = "unknown" ] || [ "$SHA" = "null" ]; then
+            echo "::error::No usable SHA. Pass one explicitly."
+            exit 1
+          fi
+
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Promoting \`$SHA\`"
+            echo
+            echo "- dev status: \`$STATUS\`, running \`$LIVE_SHA\`"
+            echo "- rollback mode: \`${SKIP}\`"
+            echo "- reason: ${REASON:-_none given_}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  promote:
+    name: production
+    needs: preflight
+    # The approval gate lives in the environment this calls, not in a step
+    # here: Settings → Environments → production → required reviewers.
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: production
+      sha: ${{ needs.preflight.outputs.sha }}
+    # No `secrets: inherit`. The only secret the deployment needs is
+    # AWS_DEPLOY_ROLE_ARN, which is an *environment* secret — the called
+    # workflow's job declares `environment: production` and reads it directly.
+    # Inheriting would hand every repository secret to the called workflow for
+    # no benefit.

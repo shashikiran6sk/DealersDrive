@@ -1,0 +1,300 @@
+# ---------------------------------------------------------------------------
+# Deploy — reusable, and identical for dev and production.
+#
+# ONE workflow deploys both environments. That is the whole point: production
+# is not a different procedure, it is the same procedure with a different
+# environment name, a different set of secrets, and a human standing in front
+# of it. A production-only deploy path is a path that is exercised once a month
+# and is therefore the one that breaks.
+#
+# THIS WORKFLOW NEVER BUILDS AN IMAGE. It takes a SHA, verifies that the images
+# for that SHA already exist in ECR, and rolls them out. Rebuilding here would
+# mean production runs bytes that were never tested (ARCHITECTURE §20.1).
+#
+# Order is not arbitrary:
+#   1. verify the images exist            — fail in 5 seconds, not 5 minutes
+#   2. migrate                            — schema first, and expand/contract
+#                                            means the *running* old code stays
+#                                            compatible with the new schema
+#   3. api, then web, each health-gated   — the web app calls the API, so the
+#                                            API is the one that must already
+#                                            be answering
+#   4. smoke test the public URLs         — including that the running build is
+#                                            the one we just deployed
+# ---------------------------------------------------------------------------
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'GitHub Environment to deploy: dev or production.'
+        required: true
+        type: string
+      sha:
+        description: 'Commit SHA whose images are promoted. Never rebuilt.'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  # Required for the OIDC token that assumes the AWS role. No long-lived AWS
+  # access key exists anywhere in this repository.
+  id-token: write
+  deployments: write
+
+jobs:
+  deploy:
+    name: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # This is the manual gate. GitHub pauses here when the environment has
+    # required reviewers configured — `production` does, `dev` does not — and
+    # it is also what scopes the secrets below: a dev deploy cannot read a
+    # production secret, because it never enters the production environment.
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ vars.WEB_BASE_URL }}
+
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      CLUSTER: ${{ vars.ECS_CLUSTER }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The smoke test that runs at the end must be the one from the commit
+          # being deployed, not from whatever main happens to be.
+          ref: ${{ inputs.sha }}
+
+      # Without `secrets: inherit`, this comes from the environment's own secret
+      # store. If it is unset the next step fails with an opaque OIDC error, so
+      # say what is actually wrong instead.
+      - name: Check the environment is configured
+        env:
+          ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error::AWS_DEPLOY_ROLE_ARN is not set on the '$ENVIRONMENT' environment (Settings → Environments → $ENVIRONMENT → Secrets)."
+            exit 1
+          fi
+
+      - name: Assume the deployment role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: deploy-${{ inputs.environment }}-${{ inputs.sha }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Every `${{ }}` below is bound to an environment variable and read as
+      # `$VAR` by the shell, never interpolated into the script text.
+      # `inputs.sha` and `inputs.reason` arrive from a workflow_dispatch form —
+      # strings a human typed — and a string interpolated into a `run:` block is
+      # executed by the runner. `$SHA` is data; `${{ inputs.sha }}` inside a
+      # script is code.
+      - name: Resolve image references
+        id: images
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          SHA: ${{ inputs.sha }}
+          REPO_API: ${{ vars.ECR_REPO_API }}
+          REPO_WEB: ${{ vars.ECR_REPO_WEB }}
+          REPO_MIGRATOR: ${{ vars.ECR_REPO_MIGRATOR }}
+        run: |
+          set -euo pipefail
+          TAG="sha-$SHA"
+          {
+            echo "api=$REGISTRY/$REPO_API:$TAG"
+            echo "web=$REGISTRY/$REPO_WEB:$TAG"
+            echo "migrator=$REGISTRY/$REPO_MIGRATOR:$TAG"
+            echo "tag=$TAG"
+          } >> "$GITHUB_OUTPUT"
+
+      # An image that is not in the registry is a promotion of something that
+      # was never built — most often a SHA typed by hand. Say so immediately.
+      - name: Verify the images exist
+        env:
+          REPO_API: ${{ vars.ECR_REPO_API }}
+          REPO_WEB: ${{ vars.ECR_REPO_WEB }}
+          REPO_MIGRATOR: ${{ vars.ECR_REPO_MIGRATOR }}
+          TAG: ${{ steps.images.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for repo in "$REPO_API" "$REPO_WEB" "$REPO_MIGRATOR"; do
+            aws ecr describe-images \
+              --repository-name "$repo" \
+              --image-ids imageTag="$TAG" \
+              --query 'imageDetails[0].imageDigest' --output text \
+              || { echo "::error::$repo:$TAG is not in ECR. Was this SHA ever built?"; exit 1; }
+          done
+
+      # ── migrations ───────────────────────────────────────────────────────
+      #
+      # A one-off Fargate task, from the migrator image built at this same
+      # commit, inside the VPC that can reach the database. DATABASE_URL never
+      # leaves AWS: it is an SSM parameter referenced by the task definition,
+      # so GitHub holds no database credential for any environment.
+      #
+      # Migrations run BEFORE the new tasks take traffic, which means the old
+      # code serves against the new schema for a minute or two. That is legal
+      # only because every migration is expand/contract (§20.6) — and it is the
+      # same property that makes rolling back to the previous image safe.
+      - name: Run database migrations
+        id: migrate
+        env:
+          FAMILY: ${{ vars.ECS_TASK_FAMILY_MIGRATE }}
+          IMAGE_MIGRATOR: ${{ steps.images.outputs.migrator }}
+          SUBNETS: ${{ vars.ECS_SUBNETS }}
+          SECURITY_GROUP: ${{ vars.ECS_SECURITY_GROUP }}
+          ASSIGN_PUBLIC_IP: ${{ vars.ECS_ASSIGN_PUBLIC_IP }}
+          SHA: ${{ inputs.sha }}
+          LOG_GROUP: ${{ vars.MIGRATE_LOG_GROUP }}
+        run: |
+          set -euo pipefail
+
+          echo "Registering a migration task definition pinned to $IMAGE_MIGRATOR"
+          CURRENT=$(aws ecs describe-task-definition --task-definition "$FAMILY" --query taskDefinition)
+          NEXT=$(echo "$CURRENT" | jq --arg image "$IMAGE_MIGRATOR" '
+            .containerDefinitions[0].image = $image
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)')
+          TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json "$NEXT" \
+            --query 'taskDefinition.taskDefinitionArn' --output text)
+
+          TASK_ARN=$(aws ecs run-task \
+            --cluster "$CLUSTER" \
+            --task-definition "$TASK_DEF_ARN" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUP],assignPublicIp=$ASSIGN_PUBLIC_IP}" \
+            --started-by "migrate-$SHA" \
+            --query 'tasks[0].taskArn' --output text)
+
+          echo "Waiting for $TASK_ARN"
+          aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$TASK_ARN"
+
+          EXIT_CODE=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          REASON=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+            --query 'tasks[0].stoppedReason' --output text)
+
+          echo "exit=$EXIT_CODE reason=$REASON"
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "::error::Migrations failed (exit $EXIT_CODE, $REASON). Nothing has been deployed — the running version is untouched."
+            echo "Logs: CloudWatch log group $LOG_GROUP, stream prefix migrate"
+            exit 1
+          fi
+
+      # ── the API, first ───────────────────────────────────────────────────
+      #
+      # `wait-for-service-stability` is what makes a failed deploy fail the
+      # workflow: ECS holds the rollout until the new tasks pass the target
+      # group health check (`/health/ready`), and the service's deployment
+      # circuit breaker rolls back to the previous task definition on its own
+      # if they never do. The workflow does not have to orchestrate that — it
+      # has to wait for it and report it.
+      # The task definition is fetched from AWS rather than committed to this
+      # repository, and that is deliberate. It carries the environment
+      # variables and the SSM parameter ARNs for that environment's secrets —
+      # so keeping it in AWS means GitHub never holds them, and a value changed
+      # in the console is not silently reverted by a stale file in git. The
+      # deploy changes exactly one field: the image.
+      - name: Fetch the current API task definition
+        id: fetch-api
+        env:
+          FAMILY: ${{ vars.ECS_TASK_FAMILY_API }}
+        run: |
+          set -euo pipefail
+          aws ecs describe-task-definition \
+            --task-definition "$FAMILY" \
+            --query taskDefinition --output json \
+            | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                      .compatibilities, .registeredAt, .registeredBy, .deregisteredAt)' \
+            > taskdef-api.json
+          echo 'file=taskdef-api.json' >> "$GITHUB_OUTPUT"
+
+      - name: Render API task definition
+        id: taskdef-api
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.fetch-api.outputs.file }}
+          container-name: api
+          image: ${{ steps.images.outputs.api }}
+
+      - name: Deploy the API
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef-api.outputs.task-definition }}
+          service: ${{ vars.ECS_SERVICE_API }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Fetch the current web task definition
+        id: fetch-web
+        env:
+          FAMILY: ${{ vars.ECS_TASK_FAMILY_WEB }}
+        run: |
+          set -euo pipefail
+          aws ecs describe-task-definition \
+            --task-definition "$FAMILY" \
+            --query taskDefinition --output json \
+            | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                      .compatibilities, .registeredAt, .registeredBy, .deregisteredAt)' \
+            > taskdef-web.json
+          echo 'file=taskdef-web.json' >> "$GITHUB_OUTPUT"
+
+      - name: Render web task definition
+        id: taskdef-web
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.fetch-web.outputs.file }}
+          container-name: web
+          image: ${{ steps.images.outputs.web }}
+
+      - name: Deploy the web app
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef-web.outputs.task-definition }}
+          service: ${{ vars.ECS_SERVICE_WEB }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      # ── prove it ─────────────────────────────────────────────────────────
+      #
+      # A green ECS deployment means the containers pass their health check. It
+      # does not mean the site works. The smoke test asks the public URLs the
+      # questions a person would: does the marketplace render, does the API
+      # answer, and — the one a health check cannot answer — is the build that
+      # is serving the build we just deployed.
+      - name: Smoke test
+        env:
+          WEB_BASE_URL: ${{ vars.WEB_BASE_URL }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          SHA: ${{ inputs.sha }}
+        run: ./scripts/smoke.sh "$WEB_BASE_URL" "$API_BASE_URL" "$SHA"
+
+      - name: Summary
+        if: always()
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          STATUS: ${{ job.status }}
+          SHA: ${{ inputs.sha }}
+          IMAGE_API: ${{ steps.images.outputs.api }}
+          IMAGE_WEB: ${{ steps.images.outputs.web }}
+          SITE: ${{ vars.WEB_BASE_URL }}
+        run: |
+          {
+            echo "### $ENVIRONMENT · $STATUS"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Commit | \`$SHA\` |"
+            echo "| API image | \`$IMAGE_API\` |"
+            echo "| Web image | \`$IMAGE_WEB\` |"
+            echo "| Site | $SITE |"
+          } >> "$GITHUB_STEP_SUMMARY"

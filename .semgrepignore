@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------------------
+# Paths Semgrep does not scan.
+#
+# Everything here is either generated, vendored, or prose. Real code is never
+# excluded — a suppression that hides a finding belongs on the line itself, as
+# a `nosemgrep` comment saying why (see scripts/browse.mjs).
+# ---------------------------------------------------------------------------
+
+node_modules/
+dist/
+.next/
+.turbo/
+coverage/
+pnpm-lock.yaml
+
+# Documentation and the UI prototype it was built from.
+#
+# `docs/ENGINEER-ONBOARDING.md` contains an illustrative JWT in a diagram
+# explaining why this application does NOT use JWTs, which the secrets rules
+# read as a leaked token. Prose is not code, and secrets in any file — docs
+# included — are gitleaks' job, which scans the whole repository and its
+# history.
+docs/

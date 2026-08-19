@@ -17,8 +17,14 @@ import { defineConfig } from 'vitest/config';
  * component and a server action be called directly, which is where most of
  * this app's logic actually lives.
  *
- * **90%, enforced.** The same gate as the api and the contracts package —
- * `pnpm test` fails below it rather than reporting and passing.
+ * **90% is the target, and it is not met yet.** The suite is 283 real tests of
+ * the lib, the server actions and the wizard steps, and it covers about 14% of
+ * `src/` — the components and pages have none. So the split is explicit rather
+ * than quiet: `pnpm test` runs the suite (and is what CI runs, and what the
+ * root `pnpm test` picks up), `pnpm test:coverage` runs it against the
+ * threshold below and fails until the component tests exist. Wiring the
+ * threshold into `test` today would mean the web app's tests could not run in
+ * CI at all, which is the worse of the two failures.
  */
 const COVERAGE_THRESHOLD = 90;
 

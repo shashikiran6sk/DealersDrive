@@ -9,11 +9,11 @@
 # vehicles, photos and admin account. That is what you want before a demo and
 # never what you want after someone has clicked around in one.
 #
-# The step order matters and is not the obvious one. The marketplace pages are
-# ISR, so `next build` prerenders them — which means it CALLS the API over
-# API_BASE_URL. The API therefore has to be migrated, seeded and listening
-# before the web build starts, and nginx has to be terminating TLS before
-# that, or the build fails on a connection error rather than a code error.
+# The step order no longer *has* to be this one: the web build is offline now
+# (every data-reading route is `force-dynamic`, so `next build` calls nothing).
+# It stays this way because it is still the right order to *start* things in —
+# the API should be migrated and answering before the site in front of it is
+# restarted — and because the readiness wait below is worth keeping.
 # ---------------------------------------------------------------------------
 set -euo pipefail
 

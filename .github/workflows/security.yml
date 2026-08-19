@@ -1,0 +1,134 @@
+# ---------------------------------------------------------------------------
+# Security — static analysis and secret scanning.
+#
+# This replaces CodeQL, and the reason is a licensing one rather than a
+# technical one: uploading CodeQL results requires GitHub Code Security on a
+# private repository (~$30 per committer per month). The analysis ran fine; the
+# upload was rejected with "Code scanning is not enabled for this repository",
+# and the job ended as a configuration error. Semgrep OSS needs no code
+# scanning, no upload and no licence — it fails the job directly on findings,
+# which is the part that actually gates a merge.
+#
+# Two tools, two questions:
+#   semgrep   — is there a vulnerability in the code we wrote?
+#   gitleaks  — is there a credential in the repository, or anywhere in its
+#               history? (A secret committed and later deleted is still leaked.)
+#
+# Both run on pull requests, on main, and weekly — a rule published upstream can
+# find something in code nobody has touched for months.
+# ---------------------------------------------------------------------------
+name: Security
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 1'
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The official image, so the version is the container's and there is no
+    # pip install to go wrong on the runner.
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      # Rule packs, each one verified to resolve — a pack name that does not
+      # exist (`p/express`, for instance) fails the scan with an HTTP 404 rather
+      # than being skipped.
+      #
+      # `--metrics=off`: Semgrep OSS reports anonymous usage back to
+      # semgrep.dev by default. This is a private repository; it opts out.
+      #
+      # Findings are filtered afterwards rather than with `--severity`, which
+      # only understands INFO/WARNING/ERROR and would silently drop a rule that
+      # reports HIGH or CRITICAL under Semgrep's newer severity model.
+      - name: Scan
+        run: |
+          set -uo pipefail
+          semgrep scan \
+            --config p/default \
+            --config p/typescript \
+            --config p/react \
+            --config p/nodejs \
+            --config p/secrets \
+            --config p/github-actions \
+            --config p/dockerfile \
+            --metrics=off \
+            --json --output semgrep.json
+          echo "scan complete"
+
+      - name: Report
+        run: |
+          set -euo pipefail
+
+          blocking() {
+            jq -r '.results[]
+              | select(.extra.severity == "ERROR" or .extra.severity == "HIGH" or .extra.severity == "CRITICAL")
+              | "\(.path):\(.start.line)  [\(.extra.severity)] \(.check_id | split(".") | last)\n    \(.extra.message | gsub("\n"; " ") | .[0:160])"' semgrep.json
+          }
+          advisory() {
+            jq -r '.results[]
+              | select(.extra.severity != "ERROR" and .extra.severity != "HIGH" and .extra.severity != "CRITICAL")
+              | "\(.path):\(.start.line)  [\(.extra.severity)] \(.check_id | split(".") | last)"' semgrep.json
+          }
+
+          {
+            echo "### Semgrep"
+            echo
+            echo "\`\`\`"
+            blocking | sed 's/^/  /' || true
+            echo "\`\`\`"
+            echo
+            echo "<details><summary>Advisory findings (not blocking)</summary>"
+            echo
+            echo "\`\`\`"
+            advisory || true
+            echo "\`\`\`"
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          COUNT=$(blocking | grep -c '^[^ ]' || true)
+          if [ "${COUNT:-0}" -gt 0 ]; then
+            echo "::error::$COUNT blocking finding(s). See the job summary."
+            blocking
+            exit 1
+          fi
+          echo "No blocking findings."
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The whole history, not just the tip. A credential that was
+          # committed in March and deleted in April is still a credential
+          # somebody can `git log` their way to.
+          fetch-depth: 0
+
+      - name: Scan the repository and its history
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source=/repo --config=/repo/.gitleaks.toml \
+            --redact --no-banner --verbose
+
+      # `--redact` above means a finding prints its location and rule, never the
+      # secret itself — a workflow log is not the place to publish one a second
+      # time. If this job fails: rotate the credential first, then remove it
+      # from the history. Rotating is what makes it harmless; rewriting history
+      # only makes it harder to find.

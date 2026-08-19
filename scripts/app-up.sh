@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# Bring the whole product up in containers, in the one order that works.
+# Bring the whole product up in containers.
 #
 #   pnpm app:up              start everything
 #   pnpm app:up --seed       ...and rebuild the demo data first (TRUNCATES)
 #
-# Why this is a script and not `docker compose --profile app up -d --build`:
-# Compose builds every image before it starts anything, and the web image
-# cannot be built until the API is answering. The public marketplace pages are
-# ISR, so `next build` prerenders them, and prerendering them calls the API.
-# Same constraint deploy/release.sh documents for the host deployment.
+# This used to be a two-phase script, because the web image could not be built
+# until the API was answering. It no longer is: every data-reading route is
+# `force-dynamic`, so `next build` calls nothing and compose can build and
+# start the whole profile in one pass. What is left here is the readiness wait
+# and the optional seed — the two things `docker compose up` cannot express.
 # ---------------------------------------------------------------------------
 set -euo pipefail
 
@@ -20,8 +20,8 @@ SEED=false
 
 log() { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 
-log "Backing services, migrations, API"
-docker compose --profile app up -d --build api
+log "Building and starting everything"
+docker compose --profile app up -d --build
 
 if $SEED; then
   log "Seeding demo data (this truncates the database)"
@@ -36,10 +36,12 @@ for i in $(seq 1 45); do
 done
 curl -fsS http://127.0.0.1:4000/health/ready && echo
 
-# The web build prerenders against the API, so it goes after the wait, not
-# before it.
-log "Building and starting the web app"
-docker compose --profile app up -d --build web
+log "Waiting for the web app"
+for i in $(seq 1 30); do
+  if curl -fsS -o /dev/null http://127.0.0.1:3000/api/health; then break; fi
+  [[ $i -eq 30 ]] && { echo "Web never became ready — docker compose logs web"; exit 1; }
+  sleep 2
+done
 
 log "Up. http://localhost:3000 — API on http://localhost:4000/api/docs"
 docker compose --profile app ps

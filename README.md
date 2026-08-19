@@ -10,6 +10,7 @@ authenticate.
 | **Engineering log** | [`CONTEXT.md`](CONTEXT.md) — read this before changing `apps/api`                                                                      |
 | **API reference**   | http://localhost:4000/api/docs once running                                                                                            |
 | **Postman**         | [`docs/postman/`](docs/postman) — import the collection + environment and run the whole API                                            |
+| **Deployment**      | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — local → dev → production, the pipeline, and what it costs                                 |
 
 ## Layout
 
@@ -79,11 +80,14 @@ Two images, built from the repo root because both apps import
 `@dealers-drive/contracts` from a sibling workspace — the build context has to
 be the whole monorepo.
 
-**The order below is not arbitrary.** The public marketplace pages are ISR
-(`export const revalidate`, ARCHITECTURE §15.1), so `next build` prerenders
-them — and prerendering them _calls the API_. The web image therefore cannot be
-built until the API is running, migrated and seeded. `deploy/release.sh`
-sequences a host deployment for exactly the same reason.
+**Both images build offline** — no API, no database, nothing running. Every
+route that reads data is `dynamic = 'force-dynamic'`, so `next build`
+prerenders nothing that would call the API, and the resulting image carries no
+environment's data. That is what lets one image be built once and promoted from
+development to production unchanged (docs/DEPLOYMENT.md §B1).
+
+The order below still matters at *run* time — the API must be migrated and
+answering before the web container starts serving — but not at build time.
 
 ```bash
 # 1. The API, and the migration image — the same Dockerfile at an earlier
@@ -124,16 +128,13 @@ docker run -d --name dd-api --network dealers-drive -p 4000:4000 \
 curl -fsS http://localhost:4000/health/ready   # wait for this before continuing
 ```
 
-Only now can the web image be built:
+Then the web app. This image could have been built first — it takes no build
+argument beyond `GIT_SHA`, which names the artifact rather than configuring it:
 
 ```bash
-# 4. Web (Next.js). BUILD_API_BASE_URL is how the *build container* reaches the
-#    API — `host.docker.internal` is the host as seen from inside a build, and
-#    --add-host is a no-op on Docker Desktop but required on Linux.
-docker build -f apps/web/Dockerfile \
-  --add-host=host.docker.internal:host-gateway \
-  --build-arg BUILD_API_BASE_URL=http://host.docker.internal:4000 \
-  -t dealers-drive-web .
+# 4. Web (Next.js). No API needed to build it, and nothing environment-specific
+#    inside it: API_BASE_URL, WEB_BASE_URL and APP_ENV are read at runtime.
+docker build -f apps/web/Dockerfile -t dealers-drive-web .
 
 docker run -d --name dd-web --network dealers-drive -p 3000:3000 \
   -e API_BASE_URL=http://dd-api:4000 \
@@ -153,11 +154,13 @@ Four things in there are deliberate and worth understanding:
   `API_BASE_URL=http://localhost:4000`, which is what presigned upload URLs and
   media URLs are built from, and which has to be a _browser_-reachable address
   rather than a container name.
-- **`BUILD_API_BASE_URL` is a build address, not a runtime one.** It exists only
-  inside the build stage. At runtime the container reads `API_BASE_URL` from the
+- **The web image takes no configuration at build time.** At runtime the
+  container reads `API_BASE_URL`, `WEB_BASE_URL` and `APP_ENV` from the
   environment, which is why the same image runs in every environment — there is
   no `NEXT_PUBLIC_*` anywhere, because those are inlined at build time and would
-  force one image per environment (`apps/web/src/lib/config.ts`, Rule 9).
+  force one image per environment (`apps/web/src/lib/config.ts`, Rule 9). The
+  only build argument is `GIT_SHA`, which `/api/health` reports so a deployment
+  can prove which build is serving.
 - **The web container talks to `http://dd-api:4000`, not to localhost.** Next is
   a backend-for-frontend here: the browser only ever talks to port 3000, and
   Next does the API calls server-side. `dd-api` is a Docker DNS name that
@@ -191,20 +194,22 @@ pnpm app:up             # every run after that
 
 Open http://localhost:3000.
 
-`pnpm app:up` is [`scripts/app-up.sh`](scripts/app-up.sh), and it is a script
-rather than a single `docker compose up` for one reason: **Compose builds every
-image before it starts anything, and the web image cannot be built until the API
-is answering.** `next build` prerenders the ISR marketplace pages, and
-prerendering them calls the API. So the script does:
+`pnpm app:up` is [`scripts/app-up.sh`](scripts/app-up.sh). Compose does the
+whole thing in one pass — the web image builds offline, so there is no ordering
+constraint to work around:
 
 ```bash
-docker compose --profile app up -d --build api   # backing services, migrations, API
-docker compose run --rm seed                     # only with --seed
-curl -fsS http://127.0.0.1:4000/health/ready     # wait, do not race
-docker compose --profile app up -d --build web   # now the prerender has something to call
+docker compose --profile app up -d --build      # everything
+docker compose run --rm seed                    # only with --seed
 ```
 
-Run those four by hand if you prefer; the script only adds the retry loop.
+The script adds the readiness waits on `/health/ready` and `/api/health`, which
+is all `docker compose up` cannot express. To check the result the way a deploy
+does:
+
+```bash
+./scripts/smoke.sh http://localhost:3000 http://localhost:4000
+```
 
 ```bash
 docker compose --profile app logs -f api web  # follow the logs
@@ -216,7 +221,7 @@ Or through pnpm, which is the same thing with less typing:
 
 | Command            | Does                                                        |
 | ------------------ | ----------------------------------------------------------- |
-| `pnpm app:up`      | build + start the full stack, in order (`--seed` to reseed) |
+| `pnpm app:up`      | build + start the full stack (`--seed` to reseed)           |
 | `pnpm app:down`    | stop the full stack, keep the volumes                       |
 | `pnpm app:logs`    | follow the api and web logs                                 |
 | `pnpm app:seed`    | run the seed once (it TRUNCATES first — see below)          |
@@ -233,7 +238,7 @@ Or through pnpm, which is the same thing with less typing:
 | `migrate`  | `app`   | `prisma migrate deploy`, runs to completion; the API waits on its exit code |
 | `seed`     | `seed`  | never automatic — run it by hand                                            |
 | `api`      | `app`   | waits for Postgres healthy **and** `migrate` exited 0                       |
-| `web`      | `app`   | built **after** the API is answering, then waits for its health check       |
+| `web`      | `app`   | builds offline; waits for the API's health check before it starts           |
 
 The app services carry `profiles: [app]`, which is why option 1's
 `docker compose up -d` still starts only the three backing services.
@@ -311,7 +316,7 @@ legitimately returns nothing. That looks like a bug and is not one.
 | `pnpm build`       | builds every workspace package                 |
 | `pnpm lint`        | eslint, type-aware, across the repo            |
 | `pnpm typecheck`   | tsc across the repo                            |
-| `pnpm test`        | vitest across the repo (2 097 tests)           |
+| `pnpm test`        | vitest across the repo (2 781 tests)           |
 | `pnpm format`      | prettier write                                 |
 | `pnpm infra:up`    | backing services only (`docker compose up -d`) |
 | `pnpm infra:down`  | stops them                                     |
@@ -321,12 +326,19 @@ legitimately returns nothing. That looks like a bug and is not one.
 | `pnpm app:logs`    | follows the api and web container logs         |
 | `pnpm app:seed`    | runs the seed inside a one-shot container      |
 
+And one script that is not a pnpm task:
+
+| Command                                                            | Does                                                                     |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `./scripts/smoke.sh <web-url> <api-url> [sha]` | the read-only checks every deployment gates on — run it against localhost too |
+
 In `apps/api`:
 
 | Command             | Does                                                        |
 | ------------------- | ----------------------------------------------------------- |
 | `pnpm db:migrate`   | `prisma migrate dev`                                        |
 | `pnpm db:seed`      | rebuilds the seeded world (idempotent — it truncates first) |
+| `pnpm db:bootstrap` | **deployed environments**: catalogue, packs, config, one admin. Creates what is missing, overwrites nothing, truncates nothing |
 | `pnpm db:reset`     | migrate reset + seed                                        |
 | `pnpm db:studio`    | Prisma Studio                                               |
 | `pnpm test`         | the integration suite (needs Postgres running)              |
@@ -609,18 +621,26 @@ hook waiting — the migration that creates them is not written.
 
 ### 5. Deployment
 
-A single-box deployment is done and documented in [`deploy/`](deploy/README.md):
-nginx terminating TLS in front of Next.js and the API on one hostname, Postgres
-and MinIO in Docker on loopback, systemd units, and a release script that
-migrates and seeds in the order the ISR build requires. Good enough to demo, and
-honest about what is demo-grade — see that file's closing section.
+Two deployments exist, for two purposes.
 
-`apps/api/Dockerfile` also exists and its `HEALTHCHECK` polls `/health/ready`.
+**[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) is the real one** — local →
+`dev.dealers-drive.com` → `www.dealers-drive.com`, on ECS Fargate, with one
+image built per commit and promoted from development to production unchanged.
+The pipeline is in [`.github/workflows/`](.github/workflows/) and the one-time
+infrastructure setup is [`deploy/aws/README.md`](deploy/aws/README.md). Merging
+to `main` deploys development automatically; production is a manual workflow
+run behind a required approval, and a rollback is the same run with an older
+commit.
+
+**[`deploy/`](deploy/README.md) is the single box the investor demo runs on** —
+nginx terminating TLS in front of Next.js and the API on one hostname, Postgres
+and MinIO in Docker on loopback, systemd units, and a release script that builds
+on the server. Honest about being demo-grade; see that file's closing section.
 
 Still needed for real production: a separate worker entrypoint — today
-`WORKER_INLINE=true` runs job handlers inside the HTTP process, so scaling the
-API horizontally would run them N times over — managed Postgres instead of a
-container, and R2 instead of on-box MinIO.
+`WORKER_INLINE=true` runs job handlers inside the HTTP process, which caps the
+API at one task — the Sentry SDK (the DSN is validated and does nothing), and
+the CloudWatch alarms.
 
 ### 6. Product work not started
 

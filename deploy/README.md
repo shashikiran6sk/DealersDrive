@@ -1,5 +1,16 @@
 # Deploying Dealers-Drive to one EC2 box
 
+> **This is the demo box, not the production pipeline.** It builds on the
+> server, which means there is no artifact to roll back to and every release
+> has a window where the site is down. It is documented, it works, and it is
+> what the investor demo runs on.
+>
+> The three-environment deployment — local → `dev.dealers-drive.com` →
+> `www.dealers-drive.com`, one image built per commit and promoted unchanged,
+> with health gates, smoke tests, an approval and a rollback — is
+> [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md), and its one-time setup is
+> [`deploy/aws/README.md`](aws/README.md).
+
 Everything the MVP needs runs on a single instance behind nginx: the Next.js
 site, the Express API, Postgres and MinIO. One hostname serves the whole thing,
 so the session cookie is host-only and the browser never has to reason about two
@@ -143,9 +154,9 @@ dependencies, generates the Prisma client, builds contracts and the API, runs
 `prisma migrate deploy`, seeds the demo catalogue, starts the API, **waits for
 `/health/ready`**, then builds and starts the web app.
 
-That order is deliberate: the marketplace pages are ISR, so `next build`
-prerenders them by calling the API over `API_BASE_URL`. Build the web app first
-and it fails on a connection error.
+That order is about starting, not building: the web build no longer calls the
+API (every data-reading route is `force-dynamic`), but the API should be
+migrated and answering before the site in front of it restarts.
 
 `--seed` truncates every application table and rewrites the demo dealerships,
 vehicles, photos and the admin account. Run it before a demo; never after

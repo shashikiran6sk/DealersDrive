@@ -3,13 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Dealers-Drive web — Next.js 15 App Router",
+  "description": "Dealers-Drive web \u2014 Next.js 15 App Router",
   "scripts": {
     "dev": "next dev --turbopack --port 3000",
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
     "clean": "rm -rf .next .turbo *.tsbuildinfo"
   },
   "dependencies": {

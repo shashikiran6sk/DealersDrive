@@ -57,6 +57,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function target() {
   for (let attempt = 0; attempt < 60; attempt += 1) {
     try {
+      // Chrome's DevTools Protocol endpoint is plain HTTP on loopback by
+      // design; there is no TLS to opt into. The suppression names the rule,
+      // and it has to sit on the line directly above the finding.
+      // nosemgrep: typescript.react.security.react-insecure-request.react-insecure-request
       const list = await fetch('http://127.0.0.1:9222/json/list').then((r) => r.json());
       const page = list.find((t) => t.type === 'page');
       if (page) return page.webSocketDebuggerUrl;

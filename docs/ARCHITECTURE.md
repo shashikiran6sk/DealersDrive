@@ -1999,6 +1999,24 @@ type DomainEvent<T = unknown> = {
 
 # 20. Environments, CI/CD & deployment
 
+> **This section is the design. [`docs/DEPLOYMENT.md`](DEPLOYMENT.md) is what
+> was built**, and it is the one to follow — it records what changed against
+> this section after the code was inspected, and why:
+>
+> - **The host runs on ECS Fargate in ap-south-1, not Render**, with images in
+>   ECR rather than GHCR. §C2 there compares the options and prices them.
+> - **The database is RDS, not Neon**, and preview environments per PR are not
+>   built. Three environments, not four.
+> - **`next build` had to stop calling the API before build-once/promote-many
+>   was possible at all.** The ISR routes prerendered marketplace data — and a
+>   statically generated `robots.txt` would have shipped `Disallow: /` to
+>   production. Both are fixed; §B there has the detail.
+> - **The web Dockerfile does not use `output: 'standalone'`.** The runtime
+>   stage installs production dependencies and runs `next start`, which is what
+>   the repository already had and what is verified working.
+> - Migrations run as a one-off ECS task from a **migrator image built at the
+>   same commit**, so `DATABASE_URL` never leaves AWS and no workflow holds it.
+
 ## 20.1 The governing principle
 
 > **Build once. Promote the same artifact. Never rebuild for production.**
@@ -2031,7 +2049,8 @@ Preview environments are optional at the start — if PR-level Neon branching fe
 │   integration tests against a Postgres service container             │
 │   build (correctness check only, output discarded)                   │
 │   Lighthouse CI budget check                                         │
-│   pnpm audit + CodeQL                                                │
+│   pnpm audit + semgrep + gitleaks (CodeQL needs paid Code Security │
+│   on a private repo — see DEPLOYMENT.md §E)                        │
 │   → optional preview deploy                                          │
 └──────────────────────────────────────────────────────────────────────┘
                                  │ merge to main
