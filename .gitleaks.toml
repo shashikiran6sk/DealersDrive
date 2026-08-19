@@ -1,0 +1,26 @@
+# ---------------------------------------------------------------------------
+# gitleaks — committed-secret scanning, over the whole repository AND its
+# history. A secret that was committed and then deleted is still leaked; only a
+# history scan finds it.
+#
+# The default rule set does the work. This file exists for one allowlist, and
+# the rule for adding to it is: allowlist a *pattern that cannot be a secret*,
+# never a path that merely happens to contain one today.
+# ---------------------------------------------------------------------------
+title = "Dealers-Drive"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Object-storage keys are paths, not credentials"
+regexTarget = "match"
+regexes = [
+  # `key: 'dealers/1/kyc/gst certificate.pdf'` in the storage adapter's tests.
+  # `generic-api-key` reads any `key:` assignment as a credential; these are
+  # bucket object keys, and a slash-separated path under `dealers/` is a shape
+  # no credential has. The pattern is deliberately anchored on that prefix
+  # rather than on the file, so a real secret added to the same test is still
+  # caught.
+  '''key:\s*['"]dealers/''',
+]

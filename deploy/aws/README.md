@@ -395,8 +395,8 @@ API_BASE_URL            https://dev.dealers-drive.com | https://www.dealers-driv
 health endpoint through it, before entering any environment).
 
 **Branch protection** on `main`: require the `CI / lint · typecheck · test ·
-build`, `CI / images build`, `CI / dependency audit` and `CodeQL / analyze`
-checks, require a pull request, require the branch to be up to date, no force
+build`, `CI / images build`, `CI / dependency audit`, `Security / semgrep` and
+`Security / gitleaks` checks, require a pull request, require the branch to be up to date, no force
 pushes, no deletions. Include administrators — a rule you can wave through is a
 rule you will wave through at 11pm.
 

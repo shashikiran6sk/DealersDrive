@@ -66,6 +66,10 @@ jobs:
           DEV_API_BASE_URL: ${{ vars.DEV_API_BASE_URL }}
           REQUESTED: ${{ inputs.sha }}
           SKIP: ${{ inputs.skip_dev_check }}
+          # Free text, typed by whoever ran the workflow. Bound to a variable
+          # rather than interpolated into the script — a `run:` block executes
+          # what is interpolated into it.
+          REASON: ${{ inputs.reason }}
         run: |
           set -euo pipefail
 
@@ -105,7 +109,7 @@ jobs:
             echo
             echo "- dev status: \`$STATUS\`, running \`$LIVE_SHA\`"
             echo "- rollback mode: \`${SKIP}\`"
-            echo "- reason: ${{ inputs.reason || '_none given_' }}"
+            echo "- reason: ${REASON:-_none given_}"
           } >> "$GITHUB_STEP_SUMMARY"
 
   promote:
@@ -117,4 +121,8 @@ jobs:
     with:
       environment: production
       sha: ${{ needs.preflight.outputs.sha }}
-    secrets: inherit
+    # No `secrets: inherit`. The only secret the deployment needs is
+    # AWS_DEPLOY_ROLE_ARN, which is an *environment* secret — the called
+    # workflow's job declares `environment: production` and reads it directly.
+    # Inheriting would hand every repository secret to the called workflow for
+    # no benefit.

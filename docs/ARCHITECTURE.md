@@ -2049,7 +2049,8 @@ Preview environments are optional at the start — if PR-level Neon branching fe
 │   integration tests against a Postgres service container             │
 │   build (correctness check only, output discarded)                   │
 │   Lighthouse CI budget check                                         │
-│   pnpm audit + CodeQL                                                │
+│   pnpm audit + semgrep + gitleaks (CodeQL needs paid Code Security │
+│   on a private repo — see DEPLOYMENT.md §E)                        │
 │   → optional preview deploy                                          │
 └──────────────────────────────────────────────────────────────────────┘
                                  │ merge to main

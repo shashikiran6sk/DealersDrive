@@ -48,6 +48,11 @@ RUN pnpm --filter @dealers-drive/api exec prisma generate \
 FROM build AS migrator
 ENV NODE_ENV=development
 WORKDIR /app/apps/api
+# Non-root, like the runtime image. Nothing here writes to the filesystem —
+# `prisma migrate deploy` and `db:bootstrap` only talk to the database — so the
+# root the build stage left behind buys nothing and is one more thing a
+# compromised migration could use. Verified: both commands run as `node`.
+USER node
 CMD ["pnpm", "db:migrate:deploy"]
 
 # --- runtime ----------------------------------------------------------------

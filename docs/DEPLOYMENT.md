@@ -174,7 +174,7 @@ platform-independent. That is deliberate.
 ```mermaid
 flowchart TB
     dev["Developer<br/>feature/*"] -->|push| pr[Pull Request]
-    pr --> ci["GitHub Actions · CI<br/>format · lint · typecheck<br/>unit + integration tests<br/>build · images build<br/>audit · CodeQL"]
+    pr --> ci["GitHub Actions<br/>lint · typecheck<br/>unit + integration tests<br/>build · images build<br/>audit · semgrep · gitleaks"]
     ci -->|green, reviewed| main[(main)]
     main --> rel["release.yml<br/><b>the only place images are built</b>"]
     rel --> ecr["Amazon ECR<br/>api · web · migrator<br/>tagged sha-&lt;commit&gt;, immutable"]
@@ -246,7 +246,7 @@ becomes a line item worth reading).
 
 ## E. CI/CD
 
-Four workflows. The split is not cosmetic: each one has a different trigger, a
+Five workflows. The split is not cosmetic: each one has a different trigger, a
 different privilege level, and a different failure meaning.
 
 | Workflow | Trigger | Credentials | Builds? | Deploys? |
@@ -255,25 +255,41 @@ different privilege level, and a different failure meaning.
 | `release.yml` | push to `main` | ECR push only | **yes — the only place** | dev, automatically |
 | `_deploy.yml` | called by the two above | per-environment deploy role | **never** | the environment it is called with |
 | `promote.yml` | `workflow_dispatch` + approval | via `_deploy.yml` | **never** | production |
+| `security.yml` | PR, `main`, weekly | **none** | no | never |
 
 ### On a pull request
 
 ```
 PR opened / updated
       │
-      ├─ verify   format → lint → typecheck → test (unit + integration,
-      │           against a real Postgres service) → build
+      ├─ verify   lint → typecheck → test (unit + integration, against a
+      │           real Postgres service) → build
       ├─ images   both Dockerfiles build from a clean checkout, with
       │           NOTHING running. This is what stops B1 coming back
       ├─ audit    pnpm audit: blocks on critical, reports high
-      └─ CodeQL   security-and-quality queries
+      ├─ semgrep  SAST over the TypeScript, the workflows and the Dockerfiles
+      └─ gitleaks credentials, in the working tree and in the history
             │
-      branch protection requires all four, plus a review
+      branch protection requires all five, plus a review
             │
           merge
 ```
 
 Nothing is pushed and nothing is deployed. A fork can run the whole thing.
+
+**SAST is Semgrep OSS, not CodeQL, and the reason is licensing.** CodeQL
+analysed this repository fine — 318 TypeScript files, SARIF produced — and then
+failed to *upload*: publishing code scanning results on a private repository
+requires GitHub Code Security at roughly $30 per committer per month. Semgrep
+OSS needs no upload, no licence and no Security tab; it fails the job on
+findings, which is the part that gates a merge. Running CodeQL with the upload
+disabled is not an alternative — its licence does not cover private
+repositories outside Code Security. Revisit when the team is large enough that
+alert triage in a Security tab beats a red check.
+
+`gitleaks` runs beside it against the **full history**, because a credential
+that was committed in March and deleted in April is still a credential anybody
+can `git log` their way to.
 
 The audit gate blocks at **critical** and reports at **high** on purpose: every
 current high advisory is transitive through `next` or `prisma` with no fix this
@@ -431,7 +447,9 @@ Everything created or modified, and why.
 | `.github/workflows/release.yml` | `main` → dev | The only place images are built. Pushes three `sha-` tagged images, calls `_deploy.yml` for dev |
 | `.github/workflows/_deploy.yml` | dev + production | Reusable rollout: verify images → migrate → api → web → smoke. Contains no build step, by design |
 | `.github/workflows/promote.yml` | production | The manual trigger, the dev-verification preflight, and the rollback path |
-| `.github/workflows/codeql.yml` | PRs, weekly | SAST |
+| `.github/workflows/security.yml` | PRs, `main`, weekly | Semgrep OSS (SAST) and gitleaks (secrets, including history). Holds no credentials |
+| `.semgrepignore` | — | Generated and vendored paths, plus `docs/` — prose, where gitleaks is the right tool |
+| `.gitleaks.toml` | — | Default rules plus one allowlist: object-storage keys in tests are paths, not credentials |
 | `.github/dependabot.yml` | — | Weekly grouped npm bumps, monthly actions and base images |
 | `scripts/smoke.sh` | all three | Read-only checks against a deployed pair of URLs, including "is the running build the one just deployed" |
 | `apps/web/src/app/api/health/route.ts` | all three | The web app's own probe. Calls no upstream, reports `GIT_SHA` |
@@ -534,7 +552,8 @@ merge work without reducing risk.
 | `CI / lint · typecheck · test · build` | The four working-agreement commands |
 | `CI / images build` | Catches a route that starts prerendering data again |
 | `CI / dependency audit` | Critical advisories |
-| `CodeQL / analyze` | SAST |
+| `Security / semgrep` | SAST over the code, the workflows and the Dockerfiles |
+| `Security / gitleaks` | No credential in the tree or the history |
 | 1 approving review | |
 | Branch up to date before merge | Two green PRs can still be red together |
 | No force pushes, no deletions, include administrators | |
@@ -707,7 +726,7 @@ parameters (task role, per environment), Swagger in production
 | Identity | Google OIDC for dealers, Argon2id for the one admin account, opaque revocable sessions, `HttpOnly`+`Secure`+`SameSite=Lax` cookies, host-only per environment |
 | Tenancy | `dealerId` as a first-class column on every dealer-owned table, `withTenant` issuing `SET LOCAL app.dealer_id`, and a repository signature convention that makes an unscoped query a type error |
 | Secrets | SSM SecureStrings, per environment, read by the task's execution role. Nothing in git, nothing in a workflow file, nothing in an image |
-| Supply chain | Immutable image tags, `provenance: true` attestations, `pnpm audit`, CodeQL, Dependabot, non-root containers, `--frozen-lockfile` everywhere |
+| Supply chain | Immutable image tags, `provenance: true` attestations, `pnpm audit`, Semgrep, gitleaks, Dependabot, non-root containers (including the migrator), `--frozen-lockfile` everywhere |
 | Access | GitHub OIDC — no AWS keys. Separate build and deploy roles. The production deploy role is only assumable from a job that has entered the `production` environment, which requires the approval |
 | Change control | Branch protection on `main`, required reviews, required checks, and a required reviewer on production deployments |
 

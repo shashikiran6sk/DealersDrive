@@ -109,4 +109,5 @@ jobs:
     with:
       environment: dev
       sha: ${{ needs.build.outputs.sha }}
-    secrets: inherit
+    # No `secrets: inherit` — see the note in promote.yml. The deployment role
+    # ARN is a `dev` environment secret and is read by the called workflow.
