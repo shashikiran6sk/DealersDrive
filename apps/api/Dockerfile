@@ -52,7 +52,12 @@ CMD ["pnpm", "db:migrate:deploy"]
 
 # --- runtime ----------------------------------------------------------------
 FROM base AS runner
-ENV NODE_ENV=production
+# The commit this image was built from. It configures nothing — it names the
+# artifact, and `/health/ready` reports it so a deploy (and a promotion) can
+# verify which build is actually serving.
+ARG GIT_SHA=unknown
+ENV NODE_ENV=production \
+    GIT_SHA=$GIT_SHA
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/api/package.json apps/api/
 COPY packages/contracts/package.json packages/contracts/

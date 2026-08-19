@@ -39,6 +39,16 @@ const optional = <T extends z.ZodTypeAny>(schema: T) =>
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_ENV: z.enum(['local', 'preview', 'dev', 'production']).default('local'),
+  /**
+   * The commit this artifact was built from, injected as a Docker build
+   * argument and surfaced by `/health/ready`.
+   *
+   * It is the answer to "what is actually running right now", and the
+   * production promotion refuses to run until the SHA it was asked for is the
+   * SHA dev reports (§20.3). `unknown` is the honest local value: a `pnpm dev`
+   * process was not built from anything.
+   */
+  GIT_SHA: z.string().min(1).default('unknown'),
   PORT: z.coerce.number().int().positive().max(65535).default(4000),
   HOST: z.string().min(1).default('0.0.0.0'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
@@ -95,7 +105,14 @@ const envSchema = z.object({
    * verifier) and nothing else. Session tokens are random, not signed.
    */
   SESSION_SECRET: z.string().min(16).default('dealers-drive-local-session-secret'),
-  /** `.dealers-drive.com` in production so web and api share the cookie. Host-only locally. */
+  /**
+   * Empty in every environment, and that is the design (docs/DEPLOYMENT.md §F4).
+   *
+   * Each environment serves the web app and the API on a single origin, so the
+   * cookie is already shared where it needs to be. A parent-domain cookie
+   * would also be sent to every *other* environment on that domain — a dev
+   * session presented to production. Host-only is what makes that impossible.
+   */
   SESSION_COOKIE_DOMAIN: optional(z.string().min(1)),
 
   /** `development` settles instantly; `razorpay` is the production adapter. */

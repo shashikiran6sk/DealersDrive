@@ -6,11 +6,18 @@ import type { ModuleDocs } from '../../docs/spec.js';
 /** Shared by the 200 and the 503 — the same body, a different verdict. */
 const READINESS: JsonSchema = {
   type: 'object',
-  required: ['status', 'contracts', 'appEnv', 'checks', 'uptimeSeconds'],
+  required: ['status', 'contracts', 'appEnv', 'version', 'checks', 'uptimeSeconds'],
   properties: {
     status: { type: 'string', enum: ['ok', 'degraded'] },
     contracts: { type: 'string', description: 'The @dealers-drive/contracts version.' },
     appEnv: { type: 'string', enum: ['local', 'preview', 'dev', 'production'] },
+    version: {
+      type: 'string',
+      description:
+        'The commit this image was built from (`GIT_SHA`), or `unknown` outside a built image. ' +
+        'Deployments gate on it: promotion refuses to run unless dev is already reporting the ' +
+        'SHA being promoted.',
+    },
     checks: {
       type: 'object',
       additionalProperties: { type: 'string', enum: ['ok', 'down'] },
@@ -78,6 +85,7 @@ export const healthDocs: ModuleDocs = {
             status: 'ok',
             contracts: CONTRACTS_VERSION,
             appEnv: 'local',
+            version: 'unknown',
             checks: { queue: 'ok', storage: 'ok', gateway: 'ok', database: 'ok' },
             uptimeSeconds: 412,
           },
@@ -90,6 +98,7 @@ export const healthDocs: ModuleDocs = {
             status: 'degraded',
             contracts: CONTRACTS_VERSION,
             appEnv: 'local',
+            version: 'unknown',
             checks: { queue: 'ok', storage: 'ok', gateway: 'ok', database: 'down' },
             uptimeSeconds: 412,
           },

@@ -9,8 +9,13 @@ import { apiGet, qs } from '@/lib/api';
 import { seoMetadata } from '@/lib/seo';
 import type { SearchParamsInput } from '@/lib/url';
 
-/** RSC + ISR 10 min — SEO, and a directory changes at the pace of onboarding. */
-export const revalidate = 600;
+/**
+ * SEO, and a directory changes at the pace of onboarding — so the fetches below
+ * cache for 10 minutes. The *route* is dynamic on purpose: a prerendered route
+ * would call the API during `next build` and bake that environment's dealers
+ * into the image (§20.1, and the note on the home page).
+ */
+export const dynamic = 'force-dynamic';
 
 function readParams(params: SearchParamsInput): { city?: string; q?: string; page?: string } {
   const one = (key: string): string | undefined => {

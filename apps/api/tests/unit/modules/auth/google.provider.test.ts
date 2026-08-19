@@ -287,8 +287,19 @@ describe('what it refuses', () => {
 });
 
 describe('without credentials', () => {
+  /**
+   * Blank, not deleted.
+   *
+   * `config/env.ts` calls `dotenv.config()` when it is imported, and dotenv
+   * fills in any variable that is *unset* — so deleting this one and
+   * re-importing the module reads it straight back out of the developer's own
+   * `.env`, and the test passes only for someone who has never configured
+   * Google sign-in. Blank is present, so dotenv leaves it alone, and `env.ts`
+   * already treats an empty string as unset (`optional()`), which is the state
+   * this test is about.
+   */
   it('reports that it cannot sign anybody in', async () => {
-    delete process.env.GOOGLE_CLIENT_ID;
+    process.env.GOOGLE_CLIENT_ID = '';
     vi.resetModules();
     try {
       const module = await import('../../../../src/modules/auth/google.provider.js');

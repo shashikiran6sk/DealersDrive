@@ -10,8 +10,21 @@ import { serverConfig } from '@/lib/config';
 import { seoMetadata } from '@/lib/seo';
 import type { SearchParamsInput } from '@/lib/url';
 
-/** RSC + ISR 5 minutes — SEO-critical and near-static (ARCHITECTURE §15.1). */
-export const revalidate = 300;
+/**
+ * Rendered per request, with the *data* cached for 5 minutes (ARCHITECTURE
+ * §15.1 — the cache moved from the route to the fetch, not away).
+ *
+ * `revalidate` here would prerender this page during `next build`, which calls
+ * the API — so the image would carry HTML built from whichever database the
+ * build machine could reach, and a CI-built image would ship CI's cars to
+ * production for 5 minutes after every deploy. That breaks build-once /
+ * promote-many (§20.1) as surely as a `NEXT_PUBLIC_*` variable would.
+ *
+ * `apiGet(..., { revalidate: 300 })` below keeps the Data Cache: the first
+ * request after 5 minutes refetches, the rest are served from memory. What is
+ * paid per request is the render, not the round trip.
+ */
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: {

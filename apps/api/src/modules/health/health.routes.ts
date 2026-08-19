@@ -38,6 +38,10 @@ export function createHealthRouter(container: Container): Router {
           status: healthy ? 'ok' : 'degraded',
           contracts: CONTRACTS_VERSION,
           appEnv: env.APP_ENV,
+          // The deployed commit. A deploy pipeline has no other way to tell
+          // "the new image is serving" from "the old one is still serving and
+          // answering exactly as well" — both are 200s (§20.3).
+          version: env.GIT_SHA,
           checks,
           uptimeSeconds: Math.round((Date.now() - startedAt) / 1000),
         });

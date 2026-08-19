@@ -12,11 +12,15 @@ import { serverConfig } from '@/lib/config';
  * ARCHITECTURE §17.4 — only indexable URLs, with an **accurate** `lastmod`
  * (lying gets a sitemap deprioritised). Regenerated hourly.
  *
+ * Built per request from data the fetch cache holds for an hour, rather than
+ * prerendered at build time: `next build` must not call the API, or the image
+ * would carry one environment's URLs into every other one (§20.1).
+ *
  * Sharding at 50k per child is deferred until there is a second shard's worth
  * of inventory; at that point this becomes `sitemap.ts` + `sitemap/[id].ts` and
  * the URL-building below moves across unchanged.
  */
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 /** Well inside Google's 50k limit and inside the API's page ceiling. */
 const PAGE_SIZE = 48;

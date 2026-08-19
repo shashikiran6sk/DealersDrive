@@ -1,0 +1,46 @@
+# ---------------------------------------------------------------------------
+# Dependabot — the thing that actually closes advisories.
+#
+# `pnpm audit` in CI reports; it cannot fix anything, because every current
+# high-severity advisory in this repository is transitive through `next` or
+# `prisma`. Only an upstream bump closes those, and this is what raises it.
+#
+# Weekly and grouped, not daily and atomised: a wall of individual PRs for
+# patch bumps is how dependency review stops happening at all.
+# ---------------------------------------------------------------------------
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Patch and minor upgrades ride together — they pass or fail CI as one
+      # decision, and reviewing them individually buys nothing.
+      routine:
+        update-types: [minor, patch]
+    # A major bump of the framework or the ORM is a piece of work, not a
+    # dependency update, and it should be planned rather than auto-raised.
+    ignore:
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+
+  # The actions in .github/workflows pin to major tags; this keeps them from
+  # silently ageing into deprecation warnings.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: docker
+    directories:
+      - /apps/api
+      - /apps/web
+    schedule:
+      interval: monthly

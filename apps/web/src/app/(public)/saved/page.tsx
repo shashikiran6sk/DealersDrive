@@ -6,6 +6,14 @@ import { SavedCarsList } from '@/features/saved/saved-list';
 import { apiGet } from '@/lib/api';
 import { seoMetadata } from '@/lib/seo';
 
+/**
+ * Rendered per request. The one server-side value on this page — the live car
+ * count — is cached for 5 minutes by the fetch below; prerendering it instead
+ * would call the API during `next build` and bake a number from the build
+ * machine's database into the image (§20.1).
+ */
+export const dynamic = 'force-dynamic';
+
 /** Device-scoped and personal — nothing to index (DESIGN-SPEC §3.7, §4.10). */
 export const metadata: Metadata = {
   title: 'Saved cars',
