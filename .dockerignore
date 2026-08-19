@@ -3,6 +3,7 @@
 **/.next
 **/.turbo
 **/coverage
+**/.storage
 **/*.tsbuildinfo
 .git
 .github
