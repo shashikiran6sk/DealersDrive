@@ -9,7 +9,7 @@ authenticate.
 | **Specs**           | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/API-SPEC.md`](docs/API-SPEC.md) · [`docs/DESIGN-SPEC.md`](docs/DESIGN-SPEC.md) |
 | **Engineering log** | [`CONTEXT.md`](CONTEXT.md) — read this before changing `apps/api`                                                                      |
 | **API reference**   | http://localhost:4000/api/docs once running                                                                                            |
-| **Postman**         | [`docs/postman/`](docs/postman) — import the collection + environment and run the whole API                                             |
+| **Postman**         | [`docs/postman/`](docs/postman) — import the collection + environment and run the whole API                                            |
 
 ## Layout
 
@@ -24,30 +24,256 @@ packages/
 
 ## Requirements
 
-- Node 22 (`nvm use`)
-- pnpm 9 (`corepack enable`)
-- Docker (Postgres 16, MinIO, Mailpit)
+|                            |            Manual            | Docker |   Docker Compose    |
+| -------------------------- | :--------------------------: | :----: | :-----------------: |
+| Node 22 (`nvm use`)        |              ✓               |   —    |          —          |
+| pnpm 9 (`corepack enable`) |              ✓               |   —    |          —          |
+| Docker Engine 24+          | ✓ (Postgres, MinIO, Mailpit) |   ✓    | ✓ (with Compose v2) |
 
-## Getting started
+Three ways to run this, in increasing order of "nothing on my machine but Docker":
+
+1. [**Manually**](#1-manually) — apps on the host, backing services in Docker. The
+   development loop: hot reload, `pnpm test`, Prisma Studio.
+2. [**With Docker**](#2-with-docker) — build the two images and run the containers
+   yourself. Useful for understanding what Compose is doing for you.
+3. [**With Docker Compose**](#3-with-docker-compose) — `pnpm app:up` for the
+   whole product. Use this if you just want to see it work.
+
+All three end up at the same place: http://localhost:3000, with the API on
+http://localhost:4000 and Swagger on http://localhost:4000/api/docs.
+
+---
+
+## 1. Manually
+
+Backing services in Docker, both apps on the host with hot reload.
 
 ```bash
 corepack enable
 pnpm install
 cp .env.example .env      # the defaults work for local development as-is
-docker compose up -d      # postgres, minio, mailpit
+docker compose up -d      # postgres, minio, mailpit — the apps are NOT started
 
 cd apps/api
-pnpm db:migrate           # apply the 4 migrations
+pnpm db:migrate           # apply the migrations
 pnpm db:seed              # build the world: 5 dealers, 23 vehicles, 18 live listings
 cd ../..
 
 pnpm dev                  # web + api together
 ```
 
+`docker compose up -d` starts only the three backing services. The API and web
+containers live behind a Compose _profile_, so this command means exactly what
+it has always meant — see [option 3](#3-with-docker-compose).
+
 Then open http://localhost:3000. The marketplace, the admin console and Swagger
 all work immediately. **Dealer sign-in needs a Google OAuth client of your own** —
 five minutes, and the API tells you exactly what to set if you skip it (see
 [Authentication](#authentication)).
+
+---
+
+## 2. With Docker
+
+Two images, built from the repo root because both apps import
+`@dealers-drive/contracts` from a sibling workspace — the build context has to
+be the whole monorepo.
+
+**The order below is not arbitrary.** The public marketplace pages are ISR
+(`export const revalidate`, ARCHITECTURE §15.1), so `next build` prerenders
+them — and prerendering them _calls the API_. The web image therefore cannot be
+built until the API is running, migrated and seeded. `deploy/release.sh`
+sequences a host deployment for exactly the same reason.
+
+```bash
+# 1. The API, and the migration image — the same Dockerfile at an earlier
+#    stage. It keeps the dev dependencies, because `prisma` (the CLI) and `tsx`
+#    (the seed runs TypeScript directly) are both dev dependencies.
+docker build -f apps/api/Dockerfile -t dealers-drive-api .
+docker build -f apps/api/Dockerfile --target migrator -t dealers-drive-migrator .
+```
+
+Then a network, a database, migrations, and the API. Stop the Compose stack
+first if it is running — these container names and host ports are the same ones
+Compose claims:
+
+```bash
+docker compose --profile app down
+docker network create dealers-drive
+
+docker run -d --name dd-postgres --network dealers-drive \
+  -e POSTGRES_USER=dealersdrive -e POSTGRES_PASSWORD=dealersdrive \
+  -e POSTGRES_DB=dealersdrive -p 5432:5432 \
+  postgres:16-alpine
+
+DB=postgresql://dealersdrive:dealersdrive@dd-postgres:5432/dealersdrive
+
+# 2. Schema first, as its own container that runs to completion. Migrations do
+#    not belong in the API's boot path: two replicas starting together would
+#    race to alter the same tables.
+docker run --rm --network dealers-drive -e DATABASE_URL=$DB dealers-drive-migrator
+docker run --rm --network dealers-drive -e DATABASE_URL=$DB dealers-drive-migrator pnpm db:seed
+
+# 3. The API, published on the host so both the browser and the web build can
+#    reach it.
+docker run -d --name dd-api --network dealers-drive -p 4000:4000 \
+  -e NODE_ENV=development -e DATABASE_URL=$DB \
+  -v dd-storage:/app/.storage \
+  dealers-drive-api
+
+curl -fsS http://localhost:4000/health/ready   # wait for this before continuing
+```
+
+Only now can the web image be built:
+
+```bash
+# 4. Web (Next.js). BUILD_API_BASE_URL is how the *build container* reaches the
+#    API — `host.docker.internal` is the host as seen from inside a build, and
+#    --add-host is a no-op on Docker Desktop but required on Linux.
+docker build -f apps/web/Dockerfile \
+  --add-host=host.docker.internal:host-gateway \
+  --build-arg BUILD_API_BASE_URL=http://host.docker.internal:4000 \
+  -t dealers-drive-web .
+
+docker run -d --name dd-web --network dealers-drive -p 3000:3000 \
+  -e API_BASE_URL=http://dd-api:4000 \
+  dealers-drive-web
+```
+
+Four things in there are deliberate and worth understanding:
+
+- **`-e NODE_ENV=development` on the API.** The image is a production _build_ —
+  compiled JavaScript, production dependencies only — but `NODE_ENV=production`
+  turns on the boot guards in `apps/api/src/config/env.ts`: it refuses the local
+  default `SESSION_SECRET`, refuses `STORAGE_DRIVER=local`, and requires real
+  Google OAuth credentials. Those guards are right, and this is a laptop.
+  Running the image as production is what [`deploy/`](deploy/README.md) is for.
+- **`DATABASE_URL` is the only variable the API needs.** Everything else falls
+  back to a local default that is already correct — including
+  `API_BASE_URL=http://localhost:4000`, which is what presigned upload URLs and
+  media URLs are built from, and which has to be a _browser_-reachable address
+  rather than a container name.
+- **`BUILD_API_BASE_URL` is a build address, not a runtime one.** It exists only
+  inside the build stage. At runtime the container reads `API_BASE_URL` from the
+  environment, which is why the same image runs in every environment — there is
+  no `NEXT_PUBLIC_*` anywhere, because those are inlined at build time and would
+  force one image per environment (`apps/web/src/lib/config.ts`, Rule 9).
+- **The web container talks to `http://dd-api:4000`, not to localhost.** Next is
+  a backend-for-frontend here: the browser only ever talks to port 3000, and
+  Next does the API calls server-side. `dd-api` is a Docker DNS name that
+  resolves only inside the network, which is correct — nothing in the browser
+  bundle needs it.
+
+Photo uploads work out of the box because `STORAGE_DRIVER` defaults to `local`:
+the API signs an upload URL on its own origin and terminates the PUT itself. To
+run MinIO instead, see the note in [option 3](#3-with-docker-compose) — a
+presigned S3 URL is signed over its host, and that has one consequence.
+
+Tear it down with:
+
+```bash
+docker rm -f dd-web dd-api dd-postgres
+docker network rm dealers-drive
+docker volume rm dd-storage
+```
+
+---
+
+## 3. With Docker Compose
+
+The whole product — Postgres, MinIO, Mailpit, migrations, API, web.
+
+```bash
+cp .env.example .env    # optional: only Google OAuth is read from it
+pnpm app:up --seed      # first run: also builds the demo data
+pnpm app:up             # every run after that
+```
+
+Open http://localhost:3000.
+
+`pnpm app:up` is [`scripts/app-up.sh`](scripts/app-up.sh), and it is a script
+rather than a single `docker compose up` for one reason: **Compose builds every
+image before it starts anything, and the web image cannot be built until the API
+is answering.** `next build` prerenders the ISR marketplace pages, and
+prerendering them calls the API. So the script does:
+
+```bash
+docker compose --profile app up -d --build api   # backing services, migrations, API
+docker compose run --rm seed                     # only with --seed
+curl -fsS http://127.0.0.1:4000/health/ready     # wait, do not race
+docker compose --profile app up -d --build web   # now the prerender has something to call
+```
+
+Run those four by hand if you prefer; the script only adds the retry loop.
+
+```bash
+docker compose --profile app logs -f api web  # follow the logs
+docker compose --profile app down             # stop, keep the data
+docker compose --profile app down -v          # stop and delete the volumes
+```
+
+Or through pnpm, which is the same thing with less typing:
+
+| Command            | Does                                                        |
+| ------------------ | ----------------------------------------------------------- |
+| `pnpm app:up`      | build + start the full stack, in order (`--seed` to reseed) |
+| `pnpm app:down`    | stop the full stack, keep the volumes                       |
+| `pnpm app:logs`    | follow the api and web logs                                 |
+| `pnpm app:seed`    | run the seed once (it TRUNCATES first — see below)          |
+| `pnpm infra:up`    | backing services only, for [option 1](#1-manually)          |
+| `pnpm infra:reset` | wipe the local volumes and restart the backing services     |
+
+### What Compose is doing
+
+| Service    | Profile | Notes                                                                       |
+| ---------- | ------- | --------------------------------------------------------------------------- |
+| `postgres` | —       | starts with a bare `docker compose up -d`                                   |
+| `minio`    | —       | same                                                                        |
+| `mailpit`  | —       | same                                                                        |
+| `migrate`  | `app`   | `prisma migrate deploy`, runs to completion; the API waits on its exit code |
+| `seed`     | `seed`  | never automatic — run it by hand                                            |
+| `api`      | `app`   | waits for Postgres healthy **and** `migrate` exited 0                       |
+| `web`      | `app`   | built **after** the API is answering, then waits for its health check       |
+
+The app services carry `profiles: [app]`, which is why option 1's
+`docker compose up -d` still starts only the three backing services.
+
+**The seed is not automatic, on purpose.** `pnpm db:seed` truncates before it
+writes, so wiring it into `up` would erase your data on every restart. Run
+`docker compose run --rm seed` once against a fresh database.
+
+### Two things that are not what you would guess
+
+**Storage defaults to `local`, not MinIO.** A presigned S3 URL is signed over
+its _host_: a URL the API signs as `http://minio:9000/…` is rejected when the
+browser sends it to `localhost:9000`, because the signature covers a different
+`Host` header. The `local` driver has no such problem — it signs
+`http://localhost:4000/uploads?…`, which the browser can reach, and the API
+terminates the PUT. To exercise the real S3 adapter instead, make one hostname
+resolve from both sides:
+
+```bash
+echo '127.0.0.1 minio' | sudo tee -a /etc/hosts
+DOCKER_STORAGE_DRIVER=minio docker compose --profile app up -d
+```
+
+**Mailpit receives nothing.** `MAIL_DRIVER=console` is the only mailer that
+exists — there is no SMTP adapter yet (see
+[Providers](#providers--local-and-production)). Mailpit stays in the file for
+the day one is written.
+
+### Google sign-in under Compose
+
+`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are read from your root `.env`,
+which Compose loads automatically. Register the same redirect URI as for local
+development — `http://localhost:4000/v1/auth/google/callback` — because the API
+container publishes port 4000 on the host and the browser reaches it there.
+Without those two values everything works except the "Continue with Google"
+button, which answers with a configuration error naming exactly what to set.
+
+---
+
+## Where things are
 
 Sign in to the admin console at http://localhost:3000/admin/login with
 `DEV_ADMIN_EMAIL` / `DEV_ADMIN_PASSWORD` from your `.env` — by default
@@ -79,27 +305,32 @@ legitimately returns nothing. That looks like a bug and is not one.
 
 ## Scripts
 
-| Command            | Does                                 |
-| ------------------ | ------------------------------------ |
-| `pnpm dev`         | runs web + api together (turbo)      |
-| `pnpm build`       | builds every workspace package       |
-| `pnpm lint`        | eslint, type-aware, across the repo  |
-| `pnpm typecheck`   | tsc across the repo                  |
-| `pnpm test`        | vitest across the repo (2 097 tests) |
-| `pnpm format`      | prettier write                       |
-| `pnpm infra:up`    | `docker compose up -d`               |
-| `pnpm infra:reset` | wipes the local volumes and restarts |
+| Command            | Does                                           |
+| ------------------ | ---------------------------------------------- |
+| `pnpm dev`         | runs web + api together (turbo)                |
+| `pnpm build`       | builds every workspace package                 |
+| `pnpm lint`        | eslint, type-aware, across the repo            |
+| `pnpm typecheck`   | tsc across the repo                            |
+| `pnpm test`        | vitest across the repo (2 097 tests)           |
+| `pnpm format`      | prettier write                                 |
+| `pnpm infra:up`    | backing services only (`docker compose up -d`) |
+| `pnpm infra:down`  | stops them                                     |
+| `pnpm infra:reset` | wipes the local volumes and restarts           |
+| `pnpm app:up`      | builds and starts the full stack in containers |
+| `pnpm app:down`    | stops the full stack, keeps the volumes        |
+| `pnpm app:logs`    | follows the api and web container logs         |
+| `pnpm app:seed`    | runs the seed inside a one-shot container      |
 
 In `apps/api`:
 
-| Command           | Does                                                        |
-| ----------------- | ----------------------------------------------------------- |
-| `pnpm db:migrate` | `prisma migrate dev`                                        |
-| `pnpm db:seed`    | rebuilds the seeded world (idempotent — it truncates first) |
-| `pnpm db:reset`   | migrate reset + seed                                        |
-| `pnpm db:studio`  | Prisma Studio                                               |
-| `pnpm test`       | the integration suite (needs Postgres running)              |
-| `pnpm docs:postman` | regenerates `docs/postman/` from the OpenAPI document     |
+| Command             | Does                                                        |
+| ------------------- | ----------------------------------------------------------- |
+| `pnpm db:migrate`   | `prisma migrate dev`                                        |
+| `pnpm db:seed`      | rebuilds the seeded world (idempotent — it truncates first) |
+| `pnpm db:reset`     | migrate reset + seed                                        |
+| `pnpm db:studio`    | Prisma Studio                                               |
+| `pnpm test`         | the integration suite (needs Postgres running)              |
+| `pnpm docs:postman` | regenerates `docs/postman/` from the OpenAPI document       |
 
 `pnpm lint && pnpm typecheck && pnpm test && pnpm build` **must all pass** before
 calling anything done.
@@ -205,7 +436,7 @@ takes effect on the very next request, with no token left believing otherwise.
 
 ### Setting up Google sign-in locally
 
-1. Create an **OAuth 2.0 Client ID** (type: *Web application*) at
+1. Create an **OAuth 2.0 Client ID** (type: _Web application_) at
    <https://console.cloud.google.com/apis/credentials>.
 2. Register exactly:
    - Authorized JavaScript origin — `http://localhost:3000`
@@ -236,20 +467,20 @@ and what is not.
 
 ## Providers — local and production
 
-Every row is the *same code* on both sides. What changes is environment
+Every row is the _same code_ on both sides. What changes is environment
 configuration, never a service, a repository or a route.
 
-| Capability      | Local                     | Production                | Chosen by                    |
-| --------------- | ------------------------- | ------------------------- | ---------------------------- |
-| Database        | PostgreSQL 16 (docker)    | PostgreSQL                | `DATABASE_URL`               |
-| Object storage  | MinIO (`localhost:9000`)  | Cloudflare R2             | `STORAGE_DRIVER` + `S3_*`    |
-| Dealer identity | Google OAuth (dev client) | Google OAuth (prod client)| `GOOGLE_CLIENT_*`            |
-| Admin identity  | email + Argon2id password | email + Argon2id password | — (same everywhere)          |
-| Sessions        | `dd_session` in Postgres  | `dd_session` in Postgres  | `SESSION_COOKIE_DOMAIN`      |
-| SMS             | console                   | MSG91                     | `SMS_DRIVER`                 |
-| Email           | console                   | Resend *(adapter to write)*| `MAIL_DRIVER`               |
-| Payments        | development provider      | Razorpay *(adapter to write)* | `PAYMENT_PROVIDER`      |
-| API reference   | on                        | off unless asked          | `DOCS_ENABLED`               |
+| Capability      | Local                     | Production                    | Chosen by                 |
+| --------------- | ------------------------- | ----------------------------- | ------------------------- |
+| Database        | PostgreSQL 16 (docker)    | PostgreSQL                    | `DATABASE_URL`            |
+| Object storage  | MinIO (`localhost:9000`)  | Cloudflare R2                 | `STORAGE_DRIVER` + `S3_*` |
+| Dealer identity | Google OAuth (dev client) | Google OAuth (prod client)    | `GOOGLE_CLIENT_*`         |
+| Admin identity  | email + Argon2id password | email + Argon2id password     | — (same everywhere)       |
+| Sessions        | `dd_session` in Postgres  | `dd_session` in Postgres      | `SESSION_COOKIE_DOMAIN`   |
+| SMS             | console                   | MSG91                         | `SMS_DRIVER`              |
+| Email           | console                   | Resend _(adapter to write)_   | `MAIL_DRIVER`             |
+| Payments        | development provider      | Razorpay _(adapter to write)_ | `PAYMENT_PROVIDER`        |
+| API reference   | on                        | off unless asked              | `DOCS_ENABLED`            |
 
 `STORAGE_DRIVER=minio` and `STORAGE_DRIVER=r2` build the **same S3 adapter** —
 only `S3_ENDPOINT` and the keys differ. `local` writes to the filesystem instead
@@ -268,8 +499,8 @@ pnpm dev                                   # or: cd apps/api && pnpm dev
 
 Import both files from [`docs/postman/`](docs/postman) — **Import → Files**:
 
-| File                                     | What it is                                         |
-| ---------------------------------------- | -------------------------------------------------- |
+| File                                     | What it is                                          |
+| ---------------------------------------- | --------------------------------------------------- |
 | `dealers-drive.postman_collection.json`  | 73 requests in 10 folders, one per documented route |
 | `dealers-drive.postman_environment.json` | 21 variables, `baseUrl` = `http://localhost:4000`   |
 

@@ -19,7 +19,11 @@
     "clean": "turbo run clean",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
-    "infra:reset": "docker compose down -v && docker compose up -d"
+    "infra:reset": "docker compose down -v && docker compose up -d",
+    "app:up": "bash scripts/app-up.sh",
+    "app:down": "docker compose --profile app down",
+    "app:logs": "docker compose --profile app logs -f api web",
+    "app:seed": "docker compose run --rm seed"
   },
   "devDependencies": {
     "prettier": "^3.9.6",
