@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ApiError, apiGet, apiSend, qs } from '../../../src/lib/api.js';
+import { cookieJar } from '../../setup.js';
+import { ApiError, apiGet, apiSend, apiSignIn, qs, sessionFrom } from '../../../src/lib/api.js';
 
 /**
  * The one place the web app talks to the API (Rule 8). Three behaviours here
@@ -268,7 +269,7 @@ describe('ApiError', () => {
   it('carries the status and the code', async () => {
     globalThis.fetch = respondWith(problem, { status: 400 }) as unknown as typeof fetch;
 
-    const error = await apiGet('/v1/vehicles').catch((caught: unknown) => caught as ApiError);
+    const error = (await apiGet('/v1/vehicles').catch((caught: unknown) => caught)) as ApiError;
 
     expect(error.status).toBe(400);
     expect(error.code).toBe('VALIDATION_FAILED');
@@ -277,7 +278,7 @@ describe('ApiError', () => {
   it('uses the detail as its message, because that is what a user would read', async () => {
     globalThis.fetch = respondWith(problem, { status: 400 }) as unknown as typeof fetch;
 
-    const error = await apiGet('/v1/vehicles').catch((caught: unknown) => caught as ApiError);
+    const error = (await apiGet('/v1/vehicles').catch((caught: unknown) => caught)) as ApiError;
 
     expect(error.message).toBe('The request did not match the expected shape.');
   });
@@ -312,7 +313,7 @@ describe('ApiError', () => {
       text: '',
     }) as unknown as typeof fetch;
 
-    const error = await apiGet('/v1/vehicles').catch((caught: unknown) => caught as ApiError);
+    const error = (await apiGet('/v1/vehicles').catch((caught: unknown) => caught)) as ApiError;
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.status).toBe(502);
@@ -437,5 +438,139 @@ describe('qs', () => {
 
   it('returns an empty string when every value was dropped', () => {
     expect(qs({ city: undefined, q: '' })).toBe('');
+  });
+});
+
+/**
+ * The session has to be carried by hand.
+ *
+ * These fetches happen on the Next server, not in the browser, so the dealer's
+ * `dd_session` cookie is not attached for us. Forwarding it is what makes the
+ * console work at all — and forwarding it on a *cached* request is how one
+ * dealer's inventory would end up in another's browser (§18). The rule is
+ * therefore not "always forward" but "forward exactly when the response is not
+ * shared", which is what these tests pin.
+ */
+describe('forwarding the session', () => {
+  it('sends the cookie on an uncached read', async () => {
+    cookieJar.set('dd_session', 'the-token');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiGet('/v1/dealer', { revalidate: false });
+
+    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBe(
+      'dd_session=the-token',
+    );
+  });
+
+  it('sends it on every mutation', async () => {
+    cookieJar.set('dd_session', 'the-token');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiSend('POST', '/v1/dealer/vehicles', { year: 2020 });
+
+    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBe(
+      'dd_session=the-token',
+    );
+  });
+
+  /** The catalogue is the same for everyone, and is cached for everyone. */
+  it('never sends it on a cached read', async () => {
+    cookieJar.set('dd_session', 'the-token');
+    globalThis.fetch = respondWith({ data: [] }) as unknown as typeof fetch;
+
+    await apiGet('/v1/vehicles', { revalidate: 60 });
+
+    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBeUndefined();
+    expect(calls[0]?.init.next?.revalidate).toBe(60);
+  });
+
+  it('sends no cookie header at all when there is no session', async () => {
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiGet('/v1/dealer', { revalidate: false });
+
+    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBeUndefined();
+  });
+});
+
+describe('sessionFrom', () => {
+  it('reads the token and its expiry out of Set-Cookie', () => {
+    const session = sessionFrom([
+      'dd_session=abc123; Path=/; Expires=Wed, 19 Aug 2026 03:52:38 GMT; HttpOnly; SameSite=Lax',
+    ]);
+
+    expect(session?.value).toBe('abc123');
+    expect(session?.expires?.toUTCString()).toBe('Wed, 19 Aug 2026 03:52:38 GMT');
+  });
+
+  it('ignores every other cookie the API sets', () => {
+    expect(sessionFrom(['dd_oauth=xyz; Path=/', 'other=1'])).toBeNull();
+    expect(sessionFrom([])).toBeNull();
+  });
+
+  it('accepts a session with no expiry', () => {
+    const session = sessionFrom(['dd_session=abc123; Path=/; HttpOnly']);
+
+    expect(session).toEqual({ value: 'abc123' });
+  });
+
+  it('rejects an empty value rather than issuing a blank session', () => {
+    expect(sessionFrom(['dd_session=; Path=/'])).toBeNull();
+  });
+
+  it('ignores an unparseable expiry rather than issuing an invalid date', () => {
+    expect(sessionFrom(['dd_session=abc; Expires=not-a-date'])).toEqual({ value: 'abc' });
+  });
+});
+
+describe('apiSignIn', () => {
+  function signInResponse(body: unknown, setCookie: string[], status = 200) {
+    return vi.fn((url: string, init: Captured['init']) => {
+      calls.push({ url, init });
+      return Promise.resolve({
+        ok: status >= 200 && status < 300,
+        status,
+        text: () => Promise.resolve(JSON.stringify(body)),
+        headers: { getSetCookie: () => setCookie },
+      } as unknown as Response);
+    });
+  }
+
+  it('returns the body and the issued session together', async () => {
+    globalThis.fetch = signInResponse({ admin: { id: '1' } }, [
+      'dd_session=issued; Path=/; HttpOnly',
+    ]) as unknown as typeof fetch;
+
+    const result = await apiSignIn<{ admin: { id: string } }>('/v1/auth/admin/login', {
+      email: 'a@b.c',
+      password: 'x',
+    });
+
+    expect(result.data.admin.id).toBe('1');
+    expect(result.session?.value).toBe('issued');
+  });
+
+  it('never caches a sign-in', async () => {
+    globalThis.fetch = signInResponse({}, []) as unknown as typeof fetch;
+
+    await apiSignIn('/v1/auth/admin/login', {});
+
+    expect(calls[0]?.init.cache).toBe('no-store');
+  });
+
+  it('throws the problem document on a refusal', async () => {
+    globalThis.fetch = signInResponse(
+      { type: 'about:blank', title: 'no', status: 401, code: 'INVALID_CREDENTIALS' },
+      [],
+      401,
+    ) as unknown as typeof fetch;
+
+    const error = (await apiSignIn('/v1/auth/admin/login', {}).catch(
+      (caught: unknown) => caught,
+    )) as ApiError;
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.code).toBe('INVALID_CREDENTIALS');
   });
 });

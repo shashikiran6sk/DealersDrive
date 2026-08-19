@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 
 import { cleanup } from '@testing-library/react';
+import { createElement } from 'react';
 import { afterEach, beforeEach, vi } from 'vitest';
 
 /**
@@ -121,8 +122,7 @@ vi.mock('next/link', () => ({
     children: React.ReactNode;
     href: string | { pathname: string };
   } & Record<string, unknown>) =>
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-    (require('react') as typeof import('react')).createElement(
+    createElement(
       'a',
       { href: typeof href === 'string' ? href : href.pathname, ...rest },
       children,
@@ -136,7 +136,6 @@ vi.mock('next/link', () => ({
  */
 vi.mock('next/image', () => ({
   default: ({ alt, src, ...rest }: { alt: string; src: string } & Record<string, unknown>) => {
-    const { createElement } = require('react') as typeof import('react');
     const { priority, fill, quality, placeholder, blurDataURL, loader, unoptimized, ...safe } =
       rest as Record<string, unknown>;
     void priority;

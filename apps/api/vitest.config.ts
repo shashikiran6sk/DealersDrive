@@ -30,6 +30,18 @@ const ENV = {
   RATE_LIMIT_ENABLED: 'false',
   LOG_LEVEL: 'silent',
   STORAGE_LOCAL_DIR: '.storage-test',
+  // Local disk, not MinIO: the suite must not need a container running, and
+  // the presign→PUT→commit contract it exercises is identical either way.
+  STORAGE_DRIVER: 'local',
+  // The S3 adapter's own unit test builds it directly and signs URLs offline;
+  // SigV4 needs credentials to exist, not to be valid.
+  S3_ACCESS_KEY_ID: 'test-key',
+  S3_SECRET_ACCESS_KEY: 'test-secret',
+  // Stated rather than inherited. `env.ts` already defaults this off under
+  // test, but the developer's own `.env` sets it *on*, and dotenv fills in any
+  // variable the runner has not — so without this line the suite's behaviour
+  // would depend on a file that is not in the repository.
+  DOCS_ENABLED: 'false',
 };
 
 /**

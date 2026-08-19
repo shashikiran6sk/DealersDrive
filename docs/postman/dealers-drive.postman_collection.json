@@ -135,6 +135,325 @@
   ],
   "item": [
     {
+      "name": "Authentication",
+      "description": "Dealers sign in with Google (OAuth 2.0 authorization code + PKCE + OIDC nonce); admins sign in with an email and an Argon2id-hashed password. Both end in the same place: an opaque `dd_session` cookie backed by a row in `sessions`, revocable instantly (ARCHITECTURE §8.2).\n\n**No endpoint here accepts an identity.** There is no request body anywhere in this tag that carries an email as proof of who the caller is — the dealer flow establishes that from a token Google signed, and the admin flow from a password hash. A `dealerId` is never accepted anywhere in the API; it is a property of the resolved session (rule 1).",
+      "item": [
+        {
+          "name": "Which sign-in methods work here",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/providers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "providers"
+              ]
+            },
+            "description": "Lets the sign-in screen render a working button or an explanation, rather than a button that fails on click. `enabled` is false when this deployment has no Google client configured; `reason` then names what is missing.\n\n`Cache-Control: no-store`."
+          },
+          "response": []
+        },
+        {
+          "name": "Begin Google sign-in",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/google/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "google",
+                "start"
+              ]
+            },
+            "description": "A browser navigation, not an API call. Mints `state`, an OIDC `nonce` and a PKCE verifier, seals all three into a 10-minute HttpOnly `dd_oauth` cookie, and redirects to Google's authorization endpoint.\n\nOptional `?returnTo=/dealer/inventory` — a **path**, never an absolute URL. Anything else is replaced with `/dealer`, because a callback that redirects anywhere the caller asks is an open redirect and a session-leaking one.\n\n`503 OAUTH_NOT_CONFIGURED` when the deployment has no Google credentials — the response names the variables to set."
+          },
+          "response": []
+        },
+        {
+          "name": "Google's redirect back",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/google/callback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "google",
+                "callback"
+              ]
+            },
+            "description": "Verifies `state` against the sealed cookie, exchanges the authorization code at Google's token endpoint using the PKCE verifier, and checks the identity token's issuer, audience, expiry and nonce. The email is taken from that token and from nowhere else.\n\nThe account is found by `provider + sub`, never by email address — a Google account holder can change their email, and `sub` is what does not move. A first sign-in creates the user and the identity; a returning one refreshes the stored profile.\n\nEnds by setting `dd_session` and redirecting to `/dealer/onboarding` when the account has no dealership yet, or to the requested path when it has. Every failure redirects to `/dealer/login?error=…` instead, so the person sees the sign-in screen rather than a JSON body: `sign_in_failed`, `identity_unverified`, `google_declined`, `account_link_required`, `account_suspended`, `invalid_callback`."
+          },
+          "response": []
+        },
+        {
+          "name": "Who am I",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "The resolved session. One shape covers both states: a verified Google identity with no dealership yet (`next: \"ONBOARDING\"`, `dealer: null`) and a full dealer seat with its role, permissions (§8.3) and the two badge counts the console header shows.\n\n`identity` is the Google account behind the session — what the onboarding screen displays instead of asking for an email again.\n\n`Cache-Control: no-store`."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const dealerId = read('dealer.id');",
+                  "  if (dealerId) pm.collectionVariables.set('dealerId', dealerId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create the dealership",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/onboarding",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "onboarding"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"R. Manikandan\",\n  \"roleTitle\": \"Proprietor\",\n  \"phone\": \"9840012345\",\n  \"brandName\": \"Sri Lakshmi Motors\",\n  \"legalName\": \"Sri Lakshmi Automobiles Pvt Ltd\",\n  \"addressLine\": \"14, Katpadi Main Road, Gandhi Nagar\",\n  \"citySlug\": \"vellore\",\n  \"pincode\": \"632006\",\n  \"landline\": \"0416 224 8890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "The one endpoint a session with no dealership may call. Creates the user record, the dealership in `DRAFT`, the `OWNER` membership and the three KYC placeholders, in one transaction.\n\nNo `email` field: the address comes from the Google identity on the session. No `status` and no `slug` either — approval is the admin's decision and the slug is derived from the brand name (rules 1 and 5).\n\n`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `422 UNKNOWN_CITY` for a city outside the catalogue."
+          },
+          "response": []
+        },
+        {
+          "name": "End the session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes the `sessions` row behind the presented cookie and clears the cookie. The row is what makes this real: the token stops working everywhere immediately, rather than merely being forgotten by one browser."
+          },
+          "response": []
+        },
+        {
+          "name": "Admin sign-in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/admin/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "admin",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ops@dealers-drive.in\",\n  \"password\": \"••••••••\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Email and Argon2id password. There is no admin sign-up, no admin OTP and no Google path into the admin console: admins are created by the seed or by another admin.\n\nThe session it issues has `scope = ADMIN` and a 12-hour lifetime, and satisfies only `/v1/admin/**` — a dealer cookie can never reach an admin route, and an admin cookie can never reach a dealer one, even for one human holding both seats.\n\nUnknown email and wrong password are indistinguishable: same status, same message, and a decoy hash verification so the timing matches too.\n\n**Rate limit** 5 attempts per email per 15 minutes, 20 per IP per 15 minutes.."
+          },
+          "response": []
+        },
+        {
+          "name": "End the admin session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/admin/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "admin",
+                "logout"
+              ]
+            },
+            "description": "Revokes the presented session and clears the cookie. Unguarded on purpose: signing out has to work when the session has already expired, and it can only ever revoke the token in the caller's own cookie."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Public catalogue",
       "description": "Search, vehicle detail and dealer profiles, for anonymous buyers. No session, no account, and **no dealer phone number** — `POST /v1/vehicles/{id}/reveal-contact` is the only endpoint that returns one. IP rate-limited at 120 requests/minute.",
       "item": [
@@ -1537,105 +1856,8 @@
     },
     {
       "name": "Dealer account",
-      "description": "The acting dealership: profile, KYC documents, verification submission, dashboard and session. Every one of these reads and writes exactly one dealership — the one the session resolves to. **No endpoint here takes a `dealerId`**, and because the schemas are `.strict()`, sending one is a 400 rather than a quiet no-op (rule 1).",
+      "description": "The acting dealership: profile, KYC documents, verification submission and dashboard. Every one of these reads and writes exactly one dealership — the one the session resolves to. **No endpoint here takes a `dealerId`**, and because the schemas are `.strict()`, sending one is a 400 rather than a quiet no-op (rule 1).",
       "item": [
-        {
-          "name": "Who am I",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Request-Id",
-                "value": "",
-                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
-                "disabled": true
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/v1/auth/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "me"
-              ]
-            },
-            "description": "The resolved session: the user, their dealership, their role, the permissions that role carries (§8.3) and the two badge counts the console header shows.\n\nThis is the endpoint to call first from Swagger UI — it tells you which dealership the other operations will act on. Locally that is `DEV_DEALER_SLUG`.\n\n`Cache-Control: no-store`."
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// Captures ids the rest of the collection needs, so a flow can be run in",
-                  "// order without copying uuids by hand.",
-                  "if (pm.response.code < 400) {",
-                  "  const body = pm.response.json();",
-                  "",
-                  "  // A `*` segment takes the first array element whose remaining path resolves.",
-                  "  const read = (path) => {",
-                  "    const keys = path.split('.');",
-                  "    const walk = (node, index) => {",
-                  "      if (node == null) return undefined;",
-                  "      if (index === keys.length) return node;",
-                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
-                  "      if (!Array.isArray(node)) return undefined;",
-                  "      for (const entry of node) {",
-                  "        const found = walk(entry, index + 1);",
-                  "        if (found != null) return found;",
-                  "      }",
-                  "      return undefined;",
-                  "    };",
-                  "    return walk(body, 0);",
-                  "  };",
-                  "",
-                  "  const dealerId = read('dealer.id');",
-                  "  if (dealerId) pm.collectionVariables.set('dealerId', dealerId);",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "End the session",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Request-Id",
-                "value": "",
-                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
-                "disabled": true
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/v1/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "logout"
-              ]
-            },
-            "description": "Returns 204 and revokes nothing. The session is server-configured in this build (CLAUDE.md §5), so there is no token to invalidate — the route exists so the client contract does not change on the day there is one."
-          },
-          "response": []
-        },
         {
           "name": "The dealership record",
           "request": {

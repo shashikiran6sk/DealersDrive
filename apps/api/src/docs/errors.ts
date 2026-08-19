@@ -201,6 +201,21 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
       },
     },
   ),
+
+  ServiceUnavailable: response(
+    'A credential this operation needs is not configured on the server. Nothing about ' +
+      'the request is wrong; the deployment is incomplete.',
+    {
+      oauthNotConfigured: {
+        summary: 'Google sign-in is not configured',
+        value: problem(
+          503,
+          'OAUTH_NOT_CONFIGURED',
+          'Google sign-in is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.',
+        ),
+      },
+    },
+  ),
 };
 
 /** Status → the `components.responses` key that documents it. */
@@ -213,4 +228,5 @@ export const ERROR_RESPONSE_BY_STATUS: Record<number, string> = {
   422: 'UnprocessableEntity',
   429: 'TooManyRequests',
   500: 'InternalServerError',
+  503: 'ServiceUnavailable',
 };

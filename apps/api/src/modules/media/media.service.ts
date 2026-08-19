@@ -63,7 +63,7 @@ export function createMediaService({ prisma, storage, queue, config }: MediaDeps
         },
       });
 
-      const presigned = storage.presignPut({
+      const presigned = await storage.presignPut({
         key,
         contentType: input.mimeType,
         contentLength: input.bytes,

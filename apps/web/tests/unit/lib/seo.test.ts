@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { hasFilterParams, indexPolicy, seoMetadata } from '../../../src/lib/seo.js';
 
 /**
+ * `indexPolicy` always returns the object form; Next's `Robots` type also
+ * admits a bare string, which is what makes the property read need narrowing.
+ */
+function robotsOf(policy: ReturnType<typeof indexPolicy>): { index: boolean; follow: boolean } {
+  return policy.robots as { index: boolean; follow: boolean };
+}
+
+/**
  * ARCHITECTURE §17.2, the whole indexing policy in one function — and the
  * reason it *is* one function: thirteen facets combine into millions of URLs,
  * and if each route decided its own robots tag the policy would drift silently
@@ -83,7 +91,7 @@ describe('filtered pages', () => {
   });
 
   it('does not index a searched dealer directory', () => {
-    expect(indexPolicy({ kind: 'dealers', hasQuery: true }).robots.index).toBe(false);
+    expect(robotsOf(indexPolicy({ kind: 'dealers', hasQuery: true })).index).toBe(false);
   });
 });
 

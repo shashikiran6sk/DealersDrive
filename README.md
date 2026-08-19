@@ -37,20 +37,30 @@ cp .env.example .env      # the defaults work for local development as-is
 docker compose up -d      # postgres, minio, mailpit
 
 cd apps/api
-pnpm db:migrate           # apply the 3 migrations
+pnpm db:migrate           # apply the 4 migrations
 pnpm db:seed              # build the world: 5 dealers, 23 vehicles, 18 live listings
 cd ../..
 
 pnpm dev                  # web + api together
 ```
 
-Then open http://localhost:3000. You are already acting as the development dealer
-— there is no login step, by design (see [Authentication](#authentication)).
+Then open http://localhost:3000. The marketplace, the admin console and Swagger
+all work immediately. **Dealer sign-in needs a Google OAuth client of your own** —
+five minutes, and the API tells you exactly what to set if you skip it (see
+[Authentication](#authentication)).
+
+Sign in to the admin console at http://localhost:3000/admin/login with
+`DEV_ADMIN_EMAIL` / `DEV_ADMIN_PASSWORD` from your `.env` — by default
+`ops@dealers-drive.in` / `dealers-drive-local-admin`. The seed hashes that
+password with Argon2id; the plaintext is never stored.
 
 | Service                        | URL                                                                  |
 | ------------------------------ | -------------------------------------------------------------------- |
 | Web                            | http://localhost:3000                                                |
+| Dealer sign-in                 | http://localhost:3000/dealer/login                                   |
+| Dealer onboarding              | http://localhost:3000/dealer/onboarding                              |
 | Dealer console                 | http://localhost:3000/dealer                                         |
+| Admin sign-in                  | http://localhost:3000/admin/login                                    |
 | Admin console                  | http://localhost:3000/admin                                          |
 | API                            | http://localhost:4000/health/live                                    |
 | **API reference (Swagger UI)** | http://localhost:4000/api/docs                                       |
@@ -71,7 +81,7 @@ legitimately returns nothing. That looks like a bug and is not one.
 | `pnpm build`       | builds every workspace package       |
 | `pnpm lint`        | eslint, type-aware, across the repo  |
 | `pnpm typecheck`   | tsc across the repo                  |
-| `pnpm test`        | vitest across the repo (129 tests)   |
+| `pnpm test`        | vitest across the repo (2 097 tests) |
 | `pnpm format`      | prettier write                       |
 | `pnpm infra:up`    | `docker compose up -d`               |
 | `pnpm infra:reset` | wipes the local volumes and restarts |
@@ -92,8 +102,21 @@ calling anything done.
 
 ## What works today
 
-Everything below is implemented and verified end to end — by the 114-test suite,
-and by driving the running app in a browser.
+Everything below is implemented and verified end to end — by the 2 097-test
+suite, and by driving the running app in a browser.
+
+### Authentication
+
+- **Dealer sign-in with Google** — authorization code flow with PKCE and an OIDC
+  nonce, the state and verifier sealed into a signed ten-minute cookie, the
+  identity token's issuer, audience, expiry and nonce all checked server-side
+- **Dealer onboarding** — the four-step wizard a new Google account lands on:
+  account, dealership, KYC documents, submit for verification. The verified
+  Google address is shown, never asked for
+- **Admin sign-in** — email and Argon2id password, rate-limited per account and
+  per IP, with unknown-account and wrong-password answering identically
+- **Sessions** — `dd_session`, opaque, HttpOnly, revocable on the next request;
+  separate scopes for the two consoles
 
 ### Public marketplace
 
@@ -132,7 +155,9 @@ and by driving the running app in a browser.
 - Enquiry inbox with live tab counts, status transitions and notes
 - **Credit wallet and purchase** — packs, GST, invoice, immediate credit; the
   ledger shows every movement with its running balance
-- Profile and KYC document upload
+- Profile and KYC document upload — presigned straight to object storage, same
+  contract as vehicle photos
+- Sign out, which revokes the session row rather than forgetting a cookie
 
 ### Admin console (`/admin`)
 
@@ -153,25 +178,83 @@ a `traceId` on every line.
 
 ## Authentication
 
-**There is no login screen, and that is deliberate.** Identity verification is
-the one thing this build bypasses: `SessionResolver` is a seam, and the
-development resolver reads a server-configured identity (`DEV_DEALER_SLUG`,
-`DEV_ADMIN_EMAIL`) rather than a cookie. Swap the resolver for a
-`CookieSessionResolver` and nothing downstream changes.
+Two doors, sharing nothing but the cookie mechanism.
+
+**Dealers sign in with Google** (OAuth 2.0 authorization code + PKCE + OIDC
+nonce). There is no dealer password and no dealer OTP anywhere in the product.
+The account is found by Google's stable subject identifier (`sub`), never by the
+email address — an account holder can change their email, and matching on the
+string is how an expired domain would become somebody else's inventory. A Google
+account with no dealership lands on onboarding; one with a dealership lands on
+the console.
+
+**Admins sign in with an email and an Argon2id password** at `/admin/login`.
+There is no admin sign-up, no admin OTP and no Google path into the admin
+console. Admin sessions are a separate scope with a 12-hour lifetime: a dealer's
+cookie cannot reach an admin route and an admin's cannot reach a dealer one, even
+for one human holding both seats.
+
+Both end in the same place — an opaque `dd_session` cookie (32 random bytes,
+HttpOnly, SameSite=Lax, only its SHA-256 stored) backed by a row in `sessions`.
+That row is the point: signing out, suspending a dealership or revoking a session
+takes effect on the very next request, with no token left believing otherwise.
+
+### Setting up Google sign-in locally
+
+1. Create an **OAuth 2.0 Client ID** (type: *Web application*) at
+   <https://console.cloud.google.com/apis/credentials>.
+2. Register exactly:
+   - Authorized JavaScript origin — `http://localhost:3000`
+   - Authorized redirect URI — `http://localhost:4000/v1/auth/google/callback`
+3. Put the client id and secret in `.env` as `GOOGLE_CLIENT_ID` and
+   `GOOGLE_CLIENT_SECRET`. Never commit the secret.
+
+Without them everything else still runs, and `/dealer/login` says which two
+variables are missing rather than showing a button that fails on click.
+
+If you have no Google client and want the dealer console anyway, `AUTH_MODE=dev`
+restores the old server-configured identity (`DEV_DEALER_SLUG`). It is refused in
+production, and it logs a warning on every boot.
 
 Everything _downstream_ of identity is production-grade and tested: the
 permission table, dealer scoping on every repository call, ownership re-checked
 inside the writing transaction, and cross-tenant reads answering **404 rather
-than 403** so an id's existence is never leaked. To act as a different
-dealership, restart with a different `DEV_DEALER_SLUG` — there is no header that
-could do it, which is exactly the property that makes tenant isolation testable.
+than 403** so an id's existence is never leaked. `dealerId` is a property of the
+resolved session and is never read from a request — there is no header, body
+field or path parameter that could set it.
 
-Payments are mocked the same way: the development provider settles inline through
+Payments are still mocked: the development provider settles inline through
 the same function a Razorpay webhook will call, so no gateway page is involved —
 while the credit ledger itself is append-only, row-locked and real.
 
 See [`CONTEXT.md` §6](CONTEXT.md) for the full boundary between what is mocked
 and what is not.
+
+## Providers — local and production
+
+Every row is the *same code* on both sides. What changes is environment
+configuration, never a service, a repository or a route.
+
+| Capability      | Local                     | Production                | Chosen by                    |
+| --------------- | ------------------------- | ------------------------- | ---------------------------- |
+| Database        | PostgreSQL 16 (docker)    | PostgreSQL                | `DATABASE_URL`               |
+| Object storage  | MinIO (`localhost:9000`)  | Cloudflare R2             | `STORAGE_DRIVER` + `S3_*`    |
+| Dealer identity | Google OAuth (dev client) | Google OAuth (prod client)| `GOOGLE_CLIENT_*`            |
+| Admin identity  | email + Argon2id password | email + Argon2id password | — (same everywhere)          |
+| Sessions        | `dd_session` in Postgres  | `dd_session` in Postgres  | `SESSION_COOKIE_DOMAIN`      |
+| SMS             | console                   | MSG91                     | `SMS_DRIVER`                 |
+| Email           | console                   | Resend *(adapter to write)*| `MAIL_DRIVER`               |
+| Payments        | development provider      | Razorpay *(adapter to write)* | `PAYMENT_PROVIDER`      |
+| API reference   | on                        | off unless asked          | `DOCS_ENABLED`               |
+
+`STORAGE_DRIVER=minio` and `STORAGE_DRIVER=r2` build the **same S3 adapter** —
+only `S3_ENDPOINT` and the keys differ. `local` writes to the filesystem instead
+and needs no container; that is what the test suite uses.
+
+`apps/api/src/config/env.ts` refuses to start when a combination is incomplete:
+R2 without keys, MSG91 without an auth key, production without a Google client,
+production still carrying a local development secret, or production on local disk
+storage. None of them fall back silently.
 
 ## Testing the API in Postman
 
@@ -230,14 +313,7 @@ Ordered by what unblocks the most. In every case the abstraction already exists
 and only the adapter is missing — [`CONTEXT.md` §12](CONTEXT.md) has the
 step-by-step for each.
 
-### 1. Real authentication — prerequisite for everything else
-
-Implement `CookieSessionResolver` against the existing `SessionResolver` port
-(the `Session` model and `tokenHash` column are already in the schema), add the
-OTP round trip, and swap it in at the composition root. No authorization code
-changes.
-
-### 2. Payment integration (Razorpay)
+### 1. Payment integration (Razorpay)
 
 `PaymentProvider` port exists with `DevelopmentPaymentProvider`. Remaining:
 
@@ -254,7 +330,7 @@ changes.
 - Refunds: `admin:payment:refund` is in the permission table with no endpoint
   behind it yet.
 
-### 3. Monitoring, logging and observability
+### 2. Monitoring, logging and observability
 
 Structured logging is already good — pino, one JSON line per event, a mixin that
 stamps `traceId` (plus `userId`/`dealerId` after auth) on every line emitted
@@ -279,20 +355,24 @@ and something watching them:
   nothing surfaces failed jobs yet; `GET /v1/admin/audit-logs` exists and is
   documented but has no console screen.
 
-### 4. Real infrastructure adapters
+### 3. Real infrastructure adapters
 
-`ResendMailer` / `Msg91Sms` against the existing `MailerPort` and `SmsPort`
-(console adapters today), and an R2 adapter against `StoragePort` — the local
-adapter already implements the same presign → PUT → commit contract, HMAC
-included.
+Storage and SMS are done: `S3Storage` covers MinIO and R2 through one adapter
+chosen by `STORAGE_DRIVER`, and `Msg91Sms` sits behind `SmsPort` (written against
+MSG91's documented API, never exercised against a real account — India's DLT
+registration of the entity, sender header and each template comes first).
 
-### 5. PostgreSQL row-level security
+Remaining: `ResendMailer` against `MailerPort`, which is still the console
+adapter. Dealer sign-in does not depend on it — Google verifies the address and
+there is no email OTP — so nothing is blocked on it.
+
+### 4. PostgreSQL row-level security
 
 Layers 1, 2 and 4 of the four-layer tenancy model are done and tested.
 `withTenant` already issues `SET LOCAL app.dealer_id`, so the policies have a
 hook waiting — the migration that creates them is not written.
 
-### 6. Deployment
+### 5. Deployment
 
 `apps/api/Dockerfile` exists and its `HEALTHCHECK` already polls
 `/health/ready`. Still needed: a separate worker entrypoint — today
@@ -300,7 +380,7 @@ hook waiting — the migration that creates them is not written.
 API horizontally would run them N times over — and `prisma migrate deploy` in the
 release step.
 
-### 7. Product work not started
+### 6. Product work not started
 
 Photo requests, team members, saved searches, deeper dealer analytics, and mobile
 and tablet layouts (this build was scoped to desktop). Buyer accounts are

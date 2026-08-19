@@ -8,3 +8,10 @@
  */
 export type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 export type { DealersPublicService } from './dealers.public.service.js';
+/**
+ * One consumer, and only for `session()`: the auth module composes the session
+ * body it returns from `/v1/auth/me` out of the dealership half this service
+ * renders. It is a type-only export, so nothing is constructed across the
+ * boundary — the container still does the wiring.
+ */
+export type { DealersService } from './dealers.service.js';

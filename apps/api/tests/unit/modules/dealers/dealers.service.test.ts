@@ -329,8 +329,8 @@ describe('session', () => {
 
     const session = await h.service.session(principal);
 
-    expect(session.dealer.isVerified).toBe(false);
-    expect(session.dealer.statusLabel).not.toBe('Verified');
+    expect(session.dealer?.isVerified).toBe(false);
+    expect(session.dealer?.statusLabel).not.toBe('Verified');
   });
 
   it('falls back to the dealership phone when the acting member is not on the row', async () => {

@@ -382,7 +382,7 @@ describe('overview', () => {
   it('reports the six platform stats', async () => {
     const h = setup({ counts: [12, 3, 40, 7, 5], capturedSum: 1_00_000_00n });
 
-    const overview = await h.service.overview();
+    const overview = await h.service.overview(principal());
 
     expect(overview.stats.map((stat) => stat.key)).toEqual([
       'totalDealers',
@@ -397,7 +397,7 @@ describe('overview', () => {
   it('separates gross captured from revenue net of GST', async () => {
     const h = setup({ counts: [0, 0, 0, 0, 0], capturedSum: 11_800_000n, gstPercent: 18 });
 
-    const overview = await h.service.overview();
+    const overview = await h.service.overview(principal());
     const gross = overview.stats.find((stat) => stat.key === 'payments30d');
     const net = overview.stats.find((stat) => stat.key === 'revenue30d');
 
@@ -409,7 +409,7 @@ describe('overview', () => {
   it('reports zero revenue when nothing was captured', async () => {
     const h = setup({ counts: [0, 0, 0, 0, 0], capturedSum: null });
 
-    const overview = await h.service.overview();
+    const overview = await h.service.overview(principal());
 
     expect(overview.stats.find((stat) => stat.key === 'payments30d')?.value).toBe(0);
   });
@@ -420,14 +420,14 @@ describe('overview', () => {
     const small = setup({ counts: [0, 0, 0, 0, 0], capturedSum: 50_000n });
 
     expect(
-      (await lakhs.service.overview()).stats.find((stat) => stat.key === 'payments30d')?.valueLabel,
+      (await lakhs.service.overview(principal())).stats.find((stat) => stat.key === 'payments30d')?.valueLabel,
     ).toBe('₹4.2 L');
     expect(
-      (await crores.service.overview()).stats.find((stat) => stat.key === 'payments30d')
+      (await crores.service.overview(principal())).stats.find((stat) => stat.key === 'payments30d')
         ?.valueLabel,
     ).toBe('₹2.5 Cr');
     expect(
-      (await small.service.overview()).stats.find((stat) => stat.key === 'payments30d')?.valueLabel,
+      (await small.service.overview(principal())).stats.find((stat) => stat.key === 'payments30d')?.valueLabel,
     ).toBe('₹500');
   });
 
@@ -435,7 +435,7 @@ describe('overview', () => {
     const h = setup({ counts: [0, 3, 0, 0, 0] });
 
     expect(
-      (await h.service.overview()).stats.find((stat) => stat.key === 'pendingVerification')?.href,
+      (await h.service.overview(principal())).stats.find((stat) => stat.key === 'pendingVerification')?.href,
     ).toBe('/admin/dealers?status=PENDING_APPROVAL');
   });
 
@@ -449,8 +449,8 @@ describe('overview', () => {
       oldest: { submittedAt: new Date(Date.now() - 3_600_000) },
     });
 
-    const manyQueue = (await many.service.overview()).moderationQueue;
-    const oneQueue = (await one.service.overview()).moderationQueue;
+    const manyQueue = (await many.service.overview(principal())).moderationQueue;
+    const oneQueue = (await one.service.overview(principal())).moderationQueue;
 
     expect(manyQueue.message).toMatch(/^3 listings submitted by dealers are waiting/);
     expect(manyQueue.message).toContain('Oldest has been waiting');
@@ -460,7 +460,7 @@ describe('overview', () => {
   it('says so plainly when the queue is empty', async () => {
     const h = setup({ counts: [0, 0, 0, 0, 0], oldest: null });
 
-    const overview = await h.service.overview();
+    const overview = await h.service.overview(principal());
 
     expect(overview.moderationQueue.message).toBe('No listings are waiting for review.');
     expect(overview.moderationQueue.oldestWaitingLabel).toBe('—');
@@ -470,7 +470,7 @@ describe('overview', () => {
   it('warns in the header badge while anything is waiting', async () => {
     const h = setup({ counts: [0, 0, 0, 0, 2], oldest: { submittedAt: new Date() } });
 
-    const badge = (await h.service.overview()).headerBadge;
+    const badge = (await h.service.overview(principal())).headerBadge;
 
     expect(badge).toMatchObject({ count: 2, label: '2 awaiting review', tone: 'warn' });
   });

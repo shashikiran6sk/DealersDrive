@@ -9,6 +9,7 @@ import { createRoutes } from '../../src/routes.js';
  * where the three guard chains are visible together:
  *
  *   /v1/…          public, no principal
+ *   /v1/auth/…     mixed — sign-in open, `/me` and `/onboarding` guarded
  *   /v1/dealer/…   requireDealer  — dealerId enters the request context here
  *   /v1/admin/…    requireAdmin
  *
@@ -24,16 +25,21 @@ import { createRoutes } from '../../src/routes.js';
 
 interface Dispatch {
   dealerGuard: boolean;
+  signedInGuard: boolean;
   adminGuard: boolean;
   /** A handler ran — including one that then rejected its input. */
   reached: boolean;
 }
 
 function harness() {
-  const calls = { dealer: 0, admin: 0 };
+  const calls = { dealer: 0, signedIn: 0, admin: 0 };
 
   const requireDealer = (_req: Request, _res: Response, next: () => void) => {
     calls.dealer += 1;
+    next();
+  };
+  const requireSignedIn = (_req: Request, _res: Response, next: () => void) => {
+    calls.signedIn += 1;
     next();
   };
   const requireAdmin = (_req: Request, _res: Response, next: () => void) => {
@@ -50,7 +56,8 @@ function harness() {
   const service = new Proxy({}, { get: () => () => Promise.resolve({}) }) as never;
 
   const container = {
-    auth: { requireDealer, requireAdmin },
+    guards: { requireDealer, requireSignedIn, requireAdmin },
+    auth: service,
     storage: service,
     media: service,
     catalog: service,
@@ -75,6 +82,7 @@ function harness() {
    */
   async function dispatch(method: string, url: string): Promise<Dispatch> {
     calls.dealer = 0;
+    calls.signedIn = 0;
     calls.admin = 0;
     let unmatched = false;
 
@@ -105,7 +113,12 @@ function harness() {
 
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    return { dealerGuard: calls.dealer > 0, adminGuard: calls.admin > 0, reached: !unmatched };
+    return {
+      dealerGuard: calls.dealer > 0,
+      signedInGuard: calls.signedIn > 0,
+      adminGuard: calls.admin > 0,
+      reached: !unmatched,
+    };
   }
 
   return { dispatch };
@@ -134,8 +147,37 @@ describe('the dealer boundary', () => {
     expect((await dispatch(method, url)).dealerGuard).toBe(true);
   });
 
-  it('runs the dealer guard for the session routes too', async () => {
-    expect((await dispatch('GET', '/v1/auth/me')).dealerGuard).toBe(true);
+  /**
+   * `/v1/auth/me` is behind `requireSignedIn`, not `requireDealer`: it has to
+   * answer for a verified Google account that has not created a dealership yet.
+   * That is a weaker guard, so what matters is that it is still a guard.
+   */
+  it.each(['GET /v1/auth/me', 'POST /v1/auth/onboarding', 'POST /v1/auth/logout'])(
+    'runs the signed-in guard for %s',
+    async (signature) => {
+      const [method, url] = signature.split(' ') as [string, string];
+
+      expect((await dispatch(method, url)).signedInGuard).toBe(true);
+    },
+  );
+
+  /**
+   * The other half, and the one that would be a lockout rather than a leak:
+   * sign-in cannot require being signed in.
+   */
+  it.each([
+    'GET /v1/auth/providers',
+    'GET /v1/auth/google/start',
+    'GET /v1/auth/google/callback',
+    'POST /v1/auth/admin/login',
+    'POST /v1/auth/admin/logout',
+  ])('leaves %s reachable without any session', async (signature) => {
+    const [method, url] = signature.split(' ') as [string, string];
+    const result = await dispatch(method, url);
+
+    expect(result.signedInGuard).toBe(false);
+    expect(result.dealerGuard).toBe(false);
+    expect(result.adminGuard).toBe(false);
   });
 
   it('never runs the admin guard on a dealer path', async () => {

@@ -49,6 +49,7 @@ describe('the response components', () => {
         'Forbidden',
         'InternalServerError',
         'NotFound',
+        'ServiceUnavailable',
         'TooManyRequests',
         'Unauthorized',
         'UnprocessableEntity',
@@ -133,6 +134,7 @@ describe('the examples', () => {
       UnprocessableEntity: 422,
       TooManyRequests: 429,
       InternalServerError: 500,
+      ServiceUnavailable: 503,
     };
 
     for (const [name, response] of Object.entries(responses)) {
@@ -231,6 +233,6 @@ describe('ERROR_RESPONSE_BY_STATUS', () => {
       Object.keys(ERROR_RESPONSE_BY_STATUS)
         .map(Number)
         .sort((a, b) => a - b),
-    ).toEqual([400, 401, 403, 404, 409, 422, 429, 500]);
+    ).toEqual([400, 401, 403, 404, 409, 422, 429, 500, 503]);
   });
 });

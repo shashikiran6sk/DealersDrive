@@ -3,9 +3,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { redirect } from 'next/navigation';
+
 import { AdminNav } from '@/components/admin/admin-nav';
 import { StatusTag } from '@/components/ui/primitives';
-import { apiGet } from '@/lib/api';
+import { SignOutButton } from '@/features/auth/sign-out';
+import { ApiError, apiGet } from '@/lib/api';
 import { seoMetadata } from '@/lib/seo';
 
 /**
@@ -24,10 +27,9 @@ export const metadata: Metadata = {
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   // The header badge is a live count of the queue — never a hard-coded number
-  // (Rule 6, §4.11).
-  const overview = await apiGet<AdminOverview>('/v1/admin/metrics/overview', {
-    revalidate: false,
-  });
+  // (Rule 6, §4.11). It is also the guard: a 401 here means no admin session,
+  // and every admin page sits beneath this layout.
+  const overview = await requireAdmin();
 
   return (
     <div className="flex min-h-dvh bg-(--color-neutral-100) max-md:flex-col">
@@ -62,7 +64,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 <StatusTag tone={overview.headerBadge.tone}>{overview.headerBadge.label}</StatusTag>
               </Link>
             ) : null}
-            <span className="text-[12px] ink-muted">ops@dealers-drive.in</span>
+            <span className="text-[12px] ink-muted">{overview.operator.email}</span>
+            <SignOutButton scope="admin" />
           </div>
         </header>
 
@@ -70,4 +73,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       </div>
     </div>
   );
+}
+
+async function requireAdmin(): Promise<AdminOverview> {
+  try {
+    return await apiGet<AdminOverview>('/v1/admin/metrics/overview', { revalidate: false });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      redirect('/admin/login?error=session_expired');
+    }
+    throw error;
+  }
 }

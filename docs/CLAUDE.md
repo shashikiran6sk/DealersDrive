@@ -170,55 +170,58 @@ The goal is:
 
 ---
 
-# 5. AUTHENTICATION — TEMPORARILY BYPASS
+# 5. AUTHENTICATION — IMPLEMENTED (revised)
 
-For the current local version:
+> **Superseded, r3.** This section previously said *do not implement
+> authentication*, and the build followed it: a development resolver read a
+> server-configured identity. That instruction has been replaced — real sign-in
+> is now implemented and tested. The paragraphs below describe what exists.
 
-## DO NOT IMPLEMENT
+## Dealers — Google OAuth, nothing else
 
-* dealer signup
-* dealer signin
-* OTP verification
-* OTP resend
-* password authentication
-* production session authentication
-* production identity verification
+* **Implemented:** OAuth 2.0 authorization code flow with PKCE and an OIDC
+  nonce, against Google. The backend redeems the code server-side and verifies
+  the identity token's issuer, audience, expiry and nonce.
+* **Not implemented, and not wanted:** dealer signup forms, dealer passwords,
+  email OTP, mobile OTP. There is no dealer credential for anybody to steal,
+  phish or reset.
+* The account is found by `provider + sub`, never by email address. A verified
+  email that already belongs to an account is refused (`ACCOUNT_LINK_REQUIRED`)
+  rather than merged.
+* Phone numbers are collected during onboarding. **Nothing sends a code to
+  them** — SMS verification is explicitly out of scope.
 
-These can be implemented later.
+## Admins — email and password, nothing else
 
-## Instead
+* Email + Argon2id password at `POST /v1/auth/admin/login`.
+* **No admin signup, no admin OTP, no admin Google.** Admins come from the seed
+  or from another admin.
+* A separate session scope with a 12-hour lifetime.
 
-Create a **local development dealer/session mechanism**.
+## Sessions
 
-The application should behave as if a dealer is authenticated.
+Opaque `dd_session` cookie: 32 random bytes, HttpOnly, `SameSite=Lax`, only the
+SHA-256 stored, backed by a row in `sessions`. Logging out, suspending a
+dealership or revoking a session takes effect on the **next request** — which is
+the entire reason the design is not a JWT.
 
-For example:
+Nothing goes in `localStorage` or `sessionStorage`. No token is ever returned to
+client JavaScript.
 
-```text
-Current Local Dealer
---------------------
-Dealer ID: dealer-demo-001
-Dealer Name: Demo Motors
-Phone: +91 98400 12345
-Status: ACTIVE
-Credits: determined from database
-```
+## What has not changed
 
-The exact implementation should follow the architecture where possible, but authentication can be mocked/bypassed for local development.
-
-### Important
-
-Even though authentication is bypassed:
-
-**Do NOT weaken tenant isolation.**
-
-The application should still behave as though:
+**Tenant isolation is unchanged and must stay that way.**
 
 ```text
 dealerId = current authenticated dealer
 ```
 
-and server-side code must derive the dealer from the local development session/context rather than accepting arbitrary `dealerId` values from clients.
+`dealerId` is a property of the resolved session and is never read from a request
+body, query string or path. `SessionResolver` still offers no way to pass an
+identity in — the request is available only so a cookie can be read from it.
+
+`AUTH_MODE=dev` keeps the old server-configured identity available for a
+developer with no Google client. It is refused in production and warns on boot.
 
 ---
 

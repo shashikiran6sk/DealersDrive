@@ -3,8 +3,11 @@ import { randomUUID } from 'node:crypto';
 import { formatLakh, formatRupees, initialsOf, slugify } from '@dealers-drive/contracts';
 import { PrismaClient, type CreditReason } from '@prisma/client';
 
+import { env } from '../../src/config/env.js';
+import { hashPassword } from '../../src/modules/auth/password.js';
 import { CONFIG_DEFAULTS } from '../../src/platform/config/platform-config.js';
-import { createLocalStorage } from '../../src/platform/storage/local.adapter.js';
+import { createStorage } from '../../src/platform/storage/factory.js';
+import { ensureBucket } from '../../src/platform/storage/s3.adapter.js';
 import { createSearchRepository } from '../../src/modules/search/search.repository.js';
 import {
   CITIES,
@@ -32,7 +35,10 @@ import { DERIVATIVE_WIDTHS, generatePlaceholderImage } from './images.js';
  */
 
 const prisma = new PrismaClient();
-const storage = createLocalStorage();
+// The same driver the API will read them back through — a seed that always
+// wrote to local disk would leave a MinIO-backed developer with 100 broken
+// images and no clue why.
+const storage = createStorage();
 const search = createSearchRepository(prisma);
 
 const LISTING_DAYS = 90;
@@ -53,7 +59,7 @@ async function truncate(): Promise<void> {
       credit_transactions, invoices, payments, orders, credit_packs,
       photo_requests, phone_reveals, enquiries, listing_view_daily, listings,
       vehicle_media, media, vehicles, dealer_documents, dealer_members,
-      dealers, sessions, users, colors, rtos, cities, variants, models, makes
+      dealers, sessions, oauth_identities, users, colors, rtos, cities, variants, models, makes
     RESTART IDENTITY CASCADE`);
   await prisma.$executeRawUnsafe(`ALTER SEQUENCE enquiry_reference_seq RESTART WITH 10000`);
   await prisma.$executeRawUnsafe(`ALTER SEQUENCE invoice_number_seq RESTART WITH 1`);
@@ -123,19 +129,28 @@ async function seedCatalog() {
 
 type Catalog = Awaited<ReturnType<typeof seedCatalog>>;
 
+/**
+ * The one admin account, and the only account in the system with a password.
+ *
+ * `DEV_ADMIN_PASSWORD` is read once, hashed with the same Argon2id parameters
+ * sign-in verifies against, and dropped. The plaintext is never written to a
+ * row, never logged, and never returned by any endpoint — the value the
+ * developer types comes from their own `.env`, not from anything this seed
+ * prints. Re-running the seed re-hashes it, so rotating the variable rotates
+ * the credential.
+ */
 async function seedAdmin(): Promise<string> {
   const admin = await prisma.user.create({
     data: {
       fullName: 'Dealers-Drive Operations',
       roleTitle: 'Platform admin',
-      email: 'ops@dealers-drive.in',
+      email: env.DEV_ADMIN_EMAIL,
       phone: '+919000000001',
       emailVerifiedAt: now,
       phoneVerifiedAt: now,
       isPlatformAdmin: true,
       adminRole: 'SUPER_ADMIN',
-      // No passwordHash: admin sign-in is out of scope for this build, and the
-      // `only_admins_have_passwords` constraint keeps the intent visible.
+      passwordHash: await hashPassword(env.DEV_ADMIN_PASSWORD),
     },
   });
   return admin.id;
@@ -734,6 +749,10 @@ async function reconcile(dealers: Dealers, ledger: Ledger): Promise<void> {
 async function main(): Promise<void> {
   const started = Date.now();
   process.stdout.write('Seeding Dealers-Drive…\n');
+
+  // A fresh MinIO volume has no bucket; the seed is usually the first thing to
+  // write to it, and a missing bucket here would surface as 100 failed uploads.
+  if (env.STORAGE_DRIVER !== 'local') await ensureBucket();
 
   await truncate();
   await seedConfig();

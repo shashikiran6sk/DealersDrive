@@ -1,4 +1,17 @@
+import { resolve } from 'node:path';
+
+import { config as loadEnv } from 'dotenv';
 import type { NextConfig } from 'next';
+
+/**
+ * One `.env`, at the repo root, for both apps.
+ *
+ * Next only looks inside its own project directory, so without this the web app
+ * would need a second copy of `API_BASE_URL` — and two files that must agree is
+ * how they stop agreeing. dotenv never overwrites a variable that is already
+ * set, so a real environment variable still wins over the file.
+ */
+loadEnv({ path: [resolve(process.cwd(), '.env'), resolve(process.cwd(), '../../.env')], quiet: true });
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

@@ -24,6 +24,18 @@ const isProduction = process.env.NODE_ENV === 'production';
 const required = (localDefault: string) =>
   isProduction ? z.string().min(1) : z.string().min(1).default(localDefault);
 
+/**
+ * An optional variable that may be present but blank.
+ *
+ * `.env.example` lists every production credential with an empty value, so a
+ * developer can see what exists without hunting through documentation. dotenv
+ * reads `GOOGLE_CLIENT_ID=` as the empty string, not as absent — and `""` is a
+ * value, so a plain `.optional()` would fail `.min(1)` on a variable nobody
+ * set. Blank means unset, everywhere.
+ */
+const optional = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((value) => (value === '' ? undefined : value), schema.optional());
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_ENV: z.enum(['local', 'preview', 'dev', 'production']).default('local'),
@@ -41,26 +53,98 @@ const envSchema = z.object({
   DATABASE_URL: required('postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'),
 
   /**
-   * Local development identity (CLAUDE.md §5, §17). Production auth replaces
-   * the resolver, not these values — nothing downstream of `resolvePrincipal`
-   * knows the difference, and no route ever reads an identity from a client.
+   * Which `SessionResolver` the container builds.
+   *
+   *   cookie — the real thing: `dd_session` → `sessions` row → principal
+   *   dev    — the server-configured identity below, for a developer who has
+   *            no Google credentials yet. Refused in production, and it logs a
+   *            warning on every boot so it can never be mistaken for the norm.
+   */
+  AUTH_MODE: z.enum(['cookie', 'dev']).default('cookie'),
+
+  /**
+   * Local development identity (CLAUDE.md §5, §17), used only when
+   * `AUTH_MODE=dev`. Production auth replaces the resolver, not these values —
+   * nothing downstream of `resolvePrincipal` knows the difference, and no route
+   * ever reads an identity from a client.
    */
   DEV_DEALER_SLUG: z.string().min(1).default('sri-lakshmi-motors'),
+
+  /** The admin the seed creates, and the account `pnpm db:seed` hashes a password for. */
   DEV_ADMIN_EMAIL: z.string().min(1).default('ops@dealers-drive.in'),
+  /**
+   * Seed input only. Read once by `prisma/seed`, hashed with Argon2id, and
+   * never stored, logged or returned. Required in production *if* the seed is
+   * run there at all — the schema keeps it optional because the API itself
+   * never reads it.
+   */
+  DEV_ADMIN_PASSWORD: z.string().min(8).default('dealers-drive-local-admin'),
+
+  /**
+   * Dealer sign-in — Google OAuth 2.0 / OpenID Connect (authorization code +
+   * PKCE + nonce). No default: a fabricated client id would turn a
+   * configuration mistake into a broken redirect at Google rather than a clear
+   * error at boot. `assertGoogleConfigured()` is what routes call.
+   */
+  GOOGLE_CLIENT_ID: optional(z.string().min(1)),
+  GOOGLE_CLIENT_SECRET: optional(z.string().min(1)),
+  GOOGLE_CALLBACK_URL: z.string().url().default('http://localhost:4000/v1/auth/google/callback'),
+
+  /**
+   * Signs the short-lived OAuth transaction cookie (state · nonce · PKCE
+   * verifier) and nothing else. Session tokens are random, not signed.
+   */
+  SESSION_SECRET: z.string().min(16).default('dealers-drive-local-session-secret'),
+  /** `.dealers-drive.com` in production so web and api share the cookie. Host-only locally. */
+  SESSION_COOKIE_DOMAIN: optional(z.string().min(1)),
 
   /** `development` settles instantly; `razorpay` is the production adapter. */
   PAYMENT_PROVIDER: z.enum(['development', 'razorpay']).default('development'),
 
-  /** Local disk stands in for R2. Same port, same presign→PUT→commit contract. */
-  STORAGE_DRIVER: z.enum(['local', 'r2']).default('local'),
+  /**
+   * One `StoragePort`, three ways to terminate a PUT:
+   *
+   *   local  — the filesystem. No container needed; what the test suite uses.
+   *   minio  — S3-compatible, on localhost:9000. What `docker compose` gives you.
+   *   r2     — S3-compatible, at Cloudflare. Production.
+   *
+   * `minio` and `r2` are the *same adapter*: only S3_ENDPOINT and the keys
+   * differ, which is the whole claim this seam has to keep true (§12.1).
+   */
+  STORAGE_DRIVER: z.enum(['local', 'minio', 'r2']).default('local'),
   STORAGE_LOCAL_DIR: z.string().min(1).default('.storage'),
+
+  S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
+  S3_REGION: z.string().min(1).default('auto'),
+  S3_BUCKET: z.string().min(1).default('dealers-drive'),
+  S3_ACCESS_KEY_ID: optional(z.string().min(1)),
+  S3_SECRET_ACCESS_KEY: optional(z.string().min(1)),
+  /**
+   * MinIO needs path-style addressing (`endpoint/bucket/key`); R2 accepts it
+   * too, so it is on by default and only worth turning off for a bucket served
+   * from a virtual-hosted domain.
+   */
+  S3_FORCE_PATH_STYLE: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
   /** Signs local presigned upload URLs. Any secret works locally. */
   UPLOAD_SIGNING_SECRET: z.string().min(8).default('dealers-drive-local-upload-secret'),
   MEDIA_BASE_URL: required('http://localhost:4000/media'),
 
   MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
+  /** `console` locally, `msg91` in production. Mobile OTP is out of scope either way. */
   SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
+  MSG91_AUTH_KEY: optional(z.string().min(1)),
+  MSG91_SENDER_ID: optional(z.string().min(1)),
   MAIL_FROM: z.string().min(1).default('Dealers-Drive <no-reply@dealers-drive.com>'),
+
+  /**
+   * Accepted and validated so production configuration is complete, but no SDK
+   * is installed — see README "Remaining production setup". An unset DSN is the
+   * normal local state and must never be an error.
+   */
+  SENTRY_DSN: optional(z.string().url()),
 
   SUPPORT_EMAIL: z.string().min(1).default('support@dealers-drive.com'),
   SUPPORT_PHONE: z.string().min(1).default('+914162248890'),
@@ -103,6 +187,67 @@ const envSchema = z.object({
     .transform((value) => value === 'true'),
 });
 
+/** The local defaults that are fine on a laptop and must never reach production. */
+const LOCAL_SESSION_SECRET = 'dealers-drive-local-session-secret';
+const LOCAL_UPLOAD_SECRET = 'dealers-drive-local-upload-secret';
+
+/**
+ * Cross-field rules — "this variable is required *because* of that one".
+ *
+ * They exist so a production deployment fails at boot rather than at the first
+ * dealer who tries to sign in. Nothing here silently falls back to a local
+ * provider: choosing R2 without keys is a configuration error, not a reason to
+ * start writing to the container's filesystem.
+ */
+const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
+  const require = (path: string, message: string) => {
+    ctx.addIssue({ code: 'custom', path: [path], message });
+  };
+
+  const production = value.NODE_ENV === 'production';
+
+  if (production && value.AUTH_MODE === 'dev') {
+    require('AUTH_MODE', 'must be `cookie` in production — `dev` bypasses identity verification.');
+  }
+
+  if (value.STORAGE_DRIVER !== 'local') {
+    if (!value.S3_ACCESS_KEY_ID) {
+      require('S3_ACCESS_KEY_ID', `is required when STORAGE_DRIVER=${value.STORAGE_DRIVER}.`);
+    }
+    if (!value.S3_SECRET_ACCESS_KEY) {
+      require('S3_SECRET_ACCESS_KEY', `is required when STORAGE_DRIVER=${value.STORAGE_DRIVER}.`);
+    }
+  }
+
+  if (value.SMS_DRIVER === 'msg91') {
+    if (!value.MSG91_AUTH_KEY) require('MSG91_AUTH_KEY', 'is required when SMS_DRIVER=msg91.');
+    if (!value.MSG91_SENDER_ID) require('MSG91_SENDER_ID', 'is required when SMS_DRIVER=msg91.');
+  }
+
+  if (!production) return;
+
+  if (value.AUTH_MODE === 'cookie') {
+    if (!value.GOOGLE_CLIENT_ID) {
+      require('GOOGLE_CLIENT_ID', 'is required in production — dealers sign in with Google.');
+    }
+    if (!value.GOOGLE_CLIENT_SECRET) {
+      require('GOOGLE_CLIENT_SECRET', 'is required in production — dealers sign in with Google.');
+    }
+  }
+
+  if (value.STORAGE_DRIVER === 'local') {
+    require('STORAGE_DRIVER', 'must be `r2` in production — container filesystems are not durable.');
+  }
+
+  if (value.SESSION_SECRET === LOCAL_SESSION_SECRET) {
+    require('SESSION_SECRET', 'is still the local development default.');
+  }
+
+  if (value.UPLOAD_SIGNING_SECRET === LOCAL_UPLOAD_SECRET) {
+    require('UPLOAD_SIGNING_SECRET', 'is still the local development default.');
+  }
+});
+
 export type Env = z.infer<typeof envSchema> & {
   readonly isProduction: boolean;
   readonly isDevelopment: boolean;
@@ -111,7 +256,7 @@ export type Env = z.infer<typeof envSchema> & {
 };
 
 function loadEnv(): Env {
-  const parsed = envSchema.safeParse(process.env);
+  const parsed = checkedEnvSchema.safeParse(process.env);
 
   if (!parsed.success) {
     const details = parsed.error.issues
@@ -139,3 +284,32 @@ function loadEnv(): Env {
 
 /** Validated, frozen, import-anywhere. Reading process.env elsewhere is a bug. */
 export const env: Env = loadEnv();
+
+/**
+ * Google OAuth credentials, or a developer-facing explanation of what to set.
+ *
+ * Called by the two routes that need them rather than at boot, so a developer
+ * who has not registered an OAuth client yet still gets a working API, a
+ * working marketplace and a working admin console — and a precise error the
+ * moment they press "Continue with Google". Production never reaches the throw:
+ * `checkedEnvSchema` has already refused to start (§29).
+ */
+export function googleCredentials(): { clientId: string; clientSecret: string; callbackUrl: string } {
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+    throw new Error(
+      'Google sign-in is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env, ' +
+        `and register ${env.GOOGLE_CALLBACK_URL} as an authorized redirect URI in the Google Cloud ` +
+        'console (APIs & Services → Credentials → OAuth 2.0 Client ID → Web application).',
+    );
+  }
+
+  return {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+    callbackUrl: env.GOOGLE_CALLBACK_URL,
+  };
+}
+
+export function isGoogleConfigured(): boolean {
+  return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
+}

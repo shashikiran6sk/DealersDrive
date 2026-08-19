@@ -125,6 +125,25 @@ export class DomainError extends AppError {
   }
 }
 
+/**
+ * 503 — the API is configured such that it cannot perform this operation.
+ *
+ * Not the caller's fault and not a business rule: a credential is missing. The
+ * detail is written for the developer who has to fix it and names the variable,
+ * because the alternative — a generic 500 — sends them to the logs to learn
+ * something the response could have told them (§29).
+ */
+export class ConfigurationError extends AppError {
+  readonly status = 503;
+  readonly code: string;
+  readonly title = 'Not configured';
+
+  constructor(detail: string, options?: AppErrorOptions & { code?: string }) {
+    super(detail, options);
+    this.code = options?.code ?? 'NOT_CONFIGURED';
+  }
+}
+
 /** 429 — over a limit. Always accompanied by `Retry-After`. */
 export class RateLimitError extends AppError {
   readonly status = 429;

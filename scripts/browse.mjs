@@ -8,6 +8,11 @@
  * full-page PNG.
  *
  *   node scripts/browse.mjs <url> <out.png> [--width=1440] [--steps=steps.json]
+ *                                            [--cookie=name=value]
+ *
+ * `--cookie` is set through the DevTools protocol rather than `document.cookie`,
+ * which is the only way to hand the page a session: the real `dd_session` is
+ * HttpOnly, and script cannot write one — nor should it be able to.
  *
  * A step is one of:
  *   { "eval": "<expression>" }        run in the page, await the result
@@ -31,6 +36,7 @@ const flag = (name, fallback) =>
 
 const width = Number(flag('width', '1440'));
 const stepsFile = flag('steps', null);
+const cookies = flags.filter((f) => f.startsWith('--cookie=')).map((f) => f.slice('--cookie='.length));
 const steps = stepsFile ? JSON.parse(await readFile(stepsFile, 'utf8')) : [];
 
 const profile = await mkdtemp(join(tmpdir(), 'dd-cdp-'));
@@ -109,6 +115,22 @@ async function shot(path) {
 await send('Page.enable');
 await send('Runtime.enable');
 await send('Log.enable');
+
+// Before the first navigation, so the very first request carries them.
+if (cookies.length > 0) {
+  await send('Network.enable');
+  for (const pair of cookies) {
+    const separator = pair.indexOf('=');
+    await send('Network.setCookie', {
+      name: pair.slice(0, separator),
+      value: pair.slice(separator + 1),
+      url,
+      path: '/',
+      httpOnly: true,
+    });
+  }
+}
+
 await send('Page.navigate', { url });
 
 // Wait for the load event rather than a fixed delay.

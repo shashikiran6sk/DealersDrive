@@ -45,8 +45,8 @@ function signature(overrides: Partial<LocalStorageSignature> = {}): LocalStorage
 }
 
 describe('presignPut', () => {
-  it('returns a PUT the client can make without the API in the path', () => {
-    const presigned = createLocalStorage().presignPut({
+  it('returns a PUT the client can make without the API in the path', async () => {
+    const presigned = await createLocalStorage().presignPut({
       key: 'vehicles/abc/original.jpg',
       contentType: 'image/jpeg',
       contentLength: 2048,
@@ -56,8 +56,8 @@ describe('presignPut', () => {
     expect(presigned.uploadUrl.startsWith(`${env.API_BASE_URL}/uploads?`)).toBe(true);
   });
 
-  it('binds the key, content type and length into the URL', () => {
-    const presigned = createLocalStorage().presignPut({
+  it('binds the key, content type and length into the URL', async () => {
+    const presigned = await createLocalStorage().presignPut({
       key: 'vehicles/abc/original.jpg',
       contentType: 'image/jpeg',
       contentLength: 2048,
@@ -70,9 +70,9 @@ describe('presignPut', () => {
     expect(params.get('signature')).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('defaults the expiry to five minutes', () => {
+  it('defaults the expiry to five minutes', async () => {
     const before = Date.now();
-    const presigned = createLocalStorage().presignPut({
+    const presigned = await createLocalStorage().presignPut({
       key: 'k',
       contentType: 'image/jpeg',
       contentLength: 1,
@@ -84,8 +84,8 @@ describe('presignPut', () => {
     expect(expiresAt).toBeLessThanOrEqual(Date.now() + 300_000);
   });
 
-  it('honours an explicit expiry', () => {
-    const presigned = createLocalStorage().presignPut({
+  it('honours an explicit expiry', async () => {
+    const presigned = await createLocalStorage().presignPut({
       key: 'k',
       contentType: 'image/jpeg',
       contentLength: 1,
@@ -98,8 +98,8 @@ describe('presignPut', () => {
     );
   });
 
-  it('tells the client which headers to send, so the signature can bind them', () => {
-    const presigned = createLocalStorage().presignPut({
+  it('tells the client which headers to send, so the signature can bind them', async () => {
+    const presigned = await createLocalStorage().presignPut({
       key: 'k',
       contentType: 'application/pdf',
       contentLength: 4096,
@@ -111,8 +111,8 @@ describe('presignPut', () => {
     });
   });
 
-  it('produces a URL whose signature verifies', () => {
-    const presigned = createLocalStorage().presignPut({
+  it('produces a URL whose signature verifies', async () => {
+    const presigned = await createLocalStorage().presignPut({
       key: 'vehicles/abc/original.jpg',
       contentType: 'image/jpeg',
       contentLength: 2048,
@@ -132,8 +132,8 @@ describe('presignPut', () => {
     ).toBe(true);
   });
 
-  it('encodes a key with slashes without breaking the query string', () => {
-    const presigned = createLocalStorage().presignPut({
+  it('encodes a key with slashes without breaking the query string', async () => {
+    const presigned = await createLocalStorage().presignPut({
       key: 'dealers/1/kyc/gst certificate.pdf',
       contentType: 'application/pdf',
       contentLength: 10,
@@ -354,17 +354,17 @@ describe('publicUrl', () => {
 });
 
 describe('signedReadUrl', () => {
-  it('signs a private read with an expiry', () => {
-    const url = new URL(createLocalStorage().signedReadUrl('dealers/1/kyc/gst.pdf', 120));
+  it('signs a private read with an expiry', async () => {
+    const url = new URL(await createLocalStorage().signedReadUrl('dealers/1/kyc/gst.pdf', 120));
 
     expect(url.pathname).toBe('/private/dealers/1/kyc/gst.pdf');
     expect(Number(url.searchParams.get('expiresAt'))).toBeGreaterThan(Date.now());
     expect(url.searchParams.get('signature')).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('signs a read with a different payload from a write', () => {
+  it('signs a read with a different payload from a write', async () => {
     const spy = vi.fn();
-    const url = new URL(createLocalStorage().signedReadUrl('k', 60));
+    const url = new URL(await createLocalStorage().signedReadUrl('k', 60));
     const expiresAt = Number(url.searchParams.get('expiresAt'));
 
     // A read URL must not be replayable as an upload URL: the content type in
@@ -375,12 +375,12 @@ describe('signedReadUrl', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('expires sooner for a shorter window', () => {
+  it('expires sooner for a shorter window', async () => {
     const short = Number(
-      new URL(createLocalStorage().signedReadUrl('k', 10)).searchParams.get('expiresAt'),
+      new URL(await createLocalStorage().signedReadUrl('k', 10)).searchParams.get('expiresAt'),
     );
     const long = Number(
-      new URL(createLocalStorage().signedReadUrl('k', 600)).searchParams.get('expiresAt'),
+      new URL(await createLocalStorage().signedReadUrl('k', 600)).searchParams.get('expiresAt'),
     );
 
     expect(short).toBeLessThan(long);

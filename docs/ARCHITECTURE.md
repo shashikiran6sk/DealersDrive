@@ -1077,7 +1077,31 @@ One integration test per tenant-owned resource: *Dealer A requests Dealer B's re
 
 # 8. Authentication & authorization
 
-## 8.1 Dealer auth — passwordless phone OTP
+## 8.1 Dealer auth — Google sign-in
+
+> **Changed in r3, and this supersedes the OTP design below.** Dealers sign in
+> with **Google** (OAuth 2.0 authorization code + PKCE + OIDC nonce). There is no
+> dealer password, no email OTP and no mobile OTP anywhere in the product, and
+> the `VerificationCode` flow sketched in this section was never built.
+>
+> The r2 reasoning still holds — *a credential that exists in the API but nowhere
+> in the product is an attack surface with no user* — and Google sign-in takes it
+> one step further: there is no dealer credential at all. It also takes DLT
+> registration off the launch critical path, which the r2 note below correctly
+> identified as the biggest schedule risk in the design.
+>
+> What replaced it, in one line each:
+>
+> * `OAuthIdentity(provider, providerSubject)` is the account. The email is
+>   refreshed on every sign-in and never used to find anybody.
+> * A verified identity with no `DealerMember` row is a `PendingPrincipal`, which
+>   can reach `POST /v1/auth/onboarding` and nothing else.
+> * Admins keep email + password (§8.2), **without** the mandatory TOTP this
+>   document specifies — that is a deliberate deferral, not an oversight.
+> * Phone numbers are still collected at onboarding. Nothing sends a code to one.
+>
+> `docs/API-SPEC.md` Part B is the implemented contract. Everything below is kept
+> for the reasoning, and for the day an SMS channel is wanted again.
 
 > **Changed in r2.** The previous design was email + phone + password. **There is no password field on any dealer screen in the UI.** Sign-in is one phone number and a six-digit code; the sign-in screen says so out loud: *"We send a one-time code — no password to remember."* A password field that exists in the API but nowhere in the product is an attack surface with no user.
 
@@ -1138,7 +1162,7 @@ Domain    .dealers-drive.com             Max-Age   30 days (sliding)
 ```
 Plus a double-submit CSRF token on every state-changing request. Session rotates on login and on any privilege change.
 
-**Admins:** email + password + mandatory TOTP 2FA with backup codes, 12-hour sessions, harder rate limits, separate `/v1/auth/admin/login` flow.
+**Admins:** email + password, 12-hour sessions, harder rate limits, separate `/v1/auth/admin/login` flow. *(r3: implemented without the mandatory TOTP — the `totpSecret` and `totpEnabledAt` columns exist and are unused. Adding 2FA is a second verification step on an existing flow, not a redesign.)*
 
 ## 8.3 Permissions
 

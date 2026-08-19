@@ -57,7 +57,7 @@ export function createAdminRouter(service: AdminService): Router {
 
   router.get(
     '/metrics/overview',
-    handle(() => service.overview()),
+    handle((req) => service.overview(adminPrincipal(req))),
   );
 
   router.get(
