@@ -1,0 +1,31 @@
+# Dealers-Drive web. Install alongside dealers-drive-api.service.
+[Unit]
+Description=Dealers-Drive web (Next.js)
+After=network-online.target dealers-drive-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+# apps/web, so next.config.ts's dotenv call resolves ../../.env — the same
+# repo-root file the API reads.
+WorkingDirectory=/home/ubuntu/dealers-drive/apps/web
+Environment=NODE_ENV=production
+Environment=PORT=3000
+# --hostname 127.0.0.1: nginx is the only client, so the port is not exposed
+# on the instance's public interface even if the security group is widened.
+ExecStart=/home/ubuntu/dealers-drive/apps/web/node_modules/.bin/next start --hostname 127.0.0.1 --port 3000
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=20
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dd-web
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
