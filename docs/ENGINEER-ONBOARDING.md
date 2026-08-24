@@ -21,6 +21,21 @@ before you promise anyone a feature.
 
 ---
 
+> ### 📚 Looking for a structured way through this?
+>
+> **[`docs/learning-path/`](learning-path/README.md)** turns this reference into a
+> **20-day programme**: one document per day, each naming the exact sections to
+> read, the exact files to open in order, hands-on exercises, self-check questions
+> and a deliverable checklist.
+>
+> Start at **[`learning-path/README.md`](learning-path/README.md)**, then work
+> through `day-01.md` → `day-20.md`. A Word version of the whole programme is at
+> `learning-path/Dealers-Drive-Learning-Path.docx`.
+>
+> This document is the *explanation*. The learning path is the *sequence*.
+
+---
+
 ## Table of contents
 
 | Part | Subject |
@@ -47,13 +62,35 @@ before you promise anyone a feature.
 | 20 | Error handling |
 | 21 | Observability |
 | 22 | Testing strategy |
-| 23 | Production architecture |
+| 23 | Production architecture — what actually runs on AWS |
 | 24 | Eight complete user journeys |
 | 25 | "What happens if…" — the troubleshooting table |
 | 26 | Why did we build it this way? |
 | 27 | Code reading guide — day 1, day 3, week 1 |
 | 28 | Glossary |
 | 29 | Consolidated list of gaps, mocks and spec/code conflicts |
+| **30** | **Turborepo and the monorepo build system** |
+| **31** | **CI/CD — from a pull request to production** |
+| **32** | **Database operations — provisioning, migrations, backups, PITR, DR** |
+| **33** | **Scaling — 10 users to 100,000+** |
+| **34** | **The concepts, from first principles** |
+| **35** | **Reference links for learning** |
+
+**Parts 30–35 were added, and Part 23 was rewritten, in the revision dated
+2026-08-24.** If you are new, Part 34 is the one to keep open beside the others:
+every term the rest of the document uses is built up there from first principles
+and then connected back to the file that implements it.
+
+### Where to look for the six things people ask about most
+
+| Question | Read |
+|---|---|
+| How does "Sign in with Google" actually work? | §34-B7 → §34-B8 → §34-B9 → **Part 4** |
+| What is the difference between a token, a session and a cookie? | **§34-B2**, then §34-B3, §34-B4, then Part 5 |
+| How do images get uploaded and served? | §34-D1 → §34-D2 → **Part 14** → §33.3 |
+| What happens when I merge a PR? | **Part 31**, §31.4 |
+| How is the database backed up, and how do I recover? | **Part 32**, §32.6–§32.7 |
+| What breaks first when we grow? | **Part 33**, §33.9 and §33.11 |
 
 ---
 ---
@@ -6031,227 +6068,307 @@ test. Write down what you ruled out and what evidence you need.
 
 # Part 23 — Production architecture
 
-## 23.1 What is actually built for deployment
+> **This part was rewritten in full.** The previous version described a
+> single-box EC2 deployment and listed CI/CD workflows and the web Dockerfile as
+> "not present". Both now exist, and the production target is AWS ECS Fargate.
+> The source of truth is `.github/workflows/`, `deploy/aws/README.md`,
+> `apps/*/Dockerfile` and `docs/DEPLOYMENT.md`.
 
-`deploy/` contains a **single-box EC2 deployment** — nginx + systemd + Docker
-Compose for the data services. Not Kubernetes, not a PaaS. That is a deliberate
-fit for an MVP.
+## 23.1 The three ways this system runs
 
-```
-                  ┌──────────────────────── EC2 instance (t3.small+) ───────────┐
-  investor ──443──┤  nginx (TLS via certbot)                                     │
-                  │    /            → 127.0.0.1:3000   Next.js   (systemd)       │
-                  │    /v1  /media  → 127.0.0.1:4000   Express   (systemd)       │
-                  │                                                              │
-  browser ──443───┤  s3.<domain>    → 127.0.0.1:9000   MinIO     (docker)        │
-  (photo upload)  │                   127.0.0.1:5432   Postgres  (docker)        │
-                  └──────────────────────────────────────────────────────────────┘
+The same source tree runs in three shapes, and knowing which one you are looking
+at prevents most confusion.
 
-  Security group: 22 (your IP only), 80, 443. NOTHING else.
-  Postgres, MinIO and both Node processes bind to LOOPBACK — unreachable even
-  if the security group is widened by accident.
-```
+| | **Laptop** | **`docker compose --profile app`** | **AWS (dev and production)** |
+|---|---|---|---|
+| Web | `next dev --turbopack` on :3000 | `dd-web` container | ECS Fargate task, `next start` |
+| API | `tsx watch` on :4000 | `dd-api` container | ECS Fargate task, `node dist/index.js` |
+| Postgres | Docker container on :5432 | same container | **RDS PostgreSQL 16**, private subnet |
+| Object storage | filesystem (`.storage/`) or MinIO | MinIO on :9000 | **Cloudflare R2** |
+| Mail | console logger | Mailpit on :8025 | console logger (still) |
+| Jobs | inline in the API process | inline in the API process | inline in the API process |
+| Identity | `AUTH_MODE=dev` or real Google | real Google | real Google, one OAuth client per environment |
+| TLS | none | none | ACM certificate at the ALB |
 
-Two details from `deploy/README.md` worth repeating:
-
-- **One hostname serves the whole thing**, so the session cookie is host-only and
-  the browser never has to reason about two origins.
-- **`s3.<domain>` is not optional** if you want to demo adding a car with photos:
-  the browser uploads straight to the bucket with a presigned URL, and *the SigV4
-  signature covers the hostname it was signed for*.
-
-`deploy/docker-compose.prod.yml` differs from the dev one in exactly three ways,
-each stated in a comment: every port publishes on `127.0.0.1` only; credentials
-come from `.env` rather than being hardcoded; and there is **no Mailpit** —
-*"an open web inbox on a public box is a liability with no upside."*
-
-## 23.2 The target architecture
-
-```
-                        ┌──────────────────────────────┐
-                        │           USERS              │
-                        │  buyers · dealers · admins   │
-                        └──────────────┬───────────────┘
-                                       │ HTTPS
-                        ┌──────────────▼───────────────┐
-                        │      CDN / LOAD BALANCER     │
-                        │  TLS · static assets · WAF   │
-                        └───────┬──────────────┬───────┘
-                                │              │
-              ┌─────────────────▼──┐      ┌────▼───────────────────┐
-              │  NEXT.JS (N inst.) │      │   EXPRESS API (N inst.)│
-              │  stateless         │      │   stateless            │
-              │  ISR cache         │      │   /health/ready gate   │
-              └─────────┬──────────┘      └────┬───────────────────┘
-                        └──────────┬───────────┘
-                                   │ connection pool
-                        ┌──────────▼───────────────────┐
-                        │       POSTGRESQL 16          │
-                        │  write model · listing_search│
-                        │  outbox_events · pgboss      │
-                        │  PITR backups · read replica?│
-                        └──────────┬───────────────────┘
-                                   │
-                        ┌──────────▼───────────────────┐
-                        │  WORKER PROCESS (1..N)       │  ← NOT IMPLEMENTED
-                        │  same image, worker.ts entry │     (no worker.ts)
-                        │  outbox poller + pg-boss     │
-                        │  NEVER listens on a port     │
-                        └──────────┬───────────────────┘
-                                   │
-   ┌───────────────┬───────────────┼──────────────┬─────────────────┐
-   ▼               ▼               ▼              ▼                 ▼
-┌────────┐  ┌────────────┐  ┌───────────┐  ┌────────────┐  ┌───────────────┐
-│ OBJECT │  │  PAYMENT   │  │   EMAIL   │  │    SMS     │  │  MONITORING   │
-│STORAGE │  │  GATEWAY   │  │ PROVIDER  │  │  PROVIDER  │  │               │
-│ R2 /   │  │            │  │           │  │            │  │ logs → sink   │
-│ MinIO  │  │ Razorpay   │  │ Resend    │  │ MSG91      │  │ errors→Sentry │
-│  ✅    │  │ ❌ NOT     │  │ ❌ NOT    │  │ ⚠️ adapter │  │ metrics ❌     │
-│        │  │ IMPLEMENTED│  │ WRITTEN   │  │ never sent │  │ uptime ❌      │
-└────────┘  └────────────┘  └───────────┘  └────────────┘  └───────────────┘
-```
-
-## 23.3 The concepts
-
-### Horizontal scaling and stateless HTTP
-
-"Stateless" means **no request depends on which instance handled the previous
-one.** Concretely, in this codebase:
-
-- session state lives in Postgres, not process memory ✅
-- no in-memory user cache ✅
-- uploads go to object storage, not local disk ✅
-- **rate-limit counters live in a process-local `Map`** ⚠️ — the one piece of
-  per-instance state. N instances = N× the effective limit.
-- **`WORKER_INLINE=true` means job handlers run in every API instance** ⚠️ — see
-  §13.7
-
-The first two are fine. The last two are the reasons this is not yet safe to
-scale horizontally without thought.
-
-### Connection pooling
-
-Each Prisma client holds a pool. `instances × pool_size` must stay under
-Postgres's `max_connections` (default 100). Three API instances at the Prisma
-default (`num_cpus × 2 + 1`) on a 4-core box is 27 — fine. Ten instances plus
-workers is not, and the symptom is `too many clients already` under load, not in
-staging.
-
-If you outgrow it: PgBouncer in transaction mode. Note that transaction-mode
-pooling breaks prepared statements and session-level state — including `SET
-LOCAL`, which `withTenant` uses. Worth knowing before you reach for it.
-
-### Migrations
+The command that starts each:
 
 ```bash
-prisma migrate deploy   # applies pending migrations. NEVER `migrate dev` in prod.
+pnpm infra:up      # postgres + minio + mailpit only
+pnpm dev           # turbo run dev — web and api on the host, with hot reload
+pnpm app:up        # scripts/app-up.sh — builds the real images and runs everything in Docker
 ```
 
-**Must run before the new image takes traffic.** And ARCHITECTURE §20.6 mandates
-**expand/contract**: never write a migration that breaks the currently-running
-version, because during a rolling deploy both versions are live at once.
+`pnpm app:up` matters more than it looks: it is the only local command that
+exercises the **production images**, the production Next build and the migrator
+container. If something is going to break in CI's `images build` job, it breaks
+here first, for free.
+
+## 23.2 What actually runs on AWS
+
+One AWS account, one region (`ap-south-1`, Mumbai — the buyers are in Tamil
+Nadu), one VPC, **one Application Load Balancer shared by both environments**.
+The environments share that infrastructure and nothing else: separate databases,
+separate buckets, separate secrets, separate OAuth clients, separate IAM roles.
 
 ```
-❌ one step:  ALTER TABLE vehicles DROP COLUMN old_price;
-              → the old instances still SELECT it → 500s during the rollout
+                              INTERNET
+                                 │
+                     ┌───────────▼────────────┐
+                     │  Cloudflare / Route 53 │   DNS only (grey cloud) —
+                     │  dealers-drive.com     │   proxying would break the
+                     │  www · dev             │   per-IP rate limits (§23.6)
+                     └───────────┬────────────┘
+                                 │ 443
+        ┌────────────────────────▼─────────────────────────────────┐
+        │        Application Load Balancer  (sg: dd-alb)           │
+        │        TLS terminates here, ACM cert, 80 → 301 → 443     │
+        │                                                          │
+        │  host dev.…   path /v1/* /health/* /media/* /api/docs* ──┼──▶ tg-api-dev
+        │  host dev.…   everything else ───────────────────────────┼──▶ tg-web-dev
+        │  host www.…   path /v1/* /health/* /media/* ─────────────┼──▶ tg-api-prod
+        │  host www.…   everything else ───────────────────────────┼──▶ tg-web-prod
+        │  host apex    301 ──▶ www                                │
+        └───────┬────────────────────────────────────┬─────────────┘
+                │                                    │
+   ┌────────────▼──────────────┐        ┌────────────▼──────────────┐
+   │  ECS Fargate  dd-web-*    │        │  ECS Fargate  dd-api-*    │
+   │  next start, :3000        │        │  node dist/index.js, :4000│
+   │  health /api/health       │        │  health /health/ready     │
+   │  prod desired-count 2     │        │  desired-count 1 (capped) │
+   │  sg: dd-app               │        │  sg: dd-app               │
+   └────────────┬──────────────┘        └────────────┬──────────────┘
+                │ server-side fetch                  │
+                │ (Service Connect / ALB)            │
+                └──────────────┬─────────────────────┘
+                               │ 5432 (sg: dd-rds allows dd-app only)
+                  ┌────────────▼─────────────────┐
+                  │  RDS PostgreSQL 16           │
+                  │  dd-postgres-dev  t4g.micro  │
+                  │  dd-postgres-prod t4g.small  │
+                  │  gp3, encrypted, private,    │
+                  │  7-day PITR on production    │
+                  │  application tables +        │
+                  │  listing_search + outbox +   │
+                  │  the `pgboss` schema         │
+                  └──────────────────────────────┘
 
-✅ expand:    add the new column, write to both, backfill        (deploy 1)
-✅ migrate:   switch reads to the new column                     (deploy 2)
-✅ contract:  drop the old column                                (deploy 3)
+   Browser ──── PUT presigned URL ────▶ Cloudflare R2  dd-media-dev / dd-media-prod
+   (photo bytes never touch either ECS task)
+
+   Secrets:  SSM Parameter Store SecureStrings under /dealers-drive/<env>/*
+             resolved by the ECS *execution* role at task start
+   Registry: ECR — dealers-drive/{api,web,migrator}, IMMUTABLE tags
+   Logs:     CloudWatch Logs, one JSON line per request, Container Insights on
 ```
 
-### Health checks and deploy gating
+### Why one hostname per environment, not `api.` and `www.`
 
-Deploys gate on `/health/ready`. New instances take traffic only after it returns
-200. The `Dockerfile`'s `HEALTHCHECK` already polls it.
+This is the single most consequential layout decision, and it is a security one.
 
-### Secrets and environment
+If the API lived at `api.dealers-drive.com` and the site at
+`www.dealers-drive.com`, the `dd_session` cookie would have to be scoped to
+`.dealers-drive.com` so both hosts could read it. A parent-domain cookie is sent
+to **every** host on that domain — including `dev.dealers-drive.com`. A dev
+session would be presented to production on every request.
 
-- `env.ts` validates everything at boot and `process.exit(1)`s on a problem, with
-  every problem listed.
-- Production refuses: `AUTH_MODE=dev`, `STORAGE_DRIVER=local`, the default
-  `SESSION_SECRET`, the default `UPLOAD_SIGNING_SECRET`, missing Google
-  credentials, missing S3 keys when the driver needs them.
-- **No `NEXT_PUBLIC_*`** — so the same built artifact deploys to dev and
-  production. That is **build-once-promote-many**, and it is why the Next
-  Dockerfile in ARCHITECTURE §20.5 carries the comment *"no `NEXT_PUBLIC_*` here.
-  Nothing environment-specific is baked in."*
+Putting both behind one hostname, split by path at the load balancer, makes the
+cookie **host-only**: `SESSION_COOKIE_DOMAIN` is empty in every environment
+(`apps/api/src/config/env.ts`), `dev.` and `www.` cannot read each other's
+cookies, there is no CORS preflight between the two apps, and the OAuth callback
+is a same-site navigation.
 
-### Graceful shutdown
+The cost is one listener-rule subtlety worth memorising: the API rule must name
+`/api/docs*` explicitly and **must not** claim `/api/*`, because the web app's
+own BFF routes live at `/api/dealer/*` and `/api/vehicles/*`
+(`apps/web/src/app/api/`). Sending those to Express would break photo upload and
+the enquiry inbox with a 404 that looks like an application bug.
+
+## 23.3 The three images
+
+`release.yml` builds three images from one commit. They are not three copies of
+the app; they are three different jobs.
+
+| Image | Dockerfile target | What it is | Entry |
+|---|---|---|---|
+| `dealers-drive/api` | `apps/api/Dockerfile` → `runner` | the HTTP process, production deps only | `node apps/api/dist/index.js` |
+| `dealers-drive/migrator` | `apps/api/Dockerfile` → `migrator` | the schema owner — **dev deps kept**, because `prisma` (the CLI) and `tsx` (the seed) are devDependencies | `pnpm db:migrate:deploy`, runs to completion and exits |
+| `dealers-drive/web` | `apps/web/Dockerfile` → `runner` | the Next.js server | `next start` |
+
+Three properties of these images carry the whole deployment model:
+
+**1. `GIT_SHA` is the only build argument, and it configures nothing.** It names
+the artifact. `/health/ready` reports it as `version`, and `/api/health` on the
+web app does the same. This is the only way a pipeline can distinguish "the new
+image is serving" from "the old image is still serving and answering exactly as
+well" — both are 200s.
+
+**2. The web build must succeed with nothing running.** No API, no database. That
+is a requirement, not a convenience: every data route is
+`export const dynamic = 'force-dynamic'`, so `next build` prerenders no page that
+calls the API. If it ever did, the image would contain HTML — and a
+`robots.txt` — built from whichever environment the build machine could reach,
+and one image could no longer be promoted from dev to production. It is the same
+rule that bans `NEXT_PUBLIC_*` (`apps/web/src/lib/config.ts`). CI's
+`images build` job is what catches a regression here, on the pull request.
+
+**3. Both runtime images are non-root (`USER node`) — including the migrator.** A
+container process running as root turns a container escape into a host
+compromise, and a compromised migration is exactly the thing you do not want
+holding root.
+
+## 23.4 The pipeline in one paragraph each
+
+The full walk-through is **Part 31**. In outline:
+
+- **`ci.yml`** — every pull request and every push to `main`. Three jobs:
+  `verify` (lint · typecheck · test · build against a real Postgres service
+  container), `docker` (both images build from a clean context, nothing running),
+  `audit` (`pnpm audit`, blocking at critical). It holds **no credentials** — a
+  fork PR can run it in full.
+- **`security.yml`** — Semgrep and gitleaks, on PRs, on `main`, and weekly.
+  Weekly matters: a rule published upstream can find something in code nobody has
+  touched for months.
+- **`release.yml`** — on push to `main` (which, after branch protection, means
+  "on every merged PR"). Builds the three images, pushes them to ECR tagged
+  `sha-<commit>`, then calls `_deploy.yml` with `environment: dev`. **Production
+  is never touched by this workflow.**
+- **`promote.yml`** — `workflow_dispatch`, manual. A preflight job reads dev's
+  `/health/ready`, resolves which SHA to promote, and refuses if dev is degraded
+  or is not running the SHA you asked for. Then it calls `_deploy.yml` with
+  `environment: production`, and GitHub pauses for a **required reviewer**.
+- **`_deploy.yml`** — reusable, and **identical for dev and production**. It
+  never builds an image. It verifies the images exist in ECR, runs migrations as
+  a one-off Fargate task, deploys API then web (each gated on service stability),
+  and finally runs `scripts/smoke.sh` against the public URLs.
+
+One deploy path, exercised on every merge, with a human standing in front of it
+for production. A production-only deploy path is a path that runs once a month
+and is therefore the one that breaks.
+
+## 23.5 The reliability mechanisms, and which one does what
+
+Four separate things can save a bad deploy. They are often confused.
+
+| Mechanism | Where it is configured | What it catches |
+|---|---|---|
+| Container `HEALTHCHECK` | both Dockerfiles | the process died or wedged; Docker/ECS restarts it |
+| ALB target group health check | `tg-api-*` → `/health/ready`, `tg-web-*` → `/api/health` | a task that is running but cannot serve; it is removed from rotation |
+| ECS **deployment circuit breaker** (`enable=true, rollback=true`) | the ECS service | new tasks that never go healthy → ECS restores the previous task definition **by itself**, before the new version serves a single request |
+| `minimumHealthyPercent=100, maximumPercent=200` | the ECS service | there is never a moment with fewer healthy tasks than before the deploy |
+
+The workflow does not orchestrate the rollback. `wait-for-service-stability: true`
+means the workflow *waits for* the circuit breaker's verdict and fails loudly
+when it fires — the rollback is reported rather than silent.
+
+Note the deliberate asymmetry in the two health checks:
+
+- The **API** is checked on `/health/ready`, which runs `SELECT 1`. A task that
+  cannot reach Postgres should not receive traffic.
+- The **web app** is checked on `/api/health`, which touches **nothing**. It must
+  not fail because the API is down — otherwise an API incident would pull the
+  front end out of rotation too, and there would be nothing left to serve an
+  error page.
+
+`/health/live` exists for a third purpose: it never touches a dependency, so a
+database blip cannot get the container killed and restarted. Liveness answers
+"is this process alive"; readiness answers "should this process get traffic".
+Conflating them is how a five-second database hiccup becomes a restart storm.
+
+## 23.6 Graceful shutdown, and why it is required rather than polite
+
+`apps/api/src/index.ts`:
 
 ```ts
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+
 function shutdown(signal: string): void {
-  const forceExit = setTimeout(() => { logger.error('shutdown timed out, forcing exit'); process.exit(1); }, 10_000);
-  forceExit.unref();
-  server.close(async (closeError) => {
-    await closeContainer(container);   // outbox.stop() → queue.stop() → prisma.$disconnect()
+  const forceExit = setTimeout(() => process.exit(1), SHUTDOWN_TIMEOUT_MS); // 10s
+  forceExit.unref();                       // the timer must not keep the process alive
+  server.close(async (closeError) => {     // stop accepting; drain in-flight requests
+    await closeContainer(container);       // outbox.stop() → queue.stop() → prisma.$disconnect()
     process.exit(closeError ? 1 : 0);
   });
 }
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT',  () => shutdown('SIGINT'));
 ```
 
-`server.close()` stops accepting new connections and waits for in-flight requests
-to finish. The 10-second timer is the backstop — a hung request must not block a
-deploy forever. `forceExit.unref()` means the timer itself does not keep the
-process alive.
+When ECS replaces a task it sends `SIGTERM`, waits, then `SIGKILL`s. Without the
+handler, every request in flight at that instant is a connection reset in a
+dealer's browser — during a deploy that is otherwise "zero downtime". With it,
+`server.close()` stops accepting new connections and lets the existing ones
+finish.
 
-### The Dockerfile
+The 10-second backstop exists because a hung request must not block a deploy
+forever, and `forceExit.unref()` is the detail people miss: an un-unref'd timer
+keeps the Node event loop alive for its full duration, so the process that
+finished cleanly in 200ms would still sit there for ten seconds.
 
-Multi-stage, workspace-aware, built from the repo root:
+## 23.7 Configuration: three layers, and what may live in each
 
-```
-base   → node:22-alpine, corepack
-deps   → COPY only package.json + lockfile, pnpm install    ← cached on lockfile changes only
-build  → COPY everything, build contracts then api
-runner → NODE_ENV=production, pnpm install --prod --filter @dealers-drive/api...
-         COPY --from=build only the dist output
-         HEALTHCHECK /health/ready
-         USER node                                          ← not root
-         CMD ["node", "apps/api/dist/index.js"]
-```
+| Layer | Holds | Where |
+|---|---|---|
+| **Baked into the image** | nothing environment-specific. Only `GIT_SHA`. | `ARG GIT_SHA` |
+| **Task definition environment** | non-secret values: `APP_ENV`, `WEB_BASE_URL`, `API_BASE_URL`, `STORAGE_DRIVER`, `S3_BUCKET`, `MEDIA_BASE_URL` | `deploy/aws/taskdef/*.json` (registered in AWS, not committed) |
+| **Task definition `secrets`** | SSM SecureString ARNs: `DATABASE_URL`, `SESSION_SECRET`, `UPLOAD_SIGNING_SECRET`, `GOOGLE_CLIENT_*`, `S3_*_KEY` | `/dealers-drive/<env>/*` |
 
-The `deps` stage copying only manifests is the standard Docker layer-caching
-trick: a source change does not invalidate `pnpm install`.
+Two consequences worth stating explicitly:
 
-`USER node` matters — a container process running as root turns a container
-escape into a host compromise.
+- **GitHub never holds a database credential.** `DATABASE_URL` is an SSM
+  parameter referenced by the migrate task definition; the migration runs *inside*
+  the VPC and the value never leaves AWS.
+- **The task definitions live in AWS, not in git.** `_deploy.yml` fetches the
+  current one with `describe-task-definition`, changes exactly one field (the
+  image), and re-registers it. A value someone changed in the console is
+  therefore not silently reverted by a stale file in the repository — and the
+  repository does not have to contain the SSM ARNs.
 
-> **There is no `apps/web/Dockerfile`.** ARCHITECTURE §20.5 specifies one (Next.js
-> standalone output); it has not been written. The `deploy/` path runs Next under
-> systemd instead.
+`env.ts` is the last gate. It validates everything at boot and `process.exit(1)`s
+with every problem listed. In production it refuses: `AUTH_MODE=dev`,
+`STORAGE_DRIVER=local`, the default `SESSION_SECRET`, the default
+`UPLOAD_SIGNING_SECRET`, missing Google credentials, and missing S3 keys when the
+driver needs them. A misconfigured production task fails its health check and is
+rolled back — it never serves.
 
-### Rollback
+## 23.8 The one thing that is not horizontally scalable yet
 
-Deploy by image tag, roll back by re-pointing at the previous tag. The constraint
-is migrations: a migration that dropped a column cannot be rolled back by
-redeploying the old image. That is the second reason for expand/contract.
+`dd-api-prod` runs `desired-count 1`, and that is not an oversight.
 
-## 23.4 Implemented vs roadmap — the honest table
+`WORKER_INLINE=true` means the pg-boss job handlers and the scheduled cron jobs
+run **inside the HTTP process** (`container.ts` → `startBackground`). Two API
+tasks would mean every scheduled job — the listing expiry sweep, the counter
+reconciliation, the orphan-media GC — runs twice.
 
-| Concern | State |
-|---|---|
-| API Dockerfile, multi-stage, non-root, healthcheck | ✅ implemented |
-| Single-box deploy: nginx, systemd, compose, bootstrap, release script | ✅ implemented |
-| `env.ts` production guards | ✅ implemented |
-| Graceful shutdown | ✅ implemented |
-| `/health/live` + `/health/ready` | ✅ implemented (DB only) |
-| Object storage R2/MinIO via one S3 adapter | ✅ implemented |
-| Structured logging with traceId | ✅ implemented |
-| **Separate worker process (`worker.ts`)** | ❌ **NOT IMPLEMENTED** |
-| **Web Dockerfile** | ❌ not written |
-| **CI/CD workflows** (`.github/workflows/`) | ❌ not present in the repo |
-| **Sentry** | ❌ DSN accepted, no SDK |
-| **Log shipping** | ❌ |
-| **Metrics / `/metrics`** | ❌ |
-| **Uptime monitoring / alerting** | ❌ |
-| **Razorpay** | ❌ |
-| **Resend mailer** | ❌ console only |
-| **MSG91** | ⚠️ adapter written + unit-tested, never sent a real message; DLT registration required first |
-| **PostgreSQL RLS** | ❌ hook in place, policies not written |
-| **Cross-instance rate limiting** | ❌ in-process only |
-| **CSRF tokens** | ❌ |
+The second piece of per-instance state is the rate limiter: `middleware/rate-limit.ts`
+keeps fixed-window counters in a process-local `Map`. N tasks would mean N× the
+effective limit, and a restart clears it.
+
+So growing the API today means a **bigger task**, not more of them. Lifting the
+cap is the subject of **Part 33**, and it is two changes: a separate worker
+entrypoint, and a shared counter store behind a `CachePort`.
+
+Everything else about the API is already stateless: sessions are rows in
+Postgres, there is no in-memory user cache, and uploads go to object storage
+rather than local disk. `dd-web-prod` already runs two tasks for exactly that
+reason — the Next server holds nothing.
+
+## 23.9 Cost, honestly
+
+From `docs/DEPLOYMENT.md` §L, at an early-stage volume (a few hundred listings,
+~5k page views/day, ~50 GB of photos, ~200 GB/month of image egress):
+
+| | Dev | Production | Shared |
+|---|---:|---:|---:|
+| Fargate (api + web) | $20 | $62 | |
+| RDS Postgres | $17 | $32 | |
+| ALB | | | $22 |
+| Data transfer out | $1 | $20 | |
+| CloudWatch | $3 | $9 | |
+| ECR | | | $2 |
+| Cloudflare R2 | $1 | $2 | |
+| **Total** | **~$42** | **~$125** | **~$27** |
+
+**≈ $195/month.** R2 rather than S3 is the largest single saving: on an
+image-heavy marketplace where the browser downloads photos directly, R2's zero
+egress charge removes the line item that would otherwise dominate.
 
 ---
 ---
@@ -7825,25 +7942,31 @@ Read this before promising anyone a feature.
 | **Payment webhook route** | no `/v1/webhooks/*` in `routes.ts` | `WebhookEvent` model exists, unused by any code |
 | **Refund endpoint** | `admin:payment:refund` in the permission table | no route behind it |
 | **Resend mailer** | `createConsoleMailer()` only | `MAIL_DRIVER` accepts `smtp`/`resend`; neither is wired |
-| **PostgreSQL RLS** | `prisma/rls.sql` **does not exist** | `withTenant` issues `SET LOCAL app.dealer_id`; nothing reads it |
+| **PostgreSQL RLS** | `prisma/rls.sql` **does not exist** (confirmed again 2026-08-24) | `withTenant` issues `SET LOCAL app.dealer_id`; nothing reads it. Layers 1, 2 and 4 of the four-layer model are in place and tested |
 | **CSRF double-submit token** | no `X-CSRF-Token` anywhere | specified in ARCHITECTURE §8.2 and API-SPEC §0.3 |
 | **Admin TOTP / 2FA** | `totpSecret`, `totpEnabledAt` never read or written | ARCHITECTURE §8.2 says "mandatory" |
-| **Separate worker process** | no `worker.ts` | `WORKER_INLINE=true`; scaling the API runs handlers N times |
-| **Web Dockerfile** | `apps/web/Dockerfile` absent | ARCHITECTURE §20.5 specifies one |
-| **CI/CD workflows** | no `.github/workflows/` in the repo | ARCHITECTURE §20.4 specifies four |
+| **Separate worker process** | no `worker.ts` | `WORKER_INLINE=true`; this is why `dd-api-prod` is capped at `desired-count 1` (§23.8, §33.2) |
+| ~~Web Dockerfile~~ | **NOW IMPLEMENTED** — `apps/web/Dockerfile`, multi-stage, non-root, builds with nothing running | §23.3 |
+| ~~CI/CD workflows~~ | **NOW IMPLEMENTED** — `ci.yml`, `security.yml`, `release.yml`, `promote.yml`, `_deploy.yml`, plus `dependabot.yml` | **Part 31** |
 | **Sentry** | `SENTRY_DSN` validated; **no SDK installed** | TODO marked in `error-handler.ts` |
-| **Metrics / `/metrics`** | none | the four that matter are named in `CONTEXT.md` §12.4 |
+| **Metrics / `/metrics`** | none | the four that matter are named in `CONTEXT.md` §12.4. Credit-ledger drift is the one worth alerting on first (§32.9) |
 | **Log shipping** | none | stdout is the interface; nothing consumes it |
-| **Alerting** | none | drift is `logger.error` with nothing watching |
+| **Alerting** | none configured | the six CloudWatch alarms are specified in `docs/DEPLOYMENT.md` §Monitoring but are not yet created (§32.9) |
 | **Job observability** | none | pg-boss state lives in the `pgboss` schema, unsurfaced |
 | **Audit-log UI** | `GET /v1/admin/audit-logs` exists and is documented | no admin screen |
 | **Account linking flow** | `ACCOUNT_LINK_REQUIRED` is a refusal | support inserts the `oauth_identities` row manually |
 | **Team seats / invites** | `MANAGER`, `SALES`, `member:manage` all exist | no invite endpoint; every dealership has one member |
 | **Photo requests** | `CreatePhotoRequestInput`, `photo:request`, `PhotoRequest` model | no endpoint |
-| **Cross-instance rate limiting** | in-process `Map` | N instances = N× the limit; restart clears it |
+| **Cross-instance rate limiting** | in-process `Map` | N instances = N× the limit; restart clears it. The `CachePort` + Redis swap is item 4 in §33.11 |
 | **Invoice PDF** | `pdfMediaKey` is written | no PDF is generated |
 | **Sitemap `lastmod`** | omitted deliberately | no public response carries a listing timestamp; left out rather than fabricated |
 | **Mobile/tablet layouts** | desktop-scoped by the brief | breakpoints implemented where cheap |
+| **CDN / public media domain** | `MEDIA_BASE_URL` points at the API in every environment, so image reads proxy through the Node process | one variable away; the DNS record is already reserved. **The highest-leverage scaling change available** (§33.3, §33.11 item 1) |
+| **ECS autoscaling** | services run at a fixed `desired-count` | blocked on the worker entrypoint for the API; the web app could autoscale today (§33.4) |
+| **Read replica** | one RDS instance per environment | `listing_search` is already a separate read path, so this is a second Prisma client, not a rewrite (§33.6) |
+| **Multi-AZ RDS failover** | single-AZ, deliberately | a cost decision, written down rather than forgotten (§32.1) |
+| **Multi-region / cross-region backups** | regional only, deliberately | region loss is an accepted multi-day RTO (§32.7) |
+| **Backup restore rehearsal** | never performed | PITR is configured; nobody has restored from it. An untested backup is a hope (§35.11 item 9) |
 
 ## 29.2 DEV-ONLY / mocked
 
@@ -7926,6 +8049,2815 @@ From `CONTEXT.md` §9, so they only cost it once:
 ---
 ---
 
+# Part 30 — Turborepo and the monorepo build system
+
+You do not need Turborepo to understand this codebase. You need it to understand
+why `pnpm test` at the root does the right thing, why CI is fast, and why the
+Docker builds are shaped the way they are.
+
+## 30.1 First principles: what problem a monorepo creates
+
+A **monorepo** is one git repository containing several independently-built
+packages. Dealers-Drive has four:
+
+```
+dealers-drive/
+├── apps/
+│   ├── api          @dealers-drive/api        Express 5 server
+│   └── web          @dealers-drive/web        Next.js 15 app
+└── packages/
+    ├── contracts    @dealers-drive/contracts  Zod schemas + inferred types
+    └── config       @dealers-drive/config     shared eslint + tsconfig presets
+```
+
+The alternative — four repositories — has one fatal property for this system:
+`contracts` defines the request and response shapes that `api` validates against
+and `web` renders. In four repos, changing a shape means publishing a new
+`contracts` version, then a PR to `api`, then a PR to `web`, and in between there
+is a window where the deployed API and the deployed web app disagree about what a
+`VehicleDto` is. In one repo, one commit changes all three and CI type-checks all
+three together. **That is the entire reason this is a monorepo.**
+
+But a monorepo creates a problem of its own: dependency order. `api` imports
+`@dealers-drive/contracts`, and nothing that imports `@dealers-drive/contracts`
+compiles until `contracts` has been built into `dist/`. Run the four builds in
+the wrong order and everything fails. Run them all serially every time and a
+one-line CSS change costs a full rebuild of everything.
+
+Two tools split that problem:
+
+- **pnpm workspaces** answers *"where does `@dealers-drive/contracts` resolve
+  from?"*
+- **Turborepo** answers *"in what order do these tasks run, and which of them can
+  I skip?"*
+
+## 30.2 pnpm workspaces — the resolution half
+
+`pnpm-workspace.yaml`, in full:
+
+```yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+```
+
+That tells pnpm those directories are members of one workspace. When
+`apps/api/package.json` says:
+
+```json
+"@dealers-drive/contracts": "workspace:*"
+```
+
+`workspace:*` is a pnpm protocol meaning **"do not go to the npm registry; link
+the local package"**. `pnpm install` creates
+`apps/api/node_modules/@dealers-drive/contracts` as a symlink to
+`packages/contracts`. An import in the API resolves to the local source tree, so
+a change there is visible immediately — no publish, no version bump, no `npm
+link`.
+
+Two more pnpm properties that matter here:
+
+**The content-addressable store.** pnpm keeps one copy of each package version on
+disk (`~/.pnpm-store`) and hard-links it into each `node_modules`. Four packages
+that all depend on `zod@4.4.3` cost one copy, not four. That is why
+`pnpm install --frozen-lockfile` in CI is fast and why the Docker `deps` layer is
+small.
+
+**Strict `node_modules` by default.** npm and yarn flatten `node_modules`, so a
+package can `import` something it never declared as a dependency and it happens
+to work — until the transitive dependency that supplied it is removed. pnpm's
+layout makes an undeclared import fail immediately. `.npmrc` in the repo root is
+where any exception to that would live.
+
+`--frozen-lockfile` deserves a sentence of its own: it makes `pnpm install` fail
+rather than update `pnpm-lock.yaml`. Every install in CI and in every Dockerfile
+uses it, which is what makes "the dependency tree CI tested" and "the dependency
+tree the image contains" the same tree.
+
+## 30.3 Turborepo — the ordering half
+
+`turbo.json` in full, annotated:
+
+```jsonc
+{
+  "ui": "stream",
+  "globalDependencies": [".env", ".nvmrc", "tsconfig.json"],
+  "globalEnv": ["NODE_ENV"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],                        // ← the important line
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "dev":       { "dependsOn": ["^build"], "cache": false, "persistent": true },
+    "lint":      { "dependsOn": ["^build"], "outputs": [] },
+    "typecheck": { "dependsOn": ["^build"], "outputs": ["dist/**", "*.tsbuildinfo"] },
+    "test":      { "dependsOn": ["^build"], "outputs": [], "cache": false },
+    "clean":     { "cache": false }
+  }
+}
+```
+
+### `dependsOn: ["^build"]` — the caret is everything
+
+- `"build"` (no caret) would mean *"this package's own build task"*.
+- `"^build"` means **"the `build` task of every package this package depends
+  on"**.
+
+So `turbo run build` reads the dependency graph from the `package.json` files,
+sees that `api` and `web` both depend on `contracts`, and produces this plan:
+
+```
+                    ┌─ contracts#build ─┐
+                    │                    ├─▶ api#build   ─┐
+   (nothing) ───────┤                    │                 ├─▶ done
+                    │                    ├─▶ web#build   ─┘
+                    └────────────────────┘
+                     runs first, alone      then these two, IN PARALLEL
+```
+
+`api#build` and `web#build` have no relationship to each other, so Turbo runs
+them concurrently across cores. You never write that plan down; it is derived.
+
+`test`, `lint` and `typecheck` all declare `dependsOn: ["^build"]` for the same
+reason: none of them can run against `@dealers-drive/contracts` until its `dist/`
+exists, because `packages/contracts/package.json` points `types` and `main` at
+`./dist/`.
+
+### `outputs` — what caching actually is
+
+Turborepo's cache is a **content-addressed function cache**. Before running a
+task it hashes:
+
+- every non-ignored file in the package,
+- the resolved dependency versions,
+- the task's own configuration,
+- the hashes of all `dependsOn` tasks,
+- anything named in `globalDependencies` (here: `.env`, `.nvmrc`, root
+  `tsconfig.json`),
+- the environment variables named in `globalEnv` / `env`.
+
+If that hash is already in the cache, Turbo **does not run the task**. It
+replays the recorded stdout and restores the declared `outputs` from the cache
+directory (`.turbo/cache/`, or a remote cache if one is configured). You see:
+
+```
+contracts#build: cache hit, replaying logs
+```
+
+This is why `outputs` must be declared correctly. A task whose real output is not
+listed will appear to succeed from cache while leaving nothing on disk. Notice
+`"!.next/cache/**"` on `build`: Next's own incremental cache is machine-local
+scratch, and caching it would bloat every cache entry for no benefit.
+
+And this is why `test` sets `"cache": false`. The integration suite talks to a
+real Postgres; its result depends on database state that Turbo cannot hash. A
+cached "pass" would be a lie.
+
+### `persistent: true`
+
+`dev` never exits. `persistent` tells Turbo not to wait for it before considering
+the run complete, and to refuse to let another task depend on it — a task that
+never finishes cannot be a prerequisite. This is why `pnpm dev` starts
+`contracts` in watch mode, `tsx watch` for the API and `next dev` for the web app
+and holds all three open in one terminal.
+
+### `globalEnv` and the environment-hash trap
+
+Turbo deliberately hashes only the environment variables you declare. If a task's
+output depends on an undeclared variable, you get a cache hit that produces the
+wrong bytes. Here `globalEnv` is just `["NODE_ENV"]` — which is safe **precisely
+because** `NEXT_PUBLIC_*` is banned and nothing environment-specific is read at
+build time (§23.3). The two rules protect each other.
+
+## 30.4 The six root commands
+
+```bash
+pnpm dev        # turbo run dev        — everything in watch mode, one terminal
+pnpm build      # turbo run build      — contracts, then api and web in parallel
+pnpm lint       # turbo run lint       — eslint in each package
+pnpm typecheck  # turbo run typecheck  — tsc --noEmit in each package
+pnpm test       # turbo run test       — vitest in each package, coverage gates on
+pnpm clean      # turbo run clean      — rm -rf dist .next .turbo *.tsbuildinfo
+```
+
+`lint`, `typecheck`, `test`, `build` are the four commands the working agreements
+name, and they are exactly the four `ci.yml` runs. Nothing you can pass CI with
+is something you could not have run locally in one line.
+
+To scope a command to one package, use pnpm's filter rather than `cd`:
+
+```bash
+pnpm --filter @dealers-drive/api test
+pnpm --filter @dealers-drive/api db:migrate
+pnpm --filter @dealers-drive/web dev
+```
+
+`--filter @dealers-drive/api...` (with the trailing `...`) means *"that package
+**and everything it depends on**"*. That is what the Dockerfiles use:
+
+```dockerfile
+RUN pnpm install --frozen-lockfile --prod --filter @dealers-drive/api...
+```
+
+— install production dependencies for the API *and* for `contracts`, and nothing
+for `web`. It is why the API image does not contain React.
+
+## 30.5 `packages/config` — why shared presets are a package
+
+`@dealers-drive/config` ships no code. It exports files:
+
+```json
+"exports": {
+  "./tsconfig/base.json": "./tsconfig/base.json",
+  "./tsconfig/node.json": "./tsconfig/node.json",
+  "./tsconfig/next.json": "./tsconfig/next.json",
+  "./eslint/base":        "./eslint/base.js",
+  "./eslint/node":        "./eslint/node.js",
+  "./eslint/next":        "./eslint/next.js"
+}
+```
+
+Each app's `tsconfig.json` extends the right preset, and each app's
+`eslint.config.js` imports the right flat config. Without this, "strict mode on"
+is a decision made four times and silently relaxed in one of them. With it,
+tightening a compiler option is one commit in one file, and the four packages
+either all pass or the PR is red.
+
+This is also where the module-boundary rules are enforced. ARCHITECTURE §5.5
+rule 2 says only `*.repository.ts` may import `platform/db/prisma` — that is an
+ESLint rule living in `packages/config/eslint/node.js`, not a convention people
+remember.
+
+## 30.6 How the monorepo shapes the Dockerfiles
+
+Both Dockerfiles are built **from the repository root**, not from the app
+directory:
+
+```bash
+docker build -f apps/api/Dockerfile -t dealers-drive-api .
+#                                                        ↑ the whole monorepo
+```
+
+They have to be: the API imports `@dealers-drive/contracts`, which lives outside
+`apps/api/`. A build context of `apps/api` could not see it.
+
+The `deps` stage then does something that looks pedantic and is not:
+
+```dockerfile
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/api/package.json apps/api/
+COPY packages/contracts/package.json packages/contracts/
+COPY packages/config/package.json packages/config/
+RUN pnpm install --frozen-lockfile
+```
+
+Only the **manifests** are copied before `pnpm install`. Docker caches layers by
+their inputs, so this `RUN` is re-executed only when a `package.json` or the
+lockfile changes — not when someone edits a `.tsx` file. Copy the whole tree
+first and every source change reinstalls the entire dependency tree, turning a
+30-second image build into a four-minute one.
+
+`.dockerignore` is the other half of that: it keeps `node_modules`, `.next`,
+`dist` and `.git` out of the build context entirely, so the daemon is not
+shipping a gigabyte of files it will overwrite anyway.
+
+## 30.7 What breaks, and what it looks like
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `Cannot find module '@dealers-drive/contracts'` | `contracts/dist` does not exist | `pnpm build`, or `pnpm --filter @dealers-drive/contracts build` |
+| Types are stale after editing a Zod schema | `contracts` watch not running, or `dist` is old | `pnpm dev` at the root, not `next dev` in `apps/web` |
+| `Cannot find module '@prisma/client'` or `PrismaClient` has no models | the Prisma client is **generated**, not committed | `pnpm --filter @dealers-drive/api db:generate` |
+| A task "passed" but produced nothing | wrong or missing `outputs` in `turbo.json` | fix `outputs`; `pnpm clean` to prove it |
+| Lockfile mismatch in CI or Docker | someone installed without committing `pnpm-lock.yaml` | commit the lockfile; `--frozen-lockfile` is doing its job |
+| A cached build that should not have been cached | an input Turbo does not hash | add it to `globalDependencies` or the task's `env` |
+
+> The Prisma one catches nearly everyone once. `prisma generate` writes the typed
+> client into `node_modules/.prisma/client` from `schema.prisma`. It is a build
+> artifact, so it is in `.gitignore`, so a fresh clone has no `PrismaClient`
+> types at all. Both `ci.yml` and the API Dockerfile run it explicitly, before
+> anything that type-checks.
+
+---
+---
+
+# Part 31 — CI/CD: from a pull request to production
+
+This part answers the question the way you would ask it out loud: *"I opened a
+PR. Then I merged it. Then somebody promoted it. What actually happened at each
+of those three moments?"*
+
+## 31.1 First principles: what CI and CD are, and why they exist
+
+**Continuous Integration (CI)** is the practice of proving, automatically and on
+every change, that the codebase still works — *before* the change becomes part of
+the shared branch. The failure it prevents is not "a bug shipped"; it is "`main`
+is broken and now nobody can ship anything".
+
+**Continuous Delivery (CD)** is the practice of making a deployment a
+*decision*, not a *procedure*. If deploying means fifteen manual steps, you
+deploy rarely, each deploy contains a month of changes, and when one breaks you
+cannot tell which change did it. If deploying is one button, you deploy small
+changes often and the blast radius of any one of them is small.
+
+Both rest on the same idea: **the artifact you test is the artifact you ship.**
+This is why the pipeline builds an image *once*, tags it with the commit SHA, and
+promotes those exact bytes. A rebuild for production would be a different
+artifact from the one dev has been running.
+
+The GitHub vocabulary you need:
+
+| Term | Meaning |
+|---|---|
+| **Workflow** | a YAML file in `.github/workflows/` describing what runs and when |
+| **Trigger** (`on:`) | what starts it — `pull_request`, `push`, `workflow_dispatch` (a button), `schedule` (cron), `workflow_call` (another workflow) |
+| **Job** | a unit that runs on its own fresh virtual machine. Jobs are parallel unless one `needs:` another |
+| **Step** | one command or one reusable Action inside a job |
+| **Runner** | the VM (`ubuntu-latest`), destroyed when the job ends |
+| **Service container** | a Docker container the runner starts alongside the job — here, Postgres |
+| **Environment** | a named deployment target (`dev`, `production`) carrying its own secrets and, optionally, **required reviewers** |
+| **Secret** vs **variable** | secrets are masked in logs; variables are not. `AWS_DEPLOY_ROLE_ARN` is a secret; `ECS_CLUSTER` is a variable |
+| **OIDC** | GitHub mints a short-lived signed token proving *"this job, in this repo, on this ref"*. AWS trades it for temporary credentials. **No AWS key is stored anywhere in this repository** |
+
+## 31.2 The five workflows, and what each one proves
+
+```
+   ┌──────────────────────────────────────────────────────────────────┐
+   │  YOU OPEN A PULL REQUEST                                         │
+   │                                                                  │
+   │   ci.yml ──────┬── verify   lint · typecheck · test · build      │
+   │                ├── docker   both images build, nothing running   │
+   │                └── audit    pnpm audit, blocking at critical     │
+   │   security.yml ┬── semgrep  static analysis                      │
+   │                └── gitleaks secrets, including in history        │
+   │                                                                  │
+   │   NO CREDENTIALS. NO IMAGE PUSHED. NO ENVIRONMENT TOUCHED.       │
+   └───────────────────────────┬──────────────────────────────────────┘
+                               │ all required checks green, review approved
+                               ▼
+   ┌──────────────────────────────────────────────────────────────────┐
+   │  YOU MERGE TO main                                               │
+   │                                                                  │
+   │   ci.yml + security.yml run again on main                        │
+   │   release.yml ─┬── build & push  api · migrator · web            │
+   │                │                 → ECR, tag sha-<commit>         │
+   │                └── calls _deploy.yml  environment: dev           │
+   │                                                                  │
+   │   DEV IS NOW RUNNING YOUR COMMIT. PRODUCTION IS UNTOUCHED.       │
+   └───────────────────────────┬──────────────────────────────────────┘
+                               │ a human tests dev and decides
+                               ▼
+   ┌──────────────────────────────────────────────────────────────────┐
+   │  Actions → "Promote to Production" → Run workflow                │
+   │                                                                  │
+   │   promote.yml ─┬── preflight   read dev /health/ready,           │
+   │                │               resolve + verify the SHA          │
+   │                └── calls _deploy.yml  environment: production    │
+   │                          ⏸  GitHub pauses for a required review  │
+   │                                                                  │
+   │   NO BUILD STEP. THE SAME BYTES DEV HAS BEEN RUNNING.            │
+   └──────────────────────────────────────────────────────────────────┘
+```
+
+## 31.3 Moment one — you open a pull request
+
+### `ci.yml` job `verify`
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    env: { POSTGRES_USER: dealersdrive, POSTGRES_PASSWORD: dealersdrive, POSTGRES_DB: dealersdrive }
+    ports: ['5432:5432']
+    options: --health-cmd "pg_isready -U dealersdrive -d dealersdrive" ...
+```
+
+Those credentials are **not placeholders**. `apps/api/tests/global-setup.ts`
+connects to exactly that URL and creates `dealersdrive_test` from it. Change them
+here and the integration suite cannot find a database.
+
+Then, in order:
+
+1. `pnpm install --frozen-lockfile`
+2. **`pnpm --filter @dealers-drive/api db:generate`** — the Prisma client is a
+   build artifact, not a committed file. Nothing that imports `@prisma/client`
+   type-checks until it exists, so this runs *before* the checks rather than as
+   part of one.
+3. `pnpm lint` → `pnpm typecheck` → `pnpm test` → `pnpm build`
+
+The Postgres service is there because the integration suite is **not mocked**. It
+asserts invariants that only exist in the database — the `creditBalance >= 0`
+check constraint, the partial unique index that stops two live listings for one
+vehicle, `SELECT … FOR UPDATE` ordering under concurrency. A mock cannot fail
+those, which means a mock cannot prove them.
+
+> **`pnpm format:check` is deliberately absent**, with the reason written in the
+> workflow: it currently reports ~120 pre-existing files, so adding it would make
+> every PR red for reasons unrelated to the change in it — and a check that is
+> always red is a check nobody reads. Run `pnpm format` once across the
+> repository and it becomes a one-line addition worth making.
+
+### `ci.yml` job `docker`
+
+Builds both images with `push: false` and **no registry login**. It proves
+something `verify` cannot: that the two Dockerfiles still produce an image from a
+clean checkout, with nothing running.
+
+The web build is the one that earns its place. It must succeed with no API and no
+database (§23.3). If a route ever starts prerendering data again, this job is
+where it fails — on the pull request, rather than on `main` after the merge.
+
+### `ci.yml` job `audit`
+
+```yaml
+- run: pnpm audit --audit-level=critical      # blocks
+- run: pnpm audit --audit-level=high          # continue-on-error: true
+  continue-on-error: true
+```
+
+The split is deliberate. Every current high-severity advisory here is transitive
+through `next` or `prisma` and has no fix this repository can apply. A gate that
+is red for reasons nobody can act on gets ignored — and then the critical one is
+ignored too. `.github/dependabot.yml` is what actually closes these, by raising
+the upstream bump as a weekly grouped PR.
+
+### `security.yml`
+
+Two tools, two different questions:
+
+- **Semgrep** — *is there a vulnerability in the code we wrote?* It runs in the
+  official `semgrep/semgrep` container with `--metrics=off`, and it **replaced
+  CodeQL** for a licensing reason rather than a technical one: uploading CodeQL
+  results needs GitHub Code Security on a private repository. Semgrep OSS fails
+  the job directly on findings, which is the part that gates a merge.
+- **gitleaks** — *is there a credential in the repository, or anywhere in its
+  history?* A secret that was committed and later deleted is still leaked;
+  scanning only the working tree would miss it. `.gitleaks.toml` extends the
+  default rule set with exactly one allowlist entry — object-storage *keys* in
+  the storage adapter's tests, which the `generic-api-key` rule reads as
+  credentials. The rule recorded there for adding to it is worth keeping:
+  allowlist a **pattern that cannot be a secret**, never a path that merely
+  happens to contain one today.
+
+Both also run **weekly on a cron**, because a rule published upstream can find
+something in code nobody has touched for months.
+
+### Branch protection
+
+None of the above matters unless it is required. `main` requires: the five checks
+above, a pull request, an up-to-date branch, no force pushes, no deletions — and
+**including administrators**. A rule you can wave through is a rule you will wave
+through at 11pm.
+
+## 31.4 Moment two — you merge to `main`
+
+`release.yml` fires. It is **the only place an image is ever built**.
+
+### Step 1 — assume the CI role, via OIDC
+
+```yaml
+- uses: aws-actions/configure-aws-credentials@v4
+  with:
+    role-to-assume: ${{ secrets.AWS_CI_ROLE_ARN }}
+    aws-region: ${{ vars.AWS_REGION }}
+```
+
+`permissions: id-token: write` lets the job request a signed OIDC token from
+GitHub. It contains claims including `repo:owner/dealers-drive:ref:refs/heads/main`.
+The `dd-gha-ci` IAM role's trust policy accepts **only** that subject, and its
+permission policy allows **only** pushing to the three ECR repositories. It
+cannot deploy anything. Building and deploying are different privileges, so they
+are different roles.
+
+### Step 2 — build and push three images
+
+```yaml
+build-args: GIT_SHA=${{ github.sha }}
+tags: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPO_API }}:sha-${{ github.sha }}
+cache-from: type=gha,scope=api
+cache-to:   type=gha,scope=api,mode=max
+provenance: true
+```
+
+- **`sha-<commit>` and nothing else.** No `latest`. `latest` is a moving target,
+  and a moving target cannot be rolled back to. The ECR repositories are created
+  with `--image-tag-mutability IMMUTABLE`, so `sha-9f2c1a` means one set of bytes
+  forever.
+- **`cache-from`/`cache-to: type=gha`** reuses Docker layers across workflow
+  runs. The `deps` layer (§30.6) is the one this saves.
+- **`provenance: true`** attaches a signed SLSA attestation recording which
+  workflow, which commit and which runner produced the image — supply-chain
+  evidence.
+
+### Step 3 — deploy to dev
+
+```yaml
+deploy-dev:
+  needs: build
+  uses: ./.github/workflows/_deploy.yml
+  with: { environment: dev, sha: ${{ needs.build.outputs.sha }} }
+```
+
+Note the absent `secrets: inherit`. The called workflow's job declares
+`environment: dev` and reads `AWS_DEPLOY_ROLE_ARN` from that environment's own
+secret store. Inheriting would hand every repository secret to the called
+workflow for no benefit.
+
+**Production is not touched. Ever. By this workflow.**
+
+## 31.5 `_deploy.yml` — the same procedure for both environments
+
+One workflow deploys dev and production. Production is not a different
+procedure; it is the same procedure with a different environment name, a
+different set of secrets, and a human standing in front of it.
+
+**It never builds an image.** It takes a SHA and rolls out what already exists.
+
+```
+ 1. checkout at inputs.sha        ← the smoke test must be the one from THIS commit
+ 2. check AWS_DEPLOY_ROLE_ARN is set   → a clear error instead of an opaque OIDC failure
+ 3. assume the deployment role (OIDC, environment-scoped)
+ 4. resolve image references      → registry/repo:sha-<commit>, ×3
+ 5. VERIFY THE IMAGES EXIST in ECR    → fail in 5 seconds, not 5 minutes
+ 6. RUN MIGRATIONS                    → one-off Fargate task, migrator image, inside the VPC
+ 7. deploy the API   → wait-for-service-stability
+ 8. deploy the web   → wait-for-service-stability
+ 9. SMOKE TEST the public URLs
+10. write a job summary
+```
+
+### Why that order
+
+**Images before anything.** A tag that is not in ECR means a promotion of
+something that was never built — most often a SHA someone typed by hand. Say so
+immediately, before touching a service.
+
+**Migrations before the new tasks take traffic.** Which means, for a minute or
+two, the *old* code is running against the *new* schema. That is legal only
+because every migration is expand/contract (§32.5) — and it is the same property
+that makes rolling back to the previous image safe.
+
+**API before web.** The web app calls the API server-side on nearly every render.
+The API is the one that must already be answering.
+
+The migration step is worth reading closely:
+
+```bash
+CURRENT=$(aws ecs describe-task-definition --task-definition "$FAMILY" --query taskDefinition)
+NEXT=$(echo "$CURRENT" | jq --arg image "$IMAGE_MIGRATOR" '.containerDefinitions[0].image = $image | del(...)')
+TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json "$NEXT" ...)
+TASK_ARN=$(aws ecs run-task --cluster "$CLUSTER" --task-definition "$TASK_DEF_ARN" --launch-type FARGATE ...)
+aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$TASK_ARN"
+EXIT_CODE=$(aws ecs describe-tasks ... --query 'tasks[0].containers[0].exitCode')
+[ "$EXIT_CODE" != "0" ] && { echo "::error::Migrations failed. Nothing has been deployed — the running version is untouched."; exit 1; }
+```
+
+The migrator is a **task, not a service**: it runs `pnpm db:migrate:deploy`,
+exits, and its exit code is the gate. `DATABASE_URL` is an SSM parameter
+referenced by the task definition, so it is resolved inside AWS and GitHub never
+sees a database credential for any environment.
+
+### The shell-injection discipline
+
+Every `${{ }}` in a `run:` block is bound to an environment variable first and
+read as `$VAR` by the shell:
+
+```yaml
+env:
+  SHA: ${{ inputs.sha }}
+run: |
+  TAG="sha-$SHA"       # ← data
+```
+
+`inputs.sha` and `inputs.reason` come from a `workflow_dispatch` form — strings a
+human typed. **A string interpolated directly into a `run:` block is executed by
+the runner.** `$SHA` is data; `${{ inputs.sha }}` inside a script is code. This
+is a real GitHub Actions vulnerability class, not a style preference.
+
+### Deploying a service
+
+```yaml
+- name: Fetch the current API task definition        # from AWS, not from git
+- name: Render API task definition                   # change exactly one field: image
+  uses: aws-actions/amazon-ecs-render-task-definition@v1
+- name: Deploy the API
+  uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+  with: { wait-for-service-stability: true }
+```
+
+Fetching from AWS rather than committing the task definition is deliberate: it
+carries the environment variables and the SSM ARNs for that environment's
+secrets, so keeping it in AWS means GitHub never holds them, and a value changed
+in the console is not silently reverted by a stale file in git.
+
+`wait-for-service-stability: true` is what makes a failed deploy fail the
+workflow. ECS holds the rollout until the new tasks pass the target group health
+check; the deployment circuit breaker restores the previous task definition on
+its own if they never do (§23.5).
+
+### Step 9 — the smoke test
+
+`scripts/smoke.sh <web-url> <api-url> <expected-sha>`. A green ECS deployment
+means the containers answered their health check. It does not mean the site
+works, and it does not mean the *new* containers are the ones answering.
+
+It is **deliberately read-only** — it signs nobody in, writes no row and uploads
+no photo. A smoke test that mutates production is a smoke test nobody dares run
+when they most need to. What it checks:
+
+| Check | Why it exists |
+|---|---|
+| `/health/live` and `/health/ready` | a 503 from `/ready` names the failing dependency — a diagnosis, not a mystery |
+| **`.version` equals the expected SHA** | the one thing a health check cannot answer: are the *new* tasks taking traffic, or are the old ones still answering just as well? |
+| `GET /v1/vehicles` returns an array | the public marketplace read path — what a buyer sees |
+| `GET /v1/auth/providers` → `google.enabled` | a deployment with no OAuth credentials starts perfectly and then cannot sign anybody in |
+| `GET /v1/dealer/vehicles` → 401 | a deployment that lost its guard middleware must never reach a person |
+| web `/api/health` `.version` | the same build check, for the Next task |
+| the home page contains real markup | a 200 containing an error shell would pass a status check and fail every buyer |
+| `robots.txt` matches `APP_ENV` | production must be crawlable; dev must **not** compete with production in search |
+| the response is HTTPS, and `x-powered-by` is absent | TLS terminated, `app.disable('x-powered-by')` still in effect |
+
+## 31.6 Moment three — promoting to production
+
+Actions → **Promote to Production** → Run workflow.
+
+```
+sha:             blank = promote whatever dev is running now  (the common case)
+skip_dev_check:  false  (true only for a rollback)
+reason:          one line, recorded on the deployment
+```
+
+### The `preflight` job
+
+It enters **no environment** and holds **no production secret** — it only reads a
+public health endpoint. Everything checkable before a human is asked to approve
+is checked here, so an approval is never spent on a promotion that was going to
+fail on a typo.
+
+```bash
+READY=$(curl -fsS "$DEV_API_BASE_URL/health/ready")   # dev must be answering at all
+LIVE_SHA=$(echo "$READY" | jq -r '.version')
+STATUS=$(echo "$READY" | jq -r '.status')
+SHA="${REQUESTED:-$LIVE_SHA}"                          # blank input = ship what I tested
+
+if [ "$SKIP" != "true" ]; then
+  [ "$STATUS" = "ok" ]      || die "dev reports status=$STATUS. Promoting a degraded build is how an outage spreads."
+  [ "$SHA" = "$LIVE_SHA" ]  || die "$SHA is not what dev is running ($LIVE_SHA)."
+fi
+```
+
+The `skip_dev_check` switch exists for exactly one reason, and it is why it is
+not the default: **the SHA you want back during a rollback is, by definition, not
+the one dev is running.**
+
+### The approval gate
+
+The gate is not a step in the workflow. It is the `production` **environment**
+having required reviewers configured (Settings → Environments → production).
+GitHub pauses the job before its first step and notifies the reviewers.
+
+That same mechanism is what scopes the credentials. The `dd-gha-deploy-production`
+IAM role trusts the OIDC subject
+`repo:owner/dealers-drive:environment:production` — GitHub only mints a token
+with that subject for a job that has **entered** the production environment, and
+entering it requires the approval. A dev deploy cannot read a production secret
+or touch a production service, because the token it can obtain does not say
+`environment:production`.
+
+The `iam:PassRole` permission on each deploy role is restricted to that
+environment's own task roles, which is what stops a dev deployment from launching
+a task wearing production's identity.
+
+## 31.7 Rolling back
+
+| Situation | What happens | How long |
+|---|---|---|
+| New tasks never go healthy | **Nothing to do.** ECS's circuit breaker restores the previous task definition by itself, before the new version serves a request. The workflow fails and says so. | seconds |
+| A bad release that *is* healthy | Promote the previous SHA with `skip_dev_check: true` | < 5 min |
+| Bad data or a destructive migration | RDS point-in-time recovery **into a new instance** (§32.7) | < 1 hour |
+| Region loss | Accepted. Backups are regional. Stated out loud rather than implied. | days |
+
+Rolling back the application is *rolling forward to older bytes* — no build, and
+the images are the exact ones that were serving before. ECR's immutable tags are
+what guarantee that.
+
+**The database does not roll back.** A Prisma migration has no `down`. The
+strategy that makes the application rollback safe is expand/contract, and it is
+covered in §32.5.
+
+## 31.8 What each moment costs you
+
+| Moment | Wall clock | What is at risk |
+|---|---|---|
+| PR checks | ~5–8 min | nothing — no credentials, no environment |
+| Merge → dev live | ~10–15 min | dev only |
+| Promote → production live | ~4–6 min after approval | production, gated by a human and the circuit breaker |
+| Rollback | ~4–6 min | the previous known-good bytes |
+
+GitHub Actions usage is roughly 900 minutes/month against 2,000 free.
+
+---
+---
+
+# Part 32 — Database operations
+
+Part 9 covered *PostgreSQL the data model* — constraints, transactions, indexes,
+row locking. This part covers *PostgreSQL the operated service*: who provisions
+it, how the schema changes without downtime, what happens when the data is wrong,
+and precisely where AWS's responsibility ends and yours begins.
+
+## 32.1 The one-line summary of the shared-responsibility split
+
+> **AWS keeps the database running. You keep the data correct.**
+
+| | **AWS (RDS) does this** | **You do this** |
+|---|---|---|
+| Hardware, host OS, hypervisor | ✅ | |
+| PostgreSQL installation, minor version patching | ✅ (in a maintenance window you configure) | |
+| Major version upgrades | offers them | **you decide when, and test first** |
+| Automated daily snapshots + continuous WAL archiving | ✅ | **you set the retention period** |
+| Restore mechanics (PITR, snapshot restore) | ✅ | **you decide when to restore and to what point** |
+| Storage autoscaling, encryption at rest | ✅ | you enable it |
+| Multi-AZ failover | ✅ *if you pay for it* | **not enabled here** — single AZ |
+| Replication plumbing for read replicas | ✅ | **you decide to create one and to route reads to it** |
+| Metrics (CloudWatch, Performance Insights) | ✅ collects | **you set the alarms and read them** |
+| Network isolation | provides subnet groups + SGs | **you configure them** |
+| **Schema** | — | **entirely yours** |
+| **Migrations** | — | **entirely yours** |
+| **Query performance and indexes** | Performance Insights shows you | **entirely yours** |
+| **Connection budget** | enforces `max_connections` | **entirely yours to stay under** |
+| **Data correctness, ledger integrity, tenant isolation** | — | **entirely yours** |
+| **Backup *testing*** | — | **yours. An untested backup is a hope, not a backup** |
+
+The pattern generalises: a managed service removes the *operational* failure
+modes (a disk fills, a host dies, a patch is missed) and removes **none** of the
+*application* failure modes (a migration drops a column, a query has no index, a
+connection leak exhausts the pool).
+
+## 32.2 How the database is provisioned
+
+Two RDS instances, created once by hand (`deploy/aws/README.md` §4):
+
+```bash
+aws rds create-db-instance \
+  --db-instance-identifier dd-postgres-prod \
+  --engine postgres --engine-version 16 \
+  --db-instance-class db.t4g.small \
+  --allocated-storage 20 --storage-type gp3 --storage-encrypted \
+  --master-username dealersdrive --manage-master-user-password \
+  --db-name dealersdrive \
+  --no-publicly-accessible \
+  --vpc-security-group-ids "$RDS_SG" --db-subnet-group-name dd-subnets \
+  --backup-retention-period 7 --preferred-backup-window 18:00-19:00 \
+  --deletion-protection \
+  --enable-performance-insights
+```
+
+Every flag there is a decision:
+
+| Flag | Why |
+|---|---|
+| **Two instances, not two databases on one instance** | An accidental `DATABASE_URL` with the wrong database *name* would still point at production's disk, CPU and connection limit. One runaway dev query would be a production incident. |
+| `--no-publicly-accessible` + `dd-rds` security group | The database has no route from the internet, and accepts 5432 **only** from the `dd-app` security group. Not from a laptop. To open `psql`, use SSM Session Manager port-forwarding through a task — audited, and no bastion with a key somebody keeps. |
+| `--storage-encrypted` | Encryption at rest, including snapshots. Free. |
+| `--manage-master-user-password` | RDS generates and stores the password in Secrets Manager. Nobody types it, nobody pastes it into Slack. |
+| `--backup-retention-period 7` | **This one flag is what enables point-in-time recovery.** 7 days on production, 1 on dev. Setting it to 0 disables PITR entirely. |
+| `--deletion-protection` | Production only. `delete-db-instance` is refused until it is turned off deliberately. |
+| `--enable-performance-insights` | The query-level profiler (§32.9). Free at 7-day retention. |
+| `db.t4g.small` / `db.t4g.micro` | Graviton (ARM) burstable. ~$32 and ~$17/month. The first scaling decision you will make is `t4g.medium` (§33). |
+
+**Local and CI are not RDS.** Locally it is the `postgres:16-alpine` container in
+`docker-compose.yml`. In CI it is a GitHub Actions service container with the
+same image. Same major version everywhere — a `pg_trgm` extension or a
+`GENERATED ALWAYS AS` column that works locally and not in production is a class
+of bug that version parity removes.
+
+## 32.3 What is actually in the database
+
+Three logical groups sharing one instance:
+
+```
+dealersdrive
+├── public schema
+│   ├── the write model      users, sessions, oauth_identities, dealers,
+│   │                        dealer_members, dealer_documents, vehicles,
+│   │                        vehicle_media, media, listings, enquiries,
+│   │                        credit_transactions, orders, payments, invoices,
+│   │                        audit_logs, cities, makes, models, variants, rtos…
+│   ├── listing_search       the DENORMALIZED READ MODEL (Part 12)
+│   │                        one row per publicly-visible listing, rebuilt by a
+│   │                        job, with a generated tsvector + 10 indexes
+│   └── outbox_events        the transactional outbox (Part 13)
+└── pgboss schema            pg-boss's job queue tables
+```
+
+That last one is a real architectural choice, not an accident: **the queue lives
+in the same database as the data**. It is what makes "enqueue a job" and "write
+the row that job is about" one transaction, and it is why there is no Redis in
+this system (Part 13, §26).
+
+## 32.4 Migrations — the mechanics
+
+A **migration** is a versioned, ordered SQL script that moves the schema from one
+state to the next. The alternative — someone running `ALTER TABLE` by hand — has
+no record, no ordering and no way to reproduce the schema on a new machine.
+
+Prisma's model: `prisma/schema.prisma` is what you edit; the migration files are
+what actually run.
+
+```
+apps/api/prisma/migrations/
+├── 20260816183407_init/                     migration.sql
+├── 20260816183500_search_and_invariants/    migration.sql
+├── 20260816200000_credit_ledger_sequence/   migration.sql
+├── 20260818120000_google_oauth_identity/    migration.sql
+└── migration_lock.toml
+```
+
+Each is a timestamped directory containing raw SQL. **They are committed, and
+they are immutable once merged.** Editing a migration that has already run
+somewhere means that environment's schema and the file no longer agree; Prisma
+detects this by checksum and refuses to proceed.
+
+### The two commands, and never confusing them
+
+| | `prisma migrate dev` | `prisma migrate deploy` |
+|---|---|---|
+| Where | **your laptop only** | **every deployed environment** |
+| What it does | diffs `schema.prisma` against the DB, *generates* a new migration, applies it, regenerates the client | applies pending migrations, in order. Nothing else |
+| Can it drop data? | **yes** — it will offer to reset the database | no. It only runs what is in the files |
+| In this repo | `pnpm --filter @dealers-drive/api db:migrate` | `pnpm --filter @dealers-drive/api db:migrate:deploy` |
+
+`migrate deploy` is the `CMD` of the migrator image. It never generates
+anything, so what runs against production is exactly the SQL that ran in CI and
+on dev.
+
+### The developer loop
+
+```bash
+# 1. edit apps/api/prisma/schema.prisma
+pnpm --filter @dealers-drive/api db:migrate      # names it, writes the SQL, applies it
+# 2. READ the generated SQL. Every time. It is the thing that will run in production.
+# 3. commit schema.prisma AND the migration directory together
+```
+
+Other commands you will use:
+
+```bash
+pnpm --filter @dealers-drive/api db:generate   # regenerate the typed client (after any schema edit)
+pnpm --filter @dealers-drive/api db:studio     # a browser UI over the local database
+pnpm --filter @dealers-drive/api db:reset      # DROP EVERYTHING, re-migrate, re-seed. Laptop only.
+```
+
+### Seeding: `db:seed` vs `db:bootstrap` — the distinction that matters most
+
+| | `db:seed` | `db:bootstrap` |
+|---|---|---|
+| Where | **a laptop. Only.** | dev and production |
+| What it does | **truncates every application table**, then invents 5 dealerships, 23 cars, enquiries, a credit ledger and placeholder images | writes the reference catalogue (cities, RTOs, colours, makes/models/variants), the credit packs, the config defaults and one platform admin |
+| Idempotency | idempotent *by truncation* | **create-if-missing, never overwrite** — every write is an upsert with an empty update |
+| Run it twice on production | catastrophe | harmless |
+
+> **Never run `pnpm db:seed` against dev or production.** It truncates first.
+> `db:bootstrap` is the deployed-environment command, run as a one-off Fargate
+> task from the migrator image (`deploy/aws/README.md` §13).
+
+An empty production database is not a blank slate — it is a broken product. A
+dealer cannot list a car whose make does not exist, so the catalogue is part of
+the deployment, not part of the data.
+
+## 32.5 Expand/contract — why this is the most important idea in the part
+
+During a rolling deploy, **two versions of the code are live at the same time.**
+And `_deploy.yml` runs migrations *before* the new tasks take traffic, so there is
+a window in which the **old** code is running against the **new** schema.
+
+Therefore: **every migration must be backward-compatible with the currently
+deployed release.**
+
+```
+❌ ONE STEP
+   ALTER TABLE vehicles DROP COLUMN old_price;
+   → the old tasks still SELECT it → 500s for every request during the rollout
+
+✅ THREE RELEASES
+   EXPAND   (release N)    add the new nullable column / new table / new index.
+                           The running old code ignores it. Safe.
+   MIGRATE  (release N)    the new code writes BOTH shapes; a job backfills the
+                           new column from the old one; reads switch over.
+   CONTRACT (release N+2)  once nothing reads the old column, drop it.
+```
+
+This is also **why "redeploy the previous image" is a complete rollback**: because
+every migration is compatible with the previous release, the previous image
+always runs correctly against the current schema. Expand/contract is not a purity
+exercise; it is the precondition for §31.7 working at all.
+
+The rules, ordered by how expensive they are to learn the hard way:
+
+- **A rename is two releases.** Never one. Add the new column, dual-write,
+  backfill, switch reads, then drop.
+- **Never `ALTER COLUMN … SET NOT NULL`** on a populated table without a default
+  and a *completed* backfill. It takes an `ACCESS EXCLUSIVE` lock and scans the
+  whole table.
+- **`CREATE INDEX CONCURRENTLY`** in production, always. A plain `CREATE INDEX`
+  blocks every write to that table for the duration. `CONCURRENTLY` does not, at
+  the cost of two passes and the possibility of leaving an invalid index that you
+  must drop and retry.
+- **Set `lock_timeout` and `statement_timeout`** in any migration touching a
+  large table. Without them, a migration that cannot get its lock **queues behind
+  a long-running query and then blocks every query behind itself** — and the site
+  goes down while the migration is still "waiting".
+- **A `DROP COLUMN` or `DROP TABLE` is irreversible without a restore.** If one
+  ships and is wrong, the only recovery is PITR — which means losing every write
+  since the restore point. On a marketplace, that is enquiries a dealer has
+  already been called about.
+
+**Dev is the rehearsal.** Every migration runs there on merge and only reaches
+production on promotion, so it has always executed once against real data shapes
+before it touches a real dealer.
+
+## 32.6 Backups — what RDS actually keeps
+
+Two different things, often confused:
+
+**1. Automated backups (`--backup-retention-period 7`).** Once a day, in the
+`18:00-19:00` UTC window, RDS takes a storage-level snapshot. *Continuously*, it
+ships the write-ahead log (WAL) to S3. Together, the daily snapshot plus the WAL
+since it are what make point-in-time recovery possible. They are deleted when
+they age past the retention period — and, importantly, **they are deleted with
+the instance** unless you took a final snapshot.
+
+**2. Manual snapshots.** A snapshot you take yourself. It lives until you delete
+it. Take one before anything genuinely irreversible:
+
+```bash
+aws rds create-db-snapshot \
+  --db-instance-identifier dd-postgres-prod \
+  --db-snapshot-identifier prod-before-contract-migration-2026-08-24
+```
+
+That one command before a `DROP COLUMN` release converts "restore to a point in
+time and lose the last hour" into "restore a known-good copy". It costs cents.
+
+**What is the WAL?** Postgres does not write changed pages to disk immediately.
+It first appends a record of *the change* to the write-ahead log, and only later
+writes the pages. Crash recovery replays the WAL. RDS exploits the same property
+for backups: snapshot + WAL replay = the database as it was at any second in
+between. This is also the mechanism read replicas and Multi-AZ use.
+
+**What is *not* backed up:**
+
+- **Cloudflare R2.** The photos are not in the database and not in an RDS
+  snapshot. R2 has its own versioning and lifecycle settings, configured
+  separately. A restore of the database that references media R2 no longer holds
+  gives you a catalogue of broken images.
+- **SSM parameters.** Version-history is kept by Parameter Store, but nothing
+  ties it to a database restore point.
+- **The `pgboss` schema is** backed up (it is in the same database), which means
+  a restore replays jobs. Worth knowing before you restore over anything live.
+
+## 32.7 Point-in-time recovery, and how to actually use it
+
+PITR restores to **any second** within the retention window. It **always creates
+a new instance** — it never overwrites the source, and RDS will not let it.
+
+```bash
+aws rds restore-db-instance-to-point-in-time \
+  --source-db-instance-identifier dd-postgres-prod \
+  --target-db-instance-identifier dd-postgres-prod-restore-20260824 \
+  --restore-time 2026-08-24T09:14:00Z \
+  --db-subnet-group-name dd-subnets \
+  --vpc-security-group-ids "$RDS_SG" \
+  --no-publicly-accessible
+```
+
+The procedure that works, and the one people get wrong:
+
+```
+❌ WRONG   Restore "over" production, or repoint DATABASE_URL at the restored
+           instance immediately. You have just discarded every write since the
+           restore point — enquiries, credit purchases, approvals — silently.
+
+✅ RIGHT   1. Restore into a NEW instance.
+           2. Point psql at it. Extract exactly the rows you need.
+           3. Reconcile into production by hand, or with a scripted, reviewed
+              backfill.
+           4. Delete the restored instance.
+```
+
+Restore-over-production is correct only in a total-loss scenario (the data is
+comprehensively wrong and recent writes are worth less than correctness). On a
+marketplace with a credit ledger, that bar is very high — the ledger is an
+append-only record and re-applying it by hand is possible; unpicking a silent
+truncation of it is not.
+
+**PITR only rewinds the database.** R2 objects, sent emails and SMS, and anything
+a dealer already acted on do not rewind with it.
+
+### Recovery objectives, stated
+
+| Scenario | Target | Mechanism |
+|---|---|---|
+| Bad release, caught by health checks | seconds | ECS circuit breaker — automatic, no human |
+| Bad release, caught by a person | < 5 min | Promote the previous SHA |
+| Database corruption / bad data migration | < 1 hour, to any second in the last 7 days | RDS PITR into a **new** instance |
+| **Region loss** | **days** | **Accepted.** Backups are regional. A multi-region story is not worth its cost at this stage — said out loud rather than implied |
+
+That last row is the honest one. It is not a gap someone forgot; it is a
+deliberate, written-down decision. Changing it means cross-region automated
+backup replication, a second VPC, and roughly doubling the infrastructure cost.
+
+## 32.8 Connection management — the failure mode you will meet first
+
+### The first principle: a Postgres connection is a process
+
+Every connection to Postgres forks an OS process on the database host, with its
+own memory. This is why `max_connections` exists and why it is not large: on a
+`db.t4g.small` RDS derives it from memory and lands in the low hundreds. Exceed
+it and every new connection is refused with:
+
+```
+FATAL: sorry, too many clients already
+```
+
+— and that arrives **under load**, not in staging.
+
+### What Prisma does
+
+`createPrisma()` builds **one `PrismaClient` per process**, and that client holds
+a connection **pool**: a small set of connections kept open and handed to queries
+as they arrive. Opening a TCP connection and authenticating costs milliseconds;
+doing it per query at a few hundred requests per second is unaffordable.
+
+Prisma's default pool size is `num_physical_cpus × 2 + 1`, tunable in the
+connection string:
+
+```
+postgresql://user:pass@host:5432/db?connection_limit=10&pool_timeout=20
+```
+
+The arithmetic you must do before scaling anything:
+
+```
+total connections  =  (API tasks × pool_size)
+                   +  (worker tasks × pool_size)
+                   +  pg-boss's own connections
+                   +  any migration task
+                   +  every psql session a human has open
+
+… and that total must stay comfortably under max_connections.
+```
+
+Today: **one** API task, `WORKER_INLINE=true` so no separate worker, a small
+pool. Nowhere near the limit. At ten API tasks and a default pool it becomes the
+binding constraint — which is exactly the §33.5 discussion.
+
+### The PgBouncer caveat, stated before you need it
+
+The standard answer to connection exhaustion is a **connection pooler** —
+PgBouncer or RDS Proxy — sitting between the app and Postgres, multiplexing many
+client connections onto few server ones.
+
+**Transaction-mode pooling breaks session-level state.** A client gets a
+different backend connection per transaction, so anything set outside a
+transaction does not persist — and prepared statements need care.
+
+That is not abstract here. `withTenant()` issues:
+
+```sql
+SET LOCAL app.dealer_id = '<uuid>'
+```
+
+`SET LOCAL` is scoped to the current transaction, which is exactly why it is
+*compatible* with transaction-mode pooling — but the moment anyone reaches for
+plain `SET`, or session-level advisory locks, or `LISTEN`/`NOTIFY`, it breaks.
+pg-boss in particular should be given a direct connection rather than routed
+through a transaction-mode pooler.
+
+**Know this before you reach for it, not after.**
+
+## 32.9 Monitoring the database
+
+| Question | Tool | What to look at |
+|---|---|---|
+| Is it about to run out of connections? | CloudWatch `DatabaseConnections` | against `max_connections` — alarm well before it |
+| Is it CPU-bound? | CloudWatch `CPUUtilization` | sustained > 70% on a burstable class also means **CPU credits are draining** — a `t4g` that exhausts its credits throttles hard |
+| Is it about to run out of disk? | CloudWatch `FreeStorageSpace` | the classic 3 a.m. page. Enable storage autoscaling |
+| Is a query slow, and which one? | **Performance Insights** | top SQL by wait time, with the actual statement. This is the single most useful database tool AWS gives you |
+| Is replication lagging? | `ReplicaLag` | only once a read replica exists (§33.6) |
+| Is memory pressure causing disk reads? | `FreeableMemory`, `ReadIOPS` | a working set that no longer fits in the buffer cache |
+
+Six CloudWatch alarms → SNS → email is the configured baseline (ALB 5xx rate, ALB
+p95 latency, unhealthy target count, ECS CPU/memory, RDS CPU, RDS free storage,
+RDS connections).
+
+And the one **application-level** database metric that is worth more than all of
+them here: **credit-ledger drift** — `Dealer.creditBalance` compared against the
+newest `CreditTransaction.balanceAfter`. It is always zero. Any non-zero value
+catches a write path that bypassed `moveCredits()`, which is the single worst bug
+this system could have. The nightly `counters.reconcile` job computes it; nothing
+yet alerts on it (Part 21).
+
+### Reading a slow query
+
+```sql
+EXPLAIN ANALYZE
+SELECT … FROM listing_search WHERE city_slug = 'vellore' ORDER BY price_paise LIMIT 24;
+```
+
+`Seq Scan` on a large table is the thing to find. `Index Scan` using
+`listing_search_city_price` is the thing you want. The read model already carries
+ten purpose-built indexes for exactly the filters the search UI offers —
+including a GIN index on the generated `search_doc` tsvector for full-text and a
+`pg_trgm` GIN index for fuzzy make/model matching.
+
+## 32.10 What is yours, restated as a checklist
+
+Before any schema change reaches production:
+
+- [ ] The migration is expand/contract — the **currently deployed** code still works against it
+- [ ] Any new index on a large table uses `CREATE INDEX CONCURRENTLY`
+- [ ] `lock_timeout` and `statement_timeout` are set if a large table is touched
+- [ ] A manual snapshot was taken if the change is destructive
+- [ ] It ran on dev first (it did — that is automatic on merge)
+- [ ] Every new query has an index that serves it, checked with `EXPLAIN ANALYZE`
+- [ ] Every dealer-owned table carries `dealerId` and the query filters on it
+- [ ] Invariants that must never be violated are **CHECK constraints or unique indexes**, not application code (Part 9)
+
+---
+---
+
+# Part 33 — Scaling: 10 users → 100,000+
+
+This is the part to read slowly. Almost every claim in it is checkable against a
+file in this repository, and where something is *not* yet built I say so and name
+what would have to change.
+
+## 33.1 The three principles everything below follows from
+
+**1. Find the bottleneck. Everything else is noise.**
+A system is exactly as fast as its slowest saturated resource. Adding API tasks
+when the database is the bottleneck makes things *worse* — more tasks means more
+connections and more concurrent queries against the same saturated instance.
+Always ask "what is at 100%?" before "what do I add?".
+
+**2. Reads and writes scale differently.**
+On a used-car marketplace, reads outnumber writes by roughly 1000:1. Buyers
+browse; dealers occasionally list. Reads can be duplicated (caches, replicas,
+CDNs) almost without limit. Writes have to be serialised somewhere, because
+correctness demands it. **Which is why the read path and the write path are
+already separate structures in this codebase** — `listing_search` is a
+denormalized read model, not a view over the write tables (Part 12).
+
+**3. Stateless scales; stateful does not.**
+If a process holds nothing a request depends on, you can run N of them behind a
+load balancer and it just works. The moment a process remembers something, you
+must either replicate that memory or pin the user to that process — and pinning
+destroys most of the benefit. This is why sessions are rows in Postgres rather
+than objects in Node memory (Part 5).
+
+## 33.2 The journey, stage by stage
+
+### 10 users — today
+
+```
+1 ALB → 1 dd-api task (0.5 vCPU / 1 GB) → RDS db.t4g.small
+      → 2 dd-web tasks
+        Photos: browser PUTs direct to R2; reads proxy back through the API
+```
+
+Everything is idle. The database is doing single-digit queries per second. The
+API task is using a few percent of its CPU. **Change nothing.** The most common
+scaling mistake at this stage is building for a load that will not arrive for two
+years, and paying for it every month in complexity.
+
+What *is* worth doing at this stage costs nothing: make sure the alarms exist and
+somebody reads them, so you find out you are at 60% before you are at 100%.
+
+### 1,000 users — the first real load
+
+Say 1,000 dealers, ~50k listings, ~100k page views a day. That is roughly
+**2–5 requests/second average, 20–50 at peak.** A single Node process handles
+this comfortably; a well-indexed Postgres barely notices it.
+
+What starts to show:
+
+| Symptom | Why | Fix |
+|---|---|---|
+| Image bandwidth dominates the AWS bill | `MEDIA_BASE_URL=https://www.dealers-drive.com/media` — **every image read proxies through the API task** and out of the ALB | **Point `MEDIA_BASE_URL` at R2's public bucket domain or a CDN.** One environment variable. See §33.3 |
+| A search page occasionally feels slow | one filter combination without an index | `EXPLAIN ANALYZE`, add the index |
+| `dd-web` restarts blip | 2 tasks already; fine | nothing |
+
+The single highest-leverage change in this whole part lives at this stage, and it
+is one environment variable.
+
+### 10,000 users — the architecture has to change
+
+~10k dealers, 500k listings, 1M page views a day. **~12 req/s average, 100–200
+at peak, spikier around evenings.**
+
+Now the two pieces of per-instance state in the API become blocking, and they are
+the reason `dd-api-prod` is pinned to `desired-count 1`:
+
+**(a) `WORKER_INLINE=true`.** Job handlers and cron schedules run inside the HTTP
+process (`container.ts` → `startBackground`). Two API tasks would run every
+scheduled job **twice**: the listing-expiry sweep twice, `counters.reconcile`
+twice, orphan-media GC twice.
+
+**(b) The rate limiter is a process-local `Map`** (`middleware/rate-limit.ts`).
+N tasks = N× the effective limit, and a restart clears it. The limits on phone
+reveal and enquiry creation are a *spend control* as much as a security control —
+every SMS costs money — so N× is not a rounding error.
+
+The work to lift the cap, in order:
+
+```
+1. WORKER ENTRYPOINT.  A second entry file that builds the same container and
+   calls startBackground() WITHOUT app.listen(). Deploy it as a separate ECS
+   service, desired-count 1, no load balancer, no target group.
+   API tasks then run with WORKER_INLINE=false and only serve HTTP.
+   → the API becomes genuinely stateless; desired-count can go to 2, 4, 8.
+
+2. SHARED RATE-LIMIT COUNTERS.  A CachePort with two adapters: the existing
+   in-memory Map (local, tests) and Redis/ElastiCache (deployed). This is the
+   first thing in the system that genuinely needs Redis, and it is worth
+   noting that it is the ONLY thing so far — the queue is in Postgres, and
+   sessions are in Postgres, precisely to avoid needing it earlier.
+
+3. AUTOSCALING.  ECS target-tracking on ALB RequestCountPerTarget or CPU.
+   min 2, max N. Two, not one, is the floor — one task means a restart is an
+   outage and an AZ failure is an outage.
+
+4. CONNECTION BUDGET.  Do the arithmetic in §32.8 BEFORE step 3, not after.
+```
+
+Also at this stage: the database instance goes from `t4g.small` to `t4g.medium`
+or `m7g.large`, and you start caring about which queries are hot.
+
+### 100,000+ users — the database becomes the conversation
+
+~100k dealers, several million listings, 10M+ page views a day. **~120 req/s
+average, 1,000+ at peak.** API tasks are now cheap and boring; the interesting
+constraint is Postgres.
+
+The moves, roughly in the order they pay off:
+
+1. **CDN in front of everything cacheable.** Media is already
+   content-addressed and immutable (§33.3) — cache hit rates near 100%. Public
+   listing and search pages are anonymous and server-rendered, so they are
+   cacheable too.
+2. **Read replicas** for the read model (§33.6).
+3. **A cache layer** for the genuinely hot, genuinely repeated queries — facet
+   counts, the home page's per-city tiles, the catalogue (§33.7).
+4. **Separate the worker fleet from the API fleet** properly: independent
+   scaling, so a burst of media processing does not compete with HTTP for CPU.
+5. **Only then** consider partitioning `listing_search`, or moving search to a
+   dedicated engine (OpenSearch/Typesense).
+
+Note what is *not* on that list: microservices. Splitting the modular monolith
+into services adds network hops, distributed transactions and deployment
+complexity, and does nothing for the actual bottleneck, which is one Postgres
+instance. Part 26 explains why the monolith is the right shape here, and it stays
+the right shape well past 100k users.
+
+## 33.3 Object storage, media, and the CDN — the cheapest win available
+
+This deserves its own section because the current configuration has one
+straightforward, high-value change waiting in it.
+
+### How it works today
+
+**Uploads already scale perfectly.** The browser gets a presigned PUT and sends
+the bytes **directly to R2** — the API never touches an image byte on the upload
+path (Part 14). A dealer uploading twelve 8 MB photos costs the API one signature
+and nothing else. That is already the right architecture at any scale.
+
+**Reads currently do not.** `MEDIA_BASE_URL=https://www.dealers-drive.com/media`,
+so every `<img>` on every search result page hits:
+
+```
+GET /media/vehicles/by-media/<mediaId>/640.webp
+   → ALB → dd-api task → media.serve() → storage.get(key) → R2 → back through
+     the API process → back through the ALB → the browser
+```
+
+The bytes make a round trip through a Node process that has nothing to add to
+them. At 24 cards per search page with 4 srcset widths, one page view is a lot of
+image requests, and each one occupies an API task's event loop and burns ALB
+data-transfer.
+
+`docs/DEPLOYMENT.md` §L names this directly: *"Data transfer out $20 — mostly
+`/media`; this is the line CloudFront or an R2 public domain removes."*
+
+### The change
+
+Point `MEDIA_BASE_URL` at a public R2 bucket domain (or CloudFront in front of
+R2) instead of at the API. `deploy/aws/README.md` §10 already reserves the DNS
+record for it:
+
+| Name | Type | Value |
+|---|---|---|
+| `media` | CNAME | the R2 public bucket domain |
+
+Nothing in the application changes. `platform/media/urls.ts` builds every image
+URL from `MEDIA_BASE_URL`, so one variable moves the entire delivery path off the
+API. The `/media/...` route stays exactly where it is and keeps serving local
+development and MinIO.
+
+### Why the URL scheme makes this safe
+
+```ts
+export function mediaUrl(mediaId: string, width: number): string {
+  return `${env.MEDIA_BASE_URL}/vehicles/by-media/${mediaId}/${width}.webp`;
+}
+```
+
+Media is addressed by **id and width, never by storage key**. That gives two
+properties a CDN needs:
+
+- **Content-addressed and immutable.** A new upload is a new id and therefore a
+  new URL. The route sets
+  `Cache-Control: public, max-age=31536000, immutable`. **A cache never has to be
+  invalidated**, which is the hardest problem in CDN operation, removed by
+  construction.
+- **The storage layout can change** without invalidating a single cached page.
+
+### The CDN itself, from first principles
+
+A **Content Delivery Network** is a fleet of caching servers in cities around the
+world. A request goes to the nearest edge; if that edge has the object it answers
+in ~10 ms without your infrastructure being involved at all. If not, it fetches
+once from the origin and serves every subsequent request from cache.
+
+Two things it gives you here: latency (a buyer in Chennai fetching from an edge
+in Chennai rather than a Mumbai bucket) and **origin offload** — at a 99% hit
+rate your origin serves 1% of the traffic.
+
+And R2 specifically is why this is cheap: **R2 charges nothing for egress**. On an
+image-heavy marketplace, that is the single largest line item avoided, and it is
+the reason R2 was chosen over S3 (`deploy/aws/README.md` §5).
+
+### What about the KYC documents?
+
+They are the deliberate exception and must **never** be CDN-cached. They have no
+public route at all; the only way one is ever served is
+`storage.signedReadUrl(key, seconds)` — a short-lived signed URL, minutes not
+hours, and every issue of one is audit-logged.
+
+That is the difference worth internalising:
+
+| | Vehicle photos | KYC documents |
+|---|---|---|
+| Bucket | private | private |
+| Delivery | public, immutable, cacheable URL | short-lived **signed** URL |
+| Who may see it | anyone with the link (it is a public listing) | an admin, for minutes, audit-logged |
+| CDN | yes, aggressively | **never** |
+
+## 33.4 How application servers scale
+
+### Vertical vs horizontal, precisely
+
+**Vertical (scale up)** — a bigger machine. More vCPU, more memory.
+*Advantages:* zero code change, no distributed-systems problems, and it is the
+right first move almost every time.
+*Limits:* there is a largest machine; it is a single point of failure; and the
+price curve turns superlinear near the top.
+
+**Horizontal (scale out)** — more machines.
+*Advantages:* effectively unbounded, and redundancy comes free — one task dying
+is a capacity event, not an outage.
+*Requirements:* the process must be **stateless**, and something must distribute
+traffic across the instances.
+
+Node's single-threaded event loop shapes this. One Node process uses **one CPU
+core** for JavaScript. Giving a task 4 vCPU does not make one Node process four
+times faster; running four tasks does. So for this system, vertical scaling helps
+mainly with memory and with the I/O-bound parts (the event loop handles thousands
+of concurrent awaits happily) and horizontal scaling is what buys CPU.
+
+**Where the CPU actually goes here:** almost everything the API does is I/O —
+awaiting Postgres, awaiting R2, awaiting Google's token endpoint. The two genuine
+CPU consumers are `sharp` image processing (which is why it belongs in a worker,
+not the HTTP process) and Argon2id password hashing (deliberately expensive, and
+only on admin sign-in).
+
+### How the load balancer distributes traffic
+
+The **Application Load Balancer** is a Layer 7 (HTTP-aware) reverse proxy. Every
+request from the internet arrives at it, and it:
+
+1. terminates TLS (the ACM certificate lives here; the containers speak plain
+   HTTP inside the VPC),
+2. matches **listener rules** — host + path — to choose a target group (§23.2),
+3. picks a target from that group's healthy members (round-robin by default),
+4. forwards, and adds `X-Forwarded-For` with the real client IP.
+
+Three consequences that show up in this codebase:
+
+**`app.set('trust proxy', 1)`** in `server.ts`. Without it, `req.ip` would be the
+load balancer's address for every request, and every per-IP rate limit would
+count one bucket for the entire internet. `1` means "trust exactly one proxy
+hop" — which is also why `deploy/aws/README.md` §10 insists the DNS records stay
+**DNS-only (grey cloud)** on Cloudflare: proxying them adds a second hop, and the
+API would then read the Cloudflare edge as the client.
+
+**Health checks are how the ALB knows what is healthy.** Every 15 seconds it
+polls `/health/ready` (API) and `/api/health` (web). Two consecutive successes
+puts a target in rotation; three failures takes it out. This is the same
+mechanism that gates deploys (§23.5).
+
+**No sticky sessions, deliberately.** Any task can serve any request, because the
+session lives in Postgres. Sticky sessions would undo most of the benefit of
+horizontal scaling and would make a task restart into a mass sign-out.
+
+### The ECS autoscaling that is not yet configured
+
+```
+Target tracking on ALB RequestCountPerTarget (or ECS CPU):
+  min 2   ← never 1: a restart or an AZ loss must not be an outage
+  max N   ← bounded by the connection budget (§32.8), not by ambition
+  scale-out cooldown short, scale-in cooldown long
+```
+
+Scale-in slower than scale-out is the standard asymmetry: adding capacity too
+eagerly costs money, removing it too eagerly costs an outage.
+
+## 33.5 Database connections under scale
+
+This is the interaction that surprises people, so it gets its own section.
+
+Adding API tasks multiplies database connections. From §32.8:
+
+```
+total = (API tasks × pool) + (worker tasks × pool) + pg-boss + migrations + humans
+        must stay comfortably under max_connections
+```
+
+Concretely:
+
+| API tasks | Pool per task | Connections | On a `db.t4g.small` |
+|---:|---:|---:|---|
+| 1 | 5 | ~5 + pg-boss | today. Nowhere near the limit |
+| 4 | 5 | ~20 + workers | fine |
+| 10 | 9 (Prisma default on 4 vCPU) | ~90 + workers + pg-boss | **at or over the limit** |
+
+The failure is not graceful. It is `FATAL: sorry, too many clients already` on
+new connections, under load, while the healthy connections keep working — so the
+error rate climbs but the health check may still pass.
+
+**The order of operations when scaling out:**
+
+1. Set `connection_limit` explicitly in `DATABASE_URL`. Do not leave it to a
+   default that changes with the task's vCPU allocation.
+2. Compute the budget for your maximum task count.
+3. If the budget does not fit: a **bigger** database instance raises
+   `max_connections` (it is derived from memory), or introduce a pooler.
+4. If you introduce a pooler, use **transaction mode**, and re-read the
+   `SET LOCAL` caveat in §32.8. Give pg-boss a direct connection.
+
+**Why a pooler helps at all:** most connections are idle most of the time — a
+request holds one for the few milliseconds it is querying. A transaction-mode
+pooler lets 500 application-side connections share 20 real Postgres backends,
+because they are never all mid-transaction simultaneously.
+
+## 33.6 How the database scales
+
+In the order you would actually do them:
+
+### 1. Indexes and query shape — always first, and free
+
+A missing index turns a 2 ms lookup into a 2-second sequential scan, and no
+amount of hardware fixes it. Postgres reads indexes as **B-trees**: a balanced
+structure that finds a value in a few page reads instead of scanning every row.
+
+The read model already carries ten purpose-built indexes:
+
+```sql
+CREATE INDEX listing_search_doc_idx      ON listing_search USING GIN (search_doc);   -- full text
+CREATE INDEX listing_search_features_idx ON listing_search USING GIN (features);     -- array containment
+CREATE INDEX listing_search_city_price   ON listing_search (city_slug, price_paise);
+CREATE INDEX listing_search_make_model   ON listing_search (make_slug, model_slug, year);
+CREATE INDEX listing_search_price_recent ON listing_search (price_paise, approved_at DESC);
+CREATE INDEX listing_search_trgm         ON listing_search USING GIN (
+  (coalesce(make_name,'') || ' ' || coalesce(model_name,'')) gin_trgm_ops);          -- fuzzy match
+```
+
+Three index types, three jobs: **B-tree** for ranges and equality and sorting,
+**GIN** for "does this document/array contain this" (full-text and the features
+array), **GIN + `pg_trgm`** for typo-tolerant substring matching on make and
+model.
+
+Column order in a composite index matters: `(city_slug, price_paise)` serves
+"cars in Vellore, cheapest first" and "cars in Vellore"; it does **not** serve
+"all cars under ₹5L" — the leading column has to be constrained.
+
+The costs of an index, so you do not add them reflexively: every `INSERT`/`UPDATE`
+must maintain it, and it occupies memory in the buffer cache. Index the queries
+you actually run.
+
+### 2. Vertical scaling — one command, minutes of downtime
+
+```bash
+aws rds modify-db-instance --db-instance-identifier dd-postgres-prod \
+  --db-instance-class db.t4g.medium --apply-immediately
+```
+
+`t4g.small → t4g.medium → m7g.large → …`. More memory means more of the working
+set fits in the buffer cache, which means fewer disk reads, which is usually
+where the win comes from. It also raises `max_connections`.
+
+This is the right answer far longer than people expect. A modern
+`db.m7g.2xlarge` handles a very large marketplace.
+
+### 3. Read replicas — the first real architecture change
+
+A **read replica** is a second instance receiving a continuous stream of the
+primary's WAL and replaying it. It is read-only, and it is **eventually
+consistent** — typically milliseconds behind, occasionally more.
+
+```bash
+aws rds create-db-instance-read-replica \
+  --db-instance-identifier dd-postgres-prod-replica \
+  --source-db-instance-identifier dd-postgres-prod
+```
+
+**Why this system is unusually well-suited to replicas:** the public read path
+already queries a *separate table* — `listing_search` — through a *separate
+repository* (`search.repository.ts`). Routing it to a replica is a second Prisma
+client with a different `DATABASE_URL`, injected at the composition root
+(`container.ts`), not a rewrite.
+
+**The replication-lag trap, and why it does not bite here.** The classic bug is:
+a user writes, is redirected, reads from a replica that has not caught up, and
+sees stale data — "I just saved that and it is not there".
+
+In Dealers-Drive, the write path and the public read path are already
+**asynchronously decoupled by design**. A listing becomes publicly visible via
+`search.index-listing`, a background job, *after* approval. The dealer's own
+console reads the write tables, not the read model. So a few milliseconds of
+replica lag is invisible against a job latency that is already measured in
+seconds — the product's own semantics absorb it.
+
+**What must never go to a replica:** anything in a write transaction, anything
+using `SELECT … FOR UPDATE` (the credit ledger), and the session lookup that runs
+on every authenticated request — a session revoked a moment ago must stop working
+*now*, not after replication catches up.
+
+### 4. Partitioning, sharding, and a different engine — much later
+
+- **Partitioning** splits one large table into physical chunks by a key (say,
+  `approved_at` by month). Queries that name the key touch one partition. Worth
+  it when a table is tens of millions of rows.
+- **Sharding** splits data across separate database *instances*. It is a large,
+  invasive change and should be the last resort.
+- **A dedicated search engine** (OpenSearch, Typesense) is worth considering when
+  Postgres full-text stops keeping up. Note that the migration is unusually cheap
+  here, because `listing_search` is already a rebuilt-from-events projection —
+  you would be adding a second consumer of the same job, not inventing an
+  indexing pipeline.
+
+## 33.7 Caching — the layers, and which ones exist
+
+**Caching is storing the result of expensive work so the work is not repeated.**
+The universal cost is staleness, and every layer below has a different answer to
+"how do you know when it is wrong?".
+
+| Layer | Where | Staleness answer | Status here |
+|---|---|---|---|
+| **Browser cache** | the user's browser | `Cache-Control` headers | ✅ media: `max-age=31536000, immutable` |
+| **CDN / edge** | Cloudflare / CloudFront | immutable URLs, so never invalidated | ⚠️ **available, not yet configured** (§33.3) |
+| **Next.js data cache** | the Next server | `revalidate: N` seconds, or tags | ✅ `lib/api.ts` — public pages only |
+| **Application cache** | Redis / in-process | TTL, or explicit invalidation | ❌ not present |
+| **Database buffer cache** | Postgres memory | automatic (LRU) | ✅ free, and why RAM matters |
+| **The read model** | `listing_search` | rebuilt by a job on every state change | ✅ **the big one** |
+
+Two of those are worth expanding.
+
+### `listing_search` is a cache, and it is the most important one
+
+It is a **materialized read model**: a table containing exactly what a search
+result needs, denormalized, with every join already done. A search query touches
+one table and one index instead of joining vehicles → listings → dealers →
+cities → media.
+
+Its invalidation strategy is the interesting part. It is not TTL-based; it is
+**event-driven and idempotent**. A listing is approved → an outbox event → the
+`search.index-listing` job → `index(listingId)` rebuilds that one row, or removes
+it if the listing no longer satisfies `APPROVED && dealer ACTIVE`. The rebuild
+assumes it will run twice.
+
+That single rule — *only APPROVED listings belonging to ACTIVE dealers are in
+this table* — is the entire public-visibility model. Suspending a dealer removes
+every one of their cars from search with one job, and because **every count in
+the product is derived from this table** (cars available, per-city tiles, facet
+counts, "from ₹x"), a listing that should not be public cannot leak into a number
+either.
+
+### The Next.js caching trap, already avoided
+
+`apps/web/src/lib/api.ts` forwards the `dd_session` cookie **only for uncached
+requests**:
+
+```ts
+const uncached = options.revalidate === false || method !== 'GET';
+if (uncached) {
+  init.cache = 'no-store';
+  const session = await sessionCookie();
+  if (session) init.headers = { ...init.headers, Cookie: `${SESSION_COOKIE}=${session}` };
+}
+```
+
+That is not a convenience. **Attaching a session to a cached fetch is how one
+dealer's console ends up in another dealer's browser.** Public pages stay
+anonymous and cacheable; anything behind a session is `revalidate: false` and
+never shared. Keep that invariant when you add caching, because it is the one
+whose failure is a data breach rather than a stale number.
+
+### When you do add Redis
+
+The first genuine need is the shared rate-limit counter (§33.2). After that, the
+candidates are the ones that are hot, repeated and tolerant of seconds of
+staleness: facet counts, the home page's per-city tiles, and the reference
+catalogue (makes/models/variants — it changes monthly and is read constantly).
+
+Do **not** cache: anything session-derived, anything in the credit ledger path,
+or anything whose staleness would show a suspended dealer's car.
+
+## 33.8 Queues and background workers
+
+The principle: **anything that does not have to happen before the response
+should not.** A request that returns in 80 ms and finishes its work in the
+background beats one that returns in 3 seconds because it waited on an SMS
+gateway.
+
+The current shape (Part 13):
+
+```
+   HTTP request
+        │
+        ├── writes rows        ┐
+        └── writes an          ├── ONE TRANSACTION — both or neither
+            outbox_events row  ┘
+        │
+        └──▶ 200 to the browser
+
+   outbox publisher (every 2s, SELECT … FOR UPDATE SKIP LOCKED)
+        └──▶ event bus ──▶ pg-boss job ──▶ handler
+                                            · media.process (sharp: re-encode,
+                                              EXIF strip, 4 derivatives, blurhash)
+                                            · search.index-listing
+                                            · notification.enquiry-to-dealer  ← priority 100
+                                            · listings.expire-sweep (cron, IST)
+                                            · counters.reconcile (cron)
+```
+
+**Why the outbox exists:** you cannot atomically write to Postgres *and* send to
+an external queue. Either the row commits and the message is lost, or the message
+is sent and the transaction rolls back. Writing the event **into the same
+database, in the same transaction** makes it atomic; a poller then moves it out.
+Delivery is therefore **at-least-once**, which is why every handler is
+idempotent.
+
+**`FOR UPDATE SKIP LOCKED`** is what lets several publishers drain the same table
+concurrently without either seeing the other's rows. It is the standard
+Postgres-as-a-queue primitive.
+
+### How this scales
+
+| Scale | Change |
+|---|---|
+| Today | `WORKER_INLINE=true` — handlers run in the API process |
+| 10k users | **separate worker service**, `desired-count 1`, no load balancer. The API becomes stateless and can scale out |
+| 100k users | scale the worker fleet independently. `media.process` is CPU-bound (`sharp`), notifications are I/O-bound — eventually different services with different task sizes |
+| Beyond | if pg-boss stops keeping up, the outbox publisher is *the only file that changes* to point at a real broker (SQS, Kafka). That is what the seam is for |
+
+The queue being *in Postgres* is a deliberate trade with a known ceiling: real
+queue semantics (retries, exponential backoff, scheduling, dead-lettering,
+priorities) with **zero new infrastructure** and transactional enqueue. It buys
+years. When it stops, the replacement is one file, because nothing above
+`platform/events/bus.ts` knows what the transport is.
+
+## 33.9 Bottlenecks: where they appear, and how to recognise them
+
+### Server bottlenecks
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| High CPU, event loop lag, slow responses across the board | CPU-bound work in the HTTP process — `sharp`, or a hot JSON serialisation | move it to the worker; scale out |
+| Memory climbing until the task is OOM-killed | a leak, or unbounded in-memory accumulation (the rate-limit `Map` never evicts) | fix the leak; move the counters to Redis |
+| Latency high but CPU low | waiting on I/O — usually the database | look at the database, not the app |
+| 502/504 at the ALB | tasks unhealthy, or slower than the ALB idle timeout | health checks; find the slow request |
+| Errors only during deploys | graceful shutdown not draining | already handled (§23.6) — check `SIGTERM` reaches PID 1 |
+
+### Database bottlenecks
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| One query dominating Performance Insights | missing index, or a bad plan | `EXPLAIN ANALYZE`; add the index |
+| `too many clients already` | connection budget exceeded | §33.5 |
+| High CPU on a `t4g` after a period of fine behaviour | **CPU credits exhausted** — burstable classes throttle hard | move to a non-burstable class |
+| Lock waits, statements queueing | a long transaction holding a lock; a non-`CONCURRENTLY` index build | shorten transactions; `lock_timeout` |
+| Writes fine, reads slow | the read path saturating the primary | read replica (§33.6) |
+| Slow after a data-volume jump | the working set no longer fits in RAM | more memory, or partitioning |
+
+### The bottleneck this system will actually hit first
+
+**Image delivery through the API** (§33.3), and it arrives long before any of the
+above. It is also the cheapest to fix — one environment variable.
+
+## 33.10 What AWS handles and what you handle
+
+| Concern | Managed for you | Yours |
+|---|---|---|
+| Server provisioning, patching the host | ✅ Fargate | choosing task CPU/memory |
+| Restarting a crashed container | ✅ ECS | making shutdown graceful |
+| Replacing an unhealthy task | ✅ ECS + ALB | writing an honest health check |
+| Rolling back a bad deploy | ✅ circuit breaker | expand/contract so rollback is *safe* |
+| Distributing traffic | ✅ ALB | `trust proxy`, listener rules |
+| TLS certificates and renewal | ✅ ACM | keeping the DNS validation records |
+| **Autoscaling** | ✅ *once configured* | **configuring it, and the connection budget** |
+| Database host, patching, snapshots, WAL | ✅ RDS | retention, and testing a restore |
+| Database failover | ✅ *if Multi-AZ* | **not enabled here — a deliberate cost choice** |
+| Object storage durability | ✅ R2 | bucket policy, CORS, lifecycle |
+| Edge caching | ✅ *once configured* | cache headers and URL design |
+| **Schema, queries, indexes** | ❌ | **entirely yours** |
+| **Application state (or the absence of it)** | ❌ | **entirely yours** |
+| **Knowing what your bottleneck is** | ❌ | **entirely yours** |
+
+The honest summary: AWS removes the operations that used to consume a team, and
+removes **none** of the architecture. Every scaling problem in §33.9 is one you
+design your way out of.
+
+## 33.11 The roadmap, in priority order
+
+| # | Change | Unlocks | Effort |
+|---|---|---|---|
+| 1 | **`MEDIA_BASE_URL` → R2 public domain / CDN** | removes the largest bandwidth and CPU load from the API | **one variable** |
+| 2 | CloudWatch alarms wired to somebody who reads them | knowing you are at 60% before you are at 100% | hours |
+| 3 | **Separate worker entrypoint** | the API becomes stateless → `desired-count > 1` | ~1 day |
+| 4 | `CachePort` + Redis for rate limits | correct limits across N tasks | ~1 day |
+| 5 | ECS autoscaling (min 2) | traffic spikes, AZ resilience | hours |
+| 6 | Explicit `connection_limit`, budget documented | prevents `too many clients` under load | hours |
+| 7 | Vertical scale the database | headroom | one command |
+| 8 | Read replica for `listing_search` | read scaling | ~1 day |
+| 9 | Application cache for facets and the catalogue | database load | days |
+| 10 | Partitioning / a dedicated search engine | tens of millions of rows | weeks |
+
+Items 1–6 take a system that is capped at one API task to one that scales
+horizontally on demand. That is the entire near-term scaling story, and none of
+it is architectural upheaval — because the architectural work (stateless
+sessions, a separate read model, a transactional outbox, a storage port, a
+composition root) was done up front.
+
+---
+---
+
+# Part 34 — The concepts, from first principles
+
+Part 28 is a glossary: short definitions to look a term up. **This part is
+different.** Each entry answers five questions in the same order:
+
+> **What it is** → **Why it exists** (what breaks without it) → **How it works
+> internally** → **Where Dealers-Drive uses it** → **An analogy**, where one
+> genuinely helps.
+
+Read it straight through once. After that, jump to whatever you are stuck on.
+
+---
+
+## A. The network — what happens between a browser and a server
+
+### A1. DNS
+
+**What.** The system that turns `www.dealers-drive.com` into an IP address like
+`13.234.x.x`.
+
+**Why.** Machines route by number; humans remember names. Names also let the
+number change — you can replace a load balancer without asking anybody to update
+a bookmark.
+
+**How.** Your browser asks a resolver. The resolver walks a hierarchy — root
+servers → `.com` servers → the nameservers for `dealers-drive.com` — and gets
+back a record. `A` maps a name to an IPv4 address; `CNAME` maps a name to another
+name; ALIAS/CNAME-flattening is a provider feature that lets the *apex* domain
+(which cannot legally be a CNAME) point at a load balancer's changing name.
+Results are cached for the record's **TTL**, which is why DNS changes are not
+instant.
+
+**Here.** `deploy/aws/README.md` §10: `www` and `dev` are CNAMEs to the ALB, the
+apex is an ALIAS/flattened CNAME redirecting to `www`, and `media` is reserved
+for the R2 public bucket domain. The records for the app hostnames are kept
+**DNS-only (grey cloud)** on Cloudflare — proxying them would insert a second
+proxy hop and break `trust proxy 1`.
+
+**Analogy.** A phone book. You look up a name to get a number; the number can
+change without the name changing.
+
+### A2. TCP, and why "a connection" costs something
+
+**What.** The protocol that gives you a reliable, ordered byte stream between two
+machines.
+
+**Why.** IP packets can be lost, duplicated or reordered. TCP hides all of that.
+
+**How.** A three-way handshake (SYN → SYN-ACK → ACK) opens the connection —
+one full round trip before a single byte of your data moves. Then sequence
+numbers and acknowledgements make it reliable.
+
+**Here.** This is why **connection pooling** matters (§32.8): a Postgres
+connection costs a TCP handshake *plus* authentication, and paying that per query
+at a few hundred requests per second is unaffordable. It is also why HTTP
+keep-alive exists.
+
+### A3. TLS and HTTPS
+
+**What.** TLS encrypts a TCP connection and authenticates the server. HTTPS is
+HTTP running inside TLS.
+
+**Why.** Without it, everyone between the browser and the server — the café
+Wi-Fi, the ISP, anyone on the path — can read and *modify* the traffic. For this
+system that means reading the `dd_session` cookie and becoming that dealer.
+
+**How.** The server presents a certificate signed by a Certificate Authority the
+browser already trusts. The browser verifies the signature and that the
+certificate covers the hostname it asked for. Then both sides derive a shared
+symmetric key and encrypt everything after that.
+
+**Here.** TLS terminates at the **ALB**, using a certificate issued and
+auto-renewed by **ACM** (`deploy/aws/README.md` §7). Inside the VPC the traffic is
+plain HTTP between the ALB and the tasks, which is safe because the security
+groups mean nothing else can reach those ports. Port 80 gets exactly one listener
+rule: redirect to 443. And `Secure` on the session cookie (`env.isProduction`)
+means the browser will not send it over plain HTTP at all.
+
+**Analogy.** A tamper-evident sealed envelope, where the seal also proves who
+sealed it.
+
+### A4. HTTP: request, response, method, status, header, body
+
+**What.** The request/response protocol the whole web runs on.
+
+**How.** A request is a **method** (`GET`, `POST`, `PATCH`, `DELETE`), a **path**,
+**headers** (metadata: `Content-Type`, `Cookie`, `Authorization`), and optionally
+a **body**. A response is a **status code**, headers, and a body.
+
+The method semantics matter more than people assume:
+
+- `GET` is **safe** (changes nothing) and **cacheable**. This is why
+  `GET /v1/vehicles` can be cached and `POST /v1/enquiries` cannot.
+- `PUT` is **idempotent** — doing it twice equals doing it once. That is why the
+  presigned upload is a `PUT`: a retried upload is not a second photo.
+- `POST` is neither.
+
+Status classes: `2xx` it worked, `3xx` go somewhere else, `4xx` you did something
+wrong, `5xx` we did something wrong. The `4xx`/`5xx` split is a real boundary — a
+`5xx` should page someone; a `422 INSUFFICIENT_CREDITS` should not.
+
+**Here.** The API answers errors as **RFC 9457 Problem Details**
+(`application/problem+json`) — a structured error body with `type`, `title`,
+`status`, `code` and per-field `errors`, so a client can branch on `code` rather
+than parse English (Part 20).
+
+### A5. Origin, and the same-origin policy
+
+**What.** An **origin** is the triple **scheme + host + port**.
+`https://www.dealers-drive.com` and `https://api.dealers-drive.com` are different
+origins. So are `http://` and `https://` versions of the same host.
+
+**Why.** The browser's core security boundary. JavaScript from one origin must
+not be able to read another origin's data — otherwise any page you visit could
+read your bank.
+
+**Here.** This single concept drives the entire hostname layout (§23.2). Serving
+the API and the web app on **one** origin, split by path at the load balancer,
+means the session cookie is host-only, there is no cross-origin fetch between
+them, and the OAuth callback is a same-site navigation.
+
+### A6. CORS
+
+**What.** Cross-Origin Resource Sharing: the mechanism by which a server *opts
+in* to being called by JavaScript from another origin.
+
+**Why.** The same-origin policy blocks it by default. CORS is the controlled
+exception.
+
+**How.** For anything non-trivial the browser first sends a **preflight**
+`OPTIONS` request asking "may origin X use method Y with header Z?". The server
+answers with `Access-Control-Allow-Origin` and friends. Crucially, for the
+browser to send **cookies**, the server must send
+`Access-Control-Allow-Credentials: true` **and** name a specific origin —
+`*` is refused with credentials.
+
+**Here.** `server.ts`:
+
+```ts
+app.use(cors({ origin: env.webOrigins, credentials: true, maxAge: 86_400 }));
+```
+
+`env.webOrigins` is an allow-list parsed from `WEB_ORIGIN`, not a wildcard. And
+because the two apps share an origin in every deployed environment, this
+allow-list is mostly a safety net rather than a load-bearing part of normal
+operation. The other CORS surface is the **R2 bucket**, which allows `PUT` from
+its own environment's origin only — that is what makes the direct browser upload
+possible at all.
+
+### A7. Reverse proxy and load balancer
+
+**What.** A server that sits in front of your servers, receives every request,
+and forwards it.
+
+**Why.** One public address; TLS terminated in one place; traffic spread across
+instances; unhealthy instances removed automatically.
+
+**How (Layer 7).** The ALB parses HTTP, so it can route on **host** and **path**,
+not just IP. It health-checks its targets and only sends traffic to healthy ones.
+It adds `X-Forwarded-For` carrying the original client IP.
+
+**Here.** One ALB serves both environments and both apps (§23.2). Two
+consequences show up in code: `app.set('trust proxy', 1)` so `req.ip` is the real
+client rather than the balancer, and the listener rule that must name
+`/api/docs*` rather than `/api/*` so the web app's own BFF routes are not
+swallowed.
+
+**Analogy.** A receptionist. One phone number for the building; they know which
+desk each call belongs to, and they stop routing to a desk nobody is sitting at.
+
+---
+
+## B. Identity — the vocabulary people mix up
+
+### B1. Authentication vs authorization
+
+- **Authentication** — *who are you?* Establishing identity.
+- **Authorization** — *may you do this?* Checking permission.
+
+They fail differently, and the API says so: **401 Unauthorized** means "I do not
+know who you are" (badly named — it is about authentication); **403 Forbidden**
+means "I know who you are and the answer is no".
+
+**Here.** Authentication is Google OIDC for dealers and Argon2id passwords for
+admins, resolved by the `SessionResolver` at the edge. Authorization is
+`requirePermission()` plus the tenant predicate inside the write itself. Both
+always — the guard is never the only check (Part 6, Part 8).
+
+### B2. Credential, cookie, session, token — the four that get confused
+
+This table is worth memorising:
+
+| | **Credential** | **Cookie** | **Session** | **Token** |
+|---|---|---|---|---|
+| What it is | proof of identity | a browser storage + transport mechanism | server-side state about a signed-in person | a string that stands in for identity |
+| Lives where | the person's head / Google | the browser | the **`sessions` table in Postgres** | in the cookie |
+| Example here | a Google account; an admin password | `dd_session=<32 random bytes>` | a row: `userId`, `scope`, `tokenHash`, `expiresAt`, `revokedAt` | the 32 random bytes themselves |
+| Lifetime | forever-ish | until it expires or is cleared | 30 days (dealer) / 12 hours (admin) | the same |
+
+The sentence that resolves most of the confusion:
+
+> **The cookie is the envelope. The token is the ticket inside it. The session is
+> the row in our database that the ticket refers to.**
+
+### B3. Cookie — what it actually is on the wire
+
+**What.** A name/value pair the server asks the browser to store and send back on
+subsequent requests to that host.
+
+**How.** The server sends:
+
+```
+Set-Cookie: dd_session=8Kx...; HttpOnly; Secure; SameSite=Lax; Path=/; Expires=...
+```
+
+and the browser sends `Cookie: dd_session=8Kx...` on every matching request,
+**automatically**, without any JavaScript involved.
+
+The attributes are the security model:
+
+| Attribute | Effect | Why here |
+|---|---|---|
+| `HttpOnly` | JavaScript **cannot read it** (`document.cookie` does not see it) | an XSS bug cannot steal the session |
+| `Secure` | only sent over HTTPS | no plaintext leak. `env.isProduction` |
+| `SameSite=Lax` | not sent on cross-site **POST**; **is** sent on top-level cross-site **GET navigation** | **required, not lax thinking** — the OAuth callback *is* a top-level cross-site GET from Google, and `Strict` would withhold the cookie on exactly that navigation. `Lax` also does the CSRF work: a cross-site POST arrives with no cookie |
+| `Path=/` | sent for every path | one origin serves both apps |
+| **no `Domain`** | **host-only** | a `.dealers-drive.com` cookie would be sent to `dev.` too — a dev session presented to production. `SESSION_COOKIE_DOMAIN` is empty in every environment, deliberately |
+
+**Here.** `apps/api/src/modules/auth/session.cookie.ts` is the only file that
+touches cookies, and it is separate from `session.service.ts` on purpose: the
+service takes a user id and returns a token and can be tested with no HTTP
+request in sight.
+
+### B4. Opaque token vs JWT
+
+**What.** A **JWT** is a signed, self-describing token: header, payload and
+signature, base64url-encoded and dot-separated. Anyone can decode the payload
+(it is **not** encrypted); the signature proves it was not altered. An **opaque
+token** is a meaningless random string whose meaning exists only in the issuer's
+database.
+
+**The trade.**
+
+| | JWT | Opaque + database |
+|---|---|---|
+| Verify | signature check, no I/O | one indexed lookup |
+| Revoke immediately | **no** — you need a denylist, which is a database, only slower to consult and easier to forget | **yes** — one `UPDATE` |
+| Contains | claims that were true at issue time | nothing; the truth is re-read |
+| Leak of the store | the signing key forges any token | only hashes; a dump does not hand anyone a live session |
+
+**Here.** `dd_session` is **opaque**: 32 random bytes, base64url. Only its
+**SHA-256** is stored (`session.service.ts`). Two properties follow, and they are
+the reason for the whole design:
+
+1. **Revocation is one line of SQL**, effective on the very next request.
+   Suspending a dealer, or signing them out everywhere, is an `UPDATE`.
+2. **The principal is rebuilt from the database on every request**
+   (`cookie-session.adapter.ts`). Nothing is cached in the token, so a role
+   change or a suspension takes effect immediately, with no window in which a
+   stale claim is still honoured.
+
+Dealers-Drive *does* handle one JWT — Google's **ID token** — but it never issues
+one and never stores one (§B8).
+
+**Analogy.** A JWT is a passport: it carries your details and a hard-to-forge
+seal, and it stays valid until it expires even if the issuing country would
+rather it did not. An opaque token is a cloakroom ticket: the number means
+nothing, and the coat can be released, held, or refused at any moment.
+
+### B5. Hashing, and why it is not encryption
+
+**What.** A hash function maps input to a fixed-length output, deterministically
+and **irreversibly**.
+
+**Why.** So a stolen database is not a stolen set of credentials.
+
+**How.** Encryption is reversible with a key; hashing is not reversible at all.
+You verify by hashing the presented value and comparing.
+
+**Here — two very different uses, and the difference is the point:**
+
+- **`SHA-256`** for the session token (`hashToken`). Fast is *fine*, because the
+  input is 32 random bytes — there is nothing to guess.
+- **`Argon2id`** for admin passwords (`modules/auth/password.ts`), at the OWASP
+  floor: 19 MiB of memory, two passes. **Slow and memory-hard is the point.**
+  Passwords are low-entropy and guessable, so the memory cost is what makes a
+  stolen hash expensive to attack on a GPU. *A plain SHA-256 of a password is not
+  a password hash.*
+
+And the timing detail: `verifyDecoy()` hashes against a dummy when the email does
+not exist, so "no such account" and "wrong password" take the same time. Without
+it, the login endpoint is an account-enumeration oracle.
+
+### B6. HMAC — proving *we* wrote this
+
+**What.** A keyed hash: `HMAC(secret, message)` produces a tag that only someone
+holding the secret can produce or verify.
+
+**Why.** To hand a value to an untrusted party and detect if they change it.
+
+**Here — twice, and both are worth understanding:**
+
+1. **The OAuth transaction cookie** (`oauth-transaction.ts`).
+   `<base64url(json)>.<hmac>` seals the `state`, `nonce`, PKCE verifier and
+   `returnTo` into one 10-minute cookie. The browser *holds* it and cannot
+   *edit* it. This is why there is no `oauth_states` table: the row would exist
+   only between two requests seconds apart and would need its own expiry sweep,
+   while the cookie is already scoped to exactly the browser that must present
+   it.
+2. **The local storage adapter's presigned PUT** (`local.adapter.ts`) — an HMAC
+   over key + content-type + content-length + expiry, which is a deliberate
+   miniature of what S3's SigV4 does.
+
+Both comparisons use `timingSafeEqual`, not `===`. A naive comparison returns
+early on the first differing byte, which leaks how much of a guess was correct.
+
+**Analogy.** A wax seal on a letter you hand to a courier. They carry it; they
+cannot alter it without you noticing.
+
+### B7. OAuth 2.0 — authorization *delegation*, not login
+
+**What.** A protocol that lets a user grant one application limited access to
+their data at another, **without giving it their password**.
+
+**Why.** The alternative is asking dealers for their Google password. Nobody
+should build that, and nobody should type it.
+
+**The four roles:**
+
+- **Resource owner** — the dealer.
+- **Client** — Dealers-Drive.
+- **Authorization server** — Google (`accounts.google.com`).
+- **Resource server** — Google's APIs.
+
+**The authorization code flow, which is the one used here:**
+
+```
+1. Browser navigates to Google with client_id, redirect_uri, scope, state,
+   nonce, code_challenge.
+2. The dealer authenticates WITH GOOGLE. Dealers-Drive never sees it.
+3. Google redirects the browser back to redirect_uri with ?code=…&state=…
+4. The API POSTs that code + client_secret + code_verifier to Google's token
+   endpoint, SERVER TO SERVER.
+5. Google returns tokens.
+```
+
+**Why the code, rather than the token, in step 3?** Because step 3 goes through
+the **browser**, where the value lands in an address bar, a `Referer` header,
+browser history and possibly a proxy log. An authorization code is *single-use*
+and worthless without the client secret, which never leaves the server. This is
+the entire reason the flow has two steps instead of one.
+
+**Here.** `google.provider.ts` builds the authorization URL and performs the
+exchange. Note `access_type=online`: no refresh token is requested, because the
+application session is the thing that outlives the sign-in and a stored Google
+refresh token would be a long-lived credential this product has no use for.
+
+**Analogy.** A valet key. It starts the car; it does not open the boot, and it is
+not your house key.
+
+### B8. OpenID Connect and the ID token
+
+**What.** A thin identity layer **on top of** OAuth 2.0. OAuth answers *"may this
+app access that?"*; OIDC answers *"who is this person?"*.
+
+**How.** Requesting the `openid` scope makes the token response include an **ID
+token**: a JWT whose claims describe the user.
+
+The claims that matter here:
+
+| Claim | Meaning | What the code does |
+|---|---|---|
+| `iss` | issuer | must be `https://accounts.google.com` |
+| `aud` | audience | must equal **our** `client_id` — otherwise it is a token minted for a different application |
+| `sub` | subject — Google's **stable, permanent** id for the account | **this is the account** |
+| `exp` | expiry | checked with 60 s of clock leeway |
+| `nonce` | echoes what we sent | ties this token to *this* browser's sign-in |
+| `email`, `email_verified` | the address, and whether Google checked it | `email_verified !== true` is a **refusal**, not a warning |
+
+**The single most important design decision in the auth module:**
+
+> **The account is the `sub`, not the email.**
+
+`prisma/schema.prisma` puts a unique index on `(provider, providerSubject)`, and
+`auth.service.ts` looks up by exactly that. The email is refreshed on every
+sign-in and is **never** the thing looked up — because a person can change their
+Google email address, and because an email that merely *matches* an existing
+account is not proof of ownership. Hence `ACCOUNT_LINK_REQUIRED`: an existing
+account with the same email and no linked identity is refused rather than
+silently merged. Silently merging on a matching string is how an expired domain
+becomes somebody else's inventory.
+
+**Why the ID token's signature is *not* verified here, and why that is correct.**
+OIDC Core §3.1.3.7 item 6: a token received **directly from the token endpoint**
+over a TLS connection whose certificate was validated may be trusted without
+checking its signature. This code POSTed to `oauth2.googleapis.com` itself, with
+a client secret, over Node's TLS stack. The token never passed through a browser,
+so there is no untrusted hop. The **claims** are still all checked. (If the token
+had arrived via the browser — the implicit flow — the signature check would be
+mandatory.)
+
+### B9. `state`, `nonce`, and PKCE — three defences, three different attacks
+
+They are constantly confused. They defend against three distinct things.
+
+**`state` — CSRF on the callback.**
+A random value sent to Google and echoed back. The API compares Google's echo
+against the value sealed in *this browser's* `dd_oauth` cookie. Without it, an
+attacker can send you a link to `/callback?code=<attacker's code>` and log your
+browser into **their** account — after which anything you upload lands in their
+inventory. A callback with no cookie, a stale cookie, or somebody else's state is
+refused **before the code is worth anything**.
+
+**PKCE (`code_challenge` / `code_verifier`) — authorization-code interception.**
+The client generates a random `code_verifier`, sends
+`code_challenge = BASE64URL(SHA256(verifier))` in step 1, and sends the raw
+verifier in step 4. Google checks they correspond. So a stolen authorization code
+is useless without the verifier, which never travelled through the browser.
+PKCE (RFC 7636) began as a mobile-app protection and is now recommended for
+**all** clients, confidential ones included — belt and braces alongside the
+client secret.
+
+**`nonce` — ID-token replay.**
+A random value sent in step 1 that Google embeds **inside the signed ID token**.
+The API checks it matches what this browser's transaction expected. It is why an
+ID token captured elsewhere cannot be replayed here.
+
+All three are generated in `createOAuthTransaction()`, sealed into the HMAC'd
+`dd_oauth` cookie, and — importantly — the cookie is **cleared as the very first
+thing** the callback does, whatever happens next. Single-use, always.
+
+### B10. Multi-tenancy
+
+**What.** One application instance serving many customers whose data must never
+mix. Here a **tenant** is a **dealership**.
+
+**Why.** The alternative — one deployment per dealer — does not work
+commercially or operationally.
+
+**How, and the rule that carries it:**
+
+> **`dealerId` always comes from the session. Never from the request.**
+
+There is no endpoint anywhere in this API that accepts a `dealerId`. It is a
+property of the resolved principal (`session.port.ts`), written into the request
+by `requireDealer`, and passed as the first argument to every repository
+function. `GET /vehicles?dealerId=123` is not a feature with a bug; it is an
+architecture that cannot be made safe.
+
+**Four layers** (Part 7), of which three are live:
+
+1. session-derived context ✅
+2. repository signatures that make an unscoped query a type error ✅
+3. PostgreSQL **row-level security** — `withTenant()` issues
+   `SET LOCAL app.dealer_id`, but the policies are **not written yet**
+4. tests that assert cross-tenant access fails ✅
+
+And cross-tenant access returns **404, not 403**. A 403 confirms the row exists,
+which is an enumeration oracle.
+
+---
+
+## C. Data — PostgreSQL as an engine
+
+### C1. ACID and transactions
+
+**What.** A **transaction** is a group of statements that commit together or not
+at all.
+
+- **Atomicity** — all or nothing.
+- **Consistency** — constraints hold at commit.
+- **Isolation** — concurrent transactions do not see each other's partial work.
+- **Durability** — once committed, it survives a crash.
+
+**Why here.** Onboarding writes a user, a dealer, a membership and three KYC rows.
+A crash halfway through must leave *nothing*, not a dealership with no owner.
+
+**How internally.** Postgres uses **MVCC** (multi-version concurrency control):
+an `UPDATE` writes a new row version rather than overwriting, so readers never
+block writers and writers never block readers. Durability comes from the
+**WAL** — the change is appended to the write-ahead log and flushed before commit
+returns; the data pages follow later. Crash recovery replays the WAL. (The same
+WAL is what makes PITR and read replicas possible — §32.6.)
+
+**Here.** `withTransaction()` and `withTenant()` in `platform/db/tenant-tx.ts`.
+
+### C2. Row locking — `SELECT … FOR UPDATE`
+
+**What.** Reading a row *and* locking it so no other transaction can modify it
+until yours ends.
+
+**Why.** The read-modify-write race. Two requests both read `balance = 1`, both
+decide "yes, affordable", both write `balance = 0`. Two cars published, one
+credit spent.
+
+**Here.** The credit ledger. Every write path re-reads the balance under
+`FOR UPDATE` inside the transaction that spends it (Part 10). The second
+transaction **blocks** until the first commits, then reads the true post-commit
+value. Combined with the `creditBalance >= 0` CHECK constraint, the invariant
+holds even if application logic is wrong.
+
+**Analogy.** Taking the last item off the shelf while holding the shelf, rather
+than looking, walking away, and coming back.
+
+### C3. Index, and what a B-tree does
+
+**What.** A separate data structure that lets the database find rows without
+reading all of them.
+
+**How.** A **B-tree** is a balanced tree kept sorted by the indexed columns.
+Finding a value is a handful of page reads instead of a full scan, and because it
+is sorted it also serves range queries (`price BETWEEN …`) and `ORDER BY`
+directly.
+
+**Composite index column order matters.** `(city_slug, price_paise)` serves "cars
+in Vellore, cheapest first" and "cars in Vellore". It does **not** serve "all cars
+under ₹5L" — the leading column must be constrained. Think of a phone book sorted
+by surname then first name: useless for finding every "Priya".
+
+**Other index types here:** **GIN** for containment queries — full-text over the
+generated `search_doc` tsvector, and `features` array membership — and
+**GIN + `pg_trgm`** for typo-tolerant substring matching on make and model.
+
+**Costs.** Every write maintains every index on that table, and indexes occupy
+buffer cache. Index the queries you run.
+
+### C4. Denormalization and the read model
+
+**Normalization** stores each fact once. **Denormalization** duplicates it to make
+reads cheap.
+
+**Here.** `listing_search` is a fully denormalized projection — dealer name, city
+name, make/model names, primary media id and blurhash, all copied onto one row —
+so a search touches one table and one index instead of five joins. It is
+maintained by a background job on every state change, and it is **the entire
+public-visibility model**: only `APPROVED` listings belonging to `ACTIVE` dealers
+are ever in it. Also denormalized: `Vehicle.primaryMediaId`, so a result card
+needs no join, and `Dealer.creditBalance`, which is explicitly a **cache** of the
+newest `CreditTransaction.balanceAfter` and never authoritative on its own.
+
+The rule: **denormalize deliberately, and name the thing that maintains it.**
+Undocumented duplication is just drift.
+
+### C5. Connection and pool
+
+See §32.8 for the operational detail. In one paragraph: a Postgres connection is
+an OS process on the database host, so they are finite and not free. A **pool** is
+a small set of connections kept open and reused. `createPrisma()` builds one
+`PrismaClient` per process, holding one pool. `instances × pool_size` must stay
+under `max_connections`, and that arithmetic is what bounds horizontal scaling
+(§33.5).
+
+### C6. Migration
+
+A versioned, ordered, immutable script that moves the schema forward. **Prisma
+migrations have no `down`.** Safety comes from **expand/contract**, not from
+reversal (§32.5).
+
+### C7. Read replica and eventual consistency
+
+A second instance replaying the primary's WAL, read-only, typically milliseconds
+behind. **Eventual consistency** means a read may briefly return a value from
+just before the latest write.
+
+Whether that is acceptable is a *product* question, not a technical one. Here it
+mostly is, because the public read path is already asynchronously decoupled — a
+listing becomes visible via a background job after approval (§33.6). Where it is
+**not** acceptable: session lookups (a revoked session must die *now*) and
+anything in a write transaction.
+
+---
+
+## D. Storage — files, objects, and signed URLs
+
+### D1. Filesystem vs object storage
+
+**A filesystem** has directories, is mounted to one machine, supports partial
+writes and appends, and dies with the machine.
+
+**Object storage** is a flat key/value store over HTTP. A **bucket** is a
+namespace; a **key** is the whole path (`vehicles/<vehicleId>/<mediaId>/640.webp`
+— the slashes are just characters). Objects are written and read whole, are
+replicated for durability, and are addressed by URL.
+
+**Why here.** Container filesystems are ephemeral: a redeploy replaces the
+container and everything written to its disk is gone. `env.ts` refuses to start
+in production with `STORAGE_DRIVER=local` for exactly that reason. Object storage
+is also independently scalable and directly reachable by the browser — which is
+what makes the next two entries possible.
+
+**Here.** `StoragePort` (`platform/storage/storage.port.ts`) is the seam. Three
+drivers, one interface: `local` (filesystem + an HMAC-signed `/uploads` route),
+`minio` and `r2` — and the last two are **the same adapter**, because they speak
+the same protocol. There is no `if (isR2)` anywhere in `s3.adapter.ts`. That is
+the whole content of the claim "changing provider is configuration".
+
+### D2. Presigned URL
+
+**What.** A URL that already contains a cryptographic signature authorising one
+specific operation on one specific object, until a specific time.
+
+**Why.** So the browser can upload **directly to storage** without the API ever
+touching the bytes, and without the browser ever holding a storage credential.
+
+**How (S3 SigV4).** The server, holding the secret key, computes a signature over
+a canonical form of the request — method, bucket, key, expiry, **and the headers
+it names as signed**. The storage service recomputes it and compares.
+
+**The detail that makes the whole design safe:**
+
+```ts
+getSignedUrl(client, new PutObjectCommand({ Bucket, Key, ContentType, ContentLength }), {
+  expiresIn: expiresInSeconds,
+  signableHeaders: new Set(['content-type', 'content-length']),
+});
+```
+
+`content-type` **and** `content-length` are *signed*, not hints. A client that
+asks to upload 400 KB of JPEG and then sends 40 MB of something else is rejected
+**by the object store**, before a byte is stored. That check is why the `commit`
+step can trust what it finds.
+
+**Here.** The three-step upload (Part 14): `presign` → browser `PUT`s the bytes
+straight to R2 → `commit` (the API `HEAD`s the object and verifies the size
+matches what was declared, then enqueues processing). The API never sees an image
+byte on the upload path. A dealer uploading twelve 8 MB photos costs one
+signature.
+
+The local adapter reproduces the *contract* with its own HMAC over the same four
+values (`local.adapter.ts` + the `PUT /uploads` route), so the code path the
+browser takes is identical whichever driver is configured.
+
+**Analogy.** A one-time, time-limited delivery authorisation for one named parcel
+at one named loading bay — not a key to the warehouse.
+
+### D3. Signed *read* URL, and why KYC documents are different
+
+`signedReadUrl(key, seconds)` is the only way a KYC document is ever served —
+minutes, not hours, and every issue of one is audit-logged. Those documents have
+**no public route at all**.
+
+Vehicle photos are the opposite: public, immutable, and served from a URL
+addressed by media id and width. Never confuse the two paths (§33.3).
+
+### D4. CDN, cache headers, and content addressing
+
+Covered in §33.3. The concept in one sentence: a CDN is a fleet of caching
+servers near your users; **`Cache-Control` is how you tell it what it may keep
+and for how long**; and if your URLs are content-addressed and immutable, cache
+invalidation — the hard part — never has to happen.
+
+```ts
+res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+```
+
+`public` = any cache may store it. `max-age=31536000` = one year. `immutable` =
+do not even revalidate. Safe **only** because a new upload gets a new media id
+and therefore a new URL.
+
+The counterpart appears on every authenticated response: `Cache-Control: no-store`
+on `/v1/auth/me`, on admin login, on `/v1/auth/providers`.
+
+---
+
+## E. Runtime — processes, containers, and the platform
+
+### E1. Process, thread, and Node's event loop
+
+**A process** is a running program with its own memory. **A thread** is a line of
+execution inside it.
+
+**Node.js runs your JavaScript on a single thread**, with an **event loop**: when
+you `await` something I/O-bound, the thread is handed back to the loop to run
+other work, and your continuation is queued when the I/O completes.
+
+**Consequences that matter here:**
+
+- **I/O-bound work scales beautifully.** Thousands of concurrent requests, each
+  awaiting Postgres or R2, are fine — that is nearly everything this API does.
+- **CPU-bound work blocks everything.** While `sharp` is re-encoding a 12 MP
+  photo, that process serves no other request. This is *the* reason
+  `media.process` belongs in a worker rather than the HTTP process, and it is
+  the concrete meaning of §33.2's worker-entrypoint item.
+- **One process uses one core** for JavaScript. Four vCPU does not make one Node
+  process four times faster — four tasks does (§33.4).
+
+**Analogy.** One very fast waiter. They can keep thirty tables moving because
+most of the time they are waiting on the kitchen. Ask them to *cook* one dish and
+all thirty tables wait.
+
+### E2. Container and image
+
+**An image** is an immutable, layered filesystem plus metadata (entrypoint,
+environment, ports). **A container** is a running instance of one, isolated by
+kernel namespaces and cgroups.
+
+**Why.** "Works on my machine" becomes "works, because it *is* my machine's
+filesystem". The image built in CI is the image that runs in production.
+
+**Layers and caching.** Each Dockerfile instruction produces a layer, cached by
+its inputs. This is why the `deps` stage copies only manifests before
+`pnpm install` (§30.6): editing a `.tsx` file must not reinstall the dependency
+tree.
+
+**Multi-stage builds.** `base → deps → build → runner` (plus `migrator` for the
+API). Build tools stay in the build stage; the runtime image contains only what
+it needs. It is why the API image has production dependencies only and no React.
+
+**`USER node`.** Both runtime images and the migrator run as non-root. A
+container process running as root turns a container escape into a host
+compromise.
+
+**Analogy.** An image is a recipe plus every ingredient, sealed. A container is
+the meal being cooked from it. Two kitchens produce the same meal.
+
+### E3. Orchestration — ECS, Fargate, task, service
+
+| Term | Meaning |
+|---|---|
+| **Task definition** | the blueprint: image, CPU, memory, environment, secret ARNs, log config |
+| **Task** | one running instance of a task definition — roughly, one container |
+| **Service** | a controller that keeps N tasks running, registers them with a target group, and manages rollouts |
+| **Cluster** | the logical grouping |
+| **Fargate** | serverless compute — AWS runs the host; you never see or patch a VM |
+
+A **rolling deployment** starts new tasks, waits for them to pass the target
+group health check, then drains and stops the old ones.
+`minimumHealthyPercent=100, maximumPercent=200` means the new task must be
+healthy before an old one is stopped, so there is never a moment with reduced
+capacity.
+
+### E4. Health check: liveness vs readiness
+
+- **Liveness** — *is this process alive?* If not, restart it.
+- **Readiness** — *should this process receive traffic?* If not, remove it from
+  rotation but leave it running.
+
+Conflating them is a classic outage: if a liveness probe checks the database, a
+five-second database blip restarts every container simultaneously.
+
+**Here.** `/health/live` touches nothing. `/health/ready` runs `SELECT 1` and
+returns 503 with the failing dependency **named**, plus `version` (the deployed
+`GIT_SHA`), `appEnv` and `uptimeSeconds`. The web app's `/api/health` touches
+nothing at all — deliberately, so an API incident does not pull the front end out
+of rotation too (§23.5).
+
+### E5. Stateless, and what "state" actually means
+
+**Stateless** means no request depends on which instance served the previous one.
+
+The audit for this API:
+
+| | Status |
+|---|---|
+| Sessions in Postgres, not process memory | ✅ |
+| No in-memory user cache | ✅ |
+| Uploads to object storage, not local disk | ✅ |
+| **Rate-limit counters in a process-local `Map`** | ⚠️ the one piece of per-instance state |
+| **`WORKER_INLINE=true` — job handlers in every API process** | ⚠️ the other one |
+
+Those two ⚠️ rows are exactly why `dd-api-prod` is capped at one task, and
+exactly what §33.2 items 3 and 4 remove.
+
+### E6. Graceful shutdown
+
+Covered in §23.6. The concept: on `SIGTERM`, stop accepting new connections,
+let in-flight requests finish, release resources, exit — with a hard timeout so a
+hung request cannot block a deploy forever, and `timer.unref()` so the timer
+itself does not keep the process alive.
+
+### E7. Environment variables, secrets, and configuration
+
+**Why not a config file in git?** Because the same image must run in dev and in
+production. Configuration is *injected*, not baked (§23.7).
+
+Three rules this repo enforces:
+
+1. **`env.ts` is the only place `process.env` is read.** Everywhere else imports
+   the validated, frozen `env` object. Reading `process.env` elsewhere is a bug.
+2. **Validation happens at boot**, with cross-field rules — "this is required
+   *because* of that". Production refuses `AUTH_MODE=dev`,
+   `STORAGE_DRIVER=local`, the local `SESSION_SECRET`, the local
+   `UPLOAD_SIGNING_SECRET`, and missing Google or S3 credentials. A misconfigured
+   production task fails its health check and is rolled back; it never serves.
+3. **`NEXT_PUBLIC_*` is banned.** Those are inlined at build time, which would
+   force one image per environment and break build-once-promote-many. Anything
+   the browser needs is read on the server (`lib/config.ts`) and passed down as
+   props.
+
+**Secrets** differ from configuration only in handling: SSM SecureStrings,
+resolved by the ECS execution role at task start, never in git, never in a
+workflow file, never in an image.
+
+---
+
+## F. Distributed-systems ideas you will meet in this code
+
+### F1. Idempotency
+
+**What.** An operation that, performed twice, has the same effect as performing
+it once.
+
+**Why.** Networks retry. A response can be lost after the work was done. Without
+idempotency, a retry double-charges.
+
+**Here.** Every job handler is idempotent, because outbox delivery is
+**at-least-once**. `sessions.revoke()` is idempotent — signing out twice must not
+be an error. `search.index(listingId)` rebuilds a row from scratch and assumes it
+will run twice. `db:bootstrap` is create-if-missing so running it twice is
+harmless. And payment webhooks are keyed so a duplicate delivery adds no credits
+(Part 15).
+
+### F2. At-least-once vs exactly-once
+
+**Exactly-once delivery does not exist** in a distributed system. You get
+at-least-once (retries, possible duplicates) or at-most-once (no retries,
+possible loss). The practical answer is **at-least-once delivery plus idempotent
+handlers**, which is *effectively* exactly-once processing.
+
+**Here.** That is precisely the outbox + pg-boss design (Part 13).
+
+### F3. Race condition and TOCTOU
+
+**A race condition** is a bug whose outcome depends on timing. **TOCTOU** —
+time-of-check to time-of-use — is the specific shape where you check a condition
+and then act on it, and something changes in between.
+
+**Here.** The guard (`requirePermission`) checks capability at the edge; the
+service re-checks ownership **inside the transaction that writes**, with the
+tenant predicate in the `WHERE` clause of the write itself. Both checks, always,
+so there is no gap between "you may" and "this row is yours" (Part 8).
+
+### F4. The transactional outbox
+
+**The problem.** You cannot atomically write to your database *and* publish to an
+external queue. Either the row commits and the message is lost, or the message is
+sent and the transaction rolls back.
+
+**The solution.** Write the event **into the same database, in the same
+transaction**. A poller reads unpublished rows and forwards them.
+
+**Here.** `outbox_events` + `outbox-publisher.ts`, polling every 2 s with
+`SELECT … FOR UPDATE SKIP LOCKED` so several publishers can drain concurrently
+without seeing each other's rows. When the sink becomes a real broker, this is
+**the only file that changes**.
+
+### F5. CQRS, in the shape actually used here
+
+**Command Query Responsibility Segregation**: the model you write through and the
+model you read through are different structures.
+
+Not the full ceremony — no event sourcing, no separate services. Just the useful
+half: writes go to the normalized tables; public reads go to `listing_search`,
+rebuilt by a job. That single separation is what makes read scaling (replicas,
+caches, a search engine) a routing decision rather than a rewrite (§33.6).
+
+### F6. Backpressure and priority
+
+When work arrives faster than it can be done, something must give. A queue
+absorbs the burst; **priorities** decide what is done first when it cannot all be
+done at once.
+
+**Here.** `notification.enquiry-to-dealer` has priority **100** — the highest —
+with the comment *"It is the product."* A buyer's enquiry reaching a dealer fast
+is the thing dealers pay for. Media processing (50) can wait a few seconds; a
+lead cannot.
+
+---
+---
+
+# Part 35 — Reference links for learning
+
+Official documentation first, because it is the thing that stays correct. Videos
+and courses are listed where they genuinely explain something better than prose
+does; for those I give the **title and the channel**, so search for the title
+rather than trusting a link that may have moved.
+
+A suggested order is at the end (§35.11).
+
+## 35.1 The web platform — HTTP, cookies, CORS
+
+| Resource | Why |
+|---|---|
+| [MDN — HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP) | The reference. Methods, status codes, headers, caching |
+| [MDN — Using HTTP cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies) | Read the `SameSite`, `HttpOnly` and `Secure` sections carefully — they are §B3 of this document |
+| [MDN — CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) | Especially preflight and `Access-Control-Allow-Credentials` |
+| [MDN — Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) | The boundary the whole hostname layout (§23.2) exists to respect |
+| [web.dev — HTTP caching](https://web.dev/articles/http-cache) | `Cache-Control`, `immutable`, and why content-addressed URLs never need invalidating |
+| [RFC 9457 — Problem Details for HTTP APIs](https://datatracker.ietf.org/doc/html/rfc9457) | The exact error format this API returns (Part 20) |
+
+**Video:** *"HTTP/1.1 vs HTTP/2 vs HTTP/3"* and the TLS handshake series on
+[Hussein Nasser's channel](https://www.youtube.com/@hnasr) — genuinely good at
+the packet-level "why" behind connections, TLS and connection pooling.
+
+## 35.2 OAuth 2.0 and OpenID Connect
+
+Read these in this order. This is the densest area in the codebase.
+
+| Resource | Why |
+|---|---|
+| [oauth.net/2](https://oauth.net/2/) | The best plain-English entry point. Start with "Authorization Code" and "PKCE" |
+| [Google — OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/oauth2/web-server) | Exactly the flow `google.provider.ts` implements |
+| [Google — OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect) | The ID token, its claims, and the `sub` |
+| [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html) | §3.1.3.7 is the clause that justifies not re-verifying the ID token signature (§B8). Worth reading the actual words |
+| [RFC 6749 — OAuth 2.0](https://datatracker.ietf.org/doc/html/rfc6749) | The base spec. §4.1 is the authorization code grant |
+| [RFC 7636 — PKCE](https://datatracker.ietf.org/doc/html/rfc7636) | §4.1–4.2 define `code_verifier` and the S256 challenge. Short, and the code matches it line for line |
+| [OAuth 2.0 Security Best Current Practice](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics) | Why PKCE is now recommended for confidential clients too |
+| [jwt.io](https://jwt.io/) | Paste a JWT and see its claims. Do this once with a real Google ID token — it makes §B8 concrete |
+
+**Video:** *"OAuth 2.0 and OpenID Connect (in plain English)"* by Nate
+Barbettini, on the [OktaDev channel](https://www.youtube.com/@OktaDev). The
+clearest hour on this topic; it builds the flow up from the naive version and
+shows what each addition defends against.
+
+## 35.3 Sessions, passwords, and application security
+
+| Resource | Why |
+|---|---|
+| [OWASP — Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) | Token entropy, storage, expiry, revocation. §B4 in one page |
+| [OWASP — Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) | The source of the Argon2id parameters in `password.ts` (19 MiB, 2 passes) |
+| [OWASP — CSRF Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) | Read the `SameSite` section: it is the defence this system relies on |
+| [OWASP Top 10](https://owasp.org/www-project-top-ten/) | Broken access control is #1, and it is what Parts 6–8 are about |
+| [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/) | The index. Also see Authorization, Multi-tenancy, and File Upload |
+| [helmet documentation](https://helmetjs.github.io/) | Every header `app.use(helmet())` sets, and what each one blocks |
+
+## 35.4 PostgreSQL
+
+| Resource | Why |
+|---|---|
+| [PostgreSQL 16 documentation](https://www.postgresql.org/docs/16/index.html) | The reference |
+| [Concurrency Control (MVCC)](https://www.postgresql.org/docs/current/mvcc.html) | Why readers never block writers, and what `FOR UPDATE` actually does |
+| [Indexes](https://www.postgresql.org/docs/current/indexes.html) | B-tree, GIN, GiST, and multicolumn index ordering |
+| [Full Text Search](https://www.postgresql.org/docs/current/textsearch.html) | `tsvector`, `setweight`, and the GIN index behind `listing_search` |
+| [pg_trgm](https://www.postgresql.org/docs/current/pgtrgm.html) | The trigram index used for fuzzy make/model matching |
+| [Write-Ahead Logging](https://www.postgresql.org/docs/current/wal-intro.html) | The mechanism under durability, PITR and read replicas |
+| [EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html) | How to read a query plan. The single most useful database skill |
+| **[Use The Index, Luke](https://use-the-index-luke.com/)** | **Free, and the best explanation of indexing anywhere.** If you read one thing in this section, read this |
+| [PgBouncer](https://www.pgbouncer.org/) | Read the pooling-modes page before you ever consider one (§32.8) |
+
+## 35.5 Prisma and the ORM layer
+
+| Resource | Why |
+|---|---|
+| [Prisma documentation](https://www.prisma.io/docs) | Start with the Prisma Client CRUD and relations guides |
+| [Prisma Migrate](https://www.prisma.io/docs/orm/prisma-migrate) | Especially "Migrate in development" vs "Migrate in production" — §32.4 |
+| [Prisma — Transactions and batch queries](https://www.prisma.io/docs/orm/prisma-client/queries/transactions) | Interactive transactions, which is what `withTransaction` uses |
+| [Prisma — Connection pool](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-pool) | `connection_limit`, and the arithmetic in §33.5 |
+
+## 35.6 Node, Express, Next.js, React
+
+| Resource | Why |
+|---|---|
+| [Node — The event loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick) | §E1. Why CPU-bound work belongs in a worker |
+| [Express 5 documentation](https://expressjs.com/) | Routing, middleware order, error handling |
+| [Next.js — App Router](https://nextjs.org/docs/app) | The whole of Part 18 |
+| [Next.js — Caching](https://nextjs.org/docs/app/building-your-application/caching) | Read this before touching `lib/api.ts`. The session/cache interaction in §33.7 is here |
+| [Next.js — Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) | How `features/*/actions.ts` works |
+| [React — Server Components](https://react.dev/reference/rsc/server-components) | Why a component can `await` a database call |
+| [Zod](https://zod.dev/) | `.strict()`, `.superRefine()`, coercion — Part 16 |
+
+## 35.7 Monorepo tooling
+
+| Resource | Why |
+|---|---|
+| [Turborepo documentation](https://turborepo.com/docs) | Start with "Configuring tasks" and "Caching". Part 30 |
+| [Turborepo — `turbo.json` reference](https://turborepo.com/docs/reference/configuration) | `dependsOn`, `outputs`, `persistent`, `globalDependencies` |
+| [pnpm — Workspaces](https://pnpm.io/workspaces) | `workspace:*`, filtering, `--filter pkg...` |
+| [pnpm — Filtering](https://pnpm.io/filtering) | The `...` suffix the Dockerfiles depend on |
+
+## 35.8 Containers, CI/CD, and AWS
+
+| Resource | Why |
+|---|---|
+| [Docker — Multi-stage builds](https://docs.docker.com/build/building/multi-stage/) | Both Dockerfiles |
+| [Docker — Build cache](https://docs.docker.com/build/cache/) | Why only manifests are copied before `pnpm install` |
+| [Docker — Dockerfile best practices](https://docs.docker.com/build/building/best-practices/) | Layer ordering, non-root users, `.dockerignore` |
+| [GitHub Actions documentation](https://docs.github.com/en/actions) | Workflow syntax, jobs, reusable workflows |
+| [GitHub Actions — OIDC with AWS](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services) | Exactly what `configure-aws-credentials` does, and why no AWS key is stored |
+| [GitHub — Security hardening for Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions) | **Read the script-injection section.** It is why every `${{ }}` here is bound to an env var first (§31.5) |
+| [GitHub — Deployment environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) | Required reviewers, environment secrets — the production gate |
+| [Amazon ECS developer guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html) | Task definitions, services, deployment circuit breaker |
+| [AWS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/userguide/what-is-fargate.html) | The serverless compute model |
+| [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) | Listener rules, target groups, health checks |
+| [Amazon RDS for PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html) | Instance classes, parameter groups, maintenance |
+| [RDS — Point-in-time recovery](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIT.html) | §32.7. Note that it always restores into a **new** instance |
+| [RDS — Read replicas](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html) | §33.6 |
+| [AWS shared responsibility model](https://aws.amazon.com/compliance/shared-responsibility-model/) | §32.1, from the source |
+| [Cloudflare R2](https://developers.cloudflare.com/r2/) | The S3 API compatibility page is the one that matters here |
+| [S3 — Presigned URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html) | §D2 |
+| [AWS SigV4](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv4_signing.html) | What `getSignedUrl` actually computes, and why signed headers matter |
+
+## 35.9 Architecture, queues, and scaling
+
+| Resource | Why |
+|---|---|
+| [microservices.io — Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html) | The pattern in Part 13, named and diagrammed |
+| [microservices.io — Idempotent consumer](https://microservices.io/patterns/communication-style/idempotent-consumer.html) | §F1 |
+| [Martin Fowler — CQRS](https://martinfowler.com/bliki/CQRS.html) | And read his caution about when *not* to use it — §F5 |
+| [pg-boss](https://github.com/timgit/pg-boss) | The README explains the Postgres-as-a-queue design and its limits |
+| [The Twelve-Factor App](https://12factor.net/) | Config, backing services, disposability, dev/prod parity. This codebase follows it closely and it is a 30-minute read |
+| [Google SRE Book](https://sre.google/books/) | Free. The chapters on **SLOs**, **monitoring distributed systems** and **release engineering** are the ones to read now |
+| [AWS Well-Architected — Reliability Pillar](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/welcome.html) | A structured way to think about §33 |
+| **Designing Data-Intensive Applications** — Martin Kleppmann (book) | The single best book for everything in Parts 32–34. Chapters 5 (replication), 7 (transactions) and 11 (stream processing) map directly onto this system |
+
+**Video:** *"Scaling Postgres"* — the [Scaling Postgres channel](https://www.youtube.com/@ScalingPostgres)
+is a weekly digest of real Postgres performance and operations material.
+
+## 35.10 Tools worth having open while you learn
+
+- **`psql`** — nothing teaches SQL faster than a prompt.
+  `pnpm --filter @dealers-drive/api db:studio` is friendlier for browsing.
+- **`EXPLAIN ANALYZE`** on every query you write. Twice a week for a month and
+  indexing stops being mysterious.
+- **Browser DevTools → Network → a request → Cookies / Headers.** Watch
+  `Set-Cookie` arrive on the OAuth callback. Watch the presigned `PUT` go to a
+  different host than everything else on the page.
+- **[jwt.io](https://jwt.io/)** with a real Google ID token.
+- **`docker compose logs -f api`** while you click through the app.
+
+## 35.11 A suggested order
+
+If you read everything in §35.1–§35.9 you will be here for a month. Read this
+much, in this order, and you will understand the system:
+
+1. **The Twelve-Factor App** — 30 minutes, and it explains half the decisions in
+   this repo.
+2. **MDN: Using HTTP cookies**, the `SameSite`/`HttpOnly`/`Secure` sections.
+3. **oauth.net/2** → the *"OAuth 2.0 and OpenID Connect in plain English"* talk
+   → **RFC 7636** (PKCE) → then re-read Part 4 of this document with the code
+   open.
+4. **Use The Index, Luke**, at least the first three chapters.
+5. **PostgreSQL: MVCC** and **Using EXPLAIN**.
+6. **Turborepo: Configuring tasks and Caching** — an hour, and Part 30 becomes
+   obvious.
+7. **Docker: Multi-stage builds** and **Build cache**.
+8. **GitHub Actions: security hardening** — specifically script injection.
+9. **RDS: point-in-time recovery**, then actually perform a restore into a
+   throwaway instance on dev. **An untested backup is a hope, not a backup.**
+10. **Designing Data-Intensive Applications**, chapters 5, 7 and 11 — over the
+    following months, not this week.
+
+---
+---
+
 # Closing — the questions you should now be able to answer
 
 Work through these. If any is uncertain, the section is named.
@@ -7959,6 +10891,27 @@ Work through these. If any is uncertain, the section is named.
 | Why do we test against a real database? | §22.2 |
 | Why do public pages use Server Components? | §18.4 |
 | What happens from "Approve" until the car is publicly visible? | §24, Journey 6 |
+| What is the difference between a token, a session and a cookie? | §34-B2 |
+| Why is `dd_session` opaque rather than a JWT? | §34-B4, §5.9 |
+| What do `state`, `nonce` and PKCE each defend against? | **§34-B9** |
+| Why is the ID token's signature not re-verified? | §34-B8, §4.5 |
+| Why is the account the Google `sub` and not the email? | §34-B8, §4.3 |
+| Why is `SameSite=Lax` required rather than `Strict`? | §34-B3, §5.10 |
+| Why is a presigned upload safe to hand to a browser? | §34-D2, §14.2 |
+| Why does `contracts` have to build before anything else? | §30.3 |
+| What does `dependsOn: ["^build"]` mean, and why the caret? | §30.3 |
+| Why does Turbo cache `build` but not `test`? | §30.3 |
+| What happens, exactly, when I merge a PR to `main`? | **§31.4** |
+| Why does production never rebuild the image? | §31.1, §31.6 |
+| Why is every `${{ }}` bound to an env var before the shell sees it? | §31.5 |
+| What is expand/contract, and why is it not optional? | **§32.5** |
+| How do I recover from a bad data migration? | §32.7 |
+| What does AWS do for me, and what is still mine? | §32.1, §33.10 |
+| Why is `dd-api-prod` capped at one task? | §23.8, §33.2 |
+| What is the first thing that will break as we grow? | **§33.3** — image reads proxying through the API |
+| Why does adding API tasks make the database problem worse? | §33.5 |
+| When is a read replica safe here, and when is it not? | §33.6 |
+| Why does this system need no Redis yet, and what needs it first? | §33.7 |
 
 ---
 
@@ -7978,6 +10931,25 @@ Work through these. If any is uncertain, the section is named.
 
 ---
 
+## And three more, added with Parts 30–35
+
+6. **The artifact you test is the artifact you ship.** One image, built once,
+   tagged with the commit SHA, promoted — never rebuilt for production.
+7. **Stateless scales; stateful does not.** The two pieces of per-instance state
+   left in the API (the rate-limit `Map` and `WORKER_INLINE`) are the entire
+   reason it is capped at one task.
+8. **Find the bottleneck before adding capacity.** Adding API tasks when the
+   database is saturated makes it worse, because each task brings its own
+   connection pool.
+
+---
+
 *Written from the code in this repository. Where documentation and implementation
 disagreed, both are recorded — see Part 29. Corrections belong in this file and in
 `CONTEXT.md`.*
+
+*Revision 2026-08-24: Part 23 rewritten against the AWS ECS deployment that now
+exists; Parts 30–35 added (Turborepo, CI/CD, database operations, scaling,
+first-principles concepts, reference links); the stale rows in Part 29 corrected.
+Traced from `.github/workflows/`, `deploy/aws/`, `apps/*/Dockerfile`,
+`apps/api/src/`, `apps/web/src/` and `apps/api/prisma/`.*
