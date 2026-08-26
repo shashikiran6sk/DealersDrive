@@ -33,6 +33,7 @@ describe('the surface', () => {
         'DELETE /vehicles/:id',
         'POST /vehicles/:id/submit',
         'POST /vehicles/:id/mark-sold',
+        'POST /vehicles/:id/remove-listing',
         'POST /listings/:id/renew',
       ].sort(),
     );

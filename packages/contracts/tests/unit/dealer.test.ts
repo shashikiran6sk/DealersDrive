@@ -44,6 +44,7 @@ describe('CreateVehicleInput', () => {
   const valid = {
     makeId: UUID,
     modelId: UUID,
+    variantId: UUID,
     year: 2019,
     fuel: 'PETROL' as const,
     transmission: 'MANUAL' as const,
@@ -54,16 +55,23 @@ describe('CreateVehicleInput', () => {
     expect(CreateVehicleInput.safeParse(valid).success).toBe(true);
   });
 
-  it('accepts a null variant, because not every model has one', () => {
-    expect(CreateVehicleInput.safeParse({ ...valid, variantId: null }).success).toBe(true);
+  /**
+   * Variant used to be optional. It is not any more: a `Swift VXi` and a
+   * `Swift ZXi+` are a lakh apart on the same model row, so a listing without
+   * one is described rather than identified — and buyers filter on it.
+   */
+  it('refuses a null or absent variant', () => {
+    const { variantId: _v, ...withoutVariant } = valid;
+
+    expect(CreateVehicleInput.safeParse({ ...valid, variantId: null }).success).toBe(false);
+    expect(CreateVehicleInput.safeParse(withoutVariant).success).toBe(false);
   });
 
-  it('requires a make and a model — a car with neither cannot be filed', () => {
-    const { makeId: _m, ...withoutMake } = valid;
-    const { modelId: _mo, ...withoutModel } = valid;
-
-    expect(CreateVehicleInput.safeParse(withoutMake).success).toBe(false);
-    expect(CreateVehicleInput.safeParse(withoutModel).success).toBe(false);
+  it('requires a make, a model and a variant — a car with a gap cannot be filed', () => {
+    for (const field of ['makeId', 'modelId', 'variantId'] as const) {
+      const { [field]: _dropped, ...without } = valid;
+      expect(CreateVehicleInput.safeParse(without).success, field).toBe(false);
+    }
   });
 
   /** §6.2: dealers pick from dropdowns, so a reference is a uuid or nothing. */
@@ -131,11 +139,65 @@ describe('UpdateVehicleInput', () => {
     expect(UpdateVehicleInput.safeParse({ ownerNumber: 10 }).success).toBe(false);
   });
 
-  /** `null` clears an optional fact; `undefined` leaves it alone. */
-  it.each(['variantId', 'colorId', 'seats', 'airbags', 'rtoCode', 'description'])(
+  /**
+   * `null` clears a genuinely optional fact; `undefined` leaves it alone.
+   *
+   * The list is short on purpose. Every field the wizard requires is
+   * `.optional()` rather than `.nullish()`, so a step may decline to *send* one
+   * but no request may blank one — otherwise a PATCH could un-complete a step
+   * the dealer had already passed, and the required-field rule would hold only
+   * until someone sent a null.
+   */
+  it.each(['seats', 'airbags', 'description'])(
     'lets %s be cleared with an explicit null',
     (field) => {
       expect(UpdateVehicleInput.safeParse({ [field]: null }).success).toBe(true);
+    },
+  );
+
+  it.each([
+    'variantId',
+    'colorId',
+    'rtoCode',
+    'cityId',
+    'insuranceType',
+    'insuranceValidTill',
+    'regNumberMasked',
+    'kmDriven',
+    'ownerNumber',
+  ])('refuses to blank %s, because the wizard requires it', (field) => {
+    expect(UpdateVehicleInput.safeParse({ [field]: null }).success).toBe(false);
+  });
+
+  /**
+   * The plate is validated because it is now mandatory, and a mandatory field
+   * that accepts anything is a required field in name only — "asdf" would fill
+   * it. Separators are optional because a dealer reading a windscreen should not
+   * have to guess ours.
+   */
+  it.each([
+    'TN 09 BX 1234',
+    'TN09BX1234',
+    'tn-09-bx-1234',
+    'TN 23 A 4567',
+    'KA01AB1234',
+    '24 BH 1234 AB',
+  ])('accepts %s as a registration number', (plate) => {
+    expect(UpdateVehicleInput.safeParse({ regNumberMasked: plate }).success, plate).toBe(true);
+  });
+
+  it('normalises a registration number to unspaced upper case', () => {
+    const parsed = UpdateVehicleInput.parse({ regNumberMasked: 'tn 09 bx 1234' });
+
+    // One stored form, so two dealers typing the same plate differently do not
+    // produce two different listings.
+    expect(parsed.regNumberMasked).toBe('TN09BX1234');
+  });
+
+  it.each(['asdf', '1234', 'TN', 'TN09BX', 'ZZ 99 ZZ 99999', ''])(
+    'refuses %s as a registration number',
+    (plate) => {
+      expect(UpdateVehicleInput.safeParse({ regNumberMasked: plate }).success, plate).toBe(false);
     },
   );
 

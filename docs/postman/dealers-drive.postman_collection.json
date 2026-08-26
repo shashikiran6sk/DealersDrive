@@ -25,6 +25,12 @@
       "description": "A model **belonging to `makeId`**. Captured alongside it; a real model filed under the wrong make is a 404, not a silently corrupt listing."
     },
     {
+      "key": "variantId",
+      "value": "",
+      "type": "string",
+      "description": "A variant **belonging to `modelId`**. Captured by `One model's variants` — run that after the bundle, because variants are no longer nested in it and a draft cannot be created without one."
+    },
+    {
       "key": "colorId",
       "value": "",
       "type": "string",
@@ -1489,7 +1495,7 @@
                 "bundle"
               ]
             },
-            "description": "Makes with their models and variants, cities, colours, RTO codes and the body/fuel/transmission vocabularies. One request rather than five, because the search page needs all of it before it can render a filter panel.\n\n`Cache-Control: public, max-age=3600, stale-while-revalidate=600`."
+            "description": "Makes with their models, cities, colours, RTO codes and the body/fuel/transmission vocabularies. One request rather than five, because the search page needs all of it before it can render a filter panel.\n\n**Variants are not included.** The catalogue holds ~2,000 of them across 344 models, and nesting them here would add roughly 400KB to a response whose other job is to render a filter panel quickly. Each model carries `variantCount`, and `GET /v1/catalog/models/{id}/variants` returns the rows for the one model a dealer has actually picked.\n\n`Cache-Control: public, max-age=3600, stale-while-revalidate=600`."
           },
           "response": [],
           "event": [
@@ -1528,6 +1534,74 @@
                   "  if (colorId) pm.collectionVariables.set('colorId', colorId);",
                   "  const cityId = read('cities.0.id');",
                   "  if (cityId) pm.collectionVariables.set('cityId', cityId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "One model's variants",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/catalog/models/{{modelId}}/variants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "catalog",
+                "models",
+                "{{modelId}}",
+                "variants"
+              ]
+            },
+            "description": "The third step of the dependent **make → model → variant** selection the add-vehicle form requires. Ordered by fuel, then transmission, then name, and each row carries a composed `label` (\"VXi · Petrol · Manual · 1197cc\") so every client renders the option identically.\n\nAn unknown model id is a **404**, not an empty list: variant is a mandatory field, and an empty list would read as \"this model has no variants\" and strand the dealer on a step they cannot complete.\n\n`Cache-Control: public, max-age=3600, stale-while-revalidate=600`."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Captures ids the rest of the collection needs, so a flow can be run in",
+                  "// order without copying uuids by hand.",
+                  "if (pm.response.code < 400) {",
+                  "  const body = pm.response.json();",
+                  "",
+                  "  // A `*` segment takes the first array element whose remaining path resolves.",
+                  "  const read = (path) => {",
+                  "    const keys = path.split('.');",
+                  "    const walk = (node, index) => {",
+                  "      if (node == null) return undefined;",
+                  "      if (index === keys.length) return node;",
+                  "      if (keys[index] !== '*') return walk(node[keys[index]], index + 1);",
+                  "      if (!Array.isArray(node)) return undefined;",
+                  "      for (const entry of node) {",
+                  "        const found = walk(entry, index + 1);",
+                  "        if (found != null) return found;",
+                  "      }",
+                  "      return undefined;",
+                  "    };",
+                  "    return walk(body, 0);",
+                  "  };",
+                  "",
+                  "  const variantId = read('data.0.id');",
+                  "  if (variantId) pm.collectionVariables.set('variantId', variantId);",
                   "}"
                 ]
               }
@@ -2348,14 +2422,14 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"makeId\": \"{{makeId}}\",\n  \"modelId\": \"{{modelId}}\",\n  \"year\": 2021,\n  \"fuel\": \"PETROL\",\n  \"transmission\": \"MANUAL\",\n  \"bodyType\": \"HATCHBACK\"\n}",
+              "raw": "{\n  \"makeId\": \"{{makeId}}\",\n  \"modelId\": \"{{modelId}}\",\n  \"variantId\": \"{{variantId}}\",\n  \"year\": 2021,\n  \"fuel\": \"PETROL\",\n  \"transmission\": \"MANUAL\",\n  \"bodyType\": \"HATCHBACK\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             },
-            "description": "Step 1 of the add-vehicle wizard. Takes only the identity of the car — make, model, year, fuel, transmission, body type — all of them ids from the catalogue, never free text, which is what makes search facets exact.\n\nCreates a **DRAFT**. Nothing is published and no credit is touched; price, kilometres, photos and description arrive via PATCH, and publishing is a separate call.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+            "description": "Step 1 of the add-vehicle wizard. Takes only the identity of the car — make, model, variant, year, fuel, transmission, body type — the first three ids from the catalogue, never free text, which is what makes search facets exact.\n\n**All seven are required**, `variantId` included: a `Swift VXi` and a `Swift ZXi+` are a lakh apart, so a listing without a variant is described rather than identified.\n\nCreates a **DRAFT**. Nothing is published and no credit is touched; price, kilometres, photos and description arrive via PATCH, and publishing is a separate call.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
           "response": [],
           "event": [
@@ -2649,7 +2723,40 @@
                 }
               }
             },
-            "description": "Removes the car from the catalogue immediately and records the sale. The sold price is optional and private — it is never shown publicly.\n\nNo credit is returned: the listing did its job.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**409 on a clean seed.** Only a published car can be marked sold, and the draft this collection creates never got published."
+            "description": "Records the sale and marks the listing **SOLD**. The car **stays on the marketplace**: it keeps its place in search results, renders with a `Sold` badge, and is inert — no link to its detail page, no enquiry, no phone reveal. `GET /v1/vehicles/{slug}` 404s for it from this moment, so a stale link cannot open a car that is gone.\n\nIt is excluded from every *available* count — `resultLabel`, city counts, body-type tiles, facets and price ranges all mean available — and sorts after every available car on every sort order.\n\nUse `POST /remove-listing` instead to take it off the marketplace entirely.\n\nThe sold price is optional and private — it is never shown publicly. No credit is returned: the listing did its job.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**409 on a clean seed.** Only a published car can be marked sold, and the draft this collection creates never got published."
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw a listing from the marketplace",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/remove-listing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "remove-listing"
+              ]
+            },
+            "description": "Takes the car off the customer-facing marketplace. The listing moves to **REMOVED** with `removedAt` set and its row leaves `listing_search`, so buyers stop seeing it everywhere at once — search, counts, the dealer page and its detail page.\n\nThe **vehicle row survives**. It returns to `DRAFT`, stays in the dealer's inventory, remains editable, and can be submitted again for a fresh credit — and the listing and its ledger rows remain as the record that this car was once advertised. Withdrawing a listing that was already SOLD leaves the vehicle SOLD; it removes the advertisement, not the sale.\n\nDistinct from `DELETE /v1/dealer/vehicles/{id}`, which soft-deletes the vehicle itself and 409s while a listing is live. Withdrawing is the thing to do first.\n\nOnly an **APPROVED**, **EXPIRED** or **SOLD** listing can be withdrawn — those are the three states a car is publicly visible in. Anything else is a 409 `INVALID_TRANSITION`. The consumed credit is not returned.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
           "response": []
         },

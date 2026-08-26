@@ -51,9 +51,9 @@ export function createSearchService({ repo, catalog, dealers, vehicles }: Search
   async function list(
     query: VehicleQuery,
     options: { dealerSlug?: string } = {},
-  ): Promise<{ data: VehicleCard[]; total: number }> {
-    const { rows, total } = await repo.search(query, options);
-    return { data: rows.map(toVehicleCard), total };
+  ): Promise<{ data: VehicleCard[]; total: number; available: number }> {
+    const { rows, total, available } = await repo.search(query, options);
+    return { data: rows.map(toVehicleCard), total, available };
   }
 
   async function facets(
@@ -195,13 +195,16 @@ export function createSearchService({ repo, catalog, dealers, vehicles }: Search
     },
 
     async search(query: VehicleQuery, basePath = '/cars'): Promise<VehicleListResponse> {
-      const { data, total } = await list(query);
+      // `total` paginates (sold cars are on the last pages and must be
+      // reachable); `available` is what the label counts. Using one number for
+      // both would either hide sold cars or claim they are for sale.
+      const { data, total, available } = await list(query);
       const totalPages = Math.ceil(total / query.limit);
 
       return {
         data,
         page: { page: query.page, limit: query.limit, total, totalPages },
-        resultLabel: carCountLabel(total),
+        resultLabel: carCountLabel(available),
         appliedFilters: describeFilters(query, basePath),
         clearAllHref: query.city ? `${basePath}?city=${query.city}` : basePath,
       };

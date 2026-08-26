@@ -1,5 +1,8 @@
+import { IdParam, type IdParam as IdParamType } from '@dealers-drive/contracts';
 import { Router } from 'express';
 
+import { NotFoundError } from '../../platform/errors.js';
+import { validate, validated } from '../../middleware/validate.js';
 import type { CatalogService } from './catalog.service.js';
 
 /** A13 · A12 · A14 — public, cached at the edge, no session anywhere. */
@@ -16,6 +19,24 @@ export function createCatalogRouter(service: CatalogService): Router {
       }
     })();
   });
+
+  router.get(
+    '/catalog/models/:id/variants',
+    validate({ params: IdParam }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const params = validated<IdParamType>(req, 'params');
+          const result = await service.modelVariants(params.id);
+          if (!result) throw new NotFoundError('That model is not in the catalogue.');
+          res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=600');
+          res.json(result);
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
 
   router.get('/cities', (_req, res, next) => {
     void (async () => {

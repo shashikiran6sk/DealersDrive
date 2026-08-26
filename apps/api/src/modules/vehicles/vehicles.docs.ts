@@ -51,8 +51,11 @@ export const vehiclesDocs: ModuleDocs = {
       summary: 'Create a draft vehicle',
       description:
         'Step 1 of the add-vehicle wizard. Takes only the identity of the car — make, model, ' +
-        'year, fuel, transmission, body type — all of them ids from the catalogue, never ' +
-        'free text, which is what makes search facets exact.\n\n' +
+        'variant, year, fuel, transmission, body type — the first three ids from the ' +
+        'catalogue, never free text, which is what makes search facets exact.\n\n' +
+        '**All seven are required**, `variantId` included: a `Swift VXi` and a `Swift ZXi+` ' +
+        'are a lakh apart, so a listing without a variant is described rather than ' +
+        'identified.\n\n' +
         'Creates a **DRAFT**. Nothing is published and no credit is touched; price, ' +
         'kilometres, photos and description arrive via PATCH, and publishing is a separate ' +
         'call.',
@@ -60,10 +63,13 @@ export const vehiclesDocs: ModuleDocs = {
       permission: 'vehicle:write',
       requestBody: {
         schema: 'CreateVehicleInput',
-        description: 'The car\'s identity. `makeId`/`modelId` come from `GET /v1/catalog/bundle`.',
+        description:
+          "The car's identity. `makeId`/`modelId` come from `GET /v1/catalog/bundle`; " +
+          '`variantId` from `GET /v1/catalog/models/{modelId}/variants`.',
         example: {
           makeId: 'b1d4f8e2-5555-4000-8000-000000000005',
           modelId: 'c2e5a9f3-6666-4000-8000-000000000006',
+          variantId: 'd3f6b0a4-7777-4000-8000-000000000007',
           year: 2021,
           fuel: 'PETROL',
           transmission: 'MANUAL',
@@ -206,9 +212,16 @@ export const vehiclesDocs: ModuleDocs = {
       tag: 'Dealer inventory',
       summary: 'Mark a car sold',
       description:
-        'Removes the car from the catalogue immediately and records the sale. The sold price ' +
-        'is optional and private — it is never shown publicly.\n\n' +
-        'No credit is returned: the listing did its job.',
+        'Records the sale and marks the listing **SOLD**. The car **stays on the marketplace**: ' +
+        'it keeps its place in search results, renders with a `Sold` badge, and is inert — no ' +
+        'link to its detail page, no enquiry, no phone reveal. `GET /v1/vehicles/{slug}` 404s ' +
+        'for it from this moment, so a stale link cannot open a car that is gone.\n\n' +
+        'It is excluded from every *available* count — `resultLabel`, city counts, body-type ' +
+        'tiles, facets and price ranges all mean available — and sorts after every available ' +
+        'car on every sort order.\n\n' +
+        'Use `POST /remove-listing` instead to take it off the marketplace entirely.\n\n' +
+        'The sold price is optional and private — it is never shown publicly. No credit is ' +
+        'returned: the listing did its job.',
       audience: 'dealer',
       permission: 'vehicle:write',
       params: 'IdParam',
@@ -221,8 +234,57 @@ export const vehiclesDocs: ModuleDocs = {
       responses: [
         {
           status: 200,
-          description: 'Sold, and out of the catalogue.',
+          description: 'Sold, still visible, no longer available.',
           schema: 'MarkSoldResponse',
+          example: {
+            displayStatus: 'SOLD',
+            statusLabel: 'Sold',
+            markedSoldAt: '2026-08-26T09:12:00.000Z',
+            remainsVisible: true,
+            message:
+              'Marked sold. The car stays on the marketplace with a Sold badge — buyers can see it but not open or enquire about it. Remove the listing if you would rather it went.',
+          },
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/vehicles/:id/remove-listing',
+      operationId: 'removeVehicleListing',
+      tag: 'Dealer inventory',
+      summary: 'Withdraw a listing from the marketplace',
+      description:
+        'Takes the car off the customer-facing marketplace. The listing moves to **REMOVED** ' +
+        'with `removedAt` set and its row leaves `listing_search`, so buyers stop seeing it ' +
+        'everywhere at once — search, counts, the dealer page and its detail page.\n\n' +
+        'The **vehicle row survives**. It returns to `DRAFT`, stays in the dealer\'s inventory, ' +
+        'remains editable, and can be submitted again for a fresh credit — and the listing and ' +
+        'its ledger rows remain as the record that this car was once advertised. Withdrawing a ' +
+        'listing that was already SOLD leaves the vehicle SOLD; it removes the advertisement, ' +
+        'not the sale.\n\n' +
+        'Distinct from `DELETE /v1/dealer/vehicles/{id}`, which soft-deletes the vehicle itself ' +
+        'and 409s while a listing is live. Withdrawing is the thing to do first.\n\n' +
+        'Only an **APPROVED**, **EXPIRED** or **SOLD** listing can be withdrawn — those are the ' +
+        'three states a car is publicly visible in. Anything else is a 409 ' +
+        '`INVALID_TRANSITION`. The consumed credit is not returned.',
+      audience: 'dealer',
+      permission: 'vehicle:write',
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'Off the marketplace; the vehicle is retained.',
+          schema: 'RemoveListingResponse',
+          example: {
+            displayStatus: 'REMOVED',
+            statusLabel: 'Removed',
+            removedAt: '2026-08-26T09:12:00.000Z',
+            vehicleRetained: true,
+            canRelist: true,
+            message:
+              'Removed from the marketplace. The car is back in your inventory as a draft — submitting it again costs one credit.',
+          },
         },
       ],
       errors: [400, 401, 403, 404, 409],

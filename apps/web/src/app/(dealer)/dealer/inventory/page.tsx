@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Banner, EmptyState, StatusTag } from '@/components/ui/primitives';
+import { InventoryActions } from '@/features/vehicle/inventory-actions';
 import { apiGet, qs } from '@/lib/api';
 import type { SearchParamsInput } from '@/lib/url';
 
@@ -97,13 +98,8 @@ export default async function InventoryPage({
                     <td className="tnum">{row.views}</td>
                     <td className="tnum">{row.enquiries}</td>
                     <td className="whitespace-nowrap tnum">{row.expiryLabel}</td>
-                    <td className="whitespace-nowrap text-right">
-                      <Link
-                        href={`/dealer/vehicles/${row.vehicleId}/edit`}
-                        className="btn btn-ghost text-[12px]"
-                      >
-                        {row.canEdit ? 'Edit' : 'View'}
-                      </Link>
+                    <td className="text-right">
+                      <InventoryActions row={row} />
                     </td>
                   </tr>
                 ))}
@@ -114,15 +110,19 @@ export default async function InventoryPage({
           {/* Card list, below 768. */}
           <div className="flex flex-col gap-[10px] md:hidden">
             {inventory.data.map((row) => (
-              <Link
-                key={row.vehicleId}
-                href={`/dealer/vehicles/${row.vehicleId}/edit`}
-                className="card gap-[10px] p-3"
-              >
+              <div key={row.vehicleId} className="card gap-[10px] p-3">
                 <div className="flex items-start gap-3">
                   <Thumb row={row} large />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[14px] font-medium">{row.title}</div>
+                    {/* Only the title is the link. The card cannot be one any
+                        more: it now contains buttons, and a button inside an
+                        anchor is invalid and unreliable on touch. */}
+                    <Link
+                      href={`/dealer/vehicles/${row.vehicleId}/edit`}
+                      className="text-[14px] font-medium"
+                    >
+                      {row.title}
+                    </Link>
                     <div className="text-[13px] tnum">{row.priceLabel}</div>
                   </div>
                   <StatusTag tone={row.statusTone}>{row.statusLabel}</StatusTag>
@@ -132,7 +132,10 @@ export default async function InventoryPage({
                   <span>{row.enquiries} enquiries</span>
                   <span className="ml-auto">{row.expiryLabel}</span>
                 </div>
-              </Link>
+                <div className="border-t border-(--color-divider) pt-[9px]">
+                  <InventoryActions row={row} />
+                </div>
+              </div>
             ))}
           </div>
         </>

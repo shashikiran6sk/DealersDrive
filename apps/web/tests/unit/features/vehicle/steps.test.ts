@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
+import { VEHICLE_WIZARD_STEPS } from '@dealers-drive/contracts';
+
 import { toStep, WIZARD_STEPS } from '../../../../src/features/vehicle/steps.js';
 
 /**
  * DESIGN-SPEC §3.14 — the four wizard steps, shared by the stepper and the
  * router so neither can disagree about which step is which.
+ *
+ * The labels now come from `packages/contracts`, which is also where the API
+ * reads each step's required fields from — so the step this file calls
+ * "Details" and the step the server refuses to let past are the same step.
  *
  * `toStep` exists because the step lives in the URL, and a URL is
  * user-editable. Every unparseable value has to land somewhere sensible rather
@@ -13,7 +19,17 @@ import { toStep, WIZARD_STEPS } from '../../../../src/features/vehicle/steps.js'
 
 describe('WIZARD_STEPS', () => {
   it('names the four steps in order', () => {
-    expect(WIZARD_STEPS).toEqual(['Basics', 'Details', 'Photos', 'Price & review']);
+    expect(WIZARD_STEPS).toEqual(['Basics', 'Details', 'Photos', 'Review & submit']);
+  });
+
+  /**
+   * The point of taking the labels from contracts: the stepper cannot drift
+   * from the field lists the API validates against. A step renamed or reordered
+   * on one side and not the other would put "Continue" on a step whose
+   * requirements belong to a different one.
+   */
+  it('is exactly the contract\'s steps, in the contract\'s order', () => {
+    expect(WIZARD_STEPS).toEqual(VEHICLE_WIZARD_STEPS.map((step) => step.label));
   });
 
   it('names each step once', () => {
@@ -21,8 +37,9 @@ describe('WIZARD_STEPS', () => {
   });
 
   /** Price is last because it is the field a dealer changes after seeing the rest. */
-  it('puts price and review at the end', () => {
-    expect(WIZARD_STEPS.at(-1)).toBe('Price & review');
+  it('puts review and submit at the end', () => {
+    expect(WIZARD_STEPS.at(-1)).toBe('Review & submit');
+    expect(VEHICLE_WIZARD_STEPS.at(-1)?.fields).toContain('pricePaise');
   });
 });
 

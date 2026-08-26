@@ -150,6 +150,23 @@ export function createVehiclesRouter(service: VehiclesService): Router {
   );
 
   router.post(
+    '/vehicles/:id/remove-listing',
+    requirePermission('vehicle:write'),
+    validate({ params: IdParam }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const { dealerId } = dealerPrincipal(req);
+          const params = validated<IdParamType>(req, 'params');
+          res.json(await service.removeListing(dealerId, params.id));
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
+
+  router.post(
     '/listings/:id/renew',
     requireDealerActive,
     requirePermission('listing:renew'),

@@ -8,12 +8,14 @@ export function createCatalogRepository(prisma: PrismaClient) {
   return {
     async bundle() {
       const [makes, cities, rto, colors] = await Promise.all([
+        // `_count` rather than the rows: the bundle carries how many variants
+        // a model has, not what they are (see `CatalogBundle`).
         prisma.make.findMany({
           orderBy: [{ popularity: 'desc' }, { name: 'asc' }],
           include: {
             models: {
               orderBy: { name: 'asc' },
-              include: { variants: { orderBy: { name: 'asc' } } },
+              include: { _count: { select: { variants: true } } },
             },
           },
         }),
@@ -43,6 +45,17 @@ export function createCatalogRepository(prisma: PrismaClient) {
 
     async variantById(id: string) {
       return prisma.variant.findUnique({ where: { id } });
+    },
+
+    /** A13b. The dependent step: one model's variants, with its make for the header. */
+    async variantsForModel(modelId: string) {
+      return prisma.model.findUnique({
+        where: { id: modelId },
+        include: {
+          make: true,
+          variants: { orderBy: [{ fuel: 'asc' }, { transmission: 'asc' }, { name: 'asc' }] },
+        },
+      });
     },
 
     async colorById(id: string) {

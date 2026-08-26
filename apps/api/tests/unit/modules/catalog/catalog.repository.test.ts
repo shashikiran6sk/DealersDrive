@@ -56,16 +56,19 @@ describe('bundle', () => {
     expect(makes?.args?.orderBy).toEqual([{ popularity: 'desc' }, { name: 'asc' }]);
   });
 
-  it('includes models and variants, each alphabetically', async () => {
+  it('includes models alphabetically, and counts variants rather than joining them', async () => {
     const { prisma, calls } = fakePrisma();
 
     await createCatalogRepository(prisma).bundle();
     const makes = calls.find((call) => call.model === 'make');
 
+    // Joining ~2,000 variants here would be ~400KB of JSON on the response
+    // whose other job is to render a filter panel fast. The count is what the
+    // bundle carries; `variantsForModel` fetches the rows for one model.
     expect(makes?.args?.include).toEqual({
       models: {
         orderBy: { name: 'asc' },
-        include: { variants: { orderBy: { name: 'asc' } } },
+        include: { _count: { select: { variants: true } } },
       },
     });
   });

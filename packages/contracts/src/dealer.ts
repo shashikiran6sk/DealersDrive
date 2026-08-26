@@ -229,7 +229,11 @@ export const InventoryRow = z.object({
   canResubmit: z.boolean(),
   canRenew: z.boolean(),
   canMarkSold: z.boolean(),
+  /** Withdraw from the marketplace — live, expired and sold listings only. */
+  canRemoveListing: z.boolean(),
   canDelete: z.boolean(),
+  /** True while buyers can still see this car, sold or not. */
+  isPubliclyVisible: z.boolean(),
 });
 export type InventoryRow = z.infer<typeof InventoryRow>;
 
@@ -254,11 +258,44 @@ export const InventoryResponse = z.object({
 export type InventoryResponse = z.infer<typeof InventoryResponse>;
 
 // ─────────── C7–C9 vehicle write ───────────────────────────────────────────
+
+/**
+ * An Indian registration mark, in either of the two live formats — the current
+ * `TN 09 BX 1234` and the older `TN 09 B 1234` — with spaces, hyphens and case
+ * all optional, because a dealer typing a number plate off a windscreen should
+ * not have to guess our separator. `BH` series marks (`24 BH 1234 AB`) are
+ * accepted too; they are national, not state-issued, and a Tamil Nadu dealer
+ * will eventually hold one.
+ *
+ * The field is named `Masked` because the *public* rendering hides the last
+ * four digits (§14.2). What is stored is the real mark, which is why it is
+ * validated as one.
+ */
+const REGISTRATION_NUMBER = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .transform((value) => value.replace(/[\s-]+/g, ''))
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^(?:[A-Z]{2}\d{1,2}[A-Z]{0,3}\d{4}|\d{2}BH\d{4}[A-Z]{1,2})$/,
+        'Enter a registration number like TN 09 BX 1234.',
+      ),
+  );
+
 export const CreateVehicleInput = z
   .object({
     makeId: Uuid,
     modelId: Uuid,
-    variantId: Uuid.nullish(),
+    /**
+     * Mandatory, unlike every other id on a draft. The variant is what makes a
+     * `Swift VXi` different from a `Swift ZXi+` — two cars a lakh apart that
+     * are otherwise the same row — so a listing without one is not identified,
+     * it is merely described.
+     */
+    variantId: Uuid,
     year: z.number().int().min(1950).max(new Date().getFullYear() + 1),
     fuel: FuelType,
     transmission: Transmission,
@@ -267,25 +304,36 @@ export const CreateVehicleInput = z
   .strict();
 export type CreateVehicleInput = z.infer<typeof CreateVehicleInput>;
 
+/**
+ * Partial, because each wizard step PATCHes only the fields it owns — that is
+ * what makes `Back` non-destructive.
+ *
+ * Partial is not the same as optional, though. Every field the wizard requires
+ * is `.optional()` rather than `.nullish()` here: a step may decline to send
+ * one, but no request may send `null` to blank a field the listing cannot go
+ * live without. The genuinely optional fields — `seats`, `airbags` — keep
+ * `.nullish()`, and the difference between the two lists is exactly
+ * `VEHICLE_WIZARD_STEPS`.
+ */
 export const UpdateVehicleInput = z
   .object({
     makeId: Uuid.optional(),
     modelId: Uuid.optional(),
-    variantId: Uuid.nullish(),
+    variantId: Uuid.optional(),
     year: z.number().int().min(1950).max(new Date().getFullYear() + 1).optional(),
     fuel: FuelType.optional(),
     transmission: Transmission.optional(),
     bodyType: BodyType.optional(),
     kmDriven: z.number().int().min(0).max(1_000_000).optional(),
     ownerNumber: z.number().int().min(1).max(9).optional(),
-    colorId: Uuid.nullish(),
+    colorId: Uuid.optional(),
     seats: z.number().int().min(2).max(10).nullish(),
     airbags: z.number().int().min(0).max(12).nullish(),
-    rtoCode: z.string().trim().max(8).nullish(),
+    rtoCode: z.string().trim().toUpperCase().min(3).max(8).optional(),
     cityId: Uuid.optional(),
-    regNumberMasked: z.string().trim().max(20).nullish(),
-    insuranceType: InsuranceType.nullish(),
-    insuranceValidTill: z.string().datetime({ offset: true }).nullish(),
+    regNumberMasked: REGISTRATION_NUMBER.optional(),
+    insuranceType: InsuranceType.optional(),
+    insuranceValidTill: z.string().datetime({ offset: true }).optional(),
     priceNegotiable: PriceNegotiability.optional(),
     /** Paise. A rupee float would be a bug, not a style choice (rule 3). */
     pricePaise: z.number().int().min(1000).max(500_000_000_00).optional(),
@@ -297,11 +345,71 @@ export type UpdateVehicleInput = z.infer<typeof UpdateVehicleInput>;
 
 export const CompletenessBlocker = z.object({ code: z.string(), message: z.string() });
 
+/**
+ * The add-vehicle wizard, as data.
+ *
+ * This array is the *only* statement of which fields are required and where.
+ * The API derives `VehicleCompleteness.steps` from it and refuses to publish a
+ * vehicle whose steps are not all complete; the web wizard renders the same
+ * array and disables `Continue` on the step the API says is incomplete. There
+ * is one list, so the front end cannot be more permissive than the back end —
+ * which is the only interesting property a required-field rule has.
+ *
+ * `photos` is a pseudo-field: its requirement is a count, not a value, and it
+ * is resolved against the live `listing.minPhotos` config rather than pinned
+ * here.
+ */
+export const VEHICLE_WIZARD_STEPS = [
+  {
+    key: 'basics',
+    label: 'Basics',
+    fields: ['makeId', 'modelId', 'variantId', 'year', 'fuel', 'transmission', 'bodyType'],
+  },
+  {
+    key: 'details',
+    label: 'Details',
+    fields: [
+      'kmDriven',
+      'ownerNumber',
+      'colorId',
+      'rtoCode',
+      'insuranceType',
+      'insuranceValidTill',
+      'cityId',
+      'regNumberMasked',
+    ],
+  },
+  { key: 'photos', label: 'Photos', fields: ['photos'] },
+  { key: 'price', label: 'Review & submit', fields: ['pricePaise', 'description'] },
+] as const satisfies readonly { key: string; label: string; fields: readonly string[] }[];
+
+export type VehicleWizardStepKey = (typeof VEHICLE_WIZARD_STEPS)[number]['key'];
+
+/** Every field the wizard requires, in step order. */
+export const REQUIRED_VEHICLE_FIELDS: readonly string[] = VEHICLE_WIZARD_STEPS.flatMap(
+  (step) => step.fields as readonly string[],
+);
+
+export const VehicleStepCompleteness = z.object({
+  key: z.enum(['basics', 'details', 'photos', 'price']),
+  label: z.string(),
+  index: z.number().int(),
+  complete: z.boolean(),
+  missing: z.array(z.string()),
+});
+export type VehicleStepCompleteness = z.infer<typeof VehicleStepCompleteness>;
+
 export const VehicleCompleteness = z.object({
   percent: z.number().int(),
   missing: z.array(z.string()),
   canSubmit: z.boolean(),
   blockers: z.array(CompletenessBlocker),
+  /**
+   * Per-step, so the wizard can gate `Continue` on the server's opinion rather
+   * than its own. The client re-validates for the error messages; it does not
+   * get a second, kinder answer.
+   */
+  steps: z.array(VehicleStepCompleteness),
 });
 export type VehicleCompleteness = z.infer<typeof VehicleCompleteness>;
 
@@ -331,6 +439,14 @@ export const DealerVehicleDto = z.object({
   makeId: Uuid,
   modelId: Uuid,
   variantId: Uuid.nullable(),
+  /**
+   * Resolved names alongside the ids. The catalogue is far too large to ship
+   * whole to the browser, so a client holding this DTO has no local table to
+   * look an id up in — and the Basics summary has to print something.
+   */
+  makeName: z.string(),
+  modelName: z.string(),
+  variantName: z.string().nullable(),
   year: z.number().int(),
   fuel: FuelType,
   transmission: Transmission,
@@ -391,12 +507,36 @@ export const MarkSoldInput = z
   .strict();
 export type MarkSoldInput = z.infer<typeof MarkSoldInput>;
 
+/**
+ * A sold car does **not** leave the marketplace. It stays on the search page,
+ * greyed out and badged `Sold`, and its detail page stops answering — the
+ * social proof of a dealer who moves stock is worth more than the empty grid
+ * slot, and a buyer who followed a link to a car that is gone deserves to be
+ * told so rather than 404'd.
+ *
+ * `remainsVisible` is therefore part of the contract and not a comment: it is
+ * what tells the console which of the two sentences to show the dealer.
+ */
 export const MarkSoldResponse = z.object({
   displayStatus: z.literal('SOLD'),
   statusLabel: z.string(),
-  removedFromCatalogueAt: z.string(),
+  markedSoldAt: z.string(),
+  remainsVisible: z.literal(true),
+  message: z.string(),
 });
 export type MarkSoldResponse = z.infer<typeof MarkSoldResponse>;
+
+/** C12b — the dealer withdrawing their own listing from the marketplace. */
+export const RemoveListingResponse = z.object({
+  displayStatus: z.literal('REMOVED'),
+  statusLabel: z.string(),
+  removedAt: z.string(),
+  /** The vehicle row survives; only its publication ends. */
+  vehicleRetained: z.literal(true),
+  canRelist: z.boolean(),
+  message: z.string(),
+});
+export type RemoveListingResponse = z.infer<typeof RemoveListingResponse>;
 
 export const RenewListingResponse = z.object({
   listingId: Uuid,

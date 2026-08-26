@@ -61,7 +61,25 @@ export function toVehicleCard(row: SearchRow): VehicleCard {
         }
       : null,
     photoCount: row.photo_count,
+    isSold: row.is_sold,
+    soldLabel: row.is_sold ? soldLabel(row.sold_at) : null,
   };
+}
+
+/**
+ * "Sold" on its own once the sale stops being news. A card that says
+ * "Sold this week" is the dealer's best advertisement; one that says it eight
+ * months later is just a stale grid slot.
+ */
+function soldLabel(soldAt: Date | null): string {
+  if (!soldAt) return 'Sold';
+  const days = Math.floor((Date.now() - soldAt.getTime()) / 86_400_000);
+  if (days <= 0) return 'Sold today';
+  if (days === 1) return 'Sold yesterday';
+  if (days < 7) return `Sold ${days} days ago`;
+  if (days < 14) return 'Sold this week';
+  if (days < 60) return `Sold ${Math.round(days / 7)} weeks ago`;
+  return 'Sold';
 }
 
 export function bodyTypeLabel(value: string): string {

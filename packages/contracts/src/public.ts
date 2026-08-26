@@ -110,6 +110,14 @@ export const VehicleCard = z.object({
   }),
   primaryImage: ImageRef.nullable(),
   photoCount: z.number().int(),
+  /**
+   * A sold car stays on the marketplace as proof the dealer moves stock, but it
+   * is not for sale: the card renders inert — no link, no save, no enquiry —
+   * and A5 refuses its detail page. The API decides this, once, so a client
+   * cannot render a clickable sold car by forgetting a check.
+   */
+  isSold: z.boolean(),
+  soldLabel: z.string().nullable(),
 });
 export type VehicleCard = z.infer<typeof VehicleCard>;
 
@@ -372,6 +380,16 @@ export const CitiesResponse = z.object({
 export type CitiesResponse = z.infer<typeof CitiesResponse>;
 
 // ─────────── A13 catalog bundle ────────────────────────────────────────────
+/**
+ * A13. Makes and models, **without** variants.
+ *
+ * The catalogue is ~2,000 variants across 344 models. Nesting them here would
+ * put roughly 400KB of JSON into the add-vehicle page's props for the sake of
+ * the twelve rows the dealer will actually look at, which on a yard's 4G is
+ * the difference between a form and a wait. `GET /v1/catalog/models/{id}/variants`
+ * fetches the one model's list when a model is picked; everything else in this
+ * bundle is small enough to ship whole and is needed before the first render.
+ */
 export const CatalogBundle = z.object({
   version: z.string(),
   makes: z.array(
@@ -388,17 +406,8 @@ export const CatalogBundle = z.object({
           bodyType: BodyType,
           yearFrom: z.number().int(),
           yearTo: z.number().int().nullable(),
-          variants: z.array(
-            z.object({
-              id: Uuid,
-              slug: z.string(),
-              name: z.string(),
-              fuel: FuelType,
-              transmission: Transmission,
-              engineCc: z.number().int().nullable(),
-              seats: z.number().int().nullable(),
-            }),
-          ),
+          /** How many rows `/v1/catalog/models/{id}/variants` will return. */
+          variantCount: z.number().int(),
         }),
       ),
     }),
@@ -424,6 +433,31 @@ export const CatalogBundle = z.object({
   features: z.array(z.string()),
 });
 export type CatalogBundle = z.infer<typeof CatalogBundle>;
+
+export const CatalogVariant = z.object({
+  id: Uuid,
+  slug: z.string(),
+  name: z.string(),
+  fuel: FuelType,
+  transmission: Transmission,
+  engineCc: z.number().int().nullable(),
+  seats: z.number().int().nullable(),
+  /** "VXi · Petrol · Manual · 1197cc" — composed once, here (API-SPEC §0.4). */
+  label: z.string(),
+});
+export type CatalogVariant = z.infer<typeof CatalogVariant>;
+
+/** A13b — one model's variants, for the dependent Make → Model → Variant step. */
+export const ModelVariantsResponse = z.object({
+  modelId: Uuid,
+  modelName: z.string(),
+  makeName: z.string(),
+  bodyType: BodyType,
+  yearFrom: z.number().int(),
+  yearTo: z.number().int().nullable(),
+  data: z.array(CatalogVariant),
+});
+export type ModelVariantsResponse = z.infer<typeof ModelVariantsResponse>;
 
 // ─────────── A14 public config ─────────────────────────────────────────────
 export const PublicConfig = z.object({

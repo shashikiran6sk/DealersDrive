@@ -15,12 +15,12 @@ import {
   CREDIT_PACKS,
   DEALERS,
   ENQUIRIES,
-  MAKES,
   PHOTO_LABELS,
   RTOS,
   VEHICLES,
   type SeedVehicle,
 } from './data.js';
+import { assertCatalogueIntegrity, VEHICLE_CATALOGUE } from './catalog/index.js';
 import { DERIVATIVE_WIDTHS, generatePlaceholderImage } from './images.js';
 
 /**
@@ -97,32 +97,66 @@ async function seedCatalog() {
   const models = new Map<string, string>();
   const variants = new Map<string, string>();
 
-  for (const make of MAKES) {
-    const makeRow = await prisma.make.create({
-      data: { slug: make.slug, name: make.name, popularity: make.popularity },
-    });
-    makes.set(make.slug, makeRow.id);
+  // Before the first INSERT, not after the four-hundredth: a duplicate slug
+  // would otherwise surface as a unique-constraint failure halfway through,
+  // leaving a half-written catalogue and an error naming the index rather than
+  // the offending variant.
+  assertCatalogueIntegrity();
 
+  // `createMany` per level rather than a create per row. The catalogue is
+  // ~2,400 rows and one round trip each turned the seed into a coffee break;
+  // ids are generated here so the maps can be built without reading back.
+  for (const make of VEHICLE_CATALOGUE) {
+    makes.set(make.slug, randomUUID());
+  }
+  await prisma.make.createMany({
+    data: VEHICLE_CATALOGUE.map((make) => ({
+      id: makes.get(make.slug)!,
+      slug: make.slug,
+      name: make.name,
+      popularity: make.popularity,
+    })),
+  });
+
+  for (const make of VEHICLE_CATALOGUE) {
     for (const model of make.models) {
-      const modelRow = await prisma.model.create({
-        data: {
-          makeId: makeRow.id,
-          slug: model.slug,
-          name: model.name,
-          bodyType: model.bodyType,
-          yearFrom: model.yearFrom,
-        },
-      });
-      models.set(`${make.slug}/${model.slug}`, modelRow.id);
-
+      models.set(`${make.slug}/${model.slug}`, randomUUID());
       for (const variant of model.variants) {
-        const variantRow = await prisma.variant.create({
-          data: { modelId: modelRow.id, ...variant },
-        });
-        variants.set(`${make.slug}/${model.slug}/${variant.slug}`, variantRow.id);
+        variants.set(`${make.slug}/${model.slug}/${variant.slug}`, randomUUID());
       }
     }
   }
+
+  await prisma.model.createMany({
+    data: VEHICLE_CATALOGUE.flatMap((make) =>
+      make.models.map((model) => ({
+        id: models.get(`${make.slug}/${model.slug}`)!,
+        makeId: makes.get(make.slug)!,
+        slug: model.slug,
+        name: model.name,
+        bodyType: model.bodyType,
+        yearFrom: model.yearFrom,
+        yearTo: model.yearTo,
+      })),
+    ),
+  });
+
+  await prisma.variant.createMany({
+    data: VEHICLE_CATALOGUE.flatMap((make) =>
+      make.models.flatMap((model) =>
+        model.variants.map((variant) => ({
+          id: variants.get(`${make.slug}/${model.slug}/${variant.slug}`)!,
+          modelId: models.get(`${make.slug}/${model.slug}`)!,
+          slug: variant.slug,
+          name: variant.name,
+          fuel: variant.fuel,
+          transmission: variant.transmission,
+          engineCc: variant.engineCc,
+          seats: variant.seats,
+        })),
+      ),
+    ),
+  });
 
   return { cities, colors, makes, models, variants };
 }
@@ -362,7 +396,7 @@ async function seedPhotos(vehicleId: string, dealerId: string, count: number, ti
 }
 
 function vehicleTitle(seed: SeedVehicle): string {
-  const make = MAKES.find((m) => m.slug === seed.makeSlug);
+  const make = VEHICLE_CATALOGUE.find((m) => m.slug === seed.makeSlug);
   const model = make?.models.find((m) => m.slug === seed.modelSlug);
   const variant = model?.variants.find((v) => v.slug === seed.variantSlug);
   return [make?.name, model?.name, variant?.name].filter(Boolean).join(' ');

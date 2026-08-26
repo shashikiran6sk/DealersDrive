@@ -26,21 +26,38 @@ export function VehicleCard({
 }) {
   if (variant === 'list') return <VehicleRow vehicle={vehicle} />;
 
+  const sold = vehicle.isSold;
+
   return (
-    <article className="card group relative overflow-hidden p-0">
+    <article
+      className={cn('card group relative overflow-hidden p-0', sold && 'opacity-70')}
+      aria-label={sold ? `${vehicle.title} — sold` : undefined}
+    >
       <div className="relative aspect-[4/3] border-b border-(--color-divider) bg-(--color-surface)">
         <VehicleImage vehicle={vehicle} sizes="(max-width: 768px) 100vw, 300px" />
         <Plate className="absolute left-[10px] top-[10px] z-[2]">{vehicle.year}</Plate>
-        {showSave ? <SaveButton vehicleId={vehicle.id} /> : null}
+        {/* A sold car keeps its place on the marketplace but is not for sale:
+            no save, no link, no enquiry. The grayscale plus the badge say so
+            twice, because colour alone is not an accessible signal (§4.15). */}
+        {sold ? <SoldOverlay label={vehicle.soldLabel} /> : null}
+        {showSave && !sold ? <SaveButton vehicleId={vehicle.id} /> : null}
       </div>
 
       <div className={cn('flex flex-col p-[12px_13px_14px]', variant === 'compact' ? 'gap-2' : 'gap-[9px]')}>
-        <Link
-          href={`/car/${vehicle.slug}`}
-          className="font-heading text-[16px] font-semibold leading-[1.2] after:absolute after:inset-0 after:content-['']"
-        >
-          {vehicle.title}
-        </Link>
+        {sold ? (
+          // A span, not a disabled link: there is no href to give it, and an
+          // anchor without one is still focusable and still reads as a link.
+          <span className="font-heading text-[16px] font-semibold leading-[1.2] ink-muted">
+            {vehicle.title}
+          </span>
+        ) : (
+          <Link
+            href={`/car/${vehicle.slug}`}
+            className="font-heading text-[16px] font-semibold leading-[1.2] after:absolute after:inset-0 after:content-['']"
+          >
+            {vehicle.title}
+          </Link>
+        )}
 
         <div className="flex items-baseline gap-[9px]">
           <span className="text-[20px] font-semibold tnum">{vehicle.priceLabel}</span>
@@ -63,6 +80,21 @@ export function VehicleCard({
   );
 }
 
+/** The badge and the veil that make a sold card unmistakable at a glance. */
+function SoldOverlay({ label }: { label: string | null }) {
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 z-[2] bg-[rgba(13,16,23,0.35)] [backdrop-filter:grayscale(0.85)]"
+      />
+      <span className="absolute right-[10px] top-[10px] z-[3] bg-(--color-ink) px-[8px] py-[3px] text-[11px] font-semibold uppercase tracking-wide text-white">
+        {label ?? 'Sold'}
+      </span>
+    </>
+  );
+}
+
 function DealerStrip({ vehicle }: { vehicle: VehicleCardDto }) {
   return (
     <div className="flex items-center gap-[7px] border-t border-(--color-divider) pt-[9px]">
@@ -82,20 +114,28 @@ function DealerStrip({ vehicle }: { vehicle: VehicleCardDto }) {
 /** The saved-cars row — 250px fixed image, price right-aligned (§2.8). */
 function VehicleRow({ vehicle }: { vehicle: VehicleCardDto }) {
   const { toggle } = useSavedCars();
+  const sold = vehicle.isSold;
 
   return (
-    <article className="card flex-row flex-wrap overflow-hidden p-0">
+    <article className={cn('card flex-row flex-wrap overflow-hidden p-0', sold && 'opacity-70')}>
       <div className="relative aspect-[4/3] w-full flex-none border-b border-(--color-divider) bg-(--color-surface) sm:w-[250px] sm:border-b-0 sm:border-r">
         <VehicleImage vehicle={vehicle} sizes="250px" />
         <Plate className="absolute left-[10px] top-[10px] z-[2]">{vehicle.year}</Plate>
+        {sold ? <SoldOverlay label={vehicle.soldLabel} /> : null}
       </div>
 
       <div className="flex min-w-[240px] flex-1 flex-col gap-[10px] p-4">
         <div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0 flex-1">
-            <Link href={`/car/${vehicle.slug}`} className="font-heading text-[19px] font-semibold">
-              {vehicle.title}
-            </Link>
+            {sold ? (
+              <span className="font-heading text-[19px] font-semibold ink-muted">
+                {vehicle.title}
+              </span>
+            ) : (
+              <Link href={`/car/${vehicle.slug}`} className="font-heading text-[19px] font-semibold">
+                {vehicle.title}
+              </Link>
+            )}
             <div className="mt-1 text-[12px] ink-muted">
               <span className="tnum">{vehicle.kmLabel}</span> · {vehicle.fuelLabel} ·{' '}
               {vehicle.transmissionLabel} · {vehicle.city.name}
@@ -113,15 +153,21 @@ function VehicleRow({ vehicle }: { vehicle: VehicleCardDto }) {
           <Tag variant="accent" className="text-[10px]">
             Verified
           </Tag>
-          <Link
-            href={`/car/${vehicle.slug}`}
-            className="btn btn-primary ml-auto text-[12px]"
-          >
-            Enquire
-          </Link>
+          {sold ? (
+            <span className="ml-auto text-[12px] font-medium ink-muted">
+              {vehicle.soldLabel ?? 'Sold'}
+            </span>
+          ) : (
+            <Link
+              href={`/car/${vehicle.slug}`}
+              className="btn btn-primary ml-auto text-[12px]"
+            >
+              Enquire
+            </Link>
+          )}
           <button
             type="button"
-            className="btn btn-secondary text-[12px]"
+            className={cn('btn btn-secondary text-[12px]', sold && 'ml-0')}
             onClick={() => toggle(vehicle.id)}
           >
             ♥ Remove

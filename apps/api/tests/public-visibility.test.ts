@@ -196,13 +196,35 @@ describe('public visibility and contact privacy', () => {
     expect(restored.body.page.total).toBe(liveCount);
   });
 
-  it('derives every count from the catalogue rather than storing it', async () => {
-    const indexed = await h.prisma.$queryRaw<{ count: bigint }[]>`
-      SELECT count(*)::bigint AS count FROM listing_search`;
-    const rows = Number(indexed[0]?.count ?? 0);
+  /**
+   * Membership in `listing_search` and *availability* are two different
+   * questions since sold cars started staying on the marketplace. A sold car is
+   * a row — it is displayed, badged and unclickable — but it is not stock, and
+   * every number the product shows a buyer means stock.
+   *
+   * So this pins both halves: nothing is stored, and every count is derived
+   * from the *available* rows rather than from the table's size.
+   */
+  it('derives every count from the catalogue, and counts only what is available', async () => {
+    const [all, available] = await Promise.all([
+      h.prisma.$queryRaw<{ count: bigint }[]>`
+        SELECT count(*)::bigint AS count FROM listing_search`,
+      h.prisma.$queryRaw<{ count: bigint }[]>`
+        SELECT count(*)::bigint AS count FROM listing_search WHERE is_sold = false`,
+    ]);
+    const rows = Number(all[0]?.count ?? 0);
+    const forSale = Number(available[0]?.count ?? 0);
 
+    // The seed sells one car, so the two numbers differ — which is the only
+    // reason this test can tell the right one from the wrong one.
+    expect(rows).toBeGreaterThan(forSale);
+
+    // The page paginates over every row, sold included, or the sold ones would
+    // sort to the end and never be reachable...
     const search = await h.agent().get('/v1/vehicles?limit=1').expect(200);
     expect(search.body.page.total).toBe(rows);
+    // ...but the label counts what a buyer can actually buy.
+    expect(search.body.resultLabel).toContain(String(forSale));
 
     // The home page is city-scoped, so its count must agree with the same
     // search restricted to that city — not with the sitewide number.
@@ -211,15 +233,25 @@ describe('public visibility and contact privacy', () => {
       .agent()
       .get(`/v1/vehicles?city=${home.body.city.slug}&limit=1`)
       .expect(200);
-    expect(home.body.activeCount).toBe(inCity.body.page.total);
+    // `all` is the sitewide pseudo-city the header offers, and it is not a
+    // `city_slug` — the same condition `buildWhere` applies.
+    const citySlug = home.body.city.slug as string;
+    const availableInCity = await h.prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT count(*)::bigint AS count FROM listing_search
+      WHERE is_sold = false
+        AND (${citySlug} = 'all' OR city_slug = ${citySlug})`;
+    expect(home.body.activeCount).toBe(Number(availableInCity[0]?.count ?? 0));
     expect(home.body.activeCountLabel).toContain(String(home.body.activeCount));
+    expect(inCity.body.resultLabel).toContain(String(home.body.activeCount));
 
+    // Facets are filters: an option offering cars that cannot be bought sends
+    // the buyer to a grid that contradicts the number they clicked.
     const facets = await h.agent().get('/v1/vehicles/facets').expect(200);
     const fuelTotal = facets.body.fuel.reduce(
       (sum: number, option: { count: number }) => sum + option.count,
       0,
     );
-    expect(fuelTotal).toBe(rows);
+    expect(fuelTotal).toBe(forSale);
   });
 
   it('404s an unknown slug rather than leaking whether it ever existed', async () => {

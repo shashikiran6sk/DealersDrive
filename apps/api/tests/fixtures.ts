@@ -18,18 +18,34 @@ import type { Harness } from './harness.js';
 export interface CatalogueIds {
   makeId: string;
   modelId: string;
+  variantId: string;
+  rtoCode: string;
   colorId: string;
   cityId: string;
 }
 
 export async function catalogueIds(prisma: PrismaClient): Promise<CatalogueIds> {
-  const [model, color, city] = await Promise.all([
-    prisma.model.findFirstOrThrow({ orderBy: { name: 'asc' } }),
+  // The model is chosen by *having a variant* rather than by name: variant is a
+  // mandatory field now, and a model whose variants had not been seeded would
+  // fail every fixture with a 400 that named the wrong problem.
+  const [variant, color, city, rto] = await Promise.all([
+    prisma.variant.findFirstOrThrow({
+      include: { model: true },
+      orderBy: { name: 'asc' },
+    }),
     prisma.color.findFirstOrThrow({ orderBy: { name: 'asc' } }),
     prisma.city.findFirstOrThrow({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+    prisma.rto.findFirstOrThrow({ orderBy: { code: 'asc' } }),
   ]);
 
-  return { makeId: model.makeId, modelId: model.id, colorId: color.id, cityId: city.id };
+  return {
+    makeId: variant.model.makeId,
+    modelId: variant.modelId,
+    variantId: variant.id,
+    rtoCode: rto.code,
+    colorId: color.id,
+    cityId: city.id,
+  };
 }
 
 /**
@@ -51,6 +67,7 @@ export async function createSubmittableVehicle(
     .send({
       makeId: ids.makeId,
       modelId: ids.modelId,
+      variantId: ids.variantId,
       year: options.year ?? 2021,
       fuel: 'PETROL',
       transmission: 'MANUAL',
@@ -68,6 +85,13 @@ export async function createSubmittableVehicle(
       ownerNumber: 1,
       colorId: ids.colorId,
       cityId: ids.cityId,
+      // The four fields that joined the mandatory Details list. Without them
+      // `completeness.canSubmit` is false and every submit-based test fails on
+      // VEHICLE_INCOMPLETE rather than on what it is actually asking about.
+      rtoCode: ids.rtoCode,
+      insuranceType: 'COMPREHENSIVE',
+      insuranceValidTill: '2027-03-01T00:00:00.000Z',
+      regNumberMasked: 'TN09BX1234',
       pricePaise: options.pricePaise ?? 4_50_000_00,
       // Completeness wants at least 100 characters of description, and a test
       // that trips that check by accident is a test that fails for the wrong

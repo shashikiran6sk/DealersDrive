@@ -6,6 +6,7 @@ import {
   formatLakh,
   FUEL_LABELS,
   slugify,
+  VEHICLE_WIZARD_STEPS,
   timeAgo,
   type CreateVehicleInput,
   type DealerVehicleDto,
@@ -15,11 +16,13 @@ import {
   type InventoryRow,
   type MarkSoldInput,
   type MarkSoldResponse,
+  type RemoveListingResponse,
   type RenewListingResponse,
   type SubmitListingResponse,
   type UpdateVehicleInput,
   type VehicleCompleteness,
   type VehicleMediaDto,
+  type VehicleStepCompleteness,
 } from '@dealers-drive/contracts';
 import type { Listing, PrismaClient } from '@prisma/client';
 
@@ -83,25 +86,56 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
     );
   }
 
+  /**
+   * Which of the wizard's required fields this vehicle still lacks, per step.
+   *
+   * The field list is `VEHICLE_WIZARD_STEPS` in `packages/contracts` — the same
+   * array the web wizard renders — so "required" has exactly one definition and
+   * the browser cannot hold a more permissive copy of it. This function is what
+   * makes the requirement un-bypassable: the wizard reads `steps[].complete` to
+   * decide whether `Continue` is enabled, and `submit()` below refuses outright
+   * when anything is missing, so skipping the UI by PATCHing the API directly
+   * buys a dealer a draft they cannot publish rather than a shortcut.
+   */
   async function completeness(vehicle: VehicleWithRelations): Promise<VehicleCompleteness> {
     const minPhotos = await config.number('listing.minPhotos');
     const readyPhotos = vehicle.media.filter((entry) => entry.media.status === 'READY').length;
 
-    const required: { field: string; ok: boolean }[] = [
-      { field: 'makeId', ok: Boolean(vehicle.makeId) },
-      { field: 'modelId', ok: Boolean(vehicle.modelId) },
-      { field: 'year', ok: Boolean(vehicle.year) },
-      { field: 'kmDriven', ok: vehicle.kmDriven !== null },
-      { field: 'ownerNumber', ok: vehicle.ownerNumber !== null },
-      { field: 'colorId', ok: vehicle.colorId !== null },
-      { field: 'cityId', ok: vehicle.cityId !== null },
-      { field: 'pricePaise', ok: vehicle.pricePaise !== null },
-      { field: 'description', ok: (vehicle.description?.trim().length ?? 0) >= 100 },
-      { field: 'photos', ok: readyPhotos >= minPhotos },
-    ];
+    const filled: Record<string, boolean> = {
+      makeId: Boolean(vehicle.makeId),
+      modelId: Boolean(vehicle.modelId),
+      variantId: vehicle.variantId !== null,
+      year: Boolean(vehicle.year),
+      fuel: Boolean(vehicle.fuel),
+      transmission: Boolean(vehicle.transmission),
+      bodyType: Boolean(vehicle.bodyType),
+      kmDriven: vehicle.kmDriven !== null,
+      ownerNumber: vehicle.ownerNumber !== null,
+      colorId: vehicle.colorId !== null,
+      rtoCode: (vehicle.rtoCode?.trim().length ?? 0) > 0,
+      insuranceType: vehicle.insuranceType !== null,
+      insuranceValidTill: vehicle.insuranceValidTill !== null,
+      cityId: vehicle.cityId !== null,
+      regNumberMasked: (vehicle.regNumberMasked?.trim().length ?? 0) > 0,
+      photos: readyPhotos >= minPhotos,
+      pricePaise: vehicle.pricePaise !== null,
+      description: (vehicle.description?.trim().length ?? 0) >= 100,
+    };
 
-    const missing = required.filter((entry) => !entry.ok).map((entry) => entry.field);
-    const percent = Math.round(((required.length - missing.length) / required.length) * 100);
+    const steps: VehicleStepCompleteness[] = VEHICLE_WIZARD_STEPS.map((step, index) => {
+      const missing = step.fields.filter((field) => !filled[field]);
+      return {
+        key: step.key,
+        label: step.label,
+        index,
+        complete: missing.length === 0,
+        missing: [...missing],
+      };
+    });
+
+    const missing = steps.flatMap((step) => step.missing);
+    const total = Object.keys(filled).length;
+    const percent = Math.round(((total - missing.length) / total) * 100);
 
     const blockers: VehicleCompleteness['blockers'] = [];
     if (readyPhotos < minPhotos) {
@@ -120,7 +154,7 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
       });
     }
 
-    return { percent, missing, canSubmit: blockers.length === 0, blockers };
+    return { percent, missing, canSubmit: blockers.length === 0, blockers, steps };
   }
 
   async function toDto(vehicle: VehicleWithRelations): Promise<DealerVehicleDto> {
@@ -147,6 +181,9 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
       makeId: vehicle.makeId,
       modelId: vehicle.modelId,
       variantId: vehicle.variantId,
+      makeName: vehicle.make.name,
+      modelName: vehicle.model.name,
+      variantName: vehicle.variant?.name ?? null,
       year: vehicle.year,
       fuel: vehicle.fuel,
       transmission: vehicle.transmission,
@@ -530,7 +567,14 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
       };
     },
 
-    /** C12. The credit is **not** refunded — the listing did its job. */
+    /**
+     * C12. The credit is **not** refunded — the listing did its job.
+     *
+     * The car stays on the marketplace, which is the part worth stating: this
+     * used to end with `unindex`, and now the outbox re-indexes instead so the
+     * row survives with `is_sold = true`. Sold cars are shown, badged and
+     * unclickable, and every "cars available" count skips them.
+     */
     async markSold(
       dealerId: string,
       vehicleId: string,
@@ -576,7 +620,74 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
       return {
         displayStatus: 'SOLD',
         statusLabel: 'Sold',
-        removedFromCatalogueAt: new Date().toISOString(),
+        markedSoldAt: soldAt.toISOString(),
+        remainsVisible: true,
+        message:
+          'Marked sold. The car stays on the marketplace with a Sold badge — buyers can see it ' +
+          'but not open or enquire about it. Remove the listing if you would rather it went.',
+      };
+    },
+
+    /**
+     * C12b — the dealer withdrawing their own listing.
+     *
+     * Distinct from `remove` (C10), which soft-deletes the *vehicle* and 409s
+     * while a listing is live. This ends the publication and keeps the asset:
+     * the listing goes REMOVED with `removedAt` set, so the inventory and the
+     * ledger still show that this car was once advertised and what it cost,
+     * and the vehicle drops back to DRAFT where it can be edited and, for a
+     * fresh credit, submitted again.
+     *
+     * The consumed credit is not returned. The listing ran; withdrawing it
+     * early is the dealer's choice, and refunding here would make "publish,
+     * withdraw, republish" a way to advertise indefinitely for one credit.
+     */
+    async removeListing(dealerId: string, vehicleId: string): Promise<RemoveListingResponse> {
+      const vehicle = await repo.findForDealer(dealerId, vehicleId);
+      if (!vehicle) throw new NotFoundError('That vehicle does not exist.');
+
+      const listing = liveListing(vehicle);
+      if (!listing) {
+        throw new ConflictError('INVALID_TRANSITION', 'This vehicle has never been published.');
+      }
+
+      const removedAt = new Date();
+      // A car that was sold stays sold. Withdrawing its listing takes it off
+      // the marketplace; it does not un-sell it, and resetting the vehicle to
+      // DRAFT here would quietly relist a car that is gone.
+      const wasSold = listing.status === 'SOLD' || vehicle.status === 'SOLD';
+
+      await withTenant(prisma, dealerId, async (tx) => {
+        await tx.listing.update({
+          where: { id: listing.id },
+          data: { status: transition(listing, 'WITHDRAW', 'DEALER'), removedAt },
+        });
+        if (!wasSold) {
+          await tx.vehicle.update({ where: { id: vehicleId }, data: { status: 'DRAFT' } });
+        }
+        await refreshActiveListings(tx, dealerId);
+
+        await enqueueOutbox(tx, {
+          type: 'ListingRemoved',
+          aggregateType: 'Listing',
+          aggregateId: listing.id,
+          dealerId,
+          actor: { type: 'DEALER' },
+          traceId: getContext()?.traceId ?? 'remove-listing',
+          payload: { listingId: listing.id, vehicleId, withdrawnByDealer: true },
+        });
+      });
+
+      return {
+        displayStatus: 'REMOVED',
+        statusLabel: 'Removed',
+        removedAt: removedAt.toISOString(),
+        vehicleRetained: true,
+        canRelist: !wasSold,
+        message: wasSold
+          ? 'Removed from the marketplace. The sale stays on your record.'
+          : 'Removed from the marketplace. The car is back in your inventory as a draft — ' +
+            'submitting it again costs one credit.',
       };
     },
 
@@ -671,9 +782,16 @@ const FIELD_LABELS: Record<string, string> = {
   modelId: 'Model',
   variantId: 'Variant',
   year: 'Year',
+  fuel: 'Fuel',
+  transmission: 'Transmission',
+  bodyType: 'Body type',
   kmDriven: 'KM driven',
   ownerNumber: 'Ownership',
   colorId: 'Colour',
+  rtoCode: 'RTO',
+  insuranceType: 'Insurance',
+  insuranceValidTill: 'Insurance valid till',
+  regNumberMasked: 'Registration number',
   cityId: 'Location',
   pricePaise: 'Asking price',
   description: 'Description (at least 100 characters)',
@@ -756,8 +874,10 @@ function toInventoryRow(vehicle: VehicleWithRelations): InventoryRowWithMeta {
     canEdit: EDITABLE.has(status),
     canResubmit: status === 'REJECTED' || status === 'CHANGES_REQUESTED',
     canRenew: status === 'EXPIRED',
-    canMarkSold: status === 'ACTIVE',
+    canMarkSold: status === 'ACTIVE' || status === 'EXPIRED',
+    canRemoveListing: WITHDRAWABLE.has(status),
     canDelete: status !== 'ACTIVE',
+    isPubliclyVisible: PUBLIC.has(status),
   };
 }
 
@@ -767,7 +887,16 @@ const EDITABLE = new Set<DisplayStatus>([
   'CHANGES_REQUESTED',
   'EXPIRED',
   'ACTIVE',
+  // A withdrawn listing leaves an editable vehicle behind — that is the whole
+  // point of withdrawing rather than deleting.
+  'REMOVED',
 ]);
+
+/** Mirrors the WITHDRAW rule in `listing.state.ts`, in display terms. */
+const WITHDRAWABLE = new Set<DisplayStatus>(['ACTIVE', 'EXPIRED', 'SOLD']);
+
+/** What a buyer can still see. A sold car is visible; a removed one is not. */
+const PUBLIC = new Set<DisplayStatus>(['ACTIVE', 'SOLD']);
 
 /**
  * `/car/{year}-{make}-{model}-{variant}-{city}-{6charId}` (§17.1). Never 404 a
