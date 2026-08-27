@@ -36,7 +36,7 @@ function fail(error: unknown, fallback: string): ActionResult<never> {
     const fieldErrors = error.fieldErrors();
     return {
       ok: false,
-      message: error.problem.detail ?? error.problem.title,
+      message: error.userMessage(error.problem.title),
       ...(Object.keys(fieldErrors).length > 0 ? { fieldErrors } : {}),
     };
   }

@@ -73,7 +73,7 @@ export async function submitEnquiryAction(
         fieldErrors,
         ...(Object.keys(fieldErrors).length > 0
           ? {}
-          : { message: error.problem.detail ?? error.problem.title }),
+          : { message: error.userMessage(error.problem.title) }),
       };
     }
     return {
@@ -120,10 +120,10 @@ export async function revealContactAction(
       if (error.code === 'CAPTCHA_REQUIRED') {
         return {
           status: 'captcha',
-          message: error.problem.detail ?? 'Complete the challenge to see this number.',
+          message: error.userMessage('Complete the challenge to see this number.'),
         };
       }
-      return { status: 'error', message: error.problem.detail ?? error.problem.title };
+      return { status: 'error', message: error.userMessage(error.problem.title) };
     }
     return { status: 'error', message: 'We could not fetch the number. Please try again.' };
   }

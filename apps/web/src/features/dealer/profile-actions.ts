@@ -81,7 +81,7 @@ export async function saveDealerProfileAction(
         fieldErrors,
         ...(Object.keys(fieldErrors).length > 0
           ? {}
-          : { message: error.problem.detail ?? error.problem.title }),
+          : { message: error.userMessage(error.problem.title) }),
       };
     }
     return { status: 'error', fieldErrors: {}, message: 'We could not save your changes.' };

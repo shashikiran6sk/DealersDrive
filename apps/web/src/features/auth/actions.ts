@@ -60,7 +60,7 @@ export async function adminLoginAction(
     if (error instanceof ApiError) {
       // The API answers identically for an unknown account and a wrong
       // password; repeating its message keeps it that way here.
-      return { message: error.problem.detail ?? 'That email and password do not match.' };
+      return { message: error.userMessage('That email and password do not match.') };
     }
     return { message: 'The admin API is unavailable. Try again shortly.' };
   }
@@ -108,7 +108,7 @@ export async function onboardingAction(
   } catch (error) {
     if (error instanceof ApiError) {
       return {
-        message: error.problem.detail ?? 'That could not be saved.',
+        message: error.userMessage('That could not be saved.'),
         errors: error.fieldErrors(),
         values,
       };
@@ -166,7 +166,7 @@ export async function saveBusinessIdsAction(
   } catch (error) {
     if (error instanceof ApiError) {
       return {
-        message: error.problem.detail ?? 'Those could not be saved.',
+        message: error.userMessage('Those could not be saved.'),
         errors: error.fieldErrors(),
         values,
       };
@@ -190,7 +190,7 @@ export async function submitForVerificationAction(): Promise<ActionState> {
     await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit');
   } catch (error) {
     if (error instanceof ApiError) {
-      return { message: error.problem.detail ?? 'That could not be submitted yet.' };
+      return { message: error.userMessage('That could not be submitted yet.') };
     }
     return { message: 'The API is unavailable. Try again shortly.' };
   }

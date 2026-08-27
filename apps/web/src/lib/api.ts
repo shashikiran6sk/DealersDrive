@@ -6,6 +6,9 @@ import { serverConfig } from './config';
 /** The session cookie the API issues. Named here so one file forwards it. */
 export const SESSION_COOKIE = 'dd_session';
 
+/** What a 5xx is allowed to say. Never the bug's own words. */
+export const SERVER_ERROR_MESSAGE = 'Something went wrong on our side. Please try again in a moment.';
+
 /**
  * The one place the web app talks to the API.
  *
@@ -35,6 +38,27 @@ export class ApiError extends Error {
     this.status = problem.status;
     this.code = problem.code;
     this.problem = problem;
+  }
+
+  /**
+   * The one line of this error a person may be shown.
+   *
+   * A 4xx `detail` is written *for* the person who made the request — "That
+   * email and password do not match", "This car is no longer listed" — and
+   * putting it on screen is the whole point of RFC 9457.
+   *
+   * A 5xx `detail` is the opposite: it is a bug describing itself. The API
+   * fills it only outside production (`apps/api/src/middleware/error-handler.ts`
+   * — `env.isProduction ? undefined : error.message`), so on a laptop it
+   * carries text like "Invalid `tx.dealerDocument.create()` invocation …
+   * Transaction API error". That is a stack trace wearing a sentence, it names
+   * our internals, and there is nothing in it a buyer or a dealer can act on.
+   * So every 5xx gets the same neutral line, in every environment — the detail
+   * is still in the server log, addressed by `traceId`, where it belongs.
+   */
+  userMessage(fallback: string = SERVER_ERROR_MESSAGE): string {
+    if (this.status >= 500) return SERVER_ERROR_MESSAGE;
+    return this.problem.detail ?? fallback;
   }
 
   /** Per-field messages, keyed by the field name the form uses. */

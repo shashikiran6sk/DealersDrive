@@ -8887,7 +8887,7 @@ detects this by checksum and refuses to proceed.
 | Where | **your laptop only** | **every deployed environment** |
 | What it does | diffs `schema.prisma` against the DB, *generates* a new migration, applies it, regenerates the client | applies pending migrations, in order. Nothing else |
 | Can it drop data? | **yes** — it will offer to reset the database | no. It only runs what is in the files |
-| In this repo | `pnpm --filter @dealers-drive/api db:migrate` | `pnpm --filter @dealers-drive/api db:migrate:deploy` |
+| In this repo | `pnpm --filter @dealers-drive/api db:migrate:new` (`--create-only`) | `pnpm --filter @dealers-drive/api db:migrate` |
 
 `migrate deploy` is the `CMD` of the migrator image. It never generates
 anything, so what runs against production is exactly the SQL that ran in CI and
@@ -8897,8 +8897,12 @@ on dev.
 
 ```bash
 # 1. edit apps/api/prisma/schema.prisma
-pnpm --filter @dealers-drive/api db:migrate      # names it, writes the SQL, applies it
+pnpm --filter @dealers-drive/api db:migrate:new  # names it and writes the SQL. Does NOT apply it
 # 2. READ the generated SQL. Every time. It is the thing that will run in production.
+#    In particular, delete any statement touching an object this repo owns in raw SQL
+#    (`listing_search`, the CHECK constraints, the sequences). Prisma cannot see those in
+#    schema.prisma, so it generates DROPs for them — see 'Objects Prisma does not manage'.
+pnpm --filter @dealers-drive/api db:migrate      # now apply it
 # 3. commit schema.prisma AND the migration directory together
 ```
 
@@ -8909,6 +8913,37 @@ pnpm --filter @dealers-drive/api db:generate   # regenerate the typed client (af
 pnpm --filter @dealers-drive/api db:studio     # a browser UI over the local database
 pnpm --filter @dealers-drive/api db:reset      # DROP EVERYTHING, re-migrate, re-seed. Laptop only.
 ```
+
+### Objects Prisma does not manage
+
+Some of this schema is written by hand, in raw SQL inside a migration, because
+Prisma's schema language cannot express it. `schema.prisma` therefore does not
+mention it at all:
+
+| Object | Created in | Why it is not in `schema.prisma` |
+|---|---|---|
+| `listing_search` | `20260816183500_search_and_invariants` (extended by `20260826120000_sold_visibility`) | a `GENERATED ALWAYS AS (…) STORED` `tsvector` column and a `gin_trgm_ops` expression index — neither is expressible |
+| `listings_one_approved_per_vehicle` | same | a partial unique index (`WHERE status = 'APPROVED'`) |
+| `approved_has_expiry`, `credit_balance_non_negative`, `credits_held_non_negative`, `ledger_delta_meaningful`, `only_admins_have_passwords` | same | `CHECK` constraints |
+| `enquiry_reference_seq`, `invoice_number_seq` | same | standalone sequences |
+
+**`prisma migrate dev` will delete all of it.** It does not distinguish "absent
+from `schema.prisma` because a human owns it" from "absent because it should not
+exist"; it diffs the database against `schema.prisma` and generates whatever SQL
+reconciles the two. Pointed at a database containing `listing_search`, it emits:
+
+```sql
+-- DropTable
+DROP TABLE "listing_search";
+```
+
+and applies it. Every search, facet, home and dealer-stats query then fails with
+`42P01 relation "listing_search" does not exist`, because the read model those
+queries are built on is gone.
+
+This is why `db:migrate` is `migrate deploy` and generating a migration is a
+separate, `--create-only` command. Read the SQL it writes and delete anything
+touching the table above before you apply it.
 
 ### Seeding: `db:seed` vs `db:bootstrap` — the distinction that matters most
 

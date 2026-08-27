@@ -36,7 +36,7 @@ export interface AdminResult<T = undefined> {
 
 function fail(error: unknown, fallback: string): AdminResult<never> {
   if (error instanceof ApiError) {
-    return { ok: false, message: error.problem.detail ?? error.problem.title };
+    return { ok: false, message: error.userMessage(error.problem.title) };
   }
   return { ok: false, message: fallback };
 }
