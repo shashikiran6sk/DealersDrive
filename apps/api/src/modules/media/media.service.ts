@@ -5,6 +5,7 @@ import type { PrismaClient } from '@prisma/client';
 import { encode } from 'blurhash';
 import sharp from 'sharp';
 
+import { env } from '../../config/env.js';
 import type { Queue } from '../../platform/jobs/queue.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
@@ -249,6 +250,14 @@ export function createMediaService({ prisma, storage, queue, config }: MediaDeps
 
       const original = await storage.get(media.storageKey);
       if (!original) {
+        // The bytes were committed but the worker cannot see them. In practice
+        // that means the worker is reading a *different* store from the one the
+        // upload landed in — a second process on the queue with its own
+        // STORAGE_DRIVER. Silent here once cost an afternoon; it never should.
+        logger.warn(
+          { mediaId, key: media.storageKey, driver: env.STORAGE_DRIVER },
+          'media bytes missing from storage — nothing to process',
+        );
         await prisma.media.update({ where: { id: mediaId }, data: { status: 'FAILED' } });
         return;
       }
