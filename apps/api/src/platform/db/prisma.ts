@@ -25,6 +25,13 @@ export function createPrisma(): PrismaClient {
   return new PrismaClient({
     datasources: { db: { url: env.DATABASE_URL } },
     log: env.isDevelopment ? ['warn', 'error'] : ['error'],
+    // See `DB_TRANSACTION_TIMEOUT_MS` in config/env.ts. Prisma's 5s default is
+    // shorter than a settlement takes against an out-of-region database, and
+    // the transaction that loses the race is a credit purchase.
+    transactionOptions: {
+      timeout: env.DB_TRANSACTION_TIMEOUT_MS,
+      maxWait: env.DB_TRANSACTION_MAX_WAIT_MS,
+    },
   });
 }
 
