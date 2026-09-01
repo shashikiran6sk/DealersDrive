@@ -3,7 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import { env } from '../../src/config/env.js';
 import { hashPassword } from '../../src/modules/auth/password.js';
 import { CONFIG_DEFAULTS } from '../../src/platform/config/platform-config.js';
-import { CITIES, COLORS, CREDIT_PACKS, MAKES, RTOS } from './data.js';
+import { assertCatalogueIntegrity, VEHICLE_CATALOGUE } from './catalog/index.js';
+import { CITIES, COLORS, CREDIT_PACKS, RTOS } from './data.js';
 
 /**
  * Production bootstrap — everything a deployed environment needs before a real
@@ -104,7 +105,9 @@ async function bootstrapCatalog(): Promise<CatalogTally> {
   const models = tally();
   const variants = tally();
 
-  for (const make of MAKES) {
+  assertCatalogueIntegrity();
+
+  for (const make of VEHICLE_CATALOGUE) {
     let makeRow = await prisma.make.findUnique({ where: { slug: make.slug } });
     if (makeRow) {
       makes.existing += 1;
@@ -129,6 +132,7 @@ async function bootstrapCatalog(): Promise<CatalogTally> {
             name: model.name,
             bodyType: model.bodyType,
             yearFrom: model.yearFrom,
+            yearTo: model.yearTo,
           },
         });
         models.created += 1;

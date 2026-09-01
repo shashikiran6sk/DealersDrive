@@ -16,14 +16,45 @@ export const catalogDocs: ModuleDocs = {
       tag: 'Catalogue',
       summary: 'The whole taxonomy in one response',
       description:
-        'Makes with their models and variants, cities, colours, RTO codes and the ' +
+        'Makes with their models, cities, colours, RTO codes and the ' +
         'body/fuel/transmission vocabularies. One request rather than five, because the ' +
         'search page needs all of it before it can render a filter panel.\n\n' +
+        '**Variants are not included.** The catalogue holds ~2,000 of them across 344 ' +
+        'models, and nesting them here would add roughly 400KB to a response whose other ' +
+        'job is to render a filter panel quickly. Each model carries `variantCount`, and ' +
+        '`GET /v1/catalog/models/{id}/variants` returns the rows for the one model a ' +
+        'dealer has actually picked.\n\n' +
         '`Cache-Control: public, max-age=3600, stale-while-revalidate=600`.',
       audience: 'public',
       responses: [
         { status: 200, description: 'The catalogue.', schema: 'CatalogBundle' },
       ],
+    },
+    {
+      method: 'get',
+      path: '/v1/catalog/models/:id/variants',
+      operationId: 'listModelVariants',
+      tag: 'Catalogue',
+      summary: "One model's variants",
+      description:
+        'The third step of the dependent **make → model → variant** selection the add-vehicle ' +
+        'form requires. Ordered by fuel, then transmission, then name, and each row carries a ' +
+        'composed `label` ("VXi · Petrol · Manual · 1197cc") so every client renders the ' +
+        'option identically.\n\n' +
+        'An unknown model id is a **404**, not an empty list: variant is a mandatory field, ' +
+        'and an empty list would read as "this model has no variants" and strand the dealer ' +
+        'on a step they cannot complete.\n\n' +
+        '`Cache-Control: public, max-age=3600, stale-while-revalidate=600`.',
+      audience: 'public',
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: "The model's variants.",
+          schema: 'ModelVariantsResponse',
+        },
+      ],
+      errors: [400, 404],
     },
     {
       method: 'get',

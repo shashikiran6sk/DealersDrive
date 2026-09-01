@@ -1,5 +1,14 @@
-/** DESIGN-SPEC §3.14 — the four steps, in order, shared by the stepper and the router. */
-export const WIZARD_STEPS = ['Basics', 'Details', 'Photos', 'Price & review'] as const;
+import { VEHICLE_WIZARD_STEPS } from '@dealers-drive/contracts';
+
+/**
+ * DESIGN-SPEC §3.14 — the four steps, in order, shared by the stepper and the
+ * router.
+ *
+ * The labels come from `packages/contracts`, which is also where the API reads
+ * each step's required fields from. One array, so the step the wizard calls
+ * "Details" and the step the server refuses to let past are the same step.
+ */
+export const WIZARD_STEPS = VEHICLE_WIZARD_STEPS.map((step) => step.label);
 
 export type WizardStep = 0 | 1 | 2 | 3;
 

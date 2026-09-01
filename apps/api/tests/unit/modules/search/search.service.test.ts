@@ -80,6 +80,11 @@ function vehicleRow(overrides: Record<string, unknown> = {}) {
 interface Options {
   rows?: SearchRow[];
   total?: number;
+  /**
+   * Available cars, which is what the result label counts. Defaults to `total`
+   * because most cases have no sold rows; the two diverge only when they do.
+   */
+  available?: number;
   facetCounts?: Record<string, { value: string; count: number }[]>;
   priceRange?: { min: number; max: number };
   bodyTypeCounts?: { body_type: string; count: number }[];
@@ -103,7 +108,11 @@ function setup(options: Options = {}) {
   const repo = {
     search: (query: VehicleQuery, opts: { dealerSlug?: string }) => {
       searchCalls.push({ query, options: opts });
-      return Promise.resolve({ rows: options.rows ?? [], total: options.total ?? 0 });
+      return Promise.resolve({
+        rows: options.rows ?? [],
+        total: options.total ?? 0,
+        available: options.available ?? options.total ?? 0,
+      });
     },
     facetCounts: (_query: VehicleQuery, column: string, opts: { dealerSlug?: string }) => {
       facetCalls.push({ column, options: opts });
@@ -181,6 +190,20 @@ describe('search', () => {
 
     expect((await one.service.search(query())).resultLabel).toBe('1 car available');
     expect((await many.service.search(query())).resultLabel).toBe('18 cars available');
+  });
+
+  it('counts the label on available cars, but paginates over the sold ones too', async () => {
+    // 18 rows come back, 15 of them buyable. Saying "18 cars available" would
+    // advertise three cars nobody can buy; paginating over 15 would make the
+    // sold ones — which sort last — unreachable. The two numbers are different
+    // questions and the response answers both.
+    const h = setup({ total: 18, available: 15 });
+
+    const response = await h.service.search(query({ limit: 6 }));
+
+    expect(response.resultLabel).toBe('15 cars available');
+    expect(response.page.total).toBe(18);
+    expect(response.page.totalPages).toBe(3);
   });
 
   it('clears back to the city, not to nothing, when a city is selected', async () => {

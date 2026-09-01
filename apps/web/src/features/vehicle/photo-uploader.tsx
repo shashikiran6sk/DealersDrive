@@ -29,6 +29,9 @@ const QUALITY = 0.85;
 const POLL_INTERVAL_MS = 1200;
 const POLL_LIMIT = 25;
 
+/** The six supporting shots beside the hero: front, rear, both sides, interior, odometer. */
+const SUPPORTING_SLOTS = 6;
+
 interface Upload {
   key: string;
   fileName: string;
@@ -47,7 +50,6 @@ export function PhotoUploader({
 }) {
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -155,6 +157,19 @@ export function PhotoUploader({
 
   const shortfall = minPhotos - media.length;
 
+  function pick() {
+    inputRef.current?.click();
+  }
+
+  // Position 0 is PRIMARY — the API decides that, and reordering is what moves
+  // it (C14), so the hero is simply "the first one".
+  const hero = media[0] ?? null;
+  const supporting = Array.from(
+    { length: SUPPORTING_SLOTS },
+    (_, index) => media[index + 1] ?? null,
+  );
+  const overflow = media.slice(SUPPORTING_SLOTS + 1);
+
   return (
     <div className="flex flex-col gap-3">
       {error ? <Banner tone="err">{error}</Banner> : null}
@@ -167,99 +182,72 @@ export function PhotoUploader({
         </Banner>
       ) : null}
 
-      <div className="grid gap-[10px] [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))] max-[375px]:[grid-template-columns:repeat(2,1fr)]">
-        {media.map((photo, index) => (
-          <figure
-            key={photo.mediaId}
-            className={cn(
-              'relative m-0 aspect-[4/3] overflow-hidden border bg-(--color-surface)',
-              index === 0 ? 'border-(--color-accent) sm:col-span-2' : 'border-(--color-divider)',
-            )}
-          >
-            {photo.url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={photo.url}
-                alt={photo.fileName ?? `Photo ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="grid h-full place-items-center text-[11px] ink-subtle">
-                {photo.status === 'FAILED' ? 'Processing failed' : 'Processing…'}
-              </div>
-            )}
+      {/*
+        One hero slot and six supporting ones (DESIGN-SPEC §3.14 step 3).
 
-            {index === 0 ? (
-              <Plate size="marker" className="absolute left-[6px] top-[6px] z-[2]">
-                PRIMARY
-              </Plate>
-            ) : null}
+        The hero is deliberately much larger — it spans the full grid on mobile
+        and two of three columns on desktop — because it is the *only* photo
+        most buyers see: it is the search-result thumbnail, the card image and
+        the share preview. Sizing it like the others invited dealers to treat
+        the order as arbitrary, and the first photo would end up being whichever
+        one uploaded fastest.
 
-            <figcaption className="absolute inset-x-0 bottom-0 z-[2] flex gap-1 bg-[rgba(13,16,23,0.75)] p-1">
-              <button
-                type="button"
-                className="btn btn-secondary bg-transparent px-2 py-[2px] text-[11px] text-white"
-                onClick={() => void move(photo.mediaId, -1)}
-                disabled={index === 0}
-                aria-label={`Move ${photo.fileName ?? 'photo'} earlier`}
-              >
-                ←
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary bg-transparent px-2 py-[2px] text-[11px] text-white"
-                onClick={() => void move(photo.mediaId, 1)}
-                disabled={index === media.length - 1}
-                aria-label={`Move ${photo.fileName ?? 'photo'} later`}
-              >
-                →
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary ml-auto bg-transparent px-2 py-[2px] text-[11px] text-white"
-                onClick={() => void remove(photo.mediaId)}
-                aria-label={`Remove ${photo.fileName ?? 'photo'}`}
-              >
-                Remove
-              </button>
-            </figcaption>
-
-            {photo.warnings.length > 0 ? (
-              // Advisory only — never blocking (C14).
-              <span className="absolute right-[6px] top-[6px] z-[2] bg-(--color-warn-bg) px-[5px] py-[1px] text-[10px] text-(--color-warn)">
-                {photo.warnings.join(', ')}
-              </span>
-            ) : null}
-          </figure>
-        ))}
-
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          onDragOver={(event) => {
-            event.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(event) => {
-            event.preventDefault();
-            setDragging(false);
-            void addFiles(event.dataTransfer.files);
-          }}
-          className={cn(
-            'grid aspect-[4/3] place-items-center border border-dashed p-2 text-center text-[12px]',
-            dragging
-              ? 'border-(--color-accent) bg-(--color-accent-100)'
-              : 'border-(--color-divider) ink-muted',
+        Empty slots render as placeholders rather than being absent, so the
+        shape of a finished listing is visible from the start.
+      */}
+      <div className="grid gap-[10px] sm:[grid-template-columns:repeat(3,1fr)]">
+        <div className="sm:col-span-2 sm:row-span-2">
+          {hero ? (
+            <PhotoSlot
+              photo={hero}
+              index={0}
+              total={media.length}
+              hero
+              onMove={move}
+              onRemove={remove}
+            />
+          ) : (
+            <EmptySlot hero label="Main photo" onPick={pick} onDropFiles={addFiles} />
           )}
-        >
-          <span>
-            Drag photos here
-            <br />
-            <span className="text-(--color-accent)">or browse</span>
-          </span>
-        </button>
+        </div>
+
+        {supporting.map((photo, offset) =>
+          photo ? (
+            <PhotoSlot
+              key={photo.mediaId}
+              photo={photo}
+              index={offset + 1}
+              total={media.length}
+              onMove={move}
+              onRemove={remove}
+            />
+          ) : (
+            <EmptySlot
+              key={`empty-${offset}`}
+              label={`Photo ${offset + 2}`}
+              onPick={pick}
+              onDropFiles={addFiles}
+            />
+          ),
+        )}
       </div>
+
+      {/* Anything past the seventh keeps working — the gallery has no cap and a
+          dealer with twelve good photos should not be told to delete five. */}
+      {overflow.length > 0 ? (
+        <div className="grid gap-[10px] [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
+          {overflow.map((photo, offset) => (
+            <PhotoSlot
+              key={photo.mediaId}
+              photo={photo}
+              index={SUPPORTING_SLOTS + 1 + offset}
+              total={media.length}
+              onMove={move}
+              onRemove={remove}
+            />
+          ))}
+        </div>
+      ) : null}
 
       <input
         ref={inputRef}
@@ -290,6 +278,142 @@ export function PhotoUploader({
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * One filled slot. `hero` only changes the aspect ratio and the badge — the
+ * controls are identical, because the hero is just position 0 and swapping it
+ * for another photo is an ordinary reorder.
+ */
+function PhotoSlot({
+  photo,
+  index,
+  total,
+  hero = false,
+  onMove,
+  onRemove,
+}: {
+  photo: VehicleMediaDto;
+  index: number;
+  total: number;
+  hero?: boolean;
+  onMove: (mediaId: string, delta: -1 | 1) => void | Promise<void>;
+  onRemove: (mediaId: string) => void | Promise<void>;
+}) {
+  return (
+    <figure
+      className={cn(
+        'relative m-0 h-full overflow-hidden border bg-(--color-surface)',
+        hero ? 'aspect-[4/3] border-(--color-accent)' : 'aspect-[4/3] border-(--color-divider)',
+      )}
+    >
+      {photo.url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photo.url}
+          alt={photo.fileName ?? `Photo ${index + 1}`}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="grid h-full place-items-center text-[11px] ink-subtle">
+          {photo.status === 'FAILED' ? 'Processing failed' : 'Processing…'}
+        </div>
+      )}
+
+      {hero ? (
+        <Plate size="marker" className="absolute left-[6px] top-[6px] z-[2]">
+          MAIN PHOTO
+        </Plate>
+      ) : null}
+
+      <figcaption className="absolute inset-x-0 bottom-0 z-[2] flex gap-1 bg-[rgba(13,16,23,0.75)] p-1">
+        <button
+          type="button"
+          className="btn btn-secondary bg-transparent px-2 py-[2px] text-[11px] text-white"
+          onClick={() => void onMove(photo.mediaId, -1)}
+          disabled={index === 0}
+          aria-label={`Move ${photo.fileName ?? 'photo'} earlier`}
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary bg-transparent px-2 py-[2px] text-[11px] text-white"
+          onClick={() => void onMove(photo.mediaId, 1)}
+          disabled={index === total - 1}
+          aria-label={`Move ${photo.fileName ?? 'photo'} later`}
+        >
+          →
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary ml-auto bg-transparent px-2 py-[2px] text-[11px] text-white"
+          onClick={() => void onRemove(photo.mediaId)}
+          aria-label={`Remove ${photo.fileName ?? 'photo'}`}
+        >
+          Remove
+        </button>
+      </figcaption>
+
+      {photo.warnings.length > 0 ? (
+        // Advisory only — never blocking (C14).
+        <span className="absolute right-[6px] top-[6px] z-[2] bg-(--color-warn-bg) px-[5px] py-[1px] text-[10px] text-(--color-warn)">
+          {photo.warnings.join(', ')}
+        </span>
+      ) : null}
+    </figure>
+  );
+}
+
+/**
+ * An empty slot. Each is its own drop target so a dealer can drag the rear
+ * three-quarter shot onto the rear three-quarter slot; the drop still appends
+ * (order is changed by reordering, not by where the file landed), but the
+ * affordance is what makes the seven-slot layout legible rather than decorative.
+ */
+function EmptySlot({
+  label,
+  hero = false,
+  onPick,
+  onDropFiles,
+}: {
+  label: string;
+  hero?: boolean;
+  onPick: () => void;
+  onDropFiles: (files: FileList | File[]) => void | Promise<void>;
+}) {
+  const [dragging, setDragging] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      onDragOver={(event) => {
+        event.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(event) => {
+        event.preventDefault();
+        setDragging(false);
+        void onDropFiles(event.dataTransfer.files);
+      }}
+      className={cn(
+        'grid aspect-[4/3] h-full w-full place-items-center border border-dashed p-2 text-center',
+        hero ? 'text-[13px]' : 'text-[11px]',
+        dragging
+          ? 'border-(--color-accent) bg-(--color-accent-100)'
+          : 'border-(--color-divider) ink-muted',
+      )}
+    >
+      <span>
+        <span className={hero ? 'block font-medium' : 'block'}>{label}</span>
+        <span className="text-(--color-accent)">
+          {hero ? 'Drag a photo here, or browse' : 'Add'}
+        </span>
+      </span>
+    </button>
   );
 }
 

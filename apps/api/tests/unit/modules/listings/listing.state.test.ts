@@ -42,6 +42,14 @@ const ALLOWED: Record<ListingEvent, { actors: Actor[]; from: ListingStatus[]; to
     REQUEST_CHANGES: { actors: ['ADMIN'], from: ['PENDING_REVIEW'], to: 'CHANGES_REQUESTED' },
     EXPIRE: { actors: ['SYSTEM'], from: ['APPROVED'], to: 'EXPIRED' },
     MARK_SOLD: { actors: ['DEALER', 'ADMIN'], from: ['APPROVED', 'EXPIRED'], to: 'SOLD' },
+    // The dealer withdrawing their own listing, as opposed to a moderator
+    // taking it down. SOLD is a legal source: a sold car is still on the
+    // marketplace, so there is still something to withdraw.
+    WITHDRAW: {
+      actors: ['DEALER', 'ADMIN'],
+      from: ['APPROVED', 'EXPIRED', 'SOLD'],
+      to: 'REMOVED',
+    },
     TAKEDOWN: {
       actors: ['ADMIN'],
       from: ['APPROVED', 'PENDING_REVIEW', 'CHANGES_REQUESTED'],
@@ -142,10 +150,17 @@ describe('the moves that matter most', () => {
     }
   });
 
-  it('treats SOLD and REMOVED as terminal for every event', () => {
+  /**
+   * REMOVED is terminal outright. SOLD has exactly one way out — WITHDRAW —
+   * because a sold car is still *on* the marketplace, badged and unclickable,
+   * so there is still a publication for the dealer to end. Nothing else moves
+   * from either.
+   */
+  it('treats REMOVED as terminal, and SOLD as terminal apart from WITHDRAW', () => {
     for (const status of ['SOLD', 'REMOVED'] as const) {
       for (const event of EVENTS) {
         for (const actor of ACTORS) {
+          if (status === 'SOLD' && event === 'WITHDRAW' && actor !== 'SYSTEM') continue;
           expect(
             () => transition(listing(status), event, actor),
             `${event} from ${status}`,
@@ -153,6 +168,21 @@ describe('the moves that matter most', () => {
         }
       }
     }
+  });
+
+  it('lets a dealer withdraw a sold listing, which ends the advert, not the sale', () => {
+    expect(transition(listing('SOLD'), 'WITHDRAW', 'DEALER')).toBe('REMOVED');
+    expect(transition(listing('APPROVED'), 'WITHDRAW', 'DEALER')).toBe('REMOVED');
+    expect(transition(listing('EXPIRED'), 'WITHDRAW', 'DEALER')).toBe('REMOVED');
+  });
+
+  it('will not let a dealer withdraw a listing that is still with the reviewers', () => {
+    // PENDING_REVIEW holds a credit, and unwinding that hold is `submit`'s
+    // business. Nothing is publicly visible in that state anyway, which is what
+    // WITHDRAW exists to end.
+    expect(() => transition(listing('PENDING_REVIEW'), 'WITHDRAW', 'DEALER')).toThrow(
+      ConflictError,
+    );
   });
 });
 
@@ -245,12 +275,20 @@ describe('displayStatus', () => {
     expect(displayStatus(vehicle('DRAFT'), null)).toBe('DRAFT');
   });
 
-  it('is SOLD as soon as the vehicle is sold, whatever the listing says', () => {
+  it('is SOLD as soon as the vehicle is sold, unless the listing was withdrawn', () => {
     // The vehicle wins: a sold car whose listing is still APPROVED must not read
     // as live for the seconds before the index catches up.
     for (const status of STATUSES) {
+      if (status === 'REMOVED') continue;
       expect(displayStatus(vehicle('SOLD'), listing(status)), status).toBe('SOLD');
     }
+  });
+
+  it('reads REMOVED, not SOLD, once a sold listing has been withdrawn', () => {
+    // The dealer sold the car and then pulled the advert. Both are true, but
+    // only the second decides whether buyers can still see it — which is what
+    // this status is for.
+    expect(displayStatus(vehicle('SOLD'), listing('REMOVED'))).toBe('REMOVED');
   });
 
   it('maps each listing status to the label the UI renders', () => {

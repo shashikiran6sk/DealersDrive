@@ -14,7 +14,12 @@ const router = createCatalogRouter({} as never);
 describe('the surface', () => {
   it('declares exactly the reference endpoints', () => {
     expect(signaturesOf(router).sort()).toEqual(
-      ['GET /catalog/bundle', 'GET /cities', 'GET /config/public'].sort(),
+      [
+        'GET /catalog/bundle',
+        'GET /catalog/models/:id/variants',
+        'GET /cities',
+        'GET /config/public',
+      ].sort(),
     );
   });
 
@@ -40,9 +45,17 @@ describe('the surface', () => {
     expect(signaturesOf(router)).not.toContain('GET /config');
   });
 
-  it('takes no path parameters — this is a fixed set of documents', () => {
-    for (const { path } of routesOf(router)) {
-      expect(path, path).not.toContain(':');
-    }
+  /**
+   * One parameterised route, and only one. The rest are fixed documents; the
+   * variants route is addressed by model because the catalogue is too large to
+   * serve whole (`CatalogBundle`), so it is the exception the rule names rather
+   * than an opening for per-dealer or per-session reference data.
+   */
+  it('parameterises only the variants route', () => {
+    const parameterised = routesOf(router)
+      .map((route) => route.path)
+      .filter((path) => path.includes(':'));
+
+    expect(parameterised).toEqual(['/catalog/models/:id/variants']);
   });
 });

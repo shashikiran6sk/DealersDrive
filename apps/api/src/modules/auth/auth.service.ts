@@ -357,9 +357,17 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
           data: { dealerId: dealer.id, userId: principal.userId, role: 'OWNER', permissions: [] },
         });
 
-        for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const) {
-          await tx.dealerDocument.create({ data: { dealerId: dealer.id, type, status: 'REQUIRED' } });
-        }
+        // One statement, not three. Every statement inside an interactive
+        // transaction is a round-trip, and the transaction budget is wall-clock:
+        // three sequential creates spend three of them on rows that have no
+        // dependency on each other.
+        await tx.dealerDocument.createMany({
+          data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
+            dealerId: dealer.id,
+            type,
+            status: 'REQUIRED' as const,
+          })),
+        });
 
         await audit.record(tx, {
           actorType: 'DEALER',

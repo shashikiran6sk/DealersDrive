@@ -92,6 +92,10 @@ const PATH_VARIABLES: { match: RegExp; param: string; variable: string; method?:
   // listing folders still need. This one is opt-in.
   { method: 'delete', match: /^\/v1\/dealer\/vehicles\/\{id\}$/, param: 'id', variable: 'disposableVehicleId' },
   { match: /^\/v1\/dealer\/vehicles\/\{id\}/, param: 'id', variable: 'vehicleId' },
+  // The catalogue's dependent step. `modelId` is already captured from the
+  // bundle for the create-vehicle request, so this one needs no capture of its
+  // own — it reuses the model whose variants the draft will be built from.
+  { match: /^\/v1\/catalog\/models\/\{id\}\/variants$/, param: 'id', variable: 'modelId' },
   { match: /^\/v1\/dealer\/listings\/\{id\}/, param: 'id', variable: 'listingId' },
   { match: /^\/v1\/dealer\/media\/\{id\}/, param: 'id', variable: 'mediaId' },
   { match: /^\/v1\/dealer\/enquiries\/\{id\}/, param: 'id', variable: 'enquiryId' },
@@ -130,6 +134,9 @@ const PATH_LITERALS: Record<string, string> = { width: '640' };
  */
 const RUN_LAST: Record<string, number> = {
   markVehicleSold: 80, // ends the listing, so renewal has nothing to renew
+  // Takes the car off the marketplace entirely, so it must follow mark-sold —
+  // which needs a listing that is still there — and precede the deletes.
+  removeVehicleListing: 85,
   deleteVehicle: 90,
   deleteMedia: 90,
   deleteDealerDocument: 90,
@@ -157,6 +164,15 @@ const VARIABLES: PostmanVariable[] = [
     description:
       'A model **belonging to `makeId`**. Captured alongside it; a real model filed under the ' +
       'wrong make is a 404, not a silently corrupt listing.',
+  },
+  {
+    key: 'variantId',
+    value: '',
+    type: 'string',
+    description:
+      "A variant **belonging to `modelId`**. Captured by `One model's variants` — run that " +
+      'after the bundle, because variants are no longer nested in it and a draft cannot be ' +
+      'created without one.',
   },
   {
     key: 'colorId',
@@ -282,6 +298,11 @@ const CAPTURES: Record<string, [string, string][]> = {
     ['colorId', 'colors.0.id'],
     ['cityId', 'cities.0.id'],
   ],
+  // Variant is mandatory on create, and the bundle no longer carries variants —
+  // so the create request's `variantId` comes from here, and this request has
+  // to run between the bundle and the create. Both sit in document order in the
+  // Catalogue and Dealer inventory folders respectively, so it already does.
+  listModelVariants: [['variantId', 'data.0.id']],
   getSession: [['dealerId', 'dealer.id']],
   searchVehicles: [
     ['publicVehicleId', 'data.0.id'],
@@ -461,6 +482,7 @@ function captureScript(operationId: string): PostmanScript | null {
 const BODY_VARIABLES: Record<string, string> = {
   makeId: 'makeId',
   modelId: 'modelId',
+  variantId: 'variantId',
   colorId: 'colorId',
   cityId: 'cityId',
   packId: 'packId',

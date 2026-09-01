@@ -5,8 +5,10 @@ import {
   ownerLabel,
   TRANSMISSION_LABELS,
   type BodyType,
+  FUEL_LABELS as FUELS,
   type CatalogBundle,
   type CitiesResponse,
+  type ModelVariantsResponse,
   type FuelType,
   type InsuranceType,
   type PublicConfig,
@@ -43,15 +45,7 @@ export function createCatalogService({ repo, search, config }: CatalogDeps) {
             bodyType: model.bodyType,
             yearFrom: model.yearFrom,
             yearTo: model.yearTo,
-            variants: model.variants.map((variant) => ({
-              id: variant.id,
-              slug: variant.slug,
-              name: variant.name,
-              fuel: variant.fuel,
-              transmission: variant.transmission,
-              engineCc: variant.engineCc,
-              seats: variant.seats,
-            })),
+            variantCount: model._count.variants,
           })),
         })),
         cities: cities.map((city) => ({
@@ -91,6 +85,46 @@ export function createCatalogService({ repo, search, config }: CatalogDeps) {
         })),
         owners: [1, 2, 3].map((value) => ({ value, label: ownerLabel(value) })),
         features: await repo.knownFeatures(),
+      };
+    },
+
+    /**
+     * A13b. Fetched when the dealer picks a model, which is why it is a route
+     * of its own rather than a slice of the bundle — 2,000 variants is not a
+     * thing to ship on the chance one of them gets used.
+     *
+     * Returns `null` for an unknown model so the route can 404 rather than
+     * answering with an empty list, which would read as "this model has no
+     * variants" and leave the dealer stuck on a mandatory field.
+     */
+    async modelVariants(modelId: string): Promise<ModelVariantsResponse | null> {
+      const model = await repo.variantsForModel(modelId);
+      if (!model) return null;
+
+      return {
+        modelId: model.id,
+        modelName: model.name,
+        makeName: model.make.name,
+        bodyType: model.bodyType,
+        yearFrom: model.yearFrom,
+        yearTo: model.yearTo,
+        data: model.variants.map((variant) => ({
+          id: variant.id,
+          slug: variant.slug,
+          name: variant.name,
+          fuel: variant.fuel,
+          transmission: variant.transmission,
+          engineCc: variant.engineCc,
+          seats: variant.seats,
+          label: [
+            variant.name,
+            FUELS[variant.fuel],
+            TRANSMISSION_LABELS[variant.transmission],
+            variant.engineCc === null ? null : `${variant.engineCc}cc`,
+          ]
+            .filter(Boolean)
+            .join(' · '),
+        })),
       };
     },
 

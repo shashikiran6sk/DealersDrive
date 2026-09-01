@@ -156,12 +156,18 @@ describe('listing lifecycle over HTTP', () => {
   });
 
   it('blocks submission before the vehicle is complete', async () => {
+    const variant = await h.prisma.variant.findFirstOrThrow({
+      include: { model: true },
+      orderBy: { name: 'asc' },
+    });
+
     const created = await h
       .agent()
       .post('/v1/dealer/vehicles')
       .send({
-        makeId: (await h.prisma.model.findFirstOrThrow({ orderBy: { name: 'asc' } })).makeId,
-        modelId: (await h.prisma.model.findFirstOrThrow({ orderBy: { name: 'asc' } })).id,
+        makeId: variant.model.makeId,
+        modelId: variant.modelId,
+        variantId: variant.id,
         year: 2020,
         fuel: 'DIESEL',
         transmission: 'AUTOMATIC',
@@ -217,24 +223,42 @@ describe('listing lifecycle over HTTP', () => {
     expect(dealerView.body.displayStatus).toBe('REMOVED');
   });
 
-  it('marks a live vehicle sold and removes it from the catalogue', async () => {
+  /** Publishes a vehicle and returns its id and public slug. */
+  async function publish(): Promise<{ vehicleId: string; slug: string; listingId: string }> {
     const vehicleId = await createSubmittableVehicle(h);
     const submit = await h
       .agent()
       .post(`/v1/dealer/vehicles/${vehicleId}/submit`)
       .send({})
       .expect(201);
+    const listingId = submit.body.listingId as string;
 
-    await h
-      .agent()
-      .post(`/v1/admin/listings/${submit.body.listingId}/approve`)
-      .send({})
-      .expect(200);
+    await h.agent().post(`/v1/admin/listings/${listingId}/approve`).send({}).expect(200);
     await h.drain();
 
     const slug = (await h.agent().get(`/v1/dealer/vehicles/${vehicleId}`).expect(200)).body
       .slug as string;
     await h.agent().get(`/v1/vehicles/${slug}`).expect(200);
+
+    return { vehicleId, slug, listingId };
+  }
+
+  /**
+   * A sold car stays on the marketplace. It keeps its row in `listing_search`
+   * so it still appears in results — greyed out, badged, sorted last — but it is
+   * excluded from every *available* count and its detail page stops answering.
+   *
+   * Both halves matter. Dropping the row loses the social proof; keeping it
+   * without `is_sold` advertises a car nobody can buy.
+   */
+  it('marks a live vehicle sold, keeps it visible, and closes its detail page', async () => {
+    const { vehicleId, slug } = await publish();
+
+    // Drain first: an earlier test in this file may have submitted a vehicle
+    // and left the resulting unindex pending, and the drain below would flush
+    // it and move the catalogue counts under this test's feet.
+    await h.drain();
+    const before = await h.agent().get('/v1/vehicles?limit=1').expect(200);
 
     const sold = await h
       .agent()
@@ -243,10 +267,169 @@ describe('listing lifecycle over HTTP', () => {
       .expect(200);
 
     expect(sold.body.displayStatus).toBe('SOLD');
-
+    expect(sold.body.remainsVisible).toBe(true);
     await h.drain();
-    // A sold car leaves the catalogue: rule 6's visibility test fails for it.
+
+    // Still indexed, and flagged.
+    const row = await h.prisma.$queryRaw<{ is_sold: boolean; sold_at: Date | null }[]>`
+      SELECT is_sold, sold_at FROM listing_search WHERE vehicle_id = ${vehicleId}::uuid`;
+    expect(row[0]?.is_sold).toBe(true);
+    expect(row[0]?.sold_at).toBeInstanceOf(Date);
+
+    // The page still counts it — sold rows sort last and have to stay
+    // reachable — while the available count drops by exactly one.
+    const after = await h.agent().get('/v1/vehicles?limit=1').expect(200);
+    expect(after.body.page.total).toBe(before.body.page.total);
+
+    const availableBefore = Number(/^([\d,]+)/.exec(before.body.resultLabel)?.[1]?.replace(/,/g, ''));
+    const availableAfter = Number(/^([\d,]+)/.exec(after.body.resultLabel)?.[1]?.replace(/,/g, ''));
+    expect(availableAfter).toBe(availableBefore - 1);
+
+    // …and the detail page is closed, so a stale link says "gone" rather than
+    // opening a car that cannot be bought.
     await h.agent().get(`/v1/vehicles/${slug}`).expect(404);
+  });
+
+  it('marks the sold card as sold wherever it still appears', async () => {
+    const { vehicleId } = await publish();
+    await h.drain();
+
+    await h.agent().post(`/v1/dealer/vehicles/${vehicleId}/mark-sold`).send({}).expect(200);
+    await h.drain();
+
+    const results = await h.agent().get('/v1/vehicles?limit=48').expect(200);
+    const card = results.body.data.find((entry: { id: string }) => entry.id === vehicleId);
+
+    // The API decides this once, so no client can render a clickable sold car
+    // by forgetting a check.
+    expect(card?.isSold).toBe(true);
+    expect(card?.soldLabel).toBeTruthy();
+
+    // And it sorts behind every available car.
+    const soldIndex = results.body.data.findIndex((entry: { id: string }) => entry.id === vehicleId);
+    const lastAvailable = results.body.data
+      .map((entry: { isSold: boolean }) => entry.isSold)
+      .lastIndexOf(false);
+    expect(soldIndex).toBeGreaterThan(lastAvailable);
+  });
+
+  /**
+   * "Non-clickable" has to mean more than a missing anchor. A buyer with the
+   * vehicle id — from a stale saved-cars list, a shared link, or curl — must not
+   * be able to enquire about or reveal the number for a car that is gone.
+   *
+   * Both paths resolve the car through `search.byVehicleId`, which carries the
+   * `is_sold = false` predicate, so this is one rule rather than a check at each
+   * call site that someone can forget to add to the third one.
+   */
+  it('refuses every buyer action on a sold car, not just the link to it', async () => {
+    const { vehicleId } = await publish();
+    await h.drain();
+
+    await h.agent().post(`/v1/dealer/vehicles/${vehicleId}/mark-sold`).send({}).expect(200);
+    await h.drain();
+
+    const enquiry = await h
+      .agent()
+      .post('/v1/enquiries')
+      .send({
+        vehicleId,
+        name: 'Priya Raman',
+        phone: '9876543210',
+        message: 'Is this still available for a test drive this weekend?',
+        source: 'LISTING_PAGE',
+      })
+      .expect(404);
+    expect(enquiry.body.code).toBe('NOT_FOUND');
+
+    await h.agent().post(`/v1/vehicles/${vehicleId}/reveal-contact`).send({}).expect(404);
+
+    // Similar cars answer 200 with nothing rather than 404 — it is a
+    // below-the-fold widget and must never take the page down — but a car that
+    // is gone recommends nothing, and is recommended to nobody.
+    const similar = await h.agent().get(`/v1/vehicles/${vehicleId}/similar?limit=12`).expect(200);
+    expect(similar.body.data).toEqual([]);
+
+    const others = await h.agent().get('/v1/vehicles?limit=48').expect(200);
+    const stillForSale = others.body.data.find((entry: { isSold: boolean }) => !entry.isSold);
+    const recommended = await h
+      .agent()
+      .get(`/v1/vehicles/${stillForSale.id}/similar?limit=12`)
+      .expect(200);
+    expect(recommended.body.data.map((entry: { id: string }) => entry.id)).not.toContain(vehicleId);
+  });
+
+  /**
+   * C12b. Distinct from the admin takedown above and from `DELETE` (C10): this
+   * ends the publication and keeps the asset.
+   */
+  it('lets a dealer withdraw their own listing, keeping the vehicle as a draft', async () => {
+    const { vehicleId, slug } = await publish();
+
+    const removed = await h
+      .agent()
+      .post(`/v1/dealer/vehicles/${vehicleId}/remove-listing`)
+      .send({})
+      .expect(200);
+
+    expect(removed.body.displayStatus).toBe('REMOVED');
+    expect(removed.body.vehicleRetained).toBe(true);
+    expect(removed.body.canRelist).toBe(true);
+    await h.drain();
+
+    // Gone from the marketplace entirely — not merely flagged, as a sale is.
+    await h.agent().get(`/v1/vehicles/${slug}`).expect(404);
+    const indexed = await h.prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT count(*)::bigint AS count FROM listing_search WHERE vehicle_id = ${vehicleId}::uuid`;
+    expect(Number(indexed[0]?.count ?? 0)).toBe(0);
+
+    // The vehicle survives, editable, back in the dealer's inventory.
+    const dealerView = await h.agent().get(`/v1/dealer/vehicles/${vehicleId}`).expect(200);
+    expect(dealerView.body.displayStatus).toBe('REMOVED');
+    expect(dealerView.body.status).toBe('DRAFT');
+
+    await h
+      .agent()
+      .patch(`/v1/dealer/vehicles/${vehicleId}`)
+      .send({ kmDriven: 51_000 })
+      .expect(200);
+  });
+
+  it('withdraws a sold listing without un-selling the car', async () => {
+    const { vehicleId } = await publish();
+
+    await h.agent().post(`/v1/dealer/vehicles/${vehicleId}/mark-sold`).send({}).expect(200);
+    await h.drain();
+
+    const removed = await h
+      .agent()
+      .post(`/v1/dealer/vehicles/${vehicleId}/remove-listing`)
+      .send({})
+      .expect(200);
+
+    // Withdrawing removes the advertisement, not the sale — resetting the
+    // vehicle to DRAFT here would quietly re-list a car that is gone.
+    expect(removed.body.canRelist).toBe(false);
+    await h.drain();
+
+    const dealerView = await h.agent().get(`/v1/dealer/vehicles/${vehicleId}`).expect(200);
+    expect(dealerView.body.status).toBe('SOLD');
+    expect(dealerView.body.displayStatus).toBe('REMOVED');
+  });
+
+  it('refuses to withdraw a listing that is still with the reviewers', async () => {
+    const vehicleId = await createSubmittableVehicle(h);
+    await h.agent().post(`/v1/dealer/vehicles/${vehicleId}/submit`).send({}).expect(201);
+
+    // PENDING_REVIEW holds a credit and shows nobody anything. Unwinding the
+    // hold is `submit`'s business, not this event's.
+    const refused = await h
+      .agent()
+      .post(`/v1/dealer/vehicles/${vehicleId}/remove-listing`)
+      .send({})
+      .expect(409);
+
+    expect(refused.body.code).toBe('INVALID_TRANSITION');
   });
 });
 
@@ -261,13 +444,18 @@ describe('listing lifecycle over HTTP', () => {
  */
 describe('catalogue references', () => {
   let h: Harness;
-  let real: { makeId: string; modelId: string };
+  let real: { makeId: string; modelId: string; variantId: string };
 
   beforeAll(async () => {
     h = await createHarness();
     h.actAs(DEALER_A);
-    const model = await h.prisma.model.findFirstOrThrow({ orderBy: { name: 'asc' } });
-    real = { makeId: model.makeId, modelId: model.id };
+    // Picked by having a variant, because variant is mandatory on create — a
+    // model with none seeded would fail these tests on the wrong field.
+    const variant = await h.prisma.variant.findFirstOrThrow({
+      include: { model: true },
+      orderBy: { name: 'asc' },
+    });
+    real = { makeId: variant.model.makeId, modelId: variant.modelId, variantId: variant.id };
   });
 
   afterAll(async () => {
@@ -279,6 +467,7 @@ describe('catalogue references', () => {
   const draft = (overrides: Record<string, unknown>) => ({
     makeId: real.makeId,
     modelId: real.modelId,
+    variantId: real.variantId,
     year: 2021,
     fuel: 'PETROL',
     transmission: 'MANUAL',

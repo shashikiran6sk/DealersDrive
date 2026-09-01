@@ -48,7 +48,7 @@ export async function updateConfigAction(
     return { ok: true };
   } catch (error) {
     if (error instanceof ApiError) {
-      return { ok: false, message: error.problem.detail ?? error.problem.title };
+      return { ok: false, message: error.userMessage(error.problem.title) };
     }
     return { ok: false, message: 'We could not save that setting.' };
   }

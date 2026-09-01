@@ -114,6 +114,8 @@ function listingFixture(overrides: Record<string, unknown> = {}): Record<string,
 
 function searchRow(overrides: Partial<SearchRow> = {}): SearchRow {
   return {
+    is_sold: false,
+    sold_at: null,
     listing_id: 'l1',
     vehicle_id: 'v1',
     dealer_id: 'd1',
@@ -457,19 +459,32 @@ describe('listListingIdsForDealer', () => {
 });
 
 describe('search', () => {
-  it('runs one page query and one count query over the same WHERE', async () => {
-    const { repo, queries } = fakePrisma({ queryRaw: [[searchRow()], [{ count: 1n }]] });
+  /**
+   * Three queries, not two: the page, the total it paginates over, and the
+   * count of *available* cars the result label reports. The last is the one
+   * that has to exclude sold rows, and it is a separate query because the page
+   * must include them.
+   */
+  it('runs one page query and two count queries over the same filters', async () => {
+    const { repo, queries } = fakePrisma({
+      queryRaw: [[searchRow()], [{ count: 3n }], [{ count: 2n }]],
+    });
 
     const result = await repo.search(query({ city: 'vellore' }));
 
-    expect(result.total).toBe(1);
-    expect(queries).toHaveLength(2);
-    expect(queries[0]?.sql).toContain('city_slug = ?');
-    expect(queries[1]?.sql).toContain('city_slug = ?');
+    expect(result.total).toBe(3);
+    expect(result.available).toBe(2);
+    expect(queries).toHaveLength(3);
+    for (const entry of queries) expect(entry.sql).toContain('city_slug = ?');
+
+    // The page and its total carry sold rows; the available count does not.
+    expect(queries[0]?.sql).not.toContain('is_sold = false');
+    expect(queries[1]?.sql).not.toContain('is_sold = false');
+    expect(queries[2]?.sql).toContain('is_sold = false');
   });
 
   it('reports a total of zero when the count query returns nothing', async () => {
-    const { repo } = fakePrisma({ queryRaw: [[], []] });
+    const { repo } = fakePrisma({ queryRaw: [[], [], []] });
 
     expect((await repo.search(query())).total).toBe(0);
   });
@@ -637,13 +652,18 @@ describe('search', () => {
     expect(queries[0]?.values).not.toContain('a-rival-dealer');
   });
 
+  /**
+   * `is_sold ASC` leads every one of these. A sold car outranking an available
+   * one on any sort would put a car nobody can buy at the top of the page, and
+   * "cheapest first" is where that would happen most.
+   */
   it.each([
-    ['price_asc', 'ORDER BY price_paise ASC, approved_at DESC'],
-    ['price_desc', 'ORDER BY price_paise DESC, approved_at DESC'],
-    ['year_desc', 'ORDER BY year DESC, approved_at DESC'],
-    ['km_asc', 'ORDER BY km ASC, approved_at DESC'],
-    ['newest', 'ORDER BY approved_at DESC'],
-  ] as const)('sorts by %s', async (sort, fragment) => {
+    ['price_asc', 'ORDER BY is_sold ASC, price_paise ASC, approved_at DESC'],
+    ['price_desc', 'ORDER BY is_sold ASC, price_paise DESC, approved_at DESC'],
+    ['year_desc', 'ORDER BY is_sold ASC, year DESC, approved_at DESC'],
+    ['km_asc', 'ORDER BY is_sold ASC, km ASC, approved_at DESC'],
+    ['newest', 'ORDER BY is_sold ASC, approved_at DESC'],
+  ] as const)('sorts by %s, with sold cars last', async (sort, fragment) => {
     const { repo, queries } = fakePrisma();
 
     await repo.search(query({ sort }));
@@ -658,7 +678,7 @@ describe('search', () => {
     await repo.search(query({ sort: 'relevance' }));
 
     expect(queries[0]?.sql).toContain(
-      'ORDER BY (photo_count >= 6) DESC, approved_at DESC, price_paise ASC',
+      'ORDER BY is_sold ASC, (photo_count >= 6) DESC, approved_at DESC, price_paise ASC',
     );
   });
 
@@ -675,7 +695,7 @@ describe('search', () => {
 
     await repo.search({ ...query(), sort: 'chaos' as VehicleQuery['sort'] });
 
-    expect(queries[0]?.sql).toContain('ORDER BY approved_at DESC');
+    expect(queries[0]?.sql).toContain('ORDER BY is_sold ASC, approved_at DESC');
   });
 });
 
@@ -722,7 +742,9 @@ describe('byVehicleId / byVehicleSlug', () => {
 
     await repo.byVehicleSlug('maruti-swift-vxi-2019-abc');
 
-    expect(queries[0]?.sql).toContain('vehicle_slug = ? LIMIT 1');
+    // `AND is_sold = false` is the detail page's whole visibility rule now that
+    // sold cars stay in the table: a sold car is shown in search but has no page.
+    expect(queries[0]?.sql).toContain('vehicle_slug = ? AND is_sold = false LIMIT 1');
     expect(queries[0]?.values).toEqual(['maruti-swift-vxi-2019-abc']);
   });
 
@@ -866,7 +888,10 @@ describe('bodyTypeCounts', () => {
 
     await repo.bodyTypeCounts();
 
-    expect(queries[0]?.sql).not.toContain('WHERE');
+    // "Every city" still means every *available* car — a body-type tile reading
+    // "12 SUVs" that includes four sold ones sends a buyer to an empty grid.
+    expect(queries[0]?.sql).toContain('WHERE is_sold = false');
+    expect(queries[0]?.sql).not.toContain('city_slug');
   });
 
   it('scopes to one city when given', async () => {
@@ -874,7 +899,8 @@ describe('bodyTypeCounts', () => {
 
     await repo.bodyTypeCounts('vellore');
 
-    expect(queries[0]?.sql).toContain('WHERE city_slug = ?');
+    expect(queries[0]?.sql).toContain('WHERE is_sold = false');
+    expect(queries[0]?.sql).toContain('AND city_slug = ?');
     expect(queries[0]?.values).toEqual(['vellore']);
   });
 
@@ -915,11 +941,15 @@ describe('dealerStats', () => {
 });
 
 describe('totalCount', () => {
-  it('counts the whole catalogue', async () => {
+  it('counts every available car, and no sold ones', async () => {
     const { repo, queries } = fakePrisma({ queryRaw: [[{ count: 18n }]] });
 
     expect(await repo.totalCount()).toBe(18);
-    expect(queries[0]?.sql).not.toContain('WHERE');
+    // This number is the homepage's "N cars available" and the header's
+    // all-cities total. Sold cars are visible on the marketplace but are not
+    // stock, and counting them would overstate the inventory on every screen.
+    expect(queries[0]?.sql).toContain('WHERE is_sold = false');
+    expect(queries[0]?.sql).not.toContain('city_slug');
   });
 
   it('counts one city when given', async () => {

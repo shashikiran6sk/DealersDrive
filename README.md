@@ -336,7 +336,8 @@ In `apps/api`:
 
 | Command             | Does                                                        |
 | ------------------- | ----------------------------------------------------------- |
-| `pnpm db:migrate`   | `prisma migrate dev`                                        |
+| `pnpm db:migrate`     | `prisma migrate deploy` — applies the committed migrations. Safe everywhere |
+| `pnpm db:migrate:new` | `prisma migrate dev --create-only` — writes a new migration for you to **read before applying**. Never point it at a database you care about: `migrate dev` reconciles the DB to `schema.prisma`, and `listing_search` is not in `schema.prisma`, so it will generate a `DROP TABLE` for it |
 | `pnpm db:seed`      | rebuilds the seeded world (idempotent — it truncates first) |
 | `pnpm db:bootstrap` | **deployed environments**: catalogue, packs, config, one admin. Creates what is missing, overwrites nothing, truncates nothing |
 | `pnpm db:reset`     | migrate reset + seed                                        |

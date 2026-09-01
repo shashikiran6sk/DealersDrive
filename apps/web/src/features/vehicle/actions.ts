@@ -7,6 +7,7 @@ import {
   UpdateVehicleInput,
   type DealerVehicleDto,
   type MarkSoldResponse,
+  type RemoveListingResponse,
   type RenewListingResponse,
   type SubmitListingResponse,
 } from '@dealers-drive/contracts';
@@ -35,7 +36,7 @@ function fail(error: unknown, fallback: string): ActionResult<never> {
     const fieldErrors = error.fieldErrors();
     return {
       ok: false,
-      message: error.problem.detail ?? error.problem.title,
+      message: error.userMessage(error.problem.title),
       ...(Object.keys(fieldErrors).length > 0 ? { fieldErrors } : {}),
     };
   }
@@ -122,7 +123,13 @@ export async function submitListingAction(
   }
 }
 
-/** C12 — mark sold. Keeps the page live and marked, never 404s it (§17.4). */
+/**
+ * C12 — mark sold.
+ *
+ * The car stays on the marketplace, badged and inert: visible in search as
+ * proof the dealer moves stock, but with no detail page and no way to enquire.
+ * `removeListingAction` below is the one that takes it down.
+ */
 export async function markSoldAction(
   vehicleId: string,
   input: unknown,
@@ -140,6 +147,28 @@ export async function markSoldAction(
     return { ok: true, data: result };
   } catch (error) {
     return fail(error, 'We could not mark that vehicle sold.');
+  }
+}
+
+/**
+ * C12b — withdraw the listing from the marketplace.
+ *
+ * Not `deleteVehicleAction`: this ends the *publication* and keeps the vehicle,
+ * which returns to the inventory as an editable draft. The listing row and its
+ * ledger entries survive as the record that this car was once advertised.
+ */
+export async function removeListingAction(
+  vehicleId: string,
+): Promise<ActionResult<RemoveListingResponse>> {
+  try {
+    const result = await apiSend<RemoveListingResponse>(
+      'POST',
+      `/v1/dealer/vehicles/${vehicleId}/remove-listing`,
+    );
+    refreshConsole();
+    return { ok: true, data: result };
+  } catch (error) {
+    return fail(error, 'We could not remove that listing.');
   }
 }
 

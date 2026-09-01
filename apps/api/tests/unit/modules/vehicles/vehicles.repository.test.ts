@@ -362,6 +362,38 @@ describe('update', () => {
     expect(calls['vehicle.findUnique']).toBeUndefined();
   });
 
+  /**
+   * The photo step of the wizard owns no scalar fields, so "Continue" there is
+   * a PATCH with an empty body. Prisma skips the statement and answers
+   * `count: 0`, which read as "no such vehicle" and 404'd a car the dealer was
+   * looking at — the empty patch has to resolve through the dealer scope
+   * instead, and still refuse another dealer's row.
+   */
+  it('answers a no-op patch with the row, not a miss', async () => {
+    const { repo, calls } = fakePrisma({ 'vehicle.findFirst': { id: VEHICLE } });
+
+    expect(await repo.update(DEALER, VEHICLE, {})).toEqual({ id: VEHICLE });
+    expect(calls['vehicle.updateMany']).toBeUndefined();
+    expect(whereOf(calls, 'vehicle.findFirst')).toEqual({
+      id: VEHICLE,
+      dealerId: DEALER,
+      deletedAt: null,
+    });
+  });
+
+  it('treats a patch of only undefined values as a no-op', async () => {
+    const { repo, calls } = fakePrisma({ 'vehicle.findFirst': { id: VEHICLE } });
+
+    expect(await repo.update(DEALER, VEHICLE, { kmDriven: undefined })).toEqual({ id: VEHICLE });
+    expect(calls['vehicle.updateMany']).toBeUndefined();
+  });
+
+  it('still refuses another dealer’s row on a no-op patch', async () => {
+    const { repo } = fakePrisma({ 'vehicle.findFirst': null });
+
+    expect(await repo.update(OTHER_DEALER, VEHICLE, {})).toBeNull();
+  });
+
   it('reads the updated row back with its relations', async () => {
     const { repo, calls } = fakePrisma({ 'vehicle.findUnique': { id: VEHICLE } });
 

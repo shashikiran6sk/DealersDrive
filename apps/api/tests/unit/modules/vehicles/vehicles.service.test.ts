@@ -387,7 +387,10 @@ describe('completeness', () => {
 
     const state = await h.service.completeness(vehicle({ pricePaise: null }));
 
-    expect(state.percent).toBe(90);
+    // 17 of 18 required fields present. The denominator grew when Details went
+    // mandatory (RTO, insurance, insurance validity and registration number
+    // joined the list), so one gap is a smaller dent than it used to be.
+    expect(state.percent).toBe(94);
   });
 });
 
@@ -676,15 +679,60 @@ describe('inventory', () => {
       }
     });
 
-    it('permits renew only when expired, and mark-sold only when live', async () => {
+    it('permits renew only when expired, and mark-sold when live or expired', async () => {
       const expired = setup({ list: [vehicle({ listings: [{ id: 'l', status: 'EXPIRED' }] })] });
       const live = setup({ list: [vehicle({ listings: [{ id: 'l', status: 'APPROVED' }] })] });
 
       const expiredRow = (await expired.service.inventory('dealer-1', { limit: 24 })).data[0];
       const liveRow = (await live.service.inventory('dealer-1', { limit: 24 })).data[0];
 
-      expect([expiredRow?.canRenew, expiredRow?.canMarkSold]).toEqual([true, false]);
+      // An expired listing is a car that did not sell before its 90 days ran
+      // out — or one that sold and the dealer never said so. Refusing to record
+      // the sale until they pay to renew is the wrong way round.
+      expect([expiredRow?.canRenew, expiredRow?.canMarkSold]).toEqual([true, true]);
       expect([liveRow?.canRenew, liveRow?.canMarkSold]).toEqual([false, true]);
+    });
+
+    it('permits withdrawal exactly while the car is publicly visible', async () => {
+      const cases: [string, boolean][] = [
+        ['APPROVED', true],
+        ['EXPIRED', true],
+        ['SOLD', true],
+        ['PENDING_REVIEW', false],
+        ['CHANGES_REQUESTED', false],
+        ['REJECTED', false],
+        ['REMOVED', false],
+      ];
+
+      for (const [status, expected] of cases) {
+        const h = setup({
+          list: [vehicle({ listings: [{ id: 'l', status, submittedAt: new Date() }] })],
+        });
+        const row = (await h.service.inventory(DEALER, { limit: 24 })).data[0];
+
+        expect(row?.canRemoveListing, status).toBe(expected);
+      }
+    });
+
+    it('reports public visibility for exactly the live and sold rows', async () => {
+      // A sold car is still on the marketplace; a removed one is not. This flag
+      // is what the console uses to tell the dealer which is which.
+      const cases: [string, boolean][] = [
+        ['APPROVED', true],
+        ['SOLD', true],
+        ['EXPIRED', false],
+        ['REMOVED', false],
+        ['PENDING_REVIEW', false],
+      ];
+
+      for (const [status, expected] of cases) {
+        const h = setup({
+          list: [vehicle({ listings: [{ id: 'l', status, submittedAt: new Date() }] })],
+        });
+        const row = (await h.service.inventory(DEALER, { limit: 24 })).data[0];
+
+        expect(row?.isPubliclyVisible, status).toBe(expected);
+      }
     });
 
     it('refuses deletion of a live car', async () => {
@@ -873,12 +921,15 @@ describe('create', () => {
     }
   });
 
-  it('treats an absent variant as null rather than leaving it undefined', async () => {
+  it('carries the variant into the coherence check', async () => {
     const h = setup();
 
-    await h.service.create(DEALER, { ...input, variantId: undefined });
+    await h.service.create(DEALER, input);
 
-    expect(h.refs[0]).toMatchObject({ variantId: null });
+    // Variant is mandatory on create now, so there is no "absent" case to
+    // normalise — what matters is that it reaches `findBrokenCatalogueRef`,
+    // which is what rejects a Seltos variant filed under a Swift.
+    expect(h.refs[0]).toMatchObject({ variantId: input.variantId });
   });
 });
 
@@ -924,27 +975,25 @@ describe('update', () => {
     expect(h.repoUpdates[0]?.pricePaise).toBe(64_500_000n);
   });
 
-  it('parses an insurance date, and clears it when told to', async () => {
+  it('parses an insurance date', async () => {
     const h = setup();
 
     await h.service.update(DEALER, VEHICLE, { insuranceValidTill: '2027-03-01' });
-    await h.service.update(DEALER, VEHICLE, { insuranceValidTill: null });
 
+    // No "clears it" case any more: insurance validity is a required Details
+    // field, so `UpdateVehicleInput` will not accept `null` for it.
     expect(h.repoUpdates[0]?.insuranceValidTill).toBeInstanceOf(Date);
-    expect(h.repoUpdates[1]?.insuranceValidTill).toBeNull();
   });
 
-  it('normalises optional ids to null when cleared', async () => {
+  it('normalises the genuinely optional fields to null when cleared', async () => {
     const h = setup();
 
+    // Only these may be blanked. The wizard's required fields are `.optional()`
+    // rather than `.nullish()` in `UpdateVehicleInput`, so a request clearing
+    // one is a 400 before it reaches here — a step cannot be un-completed.
     await h.service.update(DEALER, VEHICLE, {
-      variantId: null,
-      colorId: null,
       seats: null,
       airbags: null,
-      rtoCode: null,
-      regNumberMasked: null,
-      insuranceType: null,
       description: null,
     });
 
@@ -977,12 +1026,14 @@ describe('update', () => {
     });
   });
 
-  it('carries a cleared variant into the coherence check', async () => {
+  it('carries an unchanged variant into the coherence check when the model moves', async () => {
     const h = setup();
 
-    await h.service.update(DEALER, VEHICLE, { variantId: null });
+    // Coherence is checked against the row *as it will be*: moving the model
+    // without naming the variant still has to hold together (§10.6).
+    await h.service.update(DEALER, VEHICLE, { modelId: 'model-2' });
 
-    expect(h.refs[0]).toMatchObject({ variantId: null });
+    expect(h.refs[0]).toMatchObject({ modelId: 'model-2' });
   });
 
   it('checks colour and city only when they are being changed', async () => {

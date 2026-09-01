@@ -863,11 +863,13 @@ describe('the subscriptions', () => {
   });
 
   it('unindexes on every event that takes a car out of the catalogue', async () => {
+    // `VehicleSold` is deliberately absent: a sale keeps the row and flips
+    // `is_sold`, so the car stays on the marketplace as badged, unclickable
+    // proof the dealer moves stock. See the reindex test below.
     const events: DomainEventType[] = [
       'ListingRejected',
       'ListingRemoved',
       'ListingExpired',
-      'VehicleSold',
       'ListingSubmitted',
     ];
 
@@ -882,6 +884,18 @@ describe('the subscriptions', () => {
         `${type} should unindex`,
       ).toBe(true);
     }
+  });
+
+  it('reindexes on a sale rather than unindexing, so the sold car stays visible', async () => {
+    const h = setup();
+    await h.register();
+
+    await h.publish('VehicleSold', { aggregateId: 'listing-1' });
+
+    // `index` re-derives from the listing and sets `is_sold`; `remove` would
+    // delete the row and take the car off the marketplace, which is what
+    // `ListingRemoved` is for.
+    expect(h.sent).toEqual([{ name: 'search.index-listing', data: { listingId: 'listing-1' } }]);
   });
 
   it('unindexes on submit, because a resubmitted car must leave the catalogue', async () => {

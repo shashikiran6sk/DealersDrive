@@ -141,6 +141,24 @@ export function createVehiclesRepository(prisma: PrismaClient) {
       tx?: Tx,
     ) {
       const client = tx ?? prisma;
+
+      /**
+       * A PATCH that names no field is a no-op, not a miss. Prisma skips the
+       * statement entirely when there is nothing to SET and answers
+       * `count: 0` — the same answer it gives for a row belonging to another
+       * dealer — so reading `count` alone would turn the wizard's photo step,
+       * which owns no scalar fields of its own, into a 404. The empty case
+       * resolves through the same dealer-scoped WHERE, so `null` keeps meaning
+       * exactly one thing: no such row for this dealer.
+       */
+      const writes = Object.values(data).some((value) => value !== undefined);
+      if (!writes) {
+        return client.vehicle.findFirst({
+          where: { id: vehicleId, dealerId, deletedAt: null },
+          include: vehicleInclude,
+        });
+      }
+
       const result = await client.vehicle.updateMany({
         where: { id: vehicleId, dealerId, deletedAt: null },
         data,

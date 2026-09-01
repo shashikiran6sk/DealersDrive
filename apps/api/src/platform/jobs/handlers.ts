@@ -289,7 +289,11 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
   });
   bus.on('ListingRemoved', unindex);
   bus.on('ListingExpired', unindex);
-  bus.on('VehicleSold', unindex);
+  // A sale re-indexes rather than un-indexes: the row stays in `listing_search`
+  // and `is_sold` flips, which is what keeps the car on the marketplace as
+  // badged, unclickable proof that this dealer moves stock. `ListingRemoved`
+  // above is the event that actually deletes the row.
+  bus.on('VehicleSold', index);
   bus.on('ListingSubmitted', unindex);
 
   bus.on('EnquiryCreated', async (event) => {

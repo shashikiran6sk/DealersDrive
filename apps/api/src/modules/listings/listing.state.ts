@@ -21,6 +21,7 @@ export type ListingEvent =
   | 'REQUEST_CHANGES'
   | 'EXPIRE'
   | 'MARK_SOLD'
+  | 'WITHDRAW'
   | 'TAKEDOWN'
   | 'RENEW';
 
@@ -46,6 +47,19 @@ const RULES: Record<ListingEvent, Rule> = {
   REQUEST_CHANGES: { from: ['PENDING_REVIEW'], to: 'CHANGES_REQUESTED', actors: ['ADMIN'] },
   EXPIRE: { from: ['APPROVED'], to: 'EXPIRED', actors: ['SYSTEM'] },
   MARK_SOLD: { from: ['APPROVED', 'EXPIRED'], to: 'SOLD', actors: ['DEALER', 'ADMIN'] },
+  /**
+   * The dealer pulling their own car off the marketplace, which is a different
+   * act from a moderator taking it down and is deliberately a separate event:
+   * TAKEDOWN is moderation and reads as one in the audit log, WITHDRAW is a
+   * dealer changing their mind and reads as one.
+   *
+   * The source states are the three a car can be *on the marketplace* in — a
+   * PENDING_REVIEW listing is with our team and holds a credit, so withdrawing
+   * one would have to unwind the hold; that is `submit`'s business and not
+   * this event's. Nothing is on public display in that state anyway, which is
+   * what this event exists to end.
+   */
+  WITHDRAW: { from: ['APPROVED', 'EXPIRED', 'SOLD'], to: 'REMOVED', actors: ['DEALER', 'ADMIN'] },
   TAKEDOWN: {
     from: ['APPROVED', 'PENDING_REVIEW', 'CHANGES_REQUESTED'],
     to: 'REMOVED',
@@ -109,7 +123,10 @@ export function displayStatus(
   listing: Pick<Listing, 'status'> | null,
 ): DisplayStatus {
   if (!listing) return 'DRAFT';
-  if (vehicle.status === 'SOLD') return 'SOLD';
+  // REMOVED outranks a sold vehicle: a dealer who sold a car and then withdrew
+  // the listing needs the row to say the second thing, because the second thing
+  // is the one that decides whether buyers can still see it.
+  if (listing.status !== 'REMOVED' && vehicle.status === 'SOLD') return 'SOLD';
 
   switch (listing.status) {
     case 'PENDING_REVIEW':

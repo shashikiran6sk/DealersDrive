@@ -41,17 +41,7 @@ function repo(overrides: Partial<CatalogRepository> = {}): CatalogRepository {
                 bodyType: 'HATCHBACK',
                 yearFrom: 2012,
                 yearTo: 2022,
-                variants: [
-                  {
-                    id: 'variant-1',
-                    slug: 'vxi',
-                    name: 'VXI',
-                    fuel: 'PETROL',
-                    transmission: 'MANUAL',
-                    engineCc: 796,
-                    seats: 5,
-                  },
-                ],
+                _count: { variants: 8 },
               },
             ],
           },
@@ -89,14 +79,29 @@ function config(values: Record<string, number | boolean> = {}): PlatformConfigSe
 }
 
 describe('bundle', () => {
-  it('nests models under makes and variants under models', async () => {
+  it('nests models under makes, and counts variants rather than nesting them', async () => {
     const service = createCatalogService({ repo: repo(), search: search(), config: config() });
 
     const bundle = await service.bundle();
 
     expect(bundle.makes[0]?.name).toBe('Maruti Suzuki');
     expect(bundle.makes[0]?.models[0]?.name).toBe('Alto 800');
-    expect(bundle.makes[0]?.models[0]?.variants[0]?.name).toBe('VXI');
+    // ~2,000 variants would be ~400KB of JSON on a page that needs a filter
+    // panel quickly; `/v1/catalog/models/{id}/variants` fetches the one model
+    // a dealer actually picks.
+    expect(bundle.makes[0]?.models[0]?.variantCount).toBe(8);
+    expect(bundle.makes[0]?.models[0]).not.toHaveProperty('variants');
+  });
+
+  it('carries the production years, so the year dropdown can be bounded', async () => {
+    const service = createCatalogService({ repo: repo(), search: search(), config: config() });
+
+    const bundle = await service.bundle();
+
+    // A 2009 Alto 800 does not exist, and offering the year invites a listing
+    // that no correct search will find.
+    expect(bundle.makes[0]?.models[0]?.yearFrom).toBe(2012);
+    expect(bundle.makes[0]?.models[0]?.yearTo).toBe(2022);
   });
 
   it('exposes only the fields the wizard needs, not the whole row', async () => {

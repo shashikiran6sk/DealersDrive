@@ -6,11 +6,17 @@ import type { Tx } from '../../platform/db/prisma.js';
 /**
  * `listing_search` — the denormalized read model (ARCHITECTURE §11.1).
  *
- * Only APPROVED listings belonging to ACTIVE dealers ever enter this table.
- * That one rule is the entire visibility model, and because every count in the
- * product is derived from here — cars available, per-city counts, body-type
- * tiles, facet counts, "from ₹x" — a listing that should not be public cannot
- * leak into a number either.
+ * Membership is one rule: an APPROVED **or SOLD** listing belonging to an
+ * ACTIVE dealer. Availability is a second, narrower one: `is_sold = false`.
+ * Before sold cars stayed on the marketplace the two were the same question,
+ * and the whole visibility model was the first rule alone.
+ *
+ * Keeping them apart is now load-bearing, because every count in the product —
+ * cars available, per-city counts, body-type tiles, facet counts, "from ₹x" —
+ * means *available*, and a sold car leaking into one of them would advertise
+ * stock nobody can buy. `buildWhere` therefore adds `is_sold = false` by
+ * default and a caller must ask for sold rows explicitly; the only caller that
+ * does is the results page, which shows them last.
  */
 
 export interface SearchRow {
@@ -50,6 +56,8 @@ export interface SearchRow {
   primary_media_id: string | null;
   primary_blurhash: string | null;
   approved_at: Date;
+  is_sold: boolean;
+  sold_at: Date | null;
 }
 
 /**
@@ -63,14 +71,17 @@ const COLUMNS = Prisma.raw(`
   title, vehicle_slug, year, price_paise, km, fuel, transmission, body_type,
   owner_number, seats, airbags, color_slug, color_family, rto_code, rto_state,
   city_slug, city_name, lat, lng, features, photo_count,
-  primary_media_id, primary_blurhash, approved_at`);
+  primary_media_id, primary_blurhash, approved_at, is_sold, sold_at`);
 
 export function createSearchRepository(prisma: PrismaClient) {
   return {
     /**
      * Rebuilds one listing's row, or removes it if it no longer satisfies
-     * `APPROVED && dealer ACTIVE`. Idempotent — the subscriber that calls it
-     * assumes it will run twice.
+     * `(APPROVED or SOLD) && dealer ACTIVE`. Idempotent — the subscriber that
+     * calls it assumes it will run twice.
+     *
+     * Marking a car sold is now an `index`, not an `unindex`: the row stays and
+     * `is_sold` flips. Withdrawing the listing is what deletes it.
      */
     async index(listingId: string, client: Tx | PrismaClient = prisma): Promise<boolean> {
       const listing = await client.listing.findUnique({
@@ -90,20 +101,23 @@ export function createSearchRepository(prisma: PrismaClient) {
         },
       });
 
-      const publishable =
+      // A sold listing is still *displayed*, so it is still indexed. What it is
+      // not is available, and `is_sold` below is where that is recorded.
+      const visible =
         listing &&
-        listing.status === 'APPROVED' &&
+        (listing.status === 'APPROVED' || listing.status === 'SOLD') &&
         listing.dealer.status === 'ACTIVE' &&
         listing.vehicle.deletedAt === null &&
-        listing.vehicle.status !== 'SOLD' &&
         listing.vehicle.slug !== null &&
         listing.vehicle.pricePaise !== null &&
         listing.vehicle.kmDriven !== null;
 
-      if (!publishable) {
+      if (!visible) {
         await this.remove(listingId, client);
         return false;
       }
+
+      const isSold = listing.status === 'SOLD' || listing.vehicle.status === 'SOLD';
 
       const { vehicle, dealer } = listing;
       const city = vehicle.city ?? dealer.city;
@@ -127,7 +141,7 @@ export function createSearchRepository(prisma: PrismaClient) {
           title, vehicle_slug, year, price_paise, km, fuel, transmission, body_type,
           owner_number, seats, airbags, color_slug, color_family, rto_code, rto_state,
           city_slug, city_name, lat, lng, features, photo_count,
-          primary_media_id, primary_blurhash, approved_at
+          primary_media_id, primary_blurhash, approved_at, is_sold, sold_at
         ) VALUES (
           ${listing.id}::uuid, ${vehicle.id}::uuid, ${dealer.id}::uuid,
           ${dealer.brandName}, ${dealer.slug}, ${initialsOf(dealer.brandName)},
@@ -141,7 +155,8 @@ export function createSearchRepository(prisma: PrismaClient) {
           ${city.slug}, ${city.name}, ${city.lat}, ${city.lng},
           ${vehicle.features}::text[], ${ready.length},
           ${primary?.media.id ?? null}::uuid, ${primary?.media.blurhash ?? null},
-          ${listing.approvedAt ?? new Date()}
+          ${listing.approvedAt ?? new Date()},
+          ${isSold}, ${isSold ? (listing.soldAt ?? new Date()) : null}
         )
         ON CONFLICT (listing_id) DO UPDATE SET
           vehicle_id = EXCLUDED.vehicle_id,
@@ -164,7 +179,8 @@ export function createSearchRepository(prisma: PrismaClient) {
           photo_count = EXCLUDED.photo_count,
           primary_media_id = EXCLUDED.primary_media_id,
           primary_blurhash = EXCLUDED.primary_blurhash,
-          approved_at = EXCLUDED.approved_at`;
+          approved_at = EXCLUDED.approved_at,
+          is_sold = EXCLUDED.is_sold, sold_at = EXCLUDED.sold_at`;
 
       return true;
     },
@@ -186,25 +202,47 @@ export function createSearchRepository(prisma: PrismaClient) {
       return rows.map((row) => row.id);
     },
 
+    /**
+     * Results include sold cars; every count reported alongside them does not.
+     *
+     * `total` is what the page paginates over — it has to include sold rows or
+     * the last page would be unreachable. `available` is what the result label
+     * counts, and `orderBy` pins `is_sold` first in every sort, so the sold
+     * ones only ever appear once a buyer has scrolled past everything they can
+     * actually buy.
+     */
     async search(
       query: VehicleQuery,
       options: { dealerSlug?: string } = {},
-    ): Promise<{ rows: SearchRow[]; total: number }> {
-      const where = buildWhere(query, options);
+    ): Promise<{ rows: SearchRow[]; total: number; available: number }> {
+      const withSold = buildWhere(query, { ...options, includeSold: true });
+      const availableOnly = buildWhere(query, options);
       const offset = (query.page - 1) * query.limit;
 
       const rows = await prisma.$queryRaw<SearchRow[]>`
         SELECT ${COLUMNS} FROM listing_search
-        ${where}
+        ${withSold}
         ${orderBy(query)}
         LIMIT ${query.limit} OFFSET ${offset}`;
 
-      const counted = await prisma.$queryRaw<{ count: bigint }[]>`
-        SELECT count(*)::bigint AS count FROM listing_search ${where}`;
+      const [counted, availableCount] = await Promise.all([
+        prisma.$queryRaw<{ count: bigint }[]>`
+          SELECT count(*)::bigint AS count FROM listing_search ${withSold}`,
+        prisma.$queryRaw<{ count: bigint }[]>`
+          SELECT count(*)::bigint AS count FROM listing_search ${availableOnly}`,
+      ]);
 
-      return { rows, total: Number(counted[0]?.count ?? 0n) };
+      return {
+        rows,
+        total: Number(counted[0]?.count ?? 0n),
+        available: Number(availableCount[0]?.count ?? 0n),
+      };
     },
 
+    /**
+     * Sold rows included on purpose: a saved car that has sold must come back
+     * so the list can mark it, not vanish without explanation (A7).
+     */
     async byIds(ids: string[]): Promise<SearchRow[]> {
       if (ids.length === 0) return [];
       return prisma.$queryRaw<SearchRow[]>`
@@ -212,15 +250,26 @@ export function createSearchRepository(prisma: PrismaClient) {
         WHERE vehicle_id = ANY(${ids}::uuid[])`;
     },
 
+    /**
+     * Available cars only, both of them.
+     *
+     * A sold car is visible on the marketplace but is not openable: A5 must
+     * 404 it, and `similar` must not recommend it. That used to follow from
+     * sold rows not being in this table at all; now that they are, it has to be
+     * said out loud, and it is said here rather than at each of the four call
+     * sites — a caller that forgot would put a sold car back on a detail page.
+     */
     async byVehicleId(vehicleId: string): Promise<SearchRow | null> {
       const rows = await prisma.$queryRaw<SearchRow[]>`
-        SELECT ${COLUMNS} FROM listing_search WHERE vehicle_id = ${vehicleId}::uuid LIMIT 1`;
+        SELECT ${COLUMNS} FROM listing_search
+        WHERE vehicle_id = ${vehicleId}::uuid AND is_sold = false LIMIT 1`;
       return rows[0] ?? null;
     },
 
     async byVehicleSlug(slug: string): Promise<SearchRow | null> {
       const rows = await prisma.$queryRaw<SearchRow[]>`
-        SELECT ${COLUMNS} FROM listing_search WHERE vehicle_slug = ${slug} LIMIT 1`;
+        SELECT ${COLUMNS} FROM listing_search
+        WHERE vehicle_slug = ${slug} AND is_sold = false LIMIT 1`;
       return rows[0] ?? null;
     },
 
@@ -261,14 +310,16 @@ export function createSearchRepository(prisma: PrismaClient) {
     /** Live totals for the header city dropdown and the homepage (§11.1). */
     async cityCounts(): Promise<{ city_slug: string; count: number }[]> {
       const rows = await prisma.$queryRaw<{ city_slug: string; count: bigint }[]>`
-        SELECT city_slug, count(*)::bigint AS count FROM listing_search GROUP BY 1`;
+        SELECT city_slug, count(*)::bigint AS count FROM listing_search
+        WHERE is_sold = false GROUP BY 1`;
       return rows.map((row) => ({ city_slug: row.city_slug, count: Number(row.count) }));
     },
 
     async bodyTypeCounts(citySlug?: string): Promise<{ body_type: string; count: number }[]> {
       const rows = await prisma.$queryRaw<{ body_type: string; count: bigint }[]>`
         SELECT body_type, count(*)::bigint AS count FROM listing_search
-        ${citySlug ? Prisma.sql`WHERE city_slug = ${citySlug}` : Prisma.empty}
+        WHERE is_sold = false
+        ${citySlug ? Prisma.sql`AND city_slug = ${citySlug}` : Prisma.empty}
         GROUP BY 1`;
       return rows.map((row) => ({ body_type: row.body_type, count: Number(row.count) }));
     },
@@ -279,7 +330,7 @@ export function createSearchRepository(prisma: PrismaClient) {
       const rows = await prisma.$queryRaw<
         { dealer_slug: string; count: bigint; from_price: bigint | null }[]
       >`SELECT dealer_slug, count(*)::bigint AS count, min(price_paise) AS from_price
-          FROM listing_search GROUP BY 1`;
+          FROM listing_search WHERE is_sold = false GROUP BY 1`;
       return rows.map((row) => ({
         dealer_slug: row.dealer_slug,
         count: Number(row.count),
@@ -290,7 +341,8 @@ export function createSearchRepository(prisma: PrismaClient) {
     async totalCount(citySlug?: string): Promise<number> {
       const rows = await prisma.$queryRaw<{ count: bigint }[]>`
         SELECT count(*)::bigint AS count FROM listing_search
-        ${citySlug ? Prisma.sql`WHERE city_slug = ${citySlug}` : Prisma.empty}`;
+        WHERE is_sold = false
+        ${citySlug ? Prisma.sql`AND city_slug = ${citySlug}` : Prisma.empty}`;
       return Number(rows[0]?.count ?? 0n);
     },
 
@@ -304,7 +356,7 @@ export function createSearchRepository(prisma: PrismaClient) {
         + (CASE WHEN price_paise BETWEEN ${Math.round(price * 0.75)} AND ${Math.round(price * 1.25)}
                 THEN 2 ELSE 0 END) AS score
         FROM listing_search
-        WHERE vehicle_id <> ${row.vehicle_id}::uuid
+        WHERE vehicle_id <> ${row.vehicle_id}::uuid AND is_sold = false
         ORDER BY score DESC, abs(price_paise - ${price}) ASC
         LIMIT ${limit}`;
     },
@@ -342,12 +394,23 @@ type FilterGroup =
   | 'rtoState'
   | 'price';
 
+/**
+ * `is_sold = false` unless a caller opts out.
+ *
+ * The default is the safe direction: every count, facet and price range in the
+ * product means *available*, and there are a dozen of them against one caller
+ * that wants sold rows. A default of "include" would need each of those dozen
+ * to remember a flag, and the failure mode of forgetting is a number that
+ * advertises cars nobody can buy.
+ */
 function buildWhere(
   query: VehicleQuery,
-  options: { dealerSlug?: string; ignore?: FilterGroup },
+  options: { dealerSlug?: string; ignore?: FilterGroup; includeSold?: boolean },
 ): Prisma.Sql {
   const clauses: Prisma.Sql[] = [];
   const skip = options.ignore;
+
+  if (!options.includeSold) clauses.push(Prisma.sql`is_sold = false`);
 
   if (options.dealerSlug) {
     clauses.push(Prisma.sql`dealer_slug = ${options.dealerSlug}`);
@@ -408,22 +471,30 @@ function buildWhere(
   return Prisma.sql`WHERE ${Prisma.join(clauses, ' AND ')}`;
 }
 
+/**
+ * Sold last, always — the chosen sort only orders within that split.
+ *
+ * It is the first key in every branch rather than a special case, because a
+ * sold car outranking an available one on *any* sort would put a car nobody
+ * can buy at the top of the page, and "cheapest first" is exactly the sort
+ * where that would happen most.
+ */
 function orderBy(query: VehicleQuery): Prisma.Sql {
   switch (query.sort) {
     case 'price_asc':
-      return Prisma.sql`ORDER BY price_paise ASC, approved_at DESC`;
+      return Prisma.sql`ORDER BY is_sold ASC, price_paise ASC, approved_at DESC`;
     case 'price_desc':
-      return Prisma.sql`ORDER BY price_paise DESC, approved_at DESC`;
+      return Prisma.sql`ORDER BY is_sold ASC, price_paise DESC, approved_at DESC`;
     case 'year_desc':
-      return Prisma.sql`ORDER BY year DESC, approved_at DESC`;
+      return Prisma.sql`ORDER BY is_sold ASC, year DESC, approved_at DESC`;
     case 'km_asc':
-      return Prisma.sql`ORDER BY km ASC, approved_at DESC`;
+      return Prisma.sql`ORDER BY is_sold ASC, km ASC, approved_at DESC`;
     case 'newest':
-      return Prisma.sql`ORDER BY approved_at DESC`;
+      return Prisma.sql`ORDER BY is_sold ASC, approved_at DESC`;
     case 'relevance':
       // "Recommended": photographed, cheap-ish and recent, in that order.
-      return Prisma.sql`ORDER BY (photo_count >= 6) DESC, approved_at DESC, price_paise ASC`;
+      return Prisma.sql`ORDER BY is_sold ASC, (photo_count >= 6) DESC, approved_at DESC, price_paise ASC`;
     default:
-      return Prisma.sql`ORDER BY approved_at DESC`;
+      return Prisma.sql`ORDER BY is_sold ASC, approved_at DESC`;
   }
 }

@@ -168,7 +168,7 @@ export function createSearchRouter(
         try {
           const params = validated<SlugParamType>(req, 'params');
           const query = validated<VehicleQueryType>(req, 'query');
-          const { data, total } = await service.dealerVehicles(params.slug, query);
+          const { data, total, available } = await service.dealerVehicles(params.slug, query);
           res.set('Cache-Control', 'public, max-age=300');
           res.json({
             data,
@@ -178,7 +178,9 @@ export function createSearchRouter(
               total,
               totalPages: Math.ceil(total / query.limit),
             },
-            resultLabel: carCountLabel(total, '').trim(),
+            // The dealer's own page counts what a buyer could buy from them;
+            // the sold cars below the fold are proof of trade, not stock.
+            resultLabel: carCountLabel(available, '').trim(),
           });
         } catch (error) {
           next(error);

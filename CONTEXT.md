@@ -71,10 +71,14 @@ reason})`, exported through `billing.facade.ts`, and nothing else may write a
    `listing.status = …` outside `listings/listing.state.ts` is a bug. `status` is
    in no dealer-writable schema either, so the two facts together are the
    defence.
-6. **Public visibility is one rule:** `listing.status === 'APPROVED' AND
-dealer.status === 'ACTIVE'`, evaluated once in the `listing_search` read
-   model. Every public count is derived from those same rows — no count is
-   stored.
+6. **Public visibility is two rules now, and the split is load-bearing.**
+   *Membership* of `listing_search`: `listing.status IN ('APPROVED','SOLD') AND
+dealer.status === 'ACTIVE'`. *Availability*: `is_sold = false`. Both are
+   evaluated once, in the read model. A sold car stays on the marketplace —
+   greyed, badged, unclickable, sorted last — because a dealer who moves stock
+   should be seen to; it is not stock, so **every count means available** and
+   `buildWhere` adds `is_sold = false` unless a caller opts out. The one caller
+   that opts out is the results page. Still no count is stored.
 7. **A dealer's phone number never appears in an ordinary public response.** Only
    `POST /v1/vehicles/:id/reveal-contact` returns one, and it is rate-limited
    twice over and logged as a lead.
@@ -239,8 +243,8 @@ would test the mock.
 | --------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tenant-isolation.test.ts`                    | 12    | Dealer A cannot reach B's vehicles, enquiries, media, ledger or presign — all 404, not 403                                                    |
 | `credits.test.ts`                             | 9     | hold → consume/release; resubmit reuses the hold; refusal at zero; no negative balance; purchase → one row + invoice; cache equals newest row |
-| `listing-lifecycle.test.ts`                   | 18    | the `transition` table as a unit, then double-approve/double-submit conflicts, forged `status`, takedown, mark-sold, catalogue-reference 404s |
-| `public-visibility.test.ts`                   | 6     | rule 6 both ways incl. suspend/reinstate; rule 7 by scanning whole responses for every phone in the DB                                        |
+| `listing-lifecycle.test.ts`                   | 22    | the `transition` table as a unit, then double-approve/double-submit conflicts, forged `status`, takedown, mark-sold, dealer withdrawal, catalogue-reference 404s |
+| `public-visibility.test.ts`                   | 6     | rule 6 both ways incl. suspend/reinstate and the sold split; rule 7 by scanning whole responses for every phone in the DB                     |
 | `errors.test.ts`                              | 19    | RFC 9457 shape, `.strict()` rejections, fractional paise, 401/403 per seat, documented errors                                                 |
 | `rate-limit.test.ts`                          | 4     | limits turned back **on**, in its own module registry                                                                                         |
 | `contracts.test.ts`                           | 24    | every response parsed through `packages/contracts`                                                                                            |
@@ -444,6 +448,59 @@ with `fileParallelism: false` gives each file a fresh process, so
 
 If you see it again, capture the response body and the `x-trace-id` before doing
 anything else — that is the missing evidence.
+
+### The vehicle catalogue is a committed dataset, not an API call
+
+`prisma/seed/catalog/` — 41 makes, 344 models, ~2,000 variants covering Indian
+passenger vehicles from 2010 onwards, including the marques that have left
+(Chevrolet 2017, Ford 2021, Datsun 2022) because a decade of their cars is still
+changing hands.
+
+**No usable external source exists**, and this was checked before writing it:
+
+- **Indian Automotive Data Hub** (RapidAPI, MIT) — the closest fit, and still
+  wrong: *currently on sale* cars only. A used-car catalogue is mostly
+  discontinued models, so the half it omits is the half needed.
+- **Vahan / data.gov.in** — a registration lookup, not a catalogue. It answers
+  "what is TN09BX1234", which needs a car that already exists; it cannot
+  enumerate the variants of a Swift.
+- **CarAPI, carmakemodeldb, Teoalida** — US/EU-shaped, paid, thin on Indian trim
+  names. `VXi` / `ZXi+` / `Asta (O)` / `W8(O)` is how Indian cars are advertised
+  and none of them carry those.
+- **Global open datasets** — broad on brands, absent on Indian trims.
+
+A runtime dependency would also break the property that makes the taxonomy worth
+having (§6.2): dealers pick from a closed list, so facets and SEO slugs are
+exact. A catalogue that changes shape when someone else's API does is not
+closed.
+
+Two consequences worth knowing:
+
+- **It is written per *powertrain*, not per variant.** `p(fuel, gearbox, cc,
+seats, [trims])` expands to one row per trim, so a model shipping 14 variants is
+  three readable lines. `assertCatalogueIntegrity()` runs **before the first
+  INSERT** — a duplicate slug would otherwise surface as a unique-constraint
+  failure a few hundred rows in, leaving a half-written catalogue and an error
+  naming the index rather than the offending variant.
+- **`/v1/catalog/bundle` no longer nests variants.** ~2,000 of them is ~400KB on
+  a response whose other job is to render a filter panel quickly. Each model
+  carries `variantCount`; `GET /v1/catalog/models/{id}/variants` returns the rows
+  for the one model a dealer picks.
+
+### Required fields have exactly one definition
+
+`VEHICLE_WIZARD_STEPS` in `packages/contracts` lists which fields each
+add-vehicle step requires. The API derives `completeness.steps[]` from it and
+`submit()` refuses when any step is incomplete; the web wizard renders the same
+array and gates `Continue` on the server's verdict. There is one list, so the
+browser cannot hold a more permissive copy — which is the only interesting
+property a required-field rule has.
+
+The schema carries the other half. Every field the wizard requires is
+`.optional()` in `UpdateVehicleInput`, never `.nullish()`: a step may decline to
+*send* one, but no request may `null` one out. Only `seats`, `airbags` and
+`description` are nullable, and that list is exactly the fields no step
+requires. Without this, a PATCH could un-complete a step a dealer had passed.
 
 ### One documented conflict between specs
 

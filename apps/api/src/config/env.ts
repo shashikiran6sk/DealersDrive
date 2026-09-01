@@ -63,6 +63,24 @@ const envSchema = z.object({
   DATABASE_URL: required('postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'),
 
   /**
+   * The wall-clock budget for one interactive transaction, and how long a
+   * transaction may wait for a connection before it starts.
+   *
+   * Prisma's defaults are 5s and 2s, which assume the database is a network
+   * hop away. Against a managed Postgres in another region a round-trip costs
+   * ~500ms, and a settlement — `settleCapturedPayment` is the longest at eight
+   * sequential statements — takes ~7s. Under the default it dies with P2028
+   * partway through and rolls back, which loses a credit purchase *silently*:
+   * the order stays PENDING, no ledger row is written, and the dealer's cached
+   * balance is the only thing that ever suggested the credits existed.
+   *
+   * Raising the budget is the fix for the environment, not a licence to add
+   * statements — every one of them is still a round-trip inside a row lock.
+   */
+  DB_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
+  DB_TRANSACTION_MAX_WAIT_MS: z.coerce.number().int().positive().default(10_000),
+
+  /**
    * Which `SessionResolver` the container builds.
    *
    *   cookie — the real thing: `dd_session` → `sessions` row → principal
