@@ -14,9 +14,8 @@ import { env } from '../../../../src/config/env.js';
  * Nothing here reaches a network. The end-to-end proof that this speaks real S3
  * is a live MinIO round trip, documented in the README.
  */
-const { createS3Storage, ensureBucket, createS3Client } = await import(
-  '../../../../src/platform/storage/s3.adapter.js'
-);
+const { createS3Storage, ensureBucket, createS3Client } =
+  await import('../../../../src/platform/storage/s3.adapter.js');
 
 interface Sent {
   name: string;
@@ -98,7 +97,11 @@ describe('presignPut', () => {
   it('defaults the expiry to five minutes and honours an explicit one', async () => {
     const storage = signing;
 
-    const standard = await storage.presignPut({ key: 'k', contentType: 'image/jpeg', contentLength: 1 });
+    const standard = await storage.presignPut({
+      key: 'k',
+      contentType: 'image/jpeg',
+      contentLength: 1,
+    });
     const short = await storage.presignPut({
       key: 'k',
       contentType: 'image/jpeg',

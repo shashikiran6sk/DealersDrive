@@ -19,37 +19,37 @@ rebuilds — a rebuild would be different bytes from the ones dev has been runni
 and then "we tested it on dev" means nothing.
 
 Everything else — immutable ECR tags, `GIT_SHA` in the health response, the
-smoke test that checks *which build is serving* — exists to make that claim
+smoke test that checks _which build is serving_ — exists to make that claim
 verifiable rather than aspirational.
 
 ---
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 31** — all of it (31.1 → 31.8) | 55 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 23** — §23.1 → §23.6 | 35 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-E2, E3, E4, E6** — image, container, orchestration, health checks, graceful shutdown | 20 |
-| `docs/DEPLOYMENT.md` | §E (CI/CD) and §J (deployment workflow) | 20 |
+| Source                        | Sections                                                                                       | ~min |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 31** — all of it (31.1 → 31.8)                                                          | 55   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 23** — §23.1 → §23.6                                                                    | 35   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 34-E2, E3, E4, E6** — image, container, orchestration, health checks, graceful shutdown | 20   |
+| `docs/DEPLOYMENT.md`          | §E (CI/CD) and §J (deployment workflow)                                                        | 20   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/api/Dockerfile` | Four stages: `base`, `deps`, `build`, `runner` — plus `migrator`. Read every comment. Note `USER node` |
-| 2 | `apps/api/Dockerfile` | The `migrator` stage specifically. **Dev dependencies kept**, because `prisma` and `tsx` are devDependencies |
-| 3 | `apps/web/Dockerfile` | The long comment about building with **nothing running**. That is a requirement, not a convenience |
-| 4 | `.github/workflows/ci.yml` | Three jobs. **No credentials anywhere** — a fork PR can run it in full |
-| 5 | `.github/workflows/security.yml` | Semgrep and gitleaks. Note the weekly cron and the reason CodeQL was replaced |
-| 6 | `.github/workflows/release.yml` | On push to `main`. Builds three images, pushes to ECR, deploys **dev only** |
-| 7 | `.github/workflows/_deploy.yml` | **The core file.** Reusable, identical for both environments, and it never builds an image |
-| 8 | `.github/workflows/promote.yml` | The manual trigger, the preflight, and the rollback switch |
-| 9 | `scripts/smoke.sh` | Nine checks against the public URLs. Read the header comment on why it is read-only |
-| 10 | `apps/api/src/modules/health/health.routes.ts` | `/health/live` vs `/health/ready`, and `version: env.GIT_SHA` |
-| 11 | `apps/api/src/index.ts` | The `SIGTERM` handler. Now read it properly — `forceExit.unref()` included |
+| #   | File                                           | What to look for                                                                                             |
+| --- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 1   | `apps/api/Dockerfile`                          | Four stages: `base`, `deps`, `build`, `runner` — plus `migrator`. Read every comment. Note `USER node`       |
+| 2   | `apps/api/Dockerfile`                          | The `migrator` stage specifically. **Dev dependencies kept**, because `prisma` and `tsx` are devDependencies |
+| 3   | `apps/web/Dockerfile`                          | The long comment about building with **nothing running**. That is a requirement, not a convenience           |
+| 4   | `.github/workflows/ci.yml`                     | Three jobs. **No credentials anywhere** — a fork PR can run it in full                                       |
+| 5   | `.github/workflows/security.yml`               | Semgrep and gitleaks. Note the weekly cron and the reason CodeQL was replaced                                |
+| 6   | `.github/workflows/release.yml`                | On push to `main`. Builds three images, pushes to ECR, deploys **dev only**                                  |
+| 7   | `.github/workflows/_deploy.yml`                | **The core file.** Reusable, identical for both environments, and it never builds an image                   |
+| 8   | `.github/workflows/promote.yml`                | The manual trigger, the preflight, and the rollback switch                                                   |
+| 9   | `scripts/smoke.sh`                             | Nine checks against the public URLs. Read the header comment on why it is read-only                          |
+| 10  | `apps/api/src/modules/health/health.routes.ts` | `/health/live` vs `/health/ready`, and `version: env.GIT_SHA`                                                |
+| 11  | `apps/api/src/index.ts`                        | The `SIGTERM` handler. Now read it properly — `forceExit.unref()` included                                   |
 
 ---
 
@@ -164,7 +164,7 @@ Write out, from memory, then check against Part 31:
 What are the five required checks?
 
 **Moment 2 — I merge.** Which workflow fires? What does it build? Where does it
-push? Which environment does it deploy? Which does it *not*?
+push? Which environment does it deploy? Which does it _not_?
 
 **Moment 3 — someone promotes.** What does preflight check before a human is
 asked to approve? Where is the approval gate actually configured? What is
@@ -190,12 +190,12 @@ preference.
 
 People conflate these. Separate them (§23.5):
 
-| Mechanism | Configured where | Catches |
-|---|---|---|
-| Container `HEALTHCHECK` | | |
-| ALB target group health check | | |
-| ECS deployment circuit breaker | | |
-| `minimumHealthyPercent=100` | | |
+| Mechanism                      | Configured where | Catches |
+| ------------------------------ | ---------------- | ------- |
+| Container `HEALTHCHECK`        |                  |         |
+| ALB target group health check  |                  |         |
+| ECS deployment circuit breaker |                  |         |
+| `minimumHealthyPercent=100`    |                  |         |
 
 Fill it in, then note the deliberate asymmetry: the API is checked on
 `/health/ready` (which touches the database); the **web app** is checked on
@@ -207,24 +207,24 @@ the front end out of rotation and leave nothing to serve an error page.
 ## 5. Prove you understood it — Week 4 checkpoint (part 1)
 
 > **Say this out loud, to another person, without notes:**
-> *"I merged a PR. Describe everything that happens until the change is live in
-> production — and what would happen if it were bad."*
+> _"I merged a PR. Describe everything that happens until the change is live in
+> production — and what would happen if it were bad."_
 
 Supporting questions:
 
-1. Why does production never rebuild the image? → *§31.1, §31.6*
-2. Why are ECR tags immutable, and why is nothing tagged `latest`? → *§31.4*
-3. What does `GIT_SHA` configure? (Trick question.) → *§23.3*
-4. Why must the web image build with nothing running? → *§23.3*
-5. Why does the migrator stage keep dev dependencies? → *§23.3*
+1. Why does production never rebuild the image? → _§31.1, §31.6_
+2. Why are ECR tags immutable, and why is nothing tagged `latest`? → _§31.4_
+3. What does `GIT_SHA` configure? (Trick question.) → _§23.3_
+4. Why must the web image build with nothing running? → _§23.3_
+5. Why does the migrator stage keep dev dependencies? → _§23.3_
 6. Why do migrations run **before** the new tasks take traffic, and what makes
-   that safe? → *§31.5, §32.5*
-7. Why API before web? → *§31.5*
-8. What does the smoke test check that a health check cannot? → *§31.5*
+   that safe? → _§31.5, §32.5_
+7. Why API before web? → _§31.5_
+8. What does the smoke test check that a health check cannot? → _§31.5_
 9. Where is the production approval gate configured, and what does it also
-   control? → *§31.6*
-10. Name the four reliability mechanisms and what each catches. → *§23.5*
-11. Why is every `${{ }}` bound to an env var first? → *§31.5*
+   control? → _§31.6_
+10. Name the four reliability mechanisms and what each catches. → _§23.5_
+11. Why is every `${{ }}` bound to an env var first? → _§31.5_
 
 ---
 

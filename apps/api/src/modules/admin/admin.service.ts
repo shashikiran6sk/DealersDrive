@@ -108,7 +108,12 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
 
       return {
         stats: [
-          { key: 'totalDealers', label: 'Total dealers', value: totalDealers, valueLabel: String(totalDealers) },
+          {
+            key: 'totalDealers',
+            label: 'Total dealers',
+            value: totalDealers,
+            valueLabel: String(totalDealers),
+          },
           {
             key: 'pendingVerification',
             label: 'Pending verification',
@@ -116,10 +121,25 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
             valueLabel: String(pendingDealers),
             href: '/admin/dealers?status=PENDING_APPROVAL',
           },
-          { key: 'activeListings', label: 'Active listings', value: activeListings, valueLabel: String(activeListings) },
-          { key: 'payments30d', label: 'Payments (30d)', value: gross, valueLabel: compactRupees(gross) },
+          {
+            key: 'activeListings',
+            label: 'Active listings',
+            value: activeListings,
+            valueLabel: String(activeListings),
+          },
+          {
+            key: 'payments30d',
+            label: 'Payments (30d)',
+            value: gross,
+            valueLabel: compactRupees(gross),
+          },
           { key: 'revenue30d', label: 'Revenue (30d)', value: net, valueLabel: compactRupees(net) },
-          { key: 'newEnquiries', label: 'New enquiries', value: newEnquiries, valueLabel: String(newEnquiries) },
+          {
+            key: 'newEnquiries',
+            label: 'New enquiries',
+            value: newEnquiries,
+            valueLabel: String(newEnquiries),
+          },
         ],
         moderationQueue: {
           pendingCount: pending,
@@ -128,7 +148,9 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
             ? `${pending} listing${pending === 1 ? '' : 's'} submitted by dealers ${
                 pending === 1 ? 'is' : 'are'
               } waiting for approval.${
-                oldest ? ` Oldest has been waiting ${timeAgo(oldest.submittedAt).replace(' ago', '')}.` : ''
+                oldest
+                  ? ` Oldest has been waiting ${timeAgo(oldest.submittedAt).replace(' ago', '')}.`
+                  : ''
               }`
             : 'No listings are waiting for review.',
           href: '/admin/listings',
@@ -136,7 +158,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         headerBadge: {
           count: pending,
           label: `${pending} awaiting review`,
-          tone: (pending > 0 ? 'warn' : 'neutral'),
+          tone: pending > 0 ? 'warn' : 'neutral',
         },
         operator: { email: admin.email, adminRole: admin.adminRole },
       };
@@ -226,23 +248,25 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
 
       // Every signed document URL issued is audit-logged with the admin's
       // identity — that is the whole access control on KYC media (§26.6).
-      const documents = await Promise.all(dealer.documents.map(async (doc) => {
-        const readable = doc.status === 'UPLOADED' || doc.status === 'VERIFIED';
-        return {
-          id: doc.id,
-          type: doc.type,
-          label: DOC_TYPE_LABELS[doc.type],
-          status: doc.status,
-          fileName: doc.fileName,
-          bytes: null,
-          uploadedAt: doc.createdAt.toISOString(),
-          viewUrl: readable
-            ? await storage.signedReadUrl(`kyc/${dealerId}/${doc.type}/${doc.id}`, 300)
-            : null,
-          viewUrlExpiresAt: readable ? new Date(Date.now() + 300_000).toISOString() : null,
-          rejectionReason: doc.rejectionReason,
-        };
-      }));
+      const documents = await Promise.all(
+        dealer.documents.map(async (doc) => {
+          const readable = doc.status === 'UPLOADED' || doc.status === 'VERIFIED';
+          return {
+            id: doc.id,
+            type: doc.type,
+            label: DOC_TYPE_LABELS[doc.type],
+            status: doc.status,
+            fileName: doc.fileName,
+            bytes: null,
+            uploadedAt: doc.createdAt.toISOString(),
+            viewUrl: readable
+              ? await storage.signedReadUrl(`kyc/${dealerId}/${doc.type}/${doc.id}`, 300)
+              : null,
+            viewUrlExpiresAt: readable ? new Date(Date.now() + 300_000).toISOString() : null,
+            rejectionReason: doc.rejectionReason,
+          };
+        }),
+      );
 
       if (documents.some((doc) => doc.viewUrl)) {
         await audit.recordDetached({
@@ -328,9 +352,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
             dealerId,
             delta: input.grantCredits,
             reason: 'ADMIN_GRANT',
-            label: input.note
-              ? `Admin grant — ${input.note}`
-              : 'Admin grant — onboarding bonus',
+            label: input.note ? `Admin grant — ${input.note}` : 'Admin grant — onboarding bonus',
             actorType: 'ADMIN',
             actorId: admin.userId,
           });
@@ -416,7 +438,9 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
             status,
             statusReason: reason,
             ...(status === 'SUSPENDED' ? { suspendedAt: new Date() } : {}),
-            ...(status === 'ACTIVE' ? { suspendedAt: null, approvedAt: dealer.approvedAt ?? new Date() } : {}),
+            ...(status === 'ACTIVE'
+              ? { suspendedAt: null, approvedAt: dealer.approvedAt ?? new Date() }
+              : {}),
           },
         });
 
@@ -620,7 +644,12 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
             submittedAt: listing.submittedAt.toISOString(),
             submittedLabel: timeAgo(listing.submittedAt),
             flags: flagsFor(
-              { photoCount: photos.length, description: vehicle.description, km: vehicle.kmDriven, year: vehicle.year },
+              {
+                photoCount: photos.length,
+                description: vehicle.description,
+                km: vehicle.kmDriven,
+                year: vehicle.year,
+              },
               minPhotos,
             ),
           };
@@ -695,9 +724,17 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         photoCount: photos.length,
         photoCountLabel: `${photos.length} submitted photo${photos.length === 1 ? '' : 's'}`,
         specs: [
-          { key: 'km', label: 'KM driven', value: vehicle.kmDriven === null ? '—' : formatKm(vehicle.kmDriven) },
+          {
+            key: 'km',
+            label: 'KM driven',
+            value: vehicle.kmDriven === null ? '—' : formatKm(vehicle.kmDriven),
+          },
           { key: 'fuel', label: 'Fuel', value: FUEL_LABELS[vehicle.fuel] },
-          { key: 'transmission', label: 'Transmission', value: TRANSMISSION_LABELS[vehicle.transmission] },
+          {
+            key: 'transmission',
+            label: 'Transmission',
+            value: TRANSMISSION_LABELS[vehicle.transmission],
+          },
           { key: 'owners', label: 'Ownership', value: ownerLabel(vehicle.ownerNumber ?? 1) },
           { key: 'bodyType', label: 'Body type', value: bodyTypeLabel(vehicle.bodyType) },
           { key: 'photos', label: 'Photos submitted', value: String(photos.length) },
@@ -712,7 +749,12 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         ],
         description: vehicle.description,
         flags: flagsFor(
-          { photoCount: photos.length, description: vehicle.description, km: vehicle.kmDriven, year: vehicle.year },
+          {
+            photoCount: photos.length,
+            description: vehicle.description,
+            km: vehicle.kmDriven,
+            year: vehicle.year,
+          },
           minPhotos,
         ),
         credit: {
@@ -1057,7 +1099,10 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
 
     // ─────────── D13–D15 payments, config, audit ──────────────────────────
 
-    async payments(admin: AdminPrincipal, query: AdminPaymentQuery): Promise<AdminPaymentsResponse> {
+    async payments(
+      admin: AdminPrincipal,
+      query: AdminPaymentQuery,
+    ): Promise<AdminPaymentsResponse> {
       assertPermission(admin, 'admin:payment:read');
 
       const from = query.from ? new Date(query.from) : new Date(Date.now() - 30 * 86_400_000);
@@ -1103,11 +1148,8 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
           method: payment.method,
           status: payment.status,
           statusLabel: PAYMENT_STATUS_LABELS[payment.status],
-          statusTone: (payment.status === 'CAPTURED'
-            ? 'ok'
-            : payment.status === 'FAILED'
-              ? 'err'
-              : 'neutral'),
+          statusTone:
+            payment.status === 'CAPTURED' ? 'ok' : payment.status === 'FAILED' ? 'err' : 'neutral',
           capturedAt: payment.capturedAt?.toISOString() ?? null,
           dateLabel: formatDate(payment.capturedAt ?? payment.createdAt),
         })),
@@ -1184,7 +1226,9 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
       const page = hasMore ? rows.slice(0, query.limit) : rows;
       const last = page[page.length - 1];
 
-      const actorIds = [...new Set(page.map((row) => row.actorId).filter((id): id is string => id !== null))];
+      const actorIds = [
+        ...new Set(page.map((row) => row.actorId).filter((id): id is string => id !== null)),
+      ];
       const actors = actorIds.length
         ? await prisma.user.findMany({ where: { id: { in: actorIds } } })
         : [];

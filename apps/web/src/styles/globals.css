@@ -182,7 +182,9 @@
     border: 1px solid var(--color-divider);
     border-radius: var(--radius-md);
     padding: 6.8px 12.24px;
-    transition: background-color 120ms ease-out, color 120ms ease-out;
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out;
   }
   .btn:disabled,
   .btn[aria-disabled='true'] {
@@ -278,12 +280,15 @@
   }
   select.input {
     appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, var(--color-ink) 50%),
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--color-ink) 50%),
       linear-gradient(135deg, var(--color-ink) 50%, transparent 50%);
     background-position:
       calc(100% - 15px) calc(50% + 1px),
       calc(100% - 10px) calc(50% + 1px);
-    background-size: 5px 5px, 5px 5px;
+    background-size:
+      5px 5px,
+      5px 5px;
     background-repeat: no-repeat;
     padding-right: 28px;
   }
@@ -482,7 +487,9 @@
     font-size: 13px;
     padding: 5px 10px;
     color: color-mix(in srgb, var(--color-ink) 70%, transparent);
-    transition: background-color 120ms ease-out, color 120ms ease-out;
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out;
   }
   .dd-nav-item:hover {
     background: color-mix(in srgb, var(--color-accent) 10%, transparent);
@@ -564,7 +571,9 @@
     line-height: 1;
     z-index: 3;
     padding: 0;
-    transition: background-color 120ms ease-out, color 120ms ease-out;
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out;
   }
   .dd-arrow:hover {
     background: var(--color-accent);

@@ -26,11 +26,7 @@ interface Call {
 
 let calls: Call[] = [];
 
-function respond(
-  status: number,
-  body: unknown = {},
-  setCookie: string[] = [],
-): typeof fetch {
+function respond(status: number, body: unknown = {}, setCookie: string[] = []): typeof fetch {
   return vi.fn((url: string, init: RequestInit) => {
     calls.push({ url, init });
     return Promise.resolve({
@@ -93,7 +89,9 @@ describe('admin sign-in', () => {
       'dd_session=issued-token; Path=/; HttpOnly',
     ]);
 
-    const destination = await redirectOf(adminLoginAction({}, form({ email: 'ops@dealers-drive.in', password: 'x' })));
+    const destination = await redirectOf(
+      adminLoginAction({}, form({ email: 'ops@dealers-drive.in', password: 'x' })),
+    );
 
     expect(destination).toBe('/admin');
     expect(cookieJar.get('dd_session')).toBe('issued-token');
@@ -118,7 +116,10 @@ describe('admin sign-in', () => {
       detail: 'That email and password do not match.',
     });
 
-    const state = await adminLoginAction({}, form({ email: 'ops@dealers-drive.in', password: 'x' }));
+    const state = await adminLoginAction(
+      {},
+      form({ email: 'ops@dealers-drive.in', password: 'x' }),
+    );
 
     expect(state.message).toBe('That email and password do not match.');
     expect(cookieJar.has('dd_session')).toBe(false);
@@ -127,7 +128,10 @@ describe('admin sign-in', () => {
   it('does not sign anyone in when the API issues no cookie', async () => {
     globalThis.fetch = respond(200, { admin: { id: '1' } }, []);
 
-    const state = await adminLoginAction({}, form({ email: 'ops@dealers-drive.in', password: 'x' }));
+    const state = await adminLoginAction(
+      {},
+      form({ email: 'ops@dealers-drive.in', password: 'x' }),
+    );
 
     expect(state.message).toMatch(/did not return a session/);
     expect(cookieJar.has('dd_session')).toBe(false);
@@ -136,7 +140,10 @@ describe('admin sign-in', () => {
   it('reports an unreachable API as an outage, not a wrong password', async () => {
     globalThis.fetch = vi.fn(() => Promise.reject(new Error('ECONNREFUSED')));
 
-    const state = await adminLoginAction({}, form({ email: 'ops@dealers-drive.in', password: 'x' }));
+    const state = await adminLoginAction(
+      {},
+      form({ email: 'ops@dealers-drive.in', password: 'x' }),
+    );
 
     expect(state.message).toMatch(/unavailable/);
   });
@@ -177,7 +184,9 @@ describe('onboarding', () => {
       code: 'PHONE_ALREADY_REGISTERED',
       title: 'Conflict',
       detail: 'That mobile number is already registered.',
-      errors: [{ field: 'body.phone', code: 'PHONE_ALREADY_REGISTERED', message: 'Already registered.' }],
+      errors: [
+        { field: 'body.phone', code: 'PHONE_ALREADY_REGISTERED', message: 'Already registered.' },
+      ],
     });
 
     const state = await onboardingAction({}, form(ONBOARDING));
@@ -200,7 +209,10 @@ describe('the business registrations', () => {
   it('patches the dealership and revalidates the wizard', async () => {
     globalThis.fetch = respond(200, {});
 
-    const state = await saveBusinessIdsAction({}, form({ gstin: '33aaccp1234h1zq', pan: 'aaccp1234h' }));
+    const state = await saveBusinessIdsAction(
+      {},
+      form({ gstin: '33aaccp1234h1zq', pan: 'aaccp1234h' }),
+    );
 
     expect(state.saved).toBe(true);
     expect(calls[0]?.init.method).toBe('PATCH');

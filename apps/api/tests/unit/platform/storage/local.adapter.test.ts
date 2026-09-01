@@ -337,7 +337,9 @@ describe('the object operations', () => {
   });
 
   it('refuses a traversing key on every operation', async () => {
-    await expect(storage.put('../escape.jpg', Buffer.from('x'), 'image/jpeg')).rejects.toThrow(/escapes/);
+    await expect(storage.put('../escape.jpg', Buffer.from('x'), 'image/jpeg')).rejects.toThrow(
+      /escapes/,
+    );
     await expect(storage.delete('../escape.jpg')).rejects.toThrow(/escapes/);
     // head and get catch their own errors, so a traversal reads as "absent".
     expect(await storage.head('../escape.jpg')).toBeNull();

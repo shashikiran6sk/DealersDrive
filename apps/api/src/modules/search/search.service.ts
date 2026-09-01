@@ -292,7 +292,9 @@ export function createSearchService({ repo, catalog, dealers, vehicles }: Search
         .map((entry, index) => ({
           id: entry.media.id,
           position: entry.position,
-          label: entry.media.fileName?.replace(/\.[a-z]+$/, '').replace(/-/g, ' ') ?? `Photo ${index + 1}`,
+          label:
+            entry.media.fileName?.replace(/\.[a-z]+$/, '').replace(/-/g, ' ') ??
+            `Photo ${index + 1}`,
           url: mediaUrl(entry.media.id, 1600),
           srcset: srcsetFor(entry.media.id),
           blurhash: entry.media.blurhash,
@@ -402,7 +404,10 @@ function isUuid(value: string): boolean {
  * URL minus that one value, built server-side so the chip and the filter panel
  * cannot disagree about what "remove" means.
  */
-function describeFilters(query: VehicleQuery, basePath: string): VehicleListResponse['appliedFilters'] {
+function describeFilters(
+  query: VehicleQuery,
+  basePath: string,
+): VehicleListResponse['appliedFilters'] {
   const chips: VehicleListResponse['appliedFilters'] = [];
 
   const params = new URLSearchParams();

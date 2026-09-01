@@ -20,23 +20,19 @@ export function createCatalogRouter(service: CatalogService): Router {
     })();
   });
 
-  router.get(
-    '/catalog/models/:id/variants',
-    validate({ params: IdParam }),
-    (req, res, next) => {
-      void (async () => {
-        try {
-          const params = validated<IdParamType>(req, 'params');
-          const result = await service.modelVariants(params.id);
-          if (!result) throw new NotFoundError('That model is not in the catalogue.');
-          res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=600');
-          res.json(result);
-        } catch (error) {
-          next(error);
-        }
-      })();
-    },
-  );
+  router.get('/catalog/models/:id/variants', validate({ params: IdParam }), (req, res, next) => {
+    void (async () => {
+      try {
+        const params = validated<IdParamType>(req, 'params');
+        const result = await service.modelVariants(params.id);
+        if (!result) throw new NotFoundError('That model is not in the catalogue.');
+        res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=600');
+        res.json(result);
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
 
   router.get('/cities', (_req, res, next) => {
     void (async () => {

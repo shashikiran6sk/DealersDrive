@@ -48,9 +48,7 @@ function refreshConsole(): void {
 }
 
 /** C7 — creates the DRAFT. Only the basics; everything else is a later PATCH. */
-export async function createVehicleAction(
-  input: unknown,
-): Promise<ActionResult<{ id: string }>> {
+export async function createVehicleAction(input: unknown): Promise<ActionResult<{ id: string }>> {
   const parsed = CreateVehicleInput.safeParse(input);
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
@@ -62,11 +60,7 @@ export async function createVehicleAction(
   }
 
   try {
-    const vehicle = await apiSend<DealerVehicleDto>(
-      'POST',
-      '/v1/dealer/vehicles',
-      parsed.data,
-    );
+    const vehicle = await apiSend<DealerVehicleDto>('POST', '/v1/dealer/vehicles', parsed.data);
     refreshConsole();
     return { ok: true, data: { id: vehicle.id } };
   } catch (error) {
@@ -200,10 +194,7 @@ export async function deleteVehicleAction(vehicleId: string): Promise<ActionResu
 }
 
 /** C14 — the **full** ordered array, always. Position 0 becomes PRIMARY. */
-export async function reorderMediaAction(
-  vehicleId: string,
-  input: unknown,
-): Promise<ActionResult> {
+export async function reorderMediaAction(vehicleId: string, input: unknown): Promise<ActionResult> {
   const parsed = ReorderMediaInput.safeParse(input);
   if (!parsed.success) return { ok: false, message: 'That photo order is not valid.' };
 

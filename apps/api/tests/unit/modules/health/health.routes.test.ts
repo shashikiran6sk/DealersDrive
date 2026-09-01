@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { createHealthRouter } from '../../../../src/modules/health/health.routes.js';
+import { createMemoryCache } from '../../../../src/platform/cache/memory.adapter.js';
+import { beginDraining, resetLifecycle } from '../../../../src/platform/telemetry/lifecycle.js';
 import { permissionsOn, routesOf, signaturesOf } from '../../../router-probe.js';
 
 /**
@@ -10,8 +12,57 @@ import { permissionsOn, routesOf, signaturesOf } from '../../../router-probe.js'
  * deployment down.
  */
 
-const container = { prisma: { $queryRaw: () => Promise.resolve([]) } } as never;
+const container = {
+  prisma: { $queryRaw: () => Promise.resolve([]) },
+  cache: createMemoryCache(),
+} as never;
 const router = createHealthRouter(container);
+
+afterEach(() => {
+  resetLifecycle();
+});
+
+interface Answer {
+  status: number;
+  body: Record<string, unknown>;
+}
+
+/** Drives one probe and captures what it answered. */
+async function probe(
+  which: '/live' | '/ready',
+  overrides: { prisma?: unknown; cache?: unknown } = {},
+): Promise<Answer> {
+  const router = createHealthRouter({
+    prisma: overrides.prisma ?? { $queryRaw: () => Promise.resolve([]) },
+    cache: overrides.cache ?? createMemoryCache(),
+  } as never);
+
+  const route = routesOf(router).find((entry) => entry.path === which);
+
+  return new Promise<Answer>((resolve, reject) => {
+    let status = 200;
+    const res = {
+      status(code: number) {
+        status = code;
+        return res;
+      },
+      json(body: Record<string, unknown>) {
+        resolve({ status, body });
+        return res;
+      },
+    };
+    route?.handlers[0]?.(
+      {} as never,
+      res as never,
+      ((error?: unknown) =>
+        reject(
+          error instanceof Error
+            ? error
+            : new Error(`a health probe called next(): ${String(error)}`),
+        )) as never,
+    );
+  });
+}
 
 describe('the surface', () => {
   it('declares liveness and readiness, and nothing else', () => {
@@ -41,28 +92,19 @@ describe('the surface', () => {
 describe('the two probes are different questions', () => {
   /**
    * Liveness answers "is this process running" — it must not touch the
-   * database, or a database blip would make Kubernetes restart healthy
+   * database, or a database blip would make the orchestrator restart healthy
    * processes. Readiness answers "can this process serve traffic", which does
    * depend on the database.
    */
   it('answers liveness without touching the database', async () => {
     const queried = { count: 0 };
-    const probeRouter = createHealthRouter({
+    await probe('/live', {
       prisma: {
         $queryRaw: () => {
           queried.count += 1;
           return Promise.resolve([]);
         },
       },
-    } as never);
-
-    const live = routesOf(probeRouter).find((route) => route.path === '/live');
-    await new Promise<void>((done) => {
-      live?.handlers[0]?.(
-        {} as never,
-        { json: () => done(), status: () => ({ json: () => done() }) } as never,
-        (() => done()) as never,
-      );
     });
 
     expect(queried.count).toBe(0);
@@ -70,28 +112,118 @@ describe('the two probes are different questions', () => {
 
   it('checks the database on readiness', async () => {
     const queried = { count: 0 };
-    const probeRouter = createHealthRouter({
+    const answer = await probe('/ready', {
       prisma: {
         $queryRaw: () => {
           queried.count += 1;
           return Promise.resolve([]);
         },
       },
-    } as never);
-
-    const ready = routesOf(probeRouter).find((route) => route.path === '/ready');
-    await new Promise<void>((done) => {
-      const finish = () => {
-        done();
-        return undefined as never;
-      };
-      ready?.handlers[0]?.(
-        {} as never,
-        { json: finish, status: () => ({ json: finish }) } as never,
-        (() => done()) as never,
-      );
     });
 
     expect(queried.count).toBe(1);
+    expect(answer.status).toBe(200);
+    expect(answer.body.status).toBe('ok');
+  });
+});
+
+describe('readiness reports what a deploy needs to know', () => {
+  /**
+   * A green rollout means the containers answered. It does not mean the *new*
+   * containers answered — both old and new return 200. The SHA is the only
+   * thing that distinguishes them, which is why promote.yml reads it (§20.3).
+   */
+  it('names the deployed commit and the environment', async () => {
+    const answer = await probe('/ready');
+
+    expect(answer.body).toHaveProperty('version');
+    expect(answer.body).toHaveProperty('appEnv');
+    expect(answer.body).toHaveProperty('contracts');
+  });
+
+  it('names which adapters are live', async () => {
+    const answer = await probe('/ready');
+
+    expect(answer.body.drivers).toMatchObject({ cache: 'memory' });
+  });
+
+  it('is 503 and names the failing dependency when the database is down', async () => {
+    const answer = await probe('/ready', {
+      prisma: { $queryRaw: () => Promise.reject(new Error('connection refused')) },
+    });
+
+    expect(answer.status).toBe(503);
+    expect(answer.body.status).toBe('degraded');
+    expect(answer.body.checks).toMatchObject({ database: 'down', cache: 'ok' });
+  });
+
+  /**
+   * The rate limiter reads through the cache on every public request, so a
+   * cache that is down is a real degradation — even though the limiter itself
+   * fails open rather than refusing traffic.
+   */
+  it('is 503 when the cache is down', async () => {
+    const answer = await probe('/ready', {
+      cache: { ...createMemoryCache(), ping: () => Promise.reject(new Error('down')) },
+    });
+
+    expect(answer.status).toBe(503);
+    expect(answer.body.checks).toMatchObject({ database: 'ok', cache: 'down' });
+  });
+});
+
+describe('draining', () => {
+  /**
+   * The whole point of the drain flag. On SIGTERM readiness must fail
+   * immediately, so the load balancer stops routing here *before* the listener
+   * closes — otherwise every request already in flight, and every one routed in
+   * the seconds before the next health check, is met with a connection reset
+   * (§20.10).
+   */
+  it('fails readiness the instant a shutdown begins', async () => {
+    beginDraining();
+
+    const answer = await probe('/ready');
+
+    expect(answer.status).toBe(503);
+    expect(answer.body.status).toBe('draining');
+  });
+
+  it('reports how long it has been draining', async () => {
+    beginDraining();
+
+    const answer = await probe('/ready');
+
+    expect(typeof answer.body.drainingForMs).toBe('number');
+  });
+
+  /**
+   * Liveness must keep passing. A liveness probe that fails during a graceful
+   * drain gets the container killed mid-drain, which is the opposite of what
+   * the drain is for.
+   */
+  it('keeps liveness green throughout', async () => {
+    beginDraining();
+
+    const answer = await probe('/live');
+
+    expect(answer.status).toBe(200);
+    expect(answer.body.status).toBe('ok');
+  });
+
+  it('does not probe dependencies once draining — that is not the question', async () => {
+    const queried = { count: 0 };
+    beginDraining();
+
+    await probe('/ready', {
+      prisma: {
+        $queryRaw: () => {
+          queried.count += 1;
+          return Promise.resolve([]);
+        },
+      },
+    });
+
+    expect(queried.count).toBe(0);
   });
 });

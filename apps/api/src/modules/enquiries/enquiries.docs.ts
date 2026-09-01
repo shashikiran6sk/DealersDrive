@@ -4,7 +4,7 @@ import type { ModuleDocs } from '../../docs/spec.js';
 export const enquiriesDocs: ModuleDocs = {
   tag: 'Enquiries',
   description:
-    'Buyer enquiries and phone reveals, plus the dealer\'s inbox. The two public endpoints ' +
+    "Buyer enquiries and phone reveals, plus the dealer's inbox. The two public endpoints " +
     'need no account — asking a dealer about a car must not require a signup — so they carry ' +
     'the hardest rate limits in the API and a honeypot field.',
   operations: [
@@ -30,7 +30,7 @@ export const enquiriesDocs: ModuleDocs = {
       audience: 'public',
       requestBody: {
         schema: 'CreateEnquiryInput',
-        description: 'The buyer\'s details and what they are asking about.',
+        description: "The buyer's details and what they are asking about.",
         example: {
           vehicleId: '55714b20-2469-4280-87fb-1ac6ea79a9c5',
           name: 'Ravi Kumar',
@@ -60,7 +60,8 @@ export const enquiriesDocs: ModuleDocs = {
               title: 'Ford EcoSport Titanium',
               priceLabel: '₹4.95 Lakh',
               city: 'Vellore',
-              thumbnailUrl: 'http://localhost:4000/media/vehicles/by-media/bc7de20d-30a4-41ed-a364-8f34771a20a8/320.webp',
+              thumbnailUrl:
+                'http://localhost:4000/media/vehicles/by-media/bc7de20d-30a4-41ed-a364-8f34771a20a8/320.webp',
             },
             isDuplicate: false,
           },
@@ -80,9 +81,9 @@ export const enquiriesDocs: ModuleDocs = {
       path: '/v1/vehicles/:id/reveal-contact',
       operationId: 'revealDealerContact',
       tag: 'Enquiries',
-      summary: 'Reveal the dealer\'s phone number',
+      summary: "Reveal the dealer's phone number",
       description:
-        '**The only endpoint in the API that returns a dealer\'s phone number.** No ordinary ' +
+        "**The only endpoint in the API that returns a dealer's phone number.** No ordinary " +
         'public response carries one (rule 7).\n\n' +
         'A reveal is a lead: it writes a `PhoneReveal` row for abuse analysis *and* an ' +
         '`Enquiry` with `source: CALL_BUTTON`, so the dealer sees the tap in their inbox. ' +
@@ -101,7 +102,8 @@ export const enquiriesDocs: ModuleDocs = {
         required: false,
         example: { name: 'Ravi Kumar' },
       },
-      rateLimit: '10 reveals per hour and 20 per day per IP (`reveal.hourlyCapPerIp`, `reveal.dailyCapPerIp`)',
+      rateLimit:
+        '10 reveals per hour and 20 per day per IP (`reveal.hourlyCapPerIp`, `reveal.dailyCapPerIp`)',
       responses: [
         {
           status: 200,
@@ -125,17 +127,15 @@ export const enquiriesDocs: ModuleDocs = {
       path: '/v1/dealer/enquiries',
       operationId: 'listDealerEnquiries',
       tag: 'Enquiries',
-      summary: 'The dealer\'s inbox',
+      summary: "The dealer's inbox",
       description:
         'Leads for the acting dealership, newest first, cursor-paginated so the list stays ' +
-        'stable while new leads arrive. Scoped to the session\'s dealer — there is no ' +
+        "stable while new leads arrive. Scoped to the session's dealer — there is no " +
         'parameter that could widen it.',
       audience: 'dealer',
       permission: 'enquiry:read',
       query: 'EnquiryQuery',
-      responses: [
-        { status: 200, description: 'A page of leads.', schema: 'EnquiryListResponse' },
-      ],
+      responses: [{ status: 200, description: 'A page of leads.', schema: 'EnquiryListResponse' }],
       errors: [400, 401, 403],
     },
     {
@@ -159,11 +159,11 @@ export const enquiriesDocs: ModuleDocs = {
       path: '/v1/dealer/enquiries/:id',
       operationId: 'updateDealerEnquiry',
       tag: 'Enquiries',
-      summary: 'Update a lead\'s status',
+      summary: "Update a lead's status",
       description:
         'Move a lead through the inbox — contacted, closed with a reason, or marked spam — ' +
         'and attach a private note.\n\n' +
-        'Another dealer\'s enquiry id answers **404**, not 403.',
+        "Another dealer's enquiry id answers **404**, not 403.",
       audience: 'dealer',
       permission: 'enquiry:update',
       params: 'IdParam',

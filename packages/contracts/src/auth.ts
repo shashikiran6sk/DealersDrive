@@ -54,7 +54,10 @@ export const OnboardingInput = z
     legalName: z.string().trim().min(2, 'Enter the registered legal name.').max(160),
     addressLine: z.string().trim().min(4, 'Enter the showroom address.').max(200),
     citySlug: z.string().regex(/^[a-z0-9-]+$/, 'Choose a city from the list.'),
-    pincode: z.string().trim().regex(/^\d{6}$/, 'Pincode must be 6 digits.'),
+    pincode: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, 'Pincode must be 6 digits.'),
     landline: z.string().trim().max(24).optional(),
   })
   .strict();

@@ -111,11 +111,19 @@ export const LUXURY: CatalogMake[] = [
     ]),
     m('x1', 'X1', 'SUV', 2010, null, [
       p('PETROL', 'AUTOMATIC', 1499, 5, ['sDrive18i M Sport', 'sDrive20i xLine']),
-      p('DIESEL', 'AUTOMATIC', 1995, 5, ['sDrive20d xLine', 'sDrive18d Expedition', 'sDrive20d M Sport']),
+      p('DIESEL', 'AUTOMATIC', 1995, 5, [
+        'sDrive20d xLine',
+        'sDrive18d Expedition',
+        'sDrive20d M Sport',
+      ]),
     ]),
     m('x3', 'X3', 'SUV', 2011, null, [
       p('PETROL', 'AUTOMATIC', 1998, 5, ['xDrive30i M Sport', 'xDrive20i Luxury Line']),
-      p('DIESEL', 'AUTOMATIC', 1995, 5, ['xDrive20d Luxury Line', 'xDrive20d M Sport', 'xDrive30d M Sport']),
+      p('DIESEL', 'AUTOMATIC', 1995, 5, [
+        'xDrive20d Luxury Line',
+        'xDrive20d M Sport',
+        'xDrive30d M Sport',
+      ]),
     ]),
     m('x4', 'X4', 'SUV', 2019, null, [
       p('PETROL', 'AUTOMATIC', 1998, 5, ['xDrive30i M Sport X']),
@@ -150,8 +158,16 @@ export const LUXURY: CatalogMake[] = [
       p('DIESEL', 'AUTOMATIC', 1968, 5, ['35 TDI Premium Plus', '35 TDI Technology']),
     ]),
     m('a4', 'A4', 'LUXURY', 2008, null, [
-      p('PETROL', 'AUTOMATIC', 1984, 5, ['40 TFSI Premium Plus', '40 TFSI Technology', '30 TFSI Premium']),
-      p('DIESEL', 'AUTOMATIC', 1968, 5, ['35 TDI Premium Plus', '35 TDI Technology', '30 TDI Premium']),
+      p('PETROL', 'AUTOMATIC', 1984, 5, [
+        '40 TFSI Premium Plus',
+        '40 TFSI Technology',
+        '30 TFSI Premium',
+      ]),
+      p('DIESEL', 'AUTOMATIC', 1968, 5, [
+        '35 TDI Premium Plus',
+        '35 TDI Technology',
+        '30 TDI Premium',
+      ]),
     ]),
     m('a6', 'A6', 'LUXURY', 2005, null, [
       p('PETROL', 'AUTOMATIC', 1984, 5, ['45 TFSI Premium Plus', '45 TFSI Technology']),
@@ -162,7 +178,11 @@ export const LUXURY: CatalogMake[] = [
       p('DIESEL', 'AUTOMATIC', 2967, 5, ['50 TDI quattro']),
     ]),
     m('q2', 'Q2', 'SUV', 2020, 2023, [
-      p('PETROL', 'AUTOMATIC', 1984, 5, ['35 TFSI Premium', '35 TFSI Premium Plus', '35 TFSI Technology']),
+      p('PETROL', 'AUTOMATIC', 1984, 5, [
+        '35 TFSI Premium',
+        '35 TFSI Premium Plus',
+        '35 TFSI Technology',
+      ]),
     ]),
     m('q3', 'Q3', 'SUV', 2012, null, [
       p('PETROL', 'AUTOMATIC', 1984, 5, ['40 TFSI quattro Premium Plus', '40 TFSI Technology']),
@@ -185,9 +205,7 @@ export const LUXURY: CatalogMake[] = [
     m('rs-series', 'RS Series', 'LUXURY', 2015, null, [
       p('PETROL', 'AUTOMATIC', 2894, 5, ['RS5 Sportback', 'RS Q8', 'RS7 Sportback']),
     ]),
-    m('tt', 'TT', 'LUXURY', 2007, 2020, [
-      p('PETROL', 'AUTOMATIC', 1984, 4, ['45 TFSI']),
-    ]),
+    m('tt', 'TT', 'LUXURY', 2007, 2020, [p('PETROL', 'AUTOMATIC', 1984, 4, ['45 TFSI'])]),
   ]),
 
   make('volvo', 'Volvo', 36, [
@@ -292,9 +310,7 @@ export const LUXURY: CatalogMake[] = [
       p('DIESEL', 'AUTOMATIC', 3346, 7, ['LX500d Ultra Luxury']),
       p('PETROL', 'AUTOMATIC', 3445, 7, ['LX570']),
     ]),
-    m('ls', 'LS', 'LUXURY', 2018, null, [
-      p('HYBRID', 'AUTOMATIC', 3456, 5, ['500h Ultra Luxury']),
-    ]),
+    m('ls', 'LS', 'LUXURY', 2018, null, [p('HYBRID', 'AUTOMATIC', 3456, 5, ['500h Ultra Luxury'])]),
   ]),
 
   make('mini', 'MINI', 24, [
@@ -378,9 +394,7 @@ export const LUXURY: CatalogMake[] = [
     m('roma', 'Roma', 'LUXURY', 2021, null, [
       p('PETROL', 'AUTOMATIC', 3855, 4, ['Standard', 'Spider']),
     ]),
-    m('f8', 'F8', 'LUXURY', 2020, null, [
-      p('PETROL', 'AUTOMATIC', 3902, 2, ['Tributo', 'Spider']),
-    ]),
+    m('f8', 'F8', 'LUXURY', 2020, null, [p('PETROL', 'AUTOMATIC', 3902, 2, ['Tributo', 'Spider'])]),
     m('488', '488', 'LUXURY', 2015, 2020, [
       p('PETROL', 'AUTOMATIC', 3902, 2, ['GTB', 'Spider', 'Pista']),
     ]),
@@ -402,11 +416,7 @@ export const LUXURY: CatalogMake[] = [
     m('vantage', 'Vantage', 'LUXURY', 2012, null, [
       p('PETROL', 'AUTOMATIC', 3982, 2, ['Coupe', 'Roadster']),
     ]),
-    m('db11', 'DB11', 'LUXURY', 2017, null, [
-      p('PETROL', 'AUTOMATIC', 3982, 4, ['V8', 'V12']),
-    ]),
-    m('dbx', 'DBX', 'SUV', 2020, null, [
-      p('PETROL', 'AUTOMATIC', 3982, 5, ['Standard', '707']),
-    ]),
+    m('db11', 'DB11', 'LUXURY', 2017, null, [p('PETROL', 'AUTOMATIC', 3982, 4, ['V8', 'V12'])]),
+    m('dbx', 'DBX', 'SUV', 2020, null, [p('PETROL', 'AUTOMATIC', 3982, 5, ['Standard', '707'])]),
   ]),
 ];

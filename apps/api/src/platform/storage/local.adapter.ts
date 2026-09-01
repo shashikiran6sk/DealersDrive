@@ -27,7 +27,12 @@ export function createLocalStorage(): StoragePort {
   return {
     // Not `async`: signing against local disk is arithmetic. The port is
     // promise-returning because signing against S3 is not.
-    presignPut({ key, contentType, contentLength, expiresInSeconds = 300 }): Promise<PresignedUpload> {
+    presignPut({
+      key,
+      contentType,
+      contentLength,
+      expiresInSeconds = 300,
+    }): Promise<PresignedUpload> {
       const expiresAt = Date.now() + expiresInSeconds * 1000;
       const signature = sign({ key, contentType, contentLength, expiresAt });
       const params = new URLSearchParams({

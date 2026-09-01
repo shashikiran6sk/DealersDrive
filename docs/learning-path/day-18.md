@@ -27,29 +27,29 @@ behaviours in this system are most clearly explained by the test that pins them.
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 22** — all of it (22.1 → 22.9) | 45 |
-| `docs/CLAUDE.md` | §26 (testing) and §27 (definition of done) | 10 |
-| `docs/ENGINEER-ONBOARDING.md` | **§31.3** — the `verify` job, and why CI runs a real Postgres | 10 |
+| Source                        | Sections                                                      | ~min |
+| ----------------------------- | ------------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 22** — all of it (22.1 → 22.9)                         | 45   |
+| `docs/CLAUDE.md`              | §26 (testing) and §27 (definition of done)                    | 10   |
+| `docs/ENGINEER-ONBOARDING.md` | **§31.3** — the `verify` job, and why CI runs a real Postgres | 10   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/api/vitest.config.ts` | Two projects: `unit` and `integration`. Note `maxWorkers: 1` and read the comment |
-| 2 | `apps/api/tests/global-setup.ts` | **The suite creates and migrates its own `dealersdrive_test` database.** Not the workflow's job — this file's |
-| 3 | `apps/api/tests/harness.ts` | How a test gets an app instance with fakes injected |
-| 4 | `apps/api/tests/auth-harness.ts` | The **fake `OAuthProvider`**. No test ever talks to Google — this is what `oauth.port.ts` bought |
-| 5 | `apps/api/tests/fixtures.ts` | Building a dealer, a vehicle, a listing |
-| 6 | `apps/api/tests/tenant-isolation.test.ts` | Day 10's file. Now read it as a *pattern to copy* |
-| 7 | `apps/api/tests/credits.test.ts` | The concurrency assertions. Note they need serial execution |
-| 8 | `apps/api/tests/public-visibility.test.ts` | The truth table, executable |
-| 9 | `apps/api/tests/listing-lifecycle.test.ts` | Every **illegal** transition refused — the half people forget |
-| 10 | `apps/api/tests/contracts.test.ts` | Responses must satisfy the published Zod schemas |
-| 11 | `apps/web/vitest.config.ts` and `apps/web/tests/` | The web side: jsdom, Testing Library, stubs |
+| #   | File                                              | What to look for                                                                                              |
+| --- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/api/vitest.config.ts`                       | Two projects: `unit` and `integration`. Note `maxWorkers: 1` and read the comment                             |
+| 2   | `apps/api/tests/global-setup.ts`                  | **The suite creates and migrates its own `dealersdrive_test` database.** Not the workflow's job — this file's |
+| 3   | `apps/api/tests/harness.ts`                       | How a test gets an app instance with fakes injected                                                           |
+| 4   | `apps/api/tests/auth-harness.ts`                  | The **fake `OAuthProvider`**. No test ever talks to Google — this is what `oauth.port.ts` bought              |
+| 5   | `apps/api/tests/fixtures.ts`                      | Building a dealer, a vehicle, a listing                                                                       |
+| 6   | `apps/api/tests/tenant-isolation.test.ts`         | Day 10's file. Now read it as a _pattern to copy_                                                             |
+| 7   | `apps/api/tests/credits.test.ts`                  | The concurrency assertions. Note they need serial execution                                                   |
+| 8   | `apps/api/tests/public-visibility.test.ts`        | The truth table, executable                                                                                   |
+| 9   | `apps/api/tests/listing-lifecycle.test.ts`        | Every **illegal** transition refused — the half people forget                                                 |
+| 10  | `apps/api/tests/contracts.test.ts`                | Responses must satisfy the published Zod schemas                                                              |
+| 11  | `apps/web/vitest.config.ts` and `apps/web/tests/` | The web side: jsdom, Testing Library, stubs                                                                   |
 
 ---
 
@@ -138,12 +138,12 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 ### 4.7 The four commands, and what each catches
 
-| Command | Catches |
-|---|---|
-| `pnpm lint` | style, and the **module-boundary rules** (Day 2 §8) |
-| `pnpm typecheck` | contract drift across both apps |
-| `pnpm test` | behaviour, invariants, tenant isolation, contracts, OpenAPI coverage |
-| `pnpm build` | that both apps actually compile and the web app builds with nothing running |
+| Command          | Catches                                                                     |
+| ---------------- | --------------------------------------------------------------------------- |
+| `pnpm lint`      | style, and the **module-boundary rules** (Day 2 §8)                         |
+| `pnpm typecheck` | contract drift across both apps                                             |
+| `pnpm test`      | behaviour, invariants, tenant isolation, contracts, OpenAPI coverage        |
+| `pnpm build`     | that both apps actually compile and the web app builds with nothing running |
 
 None is redundant. Read §22.7 and note what each one catches that the others
 cannot.
@@ -152,16 +152,16 @@ cannot.
 
 ## 5. Prove you understood it
 
-1. Why does the integration suite use a real database rather than a mock? → *§22.2*
-2. Name four invariants that only exist in the database. → *§22.2, Day 11*
-3. Who creates `dealersdrive_test`, and when? → *`global-setup.ts`*
-4. Why `maxWorkers: 1`? What breaks with parallel workers? → *§22.4*
-5. How does a test sign in without contacting Google? → *`auth-harness.ts`, `ContainerOverrides`*
+1. Why does the integration suite use a real database rather than a mock? → _§22.2_
+2. Name four invariants that only exist in the database. → _§22.2, Day 11_
+3. Who creates `dealersdrive_test`, and when? → _`global-setup.ts`_
+4. Why `maxWorkers: 1`? What breaks with parallel workers? → _§22.4_
+5. How does a test sign in without contacting Google? → _`auth-harness.ts`, `ContainerOverrides`_
 6. What does `tenant-isolation.test.ts` prove, and why must it grow with every
-   new dealer-scoped endpoint? → *§22.6*
-7. Why test **illegal** transitions and not only legal ones? → *`listing-lifecycle.test.ts`*
-8. What does `contracts.test.ts` catch that `typecheck` cannot? → *§22.6*
-9. What does each of the four commands catch that the others do not? → *§22.7*
+   new dealer-scoped endpoint? → _§22.6_
+7. Why test **illegal** transitions and not only legal ones? → _`listing-lifecycle.test.ts`_
+8. What does `contracts.test.ts` catch that `typecheck` cannot? → _§22.6_
+9. What does each of the four commands catch that the others do not? → _§22.7_
 
 ---
 

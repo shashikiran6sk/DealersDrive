@@ -196,9 +196,7 @@ export const dealersDocs: ModuleDocs = {
         'recent leads, listings needing attention and any account-level banner. ' +
         '`Cache-Control: no-store` — a stale credit balance is worse than a slow one.',
       audience: 'dealer',
-      responses: [
-        { status: 200, description: 'Dashboard payload.', schema: 'DashboardResponse' },
-      ],
+      responses: [{ status: 200, description: 'Dashboard payload.', schema: 'DashboardResponse' }],
       errors: [401, 404],
     },
   ],

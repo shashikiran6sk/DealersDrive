@@ -175,7 +175,9 @@ function setup(options: Fakes = {}) {
     stringList: () => Promise.resolve([]),
     all: () => Promise.resolve([]),
     set: () => Promise.reject(new Error('not used')),
-    invalidate: () => undefined,
+    flag: () => Promise.resolve(false),
+    flags: () => Promise.resolve({}),
+    invalidate: () => Promise.resolve(),
   } as unknown as PlatformConfigService;
 
   return {

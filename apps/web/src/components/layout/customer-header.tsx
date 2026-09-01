@@ -51,7 +51,10 @@ export function CustomerHeader({ cities }: { cities: CitiesResponse }) {
           <Suspense fallback={<CityChipFallback />}>
             <CitySelector cities={cities} />
           </Suspense>
-          <Link href="/dealer" className="btn btn-secondary hidden border-transparent sm:inline-flex">
+          <Link
+            href="/dealer"
+            className="btn btn-secondary hidden border-transparent sm:inline-flex"
+          >
             <span className="hidden lg:inline">Dealer login</span>
             <span className="lg:hidden">Login</span>
           </Link>

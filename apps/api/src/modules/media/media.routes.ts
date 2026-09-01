@@ -157,7 +157,8 @@ export function createStorageRouter(storage: StoragePort, service: MediaService)
             },
             query.signature,
           );
-          if (!valid) throw new DomainError('UPLOAD_SIGNATURE_INVALID', 'That upload link has expired.');
+          if (!valid)
+            throw new DomainError('UPLOAD_SIGNATURE_INVALID', 'That upload link has expired.');
 
           if (body.length !== query.contentLength) {
             throw new DomainError(

@@ -100,13 +100,7 @@ export type CreditReason = z.infer<typeof CreditReason>;
 export const OrderStatus = z.enum(['PENDING', 'PAID', 'FAILED', 'CANCELLED', 'EXPIRED']);
 export type OrderStatus = z.infer<typeof OrderStatus>;
 
-export const PaymentStatus = z.enum([
-  'CREATED',
-  'AUTHORIZED',
-  'CAPTURED',
-  'FAILED',
-  'REFUNDED',
-]);
+export const PaymentStatus = z.enum(['CREATED', 'AUTHORIZED', 'CAPTURED', 'FAILED', 'REFUNDED']);
 export type PaymentStatus = z.infer<typeof PaymentStatus>;
 
 export const InvoiceStatus = z.enum(['CAPTURED', 'FAILED', 'REFUNDED']);

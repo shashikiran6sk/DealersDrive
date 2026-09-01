@@ -85,7 +85,10 @@ export function createVehiclesRepository(prisma: PrismaClient) {
       cityId?: string | undefined;
     }): Promise<string | null> {
       if (refs.makeId !== undefined) {
-        const make = await prisma.make.findUnique({ where: { id: refs.makeId }, select: { id: true } });
+        const make = await prisma.make.findUnique({
+          where: { id: refs.makeId },
+          select: { id: true },
+        });
         if (!make) return 'makeId';
       }
 
@@ -93,7 +96,10 @@ export function createVehiclesRepository(prisma: PrismaClient) {
         const model = await prisma.model.findFirst({
           // The make constraint is the coherence check: a real model id filed
           // under the wrong make fails here rather than corrupting the facets.
-          where: { id: refs.modelId, ...(refs.makeId === undefined ? {} : { makeId: refs.makeId }) },
+          where: {
+            id: refs.modelId,
+            ...(refs.makeId === undefined ? {} : { makeId: refs.makeId }),
+          },
           select: { id: true },
         });
         if (!model) return 'modelId';

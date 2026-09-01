@@ -88,7 +88,11 @@ export function EnquiryInbox({
         ))}
       </div>
 
-      {error ? <Banner tone="err" className="mt-3">{error}</Banner> : null}
+      {error ? (
+        <Banner tone="err" className="mt-3">
+          {error}
+        </Banner>
+      ) : null}
 
       <div className="mt-[14px] flex flex-col gap-[10px]">
         {list.isPending ? (
@@ -117,10 +121,7 @@ export function EnquiryInbox({
   );
 }
 
-function labelFor(
-  tabs: EnquiryCountsResponse['tabs'],
-  status: EnquiryStatus,
-): string {
+function labelFor(tabs: EnquiryCountsResponse['tabs'], status: EnquiryStatus): string {
   return tabs.find((tab) => tab.status === status)?.label ?? status;
 }
 

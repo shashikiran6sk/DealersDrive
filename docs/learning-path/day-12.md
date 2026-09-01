@@ -27,31 +27,31 @@ from this path, take this one — it is how every real financial system works.
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 10** — all of it (10.1 → 10.10) | 70 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 8.3, mechanism 2** — row locking for the balance | 10 |
-| `docs/CLAUDE.md` | §7 (credit system) and Rule 3, Rule 4 | 10 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 15.1** — what is real and what is mocked in payments | 10 |
+| Source                        | Sections                                                    | ~min |
+| ----------------------------- | ----------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 10** — all of it (10.1 → 10.10)                      | 70   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 8.3, mechanism 2** — row locking for the balance     | 10   |
+| `docs/CLAUDE.md`              | §7 (credit system) and Rule 3, Rule 4                       | 10   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 15.1** — what is real and what is mocked in payments | 10   |
 
-Read **§10.1 twice**. It shows the naive approach and *exactly* how it fails,
+Read **§10.1 twice**. It shows the naive approach and _exactly_ how it fails,
 with two interleaved requests. Everything else follows from that failure.
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/api/prisma/schema.prisma` | The `CreditTransaction` model. Note `delta`, `balanceAfter`, `reason`, and `seq` |
-| 2 | `apps/api/prisma/migrations/20260816200000_credit_ledger_sequence/migration.sql` | Why a `BIGSERIAL` was needed. **`createdAt` cannot order a ledger** — §10.7 explains the failure |
-| 3 | `apps/api/src/modules/billing/credits.service.ts` | **The core file.** Find `moveCredits()` — the only function allowed to move a balance |
-| 4 | `apps/api/src/modules/billing/credits.service.ts` | The `FOR UPDATE` lock, and the order of operations inside the transaction |
-| 5 | `apps/api/src/modules/billing/billing.service.ts` | The purchase flow. Note it goes through a `PaymentProvider` port |
-| 6 | `apps/api/src/platform/payments/payment.port.ts` | The seam Razorpay will slot into |
-| 7 | `apps/api/src/platform/payments/development.provider.ts` | What is active today: settles inline, contacts no gateway |
-| 8 | `apps/api/src/modules/listings/listing.state.ts` | Where credits are held and consumed. Tomorrow's file, previewed |
-| 9 | `apps/api/tests/credits.test.ts` | The concurrency assertions. Read them before running them |
+| #   | File                                                                             | What to look for                                                                                 |
+| --- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| 1   | `apps/api/prisma/schema.prisma`                                                  | The `CreditTransaction` model. Note `delta`, `balanceAfter`, `reason`, and `seq`                 |
+| 2   | `apps/api/prisma/migrations/20260816200000_credit_ledger_sequence/migration.sql` | Why a `BIGSERIAL` was needed. **`createdAt` cannot order a ledger** — §10.7 explains the failure |
+| 3   | `apps/api/src/modules/billing/credits.service.ts`                                | **The core file.** Find `moveCredits()` — the only function allowed to move a balance            |
+| 4   | `apps/api/src/modules/billing/credits.service.ts`                                | The `FOR UPDATE` lock, and the order of operations inside the transaction                        |
+| 5   | `apps/api/src/modules/billing/billing.service.ts`                                | The purchase flow. Note it goes through a `PaymentProvider` port                                 |
+| 6   | `apps/api/src/platform/payments/payment.port.ts`                                 | The seam Razorpay will slot into                                                                 |
+| 7   | `apps/api/src/platform/payments/development.provider.ts`                         | What is active today: settles inline, contacts no gateway                                        |
+| 8   | `apps/api/src/modules/listings/listing.state.ts`                                 | Where credits are held and consumed. Tomorrow's file, previewed                                  |
+| 9   | `apps/api/tests/credits.test.ts`                                                 | The concurrency assertions. Read them before running them                                        |
 
 ---
 
@@ -121,6 +121,7 @@ result of a real bug that was found and fixed (§10.5).
 This is the exercise of the day.
 
 **Without the lock (thought experiment first — write it out):**
+
 ```
 Request A: SELECT balance → 1     Request B: SELECT balance → 1
 Request A: 1 >= 1, ok             Request B: 1 >= 1, ok
@@ -167,7 +168,7 @@ ORDER BY o."createdAt" DESC LIMIT 3;
 
 There is a real `Order`, a real `Payment`, a real `CreditTransaction` and a real
 `Invoice`. **Only the gateway is mocked** — `DevelopmentPaymentProvider` reports
-success inline. Read Part 15.4 for why the *client* saying "payment succeeded"
+success inline. Read Part 15.4 for why the _client_ saying "payment succeeded"
 must never be what adds credits, even in the mock.
 
 ### 4.7 Run the credit suite
@@ -184,16 +185,16 @@ Open `apps/api/tests/credits.test.ts` and find the concurrency test. Note it run
 
 ## 5. Prove you understood it
 
-1. Show, with two interleaved requests, exactly how `dealer.credits -= 1` fails. → *§10.1*
-2. What is a ledger, and why is it append-only? → *§10.2*
-3. What is `Dealer.creditBalance`, precisely? → *§10.3*
-4. Why can `createdAt` not order the ledger? → *§10.7*
-5. Why does `CONSUME_APPROVE` have `delta: 0`? → *§10.5*
-6. Why does `CHANGES_REQUESTED` keep the hold? → *§10.5*
-7. Walk the hold → consume → release lifecycle, naming the `reason` at each step. → *§10.5*
-8. Name the two independent defences against a negative balance. → *§10.4, §9.3*
-9. What is credit-ledger drift, what causes it, and what would it prove? → *§10.8*
-10. In the mocked purchase, what is real and what is not? → *§15.1*
+1. Show, with two interleaved requests, exactly how `dealer.credits -= 1` fails. → _§10.1_
+2. What is a ledger, and why is it append-only? → _§10.2_
+3. What is `Dealer.creditBalance`, precisely? → _§10.3_
+4. Why can `createdAt` not order the ledger? → _§10.7_
+5. Why does `CONSUME_APPROVE` have `delta: 0`? → _§10.5_
+6. Why does `CHANGES_REQUESTED` keep the hold? → _§10.5_
+7. Walk the hold → consume → release lifecycle, naming the `reason` at each step. → _§10.5_
+8. Name the two independent defences against a negative balance. → _§10.4, §9.3_
+9. What is credit-ledger drift, what causes it, and what would it prove? → _§10.8_
+10. In the mocked purchase, what is real and what is not? → _§15.1_
 
 ---
 
@@ -201,7 +202,7 @@ Open `apps/api/tests/credits.test.ts` and find the concurrency test. Note it run
 
 - **Never mutate a balance outside `moveCredits()`.** That function is the only
   place allowed to, and drift is the alarm that catches a violation.
-- **Money is `BigInt` paise.** `₹6.45 Lakh` is a *formatting* concern at the API
+- **Money is `BigInt` paise.** `₹6.45 Lakh` is a _formatting_ concern at the API
   boundary. Never a float, never rupees in the database.
 - **The credit movement and the thing it pays for must be one transaction.**
   Rule 4. Otherwise you can charge for a publish that then fails.
@@ -230,4 +231,4 @@ Open `apps/api/tests/credits.test.ts` and find the concurrency test. Note it run
   `platform/jobs/handlers.ts` (Day 14).
 - Read **Part 15** in full — payments, webhooks and idempotency — and note
   exactly what remains to be built for Razorpay (§15.7). It is a checklist, and
-  it is short *because* the port was shaped for it.
+  it is short _because_ the port was shaped for it.

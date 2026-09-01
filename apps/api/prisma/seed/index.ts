@@ -313,9 +313,7 @@ class Ledger {
   }
 
   async flush(): Promise<void> {
-    const ordered = [...this.entries].sort(
-      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-    );
+    const ordered = [...this.entries].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
     for (const entry of ordered) {
       const before = this.balances.get(entry.dealerId) ?? 0;
@@ -438,9 +436,7 @@ async function seedVehicles(catalog: Catalog, dealers: Dealers, ledger: Ledger, 
     const isDraft = seed.state === 'DRAFT';
     const vehicleId = randomUUID();
     const shortId = vehicleId.slice(0, 6);
-    const slug = isDraft
-      ? null
-      : slugify(`${seed.year}-${title}-${seed.citySlug}`) + `-${shortId}`;
+    const slug = isDraft ? null : slugify(`${seed.year}-${title}-${seed.citySlug}`) + `-${shortId}`;
 
     const createdAt = daysAgo((seed.approvedDaysAgo ?? 2) + 4);
 

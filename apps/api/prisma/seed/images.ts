@@ -51,7 +51,9 @@ export interface GeneratedImage {
 }
 
 export async function generatePlaceholderImage(label: string): Promise<GeneratedImage> {
-  const master = await sharp(panelSvg(1600, 1200, label)).png().toBuffer();
+  const master = await sharp(panelSvg(1600, 1200, label))
+    .png()
+    .toBuffer();
 
   const derivatives = await Promise.all(
     DERIVATIVE_WIDTHS.map(async (width) => ({

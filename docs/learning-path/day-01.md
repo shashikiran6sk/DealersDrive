@@ -10,7 +10,7 @@
 ## 1. Why today matters
 
 You cannot reason about a system you have never seen move. Today is deliberately
-weighted towards *doing* rather than reading: by this evening you should have
+weighted towards _doing_ rather than reading: by this evening you should have
 clicked through the marketplace, signed into the dealer console, and seen a car
 you created appear in search.
 
@@ -23,34 +23,34 @@ answered in a comment two lines above the code.
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 1** — The big picture (1.1 → 1.13) | 45 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 2** — Repository structure (2.1 → 2.4) | 40 |
-| `docs/CLAUDE.md` | §1, §5, §6, §11 (the nine rules) | 20 |
-| `README.md` (repo root) | the Quick start and Commands sections | 10 |
+| Source                        | Sections                                      | ~min |
+| ----------------------------- | --------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 1** — The big picture (1.1 → 1.13)     | 45   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 2** — Repository structure (2.1 → 2.4) | 40   |
+| `docs/CLAUDE.md`              | §1, §5, §6, §11 (the nine rules)              | 20   |
+| `README.md` (repo root)       | the Quick start and Commands sections         | 10   |
 
 **Do not** read Parts 3 onward today. The order matters.
 
-While reading Part 1, keep one question in mind: *why PostgreSQL and not
-MongoDB?* Section 1.6 answers it, and that answer is the reason for roughly a
+While reading Part 1, keep one question in mind: _why PostgreSQL and not
+MongoDB?_ Section 1.6 answers it, and that answer is the reason for roughly a
 third of the decisions you will meet in Week 3.
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `package.json` | The root scripts. Note that `dev`, `build`, `test` all delegate to `turbo run` |
-| 2 | `pnpm-workspace.yaml` | Four lines. This is what makes `apps/*` and `packages/*` one workspace |
-| 3 | `turbo.json` | Skim only. Day 2 explains it |
-| 4 | `docker-compose.yml` | The three infrastructure services: `postgres`, `minio`, `mailpit`. Note the `profiles:` on the app services |
-| 5 | `.env.example` | Every variable the system takes, with a comment explaining each. **Read the comments** — this file is a map of every external dependency |
-| 6 | `apps/api/src/routes.ts` | The entire API surface in one file. Note the four mount points and their different guard chains |
-| 7 | `apps/web/src/app/` | The route groups: `(public)`, `(dealer)`, `(admin)`, `(auth)`. Directory names in brackets do not appear in the URL |
-| 8 | `apps/api/prisma/schema.prisma` | Skim the model names only. Do not try to understand it yet — Day 11 |
-| 9 | `packages/contracts/src/` | Six files. These are the shapes both apps agree on |
+| #   | File                            | What to look for                                                                                                                         |
+| --- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `package.json`                  | The root scripts. Note that `dev`, `build`, `test` all delegate to `turbo run`                                                           |
+| 2   | `pnpm-workspace.yaml`           | Four lines. This is what makes `apps/*` and `packages/*` one workspace                                                                   |
+| 3   | `turbo.json`                    | Skim only. Day 2 explains it                                                                                                             |
+| 4   | `docker-compose.yml`            | The three infrastructure services: `postgres`, `minio`, `mailpit`. Note the `profiles:` on the app services                              |
+| 5   | `.env.example`                  | Every variable the system takes, with a comment explaining each. **Read the comments** — this file is a map of every external dependency |
+| 6   | `apps/api/src/routes.ts`        | The entire API surface in one file. Note the four mount points and their different guard chains                                          |
+| 7   | `apps/web/src/app/`             | The route groups: `(public)`, `(dealer)`, `(admin)`, `(auth)`. Directory names in brackets do not appear in the URL                      |
+| 8   | `apps/api/prisma/schema.prisma` | Skim the model names only. Do not try to understand it yet — Day 11                                                                      |
+| 9   | `packages/contracts/src/`       | Six files. These are the shapes both apps agree on                                                                                       |
 
 > **How to read `routes.ts` today.** Ignore the handlers. Read only the comment
 > block at the top and the four `v1.use(...)` groupings. That comment is the
@@ -91,15 +91,15 @@ log line.
 
 ### 4.4 Click through the product — 45 minutes, unhurried
 
-| Do this | Notice |
-|---|---|
-| Open http://localhost:3000 | Per-city counts, body-type tiles. **None of these are hard-coded** |
-| Search a car, apply filters | The filters are in the **URL**, not in React state. Copy the URL into a new tab — same results |
-| Open a car's detail page | The gallery. The dealer card. **The phone number is not shown** |
-| Click to reveal the phone number | Rule 7. Note it took a separate request |
-| Open http://localhost:4000/api/docs | The generated OpenAPI reference. Every endpoint, every error code |
-| Open http://localhost:4000/health/ready | Note `version`, `appEnv`, `checks` |
-| Open http://localhost:9001 (MinIO console) | The `dealers-drive` bucket. Find a seeded photo. `minioadmin` / `minioadmin` |
+| Do this                                    | Notice                                                                                         |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Open http://localhost:3000                 | Per-city counts, body-type tiles. **None of these are hard-coded**                             |
+| Search a car, apply filters                | The filters are in the **URL**, not in React state. Copy the URL into a new tab — same results |
+| Open a car's detail page                   | The gallery. The dealer card. **The phone number is not shown**                                |
+| Click to reveal the phone number           | Rule 7. Note it took a separate request                                                        |
+| Open http://localhost:4000/api/docs        | The generated OpenAPI reference. Every endpoint, every error code                              |
+| Open http://localhost:4000/health/ready    | Note `version`, `appEnv`, `checks`                                                             |
+| Open http://localhost:9001 (MinIO console) | The `dealers-drive` bucket. Find a seeded photo. `minioadmin` / `minioadmin`                   |
 
 ### 4.5 Sign in as a dealer
 
@@ -115,7 +115,7 @@ the dealer named by `DEV_DEALER_SLUG`. It logs a loud warning on every boot, and
 Now visit http://localhost:3000/dealer and walk the console: inventory, add a
 vehicle, upload a photo, look at billing.
 
-> **You are not expected to understand *how* any of this works today.** You are
+> **You are not expected to understand _how_ any of this works today.** You are
 > building the mental picture that Weeks 2–4 attach detail to.
 
 ### 4.6 Prove the four commands pass
@@ -134,15 +134,15 @@ minutes — it runs against a real database.
 
 Answer without looking. Then check the named section.
 
-1. What does Dealers-Drive sell, and who pays for it? → *Part 1.1, 1.2*
-2. Name the three surfaces (the three kinds of user-facing application). → *Part 1.3*
+1. What does Dealers-Drive sell, and who pays for it? → _Part 1.1, 1.2_
+2. Name the three surfaces (the three kinds of user-facing application). → _Part 1.3_
 3. Why PostgreSQL rather than MongoDB? Give two reasons that are about
-   *correctness*, not preference. → *Part 1.6*
-4. Why is the backend a modular monolith rather than microservices? → *Part 1.5, 1.9*
-5. Why does a shared `contracts` package exist at all? → *Part 1.10*
+   _correctness_, not preference. → _Part 1.6_
+4. Why is the backend a modular monolith rather than microservices? → _Part 1.5, 1.9_
+5. Why does a shared `contracts` package exist at all? → _Part 1.10_
 6. What are the four mount points in `routes.ts`, and how do their guard chains
-   differ? → *`apps/api/src/routes.ts`, top comment*
-7. Why is there object storage instead of just storing images in Postgres? → *Part 1.12*
+   differ? → _`apps/api/src/routes.ts`, top comment_
+7. Why is there object storage instead of just storing images in Postgres? → _Part 1.12_
 
 ---
 
@@ -152,7 +152,7 @@ Answer without looking. Then check the named section.
   directly instead of `pnpm dev` at the root, so `contracts/dist` was never
   built. Always start from the root.
 - **`PrismaClient` has no models / `Cannot find module '@prisma/client'`** — the
-  Prisma client is *generated*, not committed. Run `db:generate`.
+  Prisma client is _generated_, not committed. Run `db:generate`.
 - **Port already in use** — a stale process. Check with
   `lsof -nP -iTCP:3000 -sTCP:LISTEN` before concluding the build is broken.
 - **The seed produced no images** — `STORAGE_DRIVER` in `.env` must match what

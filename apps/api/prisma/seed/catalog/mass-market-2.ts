@@ -57,7 +57,12 @@ export const MASS_MARKET_2: CatalogMake[] = [
     ]),
     m('fortuner', 'Fortuner', 'SUV', 2009, null, [
       p('DIESEL', 'MANUAL', 2755, 7, ['2.8 4x2', '2.8 4x4']),
-      p('DIESEL', 'AUTOMATIC', 2755, 7, ['2.8 4x2 AT', '2.8 4x4 AT', 'Legender 4x2 AT', 'Legender 4x4 AT']),
+      p('DIESEL', 'AUTOMATIC', 2755, 7, [
+        '2.8 4x2 AT',
+        '2.8 4x4 AT',
+        'Legender 4x2 AT',
+        'Legender 4x4 AT',
+      ]),
       p('PETROL', 'MANUAL', 2694, 7, ['2.7 4x2 Petrol']),
       p('PETROL', 'AUTOMATIC', 2694, 7, ['2.7 4x2 Petrol AT']),
       p('DIESEL', 'MANUAL', 2982, 7, ['3.0 4x2', '3.0 4x4']),
@@ -130,9 +135,7 @@ export const MASS_MARKET_2: CatalogMake[] = [
     m('ev6', 'EV6', 'SUV', 2022, null, [
       p('ELECTRIC', 'AUTOMATIC', null, 5, ['GT Line RWD', 'GT Line AWD']),
     ]),
-    m('ev9', 'EV9', 'SUV', 2024, null, [
-      p('ELECTRIC', 'AUTOMATIC', null, 6, ['GT Line AWD']),
-    ]),
+    m('ev9', 'EV9', 'SUV', 2024, null, [p('ELECTRIC', 'AUTOMATIC', null, 6, ['GT Line AWD'])]),
   ]),
 
   make('honda', 'Honda', 78, [
@@ -154,7 +157,13 @@ export const MASS_MARKET_2: CatalogMake[] = [
     m('city', 'City', 'SEDAN', 1998, null, [
       p('PETROL', 'MANUAL', 1497, 5, ['E', 'S', 'V', 'VX', 'ZX', 'SV']),
       p('PETROL', 'AUTOMATIC', 1497, 5, ['V CVT', 'VX CVT', 'ZX CVT', 'S AT', 'V AT']),
-      p('DIESEL', 'MANUAL', 1498, 5, ['E Diesel', 'S Diesel', 'V Diesel', 'VX Diesel', 'ZX Diesel']),
+      p('DIESEL', 'MANUAL', 1498, 5, [
+        'E Diesel',
+        'S Diesel',
+        'V Diesel',
+        'VX Diesel',
+        'ZX Diesel',
+      ]),
       p('HYBRID', 'AUTOMATIC', 1498, 5, ['e:HEV ZX']),
     ]),
     m('civic', 'Civic', 'SEDAN', 2006, 2020, [
@@ -194,7 +203,12 @@ export const MASS_MARKET_2: CatalogMake[] = [
     m('hector', 'Hector', 'SUV', 2019, null, [
       p('PETROL', 'MANUAL', 1451, 5, ['Style', 'Super', 'Smart', 'Sharp']),
       p('PETROL', 'AUTOMATIC', 1451, 5, ['Smart DCT', 'Sharp DCT', 'Savvy DCT', 'Sharp Pro CVT']),
-      p('DIESEL', 'MANUAL', 1956, 5, ['Style Diesel', 'Super Diesel', 'Smart Diesel', 'Sharp Diesel']),
+      p('DIESEL', 'MANUAL', 1956, 5, [
+        'Style Diesel',
+        'Super Diesel',
+        'Smart Diesel',
+        'Sharp Diesel',
+      ]),
       p('HYBRID', 'MANUAL', 1451, 5, ['Super Hybrid', 'Smart Hybrid']),
     ]),
     m('hector-plus', 'Hector Plus', 'SUV', 2020, null, [
@@ -271,7 +285,12 @@ export const MASS_MARKET_2: CatalogMake[] = [
       p('PETROL', 'AUTOMATIC', 999, 5, ['Comfortline AT', 'Highline Plus AT']),
       p('PETROL', 'MANUAL', 1198, 5, ['GT TSI', '1.2 Highline']),
       p('PETROL', 'AUTOMATIC', 1198, 5, ['GT TSI DSG']),
-      p('DIESEL', 'MANUAL', 1498, 5, ['Trendline Diesel', 'Comfortline Diesel', 'Highline Diesel', 'GT TDI']),
+      p('DIESEL', 'MANUAL', 1498, 5, [
+        'Trendline Diesel',
+        'Comfortline Diesel',
+        'Highline Diesel',
+        'GT TDI',
+      ]),
     ]),
     m('vento', 'Vento', 'SEDAN', 2010, 2022, [
       p('PETROL', 'MANUAL', 999, 5, ['Trendline', 'Comfortline', 'Highline', 'Highline Plus']),
@@ -306,12 +325,8 @@ export const MASS_MARKET_2: CatalogMake[] = [
     m('passat', 'Passat', 'LUXURY', 2011, 2020, [
       p('DIESEL', 'AUTOMATIC', 1968, 5, ['Comfortline', 'Highline', 'GT']),
     ]),
-    m('beetle', 'Beetle', 'LUXURY', 2016, 2019, [
-      p('PETROL', 'AUTOMATIC', 1390, 4, ['Base']),
-    ]),
-    m('t-roc', 'T-Roc', 'SUV', 2020, 2022, [
-      p('PETROL', 'AUTOMATIC', 1498, 5, ['Base']),
-    ]),
+    m('beetle', 'Beetle', 'LUXURY', 2016, 2019, [p('PETROL', 'AUTOMATIC', 1390, 4, ['Base'])]),
+    m('t-roc', 'T-Roc', 'SUV', 2020, 2022, [p('PETROL', 'AUTOMATIC', 1498, 5, ['Base'])]),
   ]),
 
   make('skoda', 'Skoda', 60, [
@@ -390,9 +405,7 @@ export const MASS_MARKET_2: CatalogMake[] = [
       p('PETROL', 'MANUAL', 999, 5, ['XE', 'XL', 'XV', 'XV Premium']),
       p('PETROL', 'AUTOMATIC', 999, 5, ['XL Turbo CVT', 'XV Turbo CVT', 'XV Premium Turbo CVT']),
     ]),
-    m('evalia', 'Evalia', 'MUV', 2012, 2016, [
-      p('DIESEL', 'MANUAL', 1461, 7, ['XE', 'XL', 'XV']),
-    ]),
+    m('evalia', 'Evalia', 'MUV', 2012, 2016, [p('DIESEL', 'MANUAL', 1461, 7, ['XE', 'XL', 'XV'])]),
     m('gt-r', 'GT-R', 'LUXURY', 2016, 2020, [
       p('PETROL', 'AUTOMATIC', 3799, 4, ['Premium Edition']),
     ]),

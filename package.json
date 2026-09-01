@@ -16,6 +16,7 @@
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
+    "docs:check": "node scripts/check-docs.mjs",
     "clean": "turbo run clean",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",

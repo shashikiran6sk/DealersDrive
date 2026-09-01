@@ -12,63 +12,63 @@ Stack assumption: React/Next.js + Tailwind (map tokens to `theme.extend`).
 
 **Cobalt ramp** (brand; the only decorative colour in the product)
 
-| Token | Hex | Used for |
-| --- | --- | --- |
-| `--color-accent-100` | `#eef2ff` | Dealer-logo tiles, credit-balance card fill, review-summary panel, grid-column demo fill |
-| `--color-accent-200` | `#dbe3ff` | 20px dealer avatar chips on vehicle cards, spacing-scale swatch fill |
-| `--color-accent-300` | `#b9c8ff` | Spacing swatch fill, grid-column borders |
-| `--color-accent-400` | `#8ba3f7` | Pressed state on dark grounds only (unused in MVP) |
-| `--color-accent-500` | `#5a79ec` | — reserved |
+| Token                | Hex       | Used for                                                                                                                                                        |
+| -------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--color-accent-100` | `#eef2ff` | Dealer-logo tiles, credit-balance card fill, review-summary panel, grid-column demo fill                                                                        |
+| `--color-accent-200` | `#dbe3ff` | 20px dealer avatar chips on vehicle cards, spacing-scale swatch fill                                                                                            |
+| `--color-accent-300` | `#b9c8ff` | Spacing swatch fill, grid-column borders                                                                                                                        |
+| `--color-accent-400` | `#8ba3f7` | Pressed state on dark grounds only (unused in MVP)                                                                                                              |
+| `--color-accent-500` | `#5a79ec` | — reserved                                                                                                                                                      |
 | `--color-accent-600` | `#2f55dd` | **Action/Primary base** = `--color-accent`; primary button, focus ring, links, active nav, plate left band, chart bars, progress fill, active thumbnail outline |
-| `--color-accent-700` | `#1e3fae` | Primary button `:active`; accent text at paragraph size (kickers, device label) |
-| `--color-accent-800` | `#172f7d` | Text on `accent-100`/`accent-200` fills (avatar initials, tag text) |
-| `--color-accent-900` | `#101f4f` | Full-field grounds: "Why Dealers-Drive" band, admin sidebar |
+| `--color-accent-700` | `#1e3fae` | Primary button `:active`; accent text at paragraph size (kickers, device label)                                                                                 |
+| `--color-accent-800` | `#172f7d` | Text on `accent-100`/`accent-200` fills (avatar initials, tag text)                                                                                             |
+| `--color-accent-900` | `#101f4f` | Full-field grounds: "Why Dealers-Drive" band, admin sidebar                                                                                                     |
 
 **Neutral ramp** (inherited from Industry, unchanged)
 
-| Token | Hex | Used for |
-| --- | --- | --- |
-| `--color-neutral-100` | `#f5f5f8` | Admin app ground, `.tag-neutral` fill |
-| `--color-neutral-200` | `#e7e7ea` | Draft/Expired badge fill |
+| Token                 | Hex       | Used for                                            |
+| --------------------- | --------- | --------------------------------------------------- |
+| `--color-neutral-100` | `#f5f5f8` | Admin app ground, `.tag-neutral` fill               |
+| `--color-neutral-200` | `#e7e7ea` | Draft/Expired badge fill                            |
 | `--color-neutral-300` | `#d4d4d7` | Skeleton bars, stepper inactive bar, progress track |
-| `--color-neutral-400` | `#b7b7ba` | Scrollbar thumb |
-| `--color-neutral-500` | `#98989b` | — |
-| `--color-neutral-600` | `#7a7a7d` | — |
-| `--color-neutral-700` | `#5d5d60` | Expired badge text |
-| `--color-neutral-800` | `#424244` | Draft badge text, `.tag-neutral` text |
-| `--color-neutral-900` | `#2b2b2d` | Shadow tint source, dialog backdrop tint |
+| `--color-neutral-400` | `#b7b7ba` | Scrollbar thumb                                     |
+| `--color-neutral-500` | `#98989b` | —                                                   |
+| `--color-neutral-600` | `#7a7a7d` | —                                                   |
+| `--color-neutral-700` | `#5d5d60` | Expired badge text                                  |
+| `--color-neutral-800` | `#424244` | Draft badge text, `.tag-neutral` text               |
+| `--color-neutral-900` | `#2b2b2d` | Shadow tint source, dialog backdrop tint            |
 
 ### 1.2 Colour — semantic
 
-| Token | Hex | Used for |
-| --- | --- | --- |
-| `--color-bg` | `#f4f5f7` | Page ground (customer + dealer app), frame background |
-| `--color-surface` | `#eaecf0` | Image-slot / placeholder ground, `+91` prefix field |
-| `--color-text` | `#14171c` | All primary text, plate border |
-| `--color-accent` | `#2f55dd` | Primary action (aliased to `accent-600`; overridable via the `accentColor` prop) |
-| `--color-divider` | `rgba(20,23,28,0.15)` (`color-mix(#14171c 15%, transparent)`) | Every hairline border, card border, table header rule |
-| Elevated surface | `#ffffff` | Cards, headers, sidebars, tables, dialogs, bottom sheet |
-| Row rule | `rgba(20,23,28,0.08)` | Table `td` bottom border, spec-row rule, list-item rule |
-| `--ok` | `#0f7a5a` | Success text/icon, Active badge text, positive delta, ledger credit |
-| `--ok-bg` | `#e6f4ef` | Success banner + Active badge fill |
-| `--warn` | `#a15c00` | Pending text, negative delta, queue counter |
-| `--warn-bg` | `#fbf0dd` | Pending badge + "under review" fill |
-| `--err` | `#b3261e` | Error text, Rejected badge, reject button, ledger debit |
-| `--err-bg` | `#fbe9e7` | Error banner + Rejected badge fill |
-| Lightbox ground | `#0d1017` | Fullscreen gallery chrome |
-| Lightbox stage | `#151a23` | Fullscreen image frame |
-| Lightbox rail cell | `#1a1f29` | Thumbnail cell in rail |
+| Token              | Hex                                                           | Used for                                                                         |
+| ------------------ | ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `--color-bg`       | `#f4f5f7`                                                     | Page ground (customer + dealer app), frame background                            |
+| `--color-surface`  | `#eaecf0`                                                     | Image-slot / placeholder ground, `+91` prefix field                              |
+| `--color-text`     | `#14171c`                                                     | All primary text, plate border                                                   |
+| `--color-accent`   | `#2f55dd`                                                     | Primary action (aliased to `accent-600`; overridable via the `accentColor` prop) |
+| `--color-divider`  | `rgba(20,23,28,0.15)` (`color-mix(#14171c 15%, transparent)`) | Every hairline border, card border, table header rule                            |
+| Elevated surface   | `#ffffff`                                                     | Cards, headers, sidebars, tables, dialogs, bottom sheet                          |
+| Row rule           | `rgba(20,23,28,0.08)`                                         | Table `td` bottom border, spec-row rule, list-item rule                          |
+| `--ok`             | `#0f7a5a`                                                     | Success text/icon, Active badge text, positive delta, ledger credit              |
+| `--ok-bg`          | `#e6f4ef`                                                     | Success banner + Active badge fill                                               |
+| `--warn`           | `#a15c00`                                                     | Pending text, negative delta, queue counter                                      |
+| `--warn-bg`        | `#fbf0dd`                                                     | Pending badge + "under review" fill                                              |
+| `--err`            | `#b3261e`                                                     | Error text, Rejected badge, reject button, ledger debit                          |
+| `--err-bg`         | `#fbe9e7`                                                     | Error banner + Rejected badge fill                                               |
+| Lightbox ground    | `#0d1017`                                                     | Fullscreen gallery chrome                                                        |
+| Lightbox stage     | `#151a23`                                                     | Fullscreen image frame                                                           |
+| Lightbox rail cell | `#1a1f29`                                                     | Thumbnail cell in rail                                                           |
 
 Text opacity ladder (all `color-mix(#14171c N%, transparent)`), use in this order:
 
-| Role | Value | Used for |
-| --- | --- | --- |
-| Text/Primary | `100%` | Headings, prices, values, names |
-| Text/Body | `75%` | Descriptions, long-form paragraphs |
-| Text/Secondary | `70%` | Hero paragraph, field labels |
-| Text/Muted | `62%` / `60%` / `58%` | Card meta rows, section sublines, spec keys |
-| Text/Subtle | `55%` | Timestamps, counts, breadcrumb |
-| Text/Faint | `50%` / `45%` | Table expiry, filter counts, rail numbers |
+| Role           | Value                 | Used for                                    |
+| -------------- | --------------------- | ------------------------------------------- |
+| Text/Primary   | `100%`                | Headings, prices, values, names             |
+| Text/Body      | `75%`                 | Descriptions, long-form paragraphs          |
+| Text/Secondary | `70%`                 | Hero paragraph, field labels                |
+| Text/Muted     | `62%` / `60%` / `58%` | Card meta rows, section sublines, spec keys |
+| Text/Subtle    | `55%`                 | Timestamps, counts, breadcrumb              |
+| Text/Faint     | `50%` / `45%`         | Table expiry, filter counts, rail numbers   |
 
 On the `accent-900` field and in the lightbox use `#fff` at `1 / 0.75 / 0.6 / 0.55` opacity; rules there are `rgba(255,255,255,0.14–0.25)`.
 
@@ -78,40 +78,40 @@ Families: `--font-heading: "Cabinet Grotesk", "Inter", system-ui, sans-serif` (6
 
 Global: `-webkit-font-smoothing: antialiased`, body `letter-spacing: -0.005em`, headings `-0.02em`.
 
-| Token | Size | Line-height | Weight | Tracking | Family | Used for |
-| --- | --- | --- | --- | --- | --- | --- |
-| `display` | 3.25rem / 52px | 1.02 | 700 | -0.02em | heading | Homepage H1 |
-| `h1` | 2.75rem / 44px | 1.05 | 700 | -0.02em | heading | Foundations title |
-| `h1-page` | 2.125rem / 34px | 1.1 | 600 | -0.02em | heading | Search results, saved cars, dealer portfolio, auth |
-| `h1-app` | 1.75rem / 28px | 1.15 | 600 | -0.02em | heading | Dealer console page titles |
-| `h1-vdp` | 1.8125rem / 29px | 1.1 | 600 | -0.02em | heading | Vehicle title, submitted state |
-| `h2` | 1.75rem / 28px | 1.15 | 600 | -0.02em | heading | Homepage section headings |
-| `h2-sm` | 1.5rem / 24px | 1.15 | 600 | -0.02em | heading | Portfolio + foundations section headings |
-| `h3` | 1.3125rem / 21px | 1.2 | 600 | -0.02em | heading | VDP subsection headings |
-| `h3-sm` | 1.1875rem / 19px | 1.2 | 600 | -0.02em | heading | Card section headings, form step headings |
-| `h4-card` | 1.0625rem / 17px | 1.2 | 600 | -0.02em | heading | Dealer card name, body-type tile |
-| `card-title` | 1rem / 16px | 1.2 | 600 | -0.02em | heading | Vehicle card name, dealer name |
-| `body-lg` | 1rem / 16px | 1.5 | 400 | — | body | Hero paragraph, auth paragraph |
-| `body` | 0.9375rem / 15px | 1.55 | 400 | — | body | Success/onboarding paragraphs |
-| `body-sm` | 0.875rem / 14px | 1.65 | 400 | — | body | Descriptions, section sublines, inputs, buttons |
-| `body-xs` | 0.8125rem / 13px | 1.5 | 400 | — | body | Spec rows, table cells, nav items, list rows |
-| `caption` | 0.75rem / 12px | 1.45 | 400 | — | body | Meta, breadcrumbs, field labels, small buttons |
-| `caption-sm` | 0.6875rem / 11px | 1.45 | 400 | — | body | Card meta, tags, timestamps, counts |
-| `micro` | 0.625rem / 10px | 1.4 | 400 | 0.1em, uppercase | body | Kickers, `h6`, nav group labels, badges |
-| `label-eyebrow` | 0.6875rem / 11px | 1.45 | 400 | 0.1em, uppercase | body | Stat-card labels, price-block label |
-| `label-brand` | 0.6875rem / 11px | 1.45 | 400 | 0.14em, uppercase | body | Hero eyebrow, foundations eyebrow |
-| `price-hero` | 2.25rem / 36px | 1.1 | 700 | -0.02em | heading, tabular | VDP price block |
-| `price-lg` | 1.375rem / 22px | 1.2 | 600 | — | body, tabular | Saved-cars row price |
-| `price` | 1.25rem / 20px | 1.2 | 600 | — | body, tabular | Vehicle card price |
-| `stat-xl` | 2.75rem / 44px | 1.05 | 700 | -0.02em | heading, tabular | Billing credit balance |
-| `stat-lg` | 2.125rem / 34px | 1.15 | 700 | -0.02em | heading, tabular | Dealer dashboard stats |
-| `stat` | 2rem / 32px | 1.15 | 700 | -0.02em | heading, tabular | Credit pack size, dealer logo initial |
-| `stat-sm` | 1.75rem / 28px | 1.15 | 700 | -0.02em | heading, tabular | Admin stat cards, sidebar credits |
-| `stat-xs` | 1.625rem / 26px | 1.15 | 700 | -0.02em | heading, tabular | Portfolio stat tiles |
-| `plate` | 0.6875rem / 11px | 1.5 | 400 | 0.08em | mono | Plate motif default |
-| `plate-logo` | 0.8125rem / 13px | 1.5 | 600 | 0.08em | mono | Logo plate (sidebar); 12px in headers, 18px in foundations |
-| `mono-data` | 0.8125rem / 13px | 1.5 | 400 | — | mono | GSTIN, PAN, phone numbers, invoice numbers, RTO |
-| `mono-xs` | 0.75rem / 12px | 1.5 | 400 | — | mono | Invoice ids, ledger deltas (600 weight) |
+| Token           | Size             | Line-height | Weight | Tracking          | Family           | Used for                                                   |
+| --------------- | ---------------- | ----------- | ------ | ----------------- | ---------------- | ---------------------------------------------------------- |
+| `display`       | 3.25rem / 52px   | 1.02        | 700    | -0.02em           | heading          | Homepage H1                                                |
+| `h1`            | 2.75rem / 44px   | 1.05        | 700    | -0.02em           | heading          | Foundations title                                          |
+| `h1-page`       | 2.125rem / 34px  | 1.1         | 600    | -0.02em           | heading          | Search results, saved cars, dealer portfolio, auth         |
+| `h1-app`        | 1.75rem / 28px   | 1.15        | 600    | -0.02em           | heading          | Dealer console page titles                                 |
+| `h1-vdp`        | 1.8125rem / 29px | 1.1         | 600    | -0.02em           | heading          | Vehicle title, submitted state                             |
+| `h2`            | 1.75rem / 28px   | 1.15        | 600    | -0.02em           | heading          | Homepage section headings                                  |
+| `h2-sm`         | 1.5rem / 24px    | 1.15        | 600    | -0.02em           | heading          | Portfolio + foundations section headings                   |
+| `h3`            | 1.3125rem / 21px | 1.2         | 600    | -0.02em           | heading          | VDP subsection headings                                    |
+| `h3-sm`         | 1.1875rem / 19px | 1.2         | 600    | -0.02em           | heading          | Card section headings, form step headings                  |
+| `h4-card`       | 1.0625rem / 17px | 1.2         | 600    | -0.02em           | heading          | Dealer card name, body-type tile                           |
+| `card-title`    | 1rem / 16px      | 1.2         | 600    | -0.02em           | heading          | Vehicle card name, dealer name                             |
+| `body-lg`       | 1rem / 16px      | 1.5         | 400    | —                 | body             | Hero paragraph, auth paragraph                             |
+| `body`          | 0.9375rem / 15px | 1.55        | 400    | —                 | body             | Success/onboarding paragraphs                              |
+| `body-sm`       | 0.875rem / 14px  | 1.65        | 400    | —                 | body             | Descriptions, section sublines, inputs, buttons            |
+| `body-xs`       | 0.8125rem / 13px | 1.5         | 400    | —                 | body             | Spec rows, table cells, nav items, list rows               |
+| `caption`       | 0.75rem / 12px   | 1.45        | 400    | —                 | body             | Meta, breadcrumbs, field labels, small buttons             |
+| `caption-sm`    | 0.6875rem / 11px | 1.45        | 400    | —                 | body             | Card meta, tags, timestamps, counts                        |
+| `micro`         | 0.625rem / 10px  | 1.4         | 400    | 0.1em, uppercase  | body             | Kickers, `h6`, nav group labels, badges                    |
+| `label-eyebrow` | 0.6875rem / 11px | 1.45        | 400    | 0.1em, uppercase  | body             | Stat-card labels, price-block label                        |
+| `label-brand`   | 0.6875rem / 11px | 1.45        | 400    | 0.14em, uppercase | body             | Hero eyebrow, foundations eyebrow                          |
+| `price-hero`    | 2.25rem / 36px   | 1.1         | 700    | -0.02em           | heading, tabular | VDP price block                                            |
+| `price-lg`      | 1.375rem / 22px  | 1.2         | 600    | —                 | body, tabular    | Saved-cars row price                                       |
+| `price`         | 1.25rem / 20px   | 1.2         | 600    | —                 | body, tabular    | Vehicle card price                                         |
+| `stat-xl`       | 2.75rem / 44px   | 1.05        | 700    | -0.02em           | heading, tabular | Billing credit balance                                     |
+| `stat-lg`       | 2.125rem / 34px  | 1.15        | 700    | -0.02em           | heading, tabular | Dealer dashboard stats                                     |
+| `stat`          | 2rem / 32px      | 1.15        | 700    | -0.02em           | heading, tabular | Credit pack size, dealer logo initial                      |
+| `stat-sm`       | 1.75rem / 28px   | 1.15        | 700    | -0.02em           | heading, tabular | Admin stat cards, sidebar credits                          |
+| `stat-xs`       | 1.625rem / 26px  | 1.15        | 700    | -0.02em           | heading, tabular | Portfolio stat tiles                                       |
+| `plate`         | 0.6875rem / 11px | 1.5         | 400    | 0.08em            | mono             | Plate motif default                                        |
+| `plate-logo`    | 0.8125rem / 13px | 1.5         | 600    | 0.08em            | mono             | Logo plate (sidebar); 12px in headers, 18px in foundations |
+| `mono-data`     | 0.8125rem / 13px | 1.5         | 400    | —                 | mono             | GSTIN, PAN, phone numbers, invoice numbers, RTO            |
+| `mono-xs`       | 0.75rem / 12px   | 1.5         | 400    | —                 | mono             | Invoice ids, ledger deltas (600 weight)                    |
 
 ### 1.4 Spacing
 
@@ -125,33 +125,33 @@ Inherited Industry scale: `--space-1: 3.4px` · `--space-2: 6.8px` · `--space-3
 
 ### 1.5 Radius
 
-| Token | Value | Applies to |
-| --- | --- | --- |
-| `--radius-sm` | 2px | — |
-| `--radius-md` | 4px | Buttons, inputs, cards, segmented control, tags (`×0.75` = 3px) |
-| `--radius-lg` | 7px | Dialog |
-| `0` (square) | 0px | **Everything authored in this product**: plates, image frames, thumbnails, stat tiles, tables, badges, banners, avatars, lightbox chrome, arrows |
+| Token         | Value | Applies to                                                                                                                                       |
+| ------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--radius-sm` | 2px   | —                                                                                                                                                |
+| `--radius-md` | 4px   | Buttons, inputs, cards, segmented control, tags (`×0.75` = 3px)                                                                                  |
+| `--radius-lg` | 7px   | Dialog                                                                                                                                           |
+| `0` (square)  | 0px   | **Everything authored in this product**: plates, image frames, thumbnails, stat tiles, tables, badges, banners, avatars, lightbox chrome, arrows |
 
 Square-cornered is the product default. Only the inherited `.btn` / `.input` / `.card` / `.dialog` classes carry 4–7px.
 
 ### 1.6 Shadow
 
-| Token | Value | Applies to |
-| --- | --- | --- |
-| `--shadow-sm` | `0 1px 2px rgba(43,43,45,0.14)` | not used |
-| `--shadow-md` | `0 3px 10px rgba(43,43,45,0.16)` | not used |
+| Token         | Value                             | Applies to                               |
+| ------------- | --------------------------------- | ---------------------------------------- |
+| `--shadow-sm` | `0 1px 2px rgba(43,43,45,0.14)`   | not used                                 |
+| `--shadow-md` | `0 3px 10px rgba(43,43,45,0.16)`  | not used                                 |
 | `--shadow-lg` | `0 12px 32px rgba(43,43,45,0.22)` | Mobile frame edge, city dropdown, dialog |
 
 Nothing else in the product carries a shadow. See §4.1.
 
 ### 1.7 Motion
 
-| Name | Duration | Easing | Applies to |
-| --- | --- | --- | --- |
-| `instant` | 0ms | — | Screen changes, filter application, badge/state flips |
-| `hover` | 120ms | `ease-out` | Button/nav/arrow background + colour transitions |
-| `sheet` | 200ms | `ease-out` | Mobile filter sheet slide-up, dialog fade-in |
-| `scroll` | native `scroll-behavior: smooth` | browser | Thumbnail strip paging, lightbox rail auto-centre |
+| Name      | Duration                         | Easing     | Applies to                                            |
+| --------- | -------------------------------- | ---------- | ----------------------------------------------------- |
+| `instant` | 0ms                              | —          | Screen changes, filter application, badge/state flips |
+| `hover`   | 120ms                            | `ease-out` | Button/nav/arrow background + colour transitions      |
+| `sheet`   | 200ms                            | `ease-out` | Mobile filter sheet slide-up, dialog fade-in          |
+| `scroll`  | native `scroll-behavior: smooth` | browser    | Thumbnail strip paging, lightbox rail auto-centre     |
 
 No entrance animations, no skeleton shimmer (skeletons are static `neutral-300` bars), no layout transitions.
 
@@ -165,26 +165,26 @@ Shared rules: every interactive element gets `:focus-visible { outline: 2px soli
 
 Base: `display:inline-flex; align-items:center; justify-content:center; gap:6px; font-family:heading; font-weight:600; font-size:14px; line-height:1.2; padding:6.8px 12.24px; border:1px solid transparent; border-radius:4px; cursor:pointer`. Natural height ≈ 32px.
 
-| Variant | Default | Hover | Active | Focus | Disabled |
-| --- | --- | --- | --- | --- | --- |
-| `btn-primary` | bg `#2f55dd`, text `#f4f5f7` | bg `#2f55dd` (600) | bg `#1e3fae` (700) | 2px `#2f55dd` ring, offset 2 | opacity .45 |
-| `btn-secondary` | transparent, border `--color-divider`, text `#14171c` | bg `rgba(20,23,28,0.07)` | bg `rgba(20,23,28,0.14)` | as above | opacity .45 |
-| `btn-ghost` | transparent, text `#2f55dd`, inline padding 3.4px | bg `rgba(47,85,221,0.10)` | bg `rgba(47,85,221,0.18)` | as above | opacity .45 |
-| `btn-destructive` | `btn-secondary` + text `--err`, border `rgba(179,38,30,0.4)` | bg `rgba(179,38,30,0.07)` | bg `rgba(179,38,30,0.14)` | as above | opacity .45 |
-| `btn-danger-solid` | `btn-primary` + bg/border `--err` | darken 8% | darken 16% | as above | opacity .45 |
-| `btn-icon` | 36×36, padding 0 | per variant | per variant | as above | opacity .45 |
-| `btn-block` | `width:100%; margin-top:6.8px` | — | — | — | — |
+| Variant            | Default                                                      | Hover                     | Active                    | Focus                        | Disabled    |
+| ------------------ | ------------------------------------------------------------ | ------------------------- | ------------------------- | ---------------------------- | ----------- |
+| `btn-primary`      | bg `#2f55dd`, text `#f4f5f7`                                 | bg `#2f55dd` (600)        | bg `#1e3fae` (700)        | 2px `#2f55dd` ring, offset 2 | opacity .45 |
+| `btn-secondary`    | transparent, border `--color-divider`, text `#14171c`        | bg `rgba(20,23,28,0.07)`  | bg `rgba(20,23,28,0.14)`  | as above                     | opacity .45 |
+| `btn-ghost`        | transparent, text `#2f55dd`, inline padding 3.4px            | bg `rgba(47,85,221,0.10)` | bg `rgba(47,85,221,0.18)` | as above                     | opacity .45 |
+| `btn-destructive`  | `btn-secondary` + text `--err`, border `rgba(179,38,30,0.4)` | bg `rgba(179,38,30,0.07)` | bg `rgba(179,38,30,0.14)` | as above                     | opacity .45 |
+| `btn-danger-solid` | `btn-primary` + bg/border `--err`                            | darken 8%                 | darken 16%                | as above                     | opacity .45 |
+| `btn-icon`         | 36×36, padding 0                                             | per variant               | per variant               | as above                     | opacity .45 |
+| `btn-block`        | `width:100%; margin-top:6.8px`                               | —                         | —                         | —                            | —           |
 
 Authored size overrides (apply as-is):
 
-| Context | Height | Font | Padding |
-| --- | --- | --- | --- |
-| Hero search CTA | 48px | 15px | `0 26px` |
-| VDP primary CTA / auth submit / sheet CTA | 44px | 15px | default inline |
-| VDP secondary pair / onboarding next | 40–42px | 14px | default |
-| Header, toolbar | 32px (natural) | 14px | default |
-| In-card / table / chip actions | natural | 12px | `4px 10px` (popular chips) or default |
-| Sidebar credits CTA | natural | 12px | `btn-block` |
+| Context                                   | Height         | Font | Padding                               |
+| ----------------------------------------- | -------------- | ---- | ------------------------------------- |
+| Hero search CTA                           | 48px           | 15px | `0 26px`                              |
+| VDP primary CTA / auth submit / sheet CTA | 44px           | 15px | default inline                        |
+| VDP secondary pair / onboarding next      | 40–42px        | 14px | default                               |
+| Header, toolbar                           | 32px (natural) | 14px | default                               |
+| In-card / table / chip actions            | natural        | 12px | `4px 10px` (popular chips) or default |
+| Sidebar credits CTA                       | natural        | 12px | `btn-block`                           |
 
 Loading state (not yet drawn — implement): keep width, replace label with a 14px 1.5px-stroke spinner in `currentColor`, `aria-busy="true"`, `pointer-events: none`, opacity 1.
 
@@ -194,12 +194,12 @@ Keyboard: native `<button>` throughout — Enter/Space activate. Never a `<div>`
 
 `display:inline-flex; align-items:center; gap:7px; border:1px solid #14171c; background:#f4f5f7; padding:2px 9px 2px 0; border-radius:0; font-family:mono; font-size:11px; letter-spacing:0.08em; line-height:1.5; color:#14171c`. `::before` = the left band: `width:5px; align-self:stretch; background:#2f55dd`.
 
-| Variant | Override | Where |
-| --- | --- | --- |
-| Logo | 13px/600, padding `4px 10px 4px 0` (12px in page headers, 18px + `6px 14px 6px 0` in foundations) | Sidebar, customer header, dealer header |
-| Year badge | default 11px | Vehicle card image (absolute `top:10px; left:10px; z-index:2`), VDP title block |
-| Verified chip | 10px, label `VERIFIED DEALER` / `VERIFIED` | VDP dealer card, portfolio header, directory card |
-| Photo marker | 9px, label `PRIMARY` | Add-vehicle primary photo tile |
+| Variant       | Override                                                                                          | Where                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Logo          | 13px/600, padding `4px 10px 4px 0` (12px in page headers, 18px + `6px 14px 6px 0` in foundations) | Sidebar, customer header, dealer header                                         |
+| Year badge    | default 11px                                                                                      | Vehicle card image (absolute `top:10px; left:10px; z-index:2`), VDP title block |
+| Verified chip | 10px, label `VERIFIED DEALER` / `VERIFIED`                                                        | VDP dealer card, portfolio header, directory card                               |
+| Photo marker  | 9px, label `PRIMARY`                                                                              | Add-vehicle primary photo tile                                                  |
 
 No other use. No hover/active state — it is not interactive.
 
@@ -207,13 +207,13 @@ No other use. No hover/active state — it is not interactive.
 
 `width:100%; min-height:36px; padding:6px 10px; font-size:14px; background:#eaecf0; border:1px solid --color-divider; border-radius:4px; caret-color:#2f55dd`.
 
-| State | Spec |
-| --- | --- |
-| Hover | `border-color: rgba(20,23,28,0.45)` |
-| Focus | `border-color: #2f55dd`, `outline-offset: 0` |
-| Error | `border-color: --err` + 11px `--err` message, `margin-top:4px` |
+| State    | Spec                                                                                   |
+| -------- | -------------------------------------------------------------------------------------- |
+| Hover    | `border-color: rgba(20,23,28,0.45)`                                                    |
+| Focus    | `border-color: #2f55dd`, `outline-offset: 0`                                           |
+| Error    | `border-color: --err` + 11px `--err` message, `margin-top:4px`                         |
 | Disabled | opacity .45, `cursor: not-allowed` (used on the pre-filled phone in onboarding step 1) |
-| Textarea | `min-height:90px; resize:vertical` |
+| Textarea | `min-height:90px; resize:vertical`                                                     |
 
 Label (`.field > label`): 12px, `margin-bottom:5px`, `rgba(20,23,28,0.70)`.
 
@@ -233,18 +233,18 @@ Keyboard: OTP cells auto-advance on entry, Backspace moves back, paste of 6 digi
 
 `inline-flex; font-size:11px; letter-spacing:0.02em; padding:3px 10px; border-radius:3px`.
 
-| Variant | Fill | Text |
-| --- | --- | --- |
-| `tag-accent` | `#eef2ff` | `#172f7d` |
-| `tag-neutral` | `#f5f5f8` | `#424244` |
-| `tag-outline` | transparent, 1px `#2f55dd` border | `#2f55dd` |
-| Status: Active | `--ok-bg` | `--ok` |
-| Status: Pending review | `--warn-bg` | `--warn` |
-| Status: Rejected | `--err-bg` | `--err` |
-| Status: Draft | `--color-neutral-200` | `--color-neutral-800` |
-| Status: Sold | `--color-accent-100` | `--color-accent-800` |
-| Status: Expired | `--color-neutral-200` | `--color-neutral-700` |
-| Payment: Captured / Failed | `--ok-bg` / `--err-bg` | `--ok` / `--err` |
+| Variant                    | Fill                              | Text                  |
+| -------------------------- | --------------------------------- | --------------------- |
+| `tag-accent`               | `#eef2ff`                         | `#172f7d`             |
+| `tag-neutral`              | `#f5f5f8`                         | `#424244`             |
+| `tag-outline`              | transparent, 1px `#2f55dd` border | `#2f55dd`             |
+| Status: Active             | `--ok-bg`                         | `--ok`                |
+| Status: Pending review     | `--warn-bg`                       | `--warn`              |
+| Status: Rejected           | `--err-bg`                        | `--err`               |
+| Status: Draft              | `--color-neutral-200`             | `--color-neutral-800` |
+| Status: Sold               | `--color-accent-100`              | `--color-accent-800`  |
+| Status: Expired            | `--color-neutral-200`             | `--color-neutral-700` |
+| Payment: Captured / Failed | `--ok-bg` / `--err-bg`            | `--ok` / `--err`      |
 
 Filter chip = `tag-outline` + `cursor:pointer`, `gap:7px`, 11px, trailing `✕`; click removes that filter. Toggle chip (mobile sheet, directory city, portfolio legacy) = 12px, `padding:6px 12px`; selected fill `#2f55dd` / text `#fff` / border `#2f55dd`, unselected transparent / `#14171c` / `--color-divider`.
 
@@ -258,12 +258,12 @@ Any framed object: `.blueprint` + four `<i class="corner tl|tr|bl|br">` children
 
 ### 2.8 Vehicle card
 
-| Variant | Spec |
-| --- | --- |
-| `VehicleCard/Grid` | `padding:0; overflow:hidden; background:#fff`; image band `aspect-ratio:4/3`, `background:#eaecf0`, 1px bottom divider; body `padding:12px 13px 14px`, `gap:9px`; whole card clickable → VDP |
-| `VehicleCard/List` (saved cars) | `flex-direction:row; flex-wrap:wrap`; image 250px fixed, `aspect-ratio:4/3`, right divider; body `padding:16px`, `gap:10px`; price right-aligned |
-| `VehicleCard/Compact` (portfolio) | Grid variant, `gap:8px` body, no save button |
-| `VehicleCard/Featured` (homepage) | Grid variant, min column 262px |
+| Variant                           | Spec                                                                                                                                                                                         |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VehicleCard/Grid`                | `padding:0; overflow:hidden; background:#fff`; image band `aspect-ratio:4/3`, `background:#eaecf0`, 1px bottom divider; body `padding:12px 13px 14px`, `gap:9px`; whole card clickable → VDP |
+| `VehicleCard/List` (saved cars)   | `flex-direction:row; flex-wrap:wrap`; image 250px fixed, `aspect-ratio:4/3`, right divider; body `padding:16px`, `gap:10px`; price right-aligned                                             |
+| `VehicleCard/Compact` (portfolio) | Grid variant, `gap:8px` body, no save button                                                                                                                                                 |
+| `VehicleCard/Featured` (homepage) | Grid variant, min column 262px                                                                                                                                                               |
 
 Slots, in order: year plate (absolute TL) · save button (absolute TR) · title `card-title` · price row (`price` 20px tabular + `caption-sm` EMI) · meta row (`caption-sm` 62% — km · fuel · transmission · city, `·` separators) · dealer strip (`padding-top:9px`, 1px top divider, 20px `accent-200` avatar with `accent-800` 9px/700 initials, 12px name with ellipsis, `tag-accent` "Verified").
 
@@ -472,29 +472,36 @@ Admin is desktop-first: at 768 the sidebar collapses to a top select and tables 
 ## 4. Rules
 
 ### 4.1 Shadows
+
 Only three elements carry one, all `--shadow-lg`: the mobile-frame edge, the city dropdown, the dialog. **Never** shadow cards, stat tiles, image frames, plates, tables, headers, sidebars, badges, buttons, the bottom sheet panel, or the lightbox. Depth is expressed with 1px `--color-divider` hairlines and white-on-`#f4f5f7` contrast.
 
 ### 4.2 Tabular numerals
+
 `font-variant-numeric: tabular-nums` is mandatory on: all prices and EMIs, KM readings, credit counts and balances, stat values, filter counts, table numeric columns, invoice amounts, ledger deltas and balances, city counts, gallery counters, pincode, and the "from ₹x" line. Never on prose.
 
 ### 4.3 Square corners
+
 Radius 0 is the product default. The only rounded things are the inherited `.btn` / `.input` / `.card` / `.seg` (4px), `.tag` (3px) and `.dialog` (7px). Never round an image frame, thumbnail, plate, avatar tile, stat tile, badge, banner, table, or the lightbox chrome. Never `border-radius: 50%` — avatars are squares.
 
 ### 4.4 Blueprint marks
+
 If an element has `.blueprint`, it must have all four `<i class="corner tl|tr|bl|br">` children. Do not use `.blueprint` on plain content cards — reserve it for the hero search block, hero/gallery figures, body-type tiles, stat and balance cards, the price block, review-summary panels, the under-review panel, and empty states.
 
 ### 4.5 Plate motif
+
 Exactly four uses: logo, year badge, verified chip, `PRIMARY` photo marker. Do not apply it to prices, buttons, section headings, statuses, or dealer names. The left band is always `--color-accent` at 5px, full height, never rounded.
 
 ### 4.6 Spacing: between vs within
+
 - Between major page sections: **44px** (customer marketing), **26px** (app screens), **22px** page padding in the consoles.
 - Between cards in a grid: **16–18px** (14px for tight stat/tile grids, 12px for admin stats).
 - Within a card: **8–11px** stack gap, **12–14px** between form fields, `padding:12–20px`.
 - Inside a row group (tags, chips, buttons): **6–9px**.
 - Divider-separated groups inside a card: 1px top border + **14px** `padding-top`.
-Always use flex/grid `gap` — never margins between siblings, never whitespace text nodes.
+  Always use flex/grid `gap` — never margins between siblings, never whitespace text nodes.
 
 ### 4.7 Button variants
+
 - `btn-primary` — one per view, the single forward action (Search cars, Enquire now, Send OTP, Continue, Submit for approval, Approve listing, Buy). Never two side by side except in dialog action rows.
 - `btn-secondary` — alternate paths of equal weight (Call dealer, Save, Back, Save draft, Review, Request changes) and toolbar controls.
 - `btn-ghost` — navigation and low-stakes affordances (View all →, Back to results, Clear all, PDF, Manage, Edit).
@@ -502,25 +509,33 @@ Always use flex/grid `gap` — never margins between siblings, never whitespace 
 - Never a `btn-primary` inside a table row; use `Approve`-style primary only in the moderation queue, where it is the queue's whole purpose.
 
 ### 4.8 Colour discipline
+
 Cobalt is the only decorative colour. Semantic colours appear only as status: green = published/captured/positive, amber = pending/under review/negative delta, red = rejected/failed/destructive. Never use a semantic colour for emphasis or decoration. Body-size accent text must use `--color-accent-700`, not `--color-accent` (contrast).
 
 ### 4.9 Moderation invariants
+
 A listing is public **only** in `ACTIVE`. `PENDING` and `REJECTED` must never appear in the customer catalogue, in search, on a portfolio, on the homepage, or in a saved-cars list. Approval consumes the held credit and is irreversible in the MVP; rejection requires a reason of ≥ 6 characters, which is stored and surfaced verbatim to the dealer with an `Edit & resubmit` action. Resubmission returns the listing to `PENDING`, never straight to `ACTIVE`.
 
 ### 4.10 Buyer anonymity
+
 No customer auth anywhere. Saved cars, city choice, and search query live in `localStorage`/URL state only. Never gate the catalogue, a VDP, a portfolio, or an enquiry form behind a sign-in.
 
 ### 4.11 Counts are derived
+
 Every count shown to a user (cars available, dealer inventory, filter counts, city counts, "from ₹x", queue count, saved count) is computed from the live catalogue filtered to `ACTIVE` — never a stored or hard-coded number.
 
 ### 4.12 Grid overflow
+
 Any grid or flex column that contains an image strip, a table, or ellipsised text needs `min-width: 0`; strips need `overflow-x: auto` on the track, not the container. This is what keeps thumbnails inside the gallery column.
 
 ### 4.13 Typography
+
 Sentence case everywhere. All-caps only at `micro`/`label-*` sizes with `0.08–0.14em` tracking, and in the plate. Headings use `--font-heading` (Cabinet Grotesk, fallback Inter); all UI text, numbers and prices use Inter; only technical identifiers (GSTIN, PAN, phone, invoice, RTO, plate, index badges) use mono. Add `text-wrap: pretty` to every multi-line paragraph. Long-form copy caps at `62–66ch`.
 
 ### 4.14 Currency and locale
+
 `₹` prefix, Lakh notation to 2 decimals (`₹6.45 Lakh`); raw amounts use `toLocaleString('en-IN')` grouping (`42,180 km`, `₹10,000`). Phones as `+91 98400 12345`. Dates as `02 Aug 2026`. EMI as `₹48,900/month` (long) or `₹11,700/mo` (card).
 
 ### 4.15 Accessibility
+
 Minimum touch target 44×44 on mobile — the 30×30 save button and 26–30px arrows must grow to 44px below 768. Focus is never removed, only restyled. Every icon-only control needs an `aria-label`. The lightbox and dialog trap focus and restore it on close. Status is never conveyed by colour alone — the badge text always carries it.

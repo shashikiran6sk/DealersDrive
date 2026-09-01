@@ -208,6 +208,52 @@ const envSchema = z.object({
     .transform((value) => value === 'true'),
 
   /**
+   * Where shared, cross-instance state lives — rate-limit windows and the
+   * config-cache version (`platform/cache`, §18).
+   *
+   *   memory    — a `Map` in this process. Right for `pnpm dev`, right for the
+   *               test suite, right for exactly one running task.
+   *   postgres  — the database the API already has. The production default,
+   *               and no new infrastructure.
+   *
+   * `memory` is refused in production below, and that refusal is the point of
+   * this variable existing at all: a process-local counter behind N tasks
+   * permits N times the limit written next to it, and reports nothing.
+   */
+  CACHE_DRIVER: z.enum(['memory', 'postgres']).default(isProduction ? 'postgres' : 'memory'),
+
+  /**
+   * How often a task re-reads the shared config version to decide whether its
+   * in-process `PlatformConfig` cache is stale.
+   *
+   * This is the ceiling on "how long until an admin's change is live
+   * everywhere". Ten seconds costs one trivial indexed read per task per ten
+   * seconds; the five-minute cache TTL it short-circuits used to be the only
+   * answer (§30).
+   */
+  CONFIG_VERSION_POLL_MS: z.coerce.number().int().positive().default(10_000),
+
+  /**
+   * Shutdown, in two phases (§20.10).
+   *
+   * DRAIN_MS is the pause *before* the server stops accepting connections:
+   * `/health/ready` starts answering 503 immediately on SIGTERM, and the load
+   * balancer needs a moment to notice and stop sending new requests. Closing
+   * the listener first is what produces the connection resets that look like a
+   * deploy causing errors. It should exceed the target group's health-check
+   * interval x unhealthy-threshold.
+   *
+   * TIMEOUT_MS is the total budget after that, after which the process exits
+   * anyway rather than hanging a deployment.
+   */
+  SHUTDOWN_DRAIN_MS: z.coerce
+    .number()
+    .int()
+    .nonnegative()
+    .default(isProduction ? 5_000 : 0),
+  SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+
+  /**
    * Serves the OpenAPI reference at `/api/docs`.
    *
    * On outside production, off inside it: the document lists every endpoint,
@@ -274,6 +320,10 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     require('STORAGE_DRIVER', 'must be `r2` in production — container filesystems are not durable.');
   }
 
+  if (value.CACHE_DRIVER === 'memory') {
+    require('CACHE_DRIVER', 'must be `postgres` in production — an in-process counter behind N tasks permits N times every rate limit, silently.');
+  }
+
   if (value.SESSION_SECRET === LOCAL_SESSION_SECRET) {
     require('SESSION_SECRET', 'is still the local development default.');
   }
@@ -329,7 +379,11 @@ export const env: Env = loadEnv();
  * moment they press "Continue with Google". Production never reaches the throw:
  * `checkedEnvSchema` has already refused to start (§29).
  */
-export function googleCredentials(): { clientId: string; clientSecret: string; callbackUrl: string } {
+export function googleCredentials(): {
+  clientId: string;
+  clientSecret: string;
+  callbackUrl: string;
+} {
   if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
     throw new Error(
       'Google sign-in is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env, ' +

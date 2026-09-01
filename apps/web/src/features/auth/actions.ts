@@ -49,10 +49,7 @@ export async function adminLoginAction(
   }
 
   try {
-    const { session } = await apiSignIn<AdminSessionResponse>(
-      '/v1/auth/admin/login',
-      parsed.data,
-    );
+    const { session } = await apiSignIn<AdminSessionResponse>('/v1/auth/admin/login', parsed.data);
 
     if (!session) return { message: 'Sign-in did not return a session. Try again.' };
     await setSession(session.value, session.expires);

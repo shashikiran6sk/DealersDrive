@@ -25,11 +25,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const result = await apiSend<VehicleBatchResponse>(
-      'POST',
-      '/v1/vehicles/batch',
-      parsed.data,
-    );
+    const result = await apiSend<VehicleBatchResponse>('POST', '/v1/vehicles/batch', parsed.data);
     return NextResponse.json(result);
   } catch (error) {
     // The Problem Details document is already a safe, public shape — pass it

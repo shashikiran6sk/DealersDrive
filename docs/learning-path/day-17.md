@@ -13,8 +13,8 @@ TypeScript types **vanish at runtime**. `req.body as CreateVehicleInput` is a
 lie you tell the compiler; the actual bytes arriving over the network are
 whatever the caller sent.
 
-Zod is the bridge: one schema that is both a *runtime validator* and a *compile-
-time type*. And because that schema lives in `packages/contracts`, the API and
+Zod is the bridge: one schema that is both a _runtime validator_ and a _compile-
+time type_. And because that schema lives in `packages/contracts`, the API and
 the web app cannot disagree about a shape — Day 2's whole argument for the
 monorepo.
 
@@ -30,31 +30,31 @@ Then two consequences:
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 16** — Zod contracts (16.1 → 16.7) | 40 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 17** — OpenAPI and Postman (17.1 → 17.7) | 25 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 20** — error handling (20.1 → 20.6) | 35 |
-| `docs/CLAUDE.md` | Rule 2, §19 (error handling), §21 (API rules) | 10 |
-| [RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457) | §3 — the members of a problem object | 10 |
+| Source                                                    | Sections                                        | ~min |
+| --------------------------------------------------------- | ----------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md`                             | **Part 16** — Zod contracts (16.1 → 16.7)       | 40   |
+| `docs/ENGINEER-ONBOARDING.md`                             | **Part 17** — OpenAPI and Postman (17.1 → 17.7) | 25   |
+| `docs/ENGINEER-ONBOARDING.md`                             | **Part 20** — error handling (20.1 → 20.6)      | 35   |
+| `docs/CLAUDE.md`                                          | Rule 2, §19 (error handling), §21 (API rules)   | 10   |
+| [RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457) | §3 — the members of a problem object            | 10   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `packages/contracts/src/index.ts` | The public surface. Six files feed it |
-| 2 | `packages/contracts/src/common.ts` | The primitives — pagination, ids, money, phone. Reused everywhere |
-| 3 | `packages/contracts/src/public.ts` | `VehicleQuery`, `VehicleDto`. Find `.strict()` |
-| 4 | `packages/contracts/src/dealer.ts` | The write inputs. **Confirm no schema anywhere accepts a `dealerId`** |
-| 5 | `apps/api/src/middleware/validate.ts` | Where a schema meets a request. How a Zod issue becomes a 422 with `body.fieldName` |
-| 6 | `apps/api/src/platform/errors.ts` | The error vocabulary: `DomainError`, `ConflictError`, `NotFoundError`, `UnauthorizedError`, `ForbiddenError`, `RateLimitError`, `ConfigurationError` |
-| 7 | `apps/api/src/middleware/error-handler.ts` | Every error becomes `application/problem+json`. **Find what it refuses to leak** |
-| 8 | `apps/api/src/docs/openapi.ts` | Zod schemas → an OpenAPI document, at runtime |
-| 9 | `apps/api/src/docs/spec.ts` | The per-module docs structure |
-| 10 | `apps/api/tests/openapi.test.ts` | **The test that makes it real** — every route must appear in the document |
-| 11 | `apps/web/src/lib/api.ts` | `ApiError.fieldErrors()` — how `body.pricePaise` becomes a message under the right form field |
+| #   | File                                       | What to look for                                                                                                                                     |
+| --- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `packages/contracts/src/index.ts`          | The public surface. Six files feed it                                                                                                                |
+| 2   | `packages/contracts/src/common.ts`         | The primitives — pagination, ids, money, phone. Reused everywhere                                                                                    |
+| 3   | `packages/contracts/src/public.ts`         | `VehicleQuery`, `VehicleDto`. Find `.strict()`                                                                                                       |
+| 4   | `packages/contracts/src/dealer.ts`         | The write inputs. **Confirm no schema anywhere accepts a `dealerId`**                                                                                |
+| 5   | `apps/api/src/middleware/validate.ts`      | Where a schema meets a request. How a Zod issue becomes a 422 with `body.fieldName`                                                                  |
+| 6   | `apps/api/src/platform/errors.ts`          | The error vocabulary: `DomainError`, `ConflictError`, `NotFoundError`, `UnauthorizedError`, `ForbiddenError`, `RateLimitError`, `ConfigurationError` |
+| 7   | `apps/api/src/middleware/error-handler.ts` | Every error becomes `application/problem+json`. **Find what it refuses to leak**                                                                     |
+| 8   | `apps/api/src/docs/openapi.ts`             | Zod schemas → an OpenAPI document, at runtime                                                                                                        |
+| 9   | `apps/api/src/docs/spec.ts`                | The per-module docs structure                                                                                                                        |
+| 10  | `apps/api/tests/openapi.test.ts`           | **The test that makes it real** — every route must appear in the document                                                                            |
+| 11  | `apps/web/src/lib/api.ts`                  | `ApiError.fieldErrors()` — how `body.pricePaise` becomes a message under the right form field                                                        |
 
 ---
 
@@ -68,7 +68,7 @@ curl -s -X POST http://localhost:4000/v1/enquiries \
   -d '{"name": 12345, "phone": true}' | jq
 ```
 
-TypeScript compiled fine. The *runtime* rejected it, with per-field errors,
+TypeScript compiled fine. The _runtime_ rejected it, with per-field errors,
 because Zod actually inspected the bytes. Read §16.1 for the framing.
 
 ### 4.2 Prove `.strict()` is a security control
@@ -184,16 +184,16 @@ equally useful one for anybody probing the live API.
 
 ## 5. Prove you understood it
 
-1. Why is TypeScript alone insufficient at an API boundary? → *§16.1*
-2. What does `.strict()` do, and what are the two failure modes it prevents? → *§16.5*
-3. Why does `packages/contracts` exist as a shared package? → *§16.2, §30.1*
-4. Where does coercion happen, and why only at the boundary? → *§16.6*
-5. Name every member of an RFC 9457 problem document. → *§20.1*
-6. Why does a client branch on `code` rather than `detail`? → *§20.6*
-7. What is the difference between 400 and 422? → *§20.2*
-8. Why is the OpenAPI document generated rather than hand-written? → *§17.5, §17.7*
-9. What does `openapi.test.ts` prevent? → *§17.5*
-10. Why is `DOCS_ENABLED=false` in production? → *`env.ts`*
+1. Why is TypeScript alone insufficient at an API boundary? → _§16.1_
+2. What does `.strict()` do, and what are the two failure modes it prevents? → _§16.5_
+3. Why does `packages/contracts` exist as a shared package? → _§16.2, §30.1_
+4. Where does coercion happen, and why only at the boundary? → _§16.6_
+5. Name every member of an RFC 9457 problem document. → _§20.1_
+6. Why does a client branch on `code` rather than `detail`? → _§20.6_
+7. What is the difference between 400 and 422? → _§20.2_
+8. Why is the OpenAPI document generated rather than hand-written? → _§17.5, §17.7_
+9. What does `openapi.test.ts` prevent? → _§17.5_
+10. Why is `DOCS_ENABLED=false` in production? → _`env.ts`_
 
 ---
 

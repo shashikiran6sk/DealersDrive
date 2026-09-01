@@ -64,7 +64,9 @@ export function ConfigRow({ entry }: { entry: ConfigEntry }) {
           <input
             id={entry.key}
             type={entry.type === 'number' ? 'number' : 'text'}
-            className={entry.type === 'number' ? 'input w-auto min-w-[140px] tnum' : 'input flex-[2]'}
+            className={
+              entry.type === 'number' ? 'input w-auto min-w-[140px] tnum' : 'input flex-[2]'
+            }
             value={value}
             onChange={(event) => setValue(event.target.value)}
           />

@@ -1915,8 +1915,8 @@ Layers, cheapest and closest to the user first. Layers 0–3 cover ~95% of traff
 L0  Browser        immutable assets, images        1 year
 L1  Cloudflare CDN HTML for public pages, images   60s – 1 year
 L2  Next.js ISR    RSC payloads, fetch cache       60s – 1 hr + on-demand
-L3  In-process LRU catalog, platform config        5 min
-L4  Redis          🟡 growth only
+L3  In-process LRU catalog, platform config        5 min, version-checked ≤10s
+L4  CachePort      rate-limit windows, config version  — (postgres · memory)
 L5  PostgreSQL     listing_search denormalized     —
 ```
 
@@ -1935,7 +1935,32 @@ L5  PostgreSQL     listing_search denormalized     —
 
 ⚠️ **Audit every cached route for accidental personalization.** A cached page containing one user's data served to another is the single most dangerous bug in this build. Add a test asserting no response carrying `Set-Cookie` is cacheable.
 
-**Redis trigger:** session lookups > 2k/s, cross-instance rate limiting needed, or facet computation > 100ms. A `CachePort` with a `MemoryAdapter` exists now, so adding a `RedisAdapter` is half a day.
+## 18.1 L4 — the `CachePort`, and why it is not Redis
+
+Cross-instance rate limiting is no longer a future need; it was a live defect. A fixed window counted in a `Map` counts one process's requests, so behind N tasks every configured limit permits N times what it says — and nothing errors. For the phone-reveal limit that is a **spend control failing open**: each reveal costs an SMS (§9.2).
+
+The port (`apps/api/src/platform/cache/cache.port.ts`) holds two things, and only two:
+
+| What | Why it cannot be process-local |
+|---|---|
+| Rate-limit windows | N tasks each counting to 5 permit 5N |
+| The platform-config version | The writer drops *its* cache; the other N−1 tasks serve stale values until their TTL expires |
+
+Two adapters ship:
+
+- **`memory`** — a `Map`. Correct for exactly one process: `pnpm dev` and the test suite. `env.ts` **refuses it in production**, because the failure is silent rather than loud.
+- **`postgres`** — the database the API already has. `increment` is a single `INSERT … ON CONFLICT DO UPDATE` with two `CASE` expressions, so it is atomic without a transaction or a row lock: whichever concurrent request wins the conflict evaluates `reset_at <= now()` against the row as it exists at that instant, and a stale window resets to 1 exactly once.
+
+**Why not Redis.** Redis is a second datastore to provision, secure, monitor and pay for, in a VPC that currently contains one — and what is being stored is a counter that may be lost without consequence beyond a window resetting early. Postgres is already there, already backed up, already on the readiness check, and already the thing the request cannot proceed without. The cost is one small write per rate-limited request, which at 120/min/IP is nothing next to the query the request is about to run anyway.
+
+**Redis trigger (unchanged in kind, changed in urgency):** when a counter write per request stops being free — session lookups > 2k/s, or the counter table showing up in the slow log. The port mentions no SQL, no table, no key prefix and no connection, so `createRedisCache()` is a new file and one line in `factory.ts`.
+
+**Two properties that are deliberate:**
+
+- **The limiter fails open.** If the backend is unreachable the request proceeds and a warning is logged. A limiter that cannot count is a limiter with no opinion, and turning a database blip into a site-wide 429 converts a degraded dependency into an outage.
+- **The cache never holds the truth.** It holds counters and a version number. `PlatformConfig` values live in the table; the cache only says *when* the table last changed. A cache that could disagree with the database would be a second source of truth.
+
+Expired windows are reclaimed by `cache.sweep-counters`, scheduled hourly — expired rows are already treated as absent, so this is space, not correctness. Hourly rather than nightly because a busy day writes one row per rate-limited request, and a full day of them makes the sweep itself the largest delete the database sees.
 
 ---
 
@@ -2417,7 +2442,11 @@ TURNSTILE_SITE_KEY=  TURNSTILE_SECRET_KEY=
 
 Every environment has **its own credentials for everything** — separate R2 buckets, separate Resend keys, separate MSG91 sender IDs, separate Sentry projects. Dev must be incapable of touching production data or emailing a real dealer.
 
-`.env.example` is committed with every key and no values. `docs/infrastructure.md` documents what each one does and where it's set.
+`.env.example` is committed with every key and no values.
+
+**The *shape* of the secrets is code; the values never are.** `deploy/terraform/ssm.tf` declares that each parameter exists and that the execution role may read it — scoped to `/dealers-drive/<env>/*`, so a dev task definition cannot resolve a production secret even if someone pastes the wrong ARN into it. Each parameter is created with a literal `PLACEHOLDER` and then carries `ignore_changes = [value]`, so `terraform apply` can never overwrite a real secret, and no secret ever has to live in a tfvars file to stop it doing so. The values are written once, by hand, with `aws ssm put-parameter`.
+
+That is what makes "no secret is in git" and "the infrastructure is in git" both true at the same time. A parameter left at `PLACEHOLDER` fails loudly at the first deploy, because `env.ts` refuses to boot in production on a missing or still-local-default secret.
 
 ## 20.8 Branching
 
@@ -2438,6 +2467,38 @@ Short-lived branches, squash merge, no `develop` branch, no release branches, no
 - Rolling back production is the same flow with an older SHA. **Under 2 minutes.**
 - `curl https://dealers-drive.com/api/health` (or the API's `/health/ready`) tells you exactly which SHA is live.
 - No image is ever built twice.
+
+## 20.10 Shutdown — fail readiness first, then close
+
+A rolling deploy that produces a burst of 502s is not a broken new version; it is almost always a task that closed its listener before the load balancer stopped routing to it. The order is the whole mechanism, and it is easy to get backwards.
+
+```
+SIGTERM
+  │
+  ├─ 0ms      set the drain flag.  /health/ready → 503 immediately
+  │           /health/live stays 200 — a liveness probe that fails during a
+  │           graceful drain gets the container KILLED mid-drain
+  │
+  ├─ …        SHUTDOWN_DRAIN_MS (5s deployed, 0 local): do nothing on purpose.
+  │           This is the target group's chance to notice and stop sending work
+  │
+  ├─ 5s       server.close() — stop accepting, let in-flight requests finish
+  │
+  ├─ …        closeContainer(): outbox → pg-boss → prisma pool
+  │
+  └─ ≤20s     exit 0.  SHUTDOWN_TIMEOUT_MS bounds the whole thing
+```
+
+Three numbers, one mechanism, and changing any one means checking the other two:
+
+| Setting | Value | Constraint |
+|---|---|---|
+| `SHUTDOWN_DRAIN_MS` | 5 000 | Long enough for the target group to deregister |
+| `SHUTDOWN_TIMEOUT_MS` | 15 000 | Budget for the drain itself |
+| ECS `stopTimeout` | 25 | **Must exceed drain + timeout**, or SIGKILL arrives mid-drain |
+| ALB `deregistration_delay` | 30 | The balancer's half of the same handshake |
+
+Keep-alive is set explicitly (`keepAliveTimeout = 61s`, `headersTimeout = 65s`) and deliberately exceeds the ALB's `idle_timeout` of 60s. If the balancer's idle timeout were the longer of the two it could send a request down a connection the task had already decided to close, and the client would see a 502 that no log explains.
 
 ---
 
@@ -2491,7 +2552,7 @@ Book an external penetration test before you take real money.
 |---|---|---|
 | Errors | **Sentry**, both apps, source maps, release tagged with the SHA | Alert routing |
 | Logs | **pino** JSON → platform log drain | Loki / Better Stack, 30-day retention |
-| Tracing | **traceId in every log line, error response and Sentry event** — 90% of the value at 5% of the cost | OpenTelemetry |
+| Tracing | **traceId in every log line, error response and Sentry event**, adopted from the edge when the caller sent one — 90% of the value at 5% of the cost | OpenTelemetry |
 | Metrics | Business metrics on an `/admin/health` page + platform dashboards | Prometheus + Grafana |
 | Uptime | UptimeRobot on homepage, a detail page, `/health/ready` | Multi-region synthetics |
 | Database | `pg_stat_statements` + weekly slow-query review | Automated alerts |
@@ -2526,6 +2587,26 @@ API 5xx > 2% for 5 min · enquiry email p95 > 60s · job queue depth > 500 or ol
 Everything else goes to a channel you check each morning. **Alert fatigue is a reliability risk** — a solo developer with 40 noisy alerts will ignore the one that matters.
 
 Every alert must link to a `docs/RUNBOOK.md` entry. An alert with no runbook entry either gets an entry or gets deleted.
+
+### What is actually wired today
+
+Five CloudWatch alarms, in `deploy/terraform/alarms.tf`, all pointing at one SNS topic:
+
+| Alarm | Fires when | Why it is worth waking someone |
+|---|---|---|
+| `api-no-healthy-targets` | `HealthyHostCount < 1` for 2 min | Unambiguous. Every `/v1` request is failing. |
+| `web-no-healthy-targets` | same, web target group | The marketplace is not rendering. |
+| `api-5xx` | target 5xx over threshold in 5 min | The application is erroring, not the balancer. |
+| `api-running-below-desired` | running tasks < minimum for 10 min | Tasks are not staying up — a crash loop the circuit breaker has already failed to fix. |
+| `api-latency-p95` | p95 > 2s for two 5-min periods | p95, not average: an average hides the tail users feel. |
+
+**Deliberately not alarmed**, and the reasons matter more than the list:
+
+- **CPU or memory crossing a threshold.** That is autoscaling's job. An alarm on it fires every time the system works correctly.
+- **4xx rates.** Clients being clients.
+- **Individual task restarts.** ECS replaces a task and the service is fine; `api-running-below-desired` is the version of this that means something.
+
+Every one of them uses `treat_missing_data = "notBreaching"`. A rolling deploy briefly reports no data, and an alarm that pages on every deploy is an alarm nobody reads within a week.
 
 ---
 
@@ -2574,7 +2655,7 @@ No mocking of Prisma — real database, real middleware, real HTTP. E2E must run
 
 # 24. Deferred work & triggers
 
-Nothing below is built now. Each has a named trigger, and each attaches to a seam that already exists.
+Nothing below is built now — except the struck-through rows, which are kept with their original trigger so the reasoning that moved them is visible rather than deleted. Each has a named trigger, and each attaches to a seam that already exists.
 
 | Deferred | Trigger | Where it attaches | Effort |
 |---|---|---|---|
@@ -2588,11 +2669,11 @@ Nothing below is built now. Each has a named trigger, and each attaches to a sea
 | **WhatsApp lead alerts** | Immediately after launch if dealer response time is poor | `notifications` module — a new channel adapter | ~2 days |
 | **Buyer accounts + favorites** | Buyers ask, or you want saved-search emails | `localStorage` favorites already hold vehicle ids to merge | ~4 days |
 | **Dealer staff sub-accounts** | A dealer asks twice | `DealerMember` and the permission model already exist | ~2 days |
-| **Redis** | Sessions > 2k/s, or cross-instance rate limits, or facets > 100ms | `CachePort` + `MemoryAdapter` exist | ~0.5 day |
+| **Redis** | ~~cross-instance rate limits~~ — **that arrived and was met with Postgres instead (§18.1).** Remaining triggers: sessions > 2k/s, facets > 100ms, or a counter write per request showing up in the slow log | `CachePort` with `memory` + `postgres` adapters; the port names no SQL, table or connection | ~0.5 day |
 | **Typesense** | >100k listings, or search p95 > 300ms, or typo tolerance costs conversions | `SearchPort` exists | ~5 days |
 | **Read replica** | Primary CPU > 60% sustained | Public reads already use a separate repository | ~0.5 day |
 | **BullMQ** | Job throughput > 50/s | Handlers unchanged | ~1 day |
-| **AWS ECS Fargate** | PaaS bill > $1,500/mo, or VPC-private database required | Everything is already Dockerized; the pipeline deploys by image | ~5 days |
+| ~~**AWS ECS Fargate**~~ | ~~PaaS bill > $1,500/mo~~ | **Built — `deploy/terraform/` is the runtime, and §20 is the pipeline.** | — |
 | **`packages/ui`** | A second app needs the components | `git mv` + a package.json | ~0.5 day |
 | **Service extraction** | Team > 12, or one module needs a different scaling profile | Facades are already the boundary; extract `search` first | — |
 | **Kafka** | >3 services sharing a durable event log | Swap the outbox publisher's sink | — |

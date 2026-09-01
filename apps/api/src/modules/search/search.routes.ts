@@ -18,7 +18,7 @@ import {
 } from '@dealers-drive/contracts';
 import { Router } from 'express';
 
-import { rateLimit } from '../../middleware/rate-limit.js';
+import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
 import { carCountLabel } from './search.mapper.js';
 import type { SearchService } from './search.service.js';
@@ -34,6 +34,7 @@ import type { DealersPublicService } from '../dealers/dealers.facade.js';
 export function createSearchRouter(
   service: SearchService,
   dealers: DealersPublicService,
+  rateLimit: RateLimiter,
 ): Router {
   const router = Router();
   const publicReads = rateLimit('public-read', { limit: 120, windowSeconds: 60 });

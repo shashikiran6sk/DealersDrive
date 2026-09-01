@@ -27,30 +27,30 @@ sides and say why this side won here.
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-B2** — the four-way comparison table. Start here | 10 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-B3** — Cookie: what it is on the wire | 15 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-B4** — Opaque token vs JWT | 15 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 5** — all of it (5.1 → 5.10) | 60 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-B5, B6** — hashing, and HMAC | 15 |
-| [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) | skim | 15 |
+| Source                                                                                                                     | Sections                                                   | ~min |
+| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md`                                                                                              | **Part 34-B2** — the four-way comparison table. Start here | 10   |
+| `docs/ENGINEER-ONBOARDING.md`                                                                                              | **Part 34-B3** — Cookie: what it is on the wire            | 15   |
+| `docs/ENGINEER-ONBOARDING.md`                                                                                              | **Part 34-B4** — Opaque token vs JWT                       | 15   |
+| `docs/ENGINEER-ONBOARDING.md`                                                                                              | **Part 5** — all of it (5.1 → 5.10)                        | 60   |
+| `docs/ENGINEER-ONBOARDING.md`                                                                                              | **Part 34-B5, B6** — hashing, and HMAC                     | 15   |
+| [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) | skim                                                       | 15   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/api/prisma/schema.prisma` | The `Session` model. Six fields and two indexes. Note `tokenHash` is `@unique`, and that `scope` exists |
-| 2 | `apps/api/src/modules/auth/session.service.ts` | **The core file of today.** `issue`, `resolve`, `revoke`, `revokeAllForUser`. Read the doc comment first |
-| 3 | `apps/api/src/modules/auth/session.service.ts` (again) | `hashToken()`. Only the SHA-256 is stored. **Why is fast hashing fine here but not for passwords?** |
-| 4 | `apps/api/src/modules/auth/session.cookie.ts` | The cookie attributes, and the comment explaining `Lax` rather than `Strict` |
-| 5 | `apps/api/src/modules/auth/session.port.ts` | The three principal shapes, and the resolver interface. Note it offers **no way to pass an identity in** |
-| 6 | `apps/api/src/modules/auth/cookie-session.adapter.ts` | Cookie → row → principal. Read both properties named in its doc comment |
-| 7 | `apps/api/src/modules/auth/password.ts` | Argon2id, and `verifyDecoy()`. A timing-attack defence in eight lines |
-| 8 | `apps/web/src/lib/session.ts` | The web side. Note `hasSession()` is deliberately **not** an authorization check |
-| 9 | `apps/web/src/lib/api.ts` | `sessionFrom()` and `apiSignIn` — how a `Set-Cookie` from the API is re-issued by the Next origin |
+| #   | File                                                   | What to look for                                                                                         |
+| --- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/api/prisma/schema.prisma`                        | The `Session` model. Six fields and two indexes. Note `tokenHash` is `@unique`, and that `scope` exists  |
+| 2   | `apps/api/src/modules/auth/session.service.ts`         | **The core file of today.** `issue`, `resolve`, `revoke`, `revokeAllForUser`. Read the doc comment first |
+| 3   | `apps/api/src/modules/auth/session.service.ts` (again) | `hashToken()`. Only the SHA-256 is stored. **Why is fast hashing fine here but not for passwords?**      |
+| 4   | `apps/api/src/modules/auth/session.cookie.ts`          | The cookie attributes, and the comment explaining `Lax` rather than `Strict`                             |
+| 5   | `apps/api/src/modules/auth/session.port.ts`            | The three principal shapes, and the resolver interface. Note it offers **no way to pass an identity in** |
+| 6   | `apps/api/src/modules/auth/cookie-session.adapter.ts`  | Cookie → row → principal. Read both properties named in its doc comment                                  |
+| 7   | `apps/api/src/modules/auth/password.ts`                | Argon2id, and `verifyDecoy()`. A timing-attack defence in eight lines                                    |
+| 8   | `apps/web/src/lib/session.ts`                          | The web side. Note `hasSession()` is deliberately **not** an authorization check                         |
+| 9   | `apps/web/src/lib/api.ts`                              | `sessionFrom()` and `apiSignIn` — how a `Set-Cookie` from the API is re-issued by the Next origin        |
 
 ---
 
@@ -68,10 +68,11 @@ curl -i -X POST http://localhost:4000/v1/auth/admin/login \
 ```
 
 **Place 1 — the wire.** Read the `Set-Cookie` header. Identify every attribute:
-`HttpOnly`, `SameSite=Lax`, `Path=/`, `Expires`. Note `Secure` is *absent*
+`HttpOnly`, `SameSite=Lax`, `Path=/`, `Expires`. Note `Secure` is _absent_
 locally and present in production (`env.isProduction`).
 
 **Place 2 — the database.**
+
 ```sql
 SELECT id, "userId", scope, left("tokenHash", 16) AS hash_prefix,
        "expiresAt", "revokedAt", ip
@@ -80,9 +81,11 @@ FROM sessions ORDER BY "createdAt" DESC LIMIT 3;
 
 **Place 3 — the browser.** Sign in through the UI, then DevTools →
 Application → Cookies. Try to read it from the console:
+
 ```js
-document.cookie      // dd_session is NOT here
+document.cookie; // dd_session is NOT here
 ```
+
 That absence is `HttpOnly` working. **An XSS bug cannot steal this session.**
 
 ### 4.2 Prove the token is not in the database
@@ -121,6 +124,7 @@ With a JWT you would need a denylist — which is a database, only slower to
 consult and easier to forget to check.
 
 Confirm in SQL:
+
 ```sql
 SELECT "revokedAt" FROM sessions ORDER BY "createdAt" DESC LIMIT 1;
 ```
@@ -146,7 +150,7 @@ Then read `password.ts`: Argon2id at 19 MiB and two passes, **deliberately
 slow**. Write down, in one sentence each, why:
 
 - SHA-256 is correct for a session token
-- SHA-256 would be *negligent* for a password
+- SHA-256 would be _negligent_ for a password
 
 (The answer is entropy. 32 random bytes have nothing to guess; a password does.)
 
@@ -171,18 +175,18 @@ oracle.
 ## 5. Prove you understood it
 
 1. Complete the sentence: "The cookie is the ___, the token is the ___, the
-   session is the ___." → *§34-B2*
-2. What does `HttpOnly` prevent, concretely? → *§34-B3*
+   session is the ___." → _§34-B2_
+2. What does `HttpOnly` prevent, concretely? → _§34-B3_
 3. Why `SameSite=Lax` and not `Strict`? Name the specific request that would
-   break. → *§34-B3, §5.10* — **this is Day 9's whole flow**
-4. Why is `SESSION_COOKIE_DOMAIN` empty in every environment? → *§34-B3, `env.ts`*
-5. Why is only the hash of the token stored? → *`session.service.ts`*
+   break. → _§34-B3, §5.10_ — **this is Day 9's whole flow**
+4. Why is `SESSION_COOKIE_DOMAIN` empty in every environment? → _§34-B3, `env.ts`_
+5. Why is only the hash of the token stored? → _`session.service.ts`_
 6. Give one advantage of a JWT and one of an opaque token. Which won here, and
-   why? → *§34-B4, §5.9*
+   why? → _§34-B4, §5.9_
 7. Why does a dealer session with `scope = 'DEALER'` fail on an admin route even
-   if the same human is an admin? → *`cookie-session.adapter.ts`*
-8. Why is `hasSession()` in `lib/session.ts` explicitly *not* an authorization
-   check? → *`lib/session.ts` doc comment*
+   if the same human is an admin? → _`cookie-session.adapter.ts`_
+8. Why is `hasSession()` in `lib/session.ts` explicitly _not_ an authorization
+   check? → _`lib/session.ts` doc comment_
 
 ---
 

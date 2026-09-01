@@ -49,8 +49,8 @@ export default async function EditVehiclePage({
           <h1 className="mt-3 text-[29px] leading-[1.1]">{vehicle.title} is with our reviewers</h1>
           <p className="mt-[10px] text-[14px] leading-[1.6] ink-secondary">
             One credit is held while we check the photos, the price and the odometer reading. It is
-            consumed when the listing goes live, and returned in full if we reject it. Most
-            listings are decided within a few hours.
+            consumed when the listing goes live, and returned in full if we reject it. Most listings
+            are decided within a few hours.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <Link href="/dealer/inventory" className="btn btn-primary">

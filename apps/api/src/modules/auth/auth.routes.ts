@@ -3,7 +3,7 @@ import { Router } from 'express';
 
 import { env } from '../../config/env.js';
 import { signedInPrincipal } from '../../middleware/auth.js';
-import { rateLimit } from '../../middleware/rate-limit.js';
+import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
 import { ForbiddenError } from '../../platform/errors.js';
 import type { AuthService } from './auth.service.js';
@@ -29,7 +29,7 @@ import {
  * back to the sign-in screen with a code in the query string, so they see the
  * product's own error state rather than a JSON body in an address bar.
  */
-export function createPublicAuthRouter(service: AuthService): Router {
+export function createPublicAuthRouter(service: AuthService, rateLimit: RateLimiter): Router {
   const router = Router();
 
   router.get('/providers', (_req, res) => {

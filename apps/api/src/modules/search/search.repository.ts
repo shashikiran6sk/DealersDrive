@@ -385,14 +385,7 @@ const FACET_TO_FILTER: Record<FacetColumn, FilterGroup> = {
 };
 
 type FilterGroup =
-  | 'fuel'
-  | 'bodyType'
-  | 'transmission'
-  | 'dealer'
-  | 'owners'
-  | 'color'
-  | 'rtoState'
-  | 'price';
+  'fuel' | 'bodyType' | 'transmission' | 'dealer' | 'owners' | 'color' | 'rtoState' | 'price';
 
 /**
  * `is_sold = false` unless a caller opts out.

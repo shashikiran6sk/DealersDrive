@@ -48,7 +48,7 @@ microservices, Redux or another global state manager. Every one of those was
 considered and rejected in ARCHITECTURE; adding one silently re-opens a settled
 decision.
 
-## 3. The nine rules that everything else follows
+## 3. The ten rules that everything else follows
 
 These are from `docs/CLAUDE.md` and are the highest-value thing in this file.
 Most of them are enforced mechanically; the notes say how.
@@ -72,8 +72,8 @@ reason})`, exported through `billing.facade.ts`, and nothing else may write a
    in no dealer-writable schema either, so the two facts together are the
    defence.
 6. **Public visibility is two rules now, and the split is load-bearing.**
-   *Membership* of `listing_search`: `listing.status IN ('APPROVED','SOLD') AND
-dealer.status === 'ACTIVE'`. *Availability*: `is_sold = false`. Both are
+   _Membership_ of `listing_search`: `listing.status IN ('APPROVED','SOLD') AND
+dealer.status === 'ACTIVE'`. _Availability_: `is_sold = false`. Both are
    evaluated once, in the read model. A sold car stays on the marketplace —
    greyed, badged, unclickable, sorted last — because a dealer who moves stock
    should be seen to; it is not stock, so **every count means available** and
@@ -85,6 +85,11 @@ dealer.status === 'ACTIVE'`. *Availability*: `is_sold = false`. Both are
 8. **Server components by default** in `apps/web`. `'use client'` needs a
    reason: an event handler, a browser API, or `localStorage`.
 9. **No unnecessary `NEXT_PUBLIC_*`.** Build-once-promote-many stays intact.
+10. **Anything counted across requests goes through the `CachePort`**, never a
+    module-level `Map`. _Enforced:_ `env.ts` refuses `CACHE_DRIVER=memory` in
+    production. A counter in process memory is correct for one process and
+    silently N times too permissive behind N tasks — and since a phone reveal
+    costs an SMS, the limiter is a spend control as much as a security one.
 
 ## 4. Repository layout
 
@@ -104,12 +109,18 @@ apps/
         <name>.repository.ts the ONLY file importing prisma in the module
         <name>.facade.ts     the ONLY file other modules may import
         <name>.docs.ts       the OpenAPI operations for this module
-      platform/              db · events · jobs · storage · notify · payments · audit · config · telemetry
+      platform/
+        cache/               CachePort — memory · postgres. Shared state, not process memory
+        db/ events/ jobs/    prisma · in-process bus + outbox · pg-boss
+        storage/ notify/     ports with adapters, chosen by env
+        payments/ audit/     PaymentProvider port · audit trail
+        config/              PlatformConfig, incl. `feature.*` flags
+        telemetry/           pino logger · the drain flag read by /health/ready
     prisma/
-      schema.prisma          28 models; the invariants are here
-      migrations/            3 migrations, applied in order
+      schema.prisma          30 models; the invariants are here
+      migrations/            applied in order; the newest adds the cache tables
       seed/                  the world: 5 dealers, 23 vehicles, 18 live listings
-    tests/                   8 files, 99 integration tests against a real database
+    tests/                   integration tests against a real database
   web/
     src/
       app/(public)/          marketplace
@@ -123,7 +134,12 @@ apps/
 packages/
   contracts/                 Zod schemas + inferred types shared by both apps
   config/                    eslint + tsconfig presets
+deploy/
+  terraform/                 the ECS runtime as code — capacity, scaling, alarms, IAM, SSM names
+  aws/                       task-definition reference for a hand-managed environment
+  nginx/ systemd/            the alternative single-VM topology
 scripts/browse.mjs           CDP driver for headless visual QA
+scripts/check-docs.mjs       fails CI when a document names a command or path that is gone
 ```
 
 ## 5. Where the invariants actually live
@@ -146,6 +162,11 @@ suggestion under concurrency.
   without re-approving anything.
 - **`Dealer.creditBalance` is a read cache.** Every write path reads the balance
   from the newest ledger row and treats the column as untrusted.
+- **`cache_counter` is incremented by one statement**, not by a read and a
+  write. Two tasks handling the sixth request of a five-per-hour window must not
+  both read 5, both decide "allowed", and both write 6. The `ON CONFLICT DO
+UPDATE … CASE` in `postgres.adapter.ts` is what makes that impossible without
+  a transaction or a row lock.
 
 ## 6. What is bypassed or mocked, and what is not
 
@@ -228,6 +249,48 @@ S3 adapter serving both MinIO (`STORAGE_DRIVER=minio`) and Cloudflare R2
 three, including the signed content-type and content-length that make the commit
 step's trust in what it finds well founded.
 
+### Shared state — real, and the reason it exists
+
+`CachePort` (`platform/cache/`) holds the two things that must be true across
+tasks rather than within one process:
+
+- **Rate-limit windows.** `increment(key, windowSeconds)` is one atomic
+  operation. The Postgres adapter does it in a single upsert with two `CASE`
+  expressions, so whichever concurrent request wins the conflict evaluates
+  `reset_at <= now()` against the row as it exists at that instant — a stale
+  window resets to 1 exactly once, and every other request increments the fresh
+  one. A read-then-write in application code cannot promise that.
+- **The platform-config version.** Bumped by whichever task writes a setting,
+  polled by the others every `CONFIG_VERSION_POLL_MS`. This is what turns "an
+  admin's change is live everywhere within five minutes" into "within ten
+  seconds".
+
+Two adapters: `memory` (a `Map`, correct for one process — `pnpm dev` and the
+test suite) and `postgres` (the production default). `env.ts` refuses `memory`
+in production, because the failure mode is silent: nothing errors, every limit
+is simply N times looser than the number written next to it. Redis is the
+obvious third adapter and the port mentions no SQL, no table and no connection,
+so adding it is a new file and one line in `factory.ts`.
+
+The limiter **fails open**. If the counter backend is unreachable the request
+proceeds and a warning is logged: a limiter that cannot count is a limiter with
+no opinion, and turning a database blip into a site-wide 429 would convert a
+degraded dependency into an outage.
+
+### Feature flags — platform config with a prefix
+
+There is no second system. A flag is a `feature.*` key in `CONFIG_DEFAULTS`, so
+it gets the existing admin screen (`GET`/`PUT /v1/admin/config`), the existing
+audit trail, and the existing cache — and flipping one now propagates to every
+task in about ten seconds rather than five minutes.
+
+`config.flag('feature.x')` refuses a key without the prefix, so a typo reads as
+a mistake rather than as `false`. `config.flags()` returns them all, unprefixed,
+for a bootstrap payload. Four ship today, all defaulting to off except
+`feature.similarCars`. The rule for adding one: **it must be safe in both
+positions at all times**, because the rollback for a bad release is flipping it
+back, and that has to work without a deploy, a migration or a data repair.
+
 ## 7. Test suite
 
 `pnpm test` — 2 097 tests. Vitest, `pool: 'forks'`, `maxWorkers: 1`,
@@ -239,18 +302,18 @@ migrated and seeded once per run by `tests/global-setup.ts`. That is deliberate 
 every invariant worth testing lives in the database (§5), and a mocked Prisma
 would test the mock.
 
-| File                                          | Tests | What it pins                                                                                                                                  |
-| --------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tenant-isolation.test.ts`                    | 12    | Dealer A cannot reach B's vehicles, enquiries, media, ledger or presign — all 404, not 403                                                    |
-| `credits.test.ts`                             | 9     | hold → consume/release; resubmit reuses the hold; refusal at zero; no negative balance; purchase → one row + invoice; cache equals newest row |
-| `listing-lifecycle.test.ts`                   | 22    | the `transition` table as a unit, then double-approve/double-submit conflicts, forged `status`, takedown, mark-sold, dealer withdrawal, catalogue-reference 404s |
-| `public-visibility.test.ts`                   | 6     | rule 6 both ways incl. suspend/reinstate and the sold split; rule 7 by scanning whole responses for every phone in the DB                     |
-| `errors.test.ts`                              | 19    | RFC 9457 shape, `.strict()` rejections, fractional paise, 401/403 per seat, documented errors                                                 |
-| `rate-limit.test.ts`                          | 4     | limits turned back **on**, in its own module registry                                                                                         |
-| `contracts.test.ts`                           | 24    | every response parsed through `packages/contracts`                                                                                            |
-| `openapi.test.ts`                             | 12    | the document describes _this_ API, in both directions (§8)                                                                                    |
-| `postman.test.ts`                             | 10    | the committed collection is regenerated and compared byte-for-byte — a route change without `pnpm docs:postman` fails here (§8.1)             |
-| `packages/contracts/tests/formatting.test.ts` | 15    | `₹6.45 Lakh`, `02 Aug 2026`, `+91 98400 12345` — the forms DESIGN-SPEC §4.14 fixes                                                            |
+| File                                           | Tests | What it pins                                                                                                                                                     |
+| ---------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tenant-isolation.test.ts`                     | 12    | Dealer A cannot reach B's vehicles, enquiries, media, ledger or presign — all 404, not 403                                                                       |
+| `credits.test.ts`                              | 9     | hold → consume/release; resubmit reuses the hold; refusal at zero; no negative balance; purchase → one row + invoice; cache equals newest row                    |
+| `listing-lifecycle.test.ts`                    | 22    | the `transition` table as a unit, then double-approve/double-submit conflicts, forged `status`, takedown, mark-sold, dealer withdrawal, catalogue-reference 404s |
+| `public-visibility.test.ts`                    | 6     | rule 6 both ways incl. suspend/reinstate and the sold split; rule 7 by scanning whole responses for every phone in the DB                                        |
+| `errors.test.ts`                               | 19    | RFC 9457 shape, `.strict()` rejections, fractional paise, 401/403 per seat, documented errors                                                                    |
+| `rate-limit.test.ts`                           | 4     | limits turned back **on**, in its own module registry                                                                                                            |
+| `contracts.test.ts`                            | 24    | every response parsed through `packages/contracts`                                                                                                               |
+| `openapi.test.ts`                              | 12    | the document describes _this_ API, in both directions (§8)                                                                                                       |
+| `postman.test.ts`                              | 10    | the committed collection is regenerated and compared byte-for-byte — a route change without `pnpm docs:postman` fails here (§8.1)                                |
+| `packages/contracts/tests/unit/common.test.ts` | 15    | `₹6.45 Lakh`, `02 Aug 2026`, `+91 98400 12345` — the forms DESIGN-SPEC §4.14 fixes                                                                               |
 
 **Two harness details worth knowing.** `tests/harness.ts` injects a switchable
 `SessionResolver` and exposes `actAs(slug, role?)` — the role seam exists because
@@ -344,7 +407,7 @@ afterwards.
 Note the shape of the one collection defect worth remembering: `{{listingId}}`
 was empty for the whole inventory folder, because it was captured from
 submit-for-review, which correctly 422s. The URL became `/v1/dealer/listings//renew`
-and answered 404 — a *plausible* status hiding an empty variable. Captures now
+and answered 404 — a _plausible_ status hiding an empty variable. Captures now
 support a `*` path segment (`data.*.listingId`: first array element where the rest
 of the path resolves), so the id comes from the inventory list instead.
 
@@ -418,15 +481,32 @@ Kept because each one is a class of mistake, not a one-off.
 
 Honest list. Each is a deliberate stopping point, not an oversight.
 
-| Gap                         | State              | Notes                                                                                                                                                                                                               |
-| --------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **PostgreSQL RLS**          | deferred           | Layers 1, 2 and 4 of the four-layer tenancy model are done and tested. `withTenant` already issues `SET LOCAL app.dealer_id`, so the policies have a hook waiting — the migration that creates them is not written. |
-| **Razorpay adapter**        | not written        | `PaymentProvider` port exists with `DevelopmentPaymentProvider`. §12 has the plan.                                                                                                                                  |
-| **Resend / MSG91 adapters** | not written        | `MailerPort`/`SmsPort` exist with console adapters.                                                                                                                                                                 |
-| **R2 storage adapter**      | not written        | `StoragePort` exists with a local adapter implementing the same presign contract.                                                                                                                                   |
-| **Sitemap `lastmod`**       | omitted            | ARCHITECTURE §17.4 wants an accurate one, but no public response carries a listing timestamp. The field is left out rather than fabricated.                                                                         |
-| **Sentry**                  | TODO in place      | `error-handler.ts` has the marked call site.                                                                                                                                                                        |
-| **`docs/MVP-SCOPE.md`**     | referenced, absent | ARCHITECTURE §5.5 carries the same numbered rules; the README now points there.                                                                                                                                     |
+Four entries that used to be here have been closed, and it is worth saying what
+they were so the reasoning is not lost:
+
+- **Rate limits were counted in process memory.** A `Map` behind N tasks permits
+  N times every limit and reports nothing. Now a `CachePort` (§5), with
+  `env.ts` refusing `memory` in production.
+- **Config changes took up to five minutes to reach every task.** The writer
+  dropped its own cache and no other instance was told. Now a shared version
+  counter, polled every ten seconds.
+- **No infrastructure was version-controlled.** Capacity, autoscaling and alarms
+  existed only as console state. Now `deploy/terraform/`.
+- **`traceId` was always minted locally**, so a request could not be followed
+  across the load balancer and the web app's BFF hop. Now adopted from
+  `x-request-id` and friends when present.
+
+| Gap                         | State              | Notes                                                                                                                                                                                                                           |
+| --------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PostgreSQL RLS**          | deferred           | Layers 1, 2 and 4 of the four-layer tenancy model are done and tested. `withTenant` already issues `SET LOCAL app.dealer_id`, so the policies have a hook waiting — the migration that creates them is not written.             |
+| **Razorpay adapter**        | not written        | `PaymentProvider` port exists with `DevelopmentPaymentProvider`. §12 has the plan.                                                                                                                                              |
+| **Resend / MSG91 adapters** | not written        | `MailerPort`/`SmsPort` exist with console adapters.                                                                                                                                                                             |
+| **R2 storage adapter**      | not written        | `StoragePort` exists with a local adapter implementing the same presign contract.                                                                                                                                               |
+| **Sitemap `lastmod`**       | omitted            | ARCHITECTURE §17.4 wants an accurate one, but no public response carries a listing timestamp. The field is left out rather than fabricated.                                                                                     |
+| **Sentry**                  | TODO in place      | `error-handler.ts` has the marked call site.                                                                                                                                                                                    |
+| **Separate worker process** | not written        | `WORKER_INLINE=true` runs the handlers in the HTTP process, so a slow image job competes with requests for the event loop (ARCHITECTURE §19.1). Every handler is already idempotent, so this is CPU isolation, not correctness. |
+| **Redis `CachePort`**       | not needed yet     | The port exists with `memory` and `postgres` adapters. Redis is a new datastore to provision, secure and pay for; Postgres is already on the readiness check. Revisit when a counter write per request stops being free.        |
+| **`docs/MVP-SCOPE.md`**     | referenced, absent | ARCHITECTURE §5.5 carries the same numbered rules; the README now points there. `scripts/check-docs.mjs` allowlists it by name, with that reason.                                                                               |
 
 ### One unexplained flake, recorded rather than buried
 
@@ -459,7 +539,7 @@ changing hands.
 **No usable external source exists**, and this was checked before writing it:
 
 - **Indian Automotive Data Hub** (RapidAPI, MIT) — the closest fit, and still
-  wrong: *currently on sale* cars only. A used-car catalogue is mostly
+  wrong: _currently on sale_ cars only. A used-car catalogue is mostly
   discontinued models, so the half it omits is the half needed.
 - **Vahan / data.gov.in** — a registration lookup, not a catalogue. It answers
   "what is TN09BX1234", which needs a car that already exists; it cannot
@@ -476,7 +556,7 @@ closed.
 
 Two consequences worth knowing:
 
-- **It is written per *powertrain*, not per variant.** `p(fuel, gearbox, cc,
+- **It is written per _powertrain_, not per variant.** `p(fuel, gearbox, cc,
 seats, [trims])` expands to one row per trim, so a model shipping 14 variants is
   three readable lines. `assertCatalogueIntegrity()` runs **before the first
   INSERT** — a duplicate slug would otherwise surface as a unique-constraint
@@ -498,7 +578,7 @@ property a required-field rule has.
 
 The schema carries the other half. Every field the wizard requires is
 `.optional()` in `UpdateVehicleInput`, never `.nullish()`: a step may decline to
-*send* one, but no request may `null` one out. Only `seats`, `airbags` and
+_send_ one, but no request may `null` one out. Only `seats`, `airbags` and
 `description` are nullable, and that list is exactly the fields no step
 requires. Without this, a PATCH could un-complete a step a dealer had passed.
 
@@ -522,7 +602,7 @@ Sign-in itself is done (§6). Three follow-ups, none of them blocking:
 1. **Account linking.** A Google identity whose verified email already belongs to
    an account is refused with `ACCOUNT_LINK_REQUIRED` — deliberately, because
    merging on a matching string is a takeover primitive. What is missing is the
-   *deliberate* path: an admin-initiated link, or a confirmation sent to the
+   _deliberate_ path: an admin-initiated link, or a confirmation sent to the
    existing address. Until then, support links an account by inserting the
    `oauth_identities` row.
 2. **Team seats.** `DealerMember` already carries `MANAGER` and `SALES`, and the
@@ -568,8 +648,30 @@ Structured logging exists and is good: pino, one JSON line per event, a mixin
 that stamps `traceId` (plus `userId`/`dealerId` after auth) on **every** line
 emitted anywhere in a request, and a redact list covering `authorization`,
 `cookie`, `set-cookie`, `*.password`, `*.passwordHash`. Nothing needs to
-remember to pass a correlation id. What is missing is everywhere for those logs
-to go and anything watching them:
+remember to pass a correlation id.
+
+**`traceId` is now adopted from the edge**, not always minted here.
+`request-context.ts` reads `x-request-id`, `x-correlation-id`, `x-trace-id` or
+`x-amzn-trace-id` — in that order, and `x-amzn-trace-id` is last on purpose,
+because the ALB sets it on every request and taking it first would mean an id
+the web app's BFF supplied deliberately was always discarded. Absent all four, a
+`nanoid(10)` is generated as before. It is echoed back under both `x-trace-id`
+and `x-request-id`.
+
+The inbound value is **filtered, not trusted**: `sanitizeTraceId` keeps only
+unreserved URL characters and caps the length at 64. Without that, a newline in
+a request header would let a caller forge a second log entry, and a quote would
+break the JSON a shipper parses. `context.traceInherited` records which of the
+two happened.
+
+**CloudWatch alarms exist**, in `deploy/terraform/alarms.tf`: no healthy targets
+(API and web), target 5xx over a threshold, tasks not staying at minimum
+capacity, and p95 latency above two seconds. Deliberately _not_ alarmed: CPU and
+memory thresholds (that is autoscaling's job, and an alarm on it fires every
+time the system works correctly), 4xx rates, and individual task restarts.
+
+What is still missing is somewhere for the logs to go and something watching
+them:
 
 1. **Error tracking.** `SENTRY_DSN` is accepted and validated by `env.ts`, and
    **no SDK is installed** — setting it today does nothing. Install
@@ -585,7 +687,8 @@ to go and anything watching them:
    should always be zero, and an alert on non-zero catches any future write path
    that bypasses `moveCredits`), and pg-boss failed-job count.
 4. **Tracing.** OpenTelemetry, if a second service ever appears. The `traceId`
-   in `request-context.ts` is the natural span id.
+   in `request-context.ts` is the natural span id, and it already propagates in
+   from upstream rather than starting fresh at this hop.
 5. **Uptime.** Poll `/health/ready`, not `/health/live` — readiness names the
    failing dependency, liveness deliberately touches nothing.
 6. **Job observability.** pg-boss keeps state in the `pgboss` schema. Surface
@@ -598,23 +701,55 @@ to go and anything watching them:
 `apps/api/Dockerfile` exists — multi-stage, `NODE_ENV=production`, and its
 `HEALTHCHECK` already polls `/health/ready`. Its `CMD` runs the API.
 
-**There is no separate worker process yet.** Today `WORKER_INLINE=true` runs the
-job handlers inside the HTTP process, which is what keeps `pnpm dev` a single
+**The runtime is code now.** `deploy/terraform/` owns the cluster, both ECS
+services, the load balancer and its path routing, autoscaling on CPU and memory,
+five alarms, the IAM roles (including the two GitHub OIDC roles — one that can
+push images and cannot deploy, one that can deploy and cannot build), and the
+_names_ of every SSM parameter. Never their values: each parameter is created
+with a placeholder and then carries `ignore_changes = [value]`, so `apply` can
+never overwrite a real secret and no secret ever has to live in a tfvars file.
+
+Terraform owns the shape; the pipeline owns the image. Every service carries
+`ignore_changes = [task_definition, desired_count]` — without the first, an
+`apply` would silently roll production back to whichever image Terraform last
+wrote; without the second, it would fight autoscaling. Read
+`deploy/terraform/README.md` before changing anything there.
+
+**Shutdown is two-phase**, and the three numbers are one mechanism: on SIGTERM
+the process sets the drain flag so `/health/ready` answers 503 immediately, waits
+`SHUTDOWN_DRAIN_MS` (5s deployed, 0 locally) for the load balancer to notice,
+_then_ closes the listener and drains in-flight work within
+`SHUTDOWN_TIMEOUT_MS`. The task's `stopTimeout` (25s) must exceed drain +
+timeout, or ECS sends SIGKILL mid-drain — which is exactly the cut-off request
+the drain exists to prevent. `/health/live` deliberately keeps answering 200
+throughout: a liveness probe that fails during a graceful drain gets the
+container killed mid-drain.
+
+**There is still no separate worker process.** `WORKER_INLINE=true` runs the job
+handlers inside the HTTP process, which is what keeps `pnpm dev` a single
 command; `env.WORKER` exists but only decides whether cron schedules are
 registered. ARCHITECTURE §19.1 wants one image and two process types, so the
 remaining work is a `worker.ts` entrypoint that builds the container, calls
-`startBackground`, and never listens — plus a second service definition pointing
-its `CMD` at it. Until then, scaling the API horizontally would run the job
-handlers N times over.
+`startBackground`, and never listens. Every handler is already written to be
+idempotent and to assume it will run twice, so this is about not letting a slow
+image job compete with HTTP requests for the event loop — not about correctness.
 
-Deploys should gate on `/health/ready`, and `prisma migrate deploy` must run
-before the new image takes traffic.
+What _used_ to block horizontal scaling, and no longer does, was the rate limiter
+counting in process memory. That moved to the `CachePort`, and the Terraform runs
+two tasks per service in every environment — including dev, deliberately, because
+two is the smallest number that exercises what breaks at N>1.
+
+Deploys gate on `/health/ready`, and `prisma migrate deploy` runs as a one-off
+Fargate task from the migrator image built at the same commit, before the new
+image takes traffic.
 
 ### 12.6 Product work not started
 
 Photo requests (`CreatePhotoRequestInput` and `photo:request` exist, no
 endpoint), team members (`member:manage` exists, no endpoint), saved searches,
-dealer analytics beyond the dashboard, buyer accounts (explicitly out of scope
+dealer analytics beyond the dashboard — the last two now have `feature.*` flags
+shipped in `CONFIG_DEFAULTS`, defaulting to off, so they can be built behind a
+switch rather than behind a branch — buyer accounts (explicitly out of scope
 in ARCHITECTURE), mobile and tablet layouts (the brief scoped this to desktop;
 DESIGN-SPEC's breakpoints are implemented where they were cheap).
 
@@ -663,6 +798,6 @@ presses "Continue with Google" and completes onboarding — which is also the wa
 to see the new-dealer path. `AUTH_MODE=dev` is the shortcut into
 `sri-lakshmi-motors`'s console without any of that.
 
-The one seeded account that *can* sign in is the admin: `DEV_ADMIN_EMAIL` with
+The one seeded account that _can_ sign in is the admin: `DEV_ADMIN_EMAIL` with
 `DEV_ADMIN_PASSWORD`, hashed with Argon2id at seed time. Change the variable and
 re-seed to rotate it; the plaintext is never stored, logged or returned.

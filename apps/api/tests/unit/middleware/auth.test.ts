@@ -239,15 +239,18 @@ describe('requireDealerActive', () => {
     expect(error).toBeUndefined();
   });
 
-  it.each(['PENDING', 'SUSPENDED', 'REJECTED'] as DealerStatus[])('refuses a %s dealer', async (status) => {
-    const { error } = await run(requireDealerActive, {
-      principal: { ...DEALER, dealerStatus: status },
-    });
+  it.each(['PENDING', 'SUSPENDED', 'REJECTED'] as DealerStatus[])(
+    'refuses a %s dealer',
+    async (status) => {
+      const { error } = await run(requireDealerActive, {
+        principal: { ...DEALER, dealerStatus: status },
+      });
 
-    expect(error).toBeInstanceOf(ForbiddenError);
-    expect((error as ForbiddenError).code).toBe('DEALER_NOT_ACTIVE');
-    expect((error as ForbiddenError).status).toBe(403);
-  });
+      expect(error).toBeInstanceOf(ForbiddenError);
+      expect((error as ForbiddenError).code).toBe('DEALER_NOT_ACTIVE');
+      expect((error as ForbiddenError).status).toBe(403);
+    },
+  );
 
   it('explains what unblocks them rather than just saying no', async () => {
     const { error } = await run(requireDealerActive, {

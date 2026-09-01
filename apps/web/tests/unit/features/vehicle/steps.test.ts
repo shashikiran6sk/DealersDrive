@@ -28,7 +28,7 @@ describe('WIZARD_STEPS', () => {
    * on one side and not the other would put "Continue" on a step whose
    * requirements belong to a different one.
    */
-  it('is exactly the contract\'s steps, in the contract\'s order', () => {
+  it("is exactly the contract's steps, in the contract's order", () => {
     expect(WIZARD_STEPS).toEqual(VEHICLE_WIZARD_STEPS.map((step) => step.label));
   });
 

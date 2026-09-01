@@ -3,7 +3,11 @@ import type { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 
 import { buildContainer } from '../src/container.js';
-import type { AuthorizationRequest, OAuthClaims, OAuthProvider } from '../src/modules/auth/oauth.port.js';
+import type {
+  AuthorizationRequest,
+  OAuthClaims,
+  OAuthProvider,
+} from '../src/modules/auth/oauth.port.js';
 import { UnauthorizedError } from '../src/platform/errors.js';
 import { createApp } from '../src/server.js';
 

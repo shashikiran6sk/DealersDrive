@@ -3,6 +3,8 @@ import type { DealerRole, PrismaClient } from '@prisma/client';
 import request from 'supertest';
 
 import { buildContainer } from '../src/container.js';
+import type { CachePort } from '../src/platform/cache/cache.port.js';
+import { createMemoryCache } from '../src/platform/cache/memory.adapter.js';
 import {
   permissionsForAdminRole,
   permissionsForRole,
@@ -23,6 +25,15 @@ import { createApp } from '../src/server.js';
 export interface Harness {
   app: Express;
   prisma: PrismaClient;
+  /**
+   * The rate limiter's counter store, pinned to memory for the suite.
+   *
+   * Exposed so a test that turns the limits back on can start from an empty
+   * window. Memory rather than the Postgres adapter on purpose: the counters
+   * must die with the process, or one file's exhausted budget would be the next
+   * file's starting state.
+   */
+  cache: CachePort;
   /**
    * Act as this dealer for every subsequent request, optionally as a member of
    * a given role. The role seam exists because §8.3's permission table is only
@@ -51,8 +62,11 @@ export async function createHarness(): Promise<Harness> {
   let currentSlug = DEALER_A;
   let currentRole: DealerRole = 'OWNER';
 
+  const cache = createMemoryCache();
+
   const container = await buildContainer({
     sessions: switchableSessions(() => ({ slug: currentSlug, role: currentRole })),
+    cache,
   });
 
   const app = createApp(container);
@@ -60,6 +74,7 @@ export async function createHarness(): Promise<Harness> {
   return {
     app,
     prisma: container.prisma,
+    cache,
     actAs(slug: string, role: DealerRole = 'OWNER') {
       currentSlug = slug;
       currentRole = role;
@@ -72,6 +87,7 @@ export async function createHarness(): Promise<Harness> {
       }
     },
     async close() {
+      await cache.reset();
       await container.prisma.$disconnect();
     },
   };

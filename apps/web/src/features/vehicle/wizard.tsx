@@ -9,11 +9,7 @@ import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Banner, Blueprint, Stepper, StatusTag } from '@/components/ui/primitives';
 import { submitListingAction, updateVehicleAction } from '@/features/vehicle/actions';
-import {
-  BasicsFields,
-  validateBasics,
-  type BasicsValue,
-} from '@/features/vehicle/basics-fields';
+import { BasicsFields, validateBasics, type BasicsValue } from '@/features/vehicle/basics-fields';
 import {
   DetailsFields,
   detailsFrom,
@@ -225,8 +221,8 @@ export function VehicleWizard({
             <div>
               <h2 className="text-[21px]">Vehicle basics</h2>
               <p className="mt-1 text-[13px] ink-muted">
-                All seven are required. Changing them here keeps everything you have already
-                entered on the later steps.
+                All seven are required. Changing them here keeps everything you have already entered
+                on the later steps.
               </p>
             </div>
             <BasicsFields
@@ -247,8 +243,8 @@ export function VehicleWizard({
             <div>
               <h2 className="text-[21px]">Vehicle details</h2>
               <p className="mt-1 text-[13px] ink-muted">
-                Buyers filter hard on these, so every field here except seats, airbags and
-                features is required. Accurate numbers get better enquiries.
+                Buyers filter hard on these, so every field here except seats, airbags and features
+                is required. Accurate numbers get better enquiries.
               </p>
             </div>
             <DetailsFields
@@ -269,8 +265,8 @@ export function VehicleWizard({
             <div>
               <h2 className="text-[21px]">Photos</h2>
               <p className="mt-1 text-[13px] ink-muted">
-                One main photo and up to six supporting shots of this actual car. The main photo
-                is what buyers see in search results.
+                One main photo and up to six supporting shots of this actual car. The main photo is
+                what buyers see in search results.
               </p>
             </div>
             <PhotoUploader vehicleId={vehicle.id} media={vehicle.media} minPhotos={minPhotos} />

@@ -32,11 +32,17 @@ if (!url || !out) {
   process.exit(2);
 }
 const flag = (name, fallback) =>
-  flags.find((f) => f.startsWith(`--${name}=`))?.split('=').slice(1).join('=') ?? fallback;
+  flags
+    .find((f) => f.startsWith(`--${name}=`))
+    ?.split('=')
+    .slice(1)
+    .join('=') ?? fallback;
 
 const width = Number(flag('width', '1440'));
 const stepsFile = flag('steps', null);
-const cookies = flags.filter((f) => f.startsWith('--cookie=')).map((f) => f.slice('--cookie='.length));
+const cookies = flags
+  .filter((f) => f.startsWith('--cookie='))
+  .map((f) => f.slice('--cookie='.length));
 const steps = stepsFile ? JSON.parse(await readFile(stepsFile, 'utf8')) : [];
 
 const profile = await mkdtemp(join(tmpdir(), 'dd-cdp-'));
@@ -110,7 +116,10 @@ async function shot(path) {
     mobile: false,
   });
   await sleep(300);
-  const { data } = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
+  const { data } = await send('Page.captureScreenshot', {
+    format: 'png',
+    captureBeyondViewport: true,
+  });
   await writeFile(path, Buffer.from(data, 'base64'));
   await send('Emulation.clearDeviceMetricsOverride');
   console.log(`shot ${path}`);

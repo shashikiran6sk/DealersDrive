@@ -22,11 +22,7 @@ const DOC_TONE: Record<AdminDealerDetail['documents'][number]['status'], StatusT
 };
 
 /** D3 — the full dealer record, its documents, its ledger and its actions. */
-export default async function AdminDealerPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function AdminDealerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   let dealer: AdminDealerDetail;

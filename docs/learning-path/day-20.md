@@ -16,10 +16,10 @@ what you know.
 Three ideas, and everything else follows:
 
 1. **AWS keeps the database running. You keep the data correct.** A managed
-   service removes the *operational* failure modes and **none** of the
-   *application* ones.
+   service removes the _operational_ failure modes and **none** of the
+   _application_ ones.
 2. **Find the bottleneck before adding capacity.** Adding API tasks when the
-   database is saturated makes it *worse*, because each task brings its own
+   database is saturated makes it _worse_, because each task brings its own
    connection pool.
 3. **Stateless scales; stateful does not.** Two pieces of per-instance state are
    the entire reason `dd-api-prod` runs one task, and removing them is the whole
@@ -29,29 +29,29 @@ Three ideas, and everything else follows:
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 32** — all of it (32.1 → 32.10) | 50 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 33** — all of it (33.1 → 33.11) | 65 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 21** — observability (21.1 → 21.8) | 25 |
-| `docs/DEPLOYMENT.md` | §K (Rollback), §L (Cost), Monitoring, Security | 25 |
+| Source                        | Sections                                       | ~min |
+| ----------------------------- | ---------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 32** — all of it (32.1 → 32.10)         | 50   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 33** — all of it (33.1 → 33.11)         | 65   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 21** — observability (21.1 → 21.8)      | 25   |
+| `docs/DEPLOYMENT.md`          | §K (Rollback), §L (Cost), Monitoring, Security | 25   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `deploy/aws/README.md` | §4 (Databases). Every `create-db-instance` flag is a decision — especially `--backup-retention-period 7`, which is what **enables PITR at all** |
-| 2 | `deploy/aws/README.md` | §9 (ECS). Read the note on `desired-count`: 1 for the API, **capped by `WORKER_INLINE=true`** |
-| 3 | `apps/api/src/config/env.ts` | `WORKER_INLINE`, `WORKER`, `JOBS_ENABLED`, `RATE_LIMIT_ENABLED` |
-| 4 | `apps/api/src/container.ts` | `startBackground()` — the `WORKER_INLINE` branch, and what would move to a worker entrypoint |
-| 5 | `apps/api/src/middleware/rate-limit.ts` | **A process-local `Map`.** The second piece of per-instance state |
-| 6 | `apps/api/src/platform/db/prisma.ts` | One client, one pool, per process |
-| 7 | `apps/api/src/platform/media/urls.ts` + `deploy/aws/env.production.example` | `MEDIA_BASE_URL`. **The bottleneck you found on Day 15** |
-| 8 | `apps/api/src/modules/health/health.routes.ts` | `/health/ready` — what it checks and what it reports |
-| 9 | `apps/api/src/platform/telemetry/logger.ts` | Structured JSON, and what is redacted |
-| 10 | `apps/api/src/modules/search/search.repository.ts` | The read model — already a separate read path, which is why a replica is a routing change |
+| #   | File                                                                        | What to look for                                                                                                                                |
+| --- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `deploy/aws/README.md`                                                      | §4 (Databases). Every `create-db-instance` flag is a decision — especially `--backup-retention-period 7`, which is what **enables PITR at all** |
+| 2   | `deploy/aws/README.md`                                                      | §9 (ECS). Read the note on `desired-count`: 1 for the API, **capped by `WORKER_INLINE=true`**                                                   |
+| 3   | `apps/api/src/config/env.ts`                                                | `WORKER_INLINE`, `WORKER`, `JOBS_ENABLED`, `RATE_LIMIT_ENABLED`                                                                                 |
+| 4   | `apps/api/src/container.ts`                                                 | `startBackground()` — the `WORKER_INLINE` branch, and what would move to a worker entrypoint                                                    |
+| 5   | `apps/api/src/middleware/rate-limit.ts`                                     | **A process-local `Map`.** The second piece of per-instance state                                                                               |
+| 6   | `apps/api/src/platform/db/prisma.ts`                                        | One client, one pool, per process                                                                                                               |
+| 7   | `apps/api/src/platform/media/urls.ts` + `deploy/aws/env.production.example` | `MEDIA_BASE_URL`. **The bottleneck you found on Day 15**                                                                                        |
+| 8   | `apps/api/src/modules/health/health.routes.ts`                              | `/health/ready` — what it checks and what it reports                                                                                            |
+| 9   | `apps/api/src/platform/telemetry/logger.ts`                                 | Structured JSON, and what is redacted                                                                                                           |
+| 10  | `apps/api/src/modules/search/search.repository.ts`                          | The read model — already a separate read path, which is why a replica is a routing change                                                       |
 
 ---
 
@@ -61,18 +61,18 @@ Three ideas, and everything else follows:
 
 Then check against §32.1.
 
-| Concern | AWS | You |
-|---|---|---|
-| Host OS patching | | |
-| PostgreSQL minor version patching | | |
-| Daily snapshots + WAL archiving | | |
-| **Backup retention period** | | |
-| **Deciding when to restore** | | |
-| Multi-AZ failover | | |
-| **Schema and migrations** | | |
-| **Indexes and query performance** | | |
-| **Connection budget** | | |
-| **Testing that a backup actually restores** | | |
+| Concern                                     | AWS | You |
+| ------------------------------------------- | --- | --- |
+| Host OS patching                            |     |     |
+| PostgreSQL minor version patching           |     |     |
+| Daily snapshots + WAL archiving             |     |     |
+| **Backup retention period**                 |     |     |
+| **Deciding when to restore**                |     |     |
+| Multi-AZ failover                           |     |     |
+| **Schema and migrations**                   |     |     |
+| **Indexes and query performance**           |     |     |
+| **Connection budget**                       |     |     |
+| **Testing that a backup actually restores** |     |     |
 
 The last row is the one people get wrong. **An untested backup is a hope, not a
 backup.**
@@ -90,7 +90,7 @@ CONTRACT  release N+2   …
 ```
 
 Now answer: **why can this not be one migration?** (During a rolling deploy both
-versions are live, and `_deploy.yml` runs migrations *before* the new tasks take
+versions are live, and `_deploy.yml` runs migrations _before_ the new tasks take
 traffic — so the old code runs against the new schema for a minute or two.)
 
 Then: **why is expand/contract the precondition for "redeploy the old image"
@@ -98,12 +98,12 @@ being a complete rollback?** (§32.5, §31.7.)
 
 ### 4.3 Learn the two Prisma commands cold
 
-| | `migrate dev` | `migrate deploy` |
-|---|---|---|
-| Where | | |
-| Generates a migration? | | |
-| Can it drop data? | | |
-| Runs as | | |
+|                        | `migrate dev` | `migrate deploy` |
+| ---------------------- | ------------- | ---------------- |
+| Where                  |               |                  |
+| Generates a migration? |               |                  |
+| Can it drop data?      |               |                  |
+| Runs as                |               |                  |
 
 Then the seeding pair, which is the more dangerous confusion:
 
@@ -134,10 +134,10 @@ SELECT count(*), state FROM pg_stat_activity GROUP BY state;
 Now compute: at Prisma's default pool on a 4-vCPU task, **how many API tasks
 before you exhaust a `db.t4g.small`?** (§33.5 has the table.) Then answer: what
 does that failure look like, and why is it especially nasty? (It arrives under
-load, on *new* connections, while existing ones keep working — so the error rate
+load, on _new_ connections, while existing ones keep working — so the error rate
 climbs but the health check may still pass.)
 
-Finally, note the caveat you must know *before* you need it: transaction-mode
+Finally, note the caveat you must know _before_ you need it: transaction-mode
 pooling breaks session-level state. `withTenant()` uses `SET LOCAL`, which is
 transaction-scoped and therefore compatible — but plain `SET`, session advisory
 locks and `LISTEN`/`NOTIFY` are not, and pg-boss wants a direct connection.
@@ -174,7 +174,7 @@ grep -n -A8 "if (!env.JOBS_ENABLED) return" apps/api/src/container.ts
 For each, answer: **what breaks if we run two API tasks?**
 
 - The rate limiter: N tasks = N× the effective limit, and a restart clears it.
-  These limits are a *spend control* — every phone-reveal SMS costs money — so
+  These limits are a _spend control_ — every phone-reveal SMS costs money — so
   N× is not a rounding error.
 - `WORKER_INLINE=true`: every scheduled job runs N times. The expiry sweep twice,
   `counters.reconcile` twice, orphan-media GC twice.
@@ -185,12 +185,12 @@ Then write the fix for each (§33.2 items 1 and 2).
 
 Without looking, sketch what changes at each stage. Then check §33.2.
 
-| Users | What is the constraint? | What changes? |
-|---|---|---|
-| 10 | | |
-| 1,000 | | |
-| 10,000 | | |
-| 100,000+ | | |
+| Users    | What is the constraint? | What changes? |
+| -------- | ----------------------- | ------------- |
+| 10       |                         |               |
+| 1,000    |                         |               |
+| 10,000   |                         |               |
+| 100,000+ |                         |               |
 
 ### 4.8 Reason about the read replica
 
@@ -203,9 +203,9 @@ Now the important half: **what must never go to a replica?**
 - anything inside a write transaction
 - anything using `SELECT … FOR UPDATE` (the credit ledger)
 - **the session lookup** — a session revoked a moment ago must stop working
-  *now*, not after replication catches up
+  _now_, not after replication catches up
 
-And the reason lag is tolerable for search: the public read path is *already*
+And the reason lag is tolerable for search: the public read path is _already_
 asynchronously decoupled — a listing becomes visible via a background job after
 approval (Day 14). Milliseconds of replica lag are invisible against a job
 latency measured in seconds. **The product's own semantics absorb it.**
@@ -218,14 +218,14 @@ curl -s http://localhost:4000/health/ready | jq
 
 Then be honest about the gaps. From Part 21 and Part 29.1:
 
-| | Status |
-|---|---|
-| Structured logs with `traceId` | |
-| `/health/live` + `/health/ready` | |
-| Sentry | |
-| Metrics / `/metrics` | |
-| Log shipping | |
-| Alerting | |
+|                                  | Status |
+| -------------------------------- | ------ |
+| Structured logs with `traceId`   |        |
+| `/health/live` + `/health/ready` |        |
+| Sentry                           |        |
+| Metrics / `/metrics`             |        |
+| Log shipping                     |        |
+| Alerting                         |        |
 
 Then find the one **application-level** metric worth more than any infrastructure
 dashboard here:
@@ -259,21 +259,21 @@ Confirm `Index Scan`. Then add a filter with no index and watch the plan change.
 
 ## 5. Prove you understood it — Week 4 checkpoint (part 2)
 
-1. State the shared-responsibility split in one sentence. → *§32.1*
-2. Which single RDS flag enables point-in-time recovery? → *§32.2*
-3. Describe the correct PITR procedure, and the wrong one people reach for. → *§32.7*
-4. What is *not* covered by an RDS snapshot? → *§32.6*
+1. State the shared-responsibility split in one sentence. → _§32.1_
+2. Which single RDS flag enables point-in-time recovery? → _§32.2_
+3. Describe the correct PITR procedure, and the wrong one people reach for. → _§32.7_
+4. What is _not_ covered by an RDS snapshot? → _§32.6_
 5. What is expand/contract, and why is it the precondition for application
-   rollback? → *§32.5*
-6. Why is `db:seed` forbidden on any deployed environment? → *§32.4*
-7. Why does adding API tasks make a database problem worse? → *§33.5*
+   rollback? → _§32.5_
+6. Why is `db:seed` forbidden on any deployed environment? → _§32.4_
+7. Why does adding API tasks make a database problem worse? → _§33.5_
 8. Vertical vs horizontal scaling — and why does Node's event loop make the
-   distinction sharper? → *§33.4*
-9. What is the first bottleneck this system will hit, and what is the fix? → *§33.3*
-10. Name the two pieces of per-instance state and their fixes. → *§33.2*
-11. When is a read replica safe here, and what must never use one? → *§33.6*
-12. What is credit-ledger drift, and what would a non-zero value prove? → *§32.9*
-13. What is the accepted RTO for region loss, and why is that acceptable? → *§32.7*
+   distinction sharper? → _§33.4_
+9. What is the first bottleneck this system will hit, and what is the fix? → _§33.3_
+10. Name the two pieces of per-instance state and their fixes. → _§33.2_
+11. When is a read replica safe here, and what must never use one? → _§33.6_
+12. What is credit-ledger drift, and what would a non-zero value prove? → _§32.9_
+13. What is the accepted RTO for region loss, and why is that acceptable? → _§32.7_
 
 ---
 
@@ -282,7 +282,7 @@ Confirm `Index Scan`. Then add a filter with no index and watch the plan change.
 - **`CREATE INDEX` without `CONCURRENTLY`** blocks every write to that table for
   the duration.
 - **A migration without `lock_timeout`** can queue behind a long query and then
-  block everything behind *itself* — the site goes down while the migration is
+  block everything behind _itself_ — the site goes down while the migration is
   still "waiting".
 - **`DROP COLUMN` is irreversible without a restore**, and a restore means losing
   every write since the restore point. On a marketplace those are enquiries a
@@ -314,14 +314,14 @@ Confirm `Index Scan`. Then add a filter with no index and watch the plan change.
 
 ### The four checkpoint questions — answer all four, out loud, in one sitting
 
-1. *"A buyer opens `/cars?city=vellore`. Describe everything that happens, from
-   DNS to the rendered HTML."*
-2. *"A dealer clicks Continue with Google. Describe every redirect, every cookie,
-   and every check — and name what each check defends against."*
-3. *"A dealer publishes a car. Describe every row written, every credit moved,
-   every job queued, and the exact moment the car becomes publicly visible."*
-4. *"I merged a PR. Describe everything that happens until the change is live in
-   production — and what would happen if it were bad."*
+1. _"A buyer opens `/cars?city=vellore`. Describe everything that happens, from
+   DNS to the rendered HTML."_
+2. _"A dealer clicks Continue with Google. Describe every redirect, every cookie,
+   and every check — and name what each check defends against."_
+3. _"A dealer publishes a car. Describe every row written, every credit moved,
+   every job queued, and the exact moment the car becomes publicly visible."_
+4. _"I merged a PR. Describe everything that happens until the change is live in
+   production — and what would happen if it were bad."_
 
 ### Then read the closing of the reference
 
@@ -344,12 +344,12 @@ question there is uncertain, that section is your next hour.
 ### Keep going
 
 - **Part 35** of the reference is a curated reading list with a suggested order.
-  Start with *The Twelve-Factor App* (30 minutes) and *Use The Index, Luke*.
+  Start with _The Twelve-Factor App_ (30 minutes) and _Use The Index, Luke_.
 - **Designing Data-Intensive Applications** — chapters 5, 7 and 11 map directly
   onto this system. Over months, not this week.
 
 ---
 
-*You now know this system better than most people know the one they work on.
+_You now know this system better than most people know the one they work on.
 The habit that got you here — never read a section without opening the file, and
-never open a file without reading the section — is the habit worth keeping.*
+never open a file without reading the section — is the habit worth keeping._

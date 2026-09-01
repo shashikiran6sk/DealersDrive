@@ -231,7 +231,10 @@ function buildOperation(
         name,
         in: 'path',
         required: true,
-        schema: name === 'width' ? { type: 'integer', enum: [320, 640, 1024, 1600] } : { type: 'string', format: 'uuid' },
+        schema:
+          name === 'width'
+            ? { type: 'integer', enum: [320, 640, 1024, 1600] }
+            : { type: 'string', format: 'uuid' },
       })),
     );
   }

@@ -4,10 +4,7 @@ import { env } from './config/env.js';
 import type { Container } from './container.js';
 import { createDocsRouter } from './docs/docs.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
-import {
-  createPublicAuthRouter,
-  createSessionAuthRouter,
-} from './modules/auth/auth.routes.js';
+import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/auth.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
 import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import {
@@ -55,8 +52,8 @@ export function createRoutes(container: Container): Router {
 
   // ── public ────────────────────────────────────────────────────────────
   v1.use(createCatalogRouter(container.catalog));
-  v1.use(createSearchRouter(container.search, container.dealersPublic));
-  v1.use(createPublicEnquiriesRouter(container.enquiries));
+  v1.use(createSearchRouter(container.search, container.dealersPublic, container.rateLimit));
+  v1.use(createPublicEnquiriesRouter(container.enquiries, container.rateLimit));
 
   // ── auth ──────────────────────────────────────────────────────────────
   // Two routers on one prefix, in this order. The first answers the paths that
@@ -64,7 +61,7 @@ export function createRoutes(container: Container): Router {
   // falls through for everything else; the second guards what is left. Order is
   // the security boundary here: swapping these two lines would leave
   // `/onboarding` open.
-  v1.use('/auth', createPublicAuthRouter(container.auth));
+  v1.use('/auth', createPublicAuthRouter(container.auth, container.rateLimit));
   v1.use('/auth', container.guards.requireSignedIn, createSessionAuthRouter(container.auth));
 
   // ── dealer ────────────────────────────────────────────────────────────
@@ -74,7 +71,7 @@ export function createRoutes(container: Container): Router {
   dealer.use(createVehiclesRouter(container.vehicles));
   dealer.use(createMediaRouter(container.media));
   dealer.use(createDealerEnquiriesRouter(container.enquiries));
-  dealer.use(createBillingRouter(container.billing, container.storage));
+  dealer.use(createBillingRouter(container.billing, container.storage, container.rateLimit));
   v1.use('/dealer', dealer);
 
   // ── admin ─────────────────────────────────────────────────────────────

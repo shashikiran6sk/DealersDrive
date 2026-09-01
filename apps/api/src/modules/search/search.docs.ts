@@ -87,7 +87,7 @@ export const searchDocs: ModuleDocs = {
       tag: 'Public catalogue',
       summary: 'Hydrate saved cars by id',
       description:
-        'Saved cars live in the browser\'s `localStorage`, so the ids arrive in a body ' +
+        "Saved cars live in the browser's `localStorage`, so the ids arrive in a body " +
         'rather than a URL. A POST because the list can be up to 100 ids — not because it ' +
         'writes anything.\n\n' +
         'A car that has left the catalogue **must not fail the whole request**: it comes ' +
@@ -125,7 +125,7 @@ export const searchDocs: ModuleDocs = {
       description:
         'Accepts either the uuid or the SEO slug (`2021-maruti-suzuki-swift-vxi-vellore-3f2a1b`), ' +
         'so a card can link by slug and a saved-car id still resolves.\n\n' +
-        '**The dealer\'s phone number is not in this response.** `dealer.contact[]` carries a ' +
+        "**The dealer's phone number is not in this response.** `dealer.contact[]` carries a " +
         'masked placeholder with `masked: true`; the real number comes only from ' +
         '`POST /v1/vehicles/{id}/reveal-contact`, which is rate-limited and logged.\n\n' +
         'A car that is not publicly visible — pending review, rejected, sold, or belonging to ' +
@@ -178,7 +178,11 @@ export const searchDocs: ModuleDocs = {
       query: 'DealerDirectoryQuery',
       rateLimit: '120 requests per minute per IP',
       responses: [
-        { status: 200, description: 'Dealers, with the city filter counts.', schema: 'DealerDirectoryResponse' },
+        {
+          status: 200,
+          description: 'Dealers, with the city filter counts.',
+          schema: 'DealerDirectoryResponse',
+        },
       ],
       errors: [429],
     },
@@ -203,9 +207,9 @@ export const searchDocs: ModuleDocs = {
       path: '/v1/dealers/:slug/vehicles',
       operationId: 'listDealerVehicles',
       tag: 'Public catalogue',
-      summary: 'One dealer\'s cars',
+      summary: "One dealer's cars",
       description:
-        'The dealer\'s own portfolio, filterable with the same query grammar as ' +
+        "The dealer's own portfolio, filterable with the same query grammar as " +
         '`GET /v1/vehicles` (the `dealer` parameter is redundant here and simply narrows ' +
         'further).',
       audience: 'public',
@@ -213,7 +217,11 @@ export const searchDocs: ModuleDocs = {
       query: 'VehicleQuery',
       rateLimit: '120 requests per minute per IP',
       responses: [
-        { status: 200, description: 'The dealer\'s visible cars.', schema: 'DealerVehiclesResponse' },
+        {
+          status: 200,
+          description: "The dealer's visible cars.",
+          schema: 'DealerVehiclesResponse',
+        },
       ],
       errors: [404, 429],
     },
@@ -222,10 +230,10 @@ export const searchDocs: ModuleDocs = {
       path: '/v1/dealers/:slug/facets',
       operationId: 'getDealerFacets',
       tag: 'Public catalogue',
-      summary: 'Facet counts within one dealer\'s cars',
+      summary: "Facet counts within one dealer's cars",
       description:
         'Facets scoped to this dealership. The portfolio page shows fuel, body type and ' +
-        'transmission from this response — a dealer facet inside one dealer\'s page would ' +
+        "transmission from this response — a dealer facet inside one dealer's page would " +
         'be a list of one.',
       audience: 'public',
       params: 'SlugParam',

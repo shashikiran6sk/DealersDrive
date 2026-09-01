@@ -44,9 +44,10 @@ export function createDealersPublicService({ repo, search }: DealersPublicDeps) 
 
       const data: DealerCard[] = paged.map((dealer) => {
         const stat = byDealer.get(dealer.slug);
-        const fromPrice = stat?.from_price === null || stat?.from_price === undefined
-          ? null
-          : Number(stat.from_price);
+        const fromPrice =
+          stat?.from_price === null || stat?.from_price === undefined
+            ? null
+            : Number(stat.from_price);
 
         return {
           slug: dealer.slug,
@@ -74,7 +75,8 @@ export function createDealersPublicService({ repo, search }: DealersPublicDeps) 
         if (!dealer.citySlug || !dealer.cityName) continue;
         const existing = cityRows.get(dealer.citySlug);
         if (existing) existing.count += 1;
-        else cityRows.set(dealer.citySlug, { slug: dealer.citySlug, name: dealer.cityName, count: 1 });
+        else
+          cityRows.set(dealer.citySlug, { slug: dealer.citySlug, name: dealer.cityName, count: 1 });
       }
       void cityCounts;
 

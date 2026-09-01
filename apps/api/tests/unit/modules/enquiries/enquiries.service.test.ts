@@ -1,5 +1,5 @@
 import type { EnquiryStatus, PrismaClient } from '@prisma/client';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { CreateEnquiryInput } from '@dealers-drive/contracts';
 
@@ -14,7 +14,7 @@ import {
   toEnquiryDto,
 } from '../../../../src/modules/enquiries/enquiries.service.js';
 import type { SearchRepository } from '../../../../src/modules/search/search.facade.js';
-import { resetRateLimits } from '../../../../src/middleware/rate-limit.js';
+import { createMemoryCache } from '../../../../src/platform/cache/memory.adapter.js';
 import type { PlatformConfigService } from '../../../../src/platform/config/platform-config.js';
 import { ConflictError, NotFoundError, RateLimitError } from '../../../../src/platform/errors.js';
 
@@ -166,11 +166,17 @@ function setup(options: Options = {}) {
     stringList: () => Promise.resolve([]),
     all: () => Promise.resolve([]),
     set: () => Promise.reject(new Error('not used')),
-    invalidate: () => undefined,
+    flag: () => Promise.resolve(false),
+    flags: () => Promise.resolve({}),
+    invalidate: () => Promise.resolve(),
   } as unknown as PlatformConfigService;
 
+  // A fresh counter per setup(), so one test's exhausted reveal window is not
+  // the next one's starting state.
+  const cache = createMemoryCache();
+
   return {
-    service: createEnquiriesService({ prisma, repo, dealers, search, config }),
+    service: createEnquiriesService({ prisma, repo, dealers, search, config, cache }),
     creates,
     reveals,
     outbox,
@@ -190,9 +196,7 @@ const input = (overrides: Partial<CreateEnquiryInput> = {}): CreateEnquiryInput 
 
 const meta = { ip: '203.0.113.9', userAgent: 'Mozilla/5.0' };
 
-beforeEach(() => {
-  resetRateLimits();
-});
+// Each `setup()` builds its own counter, so there is nothing global to reset.
 
 describe('create', () => {
   it('records the lead and returns 201 with its reference', async () => {

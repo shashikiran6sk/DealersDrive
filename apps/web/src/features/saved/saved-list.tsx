@@ -26,7 +26,10 @@ export function SavedCarsList({ activeCount }: { activeCount: number }) {
     if (!hydrated) return;
 
     if (ids.length === 0) {
-      setState({ status: 'ready', data: { data: [], unavailable: [], savedCountLabel: 'No cars saved' } });
+      setState({
+        status: 'ready',
+        data: { data: [], unavailable: [], savedCountLabel: 'No cars saved' },
+      });
       return;
     }
 

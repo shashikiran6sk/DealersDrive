@@ -202,8 +202,9 @@ describe('UpdateVehicleInput', () => {
   );
 
   it('requires an ISO datetime with an offset for the insurance expiry', () => {
-    expect(UpdateVehicleInput.safeParse({ insuranceValidTill: '2027-03-01T00:00:00Z' }).success)
-      .toBe(true);
+    expect(
+      UpdateVehicleInput.safeParse({ insuranceValidTill: '2027-03-01T00:00:00Z' }).success,
+    ).toBe(true);
     expect(UpdateVehicleInput.safeParse({ insuranceValidTill: '2027-03-01' }).success).toBe(false);
   });
 
@@ -310,7 +311,12 @@ describe('the upload schemas', () => {
   });
 
   it('bounds a photo at 10MB', () => {
-    const base = { ownerType: 'VEHICLE' as const, ownerId: UUID, fileName: 'f.jpg', mimeType: 'image/jpeg' as const };
+    const base = {
+      ownerType: 'VEHICLE' as const,
+      ownerId: UUID,
+      fileName: 'f.jpg',
+      mimeType: 'image/jpeg' as const,
+    };
 
     expect(IMAGE_MAX_BYTES).toBe(10 * 1024 * 1024);
     expect(MediaPresignInput.safeParse({ ...base, bytes: IMAGE_MAX_BYTES }).success).toBe(true);

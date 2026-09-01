@@ -44,7 +44,9 @@ export default async function AdminLoginPage({
       </AuthHeading>
 
       <AdminLoginForm
-        initialMessage={error === 'session_expired' ? 'Your session has ended. Sign in again.' : undefined}
+        initialMessage={
+          error === 'session_expired' ? 'Your session has ended. Sign in again.' : undefined
+        }
       />
     </AuthShell>
   );

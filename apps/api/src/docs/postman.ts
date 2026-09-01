@@ -90,7 +90,12 @@ const PATH_VARIABLES: { match: RegExp; param: string; variable: string; method?:
   // Deliberately *not* `vehicleId`: a DELETE wired to the variable every other
   // dealer request uses will, on a `Run all`, destroy the draft the media and
   // listing folders still need. This one is opt-in.
-  { method: 'delete', match: /^\/v1\/dealer\/vehicles\/\{id\}$/, param: 'id', variable: 'disposableVehicleId' },
+  {
+    method: 'delete',
+    match: /^\/v1\/dealer\/vehicles\/\{id\}$/,
+    param: 'id',
+    variable: 'disposableVehicleId',
+  },
   { match: /^\/v1\/dealer\/vehicles\/\{id\}/, param: 'id', variable: 'vehicleId' },
   // The catalogue's dependent step. `modelId` is already captured from the
   // bundle for the create-vehicle request, so this one needs no capture of its
@@ -192,7 +197,7 @@ const VARIABLES: PostmanVariable[] = [
     type: 'string',
     description:
       'A vehicle **the acting dealer owns**. Captured by `Create a draft vehicle` and by ' +
-      '`List the dealer\'s inventory`. Another dealer\'s id answers 404 by design.',
+      "`List the dealer's inventory`. Another dealer's id answers 404 by design.",
   },
   {
     key: 'disposableVehicleId',
@@ -224,7 +229,7 @@ const VARIABLES: PostmanVariable[] = [
     key: 'dealerId',
     value: '',
     type: 'string',
-    description: 'The acting dealership\'s uuid, for the admin endpoints. Captured by `Who am I`.',
+    description: "The acting dealership's uuid, for the admin endpoints. Captured by `Who am I`.",
   },
   {
     key: 'listingId',
@@ -238,7 +243,7 @@ const VARIABLES: PostmanVariable[] = [
     type: 'string',
     description: 'Captured by `Get a signed upload URL for a photo` and by `One vehicle`.',
   },
-  { key: 'enquiryId', value: '', type: 'string', description: 'Captured by `The dealer\'s inbox`.' },
+  { key: 'enquiryId', value: '', type: 'string', description: "Captured by `The dealer's inbox`." },
   { key: 'packId', value: '', type: 'string', description: 'Captured by `Credit packs for sale`.' },
   { key: 'orderId', value: '', type: 'string', description: 'Captured by `Buy a credit pack`.' },
   {
@@ -344,7 +349,7 @@ const CAPTURES: Record<string, [string, string][]> = {
  * tested for free.
  */
 const COLLECTION_TESTS = [
-  "const status = pm.response.code;",
+  'const status = pm.response.code;',
   '',
   'if (status >= 400) {',
   '  pm.test(`${status} is application/problem+json`, () => {',
@@ -439,8 +444,8 @@ function captureScript(operationId: string): PostmanScript | null {
     'if (pm.response.code < 400) {',
     '  const body = pm.response.json();',
     '',
-    "  // A `*` segment takes the first array element whose remaining path resolves.",
-    "  const read = (path) => {",
+    '  // A `*` segment takes the first array element whose remaining path resolves.',
+    '  const read = (path) => {',
     "    const keys = path.split('.');",
     '    const walk = (node, index) => {',
     '      if (node == null) return undefined;',
@@ -599,7 +604,11 @@ function substitutePath(path: string, method: string): string {
   });
 }
 
-function buildRequest(path: string, method: string, operation: OpenApiOperation): PostmanRequestItem {
+function buildRequest(
+  path: string,
+  method: string,
+  operation: OpenApiOperation,
+): PostmanRequestItem {
   const substituted = substitutePath(path, method);
 
   const query: PostmanQueryParam[] = operation.parameters
@@ -741,7 +750,9 @@ export function buildPostmanCollection(): PostmanCollection {
   // A fixed base URL rather than `env.API_BASE_URL`: a collection is a portable
   // artifact, and baking one developer's environment into a committed file is
   // how it stops being portable.
-  const document = buildOpenApiDocument({ serverUrl: 'http://localhost:4000' }) as unknown as OpenApiDocument;
+  const document = buildOpenApiDocument({
+    serverUrl: 'http://localhost:4000',
+  }) as unknown as OpenApiDocument;
 
   const folders = new Map<string, PostmanFolder>();
 

@@ -273,8 +273,9 @@ describe('CreateEnquiryInput', () => {
    * about which dealer it belongs to.
    */
   it('requires exactly one of vehicleId and dealerSlug', () => {
-    expect(CreateEnquiryInput.safeParse({ ...valid, dealerSlug: 'sri-lakshmi-motors' }).success)
-      .toBe(false);
+    expect(
+      CreateEnquiryInput.safeParse({ ...valid, dealerSlug: 'sri-lakshmi-motors' }).success,
+    ).toBe(false);
 
     const { vehicleId: _omitted, ...withoutVehicle } = valid;
     expect(CreateEnquiryInput.safeParse(withoutVehicle).success).toBe(false);
@@ -302,12 +303,9 @@ describe('CreateEnquiryInput', () => {
   );
 
   /** Indian mobile numbers start 6–9; a landline or a short number is a typo. */
-  it.each(['5840012345', '984001234', '98400123456', 'not-a-number'])(
-    'refuses %s',
-    (phone) => {
-      expect(CreateEnquiryInput.safeParse({ ...valid, phone }).success).toBe(false);
-    },
-  );
+  it.each(['5840012345', '984001234', '98400123456', 'not-a-number'])('refuses %s', (phone) => {
+    expect(CreateEnquiryInput.safeParse({ ...valid, phone }).success).toBe(false);
+  });
 
   it('explains what a valid number looks like rather than just failing', () => {
     const result = CreateEnquiryInput.safeParse({ ...valid, phone: '123' });

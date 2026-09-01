@@ -3,7 +3,7 @@
 > This file is the primary instruction set for Claude Code and other coding agents working on this repository.
 >
 > **Goal:** Build the Dealers-Drive application end-to-end from the existing product specifications, UI screenshots, and interactive HTML prototype. The application should be runnable locally as a complete working product.
-The current implementation must focus exclusively on the website experience. Do not implement mobile or tablet-specific layouts at this stage.
+> The current implementation must focus exclusively on the website experience. Do not implement mobile or tablet-specific layouts at this stage.
 >
 > Before writing code, read **all source-of-truth files listed below**. Do not start implementation based only on this file.
 
@@ -13,12 +13,12 @@ The current implementation must focus exclusively on the website experience. Do 
 
 **Dealers-Drive** is a B2B2C used-car marketplace for Tamil Nadu.
 
-* Independent dealers list their own vehicle inventory.
-* Buyers can browse vehicles publicly without creating an account.
-* Dealers manage their inventory through a dealer dashboard.
-* Dealers use credits for actions that require credits.
-* Dealers-Drive is the technology and marketplace layer.
-* Dealers-Drive does **not** own the vehicles.
+- Independent dealers list their own vehicle inventory.
+- Buyers can browse vehicles publicly without creating an account.
+- Dealers manage their inventory through a dealer dashboard.
+- Dealers use credits for actions that require credits.
+- Dealers-Drive is the technology and marketplace layer.
+- Dealers-Drive does **not** own the vehicles.
 
 For the current local development version, prioritize demonstrating the complete product workflow rather than production payment/authentication integrations.
 
@@ -53,45 +53,45 @@ or an equivalent interactive UI file.
 
 Defines:
 
-* system architecture
-* database design
-* entities and relationships
-* state machines
-* security model
-* tenancy/isolation
-* deployment architecture
-* server/client boundaries
-* infrastructure decisions
+- system architecture
+- database design
+- entities and relationships
+- state machines
+- security model
+- tenancy/isolation
+- deployment architecture
+- server/client boundaries
+- infrastructure decisions
 
 ### `docs/API-SPEC.md`
 
 Defines:
 
-* API endpoints
-* HTTP methods
-* request schemas
-* response schemas
-* error responses
-* query parameters
-* path parameters
-* authentication expectations
+- API endpoints
+- HTTP methods
+- request schemas
+- response schemas
+- error responses
+- query parameters
+- path parameters
+- authentication expectations
 
 ### `docs/DESIGN-SPEC.md`
 
 Defines:
 
-* design tokens
-* typography
-* colors
-* spacing
-* components
-* layouts
-* responsive behavior
-* screen requirements
-* loading states
-* empty states
-* error states
-* accessibility requirements
+- design tokens
+- typography
+- colors
+- spacing
+- components
+- layouts
+- responsive behavior
+- screen requirements
+- loading states
+- empty states
+- error states
+- accessibility requirements
 
 ### `screens/`
 
@@ -105,16 +105,16 @@ The interactive HTML prototype is the **visual interaction reference**.
 
 Use it to understand:
 
-* navigation
-* interactions
-* dropdowns
-* modals
-* forms
-* filters
-* tabs
-* vehicle interactions
-* dealer dashboard interactions
-* responsive behavior
+- navigation
+- interactions
+- dropdowns
+- modals
+- forms
+- filters
+- tabs
+- vehicle interactions
+- dealer dashboard interactions
+- responsive behavior
 
 If the written design specification is ambiguous about visual behavior, inspect the interactive prototype.
 
@@ -144,15 +144,15 @@ If two documents directly contradict each other:
 
 Do not silently choose one interpretation for:
 
-* database structure
-* API behavior
-* permissions
-* authentication
-* money
-* credits
-* listing states
-* dealer ownership
-* security
+- database structure
+- API behavior
+- permissions
+- authentication
+- money
+- credits
+- listing states
+- dealer ownership
+- security
 
 For purely visual ambiguity, prefer the interactive prototype.
 
@@ -172,31 +172,31 @@ The goal is:
 
 # 5. AUTHENTICATION — IMPLEMENTED (revised)
 
-> **Superseded, r3.** This section previously said *do not implement
-> authentication*, and the build followed it: a development resolver read a
+> **Superseded, r3.** This section previously said _do not implement
+> authentication_, and the build followed it: a development resolver read a
 > server-configured identity. That instruction has been replaced — real sign-in
 > is now implemented and tested. The paragraphs below describe what exists.
 
 ## Dealers — Google OAuth, nothing else
 
-* **Implemented:** OAuth 2.0 authorization code flow with PKCE and an OIDC
+- **Implemented:** OAuth 2.0 authorization code flow with PKCE and an OIDC
   nonce, against Google. The backend redeems the code server-side and verifies
   the identity token's issuer, audience, expiry and nonce.
-* **Not implemented, and not wanted:** dealer signup forms, dealer passwords,
+- **Not implemented, and not wanted:** dealer signup forms, dealer passwords,
   email OTP, mobile OTP. There is no dealer credential for anybody to steal,
   phish or reset.
-* The account is found by `provider + sub`, never by email address. A verified
+- The account is found by `provider + sub`, never by email address. A verified
   email that already belongs to an account is refused (`ACCOUNT_LINK_REQUIRED`)
   rather than merged.
-* Phone numbers are collected during onboarding. **Nothing sends a code to
+- Phone numbers are collected during onboarding. **Nothing sends a code to
   them** — SMS verification is explicitly out of scope.
 
 ## Admins — email and password, nothing else
 
-* Email + Argon2id password at `POST /v1/auth/admin/login`.
-* **No admin signup, no admin OTP, no admin Google.** Admins come from the seed
+- Email + Argon2id password at `POST /v1/auth/admin/login`.
+- **No admin signup, no admin OTP, no admin Google.** Admins come from the seed
   or from another admin.
-* A separate session scope with a 12-hour lifetime.
+- A separate session scope with a 12-hour lifetime.
 
 ## Sessions
 
@@ -231,11 +231,11 @@ Razorpay is **NOT required for the current version**.
 
 Do not implement:
 
-* Razorpay checkout
-* payment gateway callbacks
-* payment verification
-* production payment webhooks
-* real payment transactions
+- Razorpay checkout
+- payment gateway callbacks
+- payment verification
+- production payment webhooks
+- real payment transactions
 
 Instead, implement a **development credit purchase flow**.
 
@@ -274,7 +274,7 @@ Although payment is mocked, the underlying credit accounting should remain produ
 Credits must NOT simply be incremented by:
 
 ```ts
-dealer.credits += 100
+dealer.credits += 100;
 ```
 
 Instead follow the architecture's credit transaction model.
@@ -319,17 +319,29 @@ This allows Razorpay to be added later without redesigning the credit system.
 
 For this version, do not spend time implementing:
 
-* Razorpay
-* production authentication
-* OTP provider integration
-* production SMS
-* production email flows
-* unnecessary admin functionality not required by the existing specs
-* unnecessary infrastructure
-* unnecessary microservices
-* unnecessary abstractions
+- Razorpay
+- production authentication
+- OTP provider integration
+- production SMS
+- production email flows
+- unnecessary admin functionality not required by the existing specs
+- unnecessary infrastructure
+- unnecessary microservices
+- unnecessary abstractions
 
 Implement the product defined in the documents, but use mocks/stubs where the current scope explicitly says to do so.
+
+**"Unnecessary infrastructure" does not mean "no infrastructure".** Two things
+are in scope and are already built, because leaving them out is what makes a
+system that works on one machine and fails on two:
+
+- `deploy/terraform/` — the ECS runtime as code. Capacity, autoscaling, alarms,
+  IAM and the _names_ of secrets. Change capacity or configuration there and
+  apply; change the running image by deploying, never by applying.
+- `platform/cache/` — the `CachePort`. See Rule 10.
+
+What remains out of scope is a second datastore (Redis), a message broker, a
+service mesh, and any second deployable.
 
 ---
 
@@ -362,20 +374,20 @@ Unless the source-of-truth documents explicitly require otherwise:
 
 Do not introduce:
 
-* MongoDB
-* Redis
-* Elasticsearch
-* GraphQL
-* NestJS
-* microservices
-* Redux
-* another global state manager
+- MongoDB
+- Redis
+- Elasticsearch
+- GraphQL
+- NestJS
+- microservices
+- Redux
+- another global state manager
 
 unless the source-of-truth architecture explicitly changes.
 
 ---
 
-# 11. THE NINE CORE RULES
+# 11. THE TEN CORE RULES
 
 These rules are mandatory.
 
@@ -385,9 +397,9 @@ These rules are mandatory.
 
 Never accept it from:
 
-* request body
-* query parameter
-* URL path
+- request body
+- query parameter
+- URL path
 
 A DTO containing a client-provided `dealerId` is a bug.
 
@@ -400,14 +412,14 @@ For local development, use the mocked dealer session/context.
 All API input must use strict Zod schemas.
 
 ```ts
-schema.strict()
+schema.strict();
 ```
 
 Unknown:
 
-* body fields
-* query parameters
-* request fields
+- body fields
+- query parameters
+- request fields
 
 must be rejected.
 
@@ -452,7 +464,7 @@ Never directly mutate a credit balance without the corresponding transaction rec
 Listing state changes must go through:
 
 ```ts
-transition(listing, event, actor)
+transition(listing, event, actor);
 ```
 
 Never directly assign:
@@ -522,6 +534,44 @@ Server configuration should be read at runtime where required.
 
 Preserve build-once-promote-many behavior.
 
+Every new variable goes in the Zod schema in `apps/api/src/config/env.ts`, with a
+comment saying what breaks without it, and in `.env.example`. If it must differ
+in production, add the cross-field guard in `checkedEnvSchema` too — the point of
+that schema is that a misconfigured production process refuses to boot rather
+than discovering the problem at the first dealer who tries to sign in.
+
+## Rule 10 — Shared State
+
+**Anything counted or cached across requests goes through the `CachePort`
+(`apps/api/src/platform/cache/`). Never a module-level `Map`.**
+
+A counter in process memory is correct for exactly one process. Behind N tasks
+it permits N times the limit written next to it, and nothing errors to say so.
+For the rate limits in particular that is a spend control failing open: every
+phone reveal costs an SMS.
+
+```ts
+// WRONG — correct on a laptop, silently N times too permissive in production
+const windows = new Map<string, Window>();
+
+// RIGHT — one atomic operation against shared state
+const result = await cache.increment(key, windowSeconds);
+```
+
+The port is passed in, like the auth guards — `createRateLimiter(cache)` is built
+once in the container and handed to the routers that need it. Do not import a
+cache singleton.
+
+Two rules follow from this:
+
+- **Fail open.** If the backend is unreachable, allow the request and log. A
+  limiter that cannot count has no opinion; turning a database blip into a
+  site-wide 429 converts a degraded dependency into an outage.
+- **Never store the truth there.** The cache holds counters and a version
+  number. `PlatformConfig` values live in the table; the cache only says _when_
+  the table last changed. A cache that could disagree with the database would be
+  a second source of truth.
+
 ---
 
 # 12. DESIGN RULES
@@ -552,18 +602,18 @@ Use shadows only where specified by the design system.
 
 Do not add shadows to:
 
-* cards
-* tables
-* headers
-* sidebars
-* badges
-* buttons
+- cards
+- tables
+- headers
+- sidebars
+- badges
+- buttons
 
 Depth should primarily come from:
 
-* borders
-* 1px hairlines
-* background contrast
+- borders
+- 1px hairlines
+- background contrast
 
 ---
 
@@ -614,14 +664,14 @@ font-variant-numeric: tabular-nums;
 
 for:
 
-* prices
-* EMI
-* kilometres
-* credit counts
-* statistics
-* filter counts
-* table numeric columns
-* invoice amounts
+- prices
+- EMI
+- kilometres
+- credit counts
+- statistics
+- filter counts
+- table numeric columns
+- invoice amounts
 
 Do not apply it to normal prose.
 
@@ -640,7 +690,7 @@ for displayed vehicle prices.
 Raw amounts should use:
 
 ```ts
-toLocaleString("en-IN")
+toLocaleString('en-IN');
 ```
 
 Dates:
@@ -694,32 +744,32 @@ This includes, where specified:
 
 ### Public marketplace
 
-* home page
-* vehicle search
-* filters
-* sorting
-* vehicle listing
-* vehicle details
-* image gallery
-* enquiry/contact flows
-* public navigation
-* responsive layouts
+- home page
+- vehicle search
+- filters
+- sorting
+- vehicle listing
+- vehicle details
+- image gallery
+- enquiry/contact flows
+- public navigation
+- responsive layouts
 
 ### Dealer experience
 
-* dealer dashboard
-* inventory
-* vehicle creation
-* vehicle editing
-* vehicle publishing workflow
-* vehicle details
-* dealer statistics
-* credits/wallet
-* credit transactions
-* buy credits
-* mocked credit purchase
-* contact reveal
-* other dealer features defined in the documents
+- dealer dashboard
+- inventory
+- vehicle creation
+- vehicle editing
+- vehicle publishing workflow
+- vehicle details
+- dealer statistics
+- credits/wallet
+- credit transactions
+- buy credits
+- mocked credit purchase
+- contact reveal
+- other dealer features defined in the documents
 
 ### Admin
 
@@ -856,7 +906,7 @@ Use the shared error classes defined by the architecture.
 Never do:
 
 ```ts
-res.status(500).send("error");
+res.status(500).send('error');
 ```
 
 Never leak stack traces or internal implementation details to clients.
@@ -875,7 +925,7 @@ noUncheckedIndexedAccess: true
 Never use:
 
 ```ts
-any
+any;
 ```
 
 Avoid:
@@ -940,19 +990,18 @@ Even in local development, preserve the security architecture.
 
 Do not:
 
-* trust dealerId from the frontend
-* expose private dealer data publicly
-* bypass tenant checks
-* expose internal database fields
-* expose phone numbers in public responses
-* skip authorization checks simply because authentication is mocked
+- trust dealerId from the frontend
+- expose private dealer data publicly
+- bypass tenant checks
+- expose internal database fields
+- expose phone numbers in public responses
+- skip authorization checks simply because authentication is mocked
 
 The only thing being bypassed locally is the **identity verification mechanism**.
 
 The application should still enforce the resulting identity and permissions.
 
 ---
-
 
 # 25. RESPONSIVE DESIGN
 
@@ -982,15 +1031,15 @@ Tests must cover:
 
 ### Business logic
 
-* happy paths
-* validation errors
-* authorization errors
-* documented API errors
-* state transitions
-* credit transactions
-* credit purchases
-* contact reveal
-* listing visibility
+- happy paths
+- validation errors
+- authorization errors
+- documented API errors
+- state transitions
+- credit transactions
+- credit purchases
+- contact reveal
+- listing visibility
 
 ### Tenant isolation
 
@@ -1027,25 +1076,25 @@ must pass.
 
 Additionally:
 
-* [ ] API contracts pass
-* [ ] Database migrations work
-* [ ] Seed data works
-* [ ] Development dealer works
-* [ ] Public marketplace works
-* [ ] Dealer dashboard works
-* [ ] Inventory workflow works
-* [ ] Credit wallet works
-* [ ] Buy-credit development flow works
-* [ ] No Razorpay page is required
-* [ ] Dealer signup/signin does not block local usage
-* [ ] Tenant isolation works
-* [ ] Loading states exist
-* [ ] Empty states exist
-* [ ] Error states exist
-* [ ] Keyboard navigation works
-* [ ] No console errors
-* [ ] Responsive layouts work
-* [ ] Screens visually match the provided references
+- [ ] API contracts pass
+- [ ] Database migrations work
+- [ ] Seed data works
+- [ ] Development dealer works
+- [ ] Public marketplace works
+- [ ] Dealer dashboard works
+- [ ] Inventory workflow works
+- [ ] Credit wallet works
+- [ ] Buy-credit development flow works
+- [ ] No Razorpay page is required
+- [ ] Dealer signup/signin does not block local usage
+- [ ] Tenant isolation works
+- [ ] Loading states exist
+- [ ] Empty states exist
+- [ ] Error states exist
+- [ ] Keyboard navigation works
+- [ ] No console errors
+- [ ] Responsive layouts work
+- [ ] Screens visually match the provided references
 
 ---
 
@@ -1061,21 +1110,21 @@ Before claiming a UI feature is complete:
 
 Pay special attention to:
 
-* spacing
-* typography
-* borders
-* corner radius
-* shadows
-* colors
-* icon sizes
-* button sizes
-* table layouts
-* responsive behavior
-* empty states
-* modal behavior
-* navigation
-* vehicle cards
-* dealer dashboard layout
+- spacing
+- typography
+- borders
+- corner radius
+- shadows
+- colors
+- icon sizes
+- button sizes
+- table layouts
+- responsive behavior
+- empty states
+- modal behavior
+- navigation
+- vehicle cards
+- dealer dashboard layout
 
 Do not claim visual completion without actually checking the reference.
 
@@ -1121,14 +1170,14 @@ Public marketplace
 
 Before creating files:
 
-* inspect existing package.json files
-* inspect pnpm workspace
-* inspect Turborepo configuration
-* inspect Prisma schema
-* inspect existing apps
-* inspect existing components
-* inspect existing contracts
-* inspect environment configuration
+- inspect existing package.json files
+- inspect pnpm workspace
+- inspect Turborepo configuration
+- inspect Prisma schema
+- inspect existing apps
+- inspect existing components
+- inspect existing contracts
+- inspect environment configuration
 
 Reuse existing code when it already follows the architecture.
 
@@ -1140,14 +1189,14 @@ Do not rewrite working infrastructure unnecessarily.
 
 Ensure:
 
-* workspace works
-* web app works
-* API works
-* database connection works
-* Prisma works
-* migrations work
-* contracts work
-* local development configuration works
+- workspace works
+- web app works
+- API works
+- database connection works
+- Prisma works
+- migrations work
+- contracts work
+- local development configuration works
 
 ---
 
@@ -1157,10 +1206,10 @@ Implement the schema defined in the architecture.
 
 Create development seed data for:
 
-* dealer
-* vehicles/listings
-* credits
-* required supporting entities
+- dealer
+- vehicles/listings
+- credits
+- required supporting entities
 
 Seed enough data to make the UI meaningful.
 
@@ -1268,29 +1317,29 @@ Fix failures rather than weakening tests.
 
 Do NOT:
 
-* invent APIs
-* invent database models without architectural justification
-* create unnecessary microservices
-* add Redux
-* add MongoDB
-* add Redis
-* add Elasticsearch
-* add GraphQL
-* add unnecessary dependencies
-* build Razorpay now
-* build production authentication now
-* create a generic UI instead of following the prototype
-* use arbitrary mock data instead of the database
-* accept dealerId from the client
-* expose dealer phone numbers publicly
-* directly modify listing status
-* directly modify credit balances
-* use floating-point money
-* use `any`
-* weaken tests
-* hide errors
-* silently ignore specification conflicts
-* stop at scaffolding
+- invent APIs
+- invent database models without architectural justification
+- create unnecessary microservices
+- add Redux
+- add MongoDB
+- add Redis
+- add Elasticsearch
+- add GraphQL
+- add unnecessary dependencies
+- build Razorpay now
+- build production authentication now
+- create a generic UI instead of following the prototype
+- use arbitrary mock data instead of the database
+- accept dealerId from the client
+- expose dealer phone numbers publicly
+- directly modify listing status
+- directly modify credit balances
+- use floating-point money
+- use `any`
+- weaken tests
+- hide errors
+- silently ignore specification conflicts
+- stop at scaffolding
 
 ---
 
@@ -1354,15 +1403,15 @@ If the answer can be determined from those sources, make the decision and implem
 
 Only stop and ask when the decision materially affects:
 
-* database schema
-* API contract
-* security
-* permissions
-* money
-* credit accounting
-* listing state
-* tenant isolation
-* conflicting specifications
+- database schema
+- API contract
+- security
+- permissions
+- money
+- credit accounting
+- listing state
+- tenant isolation
+- conflicting specifications
 
 For everything else, make the most reasonable implementation consistent with the existing product.
 

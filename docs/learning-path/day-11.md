@@ -18,7 +18,7 @@ The sentence to carry away:
 > lives.**
 
 An invariant is something that must be true of the data no matter what code runs
-— *a credit balance is never negative*, *a vehicle never has two live listings*.
+— _a credit balance is never negative_, _a vehicle never has two live listings_.
 If that lives only in a `if (balance < 0) throw` in your service, then two
 concurrent requests can both pass the check and both write. **An application
 check is a suggestion under concurrency.** A `CHECK` constraint is not.
@@ -27,26 +27,26 @@ check is a suggestion under concurrency.** A `CHECK` constraint is not.
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 9** — all of it (9.1 → 9.5) | 60 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-C1 → C4** — ACID, row locking, indexes, denormalization | 25 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 1.6** — why PostgreSQL, and why not MongoDB (re-read now) | 15 |
-| [PostgreSQL — MVCC](https://www.postgresql.org/docs/current/mvcc.html) | §13.1–13.3 | 20 |
-| [Use The Index, Luke](https://use-the-index-luke.com/) | Chapter 1 and 2 | 30 |
+| Source                                                                 | Sections                                                          | ~min |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md`                                          | **Part 9** — all of it (9.1 → 9.5)                                | 60   |
+| `docs/ENGINEER-ONBOARDING.md`                                          | **Part 34-C1 → C4** — ACID, row locking, indexes, denormalization | 25   |
+| `docs/ENGINEER-ONBOARDING.md`                                          | **Part 1.6** — why PostgreSQL, and why not MongoDB (re-read now)  | 15   |
+| [PostgreSQL — MVCC](https://www.postgresql.org/docs/current/mvcc.html) | §13.1–13.3                                                        | 20   |
+| [Use The Index, Luke](https://use-the-index-luke.com/)                 | Chapter 1 and 2                                                   | 30   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/api/prisma/schema.prisma` | Read it **top to bottom**, slowly. ~830 lines. Note the comment at the top: money is `BigInt` paise everywhere, and every dealer-owned table carries `dealerId` as a first-class column |
-| 2 | `apps/api/prisma/migrations/20260816183407_init/migration.sql` | The generated SQL. Compare it to the Prisma model you just read |
-| 3 | `apps/api/prisma/migrations/20260816183500_search_and_invariants/migration.sql` | **The most interesting file today.** The `listing_search` table, ten indexes, and five `CHECK` constraints |
-| 4 | `apps/api/prisma/migrations/20260816200000_credit_ledger_sequence/migration.sql` | A `BIGSERIAL` added for ordering. Day 12 explains why `createdAt` was not enough |
-| 5 | `apps/api/src/platform/db/prisma.ts` | One client per process. Rule 2: only `*.repository.ts` imports this |
-| 6 | `apps/api/src/platform/db/tenant-tx.ts` | `withTransaction` and `withTenant` |
+| #   | File                                                                             | What to look for                                                                                                                                                                        |
+| --- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/api/prisma/schema.prisma`                                                  | Read it **top to bottom**, slowly. ~830 lines. Note the comment at the top: money is `BigInt` paise everywhere, and every dealer-owned table carries `dealerId` as a first-class column |
+| 2   | `apps/api/prisma/migrations/20260816183407_init/migration.sql`                   | The generated SQL. Compare it to the Prisma model you just read                                                                                                                         |
+| 3   | `apps/api/prisma/migrations/20260816183500_search_and_invariants/migration.sql`  | **The most interesting file today.** The `listing_search` table, ten indexes, and five `CHECK` constraints                                                                              |
+| 4   | `apps/api/prisma/migrations/20260816200000_credit_ledger_sequence/migration.sql` | A `BIGSERIAL` added for ordering. Day 12 explains why `createdAt` was not enough                                                                                                        |
+| 5   | `apps/api/src/platform/db/prisma.ts`                                             | One client per process. Rule 2: only `*.repository.ts` imports this                                                                                                                     |
+| 6   | `apps/api/src/platform/db/tenant-tx.ts`                                          | `withTransaction` and `withTenant`                                                                                                                                                      |
 
 ---
 
@@ -68,7 +68,7 @@ docker compose exec postgres psql -U dealersdrive -d dealersdrive
 \di                       -- every index in the database
 ```
 
-`\d+` on a table shows you what Prisma *produced*, which is what actually runs.
+`\d+` on a table shows you what Prisma _produced_, which is what actually runs.
 Get comfortable reading it.
 
 ### 4.2 Try to violate every invariant
@@ -102,13 +102,14 @@ SELECT conname, pg_get_constraintdef(oid)
 FROM pg_constraint WHERE conrelid = 'dealers'::regclass;
 ```
 
-Write down, for each: *which of the nine rules does this constraint enforce?*
+Write down, for each: _which of the nine rules does this constraint enforce?_
 
 ### 4.3 Feel a transaction
 
 Open **two** `psql` sessions side by side.
 
 **Session A:**
+
 ```sql
 BEGIN;
 UPDATE dealers SET "creditBalance" = "creditBalance" + 10 WHERE slug = 'sri-lakshmi-motors';
@@ -116,15 +117,17 @@ SELECT "creditBalance" FROM dealers WHERE slug = 'sri-lakshmi-motors';   -- sees
 ```
 
 **Session B (do not commit A yet):**
+
 ```sql
 -- sees the OLD value:
 SELECT "creditBalance" FROM dealers WHERE slug = 'sri-lakshmi-motors';
 ```
 
 That is **isolation**, implemented by MVCC: session B is reading a different row
-*version*. Readers never block writers.
+_version_. Readers never block writers.
 
 **Session A:**
+
 ```sql
 ROLLBACK;
 ```
@@ -134,12 +137,14 @@ Gone entirely. That is **atomicity**.
 ### 4.4 Feel a row lock
 
 **Session A:**
+
 ```sql
 BEGIN;
 SELECT "creditBalance" FROM dealers WHERE slug = 'sri-lakshmi-motors' FOR UPDATE;
 ```
 
 **Session B:**
+
 ```sql
 BEGIN;
 SELECT "creditBalance" FROM dealers WHERE slug = 'sri-lakshmi-motors' FOR UPDATE;
@@ -206,10 +211,11 @@ pnpm --filter @dealers-drive/api db:migrate
 
 **Read the generated SQL before anything else.** It is what will run in
 production one day. Note that it is `ADD COLUMN … NULL` — additive, and safe
-against currently-running code. That is *expand*, and Day 20 explains why it
+against currently-running code. That is _expand_, and Day 20 explains why it
 matters.
 
 Then throw it away:
+
 ```bash
 git checkout apps/api/prisma/schema.prisma
 rm -rf apps/api/prisma/migrations/*_<your_migration_name>
@@ -220,15 +226,15 @@ pnpm --filter @dealers-drive/api db:reset
 
 ## 5. Prove you understood it
 
-1. What is an invariant, and why must it live in the database? → *§9.2*
+1. What is an invariant, and why must it live in the database? → _§9.2_
 2. Name the four ACID properties and give a concrete example of each from this
-   schema. → *§34-C1*
-3. What does MVCC give you that locking every read would not? → *§34-C1*
-4. What does `SELECT … FOR UPDATE` do, and what does it protect? → *§9.3, §34-C2*
-5. Why is money `BigInt` paise and never a float? → *§9.5, Rule 3*
-6. Why does `(city_slug, price_paise)` not serve a query filtering only on price? → *§34-C3*
-7. What is a partial unique index, and where is one used here? → *§9.3*
-8. What is a denormalized read model, and what maintains `listing_search`? → *§9.3, §34-C4*
+   schema. → _§34-C1_
+3. What does MVCC give you that locking every read would not? → _§34-C1_
+4. What does `SELECT … FOR UPDATE` do, and what does it protect? → _§9.3, §34-C2_
+5. Why is money `BigInt` paise and never a float? → _§9.5, Rule 3_
+6. Why does `(city_slug, price_paise)` not serve a query filtering only on price? → _§34-C3_
+7. What is a partial unique index, and where is one used here? → _§9.3_
+8. What is a denormalized read model, and what maintains `listing_search`? → _§9.3, §34-C4_
 9. Name three constraints in this schema and say which of the nine rules each
    enforces.
 

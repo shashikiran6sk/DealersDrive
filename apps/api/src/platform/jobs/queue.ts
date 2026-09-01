@@ -13,7 +13,11 @@ import { logger } from '../telemetry/logger.js';
  * suite needs no background schema.
  */
 export interface Queue {
-  send(name: JobName, data: Record<string, unknown>, options?: { priority?: number }): Promise<void>;
+  send(
+    name: JobName,
+    data: Record<string, unknown>,
+    options?: { priority?: number },
+  ): Promise<void>;
   work(name: JobName, handler: (data: Record<string, unknown>) => Promise<void>): Promise<void>;
   schedule(name: JobName, cron: string, data?: Record<string, unknown>): Promise<void>;
   start(): Promise<void>;
@@ -32,6 +36,7 @@ export const JOB_NAMES = [
   'notification.invoice',
   'listings.expire-sweep',
   'counters.reconcile',
+  'cache.sweep-counters',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -55,7 +60,8 @@ export function createQueue(): Queue {
   boss.on('error', (error: unknown) => logger.error({ err: error }, 'pg-boss error'));
 
   /** Handlers registered before `start()`; pg-boss v12 needs the queue to exist. */
-  const pending: { name: JobName; handler: (data: Record<string, unknown>) => Promise<void> }[] = [];
+  const pending: { name: JobName; handler: (data: Record<string, unknown>) => Promise<void> }[] =
+    [];
   let started = false;
 
   async function attach(

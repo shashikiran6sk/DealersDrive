@@ -6,5 +6,10 @@
  * Identity is resolved by the session resolver at the edge and passed inward —
  * a service can read who is calling and can never decide it.
  */
-export type { AdminPrincipal, DealerPrincipal, Principal, SessionResolver } from './session.port.js';
+export type {
+  AdminPrincipal,
+  DealerPrincipal,
+  Principal,
+  SessionResolver,
+} from './session.port.js';
 export { permissionsForAdminRole, permissionsForRole } from './session.port.js';

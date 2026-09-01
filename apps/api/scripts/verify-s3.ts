@@ -8,10 +8,7 @@
  * over plain fetch (what the browser does), then head/get/delete.
  */
 import { env } from '../src/config/env.js';
-import {
-  createS3Client,
-  createS3Storage,
-} from '../src/platform/storage/s3.adapter.js';
+import { createS3Client, createS3Storage } from '../src/platform/storage/s3.adapter.js';
 
 const KEY = `verify/${Date.now()}.txt`;
 const BODY = Buffer.from('dealers-drive s3 connectivity check\n');

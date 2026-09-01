@@ -81,10 +81,9 @@ export default async function DealerPortfolioPage({
       `/v1/dealers/${dealer.slug}/vehicles${encoded ? `?${encoded}` : ''}`,
       { revalidate: 600 },
     ),
-    apiGet<FacetsResponse>(
-      `/v1/dealers/${dealer.slug}/facets${encoded ? `?${encoded}` : ''}`,
-      { revalidate: 600 },
-    ),
+    apiGet<FacetsResponse>(`/v1/dealers/${dealer.slug}/facets${encoded ? `?${encoded}` : ''}`, {
+      revalidate: 600,
+    }),
   ]);
 
   return (

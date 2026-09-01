@@ -17,7 +17,9 @@ import {
  * read-only, and parses everything a caller sends.
  */
 
-const router = createSearchRouter({} as never, {} as never);
+const router = createSearchRouter({} as never, {} as never, () => (_req, _res, next) => {
+  next();
+});
 
 describe('the surface', () => {
   it('declares exactly the public catalogue endpoints', () => {

@@ -54,7 +54,10 @@ export type AdminOverview = z.infer<typeof AdminOverview>;
 export const AdminDealerQuery = z
   .object({
     status: DealerStatus.optional(),
-    city: z.string().regex(/^[a-z0-9-]+$/).optional(),
+    city: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
     q: z.string().max(120).optional(),
     cursor: z.string().max(500).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -181,7 +184,10 @@ export type DealerModerationResponse = z.infer<typeof DealerModerationResponse>;
 
 export const GrantCreditsInput = z
   .object({
-    credits: z.number().int().refine((n) => n !== 0, 'Grant a non-zero number of credits.'),
+    credits: z
+      .number()
+      .int()
+      .refine((n) => n !== 0, 'Grant a non-zero number of credits.'),
     label: z.string().trim().min(3).max(120),
     reason: z.string().trim().max(300).optional(),
   })
@@ -211,8 +217,14 @@ export type VerifyDocumentResponse = z.infer<typeof VerifyDocumentResponse>;
 export const AdminListingQuery = z
   .object({
     status: ListingStatus.default('PENDING_REVIEW'),
-    dealer: z.string().regex(/^[a-z0-9-]+$/).optional(),
-    city: z.string().regex(/^[a-z0-9-]+$/).optional(),
+    dealer: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
+    city: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
     cursor: z.string().max(500).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(20),
   })
@@ -369,9 +381,18 @@ export type TakedownResponse = z.infer<typeof TakedownResponse>;
 export const AdminPaymentQuery = z
   .object({
     status: PaymentStatus.optional(),
-    dealer: z.string().regex(/^[a-z0-9-]+$/).optional(),
-    from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    dealer: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
+    from: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    to: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
     cursor: z.string().max(500).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(20),
   })
@@ -445,8 +466,14 @@ export const AuditQuery = z
     dealerId: Uuid.optional(),
     actorId: Uuid.optional(),
     action: z.string().max(60).optional(),
-    from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    from: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    to: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
     cursor: z.string().max(500).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(20),
   })

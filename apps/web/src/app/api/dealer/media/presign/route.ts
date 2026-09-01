@@ -28,11 +28,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const result = await apiSend<PresignResponse>(
-      'POST',
-      '/v1/dealer/media/presign',
-      parsed.data,
-    );
+    const result = await apiSend<PresignResponse>('POST', '/v1/dealer/media/presign', parsed.data);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     if (error instanceof ApiError) {

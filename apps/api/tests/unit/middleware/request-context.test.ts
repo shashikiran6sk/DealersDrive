@@ -4,11 +4,14 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   getContext,
   getTraceId,
+  inboundTraceId,
   requestContext,
   requireContext,
   runWithContext,
+  sanitizeTraceId,
   setContextValue,
   TRACE_ID_HEADER,
+  type RequestContext,
 } from '../../../src/middleware/request-context.js';
 
 /**
@@ -246,5 +249,142 @@ describe('the Express middleware', () => {
 
     expect(context?.userId).toBeUndefined();
     expect(context?.dealerId).toBeUndefined();
+  });
+});
+
+describe('sanitizeTraceId', () => {
+  /**
+   * An inbound id is untrusted input that ends up in every log line for the
+   * request, so it is filtered rather than trusted. The newline is the one that
+   * matters: without it, a caller can forge a second log entry.
+   */
+  it('keeps an ordinary id unchanged', () => {
+    expect(sanitizeTraceId('abc123XYZ')).toBe('abc123XYZ');
+  });
+
+  it('keeps the characters real tracing headers use', () => {
+    expect(sanitizeTraceId('Root=1-5759e988-bd862e3fe1be46a994272793')).toBe(
+      'Root=1-5759e988-bd862e3fe1be46a994272793',
+    );
+  });
+
+  it('strips a newline, so a caller cannot forge a second log line', () => {
+    // `:` survives — it appears in real tracing formats and cannot break a log
+    // line. The newline, the braces and the quotes are what had to go.
+    expect(sanitizeTraceId('abc\n{"level":"fatal"}')).toBe('abclevel:fatal');
+  });
+
+  it('strips quotes, which would otherwise break the JSON a shipper parses', () => {
+    expect(sanitizeTraceId('a"b')).toBe('ab');
+  });
+
+  it('strips control characters, including a terminal escape', () => {
+    expect(sanitizeTraceId('ab\u001b[31m')).toBe('ab31m');
+  });
+
+  it('trims surrounding whitespace', () => {
+    expect(sanitizeTraceId('  abc  ')).toBe('abc');
+  });
+
+  it('caps the length, so one header cannot bloat every log line', () => {
+    expect(sanitizeTraceId('a'.repeat(500))).toHaveLength(64);
+  });
+
+  it('rejects an empty or absent value', () => {
+    expect(sanitizeTraceId(undefined)).toBeUndefined();
+    expect(sanitizeTraceId('')).toBeUndefined();
+    expect(sanitizeTraceId('   ')).toBeUndefined();
+  });
+
+  it('rejects a value that is nothing but disallowed characters', () => {
+    expect(sanitizeTraceId('<<>>')).toBeUndefined();
+  });
+});
+
+describe('inboundTraceId', () => {
+  it('is undefined when nothing was sent', () => {
+    expect(inboundTraceId({})).toBeUndefined();
+    expect(inboundTraceId(undefined)).toBeUndefined();
+  });
+
+  it('prefers x-request-id', () => {
+    expect(inboundTraceId({ 'x-request-id': 'from-alb', 'x-correlation-id': 'other' })).toBe(
+      'from-alb',
+    );
+  });
+
+  /**
+   * `x-amzn-trace-id` is last because the ALB sets it on *every* request.
+   * Taking it first would mean an id the web app's BFF supplied deliberately
+   * was always ignored, and the two halves of one user action would never join.
+   */
+  it('prefers a deliberate id over the ALB default', () => {
+    expect(
+      inboundTraceId({ 'x-amzn-trace-id': 'Root=1-abc', 'x-correlation-id': 'from-bff' }),
+    ).toBe('from-bff');
+  });
+
+  it('falls back to the ALB id when nothing else was sent', () => {
+    expect(inboundTraceId({ 'x-amzn-trace-id': 'Root=1-abc' })).toBe('Root=1-abc');
+  });
+
+  it('takes the first value of a repeated header', () => {
+    expect(inboundTraceId({ 'x-request-id': ['first', 'second'] })).toBe('first');
+  });
+
+  it('skips a header whose value sanitizes away and tries the next', () => {
+    expect(inboundTraceId({ 'x-request-id': '<<>>', 'x-correlation-id': 'usable' })).toBe('usable');
+  });
+});
+
+describe('adopting an inbound id', () => {
+  function run(headers: Record<string, string | string[]>): {
+    context: RequestContext | undefined;
+    headersSet: Record<string, unknown>;
+  } {
+    const headersSet: Record<string, unknown> = {};
+    let context: RequestContext | undefined;
+
+    requestContext(
+      { headers, socket: {} } as unknown as Request,
+      {
+        setHeader: (name: string, value: unknown) => {
+          headersSet[name] = value;
+        },
+      } as unknown as Response,
+      (() => {
+        context = getContext();
+      }) as NextFunction,
+    );
+
+    return { context, headersSet };
+  }
+
+  it('adopts the inbound id, so one request has one id end to end', () => {
+    const { context } = run({ 'x-request-id': 'edge-123' });
+
+    expect(context?.traceId).toBe('edge-123');
+    expect(context?.traceInherited).toBe(true);
+  });
+
+  it('mints its own when the caller sent none', () => {
+    const { context } = run({});
+
+    expect(context?.traceId).toHaveLength(10);
+    expect(context?.traceInherited).toBe(false);
+  });
+
+  it('never adopts an unsanitary id', () => {
+    const { context } = run({ 'x-request-id': 'bad\nvalue"here' });
+
+    expect(context?.traceId).toBe('badvaluehere');
+  });
+
+  /** Echoed under both names: ours, and the one every log shipper looks for. */
+  it('echoes the id back under both header names', () => {
+    const { context, headersSet } = run({ 'x-request-id': 'edge-123' });
+
+    expect(headersSet['x-trace-id']).toBe(context?.traceId);
+    expect(headersSet['x-request-id']).toBe(context?.traceId);
   });
 });

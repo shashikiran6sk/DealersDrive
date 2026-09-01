@@ -15,28 +15,70 @@ export const DEPARTED: CatalogMake[] = [
     m('figo', 'Figo', 'HATCHBACK', 2010, 2021, [
       p('PETROL', 'MANUAL', 1194, 5, ['Ambiente', 'Trend', 'Titanium', 'Titanium+', 'Sports']),
       p('PETROL', 'AUTOMATIC', 1499, 5, ['Titanium AT', 'Titanium+ AT']),
-      p('DIESEL', 'MANUAL', 1498, 5, ['Ambiente Diesel', 'Trend Diesel', 'Titanium Diesel', 'Titanium+ Diesel']),
-      p('DIESEL', 'MANUAL', 1399, 5, ['LXI Duratorq', 'EXI Duratorq', 'ZXI Duratorq', 'Titanium Duratorq']),
+      p('DIESEL', 'MANUAL', 1498, 5, [
+        'Ambiente Diesel',
+        'Trend Diesel',
+        'Titanium Diesel',
+        'Titanium+ Diesel',
+      ]),
+      p('DIESEL', 'MANUAL', 1399, 5, [
+        'LXI Duratorq',
+        'EXI Duratorq',
+        'ZXI Duratorq',
+        'Titanium Duratorq',
+      ]),
     ]),
     m('figo-aspire', 'Figo Aspire', 'SEDAN', 2015, 2021, [
       p('PETROL', 'MANUAL', 1194, 5, ['Ambiente', 'Trend', 'Titanium', 'Titanium+']),
       p('PETROL', 'AUTOMATIC', 1499, 5, ['Titanium AT', 'Titanium+ AT']),
-      p('DIESEL', 'MANUAL', 1498, 5, ['Ambiente Diesel', 'Trend Diesel', 'Titanium Diesel', 'Titanium+ Diesel']),
+      p('DIESEL', 'MANUAL', 1498, 5, [
+        'Ambiente Diesel',
+        'Trend Diesel',
+        'Titanium Diesel',
+        'Titanium+ Diesel',
+      ]),
     ]),
     m('ecosport', 'EcoSport', 'SUV', 2013, 2021, [
-      p('PETROL', 'MANUAL', 1497, 5, ['Ambiente', 'Trend', 'Titanium', 'Titanium+', 'S', 'Thunder Edition']),
+      p('PETROL', 'MANUAL', 1497, 5, [
+        'Ambiente',
+        'Trend',
+        'Titanium',
+        'Titanium+',
+        'S',
+        'Thunder Edition',
+      ]),
       p('PETROL', 'AUTOMATIC', 1497, 5, ['Titanium AT', 'Titanium+ AT', 'S AT']),
-      p('PETROL', 'MANUAL', 999, 5, ['1.0 EcoBoost Titanium', '1.0 EcoBoost Platinum', '1.0 EcoBoost S']),
-      p('DIESEL', 'MANUAL', 1498, 5, ['Ambiente Diesel', 'Trend Diesel', 'Titanium Diesel', 'Titanium+ Diesel', 'S Diesel']),
+      p('PETROL', 'MANUAL', 999, 5, [
+        '1.0 EcoBoost Titanium',
+        '1.0 EcoBoost Platinum',
+        '1.0 EcoBoost S',
+      ]),
+      p('DIESEL', 'MANUAL', 1498, 5, [
+        'Ambiente Diesel',
+        'Trend Diesel',
+        'Titanium Diesel',
+        'Titanium+ Diesel',
+        'S Diesel',
+      ]),
     ]),
     m('freestyle', 'Freestyle', 'HATCHBACK', 2018, 2021, [
       p('PETROL', 'MANUAL', 1194, 5, ['Ambiente', 'Trend', 'Titanium', 'Titanium+']),
-      p('DIESEL', 'MANUAL', 1498, 5, ['Ambiente Diesel', 'Trend Diesel', 'Titanium Diesel', 'Titanium+ Diesel']),
+      p('DIESEL', 'MANUAL', 1498, 5, [
+        'Ambiente Diesel',
+        'Trend Diesel',
+        'Titanium Diesel',
+        'Titanium+ Diesel',
+      ]),
     ]),
     m('fiesta', 'Fiesta', 'SEDAN', 2005, 2015, [
       p('PETROL', 'MANUAL', 1499, 5, ['Ambiente', 'Trend', 'Titanium', 'Titanium+', 'Classic LXi']),
       p('PETROL', 'AUTOMATIC', 1499, 5, ['Titanium AT']),
-      p('DIESEL', 'MANUAL', 1498, 5, ['Ambiente Diesel', 'Trend Diesel', 'Titanium Diesel', 'Classic Titanium']),
+      p('DIESEL', 'MANUAL', 1498, 5, [
+        'Ambiente Diesel',
+        'Trend Diesel',
+        'Titanium Diesel',
+        'Classic Titanium',
+      ]),
     ]),
     m('endeavour', 'Endeavour', 'SUV', 2003, 2021, [
       p('DIESEL', 'MANUAL', 2198, 7, ['2.2 Trend 4x2', '2.2 Titanium 4x2']),
@@ -120,7 +162,12 @@ export const DEPARTED: CatalogMake[] = [
   make('fiat', 'Fiat', 30, [
     m('punto', 'Punto', 'HATCHBACK', 2009, 2019, [
       p('PETROL', 'MANUAL', 1172, 5, ['Active', 'Dynamic', 'Emotion', 'Pure', 'Evo Active']),
-      p('DIESEL', 'MANUAL', 1248, 5, ['Active Diesel', 'Dynamic Diesel', 'Emotion Diesel', 'Evo Emotion']),
+      p('DIESEL', 'MANUAL', 1248, 5, [
+        'Active Diesel',
+        'Dynamic Diesel',
+        'Emotion Diesel',
+        'Evo Emotion',
+      ]),
       p('DIESEL', 'MANUAL', 1598, 5, ['Abarth 1.4', 'Sport 90HP']),
     ]),
     m('linea', 'Linea', 'SEDAN', 2009, 2019, [
@@ -165,10 +212,26 @@ export const DEPARTED: CatalogMake[] = [
 
   make('jeep', 'Jeep', 50, [
     m('compass', 'Compass', 'SUV', 2017, null, [
-      p('DIESEL', 'MANUAL', 1956, 5, ['Sport', 'Longitude', 'Longitude (O)', 'Limited', 'Limited Plus', 'Longitude 4x2']),
-      p('DIESEL', 'AUTOMATIC', 1956, 5, ['Limited AT', 'Limited Plus AT', 'Model S AT', 'Trailhawk 4x4 AT']),
+      p('DIESEL', 'MANUAL', 1956, 5, [
+        'Sport',
+        'Longitude',
+        'Longitude (O)',
+        'Limited',
+        'Limited Plus',
+        'Longitude 4x2',
+      ]),
+      p('DIESEL', 'AUTOMATIC', 1956, 5, [
+        'Limited AT',
+        'Limited Plus AT',
+        'Model S AT',
+        'Trailhawk 4x4 AT',
+      ]),
       p('PETROL', 'MANUAL', 1368, 5, ['Sport Petrol', 'Longitude Petrol']),
-      p('PETROL', 'AUTOMATIC', 1368, 5, ['Longitude Petrol DCT', 'Limited Petrol DCT', 'Model S Petrol DCT']),
+      p('PETROL', 'AUTOMATIC', 1368, 5, [
+        'Longitude Petrol DCT',
+        'Limited Petrol DCT',
+        'Model S Petrol DCT',
+      ]),
     ]),
     m('meridian', 'Meridian', 'SUV', 2022, null, [
       p('DIESEL', 'MANUAL', 1956, 7, ['Longitude', 'Limited']),
@@ -190,9 +253,7 @@ export const DEPARTED: CatalogMake[] = [
       p('DIESEL', 'AUTOMATIC', 1898, 5, ['Z AT', 'Z Prestige AT']),
       p('DIESEL', 'MANUAL', 2499, 5, ['2.5 4x4']),
     ]),
-    m('mu-x', 'MU-X', 'SUV', 2017, null, [
-      p('DIESEL', 'AUTOMATIC', 2999, 7, ['4x2 AT', '4x4 AT']),
-    ]),
+    m('mu-x', 'MU-X', 'SUV', 2017, null, [p('DIESEL', 'AUTOMATIC', 2999, 7, ['4x2 AT', '4x4 AT'])]),
     m('d-max', 'D-Max', 'SUV', 2013, null, [
       p('DIESEL', 'MANUAL', 2499, 5, ['Regular Cab', 'S-Cab', 'Flat Deck']),
     ]),
@@ -215,25 +276,17 @@ export const DEPARTED: CatalogMake[] = [
       p('DIESEL', 'MANUAL', 2477, 7, ['4x2 MT', '4x4 MT']),
       p('DIESEL', 'AUTOMATIC', 2477, 7, ['4x2 AT', '4x4 AT']),
     ]),
-    m('pajero', 'Pajero', 'SUV', 2002, 2017, [
-      p('DIESEL', 'MANUAL', 2835, 7, ['SFX 2.8', 'GLX']),
-    ]),
-    m('outlander', 'Outlander', 'SUV', 2007, 2017, [
-      p('PETROL', 'AUTOMATIC', 2360, 5, ['2.4 AT']),
-    ]),
+    m('pajero', 'Pajero', 'SUV', 2002, 2017, [p('DIESEL', 'MANUAL', 2835, 7, ['SFX 2.8', 'GLX'])]),
+    m('outlander', 'Outlander', 'SUV', 2007, 2017, [p('PETROL', 'AUTOMATIC', 2360, 5, ['2.4 AT'])]),
     m('lancer', 'Lancer', 'SEDAN', 1998, 2012, [
       p('PETROL', 'MANUAL', 1468, 5, ['LXi', 'SFX', 'Cedia Sports']),
       p('DIESEL', 'MANUAL', 1998, 5, ['SFX Diesel']),
     ]),
-    m('montero', 'Montero', 'SUV', 2007, 2013, [
-      p('DIESEL', 'AUTOMATIC', 3200, 7, ['3.2 AT']),
-    ]),
+    m('montero', 'Montero', 'SUV', 2007, 2013, [p('DIESEL', 'AUTOMATIC', 3200, 7, ['3.2 AT'])]),
   ]),
 
   make('byd', 'BYD', 15, [
-    m('e6', 'e6', 'MUV', 2022, null, [
-      p('ELECTRIC', 'AUTOMATIC', null, 5, ['Base']),
-    ]),
+    m('e6', 'e6', 'MUV', 2022, null, [p('ELECTRIC', 'AUTOMATIC', null, 5, ['Base'])]),
     m('atto-3', 'Atto 3', 'SUV', 2022, null, [
       p('ELECTRIC', 'AUTOMATIC', null, 5, ['Dynamic', 'Premium', 'Superior']),
     ]),
@@ -263,9 +316,7 @@ export const DEPARTED: CatalogMake[] = [
   ]),
 
   make('premier', 'Premier', 5, [
-    m('rio', 'Rio', 'SUV', 2009, 2015, [
-      p('DIESEL', 'MANUAL', 1461, 5, ['GLX', 'GLS']),
-    ]),
+    m('rio', 'Rio', 'SUV', 2009, 2015, [p('DIESEL', 'MANUAL', 1461, 5, ['GLX', 'GLS'])]),
   ]),
 
   make('tesla', 'Tesla', 12, [

@@ -24,35 +24,37 @@ CI type-checks them together.
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 30** — all of it (30.1 → 30.7) | 50 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 2.3** — why modules may not import each other's internals | 15 |
-| [pnpm — Workspaces](https://pnpm.io/workspaces) | the whole page | 10 |
-| [Turborepo — Configuring tasks](https://turborepo.com/docs) | "Configuring tasks" and "Caching" | 25 |
+| Source                                                      | Sections                                                         | ~min |
+| ----------------------------------------------------------- | ---------------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md`                               | **Part 30** — all of it (30.1 → 30.7)                            | 50   |
+| `docs/ENGINEER-ONBOARDING.md`                               | **Part 2.3** — why modules may not import each other's internals | 15   |
+| [pnpm — Workspaces](https://pnpm.io/workspaces)             | the whole page                                                   | 10   |
+| [Turborepo — Configuring tasks](https://turborepo.com/docs) | "Configuring tasks" and "Caching"                                | 25   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `pnpm-workspace.yaml` | Four lines. This is the entire workspace definition |
-| 2 | `apps/api/package.json` | Find `"@dealers-drive/contracts": "workspace:*"`. That protocol is why it resolves locally rather than from npm |
-| 3 | `packages/contracts/package.json` | `main` and `types` point at `./dist/`. **This is why it must build first** |
-| 4 | `turbo.json` | Read every line. `dependsOn: ["^build"]` — the caret is the whole lesson |
-| 5 | `packages/config/package.json` | A package that ships no code, only `exports` of config files |
-| 6 | `packages/config/eslint/node.js` | The module-boundary rules. Find the one that stops non-repository files importing Prisma |
-| 7 | `apps/api/tsconfig.json` | See it `extends` the shared preset rather than redeclaring strictness |
-| 8 | `apps/api/Dockerfile` | Only the `deps` stage today. Note that **only manifests** are copied before `pnpm install` |
-| 9 | `.dockerignore` | Three lines that keep a gigabyte out of the build context |
+| #   | File                              | What to look for                                                                                                |
+| --- | --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| 1   | `pnpm-workspace.yaml`             | Four lines. This is the entire workspace definition                                                             |
+| 2   | `apps/api/package.json`           | Find `"@dealers-drive/contracts": "workspace:*"`. That protocol is why it resolves locally rather than from npm |
+| 3   | `packages/contracts/package.json` | `main` and `types` point at `./dist/`. **This is why it must build first**                                      |
+| 4   | `turbo.json`                      | Read every line. `dependsOn: ["^build"]` — the caret is the whole lesson                                        |
+| 5   | `packages/config/package.json`    | A package that ships no code, only `exports` of config files                                                    |
+| 6   | `packages/config/eslint/node.js`  | The module-boundary rules. Find the one that stops non-repository files importing Prisma                        |
+| 7   | `apps/api/tsconfig.json`          | See it `extends` the shared preset rather than redeclaring strictness                                           |
+| 8   | `apps/api/Dockerfile`             | Only the `deps` stage today. Note that **only manifests** are copied before `pnpm install`                      |
+| 9   | `.dockerignore`                   | Three lines that keep a gigabyte out of the build context                                                       |
 
 > **The one line to understand today.** In `turbo.json`:
+>
 > ```jsonc
 > "build": { "dependsOn": ["^build"], "outputs": ["dist/**", ".next/**", "!.next/cache/**"] }
 > ```
-> `"build"` would mean *this package's* build. `"^build"` means *the build task
-> of every package this package depends on.* That caret is what derives the whole
+>
+> `"build"` would mean _this package's_ build. `"^build"` means _the build task
+> of every package this package depends on._ That caret is what derives the whole
 > execution plan.
 
 ---
@@ -110,7 +112,7 @@ The trailing `...` is what the Dockerfiles use:
 RUN pnpm install --frozen-lockfile --prod --filter @dealers-drive/api...
 ```
 
-Production dependencies for the API *and* `contracts`, and nothing for `web`.
+Production dependencies for the API _and_ `contracts`, and nothing for `web`.
 **It is why the API image contains no React.** Verify it:
 
 ```bash
@@ -148,15 +150,15 @@ that type-checks.
 
 ## 5. Prove you understood it
 
-1. What does `workspace:*` do that a version number would not? → *§30.2*
-2. Why does `dependsOn` use `^build` and not `build`? → *§30.3*
-3. Why is `"cache": false` set on `test` but not on `build`? → *§30.3*
-4. What is in `outputs`, and what breaks if it is wrong? → *§30.3*
-5. Why does the `deps` Docker stage copy only `package.json` files? → *§30.6*
-6. Why must both Dockerfiles be built from the repository root? → *§30.6*
+1. What does `workspace:*` do that a version number would not? → _§30.2_
+2. Why does `dependsOn` use `^build` and not `build`? → _§30.3_
+3. Why is `"cache": false` set on `test` but not on `build`? → _§30.3_
+4. What is in `outputs`, and what breaks if it is wrong? → _§30.3_
+5. Why does the `deps` Docker stage copy only `package.json` files? → _§30.6_
+6. Why must both Dockerfiles be built from the repository root? → _§30.6_
 7. What does `--filter @dealers-drive/api...` include that
-   `--filter @dealers-drive/api` does not? → *§30.4*
-8. Why is `packages/config` a package rather than four copied config files? → *§30.5*
+   `--filter @dealers-drive/api` does not? → _§30.4_
+8. Why is `packages/config` a package rather than four copied config files? → _§30.5_
 
 ---
 
@@ -186,7 +188,7 @@ that type-checks.
 ## 8. Going deeper (optional)
 
 - Open `packages/config/eslint/node.js` and find the `no-restricted-imports`
-  rule enforcing ARCHITECTURE §5.5 rule 2 — *only `*.repository.ts` may import
-  `platform/db/prisma`*. Try importing it from a service and watch lint fail.
+  rule enforcing ARCHITECTURE §5.5 rule 2 — _only `*.repository.ts` may import
+  `platform/db/prisma`_. Try importing it from a service and watch lint fail.
   This is a **convention turned into a compiler error**, and it is a pattern
   worth copying.

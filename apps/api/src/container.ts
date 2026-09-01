@@ -3,6 +3,7 @@ import type { Logger } from 'pino';
 
 import { env, type Env } from './config/env.js';
 import { createAuthMiddleware } from './middleware/auth.js';
+import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
 import { createAdminService, type AdminService } from './modules/admin/admin.service.js';
 import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
 import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
@@ -14,18 +15,35 @@ import type { SessionResolver } from './modules/auth/session.port.js';
 import { createBillingService, type BillingService } from './modules/billing/billing.service.js';
 import { createCatalogRepository } from './modules/catalog/catalog.repository.js';
 import { createCatalogService, type CatalogService } from './modules/catalog/catalog.service.js';
-import { createDealersPublicService, type DealersPublicService } from './modules/dealers/dealers.public.service.js';
+import {
+  createDealersPublicService,
+  type DealersPublicService,
+} from './modules/dealers/dealers.public.service.js';
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
 import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
 import { createEnquiriesRepository } from './modules/enquiries/enquiries.repository.js';
-import { createEnquiriesService, type EnquiriesService } from './modules/enquiries/enquiries.service.js';
+import {
+  createEnquiriesService,
+  type EnquiriesService,
+} from './modules/enquiries/enquiries.service.js';
 import { createMediaService, type MediaService } from './modules/media/media.service.js';
-import { createSearchRepository, type SearchRepository } from './modules/search/search.repository.js';
+import {
+  createSearchRepository,
+  type SearchRepository,
+} from './modules/search/search.repository.js';
 import { createSearchService, type SearchService } from './modules/search/search.service.js';
 import { createVehiclesRepository } from './modules/vehicles/vehicles.repository.js';
-import { createVehiclesService, type VehiclesService } from './modules/vehicles/vehicles.service.js';
+import {
+  createVehiclesService,
+  type VehiclesService,
+} from './modules/vehicles/vehicles.service.js';
 import { createAuditService } from './platform/audit/audit.service.js';
-import { createPlatformConfig, type PlatformConfigService } from './platform/config/platform-config.js';
+import type { CachePort } from './platform/cache/cache.port.js';
+import { createCache } from './platform/cache/factory.js';
+import {
+  createPlatformConfig,
+  type PlatformConfigService,
+} from './platform/config/platform-config.js';
 import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
 import { createEventBus, type EventBus } from './platform/events/bus.js';
 import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
@@ -51,6 +69,7 @@ import { logger } from './platform/telemetry/logger.js';
  *   sessions  — `CookieSessionResolver`, or the dev identity under AUTH_MODE=dev
  *   oauth     — Google; a fake is injected by the sign-in tests
  *   storage   — local disk · MinIO · R2, by STORAGE_DRIVER
+ *   cache     — process memory · Postgres, by CACHE_DRIVER
  *   sms       — console · MSG91, by SMS_DRIVER
  *   payments  — `createDevelopmentPaymentProvider` today, Razorpay later
  *
@@ -64,6 +83,8 @@ export interface Container {
   readonly bus: EventBus;
   readonly outbox: OutboxPublisher;
   readonly storage: StoragePort;
+  /** Cross-instance shared state: rate-limit windows and the config version. */
+  readonly cache: CachePort;
   readonly payments: PaymentProvider;
   readonly config: PlatformConfigService;
   readonly sessions: SessionResolver;
@@ -71,6 +92,8 @@ export interface Container {
   readonly oauth: OAuthProvider;
   /** The guard chain. `auth` below is the module that issues the sessions. */
   readonly guards: ReturnType<typeof createAuthMiddleware>;
+  /** Built here, like the guards, so no router reaches for a global counter. */
+  readonly rateLimit: RateLimiter;
   readonly auth: AuthService;
   readonly search: SearchService;
   readonly searchRepo: SearchRepository;
@@ -92,6 +115,8 @@ export interface ContainerOverrides {
   payments?: PaymentProvider;
   queue?: Queue;
   storage?: StoragePort;
+  /** The integration suite pins this to memory so windows reset with the process. */
+  cache?: CachePort;
 }
 
 export async function buildContainer(overrides: ContainerOverrides = {}): Promise<Container> {
@@ -102,8 +127,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const bus = createEventBus();
   const outbox = createOutboxPublisher(prisma, bus);
   const storage = overrides.storage ?? createStorage();
+  const cache = overrides.cache ?? createCache(prisma);
   const payments = overrides.payments ?? createDevelopmentPaymentProvider();
-  const config = createPlatformConfig(prisma);
+  const config = createPlatformConfig(prisma, cache);
   const audit = createAuditService(prisma);
   const mailer = createConsoleMailer();
   const sms = env.SMS_DRIVER === 'msg91' ? createMsg91Sms() : createConsoleSms();
@@ -112,6 +138,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const oauth = overrides.oauth ?? createGoogleOAuthProvider();
   const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
   const guards = createAuthMiddleware(sessions);
+  const rateLimit = createRateLimiter(cache);
 
   const catalogRepo = createCatalogRepository(prisma);
   const dealersRepo = createDealersRepository(prisma);
@@ -134,6 +161,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     dealers: dealersRepo,
     search: searchRepo,
     config,
+    cache,
   });
   const dealers = createDealersService({
     prisma,
@@ -141,12 +169,17 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     enquiries: enquiriesRepo,
     storage,
   });
-  const vehicles = createVehiclesService({ prisma, repo: vehiclesRepo, dealers: dealersRepo, config });
+  const vehicles = createVehiclesService({
+    prisma,
+    repo: vehiclesRepo,
+    dealers: dealersRepo,
+    config,
+  });
   const billing = createBillingService({ prisma, dealers: dealersRepo, payments, config });
   const admin = createAdminService({ prisma, audit, config, storage });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
 
-  await registerHandlers({ prisma, queue, bus, search: searchRepo, media, mailer, sms });
+  await registerHandlers({ prisma, queue, bus, search: searchRepo, media, mailer, sms, cache });
 
   return {
     env,
@@ -156,12 +189,14 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     bus,
     outbox,
     storage,
+    cache,
     payments,
     config,
     sessions,
     sessionStore,
     oauth,
     guards,
+    rateLimit,
     auth,
     search,
     searchRepo,
@@ -218,6 +253,11 @@ export async function closeContainer(container: Container): Promise<void> {
     await container.queue.stop();
   } catch (error) {
     logger.warn({ err: error }, 'queue stop failed');
+  }
+  try {
+    await container.cache.close();
+  } catch (error) {
+    logger.warn({ err: error }, 'cache close failed');
   }
   await container.prisma.$disconnect();
 }

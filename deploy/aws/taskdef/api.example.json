@@ -8,8 +8,11 @@
     "other field is owned by AWS, which is why the environment variables and secret ARNs live",
     "here and not in the repository.",
     "",
-    "512 CPU / 1024 MiB is sized for the API plus the inline job handlers. It is one task, not",
-    "two: WORKER_INLINE=true means a second task would run every scheduled job twice."
+    "512 CPU / 1024 MiB is sized for the API plus the inline job handlers.",
+    "",
+    "PREFER deploy/terraform, which now owns this shape and generates it from envs/*.tfvars.",
+    "This file remains as a reference for a hand-managed environment and as documentation of",
+    "what the deploy workflow expects to find."
   ],
   "family": "dd-api-dev",
   "networkMode": "awsvpc",
@@ -54,7 +57,12 @@
         { "name": "JOBS_ENABLED", "value": "true" },
         { "name": "WORKER_INLINE", "value": "true" },
         { "name": "RATE_LIMIT_ENABLED", "value": "true" },
-        { "name": "DOCS_ENABLED", "value": "true" }
+        { "name": "DOCS_ENABLED", "value": "true" },
+        { "name": "CACHE_DRIVER", "value": "postgres" },
+        { "name": "CONFIG_VERSION_POLL_MS", "value": "10000" },
+        { "name": "SHUTDOWN_DRAIN_MS", "value": "5000" },
+        { "name": "SHUTDOWN_TIMEOUT_MS", "value": "15000" },
+        { "name": "NODE_OPTIONS", "value": "--max-old-space-size=768" }
       ],
       "secrets": [
         {
@@ -104,7 +112,7 @@
           "awslogs-stream-prefix": "api"
         }
       },
-      "stopTimeout": 20
+      "stopTimeout": 25
     }
   ]
 }

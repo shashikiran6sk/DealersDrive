@@ -458,9 +458,7 @@ describe('forwarding the session', () => {
 
     await apiGet('/v1/dealer', { revalidate: false });
 
-    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBe(
-      'dd_session=the-token',
-    );
+    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBe('dd_session=the-token');
   });
 
   it('sends it on every mutation', async () => {
@@ -469,9 +467,7 @@ describe('forwarding the session', () => {
 
     await apiSend('POST', '/v1/dealer/vehicles', { year: 2020 });
 
-    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBe(
-      'dd_session=the-token',
-    );
+    expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBe('dd_session=the-token');
   });
 
   /** The catalogue is the same for everyone, and is cached for everyone. */

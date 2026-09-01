@@ -51,10 +51,9 @@ export default async function DealerDirectoryPage({
   searchParams: Promise<SearchParamsInput>;
 }) {
   const { city, q, page } = readParams(await searchParams);
-  const directory = await apiGet<DealerDirectoryResponse>(
-    `/v1/dealers${qs({ city, q, page })}`,
-    { revalidate: 600 },
-  );
+  const directory = await apiGet<DealerDirectoryResponse>(`/v1/dealers${qs({ city, q, page })}`, {
+    revalidate: 600,
+  });
 
   const cityName = directory.cities.find((entry) => entry.slug === city)?.name ?? 'Tamil Nadu';
 

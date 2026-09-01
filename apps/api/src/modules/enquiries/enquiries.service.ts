@@ -20,6 +20,7 @@ import type { EnquiryStatus, PrismaClient } from '@prisma/client';
 
 import { getContext } from '../../middleware/request-context.js';
 import { consumeRateLimit } from '../../middleware/rate-limit.js';
+import type { CachePort } from '../../platform/cache/cache.port.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
@@ -36,6 +37,8 @@ export interface EnquiriesDeps {
   dealers: DealersRepository;
   search: SearchRepository;
   config: PlatformConfigService;
+  /** The hourly reveal window has to be shared across tasks, not per-process (§18). */
+  cache: CachePort;
 }
 
 /**
@@ -47,6 +50,7 @@ export function createEnquiriesService({
   dealers,
   search,
   config,
+  cache,
 }: EnquiriesDeps) {
   return {
     /**
@@ -80,11 +84,7 @@ export function createEnquiriesService({
       const dealer = await dealers.findPublicBySlug(dealerSlug);
       if (!dealer) throw new NotFoundError('That dealership is not listed.');
 
-      const existing = await repo.findRecentDuplicate(
-        phone,
-        input.vehicleId ?? null,
-        dealer.id,
-      );
+      const existing = await repo.findRecentDuplicate(phone, input.vehicleId ?? null, dealer.id);
       if (existing) {
         // The same reference, and no second notification to the dealer.
         return {
@@ -161,7 +161,7 @@ export function createEnquiriesService({
         config.number('reveal.dailyCapPerIp'),
       ]);
 
-      const hourly = consumeRateLimit(`reveal-hour:${meta.ip}`, hourlyCap, 3600);
+      const hourly = await consumeRateLimit(cache, `reveal-hour:${meta.ip}`, hourlyCap, 3600);
       if (!hourly.allowed) {
         throw new RateLimitError(
           'Too many numbers revealed from this network in the last hour.',
@@ -171,11 +171,9 @@ export function createEnquiriesService({
 
       const today = await repo.revealsToday(meta.ip);
       if (today >= dailyCap) {
-        throw new RateLimitError(
-          'Daily limit reached for revealing dealer numbers.',
-          3600,
-          { code: 'RATE_LIMITED' },
-        );
+        throw new RateLimitError('Daily limit reached for revealing dealer numbers.', 3600, {
+          code: 'RATE_LIMITED',
+        });
       }
 
       const dealer = await dealers.findPublicBySlug(row.dealer_slug);
@@ -380,7 +378,13 @@ function toCreatedResponse(
   brandName: string,
   slug: string,
   medianMins: number | null,
-  searchRow: { price_paise: bigint; city_name: string; title: string; primary_media_id: string | null; vehicle_slug: string } | null,
+  searchRow: {
+    price_paise: bigint;
+    city_name: string;
+    title: string;
+    primary_media_id: string | null;
+    vehicle_slug: string;
+  } | null,
   isDuplicate: boolean,
 ): EnquiryCreatedResponse {
   return {

@@ -65,7 +65,11 @@ export const billingDocs: ModuleDocs = {
       audience: 'dealer',
       permission: 'billing:read',
       responses: [
-        { status: 200, description: 'Active packs, cheapest first.', schema: 'CreditPacksResponse' },
+        {
+          status: 200,
+          description: 'Active packs, cheapest first.',
+          schema: 'CreditPacksResponse',
+        },
       ],
       errors: [401, 403],
     },
@@ -91,7 +95,8 @@ export const billingDocs: ModuleDocs = {
         description: 'Which pack to buy.',
         example: { packId: 'a4c81f92-9999-4000-8000-000000000009' },
       },
-      rateLimit: '10 orders per hour per dealer (not per IP — two dealers on one showroom connection must not throttle each other)',
+      rateLimit:
+        '10 orders per hour per dealer (not per IP — two dealers on one showroom connection must not throttle each other)',
       responses: [
         {
           status: 201,
@@ -127,14 +132,14 @@ export const billingDocs: ModuleDocs = {
       tag: 'Billing & credits',
       summary: 'Confirm an order after checkout',
       description:
-        'The client\'s post-checkout handshake. In production it carries the gateway\'s ' +
+        "The client's post-checkout handshake. In production it carries the gateway's " +
         '`paymentId` and `signature`; with the development provider the body may be empty ' +
         '(`{}`) because the order already settled.\n\n' +
         '**200** when the order is PAID — the response carries the credits added and the ' +
         'invoice. **202** when payment has been received but the webhook has not landed yet, ' +
         'with `pollAfterSeconds`: credits appear when the webhook is processed, never because ' +
         'a client said so. Verification alone therefore never grants credits.\n\n' +
-        'A signature that does not verify is a 422 `SIGNATURE_MISMATCH`. Another dealer\'s ' +
+        "A signature that does not verify is a 422 `SIGNATURE_MISMATCH`. Another dealer's " +
         'order id is a 404.',
       audience: 'dealer',
       permission: 'billing:purchase',
@@ -174,7 +179,7 @@ export const billingDocs: ModuleDocs = {
       tag: 'Billing & credits',
       summary: 'Credit history',
       description:
-        'Every credit movement, newest first, cursor-paginated on the ledger\'s append ' +
+        "Every credit movement, newest first, cursor-paginated on the ledger's append " +
         'sequence rather than a timestamp — two movements committed in one transaction share ' +
         'a `now()`, so paginating on time could skip a row.\n\n' +
         '`balanceAfter` is **read from the row, never summed**, so the history a dealer sees ' +
@@ -222,14 +227,11 @@ export const billingDocs: ModuleDocs = {
       operationId: 'listInvoices',
       tag: 'Billing & credits',
       summary: 'GST invoices',
-      description:
-        'Invoices for this dealership, newest first. Cursor-paginated on issue date.',
+      description: 'Invoices for this dealership, newest first. Cursor-paginated on issue date.',
       audience: 'dealer',
       permission: 'billing:read',
       query: 'CursorQuery',
-      responses: [
-        { status: 200, description: 'A page of invoices.', schema: 'InvoicesResponse' },
-      ],
+      responses: [{ status: 200, description: 'A page of invoices.', schema: 'InvoicesResponse' }],
       errors: [400, 401, 403],
     },
     {
@@ -241,8 +243,8 @@ export const billingDocs: ModuleDocs = {
       description:
         '**302 redirect** to a signed URL valid for five minutes — the PDF is not streamed ' +
         'through the API, and the signed link expires so a copied URL is not a permanent hole ' +
-        'in another dealer\'s billing.\n\n' +
-        'Scoped to the caller\'s own invoices; another dealer\'s invoice id is a 404 — as is an ' +
+        "in another dealer's billing.\n\n" +
+        "Scoped to the caller's own invoices; another dealer's invoice id is a 404 — as is an " +
         'invoice whose PDF has not been rendered yet, which answers 404 `PDF_NOT_READY` rather ' +
         'than a redirect to a URL that would 404 on arrival.\n\n' +
         '*Swagger UI follows the redirect automatically, so "Try it out" shows the PDF bytes ' +

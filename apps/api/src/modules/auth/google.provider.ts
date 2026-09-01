@@ -69,7 +69,10 @@ export function createGoogleOAuthProvider(fetchImpl: typeof fetch = fetch): OAut
 
       const response = await fetchImpl(TOKEN_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Accept: 'application/json',
+        },
         body: new URLSearchParams({
           code,
           client_id: clientId,
@@ -85,10 +88,10 @@ export function createGoogleOAuthProvider(fetchImpl: typeof fetch = fetch): OAut
       if (!response.ok || !payload?.id_token) {
         // `error_description` is Google's, and safe to log — it describes the
         // request, not the code. The code itself is never logged anywhere.
-        throw new UnauthorizedError(
-          'Google could not verify that sign-in. Please try again.',
-          { code: 'OAUTH_EXCHANGE_FAILED', cause: payload?.error_description ?? payload?.error },
-        );
+        throw new UnauthorizedError('Google could not verify that sign-in. Please try again.', {
+          code: 'OAUTH_EXCHANGE_FAILED',
+          cause: payload?.error_description ?? payload?.error,
+        });
       }
 
       return claimsFrom(decodeIdToken(payload.id_token), { clientId, nonce });
@@ -144,7 +147,8 @@ function claimsFrom(
   }
   // The nonce is what ties this identity token to *this* browser's sign-in, and
   // is the reason a replayed token from elsewhere cannot be used here.
-  if (claims.nonce !== expected.nonce) reject('That sign-in could not be verified. Please try again.');
+  if (claims.nonce !== expected.nonce)
+    reject('That sign-in could not be verified. Please try again.');
   if (!claims.sub) reject('Google did not return an account identifier.');
 
   if (!claims.email) {

@@ -30,7 +30,12 @@ import { getContext } from '../../middleware/request-context.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
 import { withTenant } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
-import { ConflictError, DomainError, ForbiddenError, NotFoundError } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../platform/errors.js';
 import {
   currentBalance,
   InsufficientCreditsError,
@@ -82,7 +87,11 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
 
     throw new NotFoundError(
       `That ${FIELD_LABELS[broken] ?? broken} is not in the catalogue. Pick one from GET /v1/catalog/bundle.`,
-      { errors: [{ field: broken, code: 'NOT_IN_CATALOGUE', message: 'Not a known catalogue entry.' }] },
+      {
+        errors: [
+          { field: broken, code: 'NOT_IN_CATALOGUE', message: 'Not a known catalogue entry.' },
+        ],
+      },
     );
   }
 
@@ -161,12 +170,7 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
     const listing = liveListing(vehicle);
     const status = displayStatus(vehicle, listing);
     const balance = (await dealers.findById(vehicle.dealerId))?.creditBalance ?? 0;
-    const title = [
-      vehicle.year,
-      vehicle.make.name,
-      vehicle.model.name,
-      vehicle.variant?.name,
-    ]
+    const title = [vehicle.year, vehicle.make.name, vehicle.model.name, vehicle.variant?.name]
       .filter(Boolean)
       .join(' ');
 
@@ -351,7 +355,9 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
         ...(input.regNumberMasked === undefined
           ? {}
           : { regNumberMasked: input.regNumberMasked ?? null }),
-        ...(input.insuranceType === undefined ? {} : { insuranceType: input.insuranceType ?? null }),
+        ...(input.insuranceType === undefined
+          ? {}
+          : { insuranceType: input.insuranceType ?? null }),
         ...(input.insuranceValidTill === undefined
           ? {}
           : {
@@ -426,10 +432,7 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
 
       const previous = liveListing(vehicle);
       if (previous && ['PENDING_REVIEW', 'APPROVED'].includes(previous.status)) {
-        throw new ConflictError(
-          'ALREADY_SUBMITTED',
-          'This vehicle already has a live listing.',
-        );
+        throw new ConflictError('ALREADY_SUBMITTED', 'This vehicle already has a live listing.');
       }
 
       const state = await completeness(vehicle);
@@ -868,8 +871,7 @@ function toInventoryRow(vehicle: VehicleWithRelations): InventoryRowWithMeta {
     enquiries: listing?.enquiryCount ?? 0,
     expiresAt: listing?.expiresAt?.toISOString() ?? null,
     expiryLabel: listing?.expiresAt ? formatDate(listing.expiresAt) : '—',
-    submittedLabel:
-      status === 'PENDING' && listing ? timeAgo(listing.submittedAt) : null,
+    submittedLabel: status === 'PENDING' && listing ? timeAgo(listing.submittedAt) : null,
     rejectionReason: listing?.rejectionReason ?? listing?.changeRequestNote ?? null,
     canEdit: EDITABLE.has(status),
     canResubmit: status === 'REJECTED' || status === 'CHANGES_REQUESTED',
@@ -907,13 +909,7 @@ async function uniqueSlug(
   tx: { vehicle: { findUnique: (args: { where: { slug: string } }) => Promise<unknown> } },
 ): Promise<string> {
   const base = slugify(
-    [
-      vehicle.year,
-      vehicle.make.name,
-      vehicle.model.name,
-      vehicle.variant?.name,
-      vehicle.city?.slug,
-    ]
+    [vehicle.year, vehicle.make.name, vehicle.model.name, vehicle.variant?.name, vehicle.city?.slug]
       .filter(Boolean)
       .join(' '),
   );
