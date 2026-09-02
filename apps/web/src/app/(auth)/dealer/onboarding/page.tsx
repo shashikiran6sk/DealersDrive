@@ -51,7 +51,9 @@ export default async function OnboardingPage({
     session.dealer
       ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
       : Promise.resolve(null),
-    session.dealer ? apiGet<DealerProfile>('/v1/dealer', { revalidate: false }) : Promise.resolve(null),
+    session.dealer
+      ? apiGet<DealerProfile>('/v1/dealer', { revalidate: false })
+      : Promise.resolve(null),
     session.dealer
       ? apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false })
       : Promise.resolve(null),
@@ -62,9 +64,7 @@ export default async function OnboardingPage({
   // behind you once it exists, and steps 3 and 4 need it to exist at all. Once
   // it is submitted, only the last step is left.
   const floor = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : session.dealer ? 2 : 0;
-  const step = Number.isFinite(requested)
-    ? Math.min(3, Math.max(floor, requested))
-    : floor;
+  const step = Number.isFinite(requested) ? Math.min(3, Math.max(floor, requested)) : floor;
 
   return (
     <AuthShell>

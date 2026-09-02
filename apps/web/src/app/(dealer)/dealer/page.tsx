@@ -91,11 +91,7 @@ function ViewsChart({ chart }: { chart: DashboardResponse['viewsChart'] }) {
   );
 }
 
-function RecentEnquiries({
-  enquiries,
-}: {
-  enquiries: DashboardResponse['recentEnquiries'];
-}) {
+function RecentEnquiries({ enquiries }: { enquiries: DashboardResponse['recentEnquiries'] }) {
   return (
     <section className="card gap-0 p-[14px]">
       <div className="mb-2 flex items-baseline gap-3">
@@ -122,9 +118,7 @@ function RecentEnquiries({
                 {enquiry.vehicleTitle ?? 'General enquiry'}
               </div>
             </div>
-            <span className="whitespace-nowrap text-[11px] ink-faint">
-              {enquiry.timeAgoLabel}
-            </span>
+            <span className="whitespace-nowrap text-[11px] ink-faint">{enquiry.timeAgoLabel}</span>
             <a
               href={enquiry.callHref}
               className="btn btn-secondary text-[11px]"

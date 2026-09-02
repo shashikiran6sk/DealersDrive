@@ -341,7 +341,7 @@ export function createBillingService({ prisma, dealers, payments, config }: Bill
           id: row.id,
           delta: row.delta,
           deltaLabel: row.delta > 0 ? `+${row.delta}` : row.delta === 0 ? '0' : `−${-row.delta}`,
-          tone: (row.delta > 0 ? 'ok' : row.delta === 0 ? 'neutral' : 'err'),
+          tone: row.delta > 0 ? 'ok' : row.delta === 0 ? 'neutral' : 'err',
           label: row.label,
           reason: row.reason,
           createdAt: row.createdAt.toISOString(),
@@ -380,7 +380,7 @@ export function createBillingService({ prisma, dealers, payments, config }: Bill
           amountLabel: formatRupees(invoice.amountPaise),
           status: invoice.status,
           statusLabel: INVOICE_STATUS_LABELS[invoice.status],
-          statusTone: (invoice.status === 'CAPTURED' ? 'ok' : 'err'),
+          statusTone: invoice.status === 'CAPTURED' ? 'ok' : 'err',
           credits: invoice.credits,
           // A failed payment keeps its invoice row and has no PDF, so the
           // dealer can see the attempt rather than wondering (§26.5).

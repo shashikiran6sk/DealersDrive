@@ -153,7 +153,9 @@ describe('a first sign-in', () => {
     await h.signIn(agent);
 
     const response = await agent.get('/v1/auth/me').expect(200);
-    const token = sessionCookieOf(response.headers['set-cookie'] as unknown as string[] | undefined);
+    const token = sessionCookieOf(
+      response.headers['set-cookie'] as unknown as string[] | undefined,
+    );
 
     // The cookie is not re-sent on a read, so read the row the other way: no
     // stored value may equal any plausible token, and the column is a digest.
@@ -461,7 +463,10 @@ describe('sessions and sign-out', () => {
 
     // What suspending a dealer does. The principal is rebuilt from the database
     // on every request, so this takes effect on the very next call.
-    await h.prisma.session.updateMany({ where: { revokedAt: null }, data: { revokedAt: new Date() } });
+    await h.prisma.session.updateMany({
+      where: { revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
 
     await agent.get('/v1/auth/me').expect(401);
   });

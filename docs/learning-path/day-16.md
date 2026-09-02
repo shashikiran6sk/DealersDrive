@@ -13,7 +13,7 @@ If your React experience is Create React App or the Pages Router, the App Router
 is a genuine shift: **React now runs on a server**, and the default component
 never ships to the browser at all.
 
-That is not a performance tweak. It changes what a component *is allowed to do*.
+That is not a performance tweak. It changes what a component _is allowed to do_.
 A Server Component can `await` a database call. A Client Component cannot, ever.
 
 And there is one rule today whose failure mode is not a bug but an **incident**:
@@ -27,29 +27,29 @@ And there is one rule today whose failure mode is not a bug but an **incident**:
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 18** — all of it (18.1 → 18.10) | 55 |
-| `docs/ENGINEER-ONBOARDING.md` | **Rule 8, Rule 9** in `docs/CLAUDE.md` | 5 |
-| [Next.js — App Router](https://nextjs.org/docs/app) | "Server and Client Components" | 25 |
-| [Next.js — Caching](https://nextjs.org/docs/app/building-your-application/caching) | the whole page — **read this before touching `lib/api.ts`** | 25 |
+| Source                                                                             | Sections                                                    | ~min |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md`                                                      | **Part 18** — all of it (18.1 → 18.10)                      | 55   |
+| `docs/ENGINEER-ONBOARDING.md`                                                      | **Rule 8, Rule 9** in `docs/CLAUDE.md`                      | 5    |
+| [Next.js — App Router](https://nextjs.org/docs/app)                                | "Server and Client Components"                              | 25   |
+| [Next.js — Caching](https://nextjs.org/docs/app/building-your-application/caching) | the whole page — **read this before touching `lib/api.ts`** | 25   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/web/src/app/layout.tsx` | The root. Server Component. Config is read here and passed down as props |
-| 2 | `apps/web/src/lib/config.ts` | `'server-only'` at the top — an import guard that makes leaking this into a client bundle a build error |
-| 3 | `apps/web/src/app/(public)/cars/page.tsx` | **Shape 1: RSC fetch.** Reads `searchParams`, `await`s data, renders. No hooks, no spinner |
-| 4 | `apps/web/src/lib/api.ts` | **The core file.** `apiGet`, `apiSend`, and the `uncached` branch. Read the doc comment on the class first |
-| 5 | `apps/web/src/features/auth/actions.ts` | **Shape 2: Server Actions.** `'use server'`. The three writes that change who you are |
-| 6 | `apps/web/src/app/api/dealer/media/presign/route.ts` | **Shape 3: BFF route handler.** Used only where the browser genuinely must fetch |
-| 7 | `apps/web/src/features/vehicle/photo-uploader.tsx` | **Shape 4: a real Client Component.** `'use client'`, `useState`, drag-and-drop, progress |
-| 8 | `apps/web/src/lib/session.ts` | `currentSession()` vs `hasSession()` — and the redirect loop the distinction prevents |
-| 9 | `apps/web/src/app/(dealer)/dealer/layout.tsx` | The console's own guard |
-| 10 | `apps/web/src/app/robots.ts` | Environment-dependent output. §31.5's smoke test checks this |
+| #   | File                                                 | What to look for                                                                                           |
+| --- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/web/src/app/layout.tsx`                        | The root. Server Component. Config is read here and passed down as props                                   |
+| 2   | `apps/web/src/lib/config.ts`                         | `'server-only'` at the top — an import guard that makes leaking this into a client bundle a build error    |
+| 3   | `apps/web/src/app/(public)/cars/page.tsx`            | **Shape 1: RSC fetch.** Reads `searchParams`, `await`s data, renders. No hooks, no spinner                 |
+| 4   | `apps/web/src/lib/api.ts`                            | **The core file.** `apiGet`, `apiSend`, and the `uncached` branch. Read the doc comment on the class first |
+| 5   | `apps/web/src/features/auth/actions.ts`              | **Shape 2: Server Actions.** `'use server'`. The three writes that change who you are                      |
+| 6   | `apps/web/src/app/api/dealer/media/presign/route.ts` | **Shape 3: BFF route handler.** Used only where the browser genuinely must fetch                           |
+| 7   | `apps/web/src/features/vehicle/photo-uploader.tsx`   | **Shape 4: a real Client Component.** `'use client'`, `useState`, drag-and-drop, progress                  |
+| 8   | `apps/web/src/lib/session.ts`                        | `currentSession()` vs `hasSession()` — and the redirect loop the distinction prevents                      |
+| 9   | `apps/web/src/app/(dealer)/dealer/layout.tsx`        | The console's own guard                                                                                    |
+| 10  | `apps/web/src/app/robots.ts`                         | Environment-dependent output. §31.5's smoke test checks this                                               |
 
 ---
 
@@ -63,7 +63,7 @@ actual source). The car titles and prices are in the HTML.
 Now DevTools → Network → JS. The rendering logic for `cars/page.tsx` is not in
 any bundle. **The component ran on the server and only its output was sent.**
 
-Then read §18.4 for why public pages *must* be server-rendered: SEO. A used-car
+Then read §18.4 for why public pages _must_ be server-rendered: SEO. A used-car
 marketplace lives on Google indexing its listing pages, and a crawler does not
 wait for `useEffect`.
 
@@ -94,14 +94,14 @@ if (uncached) {
 
 Answer in writing before reading further:
 
-> **Why is the session cookie forwarded *only* inside the `uncached` branch?**
+> **Why is the session cookie forwarded _only_ inside the `uncached` branch?**
 
 Then read the class doc comment. The answer: Next's data cache is **shared across
 requests and users**. If a session-bearing fetch were cached, the first dealer's
 response would be served to the next visitor. Public pages stay anonymous and
 cacheable; anything behind a session is `revalidate: false` and never shared.
 
-Also note `sessionCookie()` swallows an error: `cookies()` *throws* during static
+Also note `sessionCookie()` swallows an error: `cookies()` _throws_ during static
 generation, and that is legitimate — the sitemap and cached public pages are
 rendered with no request at all and have no session to forward.
 
@@ -109,12 +109,12 @@ rendered with no request at all and have no session to forward.
 
 For each, decide before checking §18.9:
 
-| Requirement | RSC fetch · Server Action · BFF route · Client Component |
-|---|---|
-| Render the public search results page | |
-| Submit the onboarding form and set a session cookie | |
-| Upload a photo directly to storage with a progress bar | |
-| Switch tabs in the enquiry inbox without a full navigation | |
+| Requirement                                                | RSC fetch · Server Action · BFF route · Client Component |
+| ---------------------------------------------------------- | -------------------------------------------------------- |
+| Render the public search results page                      |                                                          |
+| Submit the onboarding form and set a session cookie        |                                                          |
+| Upload a photo directly to storage with a progress bar     |                                                          |
+| Switch tabs in the enquiry inbox without a full navigation |                                                          |
 
 Now find each in the repository and confirm.
 
@@ -124,7 +124,7 @@ Sign in to the admin console through the UI with DevTools open. Note the request
 it is a `POST` to the **same URL as the page**, not to `/api/anything`. That is a
 Server Action.
 
-Then read `adminLoginAction` in `features/auth/actions.ts` and note *why* it must
+Then read `adminLoginAction` in `features/auth/actions.ts` and note _why_ it must
 be a Server Action rather than a browser fetch:
 
 > the session cookie has to be set server-side… **No token is ever handed to
@@ -132,7 +132,7 @@ be a Server Action rather than a browser fetch:
 > nothing a script on the page could read.
 
 Also read `apiSignIn` in `lib/api.ts`: the fetch happened on the Next server, so
-the API's `Set-Cookie` never reached the browser. It must be *re-issued* by this
+the API's `Set-Cookie` never reached the browser. It must be _re-issued_ by this
 origin. That is what `sessionFrom()` does.
 
 ### 4.6 Understand why the BFF exists at all
@@ -156,8 +156,8 @@ grep -rn "NEXT_PUBLIC" apps/web/src ; echo "exit $?"
 
 ### 4.7 Break the redirect loop, then fix it
 
-Read `lib/session.ts`. `hasSession()` says a cookie *exists*; `currentSession()`
-asks the API whether it *works*.
+Read `lib/session.ts`. `hasSession()` says a cookie _exists_; `currentSession()`
+asks the API whether it _works_.
 
 Reason it out: if the sign-in page used `hasSession()` and you held a cookie that
 had been revoked, what happens? (Sign-in redirects to console → console 401s →
@@ -168,16 +168,16 @@ API instead.
 
 ## 5. Prove you understood it
 
-1. What changes when React runs on a server? → *§18.1*
-2. When must a component be a Client Component? Give two genuine reasons. → *§18.2*
-3. Why must public pages be server-rendered here? → *§18.4*
-4. Why does `lib/api.ts` forward the session cookie only for uncached requests? → *`lib/api.ts`* — **the data-breach question**
-5. Why is sign-in a Server Action rather than a browser fetch? → *§18.7, `features/auth/actions.ts`*
-6. Why do BFF route handlers exist when Server Actions also run on the server? → *§18.8*
-7. Why is `NEXT_PUBLIC_*` banned? → *Rule 9, §18.6, §23.3*
-8. What is the difference between `hasSession()` and `currentSession()`? → *`lib/session.ts`*
-9. Why does `cookies()` throwing during static generation not indicate a bug? → *`lib/api.ts`*
-10. Why must `next build` succeed with no API running? → *§23.3, `apps/web/Dockerfile`*
+1. What changes when React runs on a server? → _§18.1_
+2. When must a component be a Client Component? Give two genuine reasons. → _§18.2_
+3. Why must public pages be server-rendered here? → _§18.4_
+4. Why does `lib/api.ts` forward the session cookie only for uncached requests? → _`lib/api.ts`_ — **the data-breach question**
+5. Why is sign-in a Server Action rather than a browser fetch? → _§18.7, `features/auth/actions.ts`_
+6. Why do BFF route handlers exist when Server Actions also run on the server? → _§18.8_
+7. Why is `NEXT_PUBLIC_*` banned? → _Rule 9, §18.6, §23.3_
+8. What is the difference between `hasSession()` and `currentSession()`? → _`lib/session.ts`_
+9. Why does `cookies()` throwing during static generation not indicate a bug? → _`lib/api.ts`_
+10. Why must `next build` succeed with no API running? → _§23.3, `apps/web/Dockerfile`_
 
 ---
 
@@ -189,7 +189,7 @@ From `CONTEXT.md` §9 — each of these has already cost someone time:
   sibling file (`features/enquiry/shared.ts` exists for exactly this).
 - **`.strict()` rejects `undefined`.** An action with no input must send `{}`.
   `lib/api.ts` defaults non-DELETE bodies to `{}`; bypassing it silently 400s,
-  and once made admin *Approve* do nothing at all.
+  and once made admin _Approve_ do nothing at all.
 - **Tailwind v4 arbitrary values are `bg-(--var)`**, not the v3 `bg-[--var]`.
   The old form compiles silently and emits invalid CSS. 66 occurrences were
   fixed once — do not reintroduce it.

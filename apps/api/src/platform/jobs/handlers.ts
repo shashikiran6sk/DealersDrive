@@ -3,6 +3,7 @@ import type { PrismaClient } from '@prisma/client';
 import { formatDate } from '@dealers-drive/contracts';
 
 import { env } from '../../config/env.js';
+import type { CachePort } from '../cache/cache.port.js';
 import type { DomainEvent, EventBus } from '../events/bus.js';
 import type { MailerPort, SmsPort } from '../notify/notify.port.js';
 import { logger } from '../telemetry/logger.js';
@@ -18,6 +19,7 @@ export interface HandlerDeps {
   media: MediaService;
   mailer: MailerPort;
   sms: SmsPort;
+  cache: CachePort;
 }
 
 /**
@@ -43,7 +45,17 @@ function jobId(data: Record<string, unknown>, key: string): string {
 }
 
 export async function registerHandlers(deps: HandlerDeps): Promise<void> {
-  const { prisma, queue, bus, search, media, mailer, sms } = deps;
+  const { prisma, queue, bus, search, media, mailer, sms, cache } = deps;
+
+  /**
+   * Expired rate-limit windows are already treated as absent, so this reclaims
+   * space rather than affecting correctness — which is why it runs hourly on a
+   * schedule instead of on the request path.
+   */
+  await queue.work('cache.sweep-counters', async () => {
+    const removed = await cache.sweep();
+    if (removed > 0) logger.debug({ removed }, 'swept expired rate-limit windows');
+  });
 
   await queue.work('media.process', async (data) => {
     const mediaId = jobId(data, 'mediaId');
@@ -182,7 +194,9 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
     if (!orderId) return;
     const invoice = await prisma.invoice.findFirst({
       where: { orderId },
-      include: { dealer: { include: { members: { include: { user: true }, where: { role: 'OWNER' } } } } },
+      include: {
+        dealer: { include: { members: { include: { user: true }, where: { role: 'OWNER' } } } },
+      },
     });
     const owner = invoice?.dealer.members[0]?.user;
     if (!invoice || !owner?.email) return;
@@ -212,7 +226,11 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
       await search.remove(listing.id);
       await prisma.dealer.update({
         where: { id: listing.dealerId },
-        data: { activeListings: await prisma.listing.count({ where: { dealerId: listing.dealerId, status: 'APPROVED' } }) },
+        data: {
+          activeListings: await prisma.listing.count({
+            where: { dealerId: listing.dealerId, status: 'APPROVED' },
+          }),
+        },
       });
     }
 
@@ -224,7 +242,9 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
    * conditions — each one is either money lost or a dealer's trust lost.
    */
   await queue.work('counters.reconcile', async () => {
-    const dealers = await prisma.dealer.findMany({ select: { id: true, creditBalance: true, creditsHeld: true } });
+    const dealers = await prisma.dealer.findMany({
+      select: { id: true, creditBalance: true, creditsHeld: true },
+    });
 
     for (const dealer of dealers) {
       const newest = await prisma.creditTransaction.findFirst({
@@ -337,4 +357,8 @@ export async function registerSchedules(queue: Queue): Promise<void> {
   await queue.schedule('listings.expire-sweep', '15 2 * * *');
   await queue.schedule('counters.reconcile', '30 3 * * *');
   await queue.schedule('media.gc-orphans', '0 3 * * *');
+  // Hourly rather than nightly: a busy day writes one row per rate-limited
+  // request, and letting a full day of them accumulate makes the sweep itself
+  // the biggest delete the database sees.
+  await queue.schedule('cache.sweep-counters', '5 * * * *');
 }

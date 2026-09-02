@@ -195,13 +195,15 @@ describe('rule 1 — no input schema lets a client assert an identity or a statu
 
 describe('shared shapes', () => {
   it('defines one problem-details schema for every error', () => {
-    expect(contracts.ProblemDetails.safeParse({
-      type: 'https://dealersdrive.com/errors/not-found',
-      title: 'Not found',
-      status: 404,
-      code: 'NOT_FOUND',
-      traceId: 'a1b2c3d4e5',
-    }).success).toBe(true);
+    expect(
+      contracts.ProblemDetails.safeParse({
+        type: 'https://dealersdrive.com/errors/not-found',
+        title: 'Not found',
+        status: 404,
+        code: 'NOT_FOUND',
+        traceId: 'a1b2c3d4e5',
+      }).success,
+    ).toBe(true);
   });
 
   it('requires the five fields every problem document carries', () => {

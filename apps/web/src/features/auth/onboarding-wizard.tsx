@@ -166,7 +166,9 @@ function AccountStep({
           <div className="text-[11px] uppercase tracking-[0.1em] text-(--color-accent-800)">
             Google account
           </div>
-          <div className="truncate text-[14px] font-medium">{session.identity?.email ?? session.user.email}</div>
+          <div className="truncate text-[14px] font-medium">
+            {session.identity?.email ?? session.user.email}
+          </div>
         </div>
         <StatusTag tone="ok" className="ml-auto">
           Verified with Google

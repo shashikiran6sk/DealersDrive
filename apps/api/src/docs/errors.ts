@@ -43,7 +43,10 @@ function problem(status: number, code: string, detail: string, extra?: JsonSchem
 
 interface ProblemResponse {
   description: string;
-  content: Record<string, { schema: JsonSchema; examples?: Record<string, { summary: string; value: unknown }> }>;
+  content: Record<
+    string,
+    { schema: JsonSchema; examples?: Record<string, { summary: string; value: unknown }> }
+  >;
   headers?: Record<string, { description: string; schema: JsonSchema }>;
 }
 
@@ -71,7 +74,11 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
         summary: 'A field failed validation',
         value: problem(400, 'VALIDATION_FAILED', 'The request did not match the expected shape.', {
           errors: [
-            { field: 'body.pricePaise', code: 'INVALID_TYPE', message: 'Expected int, received number' },
+            {
+              field: 'body.pricePaise',
+              code: 'INVALID_TYPE',
+              message: 'Expected int, received number',
+            },
           ],
         }),
       },
@@ -79,7 +86,11 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
         summary: 'An unknown field or query parameter',
         value: problem(400, 'VALIDATION_FAILED', 'The request did not match the expected shape.', {
           errors: [
-            { field: 'query.colour', code: 'UNRECOGNIZED_KEY', message: '`colour` is not a recognised field.' },
+            {
+              field: 'query.colour',
+              code: 'UNRECOGNIZED_KEY',
+              message: '`colour` is not a recognised field.',
+            },
           ],
         }),
       },
@@ -135,11 +146,7 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
   Conflict: response('The request collides with the current state of the resource.', {
     invalidTransition: {
       summary: 'The listing state machine refused the move',
-      value: problem(
-        409,
-        'INVALID_TRANSITION',
-        'This listing is approved and cannot be approved.',
-      ),
+      value: problem(409, 'INVALID_TRANSITION', 'This listing is approved and cannot be approved.'),
     },
     alreadySubmitted: {
       summary: 'The vehicle already has a live listing',
@@ -163,13 +170,17 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
       tooFewPhotos: {
         summary: 'The listing does not have enough photos yet',
         value: problem(422, 'TOO_FEW_PHOTOS', 'Add 2 more photos (6 required).', {
-          errors: [{ field: 'photos', code: 'TOO_FEW', message: 'Add 2 more photos (6 required).' }],
+          errors: [
+            { field: 'photos', code: 'TOO_FEW', message: 'Add 2 more photos (6 required).' },
+          ],
         }),
       },
       vehicleIncomplete: {
         summary: 'Required vehicle details are missing',
         value: problem(422, 'VEHICLE_INCOMPLETE', 'This vehicle is missing some details.', {
-          errors: [{ field: 'kmDriven', code: 'REQUIRED', message: 'Kilometres driven is required.' }],
+          errors: [
+            { field: 'kmDriven', code: 'REQUIRED', message: 'Kilometres driven is required.' },
+          ],
         }),
       },
     },
@@ -180,7 +191,11 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
     {
       rateLimited: {
         summary: 'Too many enquiries from one network',
-        value: problem(429, 'RATE_LIMITED', 'Too many enquiries from this network. Try again in an hour.'),
+        value: problem(
+          429,
+          'RATE_LIMITED',
+          'Too many enquiries from this network. Try again in an hour.',
+        ),
       },
     },
     {

@@ -77,7 +77,10 @@ export function validateDetails(value: DetailsValue): Record<string, string> {
   }
 
   if (!errors.regNumberMasked) {
-    const plate = value.regNumberMasked.trim().toUpperCase().replace(/[\s-]+/g, '');
+    const plate = value.regNumberMasked
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, '');
     if (!/^(?:[A-Z]{2}\d{1,2}[A-Z]{0,3}\d{4}|\d{2}BH\d{4}[A-Z]{1,2})$/.test(plate)) {
       errors.regNumberMasked = 'Enter a registration number like TN 09 BX 1234.';
     }
@@ -284,7 +287,12 @@ export function DetailsFields({
         </Field>
       </div>
 
-      <Field id="features" label="Features" hint="optional, comma separated" error={errors.features}>
+      <Field
+        id="features"
+        label="Features"
+        hint="optional, comma separated"
+        error={errors.features}
+      >
         <input
           id="features"
           name="features"

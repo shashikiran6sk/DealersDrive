@@ -12,7 +12,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 process.env.RATE_LIMIT_ENABLED = 'true';
 
 const { createHarness, DEALER_A } = await import('./harness.js');
-const { resetRateLimits } = await import('../src/middleware/rate-limit.js');
 type Harness = Awaited<ReturnType<typeof createHarness>>;
 
 describe('rate limits', () => {
@@ -22,14 +21,14 @@ describe('rate limits', () => {
   beforeAll(async () => {
     h = await createHarness();
     h.actAs(DEALER_A);
-    resetRateLimits();
+    await h.cache.reset();
 
     const search = await h.agent().get(`/v1/vehicles?dealer=${DEALER_A}&limit=1`).expect(200);
     liveVehicleId = search.body.data[0].id;
   });
 
   afterAll(async () => {
-    resetRateLimits();
+    await h.cache.reset();
     await h.close();
   });
 
@@ -65,7 +64,7 @@ describe('rate limits', () => {
   });
 
   it('caps phone reveals per network, because each one costs money', async () => {
-    resetRateLimits();
+    await h.cache.reset();
 
     const hourlyCap = await h.prisma.platformConfig
       .findUniqueOrThrow({ where: { key: 'reveal.hourlyCapPerIp' } })
@@ -89,7 +88,7 @@ describe('rate limits', () => {
   });
 
   it('caps credit orders per dealer rather than per network', async () => {
-    resetRateLimits();
+    await h.cache.reset();
 
     const packs = await h.agent().get('/v1/dealer/billing/packs').expect(200);
     const packId = packs.body.data[0].id as string;
@@ -114,7 +113,7 @@ describe('rate limits', () => {
   });
 
   it('leaves public reads generously limited', async () => {
-    resetRateLimits();
+    await h.cache.reset();
 
     // A2 allows 120 a minute; a buyer paging through results must never meet it.
     for (let attempt = 0; attempt < 20; attempt += 1) {

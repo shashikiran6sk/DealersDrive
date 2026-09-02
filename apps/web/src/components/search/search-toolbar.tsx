@@ -55,7 +55,11 @@ export function SearchToolbar({
           router.push(
             buildSearchUrl(
               basePath,
-              setParam(params, 'sort', event.target.value === 'relevance' ? undefined : event.target.value),
+              setParam(
+                params,
+                'sort',
+                event.target.value === 'relevance' ? undefined : event.target.value,
+              ),
             ),
           )
         }

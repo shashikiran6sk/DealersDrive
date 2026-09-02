@@ -93,6 +93,20 @@ x-api-env: &api-env
   RATE_LIMIT_ENABLED: 'true'
   DOCS_ENABLED: 'true'
 
+  # Where rate-limit windows and the config-cache version live.
+  #
+  # `postgres` here even though this is one container, and deliberately: it is
+  # the driver production uses, so the atomic upsert and the sweeper are
+  # exercised on a laptop rather than first meeting reality in ECS. `memory` is
+  # correct for `pnpm dev` on the host, where there is nothing to share with.
+  CACHE_DRIVER: ${DOCKER_CACHE_DRIVER:-postgres}
+  CONFIG_VERSION_POLL_MS: 10000
+
+  # Zero drain locally: nothing is load-balancing this container, so the pause
+  # that lets a target group notice would only make Ctrl-C feel broken.
+  SHUTDOWN_DRAIN_MS: 0
+  SHUTDOWN_TIMEOUT_MS: 15000
+
 services:
   # ── backing services (no profile: these start with a bare `up`) ───────────
   postgres:

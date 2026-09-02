@@ -94,7 +94,11 @@ export default async function HomePage({
             <div className="mt-[18px] flex flex-wrap items-center gap-2">
               <span className="text-[12px] ink-subtle">Popular:</span>
               {home.popularSearches.map((item) => (
-                <Link key={item.href} href={item.href} className="btn btn-secondary text-[12px] px-[10px] py-[4px]">
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="btn btn-secondary text-[12px] px-[10px] py-[4px]"
+                >
                   {item.label}
                 </Link>
               ))}
@@ -228,9 +232,6 @@ function HomeJsonLd() {
   };
 
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
   );
 }

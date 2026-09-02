@@ -64,8 +64,9 @@ describe('GrantCreditsInput', () => {
   });
 
   it('refuses a negative adjustment with a token reason', () => {
-    expect(GrantCreditsInput.safeParse({ credits: -5, label: 'Clawback', reason: 'x' }).success)
-      .toBe(false);
+    expect(
+      GrantCreditsInput.safeParse({ credits: -5, label: 'Clawback', reason: 'x' }).success,
+    ).toBe(false);
   });
 
   it('accepts a negative adjustment once the reason has substance', () => {

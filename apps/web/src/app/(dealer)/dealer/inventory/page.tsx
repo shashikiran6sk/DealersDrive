@@ -155,7 +155,9 @@ function Thumb({
   const size = large ? 'h-[52px] w-[70px]' : 'h-[33px] w-[44px]';
 
   return (
-    <span className={`${size} flex-none overflow-hidden border border-(--color-divider) bg-(--color-surface)`}>
+    <span
+      className={`${size} flex-none overflow-hidden border border-(--color-divider) bg-(--color-surface)`}
+    >
       {row.thumbnailUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={row.thumbnailUrl} alt="" className="h-full w-full object-cover" />

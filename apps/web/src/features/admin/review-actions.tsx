@@ -61,7 +61,11 @@ export function ReviewActions({ listing }: { listing: AdminListingDetail }) {
 
         {listing.actions.canReject ? (
           <ReasonDialog
-            trigger={<Button variant="secondary" size="md">Reject</Button>}
+            trigger={
+              <Button variant="secondary" size="md">
+                Reject
+              </Button>
+            }
             title="Reject this listing"
             body="The held credit is returned to the dealer in full. Your reason is shown to them verbatim, so write something they can act on."
             label="Reason for rejection"
@@ -79,7 +83,11 @@ export function ReviewActions({ listing }: { listing: AdminListingDetail }) {
 
         {listing.actions.canRequestChanges ? (
           <ReasonDialog
-            trigger={<Button variant="secondary" size="md">Request changes</Button>}
+            trigger={
+              <Button variant="secondary" size="md">
+                Request changes
+              </Button>
+            }
             title="Request changes"
             body="The credit stays held, so the dealer can fix the listing and resubmit without paying twice. That is the difference between this and a rejection."
             label="What needs to change"
@@ -97,7 +105,11 @@ export function ReviewActions({ listing }: { listing: AdminListingDetail }) {
 
         {listing.actions.canTakedown ? (
           <ReasonDialog
-            trigger={<Button variant="destructive" size="md">Take down</Button>}
+            trigger={
+              <Button variant="destructive" size="md">
+                Take down
+              </Button>
+            }
             title="Take this listing down"
             body="It leaves the catalogue immediately. Use this for a live listing that should not be public."
             label="Reason for takedown"

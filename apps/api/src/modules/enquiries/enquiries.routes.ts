@@ -13,12 +13,15 @@ import {
 import { Router } from 'express';
 
 import { dealerPrincipal, requirePermission } from '../../middleware/auth.js';
-import { rateLimit } from '../../middleware/rate-limit.js';
+import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
 import type { EnquiriesService } from './enquiries.service.js';
 
 /** A7 · A15 — public, hard rate limits, no session. */
-export function createPublicEnquiriesRouter(service: EnquiriesService): Router {
+export function createPublicEnquiriesRouter(
+  service: EnquiriesService,
+  rateLimit: RateLimiter,
+): Router {
   const router = Router();
 
   router.post(

@@ -36,7 +36,12 @@ export function createS3Storage(client: S3Client = createS3Client()): StoragePor
      * store before a byte is stored. That check is the whole reason the commit
      * step can trust what it finds.
      */
-    async presignPut({ key, contentType, contentLength, expiresInSeconds = 300 }): Promise<PresignedUpload> {
+    async presignPut({
+      key,
+      contentType,
+      contentLength,
+      expiresInSeconds = 300,
+    }): Promise<PresignedUpload> {
       const uploadUrl = await getSignedUrl(
         client,
         new PutObjectCommand({

@@ -70,7 +70,7 @@ export const authDocs: ModuleDocs = {
       responses: [
         {
           status: 302,
-          description: "Redirect to Google, with `dd_oauth` set.",
+          description: 'Redirect to Google, with `dd_oauth` set.',
           headers: LOCATION_HEADER,
         },
       ],
@@ -88,7 +88,7 @@ export const authDocs: ModuleDocs = {
         'issuer, audience, expiry and nonce. The email is taken from that token and from ' +
         'nowhere else.\n\n' +
         'The account is found by `provider + sub`, never by email address — a Google account ' +
-        "holder can change their email, and `sub` is what does not move. A first sign-in " +
+        'holder can change their email, and `sub` is what does not move. A first sign-in ' +
         'creates the user and the identity; a returning one refreshes the stored profile.\n\n' +
         'Ends by setting `dd_session` and redirecting to `/dealer/onboarding` when the account ' +
         'has no dealership yet, or to the requested path when it has. Every failure redirects ' +
@@ -168,7 +168,7 @@ export const authDocs: ModuleDocs = {
         'dealership in `DRAFT`, the `OWNER` membership and the three KYC placeholders, in one ' +
         'transaction.\n\n' +
         'No `email` field: the address comes from the Google identity on the session. No ' +
-        '`status` and no `slug` either — approval is the admin\'s decision and the slug is ' +
+        "`status` and no `slug` either — approval is the admin's decision and the slug is " +
         'derived from the brand name (rules 1 and 5).\n\n' +
         '`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 ' +
         'PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `422 ' +

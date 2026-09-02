@@ -102,9 +102,9 @@ describe('pages the API decides on', () => {
    * answered, its answer wins.
    */
   it('indexes a live listing', () => {
-    expect(indexPolicy({ kind: 'resolved', canonical: '/car/swift-vxi', isIndexable: true })).toEqual(
-      { robots: { index: true, follow: true }, canonical: '/car/swift-vxi' },
-    );
+    expect(
+      indexPolicy({ kind: 'resolved', canonical: '/car/swift-vxi', isIndexable: true }),
+    ).toEqual({ robots: { index: true, follow: true }, canonical: '/car/swift-vxi' });
   });
 
   it('does not index one the API called unindexable', () => {
@@ -175,12 +175,9 @@ describe('hasFilterParams', () => {
     );
   });
 
-  it.each(['make', 'fuel', 'priceMin', 'owners', 'q', 'dealer'])(
-    'counts %s as a filter',
-    (key) => {
-      expect(hasFilterParams({ [key]: 'x' })).toBe(true);
-    },
-  );
+  it.each(['make', 'fuel', 'priceMin', 'owners', 'q', 'dealer'])('counts %s as a filter', (key) => {
+    expect(hasFilterParams({ [key]: 'x' })).toBe(true);
+  });
 
   it('counts a filter alongside the describing keys', () => {
     expect(hasFilterParams({ city: 'vellore', page: '2', fuel: 'petrol' })).toBe(true);

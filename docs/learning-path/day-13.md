@@ -14,7 +14,7 @@ Two rules meet today, and they are the two that keep the marketplace honest.
 
 **Rule 5:** listing state changes go through `transition(listing, event, actor)`.
 Never assign `.status` directly. A state machine is not ceremony — it is the only
-way to guarantee that *every* path into `APPROVED` also set an expiry, consumed
+way to guarantee that _every_ path into `APPROVED` also set an expiry, consumed
 the held credit, wrote an audit row and queued the indexing job.
 
 **Rule 6:** a car is publicly visible if and only if
@@ -26,31 +26,31 @@ dealer is one job rather than a change to nine queries.
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 11** — the listing state machine (11.1 → 11.6) | 45 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 12** — public visibility (12.1 → 12.7) | 40 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-C4, 34-F5** — denormalization, and CQRS as used here | 15 |
-| `docs/CLAUDE.md` | Rule 5, Rule 6, Rule 7 | 10 |
+| Source                        | Sections                                                       | ~min |
+| ----------------------------- | -------------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 11** — the listing state machine (11.1 → 11.6)          | 45   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 12** — public visibility (12.1 → 12.7)                  | 40   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 34-C4, 34-F5** — denormalization, and CQRS as used here | 15   |
+| `docs/CLAUDE.md`              | Rule 5, Rule 6, Rule 7                                         | 10   |
 
-**§11.1 is a correction to the vocabulary** — a *vehicle* is not a *listing*.
+**§11.1 is a correction to the vocabulary** — a _vehicle_ is not a _listing_.
 Read it first; the rest of the part depends on the distinction.
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/api/prisma/schema.prisma` | The `Vehicle` and `Listing` models side by side. **Two different things.** Note the partial unique index preventing two live listings for one vehicle |
-| 2 | `apps/api/src/modules/listings/listing.state.ts` | **The core file.** The transition table: which events are legal from which states, and what each one does |
-| 3 | `apps/api/src/modules/listings/listings.facade.ts` | What other modules are allowed to see of this one |
-| 4 | `apps/api/src/modules/vehicles/vehicles.service.ts` | Find the submit path. `transition()` is called *inside* the transaction that also moves credits |
-| 5 | `apps/api/src/modules/admin/admin.service.ts` | The approve/reject path. Same `transition()`, different actor |
-| 6 | `apps/api/src/modules/search/search.repository.ts` | `index()` — rebuilds one row, **or removes it** if it no longer satisfies the rule. Idempotent by design |
-| 7 | `apps/api/src/platform/jobs/handlers.ts` | Find `search.index-listing`, `search.remove-listing` and `search.reindex-dealer`. Three jobs, one rule |
-| 8 | `apps/api/tests/listing-lifecycle.test.ts` | Every legal and illegal transition, asserted |
-| 9 | `apps/api/tests/public-visibility.test.ts` | The truth table, asserted |
+| #   | File                                                | What to look for                                                                                                                                      |
+| --- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/api/prisma/schema.prisma`                     | The `Vehicle` and `Listing` models side by side. **Two different things.** Note the partial unique index preventing two live listings for one vehicle |
+| 2   | `apps/api/src/modules/listings/listing.state.ts`    | **The core file.** The transition table: which events are legal from which states, and what each one does                                             |
+| 3   | `apps/api/src/modules/listings/listings.facade.ts`  | What other modules are allowed to see of this one                                                                                                     |
+| 4   | `apps/api/src/modules/vehicles/vehicles.service.ts` | Find the submit path. `transition()` is called _inside_ the transaction that also moves credits                                                       |
+| 5   | `apps/api/src/modules/admin/admin.service.ts`       | The approve/reject path. Same `transition()`, different actor                                                                                         |
+| 6   | `apps/api/src/modules/search/search.repository.ts`  | `index()` — rebuilds one row, **or removes it** if it no longer satisfies the rule. Idempotent by design                                              |
+| 7   | `apps/api/src/platform/jobs/handlers.ts`            | Find `search.index-listing`, `search.remove-listing` and `search.reindex-dealer`. Three jobs, one rule                                                |
+| 8   | `apps/api/tests/listing-lifecycle.test.ts`          | Every legal and illegal transition, asserted                                                                                                          |
+| 9   | `apps/api/tests/public-visibility.test.ts`          | The truth table, asserted                                                                                                                             |
 
 ---
 
@@ -63,6 +63,7 @@ arrow. Include the states people forget: `DRAFT`, `PENDING_REVIEW`,
 `CHANGES_REQUESTED`, `APPROVED`, `REJECTED`, `EXPIRED`, `WITHDRAWN`.
 
 For each arrow, note three things:
+
 - who may fire it (dealer? admin? the system?)
 - what it does to credits
 - whether it changes public visibility
@@ -106,14 +107,14 @@ ORDER BY l."submittedAt" DESC NULLS LAST LIMIT 5;
 SELECT count(*) FROM listing_search;
 ```
 
-| Step | `listings.status` | in `listing_search`? |
-|---|---|---|
-| Create a vehicle | — (no listing yet) | |
-| Submit for review | | |
-| Admin requests changes | | |
-| Resubmit | | |
-| Admin approves | | |
-| Dealer withdraws | | |
+| Step                   | `listings.status`  | in `listing_search`? |
+| ---------------------- | ------------------ | -------------------- |
+| Create a vehicle       | — (no listing yet) |                      |
+| Submit for review      |                    |                      |
+| Admin requests changes |                    |                      |
+| Resubmit               |                    |                      |
+| Admin approves         |                    |                      |
+| Dealer withdraws       |                    |                      |
 
 Fill that table in from what you observe. **The right-hand column is Rule 6 in
 action.**
@@ -146,7 +147,7 @@ grep -rn "listing_search" apps/api/src/modules/search/search.repository.ts | hea
 
 Find the per-city counts, the body-type tiles, the facet counts and the "from ₹x"
 figure. **All of them come from `listing_search`.** So a listing that should not
-be public cannot leak into a *number* either — not just not into a list. That is
+be public cannot leak into a _number_ either — not just not into a list. That is
 a subtler property than it first appears, and it is why Rule 6 says counts must
 follow the same rule.
 
@@ -179,16 +180,16 @@ refused, which is the half people forget to test.
 
 ## 5. Prove you understood it
 
-1. What is the difference between a `Vehicle` and a `Listing`? → *§11.1*
-2. Why is `listing.status = 'APPROVED'` dangerous? Name four things it skips. → *§11.3*
-3. What are the two parts of the two-part defence? → *§11.4*
-4. State the public visibility rule exactly. → *§12.1*
-5. Why is that rule evaluated in one place rather than in every query? → *§12.3*
-6. What is `listing_search`, and what keeps it correct? → *§12.4, §12.5*
-7. Why does suspending a dealer take one job rather than nine query changes? → *§12.6*
-8. Why must marketplace counts also come from `listing_search`? → *Rule 6, §12.4*
-9. What is `displayStatus`, and why is it derived rather than stored? → *§11.6*
-10. Where may a dealer's phone number appear, and what protects it? → *Rule 7, §12.7*
+1. What is the difference between a `Vehicle` and a `Listing`? → _§11.1_
+2. Why is `listing.status = 'APPROVED'` dangerous? Name four things it skips. → _§11.3_
+3. What are the two parts of the two-part defence? → _§11.4_
+4. State the public visibility rule exactly. → _§12.1_
+5. Why is that rule evaluated in one place rather than in every query? → _§12.3_
+6. What is `listing_search`, and what keeps it correct? → _§12.4, §12.5_
+7. Why does suspending a dealer take one job rather than nine query changes? → _§12.6_
+8. Why must marketplace counts also come from `listing_search`? → _Rule 6, §12.4_
+9. What is `displayStatus`, and why is it derived rather than stored? → _§11.6_
+10. Where may a dealer's phone number appear, and what protects it? → _Rule 7, §12.7_
 
 ---
 

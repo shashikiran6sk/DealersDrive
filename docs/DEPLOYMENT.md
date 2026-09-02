@@ -27,18 +27,18 @@ single-box deployment, which still works and is what the investor demo runs on.
 What the repository already had, before any of this. It is a lot, and most of
 the work below was removing obstacles rather than adding machinery.
 
-| | |
-| --- | --- |
-| **Shape** | pnpm + Turborepo monorepo. `apps/api` (Express 5, modular monolith), `apps/web` (Next.js 15 App Router), `packages/contracts` (Zod schemas shared by both), `packages/config` (eslint/tsconfig presets). One repository, two deployables. |
-| **Database** | PostgreSQL via Prisma 6. Four migrations, a deterministic seed, `db:migrate:deploy` already separated from `migrate dev`. |
-| **Jobs** | pg-boss on the same database. `WORKER_INLINE=true` runs handlers in the HTTP process. |
-| **Auth** | Google OAuth 2.0 (code + PKCE + nonce) for dealers, Argon2id passwords for admins, opaque `dd_session` cookie against a `sessions` row. `SameSite=Lax`, `Secure` in production, `HttpOnly`, optional cookie domain. |
-| **Storage** | One S3 adapter serving MinIO locally and R2 in production, chosen by `STORAGE_DRIVER`. Presigned direct-to-bucket uploads. |
-| **Config** | `apps/api/src/config/env.ts` — Zod-validated at boot, with production cross-checks that refuse to start on a surviving local default, `AUTH_MODE=dev`, filesystem storage, or missing Google credentials. This is unusually good and everything below leans on it. |
-| **Tests** | Vitest, two projects: unit (mirrors `src/`, no I/O) and integration (a real Postgres, migrated and seeded per run). 90% coverage enforced in all three packages. |
-| **Docker** | Multi-stage, workspace-aware Dockerfiles for both apps, non-root, with health checks. A `migrator` stage that keeps the Prisma CLI. `docker-compose.yml` for local Postgres/MinIO/Mailpit and an optional app profile. |
-| **Deployment** | One EC2 box: nginx terminating TLS, two systemd units, Postgres and MinIO in Docker, and `deploy/release.sh` — `git pull`, build **on the server**, migrate, restart. Documented honestly as demo-grade. |
-| **CI** | **None.** No `.github/` directory at all. |
+|                   |                                                                                                                                                                                                                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Shape**         | pnpm + Turborepo monorepo. `apps/api` (Express 5, modular monolith), `apps/web` (Next.js 15 App Router), `packages/contracts` (Zod schemas shared by both), `packages/config` (eslint/tsconfig presets). One repository, two deployables.                                                                       |
+| **Database**      | PostgreSQL via Prisma 6. Four migrations, a deterministic seed, `db:migrate:deploy` already separated from `migrate dev`.                                                                                                                                                                                       |
+| **Jobs**          | pg-boss on the same database. `WORKER_INLINE=true` runs handlers in the HTTP process.                                                                                                                                                                                                                           |
+| **Auth**          | Google OAuth 2.0 (code + PKCE + nonce) for dealers, Argon2id passwords for admins, opaque `dd_session` cookie against a `sessions` row. `SameSite=Lax`, `Secure` in production, `HttpOnly`, optional cookie domain.                                                                                             |
+| **Storage**       | One S3 adapter serving MinIO locally and R2 in production, chosen by `STORAGE_DRIVER`. Presigned direct-to-bucket uploads.                                                                                                                                                                                      |
+| **Config**        | `apps/api/src/config/env.ts` — Zod-validated at boot, with production cross-checks that refuse to start on a surviving local default, `AUTH_MODE=dev`, filesystem storage, or missing Google credentials. This is unusually good and everything below leans on it.                                              |
+| **Tests**         | Vitest, two projects: unit (mirrors `src/`, no I/O) and integration (a real Postgres, migrated and seeded per run). 90% coverage enforced in all three packages.                                                                                                                                                |
+| **Docker**        | Multi-stage, workspace-aware Dockerfiles for both apps, non-root, with health checks. A `migrator` stage that keeps the Prisma CLI. `docker-compose.yml` for local Postgres/MinIO/Mailpit and an optional app profile.                                                                                          |
+| **Deployment**    | One EC2 box: nginx terminating TLS, two systemd units, Postgres and MinIO in Docker, and `deploy/release.sh` — `git pull`, build **on the server**, migrate, restart. Documented honestly as demo-grade.                                                                                                        |
+| **CI**            | **None.** No `.github/` directory at all.                                                                                                                                                                                                                                                                       |
 | **Design intent** | `docs/ARCHITECTURE.md` §20 already specified build-once/promote-many, a `sha-` tagged registry, a dev→production promotion with a GitHub Environment approval, and expand/contract migrations. None of it was implemented, and three assumptions in it turned out to be false against the code as written (§B). |
 
 ## B. What was in the way
@@ -145,17 +145,17 @@ Balancer, with images in ECR and Postgres on RDS.** Media stays on Cloudflare
 R2, which the storage adapter already supports and which charges nothing for
 egress.
 
-The alternatives, honestly compared for *this* application at *this* stage:
+The alternatives, honestly compared for _this_ application at _this_ stage:
 
-| | Cost/mo | Ops burden | Rollback | Fits this app? |
-| --- | --- | --- | --- | --- |
-| **ECS Fargate + ALB + RDS** ✅ | ~$190 | Moderate one-time setup, then near-zero | Previous task definition, automatic via circuit breaker | Yes. Runs the existing images unchanged, health-gated, zero-downtime, Mumbai region, one account for logs/metrics/secrets/IAM |
-| EC2 + Docker Compose (today) | ~$35 | Low until it breaks | None — the artifact is built on the box | It works, and it is what the demo runs on. No zero-downtime, no rollback, one disk holding the database |
-| AWS App Runner | ~$120 | Lowest of the AWS options | Redeploy previous image | Plausible. Fewer knobs, per-service VPC connectors for RDS, and less control over health-gated rollout |
-| Fly.io | ~$70 | Low | `fly deploy --image` of an older tag | Genuinely good, and Mumbai is a region. Less mature IAM/audit story; a second vendor for secrets |
-| Render | ~$85 | Lowest overall | One-click, built in | Deploys an image digest by API, which is exactly this model. **No India region** — Singapore adds ~60ms for every buyer |
-| Vercel (web) + anything (api) | $20/user + api | Low for the front end | Instant, per deployment | Splits the artifact model: Vercel builds its own frontend per environment, so "promote the tested bytes" stops being true for half the system |
-| Kubernetes / EKS | $73 before workloads | High | Excellent | No. Four containers do not need a control plane, and the team is small |
+|                                | Cost/mo              | Ops burden                              | Rollback                                                | Fits this app?                                                                                                                                |
+| ------------------------------ | -------------------- | --------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ECS Fargate + ALB + RDS** ✅ | ~$190                | Moderate one-time setup, then near-zero | Previous task definition, automatic via circuit breaker | Yes. Runs the existing images unchanged, health-gated, zero-downtime, Mumbai region, one account for logs/metrics/secrets/IAM                 |
+| EC2 + Docker Compose (today)   | ~$35                 | Low until it breaks                     | None — the artifact is built on the box                 | It works, and it is what the demo runs on. No zero-downtime, no rollback, one disk holding the database                                       |
+| AWS App Runner                 | ~$120                | Lowest of the AWS options               | Redeploy previous image                                 | Plausible. Fewer knobs, per-service VPC connectors for RDS, and less control over health-gated rollout                                        |
+| Fly.io                         | ~$70                 | Low                                     | `fly deploy --image` of an older tag                    | Genuinely good, and Mumbai is a region. Less mature IAM/audit story; a second vendor for secrets                                              |
+| Render                         | ~$85                 | Lowest overall                          | One-click, built in                                     | Deploys an image digest by API, which is exactly this model. **No India region** — Singapore adds ~60ms for every buyer                       |
+| Vercel (web) + anything (api)  | $20/user + api       | Low for the front end                   | Instant, per deployment                                 | Splits the artifact model: Vercel builds its own frontend per environment, so "promote the tested bytes" stops being true for half the system |
+| Kubernetes / EKS               | $73 before workloads | High                                    | Excellent                                               | No. Four containers do not need a control plane, and the team is small                                                                        |
 
 The deciding factors: the images already exist and ECS runs them unchanged; the
 buyers are in Tamil Nadu and ap-south-1 is the closest region any of these
@@ -223,39 +223,87 @@ Runtime, one environment:
 
 Exactly what exists, and why. The commands are in `deploy/aws/README.md`.
 
-| Service | What | Why this and not something else |
-| --- | --- | --- |
-| **ECR** ×3 | `dealers-drive/api`, `/web`, `/migrator`, immutable tags, 30-image lifecycle | Immutable tags are what make `sha-<commit>` a rollback target. The migrator is separate because the Prisma CLI is a dev dependency the runtime image does not install |
-| **ECS Fargate** | 1 cluster, 4 services, 2 one-off task families | No servers to patch. Circuit breaker + rollback gives automatic rollback for free |
-| **ALB** ×1 | 4 target groups, host+path rules, HTTP→HTTPS | One load balancer for both environments; ~$18/month is not worth spending twice |
-| **RDS Postgres 16** ×2 | prod `db.t4g.small` (7-day PITR, deletion protection), dev `db.t4g.micro` | Two **instances**, not two databases on one: a wrong `DATABASE_URL` should not be able to reach production's disk or CPU at all |
-| **SSM Parameter Store** | SecureStrings under `/dealers-drive/{dev,production}/*` | Free at this scale; Secrets Manager is $0.40/secret/month and nothing needs rotation yet |
-| **Cloudflare R2** ×2 | `dd-media-dev`, `dd-media-prod`, one scoped token each | Zero egress fees on an image-heavy marketplace, and the adapter is already written and tested |
-| **ACM** | one certificate: apex, `www`, `dev` | Auto-renewing, free, and the load balancer is the only thing terminating TLS |
-| **CloudWatch** | log group per service per environment, Container Insights, 6 alarms → SNS | The container's stdout is already structured JSON with a `traceId` on every line |
-| **IAM** | 1 execution role, 4 task roles, 1 CI role, 2 deploy roles, GitHub OIDC | No AWS access key exists in the repository or in GitHub |
-| **Sentry** | one project per environment (free tier) | The SDK is not installed yet — `SENTRY_DSN` validates and does nothing. First follow-up |
+| Service                 | What                                                                         | Why this and not something else                                                                                                                                       |
+| ----------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ECR** ×3              | `dealers-drive/api`, `/web`, `/migrator`, immutable tags, 30-image lifecycle | Immutable tags are what make `sha-<commit>` a rollback target. The migrator is separate because the Prisma CLI is a dev dependency the runtime image does not install |
+| **ECS Fargate**         | 1 cluster, 4 services, 2 one-off task families                               | No servers to patch. Circuit breaker + rollback gives automatic rollback for free                                                                                     |
+| **ALB** ×1              | 4 target groups, host+path rules, HTTP→HTTPS                                 | One load balancer for both environments; ~$18/month is not worth spending twice                                                                                       |
+| **RDS Postgres 16** ×2  | prod `db.t4g.small` (7-day PITR, deletion protection), dev `db.t4g.micro`    | Two **instances**, not two databases on one: a wrong `DATABASE_URL` should not be able to reach production's disk or CPU at all                                       |
+| **SSM Parameter Store** | SecureStrings under `/dealers-drive/{dev,production}/*`                      | Free at this scale; Secrets Manager is $0.40/secret/month and nothing needs rotation yet                                                                              |
+| **Cloudflare R2** ×2    | `dd-media-dev`, `dd-media-prod`, one scoped token each                       | Zero egress fees on an image-heavy marketplace, and the adapter is already written and tested                                                                         |
+| **ACM**                 | one certificate: apex, `www`, `dev`                                          | Auto-renewing, free, and the load balancer is the only thing terminating TLS                                                                                          |
+| **CloudWatch**          | log group per service per environment, Container Insights, 5 alarms → SNS    | The container's stdout is already structured JSON with a `traceId` on every line, adopted from the edge when the caller sent one                                      |
+| **IAM**                 | 1 execution role, 4 task roles, 1 CI role, 2 deploy roles, GitHub OIDC       | No AWS access key exists in the repository or in GitHub                                                                                                               |
+| **Sentry**              | one project per environment (free tier)                                      | The SDK is not installed yet — `SENTRY_DSN` validates and does nothing. First follow-up                                                                               |
 
-**Not included, deliberately:** Kubernetes (four containers), Terraform (the
-infrastructure above changes a few times a year and is 200 lines of CLI in a
-runbook; revisit when a second region or a second team appears), NAT gateway
+### Terraform now owns this — `deploy/terraform/`
+
+This section used to end with "Terraform: not included, deliberately — the
+infrastructure changes a few times a year and is 200 lines of CLI in a runbook."
+That reasoning was wrong in a specific way, and it is worth recording why rather
+than quietly deleting it.
+
+The argument was about _change frequency_. The cost was about _visibility_.
+Because capacity, autoscaling and alarms existed only as console state:
+
+- a change to any of them was invisible to code review — nobody reviewed
+  "we doubled the task memory", because there was nothing to review;
+- rebuilding from scratch meant reading production to find out what production
+  was;
+- and the environments could drift apart without anything reporting it.
+
+None of those get better with a runbook, because a runbook records the commands
+someone _intended_ to run.
+
+**What Terraform owns:** the cluster, both services, the load balancer and its
+path rules, autoscaling on CPU and memory, five alarms, the log groups, the IAM
+roles including the two GitHub OIDC roles, the ECR repositories with their
+immutable-tag setting and lifecycle policy, and the _names_ of every SSM
+parameter.
+
+**What it does not own:** the image, and any secret's value. Each service carries
+
+```hcl
+lifecycle { ignore_changes = [task_definition, desired_count] }
+```
+
+so an `apply` cannot silently roll production back to whichever image Terraform
+last wrote, and cannot fight autoscaling. Each SSM parameter carries
+`ignore_changes = [value]`, so an `apply` cannot overwrite a real secret with the
+placeholder it was created with — which is what lets the secrets stay out of git
+without the infrastructure having to.
+
+> Change capacity, configuration or alarms **here**, then deploy to pick it up.
+> Change the running image by **deploying**, never by applying.
+
+`deploy/terraform/README.md` has the prerequisites, the `init` incantation and
+the reasoning behind the numbers. `deploy/aws/README.md` remains accurate for a
+hand-managed environment and documents the same shape as CLI commands.
+
+`ci.yml` runs `terraform fmt -check` and `terraform validate` on every pull
+request, with `-backend=false` so it needs no credentials and touches no state.
+A real `plan` needs the backend and is left to a human running it against the
+environment they are changing.
+
+**Still not included, deliberately:** Kubernetes (four containers), NAT gateway
 ($35/month to move tasks that the security group already protects), Redis (the
-rate limiter is in-process and the queue is on Postgres), CloudFront (the one
-case worth it is `/media`, which is the first optimisation when image egress
-becomes a line item worth reading).
+rate limiter now counts in Postgres, and the queue was already there — see
+ARCHITECTURE §18.1 for why that was the right trade), CloudFront (the one case
+worth it is `/media`, which is the first optimisation when image egress becomes
+a line item worth reading).
 
 ## E. CI/CD
 
 Five workflows. The split is not cosmetic: each one has a different trigger, a
 different privilege level, and a different failure meaning.
 
-| Workflow | Trigger | Credentials | Builds? | Deploys? |
-| --- | --- | --- | --- | --- |
-| `ci.yml` | PR, and push to `main` | **none** | images, discarded | never |
-| `release.yml` | push to `main` | ECR push only | **yes — the only place** | dev, automatically |
-| `_deploy.yml` | called by the two above | per-environment deploy role | **never** | the environment it is called with |
-| `promote.yml` | `workflow_dispatch` + approval | via `_deploy.yml` | **never** | production |
-| `security.yml` | PR, `main`, weekly | **none** | no | never |
+| Workflow       | Trigger                        | Credentials                 | Builds?                  | Deploys?                          |
+| -------------- | ------------------------------ | --------------------------- | ------------------------ | --------------------------------- |
+| `ci.yml`       | PR, and push to `main`         | **none**                    | images, discarded        | never                             |
+| `release.yml`  | push to `main`                 | ECR push only               | **yes — the only place** | dev, automatically                |
+| `_deploy.yml`  | called by the two above        | per-environment deploy role | **never**                | the environment it is called with |
+| `promote.yml`  | `workflow_dispatch` + approval | via `_deploy.yml`           | **never**                | production                        |
+| `security.yml` | PR, `main`, weekly             | **none**                    | no                       | never                             |
 
 ### On a pull request
 
@@ -279,7 +327,7 @@ Nothing is pushed and nothing is deployed. A fork can run the whole thing.
 
 **SAST is Semgrep OSS, not CodeQL, and the reason is licensing.** CodeQL
 analysed this repository fine — 318 TypeScript files, SARIF produced — and then
-failed to *upload*: publishing code scanning results on a private repository
+failed to _upload_: publishing code scanning results on a private repository
 requires GitHub Code Security at roughly $30 per committer per month. Semgrep
 OSS needs no upload, no licence and no Security tab; it fails the job on
 findings, which is the part that gates a merge. Running CodeQL with the upload
@@ -341,24 +389,29 @@ Actions → "Promote to Production" → Run workflow
    smoke test www.dealers-drive.com
 ```
 
-The preflight runs *before* the approval so that an approval is never spent on
+The preflight runs _before_ the approval so that an approval is never spent on
 a promotion that was going to fail on a typo.
 
 ## F. Configuration and secrets
 
 ### F1 · Three layers, and what may live in each
 
-| Layer | Holds | Where it lives |
-| --- | --- | --- |
-| **Build time** | `GIT_SHA`, and nothing else | Docker build argument |
-| **CI** | The ARNs of three IAM roles | GitHub repository + environment secrets |
-| **Runtime, non-secret** | URLs, feature flags, `APP_ENV` | ECS task definition `environment` |
-| **Runtime, secret** | Database, session, OAuth, R2 | SSM SecureString → task definition `secrets` |
+| Layer                   | Holds                          | Where it lives                               |
+| ----------------------- | ------------------------------ | -------------------------------------------- |
+| **Build time**          | `GIT_SHA`, and nothing else    | Docker build argument                        |
+| **CI**                  | The ARNs of three IAM roles    | GitHub repository + environment secrets      |
+| **Runtime, non-secret** | URLs, feature flags, `APP_ENV` | ECS task definition `environment`            |
+| **Runtime, secret**     | Database, session, OAuth, R2   | SSM SecureString → task definition `secrets` |
+
+The _shape_ of the last two rows is now code: `deploy/terraform/ecs.tf` holds the
+non-secret environment, and `deploy/terraform/ssm.tf` holds the secret **names**.
+Values are still written once by hand with `aws ssm put-parameter`, and
+`ignore_changes = [value]` is what stops an `apply` reverting them.
 
 The rule underneath: **nothing environment-specific is ever baked into an
 image.** That is why `NEXT_PUBLIC_*` is banned (it inlines at build time), why
-the ISR routes had to become dynamic (they inlined *data* at build time), and
-why `robots.txt` had to become runtime-resolved (it inlined a *policy*).
+the ISR routes had to become dynamic (they inlined _data_ at build time), and
+why `robots.txt` had to become runtime-resolved (it inlined a _policy_).
 
 GitHub holds no database credential, no session secret and no OAuth secret for
 any environment. Migrations run as an ECS task inside the VPC, so the one
@@ -372,16 +425,43 @@ not apply here, and adopting it would be a mistake. Both apps read **one
 `apps/web/next.config.ts` and `apps/api/prisma.config.ts` all load it — because
 two files that must agree are two files that stop agreeing.
 
-| File | Committed? | Purpose |
-| --- | --- | --- |
-| `.env.example` | **yes** | Every key, with local-safe values and a comment explaining each one. `cp .env.example .env` and a fresh clone boots |
-| `.env` | **never** (gitignored) | The developer's actual values — Google credentials, and anything they want to differ |
-| `deploy/aws/env.dev.example` | yes | Documentation of the dev **task definition**; nothing reads it |
-| `deploy/aws/env.production.example` | yes | The same for production, and the file to read to see what differs |
+| File                                | Committed?             | Purpose                                                                                                             |
+| ----------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `.env.example`                      | **yes**                | Every key, with local-safe values and a comment explaining each one. `cp .env.example .env` and a fresh clone boots |
+| `.env`                              | **never** (gitignored) | The developer's actual values — Google credentials, and anything they want to differ                                |
+| `deploy/aws/env.dev.example`        | yes                    | Documentation of the dev **task definition**; nothing reads it                                                      |
+| `deploy/aws/env.production.example` | yes                    | The same for production, and the file to read to see what differs                                                   |
 
 dotenv never overwrites a variable that is already set, so a real environment
 variable always wins over the file — which is what lets the same code run from
 a `.env` on a laptop and from a task definition in ECS.
+
+### F5 · The variables whose production value differs from their local one
+
+Three are worth calling out, because in each case the local default is not just
+different but **refused** in production by `checkedEnvSchema`:
+
+| Variable         | Local    | Production | Why the guard exists                                                                                  |
+| ---------------- | -------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| `STORAGE_DRIVER` | `local`  | `r2`       | Container filesystems are not durable; local disk would lose every uploaded photo on task replacement |
+| `AUTH_MODE`      | `cookie` | `cookie`   | `dev` bypasses identity verification entirely                                                         |
+| `CACHE_DRIVER`   | `memory` | `postgres` | A process-local counter behind N tasks permits N times every rate limit, **silently**                 |
+
+The third is the newest and the least obvious. Nothing errors when it is wrong —
+the site works, the limits simply mean N times what they say, and since a phone
+reveal costs an SMS the limiter is a spend control as much as a security one.
+That is precisely why it is a boot-time refusal rather than a note in a runbook.
+
+Two more are new and have no local/production _conflict_, only different values:
+
+| Variable              | Local  | Production | Meaning                                                                     |
+| --------------------- | ------ | ---------- | --------------------------------------------------------------------------- |
+| `SHUTDOWN_DRAIN_MS`   | `0`    | `5000`     | The pause before the listener closes. Nothing load-balances a laptop        |
+| `SHUTDOWN_TIMEOUT_MS` | 15 000 | 15 000     | The total shutdown budget. ECS `stopTimeout` (25s) must exceed drain + this |
+
+See ARCHITECTURE §20.10 — those two numbers, the task's `stopTimeout` and the
+target group's `deregistration_delay` are one mechanism, and changing any one
+means checking the other three.
 
 **Production-like locally** is `docker compose --profile app up -d --build`:
 the real production images, running the production build, with `NODE_ENV`
@@ -392,20 +472,20 @@ laptop from starting. To exercise the guards themselves, fill in a real
 
 ### F3 · What differs between the three
 
-| | local | dev | production |
-| --- | --- | --- | --- |
-| `APP_ENV` | `local` | `dev` | `production` |
-| Origin | `http://localhost:3000` | `https://dev.dealers-drive.com` | `https://www.dealers-drive.com` |
-| Database | Docker Postgres | RDS `dd-postgres-dev` | RDS `dd-postgres-prod` |
-| Storage | `local` / MinIO | R2 `dd-media-dev` | R2 `dd-media-prod` |
-| Google client | your own, localhost URIs | dev client | production client, published consent screen |
-| `SESSION_SECRET` | the published local default | its own 32 bytes | its own 32 bytes |
-| Cookie `Secure` | off (`NODE_ENV≠production`) | on | on |
-| Cookie domain | host-only | host-only | host-only |
-| `DOCS_ENABLED` | `true` | `true` | `false` |
-| Payments / mail / sms | console | console | console → real providers as each ships |
-| `robots.txt` | `Disallow: /` | `Disallow: /` | `Allow: /` |
-| Banner | amber "local" | amber "dev — not real data" | none |
+|                       | local                       | dev                             | production                                  |
+| --------------------- | --------------------------- | ------------------------------- | ------------------------------------------- |
+| `APP_ENV`             | `local`                     | `dev`                           | `production`                                |
+| Origin                | `http://localhost:3000`     | `https://dev.dealers-drive.com` | `https://www.dealers-drive.com`             |
+| Database              | Docker Postgres             | RDS `dd-postgres-dev`           | RDS `dd-postgres-prod`                      |
+| Storage               | `local` / MinIO             | R2 `dd-media-dev`               | R2 `dd-media-prod`                          |
+| Google client         | your own, localhost URIs    | dev client                      | production client, published consent screen |
+| `SESSION_SECRET`      | the published local default | its own 32 bytes                | its own 32 bytes                            |
+| Cookie `Secure`       | off (`NODE_ENV≠production`) | on                              | on                                          |
+| Cookie domain         | host-only                   | host-only                       | host-only                                   |
+| `DOCS_ENABLED`        | `true`                      | `true`                          | `false`                                     |
+| Payments / mail / sms | console                     | console                         | console → real providers as each ships      |
+| `robots.txt`          | `Disallow: /`               | `Disallow: /`                   | `Allow: /`                                  |
+| Banner                | amber "local"               | amber "dev — not real data"     | none                                        |
 
 ### F4 · Authentication across environments
 
@@ -441,40 +521,40 @@ Everything created or modified, and why.
 
 ### Created
 
-| File | Environment | What it does |
-| --- | --- | --- |
-| `.github/workflows/ci.yml` | PRs, `main` | The four checks plus the image build and the audit. Holds no credentials |
-| `.github/workflows/release.yml` | `main` → dev | The only place images are built. Pushes three `sha-` tagged images, calls `_deploy.yml` for dev |
-| `.github/workflows/_deploy.yml` | dev + production | Reusable rollout: verify images → migrate → api → web → smoke. Contains no build step, by design |
-| `.github/workflows/promote.yml` | production | The manual trigger, the dev-verification preflight, and the rollback path |
-| `.github/workflows/security.yml` | PRs, `main`, weekly | Semgrep OSS (SAST) and gitleaks (secrets, including history). Holds no credentials |
-| `.semgrepignore` | — | Generated and vendored paths, plus `docs/` — prose, where gitleaks is the right tool |
-| `.gitleaks.toml` | — | Default rules plus one allowlist: object-storage keys in tests are paths, not credentials |
-| `.github/dependabot.yml` | — | Weekly grouped npm bumps, monthly actions and base images |
-| `scripts/smoke.sh` | all three | Read-only checks against a deployed pair of URLs, including "is the running build the one just deployed" |
-| `apps/web/src/app/api/health/route.ts` | all three | The web app's own probe. Calls no upstream, reports `GIT_SHA` |
-| `apps/web/tests/unit/app/api/health.test.ts` | — | Keeps it honest and inside the 90% gate |
-| `apps/api/prisma/seed/bootstrap.ts` | dev + production | Idempotent, non-destructive: reference catalogue, credit packs, config defaults, one admin. Fixes B4 |
-| `deploy/aws/README.md` | dev + production | The one-time infrastructure runbook |
-| `deploy/aws/env.dev.example`, `env.production.example` | dev / production | Every runtime variable and secret, annotated |
-| `deploy/aws/taskdef/{api,web,migrate}.example.json` | dev + production | Task definition templates |
-| `docs/DEPLOYMENT.md` | — | This document |
+| File                                                   | Environment         | What it does                                                                                             |
+| ------------------------------------------------------ | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| `.github/workflows/ci.yml`                             | PRs, `main`         | The four checks plus the image build and the audit. Holds no credentials                                 |
+| `.github/workflows/release.yml`                        | `main` → dev        | The only place images are built. Pushes three `sha-` tagged images, calls `_deploy.yml` for dev          |
+| `.github/workflows/_deploy.yml`                        | dev + production    | Reusable rollout: verify images → migrate → api → web → smoke. Contains no build step, by design         |
+| `.github/workflows/promote.yml`                        | production          | The manual trigger, the dev-verification preflight, and the rollback path                                |
+| `.github/workflows/security.yml`                       | PRs, `main`, weekly | Semgrep OSS (SAST) and gitleaks (secrets, including history). Holds no credentials                       |
+| `.semgrepignore`                                       | —                   | Generated and vendored paths, plus `docs/` — prose, where gitleaks is the right tool                     |
+| `.gitleaks.toml`                                       | —                   | Default rules plus one allowlist: object-storage keys in tests are paths, not credentials                |
+| `.github/dependabot.yml`                               | —                   | Weekly grouped npm bumps, monthly actions and base images                                                |
+| `scripts/smoke.sh`                                     | all three           | Read-only checks against a deployed pair of URLs, including "is the running build the one just deployed" |
+| `apps/web/src/app/api/health/route.ts`                 | all three           | The web app's own probe. Calls no upstream, reports `GIT_SHA`                                            |
+| `apps/web/tests/unit/app/api/health.test.ts`           | —                   | Keeps it honest and inside the 90% gate                                                                  |
+| `apps/api/prisma/seed/bootstrap.ts`                    | dev + production    | Idempotent, non-destructive: reference catalogue, credit packs, config defaults, one admin. Fixes B4     |
+| `deploy/aws/README.md`                                 | dev + production    | The one-time infrastructure runbook                                                                      |
+| `deploy/aws/env.dev.example`, `env.production.example` | dev / production    | Every runtime variable and secret, annotated                                                             |
+| `deploy/aws/taskdef/{api,web,migrate}.example.json`    | dev + production    | Task definition templates                                                                                |
+| `docs/DEPLOYMENT.md`                                   | —                   | This document                                                                                            |
 
 ### Modified
 
-| File | Change | Why |
-| --- | --- | --- |
-| `apps/web/src/app/(public)/{page,cars/page,dealers/page,saved/page}.tsx` | `revalidate` → `dynamic = 'force-dynamic'` | Fixes B1. Page-level caching moves to the fetch level, which was already explicit in every call. The route renders per request; the *data* is still cached for 60–600s |
-| `apps/web/src/app/sitemap.ts` | same | Same reason; the walk is served from an hour-old fetch cache |
-| `apps/web/src/app/robots.ts` | added `dynamic = 'force-dynamic'` | Fixes B2 — the file is a *policy* read from `APP_ENV`, and must be resolved at request time |
-| `apps/api/src/config/env.ts` | added `GIT_SHA` | Fixes B3 |
-| `apps/api/src/modules/health/health.routes.ts` + `.docs.ts` | `/health/ready` reports `version` | Fixes B3. The promotion preflight and both smoke tests read it |
-| `apps/api/Dockerfile` | `ARG GIT_SHA` → `ENV GIT_SHA` | Names the artifact. Configures nothing |
-| `apps/web/Dockerfile` | dropped `BUILD_API_BASE_URL`; added `GIT_SHA`; health check → `/api/health` | The build no longer contacts anything. The old build argument existed only to satisfy B1 |
-| `docker-compose.yml` | web builds and starts in one pass | The two-phase dance existed only because of B1 |
-| `scripts/app-up.sh` | one `compose up`, then wait for both health endpoints | Same |
-| `apps/api/package.json` | added `db:bootstrap` | Fixes B4 |
-| `.env.example` | added `APP_ENV`, noted `GIT_SHA` | Completes the local/dev/production picture |
+| File                                                                     | Change                                                                      | Why                                                                                                                                                                    |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/app/(public)/{page,cars/page,dealers/page,saved/page}.tsx` | `revalidate` → `dynamic = 'force-dynamic'`                                  | Fixes B1. Page-level caching moves to the fetch level, which was already explicit in every call. The route renders per request; the _data_ is still cached for 60–600s |
+| `apps/web/src/app/sitemap.ts`                                            | same                                                                        | Same reason; the walk is served from an hour-old fetch cache                                                                                                           |
+| `apps/web/src/app/robots.ts`                                             | added `dynamic = 'force-dynamic'`                                           | Fixes B2 — the file is a _policy_ read from `APP_ENV`, and must be resolved at request time                                                                            |
+| `apps/api/src/config/env.ts`                                             | added `GIT_SHA`                                                             | Fixes B3                                                                                                                                                               |
+| `apps/api/src/modules/health/health.routes.ts` + `.docs.ts`              | `/health/ready` reports `version`                                           | Fixes B3. The promotion preflight and both smoke tests read it                                                                                                         |
+| `apps/api/Dockerfile`                                                    | `ARG GIT_SHA` → `ENV GIT_SHA`                                               | Names the artifact. Configures nothing                                                                                                                                 |
+| `apps/web/Dockerfile`                                                    | dropped `BUILD_API_BASE_URL`; added `GIT_SHA`; health check → `/api/health` | The build no longer contacts anything. The old build argument existed only to satisfy B1                                                                               |
+| `docker-compose.yml`                                                     | web builds and starts in one pass                                           | The two-phase dance existed only because of B1                                                                                                                         |
+| `scripts/app-up.sh`                                                      | one `compose up`, then wait for both health endpoints                       | Same                                                                                                                                                                   |
+| `apps/api/package.json`                                                  | added `db:bootstrap`                                                        | Fixes B4                                                                                                                                                               |
+| `.env.example`                                                           | added `APP_ENV`, noted `GIT_SHA`                                            | Completes the local/dev/production picture                                                                                                                             |
 
 ### Deliberately not changed
 
@@ -539,7 +619,7 @@ bucket, no VPN — `pnpm infra:up` and a `.env` copied from the example is the
 whole dependency list.
 
 **Branching: trunk-based, and nothing more.** `feature/*` and `bugfix/*` off
-`main`, squash-merged back. No `develop` (the dev environment *is* the
+`main`, squash-merged back. No `develop` (the dev environment _is_ the
 integration branch, and it is fed by `main`), no `release/*` (there is one
 production and it is promoted by SHA, not by branch), no `staging` branch (dev
 is that environment). For a team this size anything more is ceremony that adds
@@ -547,16 +627,16 @@ merge work without reducing risk.
 
 **Branch protection on `main`** — nobody pushes directly:
 
-| Required | Why |
-| --- | --- |
-| `CI / lint · typecheck · test · build` | The four working-agreement commands |
-| `CI / images build` | Catches a route that starts prerendering data again |
-| `CI / dependency audit` | Critical advisories |
-| `Security / semgrep` | SAST over the code, the workflows and the Dockerfiles |
-| `Security / gitleaks` | No credential in the tree or the history |
-| 1 approving review | |
-| Branch up to date before merge | Two green PRs can still be red together |
-| No force pushes, no deletions, include administrators | |
+| Required                                              | Why                                                   |
+| ----------------------------------------------------- | ----------------------------------------------------- |
+| `CI / lint · typecheck · test · build`                | The four working-agreement commands                   |
+| `CI / images build`                                   | Catches a route that starts prerendering data again   |
+| `CI / dependency audit`                               | Critical advisories                                   |
+| `Security / semgrep`                                  | SAST over the code, the workflows and the Dockerfiles |
+| `Security / gitleaks`                                 | No credential in the tree or the history              |
+| 1 approving review                                    |                                                       |
+| Branch up to date before merge                        | Two green PRs can still be red together               |
+| No force pushes, no deletions, include administrators |                                                       |
 
 ## J. Deployment workflow
 
@@ -607,7 +687,7 @@ so. This is the common case, and it needs no human.
 **A Prisma migration has no `down`, and rolling one back by hand can destroy
 data. This is the part to read before an incident, not during one.**
 
-The strategy that makes the application rollback above *safe* is
+The strategy that makes the application rollback above _safe_ is
 expand/contract, and it is not optional:
 
 ```
@@ -633,7 +713,7 @@ The rules, in order of how expensive they are to learn the hard way:
   ships and turns out to be wrong, the only recovery is point-in-time restore —
   which means **losing every write since the restore point**. On a marketplace
   that is enquiries a dealer has already been called about. Restore into a
-  *new* instance, extract what is needed, and reconcile by hand. Never restore
+  _new_ instance, extract what is needed, and reconcile by hand. Never restore
   over production because a deploy went wrong.
 
 Dev is the rehearsal. Every migration runs there on merge and only reaches
@@ -642,12 +722,12 @@ real data shapes before it touches a real dealer.
 
 ### Recovery objectives
 
-| | Target | How |
-| --- | --- | --- |
-| Bad release, caught by health checks | seconds | ECS circuit breaker, automatic |
-| Bad release, caught by a person | < 5 min | Promote the previous SHA |
-| Database corruption / bad data migration | < 1 hour, up to the last second | RDS point-in-time recovery into a new instance |
-| Region loss | days | Accepted. Backups are regional; a multi-region story is not worth its cost at this stage — say so out loud rather than implying otherwise |
+|                                          | Target                          | How                                                                                                                                       |
+| ---------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Bad release, caught by health checks     | seconds                         | ECS circuit breaker, automatic                                                                                                            |
+| Bad release, caught by a person          | < 5 min                         | Promote the previous SHA                                                                                                                  |
+| Database corruption / bad data migration | < 1 hour, up to the last second | RDS point-in-time recovery into a new instance                                                                                            |
+| Region loss                              | days                            | Accepted. Backups are regional; a multi-region story is not worth its cost at this stage — say so out loud rather than implying otherwise |
 
 ## L. Cost
 
@@ -655,20 +735,20 @@ Assumptions: an early-stage marketplace — a few hundred listings, ~5k page
 views a day, ~50 GB of photos, ~200 GB of image egress a month, one
 developer, ap-south-1, on-demand pricing, no savings plans.
 
-| | Dev | Production | Shared | Notes |
-| --- | ---: | ---: | ---: | --- |
-| Fargate — api | $10 | $21 | | 0.25/0.5 vCPU-GB dev, 0.5/1 prod, one task each (`WORKER_INLINE`) |
-| Fargate — web | $10 | $41 | | prod runs two tasks, for zero-downtime and one AZ failure |
-| RDS Postgres | $17 | $32 | | `db.t4g.micro` / `db.t4g.small`, 20 GB gp3, 7-day PITR on prod |
-| ALB | | | $22 | one, shared by both environments |
-| Data transfer out | $1 | $20 | | mostly `/media`; this is the line CloudFront or an R2 public domain removes |
-| CloudWatch | $3 | $9 | | logs + Container Insights |
-| ECR | | | $2 | 30 builds × 3 images, layers shared |
-| Cloudflare R2 | $1 | $2 | | 50 GB stored, **zero egress** |
-| DNS | | | $0–1 | free on Cloudflare, $0.50/zone on Route 53 |
-| Sentry, uptime monitoring | | | $0 | free tiers are sufficient at this volume |
-| GitHub Actions | | | $0 | ~900 min/month against 2,000 free |
-| **Total** | **~$42** | **~$125** | **~$27** | **≈ $195 / month** |
+|                           |      Dev | Production |   Shared | Notes                                                                       |
+| ------------------------- | -------: | ---------: | -------: | --------------------------------------------------------------------------- |
+| Fargate — api             |      $10 |        $21 |          | 0.25/0.5 vCPU-GB dev, 0.5/1 prod, one task each (`WORKER_INLINE`)           |
+| Fargate — web             |      $10 |        $41 |          | prod runs two tasks, for zero-downtime and one AZ failure                   |
+| RDS Postgres              |      $17 |        $32 |          | `db.t4g.micro` / `db.t4g.small`, 20 GB gp3, 7-day PITR on prod              |
+| ALB                       |          |            |      $22 | one, shared by both environments                                            |
+| Data transfer out         |       $1 |        $20 |          | mostly `/media`; this is the line CloudFront or an R2 public domain removes |
+| CloudWatch                |       $3 |         $9 |          | logs + Container Insights                                                   |
+| ECR                       |          |            |       $2 | 30 builds × 3 images, layers shared                                         |
+| Cloudflare R2             |       $1 |         $2 |          | 50 GB stored, **zero egress**                                               |
+| DNS                       |          |            |     $0–1 | free on Cloudflare, $0.50/zone on Route 53                                  |
+| Sentry, uptime monitoring |          |            |       $0 | free tiers are sufficient at this volume                                    |
+| GitHub Actions            |          |            |       $0 | ~900 min/month against 2,000 free                                           |
+| **Total**                 | **~$42** |  **~$125** | **~$27** | **≈ $195 / month**                                                          |
 
 Local development is $0 — Docker on the developer's machine.
 
@@ -690,15 +770,21 @@ Where it moves:
 
 Sized for a team that will actually look at it. Four questions, four answers:
 
-| Question | Answer | Cost |
-| --- | --- | --- |
-| Is it up? | Uptime monitor polling `/health/ready` every minute on both environments — readiness, not liveness, because readiness names the failing dependency | free |
-| What broke? | Sentry on 5xx only, tagged with the `traceId` that `request-context.ts` already stamps on every log line. A 422 `INSUFFICIENT_CREDITS` is not an exception | free tier |
-| What happened? | CloudWatch Logs. The application already emits one structured JSON line per event with `traceId`, `userId`, `dealerId`, and redacts `authorization`, `cookie`, `set-cookie` and password fields | ~$12/mo |
-| Is it getting worse? | Six CloudWatch alarms → SNS → email: ALB 5xx rate, ALB target response time p95, unhealthy target count, ECS CPU/memory, RDS CPU, RDS free storage, RDS connections | ~$1/mo |
+| Question             | Answer                                                                                                                                                                                                                                                                                                          | Cost      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Is it up?            | Uptime monitor polling `/health/ready` every minute on both environments — readiness, not liveness, because readiness names the failing dependency                                                                                                                                                              | free      |
+| What broke?          | Sentry on 5xx only, tagged with the `traceId` that `request-context.ts` already stamps on every log line. A 422 `INSUFFICIENT_CREDITS` is not an exception                                                                                                                                                      | free tier |
+| What happened?       | CloudWatch Logs. The application already emits one structured JSON line per event with `traceId`, `userId`, `dealerId`, and redacts `authorization`, `cookie`, `set-cookie` and password fields                                                                                                                 | ~$12/mo   |
+| Is it getting worse? | Five CloudWatch alarms → SNS → email, defined in `deploy/terraform/alarms.tf`: no healthy targets (API and web), target 5xx, tasks not staying at minimum capacity, p95 latency. CPU and memory are **not** alarmed — that is autoscaling's job, and an alarm on it fires every time the system works correctly | ~$1/mo    |
+
+Every alarm uses `treat_missing_data = "notBreaching"`, because a rolling deploy
+briefly reports no data and an alarm that pages on every deploy is one nobody
+reads within a week. RDS alarms are still to add: the database is not created by
+this Terraform (it predates it and is shared), so its alarms live with whatever
+manages it.
 
 Four product metrics are worth more than any infrastructure dashboard here, and
-none of them exist yet: enquiry-notification latency (it *is* the product),
+none of them exist yet: enquiry-notification latency (it _is_ the product),
 moderation queue depth and age, credit-ledger drift (`Dealer.creditBalance`
 against the newest `balanceAfter` — always zero, so any non-zero value catches
 a write path that bypassed `moveCredits`), and pg-boss failed-job count.
@@ -719,16 +805,16 @@ Session Manager, which is audited, if a shell is genuinely needed), the SSM
 parameters (task role, per environment), Swagger in production
 (`DOCS_ENABLED=false`).
 
-| Layer | Control |
-| --- | --- |
-| Transport | TLS at the ALB with an ACM certificate; 80 redirects to 443; HSTS from helmet |
-| Application | helmet, a CORS allow-list naming one origin, RFC 9457 problem responses that leak no internals, per-IP and per-dealer rate limits on the phone-reveal and enquiry paths |
-| Identity | Google OIDC for dealers, Argon2id for the one admin account, opaque revocable sessions, `HttpOnly`+`Secure`+`SameSite=Lax` cookies, host-only per environment |
-| Tenancy | `dealerId` as a first-class column on every dealer-owned table, `withTenant` issuing `SET LOCAL app.dealer_id`, and a repository signature convention that makes an unscoped query a type error |
-| Secrets | SSM SecureStrings, per environment, read by the task's execution role. Nothing in git, nothing in a workflow file, nothing in an image |
-| Supply chain | Immutable image tags, `provenance: true` attestations, `pnpm audit`, Semgrep, gitleaks, Dependabot, non-root containers (including the migrator), `--frozen-lockfile` everywhere |
-| Access | GitHub OIDC — no AWS keys. Separate build and deploy roles. The production deploy role is only assumable from a job that has entered the `production` environment, which requires the approval |
-| Change control | Branch protection on `main`, required reviews, required checks, and a required reviewer on production deployments |
+| Layer          | Control                                                                                                                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Transport      | TLS at the ALB with an ACM certificate; 80 redirects to 443; HSTS from helmet                                                                                                                   |
+| Application    | helmet, a CORS allow-list naming one origin, RFC 9457 problem responses that leak no internals, per-IP and per-dealer rate limits on the phone-reveal and enquiry paths                         |
+| Identity       | Google OIDC for dealers, Argon2id for the one admin account, opaque revocable sessions, `HttpOnly`+`Secure`+`SameSite=Lax` cookies, host-only per environment                                   |
+| Tenancy        | `dealerId` as a first-class column on every dealer-owned table, `withTenant` issuing `SET LOCAL app.dealer_id`, and a repository signature convention that makes an unscoped query a type error |
+| Secrets        | SSM SecureStrings, per environment, read by the task's execution role. Nothing in git, nothing in a workflow file, nothing in an image                                                          |
+| Supply chain   | Immutable image tags, `provenance: true` attestations, `pnpm audit`, Semgrep, gitleaks, Dependabot, non-root containers (including the migrator), `--frozen-lockfile` everywhere                |
+| Access         | GitHub OIDC — no AWS keys. Separate build and deploy roles. The production deploy role is only assumable from a job that has entered the `production` environment, which requires the approval  |
+| Change control | Branch protection on `main`, required reviews, required checks, and a required reviewer on production deployments                                                                               |
 
 The two known gaps, stated rather than buried: the rate limiter is in-process
 (so it counts per task — correct today at one API task, and the reason a Redis

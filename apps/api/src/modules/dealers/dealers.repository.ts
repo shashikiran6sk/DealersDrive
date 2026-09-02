@@ -84,7 +84,10 @@ export function createDealersRepository(prisma: PrismaClient) {
       });
     },
 
-    async deleteDocument(dealerId: string, type: Prisma.DealerDocumentUncheckedCreateInput['type']) {
+    async deleteDocument(
+      dealerId: string,
+      type: Prisma.DealerDocumentUncheckedCreateInput['type'],
+    ) {
       const result = await prisma.dealerDocument.updateMany({
         where: { dealerId, type },
         data: { status: 'REQUIRED', mediaId: null, fileName: null, rejectionReason: null },

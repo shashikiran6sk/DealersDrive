@@ -15,19 +15,19 @@ picture, and the day you write code for the first time.
 There is also a specific thing to notice: the **public read path is completely
 different from the write path**. A buyer's search does not join five tables — it
 reads one denormalized table called `listing_search`. You are not expected to
-understand *why* today (that is Day 13). You are expected to *see* it, so that
+understand _why_ today (that is Day 13). You are expected to _see_ it, so that
 Day 13 lands on something you have already met.
 
 ---
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 24, Journey 1** — A buyer searches for a car | 25 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 18.3, 18.4** — a public page in full, and why they are server-rendered | 25 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 12.1, 12.2** — the one visibility rule and its truth table | 15 |
-| `docs/API-SPEC.md` | the `GET /v1/vehicles` section only | 15 |
+| Source                        | Sections                                                                      | ~min |
+| ----------------------------- | ----------------------------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 24, Journey 1** — A buyer searches for a car                           | 25   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 18.3, 18.4** — a public page in full, and why they are server-rendered | 25   |
+| `docs/ENGINEER-ONBOARDING.md` | **Part 12.1, 12.2** — the one visibility rule and its truth table             | 15   |
+| `docs/API-SPEC.md`            | the `GET /v1/vehicles` section only                                           | 15   |
 
 ---
 
@@ -35,17 +35,17 @@ Day 13 lands on something you have already met.
 
 This is one request, top to bottom, across both applications.
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/web/src/app/(public)/cars/page.tsx` | A Server Component. It reads `searchParams` and `await`s data. **There is no `useEffect`, no loading spinner, no client fetch** |
-| 2 | `apps/web/src/lib/api.ts` | `apiGet` — how the Next server calls the API. Note the caching logic and *why the session cookie is only forwarded on uncached requests* |
-| 3 | `apps/api/src/modules/search/search.routes.ts` | The endpoint that answers |
-| 4 | `packages/contracts/src/public.ts` | Find `VehicleQuery`. This is the shape both sides agree on |
-| 5 | `apps/api/src/modules/search/search.service.ts` | The orchestration. Still no `req`/`res` |
-| 6 | `apps/api/src/modules/search/search.repository.ts` | **The interesting one.** Read the file's opening comment about `listing_search` |
-| 7 | `apps/api/src/modules/search/search.mapper.ts` | Database row → API DTO. The boundary where `BigInt` paise become numbers |
-| 8 | `apps/web/src/components/vehicle/vehicle-card.tsx` | Where the DTO becomes pixels |
-| 9 | `apps/api/src/platform/media/urls.ts` | How an image URL is built. Note it is by **media id and width**, never by storage key |
+| #   | File                                               | What to look for                                                                                                                         |
+| --- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/web/src/app/(public)/cars/page.tsx`          | A Server Component. It reads `searchParams` and `await`s data. **There is no `useEffect`, no loading spinner, no client fetch**          |
+| 2   | `apps/web/src/lib/api.ts`                          | `apiGet` — how the Next server calls the API. Note the caching logic and _why the session cookie is only forwarded on uncached requests_ |
+| 3   | `apps/api/src/modules/search/search.routes.ts`     | The endpoint that answers                                                                                                                |
+| 4   | `packages/contracts/src/public.ts`                 | Find `VehicleQuery`. This is the shape both sides agree on                                                                               |
+| 5   | `apps/api/src/modules/search/search.service.ts`    | The orchestration. Still no `req`/`res`                                                                                                  |
+| 6   | `apps/api/src/modules/search/search.repository.ts` | **The interesting one.** Read the file's opening comment about `listing_search`                                                          |
+| 7   | `apps/api/src/modules/search/search.mapper.ts`     | Database row → API DTO. The boundary where `BigInt` paise become numbers                                                                 |
+| 8   | `apps/web/src/components/vehicle/vehicle-card.tsx` | Where the DTO becomes pixels                                                                                                             |
+| 9   | `apps/api/src/platform/media/urls.ts`              | How an image URL is built. Note it is by **media id and width**, never by storage key                                                    |
 
 ---
 
@@ -57,15 +57,18 @@ This is one request, top to bottom, across both applications.
 that the filters are in the URL.
 
 **Layer 2 — the API.**
+
 ```bash
 curl -s "http://localhost:4000/v1/vehicles?city=vellore&limit=3" | jq '.data[0]'
 ```
 
 **Layer 3 — the SQL.** Set `LOG_LEVEL=debug` in `.env` and restart, or open a
 `psql` session and run the query yourself:
+
 ```bash
 docker compose exec postgres psql -U dealersdrive -d dealersdrive
 ```
+
 ```sql
 SELECT listing_id, title, price_paise, city_slug, dealer_name
 FROM listing_search
@@ -75,12 +78,14 @@ LIMIT 3;
 ```
 
 **Layer 4 — the plan.**
+
 ```sql
 EXPLAIN ANALYZE
 SELECT * FROM listing_search WHERE city_slug = 'vellore' ORDER BY price_paise LIMIT 3;
 ```
+
 Look for `Index Scan using listing_search_city_price`. That index exists
-*because* this query exists. Day 11 explains how to read the rest of the plan.
+_because_ this query exists. Day 11 explains how to read the rest of the plan.
 
 ### 4.2 Prove the visibility rule with your own hands
 
@@ -125,6 +130,7 @@ Add "newest first" to the search toolbar, wired through `VehicleQuery` and the
 repository's `ORDER BY`.
 
 Then:
+
 ```bash
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
@@ -148,23 +154,23 @@ re-read.
 ## 5. Prove you understood it — Week 1 checkpoint
 
 > **Say this out loud, to another person, without notes:**
-> *"A buyer opens `/cars?city=vellore`. Describe everything that happens, from
-> DNS to the rendered HTML."*
+> _"A buyer opens `/cars?city=vellore`. Describe everything that happens, from
+> DNS to the rendered HTML."_
 
 Supporting questions:
 
 1. Why is the search page a Server Component rather than a client component with
-   `useEffect`? → *Part 18.4*
-2. Why are the filters in the URL rather than in React state? → *Part 18.4*
+   `useEffect`? → _Part 18.4_
+2. Why are the filters in the URL rather than in React state? → _Part 18.4_
 3. Why does the public read path query `listing_search` instead of joining
-   `listings`, `vehicles`, `dealers` and `cities`? → *Part 12.5*
-4. What are the exact conditions for a car to be publicly visible? → *Part 12.1*
-5. Why does `lib/api.ts` refuse to attach the session cookie to a *cached*
-   request? → *`lib/api.ts` doc comment* — **this one is a data-breach question,
+   `listings`, `vehicles`, `dealers` and `cities`? → _Part 12.5_
+4. What are the exact conditions for a car to be publicly visible? → _Part 12.1_
+5. Why does `lib/api.ts` refuse to attach the session cookie to a _cached_
+   request? → _`lib/api.ts` doc comment_ — **this one is a data-breach question,
    not a performance one**
-6. Where does a price stop being `BigInt` paise and become a formatted string? → *`search.mapper.ts`*
+6. Where does a price stop being `BigInt` paise and become a formatted string? → _`search.mapper.ts`_
 7. Why is an image URL built from a media id and a width rather than a storage
-   key? → *`platform/media/urls.ts`*
+   key? → _`platform/media/urls.ts`_
 
 ---
 
@@ -172,7 +178,7 @@ Supporting questions:
 
 - **`.strict()` rejects `undefined`.** An action with no input must send `{}`,
   not nothing. `lib/api.ts` defaults non-DELETE bodies to `{}` for exactly this
-  reason. Bypassing it silently 400s — and once made admin *Approve* do nothing.
+  reason. Bypassing it silently 400s — and once made admin _Approve_ do nothing.
 - **Never hard-code a marketplace count.** Rule 6. Every count is derived from
   `listing_search`.
 - **Tailwind v4 arbitrary values** are `bg-(--var)`, not the v3 `bg-[--var]`.

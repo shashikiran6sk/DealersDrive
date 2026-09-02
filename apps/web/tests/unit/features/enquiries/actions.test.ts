@@ -154,7 +154,10 @@ describe('when the API refuses', () => {
   });
 
   it('falls back to the title when there is no detail', async () => {
-    respondWith({ type: 'x', title: 'Forbidden', status: 403, code: 'FORBIDDEN', traceId: 't' }, 403);
+    respondWith(
+      { type: 'x', title: 'Forbidden', status: 403, code: 'FORBIDDEN', traceId: 't' },
+      403,
+    );
 
     expect((await updateEnquiryStatusAction('e1', { status: 'CLOSED' })).message).toBe('Forbidden');
   });

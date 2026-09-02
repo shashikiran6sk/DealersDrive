@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cookieJar } from '../../setup.js';
-import { currentAdmin, currentSession, destinationFor, hasSession } from '../../../src/lib/session.js';
+import {
+  currentAdmin,
+  currentSession,
+  destinationFor,
+  hasSession,
+} from '../../../src/lib/session.js';
 
 /**
  * Who the request belongs to, asked two different ways — and the difference

@@ -72,7 +72,8 @@ export function SavedCarsProvider({ children }: { children: ReactNode }) {
       count: ids.length,
       hydrated,
       isSaved: (id) => ids.includes(id),
-      toggle: (id) => persist(ids.includes(id) ? ids.filter((entry) => entry !== id) : [...ids, id]),
+      toggle: (id) =>
+        persist(ids.includes(id) ? ids.filter((entry) => entry !== id) : [...ids, id]),
       clear: () => persist([]),
       prune: (gone) => {
         if (gone.length === 0) return;

@@ -74,7 +74,10 @@ const GSTIN = z
   .string()
   .trim()
   .toUpperCase()
-  .regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/, 'GSTIN must be 15 characters.');
+  .regex(
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/,
+    'GSTIN must be 15 characters.',
+  );
 
 const PAN = z
   .string()
@@ -112,7 +115,11 @@ export const UpdateDealerInput = z
         line: z.string().trim().max(200).optional(),
         cityId: Uuid.optional(),
         state: z.string().trim().max(60).optional(),
-        pincode: z.string().trim().regex(/^\d{6}$/, 'Pincode must be 6 digits.').optional(),
+        pincode: z
+          .string()
+          .trim()
+          .regex(/^\d{6}$/, 'Pincode must be 6 digits.')
+          .optional(),
       })
       .strict()
       .optional(),
@@ -296,7 +303,11 @@ export const CreateVehicleInput = z
      * it is merely described.
      */
     variantId: Uuid,
-    year: z.number().int().min(1950).max(new Date().getFullYear() + 1),
+    year: z
+      .number()
+      .int()
+      .min(1950)
+      .max(new Date().getFullYear() + 1),
     fuel: FuelType,
     transmission: Transmission,
     bodyType: BodyType,
@@ -320,7 +331,12 @@ export const UpdateVehicleInput = z
     makeId: Uuid.optional(),
     modelId: Uuid.optional(),
     variantId: Uuid.optional(),
-    year: z.number().int().min(1950).max(new Date().getFullYear() + 1).optional(),
+    year: z
+      .number()
+      .int()
+      .min(1950)
+      .max(new Date().getFullYear() + 1)
+      .optional(),
     fuel: FuelType.optional(),
     transmission: Transmission.optional(),
     bodyType: BodyType.optional(),
@@ -584,9 +600,7 @@ export const MediaCommitResponse = z.object({
 export type MediaCommitResponse = z.infer<typeof MediaCommitResponse>;
 
 /** The full ordered array, always. Never a partial swap (§12.2). */
-export const ReorderMediaInput = z
-  .object({ mediaIds: z.array(Uuid).min(1).max(40) })
-  .strict();
+export const ReorderMediaInput = z.object({ mediaIds: z.array(Uuid).min(1).max(40) }).strict();
 export type ReorderMediaInput = z.infer<typeof ReorderMediaInput>;
 
 // ─────────── C15–C17 enquiries ─────────────────────────────────────────────
@@ -628,9 +642,7 @@ export const EnquiryListResponse = z.object({
 export type EnquiryListResponse = z.infer<typeof EnquiryListResponse>;
 
 export const EnquiryCountsResponse = z.object({
-  tabs: z.array(
-    z.object({ status: EnquiryStatus, label: z.string(), count: z.number().int() }),
-  ),
+  tabs: z.array(z.object({ status: EnquiryStatus, label: z.string(), count: z.number().int() })),
   total: z.number().int(),
 });
 export type EnquiryCountsResponse = z.infer<typeof EnquiryCountsResponse>;
@@ -824,7 +836,10 @@ export const CreatePhotoRequestInput = z
     vehicleCount: z.number().int().min(1).max(50),
     address: z.string().trim().min(5).max(300),
     contactName: z.string().trim().min(2).max(80),
-    contactPhone: z.string().trim().regex(/^(\+?91[- ]?)?[6-9]\d{9}$/),
+    contactPhone: z
+      .string()
+      .trim()
+      .regex(/^(\+?91[- ]?)?[6-9]\d{9}$/),
     preferredDate: z.string().optional(),
     notes: z.string().trim().max(500).optional(),
   })

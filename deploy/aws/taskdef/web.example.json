@@ -31,7 +31,9 @@
         { "name": "APP_ENV", "value": "dev" },
         { "name": "PORT", "value": "3000" },
         { "name": "WEB_BASE_URL", "value": "https://dev.dealers-drive.com" },
-        { "name": "API_BASE_URL", "value": "http://dd-api-dev:4000" }
+        { "name": "API_BASE_URL", "value": "http://dd-api-dev:4000" },
+        { "name": "NEXT_TELEMETRY_DISABLED", "value": "1" },
+        { "name": "NODE_OPTIONS", "value": "--max-old-space-size=768" }
       ],
       "healthCheck": {
         "command": [

@@ -446,7 +446,10 @@ describe('revealContactAction', () => {
   });
 
   it('falls back to the title when an error carries no detail', async () => {
-    respondWith({ type: 'x', title: 'Not found', status: 404, code: 'NOT_FOUND', traceId: 't' }, 404);
+    respondWith(
+      { type: 'x', title: 'Not found', status: 404, code: 'NOT_FOUND', traceId: 't' },
+      404,
+    );
 
     expect(await revealContactAction(VEHICLE)).toEqual({ status: 'error', message: 'Not found' });
   });

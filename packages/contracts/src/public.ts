@@ -26,17 +26,32 @@ const splitCsv = (value: string): string[] =>
 const csvSlugs = z
   .string()
   .transform(splitCsv)
-  .pipe(z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1).max(20));
+  .pipe(
+    z
+      .array(z.string().regex(/^[a-z0-9-]+$/))
+      .min(1)
+      .max(20),
+  );
 
 const csvWords = z
   .string()
   .transform(splitCsv)
-  .pipe(z.array(z.string().regex(/^[a-z_]+$/)).min(1).max(20));
+  .pipe(
+    z
+      .array(z.string().regex(/^[a-z_]+$/))
+      .min(1)
+      .max(20),
+  );
 
 const csvInts = z
   .string()
   .transform(splitCsv)
-  .pipe(z.array(z.string().regex(/^[1-9]$/)).min(1).max(9))
+  .pipe(
+    z
+      .array(z.string().regex(/^[1-9]$/))
+      .min(1)
+      .max(9),
+  )
   .transform((values) => values.map(Number));
 
 export const SortOption = z.enum([
@@ -56,7 +71,10 @@ export type SortOption = z.infer<typeof SortOption>;
  */
 export const VehicleQuery = z
   .object({
-    city: z.string().regex(/^[a-z0-9-]+$/).optional(),
+    city: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
     q: z.string().max(120).optional(),
     make: csvSlugs.optional(),
     model: csvSlugs.optional(),
@@ -73,8 +91,14 @@ export const VehicleQuery = z
     seats: z.coerce.number().int().min(2).max(10).optional(),
     airbagsMin: z.coerce.number().int().min(0).max(12).optional(),
     color: csvSlugs.optional(),
-    rtoState: z.string().regex(/^[A-Za-z]{2}$/).optional(),
-    rto: z.string().regex(/^[A-Za-z]{2}-?\d{1,2}$/).optional(),
+    rtoState: z
+      .string()
+      .regex(/^[A-Za-z]{2}$/)
+      .optional(),
+    rto: z
+      .string()
+      .regex(/^[A-Za-z]{2}-?\d{1,2}$/)
+      .optional(),
     dealer: csvSlugs.optional(),
     sort: SortOption.default('relevance'),
     page: z.coerce.number().int().min(1).max(40).default(1),
@@ -288,7 +312,10 @@ export type RevealContactResponse = z.infer<typeof RevealContactResponse>;
 // ─────────── A8–A11 dealers ────────────────────────────────────────────────
 export const DealerDirectoryQuery = z
   .object({
-    city: z.string().regex(/^[a-z0-9-]+$/).optional(),
+    city: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
     q: z.string().max(120).optional(),
     page: z.coerce.number().int().min(1).max(40).default(1),
     limit: z.coerce.number().int().min(1).max(48).default(24),
@@ -480,7 +507,10 @@ export type PublicConfig = z.infer<typeof PublicConfig>;
 export const CreateEnquiryInput = z
   .object({
     vehicleId: Uuid.optional(),
-    dealerSlug: z.string().regex(/^[a-z0-9-]+$/).optional(),
+    dealerSlug: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
     name: z.string().trim().min(2, 'Tell us your name.').max(80),
     phone: z
       .string()
@@ -494,10 +524,10 @@ export const CreateEnquiryInput = z
     website: z.string().max(200).optional(),
   })
   .strict()
-  .refine(
-    (value) => Boolean(value.vehicleId) !== Boolean(value.dealerSlug),
-    { message: 'Provide exactly one of vehicleId or dealerSlug.', path: ['vehicleId'] },
-  );
+  .refine((value) => Boolean(value.vehicleId) !== Boolean(value.dealerSlug), {
+    message: 'Provide exactly one of vehicleId or dealerSlug.',
+    path: ['vehicleId'],
+  });
 export type CreateEnquiryInput = z.infer<typeof CreateEnquiryInput>;
 
 export const EnquiryCreatedResponse = z.object({

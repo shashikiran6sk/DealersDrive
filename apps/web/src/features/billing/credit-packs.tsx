@@ -41,7 +41,10 @@ export function CreditPacks({ packs }: { packs: CreditPacksResponse }) {
         <Banner tone={result.ok ? 'ok' : 'err'} title={result.ok ? 'Credits added' : undefined}>
           {result.message}
           {result.invoiceNumber ? (
-            <> Invoice <span className="font-mono">{result.invoiceNumber}</span>.</>
+            <>
+              {' '}
+              Invoice <span className="font-mono">{result.invoiceNumber}</span>.
+            </>
           ) : null}
         </Banner>
       ) : null}
@@ -50,10 +53,7 @@ export function CreditPacks({ packs }: { packs: CreditPacksResponse }) {
         {packs.data.map((pack) => (
           <div
             key={pack.id}
-            className={cn(
-              'card gap-[6px] p-[14px]',
-              pack.highlighted && 'border-(--color-accent)',
-            )}
+            className={cn('card gap-[6px] p-[14px]', pack.highlighted && 'border-(--color-accent)')}
           >
             {pack.badge ? (
               <Tag variant="accent" className="self-start text-[10px]">

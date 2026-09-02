@@ -69,9 +69,7 @@ export const adminDocs: ModuleDocs = {
       audience: 'admin',
       permission: 'admin:dealer:approve',
       params: 'IdParam',
-      responses: [
-        { status: 200, description: 'The dealership.', schema: 'AdminDealerDetail' },
-      ],
+      responses: [{ status: 200, description: 'The dealership.', schema: 'AdminDealerDetail' }],
       errors: [400, 401, 403, 404],
     },
     {
@@ -130,9 +128,7 @@ export const adminDocs: ModuleDocs = {
         description: 'Shown to the dealer. Minimum six characters.',
         example: { reason: 'The GST certificate does not match the legal name on the PAN card.' },
       },
-      responses: [
-        { status: 200, description: 'Rejected.', schema: 'DealerModerationResponse' },
-      ],
+      responses: [{ status: 200, description: 'Rejected.', schema: 'DealerModerationResponse' }],
       errors: [400, 401, 403, 404, 409],
     },
     {
@@ -142,7 +138,7 @@ export const adminDocs: ModuleDocs = {
       tag: 'Admin',
       summary: 'Suspend a dealership',
       description:
-        '**Pulls every one of the dealership\'s cars out of the catalogue at once**, because ' +
+        "**Pulls every one of the dealership's cars out of the catalogue at once**, because " +
         'public visibility requires `dealer.status = ACTIVE` as well as an approved listing. ' +
         'The dealer keeps read access to their own console — they need to see why — but can ' +
         'publish nothing.\n\n' +
@@ -157,7 +153,11 @@ export const adminDocs: ModuleDocs = {
         example: { reason: 'Three buyer reports of misrepresented kilometres. Under review.' },
       },
       responses: [
-        { status: 200, description: 'Suspended, and de-listed.', schema: 'DealerModerationResponse' },
+        {
+          status: 200,
+          description: 'Suspended, and de-listed.',
+          schema: 'DealerModerationResponse',
+        },
       ],
       errors: [400, 401, 403, 404],
     },
@@ -181,7 +181,11 @@ export const adminDocs: ModuleDocs = {
         example: { note: 'Reports resolved; dealer corrected the two listings.' },
       },
       responses: [
-        { status: 200, description: 'Reinstated, and re-listed.', schema: 'DealerModerationResponse' },
+        {
+          status: 200,
+          description: 'Reinstated, and re-listed.',
+          schema: 'DealerModerationResponse',
+        },
       ],
       errors: [400, 401, 403, 404],
     },
@@ -198,7 +202,7 @@ export const adminDocs: ModuleDocs = {
         'reason is not something the API will do.\n\n' +
         'Cannot drive a balance below zero: the ledger floors at zero and returns 422 ' +
         '`INSUFFICIENT_CREDITS`.\n\n' +
-        '`label` is shown verbatim in the dealer\'s own credit history, so write it for them.\n\n' +
+        "`label` is shown verbatim in the dealer's own credit history, so write it for them.\n\n" +
         'SUPER_ADMIN only (`admin:credit:grant`).',
       audience: 'admin',
       permission: 'admin:credit:grant',
@@ -231,15 +235,13 @@ export const adminDocs: ModuleDocs = {
       summary: 'Verify a KYC document',
       description:
         'Marks one document verified. `allVerified` in the response says whether that was the ' +
-        'last one outstanding, which is the moderator\'s cue that the dealership can now be ' +
+        "last one outstanding, which is the moderator's cue that the dealership can now be " +
         'approved.\n\n' +
         'Takes no body.',
       audience: 'admin',
       permission: 'admin:document:review',
       params: 'IdParam',
-      responses: [
-        { status: 200, description: 'Verified.', schema: 'VerifyDocumentResponse' },
-      ],
+      responses: [{ status: 200, description: 'Verified.', schema: 'VerifyDocumentResponse' }],
       errors: [400, 401, 403, 404, 409],
     },
     {
@@ -259,9 +261,7 @@ export const adminDocs: ModuleDocs = {
         description: 'Shown to the dealer.',
         example: { reason: 'The address proof is older than three months. Send a recent bill.' },
       },
-      responses: [
-        { status: 200, description: 'Rejected.', schema: 'VerifyDocumentResponse' },
-      ],
+      responses: [{ status: 200, description: 'Rejected.', schema: 'VerifyDocumentResponse' }],
       errors: [400, 401, 403, 404, 409],
     },
     {
@@ -289,16 +289,14 @@ export const adminDocs: ModuleDocs = {
       tag: 'Admin',
       summary: 'One listing, with review context',
       description:
-        'The review screen: full-size photos, the specification table, the dealer\'s standing, ' +
+        "The review screen: full-size photos, the specification table, the dealer's standing, " +
         'and `flags[]` — automated checks such as too few photos, a price outside the band for ' +
         'the model, or a phone number in the description.\n\n' +
         '**Flags are advisory.** Nothing here auto-rejects anything; a human decides.',
       audience: 'admin',
       permission: 'admin:listing:moderate',
       params: 'IdParam',
-      responses: [
-        { status: 200, description: 'The listing.', schema: 'AdminListingDetail' },
-      ],
+      responses: [{ status: 200, description: 'The listing.', schema: 'AdminListingDetail' }],
       errors: [400, 401, 403, 404],
     },
     {
@@ -419,7 +417,7 @@ export const adminDocs: ModuleDocs = {
         'Removes an already-published listing from the catalogue — the lever for a listing ' +
         'that turns out to be fraudulent after approval.\n\n' +
         '`refundCredit` is an explicit decision, defaulting to **false**: a takedown for the ' +
-        'dealer\'s own misconduct should not also refund them. When true, a `REVERSAL` +1 row ' +
+        "dealer's own misconduct should not also refund them. When true, a `REVERSAL` +1 row " +
         'is written.\n\n' +
         'Works from APPROVED, PENDING_REVIEW or CHANGES_REQUESTED.',
       audience: 'admin',
@@ -428,7 +426,10 @@ export const adminDocs: ModuleDocs = {
       requestBody: {
         schema: 'TakedownInput',
         description: 'Why, and whether to refund the credit.',
-        example: { reason: 'Duplicate of another live listing from the same dealer.', refundCredit: true },
+        example: {
+          reason: 'Duplicate of another live listing from the same dealer.',
+          refundCredit: true,
+        },
       },
       responses: [
         { status: 200, description: 'Removed from the catalogue.', schema: 'TakedownResponse' },
@@ -477,7 +478,7 @@ export const adminDocs: ModuleDocs = {
       summary: 'Change one configuration value',
       description:
         'Sets one key. `value` is a number, boolean, string or string array, and is validated ' +
-        'against the key\'s declared type — a string where a number belongs is a 422, not a ' +
+        "against the key's declared type — a string where a number belongs is a 422, not a " +
         'silently broken platform.\n\n' +
         'Audit-logged with the before and after values. SUPER_ADMIN only ' +
         '(`admin:config:write`).',
@@ -490,7 +491,11 @@ export const adminDocs: ModuleDocs = {
         example: { value: 8 },
       },
       responses: [
-        { status: 200, description: 'Updated. Returns the full configuration.', schema: 'ConfigResponse' },
+        {
+          status: 200,
+          description: 'Updated. Returns the full configuration.',
+          schema: 'ConfigResponse',
+        },
       ],
       errors: [400, 401, 403, 404, 422],
     },

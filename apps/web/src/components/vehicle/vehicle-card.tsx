@@ -43,7 +43,12 @@ export function VehicleCard({
         {showSave && !sold ? <SaveButton vehicleId={vehicle.id} /> : null}
       </div>
 
-      <div className={cn('flex flex-col p-[12px_13px_14px]', variant === 'compact' ? 'gap-2' : 'gap-[9px]')}>
+      <div
+        className={cn(
+          'flex flex-col p-[12px_13px_14px]',
+          variant === 'compact' ? 'gap-2' : 'gap-[9px]',
+        )}
+      >
         {sold ? (
           // A span, not a disabled link: there is no href to give it, and an
           // anchor without one is still focusable and still reads as a link.
@@ -132,7 +137,10 @@ function VehicleRow({ vehicle }: { vehicle: VehicleCardDto }) {
                 {vehicle.title}
               </span>
             ) : (
-              <Link href={`/car/${vehicle.slug}`} className="font-heading text-[19px] font-semibold">
+              <Link
+                href={`/car/${vehicle.slug}`}
+                className="font-heading text-[19px] font-semibold"
+              >
                 {vehicle.title}
               </Link>
             )}
@@ -158,10 +166,7 @@ function VehicleRow({ vehicle }: { vehicle: VehicleCardDto }) {
               {vehicle.soldLabel ?? 'Sold'}
             </span>
           ) : (
-            <Link
-              href={`/car/${vehicle.slug}`}
-              className="btn btn-primary ml-auto text-[12px]"
-            >
+            <Link href={`/car/${vehicle.slug}`} className="btn btn-primary ml-auto text-[12px]">
               Enquire
             </Link>
           )}

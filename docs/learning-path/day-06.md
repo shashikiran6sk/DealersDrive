@@ -2,7 +2,7 @@
 
 > **Track:** Week 2 · Identity
 > **Time:** ~3.5 hours · **Prerequisite:** Week 1
-> **Goal in one sentence:** explain everything that happens *before* your code
+> **Goal in one sentence:** explain everything that happens _before_ your code
 > runs, and why this system serves the API and the web app on one hostname.
 
 ---
@@ -18,7 +18,7 @@ try to learn OAuth without this foundation. Today is that foundation. It is
 deliberately light on repository code and heavy on the substrate.
 
 There is also one design decision to carry away: **this system serves
-`www.dealers-drive.com` and its API on the *same origin*, split by path at the
+`www.dealers-drive.com` and its API on the _same origin_, split by path at the
 load balancer.** By the end of today you should be able to say why that is a
 security decision rather than a convenience.
 
@@ -26,27 +26,27 @@ security decision rather than a convenience.
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34, section A** — A1 through A7, all of it | 45 |
-| `docs/ENGINEER-ONBOARDING.md` | **§23.2** — "Why one hostname per environment, not `api.` and `www.`" | 15 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 19.5, 19.6** — CORS and CSRF as this system handles them | 20 |
-| [MDN — Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) | the whole page | 15 |
-| [MDN — CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) | up to and including "Preflighted requests" | 25 |
+| Source                                                                                               | Sections                                                              | ~min |
+| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md`                                                                        | **Part 34, section A** — A1 through A7, all of it                     | 45   |
+| `docs/ENGINEER-ONBOARDING.md`                                                                        | **§23.2** — "Why one hostname per environment, not `api.` and `www.`" | 15   |
+| `docs/ENGINEER-ONBOARDING.md`                                                                        | **Part 19.5, 19.6** — CORS and CSRF as this system handles them       | 20   |
+| [MDN — Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) | the whole page                                                        | 15   |
+| [MDN — CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)                                 | up to and including "Preflighted requests"                            | 25   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/api/src/server.ts` | The `cors()` call. `origin: env.webOrigins` — an allow-list, **never `*`** — and `credentials: true` |
-| 2 | `apps/api/src/config/env.ts` | `WEB_ORIGIN`, and the `webOrigins` getter that splits it on commas |
-| 3 | `apps/api/src/server.ts` | `app.set('trust proxy', 1)`. One line, and every per-IP rate limit depends on it |
-| 4 | `apps/api/src/middleware/rate-limit.ts` | See `req.ip` being used as the bucket key. Now the line above matters |
-| 5 | `deploy/aws/README.md` | §8 (Load balancer) — the listener rule table. **Read the note about `/api/docs*` vs `/api/*`** |
-| 6 | `deploy/aws/README.md` | §10 (DNS) — and the warning about proxying breaking `trust proxy 1` |
-| 7 | `apps/api/src/modules/media/media.routes.ts` | Find `Cross-Origin-Resource-Policy: cross-origin` and read the comment. A real CORS-adjacent bug, already paid for |
+| #   | File                                         | What to look for                                                                                                   |
+| --- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 1   | `apps/api/src/server.ts`                     | The `cors()` call. `origin: env.webOrigins` — an allow-list, **never `*`** — and `credentials: true`               |
+| 2   | `apps/api/src/config/env.ts`                 | `WEB_ORIGIN`, and the `webOrigins` getter that splits it on commas                                                 |
+| 3   | `apps/api/src/server.ts`                     | `app.set('trust proxy', 1)`. One line, and every per-IP rate limit depends on it                                   |
+| 4   | `apps/api/src/middleware/rate-limit.ts`      | See `req.ip` being used as the bucket key. Now the line above matters                                              |
+| 5   | `deploy/aws/README.md`                       | §8 (Load balancer) — the listener rule table. **Read the note about `/api/docs*` vs `/api/*`**                     |
+| 6   | `deploy/aws/README.md`                       | §10 (DNS) — and the warning about proxying breaking `trust proxy 1`                                                |
+| 7   | `apps/api/src/modules/media/media.routes.ts` | Find `Cross-Origin-Resource-Policy: cross-origin` and read the comment. A real CORS-adjacent bug, already paid for |
 
 ---
 
@@ -87,7 +87,7 @@ curl -si -X OPTIONS http://localhost:4000/v1/vehicles \
 
 The second returns no `Access-Control-Allow-Origin`. **The browser is what
 enforces this** — `curl` still received a response. That distinction matters:
-CORS protects *users of browsers*, not your server. Your server is protected by
+CORS protects _users of browsers_, not your server. Your server is protected by
 authentication.
 
 ### 4.4 Prove `*` and credentials are incompatible
@@ -96,7 +96,7 @@ Temporarily set `origin: '*'` in `server.ts`'s `cors()` call while keeping
 `credentials: true`. Restart, retry the preflight, and read the browser console
 on a real page. The browser refuses. Restore the file.
 
-That refusal is a *specification rule*, not a bug: a wildcard plus credentials
+That refusal is a _specification rule_, not a bug: a wildcard plus credentials
 would let any site on the internet make authenticated requests as you.
 
 ### 4.5 Reason about the hostname layout on paper
@@ -129,16 +129,16 @@ photo upload and the enquiry inbox with a 404 that looks like an application bug
 
 ## 5. Prove you understood it
 
-1. What exactly is an *origin*? Are `http://a.com` and `https://a.com` the same
-   one? → *§34-A5*
-2. What does the same-origin policy prevent, and who enforces it? → *§34-A5*
-3. When does a browser send a CORS preflight, and what is it asking? → *§34-A6*
-4. Why can `Access-Control-Allow-Origin: *` not be combined with credentials? → *§34-A6*
+1. What exactly is an _origin_? Are `http://a.com` and `https://a.com` the same
+   one? → _§34-A5_
+2. What does the same-origin policy prevent, and who enforces it? → _§34-A5_
+3. When does a browser send a CORS preflight, and what is it asking? → _§34-A6_
+4. Why can `Access-Control-Allow-Origin: *` not be combined with credentials? → _§34-A6_
 5. Where does TLS terminate in production, and what protects the traffic after
-   that point? → *§34-A3, §23.2*
-6. What does `trust proxy 1` do, and what breaks without it? → *§34-A7*
-7. Why is one hostname per environment a *security* decision? → *§23.2*
-8. Why is a TCP connection expensive enough to justify pooling? → *§34-A2*
+   that point? → _§34-A3, §23.2_
+6. What does `trust proxy 1` do, and what breaks without it? → _§34-A7_
+7. Why is one hostname per environment a _security_ decision? → _§23.2_
+8. Why is a TCP connection expensive enough to justify pooling? → _§34-A2_
 
 ---
 

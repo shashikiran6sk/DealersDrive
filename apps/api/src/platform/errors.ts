@@ -60,7 +60,10 @@ export class NotFoundError extends AppError {
   readonly code: string;
   readonly title = 'Not found';
 
-  constructor(detail = 'The requested resource does not exist.', options?: AppErrorOptions & { code?: string }) {
+  constructor(
+    detail = 'The requested resource does not exist.',
+    options?: AppErrorOptions & { code?: string },
+  ) {
     super(detail, options);
     this.code = options?.code ?? 'NOT_FOUND';
   }
@@ -72,7 +75,10 @@ export class UnauthorizedError extends AppError {
   readonly code: string;
   readonly title = 'Authentication required';
 
-  constructor(detail = 'You must be signed in to do that.', options?: AppErrorOptions & { code?: string }) {
+  constructor(
+    detail = 'You must be signed in to do that.',
+    options?: AppErrorOptions & { code?: string },
+  ) {
     super(detail, options);
     this.code = options?.code ?? 'NOT_AUTHENTICATED';
   }
@@ -84,7 +90,10 @@ export class ForbiddenError extends AppError {
   readonly code: string;
   readonly title = 'Forbidden';
 
-  constructor(detail = 'You do not have permission to do that.', options?: AppErrorOptions & { code?: string }) {
+  constructor(
+    detail = 'You do not have permission to do that.',
+    options?: AppErrorOptions & { code?: string },
+  ) {
     super(detail, options);
     this.code = options?.code ?? 'FORBIDDEN';
   }

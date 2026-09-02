@@ -14,7 +14,7 @@ it assumes is not allowed to read the parameter path it lives in.
                        ┌──────────────── one Application Load Balancer ─────────────────┐
   dev.dealers-drive.com├──/v1 /health /media /api/docs ─▶ tg-api-dev  ─▶ ECS  dd-api-dev │
                        └──everything else ──────────────▶ tg-web-dev  ─▶ ECS  dd-web-dev │
-                                                                                          
+
   www.dealers-drive.com├──/v1 /health /media ───────────▶ tg-api-prod ─▶ ECS  dd-api-prod │
                        └──everything else ──────────────▶ tg-web-prod ─▶ ECS  dd-web-prod │
      dealers-drive.com └──301 ─▶ www                                                      │
@@ -87,11 +87,11 @@ aws iam create-open-id-connect-provider \
 
 Two roles, because building and deploying are different privileges:
 
-| Role | Trusted for | May |
-| --- | --- | --- |
-| `dd-gha-ci` | `repo:$REPO:ref:refs/heads/main` | push to the three ECR repositories |
-| `dd-gha-deploy-dev` | `repo:$REPO:environment:dev` | update the dev services, run the dev migrate task |
-| `dd-gha-deploy-production` | `repo:$REPO:environment:production` | the same, for production only |
+| Role                       | Trusted for                         | May                                               |
+| -------------------------- | ----------------------------------- | ------------------------------------------------- |
+| `dd-gha-ci`                | `repo:$REPO:ref:refs/heads/main`    | push to the three ECR repositories                |
+| `dd-gha-deploy-dev`        | `repo:$REPO:environment:dev`        | update the dev services, run the dev migrate task |
+| `dd-gha-deploy-production` | `repo:$REPO:environment:production` | the same, for production only                     |
 
 The `environment:` subject is what makes the production role unusable outside a
 production deployment: GitHub only mints that token for a job that has entered
@@ -145,11 +145,11 @@ VPC=$(aws ec2 create-vpc --cidr-block 10.20.0.0/16 \
 
 Three security groups:
 
-| Group | Inbound | Why |
-| --- | --- | --- |
-| `dd-alb` | 80, 443 from `0.0.0.0/0` | the only thing on the internet |
+| Group    | Inbound                                     | Why                                     |
+| -------- | ------------------------------------------- | --------------------------------------- |
+| `dd-alb` | 80, 443 from `0.0.0.0/0`                    | the only thing on the internet          |
 | `dd-app` | 3000, 4000 from `dd-alb`; all from `dd-app` | tasks; the self-rule is Service Connect |
-| `dd-rds` | 5432 from `dd-app` | the database, and nothing else |
+| `dd-rds` | 5432 from `dd-app`                          | the database, and nothing else          |
 
 The database is never reachable from the internet, and never from a laptop. To
 open a psql session, use SSM Session Manager port-forwarding through a task —
@@ -208,10 +208,14 @@ Each bucket needs a CORS rule allowing `PUT` from its own environment's origin
 only:
 
 ```json
-[{ "AllowedOrigins": ["https://dev.dealers-drive.com"],
-   "AllowedMethods": ["PUT"],
-   "AllowedHeaders": ["content-type"],
-   "MaxAgeSeconds": 3600 }]
+[
+  {
+    "AllowedOrigins": ["https://dev.dealers-drive.com"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["content-type"],
+    "MaxAgeSeconds": 3600
+  }
+]
 ```
 
 ## 6. Secrets
@@ -285,13 +289,13 @@ nothing to serve an error page.
 
 Listener rules, lowest priority number first:
 
-| Priority | Condition | Action |
-| --- | --- | --- |
-| 10 | host `dev.$DOMAIN` · path `/v1/*` `/health/*` `/media/*` `/api/docs*` | forward `tg-api-dev` |
-| 20 | host `dev.$DOMAIN` | forward `tg-web-dev` |
-| 30 | host `www.$DOMAIN` · path `/v1/*` `/health/*` `/media/*` | forward `tg-api-prod` |
-| 40 | host `www.$DOMAIN` | forward `tg-web-prod` |
-| 50 | host `$DOMAIN` | redirect 301 → `https://www.$DOMAIN` |
+| Priority | Condition                                                             | Action                               |
+| -------- | --------------------------------------------------------------------- | ------------------------------------ |
+| 10       | host `dev.$DOMAIN` · path `/v1/*` `/health/*` `/media/*` `/api/docs*` | forward `tg-api-dev`                 |
+| 20       | host `dev.$DOMAIN`                                                    | forward `tg-web-dev`                 |
+| 30       | host `www.$DOMAIN` · path `/v1/*` `/health/*` `/media/*`              | forward `tg-api-prod`                |
+| 40       | host `www.$DOMAIN`                                                    | forward `tg-web-prod`                |
+| 50       | host `$DOMAIN`                                                        | redirect 301 → `https://www.$DOMAIN` |
 
 The API rule must come first, and it must name `/api/docs*` explicitly rather
 than `/api/*`: the web app's own BFF routes live under `/api/dealer/*` and
@@ -345,12 +349,12 @@ docs/DEPLOYMENT.md §C, not a bigger `desired-count`.
 
 ## 10. DNS
 
-| Name | Type | Value |
-| --- | --- | --- |
-| `$DOMAIN` | ALIAS / CNAME-flattened | the load balancer's DNS name |
-| `www` | CNAME | the load balancer's DNS name |
-| `dev` | CNAME | the load balancer's DNS name |
-| `media` | CNAME | the R2 public bucket domain (optional, for a CDN in front of photos) |
+| Name      | Type                    | Value                                                                |
+| --------- | ----------------------- | -------------------------------------------------------------------- |
+| `$DOMAIN` | ALIAS / CNAME-flattened | the load balancer's DNS name                                         |
+| `www`     | CNAME                   | the load balancer's DNS name                                         |
+| `dev`     | CNAME                   | the load balancer's DNS name                                         |
+| `media`   | CNAME                   | the R2 public bucket domain (optional, for a CDN in front of photos) |
 
 Route 53 with an ALIAS record is the AWS-native answer and costs $0.50/month
 per zone. Cloudflare DNS with CNAME flattening at the apex is free and is the
@@ -364,11 +368,11 @@ dealer phone numbers.
 
 **Environments** (Settings → Environments):
 
-| | `dev` | `production` |
-| --- | --- | --- |
-| Required reviewers | none | **you** (this is the manual gate) |
-| Deployment branches | `main` | `main` |
-| Secret `AWS_DEPLOY_ROLE_ARN` | `dd-gha-deploy-dev` | `dd-gha-deploy-production` |
+|                              | `dev`               | `production`                      |
+| ---------------------------- | ------------------- | --------------------------------- |
+| Required reviewers           | none                | **you** (this is the manual gate) |
+| Deployment branches          | `main`              | `main`                            |
+| Secret `AWS_DEPLOY_ROLE_ARN` | `dd-gha-deploy-dev` | `dd-gha-deploy-production`        |
 
 **Environment variables** (not secrets — none of these are sensitive):
 
@@ -404,10 +408,10 @@ rule you will wave through at 11pm.
 
 Two clients, one per environment, in the same Google Cloud project:
 
-| | dev | production |
-| --- | --- | --- |
-| Authorized origin | `https://dev.dealers-drive.com` | `https://www.dealers-drive.com` |
-| Redirect URI | `https://dev.dealers-drive.com/v1/auth/google/callback` | `https://www.dealers-drive.com/v1/auth/google/callback` |
+|                   | dev                                                     | production                                              |
+| ----------------- | ------------------------------------------------------- | ------------------------------------------------------- |
+| Authorized origin | `https://dev.dealers-drive.com`                         | `https://www.dealers-drive.com`                         |
+| Redirect URI      | `https://dev.dealers-drive.com/v1/auth/google/callback` | `https://www.dealers-drive.com/v1/auth/google/callback` |
 
 Character for character, `https`, no trailing slash. One client with both URIs
 registered would work and is the wrong answer: an OAuth client is only as

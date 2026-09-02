@@ -57,8 +57,7 @@ export default async function CarsPage({
     apiGet<CitiesResponse>('/v1/cities', { revalidate: 60 }),
   ]);
 
-  const cityName =
-    cities.data.find((entry) => entry.slug === params.city)?.name ?? 'Tamil Nadu';
+  const cityName = cities.data.find((entry) => entry.slug === params.city)?.name ?? 'Tamil Nadu';
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 pb-[60px] pt-[26px]">

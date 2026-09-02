@@ -20,11 +20,7 @@ export const metadata: Metadata = { title: 'Review listing' };
  * consequence of each decision is money, and it should be on screen when the
  * decision is made.
  */
-export default async function ReviewListingPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ReviewListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   let listing: AdminListingDetail;

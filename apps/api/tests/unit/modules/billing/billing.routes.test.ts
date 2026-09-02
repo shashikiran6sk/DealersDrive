@@ -19,7 +19,9 @@ import {
  * exactly the kind of mistake a route file makes silently.
  */
 
-const router = createBillingRouter({} as never, {} as never);
+const router = createBillingRouter({} as never, {} as never, () => (_req, _res, next) => {
+  next();
+});
 
 describe('the surface', () => {
   it('declares exactly the billing endpoints', () => {

@@ -1,9 +1,6 @@
 'use server';
 
-import {
-  UpdateEnquiryInput,
-  type UpdateEnquiryResponse,
-} from '@dealers-drive/contracts';
+import { UpdateEnquiryInput, type UpdateEnquiryResponse } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';

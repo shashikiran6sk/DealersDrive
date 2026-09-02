@@ -10,6 +10,7 @@ import type {
   EventBus,
   EventHandler,
 } from '../../../../src/platform/events/bus.js';
+import { createMemoryCache } from '../../../../src/platform/cache/memory.adapter.js';
 import { registerHandlers, registerSchedules } from '../../../../src/platform/jobs/handlers.js';
 import type { JobName, Queue } from '../../../../src/platform/jobs/queue.js';
 import type { MailMessage, SmsMessage } from '../../../../src/platform/notify/notify.port.js';
@@ -94,6 +95,7 @@ function setup(overrides: { prisma?: PrismaStub } = {}) {
   } as unknown as MediaService;
 
   const prisma = (overrides.prisma ?? {}) as unknown as PrismaClient;
+  const cache = createMemoryCache();
 
   const deps = {
     prisma,
@@ -113,10 +115,12 @@ function setup(overrides: { prisma?: PrismaStub } = {}) {
         return Promise.resolve();
       },
     },
+    cache,
   };
 
   return {
     deps,
+    cache,
     sent,
     mails,
     texts,
@@ -165,6 +169,7 @@ describe('registration', () => {
     // `media.gc-orphans` is scheduled but has no handler yet — an honest gap, and
     // one this assertion documents rather than hides.
     expect(handled).toEqual([
+      'cache.sweep-counters',
       'media.process',
       'search.index-listing',
       'search.remove-listing',
@@ -1011,7 +1016,7 @@ describe('the subscriptions', () => {
 });
 
 describe('registerSchedules', () => {
-  it('schedules the three nightly jobs', async () => {
+  it('schedules the nightly sweeps plus the hourly counter sweep', async () => {
     const schedules: { name: JobName; cron: string }[] = [];
     const queue = {
       schedule: (name: JobName, cron: string) => {
@@ -1026,6 +1031,10 @@ describe('registerSchedules', () => {
       { name: 'listings.expire-sweep', cron: '15 2 * * *' },
       { name: 'counters.reconcile', cron: '30 3 * * *' },
       { name: 'media.gc-orphans', cron: '0 3 * * *' },
+      // Hourly rather than nightly, and deliberately so: a busy day writes one
+      // rate-limit row per request, and a full day of them makes the sweep
+      // itself the largest delete the database sees.
+      { name: 'cache.sweep-counters', cron: '5 * * * *' },
     ]);
   });
 
@@ -1043,18 +1052,28 @@ describe('registerSchedules', () => {
     expect(new Set(crons).size).toBe(crons.length);
   });
 
-  it('runs them all in the small hours, IST', async () => {
-    const hours: number[] = [];
+  /**
+   * Scoped to the nightly jobs on purpose. A cron whose hour field is `*` is
+   * saying "every hour" — that is the cache sweep, which is cheap, bounded by
+   * an index, and pointless to defer to 3am. The expensive sweeps are the ones
+   * that must not land on top of each other or on daytime traffic.
+   */
+  it('runs the nightly sweeps in the small hours, IST', async () => {
+    const crons: string[] = [];
     const queue = {
       schedule: (_name: JobName, cron: string) => {
-        hours.push(Number(cron.split(' ')[1]));
+        crons.push(cron);
         return Promise.resolve();
       },
     } as unknown as Queue;
 
     await registerSchedules(queue);
 
-    for (const hour of hours) {
+    const nightly = crons.filter((cron) => cron.split(' ')[1] !== '*');
+
+    expect(nightly.length).toBeGreaterThanOrEqual(3);
+    for (const cron of nightly) {
+      const hour = Number(cron.split(' ')[1]);
       expect(hour).toBeGreaterThanOrEqual(1);
       expect(hour).toBeLessThanOrEqual(4);
     }

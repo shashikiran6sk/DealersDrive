@@ -27,9 +27,8 @@ const NONCE = 'the-nonce';
 process.env.GOOGLE_CLIENT_ID = CLIENT_ID;
 process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
 
-const { createGoogleOAuthProvider } = await import(
-  '../../../../src/modules/auth/google.provider.js'
-);
+const { createGoogleOAuthProvider } =
+  await import('../../../../src/modules/auth/google.provider.js');
 
 function idToken(claims: Record<string, unknown>): string {
   const payload = Buffer.from(JSON.stringify(claims), 'utf8').toString('base64url');
@@ -210,7 +209,9 @@ describe('what it refuses', () => {
 
   /** An identity token from another issuer is not an identity here. */
   it('refuses another issuer', async () => {
-    const error = await rejects({ id_token: idToken(validClaims({ iss: 'https://evil.example' })) });
+    const error = await rejects({
+      id_token: idToken(validClaims({ iss: 'https://evil.example' })),
+    });
 
     expect(error.code).toBe('OAUTH_IDENTITY_INVALID');
     expect(error.detail).toContain('not issued by Google');

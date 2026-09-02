@@ -222,9 +222,7 @@ export function Combobox({
                   }}
                 >
                   <div>{option.label}</div>
-                  {option.hint ? (
-                    <div className="text-[11px] ink-subtle">{option.hint}</div>
-                  ) : null}
+                  {option.hint ? <div className="text-[11px] ink-subtle">{option.hint}</div> : null}
                 </li>
               ))
             )}

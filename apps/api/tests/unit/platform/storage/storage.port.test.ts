@@ -57,7 +57,11 @@ describe.each(implementations)('%s satisfies StoragePort', (_name, storage) => {
   });
 
   it('returns an expiry with every presign', async () => {
-    const presigned = await storage.presignPut({ key: 'k', contentType: 'image/jpeg', contentLength: 1 });
+    const presigned = await storage.presignPut({
+      key: 'k',
+      contentType: 'image/jpeg',
+      contentLength: 1,
+    });
 
     expect(presigned.expiresInSeconds).toBeGreaterThan(0);
   });
@@ -72,7 +76,7 @@ describe.each(implementations)('%s satisfies StoragePort', (_name, storage) => {
 
   it('builds URLs without requiring a round trip', async () => {
     expect(typeof storage.publicUrl('a/b.webp')).toBe('string');
-    expect(typeof await storage.signedReadUrl('a/b.pdf', 60)).toBe('string');
+    expect(typeof (await storage.signedReadUrl('a/b.pdf', 60))).toBe('string');
   });
 
   it('separates public delivery from signed reads', async () => {

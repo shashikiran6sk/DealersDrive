@@ -26,9 +26,7 @@ export const catalogDocs: ModuleDocs = {
         'dealer has actually picked.\n\n' +
         '`Cache-Control: public, max-age=3600, stale-while-revalidate=600`.',
       audience: 'public',
-      responses: [
-        { status: 200, description: 'The catalogue.', schema: 'CatalogBundle' },
-      ],
+      responses: [{ status: 200, description: 'The catalogue.', schema: 'CatalogBundle' }],
     },
     {
       method: 'get',

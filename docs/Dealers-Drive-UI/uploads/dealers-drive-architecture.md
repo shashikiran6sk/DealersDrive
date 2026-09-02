@@ -5,49 +5,49 @@
 **Date:** August 2026
 **Status:** Recommended architecture — implementable as-is
 
-> **Note on freshness:** pricing, service tiers and SDK details below reflect my knowledge as of mid-2026. Verify current pricing pages before committing spend. Anything labelled *Inference* is my professional judgement, not verified public fact.
+> **Note on freshness:** pricing, service tiers and SDK details below reflect my knowledge as of mid-2026. Verify current pricing pages before committing spend. Anything labelled _Inference_ is my professional judgement, not verified public fact.
 
 ---
 
 ## Table of contents
 
-| # | Section |
-|---|---|
-| 0 | Executive recommendation (read this first) |
-| 1 | Where I disagree with your assumptions |
-| 2 | Recommended technology stack |
-| 3 | Logical architecture |
-| 4 | Deployment architecture |
-| 5 | Repository strategy (monorepo decision) |
-| 6 | Backend architecture |
-| 7 | Database architecture |
-| 8 | Multi-tenancy |
-| 9 | Authentication & authorization |
-| 10 | API design |
-| 11 | Search architecture |
-| 12 | Image & media architecture |
-| 13 | Payments & monetization architecture |
-| 14 | Caching |
-| 15 | Background jobs |
-| 16 | Events & the outbox |
-| 17 | Frontend architecture |
-| 18 | UI component library decision (+ what is actually known about Cars24) |
-| 19 | Shared types & API contracts |
-| 20 | SEO architecture |
-| 21 | Security architecture |
-| 22 | Observability |
-| 23 | DevOps & environments |
-| 24 | Testing strategy |
-| 25 | Design system & Figma structure |
-| 26 | Branding & logo direction |
-| 27 | Scaling roadmap: MVP → massive scale |
-| 28 | Cost model |
-| 29 | ADR decision table |
-| 30 | Build now / prepare / do not build |
-| 31 | Solo-developer implementation roadmap |
-| 32 | Risks & architectural mistakes to avoid |
-| 33 | Business evolution (Phases 1–7) |
-| 34 | Your first week |
+| #   | Section                                                               |
+| --- | --------------------------------------------------------------------- |
+| 0   | Executive recommendation (read this first)                            |
+| 1   | Where I disagree with your assumptions                                |
+| 2   | Recommended technology stack                                          |
+| 3   | Logical architecture                                                  |
+| 4   | Deployment architecture                                               |
+| 5   | Repository strategy (monorepo decision)                               |
+| 6   | Backend architecture                                                  |
+| 7   | Database architecture                                                 |
+| 8   | Multi-tenancy                                                         |
+| 9   | Authentication & authorization                                        |
+| 10  | API design                                                            |
+| 11  | Search architecture                                                   |
+| 12  | Image & media architecture                                            |
+| 13  | Payments & monetization architecture                                  |
+| 14  | Caching                                                               |
+| 15  | Background jobs                                                       |
+| 16  | Events & the outbox                                                   |
+| 17  | Frontend architecture                                                 |
+| 18  | UI component library decision (+ what is actually known about Cars24) |
+| 19  | Shared types & API contracts                                          |
+| 20  | SEO architecture                                                      |
+| 21  | Security architecture                                                 |
+| 22  | Observability                                                         |
+| 23  | DevOps & environments                                                 |
+| 24  | Testing strategy                                                      |
+| 25  | Design system & Figma structure                                       |
+| 26  | Branding & logo direction                                             |
+| 27  | Scaling roadmap: MVP → massive scale                                  |
+| 28  | Cost model                                                            |
+| 29  | ADR decision table                                                    |
+| 30  | Build now / prepare / do not build                                    |
+| 31  | Solo-developer implementation roadmap                                 |
+| 32  | Risks & architectural mistakes to avoid                               |
+| 33  | Business evolution (Phases 1–7)                                       |
+| 34  | Your first week                                                       |
 
 ---
 
@@ -57,15 +57,15 @@
 
 **The five decisions that matter most, and my verdict:**
 
-| Decision | Verdict | One-line reason |
-|---|---|---|
-| Database | **PostgreSQL only** | Your domain is money + ownership + lifecycle. That is relational. JSONB covers the variable-spec problem MongoDB was supposed to solve. |
-| API style | **REST + OpenAPI** (no GraphQL) | One first-party client, heavy CDN caching needs, solo dev. GraphQL costs you weeks and buys you nothing yet. |
-| Repos | **Monorepo** (`dealers-drive/`), not two repos | You asked for two repos. For a solo dev sharing types across a fast-moving contract, two repos is a self-inflicted tax. Still two independent deployments. |
-| Backend shape | **Modular monolith** | Your instinct is right. I'll tell you *exactly* how to draw the module boundaries so extraction is cheap later. |
-| Component library | **Local `components/` folder** in the web app | A separate `dealers-drive-ui` repo at your stage is pure overhead. Trigger for extraction defined in §18. |
+| Decision          | Verdict                                        | One-line reason                                                                                                                                            |
+| ----------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database          | **PostgreSQL only**                            | Your domain is money + ownership + lifecycle. That is relational. JSONB covers the variable-spec problem MongoDB was supposed to solve.                    |
+| API style         | **REST + OpenAPI** (no GraphQL)                | One first-party client, heavy CDN caching needs, solo dev. GraphQL costs you weeks and buys you nothing yet.                                               |
+| Repos             | **Monorepo** (`dealers-drive/`), not two repos | You asked for two repos. For a solo dev sharing types across a fast-moving contract, two repos is a self-inflicted tax. Still two independent deployments. |
+| Backend shape     | **Modular monolith**                           | Your instinct is right. I'll tell you _exactly_ how to draw the module boundaries so extraction is cheap later.                                            |
+| Component library | **Local `components/` folder** in the web app  | A separate `dealers-drive-ui` repo at your stage is pure overhead. Trigger for extraction defined in §18.                                                  |
 
-**The one architectural idea that is genuinely load-bearing for your business model:** the **listing-credit ledger** (§13). Dealers buy listing credits; publishing a vehicle atomically consumes one. The dealer API *physically cannot* set a listing to `ACTIVE`. This is the difference between a marketplace that can be defrauded and one that cannot.
+**The one architectural idea that is genuinely load-bearing for your business model:** the **listing-credit ledger** (§13). Dealers buy listing credits; publishing a vehicle atomically consumes one. The dealer API _physically cannot_ set a listing to `ACTIVE`. This is the difference between a marketplace that can be defrauded and one that cannot.
 
 **Timeline:** a competent solo developer, working full-time, ships this MVP to production in **16–20 weeks**. Infrastructure cost at launch: **$45–110/month**.
 
@@ -86,7 +86,7 @@ What two repos actually costs a solo developer:
 - Local development requires two clones, two branch states, two `.env` files that drift.
 - Atomic changes are impossible. "Add `emiPerMonth` to the vehicle response and render it" becomes two PRs that can deploy out of order.
 
-**Recommendation: single repo `dealers-drive/`, two deploy targets.** Revisit if you ever have separate teams with separate release cadences and separate on-call — realistically 15+ engineers. Migration monorepo → multi-repo is trivial (`git subtree split`); the reverse is also easy. This is a low-regret decision either way, but the monorepo is strictly faster *now*.
+**Recommendation: single repo `dealers-drive/`, two deploy targets.** Revisit if you ever have separate teams with separate release cadences and separate on-call — realistically 15+ engineers. Migration monorepo → multi-repo is trivial (`git subtree split`); the reverse is also easy. This is a low-regret decision either way, but the monorepo is strictly faster _now_.
 
 ### 1.2 "PostgreSQL + MongoDB if there's a legitimate reason" — ❌ There isn't one
 
@@ -94,7 +94,7 @@ The usual argument is "vehicle specs vary by make/model, so use a document store
 
 ### 1.3 "Vehicle" and "Listing" are not the same thing — model both
 
-Almost every dealer marketplace conflates these and regrets it. A **Vehicle** is a physical asset a dealer owns (VIN, registration, km, photos). A **Listing** is a *paid publication window* for that vehicle (activated at time T, expires at T+90d, cost 1 credit). One vehicle can be listed, expire, be re-listed, be sold. Your entire revenue model attaches to Listing, not Vehicle. Separating them costs you one extra table now and saves a painful migration in month 8.
+Almost every dealer marketplace conflates these and regrets it. A **Vehicle** is a physical asset a dealer owns (VIN, registration, km, photos). A **Listing** is a _paid publication window_ for that vehicle (activated at time T, expires at T+90d, cost 1 credit). One vehicle can be listed, expire, be re-listed, be sold. Your entire revenue model attaches to Listing, not Vehicle. Separating them costs you one extra table now and saves a painful migration in month 8.
 
 ### 1.4 Don't build three separate frontend apps
 
@@ -102,11 +102,11 @@ You have three audiences (customer, dealer, admin). The instinct is three Next.j
 
 ### 1.5 Your MVP scope is too large — cut it
 
-From your list, defer to post-launch: **Reviews, Dealer Staff sub-accounts, Subscriptions, Premium analytics, Dispute handling, Featured listings, SMS.** None of them validate the core question, which is: *will independent dealers pay to list vehicles here, and will customers generate leads?* Everything that doesn't answer that is a distraction. The Sprint plan in §31 reflects this.
+From your list, defer to post-launch: **Reviews, Dealer Staff sub-accounts, Subscriptions, Premium analytics, Dispute handling, Featured listings, SMS.** None of them validate the core question, which is: _will independent dealers pay to list vehicles here, and will customers generate leads?_ Everything that doesn't answer that is a distraction. The Sprint plan in §31 reflects this.
 
 ### 1.6 "Preferably AWS" — ⚠️ Not on day one
 
-AWS is the right *destination*. It is the wrong *starting point* for a solo developer. You would spend 2–3 weeks on VPCs, security groups, IAM, ECS task definitions, ALBs, and RDS parameter groups before shipping a single feature. Start on managed PaaS (Vercel + Render/Fly + Neon), keep everything Dockerized and IaC-ready, and migrate to AWS ECS Fargate + RDS when you have real traffic or a compliance reason. The migration is roughly one week of work at that point. Full reasoning in §23.
+AWS is the right _destination_. It is the wrong _starting point_ for a solo developer. You would spend 2–3 weeks on VPCs, security groups, IAM, ECS task definitions, ALBs, and RDS parameter groups before shipping a single feature. Start on managed PaaS (Vercel + Render/Fly + Neon), keep everything Dockerized and IaC-ready, and migrate to AWS ECS Fargate + RDS when you have real traffic or a compliance reason. The migration is roughly one week of work at that point. Full reasoning in §23.
 
 ### 1.7 One thing you didn't ask about that will hurt you: the vehicle taxonomy
 
@@ -118,42 +118,42 @@ Make / Model / Variant / Year is the hardest "boring" problem in this domain. If
 
 ## 2.1 The stack (MVP)
 
-| Layer | Choice | Why this, not the alternative |
-|---|---|---|
-| Web framework | **Next.js 15, App Router** | Your constraint. Also correct: SEO is existential here and RSC + ISR gives you server-rendered, cacheable listing pages for free. |
-| Language | **TypeScript, strict, everywhere** | Single language across web/API/scripts. Types are your API contract (§19). |
-| UI styling | **Tailwind CSS v4 + CVA** | Token-driven, no runtime cost, trivially themable per the design system in §25. |
-| UI primitives | **Radix UI primitives**, styled by you | Accessibility for free (focus traps, ARIA, keyboard nav) without inheriting someone else's visual identity. |
-| API framework | **NestJS on Fastify adapter** | Gives a solo dev enforced module boundaries, DI, guards, interceptors, class-validator DTOs, and auto-generated OpenAPI. That structure is what makes later service extraction cheap. Express is faster to start and worse in month 6. |
-| ORM | **Prisma 6** | Best-in-class migrations and DX. Escape hatch to raw SQL (`$queryRaw`) for the search query, which you *will* need. |
-| Database | **PostgreSQL 16** | §7. |
-| Job queue | **pg-boss** (Postgres-backed) | Real queue semantics — retries, backoff, scheduling, dead-letter — with **zero new infrastructure**. Swap to BullMQ+Redis at ~50 jobs/sec. |
-| Object storage | **Cloudflare R2** | S3-compatible API, **zero egress fees**. For an image-heavy marketplace, egress is your #2 cost driver. §12. |
-| Image delivery | **Cloudflare Images / Image Resizing** | On-the-fly WebP/AVIF, per-width variants, edge cache. |
-| Payments | **Razorpay** (India) behind a provider interface | §13. Stripe if you're not India-first. |
-| Email | **Resend** (or AWS SES) | Transactional only at MVP. |
-| Auth | **Custom, cookie sessions in Postgres** | §9. ~250 lines. Avoids vendor lock-in on your most business-critical table. |
-| Error tracking | **Sentry** (free tier) | Non-negotiable from day one. |
-| Analytics | **PostHog Cloud** (free tier) + GA4 | Product analytics + the marketing data you'll be asked for. |
-| Hosting (web) | **Vercel** | Next.js ISR/RSC works properly here with no configuration. |
-| Hosting (API) | **Render** or **Fly.io** | Dockerfile in, HTTPS service out. |
-| Database hosting | **Neon** (or Supabase) | Managed Postgres, branching for preview environments, generous free/hobby tier. |
-| CI | **GitHub Actions** | §23. |
-| Monorepo tooling | **Turborepo + pnpm workspaces** | Task caching, path-filtered CI. |
+| Layer            | Choice                                           | Why this, not the alternative                                                                                                                                                                                                          |
+| ---------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web framework    | **Next.js 15, App Router**                       | Your constraint. Also correct: SEO is existential here and RSC + ISR gives you server-rendered, cacheable listing pages for free.                                                                                                      |
+| Language         | **TypeScript, strict, everywhere**               | Single language across web/API/scripts. Types are your API contract (§19).                                                                                                                                                             |
+| UI styling       | **Tailwind CSS v4 + CVA**                        | Token-driven, no runtime cost, trivially themable per the design system in §25.                                                                                                                                                        |
+| UI primitives    | **Radix UI primitives**, styled by you           | Accessibility for free (focus traps, ARIA, keyboard nav) without inheriting someone else's visual identity.                                                                                                                            |
+| API framework    | **NestJS on Fastify adapter**                    | Gives a solo dev enforced module boundaries, DI, guards, interceptors, class-validator DTOs, and auto-generated OpenAPI. That structure is what makes later service extraction cheap. Express is faster to start and worse in month 6. |
+| ORM              | **Prisma 6**                                     | Best-in-class migrations and DX. Escape hatch to raw SQL (`$queryRaw`) for the search query, which you _will_ need.                                                                                                                    |
+| Database         | **PostgreSQL 16**                                | §7.                                                                                                                                                                                                                                    |
+| Job queue        | **pg-boss** (Postgres-backed)                    | Real queue semantics — retries, backoff, scheduling, dead-letter — with **zero new infrastructure**. Swap to BullMQ+Redis at ~50 jobs/sec.                                                                                             |
+| Object storage   | **Cloudflare R2**                                | S3-compatible API, **zero egress fees**. For an image-heavy marketplace, egress is your #2 cost driver. §12.                                                                                                                           |
+| Image delivery   | **Cloudflare Images / Image Resizing**           | On-the-fly WebP/AVIF, per-width variants, edge cache.                                                                                                                                                                                  |
+| Payments         | **Razorpay** (India) behind a provider interface | §13. Stripe if you're not India-first.                                                                                                                                                                                                 |
+| Email            | **Resend** (or AWS SES)                          | Transactional only at MVP.                                                                                                                                                                                                             |
+| Auth             | **Custom, cookie sessions in Postgres**          | §9. ~250 lines. Avoids vendor lock-in on your most business-critical table.                                                                                                                                                            |
+| Error tracking   | **Sentry** (free tier)                           | Non-negotiable from day one.                                                                                                                                                                                                           |
+| Analytics        | **PostHog Cloud** (free tier) + GA4              | Product analytics + the marketing data you'll be asked for.                                                                                                                                                                            |
+| Hosting (web)    | **Vercel**                                       | Next.js ISR/RSC works properly here with no configuration.                                                                                                                                                                             |
+| Hosting (API)    | **Render** or **Fly.io**                         | Dockerfile in, HTTPS service out.                                                                                                                                                                                                      |
+| Database hosting | **Neon** (or Supabase)                           | Managed Postgres, branching for preview environments, generous free/hobby tier.                                                                                                                                                        |
+| CI               | **GitHub Actions**                               | §23.                                                                                                                                                                                                                                   |
+| Monorepo tooling | **Turborepo + pnpm workspaces**                  | Task caching, path-filtered CI.                                                                                                                                                                                                        |
 
 ## 2.2 What is deliberately NOT in the MVP
 
-| Technology | Verdict | Trigger to introduce |
-|---|---|---|
-| Redis | 🟡 Prepare | Session count > ~50k active, or p95 search latency > 300ms after Postgres tuning, or job throughput > 50/sec. |
-| Elasticsearch / OpenSearch / Typesense | 🟡 Prepare | > 100,000 active listings **or** typo-tolerance/relevance becomes a conversion problem. |
-| MongoDB | 🔴 Never (for this domain) | — |
-| Kafka | 🔴 Not yet | > 3 independently deployed services that need a durable shared event log. Realistically Series B. |
-| Kubernetes | 🔴 Not yet | > 8 services and > 6 engineers. Fargate covers you to enormous scale. |
-| Microservices | 🔴 Not yet | Team > 12, or one module has a genuinely different scaling profile (search, image processing). |
-| GraphQL | 🔴 Not yet | Third-party API consumers or >3 divergent client types. |
-| Terraform | 🟡 Prepare | The day you move to AWS. Not before — PaaS config is 5 dashboard clicks. |
-| Feature flag service | 🟡 Prepare | Use a `platform_config` table now; buy LaunchDarkly/PostHog flags at ~10 engineers. |
+| Technology                             | Verdict                    | Trigger to introduce                                                                                          |
+| -------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Redis                                  | 🟡 Prepare                 | Session count > ~50k active, or p95 search latency > 300ms after Postgres tuning, or job throughput > 50/sec. |
+| Elasticsearch / OpenSearch / Typesense | 🟡 Prepare                 | > 100,000 active listings **or** typo-tolerance/relevance becomes a conversion problem.                       |
+| MongoDB                                | 🔴 Never (for this domain) | —                                                                                                             |
+| Kafka                                  | 🔴 Not yet                 | > 3 independently deployed services that need a durable shared event log. Realistically Series B.             |
+| Kubernetes                             | 🔴 Not yet                 | > 8 services and > 6 engineers. Fargate covers you to enormous scale.                                         |
+| Microservices                          | 🔴 Not yet                 | Team > 12, or one module has a genuinely different scaling profile (search, image processing).                |
+| GraphQL                                | 🔴 Not yet                 | Third-party API consumers or >3 divergent client types.                                                       |
+| Terraform                              | 🟡 Prepare                 | The day you move to AWS. Not before — PaaS config is 5 dashboard clicks.                                      |
+| Feature flag service                   | 🟡 Prepare                 | Use a `platform_config` table now; buy LaunchDarkly/PostHog flags at ~10 engineers.                           |
 
 ---
 
@@ -219,7 +219,7 @@ Make / Model / Variant / Year is the hardest "boring" problem in this domain. If
 **Reading the diagram:**
 
 - The browser talks to **Next.js only**. The API is not publicly exposed to the browser for authenticated dealer/admin traffic — Next.js server components and route handlers proxy to it. This gives you one origin, httpOnly cookies with no CORS gymnastics, and a natural place to put per-page caching.
-- Public read endpoints (`GET /v1/vehicles`) *are* safe to expose directly and you should allow the browser to hit them for client-side filter interactions, since they're cacheable and unauthenticated.
+- Public read endpoints (`GET /v1/vehicles`) _are_ safe to expose directly and you should allow the browser to hit them for client-side filter interactions, since they're cacheable and unauthenticated.
 - Every arrow leaving the API to a third party goes through an **adapter interface** in a platform module. That is what makes Razorpay→Stripe or R2→S3 a one-file change.
 
 ## 3.1 Actor flows
@@ -354,18 +354,18 @@ dealers-drive/
 
 ## 5.2 Comparison
 
-| Criterion | Opt 1: web + api repos | **Opt 2: monorepo** | Opt 3: web + api + ui repos |
-|---|---|---|---|
-| Developer experience (solo) | Poor — context switching, drift | **Excellent** — one clone, one branch | Worst |
-| Atomic contract changes | Impossible | **One PR** | Impossible |
-| Type sharing | Private npm package + versioning | **Direct workspace import** | Two packages to version |
-| Deployment independence | Yes | **Yes** (path-filtered CI) | Yes |
-| CI cost/time | 2 pipelines, no shared cache | **1 pipeline, Turborepo cache, only affected apps build** | 3 pipelines |
-| Onboarding a 2nd engineer | 2 setups | **1 setup** | 3 setups |
-| Code ownership at 20+ eng | Cleaner | CODEOWNERS per directory | Cleanest |
-| Complexity cost | Low but recurring tax | **Small one-time setup (~2 hours)** | High |
-| Startup velocity | Slower | **Fastest** | Slowest |
-| Migration out later | n/a | `git subtree split` — ~1 hour | n/a |
+| Criterion                   | Opt 1: web + api repos           | **Opt 2: monorepo**                                       | Opt 3: web + api + ui repos |
+| --------------------------- | -------------------------------- | --------------------------------------------------------- | --------------------------- |
+| Developer experience (solo) | Poor — context switching, drift  | **Excellent** — one clone, one branch                     | Worst                       |
+| Atomic contract changes     | Impossible                       | **One PR**                                                | Impossible                  |
+| Type sharing                | Private npm package + versioning | **Direct workspace import**                               | Two packages to version     |
+| Deployment independence     | Yes                              | **Yes** (path-filtered CI)                                | Yes                         |
+| CI cost/time                | 2 pipelines, no shared cache     | **1 pipeline, Turborepo cache, only affected apps build** | 3 pipelines                 |
+| Onboarding a 2nd engineer   | 2 setups                         | **1 setup**                                               | 3 setups                    |
+| Code ownership at 20+ eng   | Cleaner                          | CODEOWNERS per directory                                  | Cleanest                    |
+| Complexity cost             | Low but recurring tax            | **Small one-time setup (~2 hours)**                       | High                        |
+| Startup velocity            | Slower                           | **Fastest**                                               | Slowest                     |
+| Migration out later         | n/a                              | `git subtree split` — ~1 hour                             | n/a                         |
 
 **Why not Option 1, which you asked for:** the only real argument for it is "the backend team and frontend team release independently." You are one person. When that argument becomes true you'll have the budget and the hour it takes to split. Until then, Option 1 charges you a tax on every single feature.
 
@@ -494,7 +494,7 @@ Microservices solve an **organizational** problem (many teams needing independen
 
 Concretely, in a microservices MVP, "publish a vehicle" becomes: vehicles-svc → billing-svc (consume credit) → listings-svc (activate) → search-svc (index). That is a distributed transaction requiring sagas and compensating actions. In a modular monolith it is one `prisma.$transaction()` and it is correct by construction.
 
-**But** a modular monolith is only valuable if the modules are *actually* modular. The failure mode is a "distributed ball of mud in one process." Three rules make it real:
+**But** a modular monolith is only valuable if the modules are _actually_ modular. The failure mode is a "distributed ball of mud in one process." Three rules make it real:
 
 1. **No module imports another module's repository, Prisma model, or internal service.** Cross-module access goes through the target module's exported `*.facade.ts` only. Enforce with ESLint `no-restricted-imports` — this is 20 lines of config and it is the single highest-leverage thing in this document.
 2. **Cross-module side effects go through the event bus, not direct calls.** `listings` doesn't call `search.reindex()`; it emits `ListingActivated` and search subscribes.
@@ -504,24 +504,24 @@ If you follow those three rules, extracting `search` or `media` into its own ser
 
 ## 6.2 Module organization
 
-I've restructured your proposed domain list. Your list has 18 items; several are not modules, they are *tables* or *cross-cutting platform concerns*, and treating them as modules creates artificial boundaries.
+I've restructured your proposed domain list. Your list has 18 items; several are not modules, they are _tables_ or _cross-cutting platform concerns_, and treating them as modules creates artificial boundaries.
 
-| Your item | My placement | Why |
-|---|---|---|
-| Authentication, Users | → **`identity`** | One module. Sessions, credentials, and user records are one aggregate. |
-| Dealers, Dealer Verification | → **`dealers`** | Verification is a state machine on the dealer aggregate, not a separate domain. |
-| Vehicles, Inventory | → **`vehicles`** | "Inventory" is a view over vehicles filtered by dealer. Not a module. |
-| Vehicle Images | → **`media`** (generic) | Make it polymorphic from day one — you'll need dealer logos, KYC docs, invoice PDFs. |
-| Listings, Subscriptions | → **`listings`** + **`billing`** | Listing lifecycle ≠ money. Split at the credit boundary. |
-| Payments | → **`billing`** | Payments, credits, invoices, plans: one bounded context, one ledger. |
-| Search | → **`search`** | Yes, real module. Deliberately isolated so it can be extracted first. |
-| Favorites, Inquiries | → **`engagement`** | Two small tables, one module. Splitting them is over-modularization. |
-| Notifications | → **`notifications`** | Real module (channel abstraction, templates, preferences). |
-| Reviews | → **`engagement`**, post-MVP | Not MVP. |
-| Admin | → **`admin`** | A *facade* module: orchestrates other modules' facades, owns nothing but moderation queue. |
-| Analytics | → **platform/telemetry** + a reporting service | Not a domain module at MVP. Read from replica later. |
-| Audit Logs | → **platform/audit** | Cross-cutting concern, consumed via interceptor + events. |
-| — | + **`catalog`** (NEW) | Make/model/variant/year/body/fuel taxonomy + cities. You omitted this and it's critical (§1.7). |
+| Your item                    | My placement                                   | Why                                                                                             |
+| ---------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Authentication, Users        | → **`identity`**                               | One module. Sessions, credentials, and user records are one aggregate.                          |
+| Dealers, Dealer Verification | → **`dealers`**                                | Verification is a state machine on the dealer aggregate, not a separate domain.                 |
+| Vehicles, Inventory          | → **`vehicles`**                               | "Inventory" is a view over vehicles filtered by dealer. Not a module.                           |
+| Vehicle Images               | → **`media`** (generic)                        | Make it polymorphic from day one — you'll need dealer logos, KYC docs, invoice PDFs.            |
+| Listings, Subscriptions      | → **`listings`** + **`billing`**               | Listing lifecycle ≠ money. Split at the credit boundary.                                        |
+| Payments                     | → **`billing`**                                | Payments, credits, invoices, plans: one bounded context, one ledger.                            |
+| Search                       | → **`search`**                                 | Yes, real module. Deliberately isolated so it can be extracted first.                           |
+| Favorites, Inquiries         | → **`engagement`**                             | Two small tables, one module. Splitting them is over-modularization.                            |
+| Notifications                | → **`notifications`**                          | Real module (channel abstraction, templates, preferences).                                      |
+| Reviews                      | → **`engagement`**, post-MVP                   | Not MVP.                                                                                        |
+| Admin                        | → **`admin`**                                  | A _facade_ module: orchestrates other modules' facades, owns nothing but moderation queue.      |
+| Analytics                    | → **platform/telemetry** + a reporting service | Not a domain module at MVP. Read from replica later.                                            |
+| Audit Logs                   | → **platform/audit**                           | Cross-cutting concern, consumed via interceptor + events.                                       |
+| —                            | + **`catalog`** (NEW)                          | Make/model/variant/year/body/fuel taxonomy + cities. You omitted this and it's critical (§1.7). |
 
 ### Recommended structure
 
@@ -612,37 +612,48 @@ export class PublishListingCommand {
   constructor(
     private readonly tx: TransactionManager,
     private readonly listings: ListingsRepository,
-    private readonly vehicles: VehiclesFacade,   // facade, not repository
-    private readonly billing: BillingFacade,     // facade, not repository
+    private readonly vehicles: VehiclesFacade, // facade, not repository
+    private readonly billing: BillingFacade, // facade, not repository
     private readonly outbox: OutboxService,
   ) {}
 
   async execute(input: { vehicleId: string; ctx: RequestContext }) {
-    const { dealerId, userId } = input.ctx;      // ← from session, NEVER from body
+    const { dealerId, userId } = input.ctx; // ← from session, NEVER from body
 
     return this.tx.run(async (trx) => {
       const vehicle = await this.vehicles.getOwnedBy(input.vehicleId, dealerId, trx);
-      if (!vehicle) throw new NotFoundError('vehicle');           // 404, not 403 —
-                                                                  // don't leak existence
-      if (!vehicle.isComplete()) throw new DomainError('VEHICLE_INCOMPLETE',
-        { missing: vehicle.missingFields() });
+      if (!vehicle) throw new NotFoundError('vehicle'); // 404, not 403 —
+      // don't leak existence
+      if (!vehicle.isComplete())
+        throw new DomainError('VEHICLE_INCOMPLETE', { missing: vehicle.missingFields() });
       if (vehicle.imageCount < 3) throw new DomainError('MIN_IMAGES_REQUIRED');
 
       // Atomically consume one listing credit. Throws if balance < 1.
       const credit = await this.billing.consumeListingCredit(
-        { dealerId, reason: 'LISTING_PUBLISH', refId: input.vehicleId }, trx);
+        { dealerId, reason: 'LISTING_PUBLISH', refId: input.vehicleId },
+        trx,
+      );
 
-      const listing = await this.listings.create({
-        vehicleId: vehicle.id,
-        dealerId,
-        status: 'PENDING_REVIEW',            // ← admin gate, MVP: auto-approve
-        creditLedgerId: credit.id,
-        expiresAt: addDays(new Date(), 90),
-      }, trx);
+      const listing = await this.listings.create(
+        {
+          vehicleId: vehicle.id,
+          dealerId,
+          status: 'PENDING_REVIEW', // ← admin gate, MVP: auto-approve
+          creditLedgerId: credit.id,
+          expiresAt: addDays(new Date(), 90),
+        },
+        trx,
+      );
 
-      await this.outbox.publish('ListingCreated', {
-        listingId: listing.id, vehicleId: vehicle.id, dealerId,
-      }, trx);                               // ← same transaction = no lost events
+      await this.outbox.publish(
+        'ListingCreated',
+        {
+          listingId: listing.id,
+          vehicleId: vehicle.id,
+          dealerId,
+        },
+        trx,
+      ); // ← same transaction = no lost events
 
       return listing;
     });
@@ -660,25 +671,25 @@ Note what is **not** here: no HTTP call to a payment service, no `search.index()
 
 Let me evaluate this per-entity rather than in the abstract, because that's the only way to make the call honestly.
 
-| Entity | Dominant access pattern | Needs ACID w/ others? | Relational? | Verdict |
-|---|---|---|---|---|
-| Users, Sessions | Point lookup by email/token | Yes (with dealer membership) | Yes | **Postgres** |
-| Dealers | Point lookup + admin list/filter | Yes (with payments) | Strongly | **Postgres** |
-| Dealer members / staff | Join on user + dealer | Yes | Strongly | **Postgres** |
-| Catalog (make/model/variant) | Read-heavy, tiny, hierarchical | No | Strongly | **Postgres** (cache in memory) |
-| Vehicles | Filtered range queries + faceting; **variable specs** | Yes (with listings/credits) | Mostly, + JSONB for specs | **Postgres + JSONB** |
-| Listings | State machine, expiry sweeps | **Critically yes** | Strongly | **Postgres** |
-| Payments | Financial, must be exactly-once | **Absolutely** | Strongly | **Postgres** |
-| Credit ledger | Append-only, balance must be correct | **Absolutely** | Strongly | **Postgres** |
-| Invoices | Immutable records, sequential numbering | Yes | Strongly | **Postgres** |
-| Inquiries (leads) | Insert-heavy, read by dealer | Mildly | Yes | **Postgres** |
-| Favorites | Join table, high write | No | Yes | **Postgres** |
-| Reviews | Moderated content | Yes | Yes | **Postgres** |
-| Audit logs | Append-only, high volume, rarely read | No | Semi | **Postgres** (partitioned by month) → later object storage or ClickHouse |
-| Search index | Complex multi-facet ranked queries | No | Denormalized | **Postgres now → Typesense/OpenSearch later** |
-| Analytics events | Enormous volume, aggregate reads | No | Columnar | **PostHog now → ClickHouse later** |
+| Entity                       | Dominant access pattern                               | Needs ACID w/ others?        | Relational?               | Verdict                                                                  |
+| ---------------------------- | ----------------------------------------------------- | ---------------------------- | ------------------------- | ------------------------------------------------------------------------ |
+| Users, Sessions              | Point lookup by email/token                           | Yes (with dealer membership) | Yes                       | **Postgres**                                                             |
+| Dealers                      | Point lookup + admin list/filter                      | Yes (with payments)          | Strongly                  | **Postgres**                                                             |
+| Dealer members / staff       | Join on user + dealer                                 | Yes                          | Strongly                  | **Postgres**                                                             |
+| Catalog (make/model/variant) | Read-heavy, tiny, hierarchical                        | No                           | Strongly                  | **Postgres** (cache in memory)                                           |
+| Vehicles                     | Filtered range queries + faceting; **variable specs** | Yes (with listings/credits)  | Mostly, + JSONB for specs | **Postgres + JSONB**                                                     |
+| Listings                     | State machine, expiry sweeps                          | **Critically yes**           | Strongly                  | **Postgres**                                                             |
+| Payments                     | Financial, must be exactly-once                       | **Absolutely**               | Strongly                  | **Postgres**                                                             |
+| Credit ledger                | Append-only, balance must be correct                  | **Absolutely**               | Strongly                  | **Postgres**                                                             |
+| Invoices                     | Immutable records, sequential numbering               | Yes                          | Strongly                  | **Postgres**                                                             |
+| Inquiries (leads)            | Insert-heavy, read by dealer                          | Mildly                       | Yes                       | **Postgres**                                                             |
+| Favorites                    | Join table, high write                                | No                           | Yes                       | **Postgres**                                                             |
+| Reviews                      | Moderated content                                     | Yes                          | Yes                       | **Postgres**                                                             |
+| Audit logs                   | Append-only, high volume, rarely read                 | No                           | Semi                      | **Postgres** (partitioned by month) → later object storage or ClickHouse |
+| Search index                 | Complex multi-facet ranked queries                    | No                           | Denormalized              | **Postgres now → Typesense/OpenSearch later**                            |
+| Analytics events             | Enormous volume, aggregate reads                      | No                           | Columnar                  | **PostHog now → ClickHouse later**                                       |
 
-**Result: 13 of 15 are unambiguously Postgres.** The two that aren't (search index, analytics events) are *specialised engines*, not MongoDB.
+**Result: 13 of 15 are unambiguously Postgres.** The two that aren't (search index, analytics events) are _specialised engines_, not MongoDB.
 
 ### The "but vehicle specs are variable" argument, addressed directly
 
@@ -694,11 +705,11 @@ SELECT * FROM vehicles WHERE specs @> '{"sunroof": true, "airbags": 6}';
 SELECT * FROM vehicles WHERE (specs->>'bootSpaceLitres')::int > 400;
 ```
 
-You get schemaless flexibility, indexed queries, *and* the ability to join it to `payments` inside a transaction. MongoDB gives you the first two and takes away the third. That is a strictly worse trade for a marketplace whose core loop is "money in → listing live."
+You get schemaless flexibility, indexed queries, _and_ the ability to join it to `payments` inside a transaction. MongoDB gives you the first two and takes away the third. That is a strictly worse trade for a marketplace whose core loop is "money in → listing live."
 
 ### What running two databases would actually cost you
 
-- Two backup/restore/PITR procedures to test (and you *will* need to test them).
+- Two backup/restore/PITR procedures to test (and you _will_ need to test them).
 - No foreign keys between vehicles and dealers → orphaned inventory when a dealer is deleted.
 - No transactional consistency between "credit consumed" and "listing created."
 - Dual-write drift: the classic bug is the Mongo write succeeding and the Postgres write failing, leaving a listing that is live but unpaid.
@@ -1023,18 +1034,18 @@ model PlatformConfig {              // pricing, flags, toggles — no redeploys
 
 ## 7.3 Non-obvious modelling decisions (and why)
 
-| Decision | Rationale |
-|---|---|
-| **All money as `BigInt` paise/cents** | Floating-point money is a bug, not a style choice. Never `Float`, never `Decimal` for currency arithmetic in the app layer. |
-| **`CreditLedger` is append-only with `balanceAfter`** | You can reconstruct any dealer's balance at any point in time, reconcile against payments, and prove correctness to an auditor. A mutable `credits_remaining` integer column cannot do any of that. |
-| **`Listing` separate from `Vehicle`** | §1.3. Revenue attaches to publication windows, not assets. |
-| **Partial unique index on active listings** | `CREATE UNIQUE INDEX ON listings (vehicle_id) WHERE status = 'ACTIVE';` — the database, not application code, guarantees one live listing per vehicle. |
-| **Soft delete (`deletedAt`) on vehicles, hard delete never** | Dealers delete vehicles by accident; buyers bookmark URLs; SEO needs 410 vs 404 distinction; disputes need history. |
-| **Denormalized counters (`activeListings`, `ratingAvg`)** | Avoids `COUNT(*)` on every dealer page. Updated via event subscribers, reconciled nightly by a job. |
-| **`dealerId` on `Inquiry` and `Media` even though derivable** | Tenant filtering must be a single indexed predicate, never a join. This is the multi-tenancy safety net (§8). |
-| **`regNumberMasked`** | Full registration numbers are PII and enable vehicle-history scraping. Store masked; keep the full value encrypted in a separate column only if a business process needs it. |
-| **`slug` on vehicle includes a short id** | `2021-toyota-fortuner-4x2-at-mumbai-a1b2c3` — human/SEO readable, collision-free, and lets you look up by the short id alone. |
-| **Audit log partitioned monthly from day one** | Retrofitting partitioning on a 500M-row table is a maintenance window. Doing it now is 10 lines. |
+| Decision                                                      | Rationale                                                                                                                                                                                           |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **All money as `BigInt` paise/cents**                         | Floating-point money is a bug, not a style choice. Never `Float`, never `Decimal` for currency arithmetic in the app layer.                                                                         |
+| **`CreditLedger` is append-only with `balanceAfter`**         | You can reconstruct any dealer's balance at any point in time, reconcile against payments, and prove correctness to an auditor. A mutable `credits_remaining` integer column cannot do any of that. |
+| **`Listing` separate from `Vehicle`**                         | §1.3. Revenue attaches to publication windows, not assets.                                                                                                                                          |
+| **Partial unique index on active listings**                   | `CREATE UNIQUE INDEX ON listings (vehicle_id) WHERE status = 'ACTIVE';` — the database, not application code, guarantees one live listing per vehicle.                                              |
+| **Soft delete (`deletedAt`) on vehicles, hard delete never**  | Dealers delete vehicles by accident; buyers bookmark URLs; SEO needs 410 vs 404 distinction; disputes need history.                                                                                 |
+| **Denormalized counters (`activeListings`, `ratingAvg`)**     | Avoids `COUNT(*)` on every dealer page. Updated via event subscribers, reconciled nightly by a job.                                                                                                 |
+| **`dealerId` on `Inquiry` and `Media` even though derivable** | Tenant filtering must be a single indexed predicate, never a join. This is the multi-tenancy safety net (§8).                                                                                       |
+| **`regNumberMasked`**                                         | Full registration numbers are PII and enable vehicle-history scraping. Store masked; keep the full value encrypted in a separate column only if a business process needs it.                        |
+| **`slug` on vehicle includes a short id**                     | `2021-toyota-fortuner-4x2-at-mumbai-a1b2c3` — human/SEO readable, collision-free, and lets you look up by the short id alone.                                                                       |
+| **Audit log partitioned monthly from day one**                | Retrofitting partitioning on a 500M-row table is a maintenance window. Doing it now is 10 lines.                                                                                                    |
 
 ## 7.4 The catalog problem (do not skip this)
 
@@ -1087,7 +1098,7 @@ CREATE INDEX ON listing_search USING GIN (
   (make_name || ' ' || model_name) gin_trgm_ops);  -- typo tolerance
 ```
 
-This table is your **seam**. When you move to Typesense/OpenSearch, you change the *writer* (same subscribers) and the *reader* (one repository class). The rest of the application never knows.
+This table is your **seam**. When you move to Typesense/OpenSearch, you change the _writer_ (same subscribers) and the _reader_ (one repository class). The rest of the application never knows.
 
 ---
 
@@ -1097,23 +1108,23 @@ This table is your **seam**. When you move to Typesense/OpenSearch, you change t
 
 **Shared database, shared schema, `dealer_id` discriminator column — at every stage from MVP to 100,000+ dealers.**
 
-| Strategy | Verdict | Reasoning |
-|---|---|---|
-| **Shared DB / shared schema** | ✅ **Recommended, all stages** | One migration, one connection pool, one backup. Cross-tenant queries (the entire public marketplace!) are trivial. Scales to millions of tenants — this is what Shopify, Stripe and Salesforce do. |
-| Schema per dealer | ❌ Never | 100k schemas = 100k × N tables. `pg_dump` becomes impossible. Migrations take days. And your *primary product* — a marketplace search across all dealers — would require 100k UNIONs. |
-| Database per dealer | ❌ Never | Same as above, worse. Only justified for enterprise SaaS with contractual data-residency requirements and <500 tenants. |
-| Hybrid (shared + isolated for enterprise) | 🟡 Consider at Phase 4+ | If you ever sign an OEM or a 500-branch chain with a data-residency clause. Not before. |
+| Strategy                                  | Verdict                        | Reasoning                                                                                                                                                                                          |
+| ----------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Shared DB / shared schema**             | ✅ **Recommended, all stages** | One migration, one connection pool, one backup. Cross-tenant queries (the entire public marketplace!) are trivial. Scales to millions of tenants — this is what Shopify, Stripe and Salesforce do. |
+| Schema per dealer                         | ❌ Never                       | 100k schemas = 100k × N tables. `pg_dump` becomes impossible. Migrations take days. And your _primary product_ — a marketplace search across all dealers — would require 100k UNIONs.              |
+| Database per dealer                       | ❌ Never                       | Same as above, worse. Only justified for enterprise SaaS with contractual data-residency requirements and <500 tenants.                                                                            |
+| Hybrid (shared + isolated for enterprise) | 🟡 Consider at Phase 4+        | If you ever sign an OEM or a 500-branch chain with a data-residency clause. Not before.                                                                                                            |
 
-**The decisive argument:** your product is *inherently cross-tenant*. A customer searching "Fortuner in Mumbai under ₹30L" must scan every dealer's inventory. Physical tenant isolation makes your core feature architecturally impossible. This isn't a scaling question — it's a product-shape question.
+**The decisive argument:** your product is _inherently cross-tenant_. A customer searching "Fortuner in Mumbai under ₹30L" must scan every dealer's inventory. Physical tenant isolation makes your core feature architecturally impossible. This isn't a scaling question — it's a product-shape question.
 
 Scaling per stage:
 
-| Dealers | Approach | What changes |
-|---|---|---|
-| MVP–1,000 | Shared schema, single Postgres | Nothing |
-| 10,000 | Same + read replicas + Redis | Add replicas for public reads |
-| 100,000 | Same + partition hot tables by `created_at`; consider sharding `audit_logs`, `inquiries` | Still one logical schema |
-| 100,000+ | Same + move analytics to a columnar store; possibly shard by region if you go multi-country | Tenant model unchanged |
+| Dealers   | Approach                                                                                    | What changes                  |
+| --------- | ------------------------------------------------------------------------------------------- | ----------------------------- |
+| MVP–1,000 | Shared schema, single Postgres                                                              | Nothing                       |
+| 10,000    | Same + read replicas + Redis                                                                | Add replicas for public reads |
+| 100,000   | Same + partition hot tables by `created_at`; consider sharding `audit_logs`, `inquiries`    | Still one logical schema      |
+| 100,000+  | Same + move analytics to a columnar store; possibly shard by region if you go multi-country | Tenant model unchanged        |
 
 ## 8.2 Isolation: defense in depth (four layers)
 
@@ -1128,7 +1139,7 @@ Application bugs are inevitable. Design so that a single missed `WHERE dealer_id
 const ctx = { userId, dealerId: membership.dealerId, role: membership.role };
 ```
 
-**Layer 2 — Repository-enforced scoping.** Tenant-owned repositories take `dealerId` as a *required first argument* — it is structurally impossible to write an unscoped query without a type error:
+**Layer 2 — Repository-enforced scoping.** Tenant-owned repositories take `dealerId` as a _required first argument_ — it is structurally impossible to write an unscoped query without a type error:
 
 ```ts
 class VehiclesRepository {
@@ -1150,7 +1161,7 @@ CREATE POLICY tenant_isolation ON vehicles
 
 Use **two database roles**: `app_tenant` (RLS enforced, used for all dealer-scoped work) and `app_platform` (BYPASSRLS, used for public marketplace reads, admin, and jobs). This makes "which code path can see all tenants" an explicit, auditable choice.
 
-**Layer 4 — Test + audit.** One integration test per tenant-owned resource: *"Dealer A requests Dealer B's vehicle by id → 404."* Not 403 — **404**, so you don't leak existence. Plus every cross-tenant admin read is written to `audit_logs`.
+**Layer 4 — Test + audit.** One integration test per tenant-owned resource: _"Dealer A requests Dealer B's vehicle by id → 404."_ Not 403 — **404**, so you don't leak existence. Plus every cross-tenant admin read is written to `audit_logs`.
 
 ---
 
@@ -1162,13 +1173,13 @@ Use **two database roles**: `app_tenant` (RLS enforced, used for all dealer-scop
 
 Why not JWT for a web-only MVP:
 
-| Concern | JWT | **Opaque session** |
-|---|---|---|
-| Instant revocation (suspend a dealer *now*) | Needs a denylist — i.e. a database — which defeats the point | **Native: `UPDATE sessions SET revoked_at = now()`** |
-| Implementation complexity | Access + refresh rotation, reuse detection, clock skew | ~250 lines total |
-| Permission changes take effect | On next refresh (up to 15 min stale) | **Immediately** |
-| Statelessness benefit | Real — but only matters at high scale | You are not there |
-| Storage cost | Zero | One indexed row lookup (~0.2ms), later a Redis GET |
+| Concern                                     | JWT                                                          | **Opaque session**                                   |
+| ------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
+| Instant revocation (suspend a dealer _now_) | Needs a denylist — i.e. a database — which defeats the point | **Native: `UPDATE sessions SET revoked_at = now()`** |
+| Implementation complexity                   | Access + refresh rotation, reuse detection, clock skew       | ~250 lines total                                     |
+| Permission changes take effect              | On next refresh (up to 15 min stale)                         | **Immediately**                                      |
+| Statelessness benefit                       | Real — but only matters at high scale                        | You are not there                                    |
+| Storage cost                                | Zero                                                         | One indexed row lookup (~0.2ms), later a Redis GET   |
 
 Add JWTs **only** when you have a mobile app or third-party API consumers, and even then issue them alongside sessions, not instead of them.
 
@@ -1189,13 +1200,13 @@ Plus a **double-submit CSRF token** for all state-changing requests, because `Sa
 
 **Flows to support at MVP:**
 
-| Flow | Actor | Method |
-|---|---|---|
-| Register / login | Customer | Phone + OTP (India-appropriate; lower friction than passwords) |
-| Register / login | Dealer | Email + password + mandatory email verification, phone OTP at onboarding |
-| Login | Admin | Email + password + **TOTP 2FA mandatory** |
-| Social login | Customer | Google OAuth — add in Sprint 7, not before |
-| Password reset | Dealer/Admin | Single-use token, 30 min TTL, invalidates all sessions on use |
+| Flow             | Actor        | Method                                                                   |
+| ---------------- | ------------ | ------------------------------------------------------------------------ |
+| Register / login | Customer     | Phone + OTP (India-appropriate; lower friction than passwords)           |
+| Register / login | Dealer       | Email + password + mandatory email verification, phone OTP at onboarding |
+| Login            | Admin        | Email + password + **TOTP 2FA mandatory**                                |
+| Social login     | Customer     | Google OAuth — add in Sprint 7, not before                               |
+| Password reset   | Dealer/Admin | Single-use token, 30 min TTL, invalidates all sessions on use            |
 
 Guest inquiries must work **without an account**. Forcing registration before a lead is submitted will cost you 40–60% of your leads. Capture name + phone, create a shadow user, offer account claim by OTP afterwards.
 
@@ -1216,26 +1227,26 @@ Axis 2 — WHAT CAN YOU DO TO THIS SPECIFIC RESOURCE
 ```ts
 export const PERMISSIONS = {
   // dealer scope
-  'vehicle:read':      ['OWNER','MANAGER','SALES'],
-  'vehicle:create':    ['OWNER','MANAGER'],
-  'vehicle:update':    ['OWNER','MANAGER'],
-  'vehicle:delete':    ['OWNER','MANAGER'],
-  'listing:publish':   ['OWNER','MANAGER'],   // spends money → not SALES
-  'listing:unpublish': ['OWNER','MANAGER'],
-  'inquiry:read':      ['OWNER','MANAGER','SALES'],
-  'inquiry:update':    ['OWNER','MANAGER','SALES'],
-  'billing:read':      ['OWNER'],
-  'billing:purchase':  ['OWNER'],             // only the owner spends money
-  'dealer:update':     ['OWNER'],
-  'member:manage':     ['OWNER'],
-  'analytics:read':    ['OWNER','MANAGER'],
+  'vehicle:read': ['OWNER', 'MANAGER', 'SALES'],
+  'vehicle:create': ['OWNER', 'MANAGER'],
+  'vehicle:update': ['OWNER', 'MANAGER'],
+  'vehicle:delete': ['OWNER', 'MANAGER'],
+  'listing:publish': ['OWNER', 'MANAGER'], // spends money → not SALES
+  'listing:unpublish': ['OWNER', 'MANAGER'],
+  'inquiry:read': ['OWNER', 'MANAGER', 'SALES'],
+  'inquiry:update': ['OWNER', 'MANAGER', 'SALES'],
+  'billing:read': ['OWNER'],
+  'billing:purchase': ['OWNER'], // only the owner spends money
+  'dealer:update': ['OWNER'],
+  'member:manage': ['OWNER'],
+  'analytics:read': ['OWNER', 'MANAGER'],
   // platform scope
-  'admin:dealer:approve':  ['MODERATOR','SUPER_ADMIN'],
-  'admin:dealer:suspend':  ['MODERATOR','SUPER_ADMIN'],
-  'admin:listing:moderate':['MODERATOR','SUPER_ADMIN'],
-  'admin:payment:refund':  ['SUPER_ADMIN'],
-  'admin:config:write':    ['SUPER_ADMIN'],
-  'admin:impersonate':     ['SUPER_ADMIN'],   // always audit-logged
+  'admin:dealer:approve': ['MODERATOR', 'SUPER_ADMIN'],
+  'admin:dealer:suspend': ['MODERATOR', 'SUPER_ADMIN'],
+  'admin:listing:moderate': ['MODERATOR', 'SUPER_ADMIN'],
+  'admin:payment:refund': ['SUPER_ADMIN'],
+  'admin:config:write': ['SUPER_ADMIN'],
+  'admin:impersonate': ['SUPER_ADMIN'], // always audit-logged
 } as const;
 ```
 
@@ -1245,7 +1256,6 @@ Applied declaratively:
 @Controller('v1/dealer/vehicles')
 @UseGuards(AuthGuard, DealerContextGuard, PermissionGuard)
 export class DealerVehiclesController {
-
   @Patch(':id')
   @RequirePermission('vehicle:update')
   update(@Param('id') id: string, @Body() dto: UpdateVehicleDto, @Ctx() ctx) {
@@ -1255,7 +1265,7 @@ export class DealerVehiclesController {
 }
 ```
 
-**The rule that prevents 90% of authorization bugs:** the guard checks *capability*; the service checks *ownership*. Both, always. Ownership checks live inside the transaction that performs the write, so there is no TOCTOU gap.
+**The rule that prevents 90% of authorization bugs:** the guard checks _capability_; the service checks _ownership_. Both, always. Ownership checks live inside the transaction that performs the write, so there is no TOCTOU gap.
 
 **Admin impersonation** ("view as dealer" for support) is enormously useful and enormously dangerous. If you build it: separate short-lived impersonation session, red banner in the UI, no write permissions unless `SUPER_ADMIN`, every action audit-logged with both the real and effective actor. Defer to post-MVP.
 
@@ -1265,17 +1275,17 @@ export class DealerVehiclesController {
 
 ## 10.1 REST + OpenAPI — the reasoning
 
-| Criterion | REST | GraphQL | Verdict |
-|---|---|---|---|
-| CDN/HTTP caching of public listings | Native, free, enormous | Requires persisted queries + custom cache layer | **REST wins decisively** — your listing pages are the traffic |
-| Solo-dev velocity | Immediate | 1–2 weeks of schema/resolver/dataloader setup | REST |
-| Over-fetching problem | Real, solved by 3–4 purpose-built endpoints | Solved elegantly | GraphQL — but you have *one* client |
-| N+1 risk | Explicit and visible | Hidden behind resolvers; needs DataLoader everywhere | REST |
-| Rate limiting / abuse control | Per-endpoint, trivial | Query cost analysis required | REST |
-| Tooling (OpenAPI → types → clients) | Excellent, mature | Excellent | Tie |
-| Observability (which endpoint is slow?) | Trivial | Requires per-resolver tracing | REST |
+| Criterion                               | REST                                        | GraphQL                                              | Verdict                                                       |
+| --------------------------------------- | ------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| CDN/HTTP caching of public listings     | Native, free, enormous                      | Requires persisted queries + custom cache layer      | **REST wins decisively** — your listing pages are the traffic |
+| Solo-dev velocity                       | Immediate                                   | 1–2 weeks of schema/resolver/dataloader setup        | REST                                                          |
+| Over-fetching problem                   | Real, solved by 3–4 purpose-built endpoints | Solved elegantly                                     | GraphQL — but you have _one_ client                           |
+| N+1 risk                                | Explicit and visible                        | Hidden behind resolvers; needs DataLoader everywhere | REST                                                          |
+| Rate limiting / abuse control           | Per-endpoint, trivial                       | Query cost analysis required                         | REST                                                          |
+| Tooling (OpenAPI → types → clients)     | Excellent, mature                           | Excellent                                            | Tie                                                           |
+| Observability (which endpoint is slow?) | Trivial                                     | Requires per-resolver tracing                        | REST                                                          |
 
-**Recommendation: REST with OpenAPI 3.1, auto-generated from NestJS decorators + Zod schemas.** Revisit GraphQL if you ever expose a public partner API with heterogeneous consumers (Phase 6, advertising marketplace) — and even then, consider it an *additional* gateway over the REST services rather than a replacement.
+**Recommendation: REST with OpenAPI 3.1, auto-generated from NestJS decorators + Zod schemas.** Revisit GraphQL if you ever expose a public partner API with heterogeneous consumers (Phase 6, advertising marketplace) — and even then, consider it an _additional_ gateway over the REST services rather than a replacement.
 
 **Do not add tRPC either**, despite the monorepo. It couples your frontend to your backend's internal shape and makes the future mobile app and partner integrations harder. The typed contract in `packages/contracts` gives you 90% of tRPC's DX with none of the coupling.
 
@@ -1369,11 +1379,11 @@ SYSTEM
 
 **Pagination — use both, deliberately:**
 
-| Endpoint type | Pagination | Why |
-|---|---|---|
-| Public vehicle search | **Offset/page** (`?page=2&limit=24`), capped at page 40 | SEO needs stable, linkable, numbered pages. Deep pages are worthless anyway — cap them and canonicalize. |
-| Dealer inventory, admin lists | **Cursor** (`?cursor=<opaque>&limit=50`) | Stable under concurrent inserts, O(1) regardless of depth. |
-| Infinite scroll (mobile web) | **Cursor** | Same. |
+| Endpoint type                 | Pagination                                              | Why                                                                                                      |
+| ----------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Public vehicle search         | **Offset/page** (`?page=2&limit=24`), capped at page 40 | SEO needs stable, linkable, numbered pages. Deep pages are worthless anyway — cap them and canonicalize. |
+| Dealer inventory, admin lists | **Cursor** (`?cursor=<opaque>&limit=50`)                | Stable under concurrent inserts, O(1) regardless of depth.                                               |
+| Infinite scroll (mobile web)  | **Cursor**                                              | Same.                                                                                                    |
 
 ```json
 {
@@ -1414,9 +1424,7 @@ Validate with Zod. Unknown params → `400`, not silently ignored (silent ignori
   "detail": "Publishing requires 1 credit; your balance is 0.",
   "code": "INSUFFICIENT_CREDITS",
   "traceId": "01J9X2K8M4",
-  "errors": [
-    { "field": "price", "code": "TOO_LOW", "message": "Price must be at least ₹10,000" }
-  ]
+  "errors": [{ "field": "price", "code": "TOO_LOW", "message": "Price must be at least ₹10,000" }]
 }
 ```
 
@@ -1426,15 +1434,15 @@ Validate with Zod. Unknown params → `400`, not silently ignored (silent ignori
 
 **Rate limiting** (per stage — MVP uses an in-memory/Postgres token bucket; Redis later):
 
-| Endpoint | Limit | Key |
-|---|---|---|
-| `POST /v1/auth/login` | 5 / 15 min | IP + email |
-| `POST /v1/auth/otp/request` | 3 / hour | phone |
-| `POST /v1/inquiries` | 5 / hour | IP (+ hCaptcha after 2) |
-| `GET /v1/vehicles*` | 120 / min | IP |
-| Dealer write endpoints | 60 / min | dealerId |
-| `POST /v1/dealer/media/presign` | 100 / hour | dealerId |
-| Admin endpoints | 300 / min | userId |
+| Endpoint                        | Limit      | Key                     |
+| ------------------------------- | ---------- | ----------------------- |
+| `POST /v1/auth/login`           | 5 / 15 min | IP + email              |
+| `POST /v1/auth/otp/request`     | 3 / hour   | phone                   |
+| `POST /v1/inquiries`            | 5 / hour   | IP (+ hCaptcha after 2) |
+| `GET /v1/vehicles*`             | 120 / min  | IP                      |
+| Dealer write endpoints          | 60 / min   | dealerId                |
+| `POST /v1/dealer/media/presign` | 100 / hour | dealerId                |
+| Admin endpoints                 | 300 / min  | userId                  |
 
 Return `429` with `Retry-After`. Put Cloudflare in front for L7 volumetric protection so this layer only handles application-level abuse.
 
@@ -1527,12 +1535,12 @@ Vehicle photos are simultaneously your **biggest conversion lever**, your **seco
 
 ## 12.1 Recommendation: Cloudflare R2 + Cloudflare Images
 
-| Option | Storage | Egress | Transform | Verdict |
-|---|---|---|---|---|
-| **Cloudflare R2 + Images** | ~$0.015/GB/mo | **$0 — zero egress** | Built-in resize/format at edge | ✅ **MVP + Growth** |
-| AWS S3 + CloudFront | ~$0.023/GB/mo | ~$0.085/GB (first 10TB) | Lambda@Edge (you build it) | 🟡 Later, if you consolidate on AWS |
-| Cloudinary | Bundled | Bundled | Best-in-class | 🟡 Great DX, gets expensive fast (~$250+/mo at modest volume) |
-| imgix / Imgproxy | — | — | Excellent | 🟡 Add over R2 if Cloudflare Images limits bite |
+| Option                     | Storage       | Egress                  | Transform                      | Verdict                                                       |
+| -------------------------- | ------------- | ----------------------- | ------------------------------ | ------------------------------------------------------------- |
+| **Cloudflare R2 + Images** | ~$0.015/GB/mo | **$0 — zero egress**    | Built-in resize/format at edge | ✅ **MVP + Growth**                                           |
+| AWS S3 + CloudFront        | ~$0.023/GB/mo | ~$0.085/GB (first 10TB) | Lambda@Edge (you build it)     | 🟡 Later, if you consolidate on AWS                           |
+| Cloudinary                 | Bundled       | Bundled                 | Best-in-class                  | 🟡 Great DX, gets expensive fast (~$250+/mo at modest volume) |
+| imgix / Imgproxy           | —             | —                       | Excellent                      | 🟡 Add over R2 if Cloudflare Images limits bite               |
 
 **The decisive number:** an image-heavy marketplace at 1M monthly sessions × 15 images × 150KB ≈ **2.2 TB/month of egress**. On S3+CloudFront that's ~$190/mo; on R2 it is **$0**. At 10× that scale the difference is $1,900/mo vs $0. R2 is S3-API-compatible, so migration in either direction is a config change plus an `rclone sync`.
 
@@ -1576,16 +1584,16 @@ Vehicle photos are simultaneously your **biggest conversion lever**, your **seco
 
 ## 12.3 The details people get wrong
 
-| Concern | Solution |
-|---|---|
-| **Orphaned images** (uploaded, never attached) | Nightly job: delete `Media` rows with `status=PENDING AND createdAt < now() - 24h`, plus the R2 object. Also a weekly reconciliation listing R2 keys not present in `media`. |
-| **Deleted vehicles** | Soft-delete the vehicle → job marks media `ORPHAN` → hard-delete from R2 after 30 days. Never delete synchronously; you'll want undo. |
-| **Image ordering** | `VehicleMedia.position` integer, reordered by drag-and-drop, `PUT /vehicles/:id/media/order` sends the full ordered array (idempotent, no partial-swap bugs). |
-| **Primary image** | `Vehicle.primaryMediaId` — denormalized so listing cards need no join. |
-| **Upload security** | Never trust `Content-Type`. Verify magic bytes server-side in the worker. **Always re-encode** — this is the only reliable defence against polyglot files and ImageTragick-class exploits. Serve media from a **separate domain** (`img.dealersdrive.com`) with `Content-Disposition: attachment` fallback so a stored HTML payload can't execute in your origin. |
-| **Content moderation** | MVP: minimum 3 images + admin spot-check queue. Growth: perceptual-hash dedupe (catches dealers stealing each other's photos — this *will* happen), then an ML NSFW/irrelevance classifier. |
-| **Watermarking** | Optional dealer-branded watermark on derivatives. Popular with dealers, cheap to add in the worker, do it in Phase 2. |
-| **CDN caching** | Derivatives are immutable and content-addressed (`.../{mediaId}/1024.webp`) → `Cache-Control: public, max-age=31536000, immutable`. Never invalidate; new upload = new id = new URL. |
+| Concern                                        | Solution                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Orphaned images** (uploaded, never attached) | Nightly job: delete `Media` rows with `status=PENDING AND createdAt < now() - 24h`, plus the R2 object. Also a weekly reconciliation listing R2 keys not present in `media`.                                                                                                                                                                                      |
+| **Deleted vehicles**                           | Soft-delete the vehicle → job marks media `ORPHAN` → hard-delete from R2 after 30 days. Never delete synchronously; you'll want undo.                                                                                                                                                                                                                             |
+| **Image ordering**                             | `VehicleMedia.position` integer, reordered by drag-and-drop, `PUT /vehicles/:id/media/order` sends the full ordered array (idempotent, no partial-swap bugs).                                                                                                                                                                                                     |
+| **Primary image**                              | `Vehicle.primaryMediaId` — denormalized so listing cards need no join.                                                                                                                                                                                                                                                                                            |
+| **Upload security**                            | Never trust `Content-Type`. Verify magic bytes server-side in the worker. **Always re-encode** — this is the only reliable defence against polyglot files and ImageTragick-class exploits. Serve media from a **separate domain** (`img.dealersdrive.com`) with `Content-Disposition: attachment` fallback so a stored HTML payload can't execute in your origin. |
+| **Content moderation**                         | MVP: minimum 3 images + admin spot-check queue. Growth: perceptual-hash dedupe (catches dealers stealing each other's photos — this _will_ happen), then an ML NSFW/irrelevance classifier.                                                                                                                                                                       |
+| **Watermarking**                               | Optional dealer-branded watermark on derivatives. Popular with dealers, cheap to add in the worker, do it in Phase 2.                                                                                                                                                                                                                                             |
+| **CDN caching**                                | Derivatives are immutable and content-addressed (`.../{mediaId}/1024.webp`) → `Cache-Control: public, max-age=31536000, immutable`. Never invalidate; new upload = new id = new URL.                                                                                                                                                                              |
 
 ---
 
@@ -1625,19 +1633,19 @@ Benefits: publishing is instant and offline-capable; you get **prepaid revenue**
 
 **Revenue objects in the MVP:**
 
-| Product | Mechanism |
-|---|---|
+| Product               | Mechanism                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
 | Dealer onboarding fee | One-time `Payment(purpose=ONBOARDING)`. Gates `DealerStatus: PENDING_PAYMENT → PENDING_VERIFICATION`. |
-| Listing fee | Credit packs. `Payment(purpose=LISTING_CREDITS, quantity=N)`. |
+| Listing fee           | Credit packs. `Payment(purpose=LISTING_CREDITS, quantity=N)`.                                         |
 
 **Deferred but architecturally accommodated (no schema change needed):**
 
-| Product | How it slots in |
-|---|---|
-| Monthly subscription | New `Plan` + `Subscription` tables; a subscription grants N credits/month via a scheduled job writing to the same ledger. |
-| Featured / promoted listings | `Payment(purpose=BOOST)` → sets `Listing.boostLevel`; search already sorts by it. |
-| Lead-generation fees | Charge per qualified `Inquiry`; the ledger supports negative-balance/postpaid with a credit limit. |
-| Dealer advertising | New purpose + a placement table. |
+| Product                      | How it slots in                                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Monthly subscription         | New `Plan` + `Subscription` tables; a subscription grants N credits/month via a scheduled job writing to the same ledger. |
+| Featured / promoted listings | `Payment(purpose=BOOST)` → sets `Listing.boostLevel`; search already sorts by it.                                         |
+| Lead-generation fees         | Charge per qualified `Inquiry`; the ledger supports negative-balance/postpaid with a credit limit.                        |
+| Dealer advertising           | New purpose + a placement table.                                                                                          |
 
 ## 13.3 The payment flow, in full
 
@@ -1693,7 +1701,7 @@ Benefits: publishing is instant and offline-capable; you get **prepaid revenue**
 
 This is the right question to ask, and here is the complete answer:
 
-1. **No API surface exists to set these fields.** `Listing.status`, `Payment.status`, `CreditLedger.*`, and `Dealer.status` are absent from every dealer-facing DTO. The Zod schemas *strip* unknown keys (`.strict()` → reject). A dealer POSTing `{"status":"ACTIVE"}` gets a 400, not a silent success. This is the primary defence; everything else is depth.
+1. **No API surface exists to set these fields.** `Listing.status`, `Payment.status`, `CreditLedger.*`, and `Dealer.status` are absent from every dealer-facing DTO. The Zod schemas _strip_ unknown keys (`.strict()` → reject). A dealer POSTing `{"status":"ACTIVE"}` gets a 400, not a silent success. This is the primary defence; everything else is depth.
 2. **State transitions go through a state machine**, not assignment. `transition(listing, 'ACTIVATE', actor)` validates that the source state and the actor's authority permit it. Invalid transitions throw.
 3. **Value is granted only by verified webhooks**, never by client callbacks. Even the client callback in step ③ grants nothing.
 4. **Amounts are server-computed.** The client sends a `packId`; the server looks up the price. Client-supplied amounts are never trusted, ever.
@@ -1704,15 +1712,15 @@ This is the right question to ask, and here is the complete answer:
 
 ## 13.5 Failure modes to design for now
 
-| Failure | Handling |
-|---|---|
-| Webhook never arrives | Reconciliation job every 15 min: for `payments` in `CREATED/ATTEMPTED` older than 10 min, call `gateway.fetchPayment()` and settle. This is not optional — webhooks *do* get lost. |
-| Webhook arrives twice | `webhook_events` unique constraint on `(provider, providerEventId)`. |
-| Webhook arrives before the client callback | Fine — webhook is authoritative, callback is idempotent. |
-| Payment captured but worker crashes mid-transaction | Transaction rolls back; the job retries; `webhook_events.status` stays `RECEIVED`; the outbox pattern guarantees the follow-on effects fire exactly once. |
-| Refund requested | Admin-only endpoint. Refunds `Payment` via gateway **and** writes a compensating negative ledger entry. If the dealer already spent the credits, balance can go negative — allow it, flag the account, don't try to be clever. |
-| Listing rejected by moderation | `+1` credit refund to the ledger, automatic, event-driven. Dealers must never lose money to your moderation queue. |
-| Chargeback | Webhook `payment.disputed` → suspend dealer's ability to publish, alert admin. |
+| Failure                                             | Handling                                                                                                                                                                                                                       |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Webhook never arrives                               | Reconciliation job every 15 min: for `payments` in `CREATED/ATTEMPTED` older than 10 min, call `gateway.fetchPayment()` and settle. This is not optional — webhooks _do_ get lost.                                             |
+| Webhook arrives twice                               | `webhook_events` unique constraint on `(provider, providerEventId)`.                                                                                                                                                           |
+| Webhook arrives before the client callback          | Fine — webhook is authoritative, callback is idempotent.                                                                                                                                                                       |
+| Payment captured but worker crashes mid-transaction | Transaction rolls back; the job retries; `webhook_events.status` stays `RECEIVED`; the outbox pattern guarantees the follow-on effects fire exactly once.                                                                      |
+| Refund requested                                    | Admin-only endpoint. Refunds `Payment` via gateway **and** writes a compensating negative ledger entry. If the dealer already spent the credits, balance can go negative — allow it, flag the account, don't try to be clever. |
+| Listing rejected by moderation                      | `+1` credit refund to the ledger, automatic, event-driven. Dealers must never lose money to your moderation queue.                                                                                                             |
+| Chargeback                                          | Webhook `payment.disputed` → suspend dealer's ability to publish, alert admin.                                                                                                                                                 |
 
 ---
 
@@ -1731,19 +1739,19 @@ L5  PostgreSQL           listing_search denormalized    n/a
 
 ## 14.1 What to cache, and how
 
-| Content | Layer | TTL | Invalidation |
-|---|---|---|---|
-| Homepage | CDN + ISR | 5 min | Time-based |
-| `/cars` and facet landing pages (`/cars/toyota/fortuner`) | CDN + ISR | 60s, `stale-while-revalidate=300` | Time-based. These are your SEO pages — always serve *something* fast, even if 60s stale. |
-| Vehicle detail page (VDP) | ISR | 5 min | **On-demand**: `ListingUpdated`/`ListingSold` event → job → `POST /api/revalidate` to Next.js → `revalidatePath('/car/[slug]')` |
-| Dealer page | ISR | 10 min | On-demand on dealer update |
-| Search results with filters | **Not cached at CDN** (too many permutations) | — | Cache *facet counts* at L3/L4 for 60s; the result rows hit Postgres |
-| Catalog (makes/models/cities) | L3 in-process + CDN | 1 hr / on deploy | Rarely changes; refresh on admin write |
-| Platform config | L3 in-process | 60s | Poll |
-| Session lookup | Postgres (→ Redis at growth) | — | Row-level |
-| Images/derivatives | CDN | 1 year, `immutable` | Never — content-addressed URLs |
-| Dealer dashboard, admin | **Never cached** | `no-store` | — |
-| `/v1/vehicles` public API | CDN 60s via `Cache-Control` + `Vary` | 60s | Time-based |
+| Content                                                   | Layer                                         | TTL                               | Invalidation                                                                                                                    |
+| --------------------------------------------------------- | --------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage                                                  | CDN + ISR                                     | 5 min                             | Time-based                                                                                                                      |
+| `/cars` and facet landing pages (`/cars/toyota/fortuner`) | CDN + ISR                                     | 60s, `stale-while-revalidate=300` | Time-based. These are your SEO pages — always serve _something_ fast, even if 60s stale.                                        |
+| Vehicle detail page (VDP)                                 | ISR                                           | 5 min                             | **On-demand**: `ListingUpdated`/`ListingSold` event → job → `POST /api/revalidate` to Next.js → `revalidatePath('/car/[slug]')` |
+| Dealer page                                               | ISR                                           | 10 min                            | On-demand on dealer update                                                                                                      |
+| Search results with filters                               | **Not cached at CDN** (too many permutations) | —                                 | Cache _facet counts_ at L3/L4 for 60s; the result rows hit Postgres                                                             |
+| Catalog (makes/models/cities)                             | L3 in-process + CDN                           | 1 hr / on deploy                  | Rarely changes; refresh on admin write                                                                                          |
+| Platform config                                           | L3 in-process                                 | 60s                               | Poll                                                                                                                            |
+| Session lookup                                            | Postgres (→ Redis at growth)                  | —                                 | Row-level                                                                                                                       |
+| Images/derivatives                                        | CDN                                           | 1 year, `immutable`               | Never — content-addressed URLs                                                                                                  |
+| Dealer dashboard, admin                                   | **Never cached**                              | `no-store`                        | —                                                                                                                               |
+| `/v1/vehicles` public API                                 | CDN 60s via `Cache-Control` + `Vary`          | 60s                               | Time-based                                                                                                                      |
 
 ## 14.2 Cache-invalidation strategy
 
@@ -1779,24 +1787,24 @@ At MVP scale (tens of jobs per minute) this is not a compromise; it is the corre
 
 ## 15.2 Job catalog
 
-| Job | Trigger | Priority | Notes |
-|---|---|---|---|
-| `media.process` | media commit | High | sharp derivatives, EXIF strip, blurhash. Concurrency 4. |
-| `media.gc-orphans` | Cron, daily 03:00 | Low | Deletes PENDING >24h and ORPHAN >30d |
-| `search.index-listing` | `ListingActivated/Updated` | High | Upsert into `listing_search` |
-| `search.remove-listing` | `ListingExpired/Removed` | High | |
-| `listing.expire-sweep` | Cron, hourly | Med | `WHERE status=ACTIVE AND expires_at<now()` → EXPIRED + event |
-| `listing.expiring-soon` | Cron, daily 09:00 | Low | Email dealers 7 days before expiry (this drives renewals = revenue) |
-| `payment.reconcile` | Cron, every 15 min | High | Poll gateway for stuck payments (§13.5) |
-| `payment.settlement-check` | Cron, daily | Med | Compare gateway settlement report with local ledger |
-| `invoice.generate-pdf` | `PaymentSucceeded` | Med | Render + upload to R2 |
-| `email.send` | Various events | High | Retry 5×, exponential backoff |
-| `notification.inquiry-to-dealer` | `InquiryCreated` | **Highest** | Lead speed-to-contact drives conversion. Email + (later) SMS + WhatsApp. |
-| `cache.revalidate-page` | `Listing*` events | Med | Calls Next.js revalidation endpoint |
-| `counters.reconcile` | Cron, nightly | Low | Recompute `activeListings`, `ratingAvg`, `viewCount` |
-| `analytics.rollup-daily` | Cron, 02:00 | Low | Dealer dashboard aggregates into a summary table |
-| `outbox.publish` | Every 2s | — | Drains `outbox_events` → in-process bus (§16) |
-| `audit.partition-maintain` | Cron, monthly | Low | Create next month's partition, detach old |
+| Job                              | Trigger                    | Priority    | Notes                                                                    |
+| -------------------------------- | -------------------------- | ----------- | ------------------------------------------------------------------------ |
+| `media.process`                  | media commit               | High        | sharp derivatives, EXIF strip, blurhash. Concurrency 4.                  |
+| `media.gc-orphans`               | Cron, daily 03:00          | Low         | Deletes PENDING >24h and ORPHAN >30d                                     |
+| `search.index-listing`           | `ListingActivated/Updated` | High        | Upsert into `listing_search`                                             |
+| `search.remove-listing`          | `ListingExpired/Removed`   | High        |                                                                          |
+| `listing.expire-sweep`           | Cron, hourly               | Med         | `WHERE status=ACTIVE AND expires_at<now()` → EXPIRED + event             |
+| `listing.expiring-soon`          | Cron, daily 09:00          | Low         | Email dealers 7 days before expiry (this drives renewals = revenue)      |
+| `payment.reconcile`              | Cron, every 15 min         | High        | Poll gateway for stuck payments (§13.5)                                  |
+| `payment.settlement-check`       | Cron, daily                | Med         | Compare gateway settlement report with local ledger                      |
+| `invoice.generate-pdf`           | `PaymentSucceeded`         | Med         | Render + upload to R2                                                    |
+| `email.send`                     | Various events             | High        | Retry 5×, exponential backoff                                            |
+| `notification.inquiry-to-dealer` | `InquiryCreated`           | **Highest** | Lead speed-to-contact drives conversion. Email + (later) SMS + WhatsApp. |
+| `cache.revalidate-page`          | `Listing*` events          | Med         | Calls Next.js revalidation endpoint                                      |
+| `counters.reconcile`             | Cron, nightly              | Low         | Recompute `activeListings`, `ratingAvg`, `viewCount`                     |
+| `analytics.rollup-daily`         | Cron, 02:00                | Low         | Dealer dashboard aggregates into a summary table                         |
+| `outbox.publish`                 | Every 2s                   | —           | Drains `outbox_events` → in-process bus (§16)                            |
+| `audit.partition-maintain`       | Cron, monthly              | Low         | Create next month's partition, detach old                                |
 
 ## 15.3 Deployment shape
 
@@ -1812,7 +1820,7 @@ At MVP scale (tens of jobs per minute) this is not a compromise; it is the corre
 
 # 16. Events & the outbox
 
-## 16.1 Should you use events from day one? Yes — but *in-process*.
+## 16.1 Should you use events from day one? Yes — but _in-process_.
 
 The distinction that matters is **event-driven design** (cheap, valuable now) vs **event-driven infrastructure** (Kafka, expensive, valuable later). Adopt the first, defer the second.
 
@@ -1829,7 +1837,7 @@ in-process EventBus                     ──▶  SNS/SQS or Kafka
 subscribers in the same process         subscribers in other services
 ```
 
-**Why the outbox from day one, even in a monolith:** without it, "save the listing, then send the email" has two failure modes — email sent for a listing that rolled back, or listing saved with no email. The outbox makes the event durable in the *same transaction* as the state change, so the effect is guaranteed at-least-once. This costs one table and ~60 lines. Retrofitting it after you've built 40 side-effecting flows costs weeks.
+**Why the outbox from day one, even in a monolith:** without it, "save the listing, then send the email" has two failure modes — email sent for a listing that rolled back, or listing saved with no email. The outbox makes the event durable in the _same transaction_ as the state change, so the effect is guaranteed at-least-once. This costs one table and ~60 lines. Retrofitting it after you've built 40 side-effecting flows costs weeks.
 
 ## 16.2 Event catalog
 
@@ -1850,29 +1858,29 @@ media        MediaUploaded  MediaProcessed  MediaProcessingFailed
 
 ```ts
 type DomainEvent<T = unknown> = {
-  id: string;            // uuid
-  type: string;          // "listing.activated"  (dot-cased, past tense)
-  version: 1;            // schema version — you WILL need this
-  occurredAt: string;    // ISO
+  id: string; // uuid
+  type: string; // "listing.activated"  (dot-cased, past tense)
+  version: 1; // schema version — you WILL need this
+  occurredAt: string; // ISO
   aggregateType: string; // "Listing"
   aggregateId: string;
-  dealerId?: string;     // tenant context for downstream filtering
-  actor: { type: 'USER'|'ADMIN'|'SYSTEM'; id?: string };
-  traceId: string;       // correlation across the whole causal chain
+  dealerId?: string; // tenant context for downstream filtering
+  actor: { type: 'USER' | 'ADMIN' | 'SYSTEM'; id?: string };
+  traceId: string; // correlation across the whole causal chain
   payload: T;
 };
 ```
 
 ## 16.3 What subscribes to what (MVP)
 
-| Event | Subscribers |
-|---|---|
+| Event              | Subscribers                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
 | `ListingActivated` | search.index · dealer.incrementCounter · cache.revalidate · notifications.listingLive · analytics |
-| `ListingExpired` | search.remove · dealer.decrementCounter · notifications.expiryNotice · cache.revalidate |
-| `PaymentSucceeded` | billing.grantCredits (inline, in-TX) · invoice.generatePdf · notifications.receipt · analytics |
-| `InquiryCreated` | notifications.emailDealer · listing.incrementInquiryCount · analytics |
-| `DealerApproved` | notifications.welcome · search.markDealerVerified · cache.revalidate |
-| `DealerSuspended` | listings.pauseAll · search.removeDealer · notifications.suspension · sessions.revokeAll |
+| `ListingExpired`   | search.remove · dealer.decrementCounter · notifications.expiryNotice · cache.revalidate           |
+| `PaymentSucceeded` | billing.grantCredits (inline, in-TX) · invoice.generatePdf · notifications.receipt · analytics    |
+| `InquiryCreated`   | notifications.emailDealer · listing.incrementInquiryCount · analytics                             |
+| `DealerApproved`   | notifications.welcome · search.markDealerVerified · cache.revalidate                              |
+| `DealerSuspended`  | listings.pauseAll · search.removeDealer · notifications.suspension · sessions.revokeAll           |
 
 **Rules:** subscribers must be idempotent (they will be retried); subscribers must never throw synchronously into the publisher; a failing subscriber must not roll back the originating transaction. Each subscriber runs as its own job.
 
@@ -1888,34 +1896,34 @@ React Server Components are not a stylistic preference here — they are how you
 
 ## 17.2 Server vs client, decided
 
-| Concern | Rendering | Why |
-|---|---|---|
-| Homepage | **RSC + ISR (5 min)** | SEO, near-static |
-| `/cars` + facet landing pages | **RSC, ISR 60s + SWR** | SEO-critical, high traffic, filters live in the URL so every state is server-renderable |
-| Filter panel | **Client component**, writes to URL via `useRouter().replace` | Instant feedback + shareable/indexable URLs. Debounce 300ms. Use `useOptimistic` for chip toggles. |
-| Vehicle detail page | **RSC + ISR 5 min** | SEO-critical; specs and dealer info are server-fetched |
-| Image gallery on VDP | **Client** | Swipe, zoom, lightbox, keyboard nav |
-| EMI calculator | **Client** | Pure interaction, no data |
-| Inquiry form | **Server Action** + client validation | Progressive enhancement; works without JS |
-| Favorite button | **Client + Server Action + `useOptimistic`** | Instant toggle, server-authoritative |
-| Dealer page | **RSC + ISR 10 min** | SEO |
-| Dealer dashboard | **RSC shell + client tables** | Auth'd, `no-store`, no SEO value |
-| Vehicle add/edit form | **Client** (react-hook-form + Zod) + Server Action submit | Complex multi-step form with image upload; needs rich client state |
-| Image uploader | **Client** | Direct-to-R2 with progress bars |
-| Admin dashboard | **Client-heavy** | Dense tables, bulk actions, filters — no SEO |
-| Auth pages | **Server Actions** | Cookies must be set server-side |
+| Concern                       | Rendering                                                     | Why                                                                                                |
+| ----------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Homepage                      | **RSC + ISR (5 min)**                                         | SEO, near-static                                                                                   |
+| `/cars` + facet landing pages | **RSC, ISR 60s + SWR**                                        | SEO-critical, high traffic, filters live in the URL so every state is server-renderable            |
+| Filter panel                  | **Client component**, writes to URL via `useRouter().replace` | Instant feedback + shareable/indexable URLs. Debounce 300ms. Use `useOptimistic` for chip toggles. |
+| Vehicle detail page           | **RSC + ISR 5 min**                                           | SEO-critical; specs and dealer info are server-fetched                                             |
+| Image gallery on VDP          | **Client**                                                    | Swipe, zoom, lightbox, keyboard nav                                                                |
+| EMI calculator                | **Client**                                                    | Pure interaction, no data                                                                          |
+| Inquiry form                  | **Server Action** + client validation                         | Progressive enhancement; works without JS                                                          |
+| Favorite button               | **Client + Server Action + `useOptimistic`**                  | Instant toggle, server-authoritative                                                               |
+| Dealer page                   | **RSC + ISR 10 min**                                          | SEO                                                                                                |
+| Dealer dashboard              | **RSC shell + client tables**                                 | Auth'd, `no-store`, no SEO value                                                                   |
+| Vehicle add/edit form         | **Client** (react-hook-form + Zod) + Server Action submit     | Complex multi-step form with image upload; needs rich client state                                 |
+| Image uploader                | **Client**                                                    | Direct-to-R2 with progress bars                                                                    |
+| Admin dashboard               | **Client-heavy**                                              | Dense tables, bulk actions, filters — no SEO                                                       |
+| Auth pages                    | **Server Actions**                                            | Cookies must be set server-side                                                                    |
 
 ## 17.3 State management — you need much less than you think
 
-| State type | Solution | Not this |
-|---|---|---|
-| Server data (public) | **RSC `fetch` + Next cache** | Redux, React Query |
-| Server data (dashboard, mutable) | **TanStack Query** in client components | Redux |
-| Search/filter state | **URL search params** (`nuqs` or hand-rolled) | Any store — URL state is free SEO, free sharing, free back-button |
-| Form state | **react-hook-form + Zod** | — |
-| Ephemeral UI (modal open, tab) | **`useState`** | — |
-| Session/user | **RSC context from cookie**, passed down; a thin client provider for the header | — |
-| Compare list, recently viewed | **`localStorage` + a small Zustand store** | — |
+| State type                       | Solution                                                                        | Not this                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Server data (public)             | **RSC `fetch` + Next cache**                                                    | Redux, React Query                                                |
+| Server data (dashboard, mutable) | **TanStack Query** in client components                                         | Redux                                                             |
+| Search/filter state              | **URL search params** (`nuqs` or hand-rolled)                                   | Any store — URL state is free SEO, free sharing, free back-button |
+| Form state                       | **react-hook-form + Zod**                                                       | —                                                                 |
+| Ephemeral UI (modal open, tab)   | **`useState`**                                                                  | —                                                                 |
+| Session/user                     | **RSC context from cookie**, passed down; a thin client provider for the header | —                                                                 |
+| Compare list, recently viewed    | **`localStorage` + a small Zustand store**                                      | —                                                                 |
 
 **You do not need Redux. You do not need a global store.** If you find yourself reaching for one, the state probably belongs in the URL.
 
@@ -1925,9 +1933,14 @@ React Server Components are not a stylistic preference here — they are how you
 // lib/api-client.ts — one place, typed by @dd/contracts
 import type { paths } from '@dd/contracts';
 
-export async function apiFetch<T>(path: string, init?: RequestInit & {
-  cache?: RequestCache; revalidate?: number; tags?: string[];
-}): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  init?: RequestInit & {
+    cache?: RequestCache;
+    revalidate?: number;
+    tags?: string[];
+  },
+): Promise<T> {
   const res = await fetch(`${process.env.API_URL}${path}`, {
     ...init,
     headers: {
@@ -1941,7 +1954,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit & {
     },
     next: { revalidate: init?.revalidate, tags: init?.tags },
   });
-  if (!res.ok) throw await ApiError.from(res);   // → typed Problem Details
+  if (!res.ok) throw await ApiError.from(res); // → typed Problem Details
   return res.json();
 }
 ```
@@ -1950,13 +1963,13 @@ Notes: server components call this directly (server-to-server, fast, no CORS). C
 
 ## 17.5 Performance budget (enforce in CI with Lighthouse CI)
 
-| Metric | Target | Why |
-|---|---|---|
-| LCP (mobile, listing page) | < 2.0s | Ranking factor + bounce rate |
-| INP | < 200ms | Filter interactions must feel instant |
-| CLS | < 0.05 | Reserve image aspect ratios — car photos are the main culprit |
-| JS shipped, public pages | < 120KB gzipped | RSC makes this achievable |
-| Images above the fold | 1, `priority`, AVIF, blurhash placeholder | |
+| Metric                     | Target                                    | Why                                                           |
+| -------------------------- | ----------------------------------------- | ------------------------------------------------------------- |
+| LCP (mobile, listing page) | < 2.0s                                    | Ranking factor + bounce rate                                  |
+| INP                        | < 200ms                                   | Filter interactions must feel instant                         |
+| CLS                        | < 0.05                                    | Reserve image aspect ratios — car photos are the main culprit |
+| JS shipped, public pages   | < 120KB gzipped                           | RSC makes this achievable                                     |
+| Images above the fold      | 1, `priority`, AVIF, blurhash placeholder |                                                               |
 
 ## 17.6 When to split the frontend
 
@@ -1994,12 +2007,12 @@ Their repository layout, monorepo vs polyrepo choice, internal component library
 
 **Keep components inside `apps/web/src/components/` for now. Do not create `dealers-drive-ui`.**
 
-| Option | Assessment |
-|---|---|
-| **A — local `components/`** | ✅ **Recommended.** Zero versioning overhead. Refactoring is a rename. You will redesign these components 5–10 times in the first six months; every redesign in a published package costs a version bump, a publish, and a consumer update. |
-| B — separate `dealers-drive-ui` repo | ❌ Now. Solves a problem you do not have (sharing across repos/teams). Costs: npm registry setup, semver discipline, changelogs, a Storybook deploy, dual PRs for every visual tweak, and a broken local dev loop unless you configure `pnpm link` correctly. |
-| C — separate FE/BE repos + UI repo only if justified | 🟡 Right *instinct*, wrong *repo topology* (see §5 — monorepo instead). |
-| **D — local now, `packages/ui` when a trigger fires** | ✅ **This is what I'm actually recommending.** In a monorepo, promoting `components/ui` to `packages/ui` is a `git mv` plus a `package.json`. No publishing, no versioning — workspace protocol (`"@dd/ui": "workspace:*"`) resolves it directly. |
+| Option                                                | Assessment                                                                                                                                                                                                                                                    |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A — local `components/`**                           | ✅ **Recommended.** Zero versioning overhead. Refactoring is a rename. You will redesign these components 5–10 times in the first six months; every redesign in a published package costs a version bump, a publish, and a consumer update.                   |
+| B — separate `dealers-drive-ui` repo                  | ❌ Now. Solves a problem you do not have (sharing across repos/teams). Costs: npm registry setup, semver discipline, changelogs, a Storybook deploy, dual PRs for every visual tweak, and a broken local dev loop unless you configure `pnpm link` correctly. |
+| C — separate FE/BE repos + UI repo only if justified  | 🟡 Right _instinct_, wrong _repo topology_ (see §5 — monorepo instead).                                                                                                                                                                                       |
+| **D — local now, `packages/ui` when a trigger fires** | ✅ **This is what I'm actually recommending.** In a monorepo, promoting `components/ui` to `packages/ui` is a `git mv` plus a `package.json`. No publishing, no versioning — workspace protocol (`"@dd/ui": "workspace:*"`) resolves it directly.             |
 
 **Triggers to promote to `packages/ui`:**
 
@@ -2041,34 +2054,49 @@ Add **Storybook** in the web app once you have ~15 primitives. It pays for itsel
 // packages/contracts/src/vehicle.ts
 import { z } from 'zod';
 
-export const FuelType = z.enum(['PETROL','DIESEL','CNG','ELECTRIC','HYBRID','LPG']);
-export const Transmission = z.enum(['MANUAL','AUTOMATIC','AMT','CVT','DCT']);
+export const FuelType = z.enum(['PETROL', 'DIESEL', 'CNG', 'ELECTRIC', 'HYBRID', 'LPG']);
+export const Transmission = z.enum(['MANUAL', 'AUTOMATIC', 'AMT', 'CVT', 'DCT']);
 
-export const CreateVehicleInput = z.object({
-  makeId:       z.string().uuid(),
-  modelId:      z.string().uuid(),
-  variantId:    z.string().uuid().optional(),
-  year:         z.number().int().min(1990).max(new Date().getFullYear() + 1),
-  pricePaise:   z.coerce.bigint().positive(),
-  kmDriven:     z.number().int().min(0).max(1_000_000),
-  fuel:         FuelType,
-  transmission: Transmission,
-  ownerNumber:  z.number().int().min(1).max(10),
-  cityId:       z.string().uuid(),
-  description:  z.string().max(4000).optional(),
-  features:     z.array(z.string()).max(60).default([]),
-  specs:        z.record(z.unknown()).default({}),
-}).strict();                       // ← rejects dealerId, status, etc.
+export const CreateVehicleInput = z
+  .object({
+    makeId: z.string().uuid(),
+    modelId: z.string().uuid(),
+    variantId: z.string().uuid().optional(),
+    year: z
+      .number()
+      .int()
+      .min(1990)
+      .max(new Date().getFullYear() + 1),
+    pricePaise: z.coerce.bigint().positive(),
+    kmDriven: z.number().int().min(0).max(1_000_000),
+    fuel: FuelType,
+    transmission: Transmission,
+    ownerNumber: z.number().int().min(1).max(10),
+    cityId: z.string().uuid(),
+    description: z.string().max(4000).optional(),
+    features: z.array(z.string()).max(60).default([]),
+    specs: z.record(z.unknown()).default({}),
+  })
+  .strict(); // ← rejects dealerId, status, etc.
 
 export type CreateVehicleInput = z.infer<typeof CreateVehicleInput>;
 
 export const VehicleSummary = z.object({
-  id: z.string().uuid(), slug: z.string(),
-  title: z.string(), year: z.number(), pricePaise: z.string(), // bigint over JSON
-  kmDriven: z.number(), fuel: FuelType, transmission: Transmission,
+  id: z.string().uuid(),
+  slug: z.string(),
+  title: z.string(),
+  year: z.number(),
+  pricePaise: z.string(), // bigint over JSON
+  kmDriven: z.number(),
+  fuel: FuelType,
+  transmission: Transmission,
   city: z.object({ slug: z.string(), name: z.string() }),
-  dealer: z.object({ slug: z.string(), brandName: z.string(),
-                     logoUrl: z.string().nullable(), verified: z.boolean() }),
+  dealer: z.object({
+    slug: z.string(),
+    brandName: z.string(),
+    logoUrl: z.string().nullable(),
+    verified: z.boolean(),
+  }),
   primaryImage: z.object({ key: z.string(), blurhash: z.string().nullable() }).nullable(),
   emiPerMonthPaise: z.string().nullable(),
 });
@@ -2120,6 +2148,7 @@ SEO is not a section of this document. For a used-car marketplace it is **the gr
 ```
 
 **Rules:**
+
 - Facet order is **fixed and canonical**: `city → make → model → year`. Any other ordering 301-redirects to the canonical form. Without this rule you generate infinite duplicate URLs.
 - Only **whitelisted facet combinations** get their own indexable path. Everything else lives in query strings.
 - `/car/{slug}` is a permanent URL. When a car sells, keep the page, mark it "Sold," show similar vehicles, and `noindex` it after 30 days. Never 404 a URL Google has indexed — you lose the link equity and the user.
@@ -2128,19 +2157,19 @@ SEO is not a section of this document. For a used-car marketplace it is **the gr
 
 The failure mode is **index bloat**: 8 facets × 20 values each = millions of thin, near-duplicate pages, Google burns your crawl budget on them, and your genuinely valuable pages stop getting crawled.
 
-| URL pattern | Index? | Canonical |
-|---|---|---|
-| `/cars`, `/cars/in/{city}`, `/cars/{make}`, `/cars/{make}/{model}` | ✅ index, follow | self |
-| `/cars/in/{city}/{make}/{model}` | ✅ index **if ≥ 3 active listings**, else `noindex,follow` | self |
-| `/cars/{make}/{model}/{year}` | ✅ index if ≥ 3 listings | self |
-| `/cars/...?page=2..N` | ✅ index, follow | **self** (not page 1 — that's the modern guidance) |
-| `/cars/...?page=41+` | `noindex,follow` | page 1 | 
-| Any URL with filter query params (`?priceMax=`, `?fuel=`) | ❌ `noindex,follow` | clean path |
-| Any URL with tracking params (`?utm_*`, `?ref=`) | — | clean path |
-| `/car/{slug}` — active | ✅ index | self |
-| `/car/{slug}` — sold >30 days | ❌ `noindex,follow` | self |
-| `/dealers/{slug}` | ✅ index if dealer ACTIVE and has ≥1 listing | self |
-| `/dealer/*` dashboard, `/admin/*`, `/api/*` | ❌ `Disallow` in robots.txt + `noindex` | — |
+| URL pattern                                                        | Index?                                                     | Canonical                                          |
+| ------------------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------- |
+| `/cars`, `/cars/in/{city}`, `/cars/{make}`, `/cars/{make}/{model}` | ✅ index, follow                                           | self                                               |
+| `/cars/in/{city}/{make}/{model}`                                   | ✅ index **if ≥ 3 active listings**, else `noindex,follow` | self                                               |
+| `/cars/{make}/{model}/{year}`                                      | ✅ index if ≥ 3 listings                                   | self                                               |
+| `/cars/...?page=2..N`                                              | ✅ index, follow                                           | **self** (not page 1 — that's the modern guidance) |
+| `/cars/...?page=41+`                                               | `noindex,follow`                                           | page 1                                             |
+| Any URL with filter query params (`?priceMax=`, `?fuel=`)          | ❌ `noindex,follow`                                        | clean path                                         |
+| Any URL with tracking params (`?utm_*`, `?ref=`)                   | —                                                          | clean path                                         |
+| `/car/{slug}` — active                                             | ✅ index                                                   | self                                               |
+| `/car/{slug}` — sold >30 days                                      | ❌ `noindex,follow`                                        | self                                               |
+| `/dealers/{slug}`                                                  | ✅ index if dealer ACTIVE and has ≥1 listing               | self                                               |
+| `/dealer/*` dashboard, `/admin/*`, `/api/*`                        | ❌ `Disallow` in robots.txt + `noindex`                    | —                                                  |
 
 **The "≥3 listings" threshold is not arbitrary** — an empty facet page is a thin-content page, and enough of them will suppress your whole domain.
 
@@ -2154,9 +2183,10 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   const title = `${v.year} ${v.make} ${v.model} ${v.variant ?? ''} — ₹${lakh(v.price)} | ${v.city}`;
   return {
     title,
-    description: `${v.year} ${v.make} ${v.model}, ${fmtKm(v.km)} km, ${v.fuel}, `
-      + `${v.ownerNumber} owner. Available at ${v.dealer.brandName}, ${v.city}. `
-      + `View photos, specs and contact the dealer on Dealers-Drive.`,
+    description:
+      `${v.year} ${v.make} ${v.model}, ${fmtKm(v.km)} km, ${v.fuel}, ` +
+      `${v.ownerNumber} owner. Available at ${v.dealer.brandName}, ${v.city}. ` +
+      `View photos, specs and contact the dealer on Dealers-Drive.`,
     alternates: { canonical: `https://dealersdrive.com/car/${v.slug}` },
     openGraph: { title, images: [ogImage(v)], type: 'website' },
     robots: v.isSold && v.soldDaysAgo > 30 ? { index: false, follow: true } : undefined,
@@ -2168,25 +2198,37 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
 ```json
 {
-  "@context": "https://schema.org", "@type": "Vehicle",
+  "@context": "https://schema.org",
+  "@type": "Vehicle",
   "name": "2021 Toyota Fortuner 4x2 AT",
   "brand": { "@type": "Brand", "name": "Toyota" },
-  "model": "Fortuner", "vehicleModelDate": "2021",
+  "model": "Fortuner",
+  "vehicleModelDate": "2021",
   "mileageFromOdometer": { "@type": "QuantitativeValue", "value": 42000, "unitCode": "KMT" },
-  "fuelType": "Diesel", "vehicleTransmission": "Automatic",
-  "numberOfPreviousOwners": 1, "bodyType": "SUV", "color": "White",
+  "fuelType": "Diesel",
+  "vehicleTransmission": "Automatic",
+  "numberOfPreviousOwners": 1,
+  "bodyType": "SUV",
+  "color": "White",
   "itemCondition": "https://schema.org/UsedCondition",
   "image": ["https://img.dealersdrive.com/…/1600.webp"],
   "offers": {
-    "@type": "Offer", "price": "2850000", "priceCurrency": "INR",
+    "@type": "Offer",
+    "price": "2850000",
+    "priceCurrency": "INR",
     "availability": "https://schema.org/InStock",
     "url": "https://dealersdrive.com/car/2021-toyota-fortuner-…",
     "seller": {
-      "@type": "AutoDealer", "name": "Sharma Motors",
+      "@type": "AutoDealer",
+      "name": "Sharma Motors",
       "url": "https://dealersdrive.com/dealers/sharma-motors-andheri",
-      "address": { "@type": "PostalAddress", "addressLocality": "Andheri",
-                   "addressRegion": "Maharashtra", "postalCode": "400053",
-                   "addressCountry": "IN" }
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Andheri",
+        "addressRegion": "Maharashtra",
+        "postalCode": "400053",
+        "addressCountry": "IN"
+      }
     }
   }
 }
@@ -2210,16 +2252,16 @@ At 10k+ URLs a single sitemap won't do. Build a **sitemap index** with sharded c
 
 ## 20.5 The rest of the checklist
 
-| Item | Implementation |
-|---|---|
+| Item                             | Implementation                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Duplicate content across dealers | Same car model listed by 50 dealers = 50 near-identical pages. Mitigate: require unique dealer descriptions (min 100 chars), surface unique data (this specific car's photos, km, owner count, dealer), and rely on the VDP's genuinely unique attributes. Do **not** auto-generate descriptions from a template — that's the fastest route to a thin-content penalty. |
-| Location SEO | City pages with real local content: dealer count, average price in that city, popular models locally, nearby localities. This is where you beat national competitors. |
-| Internal linking | Every VDP links to: its model page, its city page, its dealer page, and 6 similar vehicles. This is how crawl equity flows to deep pages. |
-| Core Web Vitals | §17.5. Ranking factor and a conversion factor. |
-| `hreflang` | Not needed unless multi-country. Prepare the URL structure (`/in/`, `/ae/`) mentally; don't build it. |
-| Image SEO | Descriptive filenames, `alt` = "2021 Toyota Fortuner 4x2 AT front view — Sharma Motors, Mumbai", image sitemap entries. |
-| Crawl budget | Block `/api/`, filtered query URLs, and dealer/admin routes in `robots.txt`. Monitor "Crawled – currently not indexed" in Search Console weekly. |
-| Programmatic pages | Curated price bands ("under ₹5 lakh"), body types, and "best {model} deals in {city}" — but only where you have inventory. Generate from a whitelist, never from a cross-product of all facets. |
+| Location SEO                     | City pages with real local content: dealer count, average price in that city, popular models locally, nearby localities. This is where you beat national competitors.                                                                                                                                                                                                  |
+| Internal linking                 | Every VDP links to: its model page, its city page, its dealer page, and 6 similar vehicles. This is how crawl equity flows to deep pages.                                                                                                                                                                                                                              |
+| Core Web Vitals                  | §17.5. Ranking factor and a conversion factor.                                                                                                                                                                                                                                                                                                                         |
+| `hreflang`                       | Not needed unless multi-country. Prepare the URL structure (`/in/`, `/ae/`) mentally; don't build it.                                                                                                                                                                                                                                                                  |
+| Image SEO                        | Descriptive filenames, `alt` = "2021 Toyota Fortuner 4x2 AT front view — Sharma Motors, Mumbai", image sitemap entries.                                                                                                                                                                                                                                                |
+| Crawl budget                     | Block `/api/`, filtered query URLs, and dealer/admin routes in `robots.txt`. Monitor "Crawled – currently not indexed" in Search Console weekly.                                                                                                                                                                                                                       |
+| Programmatic pages               | Curated price bands ("under ₹5 lakh"), body types, and "best {model} deals in {city}" — but only where you have inventory. Generate from a whitelist, never from a cross-product of all facets.                                                                                                                                                                        |
 
 ---
 
@@ -2229,19 +2271,19 @@ At 10k+ URLs a single sitemap won't do. Build a **sitemap index** with sharded c
 
 Generic OWASP checklists miss the threats specific to your business. Rank them by likelihood × impact:
 
-| Threat | Likelihood | Impact | Primary defence |
-|---|---|---|---|
-| **Dealer accesses another dealer's inventory/leads** | Medium | Critical (business-ending) | §8 four-layer isolation |
-| **Payment/credit manipulation** | Medium | Critical | §13.4 server-authoritative |
-| **Lead scraping** (competitors harvesting your dealers' phone numbers) | **Very high** | High — dealers churn | Below |
-| **Listing scraping** (competitor copies your inventory) | **Very high** | Medium | Below |
-| **Fake dealer accounts / listing fraud** | High | High (trust) | KYC + moderation |
-| **Stolen dealer account** (credential reuse) | Medium | High | 2FA offer, login alerts, session list |
-| **Stored XSS via dealer description/name** | Medium | High | Sanitize + CSP |
-| **Malicious file upload** | Medium | High | §12.3 re-encode |
-| **Webhook forgery** | Low | Critical | HMAC verification |
-| **Inquiry spam / SMS pumping** | High | Medium (cost) | Rate limit + captcha |
-| **SQL injection** | Low (Prisma) | Critical | Parameterized everywhere; audit `$queryRaw` sites |
+| Threat                                                                 | Likelihood    | Impact                     | Primary defence                                   |
+| ---------------------------------------------------------------------- | ------------- | -------------------------- | ------------------------------------------------- |
+| **Dealer accesses another dealer's inventory/leads**                   | Medium        | Critical (business-ending) | §8 four-layer isolation                           |
+| **Payment/credit manipulation**                                        | Medium        | Critical                   | §13.4 server-authoritative                        |
+| **Lead scraping** (competitors harvesting your dealers' phone numbers) | **Very high** | High — dealers churn       | Below                                             |
+| **Listing scraping** (competitor copies your inventory)                | **Very high** | Medium                     | Below                                             |
+| **Fake dealer accounts / listing fraud**                               | High          | High (trust)               | KYC + moderation                                  |
+| **Stolen dealer account** (credential reuse)                           | Medium        | High                       | 2FA offer, login alerts, session list             |
+| **Stored XSS via dealer description/name**                             | Medium        | High                       | Sanitize + CSP                                    |
+| **Malicious file upload**                                              | Medium        | High                       | §12.3 re-encode                                   |
+| **Webhook forgery**                                                    | Low           | Critical                   | HMAC verification                                 |
+| **Inquiry spam / SMS pumping**                                         | High          | Medium (cost)              | Rate limit + captcha                              |
+| **SQL injection**                                                      | Low (Prisma)  | Critical                   | Parameterized everywhere; audit `$queryRaw` sites |
 
 ### Anti-scraping (most marketplaces underinvest here)
 
@@ -2251,27 +2293,27 @@ Your dealers pay you for leads. If a competitor scrapes every dealer phone numbe
 - Cloudflare Bot Management on `/cars` and `/car/*`.
 - Behavioural rate limiting: >200 VDPs in 10 minutes from one IP is not a human.
 - Honeypot listings with tracked phone numbers to detect and prove scraping.
-- Accept that public listing *data* will be scraped. Protect the *contact* data.
+- Accept that public listing _data_ will be scraped. Protect the _contact_ data.
 
 ## 21.2 Controls by category
 
-| Category | MVP (🟢 build now) | Growth (🟡) |
-|---|---|---|
-| **Injection** | Prisma parameterized queries; every `$queryRaw` uses tagged templates, never string concat; Zod validation on all input | Automated SAST in CI (CodeQL) |
-| **XSS** | React auto-escaping; **never** `dangerouslySetInnerHTML` on dealer content; sanitize rich text with DOMPurify server-side; strict CSP | CSP reporting endpoint, nonce-based CSP |
-| **CSRF** | `SameSite=Lax` cookies + double-submit token on all mutations; Server Actions have built-in protection | — |
-| **SSRF** | Dealers can submit URLs (website, social). Never fetch them server-side. If you must (link preview), use an allowlist + block private IP ranges + no redirects | Dedicated egress proxy |
-| **Auth attacks** | Argon2id password hashing; rate limit login 5/15min; account lockout with exponential backoff; generic error messages ("invalid credentials"); OTP: 6 digits, 5 min TTL, 3 attempts, single use; session rotation on privilege change | 2FA for dealers, breach-password check (HIBP k-anonymity) |
-| **Authorization** | §9.2 guard + service double-check; RLS backstop; the 404-not-403 rule | Automated IDOR test suite |
-| **File upload** | mime allowlist, size cap, presigned conditions, magic-byte check, **mandatory re-encode**, EXIF strip, separate serving domain | ClamAV on KYC docs, NSFW classifier |
-| **Secrets** | Platform secret store (Vercel/Render env, encrypted at rest); zod-validated at boot; **never** in the repo; `.env.example` documents keys only; separate keys per environment | AWS Secrets Manager, 90-day rotation |
-| **Encryption** | TLS 1.3 everywhere, HSTS with preload; Postgres encrypted at rest (managed default); bcrypt/Argon2 for passwords; SHA-256 for session tokens | Column-level encryption (`pgcrypto`) for PAN/GSTIN/full reg numbers |
-| **PII** | Minimize: mask registration numbers, don't store full PAN, strip GPS EXIF; delete/anonymize on request; document a retention policy (leads 24 months, audit 7 years) | DPDP Act (India) compliance review, consent management, DPA with processors |
-| **Webhooks** | HMAC verification on raw body **before** parsing; timestamp tolerance ±5 min; replay protection via `webhook_events` unique key; IP allowlist if provider publishes one | Signed internal webhooks too |
-| **API abuse** | §10.3 rate limits; Cloudflare WAF; request size limits (1MB JSON, 10MB upload); query complexity caps (max 40 pages, max 100 limit) | Per-dealer quotas, anomaly alerting |
-| **Headers** | `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, CSP | Report-only → enforce CSP |
-| **Audit** | Every admin action, every money movement, every state transition, every cross-tenant read → `audit_logs` with actor, before/after, IP, traceId. Immutable (no UPDATE/DELETE grant) | Ship to an append-only store; alerting on anomalous admin activity |
-| **Dependencies** | `pnpm audit` in CI, Dependabot on, lockfile committed | Renovate + SBOM |
+| Category          | MVP (🟢 build now)                                                                                                                                                                                                                    | Growth (🟡)                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Injection**     | Prisma parameterized queries; every `$queryRaw` uses tagged templates, never string concat; Zod validation on all input                                                                                                               | Automated SAST in CI (CodeQL)                                               |
+| **XSS**           | React auto-escaping; **never** `dangerouslySetInnerHTML` on dealer content; sanitize rich text with DOMPurify server-side; strict CSP                                                                                                 | CSP reporting endpoint, nonce-based CSP                                     |
+| **CSRF**          | `SameSite=Lax` cookies + double-submit token on all mutations; Server Actions have built-in protection                                                                                                                                | —                                                                           |
+| **SSRF**          | Dealers can submit URLs (website, social). Never fetch them server-side. If you must (link preview), use an allowlist + block private IP ranges + no redirects                                                                        | Dedicated egress proxy                                                      |
+| **Auth attacks**  | Argon2id password hashing; rate limit login 5/15min; account lockout with exponential backoff; generic error messages ("invalid credentials"); OTP: 6 digits, 5 min TTL, 3 attempts, single use; session rotation on privilege change | 2FA for dealers, breach-password check (HIBP k-anonymity)                   |
+| **Authorization** | §9.2 guard + service double-check; RLS backstop; the 404-not-403 rule                                                                                                                                                                 | Automated IDOR test suite                                                   |
+| **File upload**   | mime allowlist, size cap, presigned conditions, magic-byte check, **mandatory re-encode**, EXIF strip, separate serving domain                                                                                                        | ClamAV on KYC docs, NSFW classifier                                         |
+| **Secrets**       | Platform secret store (Vercel/Render env, encrypted at rest); zod-validated at boot; **never** in the repo; `.env.example` documents keys only; separate keys per environment                                                         | AWS Secrets Manager, 90-day rotation                                        |
+| **Encryption**    | TLS 1.3 everywhere, HSTS with preload; Postgres encrypted at rest (managed default); bcrypt/Argon2 for passwords; SHA-256 for session tokens                                                                                          | Column-level encryption (`pgcrypto`) for PAN/GSTIN/full reg numbers         |
+| **PII**           | Minimize: mask registration numbers, don't store full PAN, strip GPS EXIF; delete/anonymize on request; document a retention policy (leads 24 months, audit 7 years)                                                                  | DPDP Act (India) compliance review, consent management, DPA with processors |
+| **Webhooks**      | HMAC verification on raw body **before** parsing; timestamp tolerance ±5 min; replay protection via `webhook_events` unique key; IP allowlist if provider publishes one                                                               | Signed internal webhooks too                                                |
+| **API abuse**     | §10.3 rate limits; Cloudflare WAF; request size limits (1MB JSON, 10MB upload); query complexity caps (max 40 pages, max 100 limit)                                                                                                   | Per-dealer quotas, anomaly alerting                                         |
+| **Headers**       | `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, CSP                                                                | Report-only → enforce CSP                                                   |
+| **Audit**         | Every admin action, every money movement, every state transition, every cross-tenant read → `audit_logs` with actor, before/after, IP, traceId. Immutable (no UPDATE/DELETE grant)                                                    | Ship to an append-only store; alerting on anomalous admin activity          |
+| **Dependencies**  | `pnpm audit` in CI, Dependabot on, lockfile committed                                                                                                                                                                                 | Renovate + SBOM                                                             |
 
 ## 21.3 Security work you should do in Sprint 8, not Sprint 1
 
@@ -2285,22 +2327,22 @@ Your dealers pay you for leads. If a competitor scrapes every dealer phone numbe
 
 ## 22.1 What you actually need at each stage
 
-| Capability | MVP 🟢 | Growth 🟡 | Scale 🔴 |
-|---|---|---|---|
-| Error tracking | **Sentry** (free tier) — web + api, source maps, release tagging | Sentry Team, alert routing | Same |
-| Structured logs | **pino** JSON → platform log drain (Render/Vercel) or Better Stack (~$25/mo) | Loki or Datadog Logs, 30-day retention | Centralized, sampled, 90-day |
-| Metrics | Platform CPU/mem/req dashboards + a handful of **business** metrics in a Postgres view | Prometheus + Grafana, or Datadog | Same + SLOs |
-| Tracing | **traceId propagated in logs and error reports** (poor-man's tracing — 90% of the value, 5% of the cost) | OpenTelemetry → Tempo/Datadog APM | Full distributed tracing across services |
-| Uptime | **UptimeRobot / Better Stack** on `/health/ready` and the homepage (free) | Multi-region synthetics on critical journeys | Same |
-| DB monitoring | `pg_stat_statements` + provider dashboard; weekly slow-query review | Automated slow-query alerts, connection-pool metrics | Query plan regression detection |
-| RUM / Core Web Vitals | **Vercel Analytics** or PostHog web vitals | Full RUM | Same |
-| Product analytics | **PostHog** (free tier) | PostHog scale / Amplitude | Warehouse + dbt |
+| Capability            | MVP 🟢                                                                                                   | Growth 🟡                                            | Scale 🔴                                 |
+| --------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------- |
+| Error tracking        | **Sentry** (free tier) — web + api, source maps, release tagging                                         | Sentry Team, alert routing                           | Same                                     |
+| Structured logs       | **pino** JSON → platform log drain (Render/Vercel) or Better Stack (~$25/mo)                             | Loki or Datadog Logs, 30-day retention               | Centralized, sampled, 90-day             |
+| Metrics               | Platform CPU/mem/req dashboards + a handful of **business** metrics in a Postgres view                   | Prometheus + Grafana, or Datadog                     | Same + SLOs                              |
+| Tracing               | **traceId propagated in logs and error reports** (poor-man's tracing — 90% of the value, 5% of the cost) | OpenTelemetry → Tempo/Datadog APM                    | Full distributed tracing across services |
+| Uptime                | **UptimeRobot / Better Stack** on `/health/ready` and the homepage (free)                                | Multi-region synthetics on critical journeys         | Same                                     |
+| DB monitoring         | `pg_stat_statements` + provider dashboard; weekly slow-query review                                      | Automated slow-query alerts, connection-pool metrics | Query plan regression detection          |
+| RUM / Core Web Vitals | **Vercel Analytics** or PostHog web vitals                                                               | Full RUM                                             | Same                                     |
+| Product analytics     | **PostHog** (free tier)                                                                                  | PostHog scale / Amplitude                            | Warehouse + dbt                          |
 
 **Skip Datadog at MVP.** It is excellent and it will cost more than your entire infrastructure. Sentry + platform logs + PostHog costs $0–50/month and covers you to ~1M MAU.
 
 ## 22.2 Instrument the business, not just the servers
 
-Server metrics tell you the box is healthy. Business metrics tell you the *product* is healthy. Put these on one page from week one:
+Server metrics tell you the box is healthy. Business metrics tell you the _product_ is healthy. Put these on one page from week one:
 
 ```
 FUNNEL
@@ -2346,25 +2388,25 @@ Everything else goes to a Slack channel you check in the morning. **Alert fatigu
 
 You said "preferably AWS." Here is the honest trade:
 
-| | Managed PaaS (Vercel + Render + Neon) | AWS from day one |
-|---|---|---|
-| Time to first production deploy | **~2 hours** | 2–3 weeks (VPC, subnets, SGs, IAM, ECS, ALB, RDS, ACM, Route53) |
-| Preview environments per PR | **Built in** | Build it yourself |
-| Cost at MVP | **$45–110/mo** | $150–300/mo (NAT Gateway alone is ~$35/mo) |
-| Ops burden | Near zero | Real, ongoing |
-| Ceiling | ~10k dealers / few million MAU comfortably | Effectively unlimited |
-| Migration cost when you outgrow it | ~1 week (everything is already Dockerized) | n/a |
+|                                    | Managed PaaS (Vercel + Render + Neon)      | AWS from day one                                                |
+| ---------------------------------- | ------------------------------------------ | --------------------------------------------------------------- |
+| Time to first production deploy    | **~2 hours**                               | 2–3 weeks (VPC, subnets, SGs, IAM, ECS, ALB, RDS, ACM, Route53) |
+| Preview environments per PR        | **Built in**                               | Build it yourself                                               |
+| Cost at MVP                        | **$45–110/mo**                             | $150–300/mo (NAT Gateway alone is ~$35/mo)                      |
+| Ops burden                         | Near zero                                  | Real, ongoing                                                   |
+| Ceiling                            | ~10k dealers / few million MAU comfortably | Effectively unlimited                                           |
+| Migration cost when you outgrow it | ~1 week (everything is already Dockerized) | n/a                                                             |
 
 **Recommendation:** start on PaaS, containerize everything, keep all cloud-specific code behind adapters, and migrate to AWS (`ap-south-1` if India) when you hit the trigger: >$1,500/mo PaaS bill, or a data-residency/compliance requirement, or you need VPC-private database networking.
 
 ## 23.2 Environments
 
-| Env | Web | API | Database | Purpose |
-|---|---|---|---|---|
-| **Local** | `pnpm dev` | `pnpm dev` | Docker Postgres + MinIO + Mailpit | Full offline dev |
-| **Preview** | Vercel per-PR | Render PR env (or shared dev API) | **Neon branch** (instant copy-on-write from staging) | Review every PR with real data shape |
-| **Staging** | Vercel `staging` | Render staging | Neon staging branch, anonymized prod subset | Pre-release verification; Razorpay test mode |
-| **Production** | Vercel prod | Render prod (2 instances) + 1 worker | Neon/RDS prod, PITR on | Live |
+| Env            | Web              | API                                  | Database                                             | Purpose                                      |
+| -------------- | ---------------- | ------------------------------------ | ---------------------------------------------------- | -------------------------------------------- |
+| **Local**      | `pnpm dev`       | `pnpm dev`                           | Docker Postgres + MinIO + Mailpit                    | Full offline dev                             |
+| **Preview**    | Vercel per-PR    | Render PR env (or shared dev API)    | **Neon branch** (instant copy-on-write from staging) | Review every PR with real data shape         |
+| **Staging**    | Vercel `staging` | Render staging                       | Neon staging branch, anonymized prod subset          | Pre-release verification; Razorpay test mode |
+| **Production** | Vercel prod      | Render prod (2 instances) + 1 worker | Neon/RDS prod, PITR on                               | Live                                         |
 
 Neon's database branching is genuinely transformative for a solo developer — every PR gets a real database with realistic data in ~2 seconds, at near-zero cost.
 
@@ -2412,11 +2454,11 @@ Rules: never `ALTER COLUMN … NOT NULL` on a large table without a default and 
 
 ## 23.5 Deployment strategy per stage
 
-| Stage | Strategy | Rationale |
-|---|---|---|
-| MVP | **Rolling with health checks** (Render/Fargate default) | Sufficient. Add a 30s drain period so in-flight requests finish. |
-| Growth | **Blue/green** for the API | Instant rollback; worth the complexity once downtime costs money. |
-| Scale | **Canary** (5% → 25% → 100%) with automated metric gates | Only valuable when you have enough traffic for 5% to be statistically meaningful. |
+| Stage  | Strategy                                                 | Rationale                                                                         |
+| ------ | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| MVP    | **Rolling with health checks** (Render/Fargate default)  | Sufficient. Add a 30s drain period so in-flight requests finish.                  |
+| Growth | **Blue/green** for the API                               | Instant rollback; worth the complexity once downtime costs money.                 |
+| Scale  | **Canary** (5% → 25% → 100%) with automated metric gates | Only valuable when you have enough traffic for 5% to be statistically meaningful. |
 
 **Rollback plan for the MVP:** re-deploy the previous image tag (one click / one command), and — critically — make sure the previous image is compatible with the current schema. Expand/contract guarantees this.
 
@@ -2456,28 +2498,28 @@ For a solo developer on a CRUD-and-money product, the classic pyramid over-inves
 
 **Tier 1 — write these before launch, no exceptions:**
 
-| Test | Type |
-|---|---|
-| Dealer A cannot read/update/delete Dealer B's vehicle → **404** | Integration |
-| Dealer A cannot see Dealer B's inquiries or billing | Integration |
-| Publishing with 0 credits → 402, no listing created, no credit consumed | Integration |
-| Publishing with 1 credit → listing ACTIVE, balance 0, ledger entry, outbox event — all in one TX | Integration |
-| Two concurrent publishes with 1 credit → exactly one succeeds | Integration (concurrency) |
-| Duplicate webhook (same event id) → credits granted exactly once | Integration |
-| Webhook with invalid signature → 400, nothing granted | Integration |
-| Client-supplied `status`/`dealerId`/`amount` in request body is rejected/ignored | Integration |
-| Payment reconciliation settles a payment whose webhook never arrived | Integration |
-| Suspended dealer's listings disappear from public search | Integration |
-| Credit ledger `balanceAfter` never goes negative | Integration + DB constraint |
-| Full journey: register → apply → pay → approve → add vehicle → upload → publish → appears in search → customer inquires → dealer sees lead | **E2E** |
-| Search returns correct results for a known fixture set (each filter, each sort) | Integration |
-| Price/EMI/formatting math | Unit |
-| Slug generation, canonical URL builder, facet→query mapping | Unit |
-| Listing state machine: every invalid transition throws | Unit |
+| Test                                                                                                                                       | Type                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| Dealer A cannot read/update/delete Dealer B's vehicle → **404**                                                                            | Integration                 |
+| Dealer A cannot see Dealer B's inquiries or billing                                                                                        | Integration                 |
+| Publishing with 0 credits → 402, no listing created, no credit consumed                                                                    | Integration                 |
+| Publishing with 1 credit → listing ACTIVE, balance 0, ledger entry, outbox event — all in one TX                                           | Integration                 |
+| Two concurrent publishes with 1 credit → exactly one succeeds                                                                              | Integration (concurrency)   |
+| Duplicate webhook (same event id) → credits granted exactly once                                                                           | Integration                 |
+| Webhook with invalid signature → 400, nothing granted                                                                                      | Integration                 |
+| Client-supplied `status`/`dealerId`/`amount` in request body is rejected/ignored                                                           | Integration                 |
+| Payment reconciliation settles a payment whose webhook never arrived                                                                       | Integration                 |
+| Suspended dealer's listings disappear from public search                                                                                   | Integration                 |
+| Credit ledger `balanceAfter` never goes negative                                                                                           | Integration + DB constraint |
+| Full journey: register → apply → pay → approve → add vehicle → upload → publish → appears in search → customer inquires → dealer sees lead | **E2E**                     |
+| Search returns correct results for a known fixture set (each filter, each sort)                                                            | Integration                 |
+| Price/EMI/formatting math                                                                                                                  | Unit                        |
+| Slug generation, canonical URL builder, facet→query mapping                                                                                | Unit                        |
+| Listing state machine: every invalid transition throws                                                                                     | Unit                        |
 
 **Tier 2 — add in the first month post-launch:** VDP renders correct JSON-LD; sitemap generation; image derivative generation; email templates render; rate limiter behaviour.
 
-**Do not build at MVP:** contract tests (you have one consumer, in the same repo, sharing types — Zod *is* your contract test); load tests (nothing to load); visual regression (your design will change weekly); 80% coverage targets (a coverage number is not a quality metric).
+**Do not build at MVP:** contract tests (you have one consumer, in the same repo, sharing types — Zod _is_ your contract test); load tests (nothing to load); visual regression (your design will change weekly); 80% coverage targets (a coverage number is not a quality metric).
 
 **Load testing** becomes valuable in Sprint 9 and before any major traffic event: a k6 script hitting `/cars` and a VDP at 100 → 1,000 RPS to find where Postgres actually breaks. Do it once, record the number, and you'll know exactly when to add Redis.
 
@@ -2487,7 +2529,7 @@ For a solo developer on a CRUD-and-money product, the classic pyramid over-inves
 
 ## 25.1 Design thesis
 
-Every Indian used-car marketplace looks like a discount retailer: loud yellow, red urgency badges, "MEGA SALE" ribbons. That styling works for a company selling *its own* cars at a margin. It is wrong for Dealers-Drive, because your actual promise is different:
+Every Indian used-car marketplace looks like a discount retailer: loud yellow, red urgency badges, "MEGA SALE" ribbons. That styling works for a company selling _its own_ cars at a margin. It is wrong for Dealers-Drive, because your actual promise is different:
 
 > **Dealers-Drive is infrastructure. The dealer is the merchant; we are the rails.**
 
@@ -2510,81 +2552,70 @@ Everything else in the UI is quiet: flat surfaces, one weight of border, generou
 
 ```css
 /* ── COLOR ──────────────────────────────────────────────────────────── */
---dd-ink-900:      #0A0E1A;   /* asphalt night — headings, dark surfaces  */
---dd-ink-700:      #1B2233;
---dd-ink-500:      #3D4759;   /* body text                                */
---dd-ink-300:      #6B7688;   /* secondary text                           */
---dd-ink-100:      #A8B1C0;   /* disabled                                 */
+--dd-ink-900: #0a0e1a; /* asphalt night — headings, dark surfaces  */
+--dd-ink-700: #1b2233;
+--dd-ink-500: #3d4759; /* body text                                */
+--dd-ink-300: #6b7688; /* secondary text                           */
+--dd-ink-100: #a8b1c0; /* disabled                                 */
 
---dd-cobalt-700:   #142BA8;   /* pressed                                  */
---dd-cobalt-600:   #1B39D6;   /* PRIMARY — buttons, links, the plate band */
---dd-cobalt-500:   #3554EE;   /* hover                                    */
---dd-cobalt-100:   #E4E9FE;   /* tinted backgrounds, selected chips       */
+--dd-cobalt-700: #142ba8; /* pressed                                  */
+--dd-cobalt-600: #1b39d6; /* PRIMARY — buttons, links, the plate band */
+--dd-cobalt-500: #3554ee; /* hover                                    */
+--dd-cobalt-100: #e4e9fe; /* tinted backgrounds, selected chips       */
 
---dd-plate:        #F2B705;   /* SIGNATURE AMBER — plate accents ONLY     */
---dd-plate-ink:    #4A3600;   /* text on amber                            */
+--dd-plate: #f2b705; /* SIGNATURE AMBER — plate accents ONLY     */
+--dd-plate-ink: #4a3600; /* text on amber                            */
 
---dd-verified:     #0FA968;   /* verified dealer, success                 */
---dd-warn:         #C97A00;
---dd-danger:       #D42B21;
+--dd-verified: #0fa968; /* verified dealer, success                 */
+--dd-warn: #c97a00;
+--dd-danger: #d42b21;
 
---dd-surface:      #FFFFFF;
---dd-surface-sub:  #F4F6F9;   /* page background, cool not cream          */
---dd-surface-sunk: #EBEFF5;   /* skeletons, wells                         */
---dd-border:       #DDE3EC;   /* the ONE border colour                    */
---dd-border-strong:#C3CCDA;
+--dd-surface: #ffffff;
+--dd-surface-sub: #f4f6f9; /* page background, cool not cream          */
+--dd-surface-sunk: #ebeff5; /* skeletons, wells                         */
+--dd-border: #dde3ec; /* the ONE border colour                    */
+--dd-border-strong: #c3ccda;
 
 /* Dark mode (dealer dashboard + admin get it first) */
---dd-dark-bg:      #070A12;
+--dd-dark-bg: #070a12;
 --dd-dark-surface: #101725;
---dd-dark-border:  #212B3E;
+--dd-dark-border: #212b3e;
 
 /* ── TYPOGRAPHY ─────────────────────────────────────────────────────── */
---font-display: 'Cabinet Grotesk', 'Inter', system-ui;  /* squared terminals,
+--font-display: 'Cabinet Grotesk', 'Inter', system-ui; /* squared terminals,
                                                            engineered feel */
---font-ui:      'Inter', system-ui;                     /* dense data UI   */
---font-plate:   'Archivo', 'Inter';                     /* wide, uppercase,
+--font-ui: 'Inter', system-ui; /* dense data UI   */
+--font-plate: 'Archivo', 'Inter'; /* wide, uppercase,
                                                            tabular numerals */
 
 /* Type scale — 1.200 minor third, tightened at display sizes */
---text-display:  clamp(2.25rem, 4vw, 3.5rem) / 1.05  700  -0.03em  display
---text-h1:       2.0rem   / 1.15   700   -0.02em   display
---text-h2:       1.5rem   / 1.25   650   -0.015em  display
---text-h3:       1.25rem  / 1.3    600   -0.01em   ui
---text-body-lg:  1.0625rem/ 1.6    400    0        ui
---text-body:     0.9375rem/ 1.55   400    0        ui
---text-sm:       0.8125rem/ 1.45   400    0        ui
---text-label:    0.75rem  / 1.3    600    0.06em   ui   UPPERCASE
---text-plate:    0.875rem / 1      700    0.08em   plate UPPERCASE tabular
-
-/* PRICES ALWAYS use font-variant-numeric: tabular-nums. Non-negotiable —
-   a column of misaligned prices is the fastest way to look untrustworthy. */
-
-/* ── SPACING (4px base) ─────────────────────────────────────────────── */
---space-1:4px  --space-2:8px  --space-3:12px --space-4:16px --space-5:20px
---space-6:24px --space-8:32px --space-10:40px --space-12:48px --space-16:64px
---space-20:80px --space-24:96px
-
-/* ── RADIUS ─────────────────────────────────────────────────────────── */
---radius-sm:   4px    /* chips, small badges           */
---radius-md:   8px    /* inputs, buttons               */
---radius-lg:   12px   /* cards                         */
---radius-xl:   16px   /* modals, hero search panel     */
---radius-plate:6px    /* the plate motif — fixed        */
---radius-full: 9999px /* avatars, filter pills ONLY     */
-
-/* ── ELEVATION (restrained: two steps, that's all) ──────────────────── */
---shadow-1: 0 1px 2px rgb(10 14 26 / .06), 0 1px 3px rgb(10 14 26 / .04);
---shadow-2: 0 8px 24px rgb(10 14 26 / .10);   /* modals, dropdowns only  */
+--text-display:
+  clamp(2.25rem, 4vw, 3.5rem) / 1.05 700 -0.03em display --text-h1: 2rem / 1.15 700 -0.02em display
+    --text-h2: 1.5rem / 1.25 650 -0.015em display --text-h3: 1.25rem / 1.3 600 -0.01em ui
+    --text-body-lg: 1.0625rem/1.6 400 0 ui --text-body: 0.9375rem/1.55 400 0 ui
+    --text-sm: 0.8125rem/1.45 400 0 ui --text-label: 0.75rem / 1.3 600 0.06em ui UPPERCASE
+    --text-plate: 0.875rem / 1 700 0.08em plate UPPERCASE tabular
+    /* PRICES ALWAYS use font-variant-numeric: tabular-nums. Non-negotiable —
+   a column of misaligned prices is the fastest way to look untrustworthy. */ /* ── SPACING (4px base) ─────────────────────────────────────────────── */
+    --space-1: 4px --space-2: 8px --space-3: 12px --space-4: 16px --space-5: 20px --space-6: 24px
+    --space-8: 32px --space-10: 40px --space-12: 48px --space-16: 64px --space-20: 80px
+    --space-24: 96px /* ── RADIUS ─────────────────────────────────────────────────────────── */
+    --radius-sm: 4px /* chips, small badges           */ --radius-md: 8px
+    /* inputs, buttons               */ --radius-lg: 12px /* cards                         */
+    --radius-xl: 16px /* modals, hero search panel     */ --radius-plate: 6px
+    /* the plate motif — fixed        */ --radius-full: 9999px /* avatars, filter pills ONLY     */
+    /* ── ELEVATION (restrained: two steps, that's all) ──────────────────── */ --shadow-1: 0 1px
+    2px rgb(10 14 26 / 0.06),
+  0 1px 3px rgb(10 14 26 / 0.04);
+--shadow-2: 0 8px 24px rgb(10 14 26 / 0.1); /* modals, dropdowns only  */
 /* Cards use --dd-border, NOT shadows. Borders read as engineered;
    shadows read as consumer-app default.                                */
 
 /* ── MOTION ─────────────────────────────────────────────────────────── */
---ease:      cubic-bezier(.2,.8,.2,1);
---dur-fast:  120ms   /* hover, focus       */
---dur-base:  200ms   /* panels, accordions */
---dur-slow:  320ms   /* sheets, modals     */
-/* @media (prefers-reduced-motion: reduce) → all durations 0ms          */
+--ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+--dur-fast: 120ms /* hover, focus       */ --dur-base: 200ms /* panels, accordions */
+  --dur-slow: 320ms /* sheets, modals     */
+  /* @media (prefers-reduced-motion: reduce) → all durations 0ms          */;
 ```
 
 **Layout grid:** 12 columns · gutter 24px · max content width 1280px · page padding 16px (mobile) / 24px (tablet) / 32px (desktop).
@@ -2592,26 +2623,27 @@ Everything else in the UI is quiet: flat surfaces, one weight of border, generou
 
 ## 25.3 Component specifications
 
-| Component | Spec |
-|---|---|
-| **Button** | Heights 32/40/48. Variants: `primary` (cobalt fill, white), `secondary` (white fill, `--dd-border`, ink text), `ghost`, `danger`. Radius `md`. Focus: 2px cobalt ring, 2px offset. Loading state replaces the label with a spinner and **preserves width** (no layout shift). |
-| **Input / Select** | Height 44 (touch-friendly). 1px border, radius `md`. Label above, always visible (never placeholder-as-label). Error: danger border + message below with an icon. Prefix slots for `₹` and suffix for `km`. |
-| **Vehicle card** | 4:3 image, `object-cover`, blurhash placeholder, aspect-ratio reserved. **Year plate** top-left over the image. Favorite heart top-right. Below: title (`{year} {make} {model} {variant}`, 2-line clamp), spec row (`42,000 km · Diesel · Automatic · 1st owner`) in `--text-sm` `ink-300`, price in `h3` tabular, then a **1px divider** and the **dealer strip**: 20px logo + brand name + verified tick. The divider matters — it visually says "this car belongs to that dealer." |
-| **Dealer badge** | 20/28/40px logo (fallback: monogram on a generated pastel derived from the dealer id), brand name, optional verified tick in `--dd-verified`. Appears on **every** vehicle card, without exception. |
-| **Filter panel** | Desktop: sticky left rail, 280px, own scroll. Mobile: bottom sheet with an "Apply (128 cars)" button showing the live result count. Each facet group: label, collapsible, "show more" past 6 options, live counts per option, disabled at count 0 (never hidden — hiding options makes users think the filter is broken). |
-| **Active filter chips** | Horizontal scroll row above results. Each removable. "Clear all" at the end. |
-| **Price range** | Dual-thumb slider **plus** two numeric inputs. Slider alone is unusable for a ₹50k–₹1cr range; inputs alone feel clumsy. Both. |
-| **Gallery** | Desktop: large frame + thumbnail strip, keyboard arrows, click to open a full-screen lightbox with zoom. Mobile: swipeable with a `3/18` counter. First image `priority`, rest lazy. |
-| **Spec table** | Two columns, zebra `--dd-surface-sub`, label `ink-300` / value `ink-700`. Grouped: Overview · Engine & transmission · Dimensions · Features. |
-| **Table (dashboard)** | Sticky header, 48px rows, zebra optional, per-column sort, row-hover, bulk-select checkbox column, sticky action column on the right. Empty state with an illustration and a primary CTA. |
-| **Modal / Sheet** | Modal on desktop (max 560px, radius `xl`, `--shadow-2`), bottom sheet on mobile. Focus trap, `Esc` to close, scroll lock, backdrop `rgb(10 14 26 / .5)`. |
-| **Toast** | Bottom-right desktop, top mobile. 4s auto-dismiss, action slot for "Undo". |
-| **Empty states** | Every list has one. Line-art illustration + one sentence naming what's missing + one primary action. "No vehicles yet. Add your first vehicle to start receiving enquiries." |
-| **Skeletons** | Every async surface. Match the real layout's dimensions exactly, or you get layout shift. |
+| Component               | Spec                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Button**              | Heights 32/40/48. Variants: `primary` (cobalt fill, white), `secondary` (white fill, `--dd-border`, ink text), `ghost`, `danger`. Radius `md`. Focus: 2px cobalt ring, 2px offset. Loading state replaces the label with a spinner and **preserves width** (no layout shift).                                                                                                                                                                                                         |
+| **Input / Select**      | Height 44 (touch-friendly). 1px border, radius `md`. Label above, always visible (never placeholder-as-label). Error: danger border + message below with an icon. Prefix slots for `₹` and suffix for `km`.                                                                                                                                                                                                                                                                           |
+| **Vehicle card**        | 4:3 image, `object-cover`, blurhash placeholder, aspect-ratio reserved. **Year plate** top-left over the image. Favorite heart top-right. Below: title (`{year} {make} {model} {variant}`, 2-line clamp), spec row (`42,000 km · Diesel · Automatic · 1st owner`) in `--text-sm` `ink-300`, price in `h3` tabular, then a **1px divider** and the **dealer strip**: 20px logo + brand name + verified tick. The divider matters — it visually says "this car belongs to that dealer." |
+| **Dealer badge**        | 20/28/40px logo (fallback: monogram on a generated pastel derived from the dealer id), brand name, optional verified tick in `--dd-verified`. Appears on **every** vehicle card, without exception.                                                                                                                                                                                                                                                                                   |
+| **Filter panel**        | Desktop: sticky left rail, 280px, own scroll. Mobile: bottom sheet with an "Apply (128 cars)" button showing the live result count. Each facet group: label, collapsible, "show more" past 6 options, live counts per option, disabled at count 0 (never hidden — hiding options makes users think the filter is broken).                                                                                                                                                             |
+| **Active filter chips** | Horizontal scroll row above results. Each removable. "Clear all" at the end.                                                                                                                                                                                                                                                                                                                                                                                                          |
+| **Price range**         | Dual-thumb slider **plus** two numeric inputs. Slider alone is unusable for a ₹50k–₹1cr range; inputs alone feel clumsy. Both.                                                                                                                                                                                                                                                                                                                                                        |
+| **Gallery**             | Desktop: large frame + thumbnail strip, keyboard arrows, click to open a full-screen lightbox with zoom. Mobile: swipeable with a `3/18` counter. First image `priority`, rest lazy.                                                                                                                                                                                                                                                                                                  |
+| **Spec table**          | Two columns, zebra `--dd-surface-sub`, label `ink-300` / value `ink-700`. Grouped: Overview · Engine & transmission · Dimensions · Features.                                                                                                                                                                                                                                                                                                                                          |
+| **Table (dashboard)**   | Sticky header, 48px rows, zebra optional, per-column sort, row-hover, bulk-select checkbox column, sticky action column on the right. Empty state with an illustration and a primary CTA.                                                                                                                                                                                                                                                                                             |
+| **Modal / Sheet**       | Modal on desktop (max 560px, radius `xl`, `--shadow-2`), bottom sheet on mobile. Focus trap, `Esc` to close, scroll lock, backdrop `rgb(10 14 26 / .5)`.                                                                                                                                                                                                                                                                                                                              |
+| **Toast**               | Bottom-right desktop, top mobile. 4s auto-dismiss, action slot for "Undo".                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Empty states**        | Every list has one. Line-art illustration + one sentence naming what's missing + one primary action. "No vehicles yet. Add your first vehicle to start receiving enquiries."                                                                                                                                                                                                                                                                                                          |
+| **Skeletons**           | Every async surface. Match the real layout's dimensions exactly, or you get layout shift.                                                                                                                                                                                                                                                                                                                                                                                             |
 
 ## 25.4 Screen-by-screen layout direction
 
 ### Homepage
+
 ```
 ┌───────────────────────────────────────────────────────────────┐
 │ HEADER  [DD plate logo]  Buy  Dealers  Sell │ 📍Mumbai  Sign in│
@@ -2648,6 +2680,7 @@ Everything else in the UI is quiet: flat surfaces, one weight of border, generou
 ```
 
 ### Listing page (`/cars/...`)
+
 ```
 Breadcrumb: Home / Used cars / Mumbai / Toyota / Fortuner
 H1: Used Toyota Fortuner in Mumbai        128 cars   [Sort: Relevance ▾]
@@ -2670,6 +2703,7 @@ Below the fold: SEO copy block + "Popular Fortuner searches" links
 ```
 
 ### Vehicle detail page
+
 ```
 Breadcrumb
 ┌─ Gallery (60%) ──────────────────┬─ Sticky rail (40%) ───────────┐
@@ -2694,6 +2728,7 @@ Mobile: gallery full-bleed; a fixed bottom bar with price + [Enquire]
 ```
 
 ### Dealer page
+
 ```
 ┌ COVER BAND (dealer accent colour, derived from their logo) ─────┐
 │  [logo 96px]  Sharma Motors ✓ Verified                          │
@@ -2706,6 +2741,7 @@ this dealer. Reuse the components — do not build a second grid.
 ```
 
 ### Dealer dashboard
+
 ```
 ┌ Sidebar 240 ─┬──────────────────────────────────────────────────┐
 │ ▪ Overview   │ Overview                                          │
@@ -2728,6 +2764,7 @@ Add vehicle — 4 steps, autosaved as DRAFT after each:
 ```
 
 ### Admin dashboard
+
 ```
 Sidebar: Overview · Dealers · Listings · Payments · Moderation ·
          Enquiries · Config · Audit log
@@ -2774,13 +2811,13 @@ Dealers-Drive Product              (consumes the library)
 
 ## 26.1 Positioning
 
-| | |
-|---|---|
-| **What we are** | The platform independent dealers run their business on, and where buyers find every dealer's inventory in one place. |
-| **Personality** | Engineered · Even-handed · Local · Unpretentious · Precise |
-| **Not** | Discount retailer · Startup-cute · Luxury concierge · Aggregator-of-aggregators |
+|                     |                                                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **What we are**     | The platform independent dealers run their business on, and where buyers find every dealer's inventory in one place.                       |
+| **Personality**     | Engineered · Even-handed · Local · Unpretentious · Precise                                                                                 |
+| **Not**             | Discount retailer · Startup-cute · Luxury concierge · Aggregator-of-aggregators                                                            |
 | **Tagline options** | "Every dealer. One drive." · "The dealer's marketplace." · "Where dealers list. Where buyers look." · "Independent dealers, one platform." |
-| **Voice** | Plain verbs. Sentence case. Numbers over adjectives — "340 verified dealers," not "India's most trusted." |
+| **Voice**           | Plain verbs. Sentence case. Numbers over adjectives — "340 verified dealers," not "India's most trusted."                                  |
 
 ## 26.2 Four directions
 
@@ -2788,7 +2825,7 @@ Dealers-Drive Product              (consumes the library)
 
 The mark is a registration plate: a rounded rectangle with a solid cobalt band on the left edge and the **DD** monogram in the field. The band is the ownable detail — it's lifted directly from European/Indian plate design, so it reads "vehicle" instantly without drawing a car.
 
-- **Why it wins:** unmistakably automotive, zero cliché (no wheels, no speed lines, no chevrons), works at 16px, extends into a *system* rather than sitting inertly in the corner — the same plate frames prices, year badges and verified chips throughout the product. Cheap to trademark; the geometry is distinctive.
+- **Why it wins:** unmistakably automotive, zero cliché (no wheels, no speed lines, no chevrons), works at 16px, extends into a _system_ rather than sitting inertly in the corner — the same plate frames prices, year badges and verified chips throughout the product. Cheap to trademark; the geometry is distinctive.
 - **Wordmark:** "Dealers-Drive" in Cabinet Grotesk SemiBold, -2% tracking. Hyphen retained and set in cobalt — it becomes a small brand tic that also visually splits the two words.
 - **Icon/app:** plate alone, DD in the field.
 - **Favicon (16px):** drop the DD, keep the plate silhouette + band. Reads as a solid mark at tiny sizes.
@@ -2810,24 +2847,27 @@ The mark is a registration plate: a rounded rectangle with a solid cobalt band o
 The small amber square on the band is the signature accent — the only amber in the mark, echoing the plate motif used throughout the UI.
 
 ### Direction 2 — **The Junction**
+
 Four short strokes converging on a single point, forming an implied diamond — many dealers, one platform. Abstract, network-y, scales beautifully. **Risk:** could belong to a logistics or fintech company; it does not say "cars" without the wordmark.
 
 ### Direction 3 — **The Key Tag**
+
 The mark is a dealer key fob/tag silhouette with a hole at the top, containing the DD monogram. Warm, specific to the trade, instantly recognisable to dealers themselves. **Risk:** slightly retail/physical; less "technology company" as you scale into financing and data.
 
 ### Direction 4 — **The Odometer**
+
 A monogram where the two D's are set as rotating drums, one slightly offset vertically as if mid-rotation. Clever, literal to used cars (mileage), and animatable on page load. **Risk:** the joke gets old, and the offset reads as a rendering bug at small sizes.
 
 ## 26.3 Brand palette (brand ≠ product UI palette)
 
-| Role | Hex | Use |
-|---|---|---|
-| Ink | `#0A0E1A` | Wordmark, plate outline, dark sections |
-| Cobalt | `#1B39D6` | The band, primary actions, links |
-| Plate Amber | `#F2B705` | The accent square, badges — **never** as a large fill |
-| Paper | `#FFFFFF` | Plate field |
-| Cool Grey | `#F4F6F9` | Backgrounds |
-| Verified Green | `#0FA968` | Verification only, never decorative |
+| Role           | Hex       | Use                                                   |
+| -------------- | --------- | ----------------------------------------------------- |
+| Ink            | `#0A0E1A` | Wordmark, plate outline, dark sections                |
+| Cobalt         | `#1B39D6` | The band, primary actions, links                      |
+| Plate Amber    | `#F2B705` | The accent square, badges — **never** as a large fill |
+| Paper          | `#FFFFFF` | Plate field                                           |
+| Cool Grey      | `#F4F6F9` | Backgrounds                                           |
+| Verified Green | `#0FA968` | Verification only, never decorative                   |
 
 **Light variant:** ink outline, white field, cobalt band.
 **Dark variant:** white outline, transparent field, cobalt band, white DD. Never invert the amber.
@@ -2850,45 +2890,45 @@ Vercel(Next.js) → Render(API 1–2 × 0.5vCPU) + Render(worker 1) → Neon Pos
                                                                 → Cloudflare R2
 ```
 
-| Component | Why now | What happens without it |
-|---|---|---|
-| Postgres | Everything. Single source of truth. | — |
-| pg-boss | Async work without new infra | Image processing blocks HTTP; emails fail silently |
-| R2 + CDN | Images are 90% of your bytes | Slow pages, huge egress bills |
-| Sentry | You cannot fix what you cannot see | Dealers report bugs by phone, if at all |
-| Cloudflare | Free WAF, DDoS, caching | You get scraped and hammered |
+| Component  | Why now                             | What happens without it                            |
+| ---------- | ----------------------------------- | -------------------------------------------------- |
+| Postgres   | Everything. Single source of truth. | —                                                  |
+| pg-boss    | Async work without new infra        | Image processing blocks HTTP; emails fail silently |
+| R2 + CDN   | Images are 90% of your bytes        | Slow pages, huge egress bills                      |
+| Sentry     | You cannot fix what you cannot see  | Dealers report bugs by phone, if at all            |
+| Cloudflare | Free WAF, DDoS, caching             | You get scraped and hammered                       |
 
 **Validation targets:** 20 paying dealers · 500 live listings · 100 inquiries/month · p95 < 400ms.
 
 ## Stage 2 — Growth (1k–10k dealers · 100k–500k listings · 1–5M MAU)
 
-| Introduce | Trigger metric | Problem solved | Migration difficulty |
-|---|---|---|---|
-| **Read replica** | Primary CPU > 60% sustained; public reads > 70% of queries | Isolates marketplace reads from dealer writes | **Easy** — route `PublicListingsRepository` to a second connection string |
-| **Redis** | Session lookups > 2k/s, or you need cross-instance rate limits | Session cache, rate limiting, facet cache, distributed locks | **Easy** — `CachePort` already exists |
-| **Typesense/Meilisearch** | > 100k listings, or p95 search > 300ms, or typo tolerance costs conversions | Relevance, typo tolerance, fast faceting | **Medium** — `SearchPort` exists; ~1 week including reindex tooling |
-| **BullMQ on Redis** | Job throughput > 50/s, or pg-boss polling adds DB load | Higher-throughput queueing | **Easy** — job handlers are unchanged |
-| **Separate media worker** | Image jobs delay other jobs | CPU isolation | Easy |
-| **Move API to AWS ECS Fargate** | PaaS bill > $1,500/mo, or VPC-private DB required | Cost + network control | **Medium** — already Dockerized; ~1 week |
-| **CloudFront / full CDN config** | Global traffic, or origin egress costs bite | Latency, cost | Easy |
-| **OpenTelemetry + Grafana** | You can't answer "why was that request slow" | Distributed visibility | Medium |
-| **Blue/green deploys** | Downtime now costs revenue | Zero-downtime releases | Easy on ECS |
-| **Dedicated analytics replica** | Dealer analytics queries slow the primary | Isolation | Easy |
+| Introduce                        | Trigger metric                                                              | Problem solved                                               | Migration difficulty                                                      |
+| -------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| **Read replica**                 | Primary CPU > 60% sustained; public reads > 70% of queries                  | Isolates marketplace reads from dealer writes                | **Easy** — route `PublicListingsRepository` to a second connection string |
+| **Redis**                        | Session lookups > 2k/s, or you need cross-instance rate limits              | Session cache, rate limiting, facet cache, distributed locks | **Easy** — `CachePort` already exists                                     |
+| **Typesense/Meilisearch**        | > 100k listings, or p95 search > 300ms, or typo tolerance costs conversions | Relevance, typo tolerance, fast faceting                     | **Medium** — `SearchPort` exists; ~1 week including reindex tooling       |
+| **BullMQ on Redis**              | Job throughput > 50/s, or pg-boss polling adds DB load                      | Higher-throughput queueing                                   | **Easy** — job handlers are unchanged                                     |
+| **Separate media worker**        | Image jobs delay other jobs                                                 | CPU isolation                                                | Easy                                                                      |
+| **Move API to AWS ECS Fargate**  | PaaS bill > $1,500/mo, or VPC-private DB required                           | Cost + network control                                       | **Medium** — already Dockerized; ~1 week                                  |
+| **CloudFront / full CDN config** | Global traffic, or origin egress costs bite                                 | Latency, cost                                                | Easy                                                                      |
+| **OpenTelemetry + Grafana**      | You can't answer "why was that request slow"                                | Distributed visibility                                       | Medium                                                                    |
+| **Blue/green deploys**           | Downtime now costs revenue                                                  | Zero-downtime releases                                       | Easy on ECS                                                               |
+| **Dedicated analytics replica**  | Dealer analytics queries slow the primary                                   | Isolation                                                    | Easy                                                                      |
 
 ## Stage 3 — Scale (10k–100k dealers · 1–5M listings · 5–25M MAU)
 
-| Introduce | Trigger | Problem solved | Difficulty |
-|---|---|---|---|
-| **Extract `search-svc`** | Search is >40% of API CPU and needs independent scaling | Independent scaling + deploy | **Medium** — the facade is already the boundary |
-| **Extract `media-svc`** | Image processing dominates cost; wants serverless burst | Bursty CPU on a different runtime | Medium |
-| **OpenSearch cluster** | > 1M listings, custom relevance/ML ranking needed | Ranking quality at scale | Medium-Hard |
-| **Table partitioning** | `audit_logs`/`inquiries`/`listing_views` > 100M rows | Vacuum, query time, retention | Medium (easy if you partitioned audit logs from day one, as advised) |
-| **Multiple read replicas + PgBouncer** | Read QPS > 10k | Connection exhaustion, read scaling | Medium |
-| **SNS/SQS or Kafka for the outbox** | Cross-service events; >3 services | Durable inter-service eventing | **Easy** — swap the outbox publisher's sink |
-| **CDC (Debezium)** | Dual-write drift between DB and search/analytics | Guaranteed consistency | Hard |
-| **ClickHouse / Redshift** | Analytics queries impact OLTP even on a replica | Columnar analytics, dealer BI | Medium |
-| **Canary deploys** | Regressions cost real money | Safer releases | Medium |
-| **Multi-AZ + automated failover** | Downtime is unacceptable | Availability | Easy on RDS |
+| Introduce                              | Trigger                                                 | Problem solved                      | Difficulty                                                           |
+| -------------------------------------- | ------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------- |
+| **Extract `search-svc`**               | Search is >40% of API CPU and needs independent scaling | Independent scaling + deploy        | **Medium** — the facade is already the boundary                      |
+| **Extract `media-svc`**                | Image processing dominates cost; wants serverless burst | Bursty CPU on a different runtime   | Medium                                                               |
+| **OpenSearch cluster**                 | > 1M listings, custom relevance/ML ranking needed       | Ranking quality at scale            | Medium-Hard                                                          |
+| **Table partitioning**                 | `audit_logs`/`inquiries`/`listing_views` > 100M rows    | Vacuum, query time, retention       | Medium (easy if you partitioned audit logs from day one, as advised) |
+| **Multiple read replicas + PgBouncer** | Read QPS > 10k                                          | Connection exhaustion, read scaling | Medium                                                               |
+| **SNS/SQS or Kafka for the outbox**    | Cross-service events; >3 services                       | Durable inter-service eventing      | **Easy** — swap the outbox publisher's sink                          |
+| **CDC (Debezium)**                     | Dual-write drift between DB and search/analytics        | Guaranteed consistency              | Hard                                                                 |
+| **ClickHouse / Redshift**              | Analytics queries impact OLTP even on a replica         | Columnar analytics, dealer BI       | Medium                                                               |
+| **Canary deploys**                     | Regressions cost real money                             | Safer releases                      | Medium                                                               |
+| **Multi-AZ + automated failover**      | Downtime is unacceptable                                | Availability                        | Easy on RDS                                                          |
 
 ## Stage 4 — Massive (100k dealers · 10M vehicles · 50M MAU · 1M concurrent peak)
 
@@ -2920,9 +2960,10 @@ Vercel(Next.js) → Render(API 1–2 × 0.5vCPU) + Render(worker 1) → Neon Pos
 ```
 
 **Key insights for this stage:**
+
 - **Cache hit ratio is the whole ballgame.** At 95% CDN hit rate, 200k RPS becomes 10k RPS at origin, which is a routine workload. At 80% it becomes 40k RPS and your bill quadruples. Invest engineering in cacheability, not in more servers.
 - **Reads and writes get separate planes.** Buyers browsing and dealers publishing have completely different scaling curves; at this size they should not share a deployment.
-- **You still don't need to shard the primary database.** A well-tuned Aurora writer with partitioned hot tables handles 100k dealers' *writes* comfortably — writes are a tiny fraction of your traffic. Shard only if you go multi-country with data residency requirements.
+- **You still don't need to shard the primary database.** A well-tuned Aurora writer with partitioned hot tables handles 100k dealers' _writes_ comfortably — writes are a tiny fraction of your traffic. Shard only if you go multi-country with data residency requirements.
 - **Do not build any of this before the trigger fires.** Companies die from premature Stage-4 architecture far more often than from being caught unprepared.
 
 ---
@@ -2933,60 +2974,60 @@ Conceptual monthly figures; verify against current pricing. Assumes India/Asia r
 
 ## MVP (100 dealers · 1,000 listings · 50k MAU)
 
-| Item | Cost |
-|---|---|
-| Vercel Pro | $20 |
-| Render API (1 × 1GB) + worker (1 × 512MB) | $14 |
-| Neon Postgres (launch tier) | $19 |
-| Cloudflare R2 (50GB storage, 0 egress) | $1 |
-| Cloudflare Images (200k transforms) | $10 |
-| Sentry / PostHog / UptimeRobot | $0 (free tiers) |
-| Resend (10k emails) | $0–20 |
-| Domain + email | $5 |
-| **Total** | **~$70–90/month** |
+| Item                                      | Cost              |
+| ----------------------------------------- | ----------------- |
+| Vercel Pro                                | $20               |
+| Render API (1 × 1GB) + worker (1 × 512MB) | $14               |
+| Neon Postgres (launch tier)               | $19               |
+| Cloudflare R2 (50GB storage, 0 egress)    | $1                |
+| Cloudflare Images (200k transforms)       | $10               |
+| Sentry / PostHog / UptimeRobot            | $0 (free tiers)   |
+| Resend (10k emails)                       | $0–20             |
+| Domain + email                            | $5                |
+| **Total**                                 | **~$70–90/month** |
 
 Razorpay takes ~2% of transaction value — a revenue share, not infrastructure cost.
 
 ## 1,000 dealers (10k listings · 500k MAU)
 
-| Item | Cost |
-|---|---|
-| Vercel Pro (higher bandwidth/function usage) | $60–150 |
-| API 2 × 2GB + 1 worker | $70 |
-| Postgres (4GB RAM, 100GB) + PITR | $110 |
-| R2 (500GB) + Images (3M transforms) | $60 |
-| Email/SMS (SMS is the surprise — ~₹0.15/msg) | $80 |
-| Sentry Team + PostHog | $50 |
-| **Total** | **~$430–520/month** |
+| Item                                         | Cost                |
+| -------------------------------------------- | ------------------- |
+| Vercel Pro (higher bandwidth/function usage) | $60–150             |
+| API 2 × 2GB + 1 worker                       | $70                 |
+| Postgres (4GB RAM, 100GB) + PITR             | $110                |
+| R2 (500GB) + Images (3M transforms)          | $60                 |
+| Email/SMS (SMS is the surprise — ~₹0.15/msg) | $80                 |
+| Sentry Team + PostHog                        | $50                 |
+| **Total**                                    | **~$430–520/month** |
 
 ## 10,000 dealers (150k listings · 5M MAU)
 
-| Item | Cost |
-|---|---|
-| Web hosting (Vercel Pro/Enterprise or self-hosted on ECS) | $400–900 |
-| ECS Fargate: api 4 tasks + worker 2 + media 2 | $350 |
-| RDS Postgres Multi-AZ (8 vCPU) + 1 replica | $700 |
-| ElastiCache Redis | $120 |
-| Typesense Cloud | $200 |
-| R2/S3 (6TB) + CDN | $250 |
-| Email + SMS + WhatsApp | $600 |
-| Observability (Datadog or Grafana Cloud) | $300 |
-| **Total** | **~$2,900–3,400/month** |
+| Item                                                      | Cost                    |
+| --------------------------------------------------------- | ----------------------- |
+| Web hosting (Vercel Pro/Enterprise or self-hosted on ECS) | $400–900                |
+| ECS Fargate: api 4 tasks + worker 2 + media 2             | $350                    |
+| RDS Postgres Multi-AZ (8 vCPU) + 1 replica                | $700                    |
+| ElastiCache Redis                                         | $120                    |
+| Typesense Cloud                                           | $200                    |
+| R2/S3 (6TB) + CDN                                         | $250                    |
+| Email + SMS + WhatsApp                                    | $600                    |
+| Observability (Datadog or Grafana Cloud)                  | $300                    |
+| **Total**                                                 | **~$2,900–3,400/month** |
 
 ## 100,000 dealers (2M listings · 50M MAU)
 
-| Item | Cost |
-|---|---|
-| CDN + edge (the dominant line item) | $8,000–20,000 |
-| Compute (100–300 Fargate tasks across services) | $12,000 |
-| Aurora writer + 5 replicas | $9,000 |
-| OpenSearch cluster | $4,000 |
-| Redis cluster | $1,500 |
-| Object storage (80TB) | $1,500 |
-| ClickHouse / warehouse | $3,000 |
-| Observability | $4,000 |
-| Email/SMS/WhatsApp | $8,000 |
-| **Total** | **~$50,000–65,000/month** |
+| Item                                            | Cost                      |
+| ----------------------------------------------- | ------------------------- |
+| CDN + edge (the dominant line item)             | $8,000–20,000             |
+| Compute (100–300 Fargate tasks across services) | $12,000                   |
+| Aurora writer + 5 replicas                      | $9,000                    |
+| OpenSearch cluster                              | $4,000                    |
+| Redis cluster                                   | $1,500                    |
+| Object storage (80TB)                           | $1,500                    |
+| ClickHouse / warehouse                          | $3,000                    |
+| Observability                                   | $4,000                    |
+| Email/SMS/WhatsApp                              | $8,000                    |
+| **Total**                                       | **~$50,000–65,000/month** |
 
 ## The five cost drivers, ranked
 
@@ -2994,7 +3035,7 @@ Razorpay takes ~2% of transaction value — a revenue share, not infrastructure 
 2. **Database.** Mitigations: read replicas before vertical scaling · the denormalized `listing_search` table · connection pooling (PgBouncer) · aggressive `pg_stat_statements` review · partition and archive `audit_logs` and view events.
 3. **Compute.** Mitigations: ISR/CDN caching means most requests never reach your API · autoscale on request count, not CPU · scale to a low floor overnight (used-car traffic has a pronounced daily curve).
 4. **SMS/WhatsApp.** Genuinely surprising at scale. Mitigation: email-first, SMS only for OTP and hot leads, WhatsApp Business templates (cheaper per message in India than SMS for many categories).
-5. **Observability.** Datadog's pricing scales with hosts *and* custom metrics *and* log volume. Mitigation: sample logs, cap custom metric cardinality (never put `dealer_id` in a metric label — that's 100,000 time series), and stay on Grafana Cloud/self-hosted longer than feels comfortable.
+5. **Observability.** Datadog's pricing scales with hosts _and_ custom metrics _and_ log volume. Mitigation: sample logs, cap custom metric cardinality (never put `dealer_id` in a metric label — that's 100,000 time series), and stay on Grafana Cloud/self-hosted longer than feels comfortable.
 
 ## How to avoid premature spend
 
@@ -3009,85 +3050,85 @@ Razorpay takes ~2% of transaction value — a revenue share, not infrastructure 
 
 # 29. ADR decision table
 
-| # | Decision | Options considered | **Recommendation** | Why | When to revisit |
-|---|---|---|---|---|---|
-| 1 | Primary database | PostgreSQL · MongoDB · both | **PostgreSQL 16 only** | Money, ownership and lifecycle need ACID + FKs. JSONB covers variable specs. Two DBs = dual-write bugs + no cross-store transactions. | Only if a genuinely non-transactional, document-shaped, high-write subsystem appears (Phase 3 CRM). Try JSONB first. |
-| 2 | API style | REST · GraphQL · both · tRPC | **REST + OpenAPI 3.1** | One first-party client; CDN caching of public listings is critical; GraphQL adds a week of setup and complicates caching and rate limiting. tRPC over-couples web to API. | Public partner API or 3+ divergent clients (Phase 6). |
-| 3 | Backend shape | Modular monolith · microservices · serverless | **Modular monolith (NestJS)** with enforced boundaries | One engineer. Transactional consistency for free. Extraction later is mechanical if facades + events are respected. | Team > 12, or one module has a genuinely different scaling profile. Extract `search` first. |
-| 4 | Repo layout | 2 repos · monorepo · 3 repos | **Turborepo monorepo, 2 deploy targets** | Atomic contract changes, direct type sharing, one CI cache. Independent deployment is achieved with path filters, not repos. | Separate teams with separate release cadence + on-call (~15 engineers). |
-| 5 | Component library | Local folder · separate repo · `packages/ui` | **Local `components/` now**, promote to `packages/ui` when a 2nd app exists | You'll redesign components 5–10× in six months. Versioning that is pure friction. In a monorepo, promotion is a `git mv`. | A second app, or parallel component work by 2+ engineers. |
-| 6 | Cache layer | Redis now · CDN+ISR only | **CDN + Next ISR + in-process LRU. No Redis.** | Postgres handles session lookups at your scale; CDN covers 95% of read traffic. | Sessions > 2k/s, cross-instance rate limits, or facet computation > 100ms. |
-| 7 | Search | Postgres FTS · Elasticsearch · Typesense · Algolia | **Postgres (`listing_search` + GIN/trgm)**, behind a `SearchPort` | Sufficient to ~200k listings ≈ 20k dealers. Zero cost, zero ops. | > 100k listings, p95 > 300ms, or typo tolerance costs conversions → **Typesense**. |
-| 8 | Job queue | pg-boss · BullMQ+Redis · SQS · Temporal | **pg-boss** | Real queue semantics on infrastructure you already run; transactional enqueue enables the outbox. | > 50 jobs/s → BullMQ. Multi-service → SQS. |
-| 9 | Object storage | S3+CloudFront · R2 · Cloudinary | **Cloudflare R2 + Cloudflare Images** | **Zero egress fees** on an image-heavy product; S3-compatible so migration is a config change. | If you consolidate fully on AWS, or Cloudflare Images' transform limits bite. |
-| 10 | CDN | Cloudflare · CloudFront · Fastly | **Cloudflare** (free tier) | WAF, bot management, DDoS, caching, DNS in one free product. | Enterprise contract needs or deep AWS integration. |
-| 11 | Authentication | JWT · sessions · Auth0/Clerk · NextAuth | **Opaque session cookies in Postgres** (custom, ~250 LOC) | Instant revocation (critical for suspending dealers), immediate permission changes, no vendor lock-in on your most business-critical table. | Mobile app or partner API → add JWTs alongside. Never replace sessions for web. |
-| 12 | Payments | Razorpay · Stripe · PayU · Cashfree | **Razorpay** behind a `PaymentGatewayPort` | India-first: UPI, netbanking, RuPay, GST invoicing, e-mandate. The port makes a second provider a 2-day job. | International dealers → add Stripe as a second adapter. |
-| 13 | Monetization mechanic | Pay-per-publish · **credit packs** · subscription | **Prepaid listing credits** | Instant publish (no gateway latency in the UX), prepaid cash flow, trivial volume discounts, refunds are ledger entries. | Add subscriptions on top later — they simply grant credits monthly. |
-| 14 | Multi-tenancy | Shared schema · schema-per-dealer · DB-per-dealer | **Shared DB, shared schema, `dealer_id` + RLS** | Your core product is a cross-tenant search. Physical isolation makes it architecturally impossible. Scales to 100k+ tenants. | Only for a contractual data-residency requirement (hybrid isolation for one enterprise tenant). |
-| 15 | Orchestration | Kubernetes · ECS Fargate · PaaS | **PaaS (Render/Fly) → ECS Fargate at growth** | K8s is a full-time job. Fargate gets you to enormous scale with no cluster to operate. | > 8 services **and** > 6 engineers. Probably never. |
-| 16 | Events | None · in-process bus + outbox · Kafka | **In-process bus + transactional outbox from day one** | Costs one table and ~60 lines; guarantees side effects; the outbox sink swaps to a broker later with no domain changes. | > 3 services sharing events → SNS/SQS, then Kafka. |
-| 17 | Frontend rendering | CSR SPA · SSR · **RSC + ISR** | **RSC + ISR + selective client components** | SEO is the growth engine; ISR gives cached, crawlable HTML with sub-second LCP. | Never — this is correct at every scale. |
-| 18 | Type sharing | Duplicate · OpenAPI codegen · **shared Zod package** | **`packages/contracts` with Zod** | One definition serves as runtime validation (API), form validation (web), and static types. | Add generated clients if a mobile/partner client appears. |
-| 19 | IaC | Terraform now · later · never | **Later (at the AWS migration)** | MVP infra is five dashboard settings; document them in Markdown instead. | The day you move to AWS. |
-| 20 | Admin UI | Same Next.js app · separate app · Retool | **Same app, `(admin)` route group** | One deploy, one auth, shared components. | Admin bundle > 40% of JS, or a different auth model, or a separate team. |
+| #   | Decision              | Options considered                                   | **Recommendation**                                                          | Why                                                                                                                                                                       | When to revisit                                                                                                      |
+| --- | --------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 1   | Primary database      | PostgreSQL · MongoDB · both                          | **PostgreSQL 16 only**                                                      | Money, ownership and lifecycle need ACID + FKs. JSONB covers variable specs. Two DBs = dual-write bugs + no cross-store transactions.                                     | Only if a genuinely non-transactional, document-shaped, high-write subsystem appears (Phase 3 CRM). Try JSONB first. |
+| 2   | API style             | REST · GraphQL · both · tRPC                         | **REST + OpenAPI 3.1**                                                      | One first-party client; CDN caching of public listings is critical; GraphQL adds a week of setup and complicates caching and rate limiting. tRPC over-couples web to API. | Public partner API or 3+ divergent clients (Phase 6).                                                                |
+| 3   | Backend shape         | Modular monolith · microservices · serverless        | **Modular monolith (NestJS)** with enforced boundaries                      | One engineer. Transactional consistency for free. Extraction later is mechanical if facades + events are respected.                                                       | Team > 12, or one module has a genuinely different scaling profile. Extract `search` first.                          |
+| 4   | Repo layout           | 2 repos · monorepo · 3 repos                         | **Turborepo monorepo, 2 deploy targets**                                    | Atomic contract changes, direct type sharing, one CI cache. Independent deployment is achieved with path filters, not repos.                                              | Separate teams with separate release cadence + on-call (~15 engineers).                                              |
+| 5   | Component library     | Local folder · separate repo · `packages/ui`         | **Local `components/` now**, promote to `packages/ui` when a 2nd app exists | You'll redesign components 5–10× in six months. Versioning that is pure friction. In a monorepo, promotion is a `git mv`.                                                 | A second app, or parallel component work by 2+ engineers.                                                            |
+| 6   | Cache layer           | Redis now · CDN+ISR only                             | **CDN + Next ISR + in-process LRU. No Redis.**                              | Postgres handles session lookups at your scale; CDN covers 95% of read traffic.                                                                                           | Sessions > 2k/s, cross-instance rate limits, or facet computation > 100ms.                                           |
+| 7   | Search                | Postgres FTS · Elasticsearch · Typesense · Algolia   | **Postgres (`listing_search` + GIN/trgm)**, behind a `SearchPort`           | Sufficient to ~200k listings ≈ 20k dealers. Zero cost, zero ops.                                                                                                          | > 100k listings, p95 > 300ms, or typo tolerance costs conversions → **Typesense**.                                   |
+| 8   | Job queue             | pg-boss · BullMQ+Redis · SQS · Temporal              | **pg-boss**                                                                 | Real queue semantics on infrastructure you already run; transactional enqueue enables the outbox.                                                                         | > 50 jobs/s → BullMQ. Multi-service → SQS.                                                                           |
+| 9   | Object storage        | S3+CloudFront · R2 · Cloudinary                      | **Cloudflare R2 + Cloudflare Images**                                       | **Zero egress fees** on an image-heavy product; S3-compatible so migration is a config change.                                                                            | If you consolidate fully on AWS, or Cloudflare Images' transform limits bite.                                        |
+| 10  | CDN                   | Cloudflare · CloudFront · Fastly                     | **Cloudflare** (free tier)                                                  | WAF, bot management, DDoS, caching, DNS in one free product.                                                                                                              | Enterprise contract needs or deep AWS integration.                                                                   |
+| 11  | Authentication        | JWT · sessions · Auth0/Clerk · NextAuth              | **Opaque session cookies in Postgres** (custom, ~250 LOC)                   | Instant revocation (critical for suspending dealers), immediate permission changes, no vendor lock-in on your most business-critical table.                               | Mobile app or partner API → add JWTs alongside. Never replace sessions for web.                                      |
+| 12  | Payments              | Razorpay · Stripe · PayU · Cashfree                  | **Razorpay** behind a `PaymentGatewayPort`                                  | India-first: UPI, netbanking, RuPay, GST invoicing, e-mandate. The port makes a second provider a 2-day job.                                                              | International dealers → add Stripe as a second adapter.                                                              |
+| 13  | Monetization mechanic | Pay-per-publish · **credit packs** · subscription    | **Prepaid listing credits**                                                 | Instant publish (no gateway latency in the UX), prepaid cash flow, trivial volume discounts, refunds are ledger entries.                                                  | Add subscriptions on top later — they simply grant credits monthly.                                                  |
+| 14  | Multi-tenancy         | Shared schema · schema-per-dealer · DB-per-dealer    | **Shared DB, shared schema, `dealer_id` + RLS**                             | Your core product is a cross-tenant search. Physical isolation makes it architecturally impossible. Scales to 100k+ tenants.                                              | Only for a contractual data-residency requirement (hybrid isolation for one enterprise tenant).                      |
+| 15  | Orchestration         | Kubernetes · ECS Fargate · PaaS                      | **PaaS (Render/Fly) → ECS Fargate at growth**                               | K8s is a full-time job. Fargate gets you to enormous scale with no cluster to operate.                                                                                    | > 8 services **and** > 6 engineers. Probably never.                                                                  |
+| 16  | Events                | None · in-process bus + outbox · Kafka               | **In-process bus + transactional outbox from day one**                      | Costs one table and ~60 lines; guarantees side effects; the outbox sink swaps to a broker later with no domain changes.                                                   | > 3 services sharing events → SNS/SQS, then Kafka.                                                                   |
+| 17  | Frontend rendering    | CSR SPA · SSR · **RSC + ISR**                        | **RSC + ISR + selective client components**                                 | SEO is the growth engine; ISR gives cached, crawlable HTML with sub-second LCP.                                                                                           | Never — this is correct at every scale.                                                                              |
+| 18  | Type sharing          | Duplicate · OpenAPI codegen · **shared Zod package** | **`packages/contracts` with Zod**                                           | One definition serves as runtime validation (API), form validation (web), and static types.                                                                               | Add generated clients if a mobile/partner client appears.                                                            |
+| 19  | IaC                   | Terraform now · later · never                        | **Later (at the AWS migration)**                                            | MVP infra is five dashboard settings; document them in Markdown instead.                                                                                                  | The day you move to AWS.                                                                                             |
+| 20  | Admin UI              | Same Next.js app · separate app · Retool             | **Same app, `(admin)` route group**                                         | One deploy, one auth, shared components.                                                                                                                                  | Admin bundle > 40% of JS, or a different auth model, or a separate team.                                             |
 
 ---
 
 # 30. Build now / prepare / do not build
 
-| Component | Status | Reasoning |
-|---|---|---|
-| PostgreSQL | 🟢 **Build now** | The foundation of everything |
-| Next.js App Router + RSC + ISR | 🟢 | SEO is the growth engine |
-| NestJS modular monolith | 🟢 | Structure that makes later extraction cheap |
-| Prisma + migrations | 🟢 | Schema evolution discipline from day one |
-| Turborepo monorepo | 🟢 | Two hours of setup, saves months |
-| `packages/contracts` (Zod) | 🟢 | Prevents contract drift permanently |
-| Cookie sessions + RBAC | 🟢 | Core to the product |
-| Row-Level Security | 🟢 | Trivial now, terrifying to retrofit after an incident |
-| Cloudflare R2 + Images | 🟢 | Images are the product |
-| Presigned direct uploads | 🟢 | Never proxy image bytes through your API |
-| Razorpay + webhooks + idempotency | 🟢 | Money must be correct on day one |
-| Credit ledger (append-only) | 🟢 | The anti-fraud foundation |
-| pg-boss job queue | 🟢 | Zero-cost async |
-| Transactional outbox | 🟢 | 60 lines now, weeks later |
-| In-process event bus | 🟢 | Decoupling with no infrastructure |
-| `listing_search` denormalized table | 🟢 | Makes Postgres search viable to 200k listings |
-| Curated make/model/variant catalog | 🟢 | Everything downstream depends on clean taxonomy |
-| Vehicle ≠ Listing separation | 🟢 | Your revenue model lives here |
-| SEO: metadata, JSON-LD, sitemaps, canonicals | 🟢 | This *is* customer acquisition |
-| Sentry + structured logs + traceId | 🟢 | You cannot operate blind |
-| Audit logs (partitioned) | 🟢 | Disputes, fraud, compliance |
-| Rate limiting | 🟢 | Cheap; abuse arrives early |
-| Integration test suite (tenant isolation + payments) | 🟢 | The tests that prevent business-ending bugs |
-| CI/CD with preview environments | 🟢 | Solo devs need a safety net most |
-| Admin moderation console | 🟢 | Ungoverned marketplaces fill with fraud in weeks |
-| Phone-number reveal gating | 🟢 | Protects your dealers' leads from scrapers |
-| `SearchPort` / `StoragePort` / `PaymentGatewayPort` interfaces | 🟢 | The seams that make every later migration cheap |
-| `CachePort` with a memory adapter | 🟡 **Prepare** | Interface now, Redis adapter later |
-| Redis | 🟡 | Trigger: §27 Stage 2 |
-| Typesense / OpenSearch | 🟡 | Trigger: >100k listings |
-| Read replicas | 🟡 | Trigger: primary CPU > 60% |
-| `packages/ui` | 🟡 | Trigger: a second app |
-| OpenTelemetry tracing | 🟡 | traceId-in-logs covers you until multi-service |
-| Terraform | 🟡 | Trigger: AWS migration |
-| Dealer staff sub-accounts | 🟡 | Schema supports it (`DealerMember`); build the UI when asked for |
-| Subscriptions | 🟡 | Ledger already supports it |
-| Reviews & ratings | 🟡 | Post-launch; needs moderation capacity first |
-| WhatsApp / SMS notifications | 🟡 | Email-first; add SMS for hot leads |
-| Blue/green + canary | 🟡 | Rolling deploys are fine at MVP |
-| Microservices | 🔴 **Do not build** | Distributed-systems cost, zero organizational benefit |
-| Kafka | 🔴 | The outbox gives you the semantics; the broker is later |
-| Kubernetes | 🔴 | A full-time job you don't have |
-| MongoDB | 🔴 | Solves nothing Postgres doesn't |
-| GraphQL | 🔴 | One client |
-| CQRS / event sourcing | 🔴 | Enormous complexity, no current benefit |
-| Service mesh, multi-region active-active | 🔴 | Not in this decade for you |
-| Native mobile apps | 🔴 | Ship a fast mobile web experience first; it's 80% of the value at 10% of the cost |
-| ML recommendations / dynamic pricing | 🔴 | Needs data you don't have yet. "Similar cars" = same model ± 2 years, ± 20% price. |
-| Custom analytics warehouse | 🔴 | PostHog + a Postgres replica covers years |
-| Multi-currency / multi-country | 🔴 | Keep money as `BigInt` minor units + a `currency` column; that's all the preparation needed |
+| Component                                                      | Status              | Reasoning                                                                                   |
+| -------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------- |
+| PostgreSQL                                                     | 🟢 **Build now**    | The foundation of everything                                                                |
+| Next.js App Router + RSC + ISR                                 | 🟢                  | SEO is the growth engine                                                                    |
+| NestJS modular monolith                                        | 🟢                  | Structure that makes later extraction cheap                                                 |
+| Prisma + migrations                                            | 🟢                  | Schema evolution discipline from day one                                                    |
+| Turborepo monorepo                                             | 🟢                  | Two hours of setup, saves months                                                            |
+| `packages/contracts` (Zod)                                     | 🟢                  | Prevents contract drift permanently                                                         |
+| Cookie sessions + RBAC                                         | 🟢                  | Core to the product                                                                         |
+| Row-Level Security                                             | 🟢                  | Trivial now, terrifying to retrofit after an incident                                       |
+| Cloudflare R2 + Images                                         | 🟢                  | Images are the product                                                                      |
+| Presigned direct uploads                                       | 🟢                  | Never proxy image bytes through your API                                                    |
+| Razorpay + webhooks + idempotency                              | 🟢                  | Money must be correct on day one                                                            |
+| Credit ledger (append-only)                                    | 🟢                  | The anti-fraud foundation                                                                   |
+| pg-boss job queue                                              | 🟢                  | Zero-cost async                                                                             |
+| Transactional outbox                                           | 🟢                  | 60 lines now, weeks later                                                                   |
+| In-process event bus                                           | 🟢                  | Decoupling with no infrastructure                                                           |
+| `listing_search` denormalized table                            | 🟢                  | Makes Postgres search viable to 200k listings                                               |
+| Curated make/model/variant catalog                             | 🟢                  | Everything downstream depends on clean taxonomy                                             |
+| Vehicle ≠ Listing separation                                   | 🟢                  | Your revenue model lives here                                                               |
+| SEO: metadata, JSON-LD, sitemaps, canonicals                   | 🟢                  | This _is_ customer acquisition                                                              |
+| Sentry + structured logs + traceId                             | 🟢                  | You cannot operate blind                                                                    |
+| Audit logs (partitioned)                                       | 🟢                  | Disputes, fraud, compliance                                                                 |
+| Rate limiting                                                  | 🟢                  | Cheap; abuse arrives early                                                                  |
+| Integration test suite (tenant isolation + payments)           | 🟢                  | The tests that prevent business-ending bugs                                                 |
+| CI/CD with preview environments                                | 🟢                  | Solo devs need a safety net most                                                            |
+| Admin moderation console                                       | 🟢                  | Ungoverned marketplaces fill with fraud in weeks                                            |
+| Phone-number reveal gating                                     | 🟢                  | Protects your dealers' leads from scrapers                                                  |
+| `SearchPort` / `StoragePort` / `PaymentGatewayPort` interfaces | 🟢                  | The seams that make every later migration cheap                                             |
+| `CachePort` with a memory adapter                              | 🟡 **Prepare**      | Interface now, Redis adapter later                                                          |
+| Redis                                                          | 🟡                  | Trigger: §27 Stage 2                                                                        |
+| Typesense / OpenSearch                                         | 🟡                  | Trigger: >100k listings                                                                     |
+| Read replicas                                                  | 🟡                  | Trigger: primary CPU > 60%                                                                  |
+| `packages/ui`                                                  | 🟡                  | Trigger: a second app                                                                       |
+| OpenTelemetry tracing                                          | 🟡                  | traceId-in-logs covers you until multi-service                                              |
+| Terraform                                                      | 🟡                  | Trigger: AWS migration                                                                      |
+| Dealer staff sub-accounts                                      | 🟡                  | Schema supports it (`DealerMember`); build the UI when asked for                            |
+| Subscriptions                                                  | 🟡                  | Ledger already supports it                                                                  |
+| Reviews & ratings                                              | 🟡                  | Post-launch; needs moderation capacity first                                                |
+| WhatsApp / SMS notifications                                   | 🟡                  | Email-first; add SMS for hot leads                                                          |
+| Blue/green + canary                                            | 🟡                  | Rolling deploys are fine at MVP                                                             |
+| Microservices                                                  | 🔴 **Do not build** | Distributed-systems cost, zero organizational benefit                                       |
+| Kafka                                                          | 🔴                  | The outbox gives you the semantics; the broker is later                                     |
+| Kubernetes                                                     | 🔴                  | A full-time job you don't have                                                              |
+| MongoDB                                                        | 🔴                  | Solves nothing Postgres doesn't                                                             |
+| GraphQL                                                        | 🔴                  | One client                                                                                  |
+| CQRS / event sourcing                                          | 🔴                  | Enormous complexity, no current benefit                                                     |
+| Service mesh, multi-region active-active                       | 🔴                  | Not in this decade for you                                                                  |
+| Native mobile apps                                             | 🔴                  | Ship a fast mobile web experience first; it's 80% of the value at 10% of the cost           |
+| ML recommendations / dynamic pricing                           | 🔴                  | Needs data you don't have yet. "Similar cars" = same model ± 2 years, ± 20% price.          |
+| Custom analytics warehouse                                     | 🔴                  | PostHog + a Postgres replica covers years                                                   |
+| Multi-currency / multi-country                                 | 🔴                  | Keep money as `BigInt` minor units + a `currency` column; that's all the preparation needed |
 
 ---
 
@@ -3096,52 +3137,63 @@ Razorpay takes ~2% of transaction value — a revenue share, not infrastructure 
 Ten two-week sprints. **Sprints 1–7 are the launchable MVP** (~14 weeks); 8–10 harden and launch. Assumes full-time work.
 
 ### Sprint 0 — Foundations (1 week)
+
 Monorepo scaffold (Turborepo + pnpm) · Next.js + NestJS hello-world both deployed to production URLs on day 3 · Postgres via Neon + Docker Compose locally · Prisma with one migration · CI (lint/typecheck/test) · Sentry wired in both apps · design tokens in Tailwind config.
 **Done when:** a commit to `main` reaches production automatically, and a deliberate error appears in Sentry.
 
 ### Sprint 1 — Identity & tenancy
+
 Users, sessions, cookie auth · register/login/logout/verify email · password reset · `Dealer` + `DealerMember` + dealer application flow (creates `DRAFT`) · auth/RBAC/tenant guards · `RequestContext` · audit log skeleton · admin user seeded with 2FA.
 **Done when:** the tenant-isolation integration tests pass (Dealer A → Dealer B's resource → 404).
 
 ### Sprint 2 — Catalog & vehicles
+
 Seed makes/models/variants/cities (**budget 3 full days for real data sourcing and cleaning — this is not a small task**) · vehicle CRUD scoped by dealer · Zod contracts in `packages/contracts` · dealer inventory list · slug generation.
 **Done when:** a dealer can create a vehicle and see it in their inventory list. No images yet.
 
 ### Sprint 3 — Media pipeline
+
 Presigned R2 uploads · client-side pre-compression · commit endpoint · pg-boss + `media.process` worker (sharp: derivatives, EXIF strip, blurhash) · drag-to-reorder gallery · primary image · orphan GC job.
 **Done when:** a dealer uploads 10 phone photos and they appear, correctly sized and ordered, in under 15 seconds.
 
 ### Sprint 4 — Public marketplace
+
 `listing_search` table + subscribers · `GET /v1/vehicles` with all filters, sort, pagination · facet counts · `/cars` listing page (RSC + ISR) · filter panel with URL state · VehicleCard **with dealer branding** · VDP · dealer page · homepage · responsive down to 375px.
 **Done when:** a stranger can find a specific car in under three clicks on a phone.
 
 ### Sprint 5 — Money
+
 Credit packs + `platform_config` pricing · Razorpay order creation with idempotency · webhook endpoint with HMAC verification + `webhook_events` dedupe · credit ledger · onboarding-fee gate · publish/unpublish with atomic credit consumption · listing state machine · expiry sweeper · invoice generation · billing page.
 **Done when:** every Tier-1 payment test in §24.2 passes, including the concurrency test.
 
 ### Sprint 6 — Leads & admin
+
 Inquiry form (guest-capable) + rate limiting + captcha · "Show number" gating · dealer inquiry inbox · email notifications (dealer lead alert, receipt, expiry warning) · admin console: dealer approve/reject/suspend, listing moderation, payment view, config editor · favorites.
 **Done when:** the full loop works end-to-end — dealer pays, publishes, buyer inquires, dealer is emailed within 30 seconds.
 
 ### Sprint 7 — SEO & polish
+
 Facet landing pages with the canonical URL rules · dynamic metadata · JSON-LD (Vehicle/Offer/AutoDealer/Breadcrumb) · sharded sitemaps · robots.txt · OG images · Search Console + GA4 + PostHog · Core Web Vitals to target · loading/error/empty states everywhere · 404/410 handling for sold cars.
 **Done when:** Lighthouse ≥ 90 on mobile for `/cars` and a VDP, and rich results validate.
 
 ### Sprint 8 — Hardening
+
 Security headers + CSP · full rate-limit coverage · payment reconciliation job · counter reconciliation job · backup restore rehearsal · load test (k6) to find the real ceiling · alerting · runbook · Playwright E2E for the two critical journeys · dependency audit · **external penetration test booked**.
 **Done when:** you have restored the database from a backup and written down the actual RTO.
 
 ### Sprint 9 — Private beta
+
 Onboard 10 real dealers by hand. Sit with three of them while they add a car. **Watch where they get stuck without helping them.** Fix that. Expect: the vehicle form is too long, the photo upload confuses them, and they don't understand credits. Fix all three. Ship dealer-requested must-haves only.
 **Done when:** a dealer completes signup → live listing with zero help from you.
 
 ### Sprint 10 — Launch
+
 Marketing site copy · dealer onboarding docs · support email/WhatsApp · pricing page · terms/privacy (get these reviewed by a lawyer — you're handling payments and PII) · Search Console sitemap submission · soft launch in one city.
 **Done when:** you have a paying dealer you did not personally know beforehand.
 
 ## Post-launch order of work (do not decide this now — let dealers decide it)
 
-The first three months post-launch should be driven entirely by two questions: *why do dealers churn?* and *why don't listings convert to inquiries?* Likely answers, in rough priority: bulk CSV upload (dealers with 50+ cars will not hand-enter them) · WhatsApp lead alerts · dealer analytics · reviews · saved searches with email alerts · dealer staff accounts · subscriptions · featured listings.
+The first three months post-launch should be driven entirely by two questions: _why do dealers churn?_ and _why don't listings convert to inquiries?_ Likely answers, in rough priority: bulk CSV upload (dealers with 50+ cars will not hand-enter them) · WhatsApp lead alerts · dealer analytics · reviews · saved searches with email alerts · dealer staff accounts · subscriptions · featured listings.
 
 ---
 
@@ -3149,30 +3201,30 @@ The first three months post-launch should be driven entirely by two questions: *
 
 ## 32.1 Architectural
 
-| Risk | Consequence | Mitigation |
-|---|---|---|
-| **Skipping the module-boundary ESLint rule** | The monolith becomes a ball of mud in ~4 months; extraction becomes a rewrite | Add it in Sprint 0. 20 lines. |
-| **Letting `dealerId` come from the request body anywhere** | Cross-tenant data breach; business-ending | Session-only, `.strict()` schemas, RLS backstop, integration tests |
-| **Trusting client-supplied prices or payment status** | Direct revenue theft | Server-side price lookup, webhook-only value grants |
-| **Building a second database "for flexibility"** | Dual-write drift, no cross-store transactions, doubled ops | Postgres + JSONB |
-| **Free-text make/model input** | Search, filters and SEO all degrade at once, unrecoverably without a data migration | Curated catalog, dropdowns only |
-| **Conflating Vehicle and Listing** | Painful migration in month 8 when you add renewals/boosts | Separate from day one |
-| **No outbox** | Silent lost emails, un-indexed listings, phantom side effects | One table, day one |
-| **Premature microservices** | 6–12 months of velocity gone | Modular monolith |
-| **Premature Kubernetes** | You become a platform engineer instead of a founder | Fargate/PaaS |
+| Risk                                                       | Consequence                                                                         | Mitigation                                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Skipping the module-boundary ESLint rule**               | The monolith becomes a ball of mud in ~4 months; extraction becomes a rewrite       | Add it in Sprint 0. 20 lines.                                      |
+| **Letting `dealerId` come from the request body anywhere** | Cross-tenant data breach; business-ending                                           | Session-only, `.strict()` schemas, RLS backstop, integration tests |
+| **Trusting client-supplied prices or payment status**      | Direct revenue theft                                                                | Server-side price lookup, webhook-only value grants                |
+| **Building a second database "for flexibility"**           | Dual-write drift, no cross-store transactions, doubled ops                          | Postgres + JSONB                                                   |
+| **Free-text make/model input**                             | Search, filters and SEO all degrade at once, unrecoverably without a data migration | Curated catalog, dropdowns only                                    |
+| **Conflating Vehicle and Listing**                         | Painful migration in month 8 when you add renewals/boosts                           | Separate from day one                                              |
+| **No outbox**                                              | Silent lost emails, un-indexed listings, phantom side effects                       | One table, day one                                                 |
+| **Premature microservices**                                | 6–12 months of velocity gone                                                        | Modular monolith                                                   |
+| **Premature Kubernetes**                                   | You become a platform engineer instead of a founder                                 | Fargate/PaaS                                                       |
 
 ## 32.2 Product & business
 
-| Risk | Consequence | Mitigation |
-|---|---|---|
-| **Cold-start (no cars → no buyers → no dealers)** | The marketplace never ignites | Launch **one city only**. Hand-onboard 30 dealers with free credits. Density beats coverage — 500 cars in one city beats 5,000 across twenty. |
-| **Dealers won't pay upfront** | No revenue | Consider: free onboarding + first 10 listings free, charge on renewal. Prove lead value before charging. Your architecture supports this — it's a `platform_config` change, not a code change. |
-| **Dealers list stale/sold cars** | Buyer trust collapses; the marketplace dies | 90-day expiry (already designed) · weekly "still available?" prompts · a buyer "report as sold" button · penalize dealers with high stale rates in search ranking |
-| **Lead scraping by competitors** | Dealers churn to the competitor who now has their number | §21.1 phone gating from day one, not later |
-| **Fake listings / bait pricing** | Regulatory and reputational damage | KYC before publishing · price-anomaly flagging (>40% below model median → review queue) · buyer reporting |
-| **No moderation capacity** | Marketplace fills with junk in weeks | Build the admin queue in Sprint 6, not "later" |
-| **Dealers with 200 cars won't hand-enter them** | Your best customers can't onboard | CSV import is the #1 post-launch feature. Design the vehicle schema now assuming a bulk importer will target it. |
-| **Optimizing the buyer experience while ignoring dealer UX** | Dealers are the paying customer; if the dashboard is painful, they leave | Watch dealers use it (Sprint 9). Time "signup → first live listing" and treat it as your north-star activation metric. |
+| Risk                                                         | Consequence                                                              | Mitigation                                                                                                                                                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cold-start (no cars → no buyers → no dealers)**            | The marketplace never ignites                                            | Launch **one city only**. Hand-onboard 30 dealers with free credits. Density beats coverage — 500 cars in one city beats 5,000 across twenty.                                                  |
+| **Dealers won't pay upfront**                                | No revenue                                                               | Consider: free onboarding + first 10 listings free, charge on renewal. Prove lead value before charging. Your architecture supports this — it's a `platform_config` change, not a code change. |
+| **Dealers list stale/sold cars**                             | Buyer trust collapses; the marketplace dies                              | 90-day expiry (already designed) · weekly "still available?" prompts · a buyer "report as sold" button · penalize dealers with high stale rates in search ranking                              |
+| **Lead scraping by competitors**                             | Dealers churn to the competitor who now has their number                 | §21.1 phone gating from day one, not later                                                                                                                                                     |
+| **Fake listings / bait pricing**                             | Regulatory and reputational damage                                       | KYC before publishing · price-anomaly flagging (>40% below model median → review queue) · buyer reporting                                                                                      |
+| **No moderation capacity**                                   | Marketplace fills with junk in weeks                                     | Build the admin queue in Sprint 6, not "later"                                                                                                                                                 |
+| **Dealers with 200 cars won't hand-enter them**              | Your best customers can't onboard                                        | CSV import is the #1 post-launch feature. Design the vehicle schema now assuming a bulk importer will target it.                                                                               |
+| **Optimizing the buyer experience while ignoring dealer UX** | Dealers are the paying customer; if the dashboard is painful, they leave | Watch dealers use it (Sprint 9). Time "signup → first live listing" and treat it as your north-star activation metric.                                                                         |
 
 ## 32.3 Personal (the risk nobody writes down)
 
@@ -3184,15 +3236,15 @@ Protect against it with hard rules: ship something a real dealer can use by week
 
 # 33. Business evolution: how today's architecture supports Phases 1–7
 
-| Phase | What it needs | Already supported by | What to add |
-|---|---|---|---|
-| **1 — Dealer inventory marketplace** | Everything in this document | — | — |
-| **2 — Dealer SaaS** (inventory tools, bulk import, pricing insights) | Multi-tenant model, RBAC, dealer staff | `Dealer`, `DealerMember`, permissions, tenant guards **already built** | CSV importer module · pricing-insight queries against the analytics replica · dealer staff UI |
-| **3 — Dealer CRM** (lead pipeline, follow-ups, tasks) | An entity with a lifecycle attached to leads | `Inquiry` already has `status` and dealer scoping; event bus already exists | `crm` module: contacts, activities, tasks, notes. This is the one place where a JSONB activity feed is genuinely appropriate — still in Postgres. |
-| **4 — Financing / insurance / warranty** | Partner integrations, application state machines, sensitive PII, strict audit | `PaymentGatewayPort` pattern generalizes to `PartnerPort` · audit logs · encryption approach | `finance` module with per-partner adapters · **column-level encryption** for financial PII · likely a compliance review and possibly a separately-deployed service with its own database |
-| **5 — Dealer analytics** | Aggregations without touching OLTP | Read replica pattern · event stream · `analytics.rollup-daily` job | ClickHouse or a warehouse · dbt models · a dashboard app. The event catalog you defined in §16 becomes the analytics fact stream. |
-| **6 — Advertising marketplace** | Placement inventory, auctions, impression/click tracking at volume, billing | `boostLevel` already in the listing model and search sort · credit ledger handles any billable unit | `ads` module: campaigns, placements, budgets · a high-volume impression pipeline (Kafka → ClickHouse) · **this is the phase where GraphQL for partner APIs becomes worth reconsidering** |
-| **7 — Automotive ecosystem** (OEMs, service, parts, valuation, C2C) | Genuinely multi-domain; multiple teams | The module boundaries you enforced from Sprint 0 | Real service extraction along existing facade lines · Kafka as the shared event backbone · possibly separate databases per bounded context |
+| Phase                                                                | What it needs                                                                 | Already supported by                                                                                | What to add                                                                                                                                                                              |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 — Dealer inventory marketplace**                                 | Everything in this document                                                   | —                                                                                                   | —                                                                                                                                                                                        |
+| **2 — Dealer SaaS** (inventory tools, bulk import, pricing insights) | Multi-tenant model, RBAC, dealer staff                                        | `Dealer`, `DealerMember`, permissions, tenant guards **already built**                              | CSV importer module · pricing-insight queries against the analytics replica · dealer staff UI                                                                                            |
+| **3 — Dealer CRM** (lead pipeline, follow-ups, tasks)                | An entity with a lifecycle attached to leads                                  | `Inquiry` already has `status` and dealer scoping; event bus already exists                         | `crm` module: contacts, activities, tasks, notes. This is the one place where a JSONB activity feed is genuinely appropriate — still in Postgres.                                        |
+| **4 — Financing / insurance / warranty**                             | Partner integrations, application state machines, sensitive PII, strict audit | `PaymentGatewayPort` pattern generalizes to `PartnerPort` · audit logs · encryption approach        | `finance` module with per-partner adapters · **column-level encryption** for financial PII · likely a compliance review and possibly a separately-deployed service with its own database |
+| **5 — Dealer analytics**                                             | Aggregations without touching OLTP                                            | Read replica pattern · event stream · `analytics.rollup-daily` job                                  | ClickHouse or a warehouse · dbt models · a dashboard app. The event catalog you defined in §16 becomes the analytics fact stream.                                                        |
+| **6 — Advertising marketplace**                                      | Placement inventory, auctions, impression/click tracking at volume, billing   | `boostLevel` already in the listing model and search sort · credit ledger handles any billable unit | `ads` module: campaigns, placements, budgets · a high-volume impression pipeline (Kafka → ClickHouse) · **this is the phase where GraphQL for partner APIs becomes worth reconsidering** |
+| **7 — Automotive ecosystem** (OEMs, service, parts, valuation, C2C)  | Genuinely multi-domain; multiple teams                                        | The module boundaries you enforced from Sprint 0                                                    | Real service extraction along existing facade lines · Kafka as the shared event backbone · possibly separate databases per bounded context                                               |
 
 **The three decisions made today that keep all seven phases open:**
 
@@ -3228,7 +3280,6 @@ Then Sprint 1 begins.
 
 ## Final word
 
-The architecture above is deliberately unimpressive in its component list: one database, one API, one web app, one queue, no cluster. That is the point. Everything sophisticated in it is *structural* rather than *infrastructural* — the module facades, the ports, the outbox, the ledger, the tenant guards, the search seam. Those cost you days now and save you quarters later. Everything else can be bought, swapped, or added the moment a metric tells you to.
+The architecture above is deliberately unimpressive in its component list: one database, one API, one web app, one queue, no cluster. That is the point. Everything sophisticated in it is _structural_ rather than _infrastructural_ — the module facades, the ports, the outbox, the ledger, the tenant guards, the search seam. Those cost you days now and save you quarters later. Everything else can be bought, swapped, or added the moment a metric tells you to.
 
 Build the boring version well. Let the dealers tell you what to build next.
-

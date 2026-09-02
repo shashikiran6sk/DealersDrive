@@ -63,9 +63,7 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
           <span className="whitespace-nowrap text-[12px] ink-subtle tnum">
             {dealer.fromPriceLabel}
           </span>
-          <span className="btn btn-ghost relative z-[2] ml-auto text-[12px]">
-            View inventory →
-          </span>
+          <span className="btn btn-ghost relative z-[2] ml-auto text-[12px]">View inventory →</span>
         </div>
       </div>
     </article>

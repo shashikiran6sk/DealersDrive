@@ -12,13 +12,7 @@ import { approveListingAction } from '@/features/admin/actions';
  * else: approving is the moderation queue's entire purpose, and making a
  * reviewer open a detail page for the obvious cases is how a queue backs up.
  */
-export function QueueApproveButton({
-  listingId,
-  title,
-}: {
-  listingId: string;
-  title: string;
-}) {
+export function QueueApproveButton({ listingId, title }: { listingId: string; title: string }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();

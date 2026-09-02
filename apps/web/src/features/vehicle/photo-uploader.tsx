@@ -176,9 +176,8 @@ export function PhotoUploader({
 
       {shortfall > 0 ? (
         <Banner tone="warn">
-          <span className="tnum">{shortfall}</span> more{' '}
-          {shortfall === 1 ? 'photo' : 'photos'} needed — a listing goes to review with at least{' '}
-          <span className="tnum">{minPhotos}</span>.
+          <span className="tnum">{shortfall}</span> more {shortfall === 1 ? 'photo' : 'photos'}{' '}
+          needed — a listing goes to review with at least <span className="tnum">{minPhotos}</span>.
         </Banner>
       ) : null}
 
@@ -270,10 +269,7 @@ export function PhotoUploader({
             </span>
           </div>
           <div className="h-1 bg-(--color-neutral-300)">
-            <div
-              className="h-full bg-(--color-accent)"
-              style={{ width: `${upload.percent}%` }}
-            />
+            <div className="h-full bg-(--color-accent)" style={{ width: `${upload.percent}%` }} />
           </div>
         </div>
       ))}

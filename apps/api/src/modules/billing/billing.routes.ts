@@ -11,13 +11,17 @@ import {
 import { Router } from 'express';
 
 import { dealerPrincipal, requirePermission } from '../../middleware/auth.js';
-import { rateLimit } from '../../middleware/rate-limit.js';
+import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { BillingService } from './billing.service.js';
 
 /** C19. `billing:read` for the panels, `billing:purchase` (OWNER only) to spend. */
-export function createBillingRouter(service: BillingService, storage: StoragePort): Router {
+export function createBillingRouter(
+  service: BillingService,
+  storage: StoragePort,
+  rateLimit: RateLimiter,
+): Router {
   const router = Router();
 
   router.get('/billing/summary', requirePermission('billing:read'), (req, res, next) => {

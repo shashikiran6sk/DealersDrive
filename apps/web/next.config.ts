@@ -11,7 +11,10 @@ import type { NextConfig } from 'next';
  * how they stop agreeing. dotenv never overwrites a variable that is already
  * set, so a real environment variable still wins over the file.
  */
-loadEnv({ path: [resolve(process.cwd(), '.env'), resolve(process.cwd(), '../../.env')], quiet: true });
+loadEnv({
+  path: [resolve(process.cwd(), '.env'), resolve(process.cwd(), '../../.env')],
+  quiet: true,
+});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

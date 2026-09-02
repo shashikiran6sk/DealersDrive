@@ -36,16 +36,16 @@ produces people who can ship one thing and cannot explain it.
 ### Time budget
 
 Each day is sized at **3–4 focused hours**. If you have a full day, spend the
-remainder on the *Going deeper* section or on the previous day's traps. If you
+remainder on the _Going deeper_ section or on the previous day's traps. If you
 have two hours, do sections 2, 3 and 5 and defer section 4 — but never skip
 section 3.
 
 ### The two documents you will live in
 
-| | Path | Role |
-|---|---|---|
-| **The reference** | `docs/ENGINEER-ONBOARDING.md` | 35 parts. The *explanation*. You are told exactly which sections to read each day |
-| **The path** | `docs/learning-path/day-NN.md` | 20 files. The *sequence*. One per day |
+|                   | Path                           | Role                                                                              |
+| ----------------- | ------------------------------ | --------------------------------------------------------------------------------- |
+| **The reference** | `docs/ENGINEER-ONBOARDING.md`  | 35 parts. The _explanation_. You are told exactly which sections to read each day |
+| **The path**      | `docs/learning-path/day-NN.md` | 20 files. The _sequence_. One per day                                             |
 
 Supporting sources you will be sent to occasionally:
 
@@ -65,43 +65,43 @@ CONTEXT.md              working notes, known gaps, traps already paid for
 
 ### Week 1 — Orientation: get it running, and understand the path a request takes
 
-| Day | Title | You will be able to… |
-|---|---|---|
+| Day             | Title                                               | You will be able to…                                           |
+| --------------- | --------------------------------------------------- | -------------------------------------------------------------- |
 | [01](day-01.md) | The product, the repository, and getting it running | Run the whole stack locally and name every top-level directory |
-| [02](day-02.md) | The monorepo — pnpm workspaces and Turborepo | Explain why `contracts` builds first and what Turbo caches |
-| [03](day-03.md) | The request lifecycle, end to end | Trace any HTTP request through all 19 stages |
-| [04](day-04.md) | Configuration, the composition root, and the seams | Explain how one image runs in three environments |
-| [05](day-05.md) | Week 1 consolidation — trace a real buyer journey | Follow a search from URL to SQL and back, unaided |
+| [02](day-02.md) | The monorepo — pnpm workspaces and Turborepo        | Explain why `contracts` builds first and what Turbo caches     |
+| [03](day-03.md) | The request lifecycle, end to end                   | Trace any HTTP request through all 19 stages                   |
+| [04](day-04.md) | Configuration, the composition root, and the seams  | Explain how one image runs in three environments               |
+| [05](day-05.md) | Week 1 consolidation — trace a real buyer journey   | Follow a search from URL to SQL and back, unaided              |
 
 ### Week 2 — Identity: who you are, and what you may do
 
-| Day | Title | You will be able to… |
-|---|---|---|
-| [06](day-06.md) | Networking first principles — DNS, TLS, HTTP, origins, CORS | Explain what happens before your code runs |
-| [07](day-07.md) | Cookies, tokens and sessions — the three people confuse | Explain `dd_session` on the wire and in the database |
-| [08](day-08.md) | OAuth 2.0 and OpenID Connect, from first principles | Explain `state`, PKCE and `nonce` as three different attacks |
-| [09](day-09.md) | Google sign-in as this codebase implements it | Walk the full flow across six files without notes |
-| [10](day-10.md) | Authorization, permissions, multi-tenancy and TOCTOU | Explain why `dealerId` never comes from a request |
+| Day             | Title                                                       | You will be able to…                                         |
+| --------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| [06](day-06.md) | Networking first principles — DNS, TLS, HTTP, origins, CORS | Explain what happens before your code runs                   |
+| [07](day-07.md) | Cookies, tokens and sessions — the three people confuse     | Explain `dd_session` on the wire and in the database         |
+| [08](day-08.md) | OAuth 2.0 and OpenID Connect, from first principles         | Explain `state`, PKCE and `nonce` as three different attacks |
+| [09](day-09.md) | Google sign-in as this codebase implements it               | Walk the full flow across six files without notes            |
+| [10](day-10.md) | Authorization, permissions, multi-tenancy and TOCTOU        | Explain why `dealerId` never comes from a request            |
 
 ### Week 3 — The domain: data, money, state and asynchrony
 
-| Day | Title | You will be able to… |
-|---|---|---|
-| [11](day-11.md) | PostgreSQL from a MERN brain — constraints, transactions, indexes | Read the schema and defend every constraint in it |
-| [12](day-12.md) | Credits and the ledger | Explain why a balance is never stored, only derived |
-| [13](day-13.md) | The listing state machine and public visibility | Explain why suspending a dealer hides every car, in one job |
-| [14](day-14.md) | Background jobs, the transactional outbox and pg-boss | Explain at-least-once delivery and why handlers are idempotent |
-| [15](day-15.md) | Media — upload, storage, processing, delivery | Explain a presigned PUT and why the API never sees image bytes |
+| Day             | Title                                                             | You will be able to…                                           |
+| --------------- | ----------------------------------------------------------------- | -------------------------------------------------------------- |
+| [11](day-11.md) | PostgreSQL from a MERN brain — constraints, transactions, indexes | Read the schema and defend every constraint in it              |
+| [12](day-12.md) | Credits and the ledger                                            | Explain why a balance is never stored, only derived            |
+| [13](day-13.md) | The listing state machine and public visibility                   | Explain why suspending a dealer hides every car, in one job    |
+| [14](day-14.md) | Background jobs, the transactional outbox and pg-boss             | Explain at-least-once delivery and why handlers are idempotent |
+| [15](day-15.md) | Media — upload, storage, processing, delivery                     | Explain a presigned PUT and why the API never sees image bytes |
 
 ### Week 4 — The surface, and running it in production
 
-| Day | Title | You will be able to… |
-|---|---|---|
-| [16](day-16.md) | Next.js — Server Components, Server Actions and the BFF | Choose the right one of the four data-fetching shapes |
-| [17](day-17.md) | Contracts, OpenAPI and error handling | Explain why `.strict()` is a security control |
-| [18](day-18.md) | Testing — and why the suite uses a real database | Write an integration test that proves tenant isolation |
-| [19](day-19.md) | Docker images and the CI/CD pipeline | Describe exactly what happens when you merge a PR |
-| [20](day-20.md) | Database operations, scaling and observability | Name the first bottleneck and what to change |
+| Day             | Title                                                   | You will be able to…                                   |
+| --------------- | ------------------------------------------------------- | ------------------------------------------------------ |
+| [16](day-16.md) | Next.js — Server Components, Server Actions and the BFF | Choose the right one of the four data-fetching shapes  |
+| [17](day-17.md) | Contracts, OpenAPI and error handling                   | Explain why `.strict()` is a security control          |
+| [18](day-18.md) | Testing — and why the suite uses a real database        | Write an integration test that proves tenant isolation |
+| [19](day-19.md) | Docker images and the CI/CD pipeline                    | Describe exactly what happens when you merge a PR      |
+| [20](day-20.md) | Database operations, scaling and observability          | Name the first bottleneck and what to change           |
 
 ---
 
@@ -153,12 +153,12 @@ At the end of each week, you should be able to answer its checkpoint question
 **out loud, to another person, without notes.** If you cannot, repeat the weakest
 day of that week before continuing.
 
-| End of | Checkpoint question |
-|---|---|
-| Week 1 | *"A buyer opens `/cars?city=vellore`. Describe everything that happens, from DNS to the rendered HTML."* |
-| Week 2 | *"A dealer clicks Continue with Google. Describe every redirect, every cookie, and every check — and name what each check defends against."* |
-| Week 3 | *"A dealer publishes a car. Describe every row written, every credit moved, every job queued, and the exact moment the car becomes publicly visible."* |
-| Week 4 | *"I merged a PR. Describe everything that happens until the change is live in production — and what would happen if it were bad."* |
+| End of | Checkpoint question                                                                                                                                    |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Week 1 | _"A buyer opens `/cars?city=vellore`. Describe everything that happens, from DNS to the rendered HTML."_                                               |
+| Week 2 | _"A dealer clicks Continue with Google. Describe every redirect, every cookie, and every check — and name what each check defends against."_           |
+| Week 3 | _"A dealer publishes a car. Describe every row written, every credit moved, every job queued, and the exact moment the car becomes publicly visible."_ |
+| Week 4 | _"I merged a PR. Describe everything that happens until the change is live in production — and what would happen if it were bad."_                     |
 
 ---
 
@@ -187,13 +187,13 @@ each line should feel obvious rather than arbitrary.
    comment — this codebase explains itself unusually well.
 2. **Check Part 25** of `ENGINEER-ONBOARDING.md` — "What happens if…" is a
    troubleshooting table covering forty concrete failure cases.
-3. **Check Part 29** — the consolidated list of what is *not* implemented. Some
+3. **Check Part 29** — the consolidated list of what is _not_ implemented. Some
    confusion is because the thing genuinely does not exist yet.
 4. **Check `CONTEXT.md` §9** — traps that have already cost someone a day.
 5. **Then ask.** A question after those four steps is a good question.
 
 ---
 
-*This path was written against the repository as of 2026-08-24. Every file path
+_This path was written against the repository as of 2026-08-24. Every file path
 in it was verified to exist. If a path has moved, the day document is stale —
-fix it here rather than working around it.*
+fix it here rather than working around it._

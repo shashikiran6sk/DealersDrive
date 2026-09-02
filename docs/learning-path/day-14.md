@@ -20,39 +20,39 @@ The problem, stated precisely:
 > and the transaction rolls back.
 
 There is no clever ordering that fixes this — it is two systems with two commits.
-The **transactional outbox** resolves it by writing the event *into the same
-database, in the same transaction*, and having a poller move it out afterwards.
+The **transactional outbox** resolves it by writing the event _into the same
+database, in the same transaction_, and having a poller move it out afterwards.
 
 That gives **at-least-once** delivery, which is why every handler in this system
 is idempotent. Exactly-once delivery does not exist; at-least-once plus
-idempotent handlers is *effectively* exactly-once processing, and that is the
+idempotent handlers is _effectively_ exactly-once processing, and that is the
 best any distributed system gets.
 
 ---
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 13** — all of it (13.1 → 13.8) | 55 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-F1, F2, F4, F6** — idempotency, at-least-once, the outbox, priority | 20 |
-| `docs/ENGINEER-ONBOARDING.md` | **§33.8** — how the job system scales | 15 |
-| [microservices.io — Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html) | the whole page | 10 |
+| Source                                                                                                      | Sections                                                                      | ~min |
+| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---- |
+| `docs/ENGINEER-ONBOARDING.md`                                                                               | **Part 13** — all of it (13.1 → 13.8)                                         | 55   |
+| `docs/ENGINEER-ONBOARDING.md`                                                                               | **Part 34-F1, F2, F4, F6** — idempotency, at-least-once, the outbox, priority | 20   |
+| `docs/ENGINEER-ONBOARDING.md`                                                                               | **§33.8** — how the job system scales                                         | 15   |
+| [microservices.io — Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html) | the whole page                                                                | 10   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `apps/api/prisma/schema.prisma` | The `OutboxEvent` model. Note `publishedAt`, `attempts`, and the `@@index([publishedAt, id])` |
-| 2 | `apps/api/src/platform/events/bus.ts` | The in-process event bus. Publishers do not know who subscribes |
-| 3 | `apps/api/src/platform/events/outbox-publisher.ts` | **The core file.** The 2-second poll, and `FOR UPDATE SKIP LOCKED` — read the comment about several workers draining the same table |
-| 4 | `apps/api/src/platform/jobs/queue.ts` | The `Queue` port. Eleven job names, and the `PRIORITIES` map — note which job is 100 and read the comment |
-| 5 | `apps/api/src/platform/jobs/queue.ts` | `createInlineQueue()` — runs handlers synchronously at send time. This is what the test suite uses, and why tests need no sleeps |
-| 6 | `apps/api/src/platform/jobs/handlers.ts` | All eleven handlers, and the cron schedules. Note the `Asia/Kolkata` timezone |
-| 7 | `apps/api/src/container.ts` | `startBackground()` — where the queue and outbox actually start, and the `WORKER_INLINE` branch |
-| 8 | `apps/api/src/modules/admin/admin.service.ts` | Find where an approval writes an outbox row **in the same transaction** as the state change |
+| #   | File                                               | What to look for                                                                                                                    |
+| --- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/api/prisma/schema.prisma`                    | The `OutboxEvent` model. Note `publishedAt`, `attempts`, and the `@@index([publishedAt, id])`                                       |
+| 2   | `apps/api/src/platform/events/bus.ts`              | The in-process event bus. Publishers do not know who subscribes                                                                     |
+| 3   | `apps/api/src/platform/events/outbox-publisher.ts` | **The core file.** The 2-second poll, and `FOR UPDATE SKIP LOCKED` — read the comment about several workers draining the same table |
+| 4   | `apps/api/src/platform/jobs/queue.ts`              | The `Queue` port. Eleven job names, and the `PRIORITIES` map — note which job is 100 and read the comment                           |
+| 5   | `apps/api/src/platform/jobs/queue.ts`              | `createInlineQueue()` — runs handlers synchronously at send time. This is what the test suite uses, and why tests need no sleeps    |
+| 6   | `apps/api/src/platform/jobs/handlers.ts`           | All eleven handlers, and the cron schedules. Note the `Asia/Kolkata` timezone                                                       |
+| 7   | `apps/api/src/container.ts`                        | `startBackground()` — where the queue and outbox actually start, and the `WORKER_INLINE` branch                                     |
+| 8   | `apps/api/src/modules/admin/admin.service.ts`      | Find where an approval writes an outbox row **in the same transaction** as the state change                                         |
 
 ---
 
@@ -139,7 +139,7 @@ directly in a `tsx` script) and check the count again. **Still exactly one row.*
 That is not luck. Read `search.repository.ts` `index()` again: it deletes and
 re-inserts, so running it twice is the same as running it once. **Every handler
 here is written that way, because at-least-once delivery means every handler
-*will* run twice eventually.**
+_will_ run twice eventually.**
 
 ### 4.6 Understand the two queue implementations
 
@@ -147,15 +147,15 @@ here is written that way, because at-least-once delivery means every handler
 grep -n "JOBS_ENABLED" apps/api/src/platform/jobs/queue.ts apps/api/src/config/env.ts
 ```
 
-| | `JOBS_ENABLED=true` | `JOBS_ENABLED=false` |
-|---|---|---|
-| Implementation | pg-boss | `createInlineQueue()` |
+|                 | `JOBS_ENABLED=true`    | `JOBS_ENABLED=false`            |
+| --------------- | ---------------------- | ------------------------------- |
+| Implementation  | pg-boss                | `createInlineQueue()`           |
 | When a job runs | polled, asynchronously | **synchronously, at send time** |
-| Used by | dev, production | the integration test suite |
+| Used by         | dev, production        | the integration test suite      |
 
-Read the comment on `createInlineQueue`: *"Deliberately not fire and forget: a
+Read the comment on `createInlineQueue`: _"Deliberately not fire and forget: a
 test that submits a listing must be able to assert on what the subscriber wrote,
-on the next line, without a sleep."* That is why this suite has no flaky waits.
+on the next line, without a sleep."_ That is why this suite has no flaky waits.
 
 ### 4.7 Find the priority decision
 
@@ -164,7 +164,7 @@ grep -n -A6 "const PRIORITIES" apps/api/src/platform/jobs/queue.ts
 ```
 
 `notification.enquiry-to-dealer` is **100** — the highest — with the comment
-*"It is the product."* A buyer's enquiry reaching a dealer fast is the thing
+_"It is the product."_ A buyer's enquiry reaching a dealer fast is the thing
 dealers pay for. Media processing can wait a few seconds; a lead cannot.
 
 **That single line is a product decision expressed in code.** Look for more of
@@ -174,16 +174,16 @@ them as you read this repository.
 
 ## 5. Prove you understood it
 
-1. Why is `await sendEmail()` inside a request handler not enough? → *§13.1*
-2. State the dual-write problem precisely. → *§13.3, §34-F4*
-3. How does the outbox pattern solve it? → *§13.3*
-4. What does `FOR UPDATE SKIP LOCKED` do, and why does the publisher need it? → *`outbox-publisher.ts`*
-5. What is at-least-once delivery, and what does it require of handlers? → *§13.3, §34-F2*
-6. Why does exactly-once delivery not exist? → *§34-F2*
-7. Give a concrete example of an idempotent handler in this codebase. → *`search.repository.ts` `index()`*
-8. Why is the queue in PostgreSQL rather than Redis? → *§13.5*
-9. What does `WORKER_INLINE=true` mean, and what does it cost? → *§13.7, §23.8*
-10. Which job has the highest priority, and why? → *`queue.ts`*
+1. Why is `await sendEmail()` inside a request handler not enough? → _§13.1_
+2. State the dual-write problem precisely. → _§13.3, §34-F4_
+3. How does the outbox pattern solve it? → _§13.3_
+4. What does `FOR UPDATE SKIP LOCKED` do, and why does the publisher need it? → _`outbox-publisher.ts`_
+5. What is at-least-once delivery, and what does it require of handlers? → _§13.3, §34-F2_
+6. Why does exactly-once delivery not exist? → _§34-F2_
+7. Give a concrete example of an idempotent handler in this codebase. → _`search.repository.ts` `index()`_
+8. Why is the queue in PostgreSQL rather than Redis? → _§13.5_
+9. What does `WORKER_INLINE=true` mean, and what does it cost? → _§13.7, §23.8_
+10. Which job has the highest priority, and why? → _`queue.ts`_
 
 ---
 
@@ -191,7 +191,7 @@ them as you read this repository.
 
 - **Never enqueue inside a transaction that might roll back.** Write an outbox
   row instead. That is the whole pattern.
-- **A handler that is not idempotent is a bug**, not a risk. It *will* run twice.
+- **A handler that is not idempotent is a bug**, not a risk. It _will_ run twice.
 - **Cron schedules are `Asia/Kolkata`.** The dealers are in Tamil Nadu; a sweep
   scheduled in UTC would run in the middle of their working day.
 - **`WORKER_INLINE=true` means every API instance runs every scheduled job.**
@@ -215,7 +215,7 @@ them as you read this repository.
 ## 8. Going deeper (optional)
 
 - Read **§33.8** — how this scales, and note that when pg-boss stops keeping up,
-  `outbox-publisher.ts` is *the only file that changes*. That is what the seam in
+  `outbox-publisher.ts` is _the only file that changes_. That is what the seam in
   `bus.ts` bought.
 - Read **Part 25.5** — "What happens if…" for jobs: a notification fails, a job
   retries, a duplicate webhook arrives, the worker crashes mid-job.

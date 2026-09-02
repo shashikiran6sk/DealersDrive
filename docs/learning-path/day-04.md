@@ -14,48 +14,48 @@ Two ideas today, and both are load-bearing for Week 4.
 
 **Configuration is injected, never baked.** The same image runs in every
 environment. That is why `NEXT_PUBLIC_*` is banned, why `env.ts` validates at
-boot, and why a production deploy is a *promotion* rather than a rebuild.
+boot, and why a production deploy is a _promotion_ rather than a rebuild.
 
 **Every provider choice is made in exactly one file.** `container.ts` is the
 composition root: storage, sessions, OAuth, payments, SMS, the queue — all
 constructed there, by hand, and passed down as plain arguments. There is no DI
-framework and no magic. When you want to know *"what actually runs when
-`STORAGE_DRIVER=r2`?"*, there is one file to read.
+framework and no magic. When you want to know _"what actually runs when
+`STORAGE_DRIVER=r2`?"_, there is one file to read.
 
 ---
 
 ## 2. Read first
 
-| Source | Sections | ~min |
-|---|---|---|
-| `docs/ENGINEER-ONBOARDING.md` | **Part 2.2** — `config/` and `container.ts` — the composition root | 20 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 34-E7** — Environment variables, secrets, configuration | 15 |
-| `docs/ENGINEER-ONBOARDING.md` | **§23.7** — Configuration: three layers | 15 |
-| `docs/ENGINEER-ONBOARDING.md` | **Part 19.10** — Secrets and configuration | 10 |
-| [The Twelve-Factor App](https://12factor.net/) | Config, Backing services, Dev/prod parity, Disposability | 25 |
+| Source                                         | Sections                                                           | ~min |
+| ---------------------------------------------- | ------------------------------------------------------------------ | ---- |
+| `docs/ENGINEER-ONBOARDING.md`                  | **Part 2.2** — `config/` and `container.ts` — the composition root | 20   |
+| `docs/ENGINEER-ONBOARDING.md`                  | **Part 34-E7** — Environment variables, secrets, configuration     | 15   |
+| `docs/ENGINEER-ONBOARDING.md`                  | **§23.7** — Configuration: three layers                            | 15   |
+| `docs/ENGINEER-ONBOARDING.md`                  | **Part 19.10** — Secrets and configuration                         | 10   |
+| [The Twelve-Factor App](https://12factor.net/) | Config, Backing services, Dev/prod parity, Disposability           | 25   |
 
 ---
 
 ## 3. Open these files, in this order
 
-| # | File | What to look for |
-|---|---|---|
-| 1 | `.env.example` | Every variable, with a comment saying what it is for. This is the *interface* to every external system |
-| 2 | `apps/api/src/config/env.ts` | **The core file of today.** Read it end to end. Note `required()`, `optional()`, and especially `checkedEnvSchema` |
-| 3 | `apps/api/src/config/env.ts` (again) | The `superRefine` block. Find every rule that fires **only in production** |
-| 4 | `apps/api/src/container.ts` | The composition root. Read the doc comment listing the five seams |
-| 5 | `apps/api/src/platform/storage/factory.ts` | One variable chooses one of three adapters |
-| 6 | `apps/api/src/platform/storage/storage.port.ts` | A *port*: an interface with no S3 concept in it. No bucket, no region, no SigV4 |
-| 7 | `apps/api/src/modules/auth/session.port.ts` | Another port. Note it offers **no way to pass an identity in** |
-| 8 | `apps/api/src/modules/auth/dev-session.adapter.ts` | The `AUTH_MODE=dev` escape hatch, and why it is safe |
-| 9 | `apps/web/src/lib/config.ts` | The web side. `serverConfig()` reads `process.env` at **runtime**, on the server |
-| 10 | `deploy/aws/env.production.example` | The same variables, with production values. Compare against `.env.example` |
+| #   | File                                               | What to look for                                                                                                   |
+| --- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 1   | `.env.example`                                     | Every variable, with a comment saying what it is for. This is the _interface_ to every external system             |
+| 2   | `apps/api/src/config/env.ts`                       | **The core file of today.** Read it end to end. Note `required()`, `optional()`, and especially `checkedEnvSchema` |
+| 3   | `apps/api/src/config/env.ts` (again)               | The `superRefine` block. Find every rule that fires **only in production**                                         |
+| 4   | `apps/api/src/container.ts`                        | The composition root. Read the doc comment listing the five seams                                                  |
+| 5   | `apps/api/src/platform/storage/factory.ts`         | One variable chooses one of three adapters                                                                         |
+| 6   | `apps/api/src/platform/storage/storage.port.ts`    | A _port_: an interface with no S3 concept in it. No bucket, no region, no SigV4                                    |
+| 7   | `apps/api/src/modules/auth/session.port.ts`        | Another port. Note it offers **no way to pass an identity in**                                                     |
+| 8   | `apps/api/src/modules/auth/dev-session.adapter.ts` | The `AUTH_MODE=dev` escape hatch, and why it is safe                                                               |
+| 9   | `apps/web/src/lib/config.ts`                       | The web side. `serverConfig()` reads `process.env` at **runtime**, on the server                                   |
+| 10  | `deploy/aws/env.production.example`                | The same variables, with production values. Compare against `.env.example`                                         |
 
-> **The pattern to name today: *ports and adapters*.** A **port** is an interface
+> **The pattern to name today: _ports and adapters_.** A **port** is an interface
 > the application defines in terms of its own needs (`StoragePort`,
 > `SessionResolver`, `PaymentProvider`, `OAuthProvider`). An **adapter**
 > implements it against a real system. The application depends on the port; the
-> container picks the adapter. That is what makes MinIO and R2 the *same code*,
+> container picks the adapter. That is what makes MinIO and R2 the _same code_,
 > and what lets tests inject a fake Google.
 
 ---
@@ -94,7 +94,9 @@ than serving.**
 # .env
 STORAGE_DRIVER=local
 ```
+
 Restart, upload a photo in the dealer console, then:
+
 ```bash
 ls apps/api/.storage/vehicles/
 ```
@@ -103,6 +105,7 @@ ls apps/api/.storage/vehicles/
 # .env
 STORAGE_DRIVER=minio
 ```
+
 Restart, upload another photo, then look in the MinIO console at
 http://localhost:9001.
 
@@ -148,17 +151,17 @@ Nothing. That absence is what makes build-once-promote-many possible (Day 19).
 
 ## 5. Prove you understood it
 
-1. Why does `env.ts` `process.exit(1)` rather than throw? → *`env.ts`, `loadEnv()`*
+1. Why does `env.ts` `process.exit(1)` rather than throw? → _`env.ts`, `loadEnv()`_
 2. Why does `required()` provide a local default outside production but not
-   inside it? → *`env.ts`, top of file*
-3. Why does `optional()` treat `""` as absent? → *`env.ts` comment*
+   inside it? → _`env.ts`, top of file_
+3. Why does `optional()` treat `""` as absent? → _`env.ts` comment_
 4. Name four production-only rules in `checkedEnvSchema` and say what each
    prevents.
-5. What is a *port*, what is an *adapter*, and where is the choice between
-   adapters made? → *§Part 2.2, `container.ts`*
-6. Why is `AUTH_MODE=dev` safe to have in the codebase at all? → *`dev-session.adapter.ts` doc comment*
-7. Why is `NEXT_PUBLIC_*` banned? → *`lib/config.ts`, §23.3*
-8. Where do production secrets actually live, and who resolves them? → *§23.7*
+5. What is a _port_, what is an _adapter_, and where is the choice between
+   adapters made? → _§Part 2.2, `container.ts`_
+6. Why is `AUTH_MODE=dev` safe to have in the codebase at all? → _`dev-session.adapter.ts` doc comment_
+7. Why is `NEXT_PUBLIC_*` banned? → _`lib/config.ts`, §23.3_
+8. Where do production secrets actually live, and who resolves them? → _§23.7_
 
 ---
 

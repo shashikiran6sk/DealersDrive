@@ -240,7 +240,9 @@ export function createAdminRouter(service: AdminService): Router {
   router.get(
     '/audit-logs',
     validate({ query: AuditQuery }),
-    handle((req) => service.auditLogs(adminPrincipal(req), validated<AuditQueryType>(req, 'query'))),
+    handle((req) =>
+      service.auditLogs(adminPrincipal(req), validated<AuditQueryType>(req, 'query')),
+    ),
   );
 
   return router;

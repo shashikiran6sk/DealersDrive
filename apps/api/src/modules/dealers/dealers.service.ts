@@ -44,8 +44,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
       id: dealer.id,
       slug: dealer.slug,
       status: dealer.status,
-      statusLabel:
-        dealer.status === 'ACTIVE' ? 'Verified' : DEALER_STATUS_LABELS[dealer.status],
+      statusLabel: dealer.status === 'ACTIVE' ? 'Verified' : DEALER_STATUS_LABELS[dealer.status],
       statusReason: dealer.statusReason,
       brandName: dealer.brandName,
       legalName: dealer.legalName,
@@ -216,8 +215,18 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
       });
 
       const steps: CompletenessResponse['steps'] = [
-        { key: 'account', label: 'Account', complete: accountMissing.length === 0, missing: accountMissing },
-        { key: 'business', label: 'Business', complete: businessMissing.length === 0, missing: businessMissing },
+        {
+          key: 'account',
+          label: 'Account',
+          complete: accountMissing.length === 0,
+          missing: accountMissing,
+        },
+        {
+          key: 'business',
+          label: 'Business',
+          complete: businessMissing.length === 0,
+          missing: businessMissing,
+        },
         {
           key: 'documents',
           label: 'Documents',
@@ -304,7 +313,11 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
           type,
           label: DOC_TYPE_LABELS[type],
           status,
-          statusLabel: documentStatusLabel(status, doc?.fileName ?? null, doc?.rejectionReason ?? null),
+          statusLabel: documentStatusLabel(
+            status,
+            doc?.fileName ?? null,
+            doc?.rejectionReason ?? null,
+          ),
           fileName: doc?.fileName ?? null,
           uploadedAt: doc?.createdAt.toISOString() ?? null,
           rejectionReason: doc?.rejectionReason ?? null,
@@ -326,10 +339,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
      * and no derivatives. The promise that buyers never see them is enforced by
      * there being no route that could serve them, not by a flag (§26.6).
      */
-    async presignDocument(
-      dealerId: string,
-      input: DocumentPresignInput,
-    ): Promise<PresignResponse> {
+    async presignDocument(dealerId: string, input: DocumentPresignInput): Promise<PresignResponse> {
       const documentId = randomUUID();
       const key = `kyc/${dealerId}/${input.type}/${documentId}`;
 
@@ -392,42 +402,50 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
       const weekStart = startOfDayUtc(new Date(Date.now() - 6 * 86_400_000));
       const previousWeekStart = new Date(weekStart.getTime() - 7 * 86_400_000);
 
-      const [rollups, previousRollups, newEnquiries, previousEnquiries, recent, expiringSoon, usedThisMonth, addedThisWeek] =
-        await Promise.all([
-          prisma.listingViewDaily.groupBy({
-            by: ['day'],
-            where: { dealerId, day: { gte: weekStart } },
-            _sum: { views: true },
-          }),
-          prisma.listingViewDaily.aggregate({
-            where: { dealerId, day: { gte: previousWeekStart, lt: weekStart } },
-            _sum: { views: true },
-          }),
-          prisma.enquiry.count({
-            where: { dealerId, status: 'NEW', createdAt: { gte: weekStart } },
-          }),
-          prisma.enquiry.count({
-            where: {
-              dealerId,
-              status: { not: 'SPAM' },
-              createdAt: { gte: previousWeekStart, lt: weekStart },
-            },
-          }),
-          enquiries.recentForDealer(dealerId, 4),
-          prisma.listing.count({
-            where: {
-              dealerId,
-              status: 'APPROVED',
-              expiresAt: { lte: new Date(Date.now() + 7 * 86_400_000) },
-            },
-          }),
-          prisma.creditTransaction.count({
-            where: { dealerId, reason: 'HOLD_SUBMIT', createdAt: { gte: startOfMonthUtc() } },
-          }),
-          prisma.listing.count({
-            where: { dealerId, status: 'APPROVED', approvedAt: { gte: weekStart } },
-          }),
-        ]);
+      const [
+        rollups,
+        previousRollups,
+        newEnquiries,
+        previousEnquiries,
+        recent,
+        expiringSoon,
+        usedThisMonth,
+        addedThisWeek,
+      ] = await Promise.all([
+        prisma.listingViewDaily.groupBy({
+          by: ['day'],
+          where: { dealerId, day: { gte: weekStart } },
+          _sum: { views: true },
+        }),
+        prisma.listingViewDaily.aggregate({
+          where: { dealerId, day: { gte: previousWeekStart, lt: weekStart } },
+          _sum: { views: true },
+        }),
+        prisma.enquiry.count({
+          where: { dealerId, status: 'NEW', createdAt: { gte: weekStart } },
+        }),
+        prisma.enquiry.count({
+          where: {
+            dealerId,
+            status: { not: 'SPAM' },
+            createdAt: { gte: previousWeekStart, lt: weekStart },
+          },
+        }),
+        enquiries.recentForDealer(dealerId, 4),
+        prisma.listing.count({
+          where: {
+            dealerId,
+            status: 'APPROVED',
+            expiresAt: { lte: new Date(Date.now() + 7 * 86_400_000) },
+          },
+        }),
+        prisma.creditTransaction.count({
+          where: { dealerId, reason: 'HOLD_SUBMIT', createdAt: { gte: startOfMonthUtc() } },
+        }),
+        prisma.listing.count({
+          where: { dealerId, status: 'APPROVED', approvedAt: { gte: weekStart } },
+        }),
+      ]);
 
       const byDay = new Map(
         rollups.map((row) => [row.day.toISOString().slice(0, 10), row._sum.views ?? 0]),
@@ -453,7 +471,9 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
       const weekTotal = series.reduce((sum, point) => sum + point.views, 0);
       const previousTotal = previousRollups._sum.views ?? 0;
       const viewDelta =
-        previousTotal === 0 ? null : Math.round(((weekTotal - previousTotal) / previousTotal) * 100);
+        previousTotal === 0
+          ? null
+          : Math.round(((weekTotal - previousTotal) / previousTotal) * 100);
 
       const firstName = (owner?.user.fullName ?? dealer.brandName).split(' ').pop() ?? '';
 
@@ -467,7 +487,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
             value: dealer.activeListings,
             valueLabel: String(dealer.activeListings),
             delta: addedThisWeek > 0 ? `+${addedThisWeek} this week` : 'No change this week',
-            deltaTone: (addedThisWeek > 0 ? 'ok' : 'neutral'),
+            deltaTone: addedThisWeek > 0 ? 'ok' : 'neutral',
           },
           {
             key: 'credits',
@@ -488,7 +508,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
                 : `${newEnquiries - previousEnquiries >= 0 ? '+' : '−'}${Math.abs(
                     newEnquiries - previousEnquiries,
                   )} vs last week`,
-            deltaTone: (newEnquiries >= previousEnquiries ? 'ok' : 'warn'),
+            deltaTone: newEnquiries >= previousEnquiries ? 'ok' : 'warn',
           },
           {
             key: 'views',
@@ -499,7 +519,7 @@ export function createDealersService({ prisma, repo, enquiries, storage }: Deale
               viewDelta === null
                 ? 'No data for last week'
                 : `${viewDelta >= 0 ? '+' : '−'}${Math.abs(viewDelta)}% vs last week`,
-            deltaTone: (viewDelta === null || viewDelta >= 0 ? 'ok' : 'warn'),
+            deltaTone: viewDelta === null || viewDelta >= 0 ? 'ok' : 'warn',
           },
         ],
         viewsChart: {
@@ -569,7 +589,11 @@ function documentStatusLabel(
 
 function greeting(): string {
   const hour = Number(
-    new Date().toLocaleString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }),
+    new Date().toLocaleString('en-GB', {
+      hour: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Kolkata',
+    }),
   );
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';

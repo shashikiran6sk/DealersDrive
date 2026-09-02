@@ -300,7 +300,9 @@ function setup(options: Options = {}) {
       configWrites.push({ key, value, by });
       return Promise.resolve({ key, label: 'Minimum photos', type: 'number', value });
     },
-    invalidate: () => undefined,
+    flag: () => Promise.resolve(false),
+    flags: () => Promise.resolve({}),
+    invalidate: () => Promise.resolve(),
   } as unknown as PlatformConfigService;
 
   const storage = {
@@ -420,14 +422,16 @@ describe('overview', () => {
     const small = setup({ counts: [0, 0, 0, 0, 0], capturedSum: 50_000n });
 
     expect(
-      (await lakhs.service.overview(principal())).stats.find((stat) => stat.key === 'payments30d')?.valueLabel,
+      (await lakhs.service.overview(principal())).stats.find((stat) => stat.key === 'payments30d')
+        ?.valueLabel,
     ).toBe('₹4.2 L');
     expect(
       (await crores.service.overview(principal())).stats.find((stat) => stat.key === 'payments30d')
         ?.valueLabel,
     ).toBe('₹2.5 Cr');
     expect(
-      (await small.service.overview(principal())).stats.find((stat) => stat.key === 'payments30d')?.valueLabel,
+      (await small.service.overview(principal())).stats.find((stat) => stat.key === 'payments30d')
+        ?.valueLabel,
     ).toBe('₹500');
   });
 
@@ -435,7 +439,9 @@ describe('overview', () => {
     const h = setup({ counts: [0, 3, 0, 0, 0] });
 
     expect(
-      (await h.service.overview(principal())).stats.find((stat) => stat.key === 'pendingVerification')?.href,
+      (await h.service.overview(principal())).stats.find(
+        (stat) => stat.key === 'pendingVerification',
+      )?.href,
     ).toBe('/admin/dealers?status=PENDING_APPROVAL');
   });
 

@@ -1,6 +1,13 @@
 import { randomUUID } from 'node:crypto';
 
-import { slugify, type MediaCommitResponse, type MediaPresignInput, type PresignResponse, type ReorderMediaInput, type VehicleMediaDto } from '@dealers-drive/contracts';
+import {
+  slugify,
+  type MediaCommitResponse,
+  type MediaPresignInput,
+  type PresignResponse,
+  type ReorderMediaInput,
+  type VehicleMediaDto,
+} from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 import { encode } from 'blurhash';
 import sharp from 'sharp';
@@ -323,7 +330,10 @@ export function createMediaService({ prisma, storage, queue, config }: MediaDeps
     },
 
     /** Resolves a delivery request to stored bytes. Content-addressed, immutable. */
-    async serve(mediaId: string, width: number): Promise<{ body: Buffer; contentType: string } | null> {
+    async serve(
+      mediaId: string,
+      width: number,
+    ): Promise<{ body: Buffer; contentType: string } | null> {
       const media = await prisma.media.findUnique({ where: { id: mediaId } });
       if (!media || media.status !== 'READY') return null;
 

@@ -20,7 +20,9 @@ import {
  * `router.use` away from the console.
  */
 
-const publicRouter = createPublicEnquiriesRouter({} as never);
+const publicRouter = createPublicEnquiriesRouter({} as never, () => (_req, _res, next) => {
+  next();
+});
 const dealerRouter = createDealerEnquiriesRouter({} as never);
 
 describe('the public router', () => {

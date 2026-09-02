@@ -15,7 +15,7 @@ export const mediaDocs: ModuleDocs = {
     '**The flow is three calls.** `POST /v1/dealer/media/presign` returns a signed URL; the ' +
     'client `PUT`s the bytes straight to storage; `POST /v1/dealer/media/{id}/commit` hands ' +
     'the file to the processor, which re-encodes it, strips EXIF (a phone photo carries the ' +
-    'seller\'s GPS coordinates) and computes a blurhash. Commit returns **202** — the file is ' +
+    "seller's GPS coordinates) and computes a blurhash. Commit returns **202** — the file is " +
     'accepted, not ready — with a `poll` URL.',
   operations: [
     {
@@ -26,8 +26,8 @@ export const mediaDocs: ModuleDocs = {
       summary: 'Get a signed upload URL for a photo',
       description:
         'Step 1 of 3. `ownerId` must be a vehicle (or dealership) **the acting dealer owns** — ' +
-        'presigning against another dealer\'s vehicle is a 404, so the upload path cannot be ' +
-        'used to attach photos to someone else\'s car.\n\n' +
+        "presigning against another dealer's vehicle is a 404, so the upload path cannot be " +
+        "used to attach photos to someone else's car.\n\n" +
         'The declared `mimeType` and `bytes` are signed into the URL, so storage rejects a ' +
         'file that does not match what was declared. JPEG, PNG and WebP up to 10 MB.\n\n' +
         'Clients are expected to down-scale before uploading (the web app compresses to ' +
@@ -111,7 +111,7 @@ export const mediaDocs: ModuleDocs = {
       path: '/v1/dealer/media/:id',
       operationId: 'getMedia',
       tag: 'Media',
-      summary: 'Poll one photo\'s processing status',
+      summary: "Poll one photo's processing status",
       description:
         'The poll target from commit. `status` moves PENDING → READY, or → FAILED with ' +
         '`warnings[]` explaining why (too small, corrupt, unsupported). `url` is null until ' +
@@ -130,8 +130,7 @@ export const mediaDocs: ModuleDocs = {
       operationId: 'deleteMedia',
       tag: 'Media',
       summary: 'Delete a photo',
-      description:
-        'Removes the photo and its derivatives. Another dealer\'s photo id is a 404.',
+      description: "Removes the photo and its derivatives. Another dealer's photo id is a 404.",
       audience: 'dealer',
       permission: 'vehicle:write',
       params: 'IdParam',
@@ -143,7 +142,7 @@ export const mediaDocs: ModuleDocs = {
       path: '/v1/dealer/vehicles/:id/media/order',
       operationId: 'reorderVehicleMedia',
       tag: 'Media',
-      summary: 'Reorder a vehicle\'s photos',
+      summary: "Reorder a vehicle's photos",
       description:
         '**Send the complete ordered array every time**, not the pair that moved. A partial ' +
         'swap is how two concurrent drags leave the gallery in an order neither user chose.\n\n' +
@@ -243,7 +242,12 @@ export const storageDocs: ModuleDocs = {
           type: 'object',
           required: ['key', 'contentType', 'contentLength', 'expiresAt', 'signature'],
           properties: {
-            key: { type: 'string', minLength: 1, maxLength: 300, description: 'Storage object key.' },
+            key: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 300,
+              description: 'Storage object key.',
+            },
             contentType: {
               type: 'string',
               minLength: 1,
@@ -256,7 +260,12 @@ export const storageDocs: ModuleDocs = {
               description: 'Must equal the body length exactly.',
             },
             expiresAt: { type: 'integer', description: 'Unix seconds; past this the URL is dead.' },
-            signature: { type: 'string', minLength: 16, maxLength: 256, description: 'HMAC over the four fields above.' },
+            signature: {
+              type: 'string',
+              minLength: 16,
+              maxLength: 256,
+              description: 'HMAC over the four fields above.',
+            },
           },
         },
       },
@@ -268,7 +277,11 @@ export const storageDocs: ModuleDocs = {
         {
           status: 200,
           description: 'Stored.',
-          inlineSchema: { type: 'object', required: ['ok'], properties: { ok: { type: 'boolean' } } },
+          inlineSchema: {
+            type: 'object',
+            required: ['ok'],
+            properties: { ok: { type: 'boolean' } },
+          },
           example: { ok: true },
         },
       ],

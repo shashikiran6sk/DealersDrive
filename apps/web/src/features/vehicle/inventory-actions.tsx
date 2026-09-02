@@ -75,14 +75,9 @@ export function InventoryActions({ row }: { row: InventoryRow }) {
 
   return (
     <div ref={menuRef} className="flex flex-wrap items-center justify-end gap-1">
-      {notice ? (
-        <span className="mr-auto text-[11px] text-(--color-ok)">{notice}</span>
-      ) : null}
+      {notice ? <span className="mr-auto text-[11px] text-(--color-ok)">{notice}</span> : null}
 
-      <Link
-        href={`/dealer/vehicles/${row.vehicleId}/edit`}
-        className="btn btn-ghost text-[12px]"
-      >
+      <Link href={`/dealer/vehicles/${row.vehicleId}/edit`} className="btn btn-ghost text-[12px]">
         {row.canEdit ? 'Edit' : 'View'}
       </Link>
 
@@ -125,16 +120,16 @@ export function InventoryActions({ row }: { row: InventoryRow }) {
               <>
                 {' '}
                 will stay on the marketplace with a <strong className="ink">Sold</strong> badge.
-                Buyers will still see it as proof you move stock, but they will not be able to
-                open it or enquire about it. The credit you spent is not returned.
+                Buyers will still see it as proof you move stock, but they will not be able to open
+                it or enquire about it. The credit you spent is not returned.
               </>
             ) : (
               <>
                 {' '}
                 will be taken off the marketplace immediately — buyers will stop seeing it in
-                search, on your dealer page and at its own link. The car stays in your inventory
-                as an editable draft, and listing it again costs one credit. The credit already
-                spent is not returned.
+                search, on your dealer page and at its own link. The car stays in your inventory as
+                an editable draft, and listing it again costs one credit. The credit already spent
+                is not returned.
               </>
             )}
           </p>

@@ -12,8 +12,8 @@ import type { ModuleDocs } from '../../docs/spec.js';
 export const vehiclesDocs: ModuleDocs = {
   tag: 'Dealer inventory',
   description:
-    'The dealer\'s cars and the listings that publish them. Scoped to the session\'s ' +
-    'dealership throughout — another dealer\'s vehicle id answers **404, not 403**, because a ' +
+    "The dealer's cars and the listings that publish them. Scoped to the session's " +
+    "dealership throughout — another dealer's vehicle id answers **404, not 403**, because a " +
     '403 would confirm the id is real.\n\n' +
     '**Money is always integer paise.** `pricePaise: 645000` is ₹6,450 — not ₹6.45 Lakh. ' +
     'A fractional value is a 400.',
@@ -23,7 +23,7 @@ export const vehiclesDocs: ModuleDocs = {
       path: '/v1/dealer/vehicles',
       operationId: 'listInventory',
       tag: 'Dealer inventory',
-      summary: 'List the dealer\'s inventory',
+      summary: "List the dealer's inventory",
       description:
         'Cursor-paginated inventory, filterable by the derived `displayStatus` — the same ' +
         'value the tabs in the console show (DRAFT, PENDING, ACTIVE, SOLD and so on) rather ' +
@@ -76,9 +76,7 @@ export const vehiclesDocs: ModuleDocs = {
           bodyType: 'HATCHBACK',
         },
       },
-      responses: [
-        { status: 201, description: 'The new draft.', schema: 'DealerVehicleDto' },
-      ],
+      responses: [{ status: 201, description: 'The new draft.', schema: 'DealerVehicleDto' }],
       errors: [400, 401, 403, 404],
     },
     {
@@ -88,14 +86,14 @@ export const vehiclesDocs: ModuleDocs = {
       tag: 'Dealer inventory',
       summary: 'One vehicle, with completeness and credit preview',
       description:
-        'The dealer\'s own view of a car, including three things the public view has no ' +
+        "The dealer's own view of a car, including three things the public view has no " +
         'equivalent of:\n\n' +
         '- `completeness` — percent done, what is missing, and `canSubmit`, plus `blockers[]` ' +
         'phrased for a dealer to act on\n' +
         '- `creditPreview` — the balance now, what publishing costs, and the balance after, ' +
         'so step 4 of the wizard can say "credits after publish · 22"\n' +
         '- `media[]` — every photo with its processing status\n\n' +
-        'Another dealer\'s id is a 404.',
+        "Another dealer's id is a 404.",
       audience: 'dealer',
       permission: 'vehicle:read',
       params: 'IdParam',
@@ -110,9 +108,9 @@ export const vehiclesDocs: ModuleDocs = {
       summary: 'Update a vehicle',
       description:
         'Partial, so each wizard step sends only its own fields and an untouched step never ' +
-        'blanks another\'s.\n\n' +
+        "blanks another's.\n\n" +
         '`pricePaise` is **paise** and must be an integer — `450000.5` is a 400. ' +
-        '`status`, `slug` and `dealerId` are not in the schema at all: a listing\'s status ' +
+        "`status`, `slug` and `dealerId` are not in the schema at all: a listing's status " +
         'changes only through the state machine, so posting `{"status":"APPROVED"}` is a 400 ' +
         'rather than a silent success (rules 1 and 5).',
       audience: 'dealer',
@@ -258,7 +256,7 @@ export const vehiclesDocs: ModuleDocs = {
         'Takes the car off the customer-facing marketplace. The listing moves to **REMOVED** ' +
         'with `removedAt` set and its row leaves `listing_search`, so buyers stop seeing it ' +
         'everywhere at once — search, counts, the dealer page and its detail page.\n\n' +
-        'The **vehicle row survives**. It returns to `DRAFT`, stays in the dealer\'s inventory, ' +
+        "The **vehicle row survives**. It returns to `DRAFT`, stays in the dealer's inventory, " +
         'remains editable, and can be submitted again for a fresh credit — and the listing and ' +
         'its ledger rows remain as the record that this car was once advertised. Withdrawing a ' +
         'listing that was already SOLD leaves the vehicle SOLD; it removes the advertisement, ' +

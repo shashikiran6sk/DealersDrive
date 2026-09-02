@@ -21,6 +21,10 @@ apps/
 packages/
   contracts/  Zod schemas shared by both apps — the source of truth for every wire shape
   config/     shared eslint + tsconfig presets
+deploy/
+  terraform/  the ECS runtime as code — capacity, autoscaling, alarms, IAM, secrets' shape
+  aws/        task-definition references for a hand-managed environment
+  nginx/ systemd/  the alternative single-VM topology
 ```
 
 ## Requirements
@@ -86,7 +90,7 @@ prerenders nothing that would call the API, and the resulting image carries no
 environment's data. That is what lets one image be built once and promoted from
 development to production unchanged (docs/DEPLOYMENT.md §B1).
 
-The order below still matters at *run* time — the API must be migrated and
+The order below still matters at _run_ time — the API must be migrated and
 answering before the web container starts serving — but not at build time.
 
 ```bash
@@ -219,14 +223,14 @@ docker compose --profile app down -v          # stop and delete the volumes
 
 Or through pnpm, which is the same thing with less typing:
 
-| Command            | Does                                                        |
-| ------------------ | ----------------------------------------------------------- |
-| `pnpm app:up`      | build + start the full stack (`--seed` to reseed)           |
-| `pnpm app:down`    | stop the full stack, keep the volumes                       |
-| `pnpm app:logs`    | follow the api and web logs                                 |
-| `pnpm app:seed`    | run the seed once (it TRUNCATES first — see below)          |
-| `pnpm infra:up`    | backing services only, for [option 1](#1-manually)          |
-| `pnpm infra:reset` | wipe the local volumes and restart the backing services     |
+| Command            | Does                                                    |
+| ------------------ | ------------------------------------------------------- |
+| `pnpm app:up`      | build + start the full stack (`--seed` to reseed)       |
+| `pnpm app:down`    | stop the full stack, keep the volumes                   |
+| `pnpm app:logs`    | follow the api and web logs                             |
+| `pnpm app:seed`    | run the seed once (it TRUNCATES first — see below)      |
+| `pnpm infra:up`    | backing services only, for [option 1](#1-manually)      |
+| `pnpm infra:reset` | wipe the local volumes and restart the backing services |
 
 ### What Compose is doing
 
@@ -310,40 +314,41 @@ legitimately returns nothing. That looks like a bug and is not one.
 
 ## Scripts
 
-| Command            | Does                                           |
-| ------------------ | ---------------------------------------------- |
-| `pnpm dev`         | runs web + api together (turbo)                |
-| `pnpm build`       | builds every workspace package                 |
-| `pnpm lint`        | eslint, type-aware, across the repo            |
-| `pnpm typecheck`   | tsc across the repo                            |
-| `pnpm test`        | vitest across the repo (2 781 tests)           |
-| `pnpm format`      | prettier write                                 |
-| `pnpm infra:up`    | backing services only (`docker compose up -d`) |
-| `pnpm infra:down`  | stops them                                     |
-| `pnpm infra:reset` | wipes the local volumes and restarts           |
-| `pnpm app:up`      | builds and starts the full stack in containers |
-| `pnpm app:down`    | stops the full stack, keeps the volumes        |
-| `pnpm app:logs`    | follows the api and web container logs         |
-| `pnpm app:seed`    | runs the seed inside a one-shot container      |
+| Command            | Does                                                       |
+| ------------------ | ---------------------------------------------------------- |
+| `pnpm dev`         | runs web + api together (turbo)                            |
+| `pnpm build`       | builds every workspace package                             |
+| `pnpm lint`        | eslint, type-aware, across the repo                        |
+| `pnpm typecheck`   | tsc across the repo                                        |
+| `pnpm test`        | vitest across the repo (2 781 tests)                       |
+| `pnpm format`      | prettier write                                             |
+| `pnpm docs:check`  | verifies every command and path the docs name still exists |
+| `pnpm infra:up`    | backing services only (`docker compose up -d`)             |
+| `pnpm infra:down`  | stops them                                                 |
+| `pnpm infra:reset` | wipes the local volumes and restarts                       |
+| `pnpm app:up`      | builds and starts the full stack in containers             |
+| `pnpm app:down`    | stops the full stack, keeps the volumes                    |
+| `pnpm app:logs`    | follows the api and web container logs                     |
+| `pnpm app:seed`    | runs the seed inside a one-shot container                  |
 
 And one script that is not a pnpm task:
 
-| Command                                                            | Does                                                                     |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Command                                        | Does                                                                          |
+| ---------------------------------------------- | ----------------------------------------------------------------------------- |
 | `./scripts/smoke.sh <web-url> <api-url> [sha]` | the read-only checks every deployment gates on — run it against localhost too |
 
 In `apps/api`:
 
-| Command             | Does                                                        |
-| ------------------- | ----------------------------------------------------------- |
-| `pnpm db:migrate`     | `prisma migrate deploy` — applies the committed migrations. Safe everywhere |
+| Command               | Does                                                                                                                                                                                                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm db:migrate`     | `prisma migrate deploy` — applies the committed migrations. Safe everywhere                                                                                                                                                                                                                 |
 | `pnpm db:migrate:new` | `prisma migrate dev --create-only` — writes a new migration for you to **read before applying**. Never point it at a database you care about: `migrate dev` reconciles the DB to `schema.prisma`, and `listing_search` is not in `schema.prisma`, so it will generate a `DROP TABLE` for it |
-| `pnpm db:seed`      | rebuilds the seeded world (idempotent — it truncates first) |
-| `pnpm db:bootstrap` | **deployed environments**: catalogue, packs, config, one admin. Creates what is missing, overwrites nothing, truncates nothing |
-| `pnpm db:reset`     | migrate reset + seed                                        |
-| `pnpm db:studio`    | Prisma Studio                                               |
-| `pnpm test`         | the integration suite (needs Postgres running)              |
-| `pnpm docs:postman` | regenerates `docs/postman/` from the OpenAPI document       |
+| `pnpm db:seed`        | rebuilds the seeded world (idempotent — it truncates first)                                                                                                                                                                                                                                 |
+| `pnpm db:bootstrap`   | **deployed environments**: catalogue, packs, config, one admin. Creates what is missing, overwrites nothing, truncates nothing                                                                                                                                                              |
+| `pnpm db:reset`       | migrate reset + seed                                                                                                                                                                                                                                                                        |
+| `pnpm db:studio`      | Prisma Studio                                                                                                                                                                                                                                                                               |
+| `pnpm test`           | the integration suite (needs Postgres running)                                                                                                                                                                                                                                              |
+| `pnpm docs:postman`   | regenerates `docs/postman/` from the OpenAPI document                                                                                                                                                                                                                                       |
 
 `pnpm lint && pnpm typecheck && pnpm test && pnpm build` **must all pass** before
 calling anything done.
@@ -487,6 +492,7 @@ configuration, never a service, a repository or a route.
 | --------------- | ------------------------- | ----------------------------- | ------------------------- |
 | Database        | PostgreSQL 16 (docker)    | PostgreSQL                    | `DATABASE_URL`            |
 | Object storage  | MinIO (`localhost:9000`)  | Cloudflare R2                 | `STORAGE_DRIVER` + `S3_*` |
+| Shared state    | process memory            | PostgreSQL                    | `CACHE_DRIVER`            |
 | Dealer identity | Google OAuth (dev client) | Google OAuth (prod client)    | `GOOGLE_CLIENT_*`         |
 | Admin identity  | email + Argon2id password | email + Argon2id password     | — (same everywhere)       |
 | Sessions        | `dd_session` in Postgres  | `dd_session` in Postgres      | `SESSION_COOKIE_DOMAIN`   |
@@ -499,10 +505,21 @@ configuration, never a service, a repository or a route.
 only `S3_ENDPOINT` and the keys differ. `local` writes to the filesystem instead
 and needs no container; that is what the test suite uses.
 
+**Shared state is not optional in production.** Rate-limit windows and the
+platform-config version live behind a `CachePort`
+(`apps/api/src/platform/cache/`). `memory` is a `Map` in one process — right for
+`pnpm dev`, right for the tests, and wrong the instant a second task exists,
+because N tasks each counting to five permit 5N. Those limits are a spend
+control as much as a security one: every phone reveal costs an SMS. The
+`postgres` adapter counts with a single atomic upsert against the database the
+API already has, so there is no new datastore, no new failure domain and no new
+bill. Redis is the obvious third adapter and the port is shaped to take it.
+
 `apps/api/src/config/env.ts` refuses to start when a combination is incomplete:
 R2 without keys, MSG91 without an auth key, production without a Google client,
-production still carrying a local development secret, or production on local disk
-storage. None of them fall back silently.
+production still carrying a local development secret, production on local disk
+storage, or production counting rate limits in process memory. None of them fall
+back silently.
 
 ## Testing the API in Postman
 
@@ -583,8 +600,25 @@ step-by-step for each.
 Structured logging is already good — pino, one JSON line per event, a mixin that
 stamps `traceId` (plus `userId`/`dealerId` after auth) on every line emitted
 anywhere in a request, and a redact list covering `authorization`, `cookie`,
-`set-cookie` and password fields. What is missing is somewhere for the logs to go
-and something watching them:
+`set-cookie` and password fields.
+
+`traceId` is now **adopted from the edge** rather than always minted here:
+`request-context.ts` reads `x-request-id`, `x-correlation-id`, `x-trace-id` or
+`x-amzn-trace-id`, in that order, sanitises it, and generates one only when the
+caller sent nothing. It is echoed back under both `x-trace-id` and
+`x-request-id`. That is what lets one user action be followed across the load
+balancer, the web app's BFF hop and the API instead of appearing as three
+unrelated requests. The inbound value is filtered, not trusted — a newline in a
+header would otherwise let a caller forge a log line.
+
+CloudWatch alarms are no longer a TODO either: five of them are defined in
+[`deploy/terraform/alarms.tf`](deploy/terraform/alarms.tf) — no healthy targets
+(API and web), target 5xx, tasks not staying up, and p95 latency. The list is
+short on purpose; an alarm nobody acts on trains everybody to ignore the ones
+that matter.
+
+What is still missing is somewhere for the logs to go and something watching
+them:
 
 - **Error tracking** — Sentry, at the marked TODO in `error-handler.ts`, tagged
   with `traceId`. 5xx only; a 422 `INSUFFICIENT_CREDITS` is not an exception.
@@ -596,7 +630,8 @@ and something watching them:
   on non-zero catches any future write path that bypasses `moveCredits`), and
   pg-boss failed-job count.
 - **Tracing** — OpenTelemetry if a second service appears; the `traceId` in
-  `request-context.ts` is the natural span id.
+  `request-context.ts` is the natural span id, and it already propagates in from
+  upstream.
 - **Uptime** — poll `/health/ready`, not `/health/live`: readiness names the
   failing dependency, liveness deliberately touches nothing.
 - **Job and audit visibility** — pg-boss keeps state in the `pgboss` schema and
@@ -627,21 +662,42 @@ Two deployments exist, for two purposes.
 **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) is the real one** — local →
 `dev.dealers-drive.com` → `www.dealers-drive.com`, on ECS Fargate, with one
 image built per commit and promoted from development to production unchanged.
-The pipeline is in [`.github/workflows/`](.github/workflows/) and the one-time
-infrastructure setup is [`deploy/aws/README.md`](deploy/aws/README.md). Merging
-to `main` deploys development automatically; production is a manual workflow
-run behind a required approval, and a rollback is the same run with an older
-commit.
+The pipeline is in [`.github/workflows/`](.github/workflows/). Merging to `main`
+deploys development automatically; production is a manual workflow run behind a
+required approval, and a rollback is the same run with an older commit.
+
+The runtime itself is now **code**, in
+[`deploy/terraform/`](deploy/terraform/README.md): the cluster, both services,
+the load balancer and its path routing, autoscaling on CPU and memory, the
+alarms, the IAM roles including the two GitHub OIDC roles, and the _names_ of
+every SSM parameter — never their values. Until it existed, capacity and scaling
+lived only as console state, which meant a change to either was invisible to
+review and rebuilding was archaeology.
+
+Terraform owns the shape; the pipeline owns the image. Every service carries
+`ignore_changes = [task_definition, desired_count]`, so an `apply` cannot drag
+production back to an older image and cannot fight autoscaling.
+[`deploy/aws/README.md`](deploy/aws/README.md) remains the reference for a
+hand-managed environment.
 
 **[`deploy/`](deploy/README.md) is the single box the investor demo runs on** —
 nginx terminating TLS in front of Next.js and the API on one hostname, Postgres
 and MinIO in Docker on loopback, systemd units, and a release script that builds
 on the server. Honest about being demo-grade; see that file's closing section.
 
-Still needed for real production: a separate worker entrypoint — today
-`WORKER_INLINE=true` runs job handlers inside the HTTP process, which caps the
-API at one task — the Sentry SDK (the DSN is validated and does nothing), and
-the CloudWatch alarms.
+Still needed for real production: a separate worker entrypoint. Today
+`WORKER_INLINE=true` runs the job handlers inside the HTTP process, so a slow
+image job competes with HTTP requests for the same event loop — which is the
+reason ARCHITECTURE §19.1 wants `WORKER=true` as its own process type. Every
+handler is already written to be idempotent and to assume it will run twice, so
+this is about isolating CPU, not about correctness.
+
+What it is _no longer_ about is rate limiting. That counter used to live in
+process memory, which capped the API at one task before any of the above
+mattered; it now lives in shared state (`CACHE_DRIVER=postgres`), and the
+Terraform runs two tasks per service in every environment.
+
+Also outstanding: the Sentry SDK (the DSN is validated and does nothing).
 
 ### 6. Product work not started
 
@@ -662,6 +718,12 @@ explicitly out of scope.
 7. Every API input schema lives in `packages/contracts` and is `.strict()`.
 8. Adding a route without documenting it in `<module>.docs.ts` **fails the test
    suite** — `tests/openapi.test.ts` walks the router and compares.
+9. Anything counted across requests goes through the `CachePort`, never a
+   module-level `Map`. A counter in process memory is correct for one process
+   and silently N times too permissive behind N tasks.
+10. Every command and repository path a document names is checked by
+    `pnpm docs:check` in CI. A renamed script that a README still mentions
+    fails the build rather than a new engineer.
 
 The numbered rules behind these are in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) §5.5 and §8.3.

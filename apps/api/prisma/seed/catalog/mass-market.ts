@@ -77,8 +77,19 @@ export const MASS_MARKET: CatalogMake[] = [
     ]),
     m('baleno', 'Baleno', 'HATCHBACK', 2015, null, [
       p('PETROL', 'MANUAL', 1197, 5, ['Sigma', 'Delta', 'Zeta', 'Alpha']),
-      p('PETROL', 'AUTOMATIC', 1197, 5, ['Delta CVT', 'Zeta CVT', 'Alpha CVT', 'Zeta AT', 'Alpha AMT']),
-      p('DIESEL', 'MANUAL', 1248, 5, ['Sigma Diesel', 'Delta Diesel', 'Zeta Diesel', 'Alpha Diesel']),
+      p('PETROL', 'AUTOMATIC', 1197, 5, [
+        'Delta CVT',
+        'Zeta CVT',
+        'Alpha CVT',
+        'Zeta AT',
+        'Alpha AMT',
+      ]),
+      p('DIESEL', 'MANUAL', 1248, 5, [
+        'Sigma Diesel',
+        'Delta Diesel',
+        'Zeta Diesel',
+        'Alpha Diesel',
+      ]),
       p('CNG', 'MANUAL', 1197, 5, ['Delta CNG']),
     ]),
     m('baleno-rs', 'Baleno RS', 'HATCHBACK', 2017, 2020, [
@@ -115,7 +126,12 @@ export const MASS_MARKET: CatalogMake[] = [
     m('ciaz', 'Ciaz', 'SEDAN', 2014, null, [
       p('PETROL', 'MANUAL', 1462, 5, ['Sigma', 'Delta', 'Zeta', 'Alpha']),
       p('PETROL', 'AUTOMATIC', 1462, 5, ['Delta AT', 'Zeta AT', 'Alpha AT']),
-      p('DIESEL', 'MANUAL', 1248, 5, ['Sigma Diesel', 'Delta Diesel', 'Zeta Diesel', 'Alpha Diesel']),
+      p('DIESEL', 'MANUAL', 1248, 5, [
+        'Sigma Diesel',
+        'Delta Diesel',
+        'Zeta Diesel',
+        'Alpha Diesel',
+      ]),
     ]),
     m('sx4', 'SX4', 'SEDAN', 2007, 2014, [
       p('PETROL', 'MANUAL', 1586, 5, ['VXi', 'ZXi']),
@@ -138,7 +154,12 @@ export const MASS_MARKET: CatalogMake[] = [
     m('s-cross', 'S-Cross', 'SUV', 2015, 2022, [
       p('DIESEL', 'MANUAL', 1248, 5, ['Sigma', 'Delta', 'Zeta', 'Alpha']),
       p('DIESEL', 'MANUAL', 1598, 5, ['Alpha 1.6']),
-      p('PETROL', 'MANUAL', 1462, 5, ['Sigma Petrol', 'Delta Petrol', 'Zeta Petrol', 'Alpha Petrol']),
+      p('PETROL', 'MANUAL', 1462, 5, [
+        'Sigma Petrol',
+        'Delta Petrol',
+        'Zeta Petrol',
+        'Alpha Petrol',
+      ]),
       p('PETROL', 'AUTOMATIC', 1462, 5, ['Zeta AT', 'Alpha AT']),
     ]),
     m('grand-vitara', 'Grand Vitara', 'SUV', 2022, null, [
@@ -287,9 +308,7 @@ export const MASS_MARKET: CatalogMake[] = [
     m('kona-electric', 'Kona Electric', 'SUV', 2019, 2023, [
       p('ELECTRIC', 'AUTOMATIC', null, 5, ['Premium', 'Premium Dual Tone']),
     ]),
-    m('ioniq-5', 'Ioniq 5', 'SUV', 2023, null, [
-      p('ELECTRIC', 'AUTOMATIC', null, 5, ['Base']),
-    ]),
+    m('ioniq-5', 'Ioniq 5', 'SUV', 2023, null, [p('ELECTRIC', 'AUTOMATIC', null, 5, ['Base'])]),
     m('accent', 'Accent', 'SEDAN', 1999, 2013, [
       p('PETROL', 'MANUAL', 1495, 5, ['GLE', 'GLS', 'Executive', 'Viva']),
       p('CNG', 'MANUAL', 1495, 5, ['GLE CNG']),
@@ -348,7 +367,13 @@ export const MASS_MARKET: CatalogMake[] = [
       p('PETROL', 'MANUAL', 1199, 5, ['XE', 'XM', 'XM+', 'XT', 'XZ', 'XZ+']),
       p('PETROL', 'AUTOMATIC', 1199, 5, ['XM+ DCA', 'XT DCA', 'XZ+ DCA']),
       p('PETROL', 'MANUAL', 1199, 5, ['XZ+ Turbo', 'XT Turbo']),
-      p('DIESEL', 'MANUAL', 1497, 5, ['XE Diesel', 'XM Diesel', 'XT Diesel', 'XZ Diesel', 'XZ+ Diesel']),
+      p('DIESEL', 'MANUAL', 1497, 5, [
+        'XE Diesel',
+        'XM Diesel',
+        'XT Diesel',
+        'XZ Diesel',
+        'XZ+ Diesel',
+      ]),
       p('CNG', 'MANUAL', 1199, 5, ['XM+ CNG', 'XZ+ CNG']),
     ]),
     m('punch', 'Punch', 'SUV', 2021, null, [
@@ -362,12 +387,25 @@ export const MASS_MARKET: CatalogMake[] = [
     m('nexon', 'Nexon', 'SUV', 2017, null, [
       p('PETROL', 'MANUAL', 1199, 5, ['XE', 'XM', 'XMA', 'XT', 'XZ', 'XZ+', 'XZ+ (O)']),
       p('PETROL', 'AUTOMATIC', 1199, 5, ['XMA AMT', 'XZA+ AMT', 'XZ+ DCA', 'XZ+ (O) DCA']),
-      p('DIESEL', 'MANUAL', 1497, 5, ['XE Diesel', 'XM Diesel', 'XZ Diesel', 'XZ+ Diesel', 'XZ+ (O) Diesel']),
+      p('DIESEL', 'MANUAL', 1497, 5, [
+        'XE Diesel',
+        'XM Diesel',
+        'XZ Diesel',
+        'XZ+ Diesel',
+        'XZ+ (O) Diesel',
+      ]),
       p('DIESEL', 'AUTOMATIC', 1497, 5, ['XZA+ Diesel AMT']),
       p('CNG', 'MANUAL', 1199, 5, ['XZ+ CNG', 'XZ+ (O) CNG']),
     ]),
     m('nexon-ev', 'Nexon EV', 'SUV', 2020, null, [
-      p('ELECTRIC', 'AUTOMATIC', null, 5, ['XM', 'XZ+', 'XZ+ Lux', 'Prime XZ+', 'Max XZ+', 'Max XZ+ Lux']),
+      p('ELECTRIC', 'AUTOMATIC', null, 5, [
+        'XM',
+        'XZ+',
+        'XZ+ Lux',
+        'Prime XZ+',
+        'Max XZ+',
+        'Max XZ+ Lux',
+      ]),
     ]),
     m('curvv', 'Curvv', 'SUV', 2024, null, [
       p('PETROL', 'MANUAL', 1199, 5, ['Smart', 'Pure', 'Creative', 'Accomplished']),
@@ -401,9 +439,7 @@ export const MASS_MARKET: CatalogMake[] = [
     m('venture', 'Venture', 'MUV', 2010, 2017, [
       p('DIESEL', 'MANUAL', 1405, 7, ['CX', 'EX', 'GX']),
     ]),
-    m('xenon', 'Xenon', 'SUV', 2009, 2020, [
-      p('DIESEL', 'MANUAL', 2179, 5, ['XT 4x2', 'XT 4x4']),
-    ]),
+    m('xenon', 'Xenon', 'SUV', 2009, 2020, [p('DIESEL', 'MANUAL', 2179, 5, ['XT 4x2', 'XT 4x4'])]),
   ]),
 
   make('mahindra', 'Mahindra', 88, [

@@ -281,7 +281,9 @@ describe('listing lifecycle over HTTP', () => {
     const after = await h.agent().get('/v1/vehicles?limit=1').expect(200);
     expect(after.body.page.total).toBe(before.body.page.total);
 
-    const availableBefore = Number(/^([\d,]+)/.exec(before.body.resultLabel)?.[1]?.replace(/,/g, ''));
+    const availableBefore = Number(
+      /^([\d,]+)/.exec(before.body.resultLabel)?.[1]?.replace(/,/g, ''),
+    );
     const availableAfter = Number(/^([\d,]+)/.exec(after.body.resultLabel)?.[1]?.replace(/,/g, ''));
     expect(availableAfter).toBe(availableBefore - 1);
 
@@ -306,7 +308,9 @@ describe('listing lifecycle over HTTP', () => {
     expect(card?.soldLabel).toBeTruthy();
 
     // And it sorts behind every available car.
-    const soldIndex = results.body.data.findIndex((entry: { id: string }) => entry.id === vehicleId);
+    const soldIndex = results.body.data.findIndex(
+      (entry: { id: string }) => entry.id === vehicleId,
+    );
     const lastAvailable = results.body.data
       .map((entry: { isSold: boolean }) => entry.isSold)
       .lastIndexOf(false);

@@ -57,6 +57,12 @@ function harness() {
 
   const container = {
     guards: { requireDealer, requireSignedIn, requireAdmin },
+    // Pass-through: this file is about which guard chain a path lands on, and
+    // a limiter that actually counted would make the assertion depend on how
+    // many times the suite dispatched the same URL.
+    rateLimit: () => (_req: Request, _res: Response, next: () => void) => {
+      next();
+    },
     auth: service,
     storage: service,
     media: service,

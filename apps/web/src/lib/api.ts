@@ -7,7 +7,8 @@ import { serverConfig } from './config';
 export const SESSION_COOKIE = 'dd_session';
 
 /** What a 5xx is allowed to say. Never the bug's own words. */
-export const SERVER_ERROR_MESSAGE = 'Something went wrong on our side. Please try again in a moment.';
+export const SERVER_ERROR_MESSAGE =
+  'Something went wrong on our side. Please try again in a moment.';
 
 /**
  * The one place the web app talks to the API.
@@ -211,7 +212,9 @@ export function sessionFrom(setCookie: string[]): IssuedSession | null {
   const expiresAttribute = attributes
     .map((attribute) => attribute.trim())
     .find((attribute) => attribute.toLowerCase().startsWith('expires='));
-  const expires = expiresAttribute ? new Date(expiresAttribute.slice('expires='.length)) : undefined;
+  const expires = expiresAttribute
+    ? new Date(expiresAttribute.slice('expires='.length))
+    : undefined;
 
   return {
     value,
