@@ -26,6 +26,7 @@ import { env } from '../../config/env.js';
 import { NotFoundError } from '../../platform/errors.js';
 import type { CatalogRepository } from '../catalog/catalog.facade.js';
 import type { DealersRepository } from '../dealers/dealers.facade.js';
+import type { ReportsService } from '../reports/reports.facade.js';
 import type { VehiclesRepository } from '../vehicles/vehicles.facade.js';
 import { mediaUrl, srcsetFor } from '../../platform/media/urls.js';
 import { bodyTypeLabel, carCountLabel, toVehicleCard } from './search.mapper.js';
@@ -36,6 +37,12 @@ export interface SearchDeps {
   catalog: CatalogRepository;
   dealers: DealersRepository;
   vehicles: VehiclesRepository;
+  /**
+   * Read-only, and only ever through `publicSummaries` — the narrow projection.
+   * This module must not be able to reach an itemised challan record; see the
+   * note on `VehicleReportSummary`.
+   */
+  reports: ReportsService;
 }
 
 const POPULAR_SEARCHES = [
@@ -47,7 +54,7 @@ const POPULAR_SEARCHES = [
   { label: 'Hatchbacks', href: '/cars?bodyType=hatchback' },
 ];
 
-export function createSearchService({ repo, catalog, dealers, vehicles }: SearchDeps) {
+export function createSearchService({ repo, catalog, dealers, vehicles, reports }: SearchDeps) {
   async function list(
     query: VehicleQuery,
     options: { dealerSlug?: string } = {},
@@ -311,12 +318,24 @@ export function createSearchService({ repo, catalog, dealers, vehicles }: Search
         .filter(Boolean)
         .join(' · ');
 
+      /**
+       * The records check, at buyer granularity.
+       *
+       * `publicSummaries` is the only door into report data from here, and it
+       * returns `VehicleReportSummary` — a shape with no itemised challans and
+       * no registration number. A component on the public page therefore
+       * cannot render one even if handed the wrong object, because the field
+       * does not exist (ARCHITECTURE §6.1 and the note on that schema).
+       */
+      const report = (await reports.publicSummaries([vehicle.id])).get(vehicle.id) ?? null;
+
       return {
         id: vehicle.id,
         slug: row.vehicle_slug,
         listingId: row.listing_id,
         year: vehicle.year,
         title,
+        report,
         make: { slug: row.make_slug, name: row.make_name },
         model: { slug: row.model_slug, name: row.model_name },
         variant:

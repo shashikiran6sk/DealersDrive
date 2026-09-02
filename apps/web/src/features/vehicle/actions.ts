@@ -3,13 +3,16 @@
 import {
   CreateVehicleInput,
   MarkSoldInput,
+  RcLookupInput,
   ReorderMediaInput,
   UpdateVehicleInput,
   type DealerVehicleDto,
   type MarkSoldResponse,
+  type RcLookupResponse,
   type RemoveListingResponse,
   type RenewListingResponse,
   type SubmitListingResponse,
+  type VehicleReportDto,
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
@@ -45,6 +48,64 @@ function fail(error: unknown, fallback: string): ActionResult<never> {
 
 function refreshConsole(): void {
   revalidatePath('/dealer', 'layout');
+}
+
+/**
+ * C21 — look a vehicle up by its number plate.
+ *
+ * Deliberately does **not** `refreshConsole()`. A lookup writes nothing, and
+ * revalidating the dealer layout on every plate typed would be a pile of
+ * cache churn to display a proposal the dealer may well discard.
+ *
+ * Every failure here — no RC on record, provider down, over the hourly cap —
+ * leaves the caller on the manual path with the plate they typed. That is a
+ * first-class route, not a retry: roughly one lookup in six does not produce a
+ * usable match, and a dealer whose car is not on VAHAN still gets to list it.
+ */
+export async function lookupRegistrationAction(
+  input: unknown,
+): Promise<ActionResult<RcLookupResponse>> {
+  const parsed = RcLookupInput.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      fieldErrors: { regNumber: 'Enter a registration number like TN 09 BX 1234.' },
+      message: 'Check the registration number.',
+    };
+  }
+
+  try {
+    const result = await apiSend<RcLookupResponse>(
+      'POST',
+      '/v1/dealer/vehicles/lookup',
+      parsed.data,
+    );
+    return { ok: true, data: result };
+  } catch (error) {
+    return fail(error, 'We could not look that number up.');
+  }
+}
+
+/**
+ * C23 — re-read the records now.
+ *
+ * Unlike the refresh that happens inside submit, this one surfaces its
+ * failure: the dealer pressed a button and deserves to know it did not work
+ * rather than staring at an unchanged date.
+ */
+export async function refreshReportAction(
+  vehicleId: string,
+): Promise<ActionResult<VehicleReportDto>> {
+  try {
+    const report = await apiSend<VehicleReportDto>(
+      'POST',
+      `/v1/dealer/vehicles/${vehicleId}/report/refresh`,
+    );
+    refreshConsole();
+    return { ok: true, data: report };
+  } catch (error) {
+    return fail(error, 'We could not check those records again.');
+  }
 }
 
 /** C7 — creates the DRAFT. Only the basics; everything else is a later PATCH. */

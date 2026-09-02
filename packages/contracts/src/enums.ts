@@ -230,3 +230,83 @@ export function ownerLabel(n: number): string {
   const words = ['', 'First', 'Second', 'Third', 'Fourth', 'Fifth'];
   return `${words[n] ?? `${n}th`} owner`;
 }
+
+// ─────────── vehicle records (RC lookup + history report) ──────────────────
+//
+// Kept together at the end rather than filed among the enums above, because
+// they share one property none of the others have: **they describe what a
+// government record says, not what Dealers-Drive decided.** `UNKNOWN` and
+// `UNAVAILABLE` therefore have to exist and have to be rendered — a missing
+// challan feed must never be presented as a clean record (ARCHITECTURE §6.3).
+
+/**
+ * How sure the resolver is that a VAHAN string maps to this catalogue row.
+ *
+ * `LIKELY` is not `EXACT` with better manners. The wizard renders the two
+ * differently on purpose: an EXACT match is stated, a LIKELY one is offered
+ * for confirmation, and a dealer who cannot tell them apart will publish
+ * somebody else's model name.
+ */
+export const RcMatchConfidence = z.enum(['EXACT', 'LIKELY', 'NONE']);
+export type RcMatchConfidence = z.infer<typeof RcMatchConfidence>;
+
+/**
+ * `UNKNOWN` means we could not read the blacklist block, and is deliberately
+ * distinct from `CLEAR`. Collapsing them would turn a provider outage into a
+ * clean bill of health on a stolen car.
+ */
+export const BlacklistStatus = z.enum(['CLEAR', 'BLACKLISTED', 'NOC_ISSUED', 'UNKNOWN']);
+export type BlacklistStatus = z.infer<typeof BlacklistStatus>;
+
+export const ChallanStatus = z.enum(['PAID', 'UNPAID', 'DISPOSED']);
+export type ChallanStatus = z.infer<typeof ChallanStatus>;
+
+/**
+ * The one-word answer at the top of a report.
+ *
+ * `UNAVAILABLE` is a first-class outcome, not an error state — it is what an
+ * honest report says when the state's feed is quiet, and it is the difference
+ * between a records check and a warranty.
+ */
+export const ReportVerdict = z.enum(['CLEAR', 'ATTENTION', 'FLAGGED', 'UNAVAILABLE']);
+export type ReportVerdict = z.infer<typeof ReportVerdict>;
+
+export const RC_CONFIDENCE_LABELS: Record<RcMatchConfidence, string> = {
+  EXACT: 'From the RC',
+  LIKELY: 'Best match — please check',
+  NONE: 'Not found — please choose',
+};
+
+export const BLACKLIST_LABELS: Record<BlacklistStatus, string> = {
+  CLEAR: 'No flags on record',
+  BLACKLISTED: 'Flagged in government records',
+  NOC_ISSUED: 'NOC issued — transfer in progress',
+  UNKNOWN: 'Records unavailable',
+};
+
+export const BLACKLIST_TONES: Record<BlacklistStatus, StatusTone> = {
+  CLEAR: 'ok',
+  BLACKLISTED: 'err',
+  NOC_ISSUED: 'warn',
+  UNKNOWN: 'neutral',
+};
+
+export const CHALLAN_STATUS_LABELS: Record<ChallanStatus, string> = {
+  PAID: 'Paid',
+  UNPAID: 'Unpaid',
+  DISPOSED: 'Disposed by court',
+};
+
+export const REPORT_VERDICT_LABELS: Record<ReportVerdict, string> = {
+  CLEAR: 'No issues found',
+  ATTENTION: 'Needs attention',
+  FLAGGED: 'Flagged',
+  UNAVAILABLE: 'Records unavailable',
+};
+
+export const REPORT_VERDICT_TONES: Record<ReportVerdict, StatusTone> = {
+  CLEAR: 'ok',
+  ATTENTION: 'warn',
+  FLAGGED: 'err',
+  UNAVAILABLE: 'neutral',
+};

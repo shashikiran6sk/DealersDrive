@@ -11,12 +11,21 @@ import type {
 } from '../../../../src/modules/vehicles/vehicles.repository.js';
 import { createVehiclesService } from '../../../../src/modules/vehicles/vehicles.service.js';
 import type { PlatformConfigService } from '../../../../src/platform/config/platform-config.js';
+import type { CatalogRepository } from '../../../../src/modules/catalog/catalog.facade.js';
+import type { ReportsService } from '../../../../src/modules/reports/reports.facade.js';
 import {
   ConflictError,
   DomainError,
   ForbiddenError,
   NotFoundError,
 } from '../../../../src/platform/errors.js';
+import { plateHash } from '../../../../src/platform/rc/plate-hash.js';
+import {
+  RcLookupError,
+  type RcLookupResult,
+  type RcRecords,
+  type RcSpecs,
+} from '../../../../src/platform/rc/rc.port.js';
 
 /**
  * Unit tests for `src/modules/vehicles/vehicles.service.ts`.
@@ -148,6 +157,23 @@ interface Options {
   minPhotos?: number;
   listing?: Record<string, unknown> | null;
   slugTaken?: number;
+  /** An existing vehicle on the same plate, for the duplicate-stock check. */
+  duplicate?: Record<string, unknown> | null;
+  /** A cached RC lookup, for the snapshot-application path. */
+  rcLookup?: Record<string, unknown> | null;
+  /** A cache hit for `lookup()`, keyed by plate hash in production. */
+  cachedLookup?: Record<string, unknown> | null;
+  /** What the provider answers. Either a result or a throw, never both. */
+  rcResult?: RcLookupResult;
+  rcError?: Error;
+  /** Platform flags. Everything unnamed stays off, as in the base harness. */
+  flags?: Record<string, boolean>;
+  /** Numeric config overrides, by key. */
+  numbers?: Record<string, number>;
+  /** Per-test replacements for the reports seam. */
+  reports?: Record<string, unknown>;
+  /** Per-test replacements for the catalogue reads the resolver makes. */
+  catalog?: Record<string, unknown>;
 }
 
 function setup(options: Options = {}) {
@@ -158,6 +184,9 @@ function setup(options: Options = {}) {
   const outbox: Record<string, unknown>[] = [];
   const repoUpdates: Record<string, unknown>[] = [];
   const refs: Record<string, unknown>[] = [];
+  const savedLookups: Record<string, unknown>[] = [];
+  const appendedReports: Record<string, unknown>[] = [];
+  const created: Record<string, unknown>[] = [];
   let slugLookups = 0;
 
   const row = options.vehicle === null ? null : vehicle(options.vehicle ?? {});
@@ -168,6 +197,25 @@ function setup(options: Options = {}) {
     countForDealer: () => Promise.resolve(options.count ?? 0),
     create: (_dealerId: string, data: Record<string, unknown>) =>
       Promise.resolve(vehicle({ ...(options.vehicle ?? {}), ...data })),
+    // `create` now runs inside a transaction so the draft and its first report
+    // row land together. The stubbed `$transaction` hands the same handle
+    // through, so this behaves identically to `create` here.
+    createIn: (_tx: unknown, _dealerId: string, data: Record<string, unknown>) => {
+      created.push(data);
+      return Promise.resolve(vehicle({ ...(options.vehicle ?? {}), ...data }));
+    },
+    findByRegistration: () => Promise.resolve(options.duplicate ?? null),
+    findRcLookup: () => Promise.resolve(options.cachedLookup ?? null),
+    findRcLookupById: () => Promise.resolve(options.rcLookup ?? null),
+    saveRcLookup: (input: Record<string, unknown>) => {
+      savedLookups.push(input);
+      return Promise.resolve({
+        id: 'lookup-1',
+        fetchedAt: new Date('2026-09-01T00:00:00.000Z'),
+        ...input,
+      });
+    },
+    sweepRcLookups: () => Promise.resolve(0),
     update: (_dealerId: string, _vehicleId: string, data: Record<string, unknown>) => {
       repoUpdates.push(data);
       return Promise.resolve(
@@ -237,13 +285,14 @@ function setup(options: Options = {}) {
   const config = {
     number: (key: string) =>
       Promise.resolve(
-        key === 'listing.minPhotos'
-          ? (options.minPhotos ?? 6)
-          : key === 'listing.reviewSlaHours'
-            ? 24
-            : 90,
+        options.numbers?.[key] ??
+          (key === 'listing.minPhotos'
+            ? (options.minPhotos ?? 6)
+            : key === 'listing.reviewSlaHours'
+              ? 24
+              : 90),
       ),
-    boolean: () => Promise.resolve(false),
+    boolean: (key: string) => Promise.resolve(options.flags?.[key] ?? false),
     stringList: () => Promise.resolve([]),
     all: () => Promise.resolve([]),
     set: () => Promise.reject(new Error('not used')),
@@ -252,8 +301,49 @@ function setup(options: Options = {}) {
     invalidate: () => Promise.resolve(),
   } as unknown as PlatformConfigService;
 
+  /**
+   * The three seams this suite does not exercise.
+   *
+   * `rc` in particular must never be a real adapter here: a unit test that
+   * could reach a provider is one that costs money and fails when someone
+   * else's server does. The lookup path has its own suites —
+   * `attestr.adapter.test.ts` and `rc-match.test.ts`.
+   */
+  const rc = {
+    provider: 'test',
+    lookup: () => {
+      if (options.rcError !== undefined) return Promise.reject(options.rcError);
+      if (options.rcResult) return Promise.resolve(options.rcResult);
+      return Promise.reject(new Error('rc lookup not stubbed for this test'));
+    },
+  };
+
+  const reports = {
+    latest: () => Promise.resolve(null),
+    latestDto: () => Promise.resolve(null),
+    toDealerDto: () => Promise.reject(new Error('not used')),
+    toPublicSummary: () => Promise.reject(new Error('not used')),
+    publicSummaries: () => Promise.resolve(new Map()),
+    isStale: () => Promise.resolve(false),
+    fetchRecords: () => Promise.reject(new Error('not used')),
+    refreshIfStale: () => Promise.resolve(null),
+    append: (_tx: unknown, input: Record<string, unknown>) => {
+      appendedReports.push(input);
+      return Promise.resolve({});
+    },
+    ...(options.reports ?? {}),
+  } as unknown as ReportsService;
+
+  const catalog = {
+    taxonomyForMatching: () => Promise.resolve([]),
+    variantRowsForModel: () => Promise.resolve([]),
+    colorByFamily: () => Promise.resolve(null),
+    rtoByCode: () => Promise.resolve(null),
+    ...(options.catalog ?? {}),
+  } as unknown as CatalogRepository;
+
   return {
-    service: createVehiclesService({ prisma, repo, dealers, config }),
+    service: createVehiclesService({ prisma, repo, dealers, config, rc, reports, catalog }),
     listingCreates,
     listingUpdates,
     vehicleUpdates,
@@ -261,6 +351,9 @@ function setup(options: Options = {}) {
     outbox,
     repoUpdates,
     refs,
+    savedLookups,
+    appendedReports,
+    created,
   };
 }
 
@@ -1506,5 +1599,559 @@ describe('renew', () => {
     const h = setup({ listing: expired });
 
     expect((await h.service.renew(DEALER, USER, 'listing-1')).message).toContain('reviewed again');
+  });
+});
+
+/**
+ * The RC lookup path (C21).
+ *
+ * The provider is stubbed for every one of these — a unit test that could
+ * reach Attestr is one that costs ₹3 to run and goes red when somebody else's
+ * server has an afternoon. What is being pinned here is not the resolver
+ * (`rc-match.test.ts` owns that) but the *service's* decisions around it: what
+ * is cached, what is billed, what a failure is called, and which of the
+ * provider's answers a dealer is allowed to see.
+ */
+const SPECS: RcSpecs = {
+  makerDescription: 'MARUTI SUZUKI INDIA LTD',
+  makerModel: 'SWIFT VXI',
+  makerVariant: null,
+  fuelType: 'PETROL',
+  colorType: 'WHITE',
+  cubicCapacity: 1197,
+  seatingCapacity: 5,
+  normsType: 'BS6',
+  ownerNumber: 2,
+  manufacturedOn: '2019-06-01',
+  registeredOn: '2019-07-14',
+  rtoName: 'VELLORE',
+};
+
+function records(overrides: Partial<RcRecords> = {}): RcRecords {
+  return {
+    rcStatus: 'ACTIVE',
+    blacklistStatus: 'CLEAR',
+    blacklistReasons: [],
+    nocIssuedTo: null,
+    challansAvailable: true,
+    challans: [],
+    financed: false,
+    insuranceUpto: '2027-03-31',
+    fitnessUpto: null,
+    pucUpto: '2026-11-01',
+    taxUpto: null,
+    ...overrides,
+  };
+}
+
+const RC_ON = { 'feature.rcLookup': true };
+const REPORT_ON = { 'feature.rcLookup': true, 'feature.vehicleReport': true };
+
+describe('lookup', () => {
+  it('refuses before touching the provider when the flag is off', async () => {
+    // The order matters and is worth pinning: a disabled feature that still
+    // makes the billed call is a feature we are paying to have switched off.
+    const h = setup({ rcError: new Error('provider should not have been called') });
+
+    await expect(h.service.lookup(DEALER, { regNumber: 'TN09BX1234' })).rejects.toThrow(DomainError);
+    expect(h.savedLookups).toHaveLength(0);
+  });
+
+  it('answers from the cache without calling the provider', async () => {
+    const h = setup({
+      flags: RC_ON,
+      cachedLookup: {
+        id: 'lookup-cached',
+        found: true,
+        specs: SPECS,
+        records: records(),
+        fetchedAt: new Date(),
+      },
+      rcError: new Error('provider should not have been called'),
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result).toMatchObject({ lookupId: 'lookup-cached', cached: true });
+    // Nothing re-saved: a cache hit that rewrites its own row would push the
+    // expiry out indefinitely and the month-old cap would never bite.
+    expect(h.savedLookups).toHaveLength(0);
+  });
+
+  it('treats a cached miss as an answer, not as a reason to ask again', async () => {
+    const h = setup({
+      flags: RC_ON,
+      cachedLookup: { id: 'lookup-miss', found: false, specs: {}, records: null, fetchedAt: new Date() },
+      rcError: new Error('provider should not have been called'),
+    });
+
+    await expect(h.service.lookup(DEALER, { regNumber: 'TN09BX1234' })).rejects.toThrow(
+      NotFoundError,
+    );
+  });
+
+  it('caches a miss so retyping a wrong plate is not billed twice', async () => {
+    const h = setup({
+      flags: RC_ON,
+      rcError: new RcLookupError('NOT_FOUND', 'no rc'),
+    });
+
+    await expect(h.service.lookup(DEALER, { regNumber: 'TN09BX1234' })).rejects.toThrow(
+      NotFoundError,
+    );
+    expect(h.savedLookups).toHaveLength(1);
+    expect(h.savedLookups[0]).toMatchObject({ found: false });
+  });
+
+  it('never lets our billing problem read as the dealer’s car being wrong', async () => {
+    // MISCONFIGURED means our key is bad or our credits are gone. The dealer
+    // sees plain unavailability and the manual form; the operator gets the log.
+    for (const kind of ['UNAVAILABLE', 'MISCONFIGURED'] as const) {
+      const h = setup({ flags: RC_ON, rcError: new RcLookupError(kind, 'internal detail') });
+      await expect(h.service.lookup(DEALER, { regNumber: 'TN09BX1234' })).rejects.toThrow(
+        /not responding right now/,
+      );
+    }
+  });
+
+  it('tells a rate-limited dealer to wait rather than to give up', async () => {
+    const h = setup({ flags: RC_ON, rcError: new RcLookupError('RATE_LIMITED', 'slow down') });
+
+    await expect(h.service.lookup(DEALER, { regNumber: 'TN09BX1234' })).rejects.toThrow(/busy/);
+  });
+
+  it('passes a non-provider error through unchanged', async () => {
+    // A bug in our own code must not be relabelled as a provider outage: that
+    // is how a null-dereference gets triaged as "the government is slow".
+    const h = setup({ flags: RC_ON, rcError: new TypeError('boom') });
+
+    await expect(h.service.lookup(DEALER, { regNumber: 'TN09BX1234' })).rejects.toThrow(TypeError);
+  });
+
+  it('saves the fresh result and hands back its id', async () => {
+    const h = setup({ flags: RC_ON, rcResult: { specs: SPECS, records: records() } });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result).toMatchObject({ lookupId: 'lookup-1', cached: false, regNumber: 'TN09BX1234' });
+    expect(h.savedLookups[0]).toMatchObject({ found: true, provider: 'test' });
+    // The plate itself is never stored — only its hash. `rc_lookups` is
+    // cross-tenant, so a readable plate column would be a registration index.
+    expect(JSON.stringify(h.savedLookups[0])).not.toContain('TN09BX1234');
+  });
+
+  it('always says a certificate does not record a gearbox', async () => {
+    const h = setup({ flags: RC_ON, rcResult: { specs: SPECS, records: records() } });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.advisories.map((row) => row.code)).toContain('TRANSMISSION_UNKNOWN');
+  });
+
+  it('says so when the catalogue does not carry the make', async () => {
+    // The empty taxonomy in the base harness is exactly this case.
+    const h = setup({ flags: RC_ON, rcResult: { specs: SPECS, records: records() } });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.advisories.map((row) => row.code)).toContain('MAKE_UNMATCHED');
+    expect(result.basics.makeId.value).toBeNull();
+  });
+
+  it('flags an uncertain model once the make is known', async () => {
+    const h = setup({
+      flags: RC_ON,
+      rcResult: { specs: { ...SPECS, makerModel: 'SOMETHING UNLISTED' }, records: records() },
+      catalog: {
+        taxonomyForMatching: () =>
+          Promise.resolve([
+            {
+              id: 'make-1',
+              name: 'Maruti Suzuki',
+              slug: 'maruti-suzuki',
+              models: [{ id: 'model-1', name: 'Swift', bodyType: 'HATCHBACK' }],
+            },
+          ]),
+      },
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.basics.makeId.value).toBe('make-1');
+    expect(result.advisories.map((row) => row.code)).toContain('MODEL_UNCERTAIN');
+  });
+
+  it('fills the detail fields it can resolve, and only those', async () => {
+    const h = setup({
+      flags: RC_ON,
+      rcResult: { specs: SPECS, records: records() },
+      catalog: {
+        colorByFamily: () => Promise.resolve({ id: 'color-9', name: 'White' }),
+        rtoByCode: () => Promise.resolve({ code: 'TN-09', name: 'Chennai Central' }),
+      },
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.details).toMatchObject({
+      ownerNumber: 2,
+      colorId: 'color-9',
+      colorName: 'White',
+      seats: 5,
+      // From the plate, not from `rtoName` — "VELLORE" and "VELLORE RTO" are
+      // one office spelled two ways, and the plate is unambiguous.
+      rtoCode: 'TN-09',
+      normsType: 'BS6',
+    });
+  });
+
+  it('drops an RTO the catalogue does not carry rather than proposing a 400', async () => {
+    const h = setup({ flags: RC_ON, rcResult: { specs: SPECS, records: records() } });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.details.rtoCode).toBeNull();
+  });
+
+  it('shows no report while the report feature is off', async () => {
+    const h = setup({
+      flags: RC_ON,
+      rcResult: { specs: SPECS, records: records({ blacklistStatus: 'BLACKLISTED' }) },
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.report).toBeNull();
+    // And no records-derived advisory leaks around the flag either.
+    expect(result.advisories.map((row) => row.code)).not.toContain('VEHICLE_BLACKLISTED');
+  });
+
+  it('shows the report, and warns, for a blacklisted vehicle', async () => {
+    const h = setup({
+      flags: REPORT_ON,
+      rcResult: {
+        specs: SPECS,
+        records: records({ blacklistStatus: 'BLACKLISTED', blacklistReasons: ['Reported stolen'] }),
+      },
+      reports: { toDealerDto: () => Promise.resolve({ verdict: 'FLAGGED' }) },
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.report).toMatchObject({ verdict: 'FLAGGED' });
+    expect(result.advisories.map((row) => row.code)).toContain('VEHICLE_BLACKLISTED');
+  });
+
+  it('warns about an NOC without blocking anything', async () => {
+    const h = setup({
+      flags: REPORT_ON,
+      rcResult: { specs: SPECS, records: records({ blacklistStatus: 'NOC_ISSUED', nocIssuedTo: 'Karnataka' }) },
+      reports: { toDealerDto: () => Promise.resolve({}) },
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.advisories.map((row) => row.code)).toContain('NOC_ISSUED');
+  });
+
+  it('renders a silent challan feed as unavailable, never as clear', async () => {
+    // The distinction the whole report rests on.
+    const h = setup({
+      flags: REPORT_ON,
+      rcResult: { specs: SPECS, records: records({ challansAvailable: false }) },
+      reports: { toDealerDto: () => Promise.resolve({}) },
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.advisories.map((row) => row.code)).toContain('CHALLANS_UNAVAILABLE');
+  });
+
+  it('totals unpaid challans in rupees, ignoring the paid ones', async () => {
+    const h = setup({
+      flags: REPORT_ON,
+      rcResult: {
+        specs: SPECS,
+        records: records({
+          challans: [
+            { challanRef: '4417', offenceDate: '2025-01-02', offence: 'Speeding', amountPaise: 100_000, status: 'UNPAID', court: false },
+            { challanRef: '9921', offenceDate: '2025-02-02', offence: 'No helmet', amountPaise: 50_000, status: 'PAID', court: false },
+            { challanRef: '3310', offenceDate: '2025-03-02', offence: 'Signal jump', amountPaise: 100_000, status: 'UNPAID', court: true },
+          ],
+        }),
+      },
+      reports: { toDealerDto: () => Promise.resolve({}) },
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+    const outstanding = result.advisories.find((row) => row.code === 'CHALLANS_OUTSTANDING');
+
+    expect(outstanding?.message).toContain('2,000');
+  });
+
+  it('shows no report when the cached records are past their freshness window', async () => {
+    // A month-old challan claim is worse than none: the dealer repeats it to a
+    // buyer, and we are the source they are citing.
+    const h = setup({
+      flags: REPORT_ON,
+      numbers: { 'report.freshnessHours': 24 },
+      cachedLookup: {
+        id: 'lookup-old',
+        found: true,
+        specs: SPECS,
+        records: records({ blacklistStatus: 'BLACKLISTED' }),
+        fetchedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
+      reports: { toDealerDto: () => Promise.reject(new Error('must not be rendered')) },
+    });
+
+    const result = await h.service.lookup(DEALER, { regNumber: 'TN09BX1234' });
+
+    expect(result.report).toBeNull();
+    expect(result.advisories.map((row) => row.code)).not.toContain('VEHICLE_BLACKLISTED');
+  });
+});
+
+/**
+ * Creating from a confirmed lookup (C21 → C4).
+ *
+ * The rule under test is that the browser's `rcLookupId` is a *pointer*, never
+ * a payload. Everything RC-derived is re-read server-side from the cached row,
+ * so a crafted request cannot claim a certificate said one owner and BS6 when
+ * it said four owners and BS4.
+ */
+const CREATE: CreateVehicleInput = {
+  makeId: 'make-1',
+  modelId: 'model-1',
+  variantId: 'variant-1',
+  year: 2021,
+  fuel: 'PETROL',
+  transmission: 'MANUAL',
+  bodyType: 'HATCHBACK',
+};
+
+/** The `rc_lookups` row a matching `rcLookupId` resolves to. */
+function lookupRow(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'lookup-1',
+    found: true,
+    // Written by the service itself on the way in, so the test does not have
+    // to know the secret — see the regHash assertions below.
+    regHash: plateHash('TN09BX1234'),
+    specs: SPECS,
+    records: records(),
+    fetchedAt: new Date(),
+    ...overrides,
+  };
+}
+
+describe('create from an RC lookup', () => {
+  it('applies the snapshot the server re-read, not the fields the client sent', async () => {
+    const h = setup({
+      rcLookup: lookupRow(),
+      catalog: {
+        colorByFamily: () => Promise.resolve({ id: 'color-9', name: 'White' }),
+        rtoByCode: () => Promise.resolve({ code: 'TN-09', name: 'Chennai Central' }),
+      },
+    });
+
+    await h.service.create(DEALER, {
+      ...CREATE,
+      regNumberMasked: 'TN09BX1234',
+      rcLookupId: '11111111-1111-4111-8111-111111111111',
+    });
+
+    expect(h.created[0]).toMatchObject({
+      ownerNumber: 2,
+      colorId: 'color-9',
+      seats: 5,
+      rtoCode: 'TN-09',
+      normsType: 'BS6',
+      regNumberMasked: 'TN09BX1234',
+    });
+    expect(h.created[0]?.rcVerifiedAt).toBeInstanceOf(Date);
+  });
+
+  it('ignores a lookup id that belongs to a different plate', async () => {
+    // A stale tab or an attempt to staple one car's certificate to another.
+    // Neither deserves an error page; both deserve to be ignored, and the
+    // draft is created exactly as a hand-typed one would be.
+    const h = setup({ rcLookup: lookupRow({ regHash: plateHash('KA51MH2020') }) });
+
+    await h.service.create(DEALER, {
+      ...CREATE,
+      regNumberMasked: 'TN09BX1234',
+      rcLookupId: '11111111-1111-4111-8111-111111111111',
+    });
+
+    expect(h.created[0]).not.toHaveProperty('rcVerifiedAt');
+    expect(h.created[0]).not.toHaveProperty('normsType');
+  });
+
+  it('ignores a lookup that found nothing', async () => {
+    const h = setup({ rcLookup: lookupRow({ found: false }) });
+
+    await h.service.create(DEALER, {
+      ...CREATE,
+      regNumberMasked: 'TN09BX1234',
+      rcLookupId: '11111111-1111-4111-8111-111111111111',
+    });
+
+    expect(h.created[0]).not.toHaveProperty('rcVerifiedAt');
+  });
+
+  it('ignores a lookup id sent without a registration number', async () => {
+    const h = setup({ rcLookup: lookupRow() });
+
+    await h.service.create(DEALER, {
+      ...CREATE,
+      rcLookupId: '11111111-1111-4111-8111-111111111111',
+    });
+
+    expect(h.created[0]).not.toHaveProperty('rcVerifiedAt');
+    expect(h.appendedReports).toHaveLength(0);
+  });
+
+  it('writes the first report row in the same transaction as the draft', async () => {
+    // A vehicle created from a lookup never exists for a moment with no record
+    // of what that lookup said.
+    const h = setup({ flags: { 'feature.vehicleReport': true }, rcLookup: lookupRow() });
+
+    await h.service.create(DEALER, {
+      ...CREATE,
+      regNumberMasked: 'TN09BX1234',
+      rcLookupId: '11111111-1111-4111-8111-111111111111',
+    });
+
+    expect(h.appendedReports).toHaveLength(1);
+    expect(h.appendedReports[0]).toMatchObject({ dealerId: DEALER });
+  });
+
+  it('writes no report row while the report feature is off', async () => {
+    const h = setup({ rcLookup: lookupRow() });
+
+    await h.service.create(DEALER, {
+      ...CREATE,
+      regNumberMasked: 'TN09BX1234',
+      rcLookupId: '11111111-1111-4111-8111-111111111111',
+    });
+
+    expect(h.appendedReports).toHaveLength(0);
+  });
+
+  it('keeps stale records out of the report even when the specs are still good', async () => {
+    // Specs are immutable and cached for a month; records are a claim and are
+    // only trusted for a day. The split is the reason the two live in one row
+    // but do not age together.
+    const h = setup({
+      flags: { 'feature.vehicleReport': true },
+      numbers: { 'report.freshnessHours': 24 },
+      rcLookup: lookupRow({ fetchedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }),
+    });
+
+    await h.service.create(DEALER, {
+      ...CREATE,
+      regNumberMasked: 'TN09BX1234',
+      rcLookupId: '11111111-1111-4111-8111-111111111111',
+    });
+
+    expect(h.created[0]?.normsType).toBe('BS6');
+    expect(h.appendedReports).toHaveLength(0);
+  });
+
+  it('refuses a plate the dealer already has a car on', async () => {
+    const h = setup({ duplicate: { id: 'other-vehicle' } });
+
+    await expect(
+      h.service.create(DEALER, { ...CREATE, regNumberMasked: 'TN09BX1234' }),
+    ).rejects.toThrow(ConflictError);
+  });
+});
+
+describe('update — the duplicate-plate guard', () => {
+  it('refuses a plate another of the dealer’s cars already carries', async () => {
+    // Without this the partial unique index surfaces as a 500, and the Details
+    // step is where most plates are actually typed.
+    const h = setup({ duplicate: { id: 'other-vehicle' } });
+
+    await expect(
+      h.service.update(DEALER, VEHICLE, { regNumberMasked: 'TN09BX1234' }),
+    ).rejects.toThrow(ConflictError);
+  });
+
+  it('allows re-sending the plate this car already has', async () => {
+    // The repository excludes the row being edited, so the field stays
+    // editable once set — a dealer correcting the price must not be told
+    // their own registration number is a duplicate.
+    const h = setup();
+
+    await expect(
+      h.service.update(DEALER, VEHICLE, { regNumberMasked: 'TN09BX1234' }),
+    ).resolves.toMatchObject({ id: VEHICLE });
+  });
+});
+
+describe('report', () => {
+  it('404s for a vehicle that is not the caller’s', async () => {
+    const h = setup({ vehicle: null });
+
+    await expect(h.service.report(DEALER, VEHICLE)).rejects.toThrow(NotFoundError);
+  });
+
+  it('returns whatever the latest row says, including nothing', async () => {
+    const h = setup();
+
+    await expect(h.service.report(DEALER, VEHICLE)).resolves.toBeNull();
+  });
+});
+
+describe('refreshReport', () => {
+  it('404s for a vehicle that is not the caller’s', async () => {
+    const h = setup({ vehicle: null });
+
+    await expect(h.service.refreshReport(DEALER, VEHICLE)).rejects.toThrow(NotFoundError);
+  });
+
+  it('refuses while the feature is off', async () => {
+    const h = setup();
+
+    await expect(h.service.refreshReport(DEALER, VEHICLE)).rejects.toThrow(DomainError);
+  });
+
+  it('asks for a registration number rather than failing obscurely', async () => {
+    const h = setup({
+      flags: { 'feature.vehicleReport': true },
+      vehicle: { regNumberMasked: null },
+    });
+
+    await expect(h.service.refreshReport(DEALER, VEHICLE)).rejects.toThrow(/registration number/);
+  });
+
+  it('appends a fresh row and returns the new report', async () => {
+    const h = setup({
+      flags: { 'feature.vehicleReport': true },
+      reports: {
+        fetchRecords: () => Promise.resolve(records()),
+        latestDto: () => Promise.resolve({ verdict: 'CLEAR' }),
+      },
+    });
+
+    await expect(h.service.refreshReport(DEALER, VEHICLE)).resolves.toMatchObject({
+      verdict: 'CLEAR',
+    });
+    expect(h.appendedReports).toHaveLength(1);
+  });
+
+  it('surfaces a provider failure, unlike the silent refresh inside submit', async () => {
+    // The dealer pressed a button. Leaving them staring at an unchanged date
+    // is worse than telling them it did not work.
+    const h = setup({
+      flags: { 'feature.vehicleReport': true },
+      reports: {
+        fetchRecords: () => Promise.reject(new RcLookupError('UNAVAILABLE', 'down')),
+      },
+    });
+
+    await expect(h.service.refreshReport(DEALER, VEHICLE)).rejects.toThrow(/not responding/);
   });
 });

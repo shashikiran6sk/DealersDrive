@@ -14,6 +14,7 @@ import {
 import { createBillingRouter } from './modules/billing/billing.routes.js';
 import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
 import { createSearchRouter } from './modules/search/search.routes.js';
+import { createReportsRouter } from './modules/reports/reports.routes.js';
 import { createVehiclesRouter } from './modules/vehicles/vehicles.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 
@@ -68,7 +69,8 @@ export function createRoutes(container: Container): Router {
   const dealer = Router();
   dealer.use(container.guards.requireDealer);
   dealer.use(createDealersRouter(container.dealers));
-  dealer.use(createVehiclesRouter(container.vehicles));
+  dealer.use(createVehiclesRouter(container.vehicles, container.rateLimit));
+  dealer.use(createReportsRouter(container.vehicles, container.rateLimit));
   dealer.use(createMediaRouter(container.media));
   dealer.use(createDealerEnquiriesRouter(container.enquiries));
   dealer.use(createBillingRouter(container.billing, container.storage, container.rateLimit));

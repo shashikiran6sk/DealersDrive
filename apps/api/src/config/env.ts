@@ -175,6 +175,36 @@ const envSchema = z.object({
   MAIL_FROM: z.string().min(1).default('Dealers-Drive <no-reply@dealers-drive.com>'),
 
   /**
+   * Where registration lookups come from (ARCHITECTURE §6.3).
+   *
+   *   mock    — deterministic and free. The default, and what the test suite
+   *             uses. Intake works end to end on it; it is not a stub.
+   *   attestr — the real provider. Costs money per call, so this is never the
+   *             default and the guard below refuses it without a token.
+   */
+  RC_LOOKUP_DRIVER: z.enum(['mock', 'attestr']).default('mock'),
+  ATTESTR_BASE_URL: optional(z.string().url()),
+  /** Basic-auth token. Without it, every lookup 503s and dealers fall back to typing. */
+  ATTESTR_AUTH_TOKEN: optional(z.string().min(1)),
+  /**
+   * How long a dealer waits before we give up and offer the manual form.
+   *
+   * Four seconds, not thirty: this is on the critical path of adding a car and
+   * the fallback is one click away, so failing fast beats succeeding slowly.
+   */
+  RC_LOOKUP_TIMEOUT_MS: z.coerce.number().int().positive().default(4000),
+  /**
+   * Keys the HMAC that `rc_lookups.regHash` stores instead of the plate.
+   *
+   * Not secrecy from ourselves — real listings hold the plate in
+   * `vehicles.regNumberMasked`. It stops the lookup cache becoming a
+   * standalone, queryable register of every plate anyone ever asked about,
+   * including the ones that never became a listing. Rotating it costs one
+   * cache generation and nothing else.
+   */
+  RC_PLATE_HASH_SECRET: z.string().min(8).default('dealers-drive-local-plate-secret'),
+
+  /**
    * Accepted and validated so production configuration is complete, but no SDK
    * is installed — see README "Remaining production setup". An unset DSN is the
    * normal local state and must never be an error.
@@ -271,6 +301,7 @@ const envSchema = z.object({
 /** The local defaults that are fine on a laptop and must never reach production. */
 const LOCAL_SESSION_SECRET = 'dealers-drive-local-session-secret';
 const LOCAL_UPLOAD_SECRET = 'dealers-drive-local-upload-secret';
+const LOCAL_PLATE_SECRET = 'dealers-drive-local-plate-secret';
 
 /**
  * Cross-field rules — "this variable is required *because* of that one".
@@ -305,6 +336,13 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     if (!value.MSG91_SENDER_ID) require('MSG91_SENDER_ID', 'is required when SMS_DRIVER=msg91.');
   }
 
+  // Checked outside production too: pointing a preview environment at Attestr
+  // with no token would spend nothing and fail every lookup silently, which is
+  // a worse outcome than refusing to boot.
+  if (value.RC_LOOKUP_DRIVER === 'attestr' && !value.ATTESTR_AUTH_TOKEN) {
+    require('ATTESTR_AUTH_TOKEN', 'is required when RC_LOOKUP_DRIVER=attestr.');
+  }
+
   if (!production) return;
 
   if (value.AUTH_MODE === 'cookie') {
@@ -330,6 +368,10 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
 
   if (value.UPLOAD_SIGNING_SECRET === LOCAL_UPLOAD_SECRET) {
     require('UPLOAD_SIGNING_SECRET', 'is still the local development default.');
+  }
+
+  if (value.RC_PLATE_HASH_SECRET === LOCAL_PLATE_SECRET) {
+    require('RC_PLATE_HASH_SECRET', 'is still the local development default.');
   }
 });
 

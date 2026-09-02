@@ -1281,6 +1281,96 @@ Allowlist `application/pdf`, `image/jpeg`, `image/png`; max 5 MB. Content-type *
 
 ---
 
+## C21. `POST /v1/dealer/vehicles/lookup`
+
+**Screen:** Add vehicle — step 0 (the number plate)
+
+Resolves a registration number into a **proposal**. Writes nothing: a lookup is
+not a commitment to list the car.
+
+**This call costs money.** Rate-limited to 20/hour per dealership; results
+cached 30 days, a not-found cached one hour.
+
+**Request**
+
+```json
+{ "regNumber": "TN09BX1234" }
+```
+
+**Response `200`**
+
+```json
+{
+  "lookupId": "…",
+  "regNumber": "TN09BX1234",
+  "cached": false,
+  "basics": {
+    "makeId": { "value": "…", "name": "Maruti Suzuki", "confidence": "EXACT", "candidates": [] },
+    "modelId": { "value": "…", "name": "Swift", "confidence": "LIKELY", "candidates": [] },
+    "variantId": {
+      "value": null,
+      "name": null,
+      "confidence": "NONE",
+      "candidates": [{ "id": "…", "name": "VXi", "hint": "1197cc · Manual" }]
+    },
+    "year": { "value": 2019, "name": "2019", "confidence": "EXACT", "candidates": [] },
+    "fuel": { "value": "PETROL", "name": "Petrol", "confidence": "EXACT", "candidates": [] },
+    "transmission": { "value": null, "name": null, "confidence": "NONE", "candidates": [] },
+    "bodyType": {
+      "value": "HATCHBACK",
+      "name": "Hatchback",
+      "confidence": "LIKELY",
+      "candidates": []
+    }
+  },
+  "details": {
+    "ownerNumber": 2,
+    "colorId": "…",
+    "colorName": "Pearl White",
+    "seats": 5,
+    "rtoCode": "TN-09",
+    "insuranceValidTill": null,
+    "normsType": "BHARAT STAGE VI"
+  },
+  "report": { "verdict": "ATTENTION", "…": "…" },
+  "advisories": [
+    {
+      "code": "TRANSMISSION_UNKNOWN",
+      "message": "A registration certificate does not record the gearbox — please confirm it."
+    }
+  ]
+}
+```
+
+`variantId` and `transmission` are **always** `NONE`. RC trim strings are
+truncated and inconsistent, and a registration certificate does not record a
+gearbox at all.
+
+**Errors:** `404` no RC on record · `503` records service unreachable · `429`
+over the hourly cap · `422` the feature is switched off. All four are expected
+outcomes — roughly one lookup in six does not produce a usable match — and every
+client must offer manual entry as a first-class path rather than a retry.
+
+## C22. `GET /v1/dealer/vehicles/{id}/report`
+
+**Screen:** Add vehicle step 4 · Edit · Admin review
+
+The **itemised** records check: every challan with date, offence, amount and
+status, plus blacklist, NOC and validity dates. Null when no lookup has run.
+
+Never contains the registered owner, the person named on a challan, any mobile
+number, the place of an offence, or the chassis and engine numbers — those are
+dropped by the provider adapter and are not stored (ARCHITECTURE §6.3).
+
+`asOf` and `stale` are load-bearing: a records check is a claim about a point in
+time, and a client rendering the findings without the date misrepresents it.
+
+## C23. `POST /v1/dealer/vehicles/{id}/report/refresh`
+
+Forces a fresh provider call. Rate-limited to 10/hour per dealership — the one
+endpoint where holding down a button spends our money. Records are refreshed
+automatically at submit, so this is for impatience rather than correctness.
+
 ## C7. `POST /v1/dealer/vehicles`
 
 **Screen:** Add vehicle — step 1, and `Save draft`
@@ -1295,9 +1385,25 @@ Allowlist `application/pdf`, `image/jpeg`, `image/png`; max 5 MB. Content-type *
   "year": 2022,
   "fuel": "PETROL",
   "transmission": "AUTOMATIC",
-  "bodyType": "HATCHBACK"
+  "bodyType": "HATCHBACK",
+  "regNumberMasked": "TN09BX1234",
+  "rcLookupId": "…"
 }
 ```
+
+`regNumberMasked` and `rcLookupId` are optional — the manual path must keep
+working for a car that is not on VAHAN.
+
+When `rcLookupId` is present and its plate matches, the server **re-reads the
+cached snapshot** and applies the RC-derived detail fields itself. It does not
+accept those fields from the client: that is what keeps the server the authority
+on what the RC actually said, and it is why this is one id rather than ten more
+optional columns. A mismatched id is ignored rather than rejected — the draft is
+created without RC provenance, exactly as a hand-typed one would be.
+
+A second vehicle on the same plate for the same dealer is a **409
+`DUPLICATE_REGISTRATION`**, guaranteed by a partial unique index rather than by
+application code.
 
 **Response `201`**
 
@@ -2603,6 +2709,9 @@ Always `200` on a successfully _recorded_ event, even if downstream processing i
 | C18 | GET             | `/v1/dealer/dashboard`                    | Dashboard                     | dealer    |
 | C19 | GET/POST        | `/v1/dealer/billing…`                     | Billing & credits             | dealer    |
 | C20 | GET/POST        | `/v1/dealer/photo-requests`               | 🟡 none                       | dealer    |
+| C21 | POST            | `/v1/dealer/vehicles/lookup`              | Add vehicle 0                 | dealer    |
+| C22 | GET             | `/v1/dealer/vehicles/{id}/report`         | Add vehicle 4, Edit, Admin    | dealer    |
+| C23 | POST            | `/v1/dealer/vehicles/{id}/report/refresh` | Add vehicle 4, Edit           | dealer    |
 | D1  | GET             | `/v1/admin/metrics/overview`              | Admin dashboard               | admin     |
 | D2  | GET             | `/v1/admin/dealers`                       | Admin dealers                 | admin     |
 | D3  | GET             | `/v1/admin/dealers/{id}`                  | Admin dealers                 | admin     |
@@ -2630,29 +2739,29 @@ Always `200` on a successfully _recorded_ event, even if downstream processing i
 
 # Appendix 2 — Screen → endpoint coverage
 
-| Screen                    | Endpoints                 |
-| ------------------------- | ------------------------- |
-| Homepage                  | A1, A12, A14              |
-| Search results            | A2, A3, A12, A13          |
-| Vehicle detail            | A5, A6, A7, A15           |
-| Vehicle images (lightbox) | A5 (`photos[]`)           |
-| Dealer directory          | A8, A12                   |
-| Dealer portfolio          | A9, A10, A11, A7, A15     |
-| Saved cars                | A4                        |
-| Enquiry sent              | A15 (response)            |
-| Sign in                   | B1, B2, B3                |
-| Sign up & OTP             | B1, B2, B3                |
-| Onboarding                | C1, C2, C3, C4, C5, A13   |
-| Dealer dashboard          | C18, B4                   |
-| Inventory                 | C6, C10, C12, C13         |
-| Add vehicle               | C7, C8, C9, C11, C14, A13 |
-| Enquiries                 | C15, C16, C17             |
-| Billing & credits         | C19, E1                   |
-| Admin dashboard           | D1                        |
-| Moderation queue          | D7, D9                    |
-| Review listing            | D8, D9, D10, D11          |
-| Admin dealers             | D2, D3, D4, D5, D6        |
-| _(Admin payments)_        | D13                       |
-| _(Admin configuration)_   | D14                       |
+| Screen                    | Endpoints                                |
+| ------------------------- | ---------------------------------------- |
+| Homepage                  | A1, A12, A14                             |
+| Search results            | A2, A3, A12, A13                         |
+| Vehicle detail            | A5, A6, A7, A15                          |
+| Vehicle images (lightbox) | A5 (`photos[]`)                          |
+| Dealer directory          | A8, A12                                  |
+| Dealer portfolio          | A9, A10, A11, A7, A15                    |
+| Saved cars                | A4                                       |
+| Enquiry sent              | A15 (response)                           |
+| Sign in                   | B1, B2, B3                               |
+| Sign up & OTP             | B1, B2, B3                               |
+| Onboarding                | C1, C2, C3, C4, C5, A13                  |
+| Dealer dashboard          | C18, B4                                  |
+| Inventory                 | C6, C10, C12, C13                        |
+| Add vehicle               | C21, C7, C8, C9, C11, C14, C22, C23, A13 |
+| Enquiries                 | C15, C16, C17                            |
+| Billing & credits         | C19, E1                                  |
+| Admin dashboard           | D1                                       |
+| Moderation queue          | D7, D9                                   |
+| Review listing            | D8, D9, D10, D11                         |
+| Admin dealers             | D2, D3, D4, D5, D6                       |
+| _(Admin payments)_        | D13                                      |
+| _(Admin configuration)_   | D14                                      |
 
 Every one of the 20 designed screens is served. Two admin nav items — Payments and Configuration — have endpoints but no design; they need screens before launch.

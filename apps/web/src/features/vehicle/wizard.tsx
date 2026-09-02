@@ -8,7 +8,12 @@ import { useState, useTransition } from 'react';
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Banner, Blueprint, Stepper, StatusTag } from '@/components/ui/primitives';
-import { submitListingAction, updateVehicleAction } from '@/features/vehicle/actions';
+import { ReportPanel } from '@/features/report/report-panel';
+import {
+  refreshReportAction,
+  submitListingAction,
+  updateVehicleAction,
+} from '@/features/vehicle/actions';
 import { BasicsFields, validateBasics, type BasicsValue } from '@/features/vehicle/basics-fields';
 import {
   DetailsFields,
@@ -61,6 +66,16 @@ export function VehicleWizard({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  /**
+   * The report is held locally so "Check again" can replace it in place.
+   *
+   * Seeded from the server render, so a page load shows the current records
+   * without a second round trip and the button is a refinement rather than
+   * the only way to see them.
+   */
+  const [report, setReport] = useState(vehicle.report);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
 
   const isEditable = vehicle.status === 'DRAFT' || vehicle.status === 'READY';
 
@@ -271,6 +286,32 @@ export function VehicleWizard({
             </div>
             <PhotoUploader vehicleId={vehicle.id} media={vehicle.media} minPhotos={minPhotos} />
           </>
+        ) : null}
+
+        {/*
+          Shown on the review step, beside the price and the credit line —
+          the moment the dealer is deciding to spend a credit is the moment
+          unpaid challans and a blacklist flag matter most.
+
+          Records are re-read automatically at submit, so this button is for
+          impatience rather than correctness: a dealer who has just paid a
+          challan wants to see it clear now.
+        */}
+        {step === 3 && report ? (
+          <ReportPanel
+            report={report}
+            refreshing={refreshing}
+            refreshError={refreshError}
+            onRefresh={() => {
+              setRefreshError(null);
+              setRefreshing(true);
+              void refreshReportAction(vehicle.id).then((result) => {
+                setRefreshing(false);
+                if (result.ok && result.data) setReport(result.data);
+                else setRefreshError(result.message ?? 'We could not check those records again.');
+              });
+            }}
+          />
         ) : null}
 
         {step === 3 ? (

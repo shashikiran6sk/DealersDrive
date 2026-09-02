@@ -55,9 +55,41 @@ export async function catalogueIds(prisma: PrismaClient): Promise<CatalogueIds> 
  *
  * Returns the vehicle id. The caller submits it.
  */
+/**
+ * Plates are unique per dealer among non-deleted vehicles — a partial unique
+ * index enforces it, and the service turns a clash into a 409. A fixture that
+ * handed every car the same number would make "create two vehicles" fail in
+ * any test that needs two, so each one gets its own.
+ *
+ * Random rather than a counter, because the database is created and seeded
+ * once for the whole run and never reset between files: a module-level counter
+ * restarts at one in every file and would collide with the cars the previous
+ * file left behind.
+ *
+ * The alphabet is not the full 26. `mock.adapter.ts` reserves plates
+ * *containing* `BL`, `NC`, `CH`, `NF` or `ZZ` for blacklisted, NOC-issued,
+ * challan-bearing, silent-feed and unknown-make vehicles, and plates *ending*
+ * `0000` or `9999` for the two lookup failures. A random plate that happened
+ * to read `TN09BLX1234` would come back blacklisted, and the fixture would
+ * hand back a car that cannot be submitted — a flake that fires once in a few
+ * hundred runs and looks like a lifecycle bug. Dropping the seven letters
+ * those pairs are built from, and the two digit endings, makes an accidentally
+ * reserved plate impossible rather than unlikely. 19³ × 8000 ≈ 5 × 10⁷ plates
+ * remain, against a few hundred fixtures per run.
+ */
+const PLATE_LETTERS = 'ADEGIJKMOPQRSTUVWXY'; // no B, C, F, H, L, N or Z
+function nextPlate(): string {
+  const letters = Array.from(
+    { length: 3 },
+    () => PLATE_LETTERS[Math.floor(Math.random() * PLATE_LETTERS.length)],
+  ).join('');
+  const digits = String(1000 + Math.floor(Math.random() * 8000));
+  return `TN09${letters}${digits}`;
+}
+
 export async function createSubmittableVehicle(
   h: Harness,
-  options: { pricePaise?: number; year?: number } = {},
+  options: { pricePaise?: number; year?: number; regNumberMasked?: string } = {},
 ): Promise<string> {
   const ids = await catalogueIds(h.prisma);
 
@@ -91,7 +123,7 @@ export async function createSubmittableVehicle(
       rtoCode: ids.rtoCode,
       insuranceType: 'COMPREHENSIVE',
       insuranceValidTill: '2027-03-01T00:00:00.000Z',
-      regNumberMasked: 'TN09BX1234',
+      regNumberMasked: options.regNumberMasked ?? nextPlate(),
       pricePaise: options.pricePaise ?? 4_50_000_00,
       // Completeness wants at least 100 characters of description, and a test
       // that trips that check by accident is a test that fails for the wrong

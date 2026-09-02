@@ -65,6 +65,87 @@ export function createVehiclesRepository(prisma: PrismaClient) {
       return prisma.vehicle.create({ data: { ...data, dealerId }, include: vehicleInclude });
     },
 
+    /** Same as `create`, inside a caller's transaction — a draft and its first
+     *  report row must land together or not at all. */
+    async createIn(tx: Tx, dealerId: string, data: Prisma.VehicleUncheckedCreateInput) {
+      return tx.vehicle.create({ data: { ...data, dealerId }, include: vehicleInclude });
+    },
+
+    /**
+     * Does this dealer already hold this plate on a live vehicle?
+     *
+     * Belt and braces with the partial unique index added by the rc_lookup
+     * migration. The index is the guarantee; this read is what turns it into a
+     * useful message with a link to the existing car, rather than a raw
+     * constraint violation surfacing as a 500.
+     */
+    /**
+     * `exceptVehicleId` is what makes this usable from PATCH as well as POST.
+     * A dealer re-typing the same plate on the car that already carries it is
+     * correcting a typo elsewhere in the form, not creating a duplicate, and
+     * refusing that would make the field uneditable once set.
+     */
+    async findByRegistration(dealerId: string, regNumberMasked: string, exceptVehicleId?: string) {
+      return prisma.vehicle.findFirst({
+        where: {
+          dealerId,
+          regNumberMasked,
+          deletedAt: null,
+          ...(exceptVehicleId ? { id: { not: exceptVehicleId } } : {}),
+        },
+        select: { id: true, makeId: true, modelId: true, year: true },
+      });
+    },
+
+    // ── RC lookup cache ──────────────────────────────────────────────────
+    //
+    // Cross-tenant by design: an RC is a fact about a car, not a dealership,
+    // and two dealers appraising the same trade-in should not both be charged
+    // for it. There is deliberately no `dealerId` parameter here — see the
+    // note on the `RcLookup` model, and the documented exception in
+    // tenant-isolation.test.ts.
+
+    async findRcLookup(regHash: string) {
+      return prisma.rcLookup.findFirst({
+        where: { regHash, expiresAt: { gt: new Date() } },
+      });
+    },
+
+    async findRcLookupById(id: string) {
+      return prisma.rcLookup.findUnique({ where: { id } });
+    },
+
+    /**
+     * Upsert rather than create: two dealers can look up the same plate in the
+     * same second, and the loser of that race should refresh the row rather
+     * than collide with the unique index on `regHash`.
+     */
+    async saveRcLookup(input: {
+      regHash: string;
+      provider: string;
+      specs: Prisma.InputJsonValue;
+      resolved: Prisma.InputJsonValue;
+      /** `JsonNull` for a cached miss — there were no records to keep. */
+      records: Prisma.InputJsonValue | Prisma.NullTypes.JsonNull;
+      expiresAt: Date;
+      found: boolean;
+    }) {
+      const { regHash, ...rest } = input;
+      return prisma.rcLookup.upsert({
+        where: { regHash },
+        create: { regHash, ...rest },
+        update: { ...rest, fetchedAt: new Date() },
+      });
+    },
+
+    /** Reclaims expired rows. Called on a schedule, never on the request path. */
+    async sweepRcLookups(): Promise<number> {
+      const { count } = await prisma.rcLookup.deleteMany({
+        where: { expiresAt: { lt: new Date() } },
+      });
+      return count;
+    },
+
     /**
      * Checks that a catalogue reference exists **and is coherent** — that the
      * model really belongs to the make, and the variant to the model.

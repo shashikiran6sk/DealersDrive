@@ -313,7 +313,13 @@ function setup(options: Options = {}) {
   } as unknown as StoragePort;
 
   return {
-    service: createAdminService({ prisma, audit, config, storage }),
+    service: createAdminService({
+      prisma,
+      audit,
+      config,
+      storage,
+      reports: { latestDto: () => Promise.resolve(null) } as never,
+    }),
     dealerUpdates,
     listingUpdates,
     documentUpdates,

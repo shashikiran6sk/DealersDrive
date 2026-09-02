@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { CursorPage, Uuid } from './common.js';
+import { VehicleReportDto } from './dealer.js';
 import {
   AdminRole,
   DealerStatus,
@@ -310,6 +311,21 @@ export const AdminListingDetail = z.object({
     consequenceNote: z.string(),
   }),
   rejectionReasonPresets: z.array(z.string()),
+  /**
+   * The full records check — the same itemised view the dealer sees, not the
+   * buyer's summary. A moderator approving a listing is the last human between
+   * a flagged vehicle and the public marketplace, so they get everything.
+   *
+   * Null when `feature.vehicleReport` is off or the vehicle was never looked
+   * up. A null report is not a clean one, and the review screen says so.
+   */
+  report: VehicleReportDto.nullable(),
+  /**
+   * True when a blacklist blocker was overridden to let this listing through.
+   * The override is audit-logged; this flag is what makes it visible on the
+   * screen afterwards rather than only in the log.
+   */
+  blacklistOverridden: z.boolean(),
 });
 export type AdminListingDetail = z.infer<typeof AdminListingDetail>;
 

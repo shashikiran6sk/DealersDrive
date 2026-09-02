@@ -116,6 +116,9 @@ function setup(overrides: { prisma?: PrismaStub } = {}) {
       },
     },
     cache,
+    // Only the RC cache sweep reaches this. Counting calls rather than
+    // stubbing a whole repository keeps the assertion about the schedule.
+    vehicles: { sweepRcLookups: () => Promise.resolve(0) } as never,
   };
 
   return {
@@ -170,6 +173,7 @@ describe('registration', () => {
     // one this assertion documents rather than hides.
     expect(handled).toEqual([
       'cache.sweep-counters',
+      'rc.sweep-lookups',
       'media.process',
       'search.index-listing',
       'search.remove-listing',
@@ -1035,6 +1039,9 @@ describe('registerSchedules', () => {
       // rate-limit row per request, and a full day of them makes the sweep
       // itself the largest delete the database sees.
       { name: 'cache.sweep-counters', cron: '5 * * * *' },
+      // Daily, not hourly: this table gains a row per distinct plate looked
+      // up — hundreds a day at most, nothing like the counter write rate.
+      { name: 'rc.sweep-lookups', cron: '45 3 * * *' },
     ]);
   });
 

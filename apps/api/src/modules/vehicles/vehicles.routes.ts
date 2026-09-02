@@ -3,16 +3,19 @@ import {
   IdParam,
   InventoryQuery,
   MarkSoldInput,
+  RcLookupInput,
   UpdateVehicleInput,
   type CreateVehicleInput as CreateVehicleInputType,
   type IdParam as IdParamType,
   type InventoryQuery as InventoryQueryType,
   type MarkSoldInput as MarkSoldInputType,
+  type RcLookupInput as RcLookupInputType,
   type UpdateVehicleInput as UpdateVehicleInputType,
 } from '@dealers-drive/contracts';
 import { Router } from 'express';
 
 import { dealerPrincipal, requireDealerActive, requirePermission } from '../../middleware/auth.js';
+import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
 import type { VehiclesService } from './vehicles.service.js';
 
@@ -23,8 +26,47 @@ import type { VehiclesService } from './vehicles.service.js';
  * `dealerPrincipal(req)`. That is the whole of rule 1, and it is visible on
  * every line rather than buried in a base class.
  */
-export function createVehiclesRouter(service: VehiclesService): Router {
+export function createVehiclesRouter(service: VehiclesService, rateLimit: RateLimiter): Router {
   const router = Router();
+
+  /**
+   * C21 — look a vehicle up by its number plate.
+   *
+   * The only endpoint in the dealer API that costs money on every call, which
+   * is why it is the only one carrying its own limiter. Twenty an hour is far
+   * above honest use — a dealer appraising stock does a handful — and far
+   * below what would make the console useful as a free VAHAN terminal, which
+   * is the actual abuse to prevent. Cost is not the concern: a lookup is
+   * roughly ₹3 against a ₹450 listing credit.
+   *
+   * Keyed by dealership rather than IP: a yard behind one office NAT is one
+   * dealer, and rate-limiting them as one IP would punish the shared desk.
+   */
+  router.post(
+    '/vehicles/lookup',
+    requirePermission('vehicle:write'),
+    rateLimit('rc-lookup', {
+      limit: 20,
+      windowSeconds: 3600,
+      keyBy: (req) => dealerPrincipal(req).dealerId,
+      code: 'RC_LOOKUP_LIMIT',
+      message:
+        'You have looked up a lot of numbers. Try again in an hour, ' +
+        'or add the vehicle by entering its details.',
+    }),
+    validate({ body: RcLookupInput }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const { dealerId } = dealerPrincipal(req);
+          const body = validated<RcLookupInputType>(req, 'body');
+          res.json(await service.lookup(dealerId, body));
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
 
   router.get(
     '/vehicles',

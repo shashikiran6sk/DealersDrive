@@ -162,8 +162,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/auth/providers",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "auth", "providers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "providers"
+              ]
             },
             "description": "Lets the sign-in screen render a working button or an explanation, rather than a button that fails on click. `enabled` is false when this deployment has no Google client configured; `reason` then names what is missing.\n\n`Cache-Control: no-store`."
           },
@@ -187,8 +193,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/auth/google/start",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "auth", "google", "start"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "google",
+                "start"
+              ]
             },
             "description": "A browser navigation, not an API call. Mints `state`, an OIDC `nonce` and a PKCE verifier, seals all three into a 10-minute HttpOnly `dd_oauth` cookie, and redirects to Google's authorization endpoint.\n\nOptional `?returnTo=/dealer/inventory` — a **path**, never an absolute URL. Anything else is replaced with `/dealer`, because a callback that redirects anywhere the caller asks is an open redirect and a session-leaking one.\n\n`503 OAUTH_NOT_CONFIGURED` when the deployment has no Google credentials — the response names the variables to set."
           },
@@ -212,8 +225,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/auth/google/callback",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "auth", "google", "callback"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "google",
+                "callback"
+              ]
             },
             "description": "Verifies `state` against the sealed cookie, exchanges the authorization code at Google's token endpoint using the PKCE verifier, and checks the identity token's issuer, audience, expiry and nonce. The email is taken from that token and from nowhere else.\n\nThe account is found by `provider + sub`, never by email address — a Google account holder can change their email, and `sub` is what does not move. A first sign-in creates the user and the identity; a returning one refreshes the stored profile.\n\nEnds by setting `dd_session` and redirecting to `/dealer/onboarding` when the account has no dealership yet, or to the requested path when it has. Every failure redirects to `/dealer/login?error=…` instead, so the person sees the sign-in screen rather than a JSON body: `sign_in_failed`, `identity_unverified`, `google_declined`, `account_link_required`, `account_suspended`, `invalid_callback`."
           },
@@ -237,8 +257,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "me"
+              ]
             },
             "description": "The resolved session. One shape covers both states: a verified Google identity with no dealership yet (`next: \"ONBOARDING\"`, `dealer: null`) and a full dealer seat with its role, permissions (§8.3) and the two badge counts the console header shows.\n\n`identity` is the Google account behind the session — what the onboarding screen displays instead of asking for an email again.\n\n`Cache-Control: no-store`."
           },
@@ -301,8 +327,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/auth/onboarding",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "auth", "onboarding"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "onboarding"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -335,8 +367,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "logout"
+              ]
             },
             "description": "Revokes the `sessions` row behind the presented cookie and clears the cookie. The row is what makes this real: the token stops working everywhere immediately, rather than merely being forgotten by one browser."
           },
@@ -364,8 +402,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/auth/admin/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "auth", "admin", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "admin",
+                "login"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -398,8 +443,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/auth/admin/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "auth", "admin", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "admin",
+                "logout"
+              ]
             },
             "description": "Revokes the presented session and clears the cookie. Unguarded on purpose: signing out has to work when the session has already expired, and it can only ever revoke the token in the caller's own cookie."
           },
@@ -429,8 +481,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/home",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "home"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "home"
+              ],
               "query": [
                 {
                   "key": "city",
@@ -462,8 +519,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/vehicles",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "vehicles"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles"
+              ],
               "query": [
                 {
                   "key": "city",
@@ -666,8 +728,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/vehicles/facets",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "vehicles", "facets"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "facets"
+              ],
               "query": [
                 {
                   "key": "city",
@@ -835,8 +903,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/vehicles/batch",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "vehicles", "batch"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "batch"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -869,8 +943,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/vehicles/{{vehicleSlug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "vehicles", "{{vehicleSlug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "{{vehicleSlug}}"
+              ]
             },
             "description": "Accepts either the uuid or the SEO slug (`2021-maruti-suzuki-swift-vxi-vellore-3f2a1b`), so a card can link by slug and a saved-car id still resolves.\n\n**The dealer's phone number is not in this response.** `dealer.contact[]` carries a masked placeholder with `masked: true`; the real number comes only from `POST /v1/vehicles/{id}/reveal-contact`, which is rate-limited and logged.\n\nA car that is not publicly visible — pending review, rejected, sold, or belonging to a suspended dealer — is a **404**, the same as one that never existed.\n\n**Rate limit** 120 requests per minute per IP."
           },
@@ -894,8 +974,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/vehicles/{{publicVehicleId}}/similar",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "vehicles", "{{publicVehicleId}}", "similar"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "{{publicVehicleId}}",
+                "similar"
+              ],
               "query": [
                 {
                   "key": "limit",
@@ -927,8 +1014,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealers",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealers"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealers"
+              ],
               "query": [
                 {
                   "key": "city",
@@ -1013,8 +1105,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealers/{{dealerSlug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealers", "{{dealerSlug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealers",
+                "{{dealerSlug}}"
+              ]
             },
             "description": "The showroom page: address, services, stats and contact rows. As with vehicle detail, `contact[]` masks the phone number (`masked: true`) — this endpoint never returns one.\n\n**Rate limit** 120 requests per minute per IP."
           },
@@ -1038,8 +1136,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealers/{{dealerSlug}}/vehicles",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealers", "{{dealerSlug}}", "vehicles"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealers",
+                "{{dealerSlug}}",
+                "vehicles"
+              ],
               "query": [
                 {
                   "key": "city",
@@ -1203,8 +1308,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealers/{{dealerSlug}}/facets",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealers", "{{dealerSlug}}", "facets"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealers",
+                "{{dealerSlug}}",
+                "facets"
+              ],
               "query": [
                 {
                   "key": "city",
@@ -1374,8 +1486,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/catalog/bundle",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "catalog", "bundle"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "catalog",
+                "bundle"
+              ]
             },
             "description": "Makes with their models, cities, colours, RTO codes and the body/fuel/transmission vocabularies. One request rather than five, because the search page needs all of it before it can render a filter panel.\n\n**Variants are not included.** The catalogue holds ~2,000 of them across 344 models, and nesting them here would add roughly 400KB to a response whose other job is to render a filter panel quickly. Each model carries `variantCount`, and `GET /v1/catalog/models/{id}/variants` returns the rows for the one model a dealer has actually picked.\n\n`Cache-Control: public, max-age=3600, stale-while-revalidate=600`."
           },
@@ -1440,8 +1558,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/catalog/models/{{modelId}}/variants",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "catalog", "models", "{{modelId}}", "variants"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "catalog",
+                "models",
+                "{{modelId}}",
+                "variants"
+              ]
             },
             "description": "The third step of the dependent **make → model → variant** selection the add-vehicle form requires. Ordered by fuel, then transmission, then name, and each row carries a composed `label` (\"VXi · Petrol · Manual · 1197cc\") so every client renders the option identically.\n\nAn unknown model id is a **404**, not an empty list: variant is a mandatory field, and an empty list would read as \"this model has no variants\" and strand the dealer on a step they cannot complete.\n\n`Cache-Control: public, max-age=3600, stale-while-revalidate=600`."
           },
@@ -1500,8 +1626,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/cities",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "cities"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "cities"
+              ]
             },
             "description": "Every city that has a presence, each with the number of cars currently visible in it, plus the default city the homepage opens on. The counts come from the `listing_search` read model, so they obey the one visibility rule and are never hard-coded.\n\n`Cache-Control: public, max-age=60, stale-while-revalidate=300`."
           },
@@ -1525,8 +1656,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/config/public",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "config", "public"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "config",
+                "public"
+              ]
             },
             "description": "The subset of `platform_config` a browser is allowed to see — listing duration, minimum photo count, support contacts, EMI assumptions. Deliberately a *subset*: the admin-only keys never appear here.\n\n`Cache-Control: public, max-age=60`."
           },
@@ -1560,8 +1697,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/enquiries",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "enquiries"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "enquiries"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -1598,8 +1740,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/vehicles/{{publicVehicleId}}/reveal-contact",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "vehicles", "{{publicVehicleId}}", "reveal-contact"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vehicles",
+                "{{publicVehicleId}}",
+                "reveal-contact"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -1632,8 +1781,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/enquiries",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "enquiries"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "enquiries"
+              ],
               "query": [
                 {
                   "key": "status",
@@ -1712,8 +1867,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/enquiries/counts",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "enquiries", "counts"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "enquiries",
+                "counts"
+              ]
             },
             "description": "The number beside each inbox tab (new, contacted, closed, spam) plus the total, so the tabs can update without refetching every list.\n\n**Permission** `enquiry:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -1741,8 +1903,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/enquiries/{{enquiryId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "enquiries", "{{enquiryId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "enquiries",
+                "{{enquiryId}}"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -1781,8 +1950,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer"
+              ]
             },
             "description": "The full private profile — including the fields the public profile withholds, such as GSTIN, PAN and the credit balance. Any dealer seat may read it."
           },
@@ -1810,8 +1984,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -1844,8 +2023,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/completeness",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "completeness"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "completeness"
+              ]
             },
             "description": "Which onboarding steps are done, what is missing from each, and whether the dealership can be submitted for verification yet. Drives the progress meter, and `canSubmit` is the same condition `POST /v1/dealer/submit` enforces server-side."
           },
@@ -1869,8 +2054,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/submit",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "submit"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "submit"
+              ]
             },
             "description": "Hands the dealership to the moderation queue. Takes no body — everything it needs is already on the record.\n\nRejected with 422 if the profile or the KYC documents are incomplete; `GET /v1/dealer/completeness` says what is missing before you try.\n\nOWNER only (`dealer:update`).\n\n**Permission** `dealer:update` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**422 on a clean seed.** The development dealer is already verified, and its KYC set is incomplete either way. `GET /v1/dealer/completeness` lists what is missing."
           },
@@ -1894,8 +2085,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/documents",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "documents"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "documents"
+              ]
             },
             "description": "All three required documents — GST certificate, PAN card, address proof — each with its status and rejection reason if it has one. Rows are returned for documents that have not been uploaded yet, so the checklist is complete rather than growing."
           },
@@ -1923,8 +2120,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/documents/presign",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "documents", "presign"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "documents",
+                "presign"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -1998,8 +2202,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/documents/{{documentType}}/commit",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "documents", "{{documentType}}", "commit"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "documents",
+                "{{documentType}}",
+                "commit"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2032,8 +2244,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/dashboard",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "dashboard"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "dashboard"
+              ]
             },
             "description": "The console landing page in one response: headline stats, the credit balance, recent leads, listings needing attention and any account-level banner. `Cache-Control: no-store` — a stale credit balance is worse than a slow one."
           },
@@ -2057,8 +2275,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/documents/{{documentType}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "documents", "{{documentType}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "documents",
+                "{{documentType}}"
+              ]
             },
             "description": "Deletes the row and the stored object, so a wrong file can be replaced. OWNER only (`document:upload`).\n\n**Permission** `document:upload` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -2088,8 +2313,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles"
+              ],
               "query": [
                 {
                   "key": "status",
@@ -2180,8 +2411,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2232,6 +2469,51 @@
           ]
         },
         {
+          "name": "Look a vehicle up by its number plate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/lookup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "lookup"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"regNumber\": \"TN09BX1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Takes a registration number and returns a **proposal** — the catalogue rows we believe it matches, the detail fields the RC can fill, and the vehicle records check.\n\nNothing is written. A lookup is not a commitment to list the car; the dealer confirms the basics and `POST /v1/dealer/vehicles` creates the draft.\n\n**Every field carries a `confidence`.** `EXACT` is stated, `LIKELY` is offered for confirmation, `NONE` must be chosen. `variantId` is *always* `NONE` with a ranked `candidates` list — RC trim strings are truncated and inconsistent, and a `Swift VXi` might be a VXi, a VXi (O) or a VXi AMT, which are a lakh apart. `transmission` is always `NONE` too: **a registration certificate does not record the gearbox.**\n\n**This call costs money.** It is rate-limited to 20 per hour per dealership and results are cached for 30 days, so a repeat lookup of the same plate is free. A not-found answer is cached for one hour — long enough to stop a mistyped plate being billed ten times, short enough that a new registration is not invisible for a month.\n\nReturns **404** when no RC is on record and **503** when the records service is unreachable. Both are expected outcomes, not exceptions: roughly one lookup in six does not produce a usable match, and every client must offer manual entry as a first-class path rather than a retry.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
           "name": "One vehicle, with completeness and credit preview",
           "request": {
             "method": "GET",
@@ -2249,8 +2531,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles", "{{vehicleId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}"
+              ]
             },
             "description": "The dealer's own view of a car, including three things the public view has no equivalent of:\n\n- `completeness` — percent done, what is missing, and `canSubmit`, plus `blockers[]` phrased for a dealer to act on\n- `creditPreview` — the balance now, what publishing costs, and the balance after, so step 4 of the wizard can say \"credits after publish · 22\"\n- `media[]` — every photo with its processing status\n\nAnother dealer's id is a 404.\n\n**Permission** `vehicle:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -2313,8 +2602,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles", "{{vehicleId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2347,8 +2643,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/submit",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles", "{{vehicleId}}", "submit"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "submit"
+              ]
             },
             "description": "Creates a listing in **PENDING_REVIEW** and **holds one listing credit** in the same database transaction. Takes no body.\n\nWhat happens to that credit is the whole lifecycle:\n\n| Outcome | Ledger | Balance |\n| --- | --- | --- |\n| submit | `HOLD_SUBMIT` −1 | drops by one |\n| approved | `CONSUME_APPROVE` 0 | unchanged — the credit is spent |\n| rejected | `RELEASE_REJECT` +1 | returned |\n| changes requested | *no row* | unchanged, **still held** |\n\nThat last row is the one to notice: a resubmission after CHANGES_REQUESTED reuses the existing hold and is **not** charged again. The surviving hold is the only thing separating \"request changes\" from \"reject\".\n\nRefused with 422 when the vehicle is incomplete (`VEHICLE_INCOMPLETE`), has too few photos (`TOO_FEW_PHOTOS`), the profile is incomplete (`PROFILE_INCOMPLETE`) or the balance is zero (`INSUFFICIENT_CREDITS`); 409 `ALREADY_SUBMITTED` when a listing is already live or in review; 403 `DEALER_NOT_ACTIVE` when the dealership is not approved yet.\n\n**Permission** `listing:submit` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n**Requires an ACTIVE dealership.** A dealer awaiting verification or under suspension can still read their console but cannot publish; this returns 403 `DEALER_NOT_ACTIVE`.\n\n---\n\n**422 `TOO_FEW_PHOTOS` on a clean seed**, for the same reason: the draft this collection creates has no photos. Upload three through the dealer console and this returns 201 with one credit held."
           },
@@ -2407,10 +2711,85 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/listings/{{listingId}}/renew",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "listings", "{{listingId}}", "renew"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "listings",
+                "{{listingId}}",
+                "renew"
+              ]
             },
             "description": "Puts an **EXPIRED** listing back into review, holding a fresh credit — a renewal is a new publication, not a free extension. Only an expired listing can be renewed; anything else is a 409 `INVALID_TRANSITION`.\n\nNote the path: this one takes a **listing** id, not a vehicle id.\n\n**Permission** `listing:renew` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n**Requires an ACTIVE dealership.** A dealer awaiting verification or under suspension can still read their console but cannot publish; this returns 403 `DEALER_NOT_ACTIVE`.\n\n---\n\n**409 on a clean seed** — nothing has expired yet. Listings run 30 days from approval."
+          },
+          "response": []
+        },
+        {
+          "name": "The vehicle's records check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "report"
+              ]
+            },
+            "description": "Blacklist status, NOC, traffic challans, and insurance/PUC/fitness/tax validity, as of the moment the provider answered.\n\nThis is the **itemised** view — every challan with its date, offence, amount and status. The public listing page carries a narrower summary with aggregates and offence types only; see `VehicleReportSummary`.\n\nWhat it never contains, at either granularity: the registered owner, the person named on a challan, any mobile number, the place of an offence, or the chassis and engine numbers. Those are dropped by the provider adapter and are not stored.\n\n`asOf` and `stale` are the important fields. A records check is a claim about a point in time, and a client that renders the findings without the date is misrepresenting it.\n\n**Permission** `vehicle:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Re-read the records now",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "",
+                "description": "Optional client-supplied correlation id. Echoed back as `x-trace-id` on the response and stamped on every log line for the request, so a client can quote it in a bug report. Generated per request if omitted.",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/report/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "report",
+                "refresh"
+              ]
+            },
+            "description": "Forces a fresh provider call — the button a dealer presses after paying off a challan.\n\nRecords are also refreshed automatically when a listing is submitted, so this is for impatience rather than correctness. It is rate-limited to 10 per hour per dealership: it is the one endpoint where holding down a button spends our money.\n\nUnlike the refresh inside submit, this one **surfaces its failure**. The dealer pressed a button and deserves to know it did not work, rather than staring at an unchanged date.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
           "response": []
         },
@@ -2436,8 +2815,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/mark-sold",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles", "{{vehicleId}}", "mark-sold"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "mark-sold"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2470,8 +2857,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/remove-listing",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles", "{{vehicleId}}", "remove-listing"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "remove-listing"
+              ]
             },
             "description": "Takes the car off the customer-facing marketplace. The listing moves to **REMOVED** with `removedAt` set and its row leaves `listing_search`, so buyers stop seeing it everywhere at once — search, counts, the dealer page and its detail page.\n\nThe **vehicle row survives**. It returns to `DRAFT`, stays in the dealer's inventory, remains editable, and can be submitted again for a fresh credit — and the listing and its ledger rows remain as the record that this car was once advertised. Withdrawing a listing that was already SOLD leaves the vehicle SOLD; it removes the advertisement, not the sale.\n\nDistinct from `DELETE /v1/dealer/vehicles/{id}`, which soft-deletes the vehicle itself and 409s while a listing is live. Withdrawing is the thing to do first.\n\nOnly an **APPROVED**, **EXPIRED** or **SOLD** listing can be withdrawn — those are the three states a car is publicly visible in. Anything else is a 409 `INVALID_TRANSITION`. The consumed credit is not returned.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -2495,8 +2890,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles/{{disposableVehicleId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles", "{{disposableVehicleId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{disposableVehicleId}}"
+              ]
             },
             "description": "Soft-deletes the vehicle and removes it from the catalogue. Requires `vehicle:delete`, which is a narrower permission than `vehicle:write` — a salesperson can neither write nor delete, and the two are separate so a future role can edit without being able to destroy.\n\n**Permission** `vehicle:delete` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**Deliberately unwired.** `{{disposableVehicleId}}` is empty, so this 404s rather than destroying the draft the Media and Billing folders still need. Paste an id in when you mean it."
           },
@@ -2530,8 +2932,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/media/presign",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "media", "presign"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "media",
+                "presign"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2605,8 +3014,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/media/{{mediaId}}/commit",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "media", "{{mediaId}}", "commit"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "media",
+                "{{mediaId}}",
+                "commit"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2639,8 +3056,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/media/{{mediaId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "media", "{{mediaId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "media",
+                "{{mediaId}}"
+              ]
             },
             "description": "The poll target from commit. `status` moves PENDING → READY, or → FAILED with `warnings[]` explaining why (too small, corrupt, unsupported). `url` is null until the derivatives exist.\n\n**Permission** `vehicle:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -2668,8 +3092,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/vehicles/{{vehicleId}}/media/order",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "vehicles", "{{vehicleId}}", "media", "order"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "vehicles",
+                "{{vehicleId}}",
+                "media",
+                "order"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2702,8 +3135,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/media/{{mediaId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "media", "{{mediaId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "media",
+                "{{mediaId}}"
+              ]
             },
             "description": "Removes the photo and its derivatives. Another dealer's photo id is a 404.\n\n**Permission** `vehicle:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -2733,8 +3173,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/billing/summary",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "billing", "summary"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "summary"
+              ]
             },
             "description": "The wallet panel: balance, how many credits are currently **held** by listings in review, how many are available to spend, and how many were used this month.\n\n`creditsHeld` is the count of listings sitting in PENDING_REVIEW or CHANGES_REQUESTED — a credit that is held is neither spent nor available.\n\n**Permission** `billing:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -2758,8 +3205,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/billing/packs",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "billing", "packs"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "packs"
+              ]
             },
             "description": "The packs a dealer can buy, with per-listing pricing derived by division rather than stored — a stored per-unit rate that disagrees with the division is a support ticket.\n\nPrices exclude GST; the tax is computed at order time.\n\n**Permission** `billing:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -2822,8 +3276,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/billing/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "billing", "orders"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "orders"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2895,8 +3356,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/billing/orders/{{orderId}}/verify",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "billing", "orders", "{{orderId}}", "verify"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "orders",
+                "{{orderId}}",
+                "verify"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -2964,8 +3434,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/billing/ledger",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "billing", "ledger"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "ledger"
+              ],
               "query": [
                 {
                   "key": "cursor",
@@ -3003,8 +3480,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/billing/invoices",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "billing", "invoices"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "invoices"
+              ],
               "query": [
                 {
                   "key": "cursor",
@@ -3077,8 +3561,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/dealer/billing/invoices/{{invoiceId}}/pdf",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "dealer", "billing", "invoices", "{{invoiceId}}", "pdf"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dealer",
+                "billing",
+                "invoices",
+                "{{invoiceId}}",
+                "pdf"
+              ]
             },
             "description": "**302 redirect** to a signed URL valid for five minutes — the PDF is not streamed through the API, and the signed link expires so a copied URL is not a permanent hole in another dealer's billing.\n\nScoped to the caller's own invoices; another dealer's invoice id is a 404 — as is an invoice whose PDF has not been rendered yet, which answers 404 `PDF_NOT_READY` rather than a redirect to a URL that would 404 on arrival.\n\n*Swagger UI follows the redirect automatically, so \"Try it out\" shows the PDF bytes rather than the 302.*\n\n**Permission** `billing:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403.\n\n---\n\n**404 `PDF_NOT_READY` on a clean seed.** Rendering is queued on purchase; the code is the signal to poll rather than to retry the purchase."
           },
@@ -3108,8 +3601,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/metrics/overview",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "metrics", "overview"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "metrics",
+                "overview"
+              ]
             },
             "description": "The admin landing page: dealer and listing counts, payments and revenue over the last 30 days, and the moderation queue depth with how long the oldest item has waited.\n\n`payments30d` is gross captured; `revenue30d` is net of GST. They differ on purpose — reporting one as the other is the kind of mistake that reaches a board deck.\n\n**Permission** `admin:metrics:read` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -3133,8 +3633,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/dealers",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "dealers"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers"
+              ],
               "query": [
                 {
                   "key": "status",
@@ -3190,8 +3696,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "dealers", "{{dealerId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}"
+              ]
             },
             "description": "Everything a moderator needs on one screen: the profile, the KYC documents with view links, listing and credit history, and an `actions` block saying which decisions are available from the current state — so the UI does not have to re-derive the state machine.\n\n**Permission** `admin:dealer:approve` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -3219,8 +3732,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/approve",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "dealers", "{{dealerId}}", "approve"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "approve"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3257,8 +3778,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/reject",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "dealers", "{{dealerId}}", "reject"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "reject"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3295,8 +3824,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/suspend",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "dealers", "{{dealerId}}", "suspend"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "suspend"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3333,8 +3870,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/reinstate",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "dealers", "{{dealerId}}", "reinstate"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "reinstate"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3371,8 +3916,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/dealers/{{dealerId}}/credits/grant",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "dealers", "{{dealerId}}", "credits", "grant"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "dealers",
+                "{{dealerId}}",
+                "credits",
+                "grant"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3405,8 +3959,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/documents/{{documentId}}/verify",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "documents", "{{documentId}}", "verify"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "documents",
+                "{{documentId}}",
+                "verify"
+              ]
             },
             "description": "Marks one document verified. `allVerified` in the response says whether that was the last one outstanding, which is the moderator's cue that the dealership can now be approved.\n\nTakes no body.\n\n**Permission** `admin:document:review` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -3434,8 +3996,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/documents/{{documentId}}/reject",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "documents", "{{documentId}}", "reject"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "documents",
+                "{{documentId}}",
+                "reject"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3468,8 +4038,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/listings",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "listings"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings"
+              ],
               "query": [
                 {
                   "key": "status",
@@ -3560,8 +4136,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "listings", "{{listingId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}"
+              ]
             },
             "description": "The review screen: full-size photos, the specification table, the dealer's standing, and `flags[]` — automated checks such as too few photos, a price outside the band for the model, or a phone number in the description.\n\n**Flags are advisory.** Nothing here auto-rejects anything; a human decides.\n\n**Permission** `admin:listing:moderate` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -3589,8 +4172,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}/approve",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "listings", "{{listingId}}", "approve"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}",
+                "approve"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3627,8 +4218,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}/reject",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "listings", "{{listingId}}", "reject"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}",
+                "reject"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3665,8 +4264,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}/request-changes",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "listings", "{{listingId}}", "request-changes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}",
+                "request-changes"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3703,8 +4310,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/listings/{{listingId}}/takedown",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "listings", "{{listingId}}", "takedown"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "listings",
+                "{{listingId}}",
+                "takedown"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3737,8 +4352,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/payments",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "payments"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "payments"
+              ],
               "query": [
                 {
                   "key": "status",
@@ -3800,8 +4421,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/config",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "config"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "config"
+              ]
             },
             "description": "Every `platform_config` entry with its type, current value and default — including the keys `GET /v1/config/public` withholds. This is where the listing duration, minimum photo count, GST percentage and reveal caps come from, so behaviour can be tuned without a deploy.\n\n**Permission** `admin:config:write` — see the role table in the `Authentication & authorization` section. A seat without it gets a 403."
           },
@@ -3829,8 +4456,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/config/{{configKey}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "config", "{{configKey}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "config",
+                "{{configKey}}"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -3863,8 +4497,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/v1/admin/audit-logs",
-              "host": ["{{baseUrl}}"],
-              "path": ["v1", "admin", "audit-logs"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "audit-logs"
+              ],
               "query": [
                 {
                   "key": "entityType",
@@ -3950,8 +4590,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/health/live",
-              "host": ["{{baseUrl}}"],
-              "path": ["health", "live"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "live"
+              ]
             },
             "description": "Returns 200 whenever the process is running. **Touches no dependency** — that is the point. If this checked the database, a database blip would restart a perfectly healthy container."
           },
@@ -3975,8 +4620,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/health/ready",
-              "host": ["{{baseUrl}}"],
-              "path": ["health", "ready"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
             },
             "description": "Checks the dependencies and names the ones that are down. **503 with a body**, not a bare 503 — deploys gate on this, and a failed deploy should say which dependency failed.\n\n`contracts` is the shared contract version, so a mismatched web and API deploy is visible from outside the process."
           },
@@ -4006,8 +4656,12 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/uploads?key=&contentType=&contentLength=&expiresAt=&signature=",
-              "host": ["{{baseUrl}}"],
-              "path": ["uploads"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads"
+              ],
               "query": [
                 {
                   "key": "key",
@@ -4069,8 +4723,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/media/vehicles/by-media/{{mediaId}}/640.webp",
-              "host": ["{{baseUrl}}"],
-              "path": ["media", "vehicles", "by-media", "{{mediaId}}", "640.webp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "media",
+                "vehicles",
+                "by-media",
+                "{{mediaId}}",
+                "640.webp"
+              ]
             },
             "description": "Content-addressed image delivery. A new upload is a new id and therefore a new URL, so a cache never has to be invalidated — hence `Cache-Control: public, max-age=31536000, immutable`.\n\nAvailable widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the JSON API this route sends `Cross-Origin-Resource-Policy: cross-origin`, because a media origin is a different host from the web app in every environment and the strict default would stop the browser embedding the image.\n\n*The path ends in a literal `.webp`, which is why the width parameter is documented as `width.webp`.*\n\n---\n\n**404 on a clean seed** — no image was uploaded, so nothing was processed into a rendition."
           },

@@ -66,6 +66,63 @@ export function createCatalogRepository(prisma: PrismaClient) {
       return prisma.rto.findUnique({ where: { code } });
     },
 
+    /**
+     * Makes and models, lean, for the RC resolver (`rc-match.ts`).
+     *
+     * Deliberately not `bundle()`: that carries a per-model variant count and
+     * is shaped for the wizard's dropdowns. The resolver needs names, slugs
+     * and production years and nothing else, and it runs on the critical path
+     * of a dealer adding a car.
+     */
+    async taxonomyForMatching() {
+      return prisma.make.findMany({
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          models: {
+            select: {
+              id: true,
+              slug: true,
+              name: true,
+              bodyType: true,
+              yearFrom: true,
+              yearTo: true,
+            },
+          },
+        },
+      });
+    },
+
+    /** One model's variants as plain rows — `variantsForModel` includes the make. */
+    async variantRowsForModel(modelId: string) {
+      return prisma.variant.findMany({
+        where: { modelId },
+        select: {
+          id: true,
+          name: true,
+          fuel: true,
+          transmission: true,
+          engineCc: true,
+          seats: true,
+        },
+        orderBy: { name: 'asc' },
+      });
+    },
+
+    /**
+     * The first colour in a family, by sort order.
+     *
+     * An RC says `WHITE` and the catalogue has both Pearl White and Arctic
+     * White. This returns the canonical one so the dealer's dropdown opens on
+     * a sensible default rather than empty — they still change it if the car
+     * is the other white, and `sortOrder` is what makes "canonical" a data
+     * decision rather than an alphabetical accident.
+     */
+    async colorByFamily(family: string) {
+      return prisma.color.findFirst({ where: { family }, orderBy: { sortOrder: 'asc' } });
+    },
+
     /** Feature names are taxonomy-constrained; anything else is rejected. */
     async knownFeatures(): Promise<string[]> {
       await Promise.resolve();

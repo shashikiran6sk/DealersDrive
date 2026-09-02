@@ -69,6 +69,7 @@ const INPUT_SCHEMA_NAMES = [
   'DocumentPresignInput',
   'DocumentCommitInput',
   'CreateVehicleInput',
+  'RcLookupInput',
   'UpdateVehicleInput',
   'MarkSoldInput',
   'MediaPresignInput',

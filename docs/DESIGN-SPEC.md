@@ -437,6 +437,36 @@ Top bar sticky `top:0; z-index:15; height:58px; background:#fff`, bottom divider
 
 ### 3.14 Add vehicle
 
+**Step 0 — Registration.** One plate field, styled as a number plate, plus a
+`Look up` button. `Enter the details instead` is present **before** anything
+fails, not only after: a dealer who already knows their import is not on VAHAN
+should not have to be refused first. Every failure — no RC, provider down, over
+the cap — lands on the same manual form with the plate carried across.
+
+**Step 1 — Confirm (was Basics).** The same seven fields, pre-filled. Each
+resolved field renders its confidence: `EXACT` is stated plainly, `LIKELY` gets
+an amber "Best match — please check" chip, `NONE` is an empty control. Only
+`LIKELY` is badged — badging `NONE` would put a warning beside a field the
+dealer simply has to fill, which reads as an error they caused.
+
+Variant and transmission are **always** empty, and the copy says why: RC trim
+strings are truncated, and a registration certificate does not record a gearbox.
+
+**The records panel.** Two treatments, deliberately not one component with a
+flag:
+
+- _Dealer and moderator_ (`ReportPanel`) — itemised challans with dates,
+  amounts and a court flag; blacklist reasons; a `Check again` button on step 4.
+- _Buyer_ (`ReportSummary`) — verdict chips, aggregate counts, offence types and
+  years. No challan references, no exact dates, no registration number.
+
+Both carry the source and the `as of` date in the footer, at 11px but never
+hidden: "no challans found in government records as of 12 Feb" and "this car has
+no challans" are different claims, and only the first is one we make.
+
+A vehicle whose challan feed was silent renders `Records unavailable` in neutral
+— never a green `None found`.
+
 `padding:22px; max-width:860px`: `h1-app` · stepper · white card `padding:20px`.
 
 - Step 1 Basics: `repeat(auto-fit, minmax(190px,1fr))` — Make, Model, Variant, Year, Fuel, Transmission, Body type.

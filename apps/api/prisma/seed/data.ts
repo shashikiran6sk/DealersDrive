@@ -26,13 +26,126 @@ export const CITIES: SeedCity[] = [
   { slug: 'gudiyattam', name: 'Gudiyattam', state: 'Tamil Nadu', lat: 12.9463, lng: 78.8712 },
 ];
 
+/**
+ * Tamil Nadu's RTO codes, plus the neighbouring-state prefixes that turn up on
+ * a Vellore forecourt.
+ *
+ * ## Why this is the whole state and not the six local offices
+ *
+ * `rtoCode` is derived from the number plate — `TN09BX1234` becomes `TN-09` —
+ * and then checked against this table before it is written, because a code we
+ * do not carry would fail the catalogue check at PATCH time and read to the
+ * dealer as our bug. With only the Vellore-district six seeded, that check
+ * failed for almost every real plate in the state, so the RC lookup would have
+ * silently stopped filling the RTO field for most cars.
+ *
+ * The neighbouring prefixes (KA, AP, KL, PY) are here for the same reason: a
+ * Bangalore car being resold in Vellore is ordinary stock, not an edge case.
+ *
+ * Codes only — the district names are what a dealer recognises, and the exact
+ * office (`TN-09` is Chennai Central) matters less than the code resolving at
+ * all.
+ */
 export const RTOS = [
+  // ── Chennai and the metropolitan belt ──────────────────────────────────
+  { code: 'TN-01', name: 'Chennai Central', city: 'Chennai', state: 'TN' },
+  { code: 'TN-02', name: 'Chennai North East', city: 'Chennai', state: 'TN' },
+  { code: 'TN-03', name: 'Chennai North West', city: 'Chennai', state: 'TN' },
+  { code: 'TN-04', name: 'Chennai West', city: 'Chennai', state: 'TN' },
+  { code: 'TN-05', name: 'Chennai North', city: 'Chennai', state: 'TN' },
+  { code: 'TN-06', name: 'Chennai South', city: 'Chennai', state: 'TN' },
+  { code: 'TN-07', name: 'Chennai South East', city: 'Chennai', state: 'TN' },
+  { code: 'TN-09', name: 'Chennai East', city: 'Chennai', state: 'TN' },
+  { code: 'TN-10', name: 'Chennai North Central', city: 'Chennai', state: 'TN' },
+  { code: 'TN-11', name: 'Chennai South West', city: 'Chennai', state: 'TN' },
+  { code: 'TN-12', name: 'Poonamallee', city: 'Poonamallee', state: 'TN' },
+  { code: 'TN-13', name: 'Sriperumbudur', city: 'Sriperumbudur', state: 'TN' },
+  { code: 'TN-14', name: 'Chennai South', city: 'Chennai', state: 'TN' },
+  { code: 'TN-18', name: 'Tiruvallur', city: 'Tiruvallur', state: 'TN' },
+  { code: 'TN-19', name: 'Chengalpattu', city: 'Chengalpattu', state: 'TN' },
+  { code: 'TN-20', name: 'Tambaram', city: 'Tambaram', state: 'TN' },
+  { code: 'TN-21', name: 'Kanchipuram', city: 'Kanchipuram', state: 'TN' },
+  { code: 'TN-22', name: 'Chennai South East', city: 'Chennai', state: 'TN' },
+
+  // ── Vellore district — the home market ─────────────────────────────────
   { code: 'TN-23', name: 'Vellore', city: 'Vellore', state: 'TN' },
   { code: 'TN-24', name: 'Vaniyambadi', city: 'Vaniyambadi', state: 'TN' },
   { code: 'TN-25', name: 'Tirupattur', city: 'Tirupattur', state: 'TN' },
   { code: 'TN-83', name: 'Ranipet', city: 'Ranipet', state: 'TN' },
   { code: 'TN-84', name: 'Arcot', city: 'Arcot', state: 'TN' },
   { code: 'TN-85', name: 'Gudiyattam', city: 'Gudiyattam', state: 'TN' },
+
+  // ── the rest of the state ──────────────────────────────────────────────
+  { code: 'TN-15', name: 'Villupuram', city: 'Villupuram', state: 'TN' },
+  { code: 'TN-16', name: 'Tindivanam', city: 'Tindivanam', state: 'TN' },
+  { code: 'TN-27', name: 'Coimbatore South', city: 'Coimbatore', state: 'TN' },
+  { code: 'TN-28', name: 'Erode', city: 'Erode', state: 'TN' },
+  { code: 'TN-29', name: 'Dharmapuri', city: 'Dharmapuri', state: 'TN' },
+  { code: 'TN-30', name: 'Salem West', city: 'Salem', state: 'TN' },
+  { code: 'TN-31', name: 'Namakkal', city: 'Namakkal', state: 'TN' },
+  { code: 'TN-32', name: 'Tiruchirappalli', city: 'Tiruchirappalli', state: 'TN' },
+  { code: 'TN-33', name: 'Perambalur', city: 'Perambalur', state: 'TN' },
+  { code: 'TN-34', name: 'Thanjavur', city: 'Thanjavur', state: 'TN' },
+  { code: 'TN-36', name: 'Nagapattinam', city: 'Nagapattinam', state: 'TN' },
+  { code: 'TN-37', name: 'Coimbatore North', city: 'Coimbatore', state: 'TN' },
+  { code: 'TN-38', name: 'Coimbatore Central', city: 'Coimbatore', state: 'TN' },
+  { code: 'TN-39', name: 'Tiruppur', city: 'Tiruppur', state: 'TN' },
+  { code: 'TN-40', name: 'Mettupalayam', city: 'Mettupalayam', state: 'TN' },
+  { code: 'TN-41', name: 'Pollachi', city: 'Pollachi', state: 'TN' },
+  { code: 'TN-42', name: 'Udhagamandalam', city: 'Ooty', state: 'TN' },
+  { code: 'TN-43', name: 'Coonoor', city: 'Coonoor', state: 'TN' },
+  { code: 'TN-45', name: 'Tiruchirappalli West', city: 'Tiruchirappalli', state: 'TN' },
+  { code: 'TN-46', name: 'Kumbakonam', city: 'Kumbakonam', state: 'TN' },
+  { code: 'TN-47', name: 'Karur', city: 'Karur', state: 'TN' },
+  { code: 'TN-48', name: 'Dindigul', city: 'Dindigul', state: 'TN' },
+  { code: 'TN-49', name: 'Kodaikanal', city: 'Kodaikanal', state: 'TN' },
+  { code: 'TN-52', name: 'Ramanathapuram', city: 'Ramanathapuram', state: 'TN' },
+  { code: 'TN-54', name: 'Sivakasi', city: 'Sivakasi', state: 'TN' },
+  { code: 'TN-55', name: 'Dindigul', city: 'Dindigul', state: 'TN' },
+  { code: 'TN-56', name: 'Virudhunagar', city: 'Virudhunagar', state: 'TN' },
+  { code: 'TN-57', name: 'Theni', city: 'Theni', state: 'TN' },
+  { code: 'TN-58', name: 'Madurai South', city: 'Madurai', state: 'TN' },
+  { code: 'TN-59', name: 'Madurai North', city: 'Madurai', state: 'TN' },
+  { code: 'TN-60', name: 'Tuticorin', city: 'Tuticorin', state: 'TN' },
+  { code: 'TN-63', name: 'Tirunelveli', city: 'Tirunelveli', state: 'TN' },
+  { code: 'TN-64', name: 'Tenkasi', city: 'Tenkasi', state: 'TN' },
+  { code: 'TN-65', name: 'Nagercoil', city: 'Nagercoil', state: 'TN' },
+  { code: 'TN-66', name: 'Coimbatore West', city: 'Coimbatore', state: 'TN' },
+  { code: 'TN-67', name: 'Pudukkottai', city: 'Pudukkottai', state: 'TN' },
+  { code: 'TN-68', name: 'Krishnagiri', city: 'Krishnagiri', state: 'TN' },
+  { code: 'TN-69', name: 'Tuticorin', city: 'Tuticorin', state: 'TN' },
+  { code: 'TN-70', name: 'Kanyakumari', city: 'Kanyakumari', state: 'TN' },
+  { code: 'TN-72', name: 'Sivaganga', city: 'Sivaganga', state: 'TN' },
+  { code: 'TN-73', name: 'Hosur', city: 'Hosur', state: 'TN' },
+  { code: 'TN-74', name: 'Nagapattinam', city: 'Nagapattinam', state: 'TN' },
+  { code: 'TN-75', name: 'Cuddalore', city: 'Cuddalore', state: 'TN' },
+  { code: 'TN-76', name: 'Ariyalur', city: 'Ariyalur', state: 'TN' },
+  { code: 'TN-77', name: 'Tiruvannamalai', city: 'Tiruvannamalai', state: 'TN' },
+  { code: 'TN-78', name: 'Salem East', city: 'Salem', state: 'TN' },
+  { code: 'TN-79', name: 'Sankagiri', city: 'Sankagiri', state: 'TN' },
+  { code: 'TN-81', name: 'Cuddalore', city: 'Cuddalore', state: 'TN' },
+  { code: 'TN-86', name: 'Chidambaram', city: 'Chidambaram', state: 'TN' },
+  { code: 'TN-88', name: 'Attur', city: 'Attur', state: 'TN' },
+  { code: 'TN-90', name: 'Erode East', city: 'Erode', state: 'TN' },
+  { code: 'TN-92', name: 'Tiruchengode', city: 'Tiruchengode', state: 'TN' },
+  { code: 'TN-93', name: 'Gobichettipalayam', city: 'Gobichettipalayam', state: 'TN' },
+  { code: 'TN-94', name: 'Palani', city: 'Palani', state: 'TN' },
+  { code: 'TN-95', name: 'Aruppukottai', city: 'Aruppukottai', state: 'TN' },
+
+  // ── neighbouring states — ordinary stock, not edge cases ───────────────
+  { code: 'KA-01', name: 'Bangalore Central', city: 'Bengaluru', state: 'KA' },
+  { code: 'KA-02', name: 'Bangalore West', city: 'Bengaluru', state: 'KA' },
+  { code: 'KA-03', name: 'Bangalore East', city: 'Bengaluru', state: 'KA' },
+  { code: 'KA-04', name: 'Bangalore North', city: 'Bengaluru', state: 'KA' },
+  { code: 'KA-05', name: 'Bangalore South', city: 'Bengaluru', state: 'KA' },
+  { code: 'KA-41', name: 'Bangalore North East', city: 'Bengaluru', state: 'KA' },
+  { code: 'KA-51', name: 'Bangalore East', city: 'Bengaluru', state: 'KA' },
+  { code: 'KA-53', name: 'Bangalore West', city: 'Bengaluru', state: 'KA' },
+  { code: 'AP-07', name: 'Chittoor', city: 'Chittoor', state: 'AP' },
+  { code: 'AP-39', name: 'Andhra Pradesh', city: 'Amaravati', state: 'AP' },
+  { code: 'KL-01', name: 'Thiruvananthapuram', city: 'Thiruvananthapuram', state: 'KL' },
+  { code: 'KL-07', name: 'Ernakulam', city: 'Kochi', state: 'KL' },
+  { code: 'PY-01', name: 'Puducherry', city: 'Puducherry', state: 'PY' },
 ];
 
 /** Normalized so the filter can group "Pearl White" and "Arctic White" (§6.1). */

@@ -7,6 +7,7 @@ import { Blueprint, LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { VehicleGallery } from '@/components/vehicle/gallery';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { VdpCtaStack } from '@/components/vehicle/vdp-cta';
+import { ReportSummary } from '@/features/report/report-summary';
 import { EnquiryForm } from '@/features/enquiry/enquiry-form';
 import { ApiError, apiGet } from '@/lib/api';
 import { serverConfig } from '@/lib/config';
@@ -104,6 +105,21 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
               ))}
             </dl>
           </section>
+
+          {/*
+            Directly under the specifications and above features: a buyer who
+            has just read the odometer and the owner count is exactly where a
+            records check does work. Below the fold it would be decoration.
+
+            `report` is null for every listing added before this feature and
+            whenever `feature.vehicleReport` is off — an absent report renders
+            nothing at all, because a missing check is not a finding.
+          */}
+          {vehicle.report ? (
+            <section className="mt-[30px]">
+              <ReportSummary report={vehicle.report} />
+            </section>
+          ) : null}
 
           {vehicle.features.length > 0 ? (
             <section className="mt-[30px]">

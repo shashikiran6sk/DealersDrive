@@ -37,7 +37,7 @@ export function createMemoryCache(): CachePort {
       return Promise.resolve({
         count: existing.count,
         resetAt: existing.resetAt,
-        retryAfterSeconds: retryAfterSeconds(existing.resetAt, now),
+        retryAfterSeconds: retryAfterSeconds(existing.resetAt, now, windowSeconds),
       });
     },
 
