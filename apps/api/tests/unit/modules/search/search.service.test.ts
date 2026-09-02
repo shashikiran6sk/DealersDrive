@@ -145,7 +145,16 @@ function setup(options: Options = {}) {
   } as unknown as VehiclesRepository;
 
   return {
-    service: createSearchService({ repo, catalog, dealers, vehicles }),
+    service: createSearchService({
+      repo,
+      catalog,
+      dealers,
+      vehicles,
+      // No report for these fixtures. `report: null` is the normal state for
+      // every listing added before the feature, so this is the realistic
+      // default rather than a convenience.
+      reports: { publicSummaries: () => Promise.resolve(new Map()) } as never,
+    }),
     searchCalls,
     facetCalls,
   };

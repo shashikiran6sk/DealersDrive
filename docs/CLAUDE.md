@@ -331,6 +331,13 @@ For this version, do not spend time implementing:
 
 Implement the product defined in the documents, but use mocks/stubs where the current scope explicitly says to do so.
 
+The **RC lookup mock is not in this list.** `RC_LOOKUP_DRIVER=mock` is the
+default and the intake flow works end to end on it — including the not-found,
+outage, blacklist and silent-challan-feed branches, which are addressable by
+reserved plate (`platform/rc/mock.adapter.ts`). It is a working local provider,
+not a deferred feature, and the branches it exercises are the ones a real
+provider produces on a bad day.
+
 **"Unnecessary infrastructure" does not mean "no infrastructure".** Two things
 are in scope and are already built, because leaving them out is what makes a
 system that works on one machine and fails on two:
@@ -366,6 +373,7 @@ Unless the source-of-truth documents explicitly require otherwise:
 | Email               | Resend                                             |
 | SMS                 | MSG91                                              |
 | Payments            | Razorpay — **deferred/mocked for current version** |
+| RC lookup           | Attestr, behind `RcLookupPort` — mock by default   |
 | Monorepo            | Turborepo + pnpm                                   |
 | Validation          | Zod                                                |
 | Public server state | RSC fetch                                          |

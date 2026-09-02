@@ -1022,7 +1022,7 @@ enum InvoiceStatus      { CAPTURED FAILED REFUNDED }                            
 | Partial unique index on approved listings | The **database**, not application code, guarantees one live listing per vehicle. |
 | `dealerId` on `Enquiry` and `Media` even though derivable | Tenant filtering must be one indexed predicate, never a join (§7). |
 | Soft delete only | Dealers delete by accident; buyers bookmark URLs; disputes need history. |
-| `regNumberMasked` | Full registration numbers are PII and enable vehicle-history scraping. |
+| `regNumberMasked` | Full registration numbers are PII and enable vehicle-history scraping. **Revised — see §6.3.** The plate is now also the intake key, and we publish a records check derived from it. The anti-scraping property is preserved by the public payload rather than by masking: `VehicleDetail` carries no registration number at all, and `VehicleReportSummary` carries aggregates rather than itemised records. |
 | Audit log partitioned from day one | Retrofitting partitioning onto 500M rows is a maintenance window. Now it's 10 lines. |
 | `uploadedByAdmin` on Media | Photo-shoot uploads must be visibly attributed, and audit-logged. |
 | **Credit ledger, not a counter** ← r2 | The billing screen shows a running history with a balance per row. A counter cannot be audited, cannot explain itself to a dealer disputing a charge, and cannot be reconciled. `Dealer.creditBalance` exists only as a read cache of the newest `balanceAfter`. |
@@ -1032,6 +1032,137 @@ enum InvoiceStatus      { CAPTURED FAILED REFUNDED }                            
 | **A phone reveal creates an Enquiry** ← r2 | §14 already says reveals count as leads. The inbox proves it — one of the four cards carries a "Call button" source chip. |
 | **Daily view rollup, not raw events** ← r2 | The dashboard needs 7 numbers per dealer per week. Raw view events would be the largest table in the database within a month and would answer no question the rollup cannot. |
 | **Invoice row for failed payments** ← r2 | The payment-history table shows a failed attempt. Hiding failures makes a dealer who was charged-then-reversed think you lost their money. |
+
+## 6.3 Vehicle registration lookup and the records report
+
+A dealer adds a car by typing its number plate. The API resolves it against
+VAHAN through a provider, matches the returned strings onto our closed
+catalogue, and returns a *proposal* the dealer confirms — plus a records check
+that is published, under a date and a disclaimer, on the listing page.
+
+### The seam
+
+`RcLookupPort` (`platform/rc/`) sits beside `StoragePort`, `SmsPort` and
+`PaymentProvider` in the composition root, chosen by `RC_LOOKUP_DRIVER`:
+
+    mock     deterministic, free, offline. The default outside production and
+             what the test suite runs. Not a stub — intake works end to end on
+             it, and reserved plates reach every failure branch.
+    attestr  the real provider. `env.ts` refuses to boot without the token.
+
+Attestr was chosen over Surepass, Cashfree and Eko for one reason that
+outweighs price: it is the only one whose response schema and error codes are
+published, which is what allows the adapter and its tests to exist before the
+account does — the same position `msg91.adapter.ts` is in. It also returns
+challans, blacklist and NOC in the *same* response, where Surepass sells challan
+lookup as a separate product; one call, one price, one error surface.
+
+### Two kinds of data, two lifetimes
+
+This split is the load-bearing decision, and the types enforce it:
+
+| | `RcSpecs` | `RcRecords` |
+|---|---|---|
+| Contents | maker, model, fuel, cc, seats, norms | challans, blacklist, NOC, validity dates |
+| Changes | never | constantly |
+| Cached | 30 days, in `rc_lookups` | 24 hours, re-fetched at submit |
+| Stored | plate-keyed, cross-tenant, swept | `vehicle_reports`, vehicle-keyed, append-only |
+| Is it a claim? | no — the dealer confirms it | **yes** — we publish it |
+
+Splitting the *types* rather than only the storage is what keeps the caching
+honest: a 30-day cache physically cannot hold a challan list, because `RcSpecs`
+has no field for one.
+
+`vehicle_reports` is append-only. Every fetch writes a new row and nothing
+updates one, because a published report is a claim made on a date: when a buyer
+says "your page said this car was clear", the answer has to be the exact row
+they saw.
+
+### What is never stored
+
+A full RC response carries the registered owner's name, father's name, both
+addresses, mobile number, chassis and engine numbers, the financier, and a
+named person on every challan. None of it is needed to list or buy a car, and
+all of it is a liability under the DPDP Act.
+
+All of it is dropped in the adapter, **before** the domain objects are
+constructed — so it never enters the domain, never reaches a log line, and
+cannot be persisted by a later feature whose author did not know to exclude it.
+`RcSpecs`, `RcRecords` and `ChallanRecord` have no fields to hold it. The
+absence of a field is the enforcement; a code review comment would not be.
+
+`challan_place` is dropped on the same reasoning even though it names nobody:
+place plus date across several challans is a movement trace of a person, and it
+tells a buyer nothing the offence and the year do not.
+
+### Two projections, and why the public one is narrower
+
+`reports.service.ts` has exactly two: `toDealerDto` (itemised) and
+`toPublicSummary` (aggregates plus offence types). The boundary between them is
+the privacy boundary for this feature, and it lives in one file so it can be
+reviewed as one decision.
+
+The public one is narrower as a direct application of the §6.1 reasoning above.
+That decision hides the plate because full registration numbers "enable
+vehicle-history scraping" — and a public page rendering a complete itemised
+challan record *is* a vehicle-history service, which would be scraped in bulk by
+exactly the people that decision was written to keep out. Aggregates plus
+offence types carry the entire trust signal a buyer needs while being worthless
+a million rows at a time.
+
+`report.publicDetail` widens it. That is a deliberate product decision behind a
+config flip, not something a rendering change can do by accident:
+`VehicleReportSummary` has no `challanDetails` field, so a public component
+cannot leak one even if handed the wrong object.
+
+### Blacklist is a submission blocker
+
+A vehicle the government has flagged does not reach the marketplace. This rides
+the existing `VehicleCompleteness.blockers` array rather than a second
+enforcement path, so the wizard already renders it, `canSubmit` already goes
+false, and `submit()` already refuses independently of the UI.
+
+It says "contact us", not "rejected". Blacklist flags carry real false positives
+— stale tax defaults, cleared theft reports an RTO never updated, NOCs for
+completed transfers — and an automatic permanent rejection would strand honest
+dealers with no recourse. An admin can override it, audit-logged.
+
+`UNKNOWN` is deliberately **not** blocked, and is deliberately not `CLEAR`. We
+could not read the records; that is our problem, not grounds to stop someone
+selling their car — and it must never render as a clean bill of health.
+
+### An absent feed is not a clean record
+
+`challansAvailable: false` means the state's challan feed returned nothing;
+an empty array with `available: true` means it answered "none". Every layer
+preserves the distinction and the public report renders the first as "records
+unavailable". Collapsing them is the worst failure this feature can produce: a
+buyer inheriting somebody else's fines on the strength of a page we published.
+
+### Why `rc_lookups` has no `dealerId`
+
+An RC is a fact about a car, not about a dealership, and two dealers appraising
+the same trade-in should not both be charged for it. The table is deliberately
+cross-tenant and `tenant-isolation.test.ts` documents it as an exception rather
+than a gap. The cost is a weak timing signal — a cached lookup returns faster —
+which is acceptable for rows holding no personal data. *Who* looked up what is
+in the audit trail, which is tenant-scoped.
+
+The plate is stored only as an HMAC under `RC_PLATE_HASH_SECRET`. Registration
+numbers occupy a small, enumerable space, so an unkeyed digest would be
+reversible by anyone with a loop. This is not secrecy from ourselves — real
+listings hold the plate in `vehicles.regNumberMasked`. It stops the lookup cache
+becoming a standalone register of every plate anyone ever asked about, including
+the ones that never became a listing.
+
+### Cost, and what the limits are actually for
+
+A listing credit sells at ₹450; a lookup costs roughly ₹3. At intake, submit and
+renewal that is three or four calls per published listing — under 3% of the
+revenue it generates. **Cost is not the constraint.** The rate limits are abuse
+controls: without them the dealer console is a free VAHAN terminal for people
+who never list a car. Hence 20 lookups per hour per dealership, 10 refreshes,
+and no scheduled background refresh at all.
 
 ## 6.2 The catalog is not optional
 

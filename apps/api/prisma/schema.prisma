@@ -261,6 +261,62 @@ model Color {
   @@map("colors")
 }
 
+/// The 30-day cache of immutable RC facts (ARCHITECTURE §6.3).
+///
+/// ## Why this is a table and not the CachePort
+///
+/// Rule 10 says the cache holds counters and a version number, never truth.
+/// This is truth — the specs a draft was built from — so it lives in the
+/// database that already exists.
+///
+/// ## Why there is no dealerId
+///
+/// An RC is a fact about a car, not about a dealership. Two dealers appraising
+/// the same trade-in should not both be charged for it, so this table is
+/// deliberately cross-tenant and `tenant-isolation.test.ts` documents it as an
+/// exception rather than a gap. The cost is a weak timing signal — a cached
+/// lookup returns faster — which is acceptable for rows holding no personal
+/// data. *Who* looked up what is in the audit log, which is tenant-scoped.
+///
+/// ## Why the plate is hashed
+///
+/// Real listings store the plate in `vehicles.regNumberMasked`, so this is not
+/// secrecy from ourselves. It is about not accumulating a standalone,
+/// queryable register of every plate anyone ever asked about — including the
+/// ones that never became a listing.
+model RcLookup {
+  id       String @id @default(uuid()) @db.Uuid
+  /// HMAC-SHA256 of the normalised plate under RC_PLATE_HASH_SECRET.
+  regHash  String @unique
+  provider String
+
+  /// The PII-free `RcSpecs` as the adapter returned it.
+  specs    Json
+  /// The resolver's output — catalogue ids and per-field confidence. Cached
+  /// alongside so a repeat lookup costs neither a provider call nor a re-match.
+  resolved Json
+  /// The `RcRecords` from the same call.
+  ///
+  /// Stored here despite records being short-lived, because a dealer confirms
+  /// the basics seconds after looking them up and re-fetching for that would
+  /// double the cost of every intake for no new information. It is trusted
+  /// only while `fetchedAt` is inside `report.freshnessHours`; past that the
+  /// service re-fetches rather than writing a stale report. The 30-day
+  /// `expiresAt` governs the specs alone.
+  records  Json?
+
+  fetchedAt DateTime @default(now())
+  /// Successes live 30 days; a "not found" lives one hour, so a genuinely new
+  /// registration is not invisible for a month (`rcLookup.cacheDays`).
+  expiresAt DateTime
+  /// False for a cached miss. Distinguishes "we asked and there is no RC" from
+  /// "we have not asked", which are different answers to the dealer.
+  found     Boolean  @default(true)
+
+  @@index([expiresAt])
+  @@map("rc_lookups")
+}
+
 // ─────────── VEHICLES (the physical asset) ───────────────────────────────
 model Vehicle {
   id                 String             @id @default(uuid()) @db.Uuid
@@ -286,7 +342,19 @@ model Vehicle {
   priceNegotiable    PriceNegotiability @default(SLIGHTLY)
   description        String?
   features           String[]
+  /// DEAD COLUMN. Written nowhere, read nowhere — the `specs` array on
+  /// `VehicleDetail` is computed from the columns above in
+  /// `search.service.ts`. Kept for now because dropping it during a rolling
+  /// deploy would break the previous revision's generated SELECTs; remove it
+  /// in a contract-phase migration once this release is fully rolled out.
   specs              Json               @default("{}")
+  /// BS4 / BS6. From the RC only — there is no way for a dealer to type it,
+  /// and it is materially price-relevant on an Indian used car.
+  normsType          String?
+  /// When the basics were last confirmed against an RC. A timestamp rather
+  /// than a boolean because "verified when?" is the question a dealer
+  /// disputing a record actually asks.
+  rcVerifiedAt       DateTime?
   status             VehicleStatus      @default(DRAFT)
   primaryMediaId     String?            @db.Uuid
   slug               String?            @unique
@@ -295,19 +363,24 @@ model Vehicle {
   updatedAt          DateTime           @updatedAt
   deletedAt          DateTime?
 
-  dealer    Dealer         @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  make      Make           @relation(fields: [makeId], references: [id])
-  model     Model          @relation(fields: [modelId], references: [id])
-  variant   Variant?       @relation(fields: [variantId], references: [id])
-  color     Color?         @relation(fields: [colorId], references: [id])
-  city      City?          @relation(fields: [cityId], references: [id])
+  dealer    Dealer          @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  make      Make            @relation(fields: [makeId], references: [id])
+  model     Model           @relation(fields: [modelId], references: [id])
+  variant   Variant?        @relation(fields: [variantId], references: [id])
+  color     Color?          @relation(fields: [colorId], references: [id])
+  city      City?           @relation(fields: [cityId], references: [id])
   media     VehicleMedia[]
   listings  Listing[]
   enquiries Enquiry[]
+  reports   VehicleReport[]
 
   @@index([dealerId, status, createdAt])
   @@index([modelId, year])
   @@index([cityId, pricePaise])
+  /// A partial unique index on (dealerId, regNumberMasked) WHERE deletedAt IS
+  /// NULL is added by raw SQL in the rc_lookup migration — Prisma cannot
+  /// express a partial index. It is what makes "you already have this car"
+  /// a database guarantee rather than a check the application might skip.
   @@map("vehicles")
 }
 
@@ -322,6 +395,73 @@ model VehicleMedia {
   @@id([vehicleId, mediaId])
   @@index([vehicleId, position])
   @@map("vehicle_media")
+}
+
+/// A point-in-time records check for one vehicle (ARCHITECTURE §6.3).
+///
+/// ## Append-only, never updated
+///
+/// Every fetch writes a NEW row. Nothing in the application updates one, and
+/// nothing deletes one while the vehicle exists. That is not tidiness — it is
+/// the answer to "your page said this car was clear". A published report is a
+/// claim we made on a date, and an updated-in-place row cannot reproduce what
+/// a buyer actually saw. `@@index([vehicleId, fetchedAt(sort: Desc)])` is what
+/// makes "the current one" a cheap read over that history.
+///
+/// ## What is deliberately absent
+///
+/// No owner name, no violator or driver name, no mobile number, no place of
+/// offence, no chassis or engine number, no lender name. Those are stripped in
+/// `attestr.adapter.ts` before the domain ever sees them, and there is no
+/// column here to hold them if a later change tried.
+model VehicleReport {
+  id        String @id @default(uuid()) @db.Uuid
+  vehicleId String @db.Uuid
+  /// Denormalised for tenant filtering — one indexed predicate, never a join (§7).
+  dealerId  String @db.Uuid
+  /// Which adapter produced this row. A report is only as good as its source,
+  /// and after a provider switch we need to know which rows came from where.
+  provider  String
+
+  /// The moment the provider answered. This is the `asOf` a buyer is shown,
+  /// and it is the whole of the claim's honesty.
+  fetchedAt DateTime @default(now())
+
+  blacklistStatus  BlacklistStatus @default(UNKNOWN)
+  blacklistReasons String[]
+  /// A state, never a person — "NOC issued to Karnataka".
+  nocIssuedTo      String?
+
+  /// False when the state's challan feed returned nothing. Distinct from a
+  /// zero count, and rendered as "unavailable" rather than "clear": an absent
+  /// feed presented as a clean record is the worst failure this table has.
+  challansAvailable       Boolean @default(false)
+  challanCount            Int     @default(0)
+  challanUnpaidCount      Int     @default(0)
+  challanOutstandingPaise BigInt  @default(0)
+  /// Itemised challans, PII already stripped. Json rather than a table: they
+  /// are read as a block with their parent report and never queried across.
+  challans                Json    @default("[]")
+
+  /// Whether a loan is on record. The lender's name is the owner's banking
+  /// relationship and is never stored.
+  financed Boolean?
+
+  rcStatus      String?
+  insuranceUpto DateTime?
+  fitnessUpto   DateTime?
+  pucUpto       DateTime?
+  taxUpto       DateTime?
+
+  /// Set when this row was the one live on a public listing page. Null for
+  /// rows only ever seen by the dealer.
+  publishedAt DateTime?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, fetchedAt(sort: Desc)])
+  @@index([dealerId, fetchedAt])
+  @@map("vehicle_reports")
 }
 
 model Media {
@@ -790,6 +930,15 @@ enum ListingStatus {
   EXPIRED
   SOLD
   REMOVED
+}
+
+/// UNKNOWN is not CLEAR. Collapsing the two would turn a provider outage into
+/// a clean bill of health on a stolen car.
+enum BlacklistStatus {
+  CLEAR
+  BLACKLISTED
+  NOC_ISSUED
+  UNKNOWN
 }
 
 enum MediaOwner {

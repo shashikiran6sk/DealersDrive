@@ -2,11 +2,14 @@ import { z } from 'zod';
 
 import { CityRef, CursorPage, ImageRef, OffsetPage, Uuid } from './common.js';
 import {
+  BlacklistStatus,
   BodyType,
   EnquirySource,
   FuelType,
   InsuranceType,
   PriceNegotiability,
+  ReportVerdict,
+  StatusTone,
   Transmission,
 } from './enums.js';
 
@@ -242,6 +245,66 @@ export const VehiclePhoto = z.object({
 });
 export type VehiclePhoto = z.infer<typeof VehiclePhoto>;
 
+/**
+ * A6 — the records check, as a buyer sees it.
+ *
+ * ## This shape is the privacy boundary
+ *
+ * There is no `challanDetails` field here, and there is no registration
+ * number. That is not an omission to be filled in later: it is the entire
+ * mechanism. `reports.service.ts` has two projections and this is the narrow
+ * one, so a public component *cannot* leak an itemised record even if someone
+ * passes it the wrong object — the field does not exist to render.
+ *
+ * The reasoning is ARCHITECTURE §6.1 applied consistently. That section
+ * justifies hiding the plate because full registration numbers "enable
+ * vehicle-history scraping". A public page that renders a complete itemised
+ * challan record *is* a vehicle-history service, and it would be scraped in
+ * bulk by exactly the people that decision was written to keep out. Aggregates
+ * plus offence types carry the whole trust signal a buyer needs while being
+ * worthless a million rows at a time.
+ *
+ * Flipping `report.publicDetail` on is a deliberate product decision that
+ * widens this schema; it is not something a rendering change can do by
+ * accident.
+ *
+ * ## Every string is built server-side
+ *
+ * `headline`, `asOfLabel`, `source` and `disclaimer` are composed in the
+ * service, not the component. They are the product's legal surface: the
+ * difference between "no challans found in government records as of 12 Feb"
+ * and "this car has no challans" is the difference between a report and a
+ * warranty, and it should not be one component author's phrasing choice.
+ */
+export const VehicleReportSummary = z.object({
+  verdict: ReportVerdict,
+  verdictLabel: z.string(),
+  verdictTone: StatusTone,
+  headline: z.string(),
+  asOfLabel: z.string(),
+  source: z.string(),
+  disclaimer: z.string(),
+  blacklistStatus: BlacklistStatus,
+  blacklistLabel: z.string(),
+  blacklistTone: StatusTone,
+  /** Present only when flagged, and phrased as a record rather than an accusation. */
+  blacklistNote: z.string().nullable(),
+  nocNote: z.string().nullable(),
+  challans: z.object({
+    /** False when the state's feed returned nothing. Rendered as "unavailable", never "clear". */
+    available: z.boolean(),
+    total: z.number().int(),
+    unpaid: z.number().int(),
+    outstandingLabel: z.string(),
+    /** Offence types and years only — no references, no dates to the day, no places. */
+    summary: z.array(z.string()),
+  }),
+  financed: z.boolean().nullable(),
+  /** Rendered as a plain list of "Insurance · valid to Mar 2027" rows. */
+  validity: z.array(z.object({ label: z.string(), value: z.string(), tone: StatusTone })),
+});
+export type VehicleReportSummary = z.infer<typeof VehicleReportSummary>;
+
 export const VehicleDetail = z.object({
   id: Uuid,
   slug: z.string(),
@@ -282,6 +345,12 @@ export const VehicleDetail = z.object({
     description: z.string(),
     isIndexable: z.boolean(),
   }),
+  /**
+   * Null when `feature.vehicleReport` is off, when the listing is not live, or
+   * when the vehicle was never looked up. A card with no report renders
+   * nothing rather than an empty panel — an absent report is not a finding.
+   */
+  report: VehicleReportSummary.nullable(),
 });
 export type VehicleDetail = z.infer<typeof VehicleDetail>;
 
@@ -496,6 +565,14 @@ export const PublicConfig = z.object({
   listingDurationDays: z.number().int(),
   enquiryRateLimitPerHour: z.number().int(),
   photoRequestsEnabled: z.boolean(),
+  /**
+   * Whether "Add a vehicle" opens on the number-plate field or on today's
+   * seven-dropdown Basics form. Both are complete flows, which is what makes
+   * this a safe rollback rather than a half-disabled feature.
+   */
+  rcLookupEnabled: z.boolean(),
+  /** Whether listing pages carry a records check at all. */
+  vehicleReportEnabled: z.boolean(),
 });
 export type PublicConfig = z.infer<typeof PublicConfig>;
 

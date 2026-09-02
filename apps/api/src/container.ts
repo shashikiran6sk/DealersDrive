@@ -27,6 +27,8 @@ import {
   type EnquiriesService,
 } from './modules/enquiries/enquiries.service.js';
 import { createMediaService, type MediaService } from './modules/media/media.service.js';
+import { createReportsRepository } from './modules/reports/reports.repository.js';
+import { createReportsService, type ReportsService } from './modules/reports/reports.service.js';
 import {
   createSearchRepository,
   type SearchRepository,
@@ -52,6 +54,8 @@ import { createQueue, type Queue } from './platform/jobs/queue.js';
 import { createMsg91Sms } from './platform/notify/msg91.adapter.js';
 import { createConsoleMailer, createConsoleSms } from './platform/notify/notify.port.js';
 import { createDevelopmentPaymentProvider } from './platform/payments/development.provider.js';
+import { createRcLookup } from './platform/rc/factory.js';
+import type { RcLookupPort } from './platform/rc/rc.port.js';
 import type { PaymentProvider } from './platform/payments/payment.port.js';
 import { createStorage } from './platform/storage/factory.js';
 import { ensureBucket } from './platform/storage/s3.adapter.js';
@@ -72,6 +76,7 @@ import { logger } from './platform/telemetry/logger.js';
  *   cache     — process memory · Postgres, by CACHE_DRIVER
  *   sms       — console · MSG91, by SMS_DRIVER
  *   payments  — `createDevelopmentPaymentProvider` today, Razorpay later
+ *   rc        — deterministic mock · Attestr, by RC_LOOKUP_DRIVER
  *
  * None of those choices reaches a module: they are all made here.
  */
@@ -86,6 +91,8 @@ export interface Container {
   /** Cross-instance shared state: rate-limit windows and the config version. */
   readonly cache: CachePort;
   readonly payments: PaymentProvider;
+  /** Registration lookup. Mock outside production; never a module's choice. */
+  readonly rc: RcLookupPort;
   readonly config: PlatformConfigService;
   readonly sessions: SessionResolver;
   readonly sessionStore: SessionService;
@@ -101,6 +108,7 @@ export interface Container {
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
   readonly vehicles: VehiclesService;
+  readonly reports: ReportsService;
   readonly media: MediaService;
   readonly enquiries: EnquiriesService;
   readonly billing: BillingService;
@@ -113,6 +121,8 @@ export interface ContainerOverrides {
   /** The seam the sign-in tests replace, so no test ever talks to Google. */
   oauth?: OAuthProvider;
   payments?: PaymentProvider;
+  /** Replaced by the lookup tests, so nothing in CI reaches a real provider. */
+  rc?: RcLookupPort;
   queue?: Queue;
   storage?: StoragePort;
   /** The integration suite pins this to memory so windows reset with the process. */
@@ -129,6 +139,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const storage = overrides.storage ?? createStorage();
   const cache = overrides.cache ?? createCache(prisma);
   const payments = overrides.payments ?? createDevelopmentPaymentProvider();
+  const rc = overrides.rc ?? createRcLookup();
   const config = createPlatformConfig(prisma, cache);
   const audit = createAuditService(prisma);
   const mailer = createConsoleMailer();
@@ -146,12 +157,21 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const enquiriesRepo = createEnquiriesRepository(prisma);
   const searchRepo = createSearchRepository(prisma);
 
+  // Built before `search` and `vehicles`: both render reports, and neither may
+  // reach the repository directly (see reports.facade.ts).
+  const reports = createReportsService({
+    prisma,
+    repo: createReportsRepository(prisma),
+    rc,
+    config,
+  });
   const catalog = createCatalogService({ repo: catalogRepo, search: searchRepo, config });
   const search = createSearchService({
     repo: searchRepo,
     catalog: catalogRepo,
     dealers: dealersRepo,
     vehicles: vehiclesRepo,
+    reports,
   });
   const dealersPublic = createDealersPublicService({ repo: dealersRepo, search: searchRepo });
   const media = createMediaService({ prisma, storage, queue, config });
@@ -174,12 +194,25 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     repo: vehiclesRepo,
     dealers: dealersRepo,
     config,
+    rc,
+    reports,
+    catalog: catalogRepo,
   });
   const billing = createBillingService({ prisma, dealers: dealersRepo, payments, config });
-  const admin = createAdminService({ prisma, audit, config, storage });
+  const admin = createAdminService({ prisma, audit, config, storage, reports });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
 
-  await registerHandlers({ prisma, queue, bus, search: searchRepo, media, mailer, sms, cache });
+  await registerHandlers({
+    prisma,
+    queue,
+    bus,
+    search: searchRepo,
+    media,
+    mailer,
+    sms,
+    cache,
+    vehicles: vehiclesRepo,
+  });
 
   return {
     env,
@@ -191,6 +224,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     storage,
     cache,
     payments,
+    rc,
     config,
     sessions,
     sessionStore,
@@ -204,6 +238,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     dealers,
     dealersPublic,
     vehicles,
+    reports,
     media,
     enquiries,
     billing,

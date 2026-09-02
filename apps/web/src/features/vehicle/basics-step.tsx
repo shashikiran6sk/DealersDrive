@@ -1,11 +1,12 @@
 'use client';
 
-import type { CatalogBundle } from '@dealers-drive/contracts';
+import type { CatalogBundle, RcLookupResponse } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Banner, Stepper } from '@/components/ui/primitives';
+import { ReportPanel } from '@/features/report/report-panel';
 import { createVehicleAction } from '@/features/vehicle/actions';
 import {
   BasicsFields,
@@ -13,6 +14,7 @@ import {
   validateBasics,
   type BasicsValue,
 } from '@/features/vehicle/basics-fields';
+import { RcSummary } from '@/features/vehicle/rc-summary';
 import { WIZARD_STEPS } from '@/features/vehicle/steps';
 
 /**
@@ -28,12 +30,41 @@ import { WIZARD_STEPS } from '@/features/vehicle/steps';
  * runs the same one and is what actually enforces it, so a dealer who submits
  * this form with a crafted request gets a 400 rather than a draft with holes.
  */
-export function BasicsStep({ catalog }: { catalog: CatalogBundle }) {
+export function BasicsStep({
+  catalog,
+  lookup,
+  prefillPlate,
+}: {
+  catalog: CatalogBundle;
+  /** Present when the dealer arrived via a number-plate lookup. */
+  lookup?: RcLookupResponse;
+  /** The plate they typed, when the lookup failed and they chose manual entry. */
+  prefillPlate?: string;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
-  const [basics, setBasics] = useState<BasicsValue>(EMPTY_BASICS);
+  /**
+   * Seeded from the lookup where it resolved something.
+   *
+   * `?? ''` throughout, so an unresolved field is an empty dropdown the dealer
+   * fills rather than a plausible guess they might not check. The variant and
+   * the transmission are *always* empty — see `RcSummary` for why.
+   */
+  const [basics, setBasics] = useState<BasicsValue>(() =>
+    lookup
+      ? {
+          makeId: lookup.basics.makeId.value ?? '',
+          modelId: lookup.basics.modelId.value ?? '',
+          variantId: '',
+          year: lookup.basics.year.value === null ? '' : String(lookup.basics.year.value),
+          fuel: lookup.basics.fuel.value ?? '',
+          transmission: '',
+          bodyType: lookup.basics.bodyType.value ?? '',
+        }
+      : EMPTY_BASICS,
+  );
 
   function submit() {
     setMessage(null);
@@ -46,6 +77,8 @@ export function BasicsStep({ catalog }: { catalog: CatalogBundle }) {
     }
 
     startTransition(async () => {
+      const plate = lookup?.regNumber ?? prefillPlate;
+
       const result = await createVehicleAction({
         makeId: basics.makeId,
         modelId: basics.modelId,
@@ -54,6 +87,15 @@ export function BasicsStep({ catalog }: { catalog: CatalogBundle }) {
         fuel: basics.fuel,
         transmission: basics.transmission,
         bodyType: basics.bodyType,
+        ...(plate ? { regNumberMasked: plate } : {}),
+        /**
+         * One id, not the resolved fields.
+         *
+         * The server re-reads what the provider actually said under this id
+         * and applies the RC-derived details itself, so a crafted request
+         * cannot claim an RC reported one owner and full insurance.
+         */
+        ...(lookup ? { rcLookupId: lookup.lookupId } : {}),
       });
 
       if (!result.ok || !result.data) {
@@ -78,14 +120,17 @@ export function BasicsStep({ catalog }: { catalog: CatalogBundle }) {
         }}
       >
         <div>
-          <h2 className="text-[21px]">Vehicle basics</h2>
+          <h2 className="text-[21px]">{lookup ? 'Confirm the car' : 'Vehicle basics'}</h2>
           <p className="mt-1 text-[13px] ink-muted">
-            These seven fields identify the car, and all seven are required. You can change them
-            later — including after you have filled in the details.
+            {lookup
+              ? 'We filled in what the registration records told us. Check it, pick the variant and the gearbox, and correct anything that is wrong.'
+              : 'These seven fields identify the car, and all seven are required. You can change them later — including after you have filled in the details.'}
           </p>
         </div>
 
         {message ? <Banner tone="err">{message}</Banner> : null}
+
+        {lookup ? <RcSummary lookup={lookup} /> : null}
 
         <BasicsFields
           catalog={catalog}
@@ -109,6 +154,14 @@ export function BasicsStep({ catalog }: { catalog: CatalogBundle }) {
           </Button>
         </div>
       </form>
+
+      {/*
+        Shown while the dealer is still deciding whether to add the car, which
+        is exactly when unpaid challans and a blacklist flag are most useful.
+        No refresh button: nothing is saved yet, so there is nothing to refresh
+        against — re-running the lookup is what the back button is for.
+      */}
+      {lookup?.report ? <ReportPanel report={lookup.report} /> : null}
     </div>
   );
 }

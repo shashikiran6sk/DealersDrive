@@ -80,6 +80,53 @@ export const vehiclesDocs: ModuleDocs = {
       errors: [400, 401, 403, 404],
     },
     {
+      method: 'post',
+      path: '/v1/dealer/vehicles/lookup',
+      operationId: 'lookupVehicleByRegistration',
+      tag: 'Dealer inventory',
+      summary: 'Look a vehicle up by its number plate',
+      description:
+        'Takes a registration number and returns a **proposal** — the catalogue rows we ' +
+        'believe it matches, the detail fields the RC can fill, and the vehicle records ' +
+        'check.\n\n' +
+        'Nothing is written. A lookup is not a commitment to list the car; the dealer ' +
+        'confirms the basics and `POST /v1/dealer/vehicles` creates the draft.\n\n' +
+        '**Every field carries a `confidence`.** `EXACT` is stated, `LIKELY` is offered for ' +
+        'confirmation, `NONE` must be chosen. `variantId` is *always* `NONE` with a ranked ' +
+        '`candidates` list — RC trim strings are truncated and inconsistent, and a `Swift ' +
+        'VXi` might be a VXi, a VXi (O) or a VXi AMT, which are a lakh apart. ' +
+        '`transmission` is always `NONE` too: **a registration certificate does not record ' +
+        'the gearbox.**\n\n' +
+        '**This call costs money.** It is rate-limited to 20 per hour per dealership and ' +
+        'results are cached for 30 days, so a repeat lookup of the same plate is free. ' +
+        'A not-found answer is cached for one hour — long enough to stop a mistyped plate ' +
+        'being billed ten times, short enough that a new registration is not invisible for ' +
+        'a month.\n\n' +
+        'Returns **404** when no RC is on record and **503** when the records service is ' +
+        'unreachable. Both are expected outcomes, not exceptions: roughly one lookup in six ' +
+        'does not produce a usable match, and every client must offer manual entry as a ' +
+        'first-class path rather than a retry.',
+      audience: 'dealer',
+      permission: 'vehicle:write',
+      requestBody: {
+        schema: 'RcLookupInput',
+        description:
+          'Spaces, hyphens and case are all optional — a dealer reading a windscreen should ' +
+          'not have to guess our separator.',
+        example: { regNumber: 'TN09BX1234' },
+      },
+      responses: [
+        {
+          status: 200,
+          description:
+            'The proposal. `report` is null when the records feature is off; ' +
+            '`advisories[]` carries what the dealer must be told but which blocks nothing.',
+          schema: 'RcLookupResponse',
+        },
+      ],
+      errors: [400, 401, 403, 404, 422, 429, 503],
+    },
+    {
       method: 'get',
       path: '/v1/dealer/vehicles/:id',
       operationId: 'getVehicle',
@@ -310,6 +357,59 @@ export const vehiclesDocs: ModuleDocs = {
         },
       ],
       errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'get',
+      path: '/v1/dealer/vehicles/:id/report',
+      operationId: 'getVehicleReport',
+      tag: 'Dealer inventory',
+      summary: "The vehicle's records check",
+      description:
+        'Blacklist status, NOC, traffic challans, and insurance/PUC/fitness/tax validity, ' +
+        'as of the moment the provider answered.\n\n' +
+        'This is the **itemised** view — every challan with its date, offence, amount and ' +
+        'status. The public listing page carries a narrower summary with aggregates and ' +
+        'offence types only; see `VehicleReportSummary`.\n\n' +
+        'What it never contains, at either granularity: the registered owner, the person ' +
+        'named on a challan, any mobile number, the place of an offence, or the chassis and ' +
+        'engine numbers. Those are dropped by the provider adapter and are not stored.\n\n' +
+        '`asOf` and `stale` are the important fields. A records check is a claim about a ' +
+        'point in time, and a client that renders the findings without the date is ' +
+        'misrepresenting it.',
+      audience: 'dealer',
+      permission: 'vehicle:read',
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'The current report, or null when none has been fetched.',
+          schema: 'VehicleReportDto',
+        },
+      ],
+      errors: [401, 403, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/vehicles/:id/report/refresh',
+      operationId: 'refreshVehicleReport',
+      tag: 'Dealer inventory',
+      summary: 'Re-read the records now',
+      description:
+        'Forces a fresh provider call — the button a dealer presses after paying off a ' +
+        'challan.\n\n' +
+        'Records are also refreshed automatically when a listing is submitted, so this is ' +
+        'for impatience rather than correctness. It is rate-limited to 10 per hour per ' +
+        'dealership: it is the one endpoint where holding down a button spends our money.\n\n' +
+        'Unlike the refresh inside submit, this one **surfaces its failure**. The dealer ' +
+        'pressed a button and deserves to know it did not work, rather than staring at an ' +
+        'unchanged date.',
+      audience: 'dealer',
+      permission: 'vehicle:write',
+      params: 'IdParam',
+      responses: [
+        { status: 200, description: 'The refreshed report.', schema: 'VehicleReportDto' },
+      ],
+      errors: [401, 403, 404, 422, 429, 503],
     },
   ],
 };

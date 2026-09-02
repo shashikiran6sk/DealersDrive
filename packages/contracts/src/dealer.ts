@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 import { CursorPage, Uuid } from './common.js';
 import {
+  BlacklistStatus,
   BodyType,
+  ChallanStatus,
   CloseReason,
   CreditReason,
   DealerDocType,
@@ -16,6 +18,8 @@ import {
   InvoiceStatus,
   MediaStatus,
   PriceNegotiability,
+  RcMatchConfidence,
+  ReportVerdict,
   StatusTone,
   Transmission,
 } from './enums.js';
@@ -278,7 +282,7 @@ export type InventoryResponse = z.infer<typeof InventoryResponse>;
  * four digits (§14.2). What is stored is the real mark, which is why it is
  * validated as one.
  */
-const REGISTRATION_NUMBER = z
+export const REGISTRATION_NUMBER = z
   .string()
   .trim()
   .toUpperCase()
@@ -311,6 +315,20 @@ export const CreateVehicleInput = z
     fuel: FuelType,
     transmission: Transmission,
     bodyType: BodyType,
+    /**
+     * The plate, when the draft came from an RC lookup rather than the manual
+     * form. Optional because the manual path must never stop working — a
+     * dealer whose car is not on VAHAN still gets to list it.
+     */
+    regNumberMasked: REGISTRATION_NUMBER.optional(),
+    /**
+     * The lookup this draft was built from. The server re-reads the snapshot
+     * under this id and applies the RC-derived detail fields itself; it does
+     * **not** accept those fields from the client. That is what keeps the
+     * server the authority on what the RC actually said, and it is why this is
+     * one id rather than ten more optional columns.
+     */
+    rcLookupId: Uuid.optional(),
   })
   .strict();
 export type CreateVehicleInput = z.infer<typeof CreateVehicleInput>;
@@ -358,6 +376,147 @@ export const UpdateVehicleInput = z
   })
   .strict();
 export type UpdateVehicleInput = z.infer<typeof UpdateVehicleInput>;
+
+// ─────────── C21–C23 RC lookup and vehicle report ──────────────────────────
+
+/**
+ * C21. One field in, a whole draft's worth of proposal out.
+ *
+ * `.strict()` and a single key, because this endpoint costs real money per
+ * call: anything that is not a registration number should be a 400 before it
+ * reaches a provider, not after.
+ */
+export const RcLookupInput = z.object({ regNumber: REGISTRATION_NUMBER }).strict();
+export type RcLookupInput = z.infer<typeof RcLookupInput>;
+
+/**
+ * A resolved field, with how sure we are of it.
+ *
+ * The confidence travels *with* the value rather than in a parallel map, so a
+ * component cannot render one without the other. A UI that shows a LIKELY
+ * match as though it were certain is the main way this feature produces wrong
+ * listings, and the shape is what prevents it.
+ */
+const rcMatch = <T extends z.ZodTypeAny>(value: T) =>
+  z.object({
+    value: value.nullable(),
+    /** The resolved display name, so the client needs no catalogue lookup. */
+    name: z.string().nullable(),
+    confidence: RcMatchConfidence,
+    /** Ranked alternatives when the match was ambiguous. Variants always have these. */
+    candidates: z.array(z.object({ id: Uuid, name: z.string(), hint: z.string().nullable() })),
+  });
+
+export const RcBasicsMatch = z.object({
+  makeId: rcMatch(Uuid),
+  modelId: rcMatch(Uuid),
+  variantId: rcMatch(Uuid),
+  year: rcMatch(z.number().int()),
+  fuel: rcMatch(FuelType),
+  transmission: rcMatch(Transmission),
+  bodyType: rcMatch(BodyType),
+});
+export type RcBasicsMatch = z.infer<typeof RcBasicsMatch>;
+
+/** The step-2 fields an RC can fill. Everything here is already confirmed. */
+export const RcDetailsPrefill = z.object({
+  ownerNumber: z.number().int().nullable(),
+  colorId: Uuid.nullable(),
+  colorName: z.string().nullable(),
+  seats: z.number().int().nullable(),
+  rtoCode: z.string().nullable(),
+  insuranceValidTill: z.string().nullable(),
+  normsType: z.string().nullable(),
+});
+export type RcDetailsPrefill = z.infer<typeof RcDetailsPrefill>;
+
+/**
+ * One traffic challan, as we are willing to hold it.
+ *
+ * Note what is absent and stays absent: the violator's name, the driver's
+ * name, the owner's mobile number and the place of offence. All four are in
+ * the provider's response; none of them is a fact about the car, and place
+ * plus date across several challans is a movement trace of a person
+ * (ARCHITECTURE §6.3). `challanRef` is the last four characters only — enough
+ * for a dealer to find the challan on the government portal, useless for
+ * enumerating anybody.
+ */
+export const ChallanDto = z.object({
+  challanRef: z.string(),
+  offenceDate: z.string().nullable(),
+  offence: z.string(),
+  amountPaise: z.number().int(),
+  amountLabel: z.string(),
+  status: ChallanStatus,
+  statusLabel: z.string(),
+  /** Referred to court — materially worse than merely unpaid, and priced differently. */
+  court: z.boolean(),
+});
+export type ChallanDto = z.infer<typeof ChallanDto>;
+
+export const ChallanSummary = z.object({
+  total: z.number().int(),
+  unpaid: z.number().int(),
+  outstandingPaise: z.number().int(),
+  outstandingLabel: z.string(),
+  /** False when the state's feed returned nothing — never rendered as "clear". */
+  available: z.boolean(),
+});
+export type ChallanSummary = z.infer<typeof ChallanSummary>;
+
+/**
+ * C22. The dealer's full view of a vehicle's records.
+ *
+ * Every string a client renders is built here, including `asOfLabel` and
+ * `disclaimer`. That is deliberate: these are the product's legal surface, and
+ * a component that composed its own wording could silently turn "no challans
+ * found in our records" into "this car has no challans".
+ */
+export const VehicleReportDto = z.object({
+  verdict: ReportVerdict,
+  verdictLabel: z.string(),
+  verdictTone: StatusTone,
+  headline: z.string(),
+  asOf: z.string(),
+  asOfLabel: z.string(),
+  /** True once older than `report.freshnessHours`; drives the Refresh affordance. */
+  stale: z.boolean(),
+  source: z.string(),
+  disclaimer: z.string(),
+  blacklistStatus: BlacklistStatus,
+  blacklistLabel: z.string(),
+  blacklistTone: StatusTone,
+  blacklistReasons: z.array(z.string()),
+  nocIssuedTo: z.string().nullable(),
+  challans: ChallanSummary,
+  /** Itemised. Dealer-only — the public summary has no equivalent field. */
+  challanDetails: z.array(ChallanDto),
+  /** Whether a loan is on record. The lender's name is never stored. */
+  financed: z.boolean().nullable(),
+  rcStatus: z.string().nullable(),
+  insuranceUpto: z.string().nullable(),
+  fitnessUpto: z.string().nullable(),
+  pucUpto: z.string().nullable(),
+  taxUpto: z.string().nullable(),
+});
+export type VehicleReportDto = z.infer<typeof VehicleReportDto>;
+
+export const RcLookupResponse = z.object({
+  lookupId: Uuid,
+  regNumber: z.string(),
+  /** Served from `rc_lookups` rather than the provider. No charge was incurred. */
+  cached: z.boolean(),
+  basics: RcBasicsMatch,
+  details: RcDetailsPrefill,
+  /** Absent when `feature.vehicleReport` is off. */
+  report: VehicleReportDto.nullable(),
+  /**
+   * Things the dealer must be told but which do not block anything —
+   * "an RC does not record the gearbox", "₹2,000 in unpaid challans".
+   */
+  advisories: z.array(z.object({ code: z.string(), message: z.string() })),
+});
+export type RcLookupResponse = z.infer<typeof RcLookupResponse>;
 
 export const CompletenessBlocker = z.object({ code: z.string(), message: z.string() });
 
@@ -493,6 +652,17 @@ export const DealerVehicleDto = z.object({
   }),
   rejectionReason: z.string().nullable(),
   changeRequestNote: z.string().nullable(),
+  /**
+   * When the basics were confirmed against an RC. Null for every vehicle added
+   * before this feature and for every one entered by hand — which is why it is
+   * a timestamp rather than a boolean: "verified when?" is the question a
+   * dealer disputing a record actually asks.
+   */
+  rcVerifiedAt: z.string().nullable(),
+  /** BS4 / BS6. From the RC only; there is no way for a dealer to type it. */
+  normsType: z.string().nullable(),
+  /** Null when `feature.vehicleReport` is off, or no lookup has run. */
+  report: VehicleReportDto.nullable(),
 });
 export type DealerVehicleDto = z.infer<typeof DealerVehicleDto>;
 

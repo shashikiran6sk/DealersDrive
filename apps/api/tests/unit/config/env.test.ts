@@ -37,6 +37,7 @@ const PRODUCTION_REQUIRED = {
   S3_SECRET_ACCESS_KEY: 'r2-secret',
   SESSION_SECRET: 'a-real-production-session-secret',
   UPLOAD_SIGNING_SECRET: 'a-real-production-upload-secret',
+  RC_PLATE_HASH_SECRET: 'a-real-production-plate-secret',
 };
 
 /**
@@ -70,6 +71,11 @@ const SCHEMA_KEYS = [
   'STORAGE_DRIVER',
   'STORAGE_LOCAL_DIR',
   'UPLOAD_SIGNING_SECRET',
+  'RC_LOOKUP_DRIVER',
+  'ATTESTR_BASE_URL',
+  'ATTESTR_AUTH_TOKEN',
+  'RC_LOOKUP_TIMEOUT_MS',
+  'RC_PLATE_HASH_SECRET',
   'MEDIA_BASE_URL',
   'MAIL_DRIVER',
   'SMS_DRIVER',
@@ -463,10 +469,14 @@ describe('configurations that must not boot', () => {
       ...PRODUCTION_REQUIRED,
       SESSION_SECRET: 'dealers-drive-local-session-secret',
       UPLOAD_SIGNING_SECRET: 'dealers-drive-local-upload-secret',
+      RC_PLATE_HASH_SECRET: 'dealers-drive-local-plate-secret',
     });
 
     expect(message).toContain('SESSION_SECRET');
     expect(message).toContain('UPLOAD_SIGNING_SECRET');
+    // Shipping this default would make every cached plate hash reproducible
+    // by anyone who has read the repository.
+    expect(message).toContain('RC_PLATE_HASH_SECRET');
   });
 
   /** The sign-in bypass is a development affordance and nothing else. */

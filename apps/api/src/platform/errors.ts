@@ -153,6 +153,26 @@ export class ConfigurationError extends AppError {
   }
 }
 
+/**
+ * 503 — a dependency we do not control is not answering.
+ *
+ * Distinct from `ConfigurationError`, which is also 503: that one means *we*
+ * are set up wrong and a developer must fix it. This one means someone else's
+ * service is down and the right response is to try later or take another path.
+ * Conflating them sends an operator hunting for a missing credential during a
+ * vendor outage.
+ */
+export class UpstreamUnavailableError extends AppError {
+  readonly status = 503;
+  readonly code: string;
+  readonly title = 'Service unavailable';
+
+  constructor(detail: string, options?: AppErrorOptions & { code?: string }) {
+    super(detail, options);
+    this.code = options?.code ?? 'UPSTREAM_UNAVAILABLE';
+  }
+}
+
 /** 429 — over a limit. Always accompanied by `Retry-After`. */
 export class RateLimitError extends AppError {
   readonly status = 429;

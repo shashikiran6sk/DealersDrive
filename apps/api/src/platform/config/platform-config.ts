@@ -41,6 +41,36 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
   },
   { key: 'billing.gstPercent', label: 'GST percent', type: 'number', value: 18 },
 
+  // ── RC lookup and the vehicle report ─────────────────────────────────────
+  //
+  // Two knobs here are spend controls and one is a privacy decision. The
+  // privacy one is `report.publicDetail`: OFF publishes aggregates and offence
+  // types, ON publishes the itemised challan list. It is config rather than
+  // code because it is a product judgement that may be revisited after seeing
+  // the summary in production — but flipping it widens what every public
+  // listing page discloses, so it is deliberately not a rendering choice a
+  // component can make (ARCHITECTURE §6.1).
+  { key: 'rcLookup.cacheDays', label: 'RC spec cache (days)', type: 'number', value: 30 },
+  {
+    key: 'rcLookup.missCacheMinutes',
+    label: 'RC not-found cache (min)',
+    type: 'number',
+    value: 60,
+  },
+  {
+    key: 'rcLookup.dailyCapPerDealer',
+    label: 'RC lookups per dealer per day',
+    type: 'number',
+    value: 60,
+  },
+  { key: 'report.freshnessHours', label: 'Report freshness (hours)', type: 'number', value: 24 },
+  {
+    key: 'report.publicDetail',
+    label: 'Show itemised challans to buyers',
+    type: 'boolean',
+    value: false,
+  },
+
   // ── feature flags ────────────────────────────────────────────────────────
   //
   // Flags are platform config, not a second system. They get the same admin
@@ -53,6 +83,29 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
   // for a bad release is flipping it back, and that has to work without a
   // deploy, a migration or a data repair.
   { key: 'feature.savedSearches', label: 'Saved searches', type: 'boolean', value: false },
+  /**
+   * Off: `/dealer/vehicles/new` opens on today's seven-dropdown Basics form.
+   * On: it opens on the registration field, with the manual form one click
+   * away. Both positions are complete flows, which is what makes this a safe
+   * rollback rather than a half-disabled feature.
+   */
+  {
+    key: 'feature.rcLookup',
+    label: 'Add a vehicle by number plate',
+    type: 'boolean',
+    value: false,
+  },
+  /**
+   * Independent of `feature.rcLookup` on purpose. If a wording problem
+   * surfaces on the public report, this pulls it from every buyer-facing page
+   * without touching intake — which is the rollback you actually want at 9pm.
+   */
+  {
+    key: 'feature.vehicleReport',
+    label: 'Vehicle records report',
+    type: 'boolean',
+    value: false,
+  },
   { key: 'feature.dealerAnalytics', label: 'Dealer analytics tab', type: 'boolean', value: false },
   {
     key: 'feature.similarCars',

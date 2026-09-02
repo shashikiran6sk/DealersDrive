@@ -69,7 +69,7 @@ export function createPostgresCache(prisma: PrismaClient): CachePort {
       return {
         count: Number(row.count),
         resetAt,
-        retryAfterSeconds: retryAfterSeconds(resetAt),
+        retryAfterSeconds: retryAfterSeconds(resetAt, Date.now(), windowSeconds),
       };
     },
 

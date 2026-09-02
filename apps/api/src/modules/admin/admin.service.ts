@@ -42,6 +42,7 @@ import type { PrismaClient } from '@prisma/client';
 import { env } from '../../config/env.js';
 import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
+import type { ReportsService } from '../reports/reports.facade.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
@@ -64,9 +65,18 @@ export interface AdminDeps {
   audit: AuditService;
   config: PlatformConfigService;
   storage: StoragePort;
+  /**
+   * The moderator gets the **dealer** projection, not the buyer's summary.
+   *
+   * A person approving a listing is the last human between a flagged vehicle
+   * and the public marketplace. Handing them the same redacted view a buyer
+   * gets would be withholding evidence from the one reader whose whole job is
+   * to weigh it.
+   */
+  reports: ReportsService;
 }
 
-export function createAdminService({ prisma, audit, config, storage }: AdminDeps) {
+export function createAdminService({ prisma, audit, config, storage, reports }: AdminDeps) {
   function assertPermission(admin: AdminPrincipal, permission: string): void {
     if (!admin.permissions.includes(permission)) {
       throw new ForbiddenError(`This action needs the ${permission} permission.`);
@@ -691,10 +701,19 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         .filter(Boolean)
         .join(' ');
       const status = displayStatus(vehicle, listing);
+      const report = await reports.latestDto(vehicle.id);
 
       return {
         listingId: listing.id,
         vehicleId: vehicle.id,
+        report,
+        /**
+         * A listing reaching review at all, while its report says
+         * BLACKLISTED, means someone overrode the submission blocker. The
+         * override is audit-logged either way; this flag is what puts it on
+         * the screen, where the next moderator will actually see it.
+         */
+        blacklistOverridden: report?.blacklistStatus === 'BLACKLISTED',
         status: listing.status,
         displayStatus: status,
         title,

@@ -156,12 +156,15 @@ export function createCatalogService({ repo, search, config }: CatalogDeps) {
     },
 
     async publicConfig(): Promise<PublicConfig> {
-      const [minPhotos, durationDays, enquiryRate, photoRequests] = await Promise.all([
-        config.number('listing.minPhotos'),
-        config.number('listing.durationDays'),
-        config.number('enquiry.rateLimitPerHour'),
-        config.boolean('photoRequests.enabled'),
-      ]);
+      const [minPhotos, durationDays, enquiryRate, photoRequests, rcLookup, vehicleReport] =
+        await Promise.all([
+          config.number('listing.minPhotos'),
+          config.number('listing.durationDays'),
+          config.number('enquiry.rateLimitPerHour'),
+          config.boolean('photoRequests.enabled'),
+          config.boolean('feature.rcLookup'),
+          config.boolean('feature.vehicleReport'),
+        ]);
 
       return {
         mediaBaseUrl: env.MEDIA_BASE_URL,
@@ -172,6 +175,11 @@ export function createCatalogService({ repo, search, config }: CatalogDeps) {
         listingDurationDays: durationDays,
         enquiryRateLimitPerHour: enquiryRate,
         photoRequestsEnabled: photoRequests,
+        // Which intake screen to open, and whether listing pages carry a
+        // records check. Both are read here rather than in the web app so a
+        // flag flip takes effect without a redeploy.
+        rcLookupEnabled: rcLookup,
+        vehicleReportEnabled: vehicleReport,
       };
     },
   };

@@ -10,6 +10,7 @@ import { logger } from '../telemetry/logger.js';
 import type { Queue } from './queue.js';
 import type { MediaService } from '../../modules/media/media.service.js';
 import type { SearchRepository } from '../../modules/search/search.repository.js';
+import type { VehiclesRepository } from '../../modules/vehicles/vehicles.facade.js';
 
 export interface HandlerDeps {
   prisma: PrismaClient;
@@ -20,6 +21,8 @@ export interface HandlerDeps {
   mailer: MailerPort;
   sms: SmsPort;
   cache: CachePort;
+  /** Only for the RC cache sweep — no job writes a vehicle. */
+  vehicles: VehiclesRepository;
 }
 
 /**
@@ -45,7 +48,7 @@ function jobId(data: Record<string, unknown>, key: string): string {
 }
 
 export async function registerHandlers(deps: HandlerDeps): Promise<void> {
-  const { prisma, queue, bus, search, media, mailer, sms, cache } = deps;
+  const { prisma, queue, bus, search, media, mailer, sms, cache, vehicles } = deps;
 
   /**
    * Expired rate-limit windows are already treated as absent, so this reclaims
@@ -55,6 +58,25 @@ export async function registerHandlers(deps: HandlerDeps): Promise<void> {
   await queue.work('cache.sweep-counters', async () => {
     const removed = await cache.sweep();
     if (removed > 0) logger.debug({ removed }, 'swept expired rate-limit windows');
+  });
+
+  /**
+   * Reclaims expired RC lookups.
+   *
+   * Daily rather than hourly: the table gains one row per distinct plate
+   * looked up, which is a few hundred a day at most — nothing like the
+   * per-request write rate the counter sweep exists for. An expired row is
+   * already treated as absent by `findRcLookup`, so this frees space rather
+   * than affecting correctness.
+   *
+   * It is also a retention control. These rows hold no personal data, but a
+   * cache that never expires slowly becomes a permanent register of every
+   * plate anyone asked about — which is precisely what the hashing was meant
+   * to prevent.
+   */
+  await queue.work('rc.sweep-lookups', async () => {
+    const removed = await vehicles.sweepRcLookups();
+    if (removed > 0) logger.debug({ removed }, 'swept expired rc lookups');
   });
 
   await queue.work('media.process', async (data) => {
@@ -361,4 +383,5 @@ export async function registerSchedules(queue: Queue): Promise<void> {
   // request, and letting a full day of them accumulate makes the sweep itself
   // the biggest delete the database sees.
   await queue.schedule('cache.sweep-counters', '5 * * * *');
+  await queue.schedule('rc.sweep-lookups', '45 3 * * *');
 }

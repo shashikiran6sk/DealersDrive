@@ -31,6 +31,18 @@ describe('retryAfterSeconds', () => {
   it('never reports zero or negative for a window already past', () => {
     expect(retryAfterSeconds(Date.now() - 5_000)).toBe(1);
   });
+
+  it('never reports longer than the window it belongs to', () => {
+    // The Postgres adapter reads `reset_at` off the database's clock and
+    // compares it to the application's. A node a millisecond behind its
+    // database would otherwise turn a 60-second window into a 61-second
+    // `Retry-After` — a header that outlives the window it describes.
+    expect(retryAfterSeconds(Date.now() + 60_001, Date.now(), 60)).toBe(60);
+  });
+
+  it('leaves an honest remainder alone', () => {
+    expect(retryAfterSeconds(Date.now() + 20_000, Date.now(), 60)).toBe(20);
+  });
 });
 
 describe('increment', () => {

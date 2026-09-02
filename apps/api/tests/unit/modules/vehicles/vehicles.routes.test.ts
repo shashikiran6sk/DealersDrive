@@ -20,7 +20,12 @@ import {
  * nothing in a diff. So this file reads the wiring rather than the responses.
  */
 
-const router = createVehiclesRouter({} as never);
+// A limiter that counts nothing. This file asserts the *shape* of the chain;
+// `rate-limit.test.ts` is what proves the windows themselves work.
+const passthroughLimiter = (() => () => (_req: never, _res: never, next: () => void) =>
+  next()) as never;
+
+const router = createVehiclesRouter({} as never, passthroughLimiter);
 
 describe('the surface', () => {
   it('declares exactly the inventory endpoints, and no more', () => {
@@ -28,6 +33,7 @@ describe('the surface', () => {
       [
         'GET /vehicles',
         'POST /vehicles',
+        'POST /vehicles/lookup',
         'GET /vehicles/:id',
         'PATCH /vehicles/:id',
         'DELETE /vehicles/:id',

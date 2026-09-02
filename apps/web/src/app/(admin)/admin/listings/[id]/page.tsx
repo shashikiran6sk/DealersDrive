@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { ReportPanel } from '@/features/report/report-panel';
 import { Banner, ImageSlot, StatusTag, Tag } from '@/components/ui/primitives';
 import { ReviewActions } from '@/features/admin/review-actions';
 import { ModerationStrip } from '@/features/admin/moderation-strip';
@@ -103,6 +104,21 @@ export default async function ReviewListingPage({ params }: { params: Promise<{ 
               </dd>
             </div>
           </dl>
+
+          {/*
+            The moderator gets the itemised view, not the buyer's summary.
+            They are the last human between a flagged vehicle and the public
+            marketplace, and handing them the redacted version would be
+            withholding evidence from the one reader whose job is to weigh it.
+
+            A null report is not a clean one — it means no lookup has run, and
+            the screen says so rather than staying silent.
+          */}
+          {listing.report ? (
+            <ReportPanel report={listing.report} />
+          ) : (
+            <Tag className="self-start text-[11px]">No records check on file</Tag>
+          )}
 
           {listing.description ? (
             <div>

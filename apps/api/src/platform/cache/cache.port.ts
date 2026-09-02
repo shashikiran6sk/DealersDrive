@@ -84,7 +84,22 @@ export interface CachePort {
   close(): Promise<void>;
 }
 
-/** Shared by both adapters so a `Retry-After` never reads `0` or a negative. */
-export function retryAfterSeconds(resetAt: number, now: number = Date.now()): number {
-  return Math.max(1, Math.ceil((resetAt - now) / 1000));
+/**
+ * Shared by both adapters so a `Retry-After` never reads `0` or a negative.
+ *
+ * `windowSeconds` is an upper bound rather than decoration. The Postgres
+ * adapter reads `reset_at` off the *database's* clock and compares it to the
+ * application's, so a node running a millisecond behind its database turns a
+ * 60-second window into a 61-second wait — a header that outlives the window
+ * it describes, and a test that fails once a fortnight for no reason anyone
+ * can reproduce. Clamping is correct in both directions: whichever clock is
+ * ahead, no caller should ever be told to wait longer than the whole window.
+ */
+export function retryAfterSeconds(
+  resetAt: number,
+  now: number = Date.now(),
+  windowSeconds?: number,
+): number {
+  const remaining = Math.max(1, Math.ceil((resetAt - now) / 1000));
+  return windowSeconds === undefined ? remaining : Math.min(remaining, windowSeconds);
 }

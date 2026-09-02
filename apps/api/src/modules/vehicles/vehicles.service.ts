@@ -4,6 +4,8 @@ import {
   formatDate,
   formatKm,
   formatLakh,
+  BODY_TYPE_LABELS,
+  formatRupees,
   FUEL_LABELS,
   slugify,
   VEHICLE_WIZARD_STEPS,
@@ -23,10 +25,14 @@ import {
   type VehicleCompleteness,
   type VehicleMediaDto,
   type VehicleStepCompleteness,
+  type RcLookupInput,
+  type RcLookupResponse,
+  type VehicleReportDto,
 } from '@dealers-drive/contracts';
-import type { Listing, PrismaClient } from '@prisma/client';
+import { Prisma, type Listing, type PrismaClient, type VehicleReport } from '@prisma/client';
 
 import { getContext } from '../../middleware/request-context.js';
+import { logger } from '../../platform/telemetry/logger.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
 import { withTenant } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
@@ -35,6 +41,7 @@ import {
   DomainError,
   ForbiddenError,
   NotFoundError,
+  UpstreamUnavailableError,
 } from '../../platform/errors.js';
 import {
   currentBalance,
@@ -43,11 +50,29 @@ import {
   refreshActiveListings,
   refreshHeldCount,
 } from '../billing/billing.facade.js';
+import type { CatalogRepository } from '../catalog/catalog.facade.js';
 import type { DealersRepository } from '../dealers/dealers.facade.js';
+import type { ReportsService } from '../reports/reports.facade.js';
 import { displayStatus, transition } from '../listings/listings.facade.js';
 import { toMediaStatus } from '../media/media.facade.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import { mediaUrl } from '../../platform/media/urls.js';
+import { plateHash } from '../../platform/rc/plate-hash.js';
+import {
+  rankVariants,
+  resolveColourFamily,
+  resolveFuel,
+  resolveMake,
+  resolveModel,
+  resolveYear,
+  rtoCodeFromPlate,
+} from '../../platform/rc/rc-match.js';
+import {
+  RcLookupError,
+  type RcLookupPort,
+  type RcRecords,
+  type RcSpecs,
+} from '../../platform/rc/rc.port.js';
 import type { VehiclesRepository, VehicleWithRelations } from './vehicles.repository.js';
 
 export interface VehiclesDeps {
@@ -55,9 +80,28 @@ export interface VehiclesDeps {
   repo: VehiclesRepository;
   dealers: DealersRepository;
   config: PlatformConfigService;
+  /** The registration lookup. Mock outside production — see `rc/factory.ts`. */
+  rc: RcLookupPort;
+  reports: ReportsService;
+  /** Read-only here: the taxonomy an RC string is resolved against. */
+  catalog: CatalogRepository;
 }
 
-export function createVehiclesService({ prisma, repo, dealers, config }: VehiclesDeps) {
+function toDateOrNull(iso: string | null): Date | null {
+  if (!iso) return null;
+  const value = new Date(iso);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
+
+export function createVehiclesService({
+  prisma,
+  repo,
+  dealers,
+  config,
+  rc,
+  reports,
+  catalog,
+}: VehiclesDeps) {
   /** The live listing, if any — the newest that is not a dead end. */
   function liveListing(vehicle: VehicleWithRelations): Listing | null {
     return vehicle.listings[0] ?? null;
@@ -106,7 +150,10 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
    * when anything is missing, so skipping the UI by PATCHing the API directly
    * buys a dealer a draft they cannot publish rather than a shortcut.
    */
-  async function completeness(vehicle: VehicleWithRelations): Promise<VehicleCompleteness> {
+  async function completeness(
+    vehicle: VehicleWithRelations,
+    report?: VehicleReport | null,
+  ): Promise<VehicleCompleteness> {
     const minPhotos = await config.number('listing.minPhotos');
     const readyPhotos = vehicle.media.filter((entry) => entry.media.status === 'READY').length;
 
@@ -147,6 +194,33 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
     const percent = Math.round(((total - missing.length) / total) * 100);
 
     const blockers: VehicleCompleteness['blockers'] = [];
+
+    /**
+     * A vehicle the government has flagged does not go on the marketplace.
+     *
+     * This rides the existing blockers array rather than inventing a second
+     * enforcement path, which buys three properties for free: the wizard
+     * already renders blockers, `canSubmit` already goes false, and `submit()`
+     * below already refuses independently of the UI.
+     *
+     * The message says "contact us", not "rejected", on purpose. Blacklist
+     * flags carry real false positives — stale tax defaults, cleared theft
+     * reports an RTO never updated, NOCs for transfers that completed — and an
+     * automatic permanent rejection would strand honest dealers with no
+     * recourse. An admin can override it, and the override is audit-logged.
+     *
+     * `UNKNOWN` is deliberately not blocked. We could not read the records;
+     * that is our problem, not grounds to stop someone selling their car.
+     */
+    if (report?.blacklistStatus === 'BLACKLISTED') {
+      blockers.push({
+        code: 'VEHICLE_BLACKLISTED',
+        message:
+          'Government records flag this vehicle. Contact us before listing it — ' +
+          'we can help if the record is out of date.',
+      });
+    }
+
     if (readyPhotos < minPhotos) {
       blockers.push({
         code: 'TOO_FEW_PHOTOS',
@@ -170,6 +244,9 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
     const listing = liveListing(vehicle);
     const status = displayStatus(vehicle, listing);
     const balance = (await dealers.findById(vehicle.dealerId))?.creditBalance ?? 0;
+    // Read once and reused for both `completeness` (which needs the blacklist
+    // status) and the DTO, rather than fetched twice on every vehicle read.
+    const report = await reports.latest(vehicle.id);
     const title = [vehicle.year, vehicle.make.name, vehicle.model.name, vehicle.variant?.name]
       .filter(Boolean)
       .join(' ');
@@ -209,11 +286,278 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
       features: vehicle.features,
       photoCount: vehicle.media.filter((entry) => entry.media.status === 'READY').length,
       media: vehicle.media.map(toMediaDto(vehicle.primaryMediaId)),
-      completeness: await completeness(vehicle),
+      completeness: await completeness(vehicle, report),
       creditPreview: { balance, cost: 1, balanceAfterPublish: Math.max(0, balance - 1) },
       rejectionReason: listing?.rejectionReason ?? null,
       changeRequestNote: listing?.changeRequestNote ?? null,
+      rcVerifiedAt: vehicle.rcVerifiedAt?.toISOString() ?? null,
+      normsType: vehicle.normsType,
+      report:
+        report && (await config.boolean('feature.vehicleReport'))
+          ? await reports.toDealerDto(report)
+          : null,
     };
+  }
+
+  // ─────────── RC lookup helpers ─────────────────────────────────────────
+
+  function notFoundForPlate(): NotFoundError {
+    return new NotFoundError(
+      'We could not find a registration certificate for that number. ' +
+        'It may be very new, or recently transferred.',
+      { errors: [{ field: 'regNumber', code: 'RC_NOT_FOUND', message: 'No RC on record.' }] },
+    );
+  }
+
+  /**
+   * Provider failure → what the dealer is told.
+   *
+   * The distinction that matters: our exhausted credits and our un-whitelisted
+   * IP are **our** problems. They must never read as "there is something wrong
+   * with your vehicle" — the dealer sees generic unavailability and falls back
+   * to the manual form, while the operator gets paged by the adapter's log
+   * line. A dealer should never be able to tell our billing problem from a
+   * government server being slow.
+   */
+  function translateRcFailure(error: unknown): Error {
+    if (!(error instanceof RcLookupError)) {
+      return error instanceof Error ? error : new Error('Vehicle records lookup failed.');
+    }
+    if (error.kind === 'NOT_FOUND') return notFoundForPlate();
+    return new UpstreamUnavailableError(
+      error.kind === 'RATE_LIMITED'
+        ? 'The vehicle records service is busy. Try again shortly, or enter the details by hand.'
+        : 'Vehicle records are not responding right now. You can enter the details by hand.',
+      { code: 'RC_UNAVAILABLE' },
+    );
+  }
+
+  /** Remembers a miss briefly, so retyping a wrong plate does not re-bill us. */
+  async function cacheMiss(regHash: string): Promise<void> {
+    const minutes = await config.number('rcLookup.missCacheMinutes');
+    await repo.saveRcLookup({
+      regHash,
+      provider: rc.provider,
+      specs: {},
+      resolved: {},
+      records: Prisma.JsonNull,
+      expiresAt: new Date(Date.now() + minutes * 60 * 1000),
+      found: false,
+    });
+  }
+
+  /** Runs the pure resolver over the live catalogue. */
+  async function resolveBasics(specs: RcSpecs): Promise<RcLookupResponse['basics']> {
+    const makes = await catalog.taxonomyForMatching();
+    const make = resolveMake(specs, makes);
+    const year = resolveYear(specs);
+
+    const models = make.value ? (makes.find((row) => row.id === make.value)?.models ?? []) : [];
+    const model = resolveModel(specs.makerModel, models, year.value);
+
+    const variants = model.value ? await catalog.variantRowsForModel(model.value) : [];
+    const variant = rankVariants(specs, model.name, variants);
+
+    const bodyType = model.value
+      ? (models.find((row) => row.id === model.value)?.bodyType ?? null)
+      : null;
+
+    const fuel = resolveFuel(specs);
+
+    return {
+      makeId: make,
+      modelId: model,
+      variantId: variant,
+      year,
+      fuel: fuel
+        ? { value: fuel, name: FUEL_LABELS[fuel], confidence: 'EXACT', candidates: [] }
+        : { value: null, name: null, confidence: 'NONE', candidates: [] },
+      /**
+       * An RC does not record the gearbox. Not "we could not read it" — the
+       * field does not exist on the certificate, which is the single biggest
+       * reason the confirm step survives this feature.
+       */
+      transmission: { value: null, name: null, confidence: 'NONE', candidates: [] },
+      bodyType: bodyType
+        ? // Taken from our own model row, not the RC's body code — those are
+          // commercial-vehicle shaped and describe a Swift as a "SALOON".
+          {
+            value: bodyType,
+            name: BODY_TYPE_LABELS[bodyType],
+            confidence: 'LIKELY',
+            candidates: [],
+          }
+        : { value: null, name: null, confidence: 'NONE', candidates: [] },
+    };
+  }
+
+  async function resolveDetails(
+    specs: RcSpecs,
+    registrationNumber: string,
+  ): Promise<RcLookupResponse['details']> {
+    const family = resolveColourFamily(specs);
+    const colour = family ? await catalog.colorByFamily(family) : null;
+
+    // From the plate, not from the provider's RTO name: "VELLORE",
+    // "VELLORE RTO" and "RTO VELLORE" are one office spelled three ways.
+    const rtoCode = rtoCodeFromPlate(registrationNumber);
+    const rto = rtoCode ? await catalog.rtoByCode(rtoCode) : null;
+
+    return {
+      ownerNumber: specs.ownerNumber,
+      colorId: colour?.id ?? null,
+      colorName: colour?.name ?? null,
+      seats: specs.seatingCapacity,
+      // Only if we actually carry that RTO. A code we cannot resolve would
+      // fail the catalogue check at PATCH time and read as our bug.
+      rtoCode: rto?.code ?? null,
+      insuranceValidTill: null,
+      normsType: specs.normsType,
+    };
+  }
+
+  /** The columns `create` writes from a confirmed snapshot. */
+  async function detailColumnsFrom(
+    specs: RcSpecs,
+    registrationNumber: string | undefined,
+  ): Promise<Record<string, unknown>> {
+    const details = await resolveDetails(specs, registrationNumber ?? '');
+    return {
+      ...(details.ownerNumber !== null ? { ownerNumber: details.ownerNumber } : {}),
+      ...(details.colorId ? { colorId: details.colorId } : {}),
+      ...(details.seats !== null ? { seats: details.seats } : {}),
+      ...(details.rtoCode ? { rtoCode: details.rtoCode } : {}),
+      ...(details.normsType ? { normsType: details.normsType } : {}),
+    };
+  }
+
+  /**
+   * The cached lookup behind an `rcLookupId`, if it is genuinely this plate's.
+   *
+   * Returns null rather than throwing when the id does not match the
+   * registration being created. A mismatch is either a stale browser tab or
+   * someone trying to attach one car's records to another; neither deserves an
+   * error page, and both deserve to be ignored. The draft is still created —
+   * just without RC provenance, exactly as a hand-typed one would be.
+   */
+  async function loadSnapshot(
+    lookupId: string,
+    registrationNumber: string | null,
+  ): Promise<{ specs: RcSpecs; records: RcRecords | null } | null> {
+    if (!registrationNumber) return null;
+    const row = await repo.findRcLookupById(lookupId);
+    if (!row || !row.found) return null;
+    if (row.regHash !== plateHash(registrationNumber)) return null;
+
+    const freshnessHours = await config.number('report.freshnessHours');
+    const recordsFresh = Date.now() - row.fetchedAt.getTime() < freshnessHours * 60 * 60 * 1000;
+
+    return {
+      specs: row.specs as unknown as RcSpecs,
+      records: recordsFresh ? ((row.records as unknown as RcRecords | null) ?? null) : null,
+    };
+  }
+
+  /**
+   * A report shaped for display before any vehicle exists.
+   *
+   * The lookup screen shows challans and blacklist status while the dealer is
+   * still deciding whether to add the car — which is exactly when that
+   * information is most useful. Nothing is persisted; the ids are placeholders
+   * and `reports.toDealerDto` only reads the record fields.
+   */
+  function previewReport(records: RcRecords, fetchedAt: Date): VehicleReport {
+    const unpaid = records.challans.filter((row) => row.status === 'UNPAID');
+    return {
+      id: '00000000-0000-0000-0000-000000000000',
+      vehicleId: '00000000-0000-0000-0000-000000000000',
+      dealerId: '00000000-0000-0000-0000-000000000000',
+      provider: rc.provider,
+      fetchedAt,
+      blacklistStatus: records.blacklistStatus,
+      blacklistReasons: records.blacklistReasons,
+      nocIssuedTo: records.nocIssuedTo,
+      challansAvailable: records.challansAvailable,
+      challanCount: records.challans.length,
+      challanUnpaidCount: unpaid.length,
+      challanOutstandingPaise: BigInt(unpaid.reduce((sum, row) => sum + row.amountPaise, 0)),
+      challans: records.challans as unknown as Prisma.JsonValue,
+      financed: records.financed,
+      rcStatus: records.rcStatus,
+      insuranceUpto: toDateOrNull(records.insuranceUpto),
+      fitnessUpto: toDateOrNull(records.fitnessUpto),
+      pucUpto: toDateOrNull(records.pucUpto),
+      taxUpto: toDateOrNull(records.taxUpto),
+      publishedAt: null,
+    } satisfies VehicleReport;
+  }
+
+  /**
+   * What the dealer must be told but which blocks nothing.
+   *
+   * The transmission line is not an apology for a missing feature — it is the
+   * honest statement that a registration certificate does not record a
+   * gearbox, and a dealer who is not told will assume the pre-filled form is
+   * complete and publish a manual car as an automatic.
+   */
+  function advisoriesFor(
+    basics: RcLookupResponse['basics'],
+    records: RcRecords | null,
+    reportShown: boolean,
+  ): RcLookupResponse['advisories'] {
+    const advisories: RcLookupResponse['advisories'] = [];
+
+    advisories.push({
+      code: 'TRANSMISSION_UNKNOWN',
+      message: 'A registration certificate does not record the gearbox — please confirm it.',
+    });
+
+    if (basics.makeId.value === null) {
+      advisories.push({
+        code: 'MAKE_UNMATCHED',
+        message:
+          'We found the registration but do not carry that make yet. ' +
+          'Choose the closest match, or enter the details by hand.',
+      });
+    } else if (basics.modelId.confidence !== 'EXACT') {
+      advisories.push({
+        code: 'MODEL_UNCERTAIN',
+        message: 'Check the model — the registration record was not specific enough to be sure.',
+      });
+    }
+
+    if (!reportShown || !records) return advisories;
+
+    if (records.blacklistStatus === 'BLACKLISTED') {
+      advisories.push({
+        code: 'VEHICLE_BLACKLISTED',
+        message: 'Government records flag this vehicle. Contact us before listing it.',
+      });
+    }
+    if (records.blacklistStatus === 'NOC_ISSUED') {
+      advisories.push({
+        code: 'NOC_ISSUED',
+        message: 'An NOC has been issued for this vehicle — it is mid-transfer between states.',
+      });
+    }
+    if (!records.challansAvailable) {
+      advisories.push({
+        code: 'CHALLANS_UNAVAILABLE',
+        message: 'Challan records were not available for this state. This is not a clear record.',
+      });
+    } else {
+      const unpaid = records.challans.filter((row) => row.status === 'UNPAID');
+      if (unpaid.length > 0) {
+        advisories.push({
+          code: 'CHALLANS_OUTSTANDING',
+          message: `${formatRupees(
+            unpaid.reduce((sum, row) => sum + row.amountPaise, 0),
+          )} in unpaid challans. Clear these before listing.`,
+        });
+      }
+    }
+
+    return advisories;
   }
 
   return {
@@ -275,6 +619,115 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
       return toDto(vehicle);
     },
 
+    /**
+     * C21 — a registration number in, a proposed draft out.
+     *
+     * Costs money per call, which shapes three things: the flag is checked
+     * before anything else, a cached row short-circuits the provider entirely,
+     * and the route in front of this is rate-limited per dealer.
+     *
+     * Nothing is written to the vehicle here. This produces a *proposal* the
+     * dealer confirms — a lookup is not a commitment to list the car, and
+     * creating a draft per plate typed would fill an inventory with abandoned
+     * rows.
+     */
+    async lookup(dealerId: string, input: RcLookupInput): Promise<RcLookupResponse> {
+      if (!(await config.boolean('feature.rcLookup'))) {
+        throw new DomainError(
+          'RC_LOOKUP_DISABLED',
+          'Looking up a vehicle by number plate is not switched on.',
+        );
+      }
+
+      const reg = input.regNumber;
+      const hash = plateHash(reg);
+      const cached = await repo.findRcLookup(hash);
+
+      let specs: RcSpecs;
+      let records: RcRecords | null;
+      let lookupId: string;
+      let fetchedAt: Date;
+
+      if (cached) {
+        // A cached miss is still an answer: "we asked, there is no RC". It
+        // lives an hour rather than a month so a genuinely new registration is
+        // not invisible until next month.
+        if (!cached.found) throw notFoundForPlate();
+        specs = cached.specs as unknown as RcSpecs;
+        records = (cached.records as unknown as RcRecords | null) ?? null;
+        lookupId = cached.id;
+        fetchedAt = cached.fetchedAt;
+      } else {
+        let result;
+        try {
+          result = await rc.lookup(reg);
+        } catch (error) {
+          if (error instanceof RcLookupError && error.kind === 'NOT_FOUND') {
+            await cacheMiss(hash);
+            throw notFoundForPlate();
+          }
+          throw translateRcFailure(error);
+        }
+
+        specs = result.specs;
+        records = result.records;
+        const days = await config.number('rcLookup.cacheDays');
+        const saved = await repo.saveRcLookup({
+          regHash: hash,
+          provider: rc.provider,
+          specs: specs as unknown as Prisma.InputJsonValue,
+          resolved: {},
+          records: records as unknown as Prisma.InputJsonValue,
+          expiresAt: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
+          found: true,
+        });
+        lookupId = saved.id;
+        fetchedAt = saved.fetchedAt;
+      }
+
+      const basics = await resolveBasics(specs);
+      const details = await resolveDetails(specs, reg);
+
+      // Records ride along in the cache row but are only trusted while fresh.
+      // Past `report.freshnessHours` the lookup shows no report rather than a
+      // stale one — a records claim with a month-old date is worse than none.
+      const freshnessHours = await config.number('report.freshnessHours');
+      const recordsFresh = Date.now() - fetchedAt.getTime() < freshnessHours * 60 * 60 * 1000;
+      const reportEnabled = await config.boolean('feature.vehicleReport');
+
+      /**
+       * The cost, abuse and product-gap trail in one line.
+       *
+       * `matched: false` is the valuable field: grouped by `maker`, it is a
+       * free, continuously-updated backlog of which makes the catalogue is
+       * missing, sourced from cars dealers actually tried to list rather than
+       * from a guess about the market.
+       */
+      logger.info(
+        {
+          dealerId,
+          provider: rc.provider,
+          cached: cached !== null,
+          matched: basics.makeId.value !== null,
+          maker: specs.makerDescription,
+        },
+        'rc lookup',
+      );
+
+      return {
+        lookupId,
+        regNumber: reg,
+        cached: cached !== null,
+        basics,
+        details,
+        report:
+          reportEnabled && records && recordsFresh
+            ? await reports.toDealerDto(previewReport(records, fetchedAt))
+            : null,
+        advisories: advisoriesFor(basics, records, recordsFresh && reportEnabled),
+      };
+    },
+
     async create(dealerId: string, input: CreateVehicleInput): Promise<DealerVehicleDto> {
       await assertCatalogue({
         makeId: input.makeId,
@@ -282,18 +735,109 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
         variantId: input.variantId ?? null,
       });
 
-      const vehicle = await repo.create(dealerId, {
-        dealerId,
-        makeId: input.makeId,
-        modelId: input.modelId,
-        variantId: input.variantId ?? null,
-        year: input.year,
-        fuel: input.fuel,
-        transmission: input.transmission,
-        bodyType: input.bodyType,
-        status: 'DRAFT',
+      /**
+       * One live car per plate per dealer.
+       *
+       * The partial unique index added by the rc_lookup migration is the
+       * actual guarantee; this read exists so the dealer gets "you already
+       * have this car" with a link to it, rather than a constraint violation
+       * surfacing as a 500.
+       */
+      if (input.regNumberMasked) {
+        const existing = await repo.findByRegistration(dealerId, input.regNumberMasked);
+        if (existing) {
+          throw new ConflictError(
+            'DUPLICATE_REGISTRATION',
+            'You already have this car in your inventory.',
+            { errors: [{ field: 'regNumberMasked', code: 'DUPLICATE', message: existing.id }] },
+          );
+        }
+      }
+
+      /**
+       * The RC-derived detail fields are applied **here**, from the cached
+       * snapshot, rather than accepted from the client.
+       *
+       * The browser sends one id. The server re-reads what the provider
+       * actually said and writes it itself, so a crafted request cannot claim
+       * an RC reported one owner and full insurance. It also means the draft
+       * and its first report row land in one transaction — a vehicle created
+       * from a lookup never exists for a moment with no record of it.
+       */
+      const snapshot = input.rcLookupId
+        ? await loadSnapshot(input.rcLookupId, input.regNumberMasked ?? null)
+        : null;
+
+      const prefill = snapshot
+        ? await detailColumnsFrom(snapshot.specs, input.regNumberMasked)
+        : {};
+
+      const vehicle = await prisma.$transaction(async (tx) => {
+        const created = await repo.createIn(tx, dealerId, {
+          dealerId,
+          makeId: input.makeId,
+          modelId: input.modelId,
+          variantId: input.variantId ?? null,
+          year: input.year,
+          fuel: input.fuel,
+          transmission: input.transmission,
+          bodyType: input.bodyType,
+          status: 'DRAFT',
+          ...(input.regNumberMasked ? { regNumberMasked: input.regNumberMasked } : {}),
+          ...(snapshot ? { rcVerifiedAt: new Date() } : {}),
+          ...prefill,
+        });
+
+        if (snapshot?.records && (await config.boolean('feature.vehicleReport'))) {
+          await reports.append(tx, {
+            vehicleId: created.id,
+            dealerId,
+            records: snapshot.records,
+          });
+        }
+
+        return created;
       });
+
       return toDto(vehicle);
+    },
+
+    /** C22 — the dealer's records report for one of their vehicles. */
+    async report(dealerId: string, vehicleId: string): Promise<VehicleReportDto | null> {
+      const vehicle = await repo.findForDealer(dealerId, vehicleId);
+      if (!vehicle) throw new NotFoundError('That vehicle does not exist.');
+      return reports.latestDto(vehicleId);
+    },
+
+    /**
+     * C23 — force a re-fetch.
+     *
+     * Unlike the refresh inside `submit()`, this one surfaces its failure: the
+     * dealer pressed a button and deserves to know it did not work, rather
+     * than staring at an unchanged date wondering.
+     */
+    async refreshReport(dealerId: string, vehicleId: string): Promise<VehicleReportDto | null> {
+      const vehicle = await repo.findForDealer(dealerId, vehicleId);
+      if (!vehicle) throw new NotFoundError('That vehicle does not exist.');
+
+      if (!(await config.boolean('feature.vehicleReport'))) {
+        throw new DomainError('REPORT_DISABLED', 'Vehicle records are not switched on.');
+      }
+      if (!vehicle.regNumberMasked) {
+        throw new DomainError(
+          'NO_REGISTRATION',
+          'Add the registration number first — records are looked up by number plate.',
+        );
+      }
+
+      try {
+        const records = await reports.fetchRecords(vehicle.regNumberMasked);
+        await reports.append(prisma, { vehicleId, dealerId, records });
+      } catch (error) {
+        throw translateRcFailure(error);
+      }
+
+      return reports.latestDto(vehicleId);
     },
 
     async update(
@@ -336,6 +880,27 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
         ...(input.colorId === undefined ? {} : { colorId: input.colorId }),
         ...(input.cityId === undefined ? {} : { cityId: input.cityId }),
       });
+
+      /**
+       * The same one-live-car-per-plate rule `create` enforces, applied on the
+       * way in through the Details step. Most vehicles get their plate here
+       * rather than at creation — a dealer who skipped the lookup types it on
+       * this screen — so without this the partial unique index would surface
+       * as a 500 on the commonest path of the two.
+       *
+       * `vehicleId` is excluded: re-sending the plate already on this row is a
+       * dealer editing some other field, not a duplicate.
+       */
+      if (input.regNumberMasked) {
+        const clash = await repo.findByRegistration(dealerId, input.regNumberMasked, vehicleId);
+        if (clash) {
+          throw new ConflictError(
+            'DUPLICATE_REGISTRATION',
+            'Another car in your inventory already has this registration number.',
+            { errors: [{ field: 'regNumberMasked', code: 'DUPLICATE', message: clash.id }] },
+          );
+        }
+      }
 
       const updated = await repo.update(dealerId, vehicleId, {
         ...(input.makeId === undefined ? {} : { makeId: input.makeId }),
@@ -435,7 +1000,20 @@ export function createVehiclesService({ prisma, repo, dealers, config }: Vehicle
         throw new ConflictError('ALREADY_SUBMITTED', 'This vehicle already has a live listing.');
       }
 
-      const state = await completeness(vehicle);
+      /**
+       * Records are re-read here, not trusted from intake.
+       *
+       * A vehicle can be clear when a dealer adds it and flagged three weeks
+       * later when they finish the photos, and the report a moderator reviews
+       * — and a buyer eventually sees — must be the current one.
+       *
+       * `refreshIfStale` never throws: a records vendor having a bad afternoon
+       * must not stop a dealer publishing a car. It returns the freshest
+       * report it has, and a stale one with an honest `asOf` date is a worse
+       * report but a truthful one. A failed submission is a lost listing.
+       */
+      const report = await reports.refreshIfStale(vehicle.id, dealerId, vehicle.regNumberMasked);
+      const state = await completeness(vehicle, report);
       const photoBlocker = state.blockers.find((b) => b.code === 'TOO_FEW_PHOTOS');
       if (photoBlocker) {
         throw new DomainError('TOO_FEW_PHOTOS', photoBlocker.message, {
