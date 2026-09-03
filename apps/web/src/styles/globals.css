@@ -167,8 +167,8 @@
  * `@layer components` is built up one block at a time, each arriving with the
  * React component that wraps it, so a class and its component land together
  * and neither can be added without the other being reviewed:
- *   F009  .btn*, .dd-plate                     ← this PR
- *   F010  .tag*
+ *   F009  .btn*, .dd-plate
+ *   F010  .tag*                                  ← this PR
  *   F011  .blueprint, .corner, .card, .image-slot
  *   F012  .skeleton
  *   F013  .field, .input
@@ -284,6 +284,56 @@
     width: 5px;
     align-self: stretch;
     background: var(--color-accent);
+  }
+
+  /* Tags and status badges — §2.5. */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    padding: 3px 10px;
+    border-radius: var(--radius-tag);
+    white-space: nowrap;
+  }
+  .tag-accent {
+    background: var(--color-accent-100);
+    color: var(--color-accent-800);
+  }
+  .tag-neutral {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-800);
+  }
+  .tag-outline {
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent-700);
+    background: transparent;
+  }
+  .tag-ok {
+    background: var(--color-ok-bg);
+    color: var(--color-ok);
+  }
+  .tag-warn {
+    background: var(--color-warn-bg);
+    color: var(--color-warn);
+  }
+  .tag-err {
+    background: var(--color-err-bg);
+    color: var(--color-err);
+  }
+  /* Draft / Expired share the neutral fill; Expired takes the lighter ink. */
+  .tag-draft {
+    background: var(--color-neutral-200);
+    color: var(--color-neutral-800);
+  }
+  .tag-expired {
+    background: var(--color-neutral-200);
+    color: var(--color-neutral-700);
+  }
+  .tag-sold {
+    background: var(--color-accent-100);
+    color: var(--color-accent-800);
   }
 }
 

@@ -25,8 +25,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F006 — Health & readiness probes
 - [x] F007 — Design tokens & base stylesheet
 - [x] F008 — Web app shell & core libs
-- [~] F009 — UI primitives: action & identity
-- [ ] F010 — UI primitives: status & feedback
+- [x] F009 — UI primitives: action & identity
+- [~] F010 — UI primitives: status & feedback
 - [ ] F011 — UI primitives: structure
 - [ ] F012 — UI primitives: states
 - [ ] F013 — Form primitives

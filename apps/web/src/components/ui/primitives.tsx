@@ -1,7 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
+import type { StatusTone } from '@dealers-drive/contracts';
 
 /**
  * The primitives. Nothing in this file knows what a vehicle is — anything that
@@ -11,11 +12,10 @@ import { cn } from '@/lib/cn';
  * ── Reconstruction note ─────────────────────────────────────────────────────
  * This file holds 14 primitives in the baseline and is built up across four
  * PRs, each adding the components it owns together with their CSS layer:
- *   F009  Plate                                            ← this PR
- *   F010  StatusTag, Tag, Banner
+ *   F009  Plate
+ *   F010  StatusTag, Tag, Banner                            ← this PR
  *   F011  Blueprint, Corners, StatCard, ImageSlot, Avatar, LogoTile
  *   F012  EmptyState, ErrorState, SkeletonLines, Stepper
- * `StatusTone` is imported by F010, which is the first to need it.
  */
 /**
  * The registration plate — the signature element, in exactly four places:
@@ -48,5 +48,77 @@ export function Plate({
     <span className={cn(plate({ size }), className)} {...props}>
       {children}
     </span>
+  );
+}
+
+const TONE_CLASS: Record<StatusTone, string> = {
+  ok: 'tag-ok',
+  warn: 'tag-warn',
+  err: 'tag-err',
+  neutral: 'tag-neutral',
+  accent: 'tag-accent',
+};
+
+/** Status is never conveyed by colour alone — the label always carries it (§4.15). */
+export function StatusTag({
+  tone,
+  children,
+  className,
+}: {
+  tone: StatusTone;
+  children: ReactNode;
+  className?: string;
+}) {
+  return <span className={cn('tag', TONE_CLASS[tone], className)}>{children}</span>;
+}
+
+export function Tag({
+  variant = 'neutral',
+  className,
+  children,
+}: {
+  variant?: 'neutral' | 'accent' | 'outline';
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className={cn(
+        'tag',
+        variant === 'accent' ? 'tag-accent' : variant === 'outline' ? 'tag-outline' : 'tag-neutral',
+        className,
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** DESIGN-SPEC §2.15 — cleared on navigation, never auto-dismissed. */
+export function Banner({
+  tone,
+  title,
+  children,
+  action,
+  className,
+}: {
+  tone: 'ok' | 'warn' | 'err';
+  title?: string;
+  children?: ReactNode;
+  action?: ReactNode;
+  className?: string;
+}) {
+  const styles = {
+    ok: 'bg-(--color-ok-bg) text-(--color-ok) border-[color-mix(in_srgb,#0f7a5a_30%,transparent)]',
+    warn: 'bg-(--color-warn-bg) text-(--color-warn) border-[color-mix(in_srgb,#a15c00_30%,transparent)]',
+    err: 'bg-(--color-err-bg) text-(--color-err) border-[color-mix(in_srgb,#b3261e_30%,transparent)]',
+  }[tone];
+
+  return (
+    <div className={cn('border px-[14px] py-[10px] text-[13px]', styles, className)} role="status">
+      {title ? <div className="mb-[3px] text-[14px] font-semibold">{title}</div> : null}
+      {children ? <div className="ink-body">{children}</div> : null}
+      {action ? <div className="mt-[9px]">{action}</div> : null}
+    </div>
   );
 }
