@@ -5,7 +5,7 @@
   "description": "Dealers-Drive \u2014 B2B2C used-car marketplace monorepo",
   "packageManager": "pnpm@9.15.9",
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "turbo run dev",

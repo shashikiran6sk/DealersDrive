@@ -30,7 +30,7 @@ inventory; buyers browse publicly without an account.
 ## Stack
 
 Turborepo + pnpm · Next.js 15 (App Router, RSC) · Express 5 · PostgreSQL 16 +
-Prisma 6 · Zod 4 · Tailwind v4 · Node 22 · TypeScript 5.9
+Prisma 6 · Zod 4 · Tailwind v4 · Node 24 · TypeScript 5.9
 
 ## Getting started
 

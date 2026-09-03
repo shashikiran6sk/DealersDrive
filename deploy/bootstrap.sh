@@ -6,7 +6,7 @@
 #   git clone <your-repo-url> ~/dealers-drive
 #   bash ~/dealers-drive/deploy/bootstrap.sh
 #
-# Installs Node 22, pnpm, Docker, nginx and certbot, and adds swap so the
+# Installs Node 24, pnpm, Docker, nginx and certbot, and adds swap so the
 # Next.js build does not get OOM-killed on a 2 GB instance. Safe to re-run.
 #
 # It does NOT write .env, request a certificate or start the app — those need
@@ -31,9 +31,9 @@ else
   echo "swapfile already present, skipping"
 fi
 
-log "Node 22 (matches .nvmrc)"
-if ! command -v node >/dev/null || [[ "$(node -v)" != v22.* ]]; then
-  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+log "Node 24 (matches .nvmrc)"
+if ! command -v node >/dev/null || [[ "$(node -v)" != v24.* ]]; then
+  curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
   sudo apt-get install -y nodejs
 fi
 node -v

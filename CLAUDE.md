@@ -299,7 +299,7 @@ bypass the `Button` component, and `.table` was hand-rolled five separate times.
 | Jobs      | pg-boss on the same database                 | real queue semantics, zero new infrastructure             |
 | Contracts | Zod v4                                       | one schema validates the request _and_ types the response |
 
-Node 22, TypeScript 5.9, pnpm 9.15.9.
+Node 24 (LTS), TypeScript 5.9, pnpm 9.15.9.
 
 ---
 

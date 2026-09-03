@@ -83,7 +83,7 @@ bash ~/dealers-drive/deploy/bootstrap.sh
 exec sudo su -l ubuntu     # pick up the new docker group
 ```
 
-Installs Node 22, pnpm 9.15.9, Docker, nginx, certbot, 4 GB of swap and a ufw
+Installs Node 24, pnpm 9.15.9, Docker, nginx, certbot, 4 GB of swap and a ufw
 rule set matching the table above. Safe to re-run.
 
 ## 4. Configuration
