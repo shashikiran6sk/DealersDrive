@@ -49,6 +49,8 @@ function app(): Express {
     // counted would start refusing once a test dispatched the same path twice.
     rateLimit: () => (_req: Request, _res: Response, next: NextFunction) => next(),
     auth: service,
+    publicConfig: service,
+    locations: service,
     prisma: { $queryRaw: () => Promise.resolve([]) },
   } as unknown as Container);
 }

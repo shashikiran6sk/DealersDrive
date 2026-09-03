@@ -680,13 +680,39 @@ Terraform for AWS ECS Fargate behind an ALB (two services), plus the nginx and s
 
 **Survives decision D1.** Cities are not vehicle-catalogue data — they drive the header city selector, the dealer directory, search filters and dealer profiles.
 
-- **Status** implemented (currently inside the catalog module) · **Confidence** HIGH · **Depends on** F005
-- **Backend** a small `modules/locations/` extracted from `modules/catalog/`
+- **Status** implemented (currently inside the catalog module) · **Confidence** HIGH · **Depends on** F005, F036
+- **Backend** `modules/locations/{locations.repository,locations.service,locations.routes,locations.facade}.ts` — extracted from `modules/catalog/`
 - **API** `GET /v1/cities`
-- **DB** `City` — and `Rto`, **only if** RTO names are still wanted for display; `rtoCode` itself is derived from the plate and needs no table
-- **Tests** adapted from `tests/unit/modules/catalog/*`
-- **Components — Reused** `Combobox` _or_ a plain `<select>` — a city list is short enough that the combobox may be unnecessary once the 344-model list is gone (D1)
-- **Sandbox** city picker — short list / long list / none selected
+- **DB** `City` — landed early with F036, because `dealerInclude` needs the relation
+- **Contracts** `packages/contracts/src/public.ts` — `CitiesResponse`
+- **Tests** `tests/unit/modules/locations/*.test.ts` (3 files), adapted from `tests/unit/modules/catalog/*`
+- **Components** none · **Sandbox** none here — see below
+- **`Rto` does not come across.** The entry made it conditional on whether RTO
+  names are still wanted for display; nothing in the reconstruction reads one.
+  `rtoCode` is derived from the plate and needs no table, which the entry
+  already said. If a display name is ever wanted, it is a new decision.
+- **The sandbox line belonged to F074.** This feature has no frontend: the
+  component the entry described — short list / long list / none selected — is
+  `CitySelector`, which **F074** owns and whose entry already lists those
+  scenarios plus `open` and `fallback`. `Combobox` is not involved either way;
+  its fate is decided at F060.
+- **`packages/contracts/tests/unit/index.test.ts` lands here, sliced.** F001
+  deferred it because it asserts invariants across every schema and only two of
+  six modules existed. Its **barrel block** holds for any subset, and without it
+  every schema-only module sits at 0 % coverage: `auth.ts` had been there since
+  F014, `public.ts` joined it at F029, and the package had about two statements
+  of headroom left before the 90 % gate failed for a reason unrelated to
+  whatever feature happened to add the next schema. Porting the barrel block
+  takes contracts from 91.59 % to **99.15 % statements · 100 % lines**. The two
+  rule blocks still need `dealer.ts` and `admin.ts`.
+- ⚠️ **The city counts need `listing_search`, which is F076.**
+  `locations.service.ts` states the two methods it needs as a local
+  `CityCountsPort` rather than importing `SearchRepository`, and the container
+  passes `emptyIndex` until then. `SearchRepository` satisfies the port
+  structurally, so F076 swaps one argument in `container.ts` and changes
+  nothing else. Zero is the true answer in the meantime — with no index there
+  are no live listings — and two tests pin that the list is still complete and
+  every count is zero, so the swap is visible rather than silent.
 
 ### F027 — Rate limiting
 
