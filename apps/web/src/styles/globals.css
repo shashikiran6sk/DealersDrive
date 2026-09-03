@@ -169,8 +169,8 @@
  * and neither can be added without the other being reviewed:
  *   F009  .btn*, .dd-plate
  *   F010  .tag*
- *   F011  .blueprint, .corner, .card, .image-slot  ← this PR
- *   F012  .skeleton
+ *   F011  .blueprint, .corner, .card, .image-slot
+ *   F012  .skeleton                              ← this PR
  *   F013  .field, .input
  * `.table` and `.seg` have no component at all in the baseline — that is
  * finding D-B, and they arrive with the primitives created at sandbox step S6.
@@ -420,6 +420,12 @@
     font-size: 12px;
     text-align: center;
     padding: 8px;
+  }
+
+  /* Skeletons — static bars, no shimmer (§1.7, §2.20). */
+  .skeleton {
+    height: 11px;
+    background: var(--color-neutral-300);
   }
 }
 

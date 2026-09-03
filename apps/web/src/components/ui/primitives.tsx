@@ -14,8 +14,8 @@ import type { StatusTone } from '@dealers-drive/contracts';
  * PRs, each adding the components it owns together with their CSS layer:
  *   F009  Plate
  *   F010  StatusTag, Tag, Banner
- *   F011  Blueprint, Corners, StatCard, ImageSlot, Avatar, LogoTile  ← this PR
- *   F012  EmptyState, ErrorState, SkeletonLines, Stepper
+ *   F011  Blueprint, Corners, StatCard, ImageSlot, Avatar, LogoTile
+ *   F012  EmptyState, ErrorState, SkeletonLines, Stepper  ← this PR
  */
 /**
  * The registration plate — the signature element, in exactly four places:
@@ -250,5 +250,95 @@ export function ImageSlot({ label, className }: { label: string; className?: str
     <div className={cn('image-slot', className)} role="img" aria-label={label}>
       <span>{label}</span>
     </div>
+  );
+}
+
+/**
+ * DESIGN-SPEC §2.20 — every list has one: a blueprint shell, one sentence
+ * naming what is missing, and one primary recovery action.
+ */
+export function EmptyState({
+  title,
+  message,
+  action,
+  className,
+}: {
+  title: string;
+  message: string;
+  action?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <Blueprint className={cn('bg-white px-6 py-14 text-center', className)}>
+      <div className="font-heading text-[22px] font-semibold">{title}</div>
+      <p className="mx-auto mt-[7px] max-w-[46ch] text-[14px] ink-muted">{message}</p>
+      {action ? <div className="mt-[18px] flex justify-center gap-2">{action}</div> : null}
+    </Blueprint>
+  );
+}
+
+export function ErrorState({
+  title = 'Something went wrong',
+  message,
+  action,
+}: {
+  title?: string;
+  message: string;
+  action?: ReactNode;
+}) {
+  return (
+    <Blueprint className="bg-white px-6 py-14 text-center" role="alert">
+      <div className="font-heading text-[22px] font-semibold text-(--color-err)">{title}</div>
+      <p className="mx-auto mt-[7px] max-w-[46ch] text-[14px] ink-muted">{message}</p>
+      {action ? <div className="mt-[18px] flex justify-center gap-2">{action}</div> : null}
+    </Blueprint>
+  );
+}
+
+/** Static bars at the widths DESIGN-SPEC §2.20 specifies. No shimmer. */
+export function SkeletonLines({ className }: { className?: string }) {
+  return (
+    <div className={cn('flex flex-col gap-[6px]', className)}>
+      <div className="skeleton w-[70%]" />
+      <div className="skeleton w-[46%]" />
+      <div className="skeleton w-[88%]" />
+    </div>
+  );
+}
+
+/** DESIGN-SPEC §2.16 — onboarding and the add-vehicle wizard share it. */
+export function Stepper({
+  steps,
+  current,
+  className,
+}: {
+  steps: readonly string[];
+  current: number;
+  className?: string;
+}) {
+  return (
+    <ol className={cn('flex gap-[6px]', className)}>
+      {steps.map((label, index) => (
+        <li key={label} className="flex-1">
+          <div
+            className="h-[3px]"
+            style={{
+              background: index <= current ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+            }}
+          />
+          <div
+            className="mt-[7px] text-[11px]"
+            style={{
+              color:
+                index <= current
+                  ? 'var(--color-accent-700)'
+                  : 'color-mix(in srgb, var(--color-ink) 45%, transparent)',
+            }}
+          >
+            {label}
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }
