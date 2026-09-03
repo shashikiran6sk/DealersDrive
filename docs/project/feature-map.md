@@ -778,14 +778,43 @@ four wizard steps plus the shell, each independently reviewable.
 
 ### F036 — Dealer entity & tenant isolation
 
+⚠️ **Pulled forward, ahead of Tier 2** — the third of the four features the
+F015 blocker note names. `session.port.ts` (F015) types a `DealerPrincipal`
+around `DealerMember`, and F018's `auth.service.ts` needs `DealersService`.
+
 The `Dealer` aggregate, membership, and the tenancy rule that every dealer-scoped query is bound to `dealerId`.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F014, F016
+- **Status** implemented · **Confidence** HIGH · **Depends on** F014
 - **Backend** `modules/dealers/{dealers.repository,dealers.facade}.ts`, `src/platform/db/tenant-tx.ts`
 - **DB** `Dealer`, `DealerMember`; enums `DealerStatus`, `DealerRole`, `MemberStatus`
-- **Contracts** `packages/contracts/src/dealer.ts` (dealer identity portion)
-- **Tests** `tests/tenant-isolation.test.ts`, `tests/unit/modules/dealers/dealers.repository.test.ts`
+- **Tests** `tests/unit/modules/dealers/dealers.repository.test.ts`
 - **Components** none · **Sandbox** none
+- **The stated dependency on F016 was wrong for this slice.** F016 is needed by
+  `dealers.routes.ts`, which is not part of this entry. Nothing here imports a
+  guard, so F036 lands ahead of F015 and F016 rather than behind them — which
+  is what makes the blocker cascade resolvable at all.
+- **`DealerDocument` and `City` arrive here**, ahead of F040 and F026, because
+  `dealerInclude` pulls both relations in. Slicing the include would mean the
+  repository this feature exists to deliver did not match the baseline. F040
+  still brings the document service paths, the API and its tests; F026 still
+  brings the `locations` module, `GET /v1/cities` and the reference data.
+- ⚠️ **Two repository methods are sliced.** `newEnquiryCount` and
+  `pendingListingCount` query `Enquiry` (**F088**) and `Listing` (**F064**).
+  Neither model exists, so both return `0` and carry the baseline body in a
+  comment. With no rows to count zero is the true answer, but it is not the
+  baseline's code: restore both, and the three test cases that assert their
+  `where` clauses, with those two models.
+- **`tests/tenant-isolation.test.ts` is not here.** It is an integration test
+  that seeds dealers, vehicles and listings — F055 and F064. The F014 entry
+  already says so.
+- **`packages/contracts/src/dealer.ts` is not here either.** `DealerProfile`
+  and `UpdateDealerInput` are consumed by `dealers.service.ts`'s `toProfile`
+  and `update`, which belong to F046; landing the module now would be dead
+  code with no test to bring across. It arrives with its first consumer.
+- **`dealers.service.ts` is not here.** It imports `DealerPrincipal` from
+  `auth.facade.ts`, so it cannot precede F015/F016. Its `session()` method —
+  the only one F018 calls — lands with **F018**, along with the
+  `DealersService` re-export from the facade.
 
 ### F037 — Onboarding shell & step routing
 
