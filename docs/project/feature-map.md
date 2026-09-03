@@ -300,7 +300,13 @@ Express 5 app, env parsing, the DI container skeleton, and `routes.ts` — the s
 
 The error class hierarchy and the four middleware that turn a thrown error into an HTTP response.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F002
+- **Status** implemented · **Confidence** HIGH · **Depends on** F002, **F004**
+- ⚠️ **Ordering corrected: F004 must land first.** `middleware/error-handler.ts`
+  imports `platform/telemetry/logger.ts` and `middleware/request-context.ts`,
+  both of which F004 owns, while nothing in F004 imports anything of F003's.
+  The dependency runs F003 → F004, not the other way round. The F-numbers are
+  kept as they are — renumbering would invalidate every cross-reference in
+  these documents — so F004 simply merges before F003.
 - **Backend** `src/platform/errors.ts`, `src/middleware/{error-handler,not-found,validate}.ts`
 - **Tests** `tests/errors.test.ts`, `tests/unit/platform/errors.test.ts`, `tests/unit/middleware/{error-handler,not-found,validate}.test.ts`
 - **Components** none · **Sandbox** none
@@ -310,6 +316,8 @@ The error class hierarchy and the four middleware that turn a thrown error into 
 Per-request context, structured pino logging with redaction, and graceful shutdown draining.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F002
+- ⚠️ **Lands before F003**, which depends on this feature's logger and request
+  context. See the note on F003.
 - **Backend** `src/middleware/{request-context,request-logger}.ts`, `src/platform/telemetry/{logger,lifecycle}.ts`
 - **External** `pino`, `nanoid`
 - **Tests** `tests/unit/middleware/{request-context,request-logger}.test.ts`, `tests/unit/platform/telemetry/*.test.ts`

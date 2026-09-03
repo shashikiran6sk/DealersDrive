@@ -5,6 +5,8 @@ import helmet from 'helmet';
 
 import { env } from './config/env.js';
 import type { Container } from './container.js';
+import { requestContext } from './middleware/request-context.js';
+import { requestLogger } from './middleware/request-logger.js';
 import { createRoutes } from './routes.js';
 
 /**
@@ -14,19 +16,18 @@ import { createRoutes } from './routes.js';
  *
  * The middleware order IS the security model. Do not reorder casually:
  *   1. request-context  — first, so everything below has a traceId, including
- *                         errors thrown by the body parser            [F004]
+ *                         errors thrown by the body parser
  *   2. helmet / cors    — reject before doing any work
  *   3. body parsers     — bounded, so a huge body cannot exhaust memory
  *      + cookie parser    — before routes, so the session resolver can read it
- *   4. request-logger   — after context, so its lines carry the traceId [F004]
+ *   4. request-logger   — after context, so its lines carry the traceId
  *   5. routes
  *   6. not-found        — anything unmatched becomes a NotFoundError    [F003]
  *   7. error-handler    — last, always                                  [F003]
  *
  * ── Reconstruction note ───────────────────────────────────────────────────
- * The four bracketed layers are not here yet. F003 adds not-found and
- * error-handler; F004 adds request-context and request-logger. They must go
- * back in the positions the comment gives them — the ordering is the security
+ * Positions 6 and 7 are not here yet. F003 adds not-found and error-handler,
+ * in the positions the comment gives them — the ordering is the security
  * model, not a style choice.
  */
 export function createApp(container: Container): Express {
@@ -36,6 +37,8 @@ export function createApp(container: Container): Express {
   // real client, not the load balancer.
   app.set('trust proxy', 1);
   app.disable('x-powered-by');
+
+  app.use(requestContext);
 
   app.use(helmet());
   app.use(
@@ -53,6 +56,8 @@ export function createApp(container: Container): Express {
   // to sign anything, and a signing secret here would imply a guarantee the
   // session design does not rely on.
   app.use(cookieParser());
+
+  app.use(requestLogger);
 
   app.use(createRoutes(container));
 

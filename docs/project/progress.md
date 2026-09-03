@@ -18,9 +18,9 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 1 — Platform foundations
 
 - [x] F001 — Contracts package foundation · [#1](https://github.com/shashikiran6sk/DealersDrive/pull/1)
-- [~] F002 — API server bootstrap & mount table
-- [ ] F003 — Error taxonomy & validation middleware
-- [ ] F004 — Request context, logging & lifecycle
+- [x] F002 — API server bootstrap & mount table
+- [ ] F003 — Error taxonomy & validation middleware · ⚠️ lands after F004
+- [~] F004 — Request context, logging & lifecycle · ⚠️ lands before F003
 - [ ] F005 — Database connection & migration harness
 - [ ] F006 — Health & readiness probes
 - [ ] F007 — Design tokens & base stylesheet
