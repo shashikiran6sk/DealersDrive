@@ -145,9 +145,8 @@ and `apps/sandbox/package.json`:
   "name": "@dealers-drive/sandbox",
   "private": true,
   "scripts": {
-    "dev": "storybook dev -p 6006 --no-open",
-    "build": "storybook build -o storybook-static",
-    "test": "vitest run",
+    "sandbox": "storybook dev -p 6006 --no-open",
+    "build:sandbox": "storybook build -o storybook-static",
   },
 }
 ```
@@ -156,10 +155,24 @@ and `apps/sandbox/package.json`:
 pnpm sandbox      → http://localhost:6006
 ```
 
-**`sandbox` must NOT be added to `turbo.json`'s `dev` task.** `pnpm dev` at the
-root runs `turbo run dev`, which would otherwise start the sandbox alongside the
-web app and the API — breaking the "not started by the frontend" requirement.
-Keeping it a plain filtered pnpm script is what enforces the isolation.
+**The scripts are named `sandbox` and `build:sandbox`, not `dev` and `build`.**
+
+⚠️ **Corrected during S0.** This section originally specified `dev` and
+`build`, and said that keeping `sandbox` out of `turbo.json`'s `dev` task was
+what enforced the isolation. That is not how Turborepo works: a task in
+`turbo.json` applies to **every** workspace package that declares a script of
+that name, so a package with a `dev` script is picked up whether or not anyone
+adds it anywhere. Verified at S0 — with a `dev` script, `turbo run dev
+--dry-run` listed `@dealers-drive/sandbox` with a real command, so `pnpm dev`
+would have started Storybook alongside the API and the web app: precisely the
+requirement this document says must hold.
+
+Naming the scripts so they match no `turbo.json` task is what actually enforces
+it. `turbo run dev --dry-run` now reports the sandbox as `<NONEXISTENT>`, the
+same as `@dealers-drive/config`, and `turbo run build` likewise — so
+`storybook-static/` is never produced by a normal build.
+
+The isolation requirement was right. The mechanism given for it was wrong.
 
 `storybook build` exists so CI can typecheck and test the stories. Its output
 (`storybook-static/`) must be `.gitignore`d and must never be deployed.

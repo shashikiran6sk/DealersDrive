@@ -39,3 +39,6 @@ coverage/
 .docker-data/
 
 apps/api/.storage/
+
+# Sandbox build output — never deployed
+apps/sandbox/storybook-static/

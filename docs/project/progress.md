@@ -24,7 +24,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F005 — Database connection & migration harness
 - [x] F006 — Health & readiness probes
 - [x] F007 — Design tokens & base stylesheet
-- [~] F008 — Web app shell & core libs
+- [x] F008 — Web app shell & core libs
 - [ ] F009 — UI primitives: action & identity
 - [ ] F010 — UI primitives: status & feedback
 - [ ] F011 — UI primitives: structure
@@ -160,7 +160,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 Tracked here too, because they gate UI features rather than following them.
 
-- [ ] S0 — `apps/sandbox` skeleton, `pnpm sandbox` working
+- [~] S0 — `apps/sandbox` skeleton, `pnpm sandbox` working
 - [ ] S1 — the 16 primitives (ships inside F009–F013)
 - [ ] S2 — decorators + mock factories
 - [ ] S3 — `Combobox`, `PlateInput`, `VehicleCard`, `DirectoryCard`
