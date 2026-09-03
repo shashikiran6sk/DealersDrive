@@ -33,7 +33,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 2 — Identity & the first dealer-facing surface
 
-- [ ] F014 — User & session data model
+- [~] F014 — User & session data model
 - [ ] F015 — Session service & cookies
 - [ ] F016 — Auth guards & authorization model
 - [ ] F017 — Auth shell UI

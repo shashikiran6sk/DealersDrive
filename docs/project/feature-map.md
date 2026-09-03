@@ -448,7 +448,16 @@ Root layout, fonts, and the four pure helpers every feature uses.
 - **Status** implemented · **Confidence** HIGH · **Depends on** F005
 - **Backend** `prisma/schema.prisma` — `User`, `Session`, `OAuthIdentity`; enums `UserStatus`, `SessionScope`, `OAuthProvider`, `AdminRole`
 - **Contracts** `packages/contracts/src/auth.ts`
-- **Tests** `tests/tenant-isolation.test.ts` (partial)
+- **Migration** `prisma/migrations/<ts>_identity/`
+- ⚠️ **Migrations diverge from the baseline by design.** The baseline has 8
+  migrations, the first of which creates all 27 models at once — unusable for a
+  feature-by-feature reconstruction. Each feature generates its own instead, so
+  the schema is deployable at every commit. The end state of the _database_ is
+  identical; the migration history is not, and is better for it.
+- ⚠️ **`memberships DealerMember[]` on `User` waits for F036**, which adds the
+  `DealerMember` model.
+- **Tests** `tests/tenant-isolation.test.ts` — cannot land here; it needs
+  dealers, vehicles and listings. It belongs with F036.
 - **Components** none · **Sandbox** none
 
 ### F015 — Session service & cookies

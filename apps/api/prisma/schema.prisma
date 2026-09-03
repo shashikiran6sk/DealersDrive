@@ -1,10 +1,11 @@
 // Dealers-Drive — database schema.
 //
-// Datasource and generator only. Every model and enum arrives with the feature
-// that owns it, in the order set by `docs/project/feature-map.md`; the first is
-// F014 (User, Session). Money is BigInt paise everywhere, and every
+// Every model and enum arrives with the feature that owns it, in the order set
+// by `docs/project/feature-map.md`. Money is BigInt paise everywhere, and every
 // dealer-owned table carries `dealerId` as a first-class column so tenant
 // filtering is one indexed predicate and never a join.
+//
+// This is the CRITICAL shared file — roughly 25 features append to it.
 
 generator client {
   provider = "prisma-client-js"
@@ -13,4 +14,98 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ─────────── IDENTITY (dealers and admins only — no buyer accounts) ──────
+model User {
+  id              String     @id @default(uuid()) @db.Uuid
+  fullName        String?
+  roleTitle       String?
+  email           String?    @unique
+  /// Optional until onboarding collects it: a dealer arrives from Google with a
+  /// verified email and nothing else, and an unverified placeholder must never
+  /// occupy the unique index (ARCHITECTURE §8.1).
+  phone           String?    @unique
+  passwordHash    String? // ADMINS ONLY. Dealers sign in with Google.
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  status          UserStatus @default(ACTIVE)
+  isPlatformAdmin Boolean    @default(false)
+  adminRole       AdminRole?
+  totpSecret      String?
+  totpEnabledAt   DateTime?
+  lastLoginAt     DateTime?
+  createdAt       DateTime   @default(now())
+
+  sessions    Session[]
+  // `memberships DealerMember[]` returns with F036, which adds DealerMember.
+  identities  OAuthIdentity[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @db.Uuid
+  tokenHash String       @unique
+  /// A dealer session can never satisfy `requireAdmin`, and an admin session can
+  /// never satisfy `requireDealer` — even when one human holds both seats.
+  scope     SessionScope @default(DEALER)
+  expiresAt DateTime
+  revokedAt DateTime?
+  ip        String?
+  userAgent String?
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// A verified third-party identity. Dealers sign in with Google and are found
+/// by `provider + providerSubject` — Google's `sub`, which is stable — never by
+/// the email, which the account holder can change (ARCHITECTURE §8.1 r3).
+model OAuthIdentity {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @db.Uuid
+  provider        OAuthProvider
+  providerSubject String
+  /// The address Google asserted at the last sign-in. Informational: it is
+  /// refreshed on every login and is never the thing looked up.
+  email           String
+  emailVerified   Boolean       @default(false)
+  displayName     String?
+  pictureUrl      String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@index([userId])
+  @@map("oauth_identities")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum SessionScope {
+  DEALER
+  ADMIN
+}
+
+enum OAuthProvider {
+  GOOGLE
+}
+
+enum AdminRole {
+  SUPPORT
+  MODERATOR
+  SUPER_ADMIN
 }
