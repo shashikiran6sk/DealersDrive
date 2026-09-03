@@ -156,3 +156,20 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+
+// The transactional outbox (§19.2). A side effect is written here inside the
+// same transaction as the state change that caused it, so the two are exactly
+// as durable as each other; `outbox-publisher.ts` drains it onto the bus.
+model OutboxEvent {
+  id            BigInt    @id @default(autoincrement())
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  payload       Json
+  createdAt     DateTime  @default(now())
+  publishedAt   DateTime?
+  attempts      Int       @default(0)
+
+  @@index([publishedAt, id])
+  @@map("outbox_events")
+}

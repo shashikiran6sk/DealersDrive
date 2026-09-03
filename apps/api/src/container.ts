@@ -5,6 +5,10 @@ import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js'
 import type { CachePort } from './platform/cache/cache.port.js';
 import { createCache } from './platform/cache/factory.js';
 import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
+import { createEventBus, type EventBus } from './platform/events/bus.js';
+import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
+import { createQueue, type Queue } from './platform/jobs/queue.js';
+import { logger } from './platform/telemetry/logger.js';
 
 /**
  * The composition root — this replaces DI (ARCHITECTURE §5.3).
@@ -38,6 +42,10 @@ export interface Container {
   readonly cache: CachePort;
   /** Built here, like the guards, so no router reaches for a global counter. */
   readonly rateLimit: RateLimiter;
+  /** pg-boss, or the inline queue when `JOBS_ENABLED=false`. */
+  readonly queue: Queue;
+  readonly bus: EventBus;
+  readonly outbox: OutboxPublisher;
 }
 
 export interface ContainerOverrides {
@@ -46,11 +54,12 @@ export interface ContainerOverrides {
   readonly prisma?: PrismaClient;
   /** The integration suite pins this to memory so windows reset with the process. */
   readonly cache?: CachePort;
+  readonly queue?: Queue;
 }
 
 /**
- * The `async` is the contract, not an accident: F031 awaits the queue here.
- * Making it synchronous now would mean changing every call site back.
+ * The `async` is the contract, not an accident: the handler registration this
+ * awaits arrives with the features that own each handler.
  */
 // eslint-disable-next-line @typescript-eslint/require-await -- see above
 export async function buildContainer(overrides: ContainerOverrides = {}): Promise<Container> {
@@ -59,22 +68,35 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const prisma = overrides.prisma ?? createPrisma();
   const cache = overrides.cache ?? createCache(prisma);
   const rateLimit = createRateLimiter(cache);
+  const queue = overrides.queue ?? createQueue();
+  const bus = createEventBus();
+  const outbox = createOutboxPublisher(prisma, bus);
 
-  return { env: overrides.env ?? env, prisma, cache, rateLimit };
+  return { env: overrides.env ?? env, prisma, cache, rateLimit, queue, bus, outbox };
 }
 
 /** Starts the background machinery. Not called by tests, which drain inline. */
-export async function startBackground(_container: Container): Promise<void> {
-  // The queue, the outbox and the bucket check arrive with F031 and F032.
+export async function startBackground(container: Container): Promise<void> {
+  // The bucket check arrives with F032, and `registerSchedules` with the
+  // handlers — see the note on `handlers.ts` in the F031 feature-map entry.
+  if (!env.JOBS_ENABLED) return;
+
+  await container.queue.start();
+  container.outbox.start();
 }
 
 /** Releases everything the container holds open. Called on SIGTERM. */
 export async function closeContainer(container: Container): Promise<void> {
-  // The queue and outbox stop ahead of this once F031 lands.
+  container.outbox.stop();
+  try {
+    await container.queue.stop();
+  } catch (error) {
+    logger.warn({ err: error }, 'queue stop failed');
+  }
   try {
     await container.cache.close();
-  } catch {
-    // A cache that will not close must not stop the process from exiting.
+  } catch (error) {
+    logger.warn({ err: error }, 'cache close failed');
   }
   await container.prisma.$disconnect();
 }
