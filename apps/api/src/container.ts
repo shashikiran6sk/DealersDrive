@@ -1,4 +1,7 @@
+import type { PrismaClient } from '@prisma/client';
+
 import { env, type Env } from './config/env.js';
+import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
 
 /**
  * The composition root — this replaces DI (ARCHITECTURE §5.3).
@@ -27,21 +30,26 @@ import { env, type Env } from './config/env.js';
  */
 export interface Container {
   readonly env: Env;
+  readonly prisma: PrismaClient;
 }
 
 export interface ContainerOverrides {
-  /** Widens as the seams arrive: prisma at F005, sessions at F015, oauth at F018. */
+  /** Widens as the seams arrive: sessions at F015, oauth at F018, cache at F028. */
   readonly env?: Env;
+  readonly prisma?: PrismaClient;
 }
 
 /**
- * The `async` is the contract, not an accident: F005 awaits the Prisma
- * connection here and F031 the queue. Making it synchronous now would mean
- * changing every call site back two features later.
+ * The `async` is the contract, not an accident: F031 awaits the queue here.
+ * Making it synchronous now would mean changing every call site back.
  */
 // eslint-disable-next-line @typescript-eslint/require-await -- see above
 export async function buildContainer(overrides: ContainerOverrides = {}): Promise<Container> {
-  return { env: overrides.env ?? env };
+  installBigIntJson();
+
+  const prisma = overrides.prisma ?? createPrisma();
+
+  return { env: overrides.env ?? env, prisma };
 }
 
 /** Starts the background machinery. Not called by tests, which drain inline. */
@@ -50,6 +58,7 @@ export async function startBackground(_container: Container): Promise<void> {
 }
 
 /** Releases everything the container holds open. Called on SIGTERM. */
-export async function closeContainer(_container: Container): Promise<void> {
-  // Nothing is held open yet. F005 adds the Prisma disconnect.
+export async function closeContainer(container: Container): Promise<void> {
+  // The queue, outbox and cache close ahead of this once F028 and F031 land.
+  await container.prisma.$disconnect();
 }
