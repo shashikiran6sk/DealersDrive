@@ -2,7 +2,7 @@
   "name": "dealers-drive",
   "version": "0.0.0",
   "private": true,
-  "description": "Dealers-Drive — B2B2C used-car marketplace monorepo",
+  "description": "Dealers-Drive \u2014 B2B2C used-car marketplace monorepo",
   "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": ">=22"
@@ -14,6 +14,7 @@
     "lint:fix": "turbo run lint -- --fix",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "sandbox": "pnpm --filter @dealers-drive/sandbox sandbox",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "docs:check": "node scripts/check-docs.mjs",
