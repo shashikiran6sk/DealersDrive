@@ -725,12 +725,29 @@ A cache port with in-memory and Postgres adapters, plus counters and version key
 Runtime-editable settings and `feature.*` flags, version-polled so a flip propagates without a redeploy. Every flag must be safe in both positions at all times.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F028
-- **Backend** `src/platform/config/platform-config.ts`
+- **Backend** `src/platform/config/platform-config.ts`, and `modules/config/{config.service,config.routes,config.facade}.ts` — the D1 relocation below
 - **Frontend** `lib/config.ts`
 - **API** `GET /v1/config/public` _(relocated here from the deleted catalog module — D1)_
 - **DB** `PlatformConfig`, `CacheVersion`
-- **Tests** `tests/unit/platform/config/platform-config.test.ts`, web `tests/unit/lib/config.test.ts` ✅
+- **Contracts** `packages/contracts/src/public.ts` — `PublicConfig`, the first shape in that module
+- **Tests** `tests/unit/platform/config/platform-config.test.ts`, `tests/unit/modules/config/{config.service,config.routes}.test.ts`, web `tests/unit/lib/config.test.ts` ✅
 - **Components** none · **Sandbox** none — the admin editor UI is **F072**
+- **The relocation needed an address, and the entry did not give it one.**
+  `publicConfig()` and its route live on `catalog.service.ts` and
+  `catalog.routes.ts` in the baseline, both deleted by D1. They move to a small
+  `modules/config/`, body unchanged: the payload reads `PlatformConfig` and
+  `env` and touches no catalogue table, so it never belonged there.
+- **`lib/config.ts` and its test already landed with F008** and are unchanged
+  by this feature. The entry lists them because F029 owns them; nothing here
+  needed to move.
+- `platform-config.ts` is byte-identical to the baseline. It is the file the
+  version-poll design lives in — `CONFIG_VERSION_POLL_MS` against the
+  `CachePort`, inside a 5-minute TTL — and both failure paths are deliberately
+  fail-open, so a cache blip degrades to the TTL rather than to a table scan
+  per read.
+- ⚠️ **`packages/contracts/src/public.ts` starts here, sliced.** The baseline
+  file is ~700 lines describing the whole public surface. Each shape arrives
+  with the feature that first answers with it; `PublicConfig` is the first.
 
 ### F030 — Audit log
 

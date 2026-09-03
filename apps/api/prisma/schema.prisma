@@ -259,6 +259,17 @@ enum DocStatus {
   REJECTED
 }
 
+model PlatformConfig {
+  key       String   @id
+  value     Json
+  label     String?
+  valueType String   @default("string")
+  updatedBy String?  @db.Uuid
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_config")
+}
+
 // Cross-instance shared state — the `CachePort` backing store (§18).
 //
 // These two tables are cache, not record. Truncating them costs a rate-limit

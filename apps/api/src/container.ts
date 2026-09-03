@@ -5,6 +5,7 @@ import { createAuthMiddleware } from './middleware/auth.js';
 import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
 import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
 import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
+import { createConfigService, type ConfigService } from './modules/config/config.service.js';
 import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
 import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
 import type { OAuthProvider } from './modules/auth/oauth.port.js';
@@ -13,6 +14,10 @@ import { createSessionService, type SessionService } from './modules/auth/sessio
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
 import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
 import { createAuditService } from './platform/audit/audit.service.js';
+import {
+  createPlatformConfig,
+  type PlatformConfigService,
+} from './platform/config/platform-config.js';
 import type { CachePort } from './platform/cache/cache.port.js';
 import { createCache } from './platform/cache/factory.js';
 import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
@@ -56,6 +61,8 @@ export interface Container {
   readonly cache: CachePort;
   /** Built here, like the guards, so no router reaches for a global counter. */
   readonly rateLimit: RateLimiter;
+  /** Runtime-editable settings and `feature.*` flags, version-polled. */
+  readonly config: PlatformConfigService;
   /** pg-boss, or the inline queue when `JOBS_ENABLED=false`. */
   readonly queue: Queue;
   readonly bus: EventBus;
@@ -72,6 +79,7 @@ export interface Container {
   readonly guards: ReturnType<typeof createAuthMiddleware>;
   readonly auth: AuthService;
   readonly dealers: DealersService;
+  readonly publicConfig: ConfigService;
 }
 
 export interface ContainerOverrides {
@@ -99,6 +107,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const prisma = overrides.prisma ?? createPrisma();
   const cache = overrides.cache ?? createCache(prisma);
   const rateLimit = createRateLimiter(cache);
+  const config = createPlatformConfig(prisma, cache);
   const queue = overrides.queue ?? createQueue();
   const bus = createEventBus();
   const outbox = createOutboxPublisher(prisma, bus);
@@ -113,12 +122,14 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const dealersRepo = createDealersRepository(prisma);
   const dealers = createDealersService({ prisma, repo: dealersRepo });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
+  const publicConfig = createConfigService({ config });
 
   return {
     env: overrides.env ?? env,
     prisma,
     cache,
     rateLimit,
+    config,
     queue,
     bus,
     outbox,
@@ -129,6 +140,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     guards,
     auth,
     dealers,
+    publicConfig,
   };
 }
 

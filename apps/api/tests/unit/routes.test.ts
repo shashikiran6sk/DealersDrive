@@ -229,13 +229,14 @@ describe('the public surface', () => {
    */
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────
-   * The baseline lists eight public paths and asserts one of them is reached.
-   * They belong to F026, F029, F076, F085 and F088 and return with them;
-   * `GET /v1/catalog/bundle` does not return at all — decision D1. The three
-   * kept below are the ones the *existing* mounts could plausibly swallow,
-   * `/v1/dealers` above all.
+   * The baseline lists eight public paths. `GET /v1/config/public` is now
+   * mounted (F029) and asserted reachable below; the rest belong to F026,
+   * F076, F085 and F088 and return with them. `GET /v1/catalog/bundle` does
+   * not return at all — decision D1. The unmounted paths kept here are the
+   * ones the *existing* mounts could plausibly swallow, `/v1/dealers` above
+   * all.
    */
-  it.each(['GET /v1/dealers', 'GET /v1/vehicles', 'GET /v1/cities'])(
+  it.each(['GET /v1/config/public', 'GET /v1/dealers', 'GET /v1/vehicles', 'GET /v1/cities'])(
     'runs no guard for %s',
     async (signature) => {
       const [method, url] = signature.split(' ') as [string, string];
@@ -246,6 +247,15 @@ describe('the public surface', () => {
       expect(result.signedInGuard, signature).toBe(false);
     },
   );
+
+  /**
+   * Mounted *before* the auth routers, and this is what proves the order does
+   * not matter for it: a public path must be reachable with no session, and a
+   * mount that fell through to `/v1/auth`'s guarded half would 401 instead.
+   */
+  it('reaches the public config handler', async () => {
+    expect((await dispatch('GET', '/v1/config/public')).reached).toBe(true);
+  });
 });
 
 describe('what sits outside /v1', () => {

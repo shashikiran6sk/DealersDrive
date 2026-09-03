@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import type { Container } from './container.js';
 import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/auth.routes.js';
+import { createConfigRouter } from './modules/config/config.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 
 /**
@@ -36,6 +37,9 @@ export function createRoutes(container: Container): Router {
   router.use('/health', createHealthRouter(container));
 
   const v1 = Router();
+
+  // ── public ────────────────────────────────────────────────────────────
+  v1.use(createConfigRouter(container.publicConfig));
 
   // ── auth ──────────────────────────────────────────────────────────────
   // Two routers on one prefix, in this order. The first answers the paths that
