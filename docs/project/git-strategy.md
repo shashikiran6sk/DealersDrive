@@ -173,7 +173,7 @@ their own inventory; buyers browse without an account; dealers spend credits on
 metered actions; the platform never owns a vehicle.
 
 ```text
-pnpm + Turborepo monorepo (Node 22, TypeScript 5.9, pnpm 9.15.9)
+pnpm + Turborepo monorepo (Node 24, TypeScript 5.9, pnpm 9.15.9)
 
 apps/
   api/    Express 5 modular monolith  ·  ~21,200 LOC src  ·  97.7 % coverage

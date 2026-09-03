@@ -607,7 +607,7 @@ Multi-stage, workspace-aware builds for both apps. The build needs nothing runni
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F006, F018
 - **Files** `apps/api/Dockerfile`, `apps/web/Dockerfile`, `.dockerignore`
-- **External** Docker, `node:22-alpine`
+- **External** Docker, `node:24-alpine`
 - **Tests** the `docker` CI job builds both from a clean context
 - **Components** none · **Sandbox** none
 - The runner stage uses `pnpm install --frozen-lockfile --prod`, so devDependencies never ship — which is why the sandbox can never reach production.

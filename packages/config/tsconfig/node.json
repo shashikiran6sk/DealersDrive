@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Dealers-Drive Node 22 (ESM)",
+  "display": "Dealers-Drive Node 24 (ESM)",
   "extends": "./base.json",
   "compilerOptions": {
     "module": "NodeNext",
