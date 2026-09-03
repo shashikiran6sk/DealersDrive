@@ -26,16 +26,17 @@ import { createApp } from '../../src/server.js';
  * The middleware stack is complete as of F003, so every position above is
  * pinned. Two cases still wait on routes rather than on middleware:
  *
- *   'does not shadow a route that exists'          → F006, which mounts /health
  *   'turns a typo'd query parameter into a 400'    → the first route with a
  *                                                    query schema to validate
  *
- * Both assert that a real route survives the stack, and there is no real route
- * yet. They are not weakened versions of themselves in the meantime.
+ * It asserts that a real route survives the stack and rejects a typo'd key.
+ * It is not included in a weakened form in the meantime.
  */
 
 function app(): Express {
-  return createApp({} as unknown as Container);
+  const prisma = { $queryRaw: () => Promise.resolve([]) };
+
+  return createApp({ prisma } as unknown as Container);
 }
 
 describe('assembly', () => {
@@ -177,6 +178,13 @@ describe('not-found sits after the routes', () => {
     const response = await request(app()).post('/v1/typo');
 
     expect((response.body as { detail?: string }).detail).toContain('POST /v1/typo');
+  });
+
+  /** Mounted *after* the routes, so a real route is never shadowed by it. */
+  it('does not shadow a route that exists', async () => {
+    const response = await request(app()).get('/health/live');
+
+    expect(response.status).not.toBe(404);
   });
 });
 

@@ -344,8 +344,16 @@ Prisma client singleton, the tenant transaction wrapper, and a `schema.prisma` c
 `/health/live` (is the process serving) and `/health/ready` (can it reach its dependencies), plus the web app's own probe. Outside `/v1` on purpose: infrastructure probes it, not clients.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F003, F005
-- **Backend** `src/modules/health/{health.routes,health.docs}.ts`
-- **Frontend** `app/api/health/route.ts`
+- **Backend** `src/modules/health/health.routes.ts`
+- ⚠️ **`health.docs.ts` lands at F096**, which brings `docs/schemas.ts` and
+  `docs/spec.ts` that it imports.
+- ⚠️ **`app/api/health/route.ts` lands after F008**, which brings `lib/config`.
+- ⚠️ **The cache probe in `/health/ready` lands at F028.** The baseline probes
+  `container.cache.ping()` and reports `drivers.cache`; the cache is built at
+  F028. The gap is forced by the tier order, not chosen — F021 puts a
+  HEALTHCHECK in both Dockerfiles at Tier 3, so `/health/ready` must answer
+  before the Tier 4 cache exists. F028 must restore the probe, the
+  `drivers.cache` field and the `is 503 when the cache is down` test.
 - **API** `GET /health/live`, `GET /health/ready`, `GET /api/health`
 - **Tests** `tests/unit/modules/health/health.routes.test.ts`, web `tests/unit/app/api/health.test.ts`
 - **Components** none · **Sandbox** none

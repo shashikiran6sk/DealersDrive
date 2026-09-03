@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import type { Container } from './container.js';
+import { createHealthRouter } from './modules/health/health.routes.js';
 
 /**
  * Every module router is mounted here and nowhere else — one file to read to
@@ -21,13 +22,14 @@ import type { Container } from './container.js';
  * every version rather than belonging to one.
  *
  * ── Reconstruction note ───────────────────────────────────────────────────
- * F002 lands the mount table with nothing mounted on it. The `/v1` router
- * exists so the versioning boundary is established before anything depends on
- * it. Health arrives at F006, auth at F018, the dealer and admin chains with
+ * Health is mounted as of F006. Storage (`/uploads`) arrives at F032 and the
+ * docs router at F096; auth at F018, and the dealer and admin chains with
  * their guards at F016.
  */
-export function createRoutes(_container: Container): Router {
+export function createRoutes(container: Container): Router {
   const router = Router();
+
+  router.use('/health', createHealthRouter(container));
 
   const v1 = Router();
 

@@ -21,8 +21,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F002 — API server bootstrap & mount table
 - [x] F003 — Error taxonomy & validation middleware · ⚠️ lands after F004
 - [x] F004 — Request context, logging & lifecycle · ⚠️ lands before F003
-- [~] F005 — Database connection & migration harness
-- [ ] F006 — Health & readiness probes
+- [x] F005 — Database connection & migration harness
+- [~] F006 — Health & readiness probes
 - [ ] F007 — Design tokens & base stylesheet
 - [ ] F008 — Web app shell & core libs
 - [ ] F009 — UI primitives: action & identity
@@ -53,7 +53,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 - [ ] F026 — City & location reference data
 - [ ] F027 — Rate limiting
-- [ ] F028 — Caching layer
+- [ ] F028 — Caching layer · ⚠️ must restore the /health/ready cache probe (F006)
 - [ ] F029 — Platform config & feature flags
 - [ ] F030 — Audit log
 - [ ] F031 — Events, outbox & background jobs
