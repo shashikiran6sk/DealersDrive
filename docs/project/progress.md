@@ -60,14 +60,14 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 5 — Storage & media
 
-- [~] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
+- [x] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F033 — Presigned upload & commit
 - [ ] F034 — Image derivative pipeline
 - [ ] F035 — Media ordering & primary photo
 
 ## Tier 6 — Dealer onboarding
 
-- [ ] F036 — Dealer entity & tenant isolation
+- [~] F036 — Dealer entity & tenant isolation · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F037 — Onboarding shell & step routing
 - [ ] F038 — Onboarding — account step
 - [ ] F039 — Onboarding — business details step

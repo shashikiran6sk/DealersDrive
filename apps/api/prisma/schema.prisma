@@ -38,7 +38,7 @@ model User {
   createdAt       DateTime   @default(now())
 
   sessions    Session[]
-  // `memberships DealerMember[]` returns with F036, which adds DealerMember.
+  memberships DealerMember[]
   identities  OAuthIdentity[]
 
   @@map("users")
@@ -108,6 +108,155 @@ enum AdminRole {
   SUPPORT
   MODERATOR
   SUPER_ADMIN
+}
+
+// ─────────── DEALERS (the tenant) ────────────────────────────────────────
+model Dealer {
+  id                 String       @id @default(uuid()) @db.Uuid
+  slug               String       @unique
+  brandName          String
+  legalName          String
+  gstin              String?
+  pan                String?
+  about              String?
+  tagline            String?
+  logoMediaId        String?      @db.Uuid
+  coverMediaId       String?      @db.Uuid
+  status             DealerStatus @default(DRAFT)
+  cityId             String?      @db.Uuid
+  addressLine        String?
+  pincode            String?
+  lat                Float?
+  lng                Float?
+  contactPhone       String?
+  contactEmail       String?
+  landline           String?
+  workingHours       Json?
+  establishedYear    Int?
+  specialities       String[]
+  /// MIRROR of the newest CreditTransaction.balanceAfter. Never authoritative
+  /// on its own — every write path re-reads the ledger under FOR UPDATE (§26.2).
+  creditBalance      Int          @default(0)
+  creditsHeld        Int          @default(0)
+  activeListings     Int          @default(0)
+  medianResponseMins Int?
+  approvedAt         DateTime?
+  suspendedAt        DateTime?
+  statusReason       String?
+  createdAt          DateTime     @default(now())
+
+  city      City?            @relation(fields: [cityId], references: [id])
+  members   DealerMember[]
+  documents DealerDocument[]
+  // vehicles    Vehicle[]              ← returns with F055
+  // listings    Listing[]              ← returns with F064
+  // enquiries   Enquiry[]              ← returns with F088
+  // ledger      CreditTransaction[]    ← returns with F050
+  // orders      Order[]                ← returns with F051
+  // payments    Payment[]              ← returns with F052
+  // invoices    Invoice[]              ← returns with F053
+  // photoReqs   PhotoRequest[]         ← returns with its own feature
+  // viewsDaily  ListingViewDaily[]     ← returns with its own feature
+  // phoneReveal PhoneReveal[]          ← returns with F090
+
+  @@index([status, cityId])
+  @@map("dealers")
+}
+
+model DealerMember {
+  id          String       @id @default(uuid()) @db.Uuid
+  dealerId    String       @db.Uuid
+  userId      String       @db.Uuid
+  role        DealerRole
+  permissions String[]
+  status      MemberStatus @default(ACTIVE)
+
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dealerId, userId])
+  @@index([userId])
+  @@map("dealer_members")
+}
+
+// ─────────── KYC DOCUMENTS (onboarding step 3) ───────────────────────────
+// Private. Stored under a separate prefix with no public delivery route.
+//
+// The model arrives here rather than at F040 because `dealerInclude` in
+// `dealers.repository.ts` pulls `documents` in, and slicing the include would
+// mean the repository this feature exists to deliver did not match the
+// baseline. F040 brings the service paths, the API and the tests.
+model DealerDocument {
+  id              String        @id @default(uuid()) @db.Uuid
+  dealerId        String        @db.Uuid
+  type            DealerDocType
+  mediaId         String?       @db.Uuid
+  fileName        String?
+  status          DocStatus     @default(REQUIRED)
+  rejectionReason String?
+  reviewedBy      String?       @db.Uuid
+  reviewedAt      DateTime?
+  createdAt       DateTime      @default(now())
+
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@unique([dealerId, type])
+  @@index([status, createdAt])
+  @@map("dealer_documents")
+}
+
+// ─────────── LOCATIONS ───────────────────────────────────────────────────
+// `City` arrives here for the same reason `DealerDocument` does: `Dealer.city`
+// is part of `dealerInclude`. F026 owns the `locations` module, `GET /v1/cities`
+// and the reference data itself; this is the table those need.
+model City {
+  id       String  @id @default(uuid()) @db.Uuid
+  slug     String  @unique
+  name     String
+  state    String
+  lat      Float
+  lng      Float
+  isActive Boolean @default(true)
+
+  dealers Dealer[]
+  // vehicles Vehicle[]   ← returns with F055
+
+  @@map("cities")
+}
+
+enum DealerStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+  REJECTED
+  CLOSED
+}
+
+enum DealerRole {
+  OWNER
+  MANAGER
+  SALES
+}
+
+enum MemberStatus {
+  ACTIVE
+  INVITED
+  REMOVED
+}
+
+enum DealerDocType {
+  GST_CERTIFICATE
+  PAN_CARD
+  ADDRESS_PROOF
+}
+
+enum DocStatus {
+  REQUIRED
+  UPLOADING
+  UPLOADED
+  VERIFIED
+  REJECTED
 }
 
 // Cross-instance shared state — the `CachePort` backing store (§18).
