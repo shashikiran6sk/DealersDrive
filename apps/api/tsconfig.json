@@ -1,0 +1,16 @@
+{
+  "extends": "@dealers-drive/config/tsconfig/node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "//": "The checking project: everything the linter and `typecheck` must see, tests included. `tsconfig.build.json` is the narrower one that emits dist.",
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "prisma/**/*.ts",
+    "scripts/**/*.ts",
+    "vitest.config.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

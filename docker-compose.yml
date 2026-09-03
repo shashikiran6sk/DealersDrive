@@ -1,0 +1,268 @@
+# ---------------------------------------------------------------------------
+# Dealers-Drive — local development stack.
+#
+# Two ways to use this file:
+#
+#   docker compose up -d                      backing services only (Postgres,
+#                                             MinIO, Mailpit). Run the apps on
+#                                             the host with `pnpm dev`.
+#
+#   docker compose --profile app up -d --build
+#                                             backing services + migrations +
+#                                             API + the web app, in one command.
+#                                             `pnpm app:up` adds the readiness
+#                                             wait and the optional seed.
+#
+# The app services carry `profiles: [app]`, which is why the first command
+# still starts exactly what it always started. `pnpm infra:up` is unchanged.
+#
+# For a real deployment behind a domain see deploy/docker-compose.prod.yml,
+# which publishes every port on 127.0.0.1 and takes its credentials from .env.
+# ---------------------------------------------------------------------------
+name: dealers-drive
+
+# The API's environment, shared by the api, migrate and seed services so the
+# three can never disagree about which database they are pointed at.
+x-api-env: &api-env
+  # NOT production: `apps/api/src/config/env.ts` refuses the local-default
+  # SESSION_SECRET, refuses STORAGE_DRIVER=local, and requires Google OAuth
+  # credentials once NODE_ENV=production. Those guards are correct — this is a
+  # laptop, so the container runs the *production build* in development mode.
+  # Flip it only once every value in `deploy/env.production.example` is real.
+  NODE_ENV: development
+  APP_ENV: local
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+  PORT: 4000
+  HOST: 0.0.0.0
+
+  # `postgres` and `minio` are Docker DNS names, resolvable only inside this
+  # network. Nothing on the host uses these URLs.
+  DATABASE_URL: postgresql://dealersdrive:dealersdrive@postgres:5432/dealersdrive
+
+  # Browser-facing, so these are host URLs even though the API is in a
+  # container: WEB_ORIGIN is matched against the browser's Origin header, and
+  # API_BASE_URL is what presigned upload URLs are built from.
+  WEB_ORIGIN: http://localhost:3000
+  WEB_BASE_URL: http://localhost:3000
+  API_BASE_URL: http://localhost:4000
+  MEDIA_BASE_URL: http://localhost:4000/media
+
+  # Read from your root .env if present. Without them everything works except
+  # the "Continue with Google" button, which answers with a configuration error
+  # naming exactly what to set.
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+  GOOGLE_CALLBACK_URL: http://localhost:4000/v1/auth/google/callback
+
+  AUTH_MODE: cookie
+  SESSION_SECRET: dealers-drive-local-session-secret
+  DEV_DEALER_SLUG: sri-lakshmi-motors
+  DEV_ADMIN_EMAIL: ${DEV_ADMIN_EMAIL:-ops@dealers-drive.in}
+  DEV_ADMIN_PASSWORD: ${DEV_ADMIN_PASSWORD:-dealers-drive-local-admin}
+
+  # `local` by default, and deliberately.
+  #
+  # A presigned S3 URL is signed over its *host*, so a URL the API signs as
+  # `http://minio:9000/...` is rejected when the browser sends it to
+  # `localhost:9000` — the signature covers a different Host header. The local
+  # driver has no such problem: it signs `http://localhost:4000/uploads?...`,
+  # which the browser can reach, and the API terminates the PUT itself.
+  #
+  # To exercise the real S3 adapter instead, add `127.0.0.1 minio` to your
+  # /etc/hosts (so one hostname resolves from both sides) and start with
+  # `DOCKER_STORAGE_DRIVER=minio docker compose --profile app up -d`.
+  STORAGE_DRIVER: ${DOCKER_STORAGE_DRIVER:-local}
+  STORAGE_LOCAL_DIR: /app/.storage
+  S3_ENDPOINT: http://minio:9000
+  S3_REGION: auto
+  S3_BUCKET: dealers-drive
+  S3_ACCESS_KEY_ID: dealersdrive
+  S3_SECRET_ACCESS_KEY: dealersdrive
+  S3_FORCE_PATH_STYLE: 'true'
+  UPLOAD_SIGNING_SECRET: dealers-drive-local-upload-secret
+
+  PAYMENT_PROVIDER: development
+  # `console` is the only mailer that exists — there is no SMTP adapter, so
+  # Mailpit below receives nothing today. It stays for the day one is written.
+  MAIL_DRIVER: console
+  SMS_DRIVER: console
+
+  JOBS_ENABLED: 'true'
+  WORKER_INLINE: 'true'
+  RATE_LIMIT_ENABLED: 'true'
+  DOCS_ENABLED: 'true'
+
+  # Where rate-limit windows and the config-cache version live.
+  #
+  # `postgres` here even though this is one container, and deliberately: it is
+  # the driver production uses, so the atomic upsert and the sweeper are
+  # exercised on a laptop rather than first meeting reality in ECS. `memory` is
+  # correct for `pnpm dev` on the host, where there is nothing to share with.
+  CACHE_DRIVER: ${DOCKER_CACHE_DRIVER:-postgres}
+  CONFIG_VERSION_POLL_MS: 10000
+
+  # Zero drain locally: nothing is load-balancing this container, so the pause
+  # that lets a target group notice would only make Ctrl-C feel broken.
+  SHUTDOWN_DRAIN_MS: 0
+  SHUTDOWN_TIMEOUT_MS: 15000
+
+services:
+  # ── backing services (no profile: these start with a bare `up`) ───────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: dd-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dealersdrive
+      POSTGRES_PASSWORD: dealersdrive
+      POSTGRES_DB: dealersdrive
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dealersdrive -d dealersdrive']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  minio:
+    image: minio/minio:latest
+    container_name: dd-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: dealersdrive
+      MINIO_ROOT_PASSWORD: dealersdrive
+      # The browser PUTs photos straight to MinIO when STORAGE_DRIVER=minio, so
+      # the bucket has to answer a preflight from the site's own origin.
+      MINIO_API_CORS_ALLOW_ORIGIN: http://localhost:3000
+    ports:
+      - '9000:9000' # S3 API
+      - '9001:9001' # web console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: dd-mailpit
+    restart: unless-stopped
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    ports:
+      - '1025:1025' # SMTP
+      - '8025:8025' # web UI
+    volumes:
+      - mailpit-data:/data
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  # ── the application (profile: app) ────────────────────────────────────────
+
+  # Schema owner. Runs `prisma migrate deploy`, exits 0, and the API waits for
+  # that exit before it starts. Applying migrations from the API's own boot
+  # path would mean N replicas racing to alter the same tables.
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: migrator
+    image: dealers-drive-migrator:local
+    container_name: dd-migrate
+    profiles: [app]
+    restart: 'no'
+    environment: *api-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # One-shot, and never automatic: the seed TRUNCATES before it writes. Run it
+  # by hand on a fresh database — `docker compose run --rm seed`.
+  seed:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: migrator
+    image: dealers-drive-migrator:local
+    container_name: dd-seed
+    profiles: [seed]
+    restart: 'no'
+    command: ['pnpm', 'db:seed']
+    environment: *api-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: runner
+    image: dealers-drive-api:local
+    container_name: dd-api
+    profiles: [app]
+    restart: unless-stopped
+    environment: *api-env
+    ports:
+      - '4000:4000'
+    volumes:
+      # Only used when STORAGE_DRIVER=local. Named, not bind-mounted, so the
+      # `node` user owns it — see the mkdir in apps/api/Dockerfile.
+      - api-storage:/app/.storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  # Builds offline: every data-reading route is `force-dynamic`, so `next build`
+  # calls nothing. The image is identical to the one CI builds and promotes.
+  #
+  # `depends_on` is about *runtime*, not the build: a web container that starts
+  # before the API is answering serves 500s on its first requests.
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: runner
+    image: dealers-drive-web:local
+    container_name: dd-web
+    profiles: [app]
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      APP_ENV: local
+      PORT: 3000
+      # Server-to-server, over the Docker network: the browser never uses this
+      # value. Next is a BFF here — the browser talks to :3000 and Next talks
+      # to the API, so `api` resolving only inside the network is correct.
+      API_BASE_URL: http://api:4000
+      WEB_BASE_URL: http://localhost:3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  minio-data:
+  mailpit-data:
+  api-storage:

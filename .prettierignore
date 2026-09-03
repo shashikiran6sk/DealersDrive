@@ -1,0 +1,13 @@
+node_modules
+dist
+.next
+.turbo
+coverage
+pnpm-lock.yaml
+# Long-form hand-authored documents. Prettier reflows their tables and nested
+# lists in ways that make a diff unreadable and, in ARCHITECTURE.md, break the
+# section numbering that code comments cite by hand ("§20.1"). They are prose,
+# not source, and they are reviewed by reading them.
+docs/ARCHITECTURE.md
+docs/ENGINEER-ONBOARDING.md
+docs/MVP-SCOPE.md

@@ -1,0 +1,6 @@
+/*
+ * Design tokens (`@theme`), the base layer and the component layer all arrive
+ * with the features that own them — F007 for tokens and base, F009–F013 for the
+ * primitives. See `docs/project/feature-map.md`.
+ */
+@import 'tailwindcss';

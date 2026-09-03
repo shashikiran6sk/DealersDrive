@@ -1,0 +1,2312 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="./ds/industry.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=cabinet-grotesk@600,700,800&display=swap">
+<script src="./ds/image-slot.js"></script>
+<style>
+:root{
+  --color-bg:#f4f5f7; --color-surface:#eaecf0; --color-text:#14171c;
+  --color-accent:#2f55dd; --color-accent-2:#2f55dd;
+  --color-divider:color-mix(in srgb,#14171c 15%,transparent);
+  --color-accent-100:#eef2ff; --color-accent-200:#dbe3ff; --color-accent-300:#b9c8ff;
+  --color-accent-400:#8ba3f7; --color-accent-500:#5a79ec; --color-accent-600:#2f55dd;
+  --color-accent-700:#1e3fae; --color-accent-800:#172f7d; --color-accent-900:#101f4f;
+  --color-accent-2-100:#eef2ff; --color-accent-2-200:#dbe3ff; --color-accent-2-300:#b9c8ff;
+  --color-accent-2-400:#8ba3f7; --color-accent-2-500:#5a79ec; --color-accent-2-600:#2f55dd;
+  --color-accent-2-700:#1e3fae; --color-accent-2-800:#172f7d; --color-accent-2-900:#101f4f;
+  --font-heading:"Cabinet Grotesk","Inter",system-ui,sans-serif; --font-heading-weight:600;
+  --font-body:"Inter",system-ui,sans-serif;
+  --ok:#0f7a5a; --ok-bg:#e6f4ef; --warn:#a15c00; --warn-bg:#fbf0dd; --err:#b3261e; --err-bg:#fbe9e7;
+}
+body{-webkit-font-smoothing:antialiased;letter-spacing:-0.005em}
+h1,h2,h3,h4,h5,h6{letter-spacing:-0.02em}
+h6{letter-spacing:0.1em}
+.dd-plate{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--color-text);
+  background:var(--color-bg);padding:2px 9px 2px 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11px;letter-spacing:0.08em;line-height:1.5;color:var(--color-text)}
+.dd-plate::before{content:"";width:5px;align-self:stretch;background:var(--color-accent)}
+.dd-nav-item{display:block;width:100%;text-align:left;border:0;background:transparent;cursor:pointer;
+  font:inherit;font-size:13px;padding:5px 10px;color:color-mix(in srgb,var(--color-text) 70%,transparent)}
+.dd-nav-item:hover{background:color-mix(in srgb,var(--color-accent) 10%,transparent);color:var(--color-text)}
+.dd-nav-item[aria-current="true"]{background:var(--color-accent);color:#fff}
+image-slot{display:block;width:100%;height:100%;min-width:0}
+.dd-strip{display:flex;gap:8px;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;min-width:0}
+.dd-strip::-webkit-scrollbar{display:none}
+.dd-arrow{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border:1px solid var(--color-divider);
+  background:#fff;cursor:pointer;display:grid;place-items:center;font-size:14px;line-height:1;z-index:3;padding:0}
+.dd-arrow:hover{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
+.dd-rail{display:flex;flex-direction:column;gap:8px;overflow-y:auto;scrollbar-width:thin}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--color-neutral-400)}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;overflow:hidden;font-family:var(--font-body);background:var(--color-bg);color:var(--color-text)">
+
+  <aside style="width:236px;flex:none;border-right:1px solid var(--color-divider);background:#fff;display:flex;flex-direction:column;overflow:auto">
+    <div style="padding:16px 14px 12px;border-bottom:1px solid var(--color-divider)">
+      <div style="display:flex;align-items:center;gap:9px">
+        <span class="dd-plate" style="font-size:13px;font-weight:600;padding:4px 10px 4px 0">DD</span>
+        <span style="font-family:var(--font-heading);font-weight:700;font-size:17px">Dealers-Drive</span>
+      </div>
+      <div style="font-size:11px;margin-top:7px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">MVP prototype · v0.1</div>
+    </div>
+
+    <div style="padding:12px 14px;border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 55%,transparent)">Viewport</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-secondary" style="flex:1;font-size:12px;padding:5px 6px" onClick="{{ setDesktop }}">1440</button>
+        <button class="btn btn-secondary" style="flex:1;font-size:12px;padding:5px 6px" onClick="{{ setMobile }}">375</button>
+      </div>
+      <div style="font-size:11px;color:var(--color-accent-700)">{{ deviceLabel }}</div>
+    </div>
+
+    <nav style="padding:10px 8px 24px;display:flex;flex-direction:column;gap:14px">
+      <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:0 10px 5px;color:color-mix(in srgb,var(--color-text) 45%,transparent)">{{ g.label }}</div>
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+            <button class="dd-nav-item" aria-current="{{ it.active }}" onClick="{{ it.go }}">{{ it.label }}</button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+  </aside>
+
+  <main style="flex:1;overflow:auto;display:flex;justify-content:center;background:var(--color-neutral-200)">
+    <div style="{{ frameStyle }}">
+
+      <!-- ══ CUSTOMER ══ -->
+      <sc-if value="{{ isCustomer }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <header style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--color-divider)">
+            <div style="max-width:1280px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:28px">
+              <button style="display:flex;align-items:center;gap:9px;border:0;background:transparent;cursor:pointer;padding:0" onClick="{{ goHome }}">
+                <span class="dd-plate" style="font-size:12px;font-weight:600;padding:3px 9px 3px 0">DD</span>
+                <span style="font-family:var(--font-heading);font-weight:700;font-size:16px">Dealers-Drive</span>
+              </button>
+              <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;gap:22px;font-size:14px">
+                  <a href="#" style="color:inherit;text-decoration:none" onClick="{{ goCars }}">Buy cars</a>
+                  <a href="#" style="color:inherit;text-decoration:none" onClick="{{ goDealers }}">Dealers</a>
+                  <a href="#" style="color:inherit;text-decoration:none" onClick="{{ goSaved }}">Saved cars {{ savedBadge }}</a>
+                </div>
+              </sc-if>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+                <div style="position:relative">
+                  <button class="btn btn-secondary" style="display:flex;align-items:center;gap:7px" onClick="{{ toggleCityMenu }}">
+                    <span style="width:5px;height:14px;background:var(--color-accent);display:block"></span>{{ cityLabel }} ▾
+                  </button>
+                  <sc-if value="{{ cityOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:calc(100% + 6px);right:0;z-index:40;width:220px;background:#fff;border:1px solid var(--color-divider);box-shadow:var(--shadow-lg);padding:6px">
+                      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:6px 9px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Looking for cars in</div>
+                      <sc-for list="{{ cityOptions }}" as="c" hint-placeholder-count="6">
+                        <button class="dd-nav-item" aria-current="{{ c.active }}" style="display:flex;align-items:center;gap:8px" onClick="{{ c.select }}">
+                          <span style="flex:1">{{ c.label }}</span>
+                          <span style="font-size:11px;font-variant-numeric:tabular-nums;opacity:0.6">{{ c.count }}</span>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+                <button class="btn btn-secondary" style="border-color:transparent" onClick="{{ goSignIn }}">Dealer login</button>
+                <button class="btn btn-primary" onClick="{{ goSignUp }}">List your cars</button>
+              </div>
+            </div>
+          </header>
+
+          <!-- Home -->
+          <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <section style="border-bottom:1px solid var(--color-divider);background:#fff">
+                <div style="max-width:1280px;margin:0 auto;padding:56px 24px 44px;display:grid;gap:36px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:center">
+                  <div>
+                    <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:14px">Independent dealers · one platform</div>
+                    <h1 style="font-size:52px;line-height:1.02;margin:0 0 14px;max-width:12ch">Find your next car</h1>
+                    <p style="font-size:16px;max-width:46ch;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Every vehicle on Dealers-Drive is owned, priced and maintained by a verified independent dealer near you. We provide the rails — they provide the car.</p>
+                    <div class="blueprint" style="margin-top:26px;padding:14px;background:var(--color-bg)">
+                      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                      <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <input class="input" style="flex:1;min-width:220px;height:48px;font-size:16px" placeholder="Search make, model or variant — e.g. Swift VXi" value="{{ query }}" onChange="{{ setQuery }}" onKeyDown="{{ onQueryKey }}">
+                        <button class="btn btn-primary" style="height:48px;padding:0 26px;font-size:15px" onClick="{{ runSearch }}">Search cars</button>
+                      </div>
+                      <div style="font-size:12px;margin-top:9px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">Showing cars in {{ cityLabel }} · change the city from the header</div>
+                    </div>
+                    <div style="margin-top:18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                      <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">Popular:</span>
+                      <sc-for list="{{ popular }}" as="p" hint-placeholder-count="6">
+                        <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onClick="{{ p.go }}">{{ p.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div class="blueprint duotone" style="aspect-ratio:4/3;background:var(--color-surface)">
+                    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                    <image-slot id="dd-hero" shape="rect" placeholder="Hero — dealer forecourt, Vellore"></image-slot>
+                  </div>
+                </div>
+              </section>
+
+              <section style="max-width:1280px;margin:0 auto;padding:44px 24px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px">
+                  <h2 style="margin:0;font-size:28px">Featured inventory</h2>
+                  <button class="btn btn-ghost" onClick="{{ goCars }}">View all {{ activeCount }} cars →</button>
+                </div>
+                <div style="display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(262px,1fr))">
+                  <sc-for list="{{ featured }}" as="v" hint-placeholder-count="4">
+                    <article class="card" style="padding:0;overflow:hidden;background:#fff;cursor:pointer" onClick="{{ v.open }}">
+                      <div style="position:relative;aspect-ratio:4/3;background:var(--color-surface);border-bottom:1px solid var(--color-divider)">
+                        <image-slot id="{{ v.slotId }}" shape="rect" placeholder="{{ v.slotHint }}"></image-slot>
+                        <span class="dd-plate" style="position:absolute;top:10px;left:10px;z-index:2">{{ v.year }}</span>
+                        <button style="position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;font-size:14px;line-height:1;color:{{ v.saveColor }}" onClick="{{ v.toggleSave }}">{{ v.saveIcon }}</button>
+                      </div>
+                      <div style="padding:12px 13px 14px;display:flex;flex-direction:column;gap:9px">
+                        <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;line-height:1.2">{{ v.name }}</div>
+                        <div style="display:flex;align-items:baseline;gap:9px">
+                          <span style="font-size:20px;font-weight:600;font-variant-numeric:tabular-nums">{{ v.priceLabel }}</span>
+                          <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ v.emiLabel }}</span>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">
+                          <span>{{ v.kmLabel }}</span><span>·</span><span>{{ v.fuel }}</span><span>·</span><span>{{ v.transmission }}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:7px;padding-top:9px;border-top:1px solid var(--color-divider)">
+                          <span style="width:20px;height:20px;flex:none;background:var(--color-accent-200);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--color-accent-800)">{{ v.dealerInitials }}</span>
+                          <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ v.dealer }}</span>
+                          <span class="tag tag-accent" style="font-size:10px">Verified</span>
+                        </div>
+                      </div>
+                    </article>
+                  </sc-for>
+                </div>
+              </section>
+
+              <section style="border-top:1px solid var(--color-divider);background:#fff">
+                <div style="max-width:1280px;margin:0 auto;padding:44px 24px">
+                  <h2 style="margin:0 0 20px;font-size:28px">Browse by body type</h2>
+                  <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+                    <sc-for list="{{ bodyTypes }}" as="b" hint-placeholder-count="5">
+                      <button class="blueprint" style="background:var(--color-bg);border:1px solid var(--color-divider);padding:18px 16px;text-align:left;cursor:pointer;font:inherit" onClick="{{ b.go }}">
+                        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                        <div style="font-family:var(--font-heading);font-weight:600;font-size:18px">{{ b.label }}</div>
+                        <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ b.count }} cars</div>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </section>
+
+              <section style="max-width:1280px;margin:0 auto;padding:44px 24px">
+                <h2 style="margin:0 0 20px;font-size:28px">Trusted dealers in Vellore</h2>
+                <div style="display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
+                  <sc-for list="{{ dealers }}" as="d" hint-placeholder-count="4">
+                    <div class="card" style="background:#fff;gap:10px;cursor:pointer" onClick="{{ d.open }}">
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <span style="width:36px;height:36px;flex:none;border:1px solid var(--color-divider);display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--color-accent-100);color:var(--color-accent-800)">{{ d.initials }}</span>
+                        <div>
+                          <div style="font-family:var(--font-heading);font-weight:600;font-size:15px">{{ d.name }}</div>
+                          <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ d.city }}</div>
+                        </div>
+                      </div>
+                      <div style="display:flex;gap:14px;font-size:12px;padding-top:9px;border-top:1px solid var(--color-divider)">
+                        <span><strong style="font-variant-numeric:tabular-nums">{{ d.cars }}</strong> cars</span>
+                        <span><strong>{{ d.years }}</strong> yrs</span>
+                        <span class="tag tag-accent" style="font-size:10px;margin-left:auto">Verified</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </section>
+
+              <section style="border-top:1px solid var(--color-divider);background:var(--color-accent-900);color:#fff">
+                <div style="max-width:1280px;margin:0 auto;padding:48px 24px">
+                  <h2 style="margin:0 0 24px;font-size:28px;color:#fff">Why Dealers-Drive</h2>
+                  <div style="display:grid;gap:26px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+                    <sc-for list="{{ whyPoints }}" as="w" hint-placeholder-count="5">
+                      <div style="border-top:1px solid rgba(255,255,255,0.25);padding-top:13px">
+                        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;opacity:0.6;margin-bottom:7px">{{ w.n }}</div>
+                        <div style="font-family:var(--font-heading);font-weight:600;font-size:17px;margin-bottom:5px">{{ w.title }}</div>
+                        <div style="font-size:13px;opacity:0.75">{{ w.body }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </sc-if>
+
+          <!-- Search results -->
+          <sc-if value="{{ isCars }}" hint-placeholder-val="{{ true }}">
+            <div style="max-width:1280px;margin:0 auto;padding:26px 24px 60px">
+              <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent);margin-bottom:10px">Home / Used cars / Vellore</div>
+              <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:18px">
+                <h1 style="margin:0;font-size:34px">Used cars in {{ cityLabel }}</h1>
+                <span style="font-size:14px;color:color-mix(in srgb,var(--color-text) 60%,transparent);font-variant-numeric:tabular-nums">{{ resultLabel }}</span>
+                <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                  <input class="input" style="width:auto;min-width:200px" placeholder="Search make or model" value="{{ query }}" onChange="{{ setQuery }}">
+                  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ true }}">
+                    <button class="btn btn-secondary" onClick="{{ openFilters }}">Filters</button>
+                  </sc-if>
+                  <select class="input" style="width:auto;min-width:180px" value="{{ sort }}" onChange="{{ setSort }}">
+                    <option>Recommended</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to Low</option>
+                    <option>Newest first</option>
+                    <option>KM: Low to High</option>
+                  </select>
+                </div>
+              </div>
+
+              <sc-if value="{{ hasChips }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;align-items:center">
+                  <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3">
+                    <button class="tag tag-outline" style="cursor:pointer;gap:7px;font-size:11px;background:transparent" onClick="{{ c.remove }}">{{ c.label }} ✕</button>
+                  </sc-for>
+                  <button class="btn btn-ghost" style="font-size:12px" onClick="{{ clearAll }}">Clear all</button>
+                </div>
+              </sc-if>
+
+              <div style="display:grid;gap:22px;grid-template-columns:{{ carsCols }}">
+                <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+                  <aside style="align-self:start;position:sticky;top:84px">
+                    <div class="card" style="background:#fff;gap:18px">
+                      <div>
+                        <h6 style="margin:0 0 10px">Budget</h6>
+                        <input type="range" min="200000" max="3000000" step="50000" style="width:100%;accent-color:var(--color-accent)" value="{{ maxPrice }}" onChange="{{ setMaxPrice }}">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--color-text) 60%,transparent)"><span>₹2.00 L</span><span>Up to {{ maxPriceLabel }}</span></div>
+                      </div>
+                      <div style="border-top:1px solid var(--color-divider);padding-top:14px">
+                        <h6 style="margin:0 0 10px">Fuel</h6>
+                        <div style="display:flex;flex-direction:column;gap:7px">
+                          <sc-for list="{{ fuelOpts }}" as="o" hint-placeholder-count="3">
+                            <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer">
+                              <input type="checkbox" style="accent-color:var(--color-accent);width:15px;height:15px" checked="{{ o.checked }}" onChange="{{ o.toggle }}">
+                              <span style="flex:1">{{ o.label }}</span>
+                              <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                            </label>
+                          </sc-for>
+                        </div>
+                      </div>
+                      <div style="border-top:1px solid var(--color-divider);padding-top:14px">
+                        <h6 style="margin:0 0 10px">Body type</h6>
+                        <div style="display:flex;flex-direction:column;gap:7px">
+                          <sc-for list="{{ bodyOpts }}" as="o" hint-placeholder-count="4">
+                            <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer">
+                              <input type="checkbox" style="accent-color:var(--color-accent);width:15px;height:15px" checked="{{ o.checked }}" onChange="{{ o.toggle }}">
+                              <span style="flex:1">{{ o.label }}</span>
+                              <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                            </label>
+                          </sc-for>
+                        </div>
+                      </div>
+                      <div style="border-top:1px solid var(--color-divider);padding-top:14px">
+                        <h6 style="margin:0 0 10px">Transmission</h6>
+                        <div style="display:flex;flex-direction:column;gap:7px">
+                          <sc-for list="{{ transOpts }}" as="o" hint-placeholder-count="2">
+                            <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer">
+                              <input type="checkbox" style="accent-color:var(--color-accent);width:15px;height:15px" checked="{{ o.checked }}" onChange="{{ o.toggle }}">
+                              <span style="flex:1">{{ o.label }}</span>
+                              <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                            </label>
+                          </sc-for>
+                        </div>
+                      </div>
+                      <div style="border-top:1px solid var(--color-divider);padding-top:14px">
+                        <h6 style="margin:0 0 10px">Dealer</h6>
+                        <div style="display:flex;flex-direction:column;gap:7px">
+                          <sc-for list="{{ dealerOpts }}" as="o" hint-placeholder-count="4">
+                            <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer">
+                              <input type="checkbox" style="accent-color:var(--color-accent);width:15px;height:15px" checked="{{ o.checked }}" onChange="{{ o.toggle }}">
+                              <span style="flex:1">{{ o.label }}</span>
+                              <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                            </label>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </div>
+                  </aside>
+                </sc-if>
+
+                <div>
+                  <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(258px,1fr))">
+                      <sc-for list="{{ results }}" as="v" hint-placeholder-count="6">
+                        <article class="card" style="padding:0;overflow:hidden;background:#fff;cursor:pointer" onClick="{{ v.open }}">
+                          <div style="position:relative;aspect-ratio:4/3;background:var(--color-surface);border-bottom:1px solid var(--color-divider)">
+                            <image-slot id="{{ v.slotId }}" shape="rect" placeholder="{{ v.slotHint }}"></image-slot>
+                            <span class="dd-plate" style="position:absolute;top:10px;left:10px;z-index:2">{{ v.year }}</span>
+                            <button style="position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;font-size:14px;line-height:1;color:{{ v.saveColor }}" onClick="{{ v.toggleSave }}">{{ v.saveIcon }}</button>
+                          </div>
+                          <div style="padding:12px 13px 14px;display:flex;flex-direction:column;gap:9px">
+                            <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;line-height:1.2">{{ v.name }}</div>
+                            <div style="display:flex;align-items:baseline;gap:9px">
+                              <span style="font-size:20px;font-weight:600;font-variant-numeric:tabular-nums">{{ v.priceLabel }}</span>
+                              <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ v.emiLabel }}</span>
+                            </div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">
+                              <span>{{ v.kmLabel }}</span><span>·</span><span>{{ v.fuel }}</span><span>·</span><span>{{ v.transmission }}</span><span>·</span><span>{{ v.city }}</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:7px;padding-top:9px;border-top:1px solid var(--color-divider)">
+                              <span style="width:20px;height:20px;flex:none;background:var(--color-accent-200);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--color-accent-800)">{{ v.dealerInitials }}</span>
+                              <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ v.dealer }}</span>
+                              <span class="tag tag-accent" style="font-size:10px">Verified</span>
+                            </div>
+                          </div>
+                        </article>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+                    <div class="blueprint" style="padding:56px 24px;text-align:center;background:#fff">
+                      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                      <div style="font-family:var(--font-heading);font-weight:600;font-size:22px;margin-bottom:7px">No cars match these filters</div>
+                      <p style="font-size:14px;color:color-mix(in srgb,var(--color-text) 60%,transparent);margin-bottom:18px">Widen your budget or clear a filter to see more of the {{ activeCount }} cars in Vellore.</p>
+                      <button class="btn btn-primary" onClick="{{ clearAll }}">Clear all filters</button>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- Vehicle detail -->
+          <sc-if value="{{ isVdp }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:1280px;margin:0 auto;padding:22px 24px 60px">
+              <button class="btn btn-ghost" style="margin-bottom:14px" onClick="{{ goCars }}">← Back to results</button>
+              <div style="display:grid;gap:30px;grid-template-columns:{{ vdpCols }}">
+                <div style="min-width:0">
+                  <button class="blueprint duotone" style="aspect-ratio:4/3;background:var(--color-surface);width:100%;padding:0;border:1px solid var(--color-divider);cursor:zoom-in;position:relative" onClick="{{ openGalleryFirst }}">
+                    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                    <image-slot id="dd-gal-1" shape="rect" placeholder="Main photo — three-quarter front"></image-slot>
+                    <span class="tag" style="position:absolute;bottom:10px;right:10px;z-index:3;background:#fff;font-size:11px">{{ vdpPhotoLabel }}</span>
+                  </button>
+                  <div style="position:relative;margin-top:14px;padding:0 34px">
+                    <button class="dd-arrow" style="left:0" onClick="{{ vdpStripPrev }}">‹</button>
+                    <div class="dd-strip" ref="{{ vdpStripRef }}">
+                      <sc-for list="{{ vdpPhotos }}" as="p" hint-placeholder-count="6">
+                        <button style="flex:0 0 108px;width:108px;aspect-ratio:4/3;border:1px solid {{ p.border }};background:var(--color-surface);padding:0;cursor:pointer;overflow:hidden;position:relative" onClick="{{ p.open }}">
+                          <image-slot id="{{ p.id }}" shape="rect" placeholder="{{ p.label }}"></image-slot>
+                        </button>
+                      </sc-for>
+                    </div>
+                    <button class="dd-arrow" style="right:0" onClick="{{ vdpStripNext }}">›</button>
+                  </div>
+
+                  <section style="margin-top:34px">
+                    <h3 style="font-size:21px;margin:0 0 12px">Specifications</h3>
+                    <div style="border:1px solid var(--color-divider);background:#fff">
+                      <sc-for list="{{ sel.specs }}" as="s" hint-placeholder-count="7">
+                        <div style="display:flex;justify-content:space-between;gap:16px;padding:11px 14px;border-bottom:1px solid color-mix(in srgb,var(--color-text) 8%,transparent);font-size:13px">
+                          <span style="color:color-mix(in srgb,var(--color-text) 58%,transparent)">{{ s.k }}</span>
+                          <span style="font-weight:500;font-variant-numeric:tabular-nums">{{ s.v }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </section>
+
+                  <section style="margin-top:30px">
+                    <h3 style="font-size:21px;margin:0 0 12px">Features</h3>
+                    <div style="display:flex;flex-wrap:wrap;gap:7px">
+                      <sc-for list="{{ sel.features }}" as="f" hint-placeholder-count="8">
+                        <span class="tag tag-neutral" style="font-size:12px;padding:5px 11px">{{ f }}</span>
+                      </sc-for>
+                    </div>
+                  </section>
+
+                  <section style="margin-top:30px">
+                    <h3 style="font-size:21px;margin:0 0 10px">Dealer description</h3>
+                    <p style="font-size:14px;line-height:1.65;color:color-mix(in srgb,var(--color-text) 75%,transparent);max-width:66ch;text-wrap:pretty">{{ sel.description }}</p>
+                  </section>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:16px;align-self:start;position:sticky;top:84px">
+                  <div>
+                    <span class="dd-plate" style="margin-bottom:10px">{{ sel.year }}</span>
+                    <h1 style="font-size:29px;margin:8px 0 0;line-height:1.1">{{ sel.name }}</h1>
+                    <div style="font-size:13px;margin-top:7px;color:color-mix(in srgb,var(--color-text) 58%,transparent)">{{ sel.summary }}</div>
+                  </div>
+                  <div class="blueprint" style="background:#fff;padding:16px">
+                    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                    <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Dealer price</div>
+                    <div style="font-size:36px;font-weight:700;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1.1;margin:3px 0 2px">{{ sel.priceLabel }}</div>
+                    <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">{{ sel.emiFull }} · Fixed price, no hidden charges</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <button class="btn btn-primary" style="height:44px;font-size:15px" onClick="{{ goEnquire }}">Enquire now</button>
+                    <div style="display:flex;gap:8px">
+                      <button class="btn btn-secondary" style="flex:1;height:40px">Call dealer</button>
+                      <button class="btn btn-secondary" style="flex:1;height:40px" onClick="{{ sel.toggleSave }}">{{ sel.saveLabel }}</button>
+                    </div>
+                  </div>
+                  <div class="card" style="background:#fff;gap:11px">
+                    <div style="display:flex;align-items:center;gap:11px">
+                      <span style="width:42px;height:42px;flex:none;border:1px solid var(--color-divider);display:grid;place-items:center;font-size:13px;font-weight:700;background:var(--color-accent-100);color:var(--color-accent-800)">{{ sel.dealerInitials }}</span>
+                      <div style="flex:1">
+                        <div style="font-family:var(--font-heading);font-weight:600;font-size:16px">{{ sel.dealer }}</div>
+                        <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ sel.city }} · {{ sel.dealerCars }} cars listed</div>
+                      </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;padding-top:10px;border-top:1px solid var(--color-divider)">
+                      <span class="dd-plate" style="font-size:10px">VERIFIED DEALER</span>
+                      <button class="btn btn-ghost" style="margin-left:auto;font-size:12px" onClick="{{ sel.viewDealership }}">View dealership →</button>
+                    </div>
+                  </div>
+                  <div style="font-size:12px;line-height:1.6;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Dealers-Drive verifies dealer identity and business documents. The vehicle itself is owned, priced and warranted by the dealer.</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- Saved cars -->
+          <sc-if value="{{ isSaved }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:1280px;margin:0 auto;padding:26px 24px 60px">
+              <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent);margin-bottom:10px">Home / Saved cars</div>
+              <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px">
+                <h1 style="margin:0;font-size:34px">Saved cars</h1>
+                <span style="font-size:14px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">{{ savedCountLabel }}</span>
+                <sc-if value="{{ hasSaved }}" hint-placeholder-val="{{ false }}">
+                  <button class="btn btn-ghost" style="margin-left:auto;font-size:12px" onClick="{{ clearSaved }}">Clear all</button>
+                </sc-if>
+              </div>
+              <p style="font-size:14px;max-width:62ch;color:color-mix(in srgb,var(--color-text) 65%,transparent);margin:0 0 22px">Saved cars stay on this device — no account needed. Enquire with each dealer directly when you are ready.</p>
+
+              <sc-if value="{{ hasSaved }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <sc-for list="{{ savedCars }}" as="v" hint-placeholder-count="3">
+                    <article class="card" style="background:#fff;padding:0;overflow:hidden;flex-direction:row;flex-wrap:wrap;cursor:pointer" onClick="{{ v.open }}">
+                      <div style="position:relative;width:250px;flex:none;aspect-ratio:4/3;background:var(--color-surface);border-right:1px solid var(--color-divider)">
+                        <image-slot id="{{ v.slotId }}" shape="rect" placeholder="{{ v.slotHint }}"></image-slot>
+                        <span class="dd-plate" style="position:absolute;top:10px;left:10px;z-index:2">{{ v.year }}</span>
+                      </div>
+                      <div style="flex:1;min-width:240px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                        <div style="display:flex;align-items:flex-start;gap:12px">
+                          <div style="flex:1">
+                            <div style="font-family:var(--font-heading);font-weight:600;font-size:19px">{{ v.name }}</div>
+                            <div style="font-size:12px;margin-top:4px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">{{ v.kmLabel }} · {{ v.fuel }} · {{ v.transmission }} · {{ v.city }}</div>
+                          </div>
+                          <div style="text-align:right">
+                            <div style="font-size:22px;font-weight:600;font-variant-numeric:tabular-nums">{{ v.priceLabel }}</div>
+                            <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ v.emiLabel }}</div>
+                          </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding-top:10px;border-top:1px solid var(--color-divider);flex-wrap:wrap">
+                          <span style="width:22px;height:22px;flex:none;background:var(--color-accent-200);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--color-accent-800)">{{ v.dealerInitials }}</span>
+                          <span style="font-size:12px">{{ v.dealer }}</span>
+                          <span class="tag tag-accent" style="font-size:10px">Verified</span>
+                          <button class="btn btn-primary" style="font-size:12px;margin-left:auto" onClick="{{ v.enquire }}">Enquire</button>
+                          <button class="btn btn-secondary" style="font-size:12px" onClick="{{ v.toggleSave }}">♥ Remove</button>
+                        </div>
+                      </div>
+                    </article>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noSaved }}" hint-placeholder-val="{{ true }}">
+                <div class="blueprint" style="padding:56px 24px;text-align:center;background:#fff">
+                  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                  <div style="font-family:var(--font-heading);font-weight:600;font-size:22px;margin-bottom:7px">Nothing saved yet</div>
+                  <p style="font-size:14px;color:color-mix(in srgb,var(--color-text) 60%,transparent);margin-bottom:18px">Tap the ♡ on any car to keep it here while you compare dealers.</p>
+                  <button class="btn btn-primary" onClick="{{ goCars }}">Browse {{ activeCount }} cars</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- Dealer directory -->
+          <sc-if value="{{ isDealerDirectory }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:1280px;margin:0 auto;padding:26px 24px 60px">
+              <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent);margin-bottom:10px">Home / Dealers</div>
+              <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px">
+                <h1 style="margin:0;font-size:34px">Dealers near Vellore</h1>
+                <span style="font-size:14px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">{{ dirCountLabel }}</span>
+              </div>
+              <p style="font-size:14px;max-width:62ch;color:color-mix(in srgb,var(--color-text) 65%,transparent);margin:0 0 20px">Every dealership below is identity- and GST-verified by Dealers-Drive. The cars belong to them — enquiries go straight to the yard.</p>
+
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:20px">
+                <input class="input" style="max-width:260px" placeholder="Search dealership name" value="{{ dirQuery }}" onChange="{{ setDirQuery }}">
+                <sc-for list="{{ dirCities }}" as="c" hint-placeholder-count="4">
+                  <button class="tag" style="cursor:pointer;font-size:12px;padding:6px 12px;background:{{ c.chipBg }};color:{{ c.chipColor }};border:1px solid {{ c.chipBorder }}" onClick="{{ c.toggle }}">{{ c.label }}</button>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ hasDirResults }}" hint-placeholder-val="{{ true }}">
+                <div style="display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))">
+                  <sc-for list="{{ dirDealers }}" as="d" hint-placeholder-count="4">
+                    <article class="card" style="padding:0;overflow:hidden;background:#fff;cursor:pointer" onClick="{{ d.open }}">
+                      <div class="duotone" style="height:104px;background:var(--color-surface);border-bottom:1px solid var(--color-divider)">
+                        <image-slot id="{{ d.coverId }}" shape="rect" placeholder="{{ d.coverHint }}"></image-slot>
+                      </div>
+                      <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+                        <div style="display:flex;gap:11px;align-items:flex-start">
+                          <span style="width:44px;height:44px;flex:none;margin-top:-34px;position:relative;z-index:2;border:1px solid var(--color-divider);background:var(--color-accent-100);color:var(--color-accent-800);display:grid;place-items:center;font-size:14px;font-weight:700">{{ d.initials }}</span>
+                          <div style="flex:1;min-width:0">
+                            <div style="font-family:var(--font-heading);font-weight:600;font-size:17px">{{ d.name }}</div>
+                            <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ d.city }}, Tamil Nadu · {{ d.years }} years</div>
+                          </div>
+                          <span class="dd-plate" style="font-size:9px">VERIFIED</span>
+                        </div>
+                        <div style="font-size:12px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 65%,transparent)">{{ d.blurb }}</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:5px">
+                          <sc-for list="{{ d.tags }}" as="t" hint-placeholder-count="3">
+                            <span class="tag tag-neutral" style="font-size:10px">{{ t }}</span>
+                          </sc-for>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:14px;padding-top:10px;border-top:1px solid var(--color-divider)">
+                          <span style="font-size:13px"><strong style="font-variant-numeric:tabular-nums">{{ d.cars }}</strong> cars listed</span>
+                          <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent);font-variant-numeric:tabular-nums">from {{ d.fromPrice }}</span>
+                          <button class="btn btn-ghost" style="margin-left:auto;font-size:12px" onClick="{{ d.open }}">View inventory →</button>
+                        </div>
+                      </div>
+                    </article>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noDirResults }}" hint-placeholder-val="{{ false }}">
+                <div class="blueprint" style="padding:48px 20px;text-align:center;background:#fff">
+                  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                  <div style="font-family:var(--font-heading);font-weight:600;font-size:20px;margin-bottom:6px">No dealerships match</div>
+                  <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:16px">Try another name or clear the city filter.</p>
+                  <button class="btn btn-primary" onClick="{{ clearDirFilters }}">Clear filters</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- Dealer portfolio -->
+          <sc-if value="{{ isDealerPage }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="background:#fff;border-bottom:1px solid var(--color-divider)">
+                <div style="max-width:1280px;margin:0 auto;padding:20px 24px 0">
+                  <button class="btn btn-ghost" style="margin-bottom:12px" onClick="{{ goCars }}">← Back to results</button>
+                </div>
+                <div class="blueprint duotone" style="max-width:1280px;margin:0 auto;height:170px;background:var(--color-surface);border:1px solid var(--color-divider);border-bottom:0">
+                  <i class="corner tl"></i><i class="corner tr"></i>
+                  <image-slot id="dd-dealer-cover" shape="rect" placeholder="Dealership frontage / yard photo"></image-slot>
+                </div>
+                <div style="max-width:1280px;margin:0 auto;padding:18px 24px 22px;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap">
+                  <span style="width:78px;height:78px;flex:none;border:1px solid var(--color-divider);background:var(--color-accent-100);color:var(--color-accent-800);display:grid;place-items:center;font-size:24px;font-weight:700;font-family:var(--font-heading);margin-top:-46px;z-index:2;position:relative">{{ dlr.initials }}</span>
+                  <div style="flex:1;min-width:240px">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                      <h1 style="font-size:32px;margin:0">{{ dlr.name }}</h1>
+                      <span class="dd-plate" style="font-size:10px">VERIFIED DEALER</span>
+                    </div>
+                    <div style="font-size:14px;margin-top:6px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">{{ dlr.address }}</div>
+                    <div style="font-size:13px;margin-top:4px;font-family:ui-monospace,Menlo,monospace;color:color-mix(in srgb,var(--color-text) 62%,transparent)">{{ dlr.phone }}</div>
+                  </div>
+                  <div style="display:flex;gap:8px">
+                    <button class="btn btn-primary" onClick="{{ goEnquire }}">Enquire with dealer</button>
+                    <button class="btn btn-secondary">Call dealership</button>
+                  </div>
+                </div>
+                <div style="max-width:1280px;margin:0 auto;padding:0 24px 20px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+                  <sc-for list="{{ dlr.stats }}" as="s" hint-placeholder-count="4">
+                    <div class="blueprint" style="padding:13px;background:var(--color-bg)">
+                      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                      <div style="font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 52%,transparent)">{{ s.label }}</div>
+                      <div style="font-size:26px;font-weight:700;font-family:var(--font-heading);font-variant-numeric:tabular-nums">{{ s.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="max-width:1280px;margin:0 auto;padding:24px 24px 0;display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+                <section class="card" style="background:#fff;gap:8px">
+                  <div class="card-kicker">About the dealership</div>
+                  <p style="font-size:13px;line-height:1.65;margin:0;color:color-mix(in srgb,var(--color-text) 75%,transparent);text-wrap:pretty">{{ dlr.about }}</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;padding-top:9px;border-top:1px solid var(--color-divider);margin-top:auto">
+                    <sc-for list="{{ dlr.services }}" as="s" hint-placeholder-count="4">
+                      <span class="tag tag-neutral" style="font-size:11px">{{ s }}</span>
+                    </sc-for>
+                  </div>
+                </section>
+                <section class="card" style="background:#fff;gap:8px">
+                  <div class="card-kicker">Contact</div>
+                  <sc-for list="{{ dlr.contact }}" as="c" hint-placeholder-count="4">
+                    <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:5px 0;border-bottom:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)">
+                      <span style="color:color-mix(in srgb,var(--color-text) 58%,transparent)">{{ c.k }}</span>
+                      <span style="font-weight:500;text-align:right">{{ c.v }}</span>
+                    </div>
+                  </sc-for>
+                </section>
+                <section class="card" style="background:#fff;gap:8px">
+                  <div class="card-kicker">Location</div>
+                  <div class="blueprint" style="flex:1;min-height:120px;background:var(--color-surface)">
+                    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                    <image-slot id="dd-dealer-map" shape="rect" placeholder="Map — dealership location"></image-slot>
+                  </div>
+                  <button class="btn btn-secondary btn-block" style="font-size:12px">Get directions</button>
+                </section>
+              </div>
+
+              <div style="max-width:1280px;margin:0 auto;padding:26px 24px 60px;display:grid;gap:22px;grid-template-columns:{{ dealerCols }}">
+                <aside style="align-self:start;position:sticky;top:84px">
+                    <div class="card" style="background:#fff;gap:18px">
+                      <div style="display:flex;align-items:baseline;justify-content:space-between">
+                        <h6 style="margin:0">Filter inventory</h6>
+                        <button class="btn btn-ghost" style="font-size:11px;padding:2px 6px" onClick="{{ clearDealerFilters }}">Clear</button>
+                      </div>
+                      <div>
+                        <h6 style="margin:0 0 10px">Budget</h6>
+                        <input type="range" min="200000" max="3000000" step="50000" style="width:100%;accent-color:var(--color-accent)" value="{{ dMaxPrice }}" onChange="{{ setDMaxPrice }}">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--color-text) 60%,transparent)"><span>₹2.00 L</span><span>Up to {{ dMaxPriceLabel }}</span></div>
+                      </div>
+                      <sc-for list="{{ dealerFilterGroups }}" as="g" hint-placeholder-count="3">
+                        <div style="border-top:1px solid var(--color-divider);padding-top:14px">
+                          <h6 style="margin:0 0 10px">{{ g.label }}</h6>
+                          <div style="display:flex;flex-direction:column;gap:7px">
+                            <sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="3">
+                              <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;opacity:{{ o.opacity }}">
+                                <input type="checkbox" style="accent-color:var(--color-accent);width:15px;height:15px" checked="{{ o.checked }}" onChange="{{ o.toggle }}">
+                                <span style="flex:1">{{ o.label }}</span>
+                                <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                              </label>
+                            </sc-for>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </aside>
+
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+                    <h2 style="font-size:24px;margin:0">Inventory</h2>
+                    <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ dealerResultLabel }}</span>
+                    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                      <select class="input" style="width:auto;min-width:170px" value="{{ sort }}" onChange="{{ setSort }}">
+                        <option>Recommended</option>
+                        <option>Price: Low to High</option>
+                        <option>Price: High to Low</option>
+                        <option>Newest first</option>
+                        <option>KM: Low to High</option>
+                      </select>
+                    </div>
+                  </div>
+                  <sc-if value="{{ hasDealerChips }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;align-items:center">
+                      <sc-for list="{{ dealerChips }}" as="c" hint-placeholder-count="2">
+                        <button class="tag tag-outline" style="cursor:pointer;gap:7px;font-size:11px;background:transparent" onClick="{{ c.remove }}">{{ c.label }} ✕</button>
+                      </sc-for>
+                      <button class="btn btn-ghost" style="font-size:12px" onClick="{{ clearDealerFilters }}">Clear all</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ hasDealerResults }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
+                      <sc-for list="{{ dealerResults }}" as="v" hint-placeholder-count="4">
+                        <article class="card" style="padding:0;overflow:hidden;background:#fff;cursor:pointer" onClick="{{ v.open }}">
+                          <div style="position:relative;aspect-ratio:4/3;background:var(--color-surface);border-bottom:1px solid var(--color-divider)">
+                            <image-slot id="{{ v.slotId }}" shape="rect" placeholder="{{ v.slotHint }}"></image-slot>
+                            <span class="dd-plate" style="position:absolute;top:10px;left:10px;z-index:2">{{ v.year }}</span>
+                            <button style="position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;font-size:14px;line-height:1;color:{{ v.saveColor }}" onClick="{{ v.toggleSave }}">{{ v.saveIcon }}</button>
+                          </div>
+                          <div style="padding:12px 13px 14px;display:flex;flex-direction:column;gap:8px">
+                            <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;line-height:1.2">{{ v.name }}</div>
+                            <div style="display:flex;align-items:baseline;gap:9px">
+                              <span style="font-size:20px;font-weight:600;font-variant-numeric:tabular-nums">{{ v.priceLabel }}</span>
+                              <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ v.emiLabel }}</span>
+                            </div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">
+                              <span>{{ v.kmLabel }}</span><span>·</span><span>{{ v.fuel }}</span><span>·</span><span>{{ v.transmission }}</span><span>·</span><span>{{ v.city }}</span>
+                            </div>
+                          </div>
+                        </article>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ noDealerResults }}" hint-placeholder-val="{{ false }}">
+                    <div class="blueprint" style="padding:44px 20px;text-align:center;background:#fff">
+                      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                      <div style="font-family:var(--font-heading);font-weight:600;font-size:19px;margin-bottom:6px">No cars match these filters</div>
+                      <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:14px">{{ dlr.name }} has {{ dlr.liveCount }} cars listed right now.</p>
+                      <button class="btn btn-primary" onClick="{{ clearDealerFilters }}">Clear filters</button>
+                    </div>
+                  </sc-if>
+                </div>
+
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- Enquiry success -->
+          <sc-if value="{{ isSuccess }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:640px;margin:0 auto;padding:80px 24px">
+              <div class="blueprint" style="background:#fff;padding:34px">
+                <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                <div style="width:44px;height:44px;background:var(--ok-bg);color:var(--ok);display:grid;place-items:center;font-size:22px;margin-bottom:16px">✓</div>
+                <h1 style="font-size:32px;margin:0 0 10px">Enquiry sent to {{ sel.dealer }}</h1>
+                <p style="font-size:15px;color:color-mix(in srgb,var(--color-text) 68%,transparent)">The dealer has your number and typically responds within 2 hours. Your enquiry reference is <strong style="font-family:ui-monospace,Menlo,monospace">DD-EN-40912</strong>.</p>
+                <div style="border:1px solid var(--color-divider);padding:14px;margin:20px 0;display:flex;gap:14px;align-items:center">
+                  <div style="width:74px;height:56px;flex:none;background:var(--color-surface);border:1px solid var(--color-divider)"><image-slot id="dd-enq-thumb" shape="rect" placeholder=""></image-slot></div>
+                  <div>
+                    <div style="font-family:var(--font-heading);font-weight:600;font-size:16px">{{ sel.name }}</div>
+                    <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent)">{{ sel.priceLabel }} · {{ sel.city }}</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn btn-primary" onClick="{{ goCars }}">Keep browsing</button>
+                  <button class="btn btn-secondary" onClick="{{ goVdp }}">Back to the car</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ══ DEALER AUTH + ONBOARDING ══ -->
+      <sc-if value="{{ isDealerEntry }}" hint-placeholder-val="{{ false }}">
+        <div style="min-height:100%;background:#fff">
+          <div style="max-width:560px;margin:0 auto;padding:52px 24px 70px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:34px">
+              <span class="dd-plate" style="font-size:12px;font-weight:600;padding:3px 9px 3px 0">DD</span>
+              <span style="font-family:var(--font-heading);font-weight:700;font-size:16px">Dealers-Drive for dealers</span>
+              <button class="btn btn-ghost" style="margin-left:auto;font-size:12px" onClick="{{ goHome }}">← Back to marketplace</button>
+            </div>
+
+            <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <sc-if value="{{ authSignIn }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <h1 style="font-size:34px;margin:0 0 8px">Sign in to your dealer account</h1>
+                    <p style="font-size:15px;color:color-mix(in srgb,var(--color-text) 65%,transparent);margin-bottom:26px">Use the registered dealership number. We send a one-time code — no password to remember.</p>
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                      <div class="field"><label>Registered phone number</label>
+                        <div style="display:flex;gap:8px">
+                          <span class="input" style="width:62px;display:grid;place-items:center;background:var(--color-surface)">+91</span>
+                          <input class="input" defaultValue="98400 12345" inputMode="numeric">
+                        </div>
+                      </div>
+                      <button class="btn btn-primary btn-block" style="height:44px" onClick="{{ authNext }}">Send OTP</button>
+                      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px">
+                        <button class="btn btn-ghost" style="font-size:13px;padding-left:0">Use email instead</button>
+                        <button class="btn btn-ghost" style="font-size:13px">Trouble signing in?</button>
+                      </div>
+                      <div style="border-top:1px solid var(--color-divider);padding-top:14px;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                        <span style="color:color-mix(in srgb,var(--color-text) 60%,transparent)">New dealership?</span>
+                        <button class="btn btn-secondary" style="font-size:12px" onClick="{{ goSignUp }}">Create a dealer account</button>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ authPhone }}" hint-placeholder-val="{{ true }}">
+                  <div>
+                    <h1 style="font-size:34px;margin:0 0 8px">Sell through your own dealership</h1>
+                    <p style="font-size:15px;color:color-mix(in srgb,var(--color-text) 65%,transparent);margin-bottom:26px">Your inventory, your pricing, your customers. We handle discovery, verification and enquiries.</p>
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                      <div class="field"><label>Dealership contact number</label>
+                        <div style="display:flex;gap:8px">
+                          <span class="input" style="width:62px;display:grid;place-items:center;background:var(--color-surface)">+91</span>
+                          <input class="input" placeholder="98400 12345" inputMode="numeric">
+                        </div>
+                      </div>
+                      <div class="field"><label>Work email</label><input class="input" placeholder="owner@srilakshmimotors.in"></div>
+                      <button class="btn btn-primary btn-block" style="height:44px" onClick="{{ authNext }}">Send OTP</button>
+                      <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent);text-align:center">Buyers never need an account. Dealer accounts are verified before going live.</div>
+                      <div style="border-top:1px solid var(--color-divider);padding-top:14px;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                        <span style="color:color-mix(in srgb,var(--color-text) 60%,transparent)">Already registered?</span>
+                        <button class="btn btn-secondary" style="font-size:12px" onClick="{{ goSignIn }}">Sign in instead</button>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ authOtp }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <h1 style="font-size:34px;margin:0 0 8px">Enter the OTP</h1>
+                    <p style="font-size:15px;color:color-mix(in srgb,var(--color-text) 65%,transparent);margin-bottom:24px">{{ otpSubline }}</p>
+                    <div style="display:flex;gap:9px;margin-bottom:14px">
+                      <input class="input" style="width:52px;height:58px;text-align:center;font-size:22px;font-variant-numeric:tabular-nums" maxLength="1" defaultValue="4">
+                      <input class="input" style="width:52px;height:58px;text-align:center;font-size:22px" maxLength="1" defaultValue="1">
+                      <input class="input" style="width:52px;height:58px;text-align:center;font-size:22px" maxLength="1" defaultValue="8">
+                      <input class="input" style="width:52px;height:58px;text-align:center;font-size:22px" maxLength="1" defaultValue="0">
+                      <input class="input" style="width:52px;height:58px;text-align:center;font-size:22px" maxLength="1" defaultValue="6">
+                      <input class="input" style="width:52px;height:58px;text-align:center;font-size:22px" maxLength="1"></input>
+                    </div>
+                    <sc-if value="{{ otpError }}" hint-placeholder-val="{{ false }}">
+                      <div style="background:var(--err-bg);color:var(--err);border:1px solid color-mix(in srgb,var(--err) 30%,transparent);padding:9px 12px;font-size:13px;margin-bottom:14px">That OTP is incorrect or expired. Two attempts remaining.</div>
+                    </sc-if>
+                    <button class="btn btn-primary btn-block" style="height:44px" onClick="{{ authVerify }}">{{ otpCta }}</button>
+                    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:13px">
+                      <button class="btn btn-ghost" style="font-size:13px" onClick="{{ authBack }}">← Change number</button>
+                      <button class="btn btn-ghost" style="font-size:13px" onClick="{{ toggleOtpError }}">Resend OTP (00:24)</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="display:flex;gap:6px;margin-bottom:22px">
+                  <sc-for list="{{ onbSteps }}" as="s" hint-placeholder-count="4">
+                    <div style="flex:1">
+                      <div style="height:3px;background:{{ s.bar }}"></div>
+                      <div style="font-size:11px;margin-top:7px;color:{{ s.color }}">{{ s.label }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <sc-if value="{{ onb1 }}" hint-placeholder-val="{{ true }}">
+                  <div>
+                    <h1 style="font-size:30px;margin:0 0 6px">Create your account</h1>
+                    <p style="font-size:14px;color:color-mix(in srgb,var(--color-text) 62%,transparent);margin-bottom:22px">This is the person who will manage the dealership on Dealers-Drive.</p>
+                    <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+                      <div class="field"><label>Full name</label><input class="input" defaultValue="R. Manikandan"></div>
+                      <div class="field"><label>Role</label><input class="input" defaultValue="Proprietor"></div>
+                      <div class="field"><label>Phone</label><input class="input" defaultValue="+91 98400 12345" disabled></div>
+                      <div class="field"><label>Email</label><input class="input" defaultValue="owner@srilakshmimotors.in"></div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ onb2 }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <h1 style="font-size:30px;margin:0 0 6px">Dealership information</h1>
+                    <p style="font-size:14px;color:color-mix(in srgb,var(--color-text) 62%,transparent);margin-bottom:22px">This is what buyers see on every one of your listings.</p>
+                    <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+                      <div class="field" style="grid-column:1/-1"><label>Dealership name (public)</label><input class="input" defaultValue="Sri Lakshmi Motors"></div>
+                      <div class="field" style="grid-column:1/-1"><label>Registered legal name</label><input class="input" defaultValue="Sri Lakshmi Automobiles Pvt Ltd"></div>
+                      <div class="field" style="grid-column:1/-1"><label>Address</label><input class="input" defaultValue="14, Katpadi Main Road, Gandhi Nagar"></div>
+                      <div class="field"><label>City</label><input class="input" defaultValue="Vellore"></div>
+                      <div class="field"><label>State</label><input class="input" defaultValue="Tamil Nadu"></div>
+                      <div class="field"><label>Pincode</label><input class="input" defaultValue="632006"></div>
+                      <div class="field"><label>Landline</label><input class="input" defaultValue="0416 224 8890"></div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ onb3 }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <h1 style="font-size:30px;margin:0 0 6px">Business verification</h1>
+                    <p style="font-size:14px;color:color-mix(in srgb,var(--color-text) 62%,transparent);margin-bottom:22px">Verified dealers get the plate badge on every listing. Documents are reviewed by our team, never shown to buyers.</p>
+                    <div style="display:flex;flex-direction:column;gap:12px">
+                      <div class="field"><label>GSTIN</label><input class="input" defaultValue="33AABCS1429P1ZK" style="font-family:ui-monospace,Menlo,monospace"></div>
+                      <div class="field"><label>PAN</label><input class="input" defaultValue="AABCS1429P" style="font-family:ui-monospace,Menlo,monospace"></div>
+                      <sc-for list="{{ docs }}" as="d" hint-placeholder-count="3">
+                        <div style="border:1px dashed var(--color-divider);padding:13px;display:flex;align-items:center;gap:12px;background:var(--color-bg)">
+                          <span style="width:32px;height:32px;flex:none;display:grid;place-items:center;background:{{ d.tint }};color:{{ d.color }};font-size:14px">{{ d.icon }}</span>
+                          <div style="flex:1">
+                            <div style="font-size:14px;font-weight:500">{{ d.label }}</div>
+                            <div style="font-size:12px;color:{{ d.color }}">{{ d.status }}</div>
+                          </div>
+                          <button class="btn btn-secondary" style="font-size:12px">{{ d.action }}</button>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ onb4 }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <div class="blueprint" style="padding:26px;background:var(--color-bg)">
+                      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                      <span class="tag" style="background:var(--warn-bg);color:var(--warn);font-size:11px">Under review</span>
+                      <h1 style="font-size:30px;margin:12px 0 8px">Your dealership application is under review</h1>
+                      <p style="font-size:14px;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:6px">We verify GSTIN, PAN and address proof against government records. Most dealerships are approved within one working day.</p>
+                      <p style="font-size:14px;color:color-mix(in srgb,var(--color-text) 68%,transparent)">You can start adding vehicles now — they will publish the moment you are approved and a listing credit is applied.</p>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <div style="display:flex;gap:9px;margin-top:26px">
+                  <button class="btn btn-secondary" onClick="{{ onbBack }}">Back</button>
+                  <button class="btn btn-primary" style="flex:1;height:42px" onClick="{{ onbNext }}">{{ onbCta }}</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ DEALER APP ══ -->
+      <sc-if value="{{ isDealerApp }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;min-height:100%;background:var(--color-bg)">
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <aside style="width:214px;flex:none;background:#fff;border-right:1px solid var(--color-divider);padding:18px 12px;display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;align-items:center;gap:8px;padding:0 6px">
+                <span class="dd-plate" style="font-size:11px;font-weight:600;padding:3px 8px 3px 0">DD</span>
+                <span style="font-family:var(--font-heading);font-weight:700;font-size:14px">Dealer console</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <sc-for list="{{ dealerNav }}" as="n" hint-placeholder-count="6">
+                  <button class="dd-nav-item" aria-current="{{ n.active }}" onClick="{{ n.go }}">{{ n.label }}</button>
+                </sc-for>
+              </div>
+              <div class="blueprint" style="margin-top:auto;padding:12px;background:var(--color-accent-100)">
+                <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent-800)">Listing credits</div>
+                <div style="font-size:28px;font-weight:700;font-family:var(--font-heading);font-variant-numeric:tabular-nums">{{ credits }}</div>
+                <button class="btn btn-primary btn-block" style="font-size:12px;margin-top:6px" onClick="{{ goBilling }}">Buy credits</button>
+              </div>
+            </aside>
+          </sc-if>
+
+          <div style="flex:1;min-width:0">
+            <header style="height:58px;background:#fff;border-bottom:1px solid var(--color-divider);display:flex;align-items:center;gap:12px;padding:0 20px;position:sticky;top:0;z-index:15">
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:16px">Sri Lakshmi Motors</div>
+              <span class="tag tag-accent" style="font-size:10px">Verified</span>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+                <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent);font-variant-numeric:tabular-nums">{{ credits }} credits</span>
+                <button class="btn btn-primary" onClick="{{ goAdd }}">Add vehicle</button>
+              </div>
+            </header>
+
+            <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+              <div style="margin:16px 22px 0;background:var(--ok-bg);border:1px solid color-mix(in srgb,var(--ok) 30%,transparent);color:var(--ok);padding:10px 14px;font-size:13px">{{ toast }}</div>
+            </sc-if>
+
+            <!-- Dashboard -->
+            <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:22px">
+                <h1 style="font-size:28px;margin:0 0 4px">Good morning, Manikandan</h1>
+                <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:20px">Here is what happened across your inventory in the last 7 days.</p>
+                <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));margin-bottom:26px">
+                  <sc-for list="{{ dashStats }}" as="s" hint-placeholder-count="4">
+                    <div class="blueprint" style="background:#fff;padding:16px">
+                      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                      <div style="font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 52%,transparent)">{{ s.label }}</div>
+                      <div style="font-size:34px;font-weight:700;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1.15">{{ s.value }}</div>
+                      <div style="font-size:12px;color:{{ s.deltaColor }}">{{ s.delta }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+                  <section class="card" style="background:#fff">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between">
+                      <h3 style="margin:0;font-size:18px">Views this week</h3>
+                      <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">2,481 total</span>
+                    </div>
+                    <div style="display:flex;align-items:flex-end;gap:9px;height:132px;margin-top:10px">
+                      <sc-for list="{{ chart }}" as="c" hint-placeholder-count="7">
+                        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end">
+                          <div style="width:100%;background:var(--color-accent);height:{{ c.h }}"></div>
+                          <div style="font-size:10px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ c.d }}</div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </section>
+
+                  <section class="card" style="background:#fff">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between">
+                      <h3 style="margin:0;font-size:18px">Recent enquiries</h3>
+                      <button class="btn btn-ghost" style="font-size:12px" onClick="{{ goInquiries }}">All enquiries →</button>
+                    </div>
+                    <div style="display:flex;flex-direction:column">
+                      <sc-for list="{{ inquiries }}" as="q" hint-placeholder-count="4">
+                        <div style="display:flex;gap:11px;align-items:center;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)">
+                          <span style="width:30px;height:30px;flex:none;background:var(--color-accent-100);color:var(--color-accent-800);display:grid;place-items:center;font-size:11px;font-weight:700">{{ q.initials }}</span>
+                          <div style="flex:1;min-width:0">
+                            <div style="font-size:13px;font-weight:500">{{ q.name }}</div>
+                            <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ q.vehicle }}</div>
+                          </div>
+                          <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent)">{{ q.when }}</span>
+                          <button class="btn btn-secondary" style="font-size:11px;padding:3px 9px">Call</button>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- Inventory -->
+            <sc-if value="{{ isInventory }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:22px">
+                <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px">
+                  <h1 style="font-size:28px;margin:0">Inventory</h1>
+                  <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ myCount }} vehicles</span>
+                </div>
+
+                <sc-if value="{{ hasRejected }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:var(--err-bg);border:1px solid color-mix(in srgb,var(--err) 30%,transparent);padding:13px 15px;margin-bottom:16px">
+                    <div style="font-size:14px;font-weight:600;color:var(--err);margin-bottom:3px">{{ rejectedTitle }}</div>
+                    <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 75%,transparent);margin-bottom:9px">Admin reason: “{{ rejectedReason }}”</div>
+                    <button class="btn btn-primary" style="font-size:12px" onClick="{{ resubmit }}">Edit &amp; resubmit</button>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+                  <div style="background:#fff;border:1px solid var(--color-divider)">
+                    <table class="table">
+                      <thead><tr><th>Vehicle</th><th>Price</th><th>Status</th><th>Views</th><th>Enq.</th><th>Expires</th><th></th></tr></thead>
+                      <tbody>
+                        <sc-for list="{{ myVehicles }}" as="v" hint-placeholder-count="6">
+                          <tr>
+                            <td>
+                              <div style="display:flex;align-items:center;gap:10px">
+                                <span style="width:44px;height:33px;flex:none;background:var(--color-surface);border:1px solid var(--color-divider)"></span>
+                                <div>
+                                  <div style="font-weight:500;font-size:13px">{{ v.name }}</div>
+                                  <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ v.kmLabel }} · {{ v.fuel }}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td style="font-variant-numeric:tabular-nums">{{ v.priceLabel }}</td>
+                            <td><span class="tag" style="background:{{ v.statusBg }};color:{{ v.statusColor }};font-size:10px">{{ v.statusLabel }}</span></td>
+                            <td style="font-variant-numeric:tabular-nums">{{ v.views }}</td>
+                            <td style="font-variant-numeric:tabular-nums">{{ v.inq }}</td>
+                            <td style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ v.expiry }}</td>
+                            <td style="text-align:right"><button class="btn btn-ghost" style="font-size:12px">Edit</button></td>
+                          </tr>
+                        </sc-for>
+                      </tbody>
+                    </table>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <sc-for list="{{ myVehicles }}" as="v" hint-placeholder-count="6">
+                      <div class="card" style="background:#fff;gap:8px">
+                        <div style="display:flex;gap:11px">
+                          <span style="width:70px;height:52px;flex:none;background:var(--color-surface);border:1px solid var(--color-divider)"></span>
+                          <div style="flex:1;min-width:0">
+                            <div style="font-weight:500;font-size:14px">{{ v.name }}</div>
+                            <div style="font-size:12px;font-variant-numeric:tabular-nums">{{ v.priceLabel }}</div>
+                          </div>
+                          <span class="tag" style="background:{{ v.statusBg }};color:{{ v.statusColor }};font-size:10px;align-self:flex-start">{{ v.statusLabel }}</span>
+                        </div>
+                        <div style="display:flex;gap:14px;font-size:11px;padding-top:8px;border-top:1px solid var(--color-divider);color:color-mix(in srgb,var(--color-text) 55%,transparent)">
+                          <span>{{ v.views }} views</span><span>{{ v.inq }} enquiries</span><span style="margin-left:auto">{{ v.expiry }}</span>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- Add vehicle -->
+            <sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:22px;max-width:860px">
+                <h1 style="font-size:28px;margin:0 0 16px">Add a vehicle</h1>
+                <div style="display:flex;gap:6px;margin-bottom:24px">
+                  <sc-for list="{{ addSteps }}" as="s" hint-placeholder-count="4">
+                    <div style="flex:1">
+                      <div style="height:3px;background:{{ s.bar }}"></div>
+                      <div style="font-size:11px;margin-top:7px;color:{{ s.color }}">{{ s.label }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div class="card" style="background:#fff;padding:20px">
+                  <sc-if value="{{ add1 }}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <h3 style="font-size:19px;margin:0 0 4px">Vehicle basics</h3>
+                      <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:16px">Make, model and variant come from our catalogue so buyers can filter reliably.</p>
+                      <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+                        <div class="field"><label>Make</label><input class="input" value="{{ nv.make }}" onChange="{{ setMake }}"></div>
+                        <div class="field"><label>Model</label><input class="input" value="{{ nv.model }}" onChange="{{ setModel }}"></div>
+                        <div class="field"><label>Variant</label><input class="input" value="{{ nv.variant }}" onChange="{{ setVariant }}"></div>
+                        <div class="field"><label>Year</label><input class="input" value="{{ nv.year }}" onChange="{{ setYear }}"></div>
+                        <div class="field"><label>Fuel</label>
+                          <select class="input" value="{{ nv.fuel }}" onChange="{{ setFuel }}"><option>Petrol</option><option>Diesel</option><option>CNG</option></select>
+                        </div>
+                        <div class="field"><label>Transmission</label>
+                          <select class="input" value="{{ nv.transmission }}" onChange="{{ setTransmission }}"><option>Manual</option><option>Automatic</option></select>
+                        </div>
+                        <div class="field"><label>Body type</label>
+                          <select class="input" value="{{ nv.body }}" onChange="{{ setBody }}"><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>MUV</option><option>Luxury</option></select>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ add2 }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <h3 style="font-size:19px;margin:0 0 4px">Vehicle details</h3>
+                      <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:16px">Buyers filter hard on these. Accurate numbers get better enquiries.</p>
+                      <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+                        <div class="field"><label>KM driven</label><input class="input" value="{{ nv.km }}" onChange="{{ setKm }}" style="font-variant-numeric:tabular-nums"></div>
+                        <div class="field"><label>Owners</label><select class="input"><option>First owner</option><option>Second owner</option><option>Third owner</option></select></div>
+                        <div class="field"><label>Colour</label><input class="input" defaultValue="Pearl White"></div>
+                        <div class="field"><label>Registration (RTO)</label><input class="input" defaultValue="TN 23" style="font-family:ui-monospace,Menlo,monospace"></div>
+                        <div class="field"><label>Insurance valid till</label><input class="input" defaultValue="March 2027"></div>
+                        <div class="field"><label>Location</label><input class="input" defaultValue="Vellore, Tamil Nadu"></div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ add3 }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <h3 style="font-size:19px;margin:0 0 4px">Photos</h3>
+                      <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:16px">Minimum 6 photos. The first is the primary image buyers see in results.</p>
+                      <div style="display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+                        <div style="grid-column:span 2;aspect-ratio:4/3;border:1px solid var(--color-accent);position:relative;background:var(--color-surface)">
+                          <image-slot id="dd-up-1" shape="rect" placeholder="Primary photo"></image-slot>
+                          <span class="dd-plate" style="position:absolute;bottom:8px;left:8px;z-index:2;font-size:9px">PRIMARY</span>
+                        </div>
+                        <div style="aspect-ratio:4/3;border:1px solid var(--color-divider);background:var(--color-surface)"><image-slot id="dd-up-2" shape="rect" placeholder="Rear"></image-slot></div>
+                        <div style="aspect-ratio:4/3;border:1px solid var(--color-divider);background:var(--color-surface)"><image-slot id="dd-up-3" shape="rect" placeholder="Interior"></image-slot></div>
+                        <div style="aspect-ratio:4/3;border:1px solid var(--color-divider);background:var(--color-surface)"><image-slot id="dd-up-4" shape="rect" placeholder="Odometer"></image-slot></div>
+                        <div style="aspect-ratio:4/3;border:1px dashed var(--color-divider);display:grid;place-items:center;font-size:12px;color:color-mix(in srgb,var(--color-text) 50%,transparent);text-align:center;padding:8px">Drag photos here<br>or browse</div>
+                      </div>
+                      <div style="margin-top:14px">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>Uploading DSC_4417.jpg</span><span style="font-variant-numeric:tabular-nums">68%</span></div>
+                        <div style="height:4px;background:var(--color-neutral-300)"><div style="width:68%;height:100%;background:var(--color-accent)"></div></div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ add4 }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <h3 style="font-size:19px;margin:0 0 4px">Price &amp; review</h3>
+                      <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:16px">Publishing consumes one listing credit and sends the listing to admin moderation.</p>
+                      <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+                        <div class="field"><label>Asking price (₹)</label><input class="input" value="{{ nv.price }}" onChange="{{ setPrice }}" style="font-variant-numeric:tabular-nums"></div>
+                        <div class="field"><label>Negotiable</label><select class="input"><option>Slightly negotiable</option><option>Fixed price</option></select></div>
+                        <div class="field" style="grid-column:1/-1"><label>Description</label><textarea class="input" defaultValue="Single owner, serviced only at authorised service centre. New tyres fitted in January 2026. Insurance valid till March 2027. Available for inspection at our Katpadi Main Road yard."></textarea></div>
+                      </div>
+                      <div class="blueprint" style="margin-top:18px;padding:14px;background:var(--color-accent-100)">
+                        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                          <div style="flex:1;min-width:200px">
+                            <div style="font-family:var(--font-heading);font-weight:600;font-size:16px">{{ nvTitle }}</div>
+                            <div style="font-size:13px;font-variant-numeric:tabular-nums">{{ nvPriceLabel }} · {{ nv.km }} km · {{ nv.fuel }}</div>
+                          </div>
+                          <div style="text-align:right">
+                            <div style="font-size:11px;color:var(--color-accent-800)">Credits after publish</div>
+                            <div style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ creditsAfter }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <div style="display:flex;gap:9px;margin-top:20px;padding-top:16px;border-top:1px solid var(--color-divider)">
+                    <button class="btn btn-secondary" onClick="{{ addBack }}">Back</button>
+                    <button class="btn btn-secondary" style="margin-left:auto">Save draft</button>
+                    <button class="btn btn-primary" onClick="{{ addNext }}">{{ addCta }}</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- Submitted -->
+            <sc-if value="{{ isSubmitted }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:40px 22px;max-width:640px">
+                <div class="blueprint" style="background:#fff;padding:28px">
+                  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                  <span class="tag" style="background:var(--warn-bg);color:var(--warn);font-size:11px">Pending approval</span>
+                  <h1 style="font-size:29px;margin:12px 0 8px">Your listing is awaiting admin approval</h1>
+                  <p style="font-size:14px;color:color-mix(in srgb,var(--color-text) 68%,transparent)">{{ nvTitle }} has been submitted. One listing credit is held and will be consumed when the listing goes live. Listings are usually reviewed within a few hours.</p>
+                  <div style="display:flex;gap:8px;margin-top:20px;flex-wrap:wrap">
+                    <button class="btn btn-primary" onClick="{{ goInventory }}">View inventory</button>
+                    <button class="btn btn-secondary" onClick="{{ goModeration }}">Open admin queue (demo)</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- Enquiries -->
+            <sc-if value="{{ isInquiries }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:22px">
+                <h1 style="font-size:28px;margin:0 0 14px">Enquiries</h1>
+                <div class="seg" style="margin-bottom:16px">
+                  <label class="seg-opt"><input type="radio" name="enqtab" defaultChecked="{{ true }}">New (12)</label>
+                  <label class="seg-opt"><input type="radio" name="enqtab">Contacted (34)</label>
+                  <label class="seg-opt"><input type="radio" name="enqtab">Closed (81)</label>
+                  <label class="seg-opt"><input type="radio" name="enqtab">Spam (3)</label>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ inquiries }}" as="q" hint-placeholder-count="4">
+                    <div class="card" style="background:#fff;gap:10px">
+                      <div style="display:flex;gap:11px;align-items:flex-start;flex-wrap:wrap">
+                        <span style="width:34px;height:34px;flex:none;background:var(--color-accent-100);color:var(--color-accent-800);display:grid;place-items:center;font-size:12px;font-weight:700">{{ q.initials }}</span>
+                        <div style="flex:1;min-width:180px">
+                          <div style="font-size:15px;font-weight:600;font-family:var(--font-heading)">{{ q.name }}</div>
+                          <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 58%,transparent);font-family:ui-monospace,Menlo,monospace">{{ q.phone }}</div>
+                        </div>
+                        <span class="tag tag-accent" style="font-size:10px">{{ q.source }}</span>
+                        <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent)">{{ q.when }}</span>
+                      </div>
+                      <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">On <strong>{{ q.vehicle }}</strong> — “{{ q.message }}”</div>
+                      <div style="display:flex;gap:8px;padding-top:9px;border-top:1px solid var(--color-divider);flex-wrap:wrap">
+                        <button class="btn btn-primary" style="font-size:12px">Call {{ q.phone }}</button>
+                        <button class="btn btn-secondary" style="font-size:12px">Email</button>
+                        <button class="btn btn-secondary" style="font-size:12px">Mark contacted</button>
+                        <button class="btn btn-ghost" style="font-size:12px;margin-left:auto">Close</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- Billing -->
+            <sc-if value="{{ isBilling }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:22px">
+                <h1 style="font-size:28px;margin:0 0 16px">Billing &amp; credits</h1>
+                <div class="blueprint" style="background:#fff;padding:18px;margin-bottom:22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+                  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                  <div style="flex:1;min-width:200px">
+                    <div style="font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 52%,transparent)">Listing credits available</div>
+                    <div style="font-size:44px;font-weight:700;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1.05">{{ credits }}</div>
+                    <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">One credit publishes one vehicle for 90 days.</div>
+                  </div>
+                </div>
+                <h3 style="font-size:19px;margin:0 0 12px">Buy credits</h3>
+                <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:26px">
+                  <sc-for list="{{ packs }}" as="p" hint-placeholder-count="4">
+                    <div class="card" style="background:#fff;gap:6px;border-color:{{ p.border }}">
+                      <sc-if value="{{ p.badge }}" hint-placeholder-val="{{ false }}">
+                        <span class="tag tag-accent" style="font-size:10px;align-self:flex-start">{{ p.badge }}</span>
+                      </sc-if>
+                      <div style="font-size:32px;font-weight:700;font-family:var(--font-heading);font-variant-numeric:tabular-nums">{{ p.credits }}</div>
+                      <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">credits</div>
+                      <div style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:6px">{{ p.price }}</div>
+                      <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ p.each }} per listing</div>
+                      <button class="btn btn-primary btn-block" style="font-size:13px" onClick="{{ p.buy }}">Buy</button>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))">
+                  <section>
+                    <h3 style="font-size:19px;margin:0 0 10px">Credit history</h3>
+                    <div style="background:#fff;border:1px solid var(--color-divider)">
+                      <sc-for list="{{ ledger }}" as="l" hint-placeholder-count="5">
+                        <div style="display:flex;align-items:center;gap:12px;padding:10px 13px;border-bottom:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)">
+                          <span style="font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;width:38px;color:{{ l.color }}">{{ l.delta }}</span>
+                          <span style="flex:1;font-size:13px">{{ l.label }}</span>
+                          <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent)">{{ l.date }}</span>
+                          <span style="font-size:12px;font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--color-text) 60%,transparent)">bal {{ l.balance }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </section>
+                  <section>
+                    <h3 style="font-size:19px;margin:0 0 10px">Payment history</h3>
+                    <div style="background:#fff;border:1px solid var(--color-divider)">
+                      <table class="table">
+                        <thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                          <sc-for list="{{ invoices }}" as="i" hint-placeholder-count="3">
+                            <tr>
+                              <td style="font-family:ui-monospace,Menlo,monospace;font-size:12px">{{ i.no }}</td>
+                              <td style="font-size:12px">{{ i.date }}</td>
+                              <td style="font-variant-numeric:tabular-nums">{{ i.amount }}</td>
+                              <td><span class="tag" style="background:{{ i.bg }};color:{{ i.color }};font-size:10px">{{ i.status }}</span></td>
+                              <td style="text-align:right"><button class="btn btn-ghost" style="font-size:12px">PDF</button></td>
+                            </tr>
+                          </sc-for>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ ADMIN ══ -->
+      <sc-if value="{{ isAdminApp }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;min-height:100%;background:var(--color-neutral-100)">
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <aside style="width:206px;flex:none;background:var(--color-accent-900);color:#fff;padding:18px 10px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;align-items:center;gap:8px;padding:0 8px">
+                <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;border:1px solid rgba(255,255,255,0.45);padding:2px 7px">DD</span>
+                <span style="font-family:var(--font-heading);font-weight:700;font-size:14px">Admin console</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <sc-for list="{{ adminNav }}" as="n" hint-placeholder-count="5">
+                  <button style="display:block;width:100%;text-align:left;border:0;background:{{ n.bg }};color:{{ n.fg }};cursor:pointer;font:inherit;font-size:13px;padding:6px 10px" onClick="{{ n.go }}">{{ n.label }}</button>
+                </sc-for>
+              </div>
+              <div style="margin-top:auto;font-size:11px;opacity:0.55;padding:0 8px">Ops build · read/write<br>logged to audit trail</div>
+            </aside>
+          </sc-if>
+
+          <div style="flex:1;min-width:0">
+            <header style="height:54px;background:#fff;border-bottom:1px solid var(--color-divider);display:flex;align-items:center;gap:12px;padding:0 20px">
+              <div style="font-size:14px;font-weight:600">{{ adminTitle }}</div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+                <sc-if value="{{ hasQueue }}" hint-placeholder-val="{{ true }}">
+                  <span class="tag" style="background:var(--warn-bg);color:var(--warn);font-size:11px">{{ queueCount }} awaiting review</span>
+                </sc-if>
+                <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">ops@dealers-drive.in</span>
+              </div>
+            </header>
+
+            <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+              <div style="margin:16px 20px 0;background:var(--ok-bg);border:1px solid color-mix(in srgb,var(--ok) 30%,transparent);color:var(--ok);padding:10px 14px;font-size:13px">{{ toast }}</div>
+            </sc-if>
+
+            <sc-if value="{{ isAdminDash }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:20px">
+                <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));margin-bottom:22px">
+                  <sc-for list="{{ adminStats }}" as="s" hint-placeholder-count="6">
+                    <div style="background:#fff;border:1px solid var(--color-divider);padding:14px">
+                      <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 52%,transparent)">{{ s.label }}</div>
+                      <div style="font-size:28px;font-weight:700;font-family:var(--font-heading);font-variant-numeric:tabular-nums">{{ s.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="background:#fff;border:1px solid var(--color-divider);padding:16px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+                    <h3 style="margin:0;font-size:17px">Moderation queue</h3>
+                    <button class="btn btn-ghost" style="font-size:12px" onClick="{{ goModeration }}">Open queue →</button>
+                  </div>
+                  <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 60%,transparent);margin:0">{{ queueCount }} listings submitted by dealers are waiting for approval. Oldest has been waiting 4 hours.</p>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isModeration }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:20px">
+                <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
+                  <h1 style="font-size:26px;margin:0">Listing moderation</h1>
+                  <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ queueCount }} pending</span>
+                </div>
+                <sc-if value="{{ hasQueue }}" hint-placeholder-val="{{ true }}">
+                  <div style="background:#fff;border:1px solid var(--color-divider)">
+                    <table class="table">
+                      <thead><tr><th>Vehicle</th><th>Dealer</th><th>Price</th><th>Location</th><th>Submitted</th><th></th></tr></thead>
+                      <tbody>
+                        <sc-for list="{{ queue }}" as="v" hint-placeholder-count="2">
+                          <tr>
+                            <td>
+                              <div style="display:flex;align-items:center;gap:10px">
+                                <span style="width:44px;height:33px;flex:none;background:var(--color-surface);border:1px solid var(--color-divider)"></span>
+                                <div>
+                                  <div style="font-weight:500;font-size:13px">{{ v.name }}</div>
+                                  <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ v.kmLabel }} · {{ v.fuel }} · {{ v.transmission }}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td style="font-size:13px">{{ v.dealer }}</td>
+                            <td style="font-variant-numeric:tabular-nums">{{ v.priceLabel }}</td>
+                            <td style="font-size:13px">{{ v.city }}</td>
+                            <td style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ v.submitted }}</td>
+                            <td style="text-align:right;white-space:nowrap">
+                              <button class="btn btn-secondary" style="font-size:12px;margin-right:6px" onClick="{{ v.review }}">Review</button>
+                              <button class="btn btn-primary" style="font-size:12px" onClick="{{ v.approve }}">Approve</button>
+                            </td>
+                          </tr>
+                        </sc-for>
+                      </tbody>
+                    </table>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ emptyQueue }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#fff;border:1px solid var(--color-divider);padding:52px 20px;text-align:center">
+                    <div style="font-family:var(--font-heading);font-weight:600;font-size:20px;margin-bottom:6px">Queue clear</div>
+                    <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin:0">No listings are waiting for review. Submit one from the dealer console to see this flow.</p>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:20px;max-width:1000px">
+                <button class="btn btn-ghost" style="margin-bottom:12px" onClick="{{ goModeration }}">← Back to queue</button>
+                <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))">
+                  <div style="min-width:0">
+                    <button style="aspect-ratio:4/3;width:100%;padding:0;border:1px solid var(--color-divider);background:var(--color-surface);cursor:zoom-in;position:relative" onClick="{{ openModGalleryFirst }}">
+                      <image-slot id="dd-mod-1" shape="rect" placeholder="Submitted primary photo"></image-slot>
+                      <span class="tag" style="position:absolute;bottom:8px;right:8px;z-index:3;background:#fff;font-size:11px">{{ modPhotoLabel }}</span>
+                    </button>
+                    <div style="position:relative;margin-top:8px;padding:0 32px">
+                      <button class="dd-arrow" style="left:0;width:26px;height:26px" onClick="{{ modStripPrev }}">‹</button>
+                      <div class="dd-strip" ref="{{ modStripRef }}">
+                        <sc-for list="{{ modPhotos }}" as="p" hint-placeholder-count="5">
+                          <button style="flex:0 0 92px;width:92px;aspect-ratio:4/3;border:1px solid {{ p.border }};background:var(--color-surface);padding:0;cursor:pointer;overflow:hidden" onClick="{{ p.open }}">
+                            <image-slot id="{{ p.id }}" shape="rect" placeholder="{{ p.label }}"></image-slot>
+                          </button>
+                        </sc-for>
+                      </div>
+                      <button class="dd-arrow" style="right:0;width:26px;height:26px" onClick="{{ modStripNext }}">›</button>
+                    </div>
+                  </div>
+                  <div>
+                    <h1 style="font-size:24px;margin:0 0 4px">{{ review.name }}</h1>
+                    <div style="font-size:14px;font-variant-numeric:tabular-nums;margin-bottom:14px">{{ review.priceLabel }} · {{ review.city }} · {{ review.dealer }}</div>
+                    <div style="border:1px solid var(--color-divider);background:#fff;margin-bottom:14px">
+                      <sc-for list="{{ review.specs }}" as="s" hint-placeholder-count="6">
+                        <div style="display:flex;justify-content:space-between;gap:14px;padding:9px 12px;border-bottom:1px solid color-mix(in srgb,var(--color-text) 8%,transparent);font-size:13px">
+                          <span style="color:color-mix(in srgb,var(--color-text) 58%,transparent)">{{ s.k }}</span><span style="font-weight:500">{{ s.v }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <button class="btn btn-primary" onClick="{{ review.approve }}">Approve listing</button>
+                      <button class="btn btn-secondary" onClick="{{ review.reject }}">Reject</button>
+                      <button class="btn btn-secondary">Request changes</button>
+                    </div>
+                    <p style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent);margin-top:12px">Approving consumes the dealer's held listing credit and publishes the vehicle to the public catalogue immediately.</p>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isAdminDealers }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:20px">
+                <h1 style="font-size:26px;margin:0 0 14px">Dealers</h1>
+                <div style="background:#fff;border:1px solid var(--color-divider)">
+                  <table class="table">
+                    <thead><tr><th>Dealer</th><th>City</th><th>Status</th><th>Vehicles</th><th>Active</th><th>Joined</th><th></th></tr></thead>
+                    <tbody>
+                      <sc-for list="{{ adminDealers }}" as="d" hint-placeholder-count="5">
+                        <tr>
+                          <td>
+                            <div style="display:flex;align-items:center;gap:9px">
+                              <span style="width:26px;height:26px;flex:none;background:var(--color-accent-100);color:var(--color-accent-800);display:grid;place-items:center;font-size:10px;font-weight:700">{{ d.initials }}</span>
+                              <span style="font-weight:500;font-size:13px">{{ d.name }}</span>
+                            </div>
+                          </td>
+                          <td style="font-size:13px">{{ d.city }}</td>
+                          <td><span class="tag" style="background:{{ d.bg }};color:{{ d.color }};font-size:10px">{{ d.status }}</span></td>
+                          <td style="font-variant-numeric:tabular-nums">{{ d.vehicles }}</td>
+                          <td style="font-variant-numeric:tabular-nums">{{ d.active }}</td>
+                          <td style="font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ d.joined }}</td>
+                          <td style="text-align:right"><button class="btn btn-ghost" style="font-size:12px">Manage</button></td>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ FOUNDATIONS ══ -->
+      <sc-if value="{{ isFoundations }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--color-bg);padding:36px 28px 70px">
+          <div style="max-width:1100px;margin:0 auto">
+            <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700)">Dealers-Drive design system · v0.1</div>
+            <h1 style="font-size:44px;margin:8px 0 10px">Foundations</h1>
+            <p style="font-size:15px;max-width:64ch;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:34px">Built on the Industry wireframe system — modular grid, hairline frames, registration marks — retuned to the Dealers-Drive cobalt palette with Inter for interface text and Cabinet Grotesk for headings. Token names map 1:1 to CSS custom properties for the Tailwind theme.</p>
+
+            <section style="margin-bottom:38px">
+              <h2 style="font-size:24px;margin:0 0 4px">Color</h2>
+              <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:14px">Cobalt is the only decorative colour. Everything else is neutral or semantic.</p>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <sc-for list="{{ ramps }}" as="r" hint-placeholder-count="2">
+                  <div>
+                    <div style="font-size:11px;letter-spacing:0.09em;text-transform:uppercase;margin-bottom:6px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ r.name }}</div>
+                    <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px">
+                      <sc-for list="{{ r.steps }}" as="s" hint-placeholder-count="9">
+                        <div>
+                          <div style="height:52px;background:{{ s.hex }};border:1px solid var(--color-divider)"></div>
+                          <div style="font-size:10px;margin-top:4px;font-family:ui-monospace,Menlo,monospace">{{ s.step }}</div>
+                          <div style="font-size:9px;color:color-mix(in srgb,var(--color-text) 45%,transparent);font-family:ui-monospace,Menlo,monospace">{{ s.hex }}</div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+                <div>
+                  <div style="font-size:11px;letter-spacing:0.09em;text-transform:uppercase;margin-bottom:6px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">Semantic</div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+                    <sc-for list="{{ semantics }}" as="s" hint-placeholder-count="6">
+                      <div style="border:1px solid var(--color-divider);background:#fff">
+                        <div style="height:38px;background:{{ s.hex }}"></div>
+                        <div style="padding:7px 9px">
+                          <div style="font-size:12px;font-weight:500">{{ s.name }}</div>
+                          <div style="font-size:10px;font-family:ui-monospace,Menlo,monospace;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ s.token }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section style="margin-bottom:38px">
+              <h2 style="font-size:24px;margin:0 0 14px">Type</h2>
+              <div style="background:#fff;border:1px solid var(--color-divider);padding:20px;display:flex;flex-direction:column;gap:14px">
+                <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="7">
+                  <div style="display:flex;gap:18px;align-items:baseline;border-bottom:1px solid color-mix(in srgb,var(--color-text) 8%,transparent);padding-bottom:12px">
+                    <div style="width:130px;flex:none;font-size:11px;font-family:ui-monospace,Menlo,monospace;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ t.token }}</div>
+                    <div style="flex:1;font-family:{{ t.family }};font-size:{{ t.size }};font-weight:{{ t.weight }};line-height:1.15">{{ t.sample }}</div>
+                    <div style="font-size:11px;font-family:ui-monospace,Menlo,monospace;color:color-mix(in srgb,var(--color-text) 40%,transparent)">{{ t.spec }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+
+            <section style="margin-bottom:38px">
+              <h2 style="font-size:24px;margin:0 0 4px">The registration plate</h2>
+              <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);margin-bottom:14px">Used in exactly four places: the logo, the year badge on vehicle cards, the verified-dealer chip, and the primary photo marker. Nowhere else.</p>
+              <div class="blueprint" style="background:#fff;padding:26px;display:flex;gap:30px;flex-wrap:wrap;align-items:center">
+                <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-start">
+                  <span class="dd-plate" style="font-size:18px;font-weight:600;padding:6px 14px 6px 0">DD</span>
+                  <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Logo mark</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-start">
+                  <span class="dd-plate">2021</span>
+                  <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Year badge</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-start">
+                  <span class="dd-plate" style="font-size:10px">VERIFIED DEALER</span>
+                  <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Verification chip</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-start">
+                  <span class="dd-plate" style="font-size:9px">PRIMARY</span>
+                  <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Photo marker</span>
+                </div>
+              </div>
+            </section>
+
+            <section style="margin-bottom:38px">
+              <h2 style="font-size:24px;margin:0 0 14px">Controls</h2>
+              <div style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+                <div class="card" style="background:#fff">
+                  <div class="card-kicker">Buttons</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <button class="btn btn-primary">Primary</button>
+                    <button class="btn btn-secondary">Secondary</button>
+                    <button class="btn btn-ghost">Tertiary</button>
+                    <button class="btn btn-secondary" style="color:var(--err);border-color:color-mix(in srgb,var(--err) 40%,transparent)">Destructive</button>
+                    <button class="btn btn-primary" disabled="{{ true }}">Disabled</button>
+                  </div>
+                </div>
+                <div class="card" style="background:#fff">
+                  <div class="card-kicker">Inputs</div>
+                  <div class="field"><label>Text input</label><input class="input" placeholder="Sri Lakshmi Motors"></div>
+                  <div class="field"><label>Error state</label><input class="input" style="border-color:var(--err)" defaultValue="33AABC">
+                    <div style="font-size:11px;color:var(--err);margin-top:4px">GSTIN must be 15 characters</div>
+                  </div>
+                  <div class="seg" style="margin-top:4px">
+                    <label class="seg-opt"><input type="radio" name="fseg" defaultChecked="{{ true }}">Petrol</label>
+                    <label class="seg-opt"><input type="radio" name="fseg">Diesel</label>
+                    <label class="seg-opt"><input type="radio" name="fseg">CNG</label>
+                  </div>
+                </div>
+                <div class="card" style="background:#fff">
+                  <div class="card-kicker">Status badges</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:7px">
+                    <sc-for list="{{ statusBadges }}" as="b" hint-placeholder-count="7">
+                      <span class="tag" style="background:{{ b.bg }};color:{{ b.color }};font-size:11px">{{ b.label }}</span>
+                    </sc-for>
+                  </div>
+                  <div class="card-kicker" style="margin-top:10px">Skeleton</div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <div style="height:11px;width:70%;background:var(--color-neutral-300)"></div>
+                    <div style="height:11px;width:46%;background:var(--color-neutral-300)"></div>
+                    <div style="height:11px;width:88%;background:var(--color-neutral-300)"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 style="font-size:24px;margin:0 0 14px">Spacing &amp; grid</h2>
+              <div style="background:#fff;border:1px solid var(--color-divider);padding:20px">
+                <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px">
+                  <sc-for list="{{ spacing }}" as="s" hint-placeholder-count="8">
+                    <div style="text-align:center">
+                      <div style="width:{{ s.px }};height:{{ s.px }};background:var(--color-accent-300);border:1px solid var(--color-accent-600)"></div>
+                      <div style="font-size:10px;margin-top:4px;font-family:ui-monospace,Menlo,monospace">{{ s.label }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:8px">
+                  <sc-for list="{{ cols }}" as="c" hint-placeholder-count="12">
+                    <div style="height:44px;background:var(--color-accent-100);border:1px solid var(--color-accent-300)"></div>
+                  </sc-for>
+                </div>
+                <div style="font-size:11px;margin-top:8px;color:color-mix(in srgb,var(--color-text) 50%,transparent)">1440 frame · 1280 max content · 12 columns · 24px gutters. Mobile 375 → 4 columns · 16px gutters.</div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- fullscreen gallery -->
+      <sc-if value="{{ galleryOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;z-index:90;background:#0d1017;display:flex;flex-direction:column">
+          <header style="height:54px;flex:none;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,0.14);color:#fff">
+            <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;border:1px solid rgba(255,255,255,0.4);padding:2px 7px">DD</span>
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:15px">{{ galleryTitle }}</div>
+            <div style="font-size:12px;opacity:0.6;font-variant-numeric:tabular-nums">{{ galleryCounter }}</div>
+            <button class="btn btn-secondary" style="margin-left:auto;background:transparent;color:#fff;border-color:rgba(255,255,255,0.35)" onClick="{{ closeGallery }}">Close ✕</button>
+          </header>
+          <div style="flex:1;min-height:0;display:flex">
+            <div class="dd-rail" ref="{{ railRef }}" style="width:{{ railWidth }};flex:none;padding:12px;border-right:1px solid rgba(255,255,255,0.14)">
+              <sc-for list="{{ galleryPhotos }}" as="p" hint-placeholder-count="8">
+                <button style="flex:none;width:100%;aspect-ratio:4/3;padding:0;cursor:pointer;overflow:hidden;background:#1a1f29;border:2px solid {{ p.railBorder }};position:relative" onClick="{{ p.select }}">
+                  <image-slot id="{{ p.railId }}" shape="rect" placeholder="{{ p.label }}"></image-slot>
+                  <span style="position:absolute;bottom:0;left:0;z-index:3;background:rgba(13,16,23,0.75);color:#fff;font-size:10px;font-family:ui-monospace,Menlo,monospace;padding:1px 5px">{{ p.n }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="flex:1;min-width:0;position:relative;display:flex;align-items:center;justify-content:center;padding:20px">
+              <button class="dd-arrow" style="left:14px;width:38px;height:38px;background:rgba(255,255,255,0.9)" onClick="{{ galleryPrev }}">‹</button>
+              <div style="max-width:100%;max-height:100%;aspect-ratio:4/3;width:min(100%,1100px);background:#151a23;border:1px solid rgba(255,255,255,0.16)">
+                <image-slot id="{{ galleryMainId }}" shape="rect" placeholder="{{ galleryMainLabel }}"></image-slot>
+              </div>
+              <button class="dd-arrow" style="right:14px;width:38px;height:38px;background:rgba(255,255,255,0.9)" onClick="{{ galleryNext }}">›</button>
+              <div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.7);font-size:12px">{{ galleryMainLabel }}</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- filters bottom sheet -->
+      <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;z-index:60;background:color-mix(in srgb,#14171c 45%,transparent);display:flex;align-items:flex-end" onClick="{{ closeFilters }}">
+          <div style="width:100%;background:#fff;padding:18px;max-height:80vh;overflow:auto" onClick="{{ stop }}">
+            <div style="display:flex;align-items:center;margin-bottom:14px">
+              <h3 style="margin:0;font-size:20px">Filters</h3>
+              <button class="btn btn-ghost" style="margin-left:auto" onClick="{{ clearAll }}">Clear all</button>
+            </div>
+            <h6 style="margin:0 0 8px">Budget</h6>
+            <input type="range" min="200000" max="3000000" step="50000" style="width:100%;accent-color:var(--color-accent)" value="{{ maxPrice }}" onChange="{{ setMaxPrice }}">
+            <div style="font-size:12px;margin-bottom:14px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">Up to {{ maxPriceLabel }}</div>
+            <h6 style="margin:0 0 8px">Fuel</h6>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px">
+              <sc-for list="{{ fuelOpts }}" as="o" hint-placeholder-count="3">
+                <button class="tag" style="cursor:pointer;font-size:12px;padding:6px 12px;background:{{ o.chipBg }};color:{{ o.chipColor }};border:1px solid {{ o.chipBorder }}" onClick="{{ o.toggle }}">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <h6 style="margin:0 0 8px">Body type</h6>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px">
+              <sc-for list="{{ bodyOpts }}" as="o" hint-placeholder-count="4">
+                <button class="tag" style="cursor:pointer;font-size:12px;padding:6px 12px;background:{{ o.chipBg }};color:{{ o.chipColor }};border:1px solid {{ o.chipBorder }}" onClick="{{ o.toggle }}">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <button class="btn btn-primary btn-block" style="height:44px" onClick="{{ closeFilters }}">Show {{ resultCount }} cars</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- approve / reject dialogs -->
+      <sc-if value="{{ approveTarget }}" hint-placeholder-val="{{ false }}">
+        <div class="dialog-backdrop" style="z-index:70">
+          <div class="dialog" style="background:#fff">
+            <div class="dialog-title">Approve and publish this listing?</div>
+            <div class="dialog-body">{{ approveTarget.name }} from {{ approveTarget.dealer }} will become visible in the public car catalogue immediately, and one listing credit will be consumed.</div>
+            <div class="dialog-actions">
+              <button class="btn btn-secondary" onClick="{{ cancelDialog }}">Cancel</button>
+              <button class="btn btn-primary" onClick="{{ confirmApprove }}">Approve &amp; publish</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ rejectTarget }}" hint-placeholder-val="{{ false }}">
+        <div class="dialog-backdrop" style="z-index:70">
+          <div class="dialog" style="background:#fff">
+            <div class="dialog-title">Reject this listing</div>
+            <div class="dialog-body">The dealer sees this reason in their inventory and can edit and resubmit. A rejected listing never appears publicly.</div>
+            <textarea class="input" placeholder="e.g. Odometer photo does not match the declared KM reading." value="{{ rejectReason }}" onChange="{{ setRejectReason }}"></textarea>
+            <div class="dialog-actions">
+              <button class="btn btn-secondary" onClick="{{ cancelDialog }}">Cancel</button>
+              <button class="btn btn-primary" style="background:var(--err);border-color:var(--err)" disabled="{{ rejectDisabled }}" onClick="{{ confirmReject }}">Reject listing</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2f55dd&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#2f55dd&quot;,&quot;#1e3fae&quot;,&quot;#0b57d0&quot;,&quot;#2a4b8d&quot;],&quot;section&quot;:&quot;Brand&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'home', device: 'desktop', selectedId: 'v3',
+    saved: {}, fuel: {}, body: {}, trans: {}, dealerF: {},
+    maxPrice: 3000000, sort: 'Recommended', filtersOpen: false,
+    city: 'Vellore', cityOpen: false, query: '',
+    authStep: 1, authMode: 'signup', otpError: false, onbStep: 1, addStep: 1,
+    approveId: null, rejectId: null, rejectReason: '', toast: '',
+    dealerSlug: 'sl', dFuel: {}, dBody: {}, dTrans: {}, dMaxPrice: 3000000,
+    dirQuery: '', dirCity: {}, gallerySet: null, galleryIndex: 0,
+    credits: 23,
+    nv: { make: 'Maruti Suzuki', model: 'Baleno', variant: 'Zeta AT', year: '2022', fuel: 'Petrol', transmission: 'Automatic', body: 'Hatchback', km: '29400', price: '785000' },
+    vehicles: [
+      { id:'v1', year:2021, mk:'Maruti Suzuki', md:'Swift', vr:'VXi', price:645000, km:42180, fuel:'Petrol', tr:'Manual', body:'Hatchback', owners:'First owner', city:'Vellore', dealer:'Sri Lakshmi Motors', dealerId:'sl', status:'ACTIVE', views:412, inq:9, expiry:'12 Oct 2026' },
+      { id:'v2', year:2019, mk:'Hyundai', md:'Creta', vr:'1.6 SX(O)', price:1120000, km:61340, fuel:'Diesel', tr:'Manual', body:'SUV', owners:'Second owner', city:'Katpadi', dealer:'Anbu Auto Hub', dealerId:'ah', status:'ACTIVE', views:688, inq:14, expiry:'02 Nov 2026' },
+      { id:'v3', year:2021, mk:'Toyota', md:'Fortuner', vr:'2.8 4x2 AT', price:2850000, km:38900, fuel:'Diesel', tr:'Automatic', body:'SUV', owners:'First owner', city:'Vellore', dealer:'Velavan Cars', dealerId:'vc', status:'ACTIVE', views:1204, inq:27, expiry:'19 Oct 2026' },
+      { id:'v4', year:2020, mk:'Honda', md:'City', vr:'ZX CVT', price:985000, km:34520, fuel:'Petrol', tr:'Automatic', body:'Sedan', owners:'First owner', city:'Gudiyattam', dealer:'Sri Lakshmi Motors', dealerId:'sl', status:'ACTIVE', views:531, inq:11, expiry:'28 Sep 2026' },
+      { id:'v5', year:2018, mk:'Maruti Suzuki', md:'Ertiga', vr:'VDi', price:710000, km:88400, fuel:'Diesel', tr:'Manual', body:'MUV', owners:'Second owner', city:'Ranipet', dealer:'MRV Motors', dealerId:'mm', status:'ACTIVE', views:297, inq:6, expiry:'05 Nov 2026' },
+      { id:'v6', year:2022, mk:'Tata', md:'Nexon', vr:'XZ+', price:940000, km:21760, fuel:'Petrol', tr:'Manual', body:'SUV', owners:'First owner', city:'Vellore', dealer:'Anbu Auto Hub', dealerId:'ah', status:'ACTIVE', views:744, inq:18, expiry:'21 Nov 2026' },
+      { id:'v7', year:2017, mk:'Hyundai', md:'i20', vr:'Asta', price:525000, km:74900, fuel:'Petrol', tr:'Manual', body:'Hatchback', owners:'Third owner', city:'Arcot', dealer:'MRV Motors', dealerId:'mm', status:'ACTIVE', views:203, inq:4, expiry:'14 Sep 2026' },
+      { id:'v8', year:2023, mk:'Kia', md:'Seltos', vr:'HTX', price:1590000, km:18240, fuel:'Petrol', tr:'Automatic', body:'SUV', owners:'First owner', city:'Vellore', dealer:'Velavan Cars', dealerId:'vc', status:'ACTIVE', views:961, inq:22, expiry:'30 Nov 2026' },
+      { id:'v9', year:2020, mk:'Mahindra', md:'XUV300', vr:'W8 (O)', price:875000, km:52300, fuel:'Diesel', tr:'Manual', body:'SUV', owners:'First owner', city:'Vellore', dealer:'Sri Lakshmi Motors', dealerId:'sl', status:'PENDING', views:0, inq:0, expiry:'—', submitted:'4 hours ago' },
+      { id:'v10', year:2016, mk:'Ford', md:'EcoSport', vr:'Titanium', price:495000, km:96500, fuel:'Diesel', tr:'Manual', body:'SUV', owners:'Second owner', city:'Vellore', dealer:'Sri Lakshmi Motors', dealerId:'sl', status:'DRAFT', views:0, inq:0, expiry:'—' },
+      { id:'v11', year:2019, mk:'Maruti Suzuki', md:'Dzire', vr:'ZXi', price:640000, km:57200, fuel:'Petrol', tr:'Manual', body:'Sedan', owners:'First owner', city:'Vellore', dealer:'Sri Lakshmi Motors', dealerId:'sl', status:'ACTIVE', views:388, inq:8, expiry:'08 Oct 2026' },
+      { id:'v12', year:2021, mk:'Hyundai', md:'Venue', vr:'SX Turbo', price:965000, km:31450, fuel:'Petrol', tr:'Automatic', body:'SUV', owners:'First owner', city:'Vellore', dealer:'Sri Lakshmi Motors', dealerId:'sl', status:'ACTIVE', views:502, inq:12, expiry:'24 Oct 2026' },
+      { id:'v13', year:2017, mk:'Maruti Suzuki', md:'Celerio', vr:'VXi AMT', price:385000, km:68900, fuel:'Petrol', tr:'Automatic', body:'Hatchback', owners:'Second owner', city:'Katpadi', dealer:'Anbu Auto Hub', dealerId:'ah', status:'ACTIVE', views:241, inq:5, expiry:'17 Sep 2026' },
+      { id:'v14', year:2020, mk:'Renault', md:'Triber', vr:'RXZ', price:585000, km:44300, fuel:'Petrol', tr:'Manual', body:'MUV', owners:'First owner', city:'Katpadi', dealer:'Anbu Auto Hub', dealerId:'ah', status:'ACTIVE', views:319, inq:7, expiry:'11 Nov 2026' },
+      { id:'v15', year:2018, mk:'Honda', md:'Jazz', vr:'V CVT', price:562000, km:63100, fuel:'Petrol', tr:'Automatic', body:'Hatchback', owners:'Second owner', city:'Katpadi', dealer:'Anbu Auto Hub', dealerId:'ah', status:'ACTIVE', views:276, inq:6, expiry:'03 Oct 2026' },
+      { id:'v16', year:2022, mk:'Skoda', md:'Slavia', vr:'Style 1.0 AT', price:1485000, km:22800, fuel:'Petrol', tr:'Automatic', body:'Sedan', owners:'First owner', city:'Vellore', dealer:'Velavan Cars', dealerId:'vc', status:'ACTIVE', views:812, inq:19, expiry:'27 Nov 2026' },
+      { id:'v17', year:2019, mk:'Toyota', md:'Innova Crysta', vr:'2.4 VX', price:1790000, km:71400, fuel:'Diesel', tr:'Manual', body:'MUV', owners:'First owner', city:'Vellore', dealer:'Velavan Cars', dealerId:'vc', status:'ACTIVE', views:1043, inq:24, expiry:'15 Oct 2026' },
+      { id:'v18', year:2020, mk:'Jeep', md:'Compass', vr:'Longitude 4x2', price:1685000, km:48600, fuel:'Diesel', tr:'Automatic', body:'SUV', owners:'Second owner', city:'Vellore', dealer:'Velavan Cars', dealerId:'vc', status:'ACTIVE', views:733, inq:15, expiry:'06 Nov 2026' },
+      { id:'v19', year:2015, mk:'Maruti Suzuki', md:'Alto 800', vr:'LXi', price:225000, km:82400, fuel:'Petrol', tr:'Manual', body:'Hatchback', owners:'Third owner', city:'Ranipet', dealer:'MRV Motors', dealerId:'mm', status:'ACTIVE', views:164, inq:3, expiry:'22 Sep 2026' },
+      { id:'v20', year:2018, mk:'Datsun', md:'GO+', vr:'T Option', price:342000, km:59700, fuel:'Petrol', tr:'Manual', body:'MUV', owners:'Second owner', city:'Arcot', dealer:'MRV Motors', dealerId:'mm', status:'ACTIVE', views:198, inq:4, expiry:'29 Oct 2026' }
+    ]
+  };
+
+  vdpStripRef = React.createRef();
+  modStripRef = React.createRef();
+  railRef = React.createRef();
+
+  photoSets = {
+    vdp: ['Three-quarter front', 'Rear three-quarter', 'Front seats', 'Dashboard', 'Rear seats', 'Boot space', 'Odometer', 'Engine bay', 'Alloy wheels', 'Left profile', 'Right profile']
+      .map((label, i) => ({ id: 'dd-gal-' + (i + 1), label })),
+    mod: ['Primary — front', 'Rear', 'Interior', 'Odometer reading', 'RC book', 'Insurance papers', 'Left profile', 'Engine bay']
+      .map((label, i) => ({ id: 'dd-mod-' + (i + 1), label }))
+  };
+
+  dealerInfo = {
+    sl: { id: 'sl', name: 'Sri Lakshmi Motors', initials: 'SL', city: 'Vellore', years: 12,
+      address: '14, Katpadi Main Road, Gandhi Nagar, Vellore 632006, Tamil Nadu', phone: '+91 98400 12345',
+      about: 'A family-run dealership operating on Katpadi Main Road since 2014. We buy directly from single-owner customers in and around Vellore, put every car through a 120-point check at our own workshop, and sell with the full service history in hand. RC transfer, loan tie-ups and insurance renewal are handled in-house.',
+      services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups', 'Exchange accepted', '7-day return window'],
+      gst: '33AABCS1429P1ZK' },
+    ah: { id: 'ah', name: 'Anbu Auto Hub', initials: 'AA', city: 'Katpadi', years: 7,
+      address: '221, Bagayam Road, Katpadi, Vellore 632007, Tamil Nadu', phone: '+91 90031 44521',
+      about: 'Katpadi-based multi-brand dealership focused on well-kept hatchbacks and compact SUVs under ₹12 Lakh. Every vehicle is sourced locally and inspected before listing.',
+      services: ['Multi-brand inventory', 'Free first service', 'Exchange accepted'], gst: '33AAFCA8821K1ZP' },
+    vc: { id: 'vc', name: 'Velavan Cars', initials: 'VC', city: 'Vellore', years: 15,
+      address: '5, Officers Line, Vellore 632001, Tamil Nadu', phone: '+91 94441 90210',
+      about: 'The oldest independent used-car dealership in Vellore town, specialising in premium SUVs and executive sedans. Extended warranty available on vehicles under 60,000 km.',
+      services: ['Premium inventory', 'Extended warranty', 'Doorstep test drive', 'Bank loan tie-ups'], gst: '33AACCV3391M1ZR' },
+    mm: { id: 'mm', name: 'MRV Motors', initials: 'MM', city: 'Ranipet', years: 5,
+      address: '88, Arcot Road, Ranipet 632401, Tamil Nadu', phone: '+91 99401 77362',
+      about: 'Ranipet dealership dealing mainly in budget hatchbacks and MUVs for first-time buyers across the Arcot–Ranipet belt.',
+      services: ['Budget inventory', 'First-time buyer support', 'Exchange accepted'], gst: '33AAKCM5512J1ZQ' }
+  };
+
+  scrollStrip = (ref, dir) => () => { const el = ref.current; if (el) el.scrollBy({ left: dir * 240, behavior: 'smooth' }); };
+  openGallery = (set, index) => () => this.setState({ gallerySet: set, galleryIndex: index });
+
+  componentDidMount() { this.applyAccent(); }
+  componentDidUpdate(p) { if (p.accentColor !== this.props.accentColor) this.applyAccent(); }
+  setRail = (el) => { this._rail = el; if (el) this.syncRail(); };
+  setGalleryIndex = (n) => this.setState({ galleryIndex: n }, () => this.syncRail(n));
+  syncRail(n) {
+    const rail = this._rail; if (!rail) return;
+    const i = n == null ? this.state.galleryIndex : n;
+    const thumb = rail.children[i]; if (!thumb) return;
+    const r = rail.getBoundingClientRect(), t = thumb.getBoundingClientRect();
+    const target = rail.scrollTop + (t.top - r.top) - (rail.clientHeight - t.height) / 2;
+    rail.scrollTo({ top: Math.max(0, Math.min(target, rail.scrollHeight - rail.clientHeight)), behavior: 'smooth' });
+  }
+  applyAccent() {
+    const a = this.props.accentColor;
+    if (a) document.documentElement.style.setProperty('--color-accent', a);
+  }
+
+  go = (screen) => (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ screen, filtersOpen: false, cityOpen: false, toast: '' }); window.scrollTo && window.scrollTo(0, 0); };
+  money = (n) => '₹' + (n / 100000).toFixed(2) + ' Lakh';
+  emi = (n) => '₹' + Math.round(n * 0.0182 / 500) * 500 + '/mo';
+  emiFull = (n) => 'EMI from ₹' + (Math.round(n * 0.0182 / 500) * 500).toLocaleString('en-IN') + '/month';
+  km = (n) => Number(n).toLocaleString('en-IN') + ' km';
+  initials = (s) => s.split(' ').slice(0, 2).map(w => w[0]).join('');
+  name = (v) => v.year + ' ' + v.mk + ' ' + v.md + ' ' + v.vr;
+
+  statusStyle = (s) => ({
+    ACTIVE:   { label: 'Active',         bg: 'var(--ok-bg)',   color: 'var(--ok)' },
+    PENDING:  { label: 'Pending review', bg: 'var(--warn-bg)', color: 'var(--warn)' },
+    REJECTED: { label: 'Rejected',       bg: 'var(--err-bg)',  color: 'var(--err)' },
+    DRAFT:    { label: 'Draft',          bg: 'var(--color-neutral-200)', color: 'var(--color-neutral-800)' },
+    SOLD:     { label: 'Sold',           bg: 'var(--color-accent-100)',  color: 'var(--color-accent-800)' },
+    EXPIRED:  { label: 'Expired',        bg: 'var(--color-neutral-200)', color: 'var(--color-neutral-700)' }
+  }[s] || { label: s, bg: 'var(--color-neutral-200)', color: 'var(--color-neutral-800)' });
+
+  toggleIn = (key, val) => () => this.setState(s => {
+    const next = Object.assign({}, s[key]);
+    if (next[val]) delete next[val]; else next[val] = true;
+    return { [key]: next };
+  });
+
+  card = (v) => ({
+    id: v.id, year: String(v.year), name: v.mk + ' ' + v.md + ' ' + v.vr,
+    priceLabel: this.money(v.price), emiLabel: this.emi(v.price), kmLabel: this.km(v.km),
+    fuel: v.fuel, transmission: v.tr, city: v.city, dealer: v.dealer,
+    dealerInitials: this.initials(v.dealer), slotId: 'dd-slot-' + v.id,
+    slotHint: v.mk + ' ' + v.md,
+    saveIcon: this.state.saved[v.id] ? '♥' : '♡',
+    saveColor: this.state.saved[v.id] ? 'var(--color-accent)' : 'var(--color-text)',
+    open: () => this.setState({ selectedId: v.id, screen: 'vdp' }),
+    enquire: (e) => { e.stopPropagation(); this.setState({ selectedId: v.id, screen: 'success' }); },
+    toggleSave: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.toggleIn('saved', v.id)(); }
+  });
+
+  renderVals() {
+    const st = this.state, S = st.screen;
+    const active = st.vehicles.filter(v => v.status === 'ACTIVE');
+    const mine = st.vehicles.filter(v => v.dealerId === 'sl');
+    const queue = st.vehicles.filter(v => v.status === 'PENDING');
+    const rejected = mine.find(v => v.status === 'REJECTED');
+    const sel = st.vehicles.find(v => v.id === st.selectedId) || st.vehicles[2];
+
+    const on = (o) => Object.keys(o);
+    const q = st.query.trim().toLowerCase();
+    const inCity = (v) => st.city === 'All of Tamil Nadu' || v.city === st.city;
+    const matchesQ = (v) => !q || this.name(v).toLowerCase().indexOf(q) !== -1;
+    const pass = (v) => inCity(v) && matchesQ(v) && v.price <= st.maxPrice
+      && (on(st.fuel).length === 0 || st.fuel[v.fuel])
+      && (on(st.body).length === 0 || st.body[v.body])
+      && (on(st.trans).length === 0 || st.trans[v.tr])
+      && (on(st.dealerF).length === 0 || st.dealerF[v.dealer]);
+    let results = active.filter(pass);
+    const sorters = {
+      'Price: Low to High': (a, b) => a.price - b.price,
+      'Price: High to Low': (a, b) => b.price - a.price,
+      'Newest first': (a, b) => b.year - a.year,
+      'KM: Low to High': (a, b) => a.km - b.km
+    };
+    if (sorters[st.sort]) results = results.slice().sort(sorters[st.sort]);
+
+    const opt = (key, label, count) => {
+      const checked = !!st[key][label];
+      return { label, count, checked, toggle: this.toggleIn(key, label),
+        chipBg: checked ? 'var(--color-accent)' : 'transparent',
+        chipColor: checked ? '#fff' : 'var(--color-text)',
+        chipBorder: checked ? 'var(--color-accent)' : 'var(--color-divider)' };
+    };
+    const countBy = (f, val) => active.filter(v => f(v) === val).length;
+
+    const chips = [];
+    ['fuel', 'body', 'trans', 'dealerF'].forEach(k => on(st[k]).forEach(val =>
+      chips.push({ label: val, remove: this.toggleIn(k, val) })));
+
+    // dealer portfolio
+    const dlr = this.dealerInfo[st.dealerSlug] || this.dealerInfo.sl;
+    const dealerStock = active.filter(v => v.dealerId === dlr.id);
+    const dPass = (v) => v.price <= st.dMaxPrice
+      && (on(st.dFuel).length === 0 || st.dFuel[v.fuel])
+      && (on(st.dBody).length === 0 || st.dBody[v.body])
+      && (on(st.dTrans).length === 0 || st.dTrans[v.tr]);
+    let dealerResults = dealerStock.filter(dPass);
+    if (sorters[st.sort]) dealerResults = dealerResults.slice().sort(sorters[st.sort]);
+
+    const savedList = st.vehicles.filter(v => st.saved[v.id]);
+
+    // dealer directory
+    const dirBlurbs = { sl: 'Family-run since 2014 — single-owner cars with full service history.',
+      ah: 'Multi-brand hatchbacks and compact SUVs under ₹12 Lakh, all locally sourced.',
+      vc: 'Vellore town\'s oldest independent dealership — premium SUVs and executive sedans.',
+      mm: 'Budget hatchbacks and MUVs for first-time buyers across the Arcot–Ranipet belt.' };
+    const dirList = ['sl', 'ah', 'vc', 'mm'].map(id => {
+      const d = this.dealerInfo[id];
+      const stock = active.filter(v => v.dealerId === id);
+      const low = stock.length ? Math.min.apply(null, stock.map(v => v.price)) : 0;
+      return { id, name: d.name, initials: d.initials, city: d.city, years: d.years,
+        blurb: dirBlurbs[id], tags: d.services.slice(0, 3), cars: stock.length,
+        fromPrice: stock.length ? this.money(low) : '—',
+        coverId: 'dd-dir-' + id, coverHint: d.name + ' — yard photo',
+        open: () => this.setState({ dealerSlug: id, screen: 'dealer', dFuel: {}, dBody: {}, dTrans: {}, dMaxPrice: 3000000 }) };
+    }).filter(d => (on(st.dirCity).length === 0 || st.dirCity[d.city])
+      && d.name.toLowerCase().indexOf(st.dirQuery.trim().toLowerCase()) !== -1);
+
+    // gallery
+    const gSet = st.gallerySet ? this.photoSets[st.gallerySet] : null;
+    const gIndex = gSet ? Math.min(st.galleryIndex, gSet.length - 1) : 0;
+
+    const nav = (screen, label) => ({ label, active: st.screen === screen, go: this.go(screen) });
+    const dealerScreens = ['dash', 'inventory', 'add', 'submitted', 'inquiries', 'billing'];
+    const adminScreens = ['adash', 'moderation', 'review', 'adealers'];
+
+    const stepper = (labels, cur) => labels.map((label, i) => ({
+      label, bar: i < cur ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+      color: i < cur ? 'var(--color-accent-700)' : 'color-mix(in srgb, var(--color-text) 45%, transparent)'
+    }));
+
+    const nvPrice = Number(st.nv.price) || 0;
+
+    return {
+      // shell
+      isDesktop: st.device === 'desktop', isMobile: st.device === 'mobile',
+      deviceLabel: st.device === 'desktop' ? 'Desktop — 1440px frame' : 'Mobile — 375px frame',
+      setDesktop: () => this.setState({ device: 'desktop' }),
+      setMobile: () => this.setState({ device: 'mobile' }),
+      frameStyle: st.device === 'mobile'
+        ? { width: '375px', minHeight: '100%', background: 'var(--color-bg)', borderLeft: '1px solid var(--color-divider)', borderRight: '1px solid var(--color-divider)', boxShadow: 'var(--shadow-lg)' }
+        : { width: '100%', maxWidth: '1440px', minHeight: '100%', background: 'var(--color-bg)' },
+      navGroups: [
+        { label: 'System', items: [nav('foundations', 'Foundations')] },
+        { label: 'Customer', items: [nav('home', 'Homepage'), nav('cars', 'Search results'), nav('vdp', 'Vehicle detail'), nav('dealers', 'Dealer directory'), nav('dealer', 'Dealer portfolio'), nav('saved', 'Saved cars'), nav('success', 'Enquiry sent')] },
+        { label: 'Dealer', items: [{ label: 'Sign in', active: st.screen === 'auth' && st.authMode === 'signin', go: () => this.setState({ screen: 'auth', authMode: 'signin', authStep: 1 }) },
+          { label: 'Sign up & OTP', active: st.screen === 'auth' && st.authMode !== 'signin', go: () => this.setState({ screen: 'auth', authMode: 'signup', authStep: 1 }) }, nav('onboarding', 'Onboarding'), nav('dash', 'Dashboard'), nav('inventory', 'Inventory'), nav('add', 'Add vehicle'), nav('inquiries', 'Enquiries'), nav('billing', 'Billing & credits')] },
+        { label: 'Admin', items: [nav('adash', 'Dashboard'), nav('moderation', 'Moderation queue'), nav('review', 'Review listing'), nav('adealers', 'Dealers')] }
+      ],
+
+      isCustomer: ['home', 'cars', 'vdp', 'success', 'dealer', 'dealers', 'saved'].includes(S),
+      isDealerPage: S === 'dealer',
+      isHome: S === 'home', isCars: S === 'cars', isVdp: S === 'vdp', isSuccess: S === 'success',
+      isDealerEntry: ['auth', 'onboarding'].includes(S),
+      isAuth: S === 'auth', isOnboarding: S === 'onboarding',
+      isDealerApp: dealerScreens.includes(S),
+      isDash: S === 'dash', isInventory: S === 'inventory', isAdd: S === 'add',
+      isSubmitted: S === 'submitted', isInquiries: S === 'inquiries', isBilling: S === 'billing',
+      isAdminApp: adminScreens.includes(S),
+      isAdminDash: S === 'adash', isModeration: S === 'moderation', isReview: S === 'review',
+      isAdminDealers: S === 'adealers', isFoundations: S === 'foundations',
+
+      goHome: this.go('home'), goCars: this.go('cars'), goVdp: this.go('vdp'),
+      goAuth: this.go('auth'), goAdd: this.go('add'), goBilling: this.go('billing'),
+      goInventory: this.go('inventory'), goInquiries: this.go('inquiries'),
+      goModeration: this.go('moderation'),
+      goEnquire: this.go('success'),
+      stop: (e) => e.stopPropagation(),
+      toast: st.toast,
+
+      // home
+      popular: ['Cars under ₹5L', 'Cars under ₹10L', 'Automatic', 'First owner', 'SUVs', 'Hatchbacks']
+        .map(label => ({ label, go: this.go('cars') })),
+      featured: active.slice(0, 4).map(this.card),
+      activeCount: active.length,
+      bodyTypes: ['Hatchback', 'Sedan', 'SUV', 'MUV', 'Luxury'].map(label => ({
+        label, count: countBy(v => v.body, label), go: this.go('cars') })),
+      dealers: ['sl', 'ah', 'vc', 'mm'].map(id => {
+        const d = this.dealerInfo[id];
+        return { name: d.name, city: d.city, cars: active.filter(v => v.dealerId === id).length, years: d.years, initials: d.initials,
+          open: () => this.setState({ dealerSlug: id, screen: 'dealer', dFuel: {}, dBody: {}, dTrans: {}, dMaxPrice: 3000000 }) };
+      }),
+      whyPoints: [
+        { n: '01', title: 'Independent dealers', body: 'Every car belongs to a local dealership you can walk into, not a faceless warehouse.' },
+        { n: '02', title: 'Verified inventory', body: 'GSTIN, PAN and address proof checked before a dealer can publish anything.' },
+        { n: '03', title: 'Moderated listings', body: 'Every listing is reviewed by our team before it reaches the catalogue.' },
+        { n: '04', title: 'Transparent pricing', body: 'The dealer sets the price and it is the price you see. No platform markup.' },
+        { n: '05', title: 'Direct enquiries', body: 'Your enquiry goes straight to the dealer. No call centre in between.' }
+      ],
+
+      // search
+      results: results.map(this.card), resultCount: results.length,
+      resultLabel: results.length.toLocaleString('en-IN') + ' cars available',
+      hasResults: results.length > 0, noResults: results.length === 0,
+      carsCols: st.device === 'mobile' ? '1fr' : '250px 1fr',
+      vdpCols: st.device === 'mobile' ? '1fr' : '1.35fr 1fr',
+      sort: st.sort, setSort: (e) => this.setState({ sort: e.target.value }),
+      maxPrice: st.maxPrice, maxPriceLabel: this.money(st.maxPrice),
+      setMaxPrice: (e) => this.setState({ maxPrice: Number(e.target.value) }),
+      fuelOpts: ['Petrol', 'Diesel', 'CNG'].map(l => opt('fuel', l, countBy(v => v.fuel, l))),
+      bodyOpts: ['Hatchback', 'Sedan', 'SUV', 'MUV'].map(l => opt('body', l, countBy(v => v.body, l))),
+      transOpts: ['Manual', 'Automatic'].map(l => opt('trans', l, countBy(v => v.tr, l))),
+      dealerOpts: ['Sri Lakshmi Motors', 'Anbu Auto Hub', 'Velavan Cars', 'MRV Motors']
+        .map(l => opt('dealerF', l, countBy(v => v.dealer, l))),
+      chips, hasChips: chips.length > 0,
+      clearAll: () => this.setState({ fuel: {}, body: {}, trans: {}, dealerF: {}, maxPrice: 3000000, query: '' }),
+      query: st.query,
+      setQuery: (e) => this.setState({ query: e.target.value }),
+      runSearch: this.go('cars'),
+      onQueryKey: (e) => { if (e.key === 'Enter') this.setState({ screen: 'cars' }); },
+      cityLabel: st.city, cityOpen: st.cityOpen,
+      toggleCityMenu: () => this.setState(s => ({ cityOpen: !s.cityOpen })),
+      cityOptions: ['All of Tamil Nadu', 'Vellore', 'Katpadi', 'Ranipet', 'Arcot', 'Gudiyattam'].map(label => ({
+        label, active: st.city === label,
+        count: label === 'All of Tamil Nadu' ? active.length : active.filter(v => v.city === label).length,
+        select: () => this.setState({ city: label, cityOpen: false })
+      })),
+      filtersOpen: st.filtersOpen,
+      openFilters: () => this.setState({ filtersOpen: true }),
+      closeFilters: () => this.setState({ filtersOpen: false }),
+
+      // VDP
+      sel: Object.assign(this.card(sel), {
+        summary: sel.owners + ' · ' + sel.city + ', Tamil Nadu · TN 23 registration',
+        emiFull: this.emiFull(sel.price),
+        saveLabel: st.saved[sel.id] ? '♥ Saved' : '♡ Save',
+        toggleSave: this.toggleIn('saved', sel.id),
+        viewDealership: () => this.setState({ dealerSlug: sel.dealerId, screen: 'dealer', dFuel: {}, dBody: {}, dTrans: {}, dMaxPrice: 3000000 }),
+        dealerCars: active.filter(v => v.dealerId === sel.dealerId).length,
+        specs: [
+          { k: 'Year', v: String(sel.year) }, { k: 'KM driven', v: this.km(sel.km) },
+          { k: 'Fuel', v: sel.fuel }, { k: 'Transmission', v: sel.tr },
+          { k: 'Ownership', v: sel.owners }, { k: 'Registration', v: 'TN 23 · ' + sel.city },
+          { k: 'Insurance', v: 'Comprehensive, valid to Mar 2027' }, { k: 'Body type', v: sel.body }
+        ],
+        features: ['Sunroof', '6 airbags', 'ABS with EBD', 'Android Auto', 'Cruise control', 'Reverse camera', 'Push-button start', 'Alloy wheels', 'Climate control'],
+        description: 'Well-maintained ' + sel.md + ' serviced only at the authorised centre — full service history available for inspection at our yard. Original paint on all panels except the left rear door. New tyres fitted in January 2026, insurance valid to March 2027. RC transfer and loan assistance handled in-house.'
+      }),
+
+      // dealer portfolio
+      dlr: {
+        name: dlr.name, initials: dlr.initials, address: dlr.address, phone: dlr.phone,
+        about: dlr.about, services: dlr.services, liveCount: dealerStock.length,
+        stats: [
+          { label: 'Cars available', value: String(dealerStock.length) },
+          { label: 'Years operating', value: String(dlr.years) },
+          { label: 'Location', value: dlr.city },
+          { label: 'Response time', value: '< 2 hrs' }
+        ],
+        contact: [
+          { k: 'Phone', v: dlr.phone }, { k: 'City', v: dlr.city + ', Tamil Nadu' },
+          { k: 'GSTIN', v: dlr.gst }, { k: 'Open', v: 'Mon–Sat, 9:30am – 8:00pm' }
+        ]
+      },
+      dealerCols: st.device === 'mobile' ? '1fr' : '234px 1fr',
+      dealerResults: dealerResults.map(this.card),
+      hasDealerResults: dealerResults.length > 0, noDealerResults: dealerResults.length === 0,
+      dealerResultLabel: dealerResults.length + ' of ' + dealerStock.length + ' cars',
+      dMaxPrice: st.dMaxPrice, dMaxPriceLabel: this.money(st.dMaxPrice),
+      setDMaxPrice: (e) => this.setState({ dMaxPrice: Number(e.target.value) }),
+      dealerFilterGroups: [
+        { label: 'Fuel', key: 'dFuel', opts: ['Petrol', 'Diesel', 'CNG'], f: (v) => v.fuel },
+        { label: 'Body type', key: 'dBody', opts: ['Hatchback', 'Sedan', 'SUV', 'MUV'], f: (v) => v.body },
+        { label: 'Transmission', key: 'dTrans', opts: ['Manual', 'Automatic'], f: (v) => v.tr }
+      ].map(g => ({
+        label: g.label,
+        opts: g.opts.map(l => {
+          const count = dealerStock.filter(v => g.f(v) === l).length;
+          return Object.assign(opt(g.key, l, count), { opacity: count ? 1 : 0.4 });
+        })
+      })),
+      dealerChips: ['dFuel', 'dBody', 'dTrans'].reduce((acc, k) => acc.concat(
+        on(st[k]).map(val => ({ label: val, remove: this.toggleIn(k, val) }))), []),
+      hasDealerChips: on(st.dFuel).length + on(st.dBody).length + on(st.dTrans).length > 0,
+      clearDealerFilters: () => this.setState({ dFuel: {}, dBody: {}, dTrans: {}, dMaxPrice: 3000000 }),
+
+      // saved
+      isSaved: S === 'saved', goSaved: this.go('saved'),
+      savedCars: savedList.map(this.card),
+      hasSaved: savedList.length > 0, noSaved: savedList.length === 0,
+      savedBadge: savedList.length ? '(' + savedList.length + ')' : '',
+      savedCountLabel: savedList.length === 1 ? '1 car saved' : savedList.length + ' cars saved',
+      clearSaved: () => this.setState({ saved: {} }),
+
+      // dealer directory
+      isDealerDirectory: S === 'dealers',
+      goDealers: this.go('dealers'),
+      dirQuery: st.dirQuery,
+      setDirQuery: (e) => this.setState({ dirQuery: e.target.value }),
+      dirCities: ['Vellore', 'Katpadi', 'Ranipet'].map(l => opt('dirCity', l, 0)),
+      clearDirFilters: () => this.setState({ dirQuery: '', dirCity: {} }),
+      dirDealers: dirList, hasDirResults: dirList.length > 0, noDirResults: dirList.length === 0,
+      dirCountLabel: dirList.length + (dirList.length === 1 ? ' verified dealership' : ' verified dealerships'),
+
+      // gallery
+      vdpPhotos: this.photoSets.vdp.map((p, i) => ({
+        id: p.id, label: p.label, border: 'var(--color-divider)',
+        open: this.openGallery('vdp', i)
+      })),
+      vdpPhotoLabel: this.photoSets.vdp.length + ' photos · view all',
+      railRef: this.setRail,
+      vdpStripRef: this.vdpStripRef,
+      vdpStripPrev: this.scrollStrip(this.vdpStripRef, -1),
+      vdpStripNext: this.scrollStrip(this.vdpStripRef, 1),
+      openGalleryFirst: this.openGallery('vdp', 0),
+      modPhotos: this.photoSets.mod.map((p, i) => ({
+        id: p.id, label: p.label, border: 'var(--color-divider)',
+        open: this.openGallery('mod', i)
+      })),
+      modPhotoLabel: this.photoSets.mod.length + ' submitted photos',
+      modStripRef: this.modStripRef,
+      modStripPrev: this.scrollStrip(this.modStripRef, -1),
+      modStripNext: this.scrollStrip(this.modStripRef, 1),
+      openModGalleryFirst: this.openGallery('mod', 0),
+      galleryOpen: !!gSet,
+      railWidth: st.device === 'mobile' ? '84px' : '132px',
+      galleryTitle: st.gallerySet === 'mod' ? this.name(sel) + ' — submitted photos' : this.name(sel),
+      galleryCounter: gSet ? (gIndex + 1) + ' / ' + gSet.length : '',
+      galleryPhotos: gSet ? gSet.map((p, i) => ({
+        railId: p.id, label: p.label, n: String(i + 1).padStart(2, '0'),
+        railBorder: i === gIndex ? 'var(--color-accent)' : 'transparent',
+        select: () => this.setGalleryIndex(i)
+      })) : [],
+      galleryMainId: gSet ? gSet[gIndex].id : '',
+      galleryMainLabel: gSet ? gSet[gIndex].label : '',
+      galleryPrev: () => this.setGalleryIndex((gIndex - 1 + gSet.length) % gSet.length),
+      galleryNext: () => this.setGalleryIndex((gIndex + 1) % gSet.length),
+      closeGallery: () => this.setState({ gallerySet: null }),
+
+      // dealer
+      credits: st.credits,
+      dealerNav: [nav('dash', 'Dashboard'), nav('inventory', 'Inventory'), nav('add', 'Add vehicle'), nav('inquiries', 'Enquiries'), nav('billing', 'Billing'), nav('onboarding', 'Dealer profile')],
+      dashStats: [
+        { label: 'Active listings', value: String(mine.filter(v => v.status === 'ACTIVE').length), delta: '+2 this week', deltaColor: 'var(--ok)' },
+        { label: 'Available credits', value: String(st.credits), delta: '5 used this month', deltaColor: 'color-mix(in srgb, var(--color-text) 55%, transparent)' },
+        { label: 'New enquiries', value: '12', delta: '+4 vs last week', deltaColor: 'var(--ok)' },
+        { label: 'Vehicle views', value: '2,481', delta: '−6% vs last week', deltaColor: 'var(--warn)' }
+      ],
+      chart: [['Mon', 46], ['Tue', 62], ['Wed', 58], ['Thu', 81], ['Fri', 100], ['Sat', 92], ['Sun', 54]]
+        .map(([d, h]) => ({ d, h: h + '%' })),
+      inquiries: [
+        { initials: 'KR', name: 'Karthik Raja', phone: '+91 98407 22118', vehicle: '2021 Maruti Suzuki Swift VXi', message: 'Is the price negotiable? Can I see it on Saturday morning?', when: '18 min ago', source: 'Listing page' },
+        { initials: 'PS', name: 'Priya Selvam', phone: '+91 90031 88420', vehicle: '2020 Honda City ZX CVT', message: 'Need loan assistance. What documents should I bring?', when: '2 hours ago', source: 'Call button' },
+        { initials: 'MV', name: 'Mohan Venkatesh', phone: '+91 94441 07733', vehicle: '2021 Maruti Suzuki Swift VXi', message: 'Any accident history? Is the service record available?', when: 'Yesterday', source: 'Listing page' },
+        { initials: 'AF', name: 'Arun Fernandes', phone: '+91 99401 55219', vehicle: '2020 Honda City ZX CVT', message: 'Interested if you can include a new set of tyres.', when: '2 days ago', source: 'Dealer page' }
+      ],
+      myVehicles: mine.map(v => {
+        const s = this.statusStyle(v.status);
+        return { name: this.name(v), priceLabel: this.money(v.price), kmLabel: this.km(v.km), fuel: v.fuel,
+          statusLabel: s.label, statusBg: s.bg, statusColor: s.color, views: String(v.views), inq: String(v.inq), expiry: v.expiry };
+      }),
+      myCount: mine.length,
+      hasRejected: !!rejected,
+      rejectedTitle: rejected ? this.name(rejected) + ' was rejected' : '',
+      rejectedReason: rejected ? (rejected.reason || '') : '',
+      resubmit: () => this.setState(s => ({
+        vehicles: s.vehicles.map(v => v.status === 'REJECTED' ? Object.assign({}, v, { status: 'PENDING', submitted: 'just now' }) : v),
+        toast: 'Listing resubmitted for approval.'
+      })),
+
+      // auth + onboarding
+      authSignIn: st.authStep === 1 && st.authMode === 'signin',
+      authPhone: st.authStep === 1 && st.authMode !== 'signin',
+      authOtp: st.authStep === 2, otpError: st.otpError,
+      goSignIn: () => this.setState({ screen: 'auth', authMode: 'signin', authStep: 1, otpError: false }),
+      goSignUp: () => this.setState({ screen: 'auth', authMode: 'signup', authStep: 1, otpError: false }),
+      otpSubline: st.authMode === 'signin'
+        ? 'Sent to the registered number +91 98400 12345. It expires in 10 minutes.'
+        : 'Sent to +91 98400 12345. It expires in 10 minutes.',
+      otpCta: st.authMode === 'signin' ? 'Verify and sign in' : 'Verify and continue',
+      authNext: () => this.setState({ authStep: 2 }),
+      authBack: () => this.setState({ authStep: 1, otpError: false }),
+      authVerify: () => st.authMode === 'signin'
+        ? this.setState({ screen: 'dash', authStep: 1 })
+        : this.setState({ screen: 'onboarding', onbStep: 1, authStep: 1 }),
+      toggleOtpError: () => this.setState(s => ({ otpError: !s.otpError })),
+      onbSteps: stepper(['Account', 'Business', 'Documents', 'Review'], st.onbStep),
+      onb1: st.onbStep === 1, onb2: st.onbStep === 2, onb3: st.onbStep === 3, onb4: st.onbStep === 4,
+      onbCta: st.onbStep === 3 ? 'Submit for verification' : st.onbStep === 4 ? 'Go to dashboard' : 'Continue',
+      onbNext: () => st.onbStep === 4 ? this.setState({ screen: 'dash' }) : this.setState({ onbStep: st.onbStep + 1 }),
+      onbBack: () => this.setState({ onbStep: Math.max(1, st.onbStep - 1) }),
+      docs: [
+        { label: 'GST certificate', status: 'gst-cert.pdf · uploaded', action: 'Replace', icon: '✓', tint: 'var(--ok-bg)', color: 'var(--ok)' },
+        { label: 'PAN card', status: 'Uploading — 62%', action: 'Cancel', icon: '↑', tint: 'var(--color-accent-100)', color: 'var(--color-accent-700)' },
+        { label: 'Address proof', status: 'Required — PDF or JPG, max 5 MB', action: 'Upload', icon: '+', tint: 'var(--color-neutral-200)', color: 'var(--color-neutral-700)' }
+      ],
+
+      // add vehicle
+      addSteps: stepper(['Basics', 'Details', 'Photos', 'Price & review'], st.addStep),
+      add1: st.addStep === 1, add2: st.addStep === 2, add3: st.addStep === 3, add4: st.addStep === 4,
+      addCta: st.addStep === 4 ? 'Submit for approval' : 'Continue',
+      addBack: () => this.setState({ addStep: Math.max(1, st.addStep - 1) }),
+      addNext: () => {
+        if (st.addStep < 4) return this.setState({ addStep: st.addStep + 1 });
+        const nv = st.nv;
+        const id = 'v' + (st.vehicles.length + 1);
+        this.setState({
+          vehicles: st.vehicles.concat([{
+            id, year: Number(nv.year), mk: nv.make, md: nv.model, vr: nv.variant,
+            price: Number(nv.price), km: Number(nv.km), fuel: nv.fuel, tr: nv.transmission,
+            body: nv.body, owners: 'First owner', city: 'Vellore', dealer: 'Sri Lakshmi Motors',
+            dealerId: 'sl', status: 'PENDING', views: 0, inq: 0, expiry: '—', submitted: 'just now'
+          }]),
+          screen: 'submitted', addStep: 1
+        });
+      },
+      nv: st.nv,
+      nvTitle: st.nv.year + ' ' + st.nv.make + ' ' + st.nv.model + ' ' + st.nv.variant,
+      nvPriceLabel: this.money(nvPrice),
+      creditsAfter: String(Math.max(0, st.credits - 1)),
+      setMake: (e) => this.setNv('make', e.target.value), setModel: (e) => this.setNv('model', e.target.value),
+      setVariant: (e) => this.setNv('variant', e.target.value), setYear: (e) => this.setNv('year', e.target.value),
+      setFuel: (e) => this.setNv('fuel', e.target.value), setTransmission: (e) => this.setNv('transmission', e.target.value),
+      setBody: (e) => this.setNv('body', e.target.value), setKm: (e) => this.setNv('km', e.target.value),
+      setPrice: (e) => this.setNv('price', e.target.value),
+
+      // billing
+      packs: [
+        { credits: '10', price: '₹4,500', each: '₹450', border: 'var(--color-divider)', badge: '', buy: () => this.buy(10) },
+        { credits: '25', price: '₹10,000', each: '₹400', border: 'var(--color-accent)', badge: 'Most popular', buy: () => this.buy(25) },
+        { credits: '50', price: '₹17,500', each: '₹350', border: 'var(--color-divider)', badge: '', buy: () => this.buy(50) },
+        { credits: '100', price: '₹30,000', each: '₹300', border: 'var(--color-divider)', badge: 'Best value', buy: () => this.buy(100) }
+      ],
+      ledger: [
+        { delta: '+25', label: 'Purchased — 25 credit pack', date: '02 Aug 2026', balance: '28', color: 'var(--ok)' },
+        { delta: '−1', label: 'Listing published — 2022 Tata Nexon XZ+', date: '04 Aug 2026', balance: '27', color: 'var(--err)' },
+        { delta: '−1', label: 'Listing published — 2020 Honda City ZX CVT', date: '07 Aug 2026', balance: '26', color: 'var(--err)' },
+        { delta: '+10', label: 'Admin grant — onboarding bonus', date: '09 Aug 2026', balance: '36', color: 'var(--ok)' },
+        { delta: '−13', label: 'Listings published — bulk import', date: '12 Aug 2026', balance: '23', color: 'var(--err)' }
+      ],
+      invoices: [
+        { no: 'DD-INV-2026-0418', date: '02 Aug 2026', amount: '₹10,000', status: 'Captured', bg: 'var(--ok-bg)', color: 'var(--ok)' },
+        { no: 'DD-INV-2026-0301', date: '11 Jul 2026', amount: '₹4,500', status: 'Captured', bg: 'var(--ok-bg)', color: 'var(--ok)' },
+        { no: 'DD-INV-2026-0287', date: '09 Jul 2026', amount: '₹4,500', status: 'Failed', bg: 'var(--err-bg)', color: 'var(--err)' }
+      ],
+
+      // admin
+      adminNav: [
+        ['adash', 'Dashboard'], ['moderation', 'Listings'], ['adealers', 'Dealers'],
+        ['adash', 'Payments'], ['adash', 'Configuration']
+      ].map(([s, label], i) => ({
+        label, go: this.go(s),
+        bg: (st.screen === s && i < 3) ? 'rgba(255,255,255,0.16)' : 'transparent',
+        fg: (st.screen === s && i < 3) ? '#fff' : 'rgba(255,255,255,0.7)'
+      })),
+      adminTitle: S === 'moderation' ? 'Listing moderation' : S === 'review' ? 'Review listing' : S === 'adealers' ? 'Dealer management' : 'Operations overview',
+      adminStats: [
+        { label: 'Total dealers', value: '86' }, { label: 'Pending verification', value: '7' },
+        { label: 'Active listings', value: String(active.length + 1240) }, { label: 'Payments (30d)', value: '₹4.2 L' },
+        { label: 'Revenue (30d)', value: '₹3.6 L' }, { label: 'New enquiries', value: '312' }
+      ],
+      queue: queue.map(v => ({
+        name: this.name(v), dealer: v.dealer, priceLabel: this.money(v.price), city: v.city,
+        kmLabel: this.km(v.km), fuel: v.fuel, transmission: v.tr, submitted: v.submitted || 'just now',
+        review: () => this.setState({ selectedId: v.id, screen: 'review' }),
+        approve: () => this.setState({ approveId: v.id })
+      })),
+      queueCount: queue.length, hasQueue: queue.length > 0, emptyQueue: queue.length === 0,
+      review: {
+        name: this.name(sel), priceLabel: this.money(sel.price), city: sel.city, dealer: sel.dealer,
+        specs: [
+          { k: 'KM driven', v: this.km(sel.km) }, { k: 'Fuel', v: sel.fuel },
+          { k: 'Transmission', v: sel.tr }, { k: 'Ownership', v: sel.owners },
+          { k: 'Body type', v: sel.body }, { k: 'Photos submitted', v: '11' },
+          { k: 'Dealer status', v: 'Verified · GSTIN on file' }
+        ],
+        approve: () => this.setState({ approveId: sel.id }),
+        reject: () => this.setState({ rejectId: sel.id, rejectReason: '' })
+      },
+      approveTarget: st.approveId ? (() => { const v = st.vehicles.find(x => x.id === st.approveId); return { name: this.name(v), dealer: v.dealer }; })() : null,
+      rejectTarget: !!st.rejectId,
+      rejectReason: st.rejectReason,
+      rejectDisabled: st.rejectReason.trim().length < 6,
+      setRejectReason: (e) => this.setState({ rejectReason: e.target.value }),
+      cancelDialog: () => this.setState({ approveId: null, rejectId: null }),
+      confirmApprove: () => this.setState(s => ({
+        vehicles: s.vehicles.map(v => v.id === s.approveId ? Object.assign({}, v, { status: 'ACTIVE', expiry: '13 Nov 2026' }) : v),
+        approveId: null, credits: Math.max(0, s.credits - 1), screen: 'moderation',
+        toast: 'Listing approved — now live in the public catalogue.'
+      })),
+      confirmReject: () => this.setState(s => ({
+        vehicles: s.vehicles.map(v => v.id === s.rejectId ? Object.assign({}, v, { status: 'REJECTED', reason: s.rejectReason }) : v),
+        rejectId: null, screen: 'moderation', toast: 'Listing rejected — the dealer has been notified with your reason.'
+      })),
+      adminDealers: [
+        { name: 'Sri Lakshmi Motors', initials: 'SL', city: 'Vellore', status: 'Active', vehicles: '18', active: '16', joined: '14 Mar 2025', bg: 'var(--ok-bg)', color: 'var(--ok)' },
+        { name: 'Anbu Auto Hub', initials: 'AA', city: 'Katpadi', status: 'Active', vehicles: '24', active: '22', joined: '02 Jun 2025', bg: 'var(--ok-bg)', color: 'var(--ok)' },
+        { name: 'Velavan Cars', initials: 'VC', city: 'Vellore', status: 'Active', vehicles: '31', active: '29', joined: '19 Nov 2024', bg: 'var(--ok-bg)', color: 'var(--ok)' },
+        { name: 'MRV Motors', initials: 'MM', city: 'Ranipet', status: 'Pending', vehicles: '11', active: '0', joined: '09 Aug 2026', bg: 'var(--warn-bg)', color: 'var(--warn)' },
+        { name: 'Gokul Cars', initials: 'GC', city: 'Arcot', status: 'Suspended', vehicles: '6', active: '0', joined: '21 Jan 2026', bg: 'var(--err-bg)', color: 'var(--err)' }
+      ],
+
+      // foundations
+      ramps: [
+        { name: 'Cobalt (brand)', steps: ['#eef2ff', '#dbe3ff', '#b9c8ff', '#8ba3f7', '#5a79ec', '#2f55dd', '#1e3fae', '#172f7d', '#101f4f'].map((hex, i) => ({ hex, step: (i + 1) * 100 })) },
+        { name: 'Neutral', steps: ['#f5f5f8', '#e7e7ea', '#d4d4d7', '#b7b7ba', '#98989b', '#7a7a7d', '#5d5d60', '#424244', '#2b2b2d'].map((hex, i) => ({ hex, step: (i + 1) * 100 })) }
+      ],
+      semantics: [
+        { name: 'Background', token: '--color-bg', hex: '#f4f5f7' },
+        { name: 'Surface', token: '--color-surface', hex: '#eaecf0' },
+        { name: 'Text primary', token: '--color-text', hex: '#14171c' },
+        { name: 'Action primary', token: '--color-accent', hex: '#2f55dd' },
+        { name: 'Success', token: '--ok', hex: '#0f7a5a' },
+        { name: 'Warning', token: '--warn', hex: '#a15c00' },
+        { name: 'Error', token: '--err', hex: '#b3261e' }
+      ],
+      typeScale: [
+        { token: 'display', family: 'var(--font-heading)', size: '46px', weight: 700, sample: 'Every dealer. One drive.', spec: '46 / 1.02' },
+        { token: 'h1', family: 'var(--font-heading)', size: '34px', weight: 600, sample: 'Used cars in Vellore', spec: '34 / 1.1' },
+        { token: 'h2', family: 'var(--font-heading)', size: '26px', weight: 600, sample: 'Featured inventory', spec: '26 / 1.15' },
+        { token: 'h3', family: 'var(--font-heading)', size: '19px', weight: 600, sample: 'Vehicle specifications', spec: '19 / 1.2' },
+        { token: 'body', family: 'var(--font-body)', size: '15px', weight: 400, sample: 'Single owner, serviced only at the authorised centre.', spec: '15 / 1.55' },
+        { token: 'body-sm', family: 'var(--font-body)', size: '13px', weight: 400, sample: '42,180 km · Petrol · Manual · Vellore', spec: '13 / 1.5' },
+        { token: 'price', family: 'var(--font-body)', size: '22px', weight: 600, sample: '₹6.45 Lakh', spec: '22 / tabular' },
+        { token: 'plate', family: 'ui-monospace, Menlo, monospace', size: '13px', weight: 500, sample: 'TN 23 BX 4417', spec: '13 / 0.08em' }
+      ],
+      statusBadges: ['ACTIVE', 'PENDING', 'REJECTED', 'DRAFT', 'SOLD', 'EXPIRED'].map(s => {
+        const x = this.statusStyle(s); return { label: x.label, bg: x.bg, color: x.color };
+      }),
+      spacing: [4, 8, 12, 16, 24, 32, 48, 64].map(n => ({ px: n + 'px', label: n })),
+      cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    };
+  }
+
+  setNv(k, v) { this.setState(s => ({ nv: Object.assign({}, s.nv, { [k]: v }) })); }
+  buy(n) { this.setState(s => ({ credits: s.credits + n, toast: n + ' credits added — payment captured via Razorpay.' })); }
+}
+</script>
+</body>
+</html>

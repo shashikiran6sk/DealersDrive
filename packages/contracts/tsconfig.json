@@ -1,0 +1,10 @@
+{
+  "extends": "@dealers-drive/config/tsconfig/node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "//": "The checking project: src plus tests, so the linter can see both. `tsconfig.build.json` emits dist.",
+  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

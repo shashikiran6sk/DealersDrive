@@ -1,0 +1,16 @@
+// Dealers-Drive — database schema.
+//
+// Datasource and generator only. Every model and enum arrives with the feature
+// that owns it, in the order set by `docs/project/feature-map.md`; the first is
+// F014 (User, Session). Money is BigInt paise everywhere, and every
+// dealer-owned table carries `dealerId` as a first-class column so tenant
+// filtering is one indexed predicate and never a join.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
