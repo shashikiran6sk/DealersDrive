@@ -23,16 +23,15 @@ import { createApp } from '../../src/server.js';
  * a problem document with no traceId.
  *
  * ── Reconstruction note ───────────────────────────────────────────────────
- * Positions 6 and 7 do not exist yet, so the describes that pin them are not
- * here either. They come back with the features that add the middleware:
+ * The middleware stack is complete as of F003, so every position above is
+ * pinned. Two cases still wait on routes rather than on middleware:
  *
- *   'not-found sits after the routes'   → F003
- *   'the error handler sits last'       → F003
- *   the 413 `code` and malformed-JSON cases in 'the body parsers' → F003,
- *     which is what turns an Express default error into a problem document
- *   'stamps one on a body-parser failure' → F003, for the same reason: the
- *     traceId reaches the response *body* only once the error handler renders
- *     the problem document. The header is asserted here already.
+ *   'does not shadow a route that exists'          → F006, which mounts /health
+ *   'turns a typo'd query parameter into a 400'    → the first route with a
+ *                                                    query schema to validate
+ *
+ * Both assert that a real route survives the stack, and there is no real route
+ * yet. They are not weakened versions of themselves in the meantime.
  */
 
 function app(): Express {
@@ -71,6 +70,23 @@ describe('the request context comes first', () => {
     const response = await request(app()).get('/v1/nope');
 
     expect(response.headers['x-trace-id']).toBeDefined();
+  });
+
+  /**
+   * The reason the context is mounted above the body parser: a malformed body
+   * fails inside `express.json()`, before any route. If the context ran later,
+   * that error would be the one failure a dealer could not quote a traceId
+   * for — and malformed bodies are exactly what people file bugs about.
+   */
+  it('stamps one on a body-parser failure, which happens before any route', async () => {
+    const response = await request(app())
+      .post('/v1/enquiries')
+      .set('Content-Type', 'application/json')
+      .send('{"not":');
+
+    expect(response.status).toBe(400);
+    expect(response.headers['x-trace-id']).toBeDefined();
+    expect((response.body as { traceId?: string }).traceId).toBeDefined();
   });
 
   it('gives each request its own traceId', async () => {
@@ -125,11 +141,7 @@ describe('the body parsers', () => {
     expect(response.status).not.toBe(415);
   });
 
-  /**
-   * Bounded so one request cannot exhaust the process's memory. F003 adds the
-   * assertion that this is rendered as a `PAYLOAD_TOO_LARGE` problem document
-   * rather than whatever Express produces by default.
-   */
+  /** Bounded so one request cannot exhaust the process's memory. */
   it('refuses a body over the limit with 413, not a 500', async () => {
     const response = await request(app())
       .post('/v1/enquiries')
@@ -137,5 +149,47 @@ describe('the body parsers', () => {
       .send(JSON.stringify({ message: 'x'.repeat(2 * 1024 * 1024) }));
 
     expect(response.status).toBe(413);
+    expect((response.body as { code?: string }).code).toBe('PAYLOAD_TOO_LARGE');
+  });
+
+  it('turns malformed JSON into a 400 problem document, not a crash', async () => {
+    const response = await request(app())
+      .post('/v1/enquiries')
+      .set('Content-Type', 'application/json')
+      .send('{"unclosed": ');
+
+    expect(response.status).toBe(400);
+    expect(response.headers['content-type']).toContain('application/problem+json');
+    expect((response.body as { code?: string }).code).toBe('MALFORMED_BODY');
+  });
+});
+
+describe('not-found sits after the routes', () => {
+  it('answers an unmatched path with a problem document rather than HTML', async () => {
+    const response = await request(app()).get('/v1/nope');
+
+    expect(response.status).toBe(404);
+    expect(response.headers['content-type']).toContain('application/problem+json');
+    expect((response.body as { code?: string }).code).toBe('NOT_FOUND');
+  });
+
+  it('names the method and path that missed', async () => {
+    const response = await request(app()).post('/v1/typo');
+
+    expect((response.body as { detail?: string }).detail).toContain('POST /v1/typo');
+  });
+});
+
+describe('the error handler sits last', () => {
+  it('renders every failure as application/problem+json', async () => {
+    const response = await request(app()).get('/v1/nope');
+
+    expect(response.headers['content-type']).toContain('application/problem+json');
+  });
+
+  it('carries the same traceId in the body and the header', async () => {
+    const response = await request(app()).get('/v1/nope');
+
+    expect((response.body as { traceId?: string }).traceId).toBe(response.headers['x-trace-id']);
   });
 });

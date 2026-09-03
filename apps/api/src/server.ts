@@ -5,6 +5,8 @@ import helmet from 'helmet';
 
 import { env } from './config/env.js';
 import type { Container } from './container.js';
+import { errorHandler } from './middleware/error-handler.js';
+import { notFound } from './middleware/not-found.js';
 import { requestContext } from './middleware/request-context.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { createRoutes } from './routes.js';
@@ -22,13 +24,8 @@ import { createRoutes } from './routes.js';
  *      + cookie parser    — before routes, so the session resolver can read it
  *   4. request-logger   — after context, so its lines carry the traceId
  *   5. routes
- *   6. not-found        — anything unmatched becomes a NotFoundError    [F003]
- *   7. error-handler    — last, always                                  [F003]
- *
- * ── Reconstruction note ───────────────────────────────────────────────────
- * Positions 6 and 7 are not here yet. F003 adds not-found and error-handler,
- * in the positions the comment gives them — the ordering is the security
- * model, not a style choice.
+ *   6. not-found        — anything unmatched becomes a NotFoundError
+ *   7. error-handler    — last, always
  */
 export function createApp(container: Container): Express {
   const app = express();
@@ -60,6 +57,9 @@ export function createApp(container: Container): Express {
   app.use(requestLogger);
 
   app.use(createRoutes(container));
+
+  app.use(notFound);
+  app.use(errorHandler);
 
   return app;
 }
