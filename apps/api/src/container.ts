@@ -8,6 +8,9 @@ import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
 import { createEventBus, type EventBus } from './platform/events/bus.js';
 import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
 import { createQueue, type Queue } from './platform/jobs/queue.js';
+import { createStorage } from './platform/storage/factory.js';
+import { ensureBucket } from './platform/storage/s3.adapter.js';
+import type { StoragePort } from './platform/storage/storage.port.js';
 import { logger } from './platform/telemetry/logger.js';
 
 /**
@@ -46,6 +49,8 @@ export interface Container {
   readonly queue: Queue;
   readonly bus: EventBus;
   readonly outbox: OutboxPublisher;
+  /** Local disk, MinIO or R2 — chosen by `STORAGE_DRIVER`, never by a module. */
+  readonly storage: StoragePort;
 }
 
 export interface ContainerOverrides {
@@ -55,6 +60,7 @@ export interface ContainerOverrides {
   /** The integration suite pins this to memory so windows reset with the process. */
   readonly cache?: CachePort;
   readonly queue?: Queue;
+  readonly storage?: StoragePort;
 }
 
 /**
@@ -71,14 +77,22 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const queue = overrides.queue ?? createQueue();
   const bus = createEventBus();
   const outbox = createOutboxPublisher(prisma, bus);
+  const storage = overrides.storage ?? createStorage();
 
-  return { env: overrides.env ?? env, prisma, cache, rateLimit, queue, bus, outbox };
+  return { env: overrides.env ?? env, prisma, cache, rateLimit, queue, bus, outbox, storage };
 }
 
 /** Starts the background machinery. Not called by tests, which drain inline. */
 export async function startBackground(container: Container): Promise<void> {
-  // The bucket check arrives with F032, and `registerSchedules` with the
-  // handlers — see the note on `handlers.ts` in the F031 feature-map entry.
+  // A fresh MinIO volume has no bucket, and the first photo upload should not be
+  // the thing that discovers that.
+  if (env.STORAGE_DRIVER !== 'local') {
+    await ensureBucket();
+    logger.info({ bucket: env.S3_BUCKET, endpoint: env.S3_ENDPOINT }, 'object storage ready');
+  }
+
+  // `registerSchedules` arrives with the handlers — see the note on
+  // `handlers.ts` in the F031 feature-map entry.
   if (!env.JOBS_ENABLED) return;
 
   await container.queue.start();

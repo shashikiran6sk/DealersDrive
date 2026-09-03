@@ -56,11 +56,11 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F028 — Caching layer · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F029 — Platform config & feature flags
 - [x] F030 — Audit log · ⚠️ pulled forward, ahead of Tier 2
-- [~] F031 — Events, outbox & background jobs · ⚠️ pulled forward, ahead of Tier 2
+- [x] F031 — Events, outbox & background jobs · ⚠️ pulled forward, ahead of Tier 2
 
 ## Tier 5 — Storage & media
 
-- [ ] F032 — Storage port & adapters
+- [~] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F033 — Presigned upload & commit
 - [ ] F034 — Image derivative pipeline
 - [ ] F035 — Media ordering & primary photo
