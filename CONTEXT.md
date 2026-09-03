@@ -171,6 +171,68 @@ before F060.
 
 ---
 
+## 7a. The sandbox needs Tailwind told where to look
+
+Found at F017, and it had been silently true since S1.
+
+`apps/sandbox/.storybook/preview.tsx` imports the real
+`apps/web/src/styles/globals.css`, whose first line is `@import 'tailwindcss'`.
+Two things have to be arranged for that to produce any CSS at all, and neither
+is inferred:
+
+1. **PostCSS runs from the sandbox's root, not the stylesheet's.** Vite resolves
+   `postcss.config.*` against its own root — `apps/sandbox` — so `apps/web`'s
+   config never applies. Without `apps/sandbox/postcss.config.mjs` the
+   `@import` does not expand and the sheet is inert.
+2. **Tailwind v4 discovers utility classes by scanning outward from the
+   stylesheet it is processing.** From `apps/sandbox` that walk does not reach
+   `apps/web/src`, so every utility class in every component produces nothing.
+   `apps/sandbox/src/preview.css` states both roots explicitly with `@source`.
+
+The failure mode is the reason this is written down: with (1) missing the story
+renders as unstyled HTML, which reads as a broken import; with (2) missing the
+story renders with its `@theme` colours and typography but **no layout**, which
+reads convincingly like a bug in the component. Both send you hunting in
+`apps/web`, where nothing is wrong.
+
+If a story ever loses its styling, check these two files before the component.
+
+---
+
+## 7b. The restore ledger
+
+Tier 2 could not be reconstructed feature-by-feature without cutting into files
+that later features own. Every cut is marked in the code with a
+`── Reconstruction slice ──` comment and in the owning feature's `feature-map.md`
+entry, but they are scattered, so this is the one list.
+
+**Nothing here is a decision. Each line is a promise to put something back.**
+
+| Restore in                      | What comes back                                                                                           | Where it was cut                                                                |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **F033**                        | `PUT /uploads` and its `routes.test.ts` case                                                              | F032 landed the adapter that presigns against it; `createStorageRouter` is F033 |
+| **F039**                        | `saveBusinessIdsAction` + its `describe` block                                                            | `features/auth/actions.ts`, `actions.test.ts`                                   |
+| **F042**                        | `submitForVerificationAction` + its `describe` block                                                      | same two files                                                                  |
+| **F046**                        | `GET /v1/dealer` → 200 in `auth.test.ts`; `reached` in `routes.test.ts`; the rest of `dealers.service.ts` | the two test files, `dealers.service.ts`                                        |
+| **F049**                        | `GET /v1/admin/metrics/overview` → 200; `AdminOverview` as `currentAdmin`'s type                          | `auth.test.ts`, web `lib/session.ts`                                            |
+| **F064**                        | `pendingListingCount`'s real query + 1 test case                                                          | `dealers.repository.ts`                                                         |
+| **F066**                        | `describe('tenant isolation survives real sessions')`, and `tests/tenant-isolation.test.ts`               | `auth.test.ts`                                                                  |
+| **F088**                        | `newEnquiryCount`'s real query + 2 test cases                                                             | `dealers.repository.ts`                                                         |
+| **F095**                        | `seoMetadata({ kind: 'private' })` on both login pages                                                    | `app/(auth)/*/login/page.tsx`                                                   |
+| **F096**                        | `auth.docs.ts` — and every other module's docs file                                                       | never landed                                                                    |
+| **F097**                        | the real seed; `prisma/seed/index.ts` is currently the three rows `auth.test.ts` needs                    | `prisma/seed/`                                                                  |
+| the last of F033/F055/F076/F092 | `platform/jobs/handlers.ts`, `registerSchedules`, `handlers.test.ts`                                      | never landed — `HandlerDeps` names five services that do not exist              |
+
+Two lines are **not** restores and must not be treated as such:
+
+- `GET /v1/catalog/bundle` is gone for good — decision D1.
+- `/v1/dealer` and `/v1/admin` are mounted with their guard and no child
+  routers. That is the finished state of F016, not a stub: the guard runs on
+  every path under the prefix, so later routers inherit the boundary rather
+  than re-declaring it.
+
+---
+
 ## 8. Local development
 
 ```bash

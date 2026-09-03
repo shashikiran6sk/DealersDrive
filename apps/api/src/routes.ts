@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import type { Container } from './container.js';
+import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/auth.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 
 /**
@@ -22,9 +23,12 @@ import { createHealthRouter } from './modules/health/health.routes.js';
  * every version rather than belonging to one.
  *
  * ── Reconstruction note ───────────────────────────────────────────────────
- * Health is mounted as of F006. Storage (`/uploads`) arrives at F032 and the
- * docs router at F096; auth at F018, and the dealer and admin chains with
- * their guards at F016.
+ * Health is mounted as of F006, auth and the two guarded chains as of
+ * F016/F018. `/uploads` arrives with F033 — F032 landed the adapter that
+ * presigns against it, not the router that serves it — and the docs router
+ * with F096. The `/v1/dealer` and `/v1/admin` chains carry their guard and no
+ * child routers yet: every router that goes under them belongs to a later
+ * feature, and the guard is what this mount exists to establish.
  */
 export function createRoutes(container: Container): Router {
   const router = Router();
@@ -32,6 +36,25 @@ export function createRoutes(container: Container): Router {
   router.use('/health', createHealthRouter(container));
 
   const v1 = Router();
+
+  // ── auth ──────────────────────────────────────────────────────────────
+  // Two routers on one prefix, in this order. The first answers the paths that
+  // must work without a session — sign-in cannot require being signed in — and
+  // falls through for everything else; the second guards what is left. Order is
+  // the security boundary here: swapping these two lines would leave
+  // `/onboarding` open.
+  v1.use('/auth', createPublicAuthRouter(container.auth, container.rateLimit));
+  v1.use('/auth', container.guards.requireSignedIn, createSessionAuthRouter(container.auth));
+
+  // ── dealer ────────────────────────────────────────────────────────────
+  const dealer = Router();
+  dealer.use(container.guards.requireDealer);
+  v1.use('/dealer', dealer);
+
+  // ── admin ─────────────────────────────────────────────────────────────
+  const admin = Router();
+  admin.use(container.guards.requireAdmin);
+  v1.use('/admin', admin);
 
   router.use('/v1', v1);
 

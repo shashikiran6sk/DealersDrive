@@ -1,0 +1,20 @@
+/**
+ * The sandbox's stylesheet entry.
+ *
+ * It is one line of its own on top of `apps/web/src/styles/globals.css` — the
+ * real token sheet, never a copy — and that line is load-bearing.
+ *
+ * Tailwind v4 discovers the classes to generate by scanning outward from the
+ * stylesheet it is processing. Run from `apps/web` that finds the app; run from
+ * `apps/sandbox`, which is where Vite invokes PostCSS, it does not, and every
+ * utility class in every component silently produces nothing. The symptom is a
+ * story that renders with its `@theme` colours but no layout at all, which
+ * looks enough like a component bug to send someone hunting in the wrong file.
+ *
+ * So the source root is stated rather than inferred. Stories themselves are
+ * scanned too: a story may use a utility no component happens to use yet.
+ */
+@import '../../web/src/styles/globals.css';
+
+@source '../../web/src';
+@source './stories';
