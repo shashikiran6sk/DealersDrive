@@ -171,6 +171,34 @@ before F060.
 
 ---
 
+## 7a. The sandbox needs Tailwind told where to look
+
+Found at F017, and it had been silently true since S1.
+
+`apps/sandbox/.storybook/preview.tsx` imports the real
+`apps/web/src/styles/globals.css`, whose first line is `@import 'tailwindcss'`.
+Two things have to be arranged for that to produce any CSS at all, and neither
+is inferred:
+
+1. **PostCSS runs from the sandbox's root, not the stylesheet's.** Vite resolves
+   `postcss.config.*` against its own root — `apps/sandbox` — so `apps/web`'s
+   config never applies. Without `apps/sandbox/postcss.config.mjs` the
+   `@import` does not expand and the sheet is inert.
+2. **Tailwind v4 discovers utility classes by scanning outward from the
+   stylesheet it is processing.** From `apps/sandbox` that walk does not reach
+   `apps/web/src`, so every utility class in every component produces nothing.
+   `apps/sandbox/src/preview.css` states both roots explicitly with `@source`.
+
+The failure mode is the reason this is written down: with (1) missing the story
+renders as unstyled HTML, which reads as a broken import; with (2) missing the
+story renders with its `@theme` colours and typography but **no layout**, which
+reads convincingly like a bug in the component. Both send you hunting in
+`apps/web`, where nothing is wrong.
+
+If a story ever loses its styling, check these two files before the component.
+
+---
+
 ## 8. Local development
 
 ```bash

@@ -1,8 +1,9 @@
 import type { Preview } from '@storybook/nextjs-vite';
 
-// The real token sheet, not a copy. If F007's @theme block stops rendering
-// outside Next, this is where it shows up.
-import '../../web/src/styles/globals.css';
+// The real token sheet, not a copy — reached through `preview.css`, which adds
+// the two `@source` roots Tailwind cannot infer from here. If F007's @theme
+// block stops rendering outside Next, this is where it shows up.
+import '../src/preview.css';
 
 /**
  * Viewport presets are the four widths the product's own class names break at,
