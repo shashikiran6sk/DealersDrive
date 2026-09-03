@@ -46,8 +46,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F021 — Docker images
 - [x] F022 — CI pipeline
 - [x] F023 — Security scanning & dependency automation
-- [~] F024 — Release & image promotion
-- [ ] F025 — Deployment infrastructure
+- [x] F024 — Release & image promotion
+- [~] F025 — Deployment infrastructure
 
 ## Tier 4 — Platform services
 

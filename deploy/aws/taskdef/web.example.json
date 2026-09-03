@@ -1,0 +1,59 @@
+{
+  "_comment": [
+    "ECS task definition for the Next.js server — dd-web-dev and dd-web-prod.",
+    "",
+    "It holds no secrets, and that is not an oversight: every call it makes is server-to-server",
+    "to the API, and the dealer's session cookie is forwarded from the incoming request rather",
+    "than stored. There is nothing here worth stealing.",
+    "",
+    "API_BASE_URL is the Service Connect name, not the public URL — the browser never uses this",
+    "value, and a round trip out to the load balancer to reach a container in the same subnet",
+    "would pay for an internet hop and a TLS handshake for nothing."
+  ],
+  "family": "dd-web-dev",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": { "cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX" },
+  "executionRoleArn": "arn:aws:iam::<account>:role/dd-ecs-execution",
+  "taskRoleArn": "arn:aws:iam::<account>:role/dd-web-task-dev",
+  "containerDefinitions": [
+    {
+      "name": "web",
+      "image": "<account>.dkr.ecr.<region>.amazonaws.com/dealers-drive/web:sha-PLACEHOLDER",
+      "essential": true,
+      "portMappings": [
+        { "name": "web", "containerPort": 3000, "protocol": "tcp", "appProtocol": "http" }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "APP_ENV", "value": "dev" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "WEB_BASE_URL", "value": "https://dev.dealers-drive.com" },
+        { "name": "API_BASE_URL", "value": "http://dd-api-dev:4000" },
+        { "name": "NEXT_TELEMETRY_DISABLED", "value": "1" },
+        { "name": "NODE_OPTIONS", "value": "--max-old-space-size=768" }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 30
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/dealers-drive/dev/web",
+          "awslogs-region": "<region>",
+          "awslogs-stream-prefix": "web"
+        }
+      },
+      "stopTimeout": 20
+    }
+  ]
+}

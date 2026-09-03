@@ -1,0 +1,48 @@
+{
+  "_comment": [
+    "The schema owner — dd-migrate-dev and dd-migrate-prod. It is a TASK, not a service: it runs",
+    "`prisma migrate deploy`, exits, and is never long-lived.",
+    "",
+    "Migrations do not belong in the API's boot path. Two tasks starting together would race to",
+    "alter the same tables, and a failed migration would become a crash loop instead of a failed",
+    "deploy. _deploy.yml runs this to completion and refuses to touch a service until it exits 0.",
+    "",
+    "It uses the MIGRATOR image, not the API image: `prisma` (the CLI) and `tsx` are dev",
+    "dependencies, and the runtime image installs production dependencies only. Same Dockerfile,",
+    "same commit, earlier stage.",
+    "",
+    "Two variables, one of them the database. The smallest surface in the system that can alter",
+    "the schema is the right size for it."
+  ],
+  "family": "dd-migrate-dev",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": { "cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX" },
+  "executionRoleArn": "arn:aws:iam::<account>:role/dd-ecs-execution",
+  "taskRoleArn": "arn:aws:iam::<account>:role/dd-migrate-task-dev",
+  "containerDefinitions": [
+    {
+      "name": "migrate",
+      "image": "<account>.dkr.ecr.<region>.amazonaws.com/dealers-drive/migrator:sha-PLACEHOLDER",
+      "essential": true,
+      "command": ["pnpm", "db:migrate:deploy"],
+      "environment": [{ "name": "NODE_ENV", "value": "development" }],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/DATABASE_URL"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/dealers-drive/dev/migrate",
+          "awslogs-region": "<region>",
+          "awslogs-stream-prefix": "migrate"
+        }
+      }
+    }
+  ]
+}

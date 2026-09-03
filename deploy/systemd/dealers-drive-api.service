@@ -1,0 +1,35 @@
+# Dealers-Drive API. Install:
+#   sudo cp deploy/systemd/*.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now dealers-drive-api
+[Unit]
+Description=Dealers-Drive API (Express)
+Documentation=https://github.com/shashikiran6sk/dealers-drive
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+# apps/api, so dotenv finds the repo-root .env at ../../.env — the same file
+# both processes read, which is why there is only ever one copy of it.
+WorkingDirectory=/home/ubuntu/dealers-drive/apps/api
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=3
+# The app closes the HTTP server, drains jobs and exits on SIGTERM.
+KillSignal=SIGTERM
+TimeoutStopSec=20
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dd-api
+
+# Least privilege: the API writes nothing to disk outside the repo.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

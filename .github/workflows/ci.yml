@@ -153,12 +153,36 @@ jobs:
           cache-to: type=gha,scope=web,mode=max
 
   # ---------------------------------------------------------------------------
-  # ── Reconstruction note ────────────────────────────────────────────────────
-  # The baseline also runs a `terraform fmt / validate` job here. It works in
-  # `deploy/terraform`, which does not exist until F025 — a job pointing at a
-  # missing directory fails on every PR. It returns with F025, which brings the
-  # Terraform it validates.
+  # The production runtime is code now (deploy/terraform), which means it can be
+  # wrong in a pull request rather than only in an account. `validate` catches a
+  # bad reference or a missing argument without touching AWS — no credentials,
+  # no state, no plan. A real `plan` needs the backend and is deliberately left
+  # to a human running it against the environment they are changing.
   # ---------------------------------------------------------------------------
+  terraform:
+    name: terraform fmt / validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: deploy/terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Format
+        run: terraform fmt -check -recursive
+
+      # `-backend=false` is what makes this runnable with no credentials: it
+      # initialises the providers so the schema is known, without touching S3.
+      - name: Init (no backend)
+        run: terraform init -backend=false
+
+      - name: Validate
+        run: terraform validate
 
   audit:
     name: dependency audit
