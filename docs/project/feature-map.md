@@ -562,7 +562,13 @@ Multi-stage, workspace-aware builds for both apps. The build needs nothing runni
 - **Files** `.github/workflows/ci.yml`
 - **External** GitHub Actions, `postgres:16-alpine`
 - **Components** none · **Sandbox** none
-- ⚠️ **This PR must also add the sandbox's typecheck/test job** if the sandbox has already landed — see `component-sandbox.md` §11 on the `--frozen-lockfile` interaction with partial manifest copies.
+- ✅ **The sandbox job was added at F022**, as required — the sandbox had
+  already landed at S0. It typechecks and builds the stories, and is the only
+  place that happens: the sandbox is deliberately outside `turbo run typecheck`
+  and `turbo run build`.
+- ⚠️ **The `terraform fmt / validate` job is deferred to F025**, which brings
+  the `deploy/terraform` directory it works in. A job pointing at a missing
+  directory fails on every PR.
 - ⚠️ CI _running_ is not CI _blocking_. Branch protection with required status checks is a repository setting and must be enabled separately — see `git-strategy.md` §1.
 
 ### F023 — Security scanning & dependency automation
