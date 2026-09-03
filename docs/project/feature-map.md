@@ -348,7 +348,10 @@ Prisma client singleton, the tenant transaction wrapper, and a `schema.prisma` c
 - ⚠️ **`health.docs.ts` lands at F096**, which brings `docs/schemas.ts` and
   `docs/spec.ts` that it imports.
 - ⚠️ **`app/api/health/route.ts` lands after F008**, which brings `lib/config`.
-- ⚠️ **The cache probe in `/health/ready` lands at F028.** The baseline probes
+- ✅ **The cache probe in `/health/ready` was restored at F028**, along with
+  `drivers.cache` and the `is 503 when the cache is down` test.
+  `health.routes.ts` is now byte-identical to the baseline.
+- ⚠️ (historical) **The cache probe in `/health/ready` landed at F028.** The baseline probes
   `container.cache.ping()` and reports `drivers.cache`; the cache is built at
   F028. The gap is forced by the tier order, not chosen — F021 puts a
   HEALTHCHECK in both Dockerfiles at Tier 3, so `/health/ready` must answer
@@ -610,6 +613,14 @@ IP-limited public reads, and per-principal limits on the metered paths. Phone re
 - **Components** none · **Sandbox** rate-limited **states** appear in `EnquiryForm` (F089) and `RevealContactButton` (F090)
 
 ### F028 — Caching layer
+
+⚠️ **Pulled forward, ahead of Tier 2.** `modules/auth/auth.routes.ts` (F018)
+takes a `RateLimiter`, which is built on `CachePort`. The Tier 2 auth stack
+cannot compile — let alone be covered by `tests/auth.test.ts` — until this
+feature and F027 exist. Discovered while implementing F015: F015 and F016
+together reach only 86.84 % line coverage because the code that covers them is
+the integration suite, which needs F018, which needs this. See the note on
+F015.
 
 A cache port with in-memory and Postgres adapters, plus counters and version keys.
 

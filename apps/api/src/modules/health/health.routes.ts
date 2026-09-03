@@ -45,18 +45,15 @@ export function createHealthRouter(container: Container): Router {
 
         const checks: Record<string, string> = { queue: 'ok', storage: 'ok', gateway: 'ok' };
 
-        // ── Reconstruction note ──────────────────────────────────────────
-        // The baseline also probes `container.cache.ping()` here, because the
-        // rate limiter reads through it on every public request and a cache
-        // that is down is a real degradation even though the limiter fails
-        // open. The cache is built at F028, and this probe must be restored
-        // there — along with `drivers.cache` below.
-        //
-        // The gap is forced by the tier order rather than chosen: F021 puts a
-        // HEALTHCHECK in both Dockerfiles at Tier 3, so /health/ready has to
-        // answer before the Tier 4 cache exists.
-        const [database] = await Promise.all([probe(() => container.prisma.$queryRaw`SELECT 1`)]);
+        const [database, cache] = await Promise.all([
+          probe(() => container.prisma.$queryRaw`SELECT 1`),
+          // The rate limiter reads through this on every public request, so a
+          // cache that is down is a real degradation even though the limiter
+          // itself fails open.
+          probe(() => container.cache.ping()),
+        ]);
         checks.database = database;
+        checks.cache = cache;
 
         const healthy = Object.values(checks).every((value) => value === 'ok');
         res.status(healthy ? 200 : 503).json({
@@ -68,8 +65,7 @@ export function createHealthRouter(container: Container): Router {
           // answering exactly as well" — both are 200s (§20.3).
           version: env.GIT_SHA,
           checks,
-          // `cache: container.cache.driver` returns with F028.
-          drivers: { storage: env.STORAGE_DRIVER },
+          drivers: { cache: container.cache.driver, storage: env.STORAGE_DRIVER },
           uptimeSeconds: Math.round((Date.now() - startedAt) / 1000),
         });
       } catch (error) {

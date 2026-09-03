@@ -109,3 +109,29 @@ enum AdminRole {
   MODERATOR
   SUPER_ADMIN
 }
+
+// Cross-instance shared state — the `CachePort` backing store (§18).
+//
+// These two tables are cache, not record. Truncating them costs a rate-limit
+// window an early reset and a config cache one extra read; nothing here is
+// referenced by another table and nothing here is restored from a backup.
+model CacheCounter {
+  key     String   @id
+  count   Int
+  /// When this fixed window rolls over. Indexed because the sweeper deletes by it.
+  resetAt DateTime @map("reset_at") @db.Timestamptz(6)
+
+  @@index([resetAt])
+  @@map("cache_counter")
+}
+
+// Bumped by the writer, polled by every other task. This is what lets an admin
+// turning a feature off propagate in seconds instead of waiting out a
+// five-minute in-process TTL (§18, §30).
+model CacheVersion {
+  namespace String   @id
+  version   BigInt
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("cache_version")
+}

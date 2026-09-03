@@ -1,6 +1,8 @@
 import type { PrismaClient } from '@prisma/client';
 
 import { env, type Env } from './config/env.js';
+import type { CachePort } from './platform/cache/cache.port.js';
+import { createCache } from './platform/cache/factory.js';
 import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
 
 /**
@@ -31,12 +33,16 @@ import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
 export interface Container {
   readonly env: Env;
   readonly prisma: PrismaClient;
+  /** Cross-instance shared state: rate-limit windows and the config version. */
+  readonly cache: CachePort;
 }
 
 export interface ContainerOverrides {
   /** Widens as the seams arrive: sessions at F015, oauth at F018, cache at F028. */
   readonly env?: Env;
   readonly prisma?: PrismaClient;
+  /** The integration suite pins this to memory so windows reset with the process. */
+  readonly cache?: CachePort;
 }
 
 /**
@@ -48,8 +54,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   installBigIntJson();
 
   const prisma = overrides.prisma ?? createPrisma();
+  const cache = overrides.cache ?? createCache(prisma);
 
-  return { env: overrides.env ?? env, prisma };
+  return { env: overrides.env ?? env, prisma, cache };
 }
 
 /** Starts the background machinery. Not called by tests, which drain inline. */
@@ -59,6 +66,11 @@ export async function startBackground(_container: Container): Promise<void> {
 
 /** Releases everything the container holds open. Called on SIGTERM. */
 export async function closeContainer(container: Container): Promise<void> {
-  // The queue, outbox and cache close ahead of this once F028 and F031 land.
+  // The queue and outbox stop ahead of this once F031 lands.
+  try {
+    await container.cache.close();
+  } catch {
+    // A cache that will not close must not stop the process from exiting.
+  }
   await container.prisma.$disconnect();
 }
