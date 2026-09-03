@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 
 import { env, type Env } from './config/env.js';
+import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
 import type { CachePort } from './platform/cache/cache.port.js';
 import { createCache } from './platform/cache/factory.js';
 import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
@@ -35,6 +36,8 @@ export interface Container {
   readonly prisma: PrismaClient;
   /** Cross-instance shared state: rate-limit windows and the config version. */
   readonly cache: CachePort;
+  /** Built here, like the guards, so no router reaches for a global counter. */
+  readonly rateLimit: RateLimiter;
 }
 
 export interface ContainerOverrides {
@@ -55,8 +58,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
 
   const prisma = overrides.prisma ?? createPrisma();
   const cache = overrides.cache ?? createCache(prisma);
+  const rateLimit = createRateLimiter(cache);
 
-  return { env: overrides.env ?? env, prisma, cache };
+  return { env: overrides.env ?? env, prisma, cache, rateLimit };
 }
 
 /** Starts the background machinery. Not called by tests, which drain inline. */
