@@ -374,9 +374,14 @@ Prisma client singleton, the tenant transaction wrapper, and a `schema.prisma` c
 Root layout, fonts, and the four pure helpers every feature uses.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F007
-- **Frontend** `app/layout.tsx`, `lib/{cn,config,api,url}.ts`, `next.config.ts`
+- **Frontend** `app/layout.tsx`, `lib/{cn,config,api}.ts`, `next.config.ts`
+- ⚠️ **`lib/url.ts` lands with the public search contracts.** It imports
+  `SortOption` and `VehicleQuery` from `packages/contracts/src/public.ts`,
+  which is not part of F001. It belongs with F076/F077.
+- Also picks up `app/api/health/route.ts`, deferred from F006 because it
+  imports `lib/config`.
 - **External** `next@15`, `react@19`, `clsx`, `tailwind-merge`
-- **Tests** `tests/unit/lib/{cn,config,api,url}.test.ts` ✅
+- **Tests** `tests/unit/lib/{cn,config,api}.test.ts` ✅ (`url.test.ts` follows `url.ts`)
 - **Components** none · **Sandbox** none
 
 ### F009 — UI primitives: action & identity
