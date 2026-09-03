@@ -168,8 +168,8 @@
  * React component that wraps it, so a class and its component land together
  * and neither can be added without the other being reviewed:
  *   F009  .btn*, .dd-plate
- *   F010  .tag*                                  ← this PR
- *   F011  .blueprint, .corner, .card, .image-slot
+ *   F010  .tag*
+ *   F011  .blueprint, .corner, .card, .image-slot  ← this PR
  *   F012  .skeleton
  *   F013  .field, .input
  * `.table` and `.seg` have no component at all in the baseline — that is
@@ -334,6 +334,92 @@
   .tag-sold {
     background: var(--color-accent-100);
     color: var(--color-accent-800);
+  }
+
+  /* Cards — §2.7. White on the cool grey ground; a border, never a shadow. */
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 6.8px;
+    padding: 10.2px;
+    background: #fff;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+  }
+  .card-kicker {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent-700);
+  }
+
+  /**
+   * The blueprint frame — §2.6. Four registration marks, always. A
+   * `.blueprint` missing a corner is a bug the design spec calls out by name.
+   */
+  .blueprint {
+    position: relative;
+    border: 1px solid var(--color-divider);
+    border-radius: 0;
+  }
+  .blueprint > .corner {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    pointer-events: none;
+  }
+  .blueprint > .corner::before,
+  .blueprint > .corner::after {
+    content: '';
+    position: absolute;
+    background: currentColor;
+  }
+  .blueprint > .corner::before {
+    left: 5px;
+    top: 0;
+    width: 1px;
+    height: 100%;
+  }
+  .blueprint > .corner::after {
+    top: 5px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+  }
+  .blueprint > .corner.tl {
+    top: -6px;
+    left: -6px;
+  }
+  .blueprint > .corner.tr {
+    top: -6px;
+    right: -6px;
+  }
+  .blueprint > .corner.bl {
+    bottom: -6px;
+    left: -6px;
+  }
+  .blueprint > .corner.br {
+    bottom: -6px;
+    right: -6px;
+  }
+
+  /**
+   * Image placeholder — the prototype's `<image-slot>`. Every photograph in
+   * the design is a flat surface panel naming the shot, and the seeded media
+   * reproduces that; this is the fallback when a vehicle has no photo at all.
+   */
+  .image-slot {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    background: var(--color-surface);
+    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+    font-size: 12px;
+    text-align: center;
+    padding: 8px;
   }
 }
 
