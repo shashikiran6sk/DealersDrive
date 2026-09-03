@@ -12,7 +12,7 @@
 #   --target migrator  dev dependencies kept, so `prisma migrate deploy` and
 #                      `pnpm db:seed` (which runs through tsx) both work.
 
-FROM node:22-alpine AS base
+FROM node:26-alpine AS base
 # openssl: Prisma's query engine links against it on musl.
 # libc6-compat: the glibc shim `sharp` and `@node-rs/argon2` prebuilds expect.
 RUN apk add --no-cache openssl libc6-compat
