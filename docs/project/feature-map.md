@@ -593,7 +593,18 @@ Build-once-promote-many: an image is built on `main`, tagged with `GIT_SHA`, and
 Terraform for AWS ECS Fargate behind an ALB (two services), plus the nginx and systemd alternative path.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F024
-- **Files** `deploy/terraform/**` (13 `.tf` + 2 tfvars), `deploy/aws/**`, `deploy/nginx/dealers-drive.conf`, `deploy/systemd/*.service`, `deploy/bootstrap.sh`, `deploy/README.md`, `docs/DEPLOYMENT.md`
+- **Files** `deploy/terraform/**`, `deploy/aws/**`, `deploy/nginx/dealers-drive.conf`, `deploy/systemd/*.service`, `deploy/bootstrap.sh`, `deploy/README.md`
+- ⚠️ **`docs/DEPLOYMENT.md` does not come back.** Only `docs/project`,
+  `docs/screens` and `docs/Dealers-Drive-UI` survive in this repository; the
+  deployment narrative lives in `deploy/README.md`, which does come across.
+  The original stays readable at the baseline.
+- ✅ **Restores the `terraform fmt / validate` CI job** deferred at F022.
+  `ci.yml` is now the baseline plus only the added `sandbox` job.
+- ⚠️ **The baseline's Terraform is not `terraform fmt` clean.** `outputs.tf` and
+  `envs/production.tfvars` fail `fmt -check` on the files as committed, so the
+  baseline's own CI job would have failed the same way. Two whitespace-only
+  hunks were applied at F025 to make the gate pass. `terraform validate`
+  passes on the baseline files unchanged.
 - **Tests** the `terraform` CI job (fmt + validate)
 - **Components** none · **Sandbox** none
 - The **last** item that can slip a tier without blocking anything, if the AWS account is not ready.

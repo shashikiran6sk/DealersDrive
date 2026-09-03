@@ -1,0 +1,118 @@
+{
+  "_comment": [
+    "ECS task definition for the API — register ONE PER ENVIRONMENT as dd-api-dev and dd-api-prod.",
+    "Replace <account>, <region> and the /dealers-drive/<env>/ parameter paths.",
+    "",
+    "The image below is a placeholder and stays one: .github/workflows/_deploy.yml fetches the",
+    "current definition, replaces exactly the image field, and registers a new revision. Every",
+    "other field is owned by AWS, which is why the environment variables and secret ARNs live",
+    "here and not in the repository.",
+    "",
+    "512 CPU / 1024 MiB is sized for the API plus the inline job handlers.",
+    "",
+    "PREFER deploy/terraform, which now owns this shape and generates it from envs/*.tfvars.",
+    "This file remains as a reference for a hand-managed environment and as documentation of",
+    "what the deploy workflow expects to find."
+  ],
+  "family": "dd-api-dev",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": { "cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX" },
+  "executionRoleArn": "arn:aws:iam::<account>:role/dd-ecs-execution",
+  "taskRoleArn": "arn:aws:iam::<account>:role/dd-api-task-dev",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "<account>.dkr.ecr.<region>.amazonaws.com/dealers-drive/api:sha-PLACEHOLDER",
+      "essential": true,
+      "portMappings": [
+        { "name": "api", "containerPort": 4000, "protocol": "tcp", "appProtocol": "http" }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "APP_ENV", "value": "dev" },
+        { "name": "PORT", "value": "4000" },
+        { "name": "HOST", "value": "0.0.0.0" },
+        { "name": "LOG_LEVEL", "value": "info" },
+        { "name": "WEB_ORIGIN", "value": "https://dev.dealers-drive.com" },
+        { "name": "WEB_BASE_URL", "value": "https://dev.dealers-drive.com" },
+        { "name": "API_BASE_URL", "value": "https://dev.dealers-drive.com" },
+        { "name": "MEDIA_BASE_URL", "value": "https://dev.dealers-drive.com/media" },
+        { "name": "AUTH_MODE", "value": "cookie" },
+        {
+          "name": "GOOGLE_CALLBACK_URL",
+          "value": "https://dev.dealers-drive.com/v1/auth/google/callback"
+        },
+        { "name": "SESSION_COOKIE_DOMAIN", "value": "" },
+        { "name": "STORAGE_DRIVER", "value": "r2" },
+        { "name": "S3_ENDPOINT", "value": "https://<cloudflare-account>.r2.cloudflarestorage.com" },
+        { "name": "S3_REGION", "value": "auto" },
+        { "name": "S3_BUCKET", "value": "dd-media-dev" },
+        { "name": "S3_FORCE_PATH_STYLE", "value": "true" },
+        { "name": "PAYMENT_PROVIDER", "value": "development" },
+        { "name": "MAIL_DRIVER", "value": "console" },
+        { "name": "SMS_DRIVER", "value": "console" },
+        { "name": "JOBS_ENABLED", "value": "true" },
+        { "name": "WORKER_INLINE", "value": "true" },
+        { "name": "RATE_LIMIT_ENABLED", "value": "true" },
+        { "name": "DOCS_ENABLED", "value": "true" },
+        { "name": "CACHE_DRIVER", "value": "postgres" },
+        { "name": "CONFIG_VERSION_POLL_MS", "value": "10000" },
+        { "name": "SHUTDOWN_DRAIN_MS", "value": "5000" },
+        { "name": "SHUTDOWN_TIMEOUT_MS", "value": "15000" },
+        { "name": "NODE_OPTIONS", "value": "--max-old-space-size=768" }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/DATABASE_URL"
+        },
+        {
+          "name": "SESSION_SECRET",
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/SESSION_SECRET"
+        },
+        {
+          "name": "UPLOAD_SIGNING_SECRET",
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/UPLOAD_SIGNING_SECRET"
+        },
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/GOOGLE_CLIENT_ID"
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/GOOGLE_CLIENT_SECRET"
+        },
+        {
+          "name": "S3_ACCESS_KEY_ID",
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/S3_ACCESS_KEY_ID"
+        },
+        {
+          "name": "S3_SECRET_ACCESS_KEY",
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/S3_SECRET_ACCESS_KEY"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:4000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 30
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/dealers-drive/dev/api",
+          "awslogs-region": "<region>",
+          "awslogs-stream-prefix": "api"
+        }
+      },
+      "stopTimeout": 25
+    }
+  ]
+}

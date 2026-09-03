@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------------------
+# Dealers-Drive — data services for a single-box deployment.
+#
+#   docker compose -f deploy/docker-compose.prod.yml --env-file .env up -d
+#
+# Differences from the development docker-compose.yml at the repo root:
+#   * every port is published on 127.0.0.1 only, so Postgres and MinIO are
+#     unreachable from the internet no matter what the security group says
+#   * credentials come from .env instead of being hardcoded to `dealersdrive`
+#   * no Mailpit — mail is the console driver in the demo, and an open web
+#     inbox on a public box is a liability with no upside
+# ---------------------------------------------------------------------------
+name: dealers-drive
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dd-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dealersdrive
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: dealersdrive
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dealersdrive -d dealersdrive']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  minio:
+    image: minio/minio:latest
+    container_name: dd-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:?set S3_ACCESS_KEY_ID in .env}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY:?set S3_SECRET_ACCESS_KEY in .env}
+      # The browser PUTs photos straight to MinIO through nginx, so the bucket
+      # has to answer a preflight from the site's own origin.
+      MINIO_API_CORS_ALLOW_ORIGIN: ${WEB_BASE_URL}
+    ports:
+      - '127.0.0.1:9000:9000' # S3 API — nginx proxies s3.<domain> to this
+      - '127.0.0.1:9001:9001' # console — reach it with an SSH tunnel, not nginx
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres-data:
+  minio-data:
