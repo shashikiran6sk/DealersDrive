@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createHealthRouter } from '../../../../src/modules/health/health.routes.js';
+import { createMemoryCache } from '../../../../src/platform/cache/memory.adapter.js';
 import { beginDraining, resetLifecycle } from '../../../../src/platform/telemetry/lifecycle.js';
 import { permissionsOn, routesOf, signaturesOf } from '../../../router-probe.js';
 
@@ -13,6 +14,7 @@ import { permissionsOn, routesOf, signaturesOf } from '../../../router-probe.js'
 
 const container = {
   prisma: { $queryRaw: () => Promise.resolve([]) },
+  cache: createMemoryCache(),
 } as never;
 const router = createHealthRouter(container);
 
@@ -28,10 +30,11 @@ interface Answer {
 /** Drives one probe and captures what it answered. */
 async function probe(
   which: '/live' | '/ready',
-  overrides: { prisma?: unknown } = {},
+  overrides: { prisma?: unknown; cache?: unknown } = {},
 ): Promise<Answer> {
   const router = createHealthRouter({
     prisma: overrides.prisma ?? { $queryRaw: () => Promise.resolve([]) },
+    cache: overrides.cache ?? createMemoryCache(),
   } as never);
 
   const route = routesOf(router).find((entry) => entry.path === which);
@@ -141,7 +144,7 @@ describe('readiness reports what a deploy needs to know', () => {
   it('names which adapters are live', async () => {
     const answer = await probe('/ready');
 
-    expect(answer.body.drivers).toMatchObject({ storage: 'local' });
+    expect(answer.body.drivers).toMatchObject({ cache: 'memory' });
   });
 
   it('is 503 and names the failing dependency when the database is down', async () => {
@@ -151,17 +154,22 @@ describe('readiness reports what a deploy needs to know', () => {
 
     expect(answer.status).toBe(503);
     expect(answer.body.status).toBe('degraded');
-    expect(answer.body.checks).toMatchObject({ database: 'down' });
+    expect(answer.body.checks).toMatchObject({ database: 'down', cache: 'ok' });
   });
 
   /**
-   * ── Reconstruction note ────────────────────────────────────────────────
-   * 'is 503 when the cache is down' lives here in the baseline. The rate
-   * limiter reads through the cache on every public request, so a cache that
-   * is down is a real degradation even though the limiter itself fails open.
-   * The cache is built at F028, which must restore both that test and the
-   * probe it asserts.
+   * The rate limiter reads through the cache on every public request, so a
+   * cache that is down is a real degradation — even though the limiter itself
+   * fails open rather than refusing traffic.
    */
+  it('is 503 when the cache is down', async () => {
+    const answer = await probe('/ready', {
+      cache: { ...createMemoryCache(), ping: () => Promise.reject(new Error('down')) },
+    });
+
+    expect(answer.status).toBe(503);
+    expect(answer.body.checks).toMatchObject({ database: 'ok', cache: 'down' });
+  });
 });
 
 describe('draining', () => {
