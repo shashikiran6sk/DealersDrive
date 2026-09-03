@@ -131,7 +131,7 @@ jobs:
       # job is where it fails, and it fails on the pull request rather than on
       # main after the merge.
       - name: Build API image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/api/Dockerfile
@@ -142,7 +142,7 @@ jobs:
           cache-to: type=gha,scope=api,mode=max
 
       - name: Build web image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/web/Dockerfile
