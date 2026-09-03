@@ -4,6 +4,7 @@ import type { Container } from './container.js';
 import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/auth.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
+import { createLocationsRouter } from './modules/locations/locations.routes.js';
 
 /**
  * Every module router is mounted here and nowhere else — one file to read to
@@ -40,6 +41,7 @@ export function createRoutes(container: Container): Router {
 
   // ── public ────────────────────────────────────────────────────────────
   v1.use(createConfigRouter(container.publicConfig));
+  v1.use(createLocationsRouter(container.locations));
 
   // ── auth ──────────────────────────────────────────────────────────────
   // Two routers on one prefix, in this order. The first answers the paths that

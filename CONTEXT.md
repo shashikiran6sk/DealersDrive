@@ -208,20 +208,21 @@ entry, but they are scattered, so this is the one list.
 
 **Nothing here is a decision. Each line is a promise to put something back.**
 
-| Restore in                      | What comes back                                                                                           | Where it was cut                                                                |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **F033**                        | `PUT /uploads` and its `routes.test.ts` case                                                              | F032 landed the adapter that presigns against it; `createStorageRouter` is F033 |
-| **F039**                        | `saveBusinessIdsAction` + its `describe` block                                                            | `features/auth/actions.ts`, `actions.test.ts`                                   |
-| **F042**                        | `submitForVerificationAction` + its `describe` block                                                      | same two files                                                                  |
-| **F046**                        | `GET /v1/dealer` → 200 in `auth.test.ts`; `reached` in `routes.test.ts`; the rest of `dealers.service.ts` | the two test files, `dealers.service.ts`                                        |
-| **F049**                        | `GET /v1/admin/metrics/overview` → 200; `AdminOverview` as `currentAdmin`'s type                          | `auth.test.ts`, web `lib/session.ts`                                            |
-| **F064**                        | `pendingListingCount`'s real query + 1 test case                                                          | `dealers.repository.ts`                                                         |
-| **F066**                        | `describe('tenant isolation survives real sessions')`, and `tests/tenant-isolation.test.ts`               | `auth.test.ts`                                                                  |
-| **F088**                        | `newEnquiryCount`'s real query + 2 test cases                                                             | `dealers.repository.ts`                                                         |
-| **F095**                        | `seoMetadata({ kind: 'private' })` on both login pages                                                    | `app/(auth)/*/login/page.tsx`                                                   |
-| **F096**                        | `auth.docs.ts` — and every other module's docs file                                                       | never landed                                                                    |
-| **F097**                        | the real seed; `prisma/seed/index.ts` is currently the three rows `auth.test.ts` needs                    | `prisma/seed/`                                                                  |
-| the last of F033/F055/F076/F092 | `platform/jobs/handlers.ts`, `registerSchedules`, `handlers.test.ts`                                      | never landed — `HandlerDeps` names five services that do not exist              |
+| Restore in                      | What comes back                                                                                                     | Where it was cut                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **F033**                        | `PUT /uploads` and its `routes.test.ts` case                                                                        | F032 landed the adapter that presigns against it; `createStorageRouter` is F033 |
+| **F039**                        | `saveBusinessIdsAction` + its `describe` block                                                                      | `features/auth/actions.ts`, `actions.test.ts`                                   |
+| **F042**                        | `submitForVerificationAction` + its `describe` block                                                                | same two files                                                                  |
+| **F046**                        | `GET /v1/dealer` → 200 in `auth.test.ts`; `reached` in `routes.test.ts`; the rest of `dealers.service.ts`           | the two test files, `dealers.service.ts`                                        |
+| **F049**                        | `GET /v1/admin/metrics/overview` → 200; `AdminOverview` as `currentAdmin`'s type                                    | `auth.test.ts`, web `lib/session.ts`                                            |
+| **F064**                        | `pendingListingCount`'s real query + 1 test case                                                                    | `dealers.repository.ts`                                                         |
+| **F066**                        | `describe('tenant isolation survives real sessions')`, and `tests/tenant-isolation.test.ts`                         | `auth.test.ts`                                                                  |
+| **F076**                        | the real `SearchRepository` behind `locations.service.ts`'s `CityCountsPort` — `emptyIndex` answers zero until then | `container.ts`                                                                  |
+| **F088**                        | `newEnquiryCount`'s real query + 2 test cases                                                                       | `dealers.repository.ts`                                                         |
+| **F095**                        | `seoMetadata({ kind: 'private' })` on both login pages                                                              | `app/(auth)/*/login/page.tsx`                                                   |
+| **F096**                        | `auth.docs.ts` — and every other module's docs file                                                                 | never landed                                                                    |
+| **F097**                        | the real seed; `prisma/seed/index.ts` is currently the three rows `auth.test.ts` needs                              | `prisma/seed/`                                                                  |
+| the last of F033/F055/F076/F092 | `platform/jobs/handlers.ts`, `registerSchedules`, `handlers.test.ts`                                                | never landed — `HandlerDeps` names five services that do not exist              |
 
 Two lines are **not** restores and must not be treated as such:
 

@@ -12,6 +12,12 @@ import type { OAuthProvider } from './modules/auth/oauth.port.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
+import { createLocationsRepository } from './modules/locations/locations.repository.js';
+import {
+  createLocationsService,
+  emptyIndex,
+  type LocationsService,
+} from './modules/locations/locations.service.js';
 import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
 import { createAuditService } from './platform/audit/audit.service.js';
 import {
@@ -80,6 +86,7 @@ export interface Container {
   readonly auth: AuthService;
   readonly dealers: DealersService;
   readonly publicConfig: ConfigService;
+  readonly locations: LocationsService;
 }
 
 export interface ContainerOverrides {
@@ -123,6 +130,12 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const dealers = createDealersService({ prisma, repo: dealersRepo });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
   const publicConfig = createConfigService({ config });
+  // `search` is the real SearchRepository from F076 onward; until the
+  // `listing_search` table exists there is nothing live to count.
+  const locations = createLocationsService({
+    repo: createLocationsRepository(prisma),
+    search: emptyIndex,
+  });
 
   return {
     env: overrides.env ?? env,
@@ -141,6 +154,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     auth,
     dealers,
     publicConfig,
+    locations,
   };
 }
 

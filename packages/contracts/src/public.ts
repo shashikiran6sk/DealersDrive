@@ -10,9 +10,24 @@ import { z } from 'zod';
  * search, facets, the home page, vehicle detail, the dealer directory. Each
  * shape arrives with the feature that first answers with it, so this file grows
  * rather than landing whole. `PublicConfig` is here because **F029** serves it
- * from `GET /v1/config/public`.
+ * from `GET /v1/config/public`, and `CitiesResponse` because **F026** serves
+ * it from `GET /v1/cities`.
  * ────────────────────────────────────────────────────────────────────────────
  */
+
+// ─────────── A12 cities ────────────────────────────────────────────────────
+export const CitiesResponse = z.object({
+  data: z.array(
+    z.object({
+      slug: z.string(),
+      name: z.string(),
+      state: z.string().optional(),
+      count: z.number().int(),
+    }),
+  ),
+  default: z.string(),
+});
+export type CitiesResponse = z.infer<typeof CitiesResponse>;
 
 // ─────────── A14 public config ─────────────────────────────────────────────
 export const PublicConfig = z.object({
