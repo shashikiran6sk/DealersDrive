@@ -1,0 +1,223 @@
+# ---------------------------------------------------------------------------
+# CI — every pull request, and every push to main.
+#
+# This workflow proves a commit is correct. It builds no image, pushes nothing
+# and touches no environment: a pull request from a fork must be able to run it
+# in full without holding a single credential.
+#
+# The same four commands the working agreements name (`lint`, `typecheck`,
+# `test`, `build`) run here, in one job, against one Postgres service — the
+# integration suite is not a mock, it asserts invariants that only exist in the
+# database, so CI runs a real one.
+#
+# `docker` is a separate job because it proves something different: that the
+# two images still build, from a clean context, with nothing running. That is
+# what release.yml will do on main, and finding out there is finding out late.
+# ---------------------------------------------------------------------------
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# One run per branch. A force-push mid-review should not leave two suites
+# racing, and the newer commit is the only one anybody cares about.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Turbo prints one line per task instead of an animated frame buffer.
+  TURBO_UI: 'false'
+  NEXT_TELEMETRY_DISABLED: '1'
+
+jobs:
+  verify:
+    name: lint · typecheck · test · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      # These credentials are not a placeholder — `apps/api/tests/global-setup.ts`
+      # connects to `dealersdrive:dealersdrive@localhost:5432/dealersdrive` and
+      # creates `dealersdrive_test` from it. Change them here and the
+      # integration suite cannot find a database.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: dealersdrive
+          POSTGRES_PASSWORD: dealersdrive
+          POSTGRES_DB: dealersdrive
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U dealersdrive -d dealersdrive"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # The Prisma client is generated, not committed. Nothing that imports
+      # `@prisma/client` type-checks until it exists, so this runs before the
+      # checks rather than as part of one of them.
+      - name: Generate Prisma client
+        run: pnpm --filter @dealers-drive/api db:generate
+
+      # Formatting is a gate now. It was deliberately left out while ~120 files
+      # were unformatted — a check that is always red is a check nobody reads —
+      # and the fix was to run `pnpm format` once across the repository rather
+      # than to keep excusing the gap. The two long-form design documents are in
+      # .prettierignore, because reflowing their tables makes a diff unreadable
+      # and breaks the section numbering that code comments cite by hand.
+      - name: Format
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      # 900 KB of Markdown, and until now nothing verified a word of it.
+      # Documentation that size does not rot loudly — it rots one renamed script
+      # at a time, and the first person to notice is a new engineer who runs a
+      # command that does not exist and quietly stops trusting the rest.
+      #
+      # This checks only what can be checked mechanically: that every `pnpm
+      # <script>` a document names exists, and that every path it names resolves.
+      # It does not attempt to verify prose.
+      - name: Documentation references
+        run: pnpm docs:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Unit and integration, both projects, with the 90% coverage gate the
+      # vitest configs enforce. The suite creates and migrates its own
+      # `dealersdrive_test` database — that is `global-setup`'s job, not this
+      # workflow's.
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  docker:
+    name: images build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      # No `push`, no registry login, no credentials. The point is only that
+      # these two Dockerfiles still produce an image from a clean checkout.
+      #
+      # The web build in particular must succeed with **nothing running**: no
+      # API, no database. If a route ever starts prerendering data again, this
+      # job is where it fails, and it fails on the pull request rather than on
+      # main after the merge.
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: runner
+          push: false
+          build-args: GIT_SHA=${{ github.sha }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          target: runner
+          push: false
+          build-args: GIT_SHA=${{ github.sha }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+
+  # ---------------------------------------------------------------------------
+  # ── Reconstruction note ────────────────────────────────────────────────────
+  # The baseline also runs a `terraform fmt / validate` job here. It works in
+  # `deploy/terraform`, which does not exist until F025 — a job pointing at a
+  # missing directory fails on every PR. It returns with F025, which brings the
+  # Terraform it validates.
+  # ---------------------------------------------------------------------------
+
+  audit:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Blocking at `critical` and reporting at `high` is a deliberate split,
+      # not laziness. Every current high advisory is transitive through `next`
+      # or `prisma` and has no fix this repository can apply — a gate that is
+      # red for reasons nobody can act on gets ignored, and then the critical
+      # one is ignored too. Dependabot (.github/dependabot.yml) is what
+      # actually closes these, by raising the upstream bump as a PR.
+      - name: Block on critical advisories
+        run: pnpm audit --audit-level=critical
+
+      - name: Report high advisories
+        continue-on-error: true
+        run: pnpm audit --audit-level=high
+
+  # ---------------------------------------------------------------------------
+  # The sandbox is local-only tooling and is never deployed, but it imports the
+  # real components from apps/web/src. A prop rename that nobody updated a story
+  # for is a broken story, and a broken story means the sandbox stops being
+  # trustworthy as the place people look before creating a component.
+  #
+  # So it is typechecked and built here, and nowhere else: it is deliberately
+  # absent from `turbo run typecheck` and `turbo run build`, because its scripts
+  # are named `sandbox` and `build:sandbox` rather than `dev` and `build` — that
+  # naming is what keeps `pnpm dev` from starting it (component-sandbox.md §4).
+  # ---------------------------------------------------------------------------
+  sandbox:
+    name: sandbox typecheck / build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck stories
+        run: pnpm --filter @dealers-drive/sandbox typecheck
+
+      - name: Build
+        run: pnpm --filter @dealers-drive/sandbox build:sandbox
