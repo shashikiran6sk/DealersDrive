@@ -649,6 +649,9 @@ Runtime-editable settings and `feature.*` flags, version-polled so a flip propag
 
 ### F030 — Audit log
 
+⚠️ **Pulled forward with F027 and F028, ahead of Tier 2** — `auth.service.ts`
+(F018) takes an `AuditService`, and every sign-in and sign-out is recorded.
+
 Append-only record of every privileged action. Required by F044, F045, F070, F071, F072.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F005

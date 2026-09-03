@@ -135,3 +135,24 @@ model CacheVersion {
 
   @@map("cache_version")
 }
+
+// ─────────── PLATFORM ────────────────────────────────────────────────────
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  actorType  String
+  actorId    String?  @db.Uuid
+  dealerId   String?  @db.Uuid
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  ip         String?
+  traceId    String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([dealerId, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
