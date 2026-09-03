@@ -51,10 +51,10 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 4 — Platform services
 
-- [~] F026 — City & location reference data
+- [x] F026 — City & location reference data
 - [x] F027 — Rate limiting · ⚠️ pulled forward, ahead of Tier 2
 - [x] F028 — Caching layer · ⚠️ pulled forward, ahead of Tier 2
-- [~] F029 — Platform config & feature flags
+- [x] F029 — Platform config & feature flags
 - [x] F030 — Audit log · ⚠️ pulled forward, ahead of Tier 2
 - [x] F031 — Events, outbox & background jobs · ⚠️ pulled forward, ahead of Tier 2
 
