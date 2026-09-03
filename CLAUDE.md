@@ -303,17 +303,45 @@ Node 22, TypeScript 5.9, pnpm 9.15.9.
 
 ---
 
-# 8. Current position
+# 8. What a feature PR updates — and what it must not
 
-The reconstruction is at the very beginning:
+This is a rule about churn. Ninety-seven branches will be open against this
+repository over its life. Any document a feature PR is _expected_ to edit
+becomes a file every branch conflicts over, and a conflict in a prose paragraph
+is far more expensive to resolve than one in a list.
 
-- ✅ `chore: initialize project` — scaffolding, tooling, docs. On `main`.
-- ⏭️ **F001 — Contracts package foundation** is the first feature PR.
-- Then F002 → … → F097, in the tier order in `feature-map.md`.
+So the split is by what each file is for:
 
-Note the tier order that D3 produced: **CI/CD is Tier 3 (F021–F025)**,
-immediately after F018 _Dealer sign-in with Google OAuth_ — the first commit at
-which a person can open a browser, click a button and be signed in. Until F021
-lands there are no Dockerfiles, no workflows and no `deploy/`, and the `app:*`
-scripts in `package.json` are inert. `pnpm infra:up` (Postgres, MinIO, Mailpit)
-works from the init commit onward.
+| File                            | Updated per feature?                               | Why                                                                                                                                                                                                 |
+| ------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/project/progress.md`      | **Yes — tick your own line, nothing else**         | One line, one file. This is the only progress record in the repository.                                                                                                                             |
+| `docs/project/feature-map.md`   | **Only when your entry is wrong**                  | If the files, tests or dependencies listed for your feature do not survive contact with the code, fix that entry — a wrong map misleads the next 96 features. Do not touch another feature's entry. |
+| `CONTEXT.md`                    | **Only when the feature taught something durable** | It is an engineering log, not a changelog. A gotcha the next person needs, a constraint discovered, a decision made. Never a "F0xx has landed" line.                                                |
+| `CLAUDE.md`                     | **Almost never**                                   | This is the operating manual. If a feature changes the rules, that is a decision needing its own discussion and its own PR — not a side effect.                                                     |
+| `docs/project/component-map.md` | When you add or change a component                 | Props, states and consumers, kept true.                                                                                                                                                             |
+| `README.md`                     | Almost never                                       | It orients a newcomer.                                                                                                                                                                              |
+
+**Do not add progress statements to prose.** "F001 is the first feature PR" was
+true for about a day. `progress.md` and `git log` are the record; a sentence in
+a document is a copy that goes stale silently.
+
+**Worked example — F001.** It ticked its line in `progress.md`; it corrected
+its own entry in `feature-map.md`, because `index.test.ts` turned out to assert
+package-wide invariants and could not land with two of six modules present; and
+it touched neither `CLAUDE.md` nor `CONTEXT.md`, because it taught nothing that
+the next feature needs to know.
+
+---
+
+# 9. Current position
+
+The reconstruction has started. **`docs/project/progress.md` is the live
+record** — read it rather than trusting anything written here.
+
+The tier order that D3 produced is worth knowing before you plan any work:
+**CI/CD is Tier 3 (F021–F025)**, immediately after F018 _Dealer sign-in with
+Google OAuth_ — the first commit at which a person can open a browser, click a
+button and be signed in. Until F021 lands there are no Dockerfiles, no
+workflows and no `deploy/`, and the `app:*` scripts in `package.json` are
+inert. `pnpm infra:up` (Postgres, MinIO, Mailpit) works from the init commit
+onward.

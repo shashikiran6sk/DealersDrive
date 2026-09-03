@@ -44,13 +44,13 @@ bisectable, and no commit tells you why anything is the way it is.
 tiers, one PR each, each one diffed against the baseline to prove it did not
 change behaviour on the way through.
 
-|                                |                                                      |
-| ------------------------------ | ---------------------------------------------------- |
-| Baseline (the working product) | tag `baseline/pre-reorg-2026-09-02` = `f05acdc`      |
-| Local reference branch         | `legacy/pre-reorg`                                   |
-| History remote (read-only)     | `legacy-origin` → `shashikiran6sk/Dealers-Drive`     |
-| Reconstruction remote          | `origin` → `shashikiran6sk/DealersDrive`             |
-| Reconstruction progress        | init commit landed; **F001 is the first feature PR** |
+|                                |                                                                                        |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| Baseline (the working product) | tag `baseline/pre-reorg-2026-09-02` = `f05acdc`                                        |
+| Local reference branch         | `legacy/pre-reorg`                                                                     |
+| History remote (read-only)     | `legacy-origin` → `shashikiran6sk/Dealers-Drive`                                       |
+| Reconstruction remote          | `origin` → `shashikiran6sk/DealersDrive`                                               |
+| Reconstruction progress        | [`docs/project/progress.md`](docs/project/progress.md) — the only place it is recorded |
 
 ---
 

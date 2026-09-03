@@ -43,8 +43,8 @@ pnpm typecheck && pnpm test && pnpm build
 
 ## Progress
 
-- ✅ `chore: initialize project`
-- ⏭️ F001 — Contracts package foundation
+[`docs/project/progress.md`](docs/project/progress.md) — 97 features across 14
+tiers, plus the sandbox steps.
 
 Tier order note: CI/CD is Tier 3 (F021–F025), immediately after the first
 dealer-facing feature. Dockerfiles, workflows and `deploy/` arrive there.
