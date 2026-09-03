@@ -43,7 +43,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 3 — CI/CD
 
-- [ ] F021 — Docker images
+- [~] F021 — Docker images
 - [ ] F022 — CI pipeline
 - [ ] F023 — Security scanning & dependency automation
 - [ ] F024 — Release & image promotion
