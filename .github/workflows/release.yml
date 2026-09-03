@@ -1,0 +1,113 @@
+# ---------------------------------------------------------------------------
+# Release — the only place an image is ever built.
+#
+# Fires on every push to `main`, which after branch protection means: on every
+# merged pull request. It builds three images from that one commit, pushes them
+# to ECR tagged with the SHA, and deploys them to development. Production is
+# not touched, ever, by this workflow (promote.yml, and a human, do that).
+#
+# Three images, one commit:
+#   dd-api       the HTTP process. Production dependencies only.
+#   dd-migrator  the schema owner — the same Dockerfile, an earlier stage, so
+#                it still has the Prisma CLI. Built here so that the migration
+#                that runs against production comes from the promoted commit
+#                and not from whatever is on someone's machine.
+#   dd-web       the Next.js server. Builds with nothing running.
+#
+# The SHA tag is the contract with promote.yml: `sha-<commit>` is immutable,
+# and promoting to production is looking up that exact tag. Nothing is ever
+# tagged `latest` and deployed from it — `latest` is a moving target, and a
+# moving target cannot be rolled back to.
+# ---------------------------------------------------------------------------
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# Never two releases at once, and never cancel one: a half-finished rollout is
+# worse than a queued one.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+  deployments: write
+
+jobs:
+  build:
+    name: build and push
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      sha: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Assume the CI role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Push-only, to the three ECR repositories, and nothing else. It
+          # cannot deploy — that is a separate role, held by the environments.
+          role-to-assume: ${{ secrets.AWS_CI_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: build-${{ github.sha }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push the API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: runner
+          push: true
+          # GIT_SHA is the only build argument either image takes. It names the
+          # artifact; it does not configure it. Everything environment-specific
+          # is read at runtime (§20.1).
+          build-args: GIT_SHA=${{ github.sha }}
+          tags: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPO_API }}:sha-${{ github.sha }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+          provenance: true
+
+      - name: Build and push the migrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: migrator
+          push: true
+          build-args: GIT_SHA=${{ github.sha }}
+          tags: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPO_MIGRATOR }}:sha-${{ github.sha }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=migrator,mode=max
+          provenance: true
+
+      - name: Build and push the web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          target: runner
+          push: true
+          build-args: GIT_SHA=${{ github.sha }}
+          tags: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPO_WEB }}:sha-${{ github.sha }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+          provenance: true
+
+  deploy-dev:
+    name: deploy to development
+    needs: build
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: dev
+      sha: ${{ needs.build.outputs.sha }}
+    # No `secrets: inherit` — see the note in promote.yml. The deployment role
+    # ARN is a `dev` environment secret and is read by the called workflow.
