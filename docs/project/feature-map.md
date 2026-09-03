@@ -605,6 +605,11 @@ Terraform for AWS ECS Fargate behind an ALB (two services), plus the nginx and s
 
 ### F027 — Rate limiting
 
+⚠️ **Pulled forward with F028, ahead of Tier 2** — `auth.routes.ts` (F018)
+takes a `RateLimiter`. `tests/rate-limit.test.ts` is an integration test that
+drives `harness.ts` against vehicle routes; it lands with those, not here.
+Only `tests/unit/middleware/rate-limit.test.ts` belongs to F027.
+
 IP-limited public reads, and per-principal limits on the metered paths. Phone reveals cost an SMS each, so the limiter is a cost control, not just abuse defence.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F003, F028
