@@ -716,6 +716,10 @@ Transactional outbox, an event bus, and the pg-boss queue.
 
 ### F032 — Storage port & adapters
 
+⚠️ **Pulled forward, ahead of Tier 2** — `dealers.service.ts` (F036/F040)
+takes a `StoragePort` for the KYC document paths. The second of the four
+features the F015 blocker note names.
+
 One narrow port; a local filesystem adapter for development and an S3/R2 adapter for everything else.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F002
@@ -723,6 +727,13 @@ One narrow port; a local filesystem adapter for development and an S3/R2 adapter
 - **External** `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, MinIO locally
 - **Tests** `tests/unit/platform/storage/*.test.ts` (3 files)
 - **Components** none · **Sandbox** none
+- `PUT /uploads` is **not** here. The local adapter presigns a URL that points
+  at it, but the router that serves it is `createStorageRouter` in
+  `modules/media/media.routes.ts` — **F033**. Until that lands, a presigned
+  local URL is well-formed and unroutable, which is exactly what the three unit
+  tests here assert.
+- `ensureBucket()` runs from `startBackground` for every driver but `local`, so
+  a fresh MinIO volume is discovered at boot rather than by the first upload.
 
 ### F033 — Presigned upload & commit
 
