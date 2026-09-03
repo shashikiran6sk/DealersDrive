@@ -331,7 +331,11 @@ Prisma client singleton, the tenant transaction wrapper, and a `schema.prisma` c
 - **Backend** `src/platform/db/{prisma,tenant-tx}.ts`, `prisma/schema.prisma` (datasource + generator only), `prisma.config.ts`
 - **DB** the connection itself; **no models yet** — each feature adds its own
 - **External** `@prisma/client`, `prisma`, Postgres 16
-- **Tests** `tests/unit/platform/db/{prisma,tenant-tx}.test.ts`, `tests/global-setup.ts`, `tests/harness.ts`
+- **Tests** `tests/unit/platform/db/{prisma,tenant-tx}.test.ts`, `tests/global-setup.ts`
+- ⚠️ **`tests/harness.ts` cannot land here.** It builds the whole app —
+  `buildContainer`, `createApp`, a memory cache (F028) and a session resolver
+  (F015) — so it arrives with the last of those, not with the database. Only
+  `global-setup.ts`, which runs migrations, belongs to F005.
 - **Components** none · **Sandbox** none
 - ⚠️ `schema.prisma` is the **CRITICAL** shared file — ~25 later features append to it.
 
