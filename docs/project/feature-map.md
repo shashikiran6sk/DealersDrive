@@ -600,6 +600,11 @@ Terraform for AWS ECS Fargate behind an ALB (two services), plus the nginx and s
   The original stays readable at the baseline.
 - ✅ **Restores the `terraform fmt / validate` CI job** deferred at F022.
   `ci.yml` is now the baseline plus only the added `sandbox` job.
+- ⚠️ **The baseline's Terraform is not `terraform fmt` clean.** `outputs.tf` and
+  `envs/production.tfvars` fail `fmt -check` on the files as committed, so the
+  baseline's own CI job would have failed the same way. Two whitespace-only
+  hunks were applied at F025 to make the gate pass. `terraform validate`
+  passes on the baseline files unchanged.
 - **Tests** the `terraform` CI job (fmt + validate)
 - **Components** none · **Sandbox** none
 - The **last** item that can slip a tier without blocking anything, if the AWS account is not ready.

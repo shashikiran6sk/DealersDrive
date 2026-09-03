@@ -19,8 +19,8 @@ public_subnet_ids  = ["subnet-<public-a>", "subnet-<public-b>"]
 
 # 1 vCPU / 2 GiB. `sharp` is the reason for the memory: image processing runs in
 # the API task (WORKER_INLINE=true), and a 12-megapixel photo is not small.
-api_cpu           = "1024"
-api_memory        = "2048"
+api_cpu    = "1024"
+api_memory = "2048"
 # 75% of the task memory. The remainder is the Node runtime, the native heap
 # sharp allocates outside V8, and enough slack that GC pressure shows up as
 # latency rather than as a task that vanishes.
