@@ -38,7 +38,7 @@ model User {
   createdAt       DateTime   @default(now())
 
   sessions    Session[]
-  // `memberships DealerMember[]` returns with F036, which adds DealerMember.
+  memberships DealerMember[]
   identities  OAuthIdentity[]
 
   @@map("users")
@@ -155,4 +155,106 @@ model AuditLog {
   @@index([dealerId, createdAt])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ── Pulled forward from F036 ────────────────────────────────────────────────
+// The Dealer and DealerMember MODELS arrive here rather than at F036, because
+// modules/auth/cookie-session.adapter.ts resolves the dealer principal by
+// reading a DealerMember and its Dealer — and that adapter is F015. A session
+// resolver that cannot resolve a dealership is not a session resolver.
+//
+// F036 keeps the substance of its feature: tenant isolation, the repository,
+// the service, the routes and the isolation tests. Only the two table
+// definitions and their enums move.
+//
+// Relation fields pointing at models that do not exist yet are commented out
+// and return with the feature that adds the other side.
+// ─────────── DEALERS (the tenant) ────────────────────────────────────────
+model Dealer {
+  id                 String       @id @default(uuid()) @db.Uuid
+  slug               String       @unique
+  brandName          String
+  legalName          String
+  gstin              String?
+  pan                String?
+  about              String?
+  tagline            String?
+  logoMediaId        String?      @db.Uuid
+  coverMediaId       String?      @db.Uuid
+  status             DealerStatus @default(DRAFT)
+  cityId             String?      @db.Uuid
+  addressLine        String?
+  pincode            String?
+  lat                Float?
+  lng                Float?
+  contactPhone       String?
+  contactEmail       String?
+  landline           String?
+  workingHours       Json?
+  establishedYear    Int?
+  specialities       String[]
+  /// MIRROR of the newest CreditTransaction.balanceAfter. Never authoritative
+  /// on its own — every write path re-reads the ledger under FOR UPDATE (§26.2).
+  creditBalance      Int          @default(0)
+  creditsHeld        Int          @default(0)
+  activeListings     Int          @default(0)
+  medianResponseMins Int?
+  approvedAt         DateTime?
+  suspendedAt        DateTime?
+  statusReason       String?
+  createdAt          DateTime     @default(now())
+
+  // city        City?               @relation(fields: [cityId], references: [id])   ← returns with its own feature
+  members     DealerMember[]
+  // vehicles    Vehicle[]   ← returns with its own feature
+  // documents   DealerDocument[]   ← returns with its own feature
+  // listings    Listing[]   ← returns with its own feature
+  // enquiries   Enquiry[]   ← returns with its own feature
+  // ledger      CreditTransaction[]   ← returns with its own feature
+  // orders      Order[]   ← returns with its own feature
+  // payments    Payment[]   ← returns with its own feature
+  // invoices    Invoice[]   ← returns with its own feature
+  // photoReqs   PhotoRequest[]   ← returns with its own feature
+  // viewsDaily  ListingViewDaily[]   ← returns with its own feature
+  // phoneReveal PhoneReveal[]   ← returns with its own feature
+
+  @@index([status, cityId])
+  @@map("dealers")
+}
+
+model DealerMember {
+  id          String       @id @default(uuid()) @db.Uuid
+  dealerId    String       @db.Uuid
+  userId      String       @db.Uuid
+  role        DealerRole
+  permissions String[]
+  status      MemberStatus @default(ACTIVE)
+
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dealerId, userId])
+  @@index([userId])
+  @@map("dealer_members")
+}
+
+enum DealerStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+  REJECTED
+  CLOSED
+}
+
+enum DealerRole {
+  OWNER
+  MANAGER
+  SALES
+}
+
+enum MemberStatus {
+  ACTIVE
+  INVITED
+  REMOVED
 }

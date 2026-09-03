@@ -33,9 +33,9 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 2 — Identity & the first dealer-facing surface
 
-- [~] F014 — User & session data model
-- [ ] F015 — Session service & cookies
-- [ ] F016 — Auth guards & authorization model
+- [x] F014 — User & session data model
+- [~] F015 — Session service & cookies · ⚠️ BLOCKED, draft PR — see feature map
+- [~] F016 — Auth guards & authorization model · ⚠️ BLOCKED with F015
 - [ ] F017 — Auth shell UI
 - [ ] F018 — Dealer sign-in with Google OAuth ⭐
 - [ ] F019 — Admin sign-in
@@ -55,7 +55,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F027 — Rate limiting · ⚠️ pulled forward, ahead of Tier 2
 - [x] F028 — Caching layer · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F029 — Platform config & feature flags
-- [~] F030 — Audit log · ⚠️ pulled forward, ahead of Tier 2
+- [x] F030 — Audit log · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F031 — Events, outbox & background jobs
 
 ## Tier 5 — Storage & media

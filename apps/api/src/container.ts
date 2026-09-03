@@ -1,10 +1,16 @@
 import type { PrismaClient } from '@prisma/client';
 
 import { env, type Env } from './config/env.js';
+import { createAuthMiddleware } from './middleware/auth.js';
 import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
+import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
+import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
+import type { SessionResolver } from './modules/auth/session.port.js';
+import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import type { CachePort } from './platform/cache/cache.port.js';
 import { createCache } from './platform/cache/factory.js';
 import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
+import { logger } from './platform/telemetry/logger.js';
 
 /**
  * The composition root — this replaces DI (ARCHITECTURE §5.3).
@@ -38,6 +44,10 @@ export interface Container {
   readonly cache: CachePort;
   /** Built here, like the guards, so no router reaches for a global counter. */
   readonly rateLimit: RateLimiter;
+  readonly sessions: SessionResolver;
+  readonly sessionStore: SessionService;
+  /** The guard chain. `auth` below is the module that issues the sessions. */
+  readonly guards: ReturnType<typeof createAuthMiddleware>;
 }
 
 export interface ContainerOverrides {
@@ -46,6 +56,7 @@ export interface ContainerOverrides {
   readonly prisma?: PrismaClient;
   /** The integration suite pins this to memory so windows reset with the process. */
   readonly cache?: CachePort;
+  readonly sessions?: SessionResolver;
 }
 
 /**
@@ -60,7 +71,28 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const cache = overrides.cache ?? createCache(prisma);
   const rateLimit = createRateLimiter(cache);
 
-  return { env: overrides.env ?? env, prisma, cache, rateLimit };
+  const sessionStore = createSessionService(prisma);
+  const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
+  const guards = createAuthMiddleware(sessions);
+
+  return { env: overrides.env ?? env, prisma, cache, rateLimit, sessions, sessionStore, guards };
+}
+
+/**
+ * `AUTH_MODE=dev` is a documented escape hatch for a developer who has not
+ * registered a Google OAuth client yet, and it is loud on purpose: it replaces
+ * identity verification with a server-configured identity. `env.ts` refuses it
+ * in production, so this branch cannot be reached there.
+ */
+function createResolver(prisma: PrismaClient, sessionStore: SessionService): SessionResolver {
+  if (env.AUTH_MODE === 'dev') {
+    logger.warn(
+      { devDealer: env.DEV_DEALER_SLUG },
+      'AUTH_MODE=dev — sign-in is bypassed and every request acts as the configured dealer',
+    );
+    return createDevSessionResolver(prisma);
+  }
+  return createCookieSessionResolver(prisma, sessionStore);
 }
 
 /** Starts the background machinery. Not called by tests, which drain inline. */

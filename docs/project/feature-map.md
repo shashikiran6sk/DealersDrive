@@ -465,6 +465,39 @@ Root layout, fonts, and the four pure helpers every feature uses.
 
 ### F015 — Session service & cookies
 
+🚧 **BLOCKED — and the block runs through most of Tier 2.**
+
+`session.service.ts`, `cookie-session.adapter.ts` and `session.cookie.ts` have
+**no unit tests in the baseline**. They are covered by `tests/auth.test.ts`, an
+integration test, which needs `auth-harness.ts` → `oauth.port.ts` → **F018**.
+
+F018 in turn needs, by direct import:
+
+| Import                                 | Owned by                              |
+| -------------------------------------- | ------------------------------------- |
+| `RateLimiter` → `CachePort`            | F027, F028 — **done**, pulled forward |
+| `AuditService`                         | F030 — **done**, pulled forward       |
+| `DealersService` (`dealers.facade.ts`) | F036                                  |
+
+and `dealers.service.ts` (610 lines) then needs `platform/events/bus.ts`
+(F031), `platform/storage/storage.port.ts` (F032) and the `DealerDocument`
+model (F040).
+
+**Measured:** F015 + F016 together reach **88.64 % lines / 86.92 % functions**
+against the 90 % gate, with 434 API tests passing. Nothing inside Tier 2
+changes that — the coverage lives in a test that needs four more features.
+
+**Options, in preference order:**
+
+1. Land F031, F032 and the F036 dealers module, then F015–F020 in order. The
+   cascade is finite and each of those is well tested in the baseline.
+2. Write unit tests for the three files. New tests, not ports — it breaks the
+   rule that tests come across with their code.
+3. Land Tier 2 with the coverage gate failing until F018. Breaks the definition
+   of done, and CI arrives red at F022.
+
+Work in progress is preserved on `feat/f015-session-service` as a draft PR.
+
 Session issue/read/revoke, the cookie adapter, the port, and the dev-session escape hatch behind `AUTH_MODE`.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F014
