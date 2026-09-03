@@ -216,6 +216,15 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # The stories import the real components, which import
+      # `@dealers-drive/contracts` — a workspace package resolved through its
+      # built `dist/`. Nothing else in this job builds it, so without this the
+      # typecheck fails on a missing module that exists perfectly well in the
+      # source tree. (It passes locally only because a previous build left the
+      # output behind, which is exactly the kind of gap CI is for.)
+      - name: Build contracts
+        run: pnpm --filter @dealers-drive/contracts build
+
       - name: Typecheck stories
         run: pnpm --filter @dealers-drive/sandbox typecheck
 
