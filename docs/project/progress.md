@@ -36,7 +36,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F014 — User & session data model
 - [ ] F015 — Session service & cookies
 - [ ] F016 — Auth guards & authorization model
-- [ ] F017 — Auth shell UI
+- [~] F017 — Auth shell UI
 - [ ] F018 — Dealer sign-in with Google OAuth ⭐
 - [ ] F019 — Admin sign-in
 - [ ] F020 — Sign-out & session revocation
@@ -67,7 +67,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 6 — Dealer onboarding
 
-- [~] F036 — Dealer entity & tenant isolation · ⚠️ pulled forward, ahead of Tier 2
+- [x] F036 — Dealer entity & tenant isolation · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F037 — Onboarding shell & step routing
 - [ ] F038 — Onboarding — account step
 - [ ] F039 — Onboarding — business details step
