@@ -1,7 +1,18 @@
 import type { PrismaClient } from '@prisma/client';
 
 import { env, type Env } from './config/env.js';
+import { createAuthMiddleware } from './middleware/auth.js';
 import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
+import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
+import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
+import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
+import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
+import type { OAuthProvider } from './modules/auth/oauth.port.js';
+import type { SessionResolver } from './modules/auth/session.port.js';
+import { createSessionService, type SessionService } from './modules/auth/session.service.js';
+import { createDealersRepository } from './modules/dealers/dealers.repository.js';
+import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
+import { createAuditService } from './platform/audit/audit.service.js';
 import type { CachePort } from './platform/cache/cache.port.js';
 import { createCache } from './platform/cache/factory.js';
 import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
@@ -51,6 +62,16 @@ export interface Container {
   readonly outbox: OutboxPublisher;
   /** Local disk, MinIO or R2 — chosen by `STORAGE_DRIVER`, never by a module. */
   readonly storage: StoragePort;
+  /** Reads the principal off a request. Cookie-backed, or the dev identity. */
+  readonly sessions: SessionResolver;
+  /** Issues, resolves and revokes the rows behind those cookies. */
+  readonly sessionStore: SessionService;
+  /** Google, or the fake the sign-in tests inject. */
+  readonly oauth: OAuthProvider;
+  /** The guard chain. `auth` below is the module that issues the sessions. */
+  readonly guards: ReturnType<typeof createAuthMiddleware>;
+  readonly auth: AuthService;
+  readonly dealers: DealersService;
 }
 
 export interface ContainerOverrides {
@@ -61,6 +82,10 @@ export interface ContainerOverrides {
   readonly cache?: CachePort;
   readonly queue?: Queue;
   readonly storage?: StoragePort;
+  /** `harness.ts` swaps the whole resolver out; `auth-harness.ts` does not. */
+  readonly sessions?: SessionResolver;
+  /** The seam `auth-harness.ts` uses: everything above it runs unmodified. */
+  readonly oauth?: OAuthProvider;
 }
 
 /**
@@ -79,7 +104,49 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const outbox = createOutboxPublisher(prisma, bus);
   const storage = overrides.storage ?? createStorage();
 
-  return { env: overrides.env ?? env, prisma, cache, rateLimit, queue, bus, outbox, storage };
+  const sessionStore = createSessionService(prisma);
+  const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
+  const guards = createAuthMiddleware(sessions);
+  const oauth = overrides.oauth ?? createGoogleOAuthProvider();
+
+  const audit = createAuditService(prisma);
+  const dealersRepo = createDealersRepository(prisma);
+  const dealers = createDealersService({ prisma, repo: dealersRepo });
+  const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
+
+  return {
+    env: overrides.env ?? env,
+    prisma,
+    cache,
+    rateLimit,
+    queue,
+    bus,
+    outbox,
+    storage,
+    sessions,
+    sessionStore,
+    oauth,
+    guards,
+    auth,
+    dealers,
+  };
+}
+
+/**
+ * `AUTH_MODE=dev` is a documented escape hatch for a developer who has not
+ * registered a Google OAuth client yet, and it is loud on purpose: it replaces
+ * identity verification with a server-configured identity. `env.ts` refuses it
+ * in production, so this branch cannot be reached there.
+ */
+function createResolver(prisma: PrismaClient, sessionStore: SessionService): SessionResolver {
+  if (env.AUTH_MODE === 'dev') {
+    logger.warn(
+      { devDealer: env.DEV_DEALER_SLUG },
+      'AUTH_MODE=dev — sign-in is bypassed and every request acts as the configured dealer',
+    );
+    return createDevSessionResolver(prisma);
+  }
+  return createCookieSessionResolver(prisma, sessionStore);
 }
 
 /** Starts the background machinery. Not called by tests, which drain inline. */

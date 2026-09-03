@@ -34,12 +34,12 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 2 — Identity & the first dealer-facing surface
 
 - [x] F014 — User & session data model
-- [ ] F015 — Session service & cookies
-- [ ] F016 — Auth guards & authorization model
-- [~] F017 — Auth shell UI
-- [ ] F018 — Dealer sign-in with Google OAuth ⭐
-- [ ] F019 — Admin sign-in
-- [ ] F020 — Sign-out & session revocation
+- [x] F015 — Session service & cookies
+- [x] F016 — Auth guards & authorization model
+- [x] F017 — Auth shell UI
+- [x] F018 — Dealer sign-in with Google OAuth ⭐
+- [x] F019 — Admin sign-in
+- [x] F020 — Sign-out & session revocation
 
 ## Tier 3 — CI/CD
 
