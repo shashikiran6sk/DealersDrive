@@ -272,7 +272,15 @@ The shared Zod vocabulary: the barrel, primitive schemas and enums. One place a 
 - **Files** `packages/contracts/src/{index,common,enums}.ts`, `tsconfig*.json`, `vitest.config.ts`
 - **DB** none — enums mirror Prisma enums by hand
 - **External** `zod@4`
-- **Tests** `packages/contracts/tests/unit/{index,common,enums}.test.ts`
+- **Tests** `packages/contracts/tests/unit/{common,enums}.test.ts`
+- ⚠️ **`tests/unit/index.test.ts` cannot land here.** It walks every export in
+  the barrel and asserts package-wide invariants across all six modules — that
+  more than 40 object schemas exist, that more than 15 input schemas exist,
+  that every one is `.strict()`, that no dealer-facing schema declares
+  `dealerId`. Those assertions are meaningless against two modules and would
+  have to be watered down to pass. It lands with the feature that adds the
+  **last** contracts module (`admin.ts`), where it can assert the whole surface
+  — which is what it is for.
 - **Components** none
 - **Sandbox** none — but this package is the **type source for every sandbox fixture** (`component-sandbox.md` §8)
 
