@@ -22,8 +22,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F003 — Error taxonomy & validation middleware · ⚠️ lands after F004
 - [x] F004 — Request context, logging & lifecycle · ⚠️ lands before F003
 - [x] F005 — Database connection & migration harness
-- [~] F006 — Health & readiness probes
-- [ ] F007 — Design tokens & base stylesheet
+- [x] F006 — Health & readiness probes
+- [~] F007 — Design tokens & base stylesheet
 - [ ] F008 — Web app shell & core libs
 - [ ] F009 — UI primitives: action & identity
 - [ ] F010 — UI primitives: status & feedback
