@@ -270,6 +270,47 @@ model PlatformConfig {
   @@map("platform_config")
 }
 
+// ─────────── MEDIA (§12) ─────────────────────────────────────────────────
+// Content-addressed: a new upload is a new id and a new URL, so a cached page
+// never has to be invalidated. `variants` maps a width to a storage key, and
+// is written by the processing job — F034.
+model Media {
+  id              String      @id @default(uuid()) @db.Uuid
+  dealerId        String?     @db.Uuid
+  ownerType       MediaOwner
+  storageKey      String      @unique
+  mimeType        String
+  bytes           Int
+  width           Int?
+  height          Int?
+  blurhash        String?
+  variants        Json        @default("{}")
+  fileName        String?
+  warnings        String[]
+  uploadedByAdmin Boolean     @default(false)
+  status          MediaStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+
+  // vehicles VehicleMedia[]   ← returns with F035, which adds VehicleMedia
+
+  @@index([status, createdAt])
+  @@map("media")
+}
+
+enum MediaOwner {
+  VEHICLE
+  DEALER_LOGO
+  DEALER_COVER
+  DEALER_DOCUMENT
+}
+
+enum MediaStatus {
+  PENDING
+  READY
+  FAILED
+  ORPHAN
+}
+
 // Cross-instance shared state — the `CachePort` backing store (§18).
 //
 // These two tables are cache, not record. Truncating them costs a rate-limit

@@ -51,6 +51,8 @@ function app(): Express {
     auth: service,
     publicConfig: service,
     locations: service,
+    media: service,
+    storage: service,
     prisma: { $queryRaw: () => Promise.resolve([]) },
   } as unknown as Container);
 }
