@@ -5,6 +5,7 @@ reorganisation work. **Nothing in the application was modified to produce it.**
 
 | Document                                         | What it answers                                                                                                   |
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| [`progress.md`](./progress.md)                   | **The reconstruction status of all 97 features.** The only place it is recorded.                                  |
 | [`feature-map.md`](./feature-map.md)             | The **decision log (D1–D3)**, then what features exist, what each one owns, in what order they can be rebuilt     |
 | [`component-map.md`](./component-map.md)         | Every UI component, its props, states, consumers, coupling and sandbox priority                                   |
 | [`component-sandbox.md`](./component-sandbox.md) | How the feature-integrated component sandbox should be built and run                                              |
