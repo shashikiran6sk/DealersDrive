@@ -28,8 +28,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F009 — UI primitives: action & identity
 - [x] F010 — UI primitives: status & feedback
 - [x] F011 — UI primitives: structure
-- [~] F012 — UI primitives: states
-- [ ] F013 — Form primitives
+- [x] F012 — UI primitives: states
+- [~] F013 — Form primitives
 
 ## Tier 2 — Identity & the first dealer-facing surface
 
@@ -161,7 +161,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 Tracked here too, because they gate UI features rather than following them.
 
 - [x] S0 — `apps/sandbox` skeleton, `pnpm sandbox` working
-- [ ] S1 — the 16 primitives (ships inside F009–F013)
+- [x] S1 — the 16 primitives (ships inside F009–F013)
 - [ ] S2 — decorators + mock factories
 - [ ] S3 — `Combobox`, `PlateInput`, `VehicleCard`, `DirectoryCard`
 - [ ] S4 — `VehicleGallery`, `MobileFilterSheet`, `FilterPanel`

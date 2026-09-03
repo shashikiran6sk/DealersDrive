@@ -170,8 +170,8 @@
  *   F009  .btn*, .dd-plate
  *   F010  .tag*
  *   F011  .blueprint, .corner, .card, .image-slot
- *   F012  .skeleton                              ← this PR
- *   F013  .field, .input
+ *   F012  .skeleton
+ *   F013  .field, .input                         ← this PR
  * `.table` and `.seg` have no component at all in the baseline — that is
  * finding D-B, and they arrive with the primitives created at sandbox step S6.
  */
@@ -426,6 +426,62 @@
   .skeleton {
     height: 11px;
     background: var(--color-neutral-300);
+  }
+
+  /* Inputs — §2.3. */
+  .input {
+    width: 100%;
+    min-height: 36px;
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--color-ink);
+    caret-color: var(--color-accent);
+    background: var(--color-surface);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+  }
+  .input::placeholder {
+    color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+  .input:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+  .input:focus-visible {
+    border-color: var(--color-accent);
+    outline-offset: 0;
+  }
+  .input:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .input[aria-invalid='true'] {
+    border-color: var(--color-err);
+  }
+  textarea.input {
+    min-height: 90px;
+    resize: vertical;
+  }
+  select.input {
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--color-ink) 50%),
+      linear-gradient(135deg, var(--color-ink) 50%, transparent 50%);
+    background-position:
+      calc(100% - 15px) calc(50% + 1px),
+      calc(100% - 10px) calc(50% + 1px);
+    background-size:
+      5px 5px,
+      5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 28px;
+  }
+
+  .field > label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
   }
 }
 
