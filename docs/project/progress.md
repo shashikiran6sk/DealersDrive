@@ -33,13 +33,13 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 2 — Identity & the first dealer-facing surface
 
-- [~] F014 — User & session data model
-- [ ] F015 — Session service & cookies
-- [ ] F016 — Auth guards & authorization model
-- [ ] F017 — Auth shell UI
-- [ ] F018 — Dealer sign-in with Google OAuth ⭐
-- [ ] F019 — Admin sign-in
-- [ ] F020 — Sign-out & session revocation
+- [x] F014 — User & session data model
+- [x] F015 — Session service & cookies
+- [x] F016 — Auth guards & authorization model
+- [x] F017 — Auth shell UI
+- [x] F018 — Dealer sign-in with Google OAuth ⭐
+- [x] F019 — Admin sign-in
+- [x] F020 — Sign-out & session revocation
 
 ## Tier 3 — CI/CD
 
@@ -47,7 +47,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F022 — CI pipeline
 - [x] F023 — Security scanning & dependency automation
 - [x] F024 — Release & image promotion
-- [~] F025 — Deployment infrastructure
+- [x] F025 — Deployment infrastructure
 
 ## Tier 4 — Platform services
 
@@ -55,19 +55,19 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F027 — Rate limiting · ⚠️ pulled forward, ahead of Tier 2
 - [x] F028 — Caching layer · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F029 — Platform config & feature flags
-- [~] F030 — Audit log · ⚠️ pulled forward, ahead of Tier 2
-- [ ] F031 — Events, outbox & background jobs
+- [x] F030 — Audit log · ⚠️ pulled forward, ahead of Tier 2
+- [x] F031 — Events, outbox & background jobs · ⚠️ pulled forward, ahead of Tier 2
 
 ## Tier 5 — Storage & media
 
-- [ ] F032 — Storage port & adapters
+- [x] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F033 — Presigned upload & commit
 - [ ] F034 — Image derivative pipeline
 - [ ] F035 — Media ordering & primary photo
 
 ## Tier 6 — Dealer onboarding
 
-- [ ] F036 — Dealer entity & tenant isolation
+- [x] F036 — Dealer entity & tenant isolation · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F037 — Onboarding shell & step routing
 - [ ] F038 — Onboarding — account step
 - [ ] F039 — Onboarding — business details step

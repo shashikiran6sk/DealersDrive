@@ -1,4 +1,4 @@
-import type { Express } from 'express';
+import type { Express, NextFunction, Request, Response } from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
@@ -22,9 +22,12 @@ import { createApp } from '../../src/server.js';
  * harmless — moving the body parser above the context, say — shows up here as
  * a problem document with no traceId.
  *
+ * No database is involved: every service is a Proxy, so the routes exist and
+ * the middleware runs, but nothing reaches Prisma.
+ *
  * ── Reconstruction note ───────────────────────────────────────────────────
  * The middleware stack is complete as of F003, so every position above is
- * pinned. Two cases still wait on routes rather than on middleware:
+ * pinned. One case still waits on routes rather than on middleware:
  *
  *   'turns a typo'd query parameter into a 400'    → the first route with a
  *                                                    query schema to validate
@@ -34,9 +37,20 @@ import { createApp } from '../../src/server.js';
  */
 
 function app(): Express {
-  const prisma = { $queryRaw: () => Promise.resolve([]) };
+  const service = new Proxy({}, { get: () => () => Promise.resolve({}) }) as never;
 
-  return createApp({ prisma } as unknown as Container);
+  return createApp({
+    guards: {
+      requireDealer: (_req: Request, _res: Response, next: NextFunction) => next(),
+      requireSignedIn: (_req: Request, _res: Response, next: NextFunction) => next(),
+      requireAdmin: (_req: Request, _res: Response, next: NextFunction) => next(),
+    },
+    // Pass-through: this file pins middleware *order*, and a limiter that
+    // counted would start refusing once a test dispatched the same path twice.
+    rateLimit: () => (_req: Request, _res: Response, next: NextFunction) => next(),
+    auth: service,
+    prisma: { $queryRaw: () => Promise.resolve([]) },
+  } as unknown as Container);
 }
 
 describe('assembly', () => {
