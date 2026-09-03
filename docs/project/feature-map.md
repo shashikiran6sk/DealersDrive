@@ -465,14 +465,31 @@ Root layout, fonts, and the four pure helpers every feature uses.
 
 ### F015 — Session service & cookies
 
+✅ **Unblocked.** The blocker recorded here — 88.64 % lines against a 90 % gate,
+because the only thing that covers `session.service.ts`,
+`cookie-session.adapter.ts` and `session.cookie.ts` is `tests/auth.test.ts`,
+which needs F018 — was resolved by option 1: F031, F032 and F036 landed first,
+and F015, F016 and F018 then landed **together**, in one PR, because none of
+the three can reach the gate alone. F017 landed ahead of them, on its own.
+
+Measured after: **96.77 % statements · 91.75 % branches · 98.15 % functions ·
+96.88 % lines**, 695 tests.
+
 Session issue/read/revoke, the cookie adapter, the port, and the dev-session escape hatch behind `AUTH_MODE`.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F014
+- **Status** implemented · **Confidence** HIGH · **Depends on** F014, F036
 - **Backend** `modules/auth/{session.service,session.port,session.cookie,cookie-session.adapter,dev-session.adapter,password}.ts`
 - **Frontend** `lib/session.ts`
 - **External** `@node-rs/argon2`
 - **Tests** `tests/unit/modules/auth/{session.port,dev-session.adapter,password}.test.ts`, web `tests/unit/lib/session.test.ts` ✅
 - **Components** none · **Sandbox** none
+- **The dependency on F036 was not listed and should have been.**
+  `session.port.ts` types a `DealerPrincipal` around `DealerMember`, so the
+  dealer models have to exist first.
+- `lib/session.ts` is byte-identical but for `currentAdmin`'s return type: the
+  baseline says `AdminOverview`, from `contracts/src/admin.ts`, which arrives
+  with **F049** alongside the route it describes. `unknown` until then — every
+  caller asks only whether there is one.
 
 ### F016 — Auth guards & authorization model
 
@@ -481,9 +498,20 @@ Session issue/read/revoke, the cookie adapter, the port, and the dev-session esc
 - **Status** implemented · **Confidence** HIGH · **Depends on** F015
 - **Backend** `src/middleware/auth.ts`, guard wiring in `routes.ts`
 - **API** `/v1/…` public · `/v1/auth/…` mixed · `/v1/dealer/…` · `/v1/admin/…`
-- **Tests** `tests/auth.test.ts`, `tests/auth-harness.ts`, `tests/unit/middleware/auth.test.ts`
+- **Tests** `tests/auth.test.ts`, `tests/auth-harness.ts`, `tests/unit/middleware/auth.test.ts`, and `tests/unit/routes.test.ts` — which the entry did not name and which is the file that actually proves the boundary
 - **Components** none · **Sandbox** none
 - Router order in `routes.ts` **is** the security boundary — the public auth router must be mounted before the guarded one.
+- **`/v1/dealer` and `/v1/admin` are mounted with their guard and no child
+  routers.** That is deliberate, not a gap: the guard runs on any path under
+  the prefix, so the boundary is real and testable from this feature onward,
+  and every router that later goes under it inherits it rather than
+  re-declaring it. A request to `/v1/dealer` is 401 without a dealer session
+  and 404 with one, which is exactly what `auth.test.ts` asserts.
+- ⚠️ **`tests/unit/routes.test.ts` is sliced.** Every guard question is asked in
+  full. Deferred are the `reached` assertions for paths whose routers do not
+  exist — `/v1/dealer/*` (F046), `PUT /uploads` (F033) — and five of the eight
+  public paths, which belong to F026, F029, F076, F085 and F088.
+  `GET /v1/catalog/bundle` is dropped permanently: decision D1 removed it.
 
 ### F017 — Auth shell UI
 
@@ -499,8 +527,8 @@ The centred auth layout and heading shared by all three sign-in surfaces.
 
 **The first dealer-facing feature — the anchor for D3.** OAuth start/callback, state transaction, identity linking, dealer session issued. The first commit where a person can open a browser and be signed in.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F014, F015, F016, F017
-- **Backend** `modules/auth/{google.provider,oauth.port,oauth-transaction,auth.routes,auth.service,auth.facade,auth.docs}.ts`
+- **Status** implemented · **Confidence** HIGH · **Depends on** F014, F015, F016, F017, F030, F031, F032, F036
+- **Backend** `modules/auth/{google.provider,oauth.port,oauth-transaction,auth.routes,auth.service,auth.facade}.ts`
 - **Frontend** `app/(auth)/dealer/login/page.tsx`, `components/auth/google-button.tsx`, `features/auth/actions.ts`
 - **API** `GET /v1/auth/providers`, `GET /v1/auth/google/start`, `GET /v1/auth/google/callback`, `GET /v1/auth/me`
 - **DB** `OAuthIdentity`, `User`, `Session`
@@ -508,6 +536,36 @@ The centred auth layout and heading shared by all three sign-in surfaces.
 - **Tests** `tests/auth.test.ts`, `tests/unit/modules/auth/{google.provider,oauth-transaction,auth.facade}.test.ts`, web `tests/unit/features/auth/actions.test.ts` ✅
 - **Components — New (Shared)** `GoogleSignInButton` · **Reused** `AuthShell`, `AuthHeading`, `Button`, `Banner`, `Plate`
 - **Sandbox** `GoogleSignInButton` — default / disabled / custom label
+- **`auth.docs.ts` is not here.** It imports `ModuleDocs` from `src/docs/spec.ts`,
+  which is **F096** — the whole OpenAPI layer. It lands there with every other
+  module's docs file. The entry listed it; the entry was wrong.
+- **`dealers.service.ts` lands here, sliced to `session()`.** It is the one
+  method `auth.service.ts` calls and the reason `dealers.facade.ts` re-exports
+  `DealersService` at all. The other 550 lines of that file — the profile, the
+  completeness tracker, the KYC document paths, the dashboard — belong to F040,
+  F043, F046 and F048, and each needs a dependency this feature does not have.
+- **A seed lands here too, sliced from F097.** `tests/global-setup.ts` runs
+  `prisma/seed/index.ts`, so the integration suite cannot start without one.
+  What is here is the three things `auth.test.ts` needs — the five cities, the
+  one admin with a password, and one dealership whose owner has _no_ password
+  so that "a dealer account cannot sign in to the admin console" is testable.
+  The baseline's 837-line seed, most of which writes the catalogue D1 removed,
+  stays with **F097**.
+- ⚠️ **`tests/auth.test.ts` is sliced — three cases.** `GET /v1/dealer` → 200
+  after onboarding becomes → 404-past-the-guard until **F046** mounts the
+  router; the same for `GET /v1/admin/metrics/overview` until **F049**; and
+  `describe('tenant isolation survives real sessions')` is deferred whole to
+  **F066**, which brings `/v1/dealer/vehicles`. Everything else runs — 42
+  integration cases against a real Postgres and a fake Google.
+- ⚠️ **`features/auth/actions.ts` is sliced — two actions.**
+  `saveBusinessIdsAction` parses `UpdateDealerInput` and writes `PATCH
+/v1/dealer` (**F039**); `submitForVerificationAction` posts `POST
+/v1/dealer/submit` (**F042**). Their two `describe` blocks in
+  `actions.test.ts` go with them.
+- ⚠️ **Both login pages inline their `noindex`.** The baseline spreads
+  `seoMetadata({ kind: 'private' })` from `lib/seo.ts`, which is **F095**. A
+  sign-in screen has to be `noindex` from the day it exists, so the literal
+  that function resolves to is written out until F095 replaces it.
 
 ### F019 — Admin sign-in
 
@@ -518,9 +576,12 @@ Email + password login for platform staff, on a separate route with a separate s
 - **Frontend** `app/(auth)/admin/login/page.tsx`, `features/auth/admin-login-form.tsx`
 - **API** `POST /v1/auth/admin/login`
 - **External** `@node-rs/argon2`
-- **Tests** `tests/unit/modules/auth/password.test.ts`
+- **Tests** `tests/unit/modules/auth/password.test.ts`, and the `describe('the admin console')` block of `tests/auth.test.ts` — which is where the wrong-password, unknown-account and no-password-at-all cases actually live
 - **Components — New (feature-specific)** `AdminLoginForm` · **Reused** `AuthShell`, `Field`, `Banner`, `Button`
-- **Sandbox** `AdminLoginForm` — idle / server error / field errors / submitting
+- **Sandbox** `AdminLoginForm` — idle / server error / field errors / submitting / session expired
+- Landed in one PR with F015, F016 and F018: `auth.routes.ts` carries the admin
+  paths in the same file as the dealer ones, and `auth.test.ts` covers all four
+  features at once.
 
 ### F020 — Sign-out & session revocation
 
@@ -528,8 +589,10 @@ Email + password login for platform staff, on a separate route with a separate s
 - **Backend** `modules/auth/auth.routes.ts` — logout paths
 - **Frontend** `features/auth/sign-out.tsx`
 - **API** `POST /v1/auth/logout`, `POST /v1/auth/admin/logout`
+- **Tests** the `describe('sessions and sign-out')` block of `tests/auth.test.ts` — revocation is a row, not a cookie, and only an integration test can say so
 - **Components — New (feature-specific)** `SignOutButton` (`scope: 'dealer'|'admin'`)
 - **Sandbox** `SignOutButton` — both scopes
+- Landed in the same PR, for the same reason as F019.
 
 ---
 
