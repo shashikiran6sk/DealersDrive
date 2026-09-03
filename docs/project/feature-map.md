@@ -548,6 +548,11 @@ Multi-stage, workspace-aware builds for both apps. The build needs nothing runni
 - **Tests** the `docker` CI job builds both from a clean context
 - **Components** none · **Sandbox** none
 - The runner stage uses `pnpm install --frozen-lockfile --prod`, so devDependencies never ship — which is why the sandbox can never reach production.
+- ✅ **Verified at F021.** Both images build from a clean context with
+  `apps/sandbox` present in the workspace and absent from the Dockerfiles'
+  partial manifest copies — `--frozen-lockfile` tolerates it. Each image
+  contains only its own app and no Storybook. That was the open risk in
+  `component-sandbox.md` §11 and `git-strategy.md` §4; it is closed.
 
 ### F022 — CI pipeline
 
