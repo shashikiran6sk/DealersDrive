@@ -164,13 +164,128 @@
 
 /*
  * ── Reconstruction note ─────────────────────────────────────────────────────
- * `@layer components` sits between `@layer base` above and `@layer utilities`
- * below in the baseline — 473 lines of `.btn`, `.tag`, `.card`, `.field`,
- * `.input`, `.blueprint`, `.dd-plate`, `.skeleton`, `.table`, `.seg`. It is
- * not one feature's to bring: each block arrives with the React component that
- * wraps it, F009 through F013, so a class and its component land together and
- * neither can be added without the other being reviewed.
+ * `@layer components` is built up one block at a time, each arriving with the
+ * React component that wraps it, so a class and its component land together
+ * and neither can be added without the other being reviewed:
+ *   F009  .btn*, .dd-plate                     ← this PR
+ *   F010  .tag*
+ *   F011  .blueprint, .corner, .card, .image-slot
+ *   F012  .skeleton
+ *   F013  .field, .input
+ * `.table` and `.seg` have no component at all in the baseline — that is
+ * finding D-B, and they arrive with the primitives created at sandbox step S6.
  */
+
+@layer components {
+  /* Buttons — §2.1. Natural height ≈ 32px; sizes are overridden per context. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--color-ink);
+    background: transparent;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+    padding: 6.8px 12.24px;
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out;
+  }
+  .btn:disabled,
+  .btn[aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg);
+  }
+  .btn-primary:not(:disabled):hover {
+    background: var(--color-accent-600);
+  }
+  .btn-primary:not(:disabled):active {
+    background: var(--color-accent-700);
+  }
+
+  .btn-secondary:not(:disabled):hover {
+    background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  }
+  .btn-secondary:not(:disabled):active {
+    background: color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+
+  .btn-ghost {
+    color: var(--color-accent-700);
+    border-color: transparent;
+    padding-inline: 3.4px;
+  }
+  .btn-ghost:not(:disabled):hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+  .btn-ghost:not(:disabled):active {
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+
+  .btn-destructive {
+    color: var(--color-err);
+    border-color: color-mix(in srgb, #b3261e 40%, transparent);
+  }
+  .btn-destructive:not(:disabled):hover {
+    background: color-mix(in srgb, #b3261e 7%, transparent);
+  }
+
+  .btn-danger-solid {
+    background: var(--color-err);
+    border-color: var(--color-err);
+    color: #fff;
+  }
+  .btn-danger-solid:not(:disabled):hover {
+    filter: brightness(0.92);
+  }
+
+  .btn-block {
+    width: 100%;
+  }
+
+  /* Inputs — §2.3. */
+
+  /**
+   * The registration plate — §2.2. The signature element, and it appears in
+   * exactly four places: the logo, the year badge on a vehicle card, the
+   * verified-dealer chip and the PRIMARY photo marker (§4.5). Nowhere else.
+   */
+  .dd-plate {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--color-ink);
+    background: var(--color-bg);
+    padding: 2px 9px 2px 0;
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    line-height: 1.5;
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+  .dd-plate::before {
+    content: '';
+    width: 5px;
+    align-self: stretch;
+    background: var(--color-accent);
+  }
+}
 
 @layer utilities {
   /**

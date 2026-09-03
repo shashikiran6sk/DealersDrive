@@ -42,7 +42,50 @@ export interface RegistryEntry {
  * across. An entry without a story, or a story without an entry, is a gap —
  * see `docs/project/component-sandbox.md` §5.
  */
-export const registry: RegistryEntry[] = [];
+export const registry: RegistryEntry[] = [
+  {
+    id: 'C001',
+    name: 'Button',
+    source: 'apps/web/src/components/ui/button.tsx',
+    category: 'Primitives',
+    ownership: 'Primitive',
+    purpose: 'Every action in the product. 5 variants x 5 sizes, block, loading.',
+    aliases: ['Btn', 'CTA', 'SubmitButton', 'ActionButton', 'btn'],
+    features: ['F009'],
+    props: ['variant', 'size', 'block', 'loading', 'disabled', 'children'],
+    states: ['default', 'hover', 'active', 'disabled', 'loading', 'block'],
+    reusable: true,
+    storyId: 'primitives-button',
+  },
+  {
+    id: 'C002',
+    name: 'ButtonLink',
+    source: 'apps/web/src/components/ui/button.tsx',
+    category: 'Primitives',
+    ownership: 'Primitive',
+    purpose: 'A Button that navigates — an anchor, so middle-click still works.',
+    aliases: ['LinkButton', 'AnchorButton', 'NavButton'],
+    features: ['F009'],
+    props: ['href', 'variant', 'size', 'block', 'children'],
+    states: ['default', 'hover', 'active'],
+    reusable: true,
+    storyId: 'primitives-button--as-link',
+  },
+  {
+    id: 'C003',
+    name: 'Plate',
+    source: 'apps/web/src/components/ui/primitives.tsx',
+    category: 'Primitives',
+    ownership: 'Primitive',
+    purpose: 'The registration plate. The signature element, in exactly four places.',
+    aliases: ['RegistrationPlate', 'NumberPlate', 'YearBadge', 'VerifiedChip', 'dd-plate'],
+    features: ['F009'],
+    props: ['size', 'children'],
+    states: ['year', 'logo', 'chip', 'marker'],
+    reusable: true,
+    storyId: 'primitives-plate',
+  },
+];
 
 /** Case-insensitive search across name, aliases, purpose and category. */
 export function findComponent(query: string): RegistryEntry[] {
