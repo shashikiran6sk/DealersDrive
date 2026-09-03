@@ -33,7 +33,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 2 — Identity & the first dealer-facing surface
 
-- [~] F014 — User & session data model
+- [x] F014 — User & session data model
 - [ ] F015 — Session service & cookies
 - [ ] F016 — Auth guards & authorization model
 - [ ] F017 — Auth shell UI
@@ -55,8 +55,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F027 — Rate limiting · ⚠️ pulled forward, ahead of Tier 2
 - [x] F028 — Caching layer · ⚠️ pulled forward, ahead of Tier 2
 - [ ] F029 — Platform config & feature flags
-- [~] F030 — Audit log · ⚠️ pulled forward, ahead of Tier 2
-- [ ] F031 — Events, outbox & background jobs
+- [x] F030 — Audit log · ⚠️ pulled forward, ahead of Tier 2
+- [~] F031 — Events, outbox & background jobs · ⚠️ pulled forward, ahead of Tier 2
 
 ## Tier 5 — Storage & media
 

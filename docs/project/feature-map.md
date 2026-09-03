@@ -684,14 +684,31 @@ Append-only record of every privileged action. Required by F044, F045, F070, F07
 
 ### F031 — Events, outbox & background jobs
 
-Transactional outbox, an event bus, and the pg-boss queue with its handlers.
+⚠️ **Pulled forward, ahead of Tier 2** — `dealers.service.ts` (F036/F040)
+calls `enqueueOutbox`, and F018's `auth.service.ts` needs `DealersService`.
+This is the first of the four features the F015 blocker note names.
+
+Transactional outbox, an event bus, and the pg-boss queue.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F005
-- **Backend** `src/platform/events/{bus,outbox-publisher}.ts`, `src/platform/jobs/{queue,handlers}.ts`
+- **Backend** `src/platform/events/{bus,outbox-publisher}.ts`, `src/platform/jobs/queue.ts`
 - **DB** `OutboxEvent`
 - **External** `pg-boss`
-- **Tests** `tests/unit/platform/events/*.test.ts`, `tests/unit/platform/jobs/*.test.ts`
+- **Tests** `tests/unit/platform/events/*.test.ts`, `tests/unit/platform/jobs/queue.test.ts`
 - **Components** none · **Sandbox** none
+- ⚠️ **`jobs/handlers.ts` does not land here, and the entry was wrong to say it
+  did.** Its `HandlerDeps` names `SearchRepository`, `MediaService`,
+  `MailerPort`, `SmsPort` and `VehiclesRepository` by direct import: the file
+  cannot compile until F033, F076, F092 and F055 exist, and every one of its
+  subscribers belongs to a feature further down the list. It arrives with the
+  last of them, carrying `registerSchedules` and
+  `tests/unit/platform/jobs/handlers.test.ts` with it. `queue.ts`,
+  `bus.ts` and `outbox-publisher.ts` have no such dependency and are complete
+  here.
+- The pg-boss branch of `createQueue()` is exercised by nothing in the unit
+  suite — `JOBS_ENABLED=false` under test, by design, so the queue a test sees
+  is always `createInlineQueue()`. That is the baseline's arrangement, not a
+  gap this feature introduced.
 
 ---
 
