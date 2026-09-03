@@ -23,14 +23,16 @@ import { createApp } from '../../src/server.js';
  * a problem document with no traceId.
  *
  * ── Reconstruction note ───────────────────────────────────────────────────
- * Positions 1, 4, 6 and 7 do not exist yet, so the describes that pin them are
- * not here either. They come back with the features that add the middleware:
+ * Positions 6 and 7 do not exist yet, so the describes that pin them are not
+ * here either. They come back with the features that add the middleware:
  *
- *   'the request context comes first'   → F004
  *   'not-found sits after the routes'   → F003
  *   'the error handler sits last'       → F003
  *   the 413 `code` and malformed-JSON cases in 'the body parsers' → F003,
  *     which is what turns an Express default error into a problem document
+ *   'stamps one on a body-parser failure' → F003, for the same reason: the
+ *     traceId reaches the response *body* only once the error handler renders
+ *     the problem document. The header is asserted here already.
  */
 
 function app(): Express {
@@ -55,6 +57,27 @@ describe('assembly', () => {
    */
   it('trusts exactly one proxy hop', () => {
     expect(app().get('trust proxy')).toBe(1);
+  });
+});
+
+describe('the request context comes first', () => {
+  it('stamps a traceId header on a successful response', async () => {
+    const response = await request(app()).get('/health/live');
+
+    expect(response.headers['x-trace-id']).toMatch(/^[\w-]{10}$/);
+  });
+
+  it('stamps one on a 404 too', async () => {
+    const response = await request(app()).get('/v1/nope');
+
+    expect(response.headers['x-trace-id']).toBeDefined();
+  });
+
+  it('gives each request its own traceId', async () => {
+    const one = await request(app()).get('/health/live');
+    const two = await request(app()).get('/health/live');
+
+    expect(one.headers['x-trace-id']).not.toBe(two.headers['x-trace-id']);
   });
 });
 
