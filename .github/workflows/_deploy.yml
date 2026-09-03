@@ -62,7 +62,7 @@ jobs:
       CLUSTER: ${{ vars.ECS_CLUSTER }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The smoke test that runs at the end must be the one from the commit
           # being deployed, not from whatever main happens to be.
