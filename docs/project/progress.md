@@ -29,7 +29,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F010 — UI primitives: status & feedback
 - [x] F011 — UI primitives: structure
 - [x] F012 — UI primitives: states
-- [~] F013 — Form primitives
+- [x] F013 — Form primitives
 
 ## Tier 2 — Identity & the first dealer-facing surface
 
