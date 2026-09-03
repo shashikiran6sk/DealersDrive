@@ -44,7 +44,7 @@ jobs:
     container:
       image: semgrep/semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Rule packs, each one verified to resolve — a pack name that does not
       # exist (`p/express`, for instance) fails the scan with an HTTP 404 rather
@@ -114,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The whole history, not just the tip. A credential that was
           # committed in March and deleted in April is still a credential
