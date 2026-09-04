@@ -129,7 +129,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
 
   const audit = createAuditService(prisma);
   const dealersRepo = createDealersRepository(prisma);
-  const dealers = createDealersService({ prisma, repo: dealersRepo });
+  const dealers = createDealersService({ prisma, repo: dealersRepo, storage });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
   const publicConfig = createConfigService({ config });
   // `search` is the real SearchRepository from F076 onward; until the

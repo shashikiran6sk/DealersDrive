@@ -107,7 +107,18 @@ function walk(
 
   for (const layer of stack) {
     if (layer.route) {
-      const path = `${prefix}${layer.route.path}`;
+      /**
+       * A route declared at `/` inside a router mounted at `/v1/dealer` serves
+       * `/v1/dealer` — Express matches it with and without the trailing slash,
+       * and the reference documents the form without. Concatenating naively
+       * yields `/v1/dealer/`, which matches no operation and would report a
+       * documented route as undocumented *and* an existing route as orphaned:
+       * one mistake, two failures, neither of them true.
+       *
+       * F041 is the first feature to mount a route at a router's root, which
+       * is why this appears now rather than with the harness (F098).
+       */
+      const path = trimTrailingSlash(`${prefix}${layer.route.path}`);
       for (const entry of layer.route.stack) {
         if (entry.method) out.add(`${entry.method.toUpperCase()} ${path}`);
       }
@@ -121,6 +132,11 @@ function walk(
       walk(handle, `${prefix}${mount === '/' ? '' : mount}`, mountedAt, out);
     }
   }
+}
+
+/** `/v1/dealer/` → `/v1/dealer`, but `/` stays `/`. */
+function trimTrailingSlash(path: string): string {
+  return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
 }
 
 /** `/v1/dealer/media/{id}` → `/v1/dealer/media/:id`, to compare like with like. */

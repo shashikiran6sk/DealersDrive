@@ -54,6 +54,14 @@ export async function onboardingAction(
   return respond('onboarding', formData);
 }
 
+/** The GSTIN/PAN save on the Documents step (**F041**). */
+export async function saveBusinessIdsAction(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  return respond('saveBusinessIds', formData);
+}
+
 export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promise<void> {
   authActionStub.calls.push({ action: 'signOut', values: { scope } });
   await new Promise((resolve) => setTimeout(resolve, authActionStub.delayMs));

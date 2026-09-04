@@ -4,10 +4,18 @@ import {
   formatPhone,
   type AuthSession,
   type DealerDocumentsResponse,
+  type DealerProfile,
+  type DocumentCommitInput,
+  type DocumentPresignInput,
+  type PresignResponse,
+  type UpdateDealerInput,
 } from '@dealers-drive/contracts';
 import type { DealerDocType, PrismaClient } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
 
-import { NotFoundError } from '../../platform/errors.js';
+import { withTransaction } from '../../platform/db/tenant-tx.js';
+import { DomainError, NotFoundError } from '../../platform/errors.js';
+import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { DealerPrincipal } from '../auth/auth.facade.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 
@@ -22,17 +30,19 @@ import type { DealersRepository, DealerWithRelations } from './dealers.repositor
  *
  * `session()` landed with **F018** — the one method the auth module calls, and
  * the reason `dealers.facade.ts` re-exports `DealersService` at all.
- * `documents()` lands with **F040**: it is a pure read over rows the repository
- * already returns, so it needs nothing this service does not already hold.
+ * `documents()` landed with **F040**. **F041** adds `toProfile`/`profile`,
+ * `update`, and the three document write paths, and with them the first
+ * dependency this service takes beyond its repository: `StoragePort`.
  *
- * Still to come: `toProfile`/`update` and the presign, commit and delete paths
- * with **F041**, `completeness()` with **F043**, `submitForVerification()` with
- * **F042**, and `dashboard()` with **F048**.
+ * Still to come: `completeness()` with **F043**, `submitForVerification()` with
+ * **F042**, and `dashboard()` with **F048** — the last of which brings
+ * `EnquiriesRepository` and the `Listing` counters.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export interface DealersDeps {
   prisma: PrismaClient;
   repo: DealersRepository;
+  storage: StoragePort;
 }
 
 /**
@@ -42,7 +52,50 @@ export interface DealersDeps {
  */
 const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'];
 
-export function createDealersService({ repo }: DealersDeps) {
+export function createDealersService({ prisma, repo, storage }: DealersDeps) {
+  function toProfile(dealer: DealerWithRelations): DealerProfile {
+    const owner = dealer.members.find((member) => member.role === 'OWNER');
+
+    return {
+      id: dealer.id,
+      slug: dealer.slug,
+      status: dealer.status,
+      statusLabel: dealer.status === 'ACTIVE' ? 'Verified' : DEALER_STATUS_LABELS[dealer.status],
+      statusReason: dealer.statusReason,
+      brandName: dealer.brandName,
+      legalName: dealer.legalName,
+      tagline: dealer.tagline,
+      about: dealer.about,
+      gstin: dealer.gstin,
+      pan: dealer.pan,
+      contact: {
+        fullName: owner?.user.fullName ?? null,
+        roleTitle: owner?.user.roleTitle ?? null,
+        phone: dealer.contactPhone ?? owner?.user.phone ?? '',
+        phoneDisplay: formatPhone(dealer.contactPhone ?? owner?.user.phone ?? ''),
+        email: owner?.user.email ?? dealer.contactEmail,
+        landline: dealer.landline,
+      },
+      address: {
+        line: dealer.addressLine,
+        cityId: dealer.cityId,
+        city: dealer.city?.name ?? null,
+        state: dealer.city?.state ?? null,
+        pincode: dealer.pincode,
+      },
+      specialities: dealer.specialities,
+      workingHours: dealer.workingHours as Record<string, string | null> | null,
+      establishedYear: dealer.establishedYear,
+      logoMediaId: dealer.logoMediaId,
+      coverMediaId: dealer.coverMediaId,
+      creditBalance: dealer.creditBalance,
+      creditsHeld: dealer.creditsHeld,
+      activeListings: dealer.activeListings,
+      approvedAt: dealer.approvedAt?.toISOString() ?? null,
+      createdAt: dealer.createdAt.toISOString(),
+    };
+  }
+
   async function requireDealer(dealerId: string): Promise<DealerWithRelations> {
     const dealer = await repo.findById(dealerId);
     if (!dealer) throw new NotFoundError('That dealership no longer exists.');
@@ -50,6 +103,7 @@ export function createDealersService({ repo }: DealersDeps) {
   }
 
   return {
+    toProfile,
     /**
      * The dealer half of B4. `identity` is filled in by the auth module, which
      * owns the OAuth tables — this service knows about dealerships, not about
@@ -101,6 +155,56 @@ export function createDealersService({ repo }: DealersDeps) {
       };
     },
 
+    async profile(dealerId: string): Promise<DealerProfile> {
+      return toProfile(await requireDealer(dealerId));
+    },
+
+    /** C2. Partial, so a wizard `Back` never loses data. `phone` is not patchable. */
+    async update(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
+      const dealer = await requireDealer(dealerId);
+      const owner = dealer.members.find((member) => member.role === 'OWNER');
+
+      const updated = await withTransaction(prisma, async (tx) => {
+        if (input.contact && owner) {
+          await tx.user.update({
+            where: { id: owner.userId },
+            data: {
+              ...(input.contact.fullName === undefined ? {} : { fullName: input.contact.fullName }),
+              ...(input.contact.roleTitle === undefined
+                ? {}
+                : { roleTitle: input.contact.roleTitle }),
+              ...(input.contact.email === undefined ? {} : { email: input.contact.email }),
+            },
+          });
+        }
+
+        return repo.update(
+          dealerId,
+          {
+            ...(input.brandName === undefined ? {} : { brandName: input.brandName }),
+            ...(input.legalName === undefined ? {} : { legalName: input.legalName }),
+            ...(input.tagline === undefined ? {} : { tagline: input.tagline }),
+            ...(input.about === undefined ? {} : { about: input.about }),
+            ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
+            ...(input.pan === undefined ? {} : { pan: input.pan }),
+            ...(input.establishedYear === undefined
+              ? {}
+              : { establishedYear: input.establishedYear }),
+            ...(input.specialities === undefined ? {} : { specialities: input.specialities }),
+            ...(input.workingHours === undefined ? {} : { workingHours: input.workingHours }),
+            ...(input.contact?.email === undefined ? {} : { contactEmail: input.contact.email }),
+            ...(input.contact?.landline === undefined ? {} : { landline: input.contact.landline }),
+            ...(input.address?.line === undefined ? {} : { addressLine: input.address.line }),
+            ...(input.address?.cityId === undefined ? {} : { cityId: input.address.cityId }),
+            ...(input.address?.pincode === undefined ? {} : { pincode: input.address.pincode }),
+          },
+          tx,
+        );
+      });
+
+      return toProfile(updated);
+    },
+
     // ─────────── C5 KYC documents ─────────────────────────────────────────
 
     /**
@@ -140,6 +244,62 @@ export function createDealersService({ repo }: DealersDeps) {
       });
 
       return { data, allVerified: data.every((doc) => doc.status === 'VERIFIED') };
+    },
+
+    /**
+     * Documents go through the same presign → PUT → commit pipeline as photos,
+     * with three differences: a private prefix, **no public delivery route**,
+     * and no derivatives. The promise that buyers never see them is enforced by
+     * there being no route that could serve them, not by a flag (§26.6).
+     */
+    async presignDocument(dealerId: string, input: DocumentPresignInput): Promise<PresignResponse> {
+      const documentId = randomUUID();
+      const key = `kyc/${dealerId}/${input.type}/${documentId}`;
+
+      await repo.upsertDocument(dealerId, input.type, {
+        id: documentId,
+        status: 'UPLOADING',
+        fileName: input.fileName,
+        mediaId: null,
+        rejectionReason: null,
+      });
+
+      const presigned = await storage.presignPut({
+        key,
+        contentType: input.mimeType,
+        contentLength: input.bytes,
+      });
+
+      return {
+        documentId,
+        uploadUrl: presigned.uploadUrl,
+        method: 'PUT',
+        headers: presigned.headers,
+        expiresInSeconds: presigned.expiresInSeconds,
+      };
+    },
+
+    async commitDocument(dealerId: string, type: DealerDocType, input: DocumentCommitInput) {
+      const doc = await repo.documentById(input.documentId);
+      if (!doc || doc.dealerId !== dealerId || doc.type !== type) {
+        throw new NotFoundError('That document does not exist.');
+      }
+
+      const key = `kyc/${dealerId}/${type}/${input.documentId}`;
+      const object = await storage.head(key);
+      if (!object) {
+        throw new DomainError('UPLOAD_MISSING', 'The upload did not complete. Try again.');
+      }
+
+      await repo.upsertDocument(dealerId, type, { status: 'UPLOADED', mediaId: null });
+      const response = await this.documents(dealerId);
+      return response.data.find((row) => row.type === type);
+    },
+
+    async deleteDocument(dealerId: string, type: DealerDocType): Promise<void> {
+      const removed = await repo.deleteDocument(dealerId, type);
+      if (!removed) throw new NotFoundError('That document does not exist.');
+      await storage.delete(`kyc/${dealerId}/${type}`);
     },
   };
 }

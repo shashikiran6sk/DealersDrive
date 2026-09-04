@@ -3,9 +3,11 @@
 import {
   AdminLoginInput,
   OnboardingInput,
+  UpdateDealerInput,
   type AdminSessionResponse,
   type AuthSession,
 } from '@dealers-drive/contracts';
+import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -114,6 +116,45 @@ export async function onboardingAction(
 }
 
 /**
+ * GSTIN and PAN, from the Documents step.
+ *
+ * They are a `PATCH` rather than part of the onboarding submit because by step
+ * 3 the dealership exists: C2 is partial precisely so each wizard step writes
+ * only its own fields and `Back` never blanks another step's.
+ *
+ * Both are upper-cased before validation. A registration is not case-sensitive,
+ * and rejecting a lower-case paste would be pedantry.
+ */
+export async function saveBusinessIdsAction(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const values = {
+    gstin: text(formData, 'gstin').trim().toUpperCase(),
+    pan: text(formData, 'pan').trim().toUpperCase(),
+  };
+
+  const parsed = UpdateDealerInput.safeParse(values);
+  if (!parsed.success) return { errors: fieldErrors(parsed.error.issues), values };
+
+  try {
+    await apiSend('PATCH', '/v1/dealer', parsed.data);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        message: error.userMessage('Those could not be saved.'),
+        errors: error.fieldErrors(),
+        values,
+      };
+    }
+    return { message: 'The API is unavailable. Try again shortly.', values };
+  }
+
+  revalidatePath('/dealer/onboarding');
+  return { values, saved: true };
+}
+
+/**
  * Sign out, for either console.
  *
  * The API call is what matters: it revokes the `sessions` row, so the token
@@ -137,16 +178,11 @@ export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promi
 
 /*
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * `saveBusinessIdsAction` and `submitForVerificationAction` sit here in the
- * baseline. The first parses `UpdateDealerInput` and writes `PATCH /v1/dealer`;
- * the second posts `POST /v1/dealer/submit` and reads `DealerSubmitResponse`.
- * Neither contract nor route exists yet, and both belong to the onboarding
- * wizard rather than to sign-in. They return with their own steps, along with
- * the two `describe` blocks in `actions.test.ts` that cover them.
- *
- * The first is **F041**, not F039 as this note originally said: GSTIN and PAN
- * are on the *Documents* step at the baseline, beside the KYC documents they
- * identify, not on the Business step. The second is **F042**.
+ * `submitForVerificationAction` sits here in the baseline. It posts
+ * `POST /v1/dealer/submit` and reads `DealerSubmitResponse`; neither the
+ * contract nor the route exists yet, and both belong to the review step rather
+ * than to sign-in. It returns with **F042**, along with the `describe` block in
+ * `actions.test.ts` that covers it.
  * ────────────────────────────────────────────────────────────────────────────
  */
 

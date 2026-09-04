@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cookieJar } from '../../../setup.js';
+import { cookieJar, revalidations } from '../../../setup.js';
 import {
   adminLoginAction,
   onboardingAction,
+  saveBusinessIdsAction,
   signOutAction,
 } from '../../../../src/features/auth/actions.js';
 
@@ -203,14 +204,39 @@ describe('onboarding', () => {
   });
 });
 
+describe('the business registrations', () => {
+  it('patches the dealership and revalidates the wizard', async () => {
+    globalThis.fetch = respond(200, {});
+
+    const state = await saveBusinessIdsAction(
+      {},
+      form({ gstin: '33aaccp1234h1zq', pan: 'aaccp1234h' }),
+    );
+
+    expect(state.saved).toBe(true);
+    expect(calls[0]?.init.method).toBe('PATCH');
+    // Upper-cased before validation: a registration is not case-sensitive, and
+    // rejecting a lower-case paste would be pedantry.
+    expect(bodyOf(calls[0])).toContain('33AACCP1234H1ZQ');
+    expect(revalidations.paths).toContain('/dealer/onboarding');
+  });
+
+  it('reports an invalid GSTIN against the field', async () => {
+    globalThis.fetch = respond(200, {});
+
+    const state = await saveBusinessIdsAction({}, form({ gstin: 'nope', pan: 'AACCP1234H' }));
+
+    expect(state.errors?.gstin).toBeTruthy();
+    expect(calls).toHaveLength(0);
+  });
+});
+
 /*
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * `describe('the business registrations')` and
- * `describe('submitting for verification')` are not here. They cover
- * `saveBusinessIdsAction` (**F039**) and `submitForVerificationAction`
- * (**F042**), which `actions.ts` defers for the same reason: neither the
- * contract nor the route they call exists yet. Both blocks return with their
- * own onboarding steps.
+ * `describe('submitting for verification')` is not here. It covers
+ * `submitForVerificationAction` (**F042**), which `actions.ts` defers for the
+ * same reason: neither the contract nor the route it calls exists yet. The
+ * block returns with the review step.
  * ────────────────────────────────────────────────────────────────────────────
  */
 

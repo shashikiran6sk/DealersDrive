@@ -1,4 +1,4 @@
-import type { AuthSession, CitiesResponse } from '@dealers-drive/contracts';
+import type { AuthSession, CitiesResponse, DealerDocumentDto } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -28,12 +28,35 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * controls on Documents and Review (**F041** and **F042** bring their own). A
  * test that fails when the next feature does its job is a tax, not a check.
  *
- * **F038 adds the second describe block**, for the Account step, and **F039
- * the third**, for the Business step. Their claims are of the same kind: what
- * a step refuses to ask for, and what it carries forward — not how it is laid
- * out.
+ * **F038 adds the second describe block**, for the Account step, **F039 the
+ * third**, for the Business step, and **F041 the fourth**, for Documents.
+ * Their claims are of the same kind: what a step refuses to ask for, and what
+ * it carries forward — not how it is laid out.
  * ────────────────────────────────────────────────────────────────────────────
  */
+
+/** One row of the KYC checklist, as `GET /v1/dealer/documents` returns it. */
+function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto {
+  return {
+    id: null,
+    type: 'GST_CERTIFICATE',
+    label: 'GST certificate',
+    status: 'REQUIRED',
+    statusLabel: 'Required — PDF or JPG, max 5 MB',
+    fileName: null,
+    uploadedAt: null,
+    rejectionReason: null,
+    action: 'Upload',
+    ...overrides,
+  };
+}
+
+/** The three rows the API always returns, all outstanding. */
+const DOCUMENTS: DealerDocumentDto[] = [
+  document(),
+  document({ type: 'PAN_CARD', label: 'PAN card' }),
+  document({ type: 'ADDRESS_PROOF', label: 'Address proof' }),
+];
 
 /**
  * `GET /v1/cities` as the Business step sees it. The `all` row is the one that
@@ -98,7 +121,15 @@ function filledSteps(): string[] {
 
 describe('OnboardingWizard — the frame', () => {
   it('names the four steps, in order', () => {
-    render(<OnboardingWizard step={0} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     const labels = within(screen.getByRole('list'))
       .getAllByRole('listitem')
@@ -113,7 +144,15 @@ describe('OnboardingWizard — the frame', () => {
     [2, ['Account', 'Business', 'Documents']],
     [3, ['Account', 'Business', 'Documents', 'Review']],
   ] as const)('opens at the step the server resolved (%i)', (step, expected) => {
-    render(<OnboardingWizard step={step} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={step}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
     expect(filledSteps()).toEqual([...expected]);
   });
 
@@ -124,7 +163,15 @@ describe('OnboardingWizard — the frame', () => {
    */
   it('moves Account → Business in the browser, with no navigation', async () => {
     const user = userEvent.setup();
-    render(<OnboardingWizard step={0} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
@@ -134,7 +181,15 @@ describe('OnboardingWizard — the frame', () => {
 
   it('moves Business → Account on Back, with no navigation', async () => {
     const user = userEvent.setup();
-    render(<OnboardingWizard step={1} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={1}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
 
@@ -145,7 +200,15 @@ describe('OnboardingWizard — the frame', () => {
   /** There is nothing behind step 1, so Back leaves onboarding altogether. */
   it('leaves onboarding for sign-in on Back from Account', async () => {
     const user = userEvent.setup();
-    render(<OnboardingWizard step={0} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
 
@@ -186,9 +249,12 @@ describe('OnboardingPage — the floor the server sets', () => {
    */
   async function openedAt(dealer: { status: string } | null, step?: string): Promise<number> {
     const { apiGet } = await import('@/lib/api');
-    vi.mocked(apiGet).mockImplementation((path: string) =>
-      Promise.resolve(path.startsWith('/v1/cities') ? { data: CITIES } : sessionWith(dealer)),
-    );
+    vi.mocked(apiGet).mockImplementation((path: string) => {
+      if (path.startsWith('/v1/cities')) return Promise.resolve({ data: CITIES });
+      if (path.startsWith('/v1/dealer/documents')) return Promise.resolve({ data: DOCUMENTS });
+      if (path === '/v1/dealer') return Promise.resolve({ gstin: null, pan: null });
+      return Promise.resolve(sessionWith(dealer));
+    });
 
     const { default: OnboardingPage } = await import('@/app/(auth)/dealer/onboarding/page');
     render(await OnboardingPage({ searchParams: Promise.resolve({ step }) }));
@@ -241,7 +307,15 @@ describe('OnboardingPage — the floor the server sets', () => {
  */
 describe('OnboardingWizard — the Account step', () => {
   it('shows the Google address as a read-only verified field, never an input to fill', () => {
-    render(<OnboardingWizard step={0} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     const email = screen.getByLabelText('Email');
     expect(email).toHaveValue('karthik@srilakshmimotors.in');
@@ -252,13 +326,29 @@ describe('OnboardingWizard — the Account step', () => {
 
   /** The identity is the verified one; `user.email` is only the fallback. */
   it('falls back to the account email when there is no linked identity', () => {
-    render(<OnboardingWizard step={0} session={session({ identity: null })} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ identity: null })}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     expect(screen.getByLabelText('Email')).toHaveValue('karthik@srilakshmimotors.in');
   });
 
   it('prefills the name from the Google profile when the user record has none', () => {
-    render(<OnboardingWizard step={0} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     expect(screen.getByLabelText('Full name')).toHaveValue('Karthik Raman');
   });
@@ -271,6 +361,8 @@ describe('OnboardingWizard — the Account step', () => {
           user: { fullName: 'K. Raman', roleTitle: 'Proprietor', phone: '9840012345' },
         })}
         cities={CITIES}
+        documents={[]}
+        dealer={null}
       />,
     );
 
@@ -286,7 +378,15 @@ describe('OnboardingWizard — the Account step', () => {
    */
   it('keeps its fields in the form when the wizard moves on to Business', async () => {
     const user = userEvent.setup();
-    render(<OnboardingWizard step={0} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
@@ -312,7 +412,15 @@ describe('OnboardingWizard — the Business step', () => {
   /** Moves to step 2 the way a dealer does, and returns the user-event handle. */
   async function onBusinessStep() {
     const user = userEvent.setup();
-    render(<OnboardingWizard step={0} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     return user;
   }
@@ -371,11 +479,95 @@ describe('OnboardingWizard — the Business step', () => {
    * because that is how it re-opens on Business after a rejected submit.
    */
   it('opens directly on Business when the frame is given step 1', () => {
-    render(<OnboardingWizard step={1} session={session()} cities={CITIES} />);
+    render(
+      <OnboardingWizard
+        step={1}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+      />,
+    );
 
     expect(
       screen.getByLabelText('Dealership name (public)').closest('fieldset'),
     ).not.toHaveAttribute('hidden');
     expect(screen.getByLabelText('Full name').closest('fieldset')).toHaveAttribute('hidden');
+  });
+});
+
+/**
+ * F041 — step 3.
+ *
+ * This step is reached by navigation rather than locally, so the frame's
+ * Back/Continue row is gone and the step brings its own. Two claims are worth
+ * pinning: the checklist is a row per required document whatever their state,
+ * and Continue says how many are still outstanding — a dealer may leave with
+ * documents missing, and the button should not pretend otherwise.
+ */
+describe('OnboardingWizard — the Documents step', () => {
+  function render_(documents: DealerDocumentDto[], dealer: { gstin?: string; pan?: string } = {}) {
+    return render(
+      <OnboardingWizard
+        step={2}
+        session={session({
+          dealer: { id: 'd1', slug: 'a', brandName: 'A', status: 'DRAFT' } as never,
+        })}
+        cities={CITIES}
+        documents={documents}
+        dealer={dealer as never}
+      />,
+    );
+  }
+
+  it('renders one uploader per document, whatever its state', () => {
+    render_(DOCUMENTS);
+
+    // The file input carries the accessible name; the visible button opens it.
+    for (const label of ['GST certificate', 'PAN card', 'Address proof']) {
+      expect(screen.getByLabelText(`Upload ${label}`)).toHaveAttribute('type', 'file');
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
+  });
+
+  /** A dealer may leave with documents missing; the button says how many. */
+  it('counts what is still outstanding on Continue', () => {
+    render_(DOCUMENTS);
+
+    expect(
+      screen.getByRole('button', { name: 'Continue (3 still to upload)' }),
+    ).toBeInTheDocument();
+  });
+
+  it('drops the count once nothing is outstanding', () => {
+    render_(DOCUMENTS.map((row) => ({ ...row, status: 'UPLOADED' as const })));
+
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+  });
+
+  /**
+   * Both controls navigate — the step is reached by a URL the server resolves,
+   * so leaving it is a navigation too, not a local move.
+   */
+  it('moves on by navigation, whether you skip or continue', async () => {
+    const user = userEvent.setup();
+    render_(DOCUMENTS);
+
+    await user.click(screen.getByRole('button', { name: 'Skip for now' }));
+    expect(navigationState.pushed).toEqual(['/dealer/onboarding?step=3']);
+  });
+
+  /** GSTIN and PAN are a separate PATCH, so they save without leaving the step. */
+  it('prefills the registrations from the dealership record', () => {
+    render_(DOCUMENTS, { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' });
+
+    expect(screen.getByLabelText('GSTIN')).toHaveValue('33AABCS1429B1ZX');
+    expect(screen.getByLabelText('PAN')).toHaveValue('AABCS1429B');
+  });
+
+  it('leaves the frame’s Back/Continue row behind', () => {
+    render_(DOCUMENTS);
+
+    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
   });
 });

@@ -1160,6 +1160,18 @@ Step 3: upload each required KYC document through the presign/commit pipeline. 5
   route that serves a local presigned URL and for `PresignResponse`, but it
   never enqueues `media.process`, so F034's absence (moved to Tier 9 by D4) has
   no effect here.
+- **`GET|PATCH /v1/dealer` arrive here, ahead of F046.** The Documents step
+  carries the GSTIN and PAN form — at the baseline they sit beside the KYC
+  documents they identify, not on the Business step — and it saves them through
+  `saveBusinessIdsAction` → `PATCH /v1/dealer`, reading their current values
+  from `GET /v1/dealer`. So `DealerProfile`, `UpdateDealerInput`, `toProfile`
+  and `update` come with their first consumer rather than with F046, which
+  keeps the profile _page_. The F039 entry says the same thing from the other
+  side.
+- **The route-parity harness needed a fix.** `GET /v1/dealer` is the first
+  route mounted at a router's own root, and `openapi.test.ts` (F098) built its
+  path as `/v1/dealer/` — reporting the route as undocumented and the operation
+  as orphaned at once. The walk now trims the trailing slash.
 
 ### F042 — Onboarding — review & submit step
 

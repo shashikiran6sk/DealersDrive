@@ -1,12 +1,18 @@
 'use client';
 
-import type { AuthSession, CitiesResponse } from '@dealers-drive/contracts';
+import type {
+  AuthSession,
+  CitiesResponse,
+  DealerDocumentDto,
+  DealerProfile,
+} from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Banner, StatusTag, Stepper } from '@/components/ui/primitives';
-import { onboardingAction, type ActionState } from '@/features/auth/actions';
+import { onboardingAction, saveBusinessIdsAction, type ActionState } from '@/features/auth/actions';
+import { DocumentUploader } from '@/features/auth/document-uploader';
 
 /**
  * DESIGN-SPEC §3.10 — Account → Business → Documents → Review.
@@ -20,13 +26,12 @@ import { onboardingAction, type ActionState } from '@/features/auth/actions';
  * component moves between them; it does not decide what you are allowed to see.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * **F037 landed the frame, F038 step 1, F039 step 2.** The remaining step
- * bodies arrive with the features that own them — Documents **F041**, Review
- * **F042** — and each brings the props it needs with it (`documents`,
- * `dealer`, `completeness`; component-map C040).
+ * **F037 landed the frame, F038 step 1, F039 step 2, F041 step 3.** The Review
+ * step arrives with **F042**, bringing the `completeness` prop (component-map
+ * C040) and the outstanding-items list inside the error banner.
  *
- * `session` arrived with the Account step and `cities` arrives with this one,
- * on the same rule: a prop lands with its only reader.
+ * A prop lands with its only reader: `session` with Account, `cities` with
+ * Business, `documents` and `dealer` with Documents.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const ONBOARDING_STEPS = ['Account', 'Business', 'Documents', 'Review'] as const;
@@ -37,10 +42,14 @@ export function OnboardingWizard({
   step,
   session,
   cities,
+  documents,
+  dealer,
 }: {
   step: OnboardingStep;
   session: AuthSession;
   cities: CitiesResponse['data'];
+  documents: DealerDocumentDto[];
+  dealer: DealerProfile | null;
 }) {
   const router = useRouter();
   /**
@@ -123,6 +132,14 @@ export function OnboardingWizard({
             )}
           </div>
         </form>
+      ) : null}
+
+      {current === 2 ? (
+        <DocumentsStep
+          documents={documents}
+          dealer={dealer}
+          onDone={() => router.push('/dealer/onboarding?step=3')}
+        />
       ) : null}
     </div>
   );
@@ -343,5 +360,84 @@ function BusinessStep({
         </div>
       </div>
     </fieldset>
+  );
+}
+
+function DocumentsStep({
+  documents,
+  dealer,
+  onDone,
+}: {
+  documents: DealerDocumentDto[];
+  dealer: DealerProfile | null;
+  onDone: () => void;
+}) {
+  const outstanding = documents.filter((document) => document.status === 'REQUIRED').length;
+  const [state, submit, pending] = useActionState<ActionState, FormData>(saveBusinessIdsAction, {});
+  const values = state.values ?? {};
+
+  return (
+    <div className="flex flex-col gap-[18px]">
+      <div>
+        <h1 className="font-heading text-[34px] font-semibold leading-[1.1] tracking-[-0.02em]">
+          Business verification
+        </h1>
+        <p className="mt-[8px] text-[15px] ink-secondary">
+          Your registrations and three documents, reviewed by our team. Listings can be prepared
+          while this is pending — they go live once you are verified.
+        </p>
+      </div>
+
+      {state.message ? <Banner tone="err">{state.message}</Banner> : null}
+      {state.saved ? <Banner tone="ok">Saved.</Banner> : null}
+
+      {/* GSTIN and PAN in mono, as the review screen renders them (§3.10). */}
+      <form action={submit} className="flex flex-col gap-[14px]" noValidate>
+        <div className="grid gap-[14px] sm:grid-cols-2">
+          <Field id="gstin" label="GSTIN" error={state.errors?.gstin}>
+            <input
+              id="gstin"
+              name="gstin"
+              className="input font-mono uppercase"
+              placeholder="33ABCDE1234F1Z5"
+              maxLength={15}
+              defaultValue={values.gstin ?? dealer?.gstin ?? ''}
+              {...invalidProps('gstin', state.errors?.gstin)}
+            />
+          </Field>
+
+          <Field id="pan" label="PAN" error={state.errors?.pan}>
+            <input
+              id="pan"
+              name="pan"
+              className="input font-mono uppercase"
+              placeholder="ABCDE1234F"
+              maxLength={10}
+              defaultValue={values.pan ?? dealer?.pan ?? ''}
+              {...invalidProps('pan', state.errors?.pan)}
+            />
+          </Field>
+        </div>
+
+        <button type="submit" className="btn btn-secondary self-start" disabled={pending}>
+          {pending ? 'Saving…' : 'Save registrations'}
+        </button>
+      </form>
+
+      <div className="flex flex-col gap-[10px]">
+        {documents.map((document) => (
+          <DocumentUploader key={document.type} document={document} />
+        ))}
+      </div>
+
+      <div className="flex gap-[8px]">
+        <button type="button" className="btn btn-secondary h-[42px] px-[18px]" onClick={onDone}>
+          Skip for now
+        </button>
+        <button type="button" className="btn btn-primary h-[42px] flex-1" onClick={onDone}>
+          {outstanding === 0 ? 'Continue' : `Continue (${outstanding} still to upload)`}
+        </button>
+      </div>
+    </div>
   );
 }

@@ -7,7 +7,8 @@ import type {
   DealerWithRelations,
 } from '../../../../src/modules/dealers/dealers.repository.js';
 import { createDealersService } from '../../../../src/modules/dealers/dealers.service.js';
-import { NotFoundError } from '../../../../src/platform/errors.js';
+import { DomainError, NotFoundError } from '../../../../src/platform/errors.js';
+import type { StoragePort } from '../../../../src/platform/storage/storage.port.js';
 
 /**
  * Unit tests for `src/modules/dealers/dealers.service.ts`.
@@ -18,17 +19,14 @@ import { NotFoundError } from '../../../../src/platform/errors.js';
  * rows; here it is three lines.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline file has seven `describe` blocks. Two are here: `documents`,
- * which **F040** brings, and `session`, which landed with F018 and until now
- * had no unit test of its own — the integration suite covers it end to end
- * through `GET /v1/auth/me`, but the derivations it does (the status label, the
- * phone fallback, where the role comes from) are exactly the kind this file is
- * for, and they are already reachable.
+ * The baseline file has seven `describe` blocks. F040 brought `documents` and
+ * `session`; **F041 brings `toProfile`, `update`, `presignDocument`,
+ * `commitDocument` and `deleteDocument`**, along with the `storage` fake and
+ * the transaction stub they need.
  *
- * The other five — `toProfile`, `update`, `completeness`,
- * `submitForVerification`, `presignDocument`/`commitDocument`/`deleteDocument`
- * and `dashboard` — arrive with F041, F042, F043 and F048, along with the
- * `storage`, `enquiries` and `prisma` fakes each needs.
+ * `completeness` and `submitForVerification` arrive with F043 and F042, and
+ * `dashboard` with F048 — the last of which needs the `enquiries` fake and a
+ * much larger `prisma` one.
  * ────────────────────────────────────────────────────────────────────────────
  */
 function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
@@ -96,21 +94,72 @@ function doc(overrides: Record<string, unknown> = {}): Record<string, unknown> {
 interface Options {
   dealer?: Record<string, unknown> | null;
   documents?: Record<string, unknown>[];
+  documentById?: Record<string, unknown> | null;
+  deleteDocument?: boolean;
+  head?: { bytes: number; contentType: string } | null;
   newEnquiryCount?: number;
   pendingListingCount?: number;
 }
 
 function setup(options: Options = {}) {
+  const updates: { dealerId: string; data: Record<string, unknown> }[] = [];
+  const upserts: { type: string; data: Record<string, unknown> }[] = [];
+  const userUpdates: Record<string, unknown>[] = [];
+  const deletes: string[] = [];
+
   const row = options.dealer === null ? null : dealer(options.dealer ?? {});
 
   const repo = {
     findById: () => Promise.resolve(row),
+    update: (dealerId: string, data: Record<string, unknown>) => {
+      updates.push({ dealerId, data });
+      return Promise.resolve(dealer({ ...(options.dealer ?? {}), ...data }));
+    },
     documents: () => Promise.resolve(options.documents ?? []),
+    documentById: () => Promise.resolve(options.documentById ?? null),
+    upsertDocument: (_dealerId: string, type: string, data: Record<string, unknown>) => {
+      upserts.push({ type, data });
+      return Promise.resolve({});
+    },
+    deleteDocument: () => Promise.resolve(options.deleteDocument ?? true),
     newEnquiryCount: () => Promise.resolve(options.newEnquiryCount ?? 0),
     pendingListingCount: () => Promise.resolve(options.pendingListingCount ?? 0),
   } as unknown as DealersRepository;
 
-  return { service: createDealersService({ prisma: {} as unknown as PrismaClient, repo }) };
+  const tx = {
+    user: {
+      update: (args: Record<string, unknown>) => {
+        userUpdates.push(args);
+        return Promise.resolve({});
+      },
+    },
+  };
+
+  const prisma = {
+    $transaction: <T>(work: (handle: typeof tx) => Promise<T>) => work(tx),
+  } as unknown as PrismaClient;
+
+  const storage = {
+    presignPut: ({ key, contentType }: { key: string; contentType: string }) => ({
+      uploadUrl: `https://storage.test/uploads?key=${key}`,
+      method: 'PUT' as const,
+      headers: { 'Content-Type': contentType },
+      expiresInSeconds: 300,
+    }),
+    head: () => Promise.resolve(options.head ?? null),
+    delete: (key: string) => {
+      deletes.push(key);
+      return Promise.resolve();
+    },
+  } as unknown as StoragePort;
+
+  return {
+    service: createDealersService({ prisma, repo, storage }),
+    updates,
+    upserts,
+    userUpdates,
+    deletes,
+  };
 }
 
 const principal: DealerPrincipal = {
@@ -312,5 +361,304 @@ describe('documents', () => {
     expect((await h.service.documents('dealer-1')).data[0]?.uploadedAt).toBe(
       '2026-08-01T00:00:00.000Z',
     );
+  });
+});
+
+describe('toProfile', () => {
+  it('calls an ACTIVE dealership "Verified" rather than "Active"', async () => {
+    const h = setup();
+
+    // The dealer sees this word on their own profile; "Active" describes a row
+    // state, "Verified" describes what a buyer is being told about them.
+    expect((await h.service.profile('dealer-1')).statusLabel).toBe('Verified');
+  });
+
+  it('labels every other status from the shared table', async () => {
+    const h = setup({ dealer: { status: 'SUSPENDED', statusReason: 'GST expired.' } });
+
+    const profile = await h.service.profile('dealer-1');
+
+    expect(profile.statusLabel).not.toBe('Verified');
+    expect(profile.statusReason).toBe('GST expired.');
+  });
+
+  it('prefers the dealership contact number over the owner’s personal one', async () => {
+    const h = setup({ dealer: { contactPhone: '9840099999' } });
+
+    const profile = await h.service.profile('dealer-1');
+
+    expect(profile.contact.phone).toBe('9840099999');
+    expect(profile.contact.phoneDisplay).toBe('+91 98400 99999');
+  });
+
+  it('falls back to the owner’s number when the dealership has none', async () => {
+    const h = setup({ dealer: { contactPhone: null } });
+
+    expect((await h.service.profile('dealer-1')).contact.phone).toBe('9840012345');
+  });
+
+  it('reports an empty phone rather than null when neither exists', async () => {
+    const h = setup({
+      dealer: {
+        contactPhone: null,
+        members: [
+          { userId: 'user-1', role: 'OWNER', user: { phone: null, emailVerifiedAt: null } },
+        ],
+      },
+    });
+
+    const profile = await h.service.profile('dealer-1');
+
+    expect(profile.contact.phone).toBe('');
+    expect(profile.contact.phoneDisplay).toBe('');
+  });
+
+  it('resolves the city name and state through the relation', async () => {
+    const h = setup();
+
+    expect((await h.service.profile('dealer-1')).address).toMatchObject({
+      city: 'Vellore',
+      state: 'Tamil Nadu',
+      pincode: '632001',
+    });
+  });
+
+  it('reports a null city for a dealership that has not set one', async () => {
+    const h = setup({ dealer: { city: null, cityId: null } });
+
+    const profile = await h.service.profile('dealer-1');
+
+    expect(profile.address.city).toBeNull();
+    expect(profile.address.state).toBeNull();
+  });
+
+  it('serialises dates as ISO strings, and a missing approval as null', async () => {
+    const h = setup({ dealer: { approvedAt: null } });
+
+    const profile = await h.service.profile('dealer-1');
+
+    expect(profile.createdAt).toBe('2025-12-01T00:00:00.000Z');
+    expect(profile.approvedAt).toBeNull();
+  });
+
+  it('404s a dealership that no longer exists', async () => {
+    const h = setup({ dealer: null });
+
+    await expect(h.service.profile('dealer-1')).rejects.toThrow(NotFoundError);
+  });
+});
+
+describe('update', () => {
+  it('writes only the field named in the patch', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { tagline: 'Trusted since 1998' });
+
+    // C2 is partial precisely so a wizard `Back` never loses data; sending
+    // `undefined` for everything else must not blank those columns.
+    expect(h.updates[0]?.data).toEqual({ tagline: 'Trusted since 1998' });
+  });
+
+  it('splits contact details between the user row and the dealership row', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', {
+      contact: { fullName: 'Ramesh K', email: 'new@example.com', landline: '0416 111 2222' },
+    });
+
+    expect(h.userUpdates[0]).toMatchObject({
+      where: { id: 'user-1' },
+      data: { fullName: 'Ramesh K', email: 'new@example.com' },
+    });
+    expect(h.updates[0]?.data).toMatchObject({
+      contactEmail: 'new@example.com',
+      landline: '0416 111 2222',
+    });
+  });
+
+  it('never patches the phone number', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { contact: { fullName: 'Ramesh K' } });
+
+    // The phone is the identity in this build; changing it would change who the
+    // dealership is without going through verification.
+    expect(JSON.stringify([h.updates, h.userUpdates])).not.toContain('phone');
+  });
+
+  it('touches no user row when the dealership has no owner', async () => {
+    const h = setup({ dealer: { members: [] } });
+
+    await h.service.update('dealer-1', { contact: { fullName: 'Nobody' } });
+
+    expect(h.userUpdates).toEqual([]);
+  });
+
+  it('flattens the address into its columns', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', {
+      address: { line: '99 New Road', cityId: 'city-2', pincode: '632002' },
+    });
+
+    expect(h.updates[0]?.data).toEqual({
+      addressLine: '99 New Road',
+      cityId: 'city-2',
+      pincode: '632002',
+    });
+  });
+
+  it('writes nothing at all for an empty patch', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', {});
+
+    expect(h.updates[0]?.data).toEqual({});
+  });
+
+  it('404s a dealership that no longer exists', async () => {
+    const h = setup({ dealer: null });
+
+    await expect(h.service.update('dealer-1', { tagline: 'x' })).rejects.toThrow(NotFoundError);
+  });
+});
+
+describe('presignDocument', () => {
+  it('keys a KYC document under a private prefix', async () => {
+    const h = setup();
+
+    const presigned = await h.service.presignDocument('dealer-1', {
+      type: 'GST_CERTIFICATE',
+      fileName: 'gst.pdf',
+      mimeType: 'application/pdf',
+      bytes: 2048,
+    });
+
+    // §26.6: the promise that buyers never see these is enforced by there being
+    // no route that could serve them — and by the key living outside `vehicles/`.
+    expect(presigned.uploadUrl).toContain(`kyc/dealer-1/GST_CERTIFICATE/${presigned.documentId}`);
+    expect(presigned.uploadUrl).not.toContain('vehicles/');
+  });
+
+  it('records the document as UPLOADING before handing back the URL', async () => {
+    const h = setup();
+
+    const presigned = await h.service.presignDocument('dealer-1', {
+      type: 'PAN_CARD',
+      fileName: 'pan.pdf',
+      mimeType: 'application/pdf',
+      bytes: 1024,
+    });
+
+    expect(h.upserts[0]).toMatchObject({
+      type: 'PAN_CARD',
+      data: { id: presigned.documentId, status: 'UPLOADING', fileName: 'pan.pdf' },
+    });
+  });
+
+  it('clears any previous rejection reason on a re-upload', async () => {
+    const h = setup();
+
+    await h.service.presignDocument('dealer-1', {
+      type: 'ADDRESS_PROOF',
+      fileName: 'eb-bill.pdf',
+      mimeType: 'application/pdf',
+      bytes: 1024,
+    });
+
+    // Otherwise the dealer uploads a clearer copy and still reads "Too blurry".
+    expect(h.upserts[0]?.data).toMatchObject({ rejectionReason: null });
+  });
+
+  it('mints a fresh document id per presign', async () => {
+    const h = setup();
+    const input = {
+      type: 'GST_CERTIFICATE' as const,
+      fileName: 'gst.pdf',
+      mimeType: 'application/pdf' as const,
+      bytes: 1024,
+    };
+
+    const first = await h.service.presignDocument('dealer-1', input);
+    const second = await h.service.presignDocument('dealer-1', input);
+
+    expect(first.documentId).not.toBe(second.documentId);
+  });
+});
+
+describe('commitDocument', () => {
+  const stored = { id: 'doc-1', dealerId: 'dealer-1', type: 'GST_CERTIFICATE' };
+
+  it('marks the document uploaded once the object is there', async () => {
+    const h = setup({
+      documentById: stored,
+      head: { bytes: 2048, contentType: 'application/pdf' },
+      documents: [doc({ type: 'GST_CERTIFICATE', status: 'UPLOADED', fileName: 'gst.pdf' })],
+    });
+
+    const result = await h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', {
+      documentId: 'doc-1',
+    });
+
+    expect(h.upserts[0]).toMatchObject({ data: { status: 'UPLOADED' } });
+    expect(result?.type).toBe('GST_CERTIFICATE');
+  });
+
+  it('404s a document belonging to another dealership', async () => {
+    const h = setup({ documentById: { ...stored, dealerId: 'dealer-2' } });
+
+    // Cross-tenant reads answer 404, never 403 (§7).
+    await expect(
+      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
+    ).rejects.toThrow(NotFoundError);
+  });
+
+  it('404s when the document id names a different type', async () => {
+    const h = setup({ documentById: { ...stored, type: 'PAN_CARD' } });
+
+    await expect(
+      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
+    ).rejects.toThrow(NotFoundError);
+  });
+
+  it('404s a document that does not exist', async () => {
+    const h = setup({ documentById: null });
+
+    await expect(
+      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
+    ).rejects.toThrow(NotFoundError);
+  });
+
+  it('reports UPLOAD_MISSING when nothing landed', async () => {
+    const h = setup({ documentById: stored, head: null });
+
+    // A presign that was never followed by a PUT must not leave a document
+    // looking complete.
+    await expect(
+      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
+    ).rejects.toThrow(DomainError);
+    await expect(
+      h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
+    ).rejects.toThrow(/did not complete/);
+    expect(h.upserts).toEqual([]);
+  });
+});
+
+describe('deleteDocument', () => {
+  it('removes the row and the stored object', async () => {
+    const h = setup({ deleteDocument: true });
+
+    await h.service.deleteDocument('dealer-1', 'GST_CERTIFICATE');
+
+    expect(h.deletes).toEqual(['kyc/dealer-1/GST_CERTIFICATE']);
+  });
+
+  it('404s when there was nothing to delete, and touches storage not at all', async () => {
+    const h = setup({ deleteDocument: false });
+
+    await expect(h.service.deleteDocument('dealer-1', 'GST_CERTIFICATE')).rejects.toThrow(
+      NotFoundError,
+    );
+    expect(h.deletes).toEqual([]);
   });
 });

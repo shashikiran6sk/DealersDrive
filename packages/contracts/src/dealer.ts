@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { Uuid } from './common.js';
-import { DealerDocType, DocStatus, MediaStatus } from './enums.js';
+import { DealerDocType, DealerStatus, DocStatus, MediaStatus } from './enums.js';
 
 /**
  * PART C — the dealer console (API-SPEC C1–C20). Every shape here is read or
@@ -12,8 +12,8 @@ import { DealerDocType, DocStatus, MediaStatus } from './enums.js';
  * The baseline file is ~800 lines covering the dealership profile, onboarding,
  * KYC documents, the vehicle wizard, RC lookup, inventory, media and enquiries.
  * Each shape arrives with the feature that first sends or answers with it; the
- * C14 media block below is here because **F033** is, and the C5 KYC read
- * shapes because **F040** is.
+ * C14 media block below is here because **F033** is, the C5 KYC read shapes
+ * because **F040** is, and C1/C2 plus the C5 write shapes because **F041** is.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
@@ -33,6 +33,104 @@ export const PresignResponse = z.object({
   maxBytes: z.number().int().optional(),
 });
 export type PresignResponse = z.infer<typeof PresignResponse>;
+
+// ─────────── C1/C2 dealer profile ──────────────────────────────────────────
+export const DealerProfile = z.object({
+  id: Uuid,
+  slug: z.string(),
+  status: DealerStatus,
+  statusLabel: z.string(),
+  statusReason: z.string().nullable(),
+  brandName: z.string(),
+  legalName: z.string(),
+  tagline: z.string().nullable(),
+  about: z.string().nullable(),
+  gstin: z.string().nullable(),
+  pan: z.string().nullable(),
+  contact: z.object({
+    fullName: z.string().nullable(),
+    roleTitle: z.string().nullable(),
+    phone: z.string(),
+    phoneDisplay: z.string(),
+    email: z.string().nullable(),
+    landline: z.string().nullable(),
+  }),
+  address: z.object({
+    line: z.string().nullable(),
+    cityId: Uuid.nullable(),
+    city: z.string().nullable(),
+    state: z.string().nullable(),
+    pincode: z.string().nullable(),
+  }),
+  specialities: z.array(z.string()),
+  workingHours: z.record(z.string(), z.string().nullable()).nullable(),
+  establishedYear: z.number().int().nullable(),
+  logoMediaId: Uuid.nullable(),
+  coverMediaId: Uuid.nullable(),
+  creditBalance: z.number().int(),
+  creditsHeld: z.number().int(),
+  activeListings: z.number().int(),
+  approvedAt: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type DealerProfile = z.infer<typeof DealerProfile>;
+
+const GSTIN = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/,
+    'GSTIN must be 15 characters.',
+  );
+
+const PAN = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, 'PAN must look like AABCS1429P.');
+
+/**
+ * Partial by design: each wizard step PATCHes only its own fields, so `Back`
+ * never loses data. `phone` is absent — it is the login identity and changing
+ * it needs an OTP round-trip on the new number.
+ */
+export const UpdateDealerInput = z
+  .object({
+    brandName: z.string().trim().min(2).max(120).optional(),
+    legalName: z.string().trim().min(2).max(160).optional(),
+    tagline: z.string().trim().max(200).optional(),
+    about: z.string().trim().max(4000).optional(),
+    gstin: GSTIN.optional(),
+    pan: PAN.optional(),
+    establishedYear: z.number().int().min(1900).max(2100).optional(),
+    specialities: z.array(z.string().trim().min(1).max(60)).max(12).optional(),
+    workingHours: z.record(z.string(), z.string().nullable()).optional(),
+    contact: z
+      .object({
+        fullName: z.string().trim().min(2).max(80).optional(),
+        roleTitle: z.string().trim().max(60).optional(),
+        email: z.string().trim().email().optional(),
+        landline: z.string().trim().max(24).optional(),
+      })
+      .strict()
+      .optional(),
+    address: z
+      .object({
+        line: z.string().trim().max(200).optional(),
+        cityId: Uuid.optional(),
+        state: z.string().trim().max(60).optional(),
+        pincode: z
+          .string()
+          .trim()
+          .regex(/^\d{6}$/, 'Pincode must be 6 digits.')
+          .optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+export type UpdateDealerInput = z.infer<typeof UpdateDealerInput>;
 
 // ─────────── C5 KYC documents ──────────────────────────────────────────────
 /**
@@ -66,14 +164,31 @@ export const DealerDocumentsResponse = z.object({
 });
 export type DealerDocumentsResponse = z.infer<typeof DealerDocumentsResponse>;
 
-/*
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * `DOCUMENT_MIME_TYPES`, `DOCUMENT_MAX_BYTES`, `DocumentPresignInput`,
- * `DocumentCommitInput` and `DocTypeParam` sit here in the baseline. They are
- * the *write* half of C5, and they arrive with **F041** — the upload step that
- * sends them. F040 is the model and the read.
- * ────────────────────────────────────────────────────────────────────────────
+/**
+ * The upload rules, in one place because both ends enforce them: the browser
+ * checks them for the message, the presign signature bakes them in for real.
+ *
+ * 5 MB, and PDF, JPEG or PNG. A KYC document is a scan or a photo of a
+ * certificate — anything larger is a misunderstanding rather than a need.
  */
+export const DOCUMENT_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png'] as const;
+export const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024;
+
+export const DocumentPresignInput = z
+  .object({
+    type: DealerDocType,
+    fileName: z.string().trim().min(1).max(160),
+    mimeType: z.enum(DOCUMENT_MIME_TYPES),
+    bytes: z.number().int().min(1).max(DOCUMENT_MAX_BYTES),
+  })
+  .strict();
+export type DocumentPresignInput = z.infer<typeof DocumentPresignInput>;
+
+export const DocumentCommitInput = z.object({ documentId: Uuid }).strict();
+export type DocumentCommitInput = z.infer<typeof DocumentCommitInput>;
+
+export const DocTypeParam = z.object({ type: DealerDocType }).strict();
+export type DocTypeParam = z.infer<typeof DocTypeParam>;
 
 export const VehicleMediaDto = z.object({
   mediaId: Uuid,
