@@ -61,9 +61,10 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 5 — Storage & media
 
 - [x] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
-- [~] F033 — Presigned upload & commit
-- [ ] F034 — Image derivative pipeline
-- [ ] F035 — Media ordering & primary photo
+- [~] F033 — Presigned upload & commit · [#50](https://github.com/shashikiran6sk/DealersDrive/pull/50)
+
+> F034 and F035 moved to Tier 9 (decision D4) — they serve vehicle galleries,
+> and nothing in Tier 6 or 7 depends on them.
 
 ## Tier 6 — Dealer onboarding
 
@@ -95,6 +96,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 9 — Vehicle intake
 
+- [ ] F034 — Image derivative pipeline · ⚠️ moved from Tier 5, D4
+- [ ] F035 — Media ordering & primary photo · ⚠️ moved from Tier 5, D4
 - [ ] F055 — Vehicle data model
 - [ ] F056 — Plate input & normalisation
 - [ ] F057 — RC lookup port, mock adapter & caching
