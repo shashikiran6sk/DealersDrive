@@ -77,7 +77,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F041 — Onboarding — document upload step · [#57](https://github.com/shashikiran6sk/DealersDrive/pull/57)
 - [x] F042 — Onboarding — review & submit step · [#59](https://github.com/shashikiran6sk/DealersDrive/pull/59)
 - [x] F043 — Onboarding completeness tracking · [#58](https://github.com/shashikiran6sk/DealersDrive/pull/58)
-- [ ] F044 — Admin document verification
+- [~] F044 — Admin document verification
 - [ ] F045 — Dealer approval, rejection & suspension
 
 ## Tier 7 — Consoles
@@ -85,7 +85,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [ ] F046 — Dealer profile management
 - [ ] F047 — Dealer console shell & navigation
 - [ ] F048 — Dealer dashboard
-- [~] F049 — Admin console shell & navigation · ⚠️ pulled forward, ahead of Tier 7 — F044 depends on it
+- [x] F049 — Admin console shell & navigation · ⚠️ pulled forward, ahead of Tier 7 — F044 depends on it · [#60](https://github.com/shashikiran6sk/DealersDrive/pull/60)
 
 ## Tier 8 — Billing & credits
 

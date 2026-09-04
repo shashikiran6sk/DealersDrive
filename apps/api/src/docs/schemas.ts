@@ -56,6 +56,7 @@ const INPUT_SCHEMA_NAMES = [
   'DocumentPresignInput',
   'DocumentCommitInput',
   'UpdateDealerInput',
+  'ReasonInput',
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────
    * The baseline lists 42 names. The rest are exported by contracts modules
