@@ -26,14 +26,19 @@ const config: StorybookConfig = {
      * match, so the exact server-actions entry has to be tried before the bare
      * `@`, which would otherwise swallow it.
      *
-     * The stub is coupling C-4 from `component-map.md` — `AdminLoginForm` and
-     * `SignOutButton` call Server Actions, and the sandbox has no server. See
-     * `src/mocks/auth-actions.ts`.
+     * The stubs are coupling C-4 from `component-map.md` — `AdminLoginForm`,
+     * `SignOutButton` and `DealerAdminActions` call Server Actions, and the
+     * sandbox has no server. See `src/mocks/auth-actions.ts` and
+     * `src/mocks/admin-actions.ts`.
      */
     viteConfig.resolve.alias = [
       {
         find: '@/features/auth/actions',
         replacement: new URL('../src/mocks/auth-actions.ts', import.meta.url).pathname,
+      },
+      {
+        find: '@/features/admin/actions',
+        replacement: new URL('../src/mocks/admin-actions.ts', import.meta.url).pathname,
       },
       { find: '@', replacement: new URL('../../web/src', import.meta.url).pathname },
     ];

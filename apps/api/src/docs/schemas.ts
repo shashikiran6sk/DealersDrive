@@ -48,6 +48,7 @@ const INPUT_SCHEMA_NAMES = [
   'DocTypeParam',
   // query
   'CursorQuery',
+  'AdminDealerQuery',
   // bodies
   'OnboardingInput',
   'AdminLoginInput',
@@ -57,12 +58,14 @@ const INPUT_SCHEMA_NAMES = [
   'DocumentCommitInput',
   'UpdateDealerInput',
   'ReasonInput',
+  'ApproveDealerInput',
+  'NoteInput',
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────
    * The baseline lists 42 names. The rest are exported by contracts modules
    * that have not landed yet — `VehicleQuery` and `CreateVehicleInput` with
-   * F055/F060, `ReorderMediaInput` with F035, the admin and billing bodies
-   * with tiers 8 and 11. `buildSchemaCatalogue()` throws when a name here is
+   * F055/F060, `ReorderMediaInput` with F035, the remaining admin and billing
+   * bodies with tiers 8 and 11. `buildSchemaCatalogue()` throws when a name here is
    * not exported, so this list cannot silently run ahead of contracts: add the
    * name in the same PR that adds the schema.
    */

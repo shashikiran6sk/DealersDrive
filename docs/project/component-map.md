@@ -212,6 +212,20 @@ No tests. Primitive. **P1** — needs a scenario per position and a
 placeholder panel with `role="img"`. 7 consumers. No tests. Primitive. **P2** —
 one short-label and one long-label scenario.
 
+### C066 — `Table` · C067 — `NumericCell`
+
+|                      |                                                                                                                                                                                                          |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `components/ui/table.tsx:49`, `:92`                                                                                                                                                                      |
+| **Purpose**          | DESIGN-SPEC §2.13. **New at F045** — the first of the five hand-rolled `.table` sites in finding D-B, created rather than copied.                                                                        |
+| **Props**            | `Table`: `columns: TableColumn[]`, `caption?`, `containerClassName?`, `children`, plus every `<table>` attribute. `NumericCell`: every `<td>` attribute.                                                 |
+| **States**           | many rows, single row (no dangling rule), overflowing, no rows                                                                                                                                            |
+| **Consumers**        | 1 (`admin/dealers`) — the other four arrive at F054, F066, F069 and F072                                                                                                                                  |
+| **Tests**            | none — the sandbox scenarios are the check                                                                                                                                                                |
+| **Ownership**        | Primitive                                                                                                                                                                                                 |
+| **Sandbox priority** | **P0** — the **Overflow** scenario is the point: the scroll container is inside the component so a caller cannot forget it, and a sideways-scrolling page is invisible on the desktop the console is built on |
+| **Confidence**       | HIGH                                                                                                                                                                                                      |
+
 ---
 
 ## Layer 2 — Forms (`components/forms/`)
@@ -451,7 +465,7 @@ Compressed to one row each. All are `'use client'` unless noted, all are
 | C059 | `ReportSummary`                      | `features/report/report-summary.tsx:29`     | `report: VehicleReportSummary`                                                                              | per verdict tone                                                            | F068      | **P1**                                    |
 | C060 | `ReviewActions`                      | `features/admin/review-actions.tsx:24`      | `listing: AdminListingDetail`                                                                               | per listing status × pending × error; uses **Radix Dialog**                 | F070      | **P0**                                    |
 | C061 | `QueueApproveButton`                 | `features/admin/queue-actions.tsx:15`       | `listingId`, `title`                                                                                        | idle, pending, error                                                        | F069      | P2                                        |
-| C062 | `DealerAdminActions`                 | `features/admin/dealer-actions.tsx:24`      | `dealer: AdminDealerDetail`                                                                                 | per dealer status × grant form × suspend form × pending × error             | F045      | **P0**                                    |
+| C062 | `DealerAdminActions`                 | `features/admin/dealer-actions.tsx:36`      | `dealer: AdminDealerDetail`                                                                                 | per dealer status × suspend form × pending × error — grant form at **F054** | F045      | **P0**                                    |
 | C063 | `ModerationStrip`                    | `features/admin/moderation-strip.tsx:12`    | `photos: {id,position,label,url}[]`                                                                         | 0, 1, 12 photos                                                             | F070      | P2                                        |
 | C064 | `ConfigRow`                          | `features/admin/config-editor.tsx:12`       | `entry: ConfigEntry`                                                                                        | boolean/number/string × clean/dirty/saving/saved/error                      | F072      | **P1**                                    |
 | C065 | `QueryProvider`                      | `features/query/query-provider.tsx:16`      | `children`                                                                                                  | — (provider)                                                                | F091      | _(decorator)_                             |
@@ -555,7 +569,7 @@ informed.
 | -------------- | ------------------------------ | ----------------------------- | ---------------------- |
 | §2.3 Input     | `.input`                       | **none**                      | **70**                 |
 | §2.7 Card      | `.card`                        | **none**                      | **32** (30 files)      |
-| §2.13 Table    | `.table`                       | **none**                      | **5** pages            |
+| §2.13 Table    | `.table`                       | `Table` — **created at F045** | **5** pages            |
 | §2.4 Segmented | `.seg` / `.seg-opt`            | **none**                      | 2 files                |
 | §2.14 Dialog   | `.dialog` / `.dialog-backdrop` | **none** — Radix used instead | **0**                  |
 
@@ -568,6 +582,13 @@ design-spec component — the exact duplication the reuse rule exists to prevent
 `Input`, `Card`, `Table`, `Segmented` and `Dialog` should be **the first new
 components created**, each entering with a sandbox entry, and existing call
 sites migrated opportunistically rather than in one sweep.
+
+**Progress.** `Input` was created at **F013**, before any of its 70 call sites
+were reconstructed; `Table` at **F045**, at the first of its five. Neither was
+a migration — each landed at the moment its first consumer did, which is the
+only point at which this costs nothing. `Segmented` is due at **F091** (its
+`.seg` CSS arrived at F045 with the dealer status tabs, which are `<Link>`s and
+not the control); `Card` and `Dialog` are still open.
 
 ### D-C — `.dialog` CSS is dead; Radix is the real implementation
 
