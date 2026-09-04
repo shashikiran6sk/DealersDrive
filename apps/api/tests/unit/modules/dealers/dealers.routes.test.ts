@@ -19,9 +19,8 @@ import {
  * and `document:upload` appear in §8.3 against OWNER alone.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline asserts nine signatures. **F041 brings the count to six**;
- * `GET /completeness`, `POST /submit` and `GET /dashboard` arrive with F043,
- * F042 and F048.
+ * The baseline asserts nine signatures. **F043 brings the count to seven**;
+ * `POST /submit` and `GET /dashboard` arrive with F042 and F048.
  * ────────────────────────────────────────────────────────────────────────────
  */
 const router = createDealersRouter({} as never);
@@ -32,6 +31,7 @@ describe('the surface', () => {
       [
         'GET /',
         'PATCH /',
+        'GET /completeness',
         'GET /documents',
         'POST /documents/presign',
         'POST /documents/:type/commit',
@@ -63,9 +63,12 @@ describe('permissions', () => {
    * salesperson who cannot see their own dealership has a broken console. The
    * tenant scope still comes from the principal, so nothing here is unscoped.
    */
-  it.each(['GET /', 'GET /documents'])('leaves %s open to any authenticated seat', (signature) => {
-    expect(permissionsOn(routeFor(router, signature) as never)).toEqual([]);
-  });
+  it.each(['GET /', 'GET /completeness', 'GET /documents'])(
+    'leaves %s open to any authenticated seat',
+    (signature) => {
+      expect(permissionsOn(routeFor(router, signature) as never)).toEqual([]);
+    },
+  );
 
   it('guards every write, and only the writes', () => {
     for (const route of routesOf(router)) {

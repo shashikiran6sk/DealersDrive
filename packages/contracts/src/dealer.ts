@@ -132,6 +132,35 @@ export const UpdateDealerInput = z
   .strict();
 export type UpdateDealerInput = z.infer<typeof UpdateDealerInput>;
 
+// ─────────── C3 completeness ───────────────────────────────────────────────
+/**
+ * The single derived answer to "what is still missing".
+ *
+ * It is derived once, on the server, and read by two callers that must agree:
+ * the wizard, which uses it to say what is outstanding, and
+ * `POST /v1/dealer/submit`, which uses the same condition to refuse a premature
+ * submit. Two independent derivations would eventually disagree, and the
+ * disagreement would be about whether a dealer is allowed to trade.
+ *
+ * `missing` carries field keys — `gstin`, `GST_CERTIFICATE` — which are precise
+ * and not something to put in front of somebody at the end of a sign-up form.
+ * The wizard maps them to words.
+ */
+export const CompletenessResponse = z.object({
+  isComplete: z.boolean(),
+  canSubmit: z.boolean(),
+  percent: z.number().int(),
+  steps: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      complete: z.boolean(),
+      missing: z.array(z.string()),
+    }),
+  ),
+});
+export type CompletenessResponse = z.infer<typeof CompletenessResponse>;
+
 // ─────────── C5 KYC documents ──────────────────────────────────────────────
 /**
  * One row of the KYC checklist.

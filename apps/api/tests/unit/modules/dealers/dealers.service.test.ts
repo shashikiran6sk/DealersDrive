@@ -24,7 +24,7 @@ import type { StoragePort } from '../../../../src/platform/storage/storage.port.
  * `commitDocument` and `deleteDocument`**, along with the `storage` fake and
  * the transaction stub they need.
  *
- * `completeness` and `submitForVerification` arrive with F043 and F042, and
+ * **F043 brings `completeness`.** `submitForVerification` arrives with F042 and
  * `dashboard` with F048 — the last of which needs the `enquiries` fake and a
  * much larger `prisma` one.
  * ────────────────────────────────────────────────────────────────────────────
@@ -660,5 +660,143 @@ describe('deleteDocument', () => {
       NotFoundError,
     );
     expect(h.deletes).toEqual([]);
+  });
+});
+
+/**
+ * C3 — the one derivation the wizard and the submit endpoint must agree on.
+ *
+ * These cases pin the two things that are easy to get subtly wrong: which
+ * document states count as outstanding, and the fact that the review step is
+ * excluded from `isComplete`. Get the second wrong and submitting requires
+ * having already submitted.
+ */
+describe('completeness', () => {
+  const verified = [
+    doc({ type: 'GST_CERTIFICATE', status: 'VERIFIED' }),
+    doc({ type: 'PAN_CARD', status: 'VERIFIED' }),
+    doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+  ];
+
+  it('reports every step complete for a finished profile', async () => {
+    const h = setup({ documents: verified });
+
+    const state = await h.service.completeness('dealer-1');
+
+    expect(state.steps.map((step) => step.complete)).toEqual([true, true, true, true]);
+    expect(state.percent).toBe(100);
+    expect(state.isComplete).toBe(true);
+  });
+
+  it('names the missing account fields', async () => {
+    const h = setup({
+      documents: verified,
+      dealer: {
+        members: [
+          { userId: 'user-1', role: 'OWNER', user: { fullName: null, email: null, phone: '9' } },
+        ],
+      },
+    });
+
+    const account = (await h.service.completeness('dealer-1')).steps[0];
+
+    // The stepper renders these verbatim, so a vague "incomplete" would leave
+    // the dealer clicking around looking for the field.
+    expect(account?.missing).toEqual(['fullName', 'email']);
+    expect(account?.complete).toBe(false);
+  });
+
+  it('names every missing business field', async () => {
+    const h = setup({
+      documents: verified,
+      dealer: {
+        brandName: '',
+        legalName: null,
+        addressLine: null,
+        cityId: null,
+        pincode: null,
+        gstin: null,
+        pan: null,
+      },
+    });
+
+    expect((await h.service.completeness('dealer-1')).steps[1]?.missing).toEqual([
+      'brandName',
+      'legalName',
+      'addressLine',
+      'cityId',
+      'pincode',
+      'gstin',
+      'pan',
+    ]);
+  });
+
+  it('treats a missing, required or rejected document as outstanding', async () => {
+    const h = setup({
+      documents: [
+        doc({ type: 'GST_CERTIFICATE', status: 'REQUIRED' }),
+        doc({ type: 'PAN_CARD', status: 'REJECTED' }),
+      ],
+    });
+
+    expect((await h.service.completeness('dealer-1')).steps[2]?.missing).toEqual([
+      'GST_CERTIFICATE',
+      'PAN_CARD',
+      'ADDRESS_PROOF',
+    ]);
+  });
+
+  it('accepts an uploaded document that has not been reviewed yet', async () => {
+    const h = setup({
+      documents: [
+        doc({ type: 'GST_CERTIFICATE', status: 'UPLOADED' }),
+        doc({ type: 'PAN_CARD', status: 'UPLOADED' }),
+        doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+      ],
+    });
+
+    // A dealer cannot wait for verification before submitting — that is what
+    // submitting is for.
+    expect((await h.service.completeness('dealer-1')).steps[2]?.complete).toBe(true);
+  });
+
+  it('marks the review step complete once the dealership has left DRAFT', async () => {
+    const draft = setup({ documents: verified, dealer: { status: 'DRAFT' } });
+    const submitted = setup({ documents: verified, dealer: { status: 'PENDING_APPROVAL' } });
+
+    expect((await draft.service.completeness('dealer-1')).steps[3]?.complete).toBe(false);
+    expect((await submitted.service.completeness('dealer-1')).steps[3]?.complete).toBe(true);
+  });
+
+  it('rounds the percentage over all four steps', async () => {
+    const h = setup({ documents: [], dealer: { status: 'DRAFT' } });
+
+    // Account and business complete, documents and review not: 2 of 4.
+    expect((await h.service.completeness('dealer-1')).percent).toBe(50);
+  });
+
+  it('only allows a submit from DRAFT, and only when the first three steps are done', async () => {
+    const ready = setup({ documents: verified, dealer: { status: 'DRAFT' } });
+    const already = setup({ documents: verified, dealer: { status: 'PENDING_APPROVAL' } });
+    const incomplete = setup({ documents: [], dealer: { status: 'DRAFT' } });
+
+    expect((await ready.service.completeness('dealer-1')).canSubmit).toBe(true);
+    expect((await already.service.completeness('dealer-1')).canSubmit).toBe(false);
+    expect((await incomplete.service.completeness('dealer-1')).canSubmit).toBe(false);
+  });
+
+  it('does not count the review step towards isComplete', async () => {
+    const h = setup({ documents: verified, dealer: { status: 'DRAFT' } });
+
+    // Otherwise submitting would require having already submitted.
+    const state = await h.service.completeness('dealer-1');
+    expect(state.isComplete).toBe(true);
+    expect(state.steps[3]?.complete).toBe(false);
+  });
+
+  it('404s a dealership that no longer exists', async () => {
+    const h = setup({ dealer: null });
+
+    await expect(h.service.completeness('dealer-1')).rejects.toThrow(NotFoundError);
   });
 });

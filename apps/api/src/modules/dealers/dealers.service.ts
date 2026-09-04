@@ -3,6 +3,7 @@ import {
   DOC_TYPE_LABELS,
   formatPhone,
   type AuthSession,
+  type CompletenessResponse,
   type DealerDocumentsResponse,
   type DealerProfile,
   type DocumentCommitInput,
@@ -34,7 +35,7 @@ import type { DealersRepository, DealerWithRelations } from './dealers.repositor
  * `update`, and the three document write paths, and with them the first
  * dependency this service takes beyond its repository: `StoragePort`.
  *
- * Still to come: `completeness()` with **F043**, `submitForVerification()` with
+ * **F043** adds `completeness()`. Still to come: `submitForVerification()` with
  * **F042**, and `dashboard()` with **F048** — the last of which brings
  * `EnquiriesRepository` and the `Listing` counters.
  * ────────────────────────────────────────────────────────────────────────────
@@ -203,6 +204,68 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       });
 
       return toProfile(updated);
+    },
+
+    /** C3. Drives the onboarding stepper and gates `POST /v1/dealer/submit`. */
+    async completeness(dealerId: string): Promise<CompletenessResponse> {
+      const dealer = await requireDealer(dealerId);
+      const owner = dealer.members.find((member) => member.role === 'OWNER');
+      const documents = await repo.documents(dealerId);
+
+      const accountMissing: string[] = [];
+      if (!owner?.user.fullName) accountMissing.push('fullName');
+      if (!owner?.user.email) accountMissing.push('email');
+
+      const businessMissing: string[] = [];
+      if (!dealer.brandName) businessMissing.push('brandName');
+      if (!dealer.legalName) businessMissing.push('legalName');
+      if (!dealer.addressLine) businessMissing.push('addressLine');
+      if (!dealer.cityId) businessMissing.push('cityId');
+      if (!dealer.pincode) businessMissing.push('pincode');
+      if (!dealer.gstin) businessMissing.push('gstin');
+      if (!dealer.pan) businessMissing.push('pan');
+
+      const documentsMissing = DOC_TYPES.filter((type) => {
+        const doc = documents.find((row) => row.type === type);
+        return !doc || doc.status === 'REQUIRED' || doc.status === 'REJECTED';
+      });
+
+      const steps: CompletenessResponse['steps'] = [
+        {
+          key: 'account',
+          label: 'Account',
+          complete: accountMissing.length === 0,
+          missing: accountMissing,
+        },
+        {
+          key: 'business',
+          label: 'Business',
+          complete: businessMissing.length === 0,
+          missing: businessMissing,
+        },
+        {
+          key: 'documents',
+          label: 'Documents',
+          complete: documentsMissing.length === 0,
+          missing: documentsMissing,
+        },
+        {
+          key: 'review',
+          label: 'Review',
+          complete: dealer.status !== 'DRAFT',
+          missing: [],
+        },
+      ];
+
+      const done = steps.filter((step) => step.complete).length;
+      const isComplete = steps.slice(0, 3).every((step) => step.complete);
+
+      return {
+        isComplete,
+        canSubmit: isComplete && dealer.status === 'DRAFT',
+        percent: Math.round((done / steps.length) * 100),
+        steps,
+      };
     },
 
     // ─────────── C5 KYC documents ─────────────────────────────────────────

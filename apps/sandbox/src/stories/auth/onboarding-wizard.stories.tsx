@@ -1,6 +1,7 @@
 import type {
   AuthSession,
   CitiesResponse,
+  CompletenessResponse,
   DealerDocumentDto,
   DealerProfile,
 } from '@dealers-drive/contracts';
@@ -15,8 +16,9 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * DESIGN-SPEC §3.10 — the onboarding wizard (C040).
  *
  * F037 landed the frame — which step is current, how a step is reached and the
- * progress indicator. **F038 lands step 1, F039 step 2 and F041 step 3**;
- * Review arrives with F042, so the last step is still deliberately sparse.
+ * progress indicator. **F038 lands step 1, F039 step 2, F041 step 3 and F043
+ * the outstanding-items list**; Review arrives with F042, so the last step is
+ * still deliberately sparse.
  *
  * `step` is the *server's* answer, not a preference. The page computes a floor
  * from the session — no dealership yet is 0, a DRAFT one is 2, one already
@@ -63,6 +65,28 @@ const DOCUMENTS: DealerDocumentDto[] = [
   document({ type: 'PAN_CARD', label: 'PAN card' }),
   document({ type: 'ADDRESS_PROOF', label: 'Address proof' }),
 ];
+
+/**
+ * `GET /v1/dealer/completeness`. The wizard renders `missing` as words rather
+ * than as the field keys the API answers with — `gstin` becomes GSTIN,
+ * `GST_CERTIFICATE` becomes GST certificate — which is the whole of what the
+ * blocker-list stories are for.
+ */
+function completeness(missing: Record<string, string[]> = {}): CompletenessResponse {
+  const steps = (['account', 'business', 'documents', 'review'] as const).map((key) => ({
+    key,
+    label: key[0]!.toUpperCase() + key.slice(1),
+    complete: (missing[key] ?? []).length === 0,
+    missing: missing[key] ?? [],
+  }));
+
+  return {
+    isComplete: steps.slice(0, 3).every((step) => step.complete),
+    canSubmit: steps.slice(0, 3).every((step) => step.complete),
+    percent: Math.round((steps.filter((step) => step.complete).length / 4) * 100),
+    steps,
+  };
+}
 
 /** A signed-in Google account with no dealership — the only state step 1 renders in. */
 function session(overrides: Partial<AuthSession['user']> = {}, identityName = 'Karthik Raman') {
@@ -114,8 +138,19 @@ const meta = {
     cities: { control: false, description: 'GET /v1/cities. Step 2 is the only reader.' },
     documents: { control: false, description: 'GET /v1/dealer/documents. Step 3 only.' },
     dealer: { control: false, description: 'GET /v1/dealer — GSTIN and PAN. Step 3 only.' },
+    completeness: {
+      control: false,
+      description: 'GET /v1/dealer/completeness. Read by the error banner.',
+    },
   },
-  args: { step: 0, session: session(), cities: CITIES, documents: DOCUMENTS, dealer: null },
+  args: {
+    step: 0,
+    session: session(),
+    cities: CITIES,
+    documents: DOCUMENTS,
+    dealer: null,
+    completeness: null,
+  },
   beforeEach: () => {
     authActionStub.result = {};
     authActionStub.delayMs = 900;
@@ -188,6 +223,51 @@ export const BusinessFieldErrors: Story = {
 };
 
 /**
+ * The blocker list, which is the point of F043. Press Continue: the action
+ * fails, and the banner names each outstanding item in words rather than in the
+ * field keys the API answers with.
+ *
+ * Many blockers — the case that has to stay readable, because it is the one a
+ * dealer who abandoned halfway comes back to.
+ */
+export const BlockersMany: Story = {
+  args: {
+    step: 1,
+    completeness: completeness({
+      account: ['phone'],
+      business: ['gstin', 'pan', 'cityId', 'pincode'],
+      documents: ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'],
+    }),
+  },
+  beforeEach: () => {
+    authActionStub.delayMs = 400;
+    authActionStub.result = { message: 'Some details are still missing.' };
+  },
+};
+
+/** One blocker. Press Continue. */
+export const BlockersOne: Story = {
+  args: { step: 1, completeness: completeness({ documents: ['ADDRESS_PROOF'] }) },
+  beforeEach: () => {
+    authActionStub.delayMs = 400;
+    authActionStub.result = { message: 'Some details are still missing.' };
+  },
+};
+
+/**
+ * None. The banner carries the message alone rather than an empty bullet list —
+ * a failure with nothing outstanding is a different failure, and padding it
+ * with an empty `<ul>` would read as a rendering bug.
+ */
+export const BlockersNone: Story = {
+  args: { step: 1, completeness: completeness() },
+  beforeEach: () => {
+    authActionStub.delayMs = 400;
+    authActionStub.result = { message: 'That could not be saved.' };
+  },
+};
+
+/**
  * Submitting. The stub holds for a minute so the disabled control and its
  * "Creating your dealership…" label stay on screen — press Continue.
  *
@@ -250,6 +330,7 @@ export const EveryStep: Story = {
             cities={args.cities}
             documents={args.documents}
             dealer={args.dealer}
+            completeness={args.completeness}
           />
         </div>
       ))}
