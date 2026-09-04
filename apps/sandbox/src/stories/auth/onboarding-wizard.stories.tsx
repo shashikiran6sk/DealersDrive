@@ -1,4 +1,9 @@
-import type { AuthSession, CitiesResponse } from '@dealers-drive/contracts';
+import type {
+  AuthSession,
+  CitiesResponse,
+  DealerDocumentDto,
+  DealerProfile,
+} from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { authActionStub } from '../../mocks/auth-actions';
@@ -10,9 +15,8 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * DESIGN-SPEC §3.10 — the onboarding wizard (C040).
  *
  * F037 landed the frame — which step is current, how a step is reached and the
- * progress indicator. **F038 lands step 1 and F039 step 2**; Documents and
- * Review arrive with F041 and F042, so the later steps are still deliberately
- * sparse.
+ * progress indicator. **F038 lands step 1, F039 step 2 and F041 step 3**;
+ * Review arrives with F042, so the last step is still deliberately sparse.
  *
  * `step` is the *server's* answer, not a preference. The page computes a floor
  * from the session — no dealership yet is 0, a DRAFT one is 2, one already
@@ -36,6 +40,28 @@ const CITIES: CitiesResponse['data'] = [
   { slug: 'vellore', name: 'Vellore', state: 'Tamil Nadu', count: 88 },
   { slug: 'chennai', name: 'Chennai', state: 'Tamil Nadu', count: 210 },
   { slug: 'coimbatore', name: 'Coimbatore', state: 'Tamil Nadu', count: 134 },
+];
+
+/** One row of the KYC checklist. `DocumentUploader` has its own stories; these place it in context. */
+function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto {
+  return {
+    id: null,
+    type: 'GST_CERTIFICATE',
+    label: 'GST certificate',
+    status: 'REQUIRED',
+    statusLabel: 'Required — PDF or JPG, max 5 MB',
+    fileName: null,
+    uploadedAt: null,
+    rejectionReason: null,
+    action: 'Upload',
+    ...overrides,
+  };
+}
+
+const DOCUMENTS: DealerDocumentDto[] = [
+  document(),
+  document({ type: 'PAN_CARD', label: 'PAN card' }),
+  document({ type: 'ADDRESS_PROOF', label: 'Address proof' }),
 ];
 
 /** A signed-in Google account with no dealership — the only state step 1 renders in. */
@@ -86,8 +112,10 @@ const meta = {
     },
     session: { control: false, description: 'GET /v1/auth/me. Step 1 is the only reader.' },
     cities: { control: false, description: 'GET /v1/cities. Step 2 is the only reader.' },
+    documents: { control: false, description: 'GET /v1/dealer/documents. Step 3 only.' },
+    dealer: { control: false, description: 'GET /v1/dealer — GSTIN and PAN. Step 3 only.' },
   },
-  args: { step: 0, session: session(), cities: CITIES },
+  args: { step: 0, session: session(), cities: CITIES, documents: DOCUMENTS, dealer: null },
   beforeEach: () => {
     authActionStub.result = {};
     authActionStub.delayMs = 900;
@@ -176,10 +204,29 @@ export const BusinessSubmitting: Story = {
 
 /**
  * Step 3 — a DRAFT dealership exists, so the server's floor is 2 and steps 1
- * and 2 are behind you. Note that the Back/Continue row is gone: from here on
- * the movement is by navigation, and each step body brings its own controls.
+ * and 2 are behind you. The frame's Back/Continue row is gone: from here on the
+ * movement is by navigation, and the step brings its own controls.
+ *
+ * Continue names what is still outstanding rather than blocking on it. A dealer
+ * may leave with documents missing — the submit on step 4 is what refuses, and
+ * it refuses with a list.
  */
 export const Documents: Story = { args: { step: 2 } };
+
+/** The same step once the registrations are on file and the checklist is done. */
+export const DocumentsComplete: Story = {
+  args: {
+    step: 2,
+    dealer: { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' } as DealerProfile,
+    documents: DOCUMENTS.map((row) => ({
+      ...row,
+      status: 'VERIFIED' as const,
+      fileName: `${row.type.toLowerCase()}.pdf`,
+      statusLabel: `${row.type.toLowerCase()}.pdf · verified`,
+      action: 'Replace',
+    })),
+  },
+};
 
 /** Step 4 — submitted, awaiting approval. The floor is 3 and nothing moves. */
 export const Review: Story = { args: { step: 3 } };
@@ -201,6 +248,8 @@ export const EveryStep: Story = {
             step={index as 0 | 1 | 2 | 3}
             session={args.session}
             cities={args.cities}
+            documents={args.documents}
+            dealer={args.dealer}
           />
         </div>
       ))}

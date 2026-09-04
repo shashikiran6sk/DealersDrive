@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { createDealersRouter } from '../../../../src/modules/dealers/dealers.routes.js';
-import { permissionsOn, routeFor, routesOf, signaturesOf } from '../../../router-probe.js';
+import {
+  permissionsOn,
+  routeFor,
+  routesOf,
+  signaturesOf,
+  validatedSources,
+} from '../../../router-probe.js';
 
 /**
  * The dealer's own account, mounted under `/v1/dealer` behind `requireDealer`.
@@ -13,19 +19,25 @@ import { permissionsOn, routeFor, routesOf, signaturesOf } from '../../../router
  * and `document:upload` appear in §8.3 against OWNER alone.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline asserts nine signatures. **F040 mounts one**, so the surface
- * assertion names one; it grows with F041, F042, F043 and F048. The
- * permission blocks are the reason this file exists at all, and the half that
- * is reachable — a read carrying no permission — is asserted in the general
- * form ("every write is guarded, and only the writes") so it keeps holding as
- * the writes arrive.
+ * The baseline asserts nine signatures. **F041 brings the count to six**;
+ * `GET /completeness`, `POST /submit` and `GET /dashboard` arrive with F043,
+ * F042 and F048.
  * ────────────────────────────────────────────────────────────────────────────
  */
 const router = createDealersRouter({} as never);
 
 describe('the surface', () => {
   it('declares exactly the account endpoints that exist yet', () => {
-    expect(signaturesOf(router).sort()).toEqual(['GET /documents']);
+    expect(signaturesOf(router).sort()).toEqual(
+      [
+        'GET /',
+        'PATCH /',
+        'GET /documents',
+        'POST /documents/presign',
+        'POST /documents/:type/commit',
+        'DELETE /documents/:type',
+      ].sort(),
+    );
   });
 
   it('declares no route twice', () => {
@@ -36,14 +48,23 @@ describe('the surface', () => {
 });
 
 describe('permissions', () => {
+  /** Identity and KYC are the owner's alone. */
+  it.each([
+    ['PATCH /', 'dealer:update'],
+    ['POST /documents/presign', 'document:upload'],
+    ['POST /documents/:type/commit', 'document:upload'],
+    ['DELETE /documents/:type', 'document:upload'],
+  ])('guards %s with %s, which only OWNER holds', (signature, permission) => {
+    expect(permissionsOn(routeFor(router, signature) as never)).toEqual([permission]);
+  });
+
   /**
-   * This carries no permission on purpose: `requireDealer` already ran, and a
-   * salesperson who cannot see their own KYC checklist has a broken console.
-   * The tenant scope still comes from the principal, so nothing here is
-   * unscoped.
+   * These carry no permission on purpose: `requireDealer` already ran, and a
+   * salesperson who cannot see their own dealership has a broken console. The
+   * tenant scope still comes from the principal, so nothing here is unscoped.
    */
-  it('leaves GET /documents open to any authenticated seat', () => {
-    expect(permissionsOn(routeFor(router, 'GET /documents') as never)).toEqual([]);
+  it.each(['GET /', 'GET /documents'])('leaves %s open to any authenticated seat', (signature) => {
+    expect(permissionsOn(routeFor(router, signature) as never)).toEqual([]);
   });
 
   it('guards every write, and only the writes', () => {
@@ -51,6 +72,26 @@ describe('permissions', () => {
       const guarded = permissionsOn(route).length > 0;
       expect(guarded, `${route.method} ${route.path}`).toBe(route.method !== 'GET');
     }
+  });
+});
+
+describe('validation', () => {
+  it('parses the profile patch body', () => {
+    expect(validatedSources(routeFor(router, 'PATCH /') as never)).toContain('body');
+  });
+
+  it('parses the document type on every route that names one', () => {
+    for (const route of routesOf(router)) {
+      if (route.path.includes(':type')) {
+        expect(validatedSources(route), `${route.method} ${route.path}`).toContain('params');
+      }
+    }
+  });
+
+  it('parses the presign body, which decides what may be uploaded', () => {
+    expect(validatedSources(routeFor(router, 'POST /documents/presign') as never)).toContain(
+      'body',
+    );
   });
 });
 

@@ -1,6 +1,17 @@
+import {
+  DocTypeParam,
+  DocumentCommitInput,
+  DocumentPresignInput,
+  UpdateDealerInput,
+  type DocTypeParam as DocTypeParamType,
+  type DocumentCommitInput as DocumentCommitInputType,
+  type DocumentPresignInput as DocumentPresignInputType,
+  type UpdateDealerInput as UpdateDealerInputType,
+} from '@dealers-drive/contracts';
 import { Router } from 'express';
 
-import { dealerPrincipal } from '../../middleware/auth.js';
+import { dealerPrincipal, requirePermission } from '../../middleware/auth.js';
+import { validate, validated } from '../../middleware/validate.js';
 import type { DealersService } from './dealers.service.js';
 
 /**
@@ -12,15 +23,42 @@ import type { DealersService } from './dealers.service.js';
  * profile and the KYC documents are the dealership's identity.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * **F040 mounts one route**, the document checklist. The other eight arrive
- * with the features that own them: `GET|PATCH /` with **F041** (the Documents
- * step's GSTIN/PAN form is their first consumer), the presign, commit and
- * delete paths with **F041**, `GET /completeness` with **F043**, `POST /submit`
- * with **F042**, and `GET /dashboard` with **F048**.
+ * F040 mounted the document checklist; **F041 adds five more** — `GET|PATCH /`,
+ * whose first consumer is the Documents step's GSTIN/PAN form, and the presign,
+ * commit and delete paths the uploader drives. `GET /completeness` arrives with
+ * **F043**, `POST /submit` with **F042**, and `GET /dashboard` with **F048**.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export function createDealersRouter(service: DealersService): Router {
   const router = Router();
+
+  router.get('/', (req, res, next) => {
+    void (async () => {
+      try {
+        const { dealerId } = dealerPrincipal(req);
+        res.json(await service.profile(dealerId));
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
+
+  router.patch(
+    '/',
+    requirePermission('dealer:update'),
+    validate({ body: UpdateDealerInput }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const { dealerId } = dealerPrincipal(req);
+          const body = validated<UpdateDealerInputType>(req, 'body');
+          res.json(await service.update(dealerId, body));
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
 
   router.get('/documents', (req, res, next) => {
     void (async () => {
@@ -32,6 +70,59 @@ export function createDealersRouter(service: DealersService): Router {
       }
     })();
   });
+
+  router.post(
+    '/documents/presign',
+    requirePermission('document:upload'),
+    validate({ body: DocumentPresignInput }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const { dealerId } = dealerPrincipal(req);
+          const body = validated<DocumentPresignInputType>(req, 'body');
+          res.status(201).json(await service.presignDocument(dealerId, body));
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
+
+  router.post(
+    '/documents/:type/commit',
+    requirePermission('document:upload'),
+    validate({ params: DocTypeParam, body: DocumentCommitInput }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const { dealerId } = dealerPrincipal(req);
+          const params = validated<DocTypeParamType>(req, 'params');
+          const body = validated<DocumentCommitInputType>(req, 'body');
+          res.json(await service.commitDocument(dealerId, params.type, body));
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
+
+  router.delete(
+    '/documents/:type',
+    requirePermission('document:upload'),
+    validate({ params: DocTypeParam }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const { dealerId } = dealerPrincipal(req);
+          const params = validated<DocTypeParamType>(req, 'params');
+          await service.deleteDocument(dealerId, params.type);
+          res.status(204).end();
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
 
   return router;
 }

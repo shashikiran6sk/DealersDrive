@@ -206,12 +206,14 @@ describe('onboarding', () => {
   });
 
   /**
-   * ── Reconstruction slice ──────────────────────────────────────────────
-   * The baseline follows onboarding with `GET /v1/dealer` and asserts the
-   * brand name comes back on the same session. `dealers.routes.ts` is F046,
-   * so what can be pinned now is that the session the guard resolves is a
-   * DEALER one the moment onboarding commits — which is the property that
-   * case exists to prove. The route assertion returns with F046.
+   * The baseline's form, restored: **F041** mounts `GET /v1/dealer`, so the
+   * case can once again end on the profile the new session reads rather than
+   * on a 404 standing in for one.
+   *
+   * The pair of requests around the onboarding call is the whole point. The
+   * same cookie is 401 before and 200 after: no second sign-in, no new token
+   * — the principal the guard resolves changed from a signed-in person with
+   * no dealership into a DEALER the moment onboarding committed.
    */
   it('turns the pending session into a dealer session, with no new sign-in', async () => {
     const agent = h.agent();
@@ -223,9 +225,9 @@ describe('onboarding', () => {
     const me = await agent.get('/v1/auth/me').expect(200);
     expect(me.body.dealer.brandName).toBe('Katpadi Auto Gallery');
     expect(me.body.role).toBe('OWNER');
-    // 404, not 401: the guard now passes and there is simply no route behind
-    // it yet. That is the whole difference this case is looking for.
-    await agent.get('/v1/dealer').expect(404);
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.brandName).toBe('Katpadi Auto Gallery');
   });
 
   it('refuses a second dealership on the same account', async () => {

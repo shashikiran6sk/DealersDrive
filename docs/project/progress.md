@@ -73,8 +73,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F037 — Onboarding shell & step routing · [#53](https://github.com/shashikiran6sk/DealersDrive/pull/53)
 - [x] F038 — Onboarding — account step · [#54](https://github.com/shashikiran6sk/DealersDrive/pull/54)
 - [x] F039 — Onboarding — business details step · [#55](https://github.com/shashikiran6sk/DealersDrive/pull/55)
-- [~] F040 — Dealer document model & types
-- [ ] F041 — Onboarding — document upload step
+- [x] F040 — Dealer document model & types · [#56](https://github.com/shashikiran6sk/DealersDrive/pull/56)
+- [~] F041 — Onboarding — document upload step
 - [ ] F042 — Onboarding — review & submit step
 - [ ] F043 — Onboarding completeness tracking
 - [ ] F044 — Admin document verification

@@ -45,6 +45,7 @@ const INPUT_SCHEMA_NAMES = [
   'IdParam',
   'SlugParam',
   'IdOrSlugParam',
+  'DocTypeParam',
   // query
   'CursorQuery',
   // bodies
@@ -52,15 +53,17 @@ const INPUT_SCHEMA_NAMES = [
   'AdminLoginInput',
   'MediaPresignInput',
   'MediaCommitInput',
+  'DocumentPresignInput',
+  'DocumentCommitInput',
+  'UpdateDealerInput',
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────
-   * The baseline lists 42 names. The other 34 are exported by contracts
-   * modules that have not landed yet — `DocTypeParam` and `DocumentPresignInput`
-   * with F041, `VehicleQuery` and `CreateVehicleInput` with F055/F060,
-   * `ReorderMediaInput` with F035, the admin and billing bodies with tiers 8
-   * and 11. `buildSchemaCatalogue()` throws when a name here is not exported,
-   * so this list cannot silently run ahead of contracts: add the name in the
-   * same PR that adds the schema.
+   * The baseline lists 42 names. The rest are exported by contracts modules
+   * that have not landed yet — `VehicleQuery` and `CreateVehicleInput` with
+   * F055/F060, `ReorderMediaInput` with F035, the admin and billing bodies
+   * with tiers 8 and 11. `buildSchemaCatalogue()` throws when a name here is
+   * not exported, so this list cannot silently run ahead of contracts: add the
+   * name in the same PR that adds the schema.
    */
 ] as const;
 
