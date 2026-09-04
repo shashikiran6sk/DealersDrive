@@ -199,6 +199,32 @@ If a story ever loses its styling, check these two files before the component.
 
 ---
 
+## 7a2. `pnpm build` does not build the sandbox
+
+Found at F041, the hard way: a green local gate and a red CI.
+
+`turbo run build` covers `contracts`, `api` and `web`. The sandbox has
+`build:sandbox`, not `build`, deliberately — a broken story must never be able
+to fail a deploy, which is the same reason stories live outside `apps/web` at
+all. CI runs it as its own job (`sandbox typecheck / build`).
+
+So `pnpm lint && pnpm typecheck && pnpm test && pnpm build` all green says
+nothing about whether Storybook still builds. **`pnpm --filter
+@dealers-drive/sandbox typecheck` passes too** — it type-checks the stories
+against the real components, and the alias that breaks is a Vite one, not a
+TypeScript one.
+
+The specific trap: `.storybook/main.ts` aliases `@/features/auth/actions` to
+`src/mocks/auth-actions.ts` (coupling C-4 — Server Actions need a server the
+sandbox does not have). **Every action a story's component imports must exist in
+that stub.** Add one to `actions.ts` without adding it to the mock and the
+Storybook build fails to resolve it, while every other check stays green.
+
+Before opening a PR that touches `features/auth/actions.ts` or any component a
+story renders, run `pnpm --filter @dealers-drive/sandbox build:sandbox`.
+
+---
+
 ## 7b. The restore ledger
 
 Tier 2 could not be reconstructed feature-by-feature without cutting into files
