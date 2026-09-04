@@ -364,7 +364,8 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/features/auth/onboarding-wizard.tsx',
     category: 'Forms',
     ownership: 'Feature-specific',
-    purpose: 'The onboarding frame: which of the four steps is current, and how each is reached.',
+    purpose:
+      'The onboarding frame: which of the four steps is current, how each is reached, and the Account step.',
     aliases: [
       'Onboarding',
       'OnboardingSteps',
@@ -374,15 +375,15 @@ export const registry: RegistryEntry[] = [
       'Wizard',
       'onboarding-wizard',
     ],
-    features: ['F037'],
+    features: ['F037', 'F038'],
     /**
-     * `step` is all F037 needs, because F037 renders no step. The other five
-     * props on component-map C040 — `session`, `cities`, `documents`, `dealer`,
-     * `completeness` — arrive with the step bodies that read them (F038, F039,
-     * F041, F042), and this line grows with them.
+     * `session` arrives with F038, because the Account step is its only reader.
+     * The three remaining props on component-map C040 — `cities`, `documents`,
+     * `dealer`, `completeness` — arrive with the step bodies that read them
+     * (F039, F041, F042), and this line grows with them.
      */
-    props: ['step'],
-    states: ['Account', 'Business', 'Documents', 'Review'],
+    props: ['step', 'session'],
+    states: ['Account', 'Account (prefilled)', 'Business', 'Documents', 'Review'],
     reusable: false,
     storyId: 'forms-onboardingwizard',
   },
