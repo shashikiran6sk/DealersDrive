@@ -6,7 +6,11 @@ import type { AdminOverview } from '@dealers-drive/contracts';
 import { createAdminService } from '../../../../src/modules/admin/admin.service.js';
 import type { AuditService } from '../../../../src/platform/audit/audit.service.js';
 import type { PlatformConfigService } from '../../../../src/platform/config/platform-config.js';
-import { type DomainError, ForbiddenError, NotFoundError } from '../../../../src/platform/errors.js';
+import {
+  type DomainError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../../../src/platform/errors.js';
 import type { StoragePort } from '../../../../src/platform/storage/storage.port.js';
 import type { AdminPrincipal } from '../../../../src/modules/auth/auth.facade.js';
 

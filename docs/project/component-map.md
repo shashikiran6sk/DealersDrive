@@ -214,17 +214,17 @@ one short-label and one long-label scenario.
 
 ### C066 — `Table` · C067 — `NumericCell`
 
-|                      |                                                                                                                                                                                                          |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Location**         | `components/ui/table.tsx:49`, `:92`                                                                                                                                                                      |
-| **Purpose**          | DESIGN-SPEC §2.13. **New at F045** — the first of the five hand-rolled `.table` sites in finding D-B, created rather than copied.                                                                        |
-| **Props**            | `Table`: `columns: TableColumn[]`, `caption?`, `containerClassName?`, `children`, plus every `<table>` attribute. `NumericCell`: every `<td>` attribute.                                                 |
-| **States**           | many rows, single row (no dangling rule), overflowing, no rows                                                                                                                                            |
-| **Consumers**        | 1 (`admin/dealers`) — the other four arrive at F054, F066, F069 and F072                                                                                                                                  |
-| **Tests**            | none — the sandbox scenarios are the check                                                                                                                                                                |
-| **Ownership**        | Primitive                                                                                                                                                                                                 |
+|                      |                                                                                                                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `components/ui/table.tsx:49`, `:92`                                                                                                                                                                           |
+| **Purpose**          | DESIGN-SPEC §2.13. **New at F045** — the first of the five hand-rolled `.table` sites in finding D-B, created rather than copied.                                                                             |
+| **Props**            | `Table`: `columns: TableColumn[]`, `caption?`, `containerClassName?`, `children`, plus every `<table>` attribute. `NumericCell`: every `<td>` attribute.                                                      |
+| **States**           | many rows, single row (no dangling rule), overflowing, no rows                                                                                                                                                |
+| **Consumers**        | 1 (`admin/dealers`) — the other four arrive at F054, F066, F069 and F072                                                                                                                                      |
+| **Tests**            | none — the sandbox scenarios are the check                                                                                                                                                                    |
+| **Ownership**        | Primitive                                                                                                                                                                                                     |
 | **Sandbox priority** | **P0** — the **Overflow** scenario is the point: the scroll container is inside the component so a caller cannot forget it, and a sideways-scrolling page is invisible on the desktop the console is built on |
-| **Confidence**       | HIGH                                                                                                                                                                                                      |
+| **Confidence**       | HIGH                                                                                                                                                                                                          |
 
 ---
 

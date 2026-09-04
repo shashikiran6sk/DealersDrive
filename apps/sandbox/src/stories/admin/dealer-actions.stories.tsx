@@ -60,7 +60,10 @@ const BASE: AdminDealerDetail = {
   },
 };
 
-function dealer(actions: Partial<AdminDealerDetail['actions']>, rest: Partial<AdminDealerDetail> = {}): AdminDealerDetail {
+function dealer(
+  actions: Partial<AdminDealerDetail['actions']>,
+  rest: Partial<AdminDealerDetail> = {},
+): AdminDealerDetail {
   return { ...BASE, ...rest, actions: { ...BASE.actions, ...actions } };
 }
 
