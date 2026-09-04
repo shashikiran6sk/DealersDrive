@@ -24,9 +24,9 @@ import type { StoragePort } from '../../../../src/platform/storage/storage.port.
  * `commitDocument` and `deleteDocument`**, along with the `storage` fake and
  * the transaction stub they need.
  *
- * **F043 brings `completeness`.** `submitForVerification` arrives with F042 and
- * `dashboard` with F048 — the last of which needs the `enquiries` fake and a
- * much larger `prisma` one.
+ * F043 brought `completeness` and **F042 `submitForVerification`**, which is
+ * six of the seven. `dashboard` arrives with F048 — the last of which needs the
+ * `enquiries` fake and a much larger `prisma` one.
  * ────────────────────────────────────────────────────────────────────────────
  */
 function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
@@ -105,6 +105,7 @@ function setup(options: Options = {}) {
   const updates: { dealerId: string; data: Record<string, unknown> }[] = [];
   const upserts: { type: string; data: Record<string, unknown> }[] = [];
   const userUpdates: Record<string, unknown>[] = [];
+  const outbox: Record<string, unknown>[] = [];
   const deletes: string[] = [];
 
   const row = options.dealer === null ? null : dealer(options.dealer ?? {});
@@ -133,6 +134,12 @@ function setup(options: Options = {}) {
         return Promise.resolve({});
       },
     },
+    outboxEvent: {
+      create: (args: { data: Record<string, unknown> }) => {
+        outbox.push(args.data);
+        return Promise.resolve({});
+      },
+    },
   };
 
   const prisma = {
@@ -158,6 +165,7 @@ function setup(options: Options = {}) {
     updates,
     upserts,
     userUpdates,
+    outbox,
     deletes,
   };
 }
@@ -798,5 +806,94 @@ describe('completeness', () => {
     const h = setup({ dealer: null });
 
     await expect(h.service.completeness('dealer-1')).rejects.toThrow(NotFoundError);
+  });
+});
+
+/**
+ * C4 — the one transition a dealer makes themselves.
+ *
+ * Everything worth asserting here is a refusal or a durability guarantee: it
+ * happens once, it does not happen at all when the profile is incomplete, and
+ * the notification is exactly as durable as the state change because both are
+ * one row apiece in the same transaction.
+ */
+describe('submitForVerification', () => {
+  const verified = [
+    doc({ type: 'GST_CERTIFICATE', status: 'VERIFIED' }),
+    doc({ type: 'PAN_CARD', status: 'VERIFIED' }),
+    doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+  ];
+
+  it('moves a complete draft to PENDING_APPROVAL', async () => {
+    const h = setup({ documents: verified, dealer: { status: 'DRAFT' } });
+
+    const response = await h.service.submitForVerification('dealer-1');
+
+    expect(h.updates[0]?.data).toEqual({ status: 'PENDING_APPROVAL' });
+    expect(response.status).toBe('PENDING_APPROVAL');
+    expect(response.statusLabel).toBe('Under review');
+  });
+
+  it('promises a decision within a working day', async () => {
+    const h = setup({ documents: verified, dealer: { status: 'DRAFT' } });
+
+    const response = await h.service.submitForVerification('dealer-1');
+
+    const submitted = new Date(response.submittedAt).getTime();
+    const expected = new Date(response.expectedDecisionBy).getTime();
+    expect(expected - submitted).toBe(86_400_000);
+    expect(response.message).toContain('one working day');
+  });
+
+  it('publishes DealerApplied in the same transaction as the status change', async () => {
+    const h = setup({ documents: verified, dealer: { status: 'DRAFT' } });
+
+    await h.service.submitForVerification('dealer-1');
+
+    // One table: the notification is exactly as durable as the state change.
+    expect(h.outbox).toHaveLength(1);
+    expect(h.outbox[0]).toMatchObject({ eventType: 'DealerApplied', aggregateType: 'Dealer' });
+  });
+
+  it('refuses a second submission', async () => {
+    const h = setup({ documents: verified, dealer: { status: 'PENDING_APPROVAL' } });
+
+    await expect(h.service.submitForVerification('dealer-1')).rejects.toThrow(DomainError);
+    await expect(h.service.submitForVerification('dealer-1')).rejects.toThrow(
+      /already been submitted/,
+    );
+    expect(h.updates).toEqual([]);
+  });
+
+  it('refuses an incomplete profile and lists every missing field', async () => {
+    const h = setup({
+      documents: [],
+      dealer: { status: 'DRAFT', gstin: null, pan: null },
+    });
+
+    try {
+      await h.service.submitForVerification('dealer-1');
+      expect.unreachable('an incomplete profile must not submit');
+    } catch (error) {
+      const domain = error as DomainError;
+      expect(domain.code).toBe('PROFILE_INCOMPLETE');
+      const fields = (domain.errors ?? []).map((entry) => entry.field);
+      expect(fields).toContain('gstin');
+      expect(fields).toContain('GST_CERTIFICATE');
+      for (const entry of domain.errors ?? []) expect(entry.code).toBe('REQUIRED');
+    }
+  });
+
+  it('does not write anything when the profile is incomplete', async () => {
+    const h = setup({ documents: [], dealer: { status: 'DRAFT' } });
+
+    await expect(h.service.submitForVerification('dealer-1')).rejects.toThrow(DomainError);
+    expect([h.updates, h.outbox]).toEqual([[], []]);
+  });
+
+  it('404s a dealership that no longer exists', async () => {
+    const h = setup({ dealer: null });
+
+    await expect(h.service.submitForVerification('dealer-1')).rejects.toThrow(NotFoundError);
   });
 });

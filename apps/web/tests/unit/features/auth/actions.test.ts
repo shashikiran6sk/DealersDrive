@@ -6,6 +6,7 @@ import {
   onboardingAction,
   saveBusinessIdsAction,
   signOutAction,
+  submitForVerificationAction,
 } from '../../../../src/features/auth/actions.js';
 
 /**
@@ -231,14 +232,29 @@ describe('the business registrations', () => {
   });
 });
 
-/*
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * `describe('submitting for verification')` is not here. It covers
- * `submitForVerificationAction` (**F042**), which `actions.ts` defers for the
- * same reason: neither the contract nor the route it calls exists yet. The
- * block returns with the review step.
- * ────────────────────────────────────────────────────────────────────────────
- */
+describe('submitting for verification', () => {
+  it('sends the event and returns to the review step', async () => {
+    globalThis.fetch = respond(200, { status: 'PENDING_APPROVAL' });
+
+    const destination = await redirectOf(submitForVerificationAction());
+
+    expect(destination).toBe('/dealer/onboarding?step=3');
+    expect(calls[0]?.url).toBe('http://api.test/v1/dealer/submit');
+  });
+
+  it('explains a refusal rather than pretending it worked', async () => {
+    globalThis.fetch = respond(422, {
+      status: 422,
+      code: 'PROFILE_INCOMPLETE',
+      title: 'Incomplete',
+      detail: 'Some details are still missing.',
+    });
+
+    const state = await submitForVerificationAction();
+
+    expect(state.message).toBe('Some details are still missing.');
+  });
+});
 
 describe('signing out', () => {
   it('revokes at the API before clearing the cookie', async () => {

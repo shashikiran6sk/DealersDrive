@@ -16,9 +16,9 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * DESIGN-SPEC §3.10 — the onboarding wizard (C040).
  *
  * F037 landed the frame — which step is current, how a step is reached and the
- * progress indicator. **F038 lands step 1, F039 step 2, F041 step 3 and F043
- * the outstanding-items list**; Review arrives with F042, so the last step is
- * still deliberately sparse.
+ * progress indicator. **F038 lands step 1, F039 step 2, F041 step 3, F043 the
+ * outstanding-items list and F042 step 4** — with which the wizard is complete
+ * and component-map C040 has all six of its props.
  *
  * `step` is the *server's* answer, not a preference. The page computes a floor
  * from the session — no dealership yet is 0, a DRAFT one is 2, one already
@@ -88,8 +88,15 @@ function completeness(missing: Record<string, string[]> = {}): CompletenessRespo
   };
 }
 
-/** A signed-in Google account with no dealership — the only state step 1 renders in. */
-function session(overrides: Partial<AuthSession['user']> = {}, identityName = 'Karthik Raman') {
+/**
+ * A signed-in Google account. `dealer` is null for steps 1 and 2 — no
+ * dealership exists yet — and set for steps 3 and 4, where its `status` is what
+ * decides whether the Review step offers a submit or an under-review panel.
+ */
+function session(
+  overrides: Partial<AuthSession['user']> = {},
+  dealer: AuthSession['dealer'] = null,
+) {
   return {
     next: 'ONBOARDING',
     user: {
@@ -105,10 +112,10 @@ function session(overrides: Partial<AuthSession['user']> = {}, identityName = 'K
     identity: {
       provider: 'GOOGLE',
       email: 'karthik@srilakshmimotors.in',
-      name: identityName,
+      name: 'Karthik Raman',
       pictureUrl: null,
     },
-    dealer: null,
+    dealer,
     role: null,
     permissions: [],
     counts: { newEnquiries: 0, pendingListings: 0 },
@@ -308,8 +315,67 @@ export const DocumentsComplete: Story = {
   },
 };
 
-/** Step 4 — submitted, awaiting approval. The floor is 3 and nothing moves. */
-export const Review: Story = { args: { step: 3 } };
+/** A dealership on the session, at whichever point of its life the story needs. */
+function dealership(status: 'DRAFT' | 'PENDING_APPROVAL') {
+  return {
+    id: '00000000-0000-4000-8000-000000000002',
+    slug: 'sri-lakshmi-motors',
+    brandName: 'Sri Lakshmi Motors',
+    status,
+    statusLabel: status === 'DRAFT' ? 'Draft' : 'Pending',
+    isVerified: false,
+    creditBalance: 0,
+    creditsHeld: 0,
+  } satisfies NonNullable<AuthSession['dealer']>;
+}
+
+/**
+ * Step 4, before the submit. The dealership is still DRAFT, so the step is a
+ * call to action: Back to Documents, or submit for verification.
+ *
+ * Press Submit to watch the pending state — the stub takes ~1s.
+ */
+export const Review: Story = {
+  args: { step: 3, session: session({}, dealership('DRAFT')), completeness: completeness() },
+};
+
+/**
+ * Step 4, after. `session.dealer.status` is `PENDING_APPROVAL`, and that single
+ * fact replaces the whole form: no submit, no Back.
+ *
+ * Both absences are deliberate. There is nothing left to submit, and a Back
+ * button leading to a form whose answers are already committed would be a lie.
+ * The state is read from the session rather than from local state, so a refresh
+ * shows this panel rather than the button the dealer already pressed.
+ */
+export const ReviewSubmitted: Story = {
+  args: {
+    step: 3,
+    session: session({}, dealership('PENDING_APPROVAL')),
+    completeness: completeness(),
+  },
+};
+
+/**
+ * A refused submit. Press Submit: the API answers 422 `PROFILE_INCOMPLETE`, and
+ * the step lists the same blockers the step-2 banner does — the endpoint
+ * decides with the derivation the wizard reads, so the two can only be wrong
+ * together.
+ */
+export const ReviewRefused: Story = {
+  args: {
+    step: 3,
+    session: session({}, dealership('DRAFT')),
+    completeness: completeness({
+      business: ['pan'],
+      documents: ['ADDRESS_PROOF'],
+    }),
+  },
+  beforeEach: () => {
+    authActionStub.delayMs = 400;
+    authActionStub.result = { message: 'Some details are still missing.' };
+  },
+};
 
 /**
  * All four at once, which is the only way to see that the stepper fills

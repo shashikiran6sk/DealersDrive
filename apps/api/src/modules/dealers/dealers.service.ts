@@ -5,6 +5,7 @@ import {
   type AuthSession,
   type CompletenessResponse,
   type DealerDocumentsResponse,
+  type DealerSubmitResponse,
   type DealerProfile,
   type DocumentCommitInput,
   type DocumentPresignInput,
@@ -14,7 +15,9 @@ import {
 import type { DealerDocType, PrismaClient } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 
+import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import { enqueueOutbox } from '../../platform/events/bus.js';
 import { DomainError, NotFoundError } from '../../platform/errors.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { DealerPrincipal } from '../auth/auth.facade.js';
@@ -35,8 +38,9 @@ import type { DealersRepository, DealerWithRelations } from './dealers.repositor
  * `update`, and the three document write paths, and with them the first
  * dependency this service takes beyond its repository: `StoragePort`.
  *
- * **F043** adds `completeness()`. Still to come: `submitForVerification()` with
- * **F042**, and `dashboard()` with **F048** — the last of which brings
+ * F043 added `completeness()` and **F042** `submitForVerification()`, which
+ * closes onboarding: every method the dealer-facing wizard calls is now here.
+ * Still to come: `dashboard()` with **F048**, which brings
  * `EnquiriesRepository` and the `Listing` counters.
  * ────────────────────────────────────────────────────────────────────────────
  */
@@ -265,6 +269,53 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
         canSubmit: isComplete && dealer.status === 'DRAFT',
         percent: Math.round((done / steps.length) * 100),
         steps,
+      };
+    },
+
+    /** C4. DRAFT → PENDING_APPROVAL. No body; the state machine decides. */
+    async submitForVerification(dealerId: string): Promise<DealerSubmitResponse> {
+      const dealer = await requireDealer(dealerId);
+      if (dealer.status !== 'DRAFT') {
+        throw new DomainError(
+          'ALREADY_SUBMITTED',
+          'This dealership has already been submitted for verification.',
+        );
+      }
+
+      const state = await this.completeness(dealerId);
+      if (!state.isComplete) {
+        throw new DomainError('PROFILE_INCOMPLETE', 'Some details are still missing.', {
+          errors: state.steps.flatMap((step) =>
+            step.missing.map((field) => ({
+              field,
+              code: 'REQUIRED',
+              message: `${field} is required.`,
+            })),
+          ),
+        });
+      }
+
+      const submittedAt = new Date();
+      await withTransaction(prisma, async (tx) => {
+        await repo.update(dealerId, { status: 'PENDING_APPROVAL' }, tx);
+        await enqueueOutbox(tx, {
+          type: 'DealerApplied',
+          aggregateType: 'Dealer',
+          aggregateId: dealerId,
+          dealerId,
+          actor: { type: 'DEALER' },
+          traceId: getContext()?.traceId ?? 'dealer-submit',
+          payload: { dealerId },
+        });
+      });
+
+      return {
+        status: 'PENDING_APPROVAL',
+        statusLabel: 'Under review',
+        submittedAt: submittedAt.toISOString(),
+        expectedDecisionBy: new Date(submittedAt.getTime() + 86_400_000).toISOString(),
+        message:
+          'We verify GSTIN, PAN and address proof against government records. Most dealerships are approved within one working day.',
       };
     },
 

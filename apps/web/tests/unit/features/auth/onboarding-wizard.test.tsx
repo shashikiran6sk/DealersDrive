@@ -34,10 +34,10 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * test that fails when the next feature does its job is a tax, not a check.
  *
  * **F038 adds the second describe block**, for the Account step, **F039 the
- * third**, for the Business step, **F041 the fourth**, for Documents, and
- * **F043 the fifth**, for the outstanding-items list. Their claims are of the
- * same kind: what a step refuses to ask for, and what it carries forward — not
- * how it is laid out.
+ * third**, for the Business step, **F041 the fourth**, for Documents, **F043
+ * the fifth**, for the outstanding-items list, and **F042 the sixth**, for
+ * Review. Their claims are of the same kind: what a step refuses to ask for,
+ * and what it carries forward — not how it is laid out.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
@@ -624,6 +624,7 @@ describe('OnboardingWizard — the Documents step', () => {
 vi.mock('@/features/auth/actions', () => ({
   onboardingAction: vi.fn(),
   saveBusinessIdsAction: vi.fn(() => Promise.resolve({})),
+  submitForVerificationAction: vi.fn(() => Promise.resolve({})),
 }));
 
 describe('OnboardingWizard — the outstanding-items list', () => {
@@ -700,5 +701,104 @@ describe('OnboardingWizard — the outstanding-items list', () => {
 
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.queryByText('GSTIN')).toBeNull();
+  });
+});
+
+/**
+ * F042 — step 4.
+ *
+ * The step renders two different screens off one prop. Before the submit it is
+ * a call to action; after it, an "under review" panel with no way back into the
+ * form — because there is nothing left to change, and offering a Back button
+ * that leads to an uneditable dealership would be a lie.
+ *
+ * Which of the two shows is decided by `session.dealer.status`, not by local
+ * state: the page re-reads the session on every load, so a dealer who refreshes
+ * after submitting sees the panel rather than the button they already pressed.
+ */
+describe('OnboardingWizard — the Review step', () => {
+  function render_(status: 'DRAFT' | 'PENDING_APPROVAL', blockers: CompletenessResponse | null) {
+    return render(
+      <OnboardingWizard
+        step={3}
+        session={session({
+          dealer: {
+            id: 'd1',
+            slug: 'katpadi-auto',
+            brandName: 'Katpadi Auto Gallery',
+            status,
+          } as never,
+        })}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+        completeness={blockers}
+      />,
+    );
+  }
+
+  it('offers the submit while the dealership is still a draft', () => {
+    render_('DRAFT', completeness());
+
+    expect(screen.getByRole('button', { name: 'Submit for verification' })).toBeEnabled();
+    expect(screen.getByText('Ready to submit')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute(
+      'href',
+      '/dealer/onboarding?step=2',
+    );
+  });
+
+  /**
+   * Once submitted there is nothing to submit again, and nothing to go back to
+   * — so both controls are replaced by the one thing left to do.
+   */
+  it('replaces the form with an under-review panel once submitted', () => {
+    render_('PENDING_APPROVAL', completeness());
+
+    expect(screen.queryByRole('button', { name: 'Submit for verification' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Back' })).toBeNull();
+    expect(screen.getByText('Under review')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Go to dashboard' })).toHaveAttribute(
+      'href',
+      '/dealer',
+    );
+  });
+
+  /** The panel names the dealership, so it reads as being about *them*. */
+  it('names the dealership in the under-review copy', () => {
+    render_('PENDING_APPROVAL', completeness());
+
+    expect(screen.getByText(/Katpadi Auto Gallery/)).toBeInTheDocument();
+  });
+
+  it('promises a decision, and says what publishing still needs', () => {
+    render_('DRAFT', completeness());
+
+    expect(screen.getByText(/keep adding vehicles in the meantime/)).toBeInTheDocument();
+    expect(screen.getByText(/one listing credit/)).toBeInTheDocument();
+  });
+
+  /**
+   * A refused submit lists the same blockers the banner on step 2 does — the
+   * API decides with the same derivation the wizard reads, so the two can only
+   * be wrong together.
+   */
+  it('names what is outstanding when the API refuses the submit', async () => {
+    const { submitForVerificationAction } = await import('@/features/auth/actions');
+    vi.mocked(submitForVerificationAction).mockResolvedValue({
+      message: 'Some details are still missing.',
+    });
+
+    const user = userEvent.setup();
+    render_('DRAFT', completeness({ documents: ['ADDRESS_PROOF'], business: ['pan'] }));
+
+    await user.click(screen.getByRole('button', { name: 'Submit for verification' }));
+
+    expect(await screen.findByText('Some details are still missing.')).toBeInTheDocument();
+    const banner = screen.getByRole('status');
+    expect([...banner.querySelectorAll('li')].map((item) => item.textContent)).toEqual([
+      'PAN',
+      'Address proof',
+    ]);
   });
 });
