@@ -62,6 +62,13 @@ export async function saveBusinessIdsAction(
   return respond('saveBusinessIds', formData);
 }
 
+/** The submit on the Review step (**F042**). Takes no form data. */
+export async function submitForVerificationAction(): Promise<ActionState> {
+  authActionStub.calls.push({ action: 'submitForVerification', values: {} });
+  await new Promise((resolve) => setTimeout(resolve, authActionStub.delayMs));
+  return authActionStub.result;
+}
+
 export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promise<void> {
   authActionStub.calls.push({ action: 'signOut', values: { scope } });
   await new Promise((resolve) => setTimeout(resolve, authActionStub.delayMs));

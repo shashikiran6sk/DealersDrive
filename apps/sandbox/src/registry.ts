@@ -364,8 +364,7 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/features/auth/onboarding-wizard.tsx',
     category: 'Forms',
     ownership: 'Feature-specific',
-    purpose:
-      'The onboarding frame: which of the four steps is current, how each is reached, and steps 1 and 2.',
+    purpose: 'Dealer onboarding end to end: the four-step frame and all four step bodies.',
     aliases: [
       'Onboarding',
       'OnboardingSteps',

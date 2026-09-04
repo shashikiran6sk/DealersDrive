@@ -11,8 +11,13 @@ import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
-import { Banner, StatusTag, Stepper } from '@/components/ui/primitives';
-import { onboardingAction, saveBusinessIdsAction, type ActionState } from '@/features/auth/actions';
+import { Banner, Blueprint, StatusTag, Stepper } from '@/components/ui/primitives';
+import {
+  onboardingAction,
+  saveBusinessIdsAction,
+  submitForVerificationAction,
+  type ActionState,
+} from '@/features/auth/actions';
 import { DocumentUploader } from '@/features/auth/document-uploader';
 
 /**
@@ -25,15 +30,6 @@ import { DocumentUploader } from '@/features/auth/document-uploader';
  *
  * Which step you may be on is decided on the server from the session. This
  * component moves between them; it does not decide what you are allowed to see.
- *
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * **F037 landed the frame, F038 step 1, F039 step 2, F041 step 3, F043 the
- * outstanding-items list.** The Review step arrives with **F042**.
- *
- * A prop lands with its only reader: `session` with Account, `cities` with
- * Business, `documents` and `dealer` with Documents, `completeness` with the
- * banner that reads it (component-map C040).
- * ────────────────────────────────────────────────────────────────────────────
  */
 export const ONBOARDING_STEPS = ['Account', 'Business', 'Documents', 'Review'] as const;
 
@@ -147,6 +143,8 @@ export function OnboardingWizard({
           onDone={() => router.push('/dealer/onboarding?step=3')}
         />
       ) : null}
+
+      {current === 3 ? <ReviewStep session={session} completeness={completeness} /> : null}
     </div>
   );
 }
@@ -444,6 +442,74 @@ function DocumentsStep({
           {outstanding === 0 ? 'Continue' : `Continue (${outstanding} still to upload)`}
         </button>
       </div>
+    </div>
+  );
+}
+
+function ReviewStep({
+  session,
+  completeness,
+}: {
+  session: AuthSession;
+  completeness: CompletenessResponse | null;
+}) {
+  const [state, submit, pending] = useActionState<ActionState, FormData>(
+    async () => submitForVerificationAction(),
+    {},
+  );
+  const submitted = session.dealer?.status === 'PENDING_APPROVAL';
+
+  return (
+    <div className="flex flex-col gap-[18px]">
+      {state.message ? (
+        <Banner tone="err" title={state.message}>
+          {/* The API refuses an incomplete dealership; this says which part. */}
+          {outstandingLabels(completeness).length > 0 ? (
+            <ul className="mt-[4px] list-disc pl-[18px]">
+              {outstandingLabels(completeness).map((label) => (
+                <li key={label}>{label}</li>
+              ))}
+            </ul>
+          ) : null}
+        </Banner>
+      ) : null}
+
+      <Blueprint className="bg-white p-[26px]">
+        <StatusTag tone={submitted ? 'warn' : 'neutral'}>
+          {submitted ? 'Under review' : 'Ready to submit'}
+        </StatusTag>
+
+        <h1 className="mt-[12px] font-heading text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">
+          {submitted ? 'We are reviewing your dealership' : 'Submit for verification'}
+        </h1>
+
+        <p className="mt-[10px] text-[14px] leading-[1.6] ink-body">
+          {submitted
+            ? `Our team is checking ${session.dealer?.brandName ?? 'your dealership'} and the documents you uploaded. Verification usually takes one working day.`
+            : 'Once you submit, our team checks your business details and documents. You can keep adding vehicles in the meantime.'}
+        </p>
+        <p className="mt-[8px] text-[14px] leading-[1.6] ink-body">
+          You can add vehicles and prepare listings now. Publishing needs a verified dealership and
+          one listing credit.
+        </p>
+      </Blueprint>
+
+      <form action={submit} className="flex gap-[8px]">
+        {submitted ? (
+          <a href="/dealer" className="btn btn-primary h-[42px] flex-1">
+            Go to dashboard
+          </a>
+        ) : (
+          <>
+            <a href="/dealer/onboarding?step=2" className="btn btn-secondary h-[42px] px-[18px]">
+              Back
+            </a>
+            <button type="submit" className="btn btn-primary h-[42px] flex-1" disabled={pending}>
+              {pending ? 'Submitting…' : 'Submit for verification'}
+            </button>
+          </>
+        )}
+      </form>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   UpdateDealerInput,
   type AdminSessionResponse,
   type AuthSession,
+  type DealerSubmitResponse,
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
@@ -116,14 +117,34 @@ export async function onboardingAction(
 }
 
 /**
- * GSTIN and PAN, from the Documents step.
+ * Sign out, for either console.
  *
- * They are a `PATCH` rather than part of the onboarding submit because by step
- * 3 the dealership exists: C2 is partial precisely so each wizard step writes
- * only its own fields and `Back` never blanks another step's.
+ * The API call is what matters: it revokes the `sessions` row, so the token
+ * stops working everywhere rather than merely being forgotten by this browser.
+ * Clearing the cookie afterwards is housekeeping, and is deliberately done even
+ * if the revoke failed — a browser holding a cookie it believes in is worse
+ * than one that has to sign in again.
+ */
+export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promise<void> {
+  const path = scope === 'admin' ? '/v1/auth/admin/logout' : '/v1/auth/logout';
+
+  try {
+    await apiSend<void>('POST', path);
+  } catch {
+    // Already expired, already revoked, API down — all end the same way.
+  }
+
+  (await cookies()).delete(SESSION_COOKIE);
+  redirect(scope === 'admin' ? '/admin/login' : '/dealer/login');
+}
+
+/**
+ * C2, from onboarding step 3 — the two registrations the KYC review needs
+ * alongside the uploaded documents (DESIGN-SPEC §3.10).
  *
- * Both are upper-cased before validation. A registration is not case-sensitive,
- * and rejecting a lower-case paste would be pedantry.
+ * A separate write from the dealership itself because it happens after the
+ * tenant exists, and because a dealer can come back to it: `PATCH /v1/dealer`
+ * is partial, so filling one field never blanks the other.
  */
 export async function saveBusinessIdsAction(
   _previous: ActionState,
@@ -155,36 +176,24 @@ export async function saveBusinessIdsAction(
 }
 
 /**
- * Sign out, for either console.
+ * C4 — the last step of onboarding: hand the dealership to a moderator.
  *
- * The API call is what matters: it revokes the `sessions` row, so the token
- * stops working everywhere rather than merely being forgotten by this browser.
- * Clearing the cookie afterwards is housekeeping, and is deliberately done even
- * if the revoke failed — a browser holding a cookie it believes in is worse
- * than one that has to sign in again.
+ * The dealer does not become ACTIVE here. This submits an *event*; the state
+ * machine and an admin decide the rest (Rule 5), which is why the success path
+ * lands on a "we're reviewing this" panel rather than on the dashboard.
  */
-export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promise<void> {
-  const path = scope === 'admin' ? '/v1/auth/admin/logout' : '/v1/auth/logout';
-
+export async function submitForVerificationAction(): Promise<ActionState> {
   try {
-    await apiSend<void>('POST', path);
-  } catch {
-    // Already expired, already revoked, API down — all end the same way.
+    await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit');
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { message: error.userMessage('That could not be submitted yet.') };
+    }
+    return { message: 'The API is unavailable. Try again shortly.' };
   }
 
-  (await cookies()).delete(SESSION_COOKIE);
-  redirect(scope === 'admin' ? '/admin/login' : '/dealer/login');
+  redirect('/dealer/onboarding?step=3');
 }
-
-/*
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * `submitForVerificationAction` sits here in the baseline. It posts
- * `POST /v1/dealer/submit` and reads `DealerSubmitResponse`; neither the
- * contract nor the route exists yet, and both belong to the review step rather
- * than to sign-in. It returns with **F042**, along with the `describe` block in
- * `actions.test.ts` that covers it.
- * ────────────────────────────────────────────────────────────────────────────
- */
 
 async function setSession(value: string, expires: Date | undefined): Promise<void> {
   (await cookies()).set(SESSION_COOKIE, value, {

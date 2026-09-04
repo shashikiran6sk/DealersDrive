@@ -23,9 +23,9 @@ import type { DealersService } from './dealers.service.js';
  * profile and the KYC documents are the dealership's identity.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * F040 mounted the document checklist, F041 five more, **F043 the completeness
- * read**. `POST /submit` arrives with **F042** and `GET /dashboard` with
- * **F048**.
+ * F040 mounted the document checklist, F041 five more, F043 the completeness
+ * read, **F042 the submit**. `GET /dashboard` arrives with **F048** and closes
+ * the module.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export function createDealersRouter(service: DealersService): Router {
@@ -64,6 +64,17 @@ export function createDealersRouter(service: DealersService): Router {
       try {
         const { dealerId } = dealerPrincipal(req);
         res.json(await service.completeness(dealerId));
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
+
+  router.post('/submit', requirePermission('dealer:update'), (req, res, next) => {
+    void (async () => {
+      try {
+        const { dealerId } = dealerPrincipal(req);
+        res.json(await service.submitForVerification(dealerId));
       } catch (error) {
         next(error);
       }

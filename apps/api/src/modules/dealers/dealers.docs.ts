@@ -7,9 +7,8 @@ import type { ModuleDocs } from '../../docs/spec.js';
  * The baseline module documents nine operations. This file grows with the
  * router beside it — an operation lands in the same PR that mounts its route,
  * which is what `tests/unit/docs/openapi.test.ts` checks in both directions.
- * F040 brought the checklist, F041 five more, **F043 the completeness read**.
- * `submitDealerForVerification` (F042) and `getDealerDashboard` (F048) are what
- * remain.
+ * F040 brought the checklist, F041 five more, F043 the completeness read,
+ * **F042 the submit**. `getDealerDashboard` (F048) is what remains.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const dealersDocs: ModuleDocs = {
@@ -77,6 +76,29 @@ export const dealersDocs: ModuleDocs = {
         { status: 200, description: 'Step-by-step completeness.', schema: 'CompletenessResponse' },
       ],
       errors: [401, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/submit',
+      operationId: 'submitDealerForVerification',
+      tag: 'Dealer account',
+      summary: 'Submit for verification',
+      description:
+        'Hands the dealership to the moderation queue. Takes no body — everything it needs ' +
+        'is already on the record.\n\n' +
+        'Rejected with 422 if the profile or the KYC documents are incomplete; ' +
+        '`GET /v1/dealer/completeness` says what is missing before you try.\n\n' +
+        'OWNER only (`dealer:update`).',
+      audience: 'dealer',
+      permission: 'dealer:update',
+      responses: [
+        {
+          status: 200,
+          description: 'Submitted. The response carries the expected decision date.',
+          schema: 'DealerSubmitResponse',
+        },
+      ],
+      errors: [401, 403, 404, 422],
     },
     {
       method: 'get',

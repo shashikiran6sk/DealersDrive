@@ -161,6 +161,15 @@ export const CompletenessResponse = z.object({
 });
 export type CompletenessResponse = z.infer<typeof CompletenessResponse>;
 
+export const DealerSubmitResponse = z.object({
+  status: DealerStatus,
+  statusLabel: z.string(),
+  submittedAt: z.string(),
+  expectedDecisionBy: z.string(),
+  message: z.string(),
+});
+export type DealerSubmitResponse = z.infer<typeof DealerSubmitResponse>;
+
 // ─────────── C5 KYC documents ──────────────────────────────────────────────
 /**
  * One row of the KYC checklist.

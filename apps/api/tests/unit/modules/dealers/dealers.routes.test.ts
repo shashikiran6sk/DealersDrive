@@ -19,8 +19,8 @@ import {
  * and `document:upload` appear in §8.3 against OWNER alone.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline asserts nine signatures. **F043 brings the count to seven**;
- * `POST /submit` and `GET /dashboard` arrive with F042 and F048.
+ * The baseline asserts nine signatures. **F042 brings the count to eight**;
+ * `GET /dashboard` arrives with F048 and closes the file.
  * ────────────────────────────────────────────────────────────────────────────
  */
 const router = createDealersRouter({} as never);
@@ -32,6 +32,7 @@ describe('the surface', () => {
         'GET /',
         'PATCH /',
         'GET /completeness',
+        'POST /submit',
         'GET /documents',
         'POST /documents/presign',
         'POST /documents/:type/commit',
@@ -51,6 +52,7 @@ describe('permissions', () => {
   /** Identity and KYC are the owner's alone. */
   it.each([
     ['PATCH /', 'dealer:update'],
+    ['POST /submit', 'dealer:update'],
     ['POST /documents/presign', 'document:upload'],
     ['POST /documents/:type/commit', 'document:upload'],
     ['DELETE /documents/:type', 'document:upload'],
