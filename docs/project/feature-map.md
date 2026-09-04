@@ -845,14 +845,41 @@ One narrow port; a local filesystem adapter for development and an S3/R2 adapter
 
 Presign → client uploads directly → commit. Bytes never pass through the API.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F032
-- **Backend** `modules/media/{media.routes,media.service,media.facade,media.docs}.ts`, `src/platform/media/urls.ts`
+- **Status** implemented · **Confidence** HIGH · **Depends on** F031, F032, F016
+- **Backend** `modules/media/{media.routes,media.service,media.facade}.ts`, `src/platform/media/urls.ts`
 - **Frontend** `app/api/dealer/media/presign/route.ts`, `app/api/dealer/media/[id]/route.ts`
 - **API** `POST /v1/dealer/media/presign`, `POST /v1/dealer/media/:id/commit`, `GET|DELETE /v1/dealer/media/:id`, `PUT /uploads`
 - **DB** `Media`; enums `MediaOwner`, `MediaStatus`
+- **Contracts** `packages/contracts/src/dealer.ts` — the C14 block plus `PresignResponse` and `VehicleMediaDto`; the first shapes in that module
 - **Tests** `tests/unit/modules/media/*.test.ts` (3), `tests/unit/platform/media/urls.test.ts`
 - **Components** none yet — the uploader UIs are **F041** and **F062**
 - **Sandbox** none directly; provides the MSW handlers those two features' scenarios need
+- **The entry understated the dependencies.** `media.service.ts` takes a
+  `Queue` (**F031**) as well as a `StoragePort`, and every route is
+  `requirePermission`-guarded (**F016**).
+- **`media.docs.ts` is not here.** It imports `ModuleDocs` from
+  `src/docs/spec.ts` — **F096**, the whole OpenAPI layer — and lands there with
+  every other module's docs file.
+- **`PUT /uploads` closes a restore-ledger row.** F032 landed the adapter that
+  presigns against it; `createStorageRouter` is what serves it, and it is
+  complete here — the HMAC, the expiry, the declared content-type and the
+  declared content-length are all verified before a byte is written, which is
+  what an S3 presigned PUT enforces. It mounts outside `/v1` because it is
+  storage, not API surface.
+- ⚠️ **`media.service.ts` is sliced three ways.** `process()` is **F034** and
+  `reorder()` is **F035**; beyond those, every method that reaches `Vehicle`
+  (**F055**) or `VehicleMedia` (**F035**) is cut back where it does so. Two of
+  those cuts remove a real guard rather than a convenience:
+  - `presign()` no longer enforces `MAX_PHOTOS_PER_VEHICLE`. **Nothing else
+    does**, so until F055 a dealer can presign without limit.
+  - `remove()` no longer refuses to take a live listing below
+    `listing.minPhotos`. That needs `Listing` (**F064**) and brings the
+    `PlatformConfigService` dependency back with it. There is no live listing
+    to empty yet, which is why this is safe now and not later.
+- ⚠️ **A committed upload stays PENDING.** `commit()` enqueues `media.process`
+  and no handler is registered for it until F034, so `status` never reaches
+  READY and `GET /media/:id` answers `url: null`. The poll loop the BFF route
+  drives is correct; there is simply nothing at the other end yet.
 
 ### F034 — Image derivative pipeline
 

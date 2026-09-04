@@ -5,6 +5,7 @@ import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/
 import { createConfigRouter } from './modules/config/config.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { createLocationsRouter } from './modules/locations/locations.routes.js';
+import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
 
 /**
  * Every module router is mounted here and nowhere else — one file to read to
@@ -26,16 +27,16 @@ import { createLocationsRouter } from './modules/locations/locations.routes.js';
  *
  * ── Reconstruction note ───────────────────────────────────────────────────
  * Health is mounted as of F006, auth and the two guarded chains as of
- * F016/F018. `/uploads` arrives with F033 — F032 landed the adapter that
- * presigns against it, not the router that serves it — and the docs router
- * with F096. The `/v1/dealer` and `/v1/admin` chains carry their guard and no
- * child routers yet: every router that goes under them belongs to a later
- * feature, and the guard is what this mount exists to establish.
+ * F016/F018, and `/uploads` plus the first router under `/v1/dealer` as of
+ * F033. The docs router arrives with F096. `/v1/admin` still carries its guard
+ * and no child routers: every router that goes under it belongs to a later
+ * feature, and the guard is what that mount exists to establish.
  */
 export function createRoutes(container: Container): Router {
   const router = Router();
 
   router.use('/health', createHealthRouter(container));
+  router.use(createStorageRouter(container.storage, container.media));
 
   const v1 = Router();
 
@@ -55,6 +56,7 @@ export function createRoutes(container: Container): Router {
   // ── dealer ────────────────────────────────────────────────────────────
   const dealer = Router();
   dealer.use(container.guards.requireDealer);
+  dealer.use(createMediaRouter(container.media));
   v1.use('/dealer', dealer);
 
   // ── admin ─────────────────────────────────────────────────────────────

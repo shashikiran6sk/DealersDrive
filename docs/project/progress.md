@@ -61,7 +61,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 5 — Storage & media
 
 - [x] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
-- [ ] F033 — Presigned upload & commit
+- [~] F033 — Presigned upload & commit
 - [ ] F034 — Image derivative pipeline
 - [ ] F035 — Media ordering & primary photo
 

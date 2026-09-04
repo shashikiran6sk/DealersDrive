@@ -78,6 +78,8 @@ function harness() {
     auth: service,
     publicConfig: service,
     locations: service,
+    media: service,
+    storage: service,
     prisma: { $queryRaw: () => Promise.resolve([]) },
   } as unknown as Container;
 
@@ -194,12 +196,12 @@ describe('the dealer boundary', () => {
     expect((await dispatch('GET', '/v1/dealer/vehicles')).adminGuard).toBe(false);
   });
 
-  /*
-   * ── Reconstruction slice ──────────────────────────────────────────────
-   * `it('reaches the handler once the guard has run')` is not here: no child
-   * router is mounted under `/v1/dealer` yet, so nothing can be reached. It
-   * returns with the first one — F046's `dealers.routes.ts`.
-   */
+  /** One guard, not one per module — the mount point owns the boundary. */
+  it('reaches the handler once the guard has run', async () => {
+    expect(
+      (await dispatch('GET', '/v1/dealer/media/00000000-0000-4000-8000-000000000000')).reached,
+    ).toBe(true);
+  });
 });
 
 describe('the admin boundary', () => {
@@ -288,11 +290,13 @@ describe('what sits outside /v1', () => {
     expect(result.adminGuard).toBe(false);
   });
 
-  /*
-   * ── Reconstruction slice ──────────────────────────────────────────────
-   * `PUT /uploads` is not mounted: F032 landed the adapter that presigns
-   * against it, F033 brings `createStorageRouter`. Its case returns there.
-   */
+  /** Storage stands in for R2; its authority is the HMAC in the URL, not a session. */
+  it('serves the presigned upload without a session guard', async () => {
+    const result = await dispatch('PUT', '/uploads?key=x');
+
+    expect(result.reached).toBe(true);
+    expect(result.dealerGuard).toBe(false);
+  });
 
   /** Built 7 times to be served 0 times is waste, so the suite turns it off. */
   it('does not mount the docs router under test', async () => {

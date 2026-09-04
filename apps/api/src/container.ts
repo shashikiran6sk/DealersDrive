@@ -13,6 +13,7 @@ import type { SessionResolver } from './modules/auth/session.port.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
 import { createLocationsRepository } from './modules/locations/locations.repository.js';
+import { createMediaService, type MediaService } from './modules/media/media.service.js';
 import {
   createLocationsService,
   emptyIndex,
@@ -87,6 +88,7 @@ export interface Container {
   readonly dealers: DealersService;
   readonly publicConfig: ConfigService;
   readonly locations: LocationsService;
+  readonly media: MediaService;
 }
 
 export interface ContainerOverrides {
@@ -136,6 +138,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     repo: createLocationsRepository(prisma),
     search: emptyIndex,
   });
+  const media = createMediaService({ prisma, storage, queue });
 
   return {
     env: overrides.env ?? env,
@@ -155,6 +158,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     dealers,
     publicConfig,
     locations,
+    media,
   };
 }
 
