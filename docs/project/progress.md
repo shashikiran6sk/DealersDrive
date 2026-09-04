@@ -61,7 +61,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 5 — Storage & media
 
 - [x] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
-- [~] F033 — Presigned upload & commit · [#50](https://github.com/shashikiran6sk/DealersDrive/pull/50)
+- [x] F033 — Presigned upload & commit · [#50](https://github.com/shashikiran6sk/DealersDrive/pull/50)
 
 > F034 and F035 moved to Tier 9 (decision D4) — they serve vehicle galleries,
 > and nothing in Tier 6 or 7 depends on them.
