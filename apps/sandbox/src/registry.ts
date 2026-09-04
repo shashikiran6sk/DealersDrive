@@ -248,7 +248,7 @@ export const registry: RegistryEntry[] = [
     ownership: 'Primitive',
     purpose: 'Wizard progress bars. ⚠️ An out-of-range `current` fills every bar.',
     aliases: ['ProgressSteps', 'WizardProgress', 'StepIndicator', 'Progress'],
-    features: ['F012'],
+    features: ['F012', 'F037'],
     props: ['steps', 'current'],
     states: ['0', '1', '2', '3', 'out-of-range', 'negative'],
     reusable: true,
@@ -357,6 +357,34 @@ export const registry: RegistryEntry[] = [
     states: ['default', 'disabled', 'custom label'],
     reusable: true,
     storyId: 'layout-googlesigninbutton',
+  },
+  {
+    id: 'C040',
+    name: 'OnboardingWizard',
+    source: 'apps/web/src/features/auth/onboarding-wizard.tsx',
+    category: 'Forms',
+    ownership: 'Feature-specific',
+    purpose: 'The onboarding frame: which of the four steps is current, and how each is reached.',
+    aliases: [
+      'Onboarding',
+      'OnboardingSteps',
+      'DealerOnboarding',
+      'SignupWizard',
+      'RegistrationWizard',
+      'Wizard',
+      'onboarding-wizard',
+    ],
+    features: ['F037'],
+    /**
+     * `step` is all F037 needs, because F037 renders no step. The other five
+     * props on component-map C040 — `session`, `cities`, `documents`, `dealer`,
+     * `completeness` — arrive with the step bodies that read them (F038, F039,
+     * F041, F042), and this line grows with them.
+     */
+    props: ['step'],
+    states: ['Account', 'Business', 'Documents', 'Review'],
+    reusable: false,
+    storyId: 'forms-onboardingwizard',
   },
   {
     id: 'C042',

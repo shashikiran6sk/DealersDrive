@@ -69,7 +69,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 6 — Dealer onboarding
 
 - [x] F036 — Dealer entity & tenant isolation · ⚠️ pulled forward, ahead of Tier 2
-- [ ] F037 — Onboarding shell & step routing
+- [~] F037 — Onboarding shell & step routing
 - [ ] F038 — Onboarding — account step
 - [ ] F039 — Onboarding — business details step
 - [ ] F040 — Dealer document model & types

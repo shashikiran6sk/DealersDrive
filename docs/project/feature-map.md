@@ -1007,9 +1007,21 @@ The wizard frame: which step is current, how a step is reached, and the progress
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F017, F012, F036
 - **Frontend** `app/(auth)/dealer/onboarding/page.tsx`, the shell portion of `features/auth/onboarding-wizard.tsx`
-- **Contracts** `ONBOARDING_STEPS = ['Account','Business','Documents','Review']`
+- **Contracts** none. `ONBOARDING_STEPS = ['Account','Business','Documents','Review']` is real, but the entry put it in the wrong package — at the baseline it is exported from `features/auth/onboarding-wizard.tsx`, and it belongs there: it is four labels for a `Stepper`, never crosses the wire, and `packages/contracts` is for shapes that do.
+- **Tests** `apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx` — **new, no baseline equivalent**
 - **Components — New (feature-specific)** `OnboardingWizard` shell · **Reused** `AuthShell`, `Stepper`
 - **Sandbox** `OnboardingWizard` shell at each of the 4 steps; `Stepper` at each position
+- **The wizard takes `step` and nothing else.** The other five props on
+  component-map C040 — `session`, `cities`, `documents`, `dealer`,
+  `completeness` — are each read by exactly one step body, so each arrives with
+  the feature that renders it (**F038**, **F039**, **F041**, **F042**). The
+  page's four fetches move with them; only `/v1/auth/me` is needed to place a
+  dealer on a step.
+- ⚠️ **Continue on the Business step is disabled until F039.** On Account it is
+  a local move, but on Business it is the submit that creates the dealership —
+  so it belongs to the form, and the form is F039. F039 replaces this button
+  with its own `type="submit"` and moves the Back/Continue row inside the
+  `<form>`, which is where the baseline has it.
 
 ### F038 — Onboarding — account step
 
