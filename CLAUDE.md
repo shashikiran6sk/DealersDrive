@@ -213,6 +213,13 @@ dealer.status === 'ACTIVE'`. _Availability_: `is_sold = false`. Both are
     too permissive behind N tasks — and since a phone reveal costs an SMS, the
     limiter is a spend control as much as a security one.
 
+11. **Every route is documented in the same PR that mounts it.** A module's
+    endpoints live in its `*.docs.ts` beside its routes, and the module is
+    listed in `MODULES` in `src/docs/openapi.ts`. This is not a documentation
+    chore that trails the code — `tests/unit/docs/openapi.test.ts` walks the
+    assembled Express router and fails when a mounted route has no operation,
+    or an operation has no route. See §4a.
+
 **The RC lookup port is a privacy boundary.** Owner name, address, phone,
 chassis and engine number are dropped _before_ the domain object is
 constructed — not filtered later. `RcSpecs` is immutable and cached 30 days;
@@ -223,6 +230,59 @@ collapse to `CLEAR`.
 microservices, Redux or another global state manager. Each was considered and
 rejected during the original build; adding one silently re-opens a settled
 decision.
+
+---
+
+# 4a. The API reference is part of the feature, not a follow-up
+
+**If your PR mounts, changes or removes a route, it updates the OpenAPI
+document in the same PR.** There is no separate documentation ticket, and F096
+is not where this gets done — F096 is the Postman collection and whatever is
+left over.
+
+The reference is served at `/api/docs` (Swagger UI), with the raw document at
+`/api/docs/openapi.json` and `/api/docs/openapi.yaml`. It is on outside
+production and off inside it, by `DOCS_ENABLED`.
+
+## What to write, and where
+
+| You did this                         | Do this too                                                                                      |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Added a route to an existing module  | Add an `OperationSpec` to that module's `*.docs.ts`                                              |
+| Added a whole module                 | Create `<module>.docs.ts`, then add it to `MODULES` **and** `TAG_ORDER` in `src/docs/openapi.ts` |
+| Added a params/query/body Zod schema | Add its export name to `INPUT_SCHEMA_NAMES` in `src/docs/schemas.ts`                             |
+| Changed a response shape             | Nothing — response schemas are generated from `packages/contracts`                               |
+| Removed a route                      | Remove its operation, or the test fails in the other direction                                   |
+
+## What you must not write
+
+**Do not hand-transcribe a schema.** `components.schemas` is generated from
+`@dealers-drive/contracts` — the same Zod objects `validate()` parses with — so
+a renamed field cannot drift out of the reference, because there is no second
+copy of it to drift from. A hand-written schema block re-introduces exactly the
+drift this design exists to prevent.
+
+Likewise, do not restate the shared truths per operation. The security
+requirement comes from the mount point (`audience`), the parameter list is
+expanded from the same schema the route validates with, and every error body
+comes from `docs/errors.ts`. Seventy-three hand-maintained copies of the same
+401 block is how a reference starts disagreeing with itself.
+
+## Why it is enforced by a test
+
+A rule that lives only in prose is one a busy PR skips. `openapi.test.ts` asks
+the question mechanically, in both directions:
+
+- a **mounted route with no operation** — the PR that added it skipped the docs
+- an **operation with no mounted route** — the docs describe something removed
+
+The second matters as much as the first: a reference listing an endpoint that
+404s is worse than one that omits it, because a client writes code against it.
+
+`buildOpenApiDocument()` additionally throws at startup on a duplicate
+`operationId`, a path parameter the params schema does not declare, and an
+`INPUT_SCHEMA_NAMES` entry contracts no longer exports. Those failures surface
+as a failed boot, not a wrong page.
 
 ---
 
@@ -270,6 +330,16 @@ A feature is done when **all** of these are true:
 ☐ No new dependency that the baseline did not already have
 ```
 
+and, for anything that mounts or changes an API route:
+
+```
+☐ Every route the feature adds has an operation in the module's *.docs.ts
+☐ A new module is listed in MODULES and TAG_ORDER in src/docs/openapi.ts
+☐ A new params/query/body schema is in INPUT_SCHEMA_NAMES
+☐ tests/unit/docs/openapi.test.ts is green — it fails in both directions
+☐ The operation was read in Swagger UI at /api/docs, not just compiled
+```
+
 and, for anything with UI:
 
 ```
@@ -284,6 +354,12 @@ and, for anything with UI:
 entry, is not done.** The sandbox is the discovery mechanism, and discovery
 failure is what produced the current state: 75 % of buttons in the product
 bypass the `Button` component, and `.table` was hand-rolled five separate times.
+
+**A route that works and is undocumented is not done**, for the same reason.
+See §4a — the reference is generated from the contracts the code validates
+with, so keeping it true costs a few lines per endpoint and buys the only kind
+of documentation worth having: the kind that can only be wrong the same way the
+code is wrong.
 
 ---
 

@@ -62,6 +62,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 - [x] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
 - [~] F033 — Presigned upload & commit · [#50](https://github.com/shashikiran6sk/DealersDrive/pull/50)
+- [~] F098 — API reference — OpenAPI & Swagger UI · ⚠️ added by D5, pulled out of F096
 
 > F034 and F035 moved to Tier 9 (decision D4) — they serve vehicle galleries,
 > and nothing in Tier 6 or 7 depends on them.
@@ -154,7 +155,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [ ] F093 — Error boundaries & error pages
 - [ ] F094 — Loading & not-found states
 - [ ] F095 — SEO & metadata
-- [ ] F096 — API documentation — OpenAPI & Postman
+- [ ] F096 — Postman collection · ⚠️ reduced by D5; OpenAPI moved to F098
 - [ ] F097 — Seed data & developer bootstrap
 
 ---
