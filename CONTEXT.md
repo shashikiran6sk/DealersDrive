@@ -236,6 +236,47 @@ Two lines are **not** restores and must not be treated as such:
 
 ---
 
+## 7c. The OpenAPI layer, and the two ways it bites
+
+The reference at `/api/docs` is built once at startup from `MODULES` in
+`src/docs/openapi.ts`. `CLAUDE.md` §4a is the rule; this is what to know when
+it goes wrong.
+
+**Response schemas are generated; input schemas are listed by hand.**
+`buildSchemaCatalogue()` walks everything `@dealers-drive/contracts` exports and
+converts it, so a response shape needs no maintenance. But it has to know which
+schemas are _request input_, because that decides whether a `.default()` field
+reads as required — get it backwards and `?limit=` documents as a required
+integer. That list is `INPUT_SCHEMA_NAMES`, and it is explicit on purpose: a
+silent misclassification is worse than a list somebody has to extend.
+
+The bite: **it throws when a name is listed but not exported.** The baseline
+lists 42 names; only 8 of those schemas exist so far, so the list was cut to 8
+and grows as features land. If you add a params/query/body schema and forget to
+list it, the operation referencing it fails the build with
+`docs: no component schema named "…"`. If you list one before contracts exports
+it, the API refuses to boot. Both are loud, which is the design.
+
+**Express 5 hides mount paths, which is why the drift test looks odd.**
+`tests/unit/docs/openapi.test.ts` has to enumerate every route the router
+actually serves. In Express 4 you could read `layer.regexp.source` and recover
+`/v1/dealer`. Express 5 replaced that with a `matchers` array of closures — a
+matcher will tell you the prefix only if you hand it a path that already
+matches, which is useless for discovery:
+
+```ts
+matcher('/health/live'); // { path: '/health', params: {} }
+matcher.path; // undefined — the mount path is in the closure
+```
+
+So the test wraps `Router.prototype.use` for the duration of `createRoutes()`,
+records which child router was mounted at which path, and restores it in a
+`finally`. Do not "simplify" that back to reading layer internals; there is
+nothing there to read. If a future Express exposes the path again, the wrapper
+is the thing to delete.
+
+---
+
 ## 8. Local development
 
 ```bash
@@ -264,3 +305,5 @@ Copy `.env.example` to `.env` before running anything that touches the database.
 | What should this screen look like?     | `docs/screens/`, `docs/Dealers-Drive-UI/`         |
 | Does this component already exist?     | `docs/project/component-map.md`, then the sandbox |
 | How do I ship it?                      | `CLAUDE.md` §2, then §6                           |
+| What does this endpoint return?        | `/api/docs` — generated, so it cannot be stale    |
+| Why did the docs test fail?            | `CLAUDE.md` §4a, then §7c above                   |

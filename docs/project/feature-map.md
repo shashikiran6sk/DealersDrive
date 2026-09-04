@@ -201,6 +201,36 @@ one Zod object is churn without a reviewer benefit.
 and F062 — vehicle photo upload UI, the feature people usually mean when they
 say "car images" — was always in Tier 9 and stays there.
 
+## D5 — The API reference is written per feature, not at F096
+
+**Decision.** The OpenAPI layer lands now, as **F098**, and every feature that
+mounts a route documents it in the same PR. F096 keeps the Postman collection
+and the generator script.
+
+**Why it could not wait.** F096 sits in Tier 14, behind 96 other features. That
+ordering assumed documentation is a write-up of finished work. It is not: the
+per-module `*.docs.ts` pattern the baseline already uses puts the description of
+an endpoint beside the routes it describes, written by whoever built it, while
+the reasoning is still in their head. Deferring that to Tier 14 means one person
+reconstructing the intent of 73 endpoints from route handlers — which is how a
+reference ends up describing what the code does rather than what it promises.
+
+**What makes it a rule rather than a hope.** `tests/unit/docs/openapi.test.ts`
+walks the assembled Express router and fails in both directions: a mounted route
+with no operation, and an operation with no mounted route. A feature cannot
+merge with an undocumented endpoint, and cannot leave a documented endpoint
+behind when it removes one. The rule is written up in `CLAUDE.md` §4a and in the
+§6 definition of done.
+
+**What F096 keeps.** `docs/postman.ts` (821 lines) and
+`docs/generate-postman.ts` — a different output, a different consumer, and no
+per-feature obligation. It is renamed to reflect that.
+
+**Cost per feature.** An `OperationSpec` is a summary, a description, the
+`audience` and the response list. Response schemas are generated from
+`packages/contracts`, so nothing is transcribed by hand. Roughly fifteen lines
+for an endpoint, written once, by the person who knows the answer.
+
 ---
 
 # Feature index
@@ -245,6 +275,7 @@ say "car images" — was always in Tier 9 and stays there.
 |      | **TIER 5 — Storage & media**                            |            |            |
 | F032 | Storage port & adapters                                 | API        | HIGH       |
 | F033 | Presigned upload & commit                               | Full-stack | HIGH       |
+| F098 | API reference — OpenAPI & Swagger UI · _added, D5_      | API        | HIGH       |
 |      | **TIER 6 — Dealer onboarding**                          |            |            |
 | F036 | Dealer entity & tenant isolation                        | API        | HIGH       |
 | F037 | Onboarding shell & step routing                         | Web        | HIGH       |
@@ -316,7 +347,7 @@ say "car images" — was always in Tier 9 and stays there.
 | F093 | Error boundaries & error pages                          | Web        | HIGH       |
 | F094 | Loading & not-found states                              | Web        | HIGH       |
 | F095 | SEO & metadata                                          | Web        | HIGH       |
-| F096 | API documentation — OpenAPI & Postman                   | API        | HIGH       |
+| F096 | Postman collection · _reduced, D5_                      | API        | HIGH       |
 | F097 | Seed data & developer bootstrap                         | API        | HIGH       |
 
 ---
@@ -948,6 +979,52 @@ Presign → client uploads directly → commit. Bytes never pass through the API
   and no handler is registered for it until F034, so `status` never reaches
   READY and `GET /media/:id` answers `url: null`. The poll loop the BFF route
   drives is correct; there is simply nothing at the other end yet.
+
+### F098 — API reference — OpenAPI & Swagger UI
+
+⚠️ **Added by decision D5**, pulled out of F096 and landed here so that every
+feature from this point documents its own endpoints. Placed in Tier 5 because
+that is where it lands; the F-number is 98 because renumbering is not worth it
+(same principle as D4).
+
+The generated OpenAPI 3.0 document, Swagger UI at `/api/docs`, and the
+per-module `*.docs.ts` pattern every later feature extends.
+
+- **Status** implemented at baseline · **Confidence** HIGH · **Depends on** F001, F002, F016, F033
+- **Backend** `src/docs/{spec,errors,schemas,openapi,docs.routes}.ts`
+- **Module docs** `modules/{auth,health,media}/*.docs.ts` ported; `modules/{locations,config}/*.docs.ts` new under D1
+- **API** `GET /api/docs`, `GET /api/docs/openapi.json`, `GET /api/docs/openapi.yaml`
+- **Env** `DOCS_ENABLED` — already present; on outside production, off inside it and under test
+- **External** `swagger-ui-express`, `yaml`, `@types/swagger-ui-express` — **already in `apps/api/package.json`**, no new dependency
+- **Tests** `tests/unit/docs/openapi.test.ts` — **new, no baseline equivalent**
+- **Components** none · **Sandbox** none
+- **Documents 18 operations across 17 paths**, which is every route currently
+  mounted — verified in both directions by the test, not by inspection.
+- ⚠️ **`INPUT_SCHEMA_NAMES` cut from 42 names to 8.** `buildSchemaCatalogue()`
+  throws when a listed name is not exported by contracts, so the list cannot run
+  ahead of the code. **Every feature that adds a params, query or body schema
+  adds its name here.**
+- ⚠️ **`AUTH_DESCRIPTION` was rewritten, and this is a real divergence.** The
+  baseline text states there is "no signup, no sign-in, no OTP and no JWT" and
+  that the dev resolver reads `DEV_DEALER_SLUG`. That was true of the original
+  build; it is false here — F015, F018 and F019 landed real sessions, and
+  `AUTH_MODE` defaults to `cookie` with `dev` as an opt-in local escape hatch
+  that `env.ts` refuses in production. Publishing the baseline prose would have
+  told every reader that authentication is bypassed. The §8.3 permission tables
+  in that section were checked against `session.port.ts` and are accurate
+  unchanged.
+- **`catalog.docs.ts` does not come across** (D1). Its two surviving operations
+  move: `GET /v1/cities` to `locations.docs.ts`, `GET /v1/config/public` to
+  `config.docs.ts`, each retagged from `Catalogue`.
+- **Sliced:** `reorderVehicleMedia` (**F035** — needs `ReorderMediaInput`), and
+  six module docs files whose routes have not landed. `MODULES` carries five
+  entries rather than eleven; **each feature adds its own line.**
+- **Health readiness examples gained `cache`** — the probe was restored at F028
+  and the baseline example predates it.
+- 💡 **Noted, not done: generate the permission tables from `PERMISSIONS` and
+  `ADMIN_PERMISSIONS`.** They are hand-written markdown in `openapi.ts` and
+  currently correct, but they are the one part of this document that can drift.
+  Faithful-port rules kept them as-is; worth doing when the admin tier lands.
 
 ---
 
@@ -1739,16 +1816,27 @@ Sitemap, robots, canonical URLs and per-page metadata.
 - **Tests** `tests/unit/lib/seo.test.ts` ✅
 - **Components** none · **Sandbox** none
 
-### F096 — API documentation — OpenAPI & Postman
+### F096 — Postman collection
 
-An OpenAPI 3.0 document generated from the same Zod contracts the API validates with, served at `/api/docs`, plus a generated Postman collection. Off in production by default.
+⚠️ **Reduced by decision D5.** The OpenAPI document, Swagger UI and the
+per-module `*.docs.ts` pattern landed early as **F098**, so that every feature
+documents its own endpoints as it lands rather than one person reconstructing 73
+of them here. What remains is the Postman collection: a different output, a
+different consumer, and no per-feature obligation.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** every API feature
-- **Backend** `src/docs/*` (6 files)
-- **API** `GET /api/docs`
-- **External** `swagger-ui-express`, `yaml`
-- **Tests** `tests/{openapi,postman,contracts}.test.ts`, `tests/unit/docs/*` (6)
+A Postman collection generated from the same OpenAPI document, so a reviewer can
+exercise the API without writing requests by hand.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F098, and every API feature for completeness
+- **Backend** `src/docs/postman.ts`, `src/docs/generate-postman.ts`
+- **Tests** `tests/postman.test.ts`
 - **Components** none · **Sandbox** none
+- **Not here any more:** `src/docs/{spec,errors,schemas,openapi,docs.routes}.ts`
+  and `GET /api/docs` — all F098.
+- By the time this lands the document should already be complete, because every
+  feature added its own operations. If it is not, that is a rule that was not
+  enforced, and the gap is the thing to investigate rather than to backfill
+  silently.
 
 ### F097 — Seed data & developer bootstrap
 
