@@ -49,6 +49,10 @@ function knownScripts() {
     'package.json',
     'apps/api/package.json',
     'apps/web/package.json',
+    // The sandbox is a workspace like any other, and `build:sandbox` is
+    // declared only here. Omitting it made every reference to that script look
+    // stale — found at F041, when CONTEXT.md first named it.
+    'apps/sandbox/package.json',
     'packages/contracts/package.json',
     'packages/config/package.json',
   ];

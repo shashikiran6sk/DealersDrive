@@ -203,10 +203,11 @@ If a story ever loses its styling, check these two files before the component.
 
 Found at F041, the hard way: a green local gate and a red CI.
 
-`turbo run build` covers `contracts`, `api` and `web`. The sandbox has
-`build:sandbox`, not `build`, deliberately — a broken story must never be able
-to fail a deploy, which is the same reason stories live outside `apps/web` at
-all. CI runs it as its own job (`sandbox typecheck / build`).
+`turbo run build` covers `contracts`, `api` and `web`. The sandbox declares a
+`build:sandbox` script rather than a `build` one, deliberately — a broken story
+must never be able to fail a deploy, which is the same reason stories live
+outside `apps/web` at all. CI runs it as its own job (`sandbox typecheck /
+build`).
 
 So `pnpm lint && pnpm typecheck && pnpm test && pnpm build` all green says
 nothing about whether Storybook still builds. **`pnpm --filter
@@ -214,14 +215,17 @@ nothing about whether Storybook still builds. **`pnpm --filter
 against the real components, and the alias that breaks is a Vite one, not a
 TypeScript one.
 
-The specific trap: `.storybook/main.ts` aliases `@/features/auth/actions` to
-`src/mocks/auth-actions.ts` (coupling C-4 — Server Actions need a server the
-sandbox does not have). **Every action a story's component imports must exist in
-that stub.** Add one to `actions.ts` without adding it to the mock and the
+The specific trap: `apps/sandbox/.storybook/main.ts` aliases
+`@/features/auth/actions` to `apps/sandbox/src/mocks/auth-actions.ts` (coupling
+C-4 — Server Actions need a server the sandbox does not have). **Every action a
+story's component imports must exist in that stub.** Add one to
+`apps/web/src/features/auth/actions.ts` without adding it to the mock and the
 Storybook build fails to resolve it, while every other check stays green.
 
-Before opening a PR that touches `features/auth/actions.ts` or any component a
-story renders, run `pnpm --filter @dealers-drive/sandbox build:sandbox`.
+Before opening a PR that touches `apps/web/src/features/auth/actions.ts` or any
+component a story renders, build the sandbox with the workspace's
+`build:sandbox` script:
+`pnpm --filter @dealers-drive/sandbox build:sandbox`.
 
 ---
 
