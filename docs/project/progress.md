@@ -61,7 +61,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 5 — Storage & media
 
 - [x] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
-- [~] F033 — Presigned upload & commit · [#50](https://github.com/shashikiran6sk/DealersDrive/pull/50)
+- [x] F033 — Presigned upload & commit · [#50](https://github.com/shashikiran6sk/DealersDrive/pull/50)
 - [~] F098 — API reference — OpenAPI & Swagger UI · ⚠️ added by D5, pulled out of F096
 
 > F034 and F035 moved to Tier 9 (decision D4) — they serve vehicle galleries,
