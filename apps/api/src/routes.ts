@@ -1,6 +1,8 @@
 import { Router } from 'express';
 
+import { env } from './config/env.js';
 import type { Container } from './container.js';
+import { createDocsRouter } from './docs/docs.routes.js';
 import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/auth.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
@@ -28,7 +30,7 @@ import { createMediaRouter, createStorageRouter } from './modules/media/media.ro
  * ── Reconstruction note ───────────────────────────────────────────────────
  * Health is mounted as of F006, auth and the two guarded chains as of
  * F016/F018, and `/uploads` plus the first router under `/v1/dealer` as of
- * F033. The docs router arrives with F096. `/v1/admin` still carries its guard
+ * F033, and the docs router as of F098. `/v1/admin` still carries its guard
  * and no child routers: every router that goes under it belongs to a later
  * feature, and the guard is what that mount exists to establish.
  */
@@ -37,6 +39,13 @@ export function createRoutes(container: Container): Router {
 
   router.use('/health', createHealthRouter(container));
   router.use(createStorageRouter(container.storage, container.media));
+
+  // The OpenAPI reference. Outside /v1 for the same reason /health is: it is not
+  // versioned API surface. Off in production by default (`DOCS_ENABLED`), and
+  // skipped under test so the suite does not pay to build it 7 times.
+  if (env.DOCS_ENABLED) {
+    router.use('/api/docs', createDocsRouter());
+  }
 
   const v1 = Router();
 
