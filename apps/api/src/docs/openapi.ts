@@ -2,6 +2,7 @@ import { CONTRACTS_VERSION } from '@dealers-drive/contracts';
 
 import { env } from '../config/env.js';
 import { authDocs } from '../modules/auth/auth.docs.js';
+import { adminDocs } from '../modules/admin/admin.docs.js';
 import { configDocs } from '../modules/config/config.docs.js';
 import { dealersDocs } from '../modules/dealers/dealers.docs.js';
 import { healthDocs } from '../modules/health/health.docs.js';
@@ -24,10 +25,10 @@ import type { Audience, ModuleDocs, OperationSpec, ResponseSpec } from './spec.j
 
 /*
  * ── Reconstruction slice ──────────────────────────────────────────────────
- * Five modules, not eleven. `searchDocs`, `enquiriesDocs`, `dealersDocs`,
- * `vehiclesDocs`, `billingDocs` and `adminDocs` describe routes that have not
- * landed yet, and `catalogDocs` never lands at all (decision D1) — its two
- * surviving operations moved to `locationsDocs` and `configDocs`.
+ * Seven modules, not eleven. `searchDocs`, `enquiriesDocs`, `vehiclesDocs` and
+ * `billingDocs` describe routes that have not landed yet, and `catalogDocs`
+ * never lands at all (decision D1) — its two surviving operations moved to
+ * `locationsDocs` and `configDocs`.
  *
  * **Each feature adds its own line here**, in the same PR as its routes. See
  * the API-documentation rule in CLAUDE.md §4.
@@ -37,6 +38,7 @@ const MODULES: ModuleDocs[] = [
   locationsDocs,
   configDocs,
   dealersDocs,
+  adminDocs,
   mediaDocs,
   healthDocs,
   storageDocs,
@@ -48,6 +50,7 @@ const TAG_ORDER = [
   'Locations',
   'Platform configuration',
   'Dealer account',
+  'Admin',
   'Media',
   'Health',
   'Storage (local only)',

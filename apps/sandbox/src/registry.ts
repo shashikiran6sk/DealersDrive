@@ -339,6 +339,32 @@ export const registry: RegistryEntry[] = [
     storyId: 'layout-authshell--heading-with-and-without-subtitle',
   },
   {
+    id: 'C024',
+    name: 'AdminNav',
+    source: 'apps/web/src/components/admin/admin-nav.tsx',
+    category: 'Admin',
+    ownership: 'Shared',
+    /**
+     * No props at all: it reads `usePathname()` (coupling C-3), so the
+     * pathname is the control — one story per route rather than a knob.
+     */
+    purpose: 'The admin sidebar nav. Reads the pathname; takes nothing.',
+    aliases: ['AdminSidebar', 'AdminMenu', 'OpsNav', 'ConsoleNav', 'admin-nav'],
+    features: ['F049'],
+    props: [],
+    states: [
+      'dashboard',
+      'listings',
+      'dealers',
+      'dealer detail',
+      'payments',
+      'configuration',
+      'nothing current',
+    ],
+    reusable: true,
+    storyId: 'admin-adminnav',
+  },
+  {
     id: 'C039',
     name: 'GoogleSignInButton',
     source: 'apps/web/src/components/auth/google-button.tsx',

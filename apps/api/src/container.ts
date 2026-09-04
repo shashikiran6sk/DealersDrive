@@ -3,6 +3,7 @@ import type { PrismaClient } from '@prisma/client';
 import { env, type Env } from './config/env.js';
 import { createAuthMiddleware } from './middleware/auth.js';
 import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
+import { createAdminService, type AdminService } from './modules/admin/admin.service.js';
 import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
 import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
 import { createConfigService, type ConfigService } from './modules/config/config.service.js';
@@ -86,6 +87,8 @@ export interface Container {
   readonly guards: ReturnType<typeof createAuthMiddleware>;
   readonly auth: AuthService;
   readonly dealers: DealersService;
+  /** The cross-tenant console. Every write it makes names the admin who made it. */
+  readonly admin: AdminService;
   readonly publicConfig: ConfigService;
   readonly locations: LocationsService;
   readonly media: MediaService;
@@ -131,6 +134,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const dealersRepo = createDealersRepository(prisma);
   const dealers = createDealersService({ prisma, repo: dealersRepo, storage });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
+  const admin = createAdminService({ prisma, config });
   const publicConfig = createConfigService({ config });
   // `search` is the real SearchRepository from F076 onward; until the
   // `listing_search` table exists there is nothing live to count.
@@ -156,6 +160,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     guards,
     auth,
     dealers,
+    admin,
     publicConfig,
     locations,
     media,

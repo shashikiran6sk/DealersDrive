@@ -12,8 +12,8 @@
  *      the session and from the state machine (CLAUDE.md rules 1 and 5).
  *
  * Each feature adds its own module and its own export line, in the order set
- * by `docs/project/feature-map.md`. `public` grows shape by shape as each
- * feature answers with one, and so does `dealer`; `admin` is still to come.
+ * by `docs/project/feature-map.md`. `public`, `dealer` and `admin` each grow
+ * shape by shape, as the feature that answers with one lands.
  */
 
 export * from './common.js';
@@ -21,6 +21,7 @@ export * from './enums.js';
 export * from './auth.js';
 export * from './public.js';
 export * from './dealer.js';
+export * from './admin.js';
 
 /** Bumped when a breaking change ships; surfaced in the API's /health/ready. */
 export const CONTRACTS_VERSION = '1.0.0';
