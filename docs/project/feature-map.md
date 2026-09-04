@@ -138,6 +138,69 @@ place at different moments:
   Tier 3, so a deployable path exists early, but they are the last two and can
   slip a tier without blocking anything if the AWS account is not ready.
 
+## D4 — The image pipeline moves behind dealer onboarding
+
+**Before:** F034 and F035 sat in Tier 5, immediately after F033, so the whole
+media tier completed before a dealer could be onboarded. **After:** Tier 5 ends
+at F033, and F034/F035 land at the head of Tier 9, immediately before F055.
+
+**Why.** F033 is the presign → commit pipeline and has no UI. Its _first_
+consumer is **F041 — onboarding's KYC document upload step**, so F032 and F033
+are prerequisites _of_ onboarding and must stay ahead of it. F034 and F035 are
+not: derivatives at 320/640/1024/1600 and the position-0-is-primary rule exist
+to serve vehicle galleries. A KYC document is a PDF or a single image that is
+never resized, never reordered and never has a primary. Nothing in Tier 6
+depends on either feature.
+
+Leaving them in place meant two PRs of `sharp` and reordering code standing
+between a signed-in dealer and a dealer who can actually be registered — the
+first end-to-end product capability after F018.
+
+**F-numbers do not change.** F034 and F035 keep their identifiers; only their
+position in the running order moves. Renumbering would invalidate every branch
+name, every `Depends on` line and every cross-reference in this document and in
+`component-map.md`, for no reviewer benefit. Read the tier headings, not the
+numeric sequence, for the order of work.
+
+**Verified against the baseline, not assumed.**
+`legacy/pre-reorg:apps/api/src/modules/dealers/dealers.service.ts` presigns KYC
+documents directly against `StoragePort` — `presignDocument` calls
+`storage.presignPut`, `commitDocument` calls `storage.head`, and the document
+row is written with `mediaId: null`. A dealer document never enters
+`media.service.ts` and never enqueues `media.process`. So the "a committed
+upload stays PENDING until F034" caveat on F033 does not reach onboarding:
+there is no derivative to wait for.
+
+**How strong the F033 → F041 edge really is.** Weaker than the `Depends on`
+line suggests, and worth stating so nobody over-trusts it:
+
+- **F032 is the hard prerequisite.** `dealers.service.ts` takes
+  `storage: StoragePort` and calls `presignPut` / `head` / `delete`. Onboarding
+  cannot upload a document without it. F032 is merged.
+- **`PresignResponse` is a contract-placement dependency.** F041's
+  `presignDocument` is typed `Promise<PresignResponse>`, and F033 introduces
+  that shape as "the first shapes in that module". It landed in F033 because
+  F033 was scheduled first, not because onboarding needs F033's machinery. Move
+  F033 and the type moves with whichever feature lands first.
+- **`PUT /uploads` is not on onboarding's path in the documented setup.**
+  `.env.example` sets `STORAGE_DRIVER=minio`, so the browser PUTs straight to
+  localhost:9000 and never reaches that route. It matters when
+  `STORAGE_DRIVER=local` — the default in the env schema, and what the test
+  suite uses — and not otherwise.
+- **The `vehicle:write` guard on `media.routes.ts` never applies to KYC.**
+  Documents are `document:upload` on `dealers.routes.ts`. Different router,
+  different permission, different service.
+
+None of that changes what D4 moves. It does mean F033 could itself sit after
+Tier 6 if strict "onboarding first" ordering were wanted, with
+`PresignResponse` carried by F041 instead. Left where it is because it is
+already built and reviewed, and because relocating a merged-ready PR to save
+one Zod object is churn without a reviewer benefit.
+
+**Nothing else moves.** F034 still depends on F033, F035 still depends on F034,
+and F062 — vehicle photo upload UI, the feature people usually mean when they
+say "car images" — was always in Tier 9 and stays there.
+
 ---
 
 # Feature index
@@ -182,8 +245,6 @@ place at different moments:
 |      | **TIER 5 — Storage & media**                            |            |            |
 | F032 | Storage port & adapters                                 | API        | HIGH       |
 | F033 | Presigned upload & commit                               | Full-stack | HIGH       |
-| F034 | Image derivative pipeline                               | API        | HIGH       |
-| F035 | Media ordering & primary photo                          | Full-stack | HIGH       |
 |      | **TIER 6 — Dealer onboarding**                          |            |            |
 | F036 | Dealer entity & tenant isolation                        | API        | HIGH       |
 | F037 | Onboarding shell & step routing                         | Web        | HIGH       |
@@ -207,6 +268,8 @@ place at different moments:
 | F053 | Invoices & PDF delivery                                 | Full-stack | HIGH       |
 | F054 | Admin credit grants & payments view                     | Full-stack | HIGH       |
 |      | **TIER 9 — Vehicle intake**                             |            |            |
+| F034 | Image derivative pipeline · _moved, D4_                 | API        | HIGH       |
+| F035 | Media ordering & primary photo · _moved, D4_            | Full-stack | HIGH       |
 | F055 | Vehicle data model                                      | API        | HIGH       |
 | F056 | Plate input & normalisation                             | Full-stack | HIGH       |
 | F057 | RC lookup port, mock adapter & caching                  | API        | HIGH       |
@@ -820,6 +883,11 @@ Transactional outbox, an event bus, and the pg-boss queue.
 
 # TIER 5 — Storage & media
 
+**The tier ends at F033** (decision D4). F032 and F033 are prerequisites of
+dealer onboarding — F041 presigns KYC documents through them — so they stay
+here. F034 and F035 serve vehicle galleries and have moved to the head of
+Tier 9.
+
 ### F032 — Storage port & adapters
 
 ⚠️ **Pulled forward, ahead of Tier 2** — `dealers.service.ts` (F036/F040)
@@ -881,33 +949,17 @@ Presign → client uploads directly → commit. Bytes never pass through the API
   READY and `GET /media/:id` answers `url: null`. The poll loop the BFF route
   drives is correct; there is simply nothing at the other end yet.
 
-### F034 — Image derivative pipeline
-
-`sharp` derivatives at 320/640/1024/1600, blurhash placeholders, and the `srcset` the front end consumes. The pipeline produces optimal bytes, which is why the app uses a plain `<img>` rather than `next/image`.
-
-- **Status** implemented · **Confidence** HIGH · **Depends on** F033
-- **Backend** `modules/media/media.service.ts` (derivatives), `src/platform/media/urls.ts`
-- **External** `sharp`, `blurhash`
-- **Tests** `tests/unit/modules/media/media.service.test.ts`
-- **Components** none · **Sandbox** the fixture images under `apps/sandbox/public/mock/` come from this pipeline's output shape
-
-### F035 — Media ordering & primary photo
-
-Reordering, and the rule that position 0 is the primary photo — marked with a `Plate size="marker"`.
-
-- **Status** implemented · **Confidence** HIGH · **Depends on** F034
-- **Backend** `modules/media/media.routes.ts` — order path
-- **API** `PUT /v1/dealer/vehicles/:id/media/order`
-- **DB** `VehicleMedia`
-- **Components — Reused** `Plate` (`size="marker"` — one of the four sanctioned plate placements)
-- **Sandbox** `Plate` marker variant in context
-
 ---
 
 # TIER 6 — Dealer onboarding
 
 The original single feature, split ten ways (decision D2). F038 → F042 are the
 four wizard steps plus the shell, each independently reviewable.
+
+**This tier now follows F033 directly** (decision D4). It is the first
+end-to-end product capability after F018: a person signs in with Google, and
+comes out the other side as a registered dealer awaiting verification. Nothing
+between F033 and here.
 
 ### F036 — Dealer entity & tenant isolation
 
@@ -1002,6 +1054,12 @@ Step 3: upload each required KYC document through the presign/commit pipeline. 5
 - **External** S3/R2 presigned PUT
 - **Components — New (feature-specific)** `DocumentUploader` · **Reused** `StatusTag`, `Banner`, `Button`
 - **Sandbox** `DocumentUploader` — empty / uploading / uploaded / verified / rejected / oversize / wrong MIME. **P0** — 7 states, currently no test and no way to see them without a real S3.
+- **This does not use the `Media` pipeline.** `dealers.service.ts` calls
+  `storage.presignPut` / `storage.head` / `storage.delete` directly and writes
+  the document row with `mediaId: null`. It needs F033 for the `PUT /uploads`
+  route that serves a local presigned URL and for `PresignResponse`, but it
+  never enqueues `media.process`, so F034's absence (moved to Tier 9 by D4) has
+  no effect here.
 
 ### F042 — Onboarding — review & submit step
 
@@ -1165,6 +1223,39 @@ Order verification and the payment provider port. The current provider is `devel
 
 **Reshaped by decision D1.** There is no catalogue lookup; make/model/variant
 arrive from the RC or are typed.
+
+**F034 and F035 open this tier** — moved from Tier 5 by decision D4,
+immediately ahead of the first feature that produces a vehicle photo.
+
+### F034 — Image derivative pipeline
+
+⚠️ **Moved here from Tier 5 by decision D4.** It sat immediately after F033;
+nothing in Tier 6 or Tier 7 depends on it, and a KYC document is never resized.
+It lands with the vehicle galleries it exists to serve. The F-number is
+unchanged.
+
+`sharp` derivatives at 320/640/1024/1600, blurhash placeholders, and the `srcset` the front end consumes. The pipeline produces optimal bytes, which is why the app uses a plain `<img>` rather than `next/image`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F033
+- **Backend** `modules/media/media.service.ts` (derivatives), `src/platform/media/urls.ts`
+- **External** `sharp`, `blurhash`
+- **Tests** `tests/unit/modules/media/media.service.test.ts`
+- **Components** none · **Sandbox** the fixture images under `apps/sandbox/public/mock/` come from this pipeline's output shape
+
+### F035 — Media ordering & primary photo
+
+⚠️ **Moved here from Tier 5 by decision D4**, with F034. A KYC document set has
+no order and no primary; a vehicle photo set has both. The F-number is
+unchanged.
+
+Reordering, and the rule that position 0 is the primary photo — marked with a `Plate size="marker"`.
+
+- **Status** implemented · **Confidence** HIGH · **Depends on** F034
+- **Backend** `modules/media/media.routes.ts` — order path
+- **API** `PUT /v1/dealer/vehicles/:id/media/order`
+- **DB** `VehicleMedia`
+- **Components — Reused** `Plate` (`size="marker"` — one of the four sanctioned plate placements)
+- **Sandbox** `Plate` marker variant in context
 
 ### F055 — Vehicle data model
 
