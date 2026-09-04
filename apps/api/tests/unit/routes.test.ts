@@ -79,6 +79,7 @@ function harness() {
     publicConfig: service,
     locations: service,
     dealers: service,
+    admin: service,
     media: service,
     storage: service,
     prisma: { $queryRaw: () => Promise.resolve([]) },
@@ -232,6 +233,11 @@ describe('the admin boundary', () => {
   /** Resolving a dealer principal on an admin path would be the wrong identity entirely. */
   it('never runs the dealer guard on an admin path', async () => {
     expect((await dispatch('GET', '/v1/admin/dealers')).dealerGuard).toBe(false);
+  });
+
+  /** The guard is established by the mount; this is the first handler behind it. */
+  it('reaches the handler once the guard has run', async () => {
+    expect((await dispatch('GET', '/v1/admin/metrics/overview')).reached).toBe(true);
   });
 });
 

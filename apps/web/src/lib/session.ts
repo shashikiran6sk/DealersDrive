@@ -1,6 +1,6 @@
 import 'server-only';
 
-import type { AuthSession } from '@dealers-drive/contracts';
+import type { AdminOverview, AuthSession } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
 
 import { ApiError, apiGet, SESSION_COOKIE } from './api';
@@ -34,21 +34,10 @@ export async function currentSession(): Promise<AuthSession | null> {
   }
 }
 
-/**
- * The same question for the admin console, whose sessions are a separate scope.
- *
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline types this `AdminOverview`, from `packages/contracts/src/admin.ts`
- * — the admin dashboard's whole response shape, which arrives with **F049**
- * along with the route it comes from. Every caller here asks one question of
- * the result, "is there one", so `unknown` is honest in the meantime and
- * narrows to the real shape — rather than changing — when F049 lands. `null`
- * is not spelled out in the return type only because `unknown` admits it.
- * ────────────────────────────────────────────────────────────────────────────
- */
-export async function currentAdmin(): Promise<unknown> {
+/** The same question for the admin console, whose sessions are a separate scope. */
+export async function currentAdmin(): Promise<AdminOverview | null> {
   try {
-    return await apiGet<unknown>('/v1/admin/metrics/overview', { revalidate: false });
+    return await apiGet<AdminOverview>('/v1/admin/metrics/overview', { revalidate: false });
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return null;
     throw error;

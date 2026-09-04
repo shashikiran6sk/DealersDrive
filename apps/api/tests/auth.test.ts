@@ -535,18 +535,11 @@ describe('the admin console', () => {
     expect(JSON.stringify(response.body)).not.toContain('argon2');
   });
 
-  /**
-   * ── Reconstruction slice ──────────────────────────────────────────────
-   * The baseline asserts `GET /v1/admin/metrics/overview` answers 200 on this
-   * session. `admin.routes.ts` is F049, so the assertion is the same one a
-   * layer down: past the guard, and 404 rather than 401. It becomes a 200
-   * again with F049.
-   */
-  it('opens the admin chain with that session', async () => {
+  it('opens the admin console with that session', async () => {
     const agent = h.agent();
     await agent.post('/v1/auth/admin/login').send(ADMIN).expect(200);
 
-    await agent.get('/v1/admin/metrics/overview').expect(404);
+    await agent.get('/v1/admin/metrics/overview').expect(200);
   });
 
   it('refuses a wrong password with the same answer as an unknown account', async () => {

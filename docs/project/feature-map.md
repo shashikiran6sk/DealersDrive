@@ -1272,10 +1272,38 @@ The console landing page: stat cards, recent activity, and the next action.
 
 The dark admin chrome and its sidebar.
 
+⚠️ **Pulled forward, ahead of Tier 7** — **F044** depends on it, and F044 is in
+Tier 6. The admin half of onboarding cannot be reviewed without a console to
+review it in.
+
 - **Status** implemented · **Confidence** HIGH · **Depends on** F019, F020
-- **Frontend** `app/(admin)/admin/layout.tsx`, `components/admin/admin-nav.tsx`
-- **Components — New (Shared)** `AdminNav` · **Reused** `Plate`, `SignOutButton`
+- **Backend** `modules/admin/{admin.service,admin.routes,admin.docs}.ts` — the overview path
+- **API** `GET /v1/admin/metrics/overview`
+- **Contracts** `AdminOverview`, and the `packages/contracts/src/admin.ts` module itself
+- **Frontend** `app/(admin)/admin/layout.tsx`, `app/(admin)/error.tsx`, `components/admin/admin-nav.tsx`
+- **Tests** `tests/unit/modules/admin/{admin.service,admin.routes}.test.ts`
+- **Components — New (Shared)** `AdminNav` · **Reused** `SignOutButton`, `StatusTag`
 - **Sandbox** `AdminNav` — every route active, via the pathname control
+- **The layout's guard is a request, so the route comes with it.** The entry
+  listed no backend, but `AdminLayout` awaits
+  `GET /v1/admin/metrics/overview` — that is both the header badge and the
+  authorization check, since a 401 there is what redirects to sign-in. So the
+  admin module, its first route and `AdminOverview` land here rather than at a
+  later metrics feature. `lib/session.ts` has said as much since F019.
+- ⚠️ **`overview()` is sliced.** Five of its counters query `Listing` (F064),
+  `Payment` (F052) and `Enquiry` (F088). None of those models exists, so each
+  reports zero — the true answer with no rows, but not the baseline's code. The
+  gross/net GST split is kept, because that is the part that is expensive to get
+  wrong later.
+- **`Plate` is not used here.** The entry named it; the baseline layout
+  hand-rolls its `DD` badge with a bordered `<span>` rather than rendering
+  `Plate`. Left as the baseline has it — noted as a reuse opportunity, not
+  changed while porting.
+- **No page sits under this layout yet.** `/admin/dealers` and
+  `/admin/dealers/:id` arrive with **F045**; the dashboard, listings, payments
+  and config pages belong to F050 and later. Next emits no route for a layout
+  with no page, so the shell is inert until F045 — which is the correct order:
+  the chrome exists before the first screen that needs it.
 
 ---
 
