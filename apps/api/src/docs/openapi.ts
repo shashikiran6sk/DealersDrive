@@ -424,8 +424,9 @@ never the case that an endpoint exists and is missing from this page, because a 
 adds a route adds its documentation in the same pull request.
 
 Currently documented: authentication and sessions, cities, public platform configuration, the
-media presign/commit pipeline, the health probes, and the local storage stand-ins. Vehicles,
-listings, search, enquiries, billing and the admin surface are still to come.
+media presign/commit pipeline, the health probes, the local storage stand-ins, and the admin
+console's metrics, KYC review and dealer status machine. Vehicles, listings, search, enquiries
+and billing are still to come, and with them the rest of the admin surface.
 `.trim();
 
 export interface OpenApiOptions {

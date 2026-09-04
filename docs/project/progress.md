@@ -78,7 +78,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F042 — Onboarding — review & submit step · [#59](https://github.com/shashikiran6sk/DealersDrive/pull/59)
 - [x] F043 — Onboarding completeness tracking · [#58](https://github.com/shashikiran6sk/DealersDrive/pull/58)
 - [~] F044 — Admin document verification
-- [ ] F045 — Dealer approval, rejection & suspension
+- [~] F045 — Dealer approval, rejection & suspension
 
 ## Tier 7 — Consoles
 

@@ -1239,9 +1239,29 @@ The dealer status machine on the admin side: approve, reject, suspend, reinstate
 - **Frontend** `app/(admin)/admin/dealers/page.tsx`, `app/(admin)/admin/dealers/[id]/page.tsx`, `features/admin/dealer-actions.tsx`
 - **API** `GET /v1/admin/dealers`, `GET /v1/admin/dealers/:id`, `POST .../approve`, `.../reject`, `.../suspend`, `.../reinstate`
 - **DB** `Dealer.status`, `AuditLog`
-- **Components — New (feature-specific)** `DealerAdminActions` · **Reused** `StatusTag`, `Button`, `Banner`, `Field`, raw `.table`
-- **Sandbox** `DealerAdminActions` — one scenario per `DealerStatus` × suspend form × pending × error. **P0.**
+- **Contracts** `AdminDealerQuery`, `AdminDealerRow`, `AdminDealersResponse`, `AdminDealerDocument`, `AdminDealerDetail`, `ApproveDealerInput`, `NoteInput`, `DealerModerationResponse`
+- **Tests** `tests/unit/modules/admin/{admin.service,admin.routes}.test.ts`, `packages/contracts/tests/unit/admin.test.ts`, `tests/unit/platform/pagination.test.ts`
+- **Components — New (feature-specific)** `DealerAdminActions` · **New (primitive)** `Table`, `NumericCell` · **Reused** `StatusTag`, `LogoTile`, `Button`, `Banner`, `Field`, `Input`, `EmptyState`
+- **Sandbox** `DealerAdminActions` — one scenario per `DealerStatus` × suspend form × pending × error. **P0.** `Table` — rows / single row / overflow / empty. **P0.**
 - 💡 **Create `Table` here.** `.table` is hand-rolled in 5 pages (finding D-B); this is the first of them in the reconstruction.
+- **The console calls four of the six routes, not six.** `POST /dealers/:id/reject`
+  and `.../reinstate` exist at the baseline and are documented, but nothing in
+  `dealer-actions.tsx` calls either: the component renders an approve control
+  and a suspend control and nothing else. They are reachable through the API
+  reference only — the same situation F044's two document routes are in. A
+  console control for them would be new product work, not a port.
+- **`platform/pagination.ts` arrives here**, with its own test. F045 is its
+  first consumer; the `encodeSeqCursor`/`decodeSeqCursor` half is unused until
+  the credit ledger at **F050**, and the file comes across whole rather than
+  sliced so its diff against the baseline is empty.
+- **The onboarding credit grant does not.** The baseline's `ApproveDealerInput`
+  carries `grantCredits`, seeded through `moveCredits` in the approval
+  transaction. Rule 4 says every credit movement writes a `CreditTransaction`,
+  and neither the model nor `billing.facade.ts` exists until **F050** — so the
+  field is out of the schema, which is `.strict()` and therefore refuses it by
+  name rather than approving and quietly granting nothing. It returns at
+  **F054** with `POST /dealers/:id/credits/grant` and the grant block in
+  `DealerAdminActions`.
 
 ---
 

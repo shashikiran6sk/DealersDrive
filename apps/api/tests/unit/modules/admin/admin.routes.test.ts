@@ -23,9 +23,11 @@ import {
  * nothing here answers a route it should not.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline asserts twenty signatures. **F044 brings the count to three**;
- * F045 brings the dealer paths, and the listing queue, payments, configuration
- * and audit log belong to later tiers.
+ * The baseline asserts twenty signatures. F044 brought the count to three and
+ * **F045 brings it to nine** — every dealer path bar
+ * `POST /dealers/:id/credits/grant`, which moves credits and so waits for the
+ * ledger. The listing queue, payments, configuration and the audit log belong
+ * to later tiers.
  * ────────────────────────────────────────────────────────────────────────────
  */
 const router = createAdminRouter({} as never);
@@ -33,7 +35,17 @@ const router = createAdminRouter({} as never);
 describe('the surface', () => {
   it('declares exactly the console endpoints that exist yet', () => {
     expect(signaturesOf(router).sort()).toEqual(
-      ['GET /metrics/overview', 'POST /documents/:id/verify', 'POST /documents/:id/reject'].sort(),
+      [
+        'GET /metrics/overview',
+        'GET /dealers',
+        'GET /dealers/:id',
+        'POST /dealers/:id/approve',
+        'POST /dealers/:id/reject',
+        'POST /dealers/:id/suspend',
+        'POST /dealers/:id/reinstate',
+        'POST /documents/:id/verify',
+        'POST /documents/:id/reject',
+      ].sort(),
     );
   });
 
@@ -75,6 +87,26 @@ describe('validation', () => {
     expect(validatedSources(routeFor(router, 'POST /documents/:id/verify') as never)).not.toContain(
       'body',
     );
+  });
+
+  /**
+   * Rejecting and suspending both end up in front of the dealer, so both parse
+   * `ReasonInput` and its six-character minimum. Approving and reinstating take
+   * an optional internal note instead — but they still parse a body, because
+   * `.strict()` is what turns a misspelled field into a named 400.
+   */
+  it.each([
+    'POST /dealers/:id/approve',
+    'POST /dealers/:id/reject',
+    'POST /dealers/:id/suspend',
+    'POST /dealers/:id/reinstate',
+  ])('parses the body on %s', (signature) => {
+    expect(validatedSources(routeFor(router, signature) as never)).toContain('body');
+  });
+
+  /** The status tabs, the city filter and the cursor all arrive as a query. */
+  it('parses the query the dealer list is filtered by', () => {
+    expect(validatedSources(routeFor(router, 'GET /dealers') as never)).toEqual(['query']);
   });
 });
 

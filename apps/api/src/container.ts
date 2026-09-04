@@ -134,7 +134,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const dealersRepo = createDealersRepository(prisma);
   const dealers = createDealersService({ prisma, repo: dealersRepo, storage });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
-  const admin = createAdminService({ prisma, audit, config });
+  const admin = createAdminService({ prisma, audit, config, storage });
   const publicConfig = createConfigService({ config });
   // `search` is the real SearchRepository from F076 onward; until the
   // `listing_search` table exists there is nothing live to count.

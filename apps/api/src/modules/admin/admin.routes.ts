@@ -1,7 +1,13 @@
 import {
+  AdminDealerQuery,
+  ApproveDealerInput,
   IdParam,
+  NoteInput,
   ReasonInput,
+  type AdminDealerQuery as AdminDealerQueryType,
+  type ApproveDealerInput as ApproveDealerInputType,
   type IdParam as IdParamType,
+  type NoteInput as NoteInputType,
   type ReasonInput as ReasonInputType,
 } from '@dealers-drive/contracts';
 import { Router } from 'express';
@@ -25,9 +31,10 @@ import type { AdminService } from './admin.service.js';
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline declares 20 routes. F049 mounted the first, which is also the
- * one the console shell reads on every page, and **F044 the two KYC review
- * paths**. The dealer status machine arrives with **F045**; the listing queue,
- * payments, configuration and the audit log belong to later tiers.
+ * one the console shell reads on every page, and F044 the two KYC review paths.
+ * **F045 brings the six dealer paths** — bar `POST /dealers/:id/credits/grant`,
+ * which moves credits and so waits for the ledger at F050/F054. The listing
+ * queue, payments, configuration and the audit log belong to later tiers.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export function createAdminRouter(service: AdminService): Router {
@@ -55,6 +62,68 @@ export function createAdminRouter(service: AdminService): Router {
   router.get(
     '/metrics/overview',
     handle((req) => service.overview(adminPrincipal(req))),
+  );
+
+  router.get(
+    '/dealers',
+    validate({ query: AdminDealerQuery }),
+    handle((req) => service.dealers(validated<AdminDealerQueryType>(req, 'query'))),
+  );
+
+  router.get(
+    '/dealers/:id',
+    validate({ params: IdParam }),
+    handle((req) =>
+      service.dealerDetail(adminPrincipal(req), validated<IdParamType>(req, 'params').id),
+    ),
+  );
+
+  router.post(
+    '/dealers/:id/approve',
+    validate({ params: IdParam, body: ApproveDealerInput }),
+    handle((req) =>
+      service.approveDealer(
+        adminPrincipal(req),
+        validated<IdParamType>(req, 'params').id,
+        validated<ApproveDealerInputType>(req, 'body'),
+      ),
+    ),
+  );
+
+  router.post(
+    '/dealers/:id/reject',
+    validate({ params: IdParam, body: ReasonInput }),
+    handle((req) =>
+      service.rejectDealer(
+        adminPrincipal(req),
+        validated<IdParamType>(req, 'params').id,
+        validated<ReasonInputType>(req, 'body').reason,
+      ),
+    ),
+  );
+
+  router.post(
+    '/dealers/:id/suspend',
+    validate({ params: IdParam, body: ReasonInput }),
+    handle((req) =>
+      service.suspendDealer(
+        adminPrincipal(req),
+        validated<IdParamType>(req, 'params').id,
+        validated<ReasonInputType>(req, 'body').reason,
+      ),
+    ),
+  );
+
+  router.post(
+    '/dealers/:id/reinstate',
+    validate({ params: IdParam, body: NoteInput }),
+    handle((req) =>
+      service.reinstateDealer(
+        adminPrincipal(req),
+        validated<IdParamType>(req, 'params').id,
+        validated<NoteInputType>(req, 'body').note,
+      ),
+    ),
   );
 
   router.post(
