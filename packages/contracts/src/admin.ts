@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AdminRole, StatusTone } from './enums.js';
+import { AdminRole, DocStatus, StatusTone } from './enums.js';
 
 /**
  * PART D — the admin API (API-SPEC D1–D17). Every write here is audit-logged
@@ -12,7 +12,7 @@ import { AdminRole, StatusTone } from './enums.js';
  * queue, payments, configuration and the audit log. Each shape arrives with the
  * feature that first answers with it; `AdminOverview` is here because **F049**
  * serves it from `GET /v1/admin/metrics/overview`, which is what the console
- * shell reads.
+ * shell reads, and the D5 review shapes because **F044** does.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
@@ -46,3 +46,25 @@ export const AdminOverview = z.object({
   operator: z.object({ email: z.string(), adminRole: AdminRole }),
 });
 export type AdminOverview = z.infer<typeof AdminOverview>;
+
+// ─────────── D4/D5 moderation input ────────────────────────────────────────
+/** Six characters is what the dialog's disabled confirm button implies (§10). */
+export const ReasonInput = z
+  .object({ reason: z.string().trim().min(6, 'Give a reason of at least 6 characters.').max(500) })
+  .strict();
+export type ReasonInput = z.infer<typeof ReasonInput>;
+
+/**
+ * The answer to verifying or rejecting one KYC document.
+ *
+ * `allVerified` is the moderator's cue that this was the last one outstanding,
+ * and `dealerCanBeApproved` says what that means for the decision in front of
+ * them — derived here rather than in the console, so two admins looking at the
+ * same dealership cannot reach different conclusions about whether it is ready.
+ */
+export const VerifyDocumentResponse = z.object({
+  status: DocStatus,
+  allVerified: z.boolean(),
+  dealerCanBeApproved: z.boolean(),
+});
+export type VerifyDocumentResponse = z.infer<typeof VerifyDocumentResponse>;

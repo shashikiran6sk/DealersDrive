@@ -1,6 +1,13 @@
+import {
+  IdParam,
+  ReasonInput,
+  type IdParam as IdParamType,
+  type ReasonInput as ReasonInputType,
+} from '@dealers-drive/contracts';
 import { Router } from 'express';
 
 import { adminPrincipal } from '../../middleware/auth.js';
+import { validate, validated } from '../../middleware/validate.js';
 import type { AdminService } from './admin.service.js';
 
 /**
@@ -17,9 +24,9 @@ import type { AdminService } from './admin.service.js';
  * it keeps the permission next to the audit row it justifies.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline declares 20 routes. **F049 mounts the first**, which is also the
- * one the console shell reads on every page. The KYC review paths arrive with
- * **F044** and the dealer status machine with **F045**; the listing queue,
+ * The baseline declares 20 routes. F049 mounted the first, which is also the
+ * one the console shell reads on every page, and **F044 the two KYC review
+ * paths**. The dealer status machine arrives with **F045**; the listing queue,
  * payments, configuration and the audit log belong to later tiers.
  * ────────────────────────────────────────────────────────────────────────────
  */
@@ -48,6 +55,26 @@ export function createAdminRouter(service: AdminService): Router {
   router.get(
     '/metrics/overview',
     handle((req) => service.overview(adminPrincipal(req))),
+  );
+
+  router.post(
+    '/documents/:id/verify',
+    validate({ params: IdParam }),
+    handle((req) =>
+      service.verifyDocument(adminPrincipal(req), validated<IdParamType>(req, 'params').id),
+    ),
+  );
+
+  router.post(
+    '/documents/:id/reject',
+    validate({ params: IdParam, body: ReasonInput }),
+    handle((req) =>
+      service.rejectDocument(
+        adminPrincipal(req),
+        validated<IdParamType>(req, 'params').id,
+        validated<ReasonInputType>(req, 'body').reason,
+      ),
+    ),
   );
 
   return router;

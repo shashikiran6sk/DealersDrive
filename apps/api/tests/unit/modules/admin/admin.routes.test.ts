@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { createAdminRouter } from '../../../../src/modules/admin/admin.routes.js';
-import { permissionsOn, routesOf, signaturesOf } from '../../../router-probe.js';
+import {
+  permissionsOn,
+  routeFor,
+  routesOf,
+  signaturesOf,
+  validatedSources,
+} from '../../../router-probe.js';
 
 /**
  * D1–D15, mounted under `/v1/admin` behind `requireAdmin`.
@@ -17,16 +23,18 @@ import { permissionsOn, routesOf, signaturesOf } from '../../../router-probe.js'
  * nothing here answers a route it should not.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline asserts twenty signatures. **F049 mounts one**; F044 and F045
- * bring the KYC and dealer paths, and the listing queue, payments,
- * configuration and audit log belong to later tiers.
+ * The baseline asserts twenty signatures. **F044 brings the count to three**;
+ * F045 brings the dealer paths, and the listing queue, payments, configuration
+ * and audit log belong to later tiers.
  * ────────────────────────────────────────────────────────────────────────────
  */
 const router = createAdminRouter({} as never);
 
 describe('the surface', () => {
   it('declares exactly the console endpoints that exist yet', () => {
-    expect(signaturesOf(router).sort()).toEqual(['GET /metrics/overview']);
+    expect(signaturesOf(router).sort()).toEqual(
+      ['GET /metrics/overview', 'POST /documents/:id/verify', 'POST /documents/:id/reject'].sort(),
+    );
   });
 
   it('declares no route twice', () => {
@@ -39,6 +47,34 @@ describe('the surface', () => {
     for (const route of routesOf(router)) {
       expect(permissionsOn(route), `${route.method} ${route.path}`).toEqual([]);
     }
+  });
+});
+
+describe('validation', () => {
+  it('parses the id on every addressed route', () => {
+    for (const route of routesOf(router)) {
+      if (route.path.includes(':id')) {
+        expect(validatedSources(route), `${route.method} ${route.path}`).toContain('params');
+      }
+    }
+  });
+
+  /**
+   * A rejection the dealer cannot act on is a support call. The six-character
+   * minimum is in `ReasonInput`, and this is what makes sure the route reaches
+   * it rather than accepting an empty body.
+   */
+  it('parses the reason a rejection must carry', () => {
+    expect(validatedSources(routeFor(router, 'POST /documents/:id/reject') as never)).toContain(
+      'body',
+    );
+  });
+
+  /** Verifying needs no reason — there is nothing for the dealer to act on. */
+  it('asks for no body on the verify path', () => {
+    expect(validatedSources(routeFor(router, 'POST /documents/:id/verify') as never)).not.toContain(
+      'body',
+    );
   });
 });
 

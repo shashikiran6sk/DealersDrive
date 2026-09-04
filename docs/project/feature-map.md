@@ -1209,12 +1209,26 @@ The single derived answer to "what is still missing", used by the wizard to gate
 The platform side of F041: an admin verifies or rejects each document, with a reason, and every decision is audited.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F040, F030, F049
-- **Backend** `modules/admin/{admin.routes,admin.service}.ts` — document paths
+- **Backend** `modules/admin/{admin.routes,admin.service,admin.docs}.ts` — document paths
 - **API** `POST /v1/admin/documents/:id/verify`, `POST /v1/admin/documents/:id/reject`
+- **Contracts** `ReasonInput`, `VerifyDocumentResponse`
 - **DB** `DealerDocument.status`, `AuditLog`
-- **Tests** `tests/unit/modules/admin/admin.service.test.ts`
-- **Components — Reused** `StatusTag`, `Button`, `Banner`, `Field`
-- **Sandbox** document review row — pending / verified / rejected-with-reason
+- **Tests** `tests/unit/modules/admin/{admin.service,admin.routes}.test.ts`
+- **Components** none · **Sandbox** none
+- **This feature has no UI at the baseline.** The entry lists four reused
+  components and a "document review row" sandbox scenario, but neither endpoint
+  has a caller: `app/(admin)/admin/dealers/[id]/page.tsx` renders each document
+  as a label, a short-lived `viewUrl` link and a `StatusTag`, with no verify or
+  reject control anywhere. The two endpoints are reachable only through the API
+  reference. That row is page markup rather than a component, and it lands with
+  **F045** along with the page; a console control for these endpoints would be
+  new product work, not a port.
+- **The permission is checked in the service, not the router** (§8.3
+  `admin:document:review`, MODERATOR and SUPER_ADMIN). That is the baseline's
+  choice for the whole admin module and the reason `admin.routes.test.ts`
+  asserts the router carries none: the check sits in the same function that
+  performs the action, so a second caller cannot reach around it, and it stays
+  beside the audit row that justifies it.
 
 ### F045 — Dealer approval, rejection & suspension
 

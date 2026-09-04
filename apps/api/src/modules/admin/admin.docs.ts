@@ -6,8 +6,9 @@ import type { ModuleDocs } from '../../docs/spec.js';
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline documents 20 operations. This file grows with the router beside
  * it — an operation lands in the same PR that mounts its route, which is what
- * `tests/unit/docs/openapi.test.ts` checks in both directions. **F049 brings
- * the first: the metrics the console shell reads.**
+ * `tests/unit/docs/openapi.test.ts` checks in both directions. F049 brought the
+ * first — the metrics the console shell reads — and **F044 the two KYC review
+ * paths**.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const adminDocs: ModuleDocs = {
@@ -38,6 +39,43 @@ export const adminDocs: ModuleDocs = {
       permission: 'admin:metrics:read',
       responses: [{ status: 200, description: 'Metrics.', schema: 'AdminOverview' }],
       errors: [401, 403],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/documents/:id/verify',
+      operationId: 'verifyDealerDocument',
+      tag: 'Admin',
+      summary: 'Verify a KYC document',
+      description:
+        'Marks one document verified. `allVerified` in the response says whether that was the ' +
+        "last one outstanding, which is the moderator's cue that the dealership can now be " +
+        'approved.\n\n' +
+        'Takes no body.',
+      audience: 'admin',
+      permission: 'admin:document:review',
+      params: 'IdParam',
+      responses: [{ status: 200, description: 'Verified.', schema: 'VerifyDocumentResponse' }],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/documents/:id/reject',
+      operationId: 'rejectDealerDocument',
+      tag: 'Admin',
+      summary: 'Reject a KYC document',
+      description:
+        'Rejects one document with a reason the dealer sees, so they know what to re-upload ' +
+        'rather than guessing. Minimum six characters.',
+      audience: 'admin',
+      permission: 'admin:document:review',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'ReasonInput',
+        description: 'Shown to the dealer.',
+        example: { reason: 'The address proof is older than three months. Send a recent bill.' },
+      },
+      responses: [{ status: 200, description: 'Rejected.', schema: 'VerifyDocumentResponse' }],
+      errors: [400, 401, 403, 404, 409],
     },
   ],
 };

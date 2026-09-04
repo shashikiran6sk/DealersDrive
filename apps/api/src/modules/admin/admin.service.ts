@@ -1,7 +1,14 @@
-import { formatRupees, type AdminOverview } from '@dealers-drive/contracts';
+import {
+  formatRupees,
+  type AdminOverview,
+  type VerifyDocumentResponse,
+} from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
+import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
+import { withTransaction } from '../../platform/db/tenant-tx.js';
+import { ForbiddenError, NotFoundError } from '../../platform/errors.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
 
 /**
@@ -16,20 +23,36 @@ import type { AdminPrincipal } from '../auth/auth.facade.js';
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline file is ~1,320 lines across metrics, dealer moderation, KYC
  * review, the listing queue, credit grants, payments, configuration and the
- * audit log. **F049 brings `overview()`** — the one method the console shell
- * needs, because the shell's guard *is* that request.
+ * audit log. F049 brought `overview()` — the one method the console shell
+ * needs, because the shell's guard *is* that request — and **F044 the KYC
+ * review**, which brings `AuditService` with it.
  *
- * `verifyDocument` / `rejectDocument` arrive with **F044** and the dealer
- * status machine with **F045**; both need `AuditService`, which this feature
- * does not take. Everything after that belongs to tiers 8 and 11.
+ * The dealer status machine arrives with **F045**. Everything after that
+ * belongs to tiers 8 and 11.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export interface AdminDeps {
   prisma: PrismaClient;
+  audit: AuditService;
   config: PlatformConfigService;
 }
 
-export function createAdminService({ prisma, config }: AdminDeps) {
+/** The three documents KYC needs. A dealership is verified when all three are. */
+const REQUIRED_DOCUMENTS = 3;
+
+export function createAdminService({ prisma, audit, config }: AdminDeps) {
+  /**
+   * The permission check lives here rather than in the router, in the same
+   * function that performs the action — so it cannot be bypassed by a second
+   * caller reaching the service another way, and it stays next to the audit row
+   * it justifies.
+   */
+  function assertPermission(admin: AdminPrincipal, permission: string): void {
+    if (!admin.permissions.includes(permission)) {
+      throw new ForbiddenError(`This action needs the ${permission} permission.`);
+    }
+  }
+
   return {
     /**
      * D1. The console landing page, and the shell's authorization check in one
@@ -113,6 +136,64 @@ export function createAdminService({ prisma, config }: AdminDeps) {
         },
         operator: { email: admin.email, adminRole: admin.adminRole },
       };
+    },
+
+    // ─────────── D5 KYC review ────────────────────────────────────────────
+
+    async verifyDocument(
+      admin: AdminPrincipal,
+      documentId: string,
+    ): Promise<VerifyDocumentResponse> {
+      assertPermission(admin, 'admin:document:review');
+      return this.reviewDocument(admin, documentId, 'VERIFIED', null);
+    },
+
+    async rejectDocument(
+      admin: AdminPrincipal,
+      documentId: string,
+      reason: string,
+    ): Promise<VerifyDocumentResponse> {
+      assertPermission(admin, 'admin:document:review');
+      return this.reviewDocument(admin, documentId, 'REJECTED', reason);
+    },
+
+    async reviewDocument(
+      admin: AdminPrincipal,
+      documentId: string,
+      status: 'VERIFIED' | 'REJECTED',
+      reason: string | null,
+    ): Promise<VerifyDocumentResponse> {
+      return withTransaction(prisma, async (tx) => {
+        const doc = await tx.dealerDocument.findUnique({ where: { id: documentId } });
+        if (!doc) throw new NotFoundError('That document does not exist.');
+
+        await tx.dealerDocument.update({
+          where: { id: documentId },
+          data: {
+            status,
+            rejectionReason: reason,
+            reviewedBy: admin.userId,
+            reviewedAt: new Date(),
+          },
+        });
+
+        const all = await tx.dealerDocument.findMany({ where: { dealerId: doc.dealerId } });
+        const allVerified =
+          all.length === REQUIRED_DOCUMENTS && all.every((row) => row.status === 'VERIFIED');
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId: doc.dealerId,
+          action: status === 'VERIFIED' ? 'document.verified' : 'document.rejected',
+          entityType: 'DealerDocument',
+          entityId: documentId,
+          before: { status: doc.status },
+          after: { status, reason },
+        });
+
+        return { status, allVerified, dealerCanBeApproved: allVerified };
+      });
     },
   };
 }
