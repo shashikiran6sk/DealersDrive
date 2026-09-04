@@ -1,3 +1,4 @@
+import type { AuthSession } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -26,8 +27,54 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * (**F039** replaces it with its form's submit), and not the absence of
  * controls on Documents and Review (**F041** and **F042** bring their own). A
  * test that fails when the next feature does its job is a tax, not a check.
+ *
+ * **F038 adds the second describe block**, for the Account step. Its claims are
+ * of the same kind: what the step refuses to ask for, and what it carries
+ * forward — not how it is laid out.
  * ────────────────────────────────────────────────────────────────────────────
  */
+
+/**
+ * A session for a Google account that has signed in and has no dealership yet
+ * — the state every dealer passes through, and the only one step 1 is rendered
+ * in. `overrides` reaches `user` and `identity`, which is where every
+ * assertion in the Account block looks.
+ */
+function session(
+  overrides: {
+    user?: Partial<AuthSession['user']>;
+    identity?: Partial<AuthSession['identity']> | null;
+    dealer?: AuthSession['dealer'];
+  } = {},
+): AuthSession {
+  return {
+    next: 'ONBOARDING',
+    user: {
+      id: '00000000-0000-4000-8000-000000000001',
+      fullName: null,
+      roleTitle: null,
+      phone: '',
+      phoneDisplay: '',
+      email: 'karthik@srilakshmimotors.in',
+      emailVerified: true,
+      ...overrides.user,
+    },
+    identity:
+      overrides.identity === null
+        ? null
+        : {
+            provider: 'GOOGLE',
+            email: 'karthik@srilakshmimotors.in',
+            name: 'Karthik Raman',
+            pictureUrl: null,
+            ...overrides.identity,
+          },
+    dealer: overrides.dealer ?? null,
+    role: null,
+    permissions: [],
+    counts: { newEnquiries: 0, pendingListings: 0 },
+  };
+}
 
 /** Which step labels the Stepper has filled — `index <= current`, C015. */
 function filledSteps(): string[] {
@@ -39,7 +86,7 @@ function filledSteps(): string[] {
 
 describe('OnboardingWizard — the frame', () => {
   it('names the four steps, in order', () => {
-    render(<OnboardingWizard step={0} />);
+    render(<OnboardingWizard step={0} session={session()} />);
 
     const labels = within(screen.getByRole('list'))
       .getAllByRole('listitem')
@@ -54,7 +101,7 @@ describe('OnboardingWizard — the frame', () => {
     [2, ['Account', 'Business', 'Documents']],
     [3, ['Account', 'Business', 'Documents', 'Review']],
   ] as const)('opens at the step the server resolved (%i)', (step, expected) => {
-    render(<OnboardingWizard step={step} />);
+    render(<OnboardingWizard step={step} session={session()} />);
     expect(filledSteps()).toEqual([...expected]);
   });
 
@@ -65,7 +112,7 @@ describe('OnboardingWizard — the frame', () => {
    */
   it('moves Account → Business in the browser, with no navigation', async () => {
     const user = userEvent.setup();
-    render(<OnboardingWizard step={0} />);
+    render(<OnboardingWizard step={0} session={session()} />);
 
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
@@ -75,7 +122,7 @@ describe('OnboardingWizard — the frame', () => {
 
   it('moves Business → Account on Back, with no navigation', async () => {
     const user = userEvent.setup();
-    render(<OnboardingWizard step={1} />);
+    render(<OnboardingWizard step={1} session={session()} />);
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
 
@@ -86,7 +133,7 @@ describe('OnboardingWizard — the frame', () => {
   /** There is nothing behind step 1, so Back leaves onboarding altogether. */
   it('leaves onboarding for sign-in on Back from Account', async () => {
     const user = userEvent.setup();
-    render(<OnboardingWizard step={0} />);
+    render(<OnboardingWizard step={0} session={session()} />);
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
 
@@ -160,5 +207,71 @@ describe('OnboardingPage — the floor the server sets', () => {
   /** A dealership past onboarding has a console; this screen is not it. */
   it('sends an ACTIVE dealership to the console', async () => {
     await expect(openedAt({ status: 'ACTIVE' })).rejects.toThrow('NEXT_REDIRECT:/dealer');
+  });
+});
+
+/**
+ * F038 — step 1.
+ *
+ * Two things here are worth a test and the rest is layout. The email is
+ * *shown, never asked for*: Google proved it, and an editable field would be a
+ * way to claim an address nobody verified. And what the dealer typed survives a
+ * rejection — the action echoes `values` back precisely so a bad pincode on
+ * step 2 does not blank the four fields on step 1.
+ */
+describe('OnboardingWizard — the Account step', () => {
+  it('shows the Google address as a read-only verified field, never an input to fill', () => {
+    render(<OnboardingWizard step={0} session={session()} />);
+
+    const email = screen.getByLabelText('Email');
+    expect(email).toHaveValue('karthik@srilakshmimotors.in');
+    expect(email).toBeDisabled();
+    expect(email).not.toHaveAttribute('name');
+    expect(screen.getByText('Verified with Google')).toBeInTheDocument();
+  });
+
+  /** The identity is the verified one; `user.email` is only the fallback. */
+  it('falls back to the account email when there is no linked identity', () => {
+    render(<OnboardingWizard step={0} session={session({ identity: null })} />);
+
+    expect(screen.getByLabelText('Email')).toHaveValue('karthik@srilakshmimotors.in');
+  });
+
+  it('prefills the name from the Google profile when the user record has none', () => {
+    render(<OnboardingWizard step={0} session={session()} />);
+
+    expect(screen.getByLabelText('Full name')).toHaveValue('Karthik Raman');
+  });
+
+  it('prefers what the user record already holds over the Google profile', () => {
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({
+          user: { fullName: 'K. Raman', roleTitle: 'Proprietor', phone: '9840012345' },
+        })}
+      />,
+    );
+
+    expect(screen.getByLabelText('Full name')).toHaveValue('K. Raman');
+    expect(screen.getByLabelText(/^Role/)).toHaveValue('Proprietor');
+    expect(screen.getByLabelText(/^Phone/)).toHaveValue('9840012345');
+  });
+
+  /**
+   * The step stays mounted when the wizard moves to Business — it is one form
+   * across two screens, so its fields have to still be in the FormData that
+   * Continue submits. `hidden` is what makes that invisible rather than absent.
+   */
+  it('keeps its fields in the form when the wizard moves on to Business', async () => {
+    const user = userEvent.setup();
+    render(<OnboardingWizard step={0} session={session()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    const fullName = screen.getByLabelText('Full name');
+    expect(fullName).toBeInTheDocument();
+    expect(fullName.closest('fieldset')).toHaveAttribute('hidden');
+    expect(fullName.closest('form')).not.toBeNull();
   });
 });

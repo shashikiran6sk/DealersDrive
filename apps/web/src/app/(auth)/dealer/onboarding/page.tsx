@@ -52,11 +52,15 @@ export default async function OnboardingPage({
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────────
    * The baseline fetches four things here and hands them to the wizard:
-   * `/v1/cities` (**F026**, already merged), `/v1/dealer/documents` (**F040**),
-   * `/v1/dealer` (**F039**) and `/v1/dealer/completeness` (**F043**). Each is
-   * read by exactly one step body, and every step body is a later feature, so
-   * fetching them now would be four requests per page load feeding nothing.
-   * They return with the steps that read them.
+   * `/v1/cities` (**F039**), `/v1/dealer/documents` and `/v1/dealer`
+   * (**F041**) and `/v1/dealer/completeness` (**F042**). Each is read by
+   * exactly one step body, and those step bodies are later features, so
+   * fetching them now would be requests per page load feeding nothing. They
+   * return with the steps that read them.
+   *
+   * `/v1/auth/me` is not one of the four: it is what places a dealer on a step
+   * at all, and the Account step (**F038**) shows the Google identity it
+   * carries rather than asking for it.
    * ──────────────────────────────────────────────────────────────────────────
    */
 
@@ -69,7 +73,7 @@ export default async function OnboardingPage({
 
   return (
     <AuthShell>
-      <OnboardingWizard step={step as 0 | 1 | 2 | 3} />
+      <OnboardingWizard step={step as 0 | 1 | 2 | 3} session={session} />
     </AuthShell>
   );
 }
