@@ -1,4 +1,4 @@
-import type { AuthSession } from '@dealers-drive/contracts';
+import type { AuthSession, CitiesResponse } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { authActionStub } from '../../mocks/auth-actions';
@@ -10,9 +10,9 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * DESIGN-SPEC §3.10 — the onboarding wizard (C040).
  *
  * F037 landed the frame — which step is current, how a step is reached and the
- * progress indicator. **F038 lands step 1**, the Account step; Business,
- * Documents and Review arrive with F039, F041 and F042, so the later steps are
- * still deliberately sparse.
+ * progress indicator. **F038 lands step 1 and F039 step 2**; Documents and
+ * Review arrive with F041 and F042, so the later steps are still deliberately
+ * sparse.
  *
  * `step` is the *server's* answer, not a preference. The page computes a floor
  * from the session — no dealership yet is 0, a DRAFT one is 2, one already
@@ -25,6 +25,18 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * find. It also calls `onboardingAction`, a Server Action, which the sandbox
  * aliases to `src/mocks/auth-actions.ts` (coupling C-4).
  */
+
+/**
+ * `GET /v1/cities` as the Business step sees it. The `all` row leads the real
+ * response and is a *search filter*, not a place a dealership can be — it is
+ * here so the story shows the step dropping it.
+ */
+const CITIES: CitiesResponse['data'] = [
+  { slug: 'all', name: 'All of Tamil Nadu', count: 412 },
+  { slug: 'vellore', name: 'Vellore', state: 'Tamil Nadu', count: 88 },
+  { slug: 'chennai', name: 'Chennai', state: 'Tamil Nadu', count: 210 },
+  { slug: 'coimbatore', name: 'Coimbatore', state: 'Tamil Nadu', count: 134 },
+];
 
 /** A signed-in Google account with no dealership — the only state step 1 renders in. */
 function session(overrides: Partial<AuthSession['user']> = {}, identityName = 'Karthik Raman') {
@@ -73,8 +85,9 @@ const meta = {
       description: 'The floor the server resolved from the session.',
     },
     session: { control: false, description: 'GET /v1/auth/me. Step 1 is the only reader.' },
+    cities: { control: false, description: 'GET /v1/cities. Step 2 is the only reader.' },
   },
-  args: { step: 0, session: session() },
+  args: { step: 0, session: session(), cities: CITIES },
   beforeEach: () => {
     authActionStub.result = {};
     authActionStub.delayMs = 900;
@@ -110,28 +123,56 @@ export const AccountPrefilled: Story = {
   },
 };
 
-/*
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * **The error and submitting states of step 1 are not stories yet, and that is
- * deliberate.** Both are `useActionState` states, and reaching one needs a
- * submit — which is the Business step's, and arrives with **F039**. A story
- * that primes `authActionStub` for a state nothing on screen can trigger looks
- * like coverage and is not: nobody could verify it by eye, which is the whole
- * point of the sandbox. They land with the control that produces them, beside
- * the Business step's own scenarios.
- * ────────────────────────────────────────────────────────────────────────────
- */
-
 /**
- * Step 2, reached the way a dealer actually reaches it: `step={0}` and a click
- * on Continue. Passing `step={1}` is the same picture, but it is not a state
- * the server ever produces — the floor is 0 until a dealership exists and 2
- * once one does, so 1 is only ever arrived at locally.
+ * Step 2. Passing `step={1}` is the same picture a dealer reaches by clicking
+ * Continue on step 1, but it is not a state the server ever produces — the
+ * floor is 0 until a dealership exists and 2 once one does, so 1 is only ever
+ * arrived at locally, or re-opened after a rejected submit.
  *
- * Continue is disabled here. It is the submit that creates the dealership, and
- * the fields it submits arrive with F039.
+ * Two things to look at rather than read. The city list has no "All of Tamil
+ * Nadu" in it, though the response does. And State is disabled and unnamed: it
+ * follows the city, so the pair cannot disagree.
+ *
+ * Continue here is the submit. Press it to watch the ~1s "Creating your
+ * dealership…" state — nothing is written before that press, which is why a
+ * dealer who abandons on step 1 leaves no half-made tenant behind.
  */
 export const Business: Story = { args: { step: 1 } };
+
+/**
+ * What a rejected submit looks like. The action answers with a banner and
+ * per-field messages, and echoes `values` back so the other eight fields
+ * survive — press Continue to see it.
+ */
+export const BusinessFieldErrors: Story = {
+  args: { step: 1 },
+  beforeEach: () => {
+    authActionStub.delayMs = 400;
+    authActionStub.result = {
+      message: 'That could not be saved.',
+      errors: {
+        brandName: 'Enter the name buyers will see.',
+        pincode: 'Pincode must be 6 digits.',
+        phone: 'Enter a 10-digit Indian mobile number.',
+      },
+    };
+  },
+};
+
+/**
+ * Submitting. The stub holds for a minute so the disabled control and its
+ * "Creating your dealership…" label stay on screen — press Continue.
+ *
+ * Note that the error a rejected submit produces can land on a field the
+ * dealer cannot see: `phone` belongs to step 1. That is why the banner sits
+ * above the stepper rather than inside the fieldset.
+ */
+export const BusinessSubmitting: Story = {
+  args: { step: 1 },
+  beforeEach: () => {
+    authActionStub.delayMs = 60_000;
+  },
+};
 
 /**
  * Step 3 — a DRAFT dealership exists, so the server's floor is 2 and steps 1
@@ -156,7 +197,11 @@ export const EveryStep: Story = {
           <p style={{ margin: '0 0 10px', fontSize: 12, opacity: 0.55 }}>
             step={index} · {label}
           </p>
-          <OnboardingWizard step={index as 0 | 1 | 2 | 3} session={args.session} />
+          <OnboardingWizard
+            step={index as 0 | 1 | 2 | 3}
+            session={args.session}
+            cities={args.cities}
+          />
         </div>
       ))}
     </div>

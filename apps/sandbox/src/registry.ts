@@ -365,7 +365,7 @@ export const registry: RegistryEntry[] = [
     category: 'Forms',
     ownership: 'Feature-specific',
     purpose:
-      'The onboarding frame: which of the four steps is current, how each is reached, and the Account step.',
+      'The onboarding frame: which of the four steps is current, how each is reached, and steps 1 and 2.',
     aliases: [
       'Onboarding',
       'OnboardingSteps',

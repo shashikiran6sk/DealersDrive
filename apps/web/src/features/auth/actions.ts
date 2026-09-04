@@ -138,12 +138,15 @@ export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promi
 /*
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * `saveBusinessIdsAction` and `submitForVerificationAction` sit here in the
- * baseline. The first parses `UpdateDealerInput` and writes `PATCH /v1/dealer`
- * (**F039**); the second posts `POST /v1/dealer/submit` and reads
- * `DealerSubmitResponse` (**F042**). Neither contract nor route exists yet,
- * and both belong to the onboarding wizard rather than to sign-in. They return
- * with their own steps, along with the two `describe` blocks in
- * `actions.test.ts` that cover them.
+ * baseline. The first parses `UpdateDealerInput` and writes `PATCH /v1/dealer`;
+ * the second posts `POST /v1/dealer/submit` and reads `DealerSubmitResponse`.
+ * Neither contract nor route exists yet, and both belong to the onboarding
+ * wizard rather than to sign-in. They return with their own steps, along with
+ * the two `describe` blocks in `actions.test.ts` that cover them.
+ *
+ * The first is **F041**, not F039 as this note originally said: GSTIN and PAN
+ * are on the *Documents* step at the baseline, beside the KYC documents they
+ * identify, not on the Business step. The second is **F042**.
  * ────────────────────────────────────────────────────────────────────────────
  */
 

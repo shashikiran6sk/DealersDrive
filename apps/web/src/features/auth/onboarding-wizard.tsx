@@ -1,6 +1,6 @@
 'use client';
 
-import type { AuthSession } from '@dealers-drive/contracts';
+import type { AuthSession, CitiesResponse } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
 
@@ -20,14 +20,13 @@ import { onboardingAction, type ActionState } from '@/features/auth/actions';
  * component moves between them; it does not decide what you are allowed to see.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * **F037 landed the frame; F038 lands step 1.** The remaining step bodies
- * arrive with the features that own them — Business **F039**, Documents
- * **F041**, Review **F042** — and each brings the props it needs with it
- * (`cities`, `documents`, `dealer`, `completeness`; component-map C040).
+ * **F037 landed the frame, F038 step 1, F039 step 2.** The remaining step
+ * bodies arrive with the features that own them — Documents **F041**, Review
+ * **F042** — and each brings the props it needs with it (`documents`,
+ * `dealer`, `completeness`; component-map C040).
  *
- * `session` arrives here, with the Account step, because that step is the only
- * thing that reads it: the verified Google address it shows rather than asks
- * for, and the name and phone it prefills from the Google profile.
+ * `session` arrived with the Account step and `cities` arrives with this one,
+ * on the same rule: a prop lands with its only reader.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const ONBOARDING_STEPS = ['Account', 'Business', 'Documents', 'Review'] as const;
@@ -37,9 +36,11 @@ export type OnboardingStep = 0 | 1 | 2 | 3;
 export function OnboardingWizard({
   step,
   session,
+  cities,
 }: {
   step: OnboardingStep;
   session: AuthSession;
+  cities: CitiesResponse['data'];
 }) {
   const router = useRouter();
   /**
@@ -52,7 +53,7 @@ export function OnboardingWizard({
    * are reached by a URL the server resolves afresh.
    */
   const [local, setLocal] = useState<0 | 1>(step === 1 ? 1 : 0);
-  const [state, submit] = useActionState<ActionState, FormData>(onboardingAction, {});
+  const [state, submit, pending] = useActionState<ActionState, FormData>(onboardingAction, {});
   // What the dealer typed, echoed back by the action. A rejected pincode must
   // not cost them the other eight fields.
   const values = state.values ?? {};
@@ -81,6 +82,12 @@ export function OnboardingWizard({
             values={values}
             hidden={local === 1}
           />
+          <BusinessStep
+            cities={cities}
+            errors={state.errors ?? {}}
+            values={values}
+            hidden={local === 0}
+          />
 
           <div className="flex gap-[8px]">
             <button
@@ -96,11 +103,10 @@ export function OnboardingWizard({
 
             {/**
              * Continue means two different things, and the difference is the
-             * point of the two-step form. On Account it is a local move. On
-             * Business it is the submit that creates the dealership, and the
-             * fields it would submit arrive with **F039** — so until then the
-             * button says it does nothing rather than looking live and failing
-             * validation on nine fields the form does not yet contain.
+             * point of the two-step form. On Account it is a local move; on
+             * Business it is the submit that creates the dealership. Nothing is
+             * written until that second press, so a dealer who abandons halfway
+             * leaves no half-made tenant behind.
              */}
             {local === 0 ? (
               <button
@@ -111,8 +117,8 @@ export function OnboardingWizard({
                 Continue
               </button>
             ) : (
-              <button type="button" className="btn btn-primary h-[42px] flex-1" disabled>
-                Continue
+              <button type="submit" className="btn btn-primary h-[42px] flex-1" disabled={pending}>
+                {pending ? 'Creating your dealership…' : 'Continue'}
               </button>
             )}
           </div>
@@ -213,6 +219,128 @@ function AccountStep({
             readOnly
           />
         </Field>
+      </div>
+    </fieldset>
+  );
+}
+
+function BusinessStep({
+  cities,
+  errors,
+  hidden,
+  values,
+}: {
+  cities: CitiesResponse['data'];
+  errors: Record<string, string>;
+  hidden: boolean;
+  values: Record<string, string>;
+}) {
+  // `/v1/cities` leads with an "All of Tamil Nadu" pseudo-city, which is a
+  // *search filter*, not a place a dealership can be.
+  const places = cities.filter((city) => city.slug !== 'all');
+  const [citySlug, setCitySlug] = useState(values.citySlug ?? '');
+  const state = places.find((city) => city.slug === citySlug)?.state ?? 'Tamil Nadu';
+
+  return (
+    <fieldset hidden={hidden} className="m-0 border-0 p-0">
+      <legend className="sr-only">Your dealership</legend>
+
+      <h1 className="font-heading text-[34px] font-semibold leading-[1.1] tracking-[-0.02em]">
+        Dealership information
+      </h1>
+      <p className="mb-[20px] mt-[8px] text-[15px] ink-secondary">
+        This is what buyers see on every one of your listings.
+      </p>
+
+      <div className="flex flex-col gap-[14px]">
+        <Field id="brandName" label="Dealership name (public)" error={errors.brandName}>
+          <input
+            id="brandName"
+            name="brandName"
+            defaultValue={values.brandName ?? ''}
+            className="input"
+            autoComplete="organization"
+            required
+            {...invalidProps('brandName', errors.brandName)}
+          />
+        </Field>
+
+        <Field id="legalName" label="Registered legal name" error={errors.legalName}>
+          <input
+            id="legalName"
+            name="legalName"
+            defaultValue={values.legalName ?? ''}
+            className="input"
+            required
+            {...invalidProps('legalName', errors.legalName)}
+          />
+        </Field>
+
+        <Field id="addressLine" label="Address" error={errors.addressLine}>
+          <input
+            id="addressLine"
+            name="addressLine"
+            defaultValue={values.addressLine ?? ''}
+            className="input"
+            autoComplete="street-address"
+            required
+            {...invalidProps('addressLine', errors.addressLine)}
+          />
+        </Field>
+
+        <div className="grid gap-[14px] sm:grid-cols-2">
+          <Field id="citySlug" label="City" error={errors.citySlug}>
+            <select
+              id="citySlug"
+              name="citySlug"
+              className="input"
+              value={citySlug}
+              onChange={(event) => setCitySlug(event.target.value)}
+              required
+              {...invalidProps('citySlug', errors.citySlug)}
+            >
+              <option value="" disabled>
+                Select a city
+              </option>
+              {places.map((city) => (
+                <option key={city.slug} value={city.slug}>
+                  {city.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          {/* Derived from the city, not typed: the catalogue owns the pair. */}
+          <Field id="state" label="State">
+            <input id="state" className="input" value={state} disabled readOnly />
+          </Field>
+
+          <Field id="pincode" label="Pincode" error={errors.pincode}>
+            <input
+              id="pincode"
+              name="pincode"
+              defaultValue={values.pincode ?? ''}
+              className="input tnum"
+              inputMode="numeric"
+              autoComplete="postal-code"
+              maxLength={6}
+              required
+              {...invalidProps('pincode', errors.pincode)}
+            />
+          </Field>
+
+          <Field id="landline" label="Landline" hint="optional" error={errors.landline}>
+            <input
+              id="landline"
+              name="landline"
+              defaultValue={values.landline ?? ''}
+              className="input tnum"
+              autoComplete="tel"
+              placeholder="0416 224 8890"
+              {...invalidProps('landline', errors.landline)}
+            />
+          </Field>
+        </div>
       </div>
     </fieldset>
   );
