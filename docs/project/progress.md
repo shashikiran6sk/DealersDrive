@@ -62,7 +62,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 - [x] F032 — Storage port & adapters · ⚠️ pulled forward, ahead of Tier 2
 - [x] F033 — Presigned upload & commit · [#50](https://github.com/shashikiran6sk/DealersDrive/pull/50)
-- [~] F098 — API reference — OpenAPI & Swagger UI · ⚠️ added by D5, pulled out of F096
+- [x] F098 — API reference — OpenAPI & Swagger UI · ⚠️ added by D5, pulled out of F096 · [#52](https://github.com/shashikiran6sk/DealersDrive/pull/52)
 
 > F034 and F035 moved to Tier 9 (decision D4) — they serve vehicle galleries,
 > and nothing in Tier 6 or 7 depends on them.
@@ -70,9 +70,9 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 6 — Dealer onboarding
 
 - [x] F036 — Dealer entity & tenant isolation · ⚠️ pulled forward, ahead of Tier 2
-- [~] F037 — Onboarding shell & step routing · [#53](https://github.com/shashikiran6sk/DealersDrive/pull/53)
-- [~] F038 — Onboarding — account step
-- [ ] F039 — Onboarding — business details step
+- [x] F037 — Onboarding shell & step routing · [#53](https://github.com/shashikiran6sk/DealersDrive/pull/53)
+- [x] F038 — Onboarding — account step · [#54](https://github.com/shashikiran6sk/DealersDrive/pull/54)
+- [~] F039 — Onboarding — business details step
 - [ ] F040 — Dealer document model & types
 - [ ] F041 — Onboarding — document upload step
 - [ ] F042 — Onboarding — review & submit step

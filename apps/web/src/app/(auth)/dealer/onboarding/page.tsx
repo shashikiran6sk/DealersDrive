@@ -1,4 +1,4 @@
-import type { AuthSession } from '@dealers-drive/contracts';
+import type { AuthSession, CitiesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
@@ -51,18 +51,24 @@ export default async function OnboardingPage({
 
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────────
-   * The baseline fetches four things here and hands them to the wizard:
-   * `/v1/cities` (**F039**), `/v1/dealer/documents` and `/v1/dealer`
-   * (**F041**) and `/v1/dealer/completeness` (**F042**). Each is read by
-   * exactly one step body, and those step bodies are later features, so
-   * fetching them now would be requests per page load feeding nothing. They
-   * return with the steps that read them.
+   * The baseline fetches four things here. `/v1/cities` arrives now, with the
+   * Business step that reads it; `/v1/dealer/documents` and `/v1/dealer` come
+   * with **F041** and `/v1/dealer/completeness` with **F042**, each with the
+   * step body that reads it. Fetching one earlier would be a request per page
+   * load feeding nothing.
+   *
+   * The baseline also makes the last three conditional on a dealership
+   * existing, in one `Promise.all` beside this. That shape returns when there
+   * is more than one thing to fetch — `/v1/cities` is not dealership-scoped
+   * (steps 1 and 2 run before a dealership exists), so on its own it is a
+   * single await.
    *
    * `/v1/auth/me` is not one of the four: it is what places a dealer on a step
    * at all, and the Account step (**F038**) shows the Google identity it
    * carries rather than asking for it.
    * ──────────────────────────────────────────────────────────────────────────
    */
+  const cities = await apiGet<CitiesResponse>('/v1/cities', { revalidate: 3600 });
 
   const requested = Number((await searchParams).step ?? NaN);
   // The dealership decides the floor: steps 1 and 2 create it, so they are
@@ -73,7 +79,7 @@ export default async function OnboardingPage({
 
   return (
     <AuthShell>
-      <OnboardingWizard step={step as 0 | 1 | 2 | 3} session={session} />
+      <OnboardingWizard step={step as 0 | 1 | 2 | 3} session={session} cities={cities.data} />
     </AuthShell>
   );
 }

@@ -1113,14 +1113,25 @@ Step 1: the signed-in person's name and contact, confirming who is registering.
 
 ### F039 — Onboarding — business details step
 
-Step 2: trading name, city, address, GSTIN, years in business.
+Step 2: trading name, legal name, address, city and pincode — the dealership
+buyers see.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F038, F026
-- **Backend** `POST /v1/auth/onboarding` (business fields), `modules/dealers/dealers.service.ts`
-- **Frontend** business step of `features/auth/onboarding-wizard.tsx`
+- **Backend** `POST /v1/auth/onboarding` (business fields) — landed with **F018**; nothing new here
+- **Frontend** business step of `features/auth/onboarding-wizard.tsx`, the `/v1/cities` fetch on the onboarding page
 - **DB** `Dealer`
 - **Components — Reused** `Field`, `Input`, city picker (F026), `Button`, `Banner`
-- **Sandbox** step 2 — empty / populated / per-field validation errors
+- **Sandbox** step 2 — empty / per-field validation errors / submitting
+- **GSTIN is not on this step.** The entry said "trading name, city, address,
+  GSTIN, years in business", and at the baseline GSTIN and PAN are on the
+  _Documents_ step, saved by `saveBusinessIdsAction` through `PATCH /v1/dealer`
+  — they sit with the KYC documents they identify. They arrive with **F041**,
+  along with `DealerProfile`, `UpdateDealerInput` and the `/v1/dealer` fetch.
+  "Years in business" (`establishedYear`) is not on either onboarding step; it
+  is a profile field, and it arrives with **F046**.
+- **`dealers.service.ts` is untouched by this feature.** The entry named it,
+  but `POST /v1/auth/onboarding` creates the dealership in `auth.service.ts`,
+  which landed with F018. Nothing on this step reaches the dealers module.
 
 ### F040 — Dealer document model & types
 
