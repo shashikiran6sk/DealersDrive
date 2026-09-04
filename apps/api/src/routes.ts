@@ -5,6 +5,7 @@ import type { Container } from './container.js';
 import { createDocsRouter } from './docs/docs.routes.js';
 import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/auth.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
+import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { createLocationsRouter } from './modules/locations/locations.routes.js';
 import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
@@ -29,10 +30,11 @@ import { createMediaRouter, createStorageRouter } from './modules/media/media.ro
  *
  * ── Reconstruction note ───────────────────────────────────────────────────
  * Health is mounted as of F006, auth and the two guarded chains as of
- * F016/F018, and `/uploads` plus the first router under `/v1/dealer` as of
- * F033, and the docs router as of F098. `/v1/admin` still carries its guard
- * and no child routers: every router that goes under it belongs to a later
- * feature, and the guard is what that mount exists to establish.
+ * F016/F018, `/uploads` plus the first router under `/v1/dealer` as of F033,
+ * the docs router as of F098, and the dealers router as of F040. `/v1/admin`
+ * still carries its guard and no child routers: every router that goes under
+ * it belongs to a later feature, and the guard is what that mount exists to
+ * establish.
  */
 export function createRoutes(container: Container): Router {
   const router = Router();
@@ -65,6 +67,7 @@ export function createRoutes(container: Container): Router {
   // ── dealer ────────────────────────────────────────────────────────────
   const dealer = Router();
   dealer.use(container.guards.requireDealer);
+  dealer.use(createDealersRouter(container.dealers));
   dealer.use(createMediaRouter(container.media));
   v1.use('/dealer', dealer);
 

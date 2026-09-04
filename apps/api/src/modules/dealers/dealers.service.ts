@@ -1,5 +1,11 @@
-import { DEALER_STATUS_LABELS, formatPhone, type AuthSession } from '@dealers-drive/contracts';
-import type { PrismaClient } from '@prisma/client';
+import {
+  DEALER_STATUS_LABELS,
+  DOC_TYPE_LABELS,
+  formatPhone,
+  type AuthSession,
+  type DealerDocumentsResponse,
+} from '@dealers-drive/contracts';
+import type { DealerDocType, PrismaClient } from '@prisma/client';
 
 import { NotFoundError } from '../../platform/errors.js';
 import type { DealerPrincipal } from '../auth/auth.facade.js';
@@ -9,20 +15,32 @@ import type { DealersRepository, DealerWithRelations } from './dealers.repositor
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline file is 610 lines and covers the profile, the onboarding
  * completeness tracker, the KYC document paths and the dealer dashboard. Each
- * of those belongs to a feature further down the list — F040, F043, F046, F048
- * — and each brings a dependency this feature does not have: `StoragePort` for
- * the document presigning, `EnquiriesRepository` for the dashboard, `Vehicle`
- * and `Listing` for the counters.
+ * of those belongs to a feature further down the list, and each brings a
+ * dependency this one does not have: `StoragePort` for the document
+ * presigning, `EnquiriesRepository` for the dashboard, `Vehicle` and `Listing`
+ * for the counters.
  *
- * `session()` is the one method the auth module calls, and it is the reason
- * `dealers.facade.ts` re-exports `DealersService` at all. It lands here, with
- * F018, and the rest of the file arrives with the features that own it.
+ * `session()` landed with **F018** — the one method the auth module calls, and
+ * the reason `dealers.facade.ts` re-exports `DealersService` at all.
+ * `documents()` lands with **F040**: it is a pure read over rows the repository
+ * already returns, so it needs nothing this service does not already hold.
+ *
+ * Still to come: `toProfile`/`update` and the presign, commit and delete paths
+ * with **F041**, `completeness()` with **F043**, `submitForVerification()` with
+ * **F042**, and `dashboard()` with **F048**.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export interface DealersDeps {
   prisma: PrismaClient;
   repo: DealersRepository;
 }
+
+/**
+ * The closed set. Three documents, always, in this order — the checklist is
+ * fixed rather than data-driven, because "which documents does KYC need" is a
+ * regulatory answer and not a per-dealer one.
+ */
+const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'];
 
 export function createDealersService({ repo }: DealersDeps) {
   async function requireDealer(dealerId: string): Promise<DealerWithRelations> {
@@ -82,7 +100,72 @@ export function createDealersService({ repo }: DealersDeps) {
         counts: { newEnquiries, pendingListings },
       };
     },
+
+    // ─────────── C5 KYC documents ─────────────────────────────────────────
+
+    /**
+     * The checklist, as the onboarding step and the console both render it.
+     *
+     * Every one of the three types is returned whether or not a row exists for
+     * it — a response that grew as documents were uploaded would leave a
+     * missing document looking like one that was never required.
+     */
+    async documents(dealerId: string): Promise<DealerDocumentsResponse> {
+      const rows = await repo.documents(dealerId);
+
+      const data = DOC_TYPES.map((type) => {
+        const doc = rows.find((row) => row.type === type);
+        const status = doc?.status ?? 'REQUIRED';
+
+        return {
+          id: doc?.id ?? null,
+          type,
+          label: DOC_TYPE_LABELS[type],
+          status,
+          statusLabel: documentStatusLabel(
+            status,
+            doc?.fileName ?? null,
+            doc?.rejectionReason ?? null,
+          ),
+          fileName: doc?.fileName ?? null,
+          uploadedAt: doc?.createdAt.toISOString() ?? null,
+          rejectionReason: doc?.rejectionReason ?? null,
+          action:
+            status === 'REQUIRED' || status === 'REJECTED'
+              ? 'Upload'
+              : status === 'UPLOADING'
+                ? 'Cancel'
+                : 'Replace',
+        };
+      });
+
+      return { data, allVerified: data.every((doc) => doc.status === 'VERIFIED') };
+    },
   };
 }
 
 export type DealersService = ReturnType<typeof createDealersService>;
+
+/**
+ * The sub-line under each row. It is a sentence a dealer can act on rather than
+ * an enum name — `REJECTED` tells them nothing, "Too blurry to read" tells them
+ * what to do next.
+ */
+function documentStatusLabel(
+  status: string,
+  fileName: string | null,
+  rejectionReason: string | null,
+): string {
+  switch (status) {
+    case 'UPLOADED':
+      return `${fileName ?? 'File'} · uploaded`;
+    case 'VERIFIED':
+      return `${fileName ?? 'File'} · verified`;
+    case 'UPLOADING':
+      return 'Uploading…';
+    case 'REJECTED':
+      return rejectionReason ?? 'Rejected — please upload a clearer copy';
+    default:
+      return 'Required — PDF or JPG, max 5 MB';
+  }
+}

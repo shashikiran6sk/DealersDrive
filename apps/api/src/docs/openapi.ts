@@ -3,6 +3,7 @@ import { CONTRACTS_VERSION } from '@dealers-drive/contracts';
 import { env } from '../config/env.js';
 import { authDocs } from '../modules/auth/auth.docs.js';
 import { configDocs } from '../modules/config/config.docs.js';
+import { dealersDocs } from '../modules/dealers/dealers.docs.js';
 import { healthDocs } from '../modules/health/health.docs.js';
 import { locationsDocs } from '../modules/locations/locations.docs.js';
 import { mediaDocs, storageDocs } from '../modules/media/media.docs.js';
@@ -35,6 +36,7 @@ const MODULES: ModuleDocs[] = [
   authDocs,
   locationsDocs,
   configDocs,
+  dealersDocs,
   mediaDocs,
   healthDocs,
   storageDocs,
@@ -45,6 +47,7 @@ const TAG_ORDER = [
   'Authentication',
   'Locations',
   'Platform configuration',
+  'Dealer account',
   'Media',
   'Health',
   'Storage (local only)',

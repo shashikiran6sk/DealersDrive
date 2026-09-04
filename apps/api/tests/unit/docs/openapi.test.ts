@@ -56,6 +56,7 @@ function mountedRoutes(): Set<string> {
     auth: service,
     publicConfig: service,
     locations: service,
+    dealers: service,
     media: service,
     storage: service,
     prisma: { $queryRaw: () => Promise.resolve([]) },
