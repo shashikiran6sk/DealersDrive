@@ -1191,10 +1191,18 @@ The single derived answer to "what is still missing", used by the wizard to gate
 - **Status** implemented · **Confidence** **MEDIUM** · **Depends on** F039, F041
 - **Backend** `modules/dealers/dealers.service.ts` — completeness derivation
 - **API** `GET /v1/dealer/completeness`
-- **Contracts** `CompletenessBlocker`, `CompletenessResponse`
+- **Contracts** `CompletenessResponse`
 - **Components — Reused** `Banner`, `StatusTag`
 - **Sandbox** blocker list — none / one / many
 - ⚠️ **MEDIUM** because completeness is derived from fields owned by F039 and F041, so it cannot be written before both — but the wizard cannot gate correctly without it. Land it with F042 if the split proves awkward.
+- **The split held.** F043 landed after F041 and before F042, carrying the
+  derivation, the endpoint, and the one wizard consumer that is not the review
+  step: the outstanding-items list inside the error banner. F042 brings the
+  other consumer.
+- **`CompletenessBlocker` is not a C3 shape.** The entry named it, but at the
+  baseline it is `{ code, message }` in the C21–C23 block, used by _vehicle_
+  completeness — a different derivation on a different aggregate. It arrives
+  with the vehicle wizard (F060), not here.
 
 ### F044 — Admin document verification
 

@@ -23,10 +23,9 @@ import type { DealersService } from './dealers.service.js';
  * profile and the KYC documents are the dealership's identity.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * F040 mounted the document checklist; **F041 adds five more** — `GET|PATCH /`,
- * whose first consumer is the Documents step's GSTIN/PAN form, and the presign,
- * commit and delete paths the uploader drives. `GET /completeness` arrives with
- * **F043**, `POST /submit` with **F042**, and `GET /dashboard` with **F048**.
+ * F040 mounted the document checklist, F041 five more, **F043 the completeness
+ * read**. `POST /submit` arrives with **F042** and `GET /dashboard` with
+ * **F048**.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export function createDealersRouter(service: DealersService): Router {
@@ -59,6 +58,17 @@ export function createDealersRouter(service: DealersService): Router {
       })();
     },
   );
+
+  router.get('/completeness', (req, res, next) => {
+    void (async () => {
+      try {
+        const { dealerId } = dealerPrincipal(req);
+        res.json(await service.completeness(dealerId));
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
 
   router.get('/documents', (req, res, next) => {
     void (async () => {

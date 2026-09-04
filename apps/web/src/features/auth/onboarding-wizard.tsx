@@ -3,6 +3,7 @@
 import type {
   AuthSession,
   CitiesResponse,
+  CompletenessResponse,
   DealerDocumentDto,
   DealerProfile,
 } from '@dealers-drive/contracts';
@@ -26,12 +27,12 @@ import { DocumentUploader } from '@/features/auth/document-uploader';
  * component moves between them; it does not decide what you are allowed to see.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * **F037 landed the frame, F038 step 1, F039 step 2, F041 step 3.** The Review
- * step arrives with **F042**, bringing the `completeness` prop (component-map
- * C040) and the outstanding-items list inside the error banner.
+ * **F037 landed the frame, F038 step 1, F039 step 2, F041 step 3, F043 the
+ * outstanding-items list.** The Review step arrives with **F042**.
  *
  * A prop lands with its only reader: `session` with Account, `cities` with
- * Business, `documents` and `dealer` with Documents.
+ * Business, `documents` and `dealer` with Documents, `completeness` with the
+ * banner that reads it (component-map C040).
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const ONBOARDING_STEPS = ['Account', 'Business', 'Documents', 'Review'] as const;
@@ -44,12 +45,14 @@ export function OnboardingWizard({
   cities,
   documents,
   dealer,
+  completeness,
 }: {
   step: OnboardingStep;
   session: AuthSession;
   cities: CitiesResponse['data'];
   documents: DealerDocumentDto[];
   dealer: DealerProfile | null;
+  completeness: CompletenessResponse | null;
 }) {
   const router = useRouter();
   /**
@@ -73,15 +76,18 @@ export function OnboardingWizard({
     <div className="flex flex-col gap-[22px]">
       <Stepper steps={ONBOARDING_STEPS} current={current} />
 
-      {/*
-       * ── Reconstruction slice ────────────────────────────────────────────
-       * The baseline banner also lists what the completeness endpoint says is
-       * still missing. That list is `CompletenessResponse`, which arrives with
-       * **F043**; the message itself is what the onboarding action returns, and
-       * it is the half this step can produce.
-       * ────────────────────────────────────────────────────────────────────
-       */}
-      {state.message ? <Banner tone="err" title={state.message} /> : null}
+      {state.message ? (
+        <Banner tone="err" title={state.message}>
+          {/* The API refuses an incomplete dealership; this says which part. */}
+          {outstandingLabels(completeness).length > 0 ? (
+            <ul className="mt-[4px] list-disc pl-[18px]">
+              {outstandingLabels(completeness).map((label) => (
+                <li key={label}>{label}</li>
+              ))}
+            </ul>
+          ) : null}
+        </Banner>
+      ) : null}
 
       {current <= 1 ? (
         <form action={submit} className="flex flex-col gap-[18px]" noValidate>
@@ -440,4 +446,31 @@ function DocumentsStep({
       </div>
     </div>
   );
+}
+
+/**
+ * What C3 says is still missing, in words a dealer can act on. The API answers
+ * with field keys — `gstin`, `GST_CERTIFICATE` — which are precise and not
+ * something to put in front of somebody at the end of a sign-up form.
+ */
+const MISSING_LABELS: Record<string, string> = {
+  gstin: 'GSTIN',
+  pan: 'PAN',
+  GST_CERTIFICATE: 'GST certificate',
+  PAN_CARD: 'PAN card',
+  ADDRESS_PROOF: 'Address proof',
+  brandName: 'Dealership name',
+  legalName: 'Registered legal name',
+  addressLine: 'Address',
+  pincode: 'Pincode',
+  cityId: 'City',
+  fullName: 'Your name',
+  phone: 'Phone number',
+  email: 'Email address',
+};
+
+function outstandingLabels(completeness: CompletenessResponse | null): string[] {
+  return (completeness?.steps ?? [])
+    .flatMap((step) => step.missing)
+    .map((key) => MISSING_LABELS[key] ?? key);
 }

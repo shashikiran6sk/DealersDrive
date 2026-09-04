@@ -7,9 +7,9 @@ import type { ModuleDocs } from '../../docs/spec.js';
  * The baseline module documents nine operations. This file grows with the
  * router beside it — an operation lands in the same PR that mounts its route,
  * which is what `tests/unit/docs/openapi.test.ts` checks in both directions.
- * F040 brought the checklist; **F041 brings five more**. `getDealerCompleteness`
- * (F043), `submitDealerForVerification` (F042) and `getDealerDashboard` (F048)
- * are what remain.
+ * F040 brought the checklist, F041 five more, **F043 the completeness read**.
+ * `submitDealerForVerification` (F042) and `getDealerDashboard` (F048) are what
+ * remain.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const dealersDocs: ModuleDocs = {
@@ -61,6 +61,22 @@ export const dealersDocs: ModuleDocs = {
       },
       responses: [{ status: 200, description: 'The updated dealership.', schema: 'DealerProfile' }],
       errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'get',
+      path: '/v1/dealer/completeness',
+      operationId: 'getDealerCompleteness',
+      tag: 'Dealer account',
+      summary: 'Onboarding progress',
+      description:
+        'Which onboarding steps are done, what is missing from each, and whether the ' +
+        'dealership can be submitted for verification yet. Drives the progress meter, and ' +
+        '`canSubmit` is the same condition `POST /v1/dealer/submit` enforces server-side.',
+      audience: 'dealer',
+      responses: [
+        { status: 200, description: 'Step-by-step completeness.', schema: 'CompletenessResponse' },
+      ],
+      errors: [401, 404],
     },
     {
       method: 'get',

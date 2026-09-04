@@ -1,6 +1,7 @@
 import type {
   AuthSession,
   CitiesResponse,
+  CompletenessResponse,
   DealerDocumentsResponse,
   DealerProfile,
 } from '@dealers-drive/contracts';
@@ -54,20 +55,17 @@ export default async function OnboardingPage({
     redirect('/dealer');
   }
 
-  /*
-   * ── Reconstruction slice ──────────────────────────────────────────────────
-   * Three of the baseline's four fetches. `/v1/dealer/completeness` arrives
-   * with **F042**, the step that reads it.
-   * ──────────────────────────────────────────────────────────────────────────
-   */
-  // The last two are dealership-scoped, so they exist only once one does.
-  const [cities, documents, dealer] = await Promise.all([
+  // The last three are dealership-scoped, so they exist only once one does.
+  const [cities, documents, dealer, completeness] = await Promise.all([
     apiGet<CitiesResponse>('/v1/cities', { revalidate: 3600 }),
     session.dealer
       ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
       : Promise.resolve(null),
     session.dealer
       ? apiGet<DealerProfile>('/v1/dealer', { revalidate: false })
+      : Promise.resolve(null),
+    session.dealer
+      ? apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false })
       : Promise.resolve(null),
   ]);
 
@@ -86,6 +84,7 @@ export default async function OnboardingPage({
         cities={cities.data}
         documents={documents?.data ?? []}
         dealer={dealer}
+        completeness={completeness}
       />
     </AuthShell>
   );

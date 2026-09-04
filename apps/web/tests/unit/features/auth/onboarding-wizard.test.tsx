@@ -1,4 +1,9 @@
-import type { AuthSession, CitiesResponse, DealerDocumentDto } from '@dealers-drive/contracts';
+import type {
+  AuthSession,
+  CitiesResponse,
+  CompletenessResponse,
+  DealerDocumentDto,
+} from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -29,11 +34,29 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * test that fails when the next feature does its job is a tax, not a check.
  *
  * **F038 adds the second describe block**, for the Account step, **F039 the
- * third**, for the Business step, and **F041 the fourth**, for Documents.
- * Their claims are of the same kind: what a step refuses to ask for, and what
- * it carries forward — not how it is laid out.
+ * third**, for the Business step, **F041 the fourth**, for Documents, and
+ * **F043 the fifth**, for the outstanding-items list. Their claims are of the
+ * same kind: what a step refuses to ask for, and what it carries forward — not
+ * how it is laid out.
  * ────────────────────────────────────────────────────────────────────────────
  */
+
+/** `GET /v1/dealer/completeness`, with everything outstanding named. */
+function completeness(missing: Record<string, string[]> = {}): CompletenessResponse {
+  const steps = (['account', 'business', 'documents', 'review'] as const).map((key) => ({
+    key,
+    label: key[0]!.toUpperCase() + key.slice(1),
+    complete: (missing[key] ?? []).length === 0,
+    missing: missing[key] ?? [],
+  }));
+
+  return {
+    isComplete: steps.slice(0, 3).every((step) => step.complete),
+    canSubmit: steps.slice(0, 3).every((step) => step.complete),
+    percent: Math.round((steps.filter((step) => step.complete).length / 4) * 100),
+    steps,
+  };
+}
 
 /** One row of the KYC checklist, as `GET /v1/dealer/documents` returns it. */
 function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto {
@@ -128,6 +151,7 @@ describe('OnboardingWizard — the frame', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -151,6 +175,7 @@ describe('OnboardingWizard — the frame', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
     expect(filledSteps()).toEqual([...expected]);
@@ -170,6 +195,7 @@ describe('OnboardingWizard — the frame', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -188,6 +214,7 @@ describe('OnboardingWizard — the frame', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -207,6 +234,7 @@ describe('OnboardingWizard — the frame', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -253,6 +281,7 @@ describe('OnboardingPage — the floor the server sets', () => {
       if (path.startsWith('/v1/cities')) return Promise.resolve({ data: CITIES });
       if (path.startsWith('/v1/dealer/documents')) return Promise.resolve({ data: DOCUMENTS });
       if (path === '/v1/dealer') return Promise.resolve({ gstin: null, pan: null });
+      if (path.startsWith('/v1/dealer/completeness')) return Promise.resolve(completeness());
       return Promise.resolve(sessionWith(dealer));
     });
 
@@ -314,6 +343,7 @@ describe('OnboardingWizard — the Account step', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -333,6 +363,7 @@ describe('OnboardingWizard — the Account step', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -347,6 +378,7 @@ describe('OnboardingWizard — the Account step', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -363,6 +395,7 @@ describe('OnboardingWizard — the Account step', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -385,6 +418,7 @@ describe('OnboardingWizard — the Account step', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -419,6 +453,7 @@ describe('OnboardingWizard — the Business step', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Continue' }));
@@ -486,6 +521,7 @@ describe('OnboardingWizard — the Business step', () => {
         cities={CITIES}
         documents={[]}
         dealer={null}
+        completeness={null}
       />,
     );
 
@@ -516,6 +552,7 @@ describe('OnboardingWizard — the Documents step', () => {
         cities={CITIES}
         documents={documents}
         dealer={dealer as never}
+        completeness={null}
       />,
     );
   }
@@ -569,5 +606,99 @@ describe('OnboardingWizard — the Documents step', () => {
     render_(DOCUMENTS);
 
     expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * F043 — what is still missing, in words.
+ *
+ * The API answers `POST /v1/auth/onboarding` and `POST /v1/dealer/submit` with
+ * field keys: `gstin`, `GST_CERTIFICATE`, `cityId`. Those are precise, and they
+ * are not what to put in front of somebody at the end of a sign-up form. The
+ * banner translates them, and falls back to the raw key rather than dropping
+ * anything it does not recognise — a blocker nobody can see is worse than an
+ * ugly one.
+ *
+ * Reaching the banner needs a rejected submit, so this block stubs the action.
+ */
+vi.mock('@/features/auth/actions', () => ({
+  onboardingAction: vi.fn(),
+  saveBusinessIdsAction: vi.fn(() => Promise.resolve({})),
+}));
+
+describe('OnboardingWizard — the outstanding-items list', () => {
+  /**
+   * The blockers, read out of the banner rather than off the page. The Stepper
+   * is a list too, and so is the city `<select>` — "City" appears three times
+   * on this screen and only one of them is a blocker.
+   */
+  function blockersShown(): string[] {
+    const banner = screen.getByRole('status');
+    return [...banner.querySelectorAll('li')].map((item) => item.textContent ?? '');
+  }
+
+  /** Submits the two-step form and returns once the banner has rendered. */
+  async function submitAndFail(state: object, blockers: CompletenessResponse | null) {
+    const { onboardingAction } = await import('@/features/auth/actions');
+    vi.mocked(onboardingAction).mockResolvedValue(state);
+
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={1}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+        completeness={blockers}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    return user;
+  }
+
+  it('names each blocker in words a dealer can act on', async () => {
+    await submitAndFail(
+      { message: 'Some details are still missing.' },
+      completeness({ business: ['gstin', 'cityId'], documents: ['GST_CERTIFICATE'] }),
+    );
+
+    expect(await screen.findByText('Some details are still missing.')).toBeInTheDocument();
+    expect(blockersShown()).toEqual(['GSTIN', 'City', 'GST certificate']);
+  });
+
+  /** An unmapped key still reaches the dealer, ugly rather than invisible. */
+  it('falls back to the raw key for anything it has no wording for', async () => {
+    await submitAndFail(
+      { message: 'Some details are still missing.' },
+      completeness({ business: ['somethingNew'] }),
+    );
+
+    expect(await screen.findByText('somethingNew')).toBeInTheDocument();
+    expect(blockersShown()).toEqual(['somethingNew']);
+  });
+
+  it('shows the message alone when nothing is outstanding', async () => {
+    await submitAndFail({ message: 'That could not be saved.' }, completeness());
+
+    expect(await screen.findByText('That could not be saved.')).toBeInTheDocument();
+    expect(blockersShown()).toEqual([]);
+  });
+
+  it('shows nothing at all when the action did not fail', () => {
+    render(
+      <OnboardingWizard
+        step={1}
+        session={session()}
+        cities={CITIES}
+        documents={[]}
+        dealer={null}
+        completeness={completeness({ business: ['gstin'] })}
+      />,
+    );
+
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByText('GSTIN')).toBeNull();
   });
 });
