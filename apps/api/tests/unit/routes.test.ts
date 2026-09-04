@@ -78,6 +78,7 @@ function harness() {
     auth: service,
     publicConfig: service,
     locations: service,
+    dealers: service,
     media: service,
     storage: service,
     prisma: { $queryRaw: () => Promise.resolve([]) },
@@ -201,6 +202,16 @@ describe('the dealer boundary', () => {
     expect(
       (await dispatch('GET', '/v1/dealer/media/00000000-0000-4000-8000-000000000000')).reached,
     ).toBe(true);
+  });
+
+  /**
+   * Two routers now sit under `/v1/dealer`, and the second is reached only
+   * because the first falls through rather than answering. That is the case
+   * that breaks when a router is mounted at a prefix instead of at the root of
+   * the chain.
+   */
+  it('reaches the dealers router as well as the media one', async () => {
+    expect((await dispatch('GET', '/v1/dealer/documents')).reached).toBe(true);
   });
 });
 

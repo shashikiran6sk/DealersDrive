@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { Uuid } from './common.js';
-import { MediaStatus } from './enums.js';
+import { DealerDocType, DocStatus, MediaStatus } from './enums.js';
 
 /**
  * PART C — the dealer console (API-SPEC C1–C20). Every shape here is read or
@@ -12,7 +12,8 @@ import { MediaStatus } from './enums.js';
  * The baseline file is ~800 lines covering the dealership profile, onboarding,
  * KYC documents, the vehicle wizard, RC lookup, inventory, media and enquiries.
  * Each shape arrives with the feature that first sends or answers with it; the
- * C14 media block below is here because **F033** does.
+ * C14 media block below is here because **F033** is, and the C5 KYC read
+ * shapes because **F040** is.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
@@ -32,6 +33,47 @@ export const PresignResponse = z.object({
   maxBytes: z.number().int().optional(),
 });
 export type PresignResponse = z.infer<typeof PresignResponse>;
+
+// ─────────── C5 KYC documents ──────────────────────────────────────────────
+/**
+ * One row of the KYC checklist.
+ *
+ * `id` is nullable and `status` defaults to `REQUIRED`, because the response
+ * describes **all three document types whether or not a row exists** — a
+ * checklist that grew as documents were uploaded would read as "not required"
+ * for the ones still missing.
+ *
+ * `statusLabel` and `action` are derived server-side rather than in the client.
+ * Two clients deriving them independently would eventually disagree about what
+ * a dealer is being asked to do next.
+ */
+export const DealerDocumentDto = z.object({
+  id: Uuid.nullable(),
+  type: DealerDocType,
+  label: z.string(),
+  status: DocStatus,
+  statusLabel: z.string(),
+  fileName: z.string().nullable(),
+  uploadedAt: z.string().nullable(),
+  rejectionReason: z.string().nullable(),
+  action: z.string(),
+});
+export type DealerDocumentDto = z.infer<typeof DealerDocumentDto>;
+
+export const DealerDocumentsResponse = z.object({
+  data: z.array(DealerDocumentDto),
+  allVerified: z.boolean(),
+});
+export type DealerDocumentsResponse = z.infer<typeof DealerDocumentsResponse>;
+
+/*
+ * ── Reconstruction slice ────────────────────────────────────────────────────
+ * `DOCUMENT_MIME_TYPES`, `DOCUMENT_MAX_BYTES`, `DocumentPresignInput`,
+ * `DocumentCommitInput` and `DocTypeParam` sit here in the baseline. They are
+ * the *write* half of C5, and they arrive with **F041** — the upload step that
+ * sends them. F040 is the model and the read.
+ * ────────────────────────────────────────────────────────────────────────────
+ */
 
 export const VehicleMediaDto = z.object({
   mediaId: Uuid,
