@@ -169,10 +169,33 @@ documents directly against `StoragePort` — `presignDocument` calls
 row is written with `mediaId: null`. A dealer document never enters
 `media.service.ts` and never enqueues `media.process`. So the "a committed
 upload stays PENDING until F034" caveat on F033 does not reach onboarding:
-there is no derivative to wait for. F041 still needs F033 for the
-`PUT /uploads` route that serves a local presigned URL in development, and for
-the `PresignResponse` contract — which is why F032 and F033 stay ahead of
-Tier 6.
+there is no derivative to wait for.
+
+**How strong the F033 → F041 edge really is.** Weaker than the `Depends on`
+line suggests, and worth stating so nobody over-trusts it:
+
+- **F032 is the hard prerequisite.** `dealers.service.ts` takes
+  `storage: StoragePort` and calls `presignPut` / `head` / `delete`. Onboarding
+  cannot upload a document without it. F032 is merged.
+- **`PresignResponse` is a contract-placement dependency.** F041's
+  `presignDocument` is typed `Promise<PresignResponse>`, and F033 introduces
+  that shape as "the first shapes in that module". It landed in F033 because
+  F033 was scheduled first, not because onboarding needs F033's machinery. Move
+  F033 and the type moves with whichever feature lands first.
+- **`PUT /uploads` is not on onboarding's path in the documented setup.**
+  `.env.example` sets `STORAGE_DRIVER=minio`, so the browser PUTs straight to
+  localhost:9000 and never reaches that route. It matters when
+  `STORAGE_DRIVER=local` — the default in the env schema, and what the test
+  suite uses — and not otherwise.
+- **The `vehicle:write` guard on `media.routes.ts` never applies to KYC.**
+  Documents are `document:upload` on `dealers.routes.ts`. Different router,
+  different permission, different service.
+
+None of that changes what D4 moves. It does mean F033 could itself sit after
+Tier 6 if strict "onboarding first" ordering were wanted, with
+`PresignResponse` carried by F041 instead. Left where it is because it is
+already built and reviewed, and because relocating a merged-ready PR to save
+one Zod object is churn without a reviewer benefit.
 
 **Nothing else moves.** F034 still depends on F033, F035 still depends on F034,
 and F062 — vehicle photo upload UI, the feature people usually mean when they
