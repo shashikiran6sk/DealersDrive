@@ -400,15 +400,22 @@ export const registry: RegistryEntry[] = [
       'Wizard',
       'onboarding-wizard',
     ],
-    features: ['F037', 'F038'],
+    features: ['F037', 'F038', 'F039', 'F041', 'F042', 'F043'],
     /**
-     * `session` arrives with F038, because the Account step is its only reader.
-     * The three remaining props on component-map C040 — `cities`, `documents`,
-     * `dealer`, `completeness` — arrive with the step bodies that read them
-     * (F039, F041, F042), and this line grows with them.
+     * `cities` is gone rather than pending: the `cities` table went with it,
+     * and step 2 types its city. `yardPhoto` takes its place in the list —
+     * step 3 renders the hero photograph alongside the KYC checklist.
      */
-    props: ['step', 'session'],
-    states: ['Account', 'Account (prefilled)', 'Business', 'Documents', 'Review'],
+    props: ['step', 'session', 'documents', 'dealer', 'completeness', 'yardPhoto'],
+    states: [
+      'Account',
+      'Account (prefilled)',
+      'Business',
+      'Business (name taken)',
+      'Documents',
+      'Documents (complete)',
+      'Review',
+    ],
     reusable: false,
     storyId: 'forms-onboardingwizard',
   },
@@ -429,9 +436,32 @@ export const registry: RegistryEntry[] = [
     ],
     features: ['F041'],
     props: ['document'],
-    states: ['required', 'uploading', 'in review', 'verified', 'rejected'],
+    states: ['required', 'uploading', 'deleting', 'in review', 'verified', 'rejected'],
     reusable: false,
     storyId: 'forms-documentuploader',
+  },
+  {
+    id: 'C041b',
+    name: 'YardPhotoUploader',
+    source: 'apps/web/src/features/auth/yard-photo-uploader.tsx',
+    category: 'Forms',
+    ownership: 'Feature-specific',
+    purpose:
+      'The dealership hero image: presign/PUT/commit, a preview, replace and delete.',
+    aliases: [
+      'YardPhoto',
+      'CoverPhotoUploader',
+      'HeroImageUploader',
+      'BannerUploader',
+      'PhotoUploader',
+      'ImageUpload',
+      'yard-photo-uploader',
+    ],
+    features: ['F041'],
+    props: ['photo'],
+    states: ['empty', 'uploaded', 'uploading', 'deleting', 'error'],
+    reusable: false,
+    storyId: 'forms-yardphotouploader',
   },
   {
     id: 'C042',
@@ -488,6 +518,27 @@ export const registry: RegistryEntry[] = [
     ],
     reusable: false,
     storyId: 'admin-dealeradminactions',
+  },
+  {
+    id: 'C062b',
+    name: 'DocumentReview',
+    source: 'apps/web/src/features/admin/document-review.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    purpose: 'The KYC checklist with a verdict on each row — verify, or reject with a reason.',
+    aliases: [
+      'KycReview',
+      'DocumentVerification',
+      'VerifyDocument',
+      'RejectDocument',
+      'AdminDocuments',
+      'document-review',
+    ],
+    features: ['F044'],
+    props: ['documents'],
+    states: ['awaiting decision', 'verified', 'rejected', 'not uploaded', 'rejecting', 'in flight'],
+    reusable: false,
+    storyId: 'admin-documentreview',
   },
   {
     id: 'C066',

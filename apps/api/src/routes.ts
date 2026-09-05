@@ -8,7 +8,6 @@ import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
 import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
-import { createLocationsRouter } from './modules/locations/locations.routes.js';
 import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
 
 /**
@@ -52,7 +51,6 @@ export function createRoutes(container: Container): Router {
 
   // ── public ────────────────────────────────────────────────────────────
   v1.use(createConfigRouter(container.publicConfig));
-  v1.use(createLocationsRouter(container.locations));
 
   // ── auth ──────────────────────────────────────────────────────────────
   // Two routers on one prefix, in this order. The first answers the paths that

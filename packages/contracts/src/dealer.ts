@@ -57,7 +57,6 @@ export const DealerProfile = z.object({
   }),
   address: z.object({
     line: z.string().nullable(),
-    cityId: Uuid.nullable(),
     city: z.string().nullable(),
     state: z.string().nullable(),
     pincode: z.string().nullable(),
@@ -97,7 +96,12 @@ const PAN = z
  */
 export const UpdateDealerInput = z
   .object({
-    brandName: z.string().trim().min(2).max(120).optional(),
+    /**
+     * The dealership's registered name, and the only name it has. `brandName`
+     * is absent from this schema deliberately: it is the server-written display
+     * mirror of `legalName`, and a client able to set the two independently is
+     * a client able to make them disagree.
+     */
     legalName: z.string().trim().min(2).max(160).optional(),
     tagline: z.string().trim().max(200).optional(),
     about: z.string().trim().max(4000).optional(),
@@ -118,8 +122,26 @@ export const UpdateDealerInput = z
     address: z
       .object({
         line: z.string().trim().max(200).optional(),
-        cityId: Uuid.optional(),
-        state: z.string().trim().max(60).optional(),
+        /**
+         * Locality as free text, not as a foreign key.
+         *
+         * ── Deliberate divergence from the baseline ───────────────────────
+         * The baseline resolved a `citySlug` against a five-row `cities`
+         * table, and took the dealership's coordinates off the row it found.
+         * That made the reach of the product a database migration: a dealer in
+         * Salem could not complete this form, and a dealer in Bengaluru could
+         * not be described by it at all, because `state` was whatever the
+         * catalogue said rather than where the yard is.
+         *
+         * So the table is gone and both are typed. The cost is that
+         * `lat`/`lng` are no longer set here — a city row carried them, a
+         * string cannot — and geocoding is a separate concern with its own
+         * feature. Nothing reads those columns yet; the distance sort that
+         * will arrives with search.
+         * ──────────────────────────────────────────────────────────────────
+         */
+        city: z.string().trim().min(2).max(80).optional(),
+        state: z.string().trim().min(2).max(80).optional(),
         pincode: z
           .string()
           .trim()
@@ -227,6 +249,51 @@ export type DocumentCommitInput = z.infer<typeof DocumentCommitInput>;
 
 export const DocTypeParam = z.object({ type: DealerDocType }).strict();
 export type DocTypeParam = z.infer<typeof DocTypeParam>;
+
+/**
+ * The yard photograph — the hero of the dealership's public portfolio.
+ *
+ * It is not a KYC document, and it deliberately does not travel with them. The
+ * three KYC documents are private, have no public delivery route and exist to
+ * be checked once; this image is the first thing a buyer will ever see of the
+ * dealership. Same presign → PUT → commit pipeline, different prefix,
+ * different destiny.
+ *
+ * It lands on `dealer.coverMediaId` — the cover slot the profile already
+ * carries — rather than on a column of its own, because that is exactly what
+ * a cover image is.
+ */
+export const YARD_PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const YARD_PHOTO_MAX_BYTES = 10 * 1024 * 1024;
+
+export const YardPhotoPresignInput = z
+  .object({
+    fileName: z.string().trim().min(1).max(160),
+    mimeType: z.enum(YARD_PHOTO_MIME_TYPES),
+    bytes: z.number().int().min(1).max(YARD_PHOTO_MAX_BYTES),
+    width: z.number().int().min(1).max(20000).optional(),
+    height: z.number().int().min(1).max(20000).optional(),
+  })
+  .strict();
+export type YardPhotoPresignInput = z.infer<typeof YardPhotoPresignInput>;
+
+export const YardPhotoCommitInput = z.object({ mediaId: Uuid }).strict();
+export type YardPhotoCommitInput = z.infer<typeof YardPhotoCommitInput>;
+
+/**
+ * `url` is a short-lived signed read rather than a delivery URL. The derivative
+ * pipeline that content-addresses an image and gives it a permanent public URL
+ * is **F034**; until it exists the only honest way to show the dealer what they
+ * uploaded is to sign a read of the original object.
+ */
+export const YardPhotoDto = z.object({
+  mediaId: Uuid.nullable(),
+  status: MediaStatus.nullable(),
+  fileName: z.string().nullable(),
+  url: z.string().nullable(),
+  uploadedAt: z.string().nullable(),
+});
+export type YardPhotoDto = z.infer<typeof YardPhotoDto>;
 
 export const VehicleMediaDto = z.object({
   mediaId: Uuid,

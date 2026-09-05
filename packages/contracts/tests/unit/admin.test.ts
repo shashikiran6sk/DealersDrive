@@ -92,10 +92,20 @@ describe('the console queries', () => {
     expect(AdminDealerQuery.parse({ limit: '50' }).limit).toBe(50);
   });
 
-  /** The city filter is a slug, so it cannot smuggle a pattern into the query. */
-  it('takes a city slug rather than a name', () => {
-    expect(AdminDealerQuery.safeParse({ city: 'Vellore' }).success).toBe(false);
+  /**
+   * The city filter takes the city's name, not a slug.
+   *
+   * It was a slug because the filter joined `cities`. That table is gone —
+   * a dealership's city is text it typed — so the console filters on the
+   * column directly, whatever case the link that built the filter used. The
+   * bound is length: this is a `contains`-free equality match, so there is no
+   * pattern for it to smuggle.
+   */
+  it('takes the city by name, in any case, within a bound', () => {
+    expect(AdminDealerQuery.safeParse({ city: 'Vellore' }).success).toBe(true);
     expect(AdminDealerQuery.safeParse({ city: 'vellore' }).success).toBe(true);
+    expect(AdminDealerQuery.safeParse({ city: '' }).success).toBe(false);
+    expect(AdminDealerQuery.safeParse({ city: 'x'.repeat(81) }).success).toBe(false);
   });
 
   /** An admin has no tenant, so the dealership is the path, never the body. */

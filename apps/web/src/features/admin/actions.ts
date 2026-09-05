@@ -2,8 +2,10 @@
 
 import {
   ApproveDealerInput,
+  NoteInput,
   ReasonInput,
   type DealerModerationResponse,
+  type VerifyDocumentResponse,
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
@@ -27,12 +29,15 @@ import { ApiError, apiSend } from '@/lib/api';
  * The baseline file also carries the four listing decisions (**F070**, F071)
  * and `grantCreditsAction` (**F054**). Each lands with the endpoint it calls.
  *
- * There is deliberately no `rejectDealerAction` or `reinstateDealerAction`.
- * Both endpoints exist and are documented, but **the baseline console calls
- * neither** — `DealerAdminActions` renders an approve control and a suspend
- * control and nothing else, so those two routes are reachable only through the
- * API reference. Adding buttons for them would be new product work rather than
- * a port; it is noted in the feature-map entry instead.
+ * `reinstateDealerAction` and the two document decisions are **not** ports.
+ * The baseline console called none of them: the endpoints existed and were
+ * documented, and nothing in the UI reached them. That left two dead ends a
+ * moderator could walk into and not walk out of. A suspended dealership could
+ * only be brought back through the API, and — worse — a document could only be
+ * *verified* through the API, which meant `canApprove` (which requires all
+ * three verified) was never true and the approve button never appeared at all.
+ * The three actions below are what make the console's own state machine
+ * traversable.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export interface AdminResult<T = undefined> {
@@ -69,6 +74,75 @@ export async function approveDealerAction(
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not approve that dealer.');
+  }
+}
+
+/**
+ * Suspension is not a terminal state, and the console should not treat it as
+ * one. This is the way back: SUSPENDED → ACTIVE, which restores every listing
+ * the suspension pulled out of the catalogue (rule 6).
+ */
+export async function reinstateDealerAction(
+  dealerId: string,
+  input: unknown,
+): Promise<AdminResult<DealerModerationResponse>> {
+  const parsed = NoteInput.safeParse(input ?? {});
+  if (!parsed.success) return { ok: false, message: 'That note is not valid.' };
+
+  try {
+    const data = await apiSend<DealerModerationResponse>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/reinstate`,
+      parsed.data,
+    );
+    refreshAdmin();
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not reinstate that dealer.');
+  }
+}
+
+/**
+ * D5. The two KYC decisions.
+ *
+ * Approving a dealership requires all three documents verified, and verifying
+ * one was previously an API-only action — so the approve control was
+ * unreachable from the console by construction. These are what close that loop.
+ */
+export async function verifyDocumentAction(
+  documentId: string,
+): Promise<AdminResult<VerifyDocumentResponse>> {
+  try {
+    const data = await apiSend<VerifyDocumentResponse>(
+      'POST',
+      `/v1/admin/documents/${documentId}/verify`,
+    );
+    refreshAdmin();
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not verify that document.');
+  }
+}
+
+export async function rejectDocumentAction(
+  documentId: string,
+  input: unknown,
+): Promise<AdminResult<VerifyDocumentResponse>> {
+  const parsed = ReasonInput.safeParse(input);
+  // The dealer reads this verbatim and re-uploads against it, so it is the one
+  // field on this screen that cannot be left to a default.
+  if (!parsed.success) return { ok: false, message: 'A rejection needs a reason.' };
+
+  try {
+    const data = await apiSend<VerifyDocumentResponse>(
+      'POST',
+      `/v1/admin/documents/${documentId}/reject`,
+      parsed.data,
+    );
+    refreshAdmin();
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not reject that document.');
   }
 }
 

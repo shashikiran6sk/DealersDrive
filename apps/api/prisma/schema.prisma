@@ -114,16 +114,30 @@ enum AdminRole {
 model Dealer {
   id                 String       @id @default(uuid()) @db.Uuid
   slug               String       @unique
+  /// The display mirror of `legalName`, written by the server and by nothing
+  /// else. Onboarding asks for one name; this is where it is shown from.
   brandName          String
+  /// Unique **per city** — see `@@unique([legalName, city])` below.
   legalName          String
-  gstin              String?
+  /// Unique where present. Nullable columns permit many NULLs in a Postgres
+  /// unique index, which is exactly right: a dealership that has not entered a
+  /// GSTIN yet must not collide with every other one that has not either.
+  gstin              String?      @unique
   pan                String?
   about              String?
   tagline            String?
   logoMediaId        String?      @db.Uuid
   coverMediaId       String?      @db.Uuid
   status             DealerStatus @default(DRAFT)
-  cityId             String?      @db.Uuid
+  /// Locality as text, not as a foreign key to a five-row table.
+  ///
+  /// `cityId -> cities.id` is gone, and with it the constraint that a
+  /// dealership could only exist in a city somebody had seeded. `lat`/`lng`
+  /// came off that row and are now written by nothing; they stay because the
+  /// distance sort that reads them is a real feature, and geocoding a typed
+  /// address is its problem rather than onboarding's.
+  city               String?
+  state              String?
   addressLine        String?
   pincode            String?
   lat                Float?
@@ -145,7 +159,6 @@ model Dealer {
   statusReason       String?
   createdAt          DateTime     @default(now())
 
-  city      City?            @relation(fields: [cityId], references: [id])
   members   DealerMember[]
   documents DealerDocument[]
   // vehicles    Vehicle[]              ← returns with F055
@@ -159,7 +172,25 @@ model Dealer {
   // viewsDaily  ListingViewDaily[]     ← returns with its own feature
   // phoneReveal PhoneReveal[]          ← returns with F090
 
-  @@index([status, cityId])
+  /// Two dealerships may share a name; two dealerships in one city may not.
+  ///
+  /// A global unique on `legalName` was the first shape of this rule, and it
+  /// was wrong in a way that only shows up at scale: "Sri Balaji Motors" is a
+  /// name three unrelated families use in three different towns, and the first
+  /// one to sign up locked the other two out of the product. Within a single
+  /// city it is the opposite — the same name is a duplicate application or an
+  /// impersonation, and a buyer cannot tell which dealership they are calling.
+  ///
+  /// Postgres permits many NULLs in a unique index, so a dealership without a
+  /// city does not collide with every other one that has none either.
+  /// Onboarding always writes one; the nullability is for rows that predate it.
+  ///
+  /// The index is the guarantee. The service reads first and compares
+  /// case-insensitively, because "SRI LAKSHMI MOTORS" would otherwise walk
+  /// straight past a case-sensitive index — that read is the error message,
+  /// this is the constraint.
+  @@unique([legalName, city])
+  @@index([status, city])
   @@map("dealers")
 }
 
@@ -206,24 +237,17 @@ model DealerDocument {
 }
 
 // ─────────── LOCATIONS ───────────────────────────────────────────────────
-// `City` arrives here for the same reason `DealerDocument` does: `Dealer.city`
-// is part of `dealerInclude`. F026 owns the `locations` module, `GET /v1/cities`
-// and the reference data itself; this is the table those need.
-model City {
-  id       String  @id @default(uuid()) @db.Uuid
-  slug     String  @unique
-  name     String
-  state    String
-  lat      Float
-  lng      Float
-  isActive Boolean @default(true)
-
-  dealers Dealer[]
-  // vehicles Vehicle[]   ← returns with F055
-
-  @@map("cities")
-}
-
+// There is no `City` model, and that is the second deliberate divergence from
+// the baseline after D1.
+//
+// D1 removed the vehicle catalogue for the reason recorded in CLAUDE.md §5;
+// `City` survived it because cities are not catalogue data. On the evidence of
+// the first onboarding flow they are: the table held five towns in one state,
+// so it decided which dealerships could exist rather than describing the ones
+// that do. `Dealer.city` and `Dealer.state` are text, normalised on write by
+// `normaliseLocality` in the contracts package, and search will build its
+// facets from the localities dealers actually trade in.
+//
 enum DealerStatus {
   DRAFT
   PENDING_APPROVAL

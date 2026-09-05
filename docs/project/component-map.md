@@ -443,8 +443,9 @@ Compressed to one row each. All are `'use client'` unless noted, all are
 
 | ID   | Component                            | Location                                    | Key props                                                                                                   | States                                                                      | Feature   | Priority                                  |
 | ---- | ------------------------------------ | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | --------- | ----------------------------------------- |
-| C040 | `OnboardingWizard`                   | `features/auth/onboarding-wizard.tsx:38`    | `step`, `session`, `cities`, `documents`, `dealer`, `completeness`                                          | 4 steps × valid/invalid/submitting                                          | F037–F042 | **P0**                                    |
-| C041 | `DocumentUploader`                   | `features/auth/document-uploader.tsx:48`    | `document: DealerDocumentDto`                                                                               | empty, uploading, uploaded, verified, rejected, >5 MB, wrong MIME           | F041      | **P0**                                    |
+| C040 | `OnboardingWizard`                   | `features/auth/onboarding-wizard.tsx:57`    | `step`, `session`, `documents`, `dealer`, `completeness`, `yardPhoto` — ⚠️ `cities` removed by **D6**       | 4 steps × valid/invalid/submitting, name-taken                              | F037–F043 | **P0** ✅                                 |
+| C041 | `DocumentUploader`                   | `features/auth/document-uploader.tsx:48`    | `document: DealerDocumentDto`                                                                               | empty, uploading, deleting, uploaded, verified, rejected, >5 MB, wrong MIME | F041      | **P0** ✅                                 |
+| C041b | `YardPhotoUploader`                 | `features/auth/yard-photo-uploader.tsx:28`  | `photo: YardPhotoDto`                                                                                       | empty, uploaded, uploading, deleting, error                                 | F041      | **P0** ✅                                 |
 | C042 | `AdminLoginForm`                     | `features/auth/admin-login-form.tsx:18`     | `initialMessage?`                                                                                           | idle, error, submitting                                                     | F019      | P1                                        |
 | C043 | `SignOutButton`                      | `features/auth/sign-out.tsx:10`             | `scope?: 'dealer'\|'admin'`, `className?`                                                                   | 2 scopes                                                                    | F020      | P3                                        |
 | C044 | `DealerProfileForm`                  | `features/dealer/profile-form.tsx:23`       | `dealer: DealerProfile`                                                                                     | empty, populated, field errors, saved, server error                         | F046      | **P1**                                    |
@@ -465,7 +466,8 @@ Compressed to one row each. All are `'use client'` unless noted, all are
 | C059 | `ReportSummary`                      | `features/report/report-summary.tsx:29`     | `report: VehicleReportSummary`                                                                              | per verdict tone                                                            | F068      | **P1**                                    |
 | C060 | `ReviewActions`                      | `features/admin/review-actions.tsx:24`      | `listing: AdminListingDetail`                                                                               | per listing status × pending × error; uses **Radix Dialog**                 | F070      | **P0**                                    |
 | C061 | `QueueApproveButton`                 | `features/admin/queue-actions.tsx:15`       | `listingId`, `title`                                                                                        | idle, pending, error                                                        | F069      | P2                                        |
-| C062 | `DealerAdminActions`                 | `features/admin/dealer-actions.tsx:36`      | `dealer: AdminDealerDetail`                                                                                 | per dealer status × suspend form × pending × error — grant form at **F054** | F045      | **P0**                                    |
+| C062 | `DealerAdminActions`                 | `features/admin/dealer-actions.tsx:36`      | `dealer: AdminDealerDetail`                                                                                 | per dealer status × approve (enabled/disabled) × suspend form × reinstate × pending × error — grant form at **F054** | F045      | **P0** ✅                                 |
+| C062b | `DocumentReview`                    | `features/admin/document-review.tsx:32`     | `documents: AdminDealerDetail['documents']`                                                                 | awaiting decision, verified, rejected, not uploaded, rejecting, in flight, empty | F044      | **P0** ✅                                 |
 | C063 | `ModerationStrip`                    | `features/admin/moderation-strip.tsx:12`    | `photos: {id,position,label,url}[]`                                                                         | 0, 1, 12 photos                                                             | F070      | P2                                        |
 | C064 | `ConfigRow`                          | `features/admin/config-editor.tsx:12`       | `entry: ConfigEntry`                                                                                        | boolean/number/string × clean/dirty/saving/saved/error                      | F072      | **P1**                                    |
 | C065 | `QueryProvider`                      | `features/query/query-provider.tsx:16`      | `children`                                                                                                  | — (provider)                                                                | F091      | _(decorator)_                             |
@@ -681,9 +683,24 @@ disappear or change with it.
 | C048 `BasicsFields`     | `catalog` drives make → model → variant cascading selects                     | **The largest change.** Three dependent selects become free-text fields with a suggest-existing guard rail. This is where facet fragmentation is prevented or created (`feature-map.md` F060 ⚠️).                                       |
 | C049 `DetailsFields`    | `catalog` supplies colour and RTO options                                     | `catalog` removed; colour and RTO become free text or a static constant list.                                                                                                                                                           |
 
-**Not affected:** `CitySelector` and everything reading `City` — `City` survives
-D1 as its own feature (F026). Nothing in `components/` reads
-`rc-aliases.ts`, which also survives unchanged.
+**Not affected by D1:** nothing in `components/` reads `rc-aliases.ts`, which
+survives unchanged.
+
+⚠️ **`CitySelector` and everything reading `City` — reassessed by D6.** This
+table said they were untouched because `City` survived D1 as its own feature
+(F026). It does not survive **D6**: the table, the module and `GET /v1/cities`
+are gone, and a dealership's city is text it typed.
+
+| Component                     | Today                                              | After D6                                                                                                                                    |
+| ----------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| C020 `CustomerHeader`         | `cities: CitiesResponse`                          | The list comes from the search facets (**F076**) — the cities dealers actually trade in, rather than five seeded rows with nothing behind them |
+| C040 `OnboardingWizard`       | `cities` prop, a `<select>` and a disabled `State` | Prop removed. City and state are two required text inputs, normalised on write                                                              |
+| C049 `DetailsFields`          | `catalog` supplies a city for the vehicle location | Free text like the dealership's, sharing F060's suggest-existing control                                                                    |
+| `CitySelector` (**F074**)     | reads `GET /v1/cities`                            | reads the facets. Its behaviour — short list / long list / none selected / open / fallback — is unchanged; only where the list comes from is |
+
+`C018 Combobox` gains back some of the justification D1 took from it: the
+suggest-from-existing-values input now has city and state as consumers as well
+as make and model.
 
 **Sandbox consequence.** These six are the only entries whose props are known to
 be wrong for the target state. Their stories should be written **after** F060

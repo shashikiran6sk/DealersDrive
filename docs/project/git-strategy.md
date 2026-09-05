@@ -354,7 +354,7 @@ is part of the definition of done" means in practice.
 
 | Risk                                               | Detail                                                                                                                                                                                            | Mitigation                                                                                                                                                                                        |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Splitting a working 42k-line system**            | `decc10c` contains most of the product in one commit. Any per-feature split risks losing behaviour that nothing tests — and the web layer has 13.83 % coverage, so most UI behaviour is untested. | Additive reconstruction (§5). Every reconstructed PR is diffed against `f05acdc`. The final state must differ from it **only by the sanctioned D1 divergence** — see the verification gate below. |
+| **Splitting a working 42k-line system**            | `decc10c` contains most of the product in one commit. Any per-feature split risks losing behaviour that nothing tests — and the web layer has 13.83 % coverage, so most UI behaviour is untested. | Additive reconstruction (§5). Every reconstructed PR is diffed against `f05acdc`. The final state must differ from it **only by the sanctioned D1 and D6 divergences** — see the verification gate below. |
 | **`prisma/schema.prisma` — 27 models in one file** | Every full-stack feature must add models to the same file. 20 PRs all editing one 1,010-line file.                                                                                                | Strict tier order (`feature-map.md`). Rebase, never merge, while a feature branch is open. Accept that migrations must be regenerated per feature.                                                |
 
 ### HIGH
@@ -499,17 +499,20 @@ it is the _same code_, re-delivered in reviewable slices. Any unexplained
 difference is a bug introduced by the reorganisation, and the diff is how it
 gets caught.
 
-### Final convergence — amended by D1
+### Final convergence — amended by D1 and D6
 
 The original gate was _"the diff must be empty."_ **Decision D1 removes the
-seeded database catalogue**, so the reconstruction is deliberately no longer
-byte-identical to `f05acdc`. The gate becomes:
+seeded database catalogue** and **decision D6 removes the `cities` table**, so
+the reconstruction is deliberately no longer byte-identical to `f05acdc`. The
+gate becomes:
 
 ```text
 git diff baseline/pre-reorg-2026-09-02 reconstruction -- apps/ packages/
 ```
 
-must contain **only the sanctioned D1 divergence**, and nothing else:
+must contain **only the sanctioned D1 and D6 divergences**, and nothing else.
+
+**D1 — the seeded database catalogue:**
 
 | Expected difference                                                           | Where                           |
 | ----------------------------------------------------------------------------- | ------------------------------- |
@@ -521,10 +524,24 @@ must contain **only the sanctioned D1 divergence**, and nothing else:
 | the catalog BFF proxy route deleted                                           | `apps/web/src/app/api/`         |
 | make/model/variant fields become free text with a suggest-existing guard rail | F060 — `basics-fields.tsx`      |
 
-**Everything else must still be empty.** `City`, `GET /v1/cities` and
-`GET /v1/config/public` are **not** part of D1 and must survive byte-identical
-(F026 and F029). `apps/api/src/platform/rc/rc-aliases.ts` is a committed
-constant, not a catalogue table, and must survive **unchanged**.
+**D6 — the `cities` table:**
+
+| Expected difference                                                           | Where                                           |
+| ----------------------------------------------------------------------------- | ------------------------------------------------- |
+| `City` model deleted; `Dealer.cityId` → `Dealer.city` + `Dealer.state` (text) | `apps/api/prisma/schema.prisma`                 |
+| `dealers.legalName` unique becomes `@@unique([legalName, city])`              | `apps/api/prisma/schema.prisma`                 |
+| `modules/locations/**` deleted, `GET /v1/cities` unmounted                    | `apps/api/src/modules/`, `apps/api/src/routes.ts` |
+| `CitiesResponse`, `CityRef` removed; `normaliseLocality` added                | `packages/contracts/`                           |
+| `OnboardingInput.citySlug` → `city` + `state`; same on `UpdateDealerInput`    | `packages/contracts/`                           |
+| `CITIES` removed from the seed                                                | `apps/api/prisma/seed/`                         |
+| the city dropdown and disabled State box become two text inputs               | `onboarding-wizard.tsx`                         |
+
+**Everything else must still be empty.** `GET /v1/config/public` is part of
+neither decision and must survive byte-identical (F029).
+`apps/api/src/platform/rc/rc-aliases.ts` is a committed constant, not a
+catalogue table, and must survive **unchanged** — the test that separates it
+from `City` is in `CONTEXT.md` §7: a reference table is catalogue data if it
+gates who or what may exist, and an alias map gates nothing.
 
 The practical consequence: write the exclusion as an explicit pathspec so the
 gate stays honest rather than being loosened by hand each time.
@@ -535,9 +552,10 @@ git diff baseline/pre-reorg-2026-09-02 reconstruction -- apps/ packages/ \
   ':!apps/api/src/modules/catalog'
 ```
 
-That command must be empty except for the schema, routes, contracts and
-`basics-fields.tsx` hunks listed above, each of which is reviewed once, by a
-human, against the D1 entry in `feature-map.md`. Documentation, CI and the
+That command must be empty except for the schema, routes, contracts,
+`basics-fields.tsx` and `onboarding-wizard.tsx` hunks listed above, each of
+which is reviewed once, by a human, against the D1 and D6 entries in
+`feature-map.md`. Documentation, CI and the
 sandbox differ by design throughout.
 
 ---

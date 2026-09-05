@@ -10,24 +10,14 @@ import { z } from 'zod';
  * search, facets, the home page, vehicle detail, the dealer directory. Each
  * shape arrives with the feature that first answers with it, so this file grows
  * rather than landing whole. `PublicConfig` is here because **F029** serves it
- * from `GET /v1/config/public`, and `CitiesResponse` because **F026** serves
- * it from `GET /v1/cities`.
+ * from `GET /v1/config/public`.
+ *
+ * `CitiesResponse` (A12) was here too, for F026's `GET /v1/cities`. It is gone
+ * with the `cities` table — see the locality note in `dealer.ts`. Search will
+ * offer the cities dealers actually trade in, counted from `listing_search` at
+ * **F076**, rather than the five somebody typed into a seed file.
  * ────────────────────────────────────────────────────────────────────────────
  */
-
-// ─────────── A12 cities ────────────────────────────────────────────────────
-export const CitiesResponse = z.object({
-  data: z.array(
-    z.object({
-      slug: z.string(),
-      name: z.string(),
-      state: z.string().optional(),
-      count: z.number().int(),
-    }),
-  ),
-  default: z.string(),
-});
-export type CitiesResponse = z.infer<typeof CitiesResponse>;
 
 // ─────────── A14 public config ─────────────────────────────────────────────
 export const PublicConfig = z.object({

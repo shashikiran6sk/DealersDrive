@@ -46,3 +46,20 @@ export async function approveDealerAction(dealerId: string, input: unknown) {
 export async function suspendDealerAction(dealerId: string, input: unknown) {
   return respond('suspendDealer', dealerId, input);
 }
+
+export async function reinstateDealerAction(dealerId: string, input: unknown) {
+  return respond('reinstateDealer', dealerId, input);
+}
+
+/**
+ * The two KYC decisions. They are keyed by document rather than by dealer, so
+ * `dealerId` above carries the document id for these — the stub records what
+ * was called with what, and a story asserts on the pair.
+ */
+export async function verifyDocumentAction(documentId: string) {
+  return respond('verifyDocument', documentId, undefined);
+}
+
+export async function rejectDocumentAction(documentId: string, input: unknown) {
+  return respond('rejectDocument', documentId, input);
+}

@@ -1,8 +1,8 @@
 import type {
   AuthSession,
-  CitiesResponse,
   CompletenessResponse,
   DealerDocumentDto,
+  YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -81,16 +81,14 @@ const DOCUMENTS: DealerDocumentDto[] = [
   document({ type: 'ADDRESS_PROOF', label: 'Address proof' }),
 ];
 
-/**
- * `GET /v1/cities` as the Business step sees it. The `all` row is the one that
- * matters here: it is a *search filter*, not a place a dealership can be, and
- * the step has to drop it.
- */
-const CITIES: CitiesResponse['data'] = [
-  { slug: 'all', name: 'All of Tamil Nadu', count: 412 },
-  { slug: 'vellore', name: 'Vellore', state: 'Tamil Nadu', count: 88 },
-  { slug: 'chennai', name: 'Chennai', state: 'Tamil Nadu', count: 210 },
-];
+/** `GET /v1/dealer/yard-photo` before anything has been uploaded. */
+const NO_YARD_PHOTO: YardPhotoDto = {
+  mediaId: null,
+  status: null,
+  fileName: null,
+  url: null,
+  uploadedAt: null,
+};
 
 /**
  * A session for a Google account that has signed in and has no dealership yet
@@ -111,8 +109,10 @@ function session(
       id: '00000000-0000-4000-8000-000000000001',
       fullName: null,
       roleTitle: null,
-      phone: '',
-      phoneDisplay: '',
+      // A real number, because step 1 now refuses to advance without one and
+      // nearly every test below walks through it.
+      phone: '9840012345',
+      phoneDisplay: '98400 12345',
       email: 'karthik@srilakshmimotors.in',
       emailVerified: true,
       ...overrides.user,
@@ -148,10 +148,10 @@ describe('OnboardingWizard — the frame', () => {
       <OnboardingWizard
         step={0}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
@@ -172,10 +172,10 @@ describe('OnboardingWizard — the frame', () => {
       <OnboardingWizard
         step={step}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
     expect(filledSteps()).toEqual([...expected]);
@@ -192,10 +192,10 @@ describe('OnboardingWizard — the frame', () => {
       <OnboardingWizard
         step={0}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
@@ -211,10 +211,10 @@ describe('OnboardingWizard — the frame', () => {
       <OnboardingWizard
         step={1}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
@@ -224,23 +224,97 @@ describe('OnboardingWizard — the frame', () => {
     expect(navigationState.pushed).toEqual([]);
   });
 
-  /** There is nothing behind step 1, so Back leaves onboarding altogether. */
-  it('leaves onboarding for sign-in on Back from Account', async () => {
-    const user = userEvent.setup();
+  /**
+   * There is nothing behind step 1, so it offers no way back.
+   *
+   * The baseline's Back here went to `/dealer/login` — not a step of this
+   * wizard, and a control that abandons the flow the dealer is halfway through.
+   * Every *other* step has one, which is what makes its absence read as "this
+   * is the beginning" rather than as an omission.
+   */
+  it('offers no Back on Account — it is the first step', () => {
     render(
       <OnboardingWizard
         step={0}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+  });
 
-    expect(navigationState.pushed).toEqual(['/dealer/login']);
+  /**
+   * Step 1 refuses to advance on an empty required field.
+   *
+   * The server validates these too and is the only thing that counts — but its
+   * verdict would not arrive until the dealer had filled in step 2 and pressed
+   * Continue, which is four fields and a city later than the mistake.
+   */
+  it('refuses to leave Account while a required field is empty', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ user: { phone: '' }, identity: { name: null } })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(filledSteps()).toEqual(['Account']);
+    expect(screen.getByText('Tell us your name.')).toBeInTheDocument();
+    expect(screen.getByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
+  });
+
+  it('advances once the required fields are filled', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ user: { phone: '' }, identity: { name: null } })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(filledSteps()).toEqual(['Account']);
+
+    await user.type(screen.getByLabelText('Full name'), 'Karthik Raman');
+    await user.type(screen.getByLabelText(/^Phone/), '9840012345');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(filledSteps()).toEqual(['Account', 'Business']);
+  });
+
+  /** A malformed number is refused as firmly as a missing one. */
+  it('refuses a phone number that is not an Indian mobile', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ user: { phone: '12345' } })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(filledSteps()).toEqual(['Account']);
+    expect(screen.getByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
   });
 });
 
@@ -271,17 +345,27 @@ describe('OnboardingPage — the floor the server sets', () => {
   /**
    * Renders the page and reports the step it opened on.
    *
-   * The page reads two endpoints now — the session that sets the floor, and
-   * `/v1/cities` for the Business step — so the stub answers by path rather
-   * than returning one body for everything.
+   * The page reads several endpoints — the session that sets the floor, and
+   * the dealership-scoped four — so the stub answers by path rather than
+   * returning one body for everything.
    */
   async function openedAt(dealer: { status: string } | null, step?: string): Promise<number> {
     const { apiGet } = await import('@/lib/api');
     vi.mocked(apiGet).mockImplementation((path: string) => {
-      if (path.startsWith('/v1/cities')) return Promise.resolve({ data: CITIES });
       if (path.startsWith('/v1/dealer/documents')) return Promise.resolve({ data: DOCUMENTS });
-      if (path === '/v1/dealer') return Promise.resolve({ gstin: null, pan: null });
+      if (path === '/v1/dealer') {
+        // Enough of `DealerProfile` for steps 1 and 2 to prefill from: they
+        // amend an existing dealership now rather than only creating one.
+        return Promise.resolve({
+          legalName: 'A Dealer',
+          gstin: null,
+          pan: null,
+          contact: { fullName: null, roleTitle: null, phone: '9840012345', landline: null },
+          address: { line: null, city: null, state: null, pincode: null },
+        });
+      }
       if (path.startsWith('/v1/dealer/completeness')) return Promise.resolve(completeness());
+      if (path.startsWith('/v1/dealer/yard-photo')) return Promise.resolve(NO_YARD_PHOTO);
       return Promise.resolve(sessionWith(dealer));
     });
 
@@ -295,7 +379,7 @@ describe('OnboardingPage — the floor the server sets', () => {
     expect(await openedAt(null)).toBe(0);
   });
 
-  it('opens a DRAFT dealership at Documents — steps 1 and 2 are behind it', async () => {
+  it('lands a DRAFT dealership on Documents — the step it had reached', async () => {
     expect(await openedAt({ status: 'DRAFT' })).toBe(2);
   });
 
@@ -303,15 +387,34 @@ describe('OnboardingPage — the floor the server sets', () => {
     expect(await openedAt({ status: 'PENDING_APPROVAL' })).toBe(3);
   });
 
-  it('refuses a ?step= below the floor', async () => {
-    expect(await openedAt({ status: 'DRAFT' }, '0')).toBe(2);
+  /**
+   * Where it lands and how far back it goes are two different questions.
+   *
+   * The floor used to be 2 once a dealership existed, on the reasoning that
+   * steps 1 and 2 *create* it and so are behind you. True of the write, false
+   * of the dealer: a name typed wrong could not be corrected without an admin,
+   * and step 3's Back button pointed at a step the server would bounce them
+   * off. Steps 1 and 2 amend as readily as they create now, so a DRAFT
+   * dealership may walk back to either.
+   */
+  it('lets a DRAFT dealership walk back to Account', async () => {
+    expect(await openedAt({ status: 'DRAFT' }, '0')).toBe(0);
+  });
+
+  it('lets a DRAFT dealership walk back to Business', async () => {
+    expect(await openedAt({ status: 'DRAFT' }, '1')).toBe(1);
+  });
+
+  /** A submitted dealership is the one thing that has nothing left to edit. */
+  it('refuses a ?step= below the floor once submitted', async () => {
+    expect(await openedAt({ status: 'PENDING_APPROVAL' }, '1')).toBe(3);
   });
 
   it('clamps a ?step= past the last step', async () => {
     expect(await openedAt(null, '9')).toBe(3);
   });
 
-  it('falls back to the floor when ?step= is not a number', async () => {
+  it('falls back to the landing step when ?step= is not a number', async () => {
     expect(await openedAt({ status: 'DRAFT' }, 'nonsense')).toBe(2);
   });
 
@@ -340,10 +443,10 @@ describe('OnboardingWizard — the Account step', () => {
       <OnboardingWizard
         step={0}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
@@ -360,10 +463,10 @@ describe('OnboardingWizard — the Account step', () => {
       <OnboardingWizard
         step={0}
         session={session({ identity: null })}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
@@ -375,10 +478,10 @@ describe('OnboardingWizard — the Account step', () => {
       <OnboardingWizard
         step={0}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
@@ -392,10 +495,10 @@ describe('OnboardingWizard — the Account step', () => {
         session={session({
           user: { fullName: 'K. Raman', roleTitle: 'Proprietor', phone: '9840012345' },
         })}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
@@ -415,10 +518,10 @@ describe('OnboardingWizard — the Account step', () => {
       <OnboardingWizard
         step={0}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
@@ -434,13 +537,12 @@ describe('OnboardingWizard — the Account step', () => {
 /**
  * F039 — step 2.
  *
- * Three claims here outlive the layout. The city list is not the city list the
- * search page gets: `/v1/cities` leads with an "All of Tamil Nadu" row, which
- * is a filter and not a place a dealership can be. The state is derived from
- * the city rather than typed, so the two cannot disagree. And Continue on this
- * step is the submit — one form across two screens, sending all nine fields at
- * once, which is what keeps a half-finished sign-up from leaving a half-made
- * tenant behind.
+ * Two claims here outlive the layout. City and state are typed, not chosen:
+ * they were a five-row dropdown and a disabled box beside it, which decided
+ * which dealerships could exist rather than describing the ones that do. And
+ * Continue on this step is the submit — one form across two screens, sending
+ * every field at once, which is what keeps a half-finished sign-up from
+ * leaving a half-made tenant behind.
  */
 describe('OnboardingWizard — the Business step', () => {
   /** Moves to step 2 the way a dealer does, and returns the user-event handle. */
@@ -450,35 +552,43 @@ describe('OnboardingWizard — the Business step', () => {
       <OnboardingWizard
         step={0}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     return user;
   }
 
-  it('offers real cities only — the "all" pseudo-city is a filter, not a place', async () => {
+  /**
+   * The reach of the product used to be a database migration: five towns in
+   * one state, and a dealer outside them could not finish this form at all.
+   */
+  it('asks for the city and the state as text, both required', async () => {
     await onBusinessStep();
 
-    const options = within(screen.getByLabelText('City'))
-      .getAllByRole('option')
-      .map((option) => option.textContent);
+    const city = screen.getByLabelText('City');
+    const state = screen.getByLabelText('State');
 
-    expect(options).toEqual(['Select a city', 'Vellore', 'Chennai']);
+    for (const field of [city, state]) {
+      expect(field.tagName).toBe('INPUT');
+      expect(field).toBeEnabled();
+      expect(field).toBeRequired();
+    }
+    expect(city).toHaveAttribute('name', 'city');
+    expect(state).toHaveAttribute('name', 'state');
   });
 
-  it('derives the state from the chosen city rather than asking for it', async () => {
+  it('takes a city and a state the platform has never seen before', async () => {
     const user = await onBusinessStep();
 
-    const state = screen.getByLabelText('State');
-    expect(state).toBeDisabled();
-    expect(state).not.toHaveAttribute('name');
+    await user.type(screen.getByLabelText('City'), 'Hubballi');
+    await user.type(screen.getByLabelText('State'), 'Karnataka');
 
-    await user.selectOptions(screen.getByLabelText('City'), 'chennai');
-    expect(state).toHaveValue('Tamil Nadu');
+    expect(screen.getByLabelText('City')).toHaveValue('Hubballi');
+    expect(screen.getByLabelText('State')).toHaveValue('Karnataka');
   });
 
   /**
@@ -495,7 +605,9 @@ describe('OnboardingWizard — the Business step', () => {
 
     const form = submit.closest('form');
     expect(form?.querySelector('#fullName')).not.toBeNull();
-    expect(form?.querySelector('#brandName')).not.toBeNull();
+    expect(form?.querySelector('#legalName')).not.toBeNull();
+    // One name, not two — `brandName` is the server's mirror of it.
+    expect(form?.querySelector('#brandName')).toBeNull();
   });
 
   it('keeps its fields in the form when Back returns to Account', async () => {
@@ -503,9 +615,24 @@ describe('OnboardingWizard — the Business step', () => {
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
 
-    const brandName = screen.getByLabelText('Dealership name (public)');
-    expect(brandName.closest('fieldset')).toHaveAttribute('hidden');
+    const legalName = screen.getByLabelText(/^Dealership name/);
+    expect(legalName.closest('fieldset')).toHaveAttribute('hidden');
     expect(navigationState.pushed).toEqual([]);
+  });
+
+  /**
+   * One name, asked for once.
+   *
+   * The baseline asked for a public brand name and a registered legal name side
+   * by side, and dealers filled both in with the same words. `brandName` is now
+   * the server's display mirror of `legalName` and is not a field at all.
+   */
+  it('asks for one dealership name, the registered one', async () => {
+    await onBusinessStep();
+
+    expect(screen.getByLabelText(/^Dealership name/)).toHaveAttribute('name', 'legalName');
+    expect(screen.queryByLabelText('Registered legal name')).toBeNull();
+    expect(screen.queryByLabelText('Dealership name (public)')).toBeNull();
   });
 
   /**
@@ -518,16 +645,16 @@ describe('OnboardingWizard — the Business step', () => {
       <OnboardingWizard
         step={1}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={null}
+        yardPhoto={null}
       />,
     );
 
-    expect(
-      screen.getByLabelText('Dealership name (public)').closest('fieldset'),
-    ).not.toHaveAttribute('hidden');
+    expect(screen.getByLabelText(/^Dealership name/).closest('fieldset')).not.toHaveAttribute(
+      'hidden',
+    );
     expect(screen.getByLabelText('Full name').closest('fieldset')).toHaveAttribute('hidden');
   });
 });
@@ -536,23 +663,34 @@ describe('OnboardingWizard — the Business step', () => {
  * F041 — step 3.
  *
  * This step is reached by navigation rather than locally, so the frame's
- * Back/Continue row is gone and the step brings its own. Two claims are worth
+ * Back/Continue row is gone and the step brings its own. Three claims are worth
  * pinning: the checklist is a row per required document whatever their state,
- * and Continue says how many are still outstanding — a dealer may leave with
- * documents missing, and the button should not pretend otherwise.
+ * the yard photograph sits alongside them, and **Continue does not move while
+ * anything is outstanding**.
+ *
+ * That last one replaces a "Skip for now" and a Continue that merely *counted*
+ * what was missing. Both let a dealer walk to the end of the wizard and only
+ * there be told what they had skipped — the same information, three screens
+ * too late. What counts as outstanding is the server's `completeness` answer,
+ * because it is the same derivation `POST /v1/dealer/submit` refuses on.
  */
 describe('OnboardingWizard — the Documents step', () => {
-  function render_(documents: DealerDocumentDto[], dealer: { gstin?: string; pan?: string } = {}) {
+  function render_(
+    documents: DealerDocumentDto[],
+    dealer: { gstin?: string; pan?: string } = {},
+    blockers: CompletenessResponse | null = completeness(),
+    photo: YardPhotoDto = NO_YARD_PHOTO,
+  ) {
     return render(
       <OnboardingWizard
         step={2}
         session={session({
           dealer: { id: 'd1', slug: 'a', brandName: 'A', status: 'DRAFT' } as never,
         })}
-        cities={CITIES}
         documents={documents}
         dealer={dealer as never}
-        completeness={null}
+        completeness={blockers}
+        yardPhoto={photo}
       />,
     );
   }
@@ -567,31 +705,71 @@ describe('OnboardingWizard — the Documents step', () => {
     }
   });
 
-  /** A dealer may leave with documents missing; the button says how many. */
-  it('counts what is still outstanding on Continue', () => {
+  /**
+   * The yard photograph is on this step because it is where a dealer uploads
+   * things, and it is required for a different reason from the three beside it:
+   * it fronts the public portfolio rather than being read once by a moderator.
+   */
+  it('asks for a photo of the yard, and says what it is for', () => {
     render_(DOCUMENTS);
 
-    expect(
-      screen.getByRole('button', { name: 'Continue (3 still to upload)' }),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Upload a photo of your yard')).toHaveAttribute('type', 'file');
+    expect(screen.getByText(/first thing buyers see/)).toBeInTheDocument();
+    expect(screen.getByText(/clear, well-lit photograph of your yard/)).toBeInTheDocument();
   });
 
-  it('drops the count once nothing is outstanding', () => {
-    render_(DOCUMENTS.map((row) => ({ ...row, status: 'UPLOADED' as const })));
+  it('shows the photo back once one has been uploaded', () => {
+    render_(DOCUMENTS, {}, completeness(), {
+      mediaId: '00000000-0000-4000-8000-00000000000a',
+      status: 'PENDING',
+      fileName: 'yard.jpg',
+      url: 'https://storage.example/signed/yard.jpg',
+      uploadedAt: '2026-09-04T00:00:00.000Z',
+    });
 
-    expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+    expect(screen.getByAltText('The dealership yard, as buyers will see it')).toHaveAttribute(
+      'src',
+      'https://storage.example/signed/yard.jpg',
+    );
+    expect(screen.getByRole('button', { name: 'Replace photo' })).toBeInTheDocument();
   });
 
-  /**
-   * Both controls navigate — the step is reached by a URL the server resolves,
-   * so leaving it is a navigation too, not a local move.
-   */
-  it('moves on by navigation, whether you skip or continue', async () => {
+  /** Nothing outstanding, so the step moves on — by navigation, as it is reached. */
+  it('continues by navigation once nothing is outstanding', async () => {
     const user = userEvent.setup();
     render_(DOCUMENTS);
 
-    await user.click(screen.getByRole('button', { name: 'Skip for now' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
     expect(navigationState.pushed).toEqual(['/dealer/onboarding?step=3']);
+  });
+
+  it('holds Continue while anything is still outstanding', () => {
+    render_(DOCUMENTS, {}, completeness({ documents: ['GST_CERTIFICATE', 'YARD_PHOTO'] }));
+
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  });
+
+  /** And says what, rather than leaving the dealer to guess at a dead button. */
+  it('names what is still outstanding, in words', () => {
+    render_(
+      DOCUMENTS,
+      {},
+      completeness({ business: ['gstin'], documents: ['PAN_CARD', 'YARD_PHOTO'] }),
+    );
+
+    const banner = screen.getByRole('status');
+    expect([...banner.querySelectorAll('li')].map((item) => item.textContent)).toEqual([
+      'PAN card',
+      'Photo of your yard',
+      'GSTIN',
+    ]);
+  });
+
+  /** There is no way to skip past it any more, because there was never a step after. */
+  it('offers no way to skip the step', () => {
+    render_(DOCUMENTS, {}, completeness({ documents: ['GST_CERTIFICATE'] }));
+
+    expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();
   });
 
   /** GSTIN and PAN are a separate PATCH, so they save without leaving the step. */
@@ -602,10 +780,16 @@ describe('OnboardingWizard — the Documents step', () => {
     expect(screen.getByLabelText('PAN')).toHaveValue('AABCS1429B');
   });
 
-  it('leaves the frame’s Back/Continue row behind', () => {
+  /**
+   * Every step but the first goes back. This one's Back is a navigation rather
+   * than a local move, because the step it returns to re-reads the dealership.
+   */
+  it('goes back to Business by navigation', async () => {
+    const user = userEvent.setup();
     render_(DOCUMENTS);
 
-    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(navigationState.pushed).toEqual(['/dealer/onboarding?step=1']);
   });
 });
 
@@ -613,7 +797,7 @@ describe('OnboardingWizard — the Documents step', () => {
  * F043 — what is still missing, in words.
  *
  * The API answers `POST /v1/auth/onboarding` and `POST /v1/dealer/submit` with
- * field keys: `gstin`, `GST_CERTIFICATE`, `cityId`. Those are precise, and they
+ * field keys: `gstin`, `GST_CERTIFICATE`, `city`. Those are precise, and they
  * are not what to put in front of somebody at the end of a sign-up form. The
  * banner translates them, and falls back to the raw key rather than dropping
  * anything it does not recognise — a blocker nobody can see is worse than an
@@ -623,6 +807,7 @@ describe('OnboardingWizard — the Documents step', () => {
  */
 vi.mock('@/features/auth/actions', () => ({
   onboardingAction: vi.fn(),
+  updateOnboardingAction: vi.fn(),
   saveBusinessIdsAction: vi.fn(() => Promise.resolve({})),
   submitForVerificationAction: vi.fn(() => Promise.resolve({})),
 }));
@@ -648,10 +833,10 @@ describe('OnboardingWizard — the outstanding-items list', () => {
       <OnboardingWizard
         step={1}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={blockers}
+        yardPhoto={null}
       />,
     );
 
@@ -662,7 +847,7 @@ describe('OnboardingWizard — the outstanding-items list', () => {
   it('names each blocker in words a dealer can act on', async () => {
     await submitAndFail(
       { message: 'Some details are still missing.' },
-      completeness({ business: ['gstin', 'cityId'], documents: ['GST_CERTIFICATE'] }),
+      completeness({ business: ['gstin', 'city'], documents: ['GST_CERTIFICATE'] }),
     );
 
     expect(await screen.findByText('Some details are still missing.')).toBeInTheDocument();
@@ -692,10 +877,10 @@ describe('OnboardingWizard — the outstanding-items list', () => {
       <OnboardingWizard
         step={1}
         session={session()}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={completeness({ business: ['gstin'] })}
+        yardPhoto={null}
       />,
     );
 
@@ -729,10 +914,10 @@ describe('OnboardingWizard — the Review step', () => {
             status,
           } as never,
         })}
-        cities={CITIES}
         documents={[]}
         dealer={null}
         completeness={blockers}
+        yardPhoto={null}
       />,
     );
   }

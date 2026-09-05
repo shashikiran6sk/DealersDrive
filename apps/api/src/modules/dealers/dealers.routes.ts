@@ -3,10 +3,14 @@ import {
   DocumentCommitInput,
   DocumentPresignInput,
   UpdateDealerInput,
+  YardPhotoCommitInput,
+  YardPhotoPresignInput,
   type DocTypeParam as DocTypeParamType,
   type DocumentCommitInput as DocumentCommitInputType,
   type DocumentPresignInput as DocumentPresignInputType,
   type UpdateDealerInput as UpdateDealerInputType,
+  type YardPhotoCommitInput as YardPhotoCommitInputType,
+  type YardPhotoPresignInput as YardPhotoPresignInputType,
 } from '@dealers-drive/contracts';
 import { Router } from 'express';
 
@@ -144,6 +148,69 @@ export function createDealersRouter(service: DealersService): Router {
       })();
     },
   );
+
+  /**
+   * The yard photograph — three writes and a read, mounted beside the KYC
+   * documents because a dealer meets them on the same onboarding step, and
+   * kept separate from them because it is the opposite kind of image: destined
+   * for the public portfolio rather than for a moderator's eyes only.
+   */
+  router.get('/yard-photo', (req, res, next) => {
+    void (async () => {
+      try {
+        const { dealerId } = dealerPrincipal(req);
+        res.json(await service.yardPhoto(dealerId));
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
+
+  router.post(
+    '/yard-photo/presign',
+    requirePermission('document:upload'),
+    validate({ body: YardPhotoPresignInput }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const { dealerId } = dealerPrincipal(req);
+          const body = validated<YardPhotoPresignInputType>(req, 'body');
+          res.status(201).json(await service.presignYardPhoto(dealerId, body));
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
+
+  router.post(
+    '/yard-photo/commit',
+    requirePermission('document:upload'),
+    validate({ body: YardPhotoCommitInput }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const { dealerId } = dealerPrincipal(req);
+          const body = validated<YardPhotoCommitInputType>(req, 'body');
+          res.json(await service.commitYardPhoto(dealerId, body));
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
+
+  router.delete('/yard-photo', requirePermission('document:upload'), (req, res, next) => {
+    void (async () => {
+      try {
+        const { dealerId } = dealerPrincipal(req);
+        await service.deleteYardPhoto(dealerId);
+        res.status(204).end();
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
 
   return router;
 }

@@ -164,14 +164,14 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
       const rows = await prisma.dealer.findMany({
         where: {
           ...(query.status ? { status: query.status } : {}),
-          ...(query.city ? { city: { slug: query.city } } : {}),
+          // The city is the dealership's own text now, not a slug on a joined
+          // row. Matched case-insensitively so a filter built from one
+          // dealership's `Vellore` still finds another's `vellore`.
+          ...(query.city ? { city: { equals: query.city, mode: 'insensitive' as const } } : {}),
           ...(query.q ? { brandName: { contains: query.q, mode: 'insensitive' } } : {}),
           ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
         },
-        include: {
-          city: true,
-          documents: true,
-        },
+        include: { documents: true },
         orderBy: { createdAt: 'desc' },
         take: query.limit + 1,
       });
@@ -199,7 +199,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
           slug: dealer.slug,
           brandName: dealer.brandName,
           initials: initialsOf(dealer.brandName),
-          city: dealer.city?.name ?? '—',
+          city: dealer.city ?? '—',
           status: dealer.status,
           statusLabel: DEALER_STATUS_LABELS[dealer.status],
           statusTone: DEALER_STATUS_TONES[dealer.status],
@@ -227,7 +227,6 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
       const dealer = await prisma.dealer.findUnique({
         where: { id: dealerId },
         include: {
-          city: true,
           documents: { orderBy: { type: 'asc' } },
           members: { include: { user: true }, where: { role: 'OWNER' } },
         },
@@ -280,6 +279,21 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         }),
       );
 
+      /**
+       * The yard photograph, signed the same way a document is.
+       *
+       * A moderator has to be able to see it. "Is this a clear photograph of
+       * the premises, or is it a screenshot of a logo" is the question the
+       * requirement exists to ask, and it is not one the API can answer.
+       */
+      const yardPhoto = dealer.coverMediaId
+        ? await prisma.media.findUnique({ where: { id: dealer.coverMediaId } })
+        : null;
+      const yardPhotoUrl =
+        yardPhoto && yardPhoto.status !== 'ORPHAN'
+          ? await storage.signedReadUrl(yardPhoto.storageKey, 300)
+          : null;
+
       if (documents.some((doc) => doc.viewUrl)) {
         await audit.recordDetached({
           actorType: 'ADMIN',
@@ -303,7 +317,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         statusReason: dealer.statusReason,
         gstin: dealer.gstin,
         pan: dealer.pan,
-        city: dealer.city?.name ?? null,
+        city: dealer.city,
         addressLine: dealer.addressLine,
         contactName: owner?.user.fullName ?? null,
         contactPhone: dealer.contactPhone,
@@ -320,6 +334,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         },
         documents,
         allDocumentsVerified: allVerified,
+        yardPhotoUrl,
         recentLedger: ledger.map((row) => ({
           id: row.id,
           delta: row.delta,
@@ -329,6 +344,14 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
           balanceAfter: row.balanceAfter,
         })),
         actions: {
+          /*
+           * Approval needs both: an application waiting, and the documents
+           * behind it verified. The console renders the control whenever the
+           * first is true and disables it on the second — `allDocumentsVerified`
+           * is on this response, so it can say *why* rather than showing
+           * nothing at all. A screen with no button on it reads as a broken
+           * screen, and that is how this was being reported.
+           */
           canApprove: dealer.status === 'PENDING_APPROVAL' && allVerified,
           canReject: dealer.status === 'PENDING_APPROVAL',
           canSuspend: dealer.status === 'ACTIVE',

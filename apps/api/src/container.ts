@@ -13,13 +13,7 @@ import type { OAuthProvider } from './modules/auth/oauth.port.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
-import { createLocationsRepository } from './modules/locations/locations.repository.js';
 import { createMediaService, type MediaService } from './modules/media/media.service.js';
-import {
-  createLocationsService,
-  emptyIndex,
-  type LocationsService,
-} from './modules/locations/locations.service.js';
 import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
 import { createAuditService } from './platform/audit/audit.service.js';
 import {
@@ -90,7 +84,6 @@ export interface Container {
   /** The cross-tenant console. Every write it makes names the admin who made it. */
   readonly admin: AdminService;
   readonly publicConfig: ConfigService;
-  readonly locations: LocationsService;
   readonly media: MediaService;
 }
 
@@ -136,12 +129,6 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
   const admin = createAdminService({ prisma, audit, config, storage });
   const publicConfig = createConfigService({ config });
-  // `search` is the real SearchRepository from F076 onward; until the
-  // `listing_search` table exists there is nothing live to count.
-  const locations = createLocationsService({
-    repo: createLocationsRepository(prisma),
-    search: emptyIndex,
-  });
   const media = createMediaService({ prisma, storage, queue });
 
   return {
@@ -162,7 +149,6 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     dealers,
     admin,
     publicConfig,
-    locations,
     media,
   };
 }

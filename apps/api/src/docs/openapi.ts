@@ -6,7 +6,6 @@ import { adminDocs } from '../modules/admin/admin.docs.js';
 import { configDocs } from '../modules/config/config.docs.js';
 import { dealersDocs } from '../modules/dealers/dealers.docs.js';
 import { healthDocs } from '../modules/health/health.docs.js';
-import { locationsDocs } from '../modules/locations/locations.docs.js';
 import { mediaDocs, storageDocs } from '../modules/media/media.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
 import { buildSchemaCatalogue, type JsonSchema, type SchemaCatalogue } from './schemas.js';
@@ -25,17 +24,18 @@ import type { Audience, ModuleDocs, OperationSpec, ResponseSpec } from './spec.j
 
 /*
  * ── Reconstruction slice ──────────────────────────────────────────────────
- * Seven modules, not eleven. `searchDocs`, `enquiriesDocs`, `vehiclesDocs` and
+ * Six modules, not eleven. `searchDocs`, `enquiriesDocs`, `vehiclesDocs` and
  * `billingDocs` describe routes that have not landed yet, and `catalogDocs`
- * never lands at all (decision D1) — its two surviving operations moved to
- * `locationsDocs` and `configDocs`.
+ * never lands at all (decision D1) — the one surviving operation moved to
+ * `configDocs`. `locationsDocs` described `GET /v1/cities`, which went with
+ * the `cities` table: a dealership's city is text it typed, so there is no
+ * list to serve.
  *
  * **Each feature adds its own line here**, in the same PR as its routes. See
  * the API-documentation rule in CLAUDE.md §4.
  */
 const MODULES: ModuleDocs[] = [
   authDocs,
-  locationsDocs,
   configDocs,
   dealersDocs,
   adminDocs,
@@ -47,7 +47,6 @@ const MODULES: ModuleDocs[] = [
 /** Tag order in the UI: buyer-facing, then dealer, then admin, then plumbing. */
 const TAG_ORDER = [
   'Authentication',
-  'Locations',
   'Platform configuration',
   'Dealer account',
   'Admin',
