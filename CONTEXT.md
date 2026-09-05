@@ -272,8 +272,12 @@ Found at F041, the hard way: a green local gate and a red CI.
 `turbo run build` covers `contracts`, `api` and `web`. The sandbox declares a
 `build:sandbox` script rather than a `build` one, deliberately — a broken story
 must never be able to fail a deploy, which is the same reason stories live
-outside `apps/web` at all. CI runs it as its own job (`sandbox typecheck /
-build`).
+outside `apps/web` at all.
+
+⚠️ **Nothing catches this automatically any more.** CI ran it as its own job
+(`sandbox typecheck / build`) until D7, when the job was removed at the
+author's request. This section used to describe a trap CI would catch for you
+on the pull request; it now describes one that reaches `main`.
 
 So `pnpm lint && pnpm typecheck && pnpm test && pnpm build` all green says
 nothing about whether Storybook still builds. **`pnpm --filter
@@ -291,7 +295,8 @@ Storybook build fails to resolve it, while every other check stays green.
 Before opening a PR that touches `apps/web/src/features/auth/actions.ts` or any
 component a story renders, build the sandbox with the workspace's
 `build:sandbox` script:
-`pnpm --filter @dealers-drive/sandbox build:sandbox`.
+`pnpm --filter @dealers-drive/sandbox build:sandbox`. Since D7 this is the only
+thing that will tell you.
 
 ---
 
@@ -373,6 +378,37 @@ is the thing to delete.
 
 ---
 
+## 7d. Two platforms, one commit (D7)
+
+The front end deploys to Vercel and the API to ECS. Three things about that are
+not obvious from either the workflows or the code, and all three have bitten
+somebody before.
+
+**The session cookie is the whole difficulty.** `dd_session` is host-only in
+every environment on purpose — `SESSION_COOKIE_DOMAIN` is empty so a dev
+session can never be presented to production. The Google callback sets it on
+whichever host answered the redirect. That is why `apps/web/next.config.ts`
+rewrites `/v1/auth/google/*` to the API: it puts the callback back on the web
+origin so the cookie lands where `cookies()` can read it. **Do not "simplify"
+that rewrite away**, and do not reach for a parent-domain cookie instead — that
+is the isolation the empty domain exists to provide.
+
+**`GIT_SHA` is read at request time, not inlined.** `apps/web/src/app/api/
+health/route.ts` reports `GIT_SHA ?? VERCEL_GIT_COMMIT_SHA ?? 'unknown'`, and
+`next.config.ts` deliberately has no `env` block. Adding one would inline the
+value at build time and break the Docker path, which sets `GIT_SHA` on the
+runtime image rather than during `next build`. The deploy workflow passes it
+with `vercel deploy --env GIT_SHA=…`.
+
+**Per-IP rate limiting is currently wrong, and known to be.** Every API request
+now originates from Vercel's egress, so the reveal-contact and enquiry limiters
+would count the entire internet as one bucket. `apps/web/src/lib/api.ts` has a
+`headers` option reserved for forwarding the buyer's IP and nothing uses it
+yet. **This must land before F088–F092**, and `app.set('trust proxy', 1)` in
+`apps/api/src/server.ts` needs revisiting for the extra hop.
+
+---
+
 ## 8. Local development
 
 ```bash
@@ -385,6 +421,11 @@ pnpm typecheck && pnpm test && pnpm build
 scripts build Docker images and stay inert until **F021** — decision D3 moved
 CI/CD to Tier 3, immediately after the first dealer-facing feature, so there are
 no Dockerfiles, no GitHub workflows and no `deploy/` directory before then.
+
+Locally the two apps are on two ports and always were, so the D7 origin split
+changes nothing here. `API_ORIGIN` is unset, so the OAuth rewrite in
+`next.config.ts` does not exist and the browser talks to `localhost:4000`
+directly — which is what `GOOGLE_CALLBACK_URL`'s default already assumes.
 
 Copy `.env.example` to `.env` before running anything that touches the database.
 

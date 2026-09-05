@@ -1,10 +1,16 @@
 # ---------------------------------------------------------------------------
 # Promote to production — the manual trigger, and the rollback.
 #
-# There is no build step in this workflow. That is the point: production runs
-# the images release.yml already built and development has already been running
-# (ARCHITECTURE §20.1). Promoting is a lookup and a rollout, not a rebuild, so
-# it takes minutes and cannot produce different bytes.
+# There is no image build in this workflow. That is the point: production runs
+# the API images release.yml already built and development has already been
+# running (ARCHITECTURE §20.1). Promoting the API is a lookup and a rollout,
+# not a rebuild, so it takes minutes and cannot produce different bytes.
+#
+# The web app is different since D7 — Vercel builds it from the promoted commit
+# rather than moving an artifact — and that is why the preflight below checks
+# that BOTH tiers on dev are serving the same commit before a person is asked
+# to approve anything. Two tiers that drifted apart on dev is the one thing
+# this split can get wrong that the single-origin layout could not.
 #
 # HOW A MAINTAINER RUNS IT
 #   Actions → "Promote to Production" → Run workflow
@@ -18,7 +24,8 @@
 # ROLLING BACK is this same workflow with an older SHA, plus
 # `skip_dev_check: true` — because the SHA you want back is, by definition, not
 # the one dev is running. That is the only reason that switch exists, and it is
-# why it is not the default.
+# why it is not the default. For the web tier alone, `vercel rollback` against
+# the production project is faster and needs no rebuild.
 # ---------------------------------------------------------------------------
 name: Promote to Production
 
@@ -52,7 +59,7 @@ jobs:
   # Everything that can be checked before a person is asked to approve is
   # checked here, so an approval is never spent on a promotion that was going
   # to fail on a typo. This job enters no environment and holds no production
-  # secret — it only reads a public health endpoint.
+  # secret — it only reads public health endpoints.
   preflight:
     name: preflight
     runs-on: ubuntu-latest
@@ -63,7 +70,11 @@ jobs:
       - name: Resolve the SHA against what dev is actually running
         id: resolve
         env:
+          # Both are `vars`, and either may be empty: while the API tier is not
+          # yet deployed (AWS_DEPLOY_ENABLED unset) the web app is the only
+          # thing that can say what dev is serving.
           DEV_API_BASE_URL: ${{ vars.DEV_API_BASE_URL }}
+          DEV_WEB_BASE_URL: ${{ vars.DEV_WEB_BASE_URL }}
           REQUESTED: ${{ inputs.sha }}
           SKIP: ${{ inputs.skip_dev_check }}
           # Free text, typed by whoever ran the workflow. Bound to a variable
@@ -73,13 +84,40 @@ jobs:
         run: |
           set -euo pipefail
 
-          READY=$(curl -fsS --max-time 15 "$DEV_API_BASE_URL/health/ready") || {
-            echo "::error::dev is not answering /health/ready. Fix dev before promoting it."
+          API_SHA=""
+          WEB_SHA=""
+          STATUS="not deployed"
+
+          if [ -n "$DEV_API_BASE_URL" ]; then
+            READY=$(curl -fsS --max-time 15 "$DEV_API_BASE_URL/health/ready") || {
+              echo "::error::dev is not answering /health/ready. Fix dev before promoting it."
+              exit 1
+            }
+            API_SHA=$(echo "$READY" | jq -r '.version')
+            STATUS=$(echo "$READY" | jq -r '.status')
+            echo "dev api: status=$STATUS version=$API_SHA"
+          else
+            echo "::warning::DEV_API_BASE_URL is unset — the API tier is not deployed, so dev's commit comes from the web app alone."
+          fi
+
+          if [ -n "$DEV_WEB_BASE_URL" ]; then
+            WEB_SHA=$(curl -fsS --max-time 15 "$DEV_WEB_BASE_URL/api/health" | jq -r '.version') || {
+              echo "::error::dev web is not answering /api/health. Fix dev before promoting it."
+              exit 1
+            }
+            echo "dev web: version=$WEB_SHA"
+          fi
+
+          # The check the split makes necessary. Two platforms deploy from one
+          # workflow, but they can still end up apart — a Vercel deploy that
+          # failed after the API rolled out, someone deploying by hand — and
+          # promoting from that state ships a mismatched pair to production.
+          if [ -n "$API_SHA" ] && [ -n "$WEB_SHA" ] && [ "$API_SHA" != "$WEB_SHA" ]; then
+            echo "::error::dev is inconsistent: the API is running $API_SHA and the web app $WEB_SHA. Re-run Release on the commit you want before promoting."
             exit 1
-          }
-          LIVE_SHA=$(echo "$READY" | jq -r '.version')
-          STATUS=$(echo "$READY" | jq -r '.status')
-          echo "dev: status=$STATUS version=$LIVE_SHA"
+          fi
+
+          LIVE_SHA="${API_SHA:-$WEB_SHA}"
 
           # A blank input means "ship what I have been testing", which is the
           # normal case and the one least likely to be typed wrong.
@@ -88,7 +126,7 @@ jobs:
           if [ "$SKIP" = "true" ]; then
             echo "::warning::Dev verification skipped — this is a rollback to $SHA."
           else
-            if [ "$STATUS" != "ok" ]; then
+            if [ -n "$API_SHA" ] && [ "$STATUS" != "ok" ]; then
               echo "::error::dev reports status=$STATUS. Promoting a degraded build is how an outage spreads."
               exit 1
             fi
@@ -107,7 +145,8 @@ jobs:
           {
             echo "### Promoting \`$SHA\`"
             echo
-            echo "- dev status: \`$STATUS\`, running \`$LIVE_SHA\`"
+            echo "- dev api: \`$STATUS\`, running \`${API_SHA:-not deployed}\`"
+            echo "- dev web: running \`${WEB_SHA:-not deployed}\`"
             echo "- rollback mode: \`${SKIP}\`"
             echo "- reason: ${REASON:-_none given_}"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -116,13 +155,15 @@ jobs:
     name: production
     needs: preflight
     # The approval gate lives in the environment this calls, not in a step
-    # here: Settings → Environments → production → required reviewers.
+    # here: Settings → Environments → production → required reviewers. It
+    # covers both tiers, because both are deployed by that one job.
     uses: ./.github/workflows/_deploy.yml
     with:
       environment: production
       sha: ${{ needs.preflight.outputs.sha }}
-    # No `secrets: inherit`. The only secret the deployment needs is
-    # AWS_DEPLOY_ROLE_ARN, which is an *environment* secret — the called
-    # workflow's job declares `environment: production` and reads it directly.
-    # Inheriting would hand every repository secret to the called workflow for
-    # no benefit.
+    # Still no `secrets: inherit`. One secret is passed by name; everything
+    # else the deployment needs — AWS_DEPLOY_ROLE_ARN, VERCEL_PROJECT_ID — is a
+    # *production environment* secret, which the called workflow's job reads
+    # directly by declaring `environment: production`.
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

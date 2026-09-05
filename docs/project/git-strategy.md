@@ -143,18 +143,26 @@ review enforcement that _is_ verifiable from the repository, and it is absent.
 
 ### Does CI enforce PRs?
 
-**CI runs; whether it blocks is a repository setting, not a workflow one.**
+**CI runs, and it blocks.** Branch protection on `main` requires ≥1 approving
+review and a set of status checks, with `strict: true` — a branch must be up to
+date with `main` before it can merge.
+
 The `verify` job (lint · typecheck · test · build against a real Postgres 16),
-`docker` (both images build from a clean context), `terraform` and `audit` all
-run on every PR. Whether a red run _prevents_ a merge depends on required-status
-checks in branch protection — see above. There is no `CODEOWNERS` file, so no
-review is required by the repository itself.
+`terraform` and `audit` run on every PR. The `docker` and `sandbox` jobs were
+removed at D7: the web image no longer exists, `release.yml` builds the API
+image on every merge anyway, and the sandbox gate was dropped at the author's
+request.
+
+⚠️ **Removing a job does not remove it from the required-checks list.** Both
+`images build` and `sandbox typecheck / build` are still named there, and a
+required check that no workflow produces leaves every PR waiting for it
+forever. They have to be removed in Settings → Branches at the same time.
 
 ### Required before Phase 2
 
 1. Tag `baseline/pre-reorg-2026-09-02` at `f05acdc`.
-2. Enable branch protection on `main`: require PRs, require the `verify` and
-   `docker` checks, require ≥1 approval, block force-push, block deletion.
+2. Enable branch protection on `main`: require PRs, require the `verify`
+   check, require ≥1 approval, block force-push, block deletion.
 3. Add `CODEOWNERS`.
 4. Decide what to do with the 11 stale local/remote feature branches (all
    merged; safe to delete after the tag exists).

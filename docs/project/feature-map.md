@@ -296,6 +296,78 @@ consumer, and should serve city and state as well as make and model.
 
 ---
 
+## D7 — The front end deploys to Vercel; the API stays on AWS
+
+**Decision.** `apps/web` is built and served by Vercel, one project per
+environment. `apps/api` keeps ECS Fargate behind the ALB. The two tiers stop
+sharing an origin.
+
+**Why.** The single-origin ALB layout costs two always-on Fargate tasks per
+environment to serve a Next.js app that Vercel runs better and cheaper, and the
+public marketplace (F050+) wants an edge cache that ECS cannot give it. Nothing
+in the product required one origin — it was how the deployment happened to be
+shaped.
+
+**What it breaks, and the fix.** Exactly one thing. `dd_session` is host-only
+in every environment _by design_: `SESSION_COOKIE_DOMAIN` is empty so that a
+dev session can never be presented to production. The OAuth callback sets that
+cookie on the API's host and 302s to `WEB_BASE_URL`, so across two origins the
+cookie lands somewhere the web app cannot read. The fix is a Next rewrite of
+`/v1/auth/google/*` to the API origin (`apps/web/next.config.ts`): the browser
+sees one origin, the API's `Set-Cookie` carries no `Domain`, and the cookie is
+assigned to the Vercel host. The API is not modified, the host-only cookie
+survives, and no `NEXT_PUBLIC_*` is introduced.
+
+The alternative — a parent-domain cookie — was rejected: it reverses the
+isolation the empty `SESSION_COOKIE_DOMAIN` exists to provide.
+
+**What it costs.** Build-once-promote-many no longer holds for the web tier.
+Vercel binds a deployment's environment variables at build time, so a dev build
+promoted to production would still call the dev API; production is therefore
+built from the promoted commit rather than moved as an artifact. This is a
+smaller loss than it sounds: the rule existed so that nothing
+environment-specific was baked in, and that is enforced at the source instead —
+Rule 9 bans `NEXT_PUBLIC_*`, `apps/web/src/lib/config.ts` reads every
+environment value from `process.env` on the server, and every data route is
+`force-dynamic`. The guarantee weakens from _same bytes_ to _same commit_, and
+`promote.yml` gained a preflight check that both tiers on dev are serving that
+one commit.
+
+**What still has to happen** (not in the PR that recorded this):
+
+- **Per-IP rate limits collapse to one bucket.** Once the browser never reaches
+  the API directly, every request arrives from Vercel's egress. The reveal and
+  enquiry limiters protect dealer phone numbers and cost real SMS money
+  (invariant 10). `apps/web/src/lib/api.ts` already reserves a `headers` option
+  for forwarding the buyer's IP and nothing uses it. **This blocks F088–F092**,
+  and `app.set('trust proxy', 1)` needs revisiting for the extra hop.
+- **The web tier comes out of `deploy/terraform`** — service, task definition,
+  target group, autoscaling, log group, task role, alarm, and the `web_*`
+  variables — along with `apps/web/Dockerfile` and the ALB's web default action.
+- **Environment values change**: the API's `WEB_ORIGIN`/`WEB_BASE_URL` become
+  the Vercel domain, `API_BASE_URL` and `MEDIA_BASE_URL` the API host, and
+  `GOOGLE_CALLBACK_URL` the web origin's `/v1/auth/google/callback` — which
+  must also be registered in the Google Cloud console.
+- **Preview deployments cannot sign in.** Google requires exact redirect URIs
+  and preview URLs are per-deployment, so previews are public-browsing only and
+  signed-in testing happens on the dev environment.
+- **The API origin becomes directly reachable.** It authenticates every route
+  itself, so this is not a hole, but it is a new public surface worth a WAF
+  rule.
+
+**Managing the two environments.** Each is its own Vercel project with its own
+domain and its own environment variables — total isolation, and no dependency
+on custom environments. `VERCEL_PROJECT_ID` is a GitHub _environment_ secret,
+so a dev deploy structurally cannot reach the production project. Vercel's git
+integration is disabled (`apps/web/vercel.json`); if it were on, a merge would
+ship the front end straight to production, past the `production` environment's
+required reviewers and before migrations had run. Both tiers deploy from the
+one gated job in `_deploy.yml` — a separately-gated web deploy is a second door
+into production. Web rollback is `vercel rollback`, which needs no rebuild; API
+rollback is `promote.yml` with an older SHA.
+
+---
+
 # Feature index
 
 | ID   | Feature                                                 | Layer      | Conf.      |
@@ -776,16 +848,19 @@ Multi-stage, workspace-aware builds for both apps. The build needs nothing runni
 
 ### F022 — CI pipeline
 
-`lint · typecheck · test · build` in one job against a real Postgres 16 service, plus the `docker` job. Runs on every PR to `main`. A fork PR must be able to run it in full holding no credential.
+`lint · typecheck · test · build` in one job against a real Postgres 16 service. Runs on every PR to `main`, and on `main` itself. A fork PR must be able to run it in full holding no credential.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F021
 - **Files** `.github/workflows/ci.yml`
 - **External** GitHub Actions, `postgres:16-alpine`
 - **Components** none · **Sandbox** none
-- ✅ **The sandbox job was added at F022**, as required — the sandbox had
-  already landed at S0. It typechecks and builds the stories, and is the only
-  place that happens: the sandbox is deliberately outside `turbo run typecheck`
-  and `turbo run build`.
+- ⚠️ **The `docker` and `sandbox` jobs were removed at D7.** The sandbox job
+  was added here at F022 and typechecked the stories — the only place that
+  happened, since the sandbox sits outside `turbo run typecheck` and
+  `turbo run build`. Dropping it means a prop rename that breaks a story is
+  now found by running `pnpm sandbox`, not by CI. The `docker` job went
+  because the web image no longer exists and `release.yml` builds the API
+  image from the same commit minutes later.
 - ⚠️ **The `terraform fmt / validate` job is deferred to F025**, which brings
   the `deploy/terraform` directory it works in. A job pointing at a missing
   directory fails on every PR.
@@ -805,8 +880,17 @@ Secret scanning, SAST and automated dependency PRs.
 Build-once-promote-many: an image is built on `main`, tagged with `GIT_SHA`, and promoted between environments without rebuilding. Nothing environment-specific is baked in.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F021, F022
-- **Files** `.github/workflows/{release,promote,_deploy}.yml`, `deploy/release.sh`
+- **Files** `.github/workflows/{release,promote,_deploy}.yml`, `deploy/release.sh`, `scripts/smoke.sh`
 - **Components** none · **Sandbox** none
+- ⚠️ **`scripts/smoke.sh` was missing.** `_deploy.yml` has called it since
+  F024 and the file was never brought across from the baseline, so the last
+  step of every deploy would have failed. Written at D7, and it now takes an
+  empty API base URL for the period when only the web tier is deployed.
+- ⚠️ **Reshaped by D7.** Two images, not three; the web tier deploys to Vercel
+  from the same commit; `promote.yml`'s preflight checks that both tiers on
+  dev are serving one commit before asking for an approval. Build-once-promote
+  -many still holds for the API and weakens to _build-per-environment, one
+  commit_ for the web app — see the D7 entry.
 
 ### F025 — Deployment infrastructure
 
