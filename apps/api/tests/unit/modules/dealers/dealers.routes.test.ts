@@ -19,8 +19,14 @@ import {
  * and `document:upload` appear in §8.3 against OWNER alone.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline asserts nine signatures. **F042 brings the count to eight**;
+ * The baseline asserts nine signatures. **F042 brought the count to eight**;
  * `GET /dashboard` arrives with F048 and closes the file.
+ *
+ * The four `/yard-photo` routes have no baseline equivalent. They are the same
+ * presign → PUT → commit pipeline as the KYC documents, under a different
+ * prefix, for the image that fronts the dealership's public portfolio — kept
+ * apart from the documents because those are private by construction and this
+ * one is destined to be published.
  * ────────────────────────────────────────────────────────────────────────────
  */
 const router = createDealersRouter({} as never);
@@ -37,6 +43,10 @@ describe('the surface', () => {
         'POST /documents/presign',
         'POST /documents/:type/commit',
         'DELETE /documents/:type',
+        'GET /yard-photo',
+        'POST /yard-photo/presign',
+        'POST /yard-photo/commit',
+        'DELETE /yard-photo',
       ].sort(),
     );
   });
@@ -56,6 +66,9 @@ describe('permissions', () => {
     ['POST /documents/presign', 'document:upload'],
     ['POST /documents/:type/commit', 'document:upload'],
     ['DELETE /documents/:type', 'document:upload'],
+    ['POST /yard-photo/presign', 'document:upload'],
+    ['POST /yard-photo/commit', 'document:upload'],
+    ['DELETE /yard-photo', 'document:upload'],
   ])('guards %s with %s, which only OWNER holds', (signature, permission) => {
     expect(permissionsOn(routeFor(router, signature) as never)).toEqual([permission]);
   });

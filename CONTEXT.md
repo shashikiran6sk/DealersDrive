@@ -155,19 +155,85 @@ order. The full shared-file register is in `docs/project/git-strategy.md` §4.
 
 ## 7. Known divergence from the baseline
 
-Exactly one, and it is deliberate: **D1 removes the seeded database catalogue.**
-Vehicle details come from the external RC lookup or manual entry instead.
+Two, both deliberate, and they are the same decision made twice.
+
+**D1 removes the seeded database catalogue.** Vehicle details come from the
+external RC lookup or manual entry instead.
+
+**D6 removes the `cities` table.** A dealership's `city` and `state` are free
+text it types; `City`, the `locations` module and `GET /v1/cities` are gone,
+and a registered name is unique **per city** rather than globally.
 
 The consequence is that the reconstruction is _not_ byte-identical to the
 baseline, so the final convergence check is "the diff contains only the
-sanctioned D1 divergence" rather than "the diff is empty". The exact permitted
+sanctioned divergences" rather than "the diff is empty". The exact permitted
 hunks are tabulated in `docs/project/git-strategy.md` §5.
 
-The risk this creates — facet fragmentation on unnormalised make/model strings —
-is tracked at **F060** (normalisation moves to write time) and **F076** (search
-facets). `CLAUDE.md` §5 has the detail. It is the single most likely place for
-this reorganisation to quietly degrade the product, so it is worth reading
-before F060.
+The risk both create is one risk: **facet fragmentation on unnormalised
+strings.** It is tracked at **F060** (make/model normalisation moves to write
+time) and **F076** (search facets). `CLAUDE.md` §5 has the detail. It is the
+single most likely place for this reorganisation to quietly degrade the
+product, so it is worth reading before F060.
+
+### Why D6 happened, which is the part worth carrying forward
+
+D1 looked at `City` and kept it, on the reasoning that cities are not
+vehicle-catalogue data — they drive the header selector, the directory, search
+filters and dealer profiles. That reasoning describes what the table is **read**
+for. It misses what the table **decides**.
+
+`cities` held five towns in one state. A dealer in Salem could not complete
+onboarding at all, and a dealer in Bengaluru could not be described by the
+form, because `state` was whatever the joined row said rather than where the
+yard is. Nobody noticed until somebody filled the form in.
+
+**The test D1 should have applied, and D6 does:** a reference table is
+catalogue data if it gates who or what may exist, whatever else it is read for.
+`City` gated sign-up. `rc-aliases.ts` does not gate anything — it is a
+committed constant that translates a manufacturer string, and it survives both
+decisions for that reason.
+
+`Dealer.lat` / `Dealer.lng` are the visible residue. They used to be copied off
+the city row; nothing writes them now. The columns stay because the distance
+sort that reads them is a real feature, and geocoding a typed address is that
+feature's problem rather than onboarding's.
+
+### The normalisation is not optional and it lives in one place
+
+`normaliseLocality` in `packages/contracts/src/common.ts`, applied by
+`auth.service.onboard` and `dealers.service.update`, on the way **in**. Case and
+whitespace only — it does not correct spelling, expand abbreviations or
+transliterate, because each of those is a judgement about a place name the
+dealer standing in it knows better than we do.
+
+Read-time normalisation would be the tempting shortcut and it does not work:
+the uniqueness constraint is a database index over the stored string, so what
+is stored is what the constraint sees. `vellore` and `Vellore` stored as typed
+are two cities to the index and one city to a human.
+
+### One name per city, and why the check is the submit
+
+A global unique on `legalName` was the first shape of this rule and it is wrong
+in a way that only shows up at scale: "Sri Balaji Motors" is a name three
+unrelated families use in three different towns, and the first to sign up locks
+the other two out of the product. Inside one city the same name is a duplicate
+application or an impersonation, and a buyer cannot tell which dealership they
+are calling.
+
+Both halves of the pair are typed on onboarding step 2, so that step's submit
+is when the question can first be asked — and it is asked by the write, against
+`@@unique([legalName, city])`, not by a lookup as the dealer types. Two reasons,
+and the second is the one that is easy to miss:
+
+1. A pre-submit check is one that two simultaneous applications can race past,
+   between the answer and the write.
+2. It would hand anyone with a browser a way to enumerate which dealerships
+   exist in which town.
+
+The service reads first anyway, case-insensitively, and that read exists purely
+to turn a collision into a 409 naming `legalName` rather than a Prisma `P2002`
+the error handler renders as a 500. The index is the guarantee; the read is the
+error message.
 
 ---
 

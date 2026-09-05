@@ -169,10 +169,14 @@ export const authDocs: ModuleDocs = {
         'transaction.\n\n' +
         'No `email` field: the address comes from the Google identity on the session. No ' +
         "`status` and no `slug` either — approval is the admin's decision and the slug is " +
-        'derived from the brand name (rules 1 and 5).\n\n' +
+        'derived from the registered name (rules 1 and 5). One name, not two: `brandName` is ' +
+        'the display mirror of `legalName` and is written by the server.\n\n' +
+        '`city` and `state` are free text, normalised on write — there is no list of cities to ' +
+        'choose from, and a dealership may be in any of them.\n\n' +
         '`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 ' +
-        'PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `422 ' +
-        'UNKNOWN_CITY` for a city outside the catalogue.',
+        'PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `409 ' +
+        'DEALER_NAME_TAKEN` if another dealership already trades under that name **in that ' +
+        'city** — the same name in another city is not a collision.',
       audience: 'dealer',
       requestBody: {
         schema: 'OnboardingInput',
@@ -180,10 +184,10 @@ export const authDocs: ModuleDocs = {
           fullName: 'R. Manikandan',
           roleTitle: 'Proprietor',
           phone: '9840012345',
-          brandName: 'Sri Lakshmi Motors',
           legalName: 'Sri Lakshmi Automobiles Pvt Ltd',
           addressLine: '14, Katpadi Main Road, Gandhi Nagar',
-          citySlug: 'vellore',
+          city: 'Vellore',
+          state: 'Tamil Nadu',
           pincode: '632006',
           landline: '0416 224 8890',
         },

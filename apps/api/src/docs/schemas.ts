@@ -56,6 +56,8 @@ const INPUT_SCHEMA_NAMES = [
   'MediaCommitInput',
   'DocumentPresignInput',
   'DocumentCommitInput',
+  'YardPhotoPresignInput',
+  'YardPhotoCommitInput',
   'UpdateDealerInput',
   'ReasonInput',
   'ApproveDealerInput',

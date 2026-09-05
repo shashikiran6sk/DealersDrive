@@ -2,6 +2,7 @@ import {
   DEALER_STATUS_LABELS,
   DOC_TYPE_LABELS,
   formatPhone,
+  normaliseLocality,
   type AuthSession,
   type CompletenessResponse,
   type DealerDocumentsResponse,
@@ -11,14 +12,19 @@ import {
   type DocumentPresignInput,
   type PresignResponse,
   type UpdateDealerInput,
+  type YardPhotoCommitInput,
+  type YardPhotoDto,
+  type YardPhotoPresignInput,
 } from '@dealers-drive/contracts';
 import type { DealerDocType, PrismaClient } from '@prisma/client';
+
+import { toMediaStatus } from '../media/media.facade.js';
 import { randomUUID } from 'node:crypto';
 
 import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
-import { DomainError, NotFoundError } from '../../platform/errors.js';
+import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { DealerPrincipal } from '../auth/auth.facade.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
@@ -57,6 +63,26 @@ export interface DealersDeps {
  */
 const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'];
 
+/**
+ * How long a yard-photo read URL is good for.
+ *
+ * The same five minutes a KYC document gets. The image is destined to be
+ * public, but it is not public *yet* — a dealership in DRAFT has not been
+ * looked at by anybody, and until it has, its photographs are as private as
+ * the rest of the application.
+ */
+const YARD_PHOTO_URL_TTL_SECONDS = 300;
+
+/** Where a yard photograph lives. Not under `kyc/`: it is not a KYC document. */
+function yardPhotoKey(dealerId: string, mediaId: string): string {
+  return `dealers/${dealerId}/yard/${mediaId}`;
+}
+
+/** Where a KYC document lives. The row's id is the last segment. */
+function documentKey(dealerId: string, type: DealerDocType, documentId: string): string {
+  return `kyc/${dealerId}/${type}/${documentId}`;
+}
+
 export function createDealersService({ prisma, repo, storage }: DealersDeps) {
   function toProfile(dealer: DealerWithRelations): DealerProfile {
     const owner = dealer.members.find((member) => member.role === 'OWNER');
@@ -83,9 +109,8 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       },
       address: {
         line: dealer.addressLine,
-        cityId: dealer.cityId,
-        city: dealer.city?.name ?? null,
-        state: dealer.city?.state ?? null,
+        city: dealer.city,
+        state: dealer.state,
         pincode: dealer.pincode,
       },
       specialities: dealer.specialities,
@@ -105,6 +130,69 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
     const dealer = await repo.findById(dealerId);
     if (!dealer) throw new NotFoundError('That dealership no longer exists.');
     return dealer;
+  }
+
+  /**
+   * Two dealerships in one city must not share a registered name, and no two
+   * anywhere may share a GSTIN.
+   *
+   * The unique indexes on `(legalName, city)` and `gstin` are what actually
+   * guarantee it, and they are what makes this safe against two applications
+   * racing. This read exists for the other half of the job: turning a
+   * collision into a message against the field the dealer just typed, rather
+   * than a Prisma P2002 the error handler renders as a 500.
+   *
+   * The name is always asked about together with a city — the one being moved
+   * to, or the one the dealership is already in — because a name on its own
+   * cannot be a duplicate of anything.
+   */
+  async function assertNoDuplicate(
+    dealerId: string,
+    fields: { legalName?: string; city?: string; gstin?: string },
+  ): Promise<void> {
+    const clash = await repo.findConflicting(dealerId, fields);
+
+    // `clash.legalName` is only ever true when both were asked about, so the
+    // message can name them without a fallback that would never be reached.
+    if (clash.legalName) {
+      throw new ConflictError(
+        'DEALER_NAME_TAKEN',
+        `A dealership called ${String(fields.legalName)} is already registered in ${String(fields.city)}.`,
+        {
+          errors: [
+            {
+              field: 'body.legalName',
+              code: 'DEALER_NAME_TAKEN',
+              message: `Already registered in ${String(fields.city)}.`,
+            },
+          ],
+        },
+      );
+    }
+
+    if (clash.gstin) {
+      throw new ConflictError(
+        'GSTIN_ALREADY_REGISTERED',
+        'That GSTIN is already registered to another dealership.',
+        {
+          errors: [
+            {
+              field: 'body.gstin',
+              code: 'GSTIN_ALREADY_REGISTERED',
+              message: 'Already registered.',
+            },
+          ],
+        },
+      );
+    }
+  }
+
+  /** Remove the bytes, keep the row as ORPHAN so a sweeper can reconcile it. */
+  async function discardMedia(mediaId: string): Promise<void> {
+    const media = await repo.mediaById(mediaId);
+    if (!media) return;
+    await repo.orphanMedia(mediaId);
+    await storage.delete(media.storageKey);
   }
 
   return {
@@ -169,6 +257,33 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       const dealer = await requireDealer(dealerId);
       const owner = dealer.members.find((member) => member.role === 'OWNER');
 
+      /**
+       * Locality as text, normalised once here.
+       *
+       * A slug resolved against `cities` until the table went; the note on
+       * `UpdateDealerInput.address` in contracts records why. `lat`/`lng` came
+       * off that row and are no longer written — nothing reads them yet, and
+       * geocoding a typed address is a separate concern from saving it.
+       */
+      const city =
+        input.address?.city === undefined ? undefined : normaliseLocality(input.address.city);
+      const state =
+        input.address?.state === undefined ? undefined : normaliseLocality(input.address.state);
+
+      /**
+       * A rename is checked against the city it will be in once this PATCH
+       * lands, which is not always the city the dealership is in now: a dealer
+       * changing both fields in one submit must be checked against the pair
+       * they typed, not against a half-applied combination of the two.
+       */
+      const nameCity = city ?? dealer.city ?? undefined;
+      await assertNoDuplicate(dealerId, {
+        ...(input.legalName === undefined || nameCity === undefined
+          ? {}
+          : { legalName: input.legalName, city: nameCity }),
+        ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
+      });
+
       const updated = await withTransaction(prisma, async (tx) => {
         if (input.contact && owner) {
           await tx.user.update({
@@ -186,8 +301,12 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
         return repo.update(
           dealerId,
           {
-            ...(input.brandName === undefined ? {} : { brandName: input.brandName }),
-            ...(input.legalName === undefined ? {} : { legalName: input.legalName }),
+            // One name. `brandName` is the display mirror and is written here
+            // rather than accepted from the client, which is why
+            // `UpdateDealerInput` does not carry it.
+            ...(input.legalName === undefined
+              ? {}
+              : { legalName: input.legalName, brandName: input.legalName }),
             ...(input.tagline === undefined ? {} : { tagline: input.tagline }),
             ...(input.about === undefined ? {} : { about: input.about }),
             ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
@@ -200,7 +319,8 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
             ...(input.contact?.email === undefined ? {} : { contactEmail: input.contact.email }),
             ...(input.contact?.landline === undefined ? {} : { landline: input.contact.landline }),
             ...(input.address?.line === undefined ? {} : { addressLine: input.address.line }),
-            ...(input.address?.cityId === undefined ? {} : { cityId: input.address.cityId }),
+            ...(city === undefined ? {} : { city }),
+            ...(state === undefined ? {} : { state }),
             ...(input.address?.pincode === undefined ? {} : { pincode: input.address.pincode }),
           },
           tx,
@@ -221,18 +341,25 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       if (!owner?.user.email) accountMissing.push('email');
 
       const businessMissing: string[] = [];
-      if (!dealer.brandName) businessMissing.push('brandName');
       if (!dealer.legalName) businessMissing.push('legalName');
       if (!dealer.addressLine) businessMissing.push('addressLine');
-      if (!dealer.cityId) businessMissing.push('cityId');
+      if (!dealer.city) businessMissing.push('city');
+      if (!dealer.state) businessMissing.push('state');
       if (!dealer.pincode) businessMissing.push('pincode');
       if (!dealer.gstin) businessMissing.push('gstin');
       if (!dealer.pan) businessMissing.push('pan');
 
-      const documentsMissing = DOC_TYPES.filter((type) => {
+      const documentsMissing: string[] = DOC_TYPES.filter((type) => {
         const doc = documents.find((row) => row.type === type);
         return !doc || doc.status === 'REQUIRED' || doc.status === 'REJECTED';
       });
+
+      // The yard photograph sits on the documents step because that is the
+      // step where a dealer uploads things — but it is required for a
+      // different reason. It is the hero of the public portfolio, and a
+      // dealership whose storefront would open with an empty frame is not
+      // ready to be reviewed.
+      if (!dealer.coverMediaId) documentsMissing.push('YARD_PHOTO');
 
       const steps: CompletenessResponse['steps'] = [
         {
@@ -368,7 +495,20 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
      */
     async presignDocument(dealerId: string, input: DocumentPresignInput): Promise<PresignResponse> {
       const documentId = randomUUID();
-      const key = `kyc/${dealerId}/${input.type}/${documentId}`;
+      const key = documentKey(dealerId, input.type, documentId);
+
+      /**
+       * Replacing removes what was there.
+       *
+       * The row is about to be overwritten with a new id, and the stored
+       * object's key ends in the old one — so this is the last moment anything
+       * knows where the previous file is. Skip it and every replacement leaves
+       * a KYC document sitting in storage that nothing references and nothing
+       * will ever delete, which for scans of PAN cards is a retention problem
+       * rather than a housekeeping one.
+       */
+      const previous = await repo.documentByType(dealerId, input.type);
+      if (previous) await storage.delete(documentKey(dealerId, input.type, previous.id));
 
       await repo.upsertDocument(dealerId, input.type, {
         id: documentId,
@@ -399,8 +539,7 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
         throw new NotFoundError('That document does not exist.');
       }
 
-      const key = `kyc/${dealerId}/${type}/${input.documentId}`;
-      const object = await storage.head(key);
+      const object = await storage.head(documentKey(dealerId, type, input.documentId));
       if (!object) {
         throw new DomainError('UPLOAD_MISSING', 'The upload did not complete. Try again.');
       }
@@ -410,10 +549,141 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       return response.data.find((row) => row.type === type);
     },
 
+    /**
+     * C5 delete. The row survives as `REQUIRED` — the checklist has three rows
+     * whatever happens to them — but the bytes do not.
+     *
+     * The row is read before it is reset, because the stored object's key ends
+     * in the row's id. The baseline deleted `kyc/{dealerId}/{type}`, which is
+     * the *prefix* the object lives under rather than the object itself, so
+     * every removed document stayed in storage. That is fixed here.
+     */
     async deleteDocument(dealerId: string, type: DealerDocType): Promise<void> {
-      const removed = await repo.deleteDocument(dealerId, type);
-      if (!removed) throw new NotFoundError('That document does not exist.');
-      await storage.delete(`kyc/${dealerId}/${type}`);
+      const existing = await repo.documentByType(dealerId, type);
+      if (!existing) throw new NotFoundError('That document does not exist.');
+
+      await repo.deleteDocument(dealerId, type);
+      await storage.delete(documentKey(dealerId, type, existing.id));
+    },
+
+    // ─────────── The yard photograph ──────────────────────────────────────
+
+    /**
+     * The image that will front this dealership's public portfolio.
+     *
+     * It is deliberately not a fourth `DealerDocType`. The three KYC documents
+     * are private, have no public delivery route and exist to be read once by a
+     * moderator; this one is the first thing a buyer will ever see. Sharing the
+     * pipeline is fine — sharing the checklist would mean sharing the privacy
+     * rules, and those are the part that must not be got wrong.
+     *
+     * It lands on `dealer.coverMediaId`, because a hero image of the premises
+     * is exactly what that slot is for.
+     */
+    async yardPhoto(dealerId: string): Promise<YardPhotoDto> {
+      const dealer = await requireDealer(dealerId);
+      if (!dealer.coverMediaId) {
+        return { mediaId: null, status: null, fileName: null, url: null, uploadedAt: null };
+      }
+
+      const media = await repo.mediaById(dealer.coverMediaId);
+      if (!media) {
+        return { mediaId: null, status: null, fileName: null, url: null, uploadedAt: null };
+      }
+
+      return {
+        mediaId: media.id,
+        status: toMediaStatus(media.status),
+        fileName: media.fileName,
+        /*
+         * A signed read of the original, not a delivery URL.
+         *
+         * The derivative pipeline that content-addresses an image and gives it
+         * a permanent public URL is **F034**. Until it exists the original is
+         * the only copy there is, and signing a read of it is the only honest
+         * way to show a dealer what they uploaded. When F034 lands this becomes
+         * `mediaUrl(media.id, …)` for a READY row and the row stops being
+         * PENDING; nothing else about this path changes.
+         */
+        url: await storage.signedReadUrl(media.storageKey, YARD_PHOTO_URL_TTL_SECONDS),
+        uploadedAt: media.createdAt.toISOString(),
+      };
+    },
+
+    async presignYardPhoto(
+      dealerId: string,
+      input: YardPhotoPresignInput,
+    ): Promise<PresignResponse> {
+      await requireDealer(dealerId);
+
+      const mediaId = randomUUID();
+      const key = yardPhotoKey(dealerId, mediaId);
+
+      await repo.createMedia({
+        id: mediaId,
+        dealerId,
+        ownerType: 'DEALER_COVER',
+        storageKey: key,
+        mimeType: input.mimeType,
+        bytes: input.bytes,
+        width: input.width ?? null,
+        height: input.height ?? null,
+        fileName: input.fileName,
+        warnings: [],
+        status: 'PENDING',
+      });
+
+      const presigned = await storage.presignPut({
+        key,
+        contentType: input.mimeType,
+        contentLength: input.bytes,
+      });
+
+      return {
+        mediaId,
+        uploadUrl: presigned.uploadUrl,
+        method: 'PUT',
+        headers: presigned.headers,
+        expiresInSeconds: presigned.expiresInSeconds,
+        maxBytes: input.bytes,
+      };
+    },
+
+    /**
+     * Commit, and displace whatever was there.
+     *
+     * The delete happens *here* rather than at presign — the opposite of the
+     * KYC path — because nothing is overwritten until this point. A presign
+     * that is never followed by a `PUT` leaves the dealership's existing yard
+     * photograph exactly where it was, which is what a dealer who changed their
+     * mind halfway through picking a file expects.
+     */
+    async commitYardPhoto(dealerId: string, input: YardPhotoCommitInput): Promise<YardPhotoDto> {
+      const dealer = await requireDealer(dealerId);
+
+      const media = await repo.mediaById(input.mediaId);
+      if (!media || media.dealerId !== dealerId || media.ownerType !== 'DEALER_COVER') {
+        throw new NotFoundError('That upload does not exist.');
+      }
+
+      const object = await storage.head(media.storageKey);
+      if (!object) {
+        throw new DomainError('UPLOAD_MISSING', 'The upload did not complete. Try again.');
+      }
+
+      const displaced = dealer.coverMediaId;
+      await repo.update(dealerId, { coverMediaId: media.id });
+      if (displaced && displaced !== media.id) await discardMedia(displaced);
+
+      return this.yardPhoto(dealerId);
+    },
+
+    async deleteYardPhoto(dealerId: string): Promise<void> {
+      const dealer = await requireDealer(dealerId);
+      if (!dealer.coverMediaId) throw new NotFoundError('There is no yard photograph to remove.');
+
+      await repo.update(dealerId, { coverMediaId: null });
+      await discardMedia(dealer.coverMediaId);
     },
   };
 }

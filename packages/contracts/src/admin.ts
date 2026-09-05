@@ -53,10 +53,15 @@ export type AdminOverview = z.infer<typeof AdminOverview>;
 export const AdminDealerQuery = z
   .object({
     status: DealerStatus.optional(),
-    city: z
-      .string()
-      .regex(/^[a-z0-9-]+$/)
-      .optional(),
+    /**
+     * The city as it is written on the dealership, not as a slug.
+     *
+     * It was a slug because the filter joined `cities`; with the table gone
+     * the column is the city's name, and the console filters on it directly.
+     * The match is case-insensitive, so a link built from one dealer's
+     * `Vellore` still finds another's `vellore`.
+     */
+    city: z.string().trim().min(1).max(80).optional(),
     q: z.string().max(120).optional(),
     cursor: z.string().max(500).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -133,6 +138,13 @@ export const AdminDealerDetail = z.object({
   }),
   documents: z.array(AdminDealerDocument),
   allDocumentsVerified: z.boolean(),
+  /**
+   * The yard photograph, as a short-lived signed read. A reviewer has to be
+   * able to see it: it is the image that will front this dealership's public
+   * portfolio, and "is this actually a photograph of a yard" is a question only
+   * a person can answer.
+   */
+  yardPhotoUrl: z.string().nullable(),
   recentLedger: z.array(
     z.object({
       id: Uuid,

@@ -32,13 +32,22 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     fullName: 'R. Manikandan',
     roleTitle: 'Proprietor',
     phone: `98400${String(99000 + subjectCounter).slice(-5)}`,
-    brandName: 'Katpadi Auto Gallery',
-    legalName: 'Katpadi Auto Gallery Pvt Ltd',
+    // One name, and it is unique within a city — two dealerships in one town
+    // trading under one registered name is either a duplicate application or
+    // an impersonation. So it varies per account for the same reason the phone
+    // number does; the collision has its own case in `dealer-onboarding.test`.
+    legalName: dealershipName(),
     addressLine: '18, Gandhi Road',
-    citySlug: 'katpadi',
+    city: 'Katpadi',
+    state: 'Tamil Nadu',
     pincode: '632007',
     ...overrides,
   };
+}
+
+/** The registered name this account's dealership will carry. */
+function dealershipName(): string {
+  return `Katpadi Auto Gallery ${subjectCounter}`;
 }
 
 /** A fresh Google account for each test, so no two tests share an identity. */
@@ -180,8 +189,10 @@ describe('onboarding', () => {
 
     const created = await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
 
+    // `brandName` is the server-written mirror of the one name that was asked
+    // for. There is no second name field on the request at all.
     expect(created.body.dealer).toMatchObject({
-      brandName: 'Katpadi Auto Gallery',
+      brandName: dealershipName(),
       status: 'DRAFT',
       creditBalance: 0,
     });
@@ -223,11 +234,12 @@ describe('onboarding', () => {
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
 
     const me = await agent.get('/v1/auth/me').expect(200);
-    expect(me.body.dealer.brandName).toBe('Katpadi Auto Gallery');
+    expect(me.body.dealer.brandName).toBe(dealershipName());
     expect(me.body.role).toBe('OWNER');
 
     const profile = await agent.get('/v1/dealer').expect(200);
-    expect(profile.body.brandName).toBe('Katpadi Auto Gallery');
+    expect(profile.body.brandName).toBe(dealershipName());
+    expect(profile.body.legalName).toBe(dealershipName());
   });
 
   it('refuses a second dealership on the same account', async () => {
@@ -253,16 +265,36 @@ describe('onboarding', () => {
     expect(conflict.body.code).toBe('PHONE_ALREADY_REGISTERED');
   });
 
-  it('refuses a city outside the catalogue', async () => {
+  /**
+   * There is no catalogue of cities to be outside of any more, and this is the
+   * case that used to prove there was: a `citySlug` of `atlantis` earned a 422
+   * `UNKNOWN_CITY`. What replaces it is the only rule left about the field —
+   * it has to be filled in.
+   */
+  it('accepts a city the platform has never seen, and refuses an empty one', async () => {
     const agent = h.agent();
     await h.signIn(agent);
 
-    const rejected = await agent
+    const created = await agent
       .post('/v1/auth/onboarding')
-      .send(onboarding({ citySlug: 'atlantis' }))
-      .expect(422);
+      .send(onboarding({ city: 'hubballi', state: 'karnataka' }))
+      .expect(201);
 
-    expect(rejected.body.code).toBe('UNKNOWN_CITY');
+    expect(created.body.dealer.status).toBe('DRAFT');
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    // Normalised on the way in, so one town cannot become three facets.
+    expect(profile.body.address).toMatchObject({ city: 'Hubballi', state: 'Karnataka' });
+
+    newAccount();
+    const other = h.agent();
+    await h.signIn(other);
+    const rejected = await other
+      .post('/v1/auth/onboarding')
+      .send(onboarding({ city: '' }))
+      .expect(400);
+
+    expect(rejected.body.code).toBe('VALIDATION_FAILED');
   });
 
   /** Rule 1 and rule 5: neither the tenant nor the state machine takes input. */
@@ -308,7 +340,7 @@ describe('a returning dealer', () => {
     expect(location).toBe(`${env.WEB_BASE_URL}/dealer`);
     const me = await second.get('/v1/auth/me').expect(200);
     expect(me.body.next).toBe('DASHBOARD');
-    expect(me.body.dealer.brandName).toBe('Katpadi Auto Gallery');
+    expect(me.body.dealer.brandName).toBe(dealershipName());
   });
 
   /**
@@ -355,7 +387,7 @@ describe('a returning dealer', () => {
     await h.signIn(later);
 
     const me = await later.get('/v1/auth/me').expect(200);
-    expect(me.body.dealer.brandName).toBe('Katpadi Auto Gallery');
+    expect(me.body.dealer.brandName).toBe(dealershipName());
     expect(me.body.identity.email).toBe('renamed@example.com');
   });
 });

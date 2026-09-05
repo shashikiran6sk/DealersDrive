@@ -65,33 +65,43 @@ export async function adminLoginAction(
   redirect('/admin');
 }
 
+/**
+ * The fields steps 1 and 2 carry between them, in one list.
+ *
+ * They are echoed back on a rejection so a bad pincode does not cost the dealer
+ * the other eight answers, and the list is written once because a field missing
+ * from it fails silently — the form re-renders blank in exactly one box, which
+ * is the kind of bug nobody reports.
+ */
+const ONBOARDING_FIELDS = [
+  'fullName',
+  'roleTitle',
+  'phone',
+  'legalName',
+  'addressLine',
+  'city',
+  'state',
+  'pincode',
+  'landline',
+] as const;
+
 /** Dealer onboarding — the step between a verified Google identity and a tenant. */
 export async function onboardingAction(
   _previous: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   const values = Object.fromEntries(
-    [
-      'fullName',
-      'roleTitle',
-      'phone',
-      'brandName',
-      'legalName',
-      'addressLine',
-      'citySlug',
-      'pincode',
-      'landline',
-    ].map((field) => [field, text(formData, field)]),
+    ONBOARDING_FIELDS.map((field) => [field, text(formData, field)]),
   );
 
   const parsed = OnboardingInput.safeParse({
     fullName: text(formData, 'fullName').trim(),
     roleTitle: emptyToUndefined(text(formData, 'roleTitle')),
     phone: text(formData, 'phone').trim(),
-    brandName: text(formData, 'brandName').trim(),
     legalName: text(formData, 'legalName').trim(),
     addressLine: text(formData, 'addressLine').trim(),
-    citySlug: text(formData, 'citySlug'),
+    city: text(formData, 'city').trim(),
+    state: text(formData, 'state').trim(),
     pincode: text(formData, 'pincode').trim(),
     landline: emptyToUndefined(text(formData, 'landline')),
   });
@@ -106,7 +116,61 @@ export async function onboardingAction(
     if (error instanceof ApiError) {
       return {
         message: error.userMessage('That could not be saved.'),
-        errors: error.fieldErrors(),
+        errors: apiFieldErrors(error),
+        values,
+      };
+    }
+    return { message: 'The API is unavailable. Try again shortly.', values };
+  }
+
+  redirect('/dealer/onboarding?step=2');
+}
+
+/**
+ * Steps 1 and 2 again, for a dealership that already exists.
+ *
+ * `Back` from the documents step has to lead somewhere, and once a tenant has
+ * been created the create path cannot be walked a second time — it would refuse
+ * with `DEALER_ALREADY_EXISTS`. So the same two steps PATCH instead, which is
+ * what `PATCH /v1/dealer` is partial for.
+ *
+ * `phone` is deliberately not sent. It is the login identity, and changing it
+ * needs an OTP round-trip on the new number that onboarding does not have.
+ */
+export async function updateOnboardingAction(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const values = Object.fromEntries(
+    ONBOARDING_FIELDS.map((field) => [field, text(formData, field)]),
+  );
+
+  const parsed = UpdateDealerInput.safeParse({
+    legalName: text(formData, 'legalName').trim(),
+    contact: {
+      fullName: text(formData, 'fullName').trim(),
+      roleTitle: text(formData, 'roleTitle').trim(),
+      landline: text(formData, 'landline').trim(),
+    },
+    address: {
+      line: text(formData, 'addressLine').trim(),
+      city: text(formData, 'city').trim(),
+      state: text(formData, 'state').trim(),
+      pincode: text(formData, 'pincode').trim(),
+    },
+  });
+
+  if (!parsed.success) {
+    return { errors: fieldErrors(parsed.error.issues), values };
+  }
+
+  try {
+    await apiSend('PATCH', '/v1/dealer', parsed.data);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        message: error.userMessage('That could not be saved.'),
+        errors: apiFieldErrors(error),
         values,
       };
     }
@@ -164,7 +228,7 @@ export async function saveBusinessIdsAction(
     if (error instanceof ApiError) {
       return {
         message: error.userMessage('Those could not be saved.'),
-        errors: error.fieldErrors(),
+        errors: apiFieldErrors(error),
         values,
       };
     }
@@ -215,11 +279,37 @@ function text(formData: FormData, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
+/**
+ * A validation path, as the name of the input it belongs to.
+ *
+ * The wizard's fields are flat — `city`, `addressLine`, `pincode` — and both
+ * validators answer in paths: Zod with `['address', 'city']`, the API with
+ * `body.address.city`. Neither matches an input, so before this an error
+ * against anything nested rendered against no field at all: the dealer saw a
+ * banner saying something was wrong and not one box highlighted. Taking the
+ * leaf fixes every case but one, and `line` is that one.
+ */
+const FORM_FIELD: Record<string, string> = { line: 'addressLine' };
+
+function formField(path: string): string {
+  const leaf = path.split('.').pop() ?? path;
+  return FORM_FIELD[leaf] ?? leaf;
+}
+
 function fieldErrors(issues: { path: PropertyKey[]; message: string }[]): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const issue of issues) {
-    const field = String(issue.path[0] ?? '');
+    const field = formField(issue.path.map(String).join('.'));
     if (field) errors[field] ??= issue.message;
+  }
+  return errors;
+}
+
+/** The same, for the field errors the API answers a 400 or a 409 with. */
+function apiFieldErrors(error: ApiError): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const [path, message] of Object.entries(error.fieldErrors())) {
+    errors[formField(path)] ??= message;
   }
   return errors;
 }

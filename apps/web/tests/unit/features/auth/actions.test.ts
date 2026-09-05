@@ -7,6 +7,7 @@ import {
   saveBusinessIdsAction,
   signOutAction,
   submitForVerificationAction,
+  updateOnboardingAction,
 } from '../../../../src/features/auth/actions.js';
 
 /**
@@ -65,10 +66,14 @@ const ONBOARDING = {
   fullName: 'R. Manikandan',
   roleTitle: 'Proprietor',
   phone: '9840012345',
-  brandName: 'Sri Lakshmi Motors',
+  // One name. `brandName` is the server's display mirror of it and is not a
+  // field the form carries any more.
   legalName: 'Sri Lakshmi Automobiles Pvt Ltd',
   addressLine: '14, Katpadi Main Road',
-  citySlug: 'vellore',
+  // Typed, not chosen. There is no list of cities and no state the platform is
+  // confined to.
+  city: 'Vellore',
+  state: 'Tamil Nadu',
   pincode: '632006',
   landline: '',
 };
@@ -174,7 +179,7 @@ describe('onboarding', () => {
     const state = await onboardingAction({}, form({ ...ONBOARDING, pincode: '12' }));
 
     expect(state.errors?.pincode).toBeTruthy();
-    expect(state.values?.brandName).toBe('Sri Lakshmi Motors');
+    expect(state.values?.legalName).toBe('Sri Lakshmi Automobiles Pvt Ltd');
     expect(calls).toHaveLength(0);
   });
 
@@ -202,6 +207,50 @@ describe('onboarding', () => {
     await redirectOf(onboardingAction({}, form({ ...ONBOARDING, roleTitle: '' })));
 
     expect(bodyOf(calls[0])).not.toContain('roleTitle');
+  });
+
+  /**
+   * A name is unique within a city, so the refusal names `legalName` and the
+   * wizard has to render it against that box. It nearly did not: the API
+   * answers in paths, and a nested one landed under a key no input carries.
+   */
+  it('marks a duplicate name against the field the dealer typed', async () => {
+    globalThis.fetch = respond(409, {
+      status: 409,
+      code: 'DEALER_NAME_TAKEN',
+      title: 'Conflict',
+      detail: 'A dealership called Sri Lakshmi is already registered in Vellore.',
+      errors: [
+        {
+          field: 'body.legalName',
+          code: 'DEALER_NAME_TAKEN',
+          message: 'Already registered in Vellore.',
+        },
+      ],
+    });
+
+    const state = await onboardingAction({}, form(ONBOARDING));
+
+    expect(state.message).toContain('Vellore');
+    expect(state.errors?.legalName).toBe('Already registered in Vellore.');
+    // And what was typed survives, so the dealer edits one field rather than
+    // filling the form in again.
+    expect(state.values?.city).toBe('Vellore');
+  });
+
+  /**
+   * `PATCH /v1/dealer` nests the address, and both validators answer in paths
+   * — Zod with `['address', 'city']`, the API with `body.address.city`. The
+   * inputs are flat, so an unmapped path renders against no field at all.
+   */
+  it('lands a nested address error on the flat input it belongs to', async () => {
+    globalThis.fetch = respond(200);
+
+    const state = await updateOnboardingAction({}, form({ ...ONBOARDING, city: 'V' }));
+
+    expect(state.errors?.city).toBeTruthy();
+    expect(state.errors?.address).toBeUndefined();
+    expect(calls).toHaveLength(0);
   });
 });
 

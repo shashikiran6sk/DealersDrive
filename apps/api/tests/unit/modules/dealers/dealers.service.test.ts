@@ -45,14 +45,17 @@ function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
     contactEmail: 'contact@sri-lakshmi-motors.in',
     landline: '0416 222 3344',
     addressLine: '12 Katpadi Road',
-    cityId: 'city-1',
-    city: { name: 'Vellore', state: 'Tamil Nadu' },
+    city: 'Vellore',
+    state: 'Tamil Nadu',
     pincode: '632001',
     specialities: ['Hatchbacks'],
     workingHours: { mon: '9:30–19:00' },
     establishedYear: 2009,
     logoMediaId: null,
-    coverMediaId: null,
+    // The yard photograph. Present by default, because the completeness
+    // fixtures below describe a *finished* profile and a finished profile has
+    // one — a dealership cannot be submitted for verification without it.
+    coverMediaId: 'media-1',
     creditBalance: 39,
     creditsHeld: 2,
     activeListings: 7,
@@ -91,14 +94,35 @@ function doc(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   };
 }
 
+/** A `Media` row, as the yard-photo paths read one back. */
+function media(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'media-1',
+    dealerId: 'dealer-1',
+    ownerType: 'DEALER_COVER',
+    storageKey: 'dealers/dealer-1/yard/media-1',
+    mimeType: 'image/jpeg',
+    bytes: 184_210,
+    fileName: 'yard.jpg',
+    status: 'PENDING',
+    createdAt: new Date('2026-09-01T00:00:00.000Z'),
+    ...overrides,
+  };
+}
+
 interface Options {
   dealer?: Record<string, unknown> | null;
   documents?: Record<string, unknown>[];
   documentById?: Record<string, unknown> | null;
+  documentByType?: Record<string, unknown> | null;
   deleteDocument?: boolean;
   head?: { bytes: number; contentType: string } | null;
   newEnquiryCount?: number;
   pendingListingCount?: number;
+  /** What `findConflicting` reports — a name or GSTIN already taken. */
+  conflicting?: { legalName: boolean; gstin: boolean };
+  /** One row, or several to be looked up by id — a replacement needs two. */
+  media?: Record<string, unknown> | Record<string, unknown>[] | null;
 }
 
 function setup(options: Options = {}) {
@@ -107,6 +131,9 @@ function setup(options: Options = {}) {
   const userUpdates: Record<string, unknown>[] = [];
   const outbox: Record<string, unknown>[] = [];
   const deletes: string[] = [];
+  const mediaCreated: Record<string, unknown>[] = [];
+  const orphaned: string[] = [];
+  const conflictQueries: { dealerId: string; fields: Record<string, unknown> }[] = [];
 
   const row = options.dealer === null ? null : dealer(options.dealer ?? {});
 
@@ -123,6 +150,31 @@ function setup(options: Options = {}) {
       return Promise.resolve({});
     },
     deleteDocument: () => Promise.resolve(options.deleteDocument ?? true),
+    documentByType: () =>
+      Promise.resolve(
+        options.documentByType === undefined
+          ? (options.deleteDocument ?? true)
+            ? doc()
+            : null
+          : options.documentByType,
+      ),
+    findConflicting: (dealerId: string, fields: Record<string, unknown>) => {
+      conflictQueries.push({ dealerId, fields });
+      return Promise.resolve(options.conflicting ?? { legalName: false, gstin: false });
+    },
+    mediaById: (mediaId: string) => {
+      if (!options.media) return Promise.resolve(null);
+      const rows = Array.isArray(options.media) ? options.media : [options.media];
+      return Promise.resolve(rows.find((row) => row.id === mediaId) ?? null);
+    },
+    createMedia: (data: Record<string, unknown>) => {
+      mediaCreated.push(data);
+      return Promise.resolve(data);
+    },
+    orphanMedia: (mediaId: string) => {
+      orphaned.push(mediaId);
+      return Promise.resolve({});
+    },
     newEnquiryCount: () => Promise.resolve(options.newEnquiryCount ?? 0),
     pendingListingCount: () => Promise.resolve(options.pendingListingCount ?? 0),
   } as unknown as DealersRepository;
@@ -158,6 +210,8 @@ function setup(options: Options = {}) {
       deletes.push(key);
       return Promise.resolve();
     },
+    signedReadUrl: (key: string, ttl: number) =>
+      Promise.resolve(`https://storage.test/signed/${key}?ttl=${ttl}`),
   } as unknown as StoragePort;
 
   return {
@@ -167,6 +221,9 @@ function setup(options: Options = {}) {
     userUpdates,
     outbox,
     deletes,
+    mediaCreated,
+    orphaned,
+    conflictQueries,
   };
 }
 
@@ -421,7 +478,7 @@ describe('toProfile', () => {
     expect(profile.contact.phoneDisplay).toBe('');
   });
 
-  it('resolves the city name and state through the relation', async () => {
+  it('reads the city and state off the dealership itself', async () => {
     const h = setup();
 
     expect((await h.service.profile('dealer-1')).address).toMatchObject({
@@ -432,7 +489,7 @@ describe('toProfile', () => {
   });
 
   it('reports a null city for a dealership that has not set one', async () => {
-    const h = setup({ dealer: { city: null, cityId: null } });
+    const h = setup({ dealer: { city: null, state: null } });
 
     const profile = await h.service.profile('dealer-1');
 
@@ -506,12 +563,13 @@ describe('update', () => {
     const h = setup();
 
     await h.service.update('dealer-1', {
-      address: { line: '99 New Road', cityId: 'city-2', pincode: '632002' },
+      address: { line: '99 New Road', city: 'Chennai', state: 'Tamil Nadu', pincode: '632002' },
     });
 
     expect(h.updates[0]?.data).toEqual({
       addressLine: '99 New Road',
-      cityId: 'city-2',
+      city: 'Chennai',
+      state: 'Tamil Nadu',
       pincode: '632002',
     });
   });
@@ -658,11 +716,14 @@ describe('deleteDocument', () => {
 
     await h.service.deleteDocument('dealer-1', 'GST_CERTIFICATE');
 
-    expect(h.deletes).toEqual(['kyc/dealer-1/GST_CERTIFICATE']);
+    // The object's key ends in the row's id. The baseline deleted the *prefix*
+    // — `kyc/dealer-1/GST_CERTIFICATE` — which is a path no object occupies, so
+    // every removed document stayed in storage.
+    expect(h.deletes).toEqual(['kyc/dealer-1/GST_CERTIFICATE/doc-1']);
   });
 
   it('404s when there was nothing to delete, and touches storage not at all', async () => {
-    const h = setup({ deleteDocument: false });
+    const h = setup({ documentByType: null });
 
     await expect(h.service.deleteDocument('dealer-1', 'GST_CERTIFICATE')).rejects.toThrow(
       NotFoundError,
@@ -718,21 +779,24 @@ describe('completeness', () => {
     const h = setup({
       documents: verified,
       dealer: {
-        brandName: '',
         legalName: null,
         addressLine: null,
-        cityId: null,
+        city: null,
+        state: null,
         pincode: null,
         gstin: null,
         pan: null,
       },
     });
 
+    // `brandName` is not named, and is not checked: it is the server-written
+    // mirror of `legalName`, so it can only be missing when `legalName` is, and
+    // naming both would ask a dealer to fill in a field that does not exist.
     expect((await h.service.completeness('dealer-1')).steps[1]?.missing).toEqual([
-      'brandName',
       'legalName',
       'addressLine',
-      'cityId',
+      'city',
+      'state',
       'pincode',
       'gstin',
       'pan',
@@ -895,5 +959,379 @@ describe('submitForVerification', () => {
     const h = setup({ dealer: null });
 
     await expect(h.service.submitForVerification('dealer-1')).rejects.toThrow(NotFoundError);
+  });
+});
+
+/**
+ * Two dealerships in one city must not share a registered name, and no two
+ * anywhere may share a GSTIN.
+ *
+ * The unique indexes on `(legalName, city)` and `gstin` are what actually
+ * guarantee it, and they are what makes it safe against two applications
+ * racing. What is asserted here is the other half of the job: turning a
+ * collision into a message against the field the dealer just typed, rather
+ * than a Prisma `P2002` the error handler renders as a 500.
+ */
+describe('update — the duplicate guard', () => {
+  it('refuses a registered name another dealership in the same city holds', async () => {
+    const h = setup({ conflicting: { legalName: true, gstin: false } });
+
+    await expect(
+      h.service.update('dealer-1', { legalName: 'Sri Lakshmi Motors Pvt Ltd' }),
+    ).rejects.toMatchObject({ status: 409, code: 'DEALER_NAME_TAKEN' });
+    expect(h.updates).toEqual([]);
+  });
+
+  /** The dealer is told which town it is taken in — the name alone is fine. */
+  it('names the city in the refusal', async () => {
+    const h = setup({ conflicting: { legalName: true, gstin: false } });
+
+    await expect(h.service.update('dealer-1', { legalName: 'Velavan Cars' })).rejects.toMatchObject(
+      {
+        detail: 'A dealership called Velavan Cars is already registered in Vellore.',
+        errors: [
+          {
+            field: 'body.legalName',
+            code: 'DEALER_NAME_TAKEN',
+            message: 'Already registered in Vellore.',
+          },
+        ],
+      },
+    );
+  });
+
+  it('refuses a GSTIN another dealership already holds', async () => {
+    const h = setup({ conflicting: { legalName: false, gstin: true } });
+
+    await expect(h.service.update('dealer-1', { gstin: '33AABCS1429B1ZX' })).rejects.toMatchObject({
+      status: 409,
+      code: 'GSTIN_ALREADY_REGISTERED',
+    });
+    expect(h.updates).toEqual([]);
+  });
+
+  /** The dealership asking is excluded, or saving an unchanged form would 409. */
+  it('asks only about the fields being changed, ignoring itself', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { legalName: 'Velavan Cars', tagline: 'Since 1998' });
+
+    // The city comes from the dealership, because a rename that does not move
+    // it is still a rename *within* a city.
+    expect(h.conflictQueries).toEqual([
+      { dealerId: 'dealer-1', fields: { legalName: 'Velavan Cars', city: 'Vellore' } },
+    ]);
+  });
+
+  /**
+   * A dealer changing name and town in one submit must be checked against the
+   * pair they typed. Checking the new name against the old city would refuse a
+   * move that is perfectly legal, and — worse — let through one that is not.
+   */
+  it('checks a rename against the city the same patch moves to', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', {
+      legalName: 'Velavan Cars',
+      address: { city: 'salem' },
+    });
+
+    expect(h.conflictQueries).toEqual([
+      { dealerId: 'dealer-1', fields: { legalName: 'Velavan Cars', city: 'Salem' } },
+    ]);
+  });
+
+  /**
+   * A name with no city to place it in cannot collide with anything, so it is
+   * not asked about. The index permits many NULL cities for exactly this row.
+   */
+  it('does not ask about a name when the dealership has no city yet', async () => {
+    const h = setup({ dealer: { city: null } });
+
+    await h.service.update('dealer-1', { legalName: 'Velavan Cars' });
+
+    expect(h.conflictQueries).toEqual([{ dealerId: 'dealer-1', fields: {} }]);
+    expect(h.updates[0]?.data).toMatchObject({ legalName: 'Velavan Cars' });
+  });
+
+  /**
+   * One name. `brandName` is not in `UpdateDealerInput` at all — it is the
+   * display mirror, written here so the two cannot disagree.
+   */
+  it('mirrors the registered name onto the display name', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { legalName: 'Velavan Cars' });
+
+    expect(h.updates[0]?.data).toMatchObject({
+      legalName: 'Velavan Cars',
+      brandName: 'Velavan Cars',
+    });
+  });
+});
+
+/**
+ * The city is text the dealer typed, so the only thing standing between five
+ * spellings of one town and five facets is the normalisation on the way in.
+ * It happens here rather than at read time, in the package both apps import.
+ */
+describe('update — the locality', () => {
+  it('normalises case and spacing before writing either field', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', {
+      address: { city: '  KRISHNAGIRI ', state: 'tamil   nadu' },
+    });
+
+    expect(h.updates[0]?.data).toMatchObject({ city: 'Krishnagiri', state: 'Tamil Nadu' });
+  });
+
+  it('accepts a city in a state the platform has never seen before', async () => {
+    const h = setup();
+
+    // The point of the change. `cities` held five towns in one state, so this
+    // dealership could not be described by the product at all.
+    await h.service.update('dealer-1', { address: { city: 'Hubballi', state: 'Karnataka' } });
+
+    expect(h.updates[0]?.data).toMatchObject({ city: 'Hubballi', state: 'Karnataka' });
+  });
+
+  it('leaves both columns alone when the patch names neither', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { address: { line: '99 New Road' } });
+
+    expect(h.updates[0]?.data).toEqual({ addressLine: '99 New Road' });
+  });
+});
+
+/**
+ * The yard photograph — the hero of the dealership's public portfolio.
+ *
+ * Same presign → PUT → commit pipeline as the KYC documents, under a different
+ * prefix, and with the replacement happening at the opposite end of it: nothing
+ * is displaced until commit, so a dealer who changes their mind halfway through
+ * picking a file still has the photograph they had before.
+ */
+describe('yardPhoto', () => {
+  it('reads empty when nothing has been uploaded', async () => {
+    const h = setup({ dealer: { coverMediaId: null } });
+
+    expect(await h.service.yardPhoto('dealer-1')).toEqual({
+      mediaId: null,
+      status: null,
+      fileName: null,
+      url: null,
+      uploadedAt: null,
+    });
+  });
+
+  /** A cover id pointing at a row that is gone is empty, not an error. */
+  it('reads empty when the media row has vanished', async () => {
+    const h = setup({ media: null });
+
+    expect((await h.service.yardPhoto('dealer-1')).mediaId).toBeNull();
+  });
+
+  /**
+   * A signed read of the original, not a delivery URL: the derivative pipeline
+   * that gives an image a permanent public URL is F034, and until it lands the
+   * original is the only copy there is.
+   */
+  it('signs a short-lived read of the stored object', async () => {
+    const h = setup({ media: media() });
+
+    expect(await h.service.yardPhoto('dealer-1')).toMatchObject({
+      mediaId: 'media-1',
+      fileName: 'yard.jpg',
+      url: 'https://storage.test/signed/dealers/dealer-1/yard/media-1?ttl=300',
+      uploadedAt: '2026-09-01T00:00:00.000Z',
+    });
+  });
+
+  /** `ORPHAN` is a stored status with no place in the wire enum. */
+  it('reports a pending upload as PROCESSING rather than PENDING', async () => {
+    const h = setup({ media: media({ status: 'PENDING' }) });
+
+    expect((await h.service.yardPhoto('dealer-1')).status).toBe('PROCESSING');
+  });
+});
+
+describe('presignYardPhoto', () => {
+  it('keys the image under the dealership rather than under kyc/', async () => {
+    const h = setup();
+
+    const presigned = await h.service.presignYardPhoto('dealer-1', {
+      fileName: 'yard.jpg',
+      mimeType: 'image/jpeg',
+      bytes: 184_210,
+    });
+
+    const created = h.mediaCreated[0];
+    expect(created).toMatchObject({
+      dealerId: 'dealer-1',
+      ownerType: 'DEALER_COVER',
+      status: 'PENDING',
+      fileName: 'yard.jpg',
+    });
+    expect(created?.storageKey).toBe(`dealers/dealer-1/yard/${String(created?.id)}`);
+    expect(presigned.mediaId).toBe(created?.id);
+  });
+
+  /** Presigning displaces nothing — that is what makes an abandoned pick safe. */
+  it('leaves the photograph already on the record alone', async () => {
+    const h = setup({ media: media() });
+
+    await h.service.presignYardPhoto('dealer-1', {
+      fileName: 'new.jpg',
+      mimeType: 'image/jpeg',
+      bytes: 1000,
+    });
+
+    expect(h.deletes).toEqual([]);
+    expect(h.orphaned).toEqual([]);
+    expect(h.updates).toEqual([]);
+  });
+});
+
+describe('commitYardPhoto', () => {
+  it('refuses an upload that never landed in storage', async () => {
+    const h = setup({ media: media({ id: 'media-2' }), head: null });
+
+    await expect(
+      h.service.commitYardPhoto('dealer-1', { mediaId: 'media-2' }),
+    ).rejects.toMatchObject({ code: 'UPLOAD_MISSING' });
+    expect(h.updates).toEqual([]);
+  });
+
+  it('refuses a media row belonging to another dealership', async () => {
+    const h = setup({ media: media({ dealerId: 'dealer-2' }) });
+
+    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
+      NotFoundError,
+    );
+  });
+
+  it('refuses a media row that is not a cover image', async () => {
+    const h = setup({ media: media({ ownerType: 'VEHICLE' }) });
+
+    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
+      NotFoundError,
+    );
+  });
+
+  it('adopts the upload onto the dealership', async () => {
+    const h = setup({
+      dealer: { coverMediaId: null },
+      media: media(),
+      head: { bytes: 184_210, contentType: 'image/jpeg' },
+    });
+
+    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
+
+    expect(h.updates[0]).toEqual({ dealerId: 'dealer-1', data: { coverMediaId: 'media-1' } });
+  });
+
+  /**
+   * This is where a replacement takes effect. The displaced row is marked
+   * ORPHAN rather than deleted — it is the only record the bytes ever existed,
+   * and a sweeper reconciles orphans against storage.
+   */
+  it('discards the photograph it displaces', async () => {
+    const h = setup({
+      dealer: { coverMediaId: 'media-old' },
+      media: [
+        media({ id: 'media-old', storageKey: 'dealers/dealer-1/yard/media-old' }),
+        media({ id: 'media-new', storageKey: 'dealers/dealer-1/yard/media-new' }),
+      ],
+      head: { bytes: 1, contentType: 'image/jpeg' },
+    });
+
+    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-new' });
+
+    expect(h.updates[0]?.data).toEqual({ coverMediaId: 'media-new' });
+    expect(h.orphaned).toEqual(['media-old']);
+    expect(h.deletes).toEqual(['dealers/dealer-1/yard/media-old']);
+  });
+
+  /**
+   * Committing the row that is already on the record is a no-op, not a
+   * self-destruct. Without the identity check it would delete the object it had
+   * just adopted.
+   */
+  it('does not discard the photograph it is re-committing', async () => {
+    const h = setup({
+      dealer: { coverMediaId: 'media-1' },
+      media: media(),
+      head: { bytes: 1, contentType: 'image/jpeg' },
+    });
+
+    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
+
+    expect(h.deletes).toEqual([]);
+    expect(h.orphaned).toEqual([]);
+  });
+});
+
+describe('deleteYardPhoto', () => {
+  it('clears the record and removes the bytes', async () => {
+    const h = setup({ media: media() });
+
+    await h.service.deleteYardPhoto('dealer-1');
+
+    expect(h.updates[0]).toEqual({ dealerId: 'dealer-1', data: { coverMediaId: null } });
+    expect(h.orphaned).toEqual(['media-1']);
+    expect(h.deletes).toEqual(['dealers/dealer-1/yard/media-1']);
+  });
+
+  it('404s when there is no photograph to remove', async () => {
+    const h = setup({ dealer: { coverMediaId: null } });
+
+    await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(NotFoundError);
+    expect(h.updates).toEqual([]);
+  });
+
+  /** A dangling cover id still clears; there is simply nothing to delete. */
+  it('clears a cover id whose media row has vanished', async () => {
+    const h = setup({ media: null });
+
+    await h.service.deleteYardPhoto('dealer-1');
+
+    expect(h.updates[0]?.data).toEqual({ coverMediaId: null });
+    expect(h.deletes).toEqual([]);
+  });
+});
+
+/**
+ * The yard photograph is required, and it is required on the documents step —
+ * the step where a dealer uploads things. A dealership whose public storefront
+ * would open with an empty frame is not ready to be reviewed.
+ */
+describe('completeness — the yard photograph', () => {
+  const verified = [
+    doc({ type: 'GST_CERTIFICATE', status: 'VERIFIED' }),
+    doc({ type: 'PAN_CARD', status: 'VERIFIED' }),
+    doc({ type: 'ADDRESS_PROOF', status: 'VERIFIED' }),
+  ];
+
+  it('names it as outstanding when there is none', async () => {
+    const h = setup({ documents: verified, dealer: { coverMediaId: null } });
+
+    const state = await h.service.completeness('dealer-1');
+
+    expect(state.steps[2]?.missing).toEqual(['YARD_PHOTO']);
+    expect(state.steps[2]?.complete).toBe(false);
+    expect(state.isComplete).toBe(false);
+  });
+
+  it('refuses the submit until one is uploaded', async () => {
+    const h = setup({
+      documents: verified,
+      dealer: { status: 'DRAFT', coverMediaId: null },
+    });
+
+    await expect(h.service.submitForVerification('dealer-1')).rejects.toMatchObject({
+      code: 'PROFILE_INCOMPLETE',
+    });
   });
 });

@@ -23,6 +23,13 @@ import type { StatusTone } from '@dealers-drive/contracts';
  * KYC documents are private. There is no public delivery route for them at all
  * — an admin reads one through a short-lived signed URL, and every issue of one
  * is audit-logged (§26.6).
+ *
+ * **Replace and Remove are two verbs, not one.** Replace is presign → PUT →
+ * commit and the API deletes the displaced object as part of it. Remove is the
+ * dealer deciding a document should not be there at all — the wrong scan, the
+ * wrong dealership's PAN card — and the row goes back to `REQUIRED` with the
+ * bytes gone. Without the second, the only way to correct a mistake is to
+ * upload something else over the top of it, which is not the same thing.
  */
 const TONE: Record<DealerDocumentDto['status'], StatusTone> = {
   REQUIRED: 'neutral',
@@ -48,8 +55,11 @@ const TAG: Record<DealerDocumentDto['status'], string> = {
 export function DocumentUploader({ document }: { document: DealerDocumentDto }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<'upload' | 'delete' | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  /** Anything but `REQUIRED` means bytes exist, and bytes can be taken back. */
+  const uploaded = document.status !== 'REQUIRED';
 
   async function upload(file: File): Promise<void> {
     setError(null);
@@ -63,7 +73,7 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
       return;
     }
 
-    setBusy(true);
+    setBusy('upload');
     try {
       const presignResponse = await fetch('/api/dealer/documents/presign', {
         method: 'POST',
@@ -99,7 +109,21 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'That upload failed.');
     } finally {
-      setBusy(false);
+      setBusy(null);
+    }
+  }
+
+  async function remove(): Promise<void> {
+    setError(null);
+    setBusy('delete');
+    try {
+      const response = await fetch(`/api/dealer/documents/${document.type}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('We could not remove that document.');
+      router.refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'That could not be removed.');
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -134,11 +158,27 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
       <button
         type="button"
         className="btn btn-secondary text-[12px]"
-        disabled={busy}
+        disabled={busy !== null}
         onClick={() => input.current?.click()}
       >
-        {busy ? 'Uploading…' : document.status === 'REQUIRED' ? 'Upload' : 'Replace'}
+        {busy === 'upload' ? 'Uploading…' : uploaded ? 'Replace' : 'Upload'}
       </button>
+
+      {/*
+        Only when there is something to delete. A `Delete` next to an empty row
+        is a control that cannot do anything, and a disabled one is worse — it
+        implies the row is in a state the dealer could get out of.
+      */}
+      {uploaded ? (
+        <button
+          type="button"
+          className="btn btn-ghost text-[12px] text-(--color-err)"
+          disabled={busy !== null}
+          onClick={() => void remove()}
+        >
+          {busy === 'delete' ? 'Removing…' : 'Delete'}
+        </button>
+      ) : null}
     </div>
   );
 }

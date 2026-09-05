@@ -50,10 +50,28 @@ export const OnboardingInput = z
       .string()
       .trim()
       .regex(/^(\+?91[- ]?)?[6-9]\d{9}$/, 'Enter a 10-digit Indian mobile number.'),
-    brandName: z.string().trim().min(2, 'Enter the name buyers will see.').max(120),
-    legalName: z.string().trim().min(2, 'Enter the registered legal name.').max(160),
+    /**
+     * One name, not two.
+     *
+     * The baseline asked for a public `brandName` alongside the registered
+     * `legalName`, and dealers filled both in with the same words. The
+     * registered name is the one KYC is checked against, so it is the one that
+     * is asked for — and it is what buyers see. `dealers.brandName` is kept as
+     * the display mirror of it, written by the server, never by a client.
+     */
+    legalName: z.string().trim().min(2, 'Enter your dealership\u2019s registered name.').max(160),
     addressLine: z.string().trim().min(4, 'Enter the showroom address.').max(200),
-    citySlug: z.string().regex(/^[a-z0-9-]+$/, 'Choose a city from the list.'),
+    /**
+     * The city, typed rather than chosen.
+     *
+     * It was a slug drawn from a five-row `cities` table, which made the
+     * product's reach a migration rather than a sign-up: a dealer in Salem or
+     * Bengaluru could not finish this form at all. Free text costs the write
+     * path a normalisation step — see `normaliseLocality` — and buys every
+     * city in India.
+     */
+    city: z.string().trim().min(2, 'Enter your city.').max(80),
+    state: z.string().trim().min(2, 'Enter your state.').max(80),
     pincode: z
       .string()
       .trim()

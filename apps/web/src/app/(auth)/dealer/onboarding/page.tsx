@@ -1,9 +1,9 @@
 import type {
   AuthSession,
-  CitiesResponse,
   CompletenessResponse,
   DealerDocumentsResponse,
   DealerProfile,
+  YardPhotoDto,
 } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -55,9 +55,12 @@ export default async function OnboardingPage({
     redirect('/dealer');
   }
 
-  // The last three are dealership-scoped, so they exist only once one does.
-  const [cities, documents, dealer, completeness] = await Promise.all([
-    apiGet<CitiesResponse>('/v1/cities', { revalidate: 3600 }),
+  // All dealership-scoped, so they exist only once one does.
+  //
+  // `GET /v1/cities` was the fifth request here, fetched for a dropdown on
+  // step 2. The city is typed now, so the screen no longer waits on reference
+  // data to render a form the dealer fills in themselves.
+  const [documents, dealer, completeness, yardPhoto] = await Promise.all([
     session.dealer
       ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
       : Promise.resolve(null),
@@ -67,24 +70,40 @@ export default async function OnboardingPage({
     session.dealer
       ? apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false })
       : Promise.resolve(null),
+    session.dealer
+      ? apiGet<YardPhotoDto>('/v1/dealer/yard-photo', { revalidate: false })
+      : Promise.resolve(null),
   ]);
 
   const requested = Number((await searchParams).step ?? NaN);
-  // The dealership decides the floor: steps 1 and 2 create it, so they are
-  // behind you once it exists, and steps 3 and 4 need it to exist at all. Once
-  // it is submitted, only the last step is left.
-  const floor = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : session.dealer ? 2 : 0;
-  const step = Number.isFinite(requested) ? Math.min(3, Math.max(floor, requested)) : floor;
+
+  /**
+   * Where the wizard opens, and how far back it goes.
+   *
+   * The floor used to be 2 once a dealership existed, on the reasoning that
+   * steps 1 and 2 *create* it and so are behind you. That is true of the write
+   * and false of the dealer: a name typed wrong on step 2 could not be
+   * corrected without an admin, and step 3 had a Back button pointing at a step
+   * the server would bounce them off. Steps 1 and 2 now amend as readily as
+   * they create, so the only floor left is the real one — a submitted
+   * dealership has nothing to edit while it is being reviewed.
+   *
+   * `landing` is separate from the floor, and stays where it was: a returning
+   * dealer wants the step they had reached, not the one they finished weeks ago.
+   */
+  const floor = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : 0;
+  const landing = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : session.dealer ? 2 : 0;
+  const step = Number.isFinite(requested) ? Math.min(3, Math.max(floor, requested)) : landing;
 
   return (
     <AuthShell>
       <OnboardingWizard
         step={step as 0 | 1 | 2 | 3}
         session={session}
-        cities={cities.data}
         documents={documents?.data ?? []}
         dealer={dealer}
         completeness={completeness}
+        yardPhoto={yardPhoto}
       />
     </AuthShell>
   );

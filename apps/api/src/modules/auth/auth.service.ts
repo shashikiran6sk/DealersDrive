@@ -1,5 +1,6 @@
 import {
   formatPhone,
+  normaliseLocality,
   slugify,
   toE164,
   type AdminSessionResponse,
@@ -15,7 +16,6 @@ import { withTransaction } from '../../platform/db/tenant-tx.js';
 import {
   ConfigurationError,
   ConflictError,
-  DomainError,
   ForbiddenError,
   UnauthorizedError,
 } from '../../platform/errors.js';
@@ -287,11 +287,46 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
      * call must not be able to create a second tenant under one session.
      */
     async onboard(principal: PendingPrincipal, input: OnboardingInput): Promise<AuthSession> {
-      const city = await prisma.city.findUnique({ where: { slug: input.citySlug } });
-      if (!city) {
-        throw new DomainError('UNKNOWN_CITY', 'Choose a city from the list.', {
-          errors: [{ field: 'body.citySlug', code: 'UNKNOWN_CITY', message: 'Unknown city.' }],
-        });
+      // Case and spacing settled once, on the way in. Everything downstream —
+      // the uniqueness read below, the index behind it, the admin console's
+      // city filter — then compares the same string rather than five spellings
+      // of one town.
+      const city = normaliseLocality(input.city);
+      const state = normaliseLocality(input.state);
+
+      /**
+       * One registered name per city.
+       *
+       * The unique index on `(legalName, city)` is the real guarantee — this
+       * read is what turns it into a message against the two fields the dealer
+       * just typed, and it compares case-insensitively because "Sri Lakshmi
+       * Motors" and "SRI LAKSHMI MOTORS" in one town are the same business
+       * applying twice.
+       *
+       * Scoped to the city rather than global, because the same name in
+       * another town is a different family's business, not a collision.
+       */
+      const nameOwner = await prisma.dealer.findFirst({
+        where: {
+          legalName: { equals: input.legalName, mode: 'insensitive' },
+          city: { equals: city, mode: 'insensitive' },
+        },
+        select: { id: true },
+      });
+      if (nameOwner) {
+        throw new ConflictError(
+          'DEALER_NAME_TAKEN',
+          `A dealership called ${input.legalName} is already registered in ${city}.`,
+          {
+            errors: [
+              {
+                field: 'body.legalName',
+                code: 'DEALER_NAME_TAKEN',
+                message: `Already registered in ${city}.`,
+              },
+            ],
+          },
+        );
       }
 
       const phone = toE164(input.phone);
@@ -334,18 +369,20 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
 
         const dealer = await tx.dealer.create({
           data: {
-            slug: await uniqueSlug(input.brandName),
-            brandName: input.brandName,
+            slug: await uniqueSlug(input.legalName),
+            // One name, asked for once. `brandName` is the display mirror —
+            // written here, and only ever by the server (`UpdateDealerInput`
+            // does not carry it).
+            brandName: input.legalName,
             legalName: input.legalName,
             // DRAFT, always. Becoming ACTIVE is the admin's decision, reached
             // through `POST /v1/dealer/submit` and the moderation queue — never
             // by a field on this request (CLAUDE.md rule 5).
             status: 'DRAFT',
-            cityId: city.id,
+            city,
+            state,
             addressLine: input.addressLine,
             pincode: input.pincode,
-            lat: city.lat,
-            lng: city.lng,
             contactPhone: phone,
             contactEmail: principal.email,
             landline: input.landline ?? null,
@@ -543,8 +580,8 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
   }
 
   /** `Sri Lakshmi Motors` → `sri-lakshmi-motors`, `-2` if that is taken. */
-  async function uniqueSlug(brandName: string): Promise<string> {
-    const base = slugify(brandName).slice(0, 60) || 'dealership';
+  async function uniqueSlug(name: string): Promise<string> {
+    const base = slugify(name).slice(0, 60) || 'dealership';
 
     for (let attempt = 0; attempt < 50; attempt += 1) {
       const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;

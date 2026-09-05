@@ -1,9 +1,9 @@
 import type {
   AuthSession,
-  CitiesResponse,
   CompletenessResponse,
   DealerDocumentDto,
   DealerProfile,
+  YardPhotoDto,
 } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
@@ -17,13 +17,14 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  *
  * F037 landed the frame — which step is current, how a step is reached and the
  * progress indicator. **F038 lands step 1, F039 step 2, F041 step 3, F043 the
- * outstanding-items list and F042 step 4** — with which the wizard is complete
- * and component-map C040 has all six of its props.
+ * outstanding-items list and F042 step 4** — with which the wizard is complete.
  *
  * `step` is the *server's* answer, not a preference. The page computes a floor
- * from the session — no dealership yet is 0, a DRAFT one is 2, one already
- * submitted is 3 — and clamps `?step=` into it, so the control below stands in
- * for a session state rather than for a click.
+ * from the session and clamps `?step=` into it, so the control below stands in
+ * for a session state rather than for a click. The floor is 0 for a DRAFT
+ * dealership and 3 for one already submitted: every step but the first goes
+ * back, which is why steps 1 and 2 have a second write path (`PATCH
+ * /v1/dealer`) behind the same fields.
  *
  * The wizard calls `useRouter().push` on Back from step 1, which needs the App
  * Router mock — hence `nextjs.appDirectory`. Without it the story throws on
@@ -32,17 +33,14 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * aliases to `src/mocks/auth-actions.ts` (coupling C-4).
  */
 
-/**
- * `GET /v1/cities` as the Business step sees it. The `all` row leads the real
- * response and is a *search filter*, not a place a dealership can be — it is
- * here so the story shows the step dropping it.
- */
-const CITIES: CitiesResponse['data'] = [
-  { slug: 'all', name: 'All of Tamil Nadu', count: 412 },
-  { slug: 'vellore', name: 'Vellore', state: 'Tamil Nadu', count: 88 },
-  { slug: 'chennai', name: 'Chennai', state: 'Tamil Nadu', count: 210 },
-  { slug: 'coimbatore', name: 'Coimbatore', state: 'Tamil Nadu', count: 134 },
-];
+/** `GET /v1/dealer/yard-photo` with nothing uploaded — step 3's hero slot. */
+const NO_YARD_PHOTO: YardPhotoDto = {
+  mediaId: null,
+  status: null,
+  fileName: null,
+  url: null,
+  uploadedAt: null,
+};
 
 /** One row of the KYC checklist. `DocumentUploader` has its own stories; these place it in context. */
 function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto {
@@ -142,21 +140,24 @@ const meta = {
       description: 'The floor the server resolved from the session.',
     },
     session: { control: false, description: 'GET /v1/auth/me. Step 1 is the only reader.' },
-    cities: { control: false, description: 'GET /v1/cities. Step 2 is the only reader.' },
     documents: { control: false, description: 'GET /v1/dealer/documents. Step 3 only.' },
-    dealer: { control: false, description: 'GET /v1/dealer — GSTIN and PAN. Step 3 only.' },
+    dealer: {
+      control: false,
+      description: 'GET /v1/dealer. Prefills steps 1–2 on the way back, and GSTIN/PAN on step 3.',
+    },
     completeness: {
       control: false,
-      description: 'GET /v1/dealer/completeness. Read by the error banner.',
+      description: 'GET /v1/dealer/completeness. Read by the error banner and step 3s Continue.',
     },
+    yardPhoto: { control: false, description: 'GET /v1/dealer/yard-photo. Step 3 only.' },
   },
   args: {
     step: 0,
     session: session(),
-    cities: CITIES,
     documents: DOCUMENTS,
     dealer: null,
     completeness: null,
+    yardPhoto: NO_YARD_PHOTO,
   },
   beforeEach: () => {
     authActionStub.result = {};
@@ -199,9 +200,14 @@ export const AccountPrefilled: Story = {
  * floor is 0 until a dealership exists and 2 once one does, so 1 is only ever
  * arrived at locally, or re-opened after a rejected submit.
  *
- * Two things to look at rather than read. The city list has no "All of Tamil
- * Nadu" in it, though the response does. And State is disabled and unnamed: it
- * follows the city, so the pair cannot disagree.
+ * City and State are typed, not chosen. They were a five-row dropdown and a
+ * disabled box beside it, which decided which dealerships could exist rather
+ * than describing the ones that do — a dealer in Salem could not finish this
+ * form, and one in Bengaluru could not be described by it.
+ *
+ * The city is load-bearing beyond the address: a dealership's name has to be
+ * unique **within its city**, so both halves of that pair are on this step and
+ * the check is the submit. `BusinessNameTaken` below is that refusal.
  *
  * Continue here is the submit. Press it to watch the ~1s "Creating your
  * dealership…" state — nothing is written before that press, which is why a
@@ -221,10 +227,35 @@ export const BusinessFieldErrors: Story = {
     authActionStub.result = {
       message: 'That could not be saved.',
       errors: {
-        brandName: 'Enter the name buyers will see.',
+        legalName: 'Enter your dealership’s registered name.',
         pincode: 'Pincode must be 6 digits.',
         phone: 'Enter a 10-digit Indian mobile number.',
       },
+    };
+  },
+};
+
+/**
+ * The duplicate-name refusal, which is what the city on this step is really
+ * for. Press Continue.
+ *
+ * Two things to look at. The message names the town — the name on its own is
+ * not the problem, and "Sri Balaji Motors" is a name three unrelated families
+ * use in three different towns. And the banner carries no bullet list under
+ * it: a refusal that already names a field is marked against that field, and
+ * following it with unrelated outstanding items would read as if those were
+ * the problem.
+ */
+export const BusinessNameTaken: Story = {
+  args: {
+    step: 1,
+    completeness: completeness({ business: ['gstin', 'pan'] }),
+  },
+  beforeEach: () => {
+    authActionStub.delayMs = 400;
+    authActionStub.result = {
+      message: 'A dealership called Sri Lakshmi Motors is already registered in Vellore.',
+      errors: { legalName: 'Already registered in Vellore.' },
     };
   },
 };
@@ -242,7 +273,7 @@ export const BlockersMany: Story = {
     step: 1,
     completeness: completeness({
       account: ['phone'],
-      business: ['gstin', 'pan', 'cityId', 'pincode'],
+      business: ['gstin', 'pan', 'city', 'state', 'pincode'],
       documents: ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'],
     }),
   },
@@ -290,21 +321,37 @@ export const BusinessSubmitting: Story = {
 };
 
 /**
- * Step 3 — a DRAFT dealership exists, so the server's floor is 2 and steps 1
- * and 2 are behind you. The frame's Back/Continue row is gone: from here on the
- * movement is by navigation, and the step brings its own controls.
+ * Step 3 — a DRAFT dealership exists. The frame's Back/Continue row is gone:
+ * from here on the movement is by navigation, and the step brings its own
+ * controls, Back included.
  *
- * Continue names what is still outstanding rather than blocking on it. A dealer
- * may leave with documents missing — the submit on step 4 is what refuses, and
- * it refuses with a list.
+ * **Continue does not move while anything is outstanding.** It replaced a
+ * "Skip for now" and a Continue that merely counted what was missing — both
+ * let a dealer walk to the end of the wizard and only there be told what they
+ * had skipped. What counts as outstanding is the server's `completeness`
+ * answer, because that is the derivation `POST /v1/dealer/submit` refuses on.
+ *
+ * The yard photograph sits with the documents because this is the step where a
+ * dealer uploads things, but it is required for a different reason: it is the
+ * hero of the public portfolio, and a dealership whose storefront would open
+ * with an empty frame is not ready to be reviewed.
  */
-export const Documents: Story = { args: { step: 2 } };
+export const Documents: Story = {
+  args: {
+    step: 2,
+    completeness: completeness({
+      business: ['gstin', 'pan'],
+      documents: ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF', 'YARD_PHOTO'],
+    }),
+  },
+};
 
-/** The same step once the registrations are on file and the checklist is done. */
+/** The same step once the registrations, the checklist and the photograph are done. */
 export const DocumentsComplete: Story = {
   args: {
     step: 2,
     dealer: { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' } as DealerProfile,
+    completeness: completeness(),
     documents: DOCUMENTS.map((row) => ({
       ...row,
       status: 'VERIFIED' as const,
@@ -312,6 +359,13 @@ export const DocumentsComplete: Story = {
       statusLabel: `${row.type.toLowerCase()}.pdf · verified`,
       action: 'Replace',
     })),
+    yardPhoto: {
+      mediaId: '00000000-0000-4000-8000-0000000000ff',
+      status: 'READY',
+      fileName: 'yard-frontage.jpg',
+      url: 'https://placehold.co/1200x675/1f2937/e5e7eb.png?text=Yard+frontage',
+      uploadedAt: '2026-09-02T09:15:00.000Z',
+    },
   },
 };
 
@@ -393,10 +447,10 @@ export const EveryStep: Story = {
           <OnboardingWizard
             step={index as 0 | 1 | 2 | 3}
             session={args.session}
-            cities={args.cities}
             documents={args.documents}
             dealer={args.dealer}
             completeness={args.completeness}
+            yardPhoto={args.yardPhoto}
           />
         </div>
       ))}

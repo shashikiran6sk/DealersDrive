@@ -51,10 +51,10 @@ afterEach(() => {
 });
 
 describe('dealerInclude', () => {
-  it('brings the city, documents and only ACTIVE members', () => {
+  it('brings the documents and only ACTIVE members', () => {
     // A removed member must not keep appearing as the owner of the dealership.
+    // There is no `city: true` any more: the city is a column on the row.
     expect(dealerInclude).toEqual({
-      city: true,
       documents: true,
       members: { include: { user: true }, where: { status: 'ACTIVE' } },
     });
@@ -110,7 +110,6 @@ describe('listActive', () => {
 
     expect(calls[0]?.args).toEqual({
       where: { status: 'ACTIVE' },
-      include: { city: true },
       orderBy: { brandName: 'asc' },
     });
   });
@@ -127,7 +126,8 @@ describe('listActive', () => {
           establishedYear: 2009,
           contactPhone: '9840012345',
           gstin: '33AABCS1429B1ZX',
-          city: { name: 'Vellore', slug: 'vellore', state: 'Tamil Nadu' },
+          city: 'Vellore',
+          state: 'Tamil Nadu',
         },
       ],
     });
@@ -162,16 +162,38 @@ describe('listActive', () => {
     expect((await createDealersRepository(prisma).listActive())[0]?.initials).toBe('VC');
   });
 
-  it('flattens the city, defaulting the state', async () => {
+  /**
+   * The slug is derived from the name rather than read off a joined row.
+   * `cities` is gone, so there is no second copy of the pair to fall out of
+   * step with this one — which is what the slug column was for.
+   */
+  it('derives the city slug from the city the dealership carries', async () => {
     const { prisma } = fakePrisma({
-      'dealer.findMany': [{ slug: 'a', brandName: 'A', specialities: [], city: null }],
+      'dealer.findMany': [
+        { slug: 'a', brandName: 'A', specialities: [], city: 'Krishnagiri', state: 'Tamil Nadu' },
+      ],
     });
 
     const [dealer] = await createDealersRepository(prisma).listActive();
 
+    expect(dealer?.cityName).toBe('Krishnagiri');
+    expect(dealer?.citySlug).toBe('krishnagiri');
+    expect(dealer?.state).toBe('Tamil Nadu');
+  });
+
+  it('carries nulls through for a dealership with no locality', async () => {
+    const { prisma } = fakePrisma({
+      'dealer.findMany': [{ slug: 'a', brandName: 'A', specialities: [], city: null, state: null }],
+    });
+
+    const [dealer] = await createDealersRepository(prisma).listActive();
+
+    // Not defaulted to "Tamil Nadu" any more. The platform is no longer one
+    // state wide, so guessing at the state would be putting a dealership
+    // somewhere it might not be.
     expect(dealer?.cityName).toBeNull();
     expect(dealer?.citySlug).toBeNull();
-    expect(dealer?.state).toBe('Tamil Nadu');
+    expect(dealer?.state).toBeNull();
   });
 
   it('computes years operating, never below one', async () => {

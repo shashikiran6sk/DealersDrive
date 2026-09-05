@@ -2,10 +2,10 @@
 
 import type {
   AuthSession,
-  CitiesResponse,
   CompletenessResponse,
   DealerDocumentDto,
   DealerProfile,
+  YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
@@ -16,9 +16,11 @@ import {
   onboardingAction,
   saveBusinessIdsAction,
   submitForVerificationAction,
+  updateOnboardingAction,
   type ActionState,
 } from '@/features/auth/actions';
 import { DocumentUploader } from '@/features/auth/document-uploader';
+import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
 
 /**
  * DESIGN-SPEC §3.10 — Account → Business → Documents → Review.
@@ -30,6 +32,33 @@ import { DocumentUploader } from '@/features/auth/document-uploader';
  *
  * Which step you may be on is decided on the server from the session. This
  * component moves between them; it does not decide what you are allowed to see.
+ *
+ * **Two rules run through every step here.**
+ *
+ * *Nothing advances on an empty required field.* Steps 2 and 4 were always
+ * gated — one by Zod on the submit, one by `canSubmit` — while steps 1 and 3
+ * were not, so a dealer could walk to the end of the wizard and only then be
+ * told what they had skipped. Step 1 now validates in the browser before it
+ * moves, and step 3 is gated on the server's own `completeness` answer, which
+ * is the same condition `POST /v1/dealer/submit` enforces. Two derivations of
+ * "is this ready" would eventually disagree, and the disagreement would be
+ * about whether somebody is allowed to trade.
+ *
+ * *Every step but the first goes back.* That costs steps 1 and 2 a second
+ * write path — once a dealership exists the create call refuses with
+ * `DEALER_ALREADY_EXISTS` — so `edit` below picks `PATCH /v1/dealer` instead.
+ * The fields, the layout and the validation are the same either way; only the
+ * verb changes.
+ *
+ * **Where the duplicate check lands.** A dealership's name has to be unique
+ * within its city, and both halves of that pair are typed on step 2 — so the
+ * question can only be asked when this step submits. It is asked in the
+ * database, by the write itself, rather than by a lookup as the dealer types:
+ * a check answered before the submit is a check two applications can race past
+ * between the answer and the write, and it would also hand anyone with a
+ * browser a way to enumerate which dealerships exist where. A collision comes
+ * back as a 409 that names `legalName`, so the step stays put with the message
+ * against the field.
  */
 export const ONBOARDING_STEPS = ['Account', 'Business', 'Documents', 'Review'] as const;
 
@@ -38,17 +67,17 @@ export type OnboardingStep = 0 | 1 | 2 | 3;
 export function OnboardingWizard({
   step,
   session,
-  cities,
   documents,
   dealer,
   completeness,
+  yardPhoto,
 }: {
   step: OnboardingStep;
   session: AuthSession;
-  cities: CitiesResponse['data'];
   documents: DealerDocumentDto[];
   dealer: DealerProfile | null;
   completeness: CompletenessResponse | null;
+  yardPhoto: YardPhotoDto | null;
 }) {
   const router = useRouter();
   /**
@@ -61,12 +90,37 @@ export function OnboardingWizard({
    * are reached by a URL the server resolves afresh.
    */
   const [local, setLocal] = useState<0 | 1>(step === 1 ? 1 : 0);
-  const [state, submit, pending] = useActionState<ActionState, FormData>(onboardingAction, {});
+
+  // The same two steps, one verb apart: create the dealership, or amend the one
+  // that is already there because the dealer pressed Back to get here.
+  const edit = dealer !== null;
+  const [state, submit, pending] = useActionState<ActionState, FormData>(
+    edit ? updateOnboardingAction : onboardingAction,
+    {},
+  );
+
+  /**
+   * What step 1 refuses to move past, checked here rather than on submit.
+   *
+   * The server validates these too — it is the only thing that counts — but on
+   * step 1 that verdict would not arrive until the dealer had filled in step 2
+   * and pressed Continue, which is three fields and a city later than the
+   * mistake. This is the message arriving where it can still be acted on.
+   */
+  const [accountErrors, setAccountErrors] = useState<Record<string, string>>({});
+
   // What the dealer typed, echoed back by the action. A rejected pincode must
   // not cost them the other eight fields.
   const values = state.values ?? {};
+  const errors = { ...(state.errors ?? {}), ...accountErrors };
 
   const current = step >= 2 ? step : local;
+
+  function continueFromAccount(form: HTMLFormElement | null): void {
+    const found = validateAccount(form);
+    setAccountErrors(found);
+    if (Object.keys(found).length === 0) setLocal(1);
+  }
 
   return (
     <div className="flex flex-col gap-[22px]">
@@ -74,8 +128,17 @@ export function OnboardingWizard({
 
       {state.message ? (
         <Banner tone="err" title={state.message}>
-          {/* The API refuses an incomplete dealership; this says which part. */}
-          {outstandingLabels(completeness).length > 0 ? (
+          {/*
+            The API refuses an incomplete dealership; this says which part.
+
+            Only when nothing more specific came back, though. A refusal that
+            names a field — a registered name already taken in this city, most
+            of all — is already marked against the box it belongs to, and
+            following it with a list of unrelated outstanding items reads as if
+            those were the problem.
+          */}
+          {Object.keys(state.errors ?? {}).length === 0 &&
+          outstandingLabels(completeness).length > 0 ? (
             <ul className="mt-[4px] list-disc pl-[18px]">
               {outstandingLabels(completeness).map((label) => (
                 <li key={label}>{label}</li>
@@ -89,33 +152,35 @@ export function OnboardingWizard({
         <form action={submit} className="flex flex-col gap-[18px]" noValidate>
           <AccountStep
             session={session}
-            errors={state.errors ?? {}}
+            dealer={dealer}
+            errors={errors}
             values={values}
             hidden={local === 1}
           />
-          <BusinessStep
-            cities={cities}
-            errors={state.errors ?? {}}
-            values={values}
-            hidden={local === 0}
-          />
+          <BusinessStep dealer={dealer} errors={errors} values={values} hidden={local === 0} />
 
           <div className="flex gap-[8px]">
-            <button
-              type="button"
-              className="btn btn-secondary h-[42px] px-[18px]"
-              onClick={() => {
-                if (local === 1) setLocal(0);
-                else router.push('/dealer/login');
-              }}
-            >
-              Back
-            </button>
+            {/*
+              Step 1 is the first step, and the first step has nothing behind
+              it. The baseline sent `Back` here to `/dealer/login`, which is not
+              a step of this wizard — it signs the dealer out of the flow they
+              are halfway through.
+            */}
+            {local === 1 ? (
+              <button
+                type="button"
+                className="btn btn-secondary h-[42px] px-[18px]"
+                onClick={() => setLocal(0)}
+              >
+                Back
+              </button>
+            ) : null}
 
             {/**
              * Continue means two different things, and the difference is the
-             * point of the two-step form. On Account it is a local move; on
-             * Business it is the submit that creates the dealership. Nothing is
+             * point of the two-step form. On Account it is a local move — taken
+             * only once the required fields on it are filled — and on Business
+             * it is the submit that creates or amends the dealership. Nothing is
              * written until that second press, so a dealer who abandons halfway
              * leaves no half-made tenant behind.
              */}
@@ -123,13 +188,13 @@ export function OnboardingWizard({
               <button
                 type="button"
                 className="btn btn-primary h-[42px] flex-1"
-                onClick={() => setLocal(1)}
+                onClick={(event) => continueFromAccount(event.currentTarget.form)}
               >
                 Continue
               </button>
             ) : (
               <button type="submit" className="btn btn-primary h-[42px] flex-1" disabled={pending}>
-                {pending ? 'Creating your dealership…' : 'Continue'}
+                {pending ? (edit ? 'Saving…' : 'Creating your dealership…') : 'Continue'}
               </button>
             )}
           </div>
@@ -140,6 +205,9 @@ export function OnboardingWizard({
         <DocumentsStep
           documents={documents}
           dealer={dealer}
+          yardPhoto={yardPhoto}
+          completeness={completeness}
+          onBack={() => router.push('/dealer/onboarding?step=1')}
           onDone={() => router.push('/dealer/onboarding?step=3')}
         />
       ) : null}
@@ -149,13 +217,40 @@ export function OnboardingWizard({
   );
 }
 
+/**
+ * The required fields of step 1, read straight off the form.
+ *
+ * Off the DOM rather than out of React state, because these inputs are
+ * uncontrolled — they carry `defaultValue` so that re-rendering the step never
+ * discards what is half-typed in it. The form element is the state.
+ */
+function validateAccount(form: HTMLFormElement | null): Record<string, string> {
+  if (!form) return {};
+
+  const value = (name: string): string => {
+    const field = form.elements.namedItem(name);
+    return field instanceof HTMLInputElement || field instanceof HTMLSelectElement
+      ? field.value.trim()
+      : '';
+  };
+
+  const errors: Record<string, string> = {};
+  if (value('fullName').length < 2) errors.fullName = 'Tell us your name.';
+  if (!/^(\+?91[- ]?)?[6-9]\d{9}$/.test(value('phone'))) {
+    errors.phone = 'Enter a 10-digit Indian mobile number.';
+  }
+  return errors;
+}
+
 function AccountStep({
   session,
+  dealer,
   errors,
   values,
   hidden,
 }: {
   session: AuthSession;
+  dealer: DealerProfile | null;
   errors: Record<string, string>;
   values: Record<string, string>;
   hidden: boolean;
@@ -198,8 +293,15 @@ function AccountStep({
             name="fullName"
             className="input"
             autoComplete="name"
-            defaultValue={values.fullName ?? session.user.fullName ?? session.identity?.name ?? ''}
+            defaultValue={
+              values.fullName ??
+              dealer?.contact.fullName ??
+              session.user.fullName ??
+              session.identity?.name ??
+              ''
+            }
             required
+            aria-required="true"
             {...invalidProps('fullName', errors.fullName)}
           />
         </Field>
@@ -211,7 +313,9 @@ function AccountStep({
             className="input"
             autoComplete="organization-title"
             placeholder="Proprietor"
-            defaultValue={values.roleTitle ?? session.user.roleTitle ?? ''}
+            defaultValue={
+              values.roleTitle ?? dealer?.contact.roleTitle ?? session.user.roleTitle ?? ''
+            }
             {...invalidProps('roleTitle', errors.roleTitle)}
           />
         </Field>
@@ -225,8 +329,16 @@ function AccountStep({
             inputMode="numeric"
             autoComplete="tel-national"
             placeholder="98400 12345"
-            defaultValue={values.phone ?? session.user.phone}
+            defaultValue={values.phone ?? dealer?.contact.phone ?? session.user.phone}
             required
+            aria-required="true"
+            /*
+              The login identity. Changing it needs an OTP round-trip on the new
+              number, which onboarding does not have — so once the dealership
+              exists this reads rather than asks. It is still submitted, because
+              step 1's own validation reads the form.
+            */
+            readOnly={dealer !== null}
             {...invalidProps('phone', errors.phone)}
           />
         </Field>
@@ -246,22 +358,16 @@ function AccountStep({
 }
 
 function BusinessStep({
-  cities,
+  dealer,
   errors,
   hidden,
   values,
 }: {
-  cities: CitiesResponse['data'];
+  dealer: DealerProfile | null;
   errors: Record<string, string>;
   hidden: boolean;
   values: Record<string, string>;
 }) {
-  // `/v1/cities` leads with an "All of Tamil Nadu" pseudo-city, which is a
-  // *search filter*, not a place a dealership can be.
-  const places = cities.filter((city) => city.slug !== 'all');
-  const [citySlug, setCitySlug] = useState(values.citySlug ?? '');
-  const state = places.find((city) => city.slug === citySlug)?.state ?? 'Tamil Nadu';
-
   return (
     <fieldset hidden={hidden} className="m-0 border-0 p-0">
       <legend className="sr-only">Your dealership</legend>
@@ -274,25 +380,29 @@ function BusinessStep({
       </p>
 
       <div className="flex flex-col gap-[14px]">
-        <Field id="brandName" label="Dealership name (public)" error={errors.brandName}>
-          <input
-            id="brandName"
-            name="brandName"
-            defaultValue={values.brandName ?? ''}
-            className="input"
-            autoComplete="organization"
-            required
-            {...invalidProps('brandName', errors.brandName)}
-          />
-        </Field>
-
-        <Field id="legalName" label="Registered legal name" error={errors.legalName}>
+        {/*
+          One name, not two.
+          
+          The baseline asked for a public brand name and a registered legal name
+          side by side, and dealers filled both in with the same words — twice
+          the typing for a distinction that never held. The registered name is
+          the one KYC is checked against, so it is the one asked for, and it is
+          what buyers see.
+        */}
+        <Field
+          id="legalName"
+          label="Dealership name"
+          hint="as registered — buyers see this"
+          error={errors.legalName}
+        >
           <input
             id="legalName"
             name="legalName"
-            defaultValue={values.legalName ?? ''}
+            defaultValue={values.legalName ?? dealer?.legalName ?? ''}
             className="input"
+            autoComplete="organization"
             required
+            aria-required="true"
             {...invalidProps('legalName', errors.legalName)}
           />
         </Field>
@@ -301,51 +411,66 @@ function BusinessStep({
           <input
             id="addressLine"
             name="addressLine"
-            defaultValue={values.addressLine ?? ''}
+            defaultValue={values.addressLine ?? dealer?.address.line ?? ''}
             className="input"
             autoComplete="street-address"
             required
+            aria-required="true"
             {...invalidProps('addressLine', errors.addressLine)}
           />
         </Field>
 
         <div className="grid gap-[14px] sm:grid-cols-2">
-          <Field id="citySlug" label="City" error={errors.citySlug}>
-            <select
-              id="citySlug"
-              name="citySlug"
+          {/*
+            City and state, typed.
+
+            Both were a dropdown and a disabled box beside it, filled in from a
+            five-row table: choose one of five towns, and the state is whatever
+            the table says. A dealer in Salem could not finish this form, and
+            one in Bengaluru could not be described by it. Two text fields
+            instead — the server normalises case and spacing so one town does
+            not become three, and the duplicate-name check below is what the
+            city is really load-bearing for.
+          */}
+          <Field id="city" label="City" error={errors.city}>
+            <input
+              id="city"
+              name="city"
+              defaultValue={values.city ?? dealer?.address.city ?? ''}
               className="input"
-              value={citySlug}
-              onChange={(event) => setCitySlug(event.target.value)}
+              autoComplete="address-level2"
+              placeholder="Vellore"
               required
-              {...invalidProps('citySlug', errors.citySlug)}
-            >
-              <option value="" disabled>
-                Select a city
-              </option>
-              {places.map((city) => (
-                <option key={city.slug} value={city.slug}>
-                  {city.name}
-                </option>
-              ))}
-            </select>
+              aria-required="true"
+              {...invalidProps('city', errors.city)}
+            />
           </Field>
 
-          {/* Derived from the city, not typed: the catalogue owns the pair. */}
-          <Field id="state" label="State">
-            <input id="state" className="input" value={state} disabled readOnly />
+          <Field id="state" label="State" error={errors.state}>
+            <input
+              id="state"
+              name="state"
+              defaultValue={values.state ?? dealer?.address.state ?? ''}
+              className="input"
+              autoComplete="address-level1"
+              placeholder="Tamil Nadu"
+              required
+              aria-required="true"
+              {...invalidProps('state', errors.state)}
+            />
           </Field>
 
           <Field id="pincode" label="Pincode" error={errors.pincode}>
             <input
               id="pincode"
               name="pincode"
-              defaultValue={values.pincode ?? ''}
+              defaultValue={values.pincode ?? dealer?.address.pincode ?? ''}
               className="input tnum"
               inputMode="numeric"
               autoComplete="postal-code"
               maxLength={6}
               required
+              aria-required="true"
               {...invalidProps('pincode', errors.pincode)}
             />
           </Field>
@@ -354,7 +479,7 @@ function BusinessStep({
             <input
               id="landline"
               name="landline"
-              defaultValue={values.landline ?? ''}
+              defaultValue={values.landline ?? dealer?.contact.landline ?? ''}
               className="input tnum"
               autoComplete="tel"
               placeholder="0416 224 8890"
@@ -370,15 +495,32 @@ function BusinessStep({
 function DocumentsStep({
   documents,
   dealer,
+  yardPhoto,
+  completeness,
+  onBack,
   onDone,
 }: {
   documents: DealerDocumentDto[];
   dealer: DealerProfile | null;
+  yardPhoto: YardPhotoDto | null;
+  completeness: CompletenessResponse | null;
+  onBack: () => void;
   onDone: () => void;
 }) {
-  const outstanding = documents.filter((document) => document.status === 'REQUIRED').length;
   const [state, submit, pending] = useActionState<ActionState, FormData>(saveBusinessIdsAction, {});
   const values = state.values ?? {};
+
+  /**
+   * What this step is still missing, in the server's own words.
+   *
+   * Derived from `completeness` rather than counted here, because the same
+   * answer is what `POST /v1/dealer/submit` refuses on. Counting `REQUIRED`
+   * rows in the browser would be a second derivation of the same question, and
+   * the two would eventually disagree about whether a dealership is ready.
+   */
+  const outstanding = stepOutstanding(completeness, 'documents').concat(
+    stepOutstanding(completeness, 'business'),
+  );
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -387,8 +529,8 @@ function DocumentsStep({
           Business verification
         </h1>
         <p className="mt-[8px] text-[15px] ink-secondary">
-          Your registrations and three documents, reviewed by our team. Listings can be prepared
-          while this is pending — they go live once you are verified.
+          Your registrations, three documents and a photo of your yard, reviewed by our team.
+          Listings can be prepared while this is pending — they go live once you are verified.
         </p>
       </div>
 
@@ -406,6 +548,8 @@ function DocumentsStep({
               placeholder="33ABCDE1234F1Z5"
               maxLength={15}
               defaultValue={values.gstin ?? dealer?.gstin ?? ''}
+              required
+              aria-required="true"
               {...invalidProps('gstin', state.errors?.gstin)}
             />
           </Field>
@@ -418,6 +562,8 @@ function DocumentsStep({
               placeholder="ABCDE1234F"
               maxLength={10}
               defaultValue={values.pan ?? dealer?.pan ?? ''}
+              required
+              aria-required="true"
               {...invalidProps('pan', state.errors?.pan)}
             />
           </Field>
@@ -434,12 +580,37 @@ function DocumentsStep({
         ))}
       </div>
 
+      {yardPhoto ? <YardPhotoUploader photo={yardPhoto} /> : null}
+
+      {/*
+        No "Skip for now".
+        
+        It was there because nothing downstream depended on this step being
+        finished — and nothing did, right up until the review step refused to
+        submit and listed everything that had been skipped. Saying so here, next
+        to the fields it names, is the same information three screens earlier.
+      */}
+      {outstanding.length > 0 ? (
+        <Banner tone="warn" title="Still needed before you can submit">
+          <ul className="mt-[4px] list-disc pl-[18px]">
+            {outstanding.map((label) => (
+              <li key={label}>{label}</li>
+            ))}
+          </ul>
+        </Banner>
+      ) : null}
+
       <div className="flex gap-[8px]">
-        <button type="button" className="btn btn-secondary h-[42px] px-[18px]" onClick={onDone}>
-          Skip for now
+        <button type="button" className="btn btn-secondary h-[42px] px-[18px]" onClick={onBack}>
+          Back
         </button>
-        <button type="button" className="btn btn-primary h-[42px] flex-1" onClick={onDone}>
-          {outstanding === 0 ? 'Continue' : `Continue (${outstanding} still to upload)`}
+        <button
+          type="button"
+          className="btn btn-primary h-[42px] flex-1"
+          disabled={outstanding.length > 0}
+          onClick={onDone}
+        >
+          Continue
         </button>
       </div>
     </div>
@@ -525,11 +696,12 @@ const MISSING_LABELS: Record<string, string> = {
   GST_CERTIFICATE: 'GST certificate',
   PAN_CARD: 'PAN card',
   ADDRESS_PROOF: 'Address proof',
-  brandName: 'Dealership name',
-  legalName: 'Registered legal name',
+  YARD_PHOTO: 'Photo of your yard',
+  legalName: 'Dealership name',
   addressLine: 'Address',
   pincode: 'Pincode',
-  cityId: 'City',
+  city: 'City',
+  state: 'State',
   fullName: 'Your name',
   phone: 'Phone number',
   email: 'Email address',
@@ -539,4 +711,10 @@ function outstandingLabels(completeness: CompletenessResponse | null): string[] 
   return (completeness?.steps ?? [])
     .flatMap((step) => step.missing)
     .map((key) => MISSING_LABELS[key] ?? key);
+}
+
+/** The same, for one named step. */
+function stepOutstanding(completeness: CompletenessResponse | null, key: string): string[] {
+  const step = completeness?.steps.find((candidate) => candidate.key === key);
+  return (step?.missing ?? []).map((field) => MISSING_LABELS[field] ?? field);
 }

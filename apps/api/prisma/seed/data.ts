@@ -5,26 +5,14 @@
  * The baseline file is 1,212 lines: cities, RTOs, colours, credit packs, five
  * dealerships and their inventory, all of it shaped by the catalogue that
  * decision D1 removes. What is here is the part `tests/auth.test.ts` needs —
- * the five cities, and the one dealership whose owner address the admin
- * sign-in cases refer to. `CITIES` is verbatim. The rest arrives with **F097**.
+ * the one dealership whose owner address the admin sign-in cases refer to.
+ * The rest arrives with **F097**.
+ *
+ * `CITIES` was here too, five rows of reference data written verbatim from the
+ * baseline. The `cities` table is gone: a dealership's city is text it typed,
+ * so there is nothing to seed and nothing to choose from.
  * ────────────────────────────────────────────────────────────────────────────
  */
-export interface SeedCity {
-  slug: string;
-  name: string;
-  state: string;
-  lat: number;
-  lng: number;
-}
-
-export const CITIES: SeedCity[] = [
-  { slug: 'vellore', name: 'Vellore', state: 'Tamil Nadu', lat: 12.9165, lng: 79.1325 },
-  { slug: 'katpadi', name: 'Katpadi', state: 'Tamil Nadu', lat: 12.9698, lng: 79.1378 },
-  { slug: 'ranipet', name: 'Ranipet', state: 'Tamil Nadu', lat: 12.9277, lng: 79.3335 },
-  { slug: 'arcot', name: 'Arcot', state: 'Tamil Nadu', lat: 12.9057, lng: 79.3199 },
-  { slug: 'gudiyattam', name: 'Gudiyattam', state: 'Tamil Nadu', lat: 12.9463, lng: 78.8712 },
-];
-
 export interface SeedDealer {
   slug: string;
   brandName: string;
@@ -32,7 +20,8 @@ export interface SeedDealer {
   tagline: string;
   gstin: string;
   pan: string;
-  citySlug: string;
+  city: string;
+  state: string;
   addressLine: string;
   pincode: string;
   lat: number;
@@ -53,7 +42,8 @@ export const DEALERS: SeedDealer[] = [
     tagline: 'Family-run since 2014 — single-owner cars with full service history.',
     gstin: '33AABCS1429P1ZK',
     pan: 'AABCS1429P',
-    citySlug: 'vellore',
+    city: 'Vellore',
+    state: 'Tamil Nadu',
     addressLine: '14, Katpadi Main Road, Gandhi Nagar',
     pincode: '632006',
     lat: 12.9165,

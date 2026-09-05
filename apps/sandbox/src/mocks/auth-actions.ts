@@ -54,6 +54,21 @@ export async function onboardingAction(
   return respond('onboarding', formData);
 }
 
+/**
+ * Steps 1 and 2 again, for a dealership that already exists.
+ *
+ * `Back` from the Documents step has to lead somewhere, and the create call
+ * refuses a second dealership — so the same fields PATCH instead. Which of the
+ * two the wizard uses is decided by whether `dealer` is null, so a story that
+ * passes one exercises this path.
+ */
+export async function updateOnboardingAction(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  return respond('updateOnboarding', formData);
+}
+
 /** The GSTIN/PAN save on the Documents step (**F041**). */
 export async function saveBusinessIdsAction(
   _previous: ActionState,

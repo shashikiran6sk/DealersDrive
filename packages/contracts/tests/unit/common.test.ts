@@ -8,6 +8,7 @@ import {
   formatMonthYear,
   formatPhone,
   initialsOf,
+  normaliseLocality,
   slugify,
   timeAgo,
   toE164,
@@ -113,6 +114,47 @@ describe('numbers and identifiers', () => {
     expect(slugify('2021 Maruti Suzuki Swift VXi')).toBe('2021-maruti-suzuki-swift-vxi');
     expect(slugify('  Hyundai   i20 (Asta) ')).toBe('hyundai-i20-asta');
     expect(slugify('x'.repeat(120))).toHaveLength(80);
+  });
+});
+
+/**
+ * The guard rail free-text localities need.
+ *
+ * There is no `cities` table any more: a dealership's city and state are typed,
+ * which is what lets the product reach past the five towns somebody seeded. The
+ * price of that is fragmentation — `vellore`, `Vellore` and `VELLORE ` are one
+ * city filtered three ways — and this is what is paid instead, once, on write.
+ */
+describe('normaliseLocality', () => {
+  it('settles case and spacing so one town cannot become three', () => {
+    expect(normaliseLocality('  VELLORE ')).toBe('Vellore');
+    expect(normaliseLocality('vellore')).toBe('Vellore');
+    expect(normaliseLocality('tamil   nadu')).toBe('Tamil Nadu');
+  });
+
+  it('capitalises after a hyphen, an apostrophe and a full stop', () => {
+    // Real place names, all of them. Title-casing on spaces alone would give
+    // "Jammu-kashmir", "D'souza Nagar" and "N.c.r.".
+    expect(normaliseLocality('jammu-kashmir')).toBe('Jammu-Kashmir');
+    expect(normaliseLocality("d'souza nagar")).toBe("D'Souza Nagar");
+    expect(normaliseLocality('n.c.r.')).toBe('N.C.R.');
+  });
+
+  it('leaves non-Latin scripts alone rather than mangling them', () => {
+    // The `u` flag matters here: `\p{L}` matches a Devanagari letter, which has
+    // no upper case, so the string comes back as typed rather than corrupted.
+    expect(normaliseLocality('  वेल्लोर ')).toBe('वेल्लोर');
+  });
+
+  /**
+   * Deliberately conservative. It does not correct spelling, expand
+   * abbreviations or transliterate — each of those is a judgement about a place
+   * name that the dealer standing in it knows better than we do.
+   */
+  it('changes nothing else', () => {
+    expect(normaliseLocality('Bengaluru')).toBe('Bengaluru');
+    expect(normaliseLocality('N.C.R.')).toBe('N.C.R.');
+    expect(normaliseLocality('')).toBe('');
   });
 });
 

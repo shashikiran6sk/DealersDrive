@@ -8,7 +8,11 @@ import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
-import { approveDealerAction, suspendDealerAction } from '@/features/admin/actions';
+import {
+  approveDealerAction,
+  reinstateDealerAction,
+  suspendDealerAction,
+} from '@/features/admin/actions';
 
 /**
  * D4 — the dealer-moderation controls.
@@ -22,6 +26,19 @@ import { approveDealerAction, suspendDealerAction } from '@/features/admin/actio
  * once, so the count is stated before the button is pressed (rule 6) — and the
  * button stays disabled until there is a reason of substance behind it, because
  * the dealer reads that reason verbatim.
+ *
+ * **The approve control is rendered from the status, not from `canApprove`.**
+ * That is the fix for a screen that read as broken: `canApprove` is
+ * `PENDING_APPROVAL && allDocumentsVerified`, so an application whose documents
+ * had not been reviewed yet showed no approve button at all — and, since
+ * verifying a document was itself an API-only action, that was every
+ * application. A moderator looking at a dealership waiting for a decision now
+ * always sees the button; when the documents are not verified it is disabled
+ * and says which condition is unmet. The permission is still the API's to
+ * enforce, and it still does.
+ *
+ * **Reinstate is here for the same reason.** SUSPENDED is not a terminal state
+ * and the console should not present it as one.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline renders a third block here — a standalone credit grant, gated on
@@ -41,6 +58,11 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
 
   const [approvalNote, setApprovalNote] = useState('');
   const [suspendReason, setSuspendReason] = useState('');
+  const [reinstateNote, setReinstateNote] = useState('');
+
+  // Waiting for a decision. The button appears on this; whether it is *usable*
+  // is `canApprove`, which additionally wants the KYC documents verified.
+  const awaitingDecision = dealer.status === 'PENDING_APPROVAL';
 
   function run(work: () => Promise<{ ok: boolean; message?: string }>, success: string) {
     setError(null);
@@ -63,7 +85,7 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
       {error ? <Banner tone="err">{error}</Banner> : null}
       {notice ? <Banner tone="ok">{notice}</Banner> : null}
 
-      {dealer.actions.canApprove ? (
+      {awaitingDecision ? (
         <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
           <Field id="approvalNote" label="Note" className="min-w-[220px] flex-1">
             <Input
@@ -77,6 +99,7 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
             variant="primary"
             size="md"
             loading={pending}
+            disabled={!dealer.actions.canApprove}
             onClick={() =>
               run(
                 () =>
@@ -89,6 +112,53 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
           >
             Approve dealer
           </Button>
+          {/*
+            A disabled button with no explanation is indistinguishable from a
+            broken one. This is the missing condition, stated.
+          */}
+          {!dealer.actions.canApprove ? (
+            <p className="w-full text-[12px] ink-muted">
+              Verify all three KYC documents above before approving — approval makes every one of
+              this dealer&rsquo;s listings eligible to appear publicly.
+            </p>
+          ) : (
+            <p className="w-full text-[12px] ink-muted">
+              Approving makes this dealer&rsquo;s listings eligible to appear publicly.
+            </p>
+          )}
+        </div>
+      ) : null}
+
+      {dealer.actions.canReinstate ? (
+        <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
+          <Field id="reinstateNote" label="Note" className="min-w-[220px] flex-1">
+            <Input
+              id="reinstateNote"
+              value={reinstateNote}
+              onChange={(event) => setReinstateNote(event.target.value)}
+              placeholder="Internal — why the suspension is being lifted"
+            />
+          </Field>
+          <Button
+            variant="primary"
+            size="md"
+            loading={pending}
+            onClick={() =>
+              run(
+                () =>
+                  reinstateDealerAction(dealer.id, {
+                    ...(reinstateNote.trim() ? { note: reinstateNote.trim() } : {}),
+                  }),
+                'Dealer reinstated.',
+              )
+            }
+          >
+            Reinstate dealer
+          </Button>
+          <p className="w-full text-[12px] ink-muted">
+            Lifting the suspension clears the reason the dealer was shown and puts their listings
+            back in front of buyers.
+          </p>
         </div>
       ) : null}
 
@@ -124,20 +194,16 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
       ) : null}
 
       {/*
-        The slice above, made visible. At the baseline a SUPER_ADMIN always has
-        the grant block, so this card is never empty; with grants deferred to
-        F054 a suspended or rejected dealership would render a bare heading,
-        which reads as a rendering bug rather than as "nothing to do here".
-        Those two states have no console control at the baseline either — the
-        reject and reinstate endpoints exist and are documented, but nothing
-        calls them — so the line says that rather than inventing a button.
+        With grants deferred to F054, a DRAFT or REJECTED dealership has nothing
+        to decide — and a card rendering a bare heading reads as a rendering bug
+        rather than as "nothing to do here".
       */}
-      {!dealer.actions.canApprove && !dealer.actions.canSuspend ? (
+      {!awaitingDecision && !dealer.actions.canSuspend && !dealer.actions.canReinstate ? (
         <p className="text-[13px] ink-muted">
           No decisions are available from this state.{' '}
-          {dealer.actions.canReinstate
-            ? 'Reinstating is an API-only action for now.'
-            : 'The dealership is still completing its application.'}
+          {dealer.status === 'DRAFT'
+            ? 'The dealership is still completing its application.'
+            : 'The application was rejected and has not been resubmitted.'}
         </p>
       ) : null}
     </section>

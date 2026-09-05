@@ -50,6 +50,7 @@ const BASE: AdminDealerDetail = {
   counts: { vehicles: 12, active: 7, pending: 1, enquiries: 30 },
   documents: [],
   allDocumentsVerified: true,
+  yardPhotoUrl: null,
   recentLedger: [],
   actions: {
     canApprove: false,
@@ -102,9 +103,16 @@ export const PendingAndReadyToApprove: Story = {
 };
 
 /**
- * PENDING_APPROVAL with a document still outstanding. `canApprove` is false, so
- * the approve control is simply absent — the console does not render a disabled
- * button it would have to explain.
+ * PENDING_APPROVAL with a document still outstanding. `canApprove` is false —
+ * and the control is rendered anyway, disabled, with a line saying why.
+ *
+ * It used to be absent, which is the more usual instinct and was wrong here.
+ * An admin looking at a dealership waiting for a decision and finding no
+ * approve button anywhere cannot tell "not allowed" from "not implemented" —
+ * and for a while it genuinely was the second, because nothing in the console
+ * could verify a document. The disabled control with its reason is the honest
+ * version: the decision is available, its precondition is not met yet, and
+ * `DocumentReview` above it is where that is fixed.
  */
 export const PendingWithDocumentsOutstanding: Story = {
   args: {
@@ -136,9 +144,13 @@ export const ActiveWithNoLiveListings: Story = {
 };
 
 /**
- * SUSPENDED. `POST /dealers/:id/reinstate` exists and is documented, but the
- * baseline console calls it from nowhere — so the card says so rather than
- * rendering a button this feature would have had to invent.
+ * SUSPENDED, with the way back.
+ *
+ * `POST /dealers/:id/reinstate` has existed and been documented since F045 and
+ * the console called it from nowhere, which made suspension terminal in
+ * practice while the state machine said otherwise. Restoring a dealership puts
+ * every listing the suspension pulled back into the catalogue (rule 6), so the
+ * control says so before it is pressed.
  */
 export const Suspended: Story = {
   args: {
@@ -154,7 +166,10 @@ export const Suspended: Story = {
   },
 };
 
-/** REJECTED — a terminal state with no console action at all. */
+/**
+ * REJECTED — the one genuinely terminal state, with no console action at all.
+ * A rejected application is re-made rather than reversed.
+ */
 export const Rejected: Story = {
   args: {
     dealer: dealer(

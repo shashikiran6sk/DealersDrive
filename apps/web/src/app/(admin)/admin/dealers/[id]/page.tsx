@@ -1,25 +1,17 @@
-import type { AdminDealerDetail, StatusTone } from '@dealers-drive/contracts';
+import type { AdminDealerDetail } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { LogoTile, StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
+import { DocumentReview } from '@/features/admin/document-review';
 import { ApiError, apiGet } from '@/lib/api';
 import { cn } from '@/lib/cn';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Dealer' };
-
-/** D5 document states, mapped to the shared status tones (§2.5). */
-const DOC_TONE: Record<AdminDealerDetail['documents'][number]['status'], StatusTone> = {
-  REQUIRED: 'neutral',
-  UPLOADING: 'neutral',
-  UPLOADED: 'warn',
-  VERIFIED: 'ok',
-  REJECTED: 'err',
-};
 
 /** D3 — the full dealer record, its documents, its ledger and its actions. */
 export default async function AdminDealerPage({ params }: { params: Promise<{ id: string }> }) {
@@ -47,10 +39,18 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
             {dealer.legalName} · joined <span className="tnum">{dealer.joinedLabel}</span>
           </p>
         </div>
-        <StatusTag tone={dealer.statusTone}>{dealer.statusLabel}</StatusTag>
-        <Link href={`/dealers/${dealer.slug}`} className="btn btn-ghost ml-auto text-[12px]">
-          Public page →
-        </Link>
+        <StatusTag tone={dealer.statusTone} className="ml-auto">
+          {dealer.statusLabel}
+        </StatusTag>
+        {/*
+          There is deliberately no "Public page" link here.
+
+          The baseline carried one, pointing at `/dealers/{slug}` — a route that
+          belongs to the public dealer profile and does not exist yet, so every
+          press of it was a 404. A link that cannot work is worse than no link:
+          a moderator clicking it concludes the dealership is broken rather than
+          that the page has not been built. It comes back with the route.
+        */}
       </div>
 
       {dealer.statusReason ? (
@@ -113,30 +113,31 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
               {dealer.allDocumentsVerified ? 'all verified' : 'verification pending'}
             </span>
           </h2>
-          {dealer.documents.length === 0 ? (
-            <p className="py-3 text-[13px] ink-muted">Nothing uploaded yet.</p>
+          <DocumentReview documents={dealer.documents} />
+        </section>
+
+        {/*
+          The yard photograph.
+
+          It is the image that will front this dealership's public portfolio,
+          and the only question the requirement exists to ask — "is this
+          actually a clear photograph of the premises" — is one a person has to
+          answer. `yardPhotoUrl` is a short-lived signed read, like the KYC
+          documents beside it.
+        */}
+        <section className="card gap-2 p-4">
+          <h2 className="text-[19px]">Yard photo</h2>
+          {dealer.yardPhotoUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={dealer.yardPhotoUrl}
+              alt={`The yard at ${dealer.brandName}`}
+              className="h-[220px] w-full border border-(--color-divider) object-cover"
+            />
           ) : (
-            dealer.documents.map((document) => (
-              <div
-                key={document.id}
-                className="flex items-center gap-3 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
-              >
-                <span className="min-w-0 flex-1 truncate">{document.label}</span>
-                {/* `viewUrl` is short-lived and audit-logged — it is the only
-                    way a KYC document is ever read (D5). */}
-                {document.viewUrl ? (
-                  <a
-                    href={document.viewUrl}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="btn btn-ghost text-[11px]"
-                  >
-                    View
-                  </a>
-                ) : null}
-                <StatusTag tone={DOC_TONE[document.status]}>{document.status}</StatusTag>
-              </div>
-            ))
+            <p className="py-3 text-[13px] ink-muted">
+              Not uploaded. A dealership cannot be submitted for verification without one.
+            </p>
           )}
         </section>
       </div>

@@ -44,6 +44,16 @@ export const dealersDocs: ModuleDocs = {
         'Notable absences, all deliberate: `phone` (it is the login identity — changing it ' +
         'needs an OTP round-trip on the new number), `status`, `slug` and `dealerId`. GSTIN ' +
         'and PAN are validated against their real formats and upper-cased.\n\n' +
+        '`brandName` is absent too, and for a different reason: a dealership has **one** ' +
+        'name. `legalName` is it, and `brandName` is the server-written display mirror of ' +
+        'it — a client able to set both is a client able to make them disagree.\n\n' +
+        '`legalName` is unique **within a city** and `gstin` is unique across the platform. A ' +
+        'collision is a 409 (`DEALER_NAME_TAKEN`, `GSTIN_ALREADY_REGISTERED`) naming the ' +
+        'field. A rename is checked against the city this same request moves to, when it ' +
+        'moves — so changing both in one call is checked against the pair, not a half-applied ' +
+        'combination of them.\n\n' +
+        '`address.city` and `address.state` are free text, normalised on write. There is no ' +
+        'list of cities to choose from and no state the platform is confined to.\n\n' +
         'OWNER only (`dealer:update`) — a manager or salesperson gets a 403.',
       audience: 'dealer',
       permission: 'dealer:update',
@@ -51,15 +61,20 @@ export const dealersDocs: ModuleDocs = {
         schema: 'UpdateDealerInput',
         description: 'Only the fields being changed.',
         example: {
-          brandName: 'Sri Lakshmi Motors',
+          legalName: 'Sri Lakshmi Motors',
           tagline: 'Family-run since 2009',
           gstin: '33AABCS1429P1Z5',
-          address: { line: '142 Katpadi Main Road', pincode: '632007' },
+          address: {
+            line: '142 Katpadi Main Road',
+            city: 'Vellore',
+            state: 'Tamil Nadu',
+            pincode: '632007',
+          },
           contact: { fullName: 'Karthik Raman', roleTitle: 'Proprietor' },
         },
       },
       responses: [{ status: 200, description: 'The updated dealership.', schema: 'DealerProfile' }],
-      errors: [400, 401, 403, 404],
+      errors: [400, 401, 403, 404, 409],
     },
     {
       method: 'get',
@@ -194,6 +209,100 @@ export const dealersDocs: ModuleDocs = {
       params: 'DocTypeParam',
       responses: [{ status: 204, description: 'Deleted.' }],
       errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'get',
+      path: '/v1/dealer/yard-photo',
+      operationId: 'getDealerYardPhoto',
+      tag: 'Dealer account',
+      summary: 'The yard photograph',
+      description:
+        'The image that fronts the dealership\u2019s public portfolio. `url` is a **short-lived ' +
+        'signed read of the original**, not a permanent delivery URL: the derivative pipeline ' +
+        'that content-addresses an image is F034, and until it lands the original is the only ' +
+        'copy there is.\n\n' +
+        'Every field is `null` when nothing has been uploaded yet.',
+      audience: 'dealer',
+      responses: [
+        {
+          status: 200,
+          description: 'The yard photograph, or an empty one.',
+          schema: 'YardPhotoDto',
+        },
+      ],
+      errors: [401, 404],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/yard-photo/presign',
+      operationId: 'presignDealerYardPhoto',
+      tag: 'Dealer account',
+      summary: 'Get an upload URL for the yard photograph',
+      description:
+        'Step 1 of 2, and the same presign \u2192 `PUT` \u2192 commit pipeline the KYC documents ' +
+        'use \u2014 different prefix, different destiny. Accepts JPEG, PNG and WebP up to 10 MB.\n\n' +
+        'Presigning does **not** displace the photograph already on the record. Nothing is ' +
+        'replaced until commit, so a dealer who changes their mind halfway through picking a ' +
+        'file still has the one they had before. OWNER only (`document:upload`).',
+      audience: 'dealer',
+      permission: 'document:upload',
+      requestBody: {
+        schema: 'YardPhotoPresignInput',
+        description: 'What is about to be uploaded.',
+        example: { fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: 1_842_100 },
+      },
+      responses: [
+        {
+          status: 201,
+          description: 'A signed upload URL. `mediaId` identifies the row to commit.',
+          schema: 'PresignResponse',
+        },
+      ],
+      errors: [400, 401, 403, 404, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/yard-photo/commit',
+      operationId: 'commitDealerYardPhoto',
+      tag: 'Dealer account',
+      summary: 'Confirm the yard photograph upload',
+      description:
+        'Step 2 of 2. HEADs the object before adopting it \u2014 a presign never followed by a ' +
+        '`PUT` must not leave the dealership looking like it has a hero image. A missing ' +
+        'object is a 422 `UPLOAD_MISSING`.\n\n' +
+        'This is where a replacement takes effect: the photograph being displaced is marked ' +
+        'ORPHAN and its bytes are deleted in the same call.',
+      audience: 'dealer',
+      permission: 'document:upload',
+      requestBody: {
+        schema: 'YardPhotoCommitInput',
+        description: 'The `mediaId` returned by presign.',
+        example: { mediaId: '7f3c9a21-4444-4000-8000-000000000009' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The yard photograph now on the record.',
+          schema: 'YardPhotoDto',
+        },
+      ],
+      errors: [400, 401, 403, 404, 422],
+    },
+    {
+      method: 'delete',
+      path: '/v1/dealer/yard-photo',
+      operationId: 'deleteDealerYardPhoto',
+      tag: 'Dealer account',
+      summary: 'Remove the yard photograph',
+      description:
+        'Clears `coverMediaId` and deletes the stored object. The dealership then reads as ' +
+        'incomplete again \u2014 `GET /v1/dealer/completeness` lists `YARD_PHOTO` as missing, ' +
+        'and `POST /v1/dealer/submit` refuses until one is uploaded. OWNER only ' +
+        '(`document:upload`).',
+      audience: 'dealer',
+      permission: 'document:upload',
+      responses: [{ status: 204, description: 'Removed.' }],
+      errors: [401, 403, 404],
     },
   ],
 };

@@ -51,7 +51,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 4 — Platform services
 
-- [x] F026 — City & location reference data
+- [⛔] F026 — City & location reference data · **withdrawn by D6** — the `cities` table, the `locations` module and `GET /v1/cities` are removed; a dealership's city is text it types
 - [x] F027 — Rate limiting · ⚠️ pulled forward, ahead of Tier 2
 - [x] F028 — Caching layer · ⚠️ pulled forward, ahead of Tier 2
 - [x] F029 — Platform config & feature flags
@@ -77,8 +77,8 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [x] F041 — Onboarding — document upload step · [#57](https://github.com/shashikiran6sk/DealersDrive/pull/57)
 - [x] F042 — Onboarding — review & submit step · [#59](https://github.com/shashikiran6sk/DealersDrive/pull/59)
 - [x] F043 — Onboarding completeness tracking · [#58](https://github.com/shashikiran6sk/DealersDrive/pull/58)
-- [~] F044 — Admin document verification
-- [~] F045 — Dealer approval, rejection & suspension
+- [x] F044 — Admin document verification · [#61](https://github.com/shashikiran6sk/DealersDrive/pull/61) + the console's verify/reject controls
+- [x] F045 — Dealer approval, rejection & suspension · [#62](https://github.com/shashikiran6sk/DealersDrive/pull/62) + the console's approve/reinstate controls
 
 ## Tier 7 — Consoles
 

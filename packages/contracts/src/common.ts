@@ -61,13 +61,6 @@ export type ProblemDetails = z.infer<typeof ProblemDetails>;
 export const KeyValue = z.object({ key: z.string(), label: z.string(), value: z.string() });
 export type KeyValue = z.infer<typeof KeyValue>;
 
-export const CityRef = z.object({
-  slug: z.string(),
-  name: z.string(),
-  state: z.string().optional(),
-});
-export type CityRef = z.infer<typeof CityRef>;
-
 export const ImageRef = z.object({
   url: z.string(),
   srcset: z.string(),
@@ -198,4 +191,31 @@ export function slugify(input: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
+}
+
+/**
+ * `" VELLORE "` -> `"Vellore"`, `"tamil  nadu"` -> `"Tamil Nadu"`.
+ *
+ * The guard rail that free-text city and state need. CLAUDE.md §5 records the
+ * risk in the vehicle catalogue's own words — without a lookup table,
+ * `Maruti`, `Maruti Suzuki` and `MARUTI SUZUKI INDIA LTD` become three facets
+ * of one brand — and a locality typed by five thousand dealers fragments the
+ * same way: `vellore`, `Vellore` and `VELLORE ` are one city filtered three
+ * ways.
+ *
+ * So normalisation happens at **write time**, here, in the package both apps
+ * import, rather than at read time in whichever query happens to remember. It
+ * is deliberately conservative: case and whitespace only. It does not correct
+ * spelling, expand abbreviations or transliterate, because each of those would
+ * be a judgement about a place name that a dealer knows better than we do.
+ */
+export function normaliseLocality(input: string): string {
+  return input
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .replace(
+      /(^|[\s\-'.])(\p{L})/gu,
+      (_match, lead: string, letter: string) => lead + letter.toUpperCase(),
+    );
 }

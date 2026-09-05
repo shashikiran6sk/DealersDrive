@@ -18,6 +18,12 @@ import { DocumentUploader } from '@/features/auth/document-uploader';
  * Upload in the sandbox opens a file picker and then fails at `fetch`, which is
  * honest rather than useful.
  *
+ * **Delete appears on any row with a file behind it**, and Replace is a delete
+ * and an upload rather than a second object left in the bucket. The stored
+ * object's key ends in the row's id, so both paths have to know which id they
+ * are displacing before they overwrite it — the delete-the-prefix shortcut the
+ * baseline used removed nothing at all.
+ *
  * KYC documents are private. There is no public delivery route for them at all
  * — an admin reads one through a short-lived signed URL, and every issue of one
  * is audit-logged (§26.6). That is why no story here shows a thumbnail.
@@ -119,6 +125,26 @@ export const Uploading: Story = {
       statusLabel: 'Uploading…',
       fileName: 'gst-certificate.pdf',
       action: 'Cancel',
+    }),
+  },
+};
+
+/**
+ * Uploaded, seen for the Delete button rather than for the tag.
+ *
+ * A row with a file behind it offers to remove it outright, not only to swap
+ * it. A dealer who uploaded their PAN into the address-proof slot had no way
+ * to undo that: Replace needs a file to replace it *with*, and there was
+ * nothing else to send.
+ */
+export const UploadedAndRemovable: Story = {
+  args: {
+    document: document({
+      id: 'doc-1',
+      status: 'UPLOADED',
+      statusLabel: 'pan.jpg · uploaded',
+      fileName: 'pan.jpg',
+      action: 'Replace',
     }),
   },
 };

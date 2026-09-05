@@ -32,16 +32,16 @@ entry. The catalogue is not carried into the reconstruction.
 
 **What that means concretely.**
 
-| Removed                                                                                                                                                                                                           | Kept, relocated, or changed                                           |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `Make`, `Model`, `Variant` Prisma models                                                                                                                                                                          | `Vehicle` stores `make`, `model`, `variant` as **normalised strings** |
-| `Color`, `Rto` reference tables                                                                                                                                                                                   | colour from RC or free text; `rtoCode` already derived from the plate |
-| `apps/api/src/modules/catalog/**` (5 files)                                                                                                                                                                       | `GET /v1/cities` → **F026**; `GET /v1/config/public` → **F029**       |
-| `GET /v1/catalog/bundle`, `GET /v1/catalog/models/:id/variants`                                                                                                                                                   | —                                                                     |
-| `apps/api/prisma/seed/catalog/**` (~5,000 LOC)                                                                                                                                                                    | `prisma/seed/` keeps only dev bootstrap (**F097**)                    |
-| `apps/web/src/app/api/catalog/models/[id]/variants/route.ts`                                                                                                                                                      | —                                                                     |
-| `CatalogBundle` from contracts                                                                                                                                                                                    | `RcBasicsMatch` yields strings, not `Uuid`s                           |
-| `City` — **not removed.** Cities are not vehicle-catalogue data. They drive the header city selector, the dealer directory, search filters and dealer profiles, so they become their own small feature, **F026**. |                                                                       |
+| Removed                                                                                                                                                                                                                                                | Kept, relocated, or changed                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `Make`, `Model`, `Variant` Prisma models                                                                                                                                                                                                               | `Vehicle` stores `make`, `model`, `variant` as **normalised strings** |
+| `Color`, `Rto` reference tables                                                                                                                                                                                                                        | colour from RC or free text; `rtoCode` already derived from the plate |
+| `apps/api/src/modules/catalog/**` (5 files)                                                                                                                                                                                                            | `GET /v1/cities` → **F026**; `GET /v1/config/public` → **F029**       |
+| `GET /v1/catalog/bundle`, `GET /v1/catalog/models/:id/variants`                                                                                                                                                                                        | —                                                                     |
+| `apps/api/prisma/seed/catalog/**` (~5,000 LOC)                                                                                                                                                                                                         | `prisma/seed/` keeps only dev bootstrap (**F097**)                    |
+| `apps/web/src/app/api/catalog/models/[id]/variants/route.ts`                                                                                                                                                                                           | —                                                                     |
+| `CatalogBundle` from contracts                                                                                                                                                                                                                         | `RcBasicsMatch` yields strings, not `Uuid`s                           |
+| `City` — **not removed.** Cities are not vehicle-catalogue data. They drive the header city selector, the dealer directory, search filters and dealer profiles, so they become their own small feature, **F026**. ⚠️ **Overturned by D6** — see below. |                                                                       |
 
 **What survives, and why it must.** `apps/api/src/platform/rc/rc-aliases.ts`
 stays. Its own header explains the reason a table is unavoidable: an RC records
@@ -231,6 +231,69 @@ per-feature obligation. It is renamed to reflect that.
 `packages/contracts`, so nothing is transcribed by hand. Roughly fifteen lines
 for an endpoint, written once, by the person who knows the answer.
 
+## D6 — The `cities` table is removed, and a name is unique per city
+
+**Decision.** A dealership's `city` and `state` are free text it types, not a
+foreign key into a reference table. `City`, the `locations` module and
+`GET /v1/cities` are removed. A registered name is unique **within a city**
+rather than globally.
+
+**This overturns half of D1.** D1 kept `City` on the reasoning that cities are
+not vehicle-catalogue data — they drive the header selector, the directory,
+search filters and dealer profiles. That reasoning described what the table was
+_read_ for and missed what it _decided_: it held five towns in one state, and a
+dealership could only exist in one of them. The first onboarding flow made that
+concrete. A dealer in Salem cannot finish the form; a dealer in Bengaluru cannot
+be described by it at all, because `state` is whatever the row says. A table
+that gates who may sign up is catalogue data whatever it is read for.
+
+**What that means concretely.**
+
+| Removed                                                           | Kept, relocated, or changed                                                             |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `City` Prisma model and the `cities` table                        | `Dealer.city` and `Dealer.state` as **normalised strings**                              |
+| `Dealer.cityId` and its foreign key                               | data preserved by the migration — existing rows keep their city by name                 |
+| `apps/api/src/modules/locations/**` (5 files) and its unit tests  | —                                                                                       |
+| `GET /v1/cities`, `locationsDocs`, the `Locations` tag            | —                                                                                       |
+| `CitiesResponse` and `CityRef` from contracts                     | —                                                                                       |
+| `CITIES` from `prisma/seed/data.ts`                               | the seed writes an admin and one dealership; there is no reference data left to seed    |
+| the city dropdown and the disabled State box on onboarding step 2 | two required text inputs                                                                |
+| the global unique on `dealers.legalName`                          | `@@unique([legalName, city])`                                                           |
+| `Dealer.lat` / `Dealer.lng` being written                         | the columns stay; nothing writes them, and geocoding a typed address is its own feature |
+
+**Why the uniqueness rule moved with it.** A global unique on `legalName` is
+wrong in a way that only shows up at scale: "Sri Balaji Motors" is a name three
+unrelated families use in three different towns, and the first to sign up locked
+the other two out of the product. Within one city the same name is a duplicate
+application or an impersonation, and a buyer cannot tell which dealership they
+are calling. Both halves of the pair are typed on step 2, so the check is that
+step's submit — a 409 naming `legalName`, from the database rather than from a
+lookup as the dealer types. A pre-submit check is one two applications can race
+past between the answer and the write, and it would hand anyone with a browser
+a way to enumerate which dealerships exist where.
+
+**⚠️ The risk this creates.** It is D1's risk, in a second column: without a
+lookup table, `vellore`, `Vellore` and `VELLORE ` become three facets of one
+city. The answer is the same one D1 reached for and it is already in place —
+**normalisation at write time**, `normaliseLocality` in
+`packages/contracts/src/common.ts`, applied by `auth.service.onboard` and
+`dealers.service.update`. It settles case and whitespace and nothing else: it
+does not correct spelling, expand abbreviations or transliterate, because each
+of those is a judgement about a place name the dealer knows better than we do.
+The suggest-existing-values guard rail D1 asks for at F060 now has a second
+consumer, and should serve city and state as well as make and model.
+
+**Knock-on effects on the plan.**
+
+- **F026 is withdrawn.** Its entry below says so in place.
+- **F039** no longer fetches `/v1/cities` and renders no city picker.
+- **F076** builds its city facets from the localities dealers actually trade
+  in, counted from `listing_search`, rather than from five seeded rows. The
+  header selector it feeds is a filter over real inventory either way.
+- `Combobox` gains back some of the justification D1 took from it: the
+  suggest-existing-values control for city and state is exactly the case it was
+  written for.
+
 ---
 
 # Feature index
@@ -266,7 +329,7 @@ for an endpoint, written once, by the person who knows the answer.
 | F024 | Release & image promotion                               | Infra      | HIGH       |
 | F025 | Deployment infrastructure                               | Infra      | HIGH       |
 |      | **TIER 4 — Platform services**                          |            |            |
-| F026 | City & location reference data                          | Full-stack | HIGH       |
+| F026 | City & location reference data ⛔ withdrawn (D6)        | Full-stack | HIGH       |
 | F027 | Rate limiting                                           | API        | HIGH       |
 | F028 | Caching layer                                           | API        | HIGH       |
 | F029 | Platform config & feature flags                         | Full-stack | HIGH       |
@@ -604,7 +667,7 @@ Session issue/read/revoke, the cookie adapter, the port, and the dev-session esc
 - ⚠️ **`tests/unit/routes.test.ts` is sliced.** Every guard question is asked in
   full. Deferred are the `reached` assertions for paths whose routers do not
   exist — `/v1/dealer/*` (F046), `PUT /uploads` (F033) — and five of the eight
-  public paths, which belong to F026, F029, F076, F085 and F088.
+  public paths, which belong to F029, F076, F085 and F088 (F026 is withdrawn — D6).
   `GET /v1/catalog/bundle` is dropped permanently: decision D1 removed it.
 
 ### F017 — Auth shell UI
@@ -770,43 +833,42 @@ Terraform for AWS ECS Fargate behind an ALB (two services), plus the nginx and s
 
 # TIER 4 — Platform services
 
-### F026 — City & location reference data
+### F026 — City & location reference data ⛔ WITHDRAWN
 
-**Survives decision D1.** Cities are not vehicle-catalogue data — they drive the header city selector, the dealer directory, search filters and dealer profiles.
+⛔ **Withdrawn by decision D6.** It landed, and then it was removed again: the
+`cities` table, the `locations` module, `GET /v1/cities`, `CitiesResponse` and
+the five seeded rows are all gone. A dealership's city and state are free text
+it types.
 
-- **Status** implemented (currently inside the catalog module) · **Confidence** HIGH · **Depends on** F005, F036
-- **Backend** `modules/locations/{locations.repository,locations.service,locations.routes,locations.facade}.ts` — extracted from `modules/catalog/`
-- **API** `GET /v1/cities`
-- **DB** `City` — landed early with F036, because `dealerInclude` needs the relation
-- **Contracts** `packages/contracts/src/public.ts` — `CitiesResponse`
-- **Tests** `tests/unit/modules/locations/*.test.ts` (3 files), adapted from `tests/unit/modules/catalog/*`
-- **Components** none · **Sandbox** none here — see below
-- **`Rto` does not come across.** The entry made it conditional on whether RTO
-  names are still wanted for display; nothing in the reconstruction reads one.
-  `rtoCode` is derived from the plate and needs no table, which the entry
-  already said. If a display name is ever wanted, it is a new decision.
-- **The sandbox line belonged to F074.** This feature has no frontend: the
-  component the entry described — short list / long list / none selected — is
-  `CitySelector`, which **F074** owns and whose entry already lists those
-  scenarios plus `open` and `fallback`. `Combobox` is not involved either way;
-  its fate is decided at F060.
-- **`packages/contracts/tests/unit/index.test.ts` lands here, sliced.** F001
-  deferred it because it asserts invariants across every schema and only two of
-  six modules existed. Its **barrel block** holds for any subset, and without it
-  every schema-only module sits at 0 % coverage: `auth.ts` had been there since
-  F014, `public.ts` joined it at F029, and the package had about two statements
-  of headroom left before the 90 % gate failed for a reason unrelated to
-  whatever feature happened to add the next schema. Porting the barrel block
-  takes contracts from 91.59 % to **99.15 % statements · 100 % lines**. The two
-  rule blocks still need `dealer.ts` and `admin.ts`.
-- ⚠️ **The city counts need `listing_search`, which is F076.**
-  `locations.service.ts` states the two methods it needs as a local
-  `CityCountsPort` rather than importing `SearchRepository`, and the container
-  passes `emptyIndex` until then. `SearchRepository` satisfies the port
-  structurally, so F076 swaps one argument in `container.ts` and changes
-  nothing else. Zero is the true answer in the meantime — with no index there
-  are no live listings — and two tests pin that the list is still complete and
-  every count is zero, so the swap is visible rather than silent.
+**Why, briefly.** D1 kept `City` on the reasoning that cities are not
+vehicle-catalogue data — they drive the header selector, the directory, search
+filters and dealer profiles. That describes what the table was read for and
+misses what it decided: five towns in one state, so a dealer in Salem could not
+finish onboarding and one in Bengaluru could not be described at all. D6 above
+has the full entry.
+
+**What became of each piece.**
+
+- **`City` model, `Dealer.cityId`** → `Dealer.city` and `Dealer.state`, text,
+  normalised on write by `normaliseLocality` in the contracts package. The
+  migration preserves existing rows' cities by name.
+- **`modules/locations/**` and its three unit-test files** → deleted, with the
+  `MODULES`/`TAG_ORDER` entries and the `/v1/cities` route assertions in
+  `tests/unit/routes.test.ts`.
+- **`CitiesResponse`, `CityRef`** → deleted from contracts.
+- **`CityCountsPort` / `emptyIndex`** → deleted. The concern was real and
+  survives without them: **F076** builds city facets from the localities
+  dealers actually trade in, counted from `listing_search`, which is a better
+  list than five seeded rows and needs no port to stand in for it.
+- **`packages/contracts/tests/unit/index.test.ts`, sliced** → _this part
+  stayed._ It has nothing to do with cities; it landed here because F001
+  deferred it, and it holds where it is. The coverage argument in the original
+  entry is unchanged.
+- **`Rto` still does not come across**, for the reason the original entry gave:
+  `rtoCode` is derived from the plate and needs no table.
+- **The sandbox line still belongs to F074.** `CitySelector` is a filter over
+  real inventory; what it filters on is now what dealers typed rather than what
+  was seeded, which changes its data source and not its behaviour.
 
 ### F027 — Rate limiting
 
@@ -1014,8 +1076,10 @@ per-module `*.docs.ts` pattern every later feature extends.
   in that section were checked against `session.port.ts` and are accurate
   unchanged.
 - **`catalog.docs.ts` does not come across** (D1). Its two surviving operations
-  move: `GET /v1/cities` to `locations.docs.ts`, `GET /v1/config/public` to
-  `config.docs.ts`, each retagged from `Catalogue`.
+  moved: `GET /v1/cities` to `locations.docs.ts`, `GET /v1/config/public` to
+  `config.docs.ts`, each retagged from `Catalogue`. ⚠️ Decision **D6** then took
+  `locations.docs.ts` with the `cities` table, so `config.docs.ts` is the only
+  one of the two left.
 - **Sliced:** `reorderVehicleMedia` (**F035** — needs `ReorderMediaInput`), and
   six module docs files whose routes have not landed. `MODULES` carries five
   entries rather than eleven; **each feature adds its own line.**
@@ -1058,8 +1122,9 @@ The `Dealer` aggregate, membership, and the tenancy rule that every dealer-scope
 - **`DealerDocument` and `City` arrive here**, ahead of F040 and F026, because
   `dealerInclude` pulls both relations in. Slicing the include would mean the
   repository this feature exists to deliver did not match the baseline. F040
-  still brings the document service paths, the API and its tests; F026 still
-  brings the `locations` module, `GET /v1/cities` and the reference data.
+  still brings the document service paths, the API and its tests. ⚠️ `City` was
+  removed again by decision **D6**: `dealerInclude` no longer names it, and
+  `Dealer.city` / `Dealer.state` are text on the row.
 - ⚠️ **Two repository methods are sliced.** `newEnquiryCount` and
   `pendingListingCount` query `Enquiry` (**F088**) and `Listing` (**F064**).
   Neither model exists, so both return `0` and carry the baseline body in a
@@ -1113,15 +1178,26 @@ Step 1: the signed-in person's name and contact, confirming who is registering.
 
 ### F039 — Onboarding — business details step
 
-Step 2: trading name, legal name, address, city and pincode — the dealership
-buyers see.
+Step 2: the dealership's registered name, address, city, state and pincode —
+what buyers see.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F038, F026
-- **Backend** `POST /v1/auth/onboarding` (business fields) — landed with **F018**; nothing new here
-- **Frontend** business step of `features/auth/onboarding-wizard.tsx`, the `/v1/cities` fetch on the onboarding page
+- **Status** implemented · **Confidence** HIGH · **Depends on** F038
+- **Backend** `POST /v1/auth/onboarding` (business fields) — landed with **F018**; and `PATCH /v1/dealer` for the same fields on the way back
+- **Frontend** business step of `features/auth/onboarding-wizard.tsx`
 - **DB** `Dealer`
-- **Components — Reused** `Field`, `Input`, city picker (F026), `Button`, `Banner`
-- **Sandbox** step 2 — empty / per-field validation errors / submitting
+- **Components — Reused** `Field`, `Input`, `Button`, `Banner`
+- **Sandbox** step 2 — empty / per-field validation errors / name taken / submitting
+- **One name, not two.** The entry said "trading name, legal name". Dealers
+  filled both in with the same words; `legalName` is the one KYC is checked
+  against, so it is the one asked for, and `brandName` is the server-written
+  display mirror of it. `UpdateDealerInput` does not carry `brandName` at all.
+- **City and state are typed, and F026 is not a dependency any more.** Decision
+  **D6** removed the `cities` table and with it the picker this entry listed.
+  Both fields are required text, normalised on write.
+- **The duplicate-name check lands on this step**, because both halves of the
+  pair it checks — the name and the city — are typed here. It is the submit
+  that asks, and a collision is a 409 naming `legalName`; the step stays put
+  with the message against the field.
 - **GSTIN is not on this step.** The entry said "trading name, city, address,
   GSTIN, years in business", and at the baseline GSTIN and PAN are on the
   _Documents_ step, saved by `saveBusinessIdsAction` through `PATCH /v1/dealer`
@@ -1512,11 +1588,12 @@ Make, model, variant, year, fuel, transmission, body type — prefilled from the
 
 KMs, owners, colour, RTO, insurance, location, seats, airbags, features. Eight required fields, several RC-prefilled.
 
-- **Status** implemented, **minor D1 change** · **Confidence** HIGH · **Depends on** F060, F026
+- **Status** implemented, **minor D1 change** · **Confidence** HIGH · **Depends on** F060
 - **Frontend** `features/vehicle/details-fields.tsx` — `DetailsFields`, `detailsFrom`, `validateDetails`, `detailsPatch`
 - **D1 change** `colorId: Uuid` → `color: string`; `rtoCode` unaffected (already derived from the plate)
+- **D6 change** the vehicle's location is text like the dealership's, not a city id. There is no picker to reuse; the suggest-existing-values control D1 asks for at F060 serves this field too
 - **Tests** `tests/unit/features/vehicle/details-fields.test.ts` ✅
-- **Components — New (feature-specific)** `DetailsFields` · **Reused** `Field`, `Input`, city picker
+- **Components — New (feature-specific)** `DetailsFields` · **Reused** `Field`, `Input`
 - **Sandbox** empty / RC-prefilled / all-errors / disabled
 
 ### F062 — Vehicle photo upload UI
@@ -1675,9 +1752,12 @@ The customer chrome: sticky header with logo plate, main nav and saved-cars badg
 
 The header's city chip. The only part of the header that reads the query string, kept behind a tight Suspense boundary so the rest of the header stays statically prerenderable.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F073, F026
+- **Status** implemented · **Confidence** HIGH · **Depends on** F073, F076
 - **Frontend** `CitySelector` and `CityChipFallback` in `components/layout/customer-header.tsx`
-- **API** `GET /v1/cities`
+- **API** the search facets — ⚠️ **not** `GET /v1/cities`, which decision **D6**
+  removed. The list is the cities dealers actually trade in, counted from
+  `listing_search`, which is what a filter over inventory should offer anyway:
+  a seeded row with nothing behind it was a chip that led to an empty page
 - **Components — New (Shared)** `CitySelector`, `CityChipFallback`
 - **Sandbox** closed / open / long city list / no city selected / fallback
 
@@ -1695,12 +1775,19 @@ DESIGN-SPEC §2.8, and the product's most important component: 4:3 image, year p
 
 Faceted vehicle search: filtering, sorting, pagination and facet counts.
 
-- **Status** implemented, **query changes under D1** · **Confidence** **MEDIUM** · **Depends on** F064, F026
+- **Status** implemented, **query changes under D1 and D6** · **Confidence** **MEDIUM** · **Depends on** F064
 - **Backend** `modules/search/{search.routes,search.service,search.repository,search.mapper,search.facade,search.docs}.ts`
 - **API** `GET /v1/vehicles`, `GET /v1/vehicles/facets`
 - **Tests** `tests/unit/modules/search/*.test.ts` (5), `tests/public-visibility.test.ts`
 - **Components** none · **Sandbox** none — it supplies the `FacetsResponse` fixtures F078 and F079 need
 - ⚠️ **D1 impact.** Make/model facets must now group on **denormalised strings** rather than catalogue foreign keys. Unnormalised values fragment the facet list. Depends on F060 getting write-time normalisation right; if it does not, this feature cannot repair it at query time.
+- ⚠️ **D6 impact — the same problem, one column over.** City facets group on
+  `dealer.city`, which is text a dealer typed, and this feature also becomes the
+  **source of the city list** the header selector (F074) offers: `GET /v1/cities`
+  is gone. The write-time normalisation is already in place —
+  `normaliseLocality` in the contracts package, applied by onboarding and by
+  `PATCH /v1/dealer` — so unlike the make/model case the dependency is
+  satisfied rather than pending.
 
 ### F077 — Search results page
 
@@ -1786,8 +1873,12 @@ DESIGN-SPEC §2.9/§2.10 — the 108 px thumbnail strip and the fullscreen light
 
 `/dealers` — the directory grid with a name search and city chips.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F046, F026
+- **Status** implemented · **Confidence** HIGH · **Depends on** F046
 - **Backend** `modules/dealers/dealers.public.service.ts`, `modules/search/search.routes.ts`
+- ⚠️ **D6 impact.** `listActive` derives `citySlug` from `dealer.city` with
+  `slugify` rather than reading it off a joined `cities` row. The chip links are
+  the same shape they were, and there is no second copy of the name/slug pair to
+  fall out of step with the first — which is what the slug column was for.
 - **Frontend** `app/(public)/dealers/page.tsx`, `components/dealers/{dealer-card,directory-filters}.tsx`
 - **API** `GET /v1/dealers`, `GET /v1/dealers/:slug`
 - **Tests** `tests/unit/modules/dealers/dealers.public.service.test.ts`

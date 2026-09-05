@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../src/config/env.js';
 import { hashPassword } from '../../src/modules/auth/password.js';
-import { CITIES, DEALERS } from './data.js';
+import { DEALERS } from './data.js';
 
 /**
  * The development and test seed.
@@ -15,29 +15,17 @@ import { CITIES, DEALERS } from './data.js';
  *
  * What is here is what the integration suite needs to run at all — the
  * `global-setup` for `tests/*.test.ts` calls this file, and `auth.test.ts`
- * needs three things from it: a city to onboard into, an admin with a
- * password, and one dealership whose owner address proves that an account with
- * no password cannot sign in to the admin console. The rest arrives with
- * **F097**, which owns this file.
+ * needs two things from it: an admin with a password, and one dealership whose
+ * owner address proves that an account with no password cannot sign in to the
+ * admin console. The rest arrives with **F097**, which owns this file.
+ *
+ * It needed a third thing until the `cities` table went — a city row to
+ * onboard into. Onboarding now types its city, so the suite no longer depends
+ * on reference data existing before it runs.
  * ────────────────────────────────────────────────────────────────────────────
  */
 const prisma = new PrismaClient();
 const now = new Date();
-
-async function seedCities(): Promise<Map<string, string>> {
-  const ids = new Map<string, string>();
-
-  for (const city of CITIES) {
-    const row = await prisma.city.upsert({
-      where: { slug: city.slug },
-      create: city,
-      update: city,
-    });
-    ids.set(city.slug, row.id);
-  }
-
-  return ids;
-}
 
 /**
  * The one admin account, and the only account in the system with a password.
@@ -70,7 +58,7 @@ async function seedAdmin(): Promise<void> {
  * `auth.test.ts` signs in to the admin console with this address and expects
  * the same refusal an unknown account gets. Dealers sign in with Google.
  */
-async function seedDealers(cities: Map<string, string>): Promise<void> {
+async function seedDealers(): Promise<void> {
   for (const seed of DEALERS) {
     const owner = await prisma.user.create({
       data: {
@@ -93,7 +81,8 @@ async function seedDealers(cities: Map<string, string>): Promise<void> {
         pan: seed.pan,
         status: 'ACTIVE',
         approvedAt: now,
-        cityId: cities.get(seed.citySlug) ?? null,
+        city: seed.city,
+        state: seed.state,
         addressLine: seed.addressLine,
         pincode: seed.pincode,
         lat: seed.lat,
@@ -121,13 +110,10 @@ async function seedDealers(cities: Map<string, string>): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const cities = await seedCities();
   await seedAdmin();
-  await seedDealers(cities);
+  await seedDealers();
 
-  console.log(
-    `seeded ${String(CITIES.length)} cities, 1 admin and ${String(DEALERS.length)} dealership`,
-  );
+  console.log(`seeded 1 admin and ${String(DEALERS.length)} dealership`);
 }
 
 main()
