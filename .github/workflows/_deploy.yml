@@ -7,20 +7,45 @@
 # of it. A production-only deploy path is a path that is exercised once a month
 # and is therefore the one that breaks.
 #
-# THIS WORKFLOW NEVER BUILDS AN IMAGE. It takes a SHA, verifies that the images
-# for that SHA already exist in ECR, and rolls them out. Rebuilding here would
-# mean production runs bytes that were never tested (ARCHITECTURE §20.1).
+# TWO TIERS, ONE JOB, since D7 split them across two platforms:
+#
+#   the API   ECS Fargate. This workflow NEVER builds its image — it takes a
+#             SHA, verifies the images for that SHA already exist in ECR, and
+#             rolls them out. Rebuilding here would mean production runs bytes
+#             that were never tested (ARCHITECTURE §20.1).
+#
+#   the web   Vercel, one project per environment, built here from the same
+#             SHA. This one IS rebuilt, and that is not a regression: Rule 9
+#             bans NEXT_PUBLIC_*, `apps/web/src/lib/config.ts` reads every
+#             environment value from `process.env` on the server, and every
+#             data route is `force-dynamic` — so `next build` bakes in nothing
+#             environment-specific and a rebuild from a pinned commit differs
+#             from dev's only in the config it is *supposed* to differ in.
+#             The guarantee weakens from "same bytes" to "same commit", and
+#             for an artifact built this way, same commit is what mattered.
+#
+# They are one job rather than two so that the environment's approval gate and
+# its secret scope cover both tiers at once. A separately-gated web deploy is a
+# second door into production.
 #
 # Order is not arbitrary:
 #   1. verify the images exist            — fail in 5 seconds, not 5 minutes
 #   2. migrate                            — schema first, and expand/contract
 #                                            means the *running* old code stays
 #                                            compatible with the new schema
-#   3. api, then web, each health-gated   — the web app calls the API, so the
+#   3. the API, health-gated              — the web app calls the API, so the
 #                                            API is the one that must already
 #                                            be answering
-#   4. smoke test the public URLs         — including that the running build is
+#   4. the web app                        — last, for the same reason
+#   5. smoke test the public URLs         — including that the running build is
 #                                            the one we just deployed
+#
+# ── while AWS does not exist yet ─────────────────────────────────────────────
+#
+# Steps 1–3 are gated on `vars.AWS_DEPLOY_ENABLED == 'true'` and skip whole
+# when it is not set, so the Vercel half deploys on its own. The switch is
+# explicit rather than inferred from an empty secret: once it IS 'true', a
+# missing AWS_DEPLOY_ROLE_ARN fails loudly, exactly as it did before.
 # ---------------------------------------------------------------------------
 name: Deploy
 
@@ -32,9 +57,13 @@ on:
         required: true
         type: string
       sha:
-        description: 'Commit SHA whose images are promoted. Never rebuilt.'
+        description: 'Commit SHA. The API images are promoted; the web app is built from it.'
         required: true
         type: string
+    secrets:
+      VERCEL_TOKEN:
+        description: 'Vercel CLI token. Repository-wide; the project it acts on comes from the environment.'
+        required: true
 
 permissions:
   contents: read
@@ -64,24 +93,45 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # The smoke test that runs at the end must be the one from the commit
-          # being deployed, not from whatever main happens to be.
+          # The web app built below, and the smoke test that runs at the end,
+          # must both come from the commit being deployed rather than from
+          # whatever main happens to be.
           ref: ${{ inputs.sha }}
 
-      # Without `secrets: inherit`, this comes from the environment's own secret
-      # store. If it is unset the next step fails with an opaque OIDC error, so
-      # say what is actually wrong instead.
-      - name: Check the environment is configured
+      # One place decides what this run does, and says so in the log. Without
+      # it a half-configured environment deploys half a system in silence.
+      - name: Resolve what this environment deploys
+        id: targets
         env:
+          AWS_ENABLED: ${{ vars.AWS_DEPLOY_ENABLED }}
           ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           ENVIRONMENT: ${{ inputs.environment }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          if [ -z "$ROLE_ARN" ]; then
-            echo "::error::AWS_DEPLOY_ROLE_ARN is not set on the '$ENVIRONMENT' environment (Settings → Environments → $ENVIRONMENT → Secrets)."
+          set -euo pipefail
+
+          if [ "$AWS_ENABLED" = "true" ]; then
+            # Without `secrets: inherit`, this comes from the environment's own
+            # secret store. If it is unset the OIDC step fails with an opaque
+            # error, so say what is actually wrong instead.
+            if [ -z "$ROLE_ARN" ]; then
+              echo "::error::AWS_DEPLOY_ENABLED is 'true' but AWS_DEPLOY_ROLE_ARN is not set on the '$ENVIRONMENT' environment (Settings → Environments → $ENVIRONMENT → Secrets)."
+              exit 1
+            fi
+            echo 'aws=true' >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::AWS_DEPLOY_ENABLED is not 'true' — the API tier is not deployed. Only the web app ships."
+            echo 'aws=false' >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::VERCEL_PROJECT_ID is not set on the '$ENVIRONMENT' environment. Each environment is its own Vercel project (D7); without it a deploy would land in the wrong one."
             exit 1
           fi
 
+      # ── the API ──────────────────────────────────────────────────────────
       - name: Assume the deployment role
+        if: steps.targets.outputs.aws == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
@@ -89,6 +139,7 @@ jobs:
           role-session-name: deploy-${{ inputs.environment }}-${{ inputs.sha }}
 
       - name: Log in to ECR
+        if: steps.targets.outputs.aws == 'true'
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
@@ -99,19 +150,18 @@ jobs:
       # executed by the runner. `$SHA` is data; `${{ inputs.sha }}` inside a
       # script is code.
       - name: Resolve image references
+        if: steps.targets.outputs.aws == 'true'
         id: images
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
           SHA: ${{ inputs.sha }}
           REPO_API: ${{ vars.ECR_REPO_API }}
-          REPO_WEB: ${{ vars.ECR_REPO_WEB }}
           REPO_MIGRATOR: ${{ vars.ECR_REPO_MIGRATOR }}
         run: |
           set -euo pipefail
           TAG="sha-$SHA"
           {
             echo "api=$REGISTRY/$REPO_API:$TAG"
-            echo "web=$REGISTRY/$REPO_WEB:$TAG"
             echo "migrator=$REGISTRY/$REPO_MIGRATOR:$TAG"
             echo "tag=$TAG"
           } >> "$GITHUB_OUTPUT"
@@ -119,14 +169,14 @@ jobs:
       # An image that is not in the registry is a promotion of something that
       # was never built — most often a SHA typed by hand. Say so immediately.
       - name: Verify the images exist
+        if: steps.targets.outputs.aws == 'true'
         env:
           REPO_API: ${{ vars.ECR_REPO_API }}
-          REPO_WEB: ${{ vars.ECR_REPO_WEB }}
           REPO_MIGRATOR: ${{ vars.ECR_REPO_MIGRATOR }}
           TAG: ${{ steps.images.outputs.tag }}
         run: |
           set -euo pipefail
-          for repo in "$REPO_API" "$REPO_WEB" "$REPO_MIGRATOR"; do
+          for repo in "$REPO_API" "$REPO_MIGRATOR"; do
             aws ecr describe-images \
               --repository-name "$repo" \
               --image-ids imageTag="$TAG" \
@@ -146,6 +196,7 @@ jobs:
       # only because every migration is expand/contract (§20.6) — and it is the
       # same property that makes rolling back to the previous image safe.
       - name: Run database migrations
+        if: steps.targets.outputs.aws == 'true'
         id: migrate
         env:
           FAMILY: ${{ vars.ECS_TASK_FAMILY_MIGRATE }}
@@ -190,7 +241,7 @@ jobs:
             exit 1
           fi
 
-      # ── the API, first ───────────────────────────────────────────────────
+      # ── the API service ──────────────────────────────────────────────────
       #
       # `wait-for-service-stability` is what makes a failed deploy fail the
       # workflow: ECS holds the rollout until the new tasks pass the target
@@ -205,6 +256,7 @@ jobs:
       # in the console is not silently reverted by a stale file in git. The
       # deploy changes exactly one field: the image.
       - name: Fetch the current API task definition
+        if: steps.targets.outputs.aws == 'true'
         id: fetch-api
         env:
           FAMILY: ${{ vars.ECS_TASK_FAMILY_API }}
@@ -219,6 +271,7 @@ jobs:
           echo 'file=taskdef-api.json' >> "$GITHUB_OUTPUT"
 
       - name: Render API task definition
+        if: steps.targets.outputs.aws == 'true'
         id: taskdef-api
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
@@ -227,6 +280,7 @@ jobs:
           image: ${{ steps.images.outputs.api }}
 
       - name: Deploy the API
+        if: steps.targets.outputs.aws == 'true'
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.taskdef-api.outputs.task-definition }}
@@ -234,47 +288,59 @@ jobs:
           cluster: ${{ vars.ECS_CLUSTER }}
           wait-for-service-stability: true
 
-      - name: Fetch the current web task definition
-        id: fetch-web
+      # ── the web app ──────────────────────────────────────────────────────
+      #
+      # Built here rather than by Vercel's git integration, which is disabled
+      # (`apps/web/vercel.json`). If it were on, a merge would ship the front
+      # end straight to production — past this environment's required
+      # reviewers, and before the migrations above had run. The gate has to be
+      # the only door.
+      #
+      # `vercel pull` resolves the project's environment variables and writes
+      # them where `vercel build` will read them, which makes the binding an
+      # explicit, logged step rather than something the platform infers. Both
+      # environments are their own Vercel project, so both build `--prod`:
+      # which project is decided by VERCEL_PROJECT_ID, an environment secret.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install the Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Build and deploy the web app
+        id: vercel
         env:
-          FAMILY: ${{ vars.ECS_TASK_FAMILY_WEB }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          SHA: ${{ inputs.sha }}
         run: |
           set -euo pipefail
-          aws ecs describe-task-definition \
-            --task-definition "$FAMILY" \
-            --query taskDefinition --output json \
-            | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
-                      .compatibilities, .registeredAt, .registeredBy, .deregisteredAt)' \
-            > taskdef-web.json
-          echo 'file=taskdef-web.json' >> "$GITHUB_OUTPUT"
-
-      - name: Render web task definition
-        id: taskdef-web
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ steps.fetch-web.outputs.file }}
-          container-name: web
-          image: ${{ steps.images.outputs.web }}
-
-      - name: Deploy the web app
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.taskdef-web.outputs.task-definition }}
-          service: ${{ vars.ECS_SERVICE_WEB }}
-          cluster: ${{ vars.ECS_CLUSTER }}
-          wait-for-service-stability: true
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          # `--env GIT_SHA` is what lets /api/health name the commit it is
+          # serving, which is the question the promotion preflight asks and a
+          # readiness probe cannot answer.
+          URL=$(vercel deploy --prebuilt --prod \
+            --env "GIT_SHA=$SHA" \
+            --token="$VERCEL_TOKEN")
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed $SHA to $URL"
 
       # ── prove it ─────────────────────────────────────────────────────────
       #
-      # A green ECS deployment means the containers pass their health check. It
-      # does not mean the site works. The smoke test asks the public URLs the
-      # questions a person would: does the marketplace render, does the API
-      # answer, and — the one a health check cannot answer — is the build that
-      # is serving the build we just deployed.
+      # A green deployment means the containers pass their health check and
+      # Vercel accepted a build. It does not mean the site works. The smoke
+      # test asks the public URLs the questions a person would: does the site
+      # render, does the API answer, and — the one a health check cannot
+      # answer — is the build that is serving the build we just deployed.
       - name: Smoke test
         env:
           WEB_BASE_URL: ${{ vars.WEB_BASE_URL }}
-          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          # Empty when the API tier is not deployed, which the script reads as
+          # "do not ask questions about a thing that does not exist yet".
+          API_BASE_URL: ${{ steps.targets.outputs.aws == 'true' && vars.API_BASE_URL || '' }}
           SHA: ${{ inputs.sha }}
         run: ./scripts/smoke.sh "$WEB_BASE_URL" "$API_BASE_URL" "$SHA"
 
@@ -284,8 +350,9 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
           STATUS: ${{ job.status }}
           SHA: ${{ inputs.sha }}
+          AWS_ENABLED: ${{ steps.targets.outputs.aws }}
           IMAGE_API: ${{ steps.images.outputs.api }}
-          IMAGE_WEB: ${{ steps.images.outputs.web }}
+          VERCEL_URL: ${{ steps.vercel.outputs.url }}
           SITE: ${{ vars.WEB_BASE_URL }}
         run: |
           {
@@ -294,7 +361,8 @@ jobs:
             echo "| | |"
             echo "|---|---|"
             echo "| Commit | \`$SHA\` |"
-            echo "| API image | \`$IMAGE_API\` |"
-            echo "| Web image | \`$IMAGE_WEB\` |"
+            echo "| API tier | ${AWS_ENABLED:-false} |"
+            echo "| API image | \`${IMAGE_API:-not deployed}\` |"
+            echo "| Web deployment | ${VERCEL_URL:-not deployed} |"
             echo "| Site | $SITE |"
           } >> "$GITHUB_STEP_SUMMARY"
