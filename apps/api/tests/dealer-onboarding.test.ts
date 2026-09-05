@@ -259,7 +259,10 @@ describe('KYC documents — replace and remove', () => {
       .expect(201);
 
     await agent
-      .put(new URL(presigned.body.uploadUrl as string).pathname + new URL(presigned.body.uploadUrl as string).search)
+      .put(
+        new URL(presigned.body.uploadUrl as string).pathname +
+          new URL(presigned.body.uploadUrl as string).search,
+      )
       .set('Content-Type', 'application/pdf')
       .send(PDF)
       .expect(200);
@@ -388,9 +391,9 @@ describe('the yard photograph', () => {
     expect(photo.body.mediaId).toBeNull();
 
     const completeness = await agent.get('/v1/dealer/completeness').expect(200);
-    const documents = (
-      completeness.body.steps as { key: string; missing: string[] }[]
-    ).find((step) => step.key === 'documents');
+    const documents = (completeness.body.steps as { key: string; missing: string[] }[]).find(
+      (step) => step.key === 'documents',
+    );
     expect(documents?.missing).toContain('YARD_PHOTO');
   });
 

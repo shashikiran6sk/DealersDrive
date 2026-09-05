@@ -98,9 +98,10 @@ export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
         <div className="text-[14px] font-medium">Photo of your yard</div>
         <p className="mt-[4px] text-[12px] leading-[1.55] ink-secondary">
           This is the first thing buyers see on your dealership page, so it is worth getting right.
-          Send us a <strong>clear, well-lit photograph of your yard or the signboard at your
-          entrance</strong> — taken straight on, in daylight, with the whole frontage in frame. Not
-          a logo, not a screenshot, and not a photo of one car.
+          Send us a{' '}
+          <strong>clear, well-lit photograph of your yard or the signboard at your entrance</strong>{' '}
+          — taken straight on, in daylight, with the whole frontage in frame. Not a logo, not a
+          screenshot, and not a photo of one car.
         </p>
       </div>
 

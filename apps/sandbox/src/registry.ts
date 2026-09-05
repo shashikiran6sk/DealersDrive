@@ -446,8 +446,7 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/features/auth/yard-photo-uploader.tsx',
     category: 'Forms',
     ownership: 'Feature-specific',
-    purpose:
-      'The dealership hero image: presign/PUT/commit, a preview, replace and delete.',
+    purpose: 'The dealership hero image: presign/PUT/commit, a preview, replace and delete.',
     aliases: [
       'YardPhoto',
       'CoverPhotoUploader',

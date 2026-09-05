@@ -986,14 +986,18 @@ describe('update — the duplicate guard', () => {
   it('names the city in the refusal', async () => {
     const h = setup({ conflicting: { legalName: true, gstin: false } });
 
-    await expect(
-      h.service.update('dealer-1', { legalName: 'Velavan Cars' }),
-    ).rejects.toMatchObject({
-      detail: 'A dealership called Velavan Cars is already registered in Vellore.',
-      errors: [
-        { field: 'body.legalName', code: 'DEALER_NAME_TAKEN', message: 'Already registered in Vellore.' },
-      ],
-    });
+    await expect(h.service.update('dealer-1', { legalName: 'Velavan Cars' })).rejects.toMatchObject(
+      {
+        detail: 'A dealership called Velavan Cars is already registered in Vellore.',
+        errors: [
+          {
+            field: 'body.legalName',
+            code: 'DEALER_NAME_TAKEN',
+            message: 'Already registered in Vellore.',
+          },
+        ],
+      },
+    );
   });
 
   it('refuses a GSTIN another dealership already holds', async () => {

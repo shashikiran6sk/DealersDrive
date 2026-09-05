@@ -265,12 +265,10 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
        * off that row and are no longer written — nothing reads them yet, and
        * geocoding a typed address is a separate concern from saving it.
        */
-      const city = input.address?.city === undefined
-        ? undefined
-        : normaliseLocality(input.address.city);
-      const state = input.address?.state === undefined
-        ? undefined
-        : normaliseLocality(input.address.state);
+      const city =
+        input.address?.city === undefined ? undefined : normaliseLocality(input.address.city);
+      const state =
+        input.address?.state === undefined ? undefined : normaliseLocality(input.address.state);
 
       /**
        * A rename is checked against the city it will be in once this PATCH

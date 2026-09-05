@@ -224,7 +224,11 @@ export const dealersDocs: ModuleDocs = {
         'Every field is `null` when nothing has been uploaded yet.',
       audience: 'dealer',
       responses: [
-        { status: 200, description: 'The yard photograph, or an empty one.', schema: 'YardPhotoDto' },
+        {
+          status: 200,
+          description: 'The yard photograph, or an empty one.',
+          schema: 'YardPhotoDto',
+        },
       ],
       errors: [401, 404],
     },
@@ -276,7 +280,11 @@ export const dealersDocs: ModuleDocs = {
         example: { mediaId: '7f3c9a21-4444-4000-8000-000000000009' },
       },
       responses: [
-        { status: 200, description: 'The yard photograph now on the record.', schema: 'YardPhotoDto' },
+        {
+          status: 200,
+          description: 'The yard photograph now on the record.',
+          schema: 'YardPhotoDto',
+        },
       ],
       errors: [400, 401, 403, 404, 422],
     },

@@ -32,15 +32,15 @@ entry. The catalogue is not carried into the reconstruction.
 
 **What that means concretely.**
 
-| Removed                                                                                                                                                                                                           | Kept, relocated, or changed                                           |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `Make`, `Model`, `Variant` Prisma models                                                                                                                                                                          | `Vehicle` stores `make`, `model`, `variant` as **normalised strings** |
-| `Color`, `Rto` reference tables                                                                                                                                                                                   | colour from RC or free text; `rtoCode` already derived from the plate |
-| `apps/api/src/modules/catalog/**` (5 files)                                                                                                                                                                       | `GET /v1/cities` → **F026**; `GET /v1/config/public` → **F029**       |
-| `GET /v1/catalog/bundle`, `GET /v1/catalog/models/:id/variants`                                                                                                                                                   | —                                                                     |
-| `apps/api/prisma/seed/catalog/**` (~5,000 LOC)                                                                                                                                                                    | `prisma/seed/` keeps only dev bootstrap (**F097**)                    |
-| `apps/web/src/app/api/catalog/models/[id]/variants/route.ts`                                                                                                                                                      | —                                                                     |
-| `CatalogBundle` from contracts                                                                                                                                                                                    | `RcBasicsMatch` yields strings, not `Uuid`s                           |
+| Removed                                                                                                                                                                                                                                                | Kept, relocated, or changed                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `Make`, `Model`, `Variant` Prisma models                                                                                                                                                                                                               | `Vehicle` stores `make`, `model`, `variant` as **normalised strings** |
+| `Color`, `Rto` reference tables                                                                                                                                                                                                                        | colour from RC or free text; `rtoCode` already derived from the plate |
+| `apps/api/src/modules/catalog/**` (5 files)                                                                                                                                                                                                            | `GET /v1/cities` → **F026**; `GET /v1/config/public` → **F029**       |
+| `GET /v1/catalog/bundle`, `GET /v1/catalog/models/:id/variants`                                                                                                                                                                                        | —                                                                     |
+| `apps/api/prisma/seed/catalog/**` (~5,000 LOC)                                                                                                                                                                                                         | `prisma/seed/` keeps only dev bootstrap (**F097**)                    |
+| `apps/web/src/app/api/catalog/models/[id]/variants/route.ts`                                                                                                                                                                                           | —                                                                     |
+| `CatalogBundle` from contracts                                                                                                                                                                                                                         | `RcBasicsMatch` yields strings, not `Uuid`s                           |
 | `City` — **not removed.** Cities are not vehicle-catalogue data. They drive the header city selector, the dealer directory, search filters and dealer profiles, so they become their own small feature, **F026**. ⚠️ **Overturned by D6** — see below. |                                                                       |
 
 **What survives, and why it must.** `apps/api/src/platform/rc/rc-aliases.ts`
@@ -241,7 +241,7 @@ rather than globally.
 **This overturns half of D1.** D1 kept `City` on the reasoning that cities are
 not vehicle-catalogue data — they drive the header selector, the directory,
 search filters and dealer profiles. That reasoning described what the table was
-*read* for and missed what it *decided*: it held five towns in one state, and a
+_read_ for and missed what it _decided_: it held five towns in one state, and a
 dealership could only exist in one of them. The first onboarding flow made that
 concrete. A dealer in Salem cannot finish the form; a dealer in Bengaluru cannot
 be described by it at all, because `state` is whatever the row says. A table
@@ -249,17 +249,17 @@ that gates who may sign up is catalogue data whatever it is read for.
 
 **What that means concretely.**
 
-| Removed                                                                | Kept, relocated, or changed                                                                            |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `City` Prisma model and the `cities` table                             | `Dealer.city` and `Dealer.state` as **normalised strings**                                             |
-| `Dealer.cityId` and its foreign key                                    | data preserved by the migration — existing rows keep their city by name                                |
-| `apps/api/src/modules/locations/**` (5 files) and its unit tests       | —                                                                                                       |
-| `GET /v1/cities`, `locationsDocs`, the `Locations` tag                 | —                                                                                                       |
-| `CitiesResponse` and `CityRef` from contracts                          | —                                                                                                       |
-| `CITIES` from `prisma/seed/data.ts`                                    | the seed writes an admin and one dealership; there is no reference data left to seed                   |
-| the city dropdown and the disabled State box on onboarding step 2      | two required text inputs                                                                                |
-| the global unique on `dealers.legalName`                               | `@@unique([legalName, city])`                                                                           |
-| `Dealer.lat` / `Dealer.lng` being written                              | the columns stay; nothing writes them, and geocoding a typed address is its own feature                |
+| Removed                                                           | Kept, relocated, or changed                                                             |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `City` Prisma model and the `cities` table                        | `Dealer.city` and `Dealer.state` as **normalised strings**                              |
+| `Dealer.cityId` and its foreign key                               | data preserved by the migration — existing rows keep their city by name                 |
+| `apps/api/src/modules/locations/**` (5 files) and its unit tests  | —                                                                                       |
+| `GET /v1/cities`, `locationsDocs`, the `Locations` tag            | —                                                                                       |
+| `CitiesResponse` and `CityRef` from contracts                     | —                                                                                       |
+| `CITIES` from `prisma/seed/data.ts`                               | the seed writes an admin and one dealership; there is no reference data left to seed    |
+| the city dropdown and the disabled State box on onboarding step 2 | two required text inputs                                                                |
+| the global unique on `dealers.legalName`                          | `@@unique([legalName, city])`                                                           |
+| `Dealer.lat` / `Dealer.lng` being written                         | the columns stay; nothing writes them, and geocoding a typed address is its own feature |
 
 **Why the uniqueness rule moved with it.** A global unique on `legalName` is
 wrong in a way that only shows up at scale: "Sri Balaji Motors" is a name three
@@ -329,7 +329,7 @@ consumer, and should serve city and state as well as make and model.
 | F024 | Release & image promotion                               | Infra      | HIGH       |
 | F025 | Deployment infrastructure                               | Infra      | HIGH       |
 |      | **TIER 4 — Platform services**                          |            |            |
-| F026 | City & location reference data ⛔ withdrawn (D6)         | Full-stack | HIGH       |
+| F026 | City & location reference data ⛔ withdrawn (D6)        | Full-stack | HIGH       |
 | F027 | Rate limiting                                           | API        | HIGH       |
 | F028 | Caching layer                                           | API        | HIGH       |
 | F029 | Platform config & feature flags                         | Full-stack | HIGH       |
@@ -860,8 +860,8 @@ has the full entry.
   survives without them: **F076** builds city facets from the localities
   dealers actually trade in, counted from `listing_search`, which is a better
   list than five seeded rows and needs no port to stand in for it.
-- **`packages/contracts/tests/unit/index.test.ts`, sliced** → *this part
-  stayed.* It has nothing to do with cities; it landed here because F001
+- **`packages/contracts/tests/unit/index.test.ts`, sliced** → _this part
+  stayed._ It has nothing to do with cities; it landed here because F001
   deferred it, and it holds where it is. The coverage argument in the original
   entry is unchanged.
 - **`Rto` still does not come across**, for the reason the original entry gave:

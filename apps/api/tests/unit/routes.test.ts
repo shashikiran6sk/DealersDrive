@@ -258,12 +258,7 @@ describe('the public surface', () => {
    * to serve. The unmounted paths kept here are the ones the *existing* mounts
    * could plausibly swallow, `/v1/dealers` above all.
    */
-  it.each([
-    'GET /v1/config/public',
-    'GET /v1/dealers',
-    'GET /v1/vehicles',
-    'GET /v1/cities',
-  ])(
+  it.each(['GET /v1/config/public', 'GET /v1/dealers', 'GET /v1/vehicles', 'GET /v1/cities'])(
     'runs no guard for %s',
     async (signature) => {
       const [method, url] = signature.split(' ') as [string, string];

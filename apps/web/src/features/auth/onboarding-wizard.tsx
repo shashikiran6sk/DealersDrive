@@ -157,12 +157,7 @@ export function OnboardingWizard({
             values={values}
             hidden={local === 1}
           />
-          <BusinessStep
-            dealer={dealer}
-            errors={errors}
-            values={values}
-            hidden={local === 0}
-          />
+          <BusinessStep dealer={dealer} errors={errors} values={values} hidden={local === 0} />
 
           <div className="flex gap-[8px]">
             {/*
@@ -199,11 +194,7 @@ export function OnboardingWizard({
               </button>
             ) : (
               <button type="submit" className="btn btn-primary h-[42px] flex-1" disabled={pending}>
-                {pending
-                  ? edit
-                    ? 'Saving…'
-                    : 'Creating your dealership…'
-                  : 'Continue'}
+                {pending ? (edit ? 'Saving…' : 'Creating your dealership…') : 'Continue'}
               </button>
             )}
           </div>
@@ -322,7 +313,9 @@ function AccountStep({
             className="input"
             autoComplete="organization-title"
             placeholder="Proprietor"
-            defaultValue={values.roleTitle ?? dealer?.contact.roleTitle ?? session.user.roleTitle ?? ''}
+            defaultValue={
+              values.roleTitle ?? dealer?.contact.roleTitle ?? session.user.roleTitle ?? ''
+            }
             {...invalidProps('roleTitle', errors.roleTitle)}
           />
         </Field>

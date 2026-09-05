@@ -81,7 +81,10 @@ export function createDealersRepository(prisma: PrismaClient) {
      * ends in the row's id, so replacing or removing a document means knowing
      * which id is being displaced before it is overwritten.
      */
-    async documentByType(dealerId: string, type: Prisma.DealerDocumentUncheckedCreateInput['type']) {
+    async documentByType(
+      dealerId: string,
+      type: Prisma.DealerDocumentUncheckedCreateInput['type'],
+    ) {
       return prisma.dealerDocument.findUnique({ where: { dealerId_type: { dealerId, type } } });
     },
 
