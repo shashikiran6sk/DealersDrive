@@ -148,10 +148,17 @@ review and a set of status checks, with `strict: true` — a branch must be up t
 date with `main` before it can merge.
 
 The `verify` job (lint · typecheck · test · build against a real Postgres 16),
-`terraform` and `audit` run on every PR. The `docker` and `sandbox` jobs were
-removed at D7: the web image no longer exists, `release.yml` builds the API
-image on every merge anyway, and the sandbox gate was dropped at the author's
-request.
+`terraform` and `audit` run on every PR — and only on pull requests, since D7
+removed the `push: main` trigger as redundant under `strict: true`. The
+`docker` and `sandbox` jobs were removed at the same time: the web image no
+longer exists, `release.yml` builds the API image on every merge anyway, and
+the sandbox gate was dropped at the author's request.
+
+⚠️ **`enforce_admins` is `false`, and nothing now runs behind a direct push.**
+While CI fired on `push: main` it was the one check an administrator pushing
+straight to `main` could not skip. It no longer fires, so that push goes
+unverified and `release.yml` deploys it. Turning `enforce_admins` on is the
+fix, and it is what makes _"Claude never pushes to `main`"_ true of everyone.
 
 ⚠️ **Removing a job does not remove it from the required-checks list.** Both
 `images build` and `sandbox typecheck / build` are still named there, and a

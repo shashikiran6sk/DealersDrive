@@ -848,12 +848,17 @@ Multi-stage, workspace-aware builds for both apps. The build needs nothing runni
 
 ### F022 — CI pipeline
 
-`lint · typecheck · test · build` in one job against a real Postgres 16 service. Runs on every PR to `main`, and on `main` itself. A fork PR must be able to run it in full holding no credential.
+`lint · typecheck · test · build` in one job against a real Postgres 16 service. Runs on every PR to `main`, and nowhere else. A fork PR must be able to run it in full holding no credential.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F021
 - **Files** `.github/workflows/ci.yml`
 - **External** GitHub Actions, `postgres:16-alpine`
 - **Components** none · **Sandbox** none
+- ⚠️ **The `push: main` trigger was removed at D7**, along with two jobs.
+  Branch protection is `strict: true`, so the merged tree is the tested tree
+  and the second run proved nothing. It did cover one gap — `enforce_admins`
+  is `false`, so an admin push to `main` is now unverified and `release.yml`
+  deploys it anyway. Turn `enforce_admins` on.
 - ⚠️ **The `docker` and `sandbox` jobs were removed at D7.** The sandbox job
   was added here at F022 and typechecked the stories — the only place that
   happened, since the sandbox sits outside `turbo run typecheck` and

@@ -1,5 +1,16 @@
 # ---------------------------------------------------------------------------
-# CI — every pull request, and every push to main.
+# CI — every pull request, and only pull requests.
+#
+# The `push: main` trigger is gone. Branch protection requires the checks below
+# and `strict: true` — a branch must be up to date with `main` before it can
+# merge — so the tree that lands is the tree that was tested, and running the
+# suite again on the merge commit proved nothing it had not just proved.
+#
+# ⚠️ It did prove one thing, and that cover is now gone: `enforce_admins` is
+# `false`, so an administrator can push straight to `main`, and nothing runs
+# behind them. `release.yml` will then build and deploy that commit unverified.
+# Turning `enforce_admins` on is what closes the hole this trigger was
+# accidentally covering.
 #
 # This workflow proves a commit is correct. It builds no image, pushes nothing
 # and touches no environment: a pull request from a fork must be able to run it
@@ -25,8 +36,6 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
-  push:
     branches: [main]
 
 # One run per branch. A force-push mid-review should not leave two suites
