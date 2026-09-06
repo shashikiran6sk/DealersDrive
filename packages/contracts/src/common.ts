@@ -219,3 +219,80 @@ export function normaliseLocality(input: string): string {
       (_match, lead: string, letter: string) => lead + letter.toUpperCase(),
     );
 }
+
+/**
+ * A ten-digit Indian mobile number, however it was typed.
+ *
+ * One definition, in the package both apps import, because there were three
+ * before: the onboarding schema, the profile schema and the wizard's own
+ * browser-side check. Three copies of a regex is three chances to disagree
+ * about whether `98400 12345` is a phone number — and they did disagree with
+ * the placeholder in the form, which shows exactly that spacing.
+ *
+ * Separators are stripped before the test rather than enumerated in it. People
+ * type `+91 98400 12345`, `98400-12345` and `9840012345`, all of them meaning
+ * the same number, and `toE164` reduces every one of them to `+919840012345`
+ * on the way to the column. A validator that rejects two of the three is
+ * rejecting a formatting habit, not a wrong number.
+ */
+export function isIndianMobile(value: string): boolean {
+  return /^(\+?91)?[6-9]\d{9}$/.test(value.trim().replace(/[\s-]/g, ''));
+}
+
+export const IndianMobile = z
+  .string()
+  .trim()
+  .max(20)
+  .refine(isIndianMobile, 'Enter a 10-digit Indian mobile number.');
+
+/**
+ * The hosts a Google Maps link may point at.
+ *
+ * The dealer pastes this and a **buyer's browser follows it**, which is the
+ * whole reason it is checked against a list rather than accepted as any URL.
+ * An unvalidated link stored here would be a self-service open redirect with a
+ * dealership's name on it: the "Get directions" button on a portfolio page is
+ * exactly the button somebody clicks without reading the status bar.
+ *
+ * Both shapes Google itself hands out are here — the long `google.com/maps/…`
+ * URL from the address bar and the `maps.app.goo.gl/…` shortener the Share
+ * sheet produces on a phone, which is what most dealers will paste. The
+ * country domains are the ones an Indian dealer's browser actually produces.
+ */
+const MAPS_HOSTS = new Set([
+  'google.com',
+  'www.google.com',
+  'google.co.in',
+  'www.google.co.in',
+  'maps.google.com',
+  'maps.google.co.in',
+  'maps.app.goo.gl',
+  'goo.gl',
+]);
+
+/**
+ * A Google Maps link to the dealership's yard, as the dealer pasted it.
+ *
+ * Stored verbatim rather than parsed into coordinates. A share link survives
+ * the dealer moving the pin, carries the place's own name and reviews, and
+ * opens the Google Maps app on a phone rather than a web map — none of which a
+ * `lat,lng` pair extracted at write time would do. Turning it into coordinates
+ * is the geocoding feature's problem, not this field's.
+ *
+ * `https` only: the link is rendered as an anchor on a public page, and a
+ * plaintext hop is a downgrade a buyer cannot see.
+ */
+export const GoogleMapsUrl = z
+  .string()
+  .trim()
+  .url('Paste the link Google Maps gave you.')
+  .max(2048)
+  .refine((value) => {
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      return false;
+    }
+    return url.protocol === 'https:' && MAPS_HOSTS.has(url.hostname.toLowerCase());
+  }, 'That is not a Google Maps link. Open your yard in Google Maps, tap Share, and paste the link it gives you.');

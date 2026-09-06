@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Uuid } from './common.js';
+import { GoogleMapsUrl, IndianMobile, Uuid } from './common.js';
 import { DealerDocType, DealerStatus, DocStatus, MediaStatus } from './enums.js';
 
 /**
@@ -62,6 +62,12 @@ export const DealerProfile = z.object({
     district: z.string().nullable(),
     state: z.string().nullable(),
     pincode: z.string().nullable(),
+    /**
+     * The dealer's own Google Maps link, verbatim. The public portfolio's "Get
+     * directions" is an anchor to this and nothing else — nullable for the
+     * rows that predate the question, which is what the portfolio branches on.
+     */
+    mapsUrl: z.string().nullable(),
   }),
   specialities: z.array(z.string()),
   workingHours: z.record(z.string(), z.string().nullable()).nullable(),
@@ -93,8 +99,17 @@ const PAN = z
 
 /**
  * Partial by design: each wizard step PATCHes only its own fields, so `Back`
- * never loses data. `phone` is absent — it is the login identity and changing
- * it needs an OTP round-trip on the new number.
+ * never loses data.
+ *
+ * `contact.phone` **is** patchable, and its absence used to be justified by a
+ * sentence that is no longer true: "it is the login identity, and changing it
+ * needs an OTP round-trip on the new number". Identity is a Google account —
+ * `sub` first, address second — and has been since dealers stopped signing in
+ * with a number. What this field holds is the number a *buyer* is given, which
+ * is precisely the thing a dealership changes when it swaps SIMs, and a
+ * read-only box on the step that asks for it was a dead end with no other way
+ * out. It stays unique across users, so the swap is still refused when the
+ * number belongs to somebody else.
  */
 export const UpdateDealerInput = z
   .object({
@@ -117,6 +132,8 @@ export const UpdateDealerInput = z
         fullName: z.string().trim().min(2).max(80).optional(),
         roleTitle: z.string().trim().max(60).optional(),
         email: z.string().trim().email().optional(),
+        /** The same rule the onboarding form applies, from the same schema. */
+        phone: IndianMobile.optional(),
         landline: z.string().trim().max(24).optional(),
       })
       .strict()
@@ -151,6 +168,8 @@ export const UpdateDealerInput = z
           .trim()
           .regex(/^\d{6}$/, 'Pincode must be 6 digits.')
           .optional(),
+        /** The Google Maps link. Host-checked — see `GoogleMapsUrl`. */
+        mapsUrl: GoogleMapsUrl.optional(),
       })
       .strict()
       .optional(),

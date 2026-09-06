@@ -388,6 +388,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         district: dealer.district,
         state: dealer.state,
         addressLine: dealer.addressLine,
+        mapsUrl: dealer.mapsUrl,
         contactName: owner?.user.fullName ?? null,
         contactPhone: dealer.contactPhone,
         contactPhoneDisplay: dealer.contactPhone ? formatPhone(dealer.contactPhone) : null,

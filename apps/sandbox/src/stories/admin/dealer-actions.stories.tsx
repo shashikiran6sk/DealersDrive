@@ -41,6 +41,7 @@ const BASE: AdminDealerDetail = {
   city: 'Vellore',
   district: 'Vellore',
   state: 'Tamil Nadu',
+  mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
   addressLine: '12 Katpadi Road',
   contactName: 'Ramesh Kumar',
   contactPhone: '9840012345',

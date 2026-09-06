@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Uuid } from './common.js';
+import { GoogleMapsUrl, IndianMobile, Uuid } from './common.js';
 import { AdminRole, DealerRole, DealerStatus } from './enums.js';
 
 /**
@@ -59,10 +59,7 @@ export const OnboardingInput = z
   .object({
     fullName: z.string().trim().min(2, 'Tell us your name.').max(80),
     roleTitle: z.string().trim().max(60).optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^(\+?91[- ]?)?[6-9]\d{9}$/, 'Enter a 10-digit Indian mobile number.'),
+    phone: IndianMobile,
     /**
      * One name, not two.
      *
@@ -100,6 +97,22 @@ export const OnboardingInput = z
       .string()
       .trim()
       .regex(/^\d{6}$/, 'Pincode must be 6 digits.'),
+    /**
+     * Where the yard actually is, as a Google Maps link.
+     *
+     * Asked for rather than derived, because a typed address is not a location:
+     * "18, Gandhi Road" resolves to four different pins in one district, and the
+     * buyer who follows the wrong one has already driven there. The dealer knows
+     * which pin is their gate, and Share → Copy link is the shortest way for
+     * them to say so.
+     *
+     * Required, for the same reason the yard photograph is: the public
+     * portfolio is built around "here is the yard, here is how to reach it",
+     * and a directions button that is missing for a third of dealerships is a
+     * button buyers stop looking for. See `GoogleMapsUrl` for why the host is
+     * checked.
+     */
+    mapsUrl: GoogleMapsUrl,
     landline: z.string().trim().max(24).optional(),
   })
   .strict();

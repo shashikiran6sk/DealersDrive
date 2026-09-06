@@ -79,6 +79,9 @@ const ONBOARDING = {
   district: 'Vellore',
   state: 'Tamil Nadu',
   pincode: '632006',
+  // Where the yard is, rather than what the address string resolves to. The
+  // host is checked by the schema — see `GoogleMapsUrl` in contracts.
+  mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
   landline: '',
 };
 

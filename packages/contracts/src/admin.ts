@@ -156,6 +156,14 @@ export const AdminDealerDetail = z.object({
   district: z.string().nullable(),
   state: z.string().nullable(),
   addressLine: z.string().nullable(),
+  /**
+   * The dealer's Google Maps link, for the reviewer.
+   *
+   * KYC is partly a question about a place — is there a yard at this address —
+   * and the pin the dealer dropped is better evidence than the address string
+   * they typed. It sits beside the yard photograph for that reason.
+   */
+  mapsUrl: z.string().nullable(),
   contactName: z.string().nullable(),
   contactPhone: z.string().nullable(),
   contactPhoneDisplay: z.string().nullable(),

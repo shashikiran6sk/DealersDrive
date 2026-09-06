@@ -1,11 +1,12 @@
 'use client';
 
-import type {
-  AuthSession,
-  CompletenessResponse,
-  DealerDocumentDto,
-  DealerProfile,
-  YardPhotoDto,
+import {
+  isIndianMobile,
+  type AuthSession,
+  type CompletenessResponse,
+  type DealerDocumentDto,
+  type DealerProfile,
+  type YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
@@ -280,7 +281,10 @@ function validateAccount(form: HTMLFormElement | null): Record<string, string> {
 
   const errors: Record<string, string> = {};
   if (value('fullName').length < 2) errors.fullName = 'Tell us your name.';
-  if (!/^(\+?91[- ]?)?[6-9]\d{9}$/.test(value('phone'))) {
+  // The same predicate the API validates with, imported rather than copied —
+  // the copy that used to live here disagreed with the placeholder beside it
+  // about whether `98400 12345` is a phone number.
+  if (!isIndianMobile(value('phone'))) {
     errors.phone = 'Enter a 10-digit Indian mobile number.';
   }
   return errors;
@@ -377,12 +381,17 @@ function AccountStep({
             required
             aria-required="true"
             /*
-              The login identity. Changing it needs an OTP round-trip on the new
-              number, which onboarding does not have — so once the dealership
-              exists this reads rather than asks. It is still submitted, because
-              step 1's own validation reads the form.
+              Editable, including on the way back from step 2.
+
+              It was read-only once a dealership existed, on the reasoning that
+              this is the login identity and changing it needs an OTP round-trip
+              on the new number. Neither half holds: identity is the Google
+              account, and this is the number a buyer is given. What the
+              read-only box actually produced was a dead end — a dealer who
+              mistyped their number, or who was told it belongs to somebody
+              else, arrived back on this step and could not change the one field
+              they had been sent here to change.
             */
-            readOnly={dealer !== null}
             {...invalidProps('phone', errors.phone)}
           />
         </Field>
@@ -540,6 +549,42 @@ function BusinessStep({
               aria-required="true"
               {...invalidProps('pincode', errors.pincode)}
             />
+          </Field>
+
+          {/*
+            Where the yard is, rather than what its address resolves to.
+
+            A typed address is not a location — "18, Gandhi Road" is four
+            different pins in one district, and the buyer who follows the wrong
+            one has already driven there. The dealer knows which pin is their
+            gate, and this is the shortest way for them to say so. It spans both
+            columns because a share link is longer than a pincode, and the
+            instruction under it is there because "paste a Maps link" is obvious
+            only to somebody who has done it before.
+          */}
+          <Field
+            id="mapsUrl"
+            label="Google Maps location"
+            hint="buyers use this for directions"
+            error={errors.mapsUrl}
+            className="sm:col-span-2"
+          >
+            <input
+              id="mapsUrl"
+              name="mapsUrl"
+              type="url"
+              inputMode="url"
+              defaultValue={values.mapsUrl ?? dealer?.address.mapsUrl ?? ''}
+              className="input"
+              placeholder="https://maps.app.goo.gl/…"
+              required
+              aria-required="true"
+              {...invalidProps('mapsUrl', errors.mapsUrl)}
+            />
+            <p className="mt-[4px] text-[11px] ink-subtle">
+              Open your yard in Google Maps, tap <strong className="font-medium">Share</strong>,
+              then <strong className="font-medium">Copy link</strong> and paste it here.
+            </p>
           </Field>
 
           <Field id="landline" label="Landline" hint="optional" error={errors.landline}>
@@ -770,6 +815,7 @@ const MISSING_LABELS: Record<string, string> = {
   city: 'City',
   district: 'District',
   state: 'State',
+  mapsUrl: 'Google Maps location',
   fullName: 'Your name',
   phone: 'Phone number',
   email: 'Email address',

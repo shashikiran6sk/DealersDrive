@@ -397,6 +397,10 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
             state,
             addressLine: input.addressLine,
             pincode: input.pincode,
+            // Stored exactly as pasted. The host was checked by the schema;
+            // what is inside the link is Google's business, and rewriting it
+            // would break the short links the Share sheet produces.
+            mapsUrl: input.mapsUrl,
             contactPhone: phone,
             contactEmail: principal.email,
             landline: input.landline ?? null,

@@ -132,6 +132,25 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
         */}
         <section className="card gap-2 p-4">
           <h2 className="text-[19px]">Yard photo</h2>
+          {/*
+            The pin, next to the picture, because they answer the same question
+            from two sides: is there really a yard, and is it where the address
+            says. The link opens in a new tab with `noreferrer` — it is a URL a
+            dealer supplied, and the API has already refused anything that is
+            not an https Google Maps host.
+          */}
+          {dealer.mapsUrl ? (
+            <a
+              href={dealer.mapsUrl}
+              target="_blank"
+              rel="noreferrer nofollow"
+              className="text-[13px] text-(--color-accent)"
+            >
+              Open the yard in Google Maps
+            </a>
+          ) : (
+            <p className="text-[13px] ink-muted">No Google Maps location on file.</p>
+          )}
           {dealer.yardPhotoUrl ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img

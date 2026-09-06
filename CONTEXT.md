@@ -483,6 +483,44 @@ and a wrong value in a filter is worse than an absent one.
 
 ---
 
+## 7g. Two fields that look like data and are not
+
+**`dealers.mapsUrl` is a security boundary.** A dealer pastes it, and a buyer's
+browser follows it from the public portfolio's "Get directions". `GoogleMapsUrl`
+in `packages/contracts/src/common.ts` is what stops that being a self-service
+open redirect wearing a dealership's name: `https`, and a hostname that is in
+the list — compared as a parsed hostname, never as a substring, because
+`maps.google.com.attacker.test` contains a Google domain and is not one.
+
+It is stored **verbatim**. Not parsed into `lat`/`lng`, and not "cleaned up": a
+share link survives the dealer moving their pin, carries the place's own name
+and reviews, and opens the Maps app rather than a web map on a phone. Rewriting
+the query string is how a short link stops resolving. `Dealer.lat` / `Dealer.lng`
+remain written by nothing; geocoding is still its own feature's problem.
+
+**The phone number stopped being a credential and nobody moved the field.** It
+was `readOnly` once a dealership existed, and `UpdateDealerInput` refused it,
+both justified by "it is the login identity, and changing it needs an OTP
+round-trip". That was true before F018. Since dealers sign in with Google, this
+is the number a _buyer_ is given — the thing a dealership changes when it swaps
+SIMs — and the read-only box was a dead end for precisely the dealer who needed
+it most: the one told the number is already registered, sent back to a step
+where they could not change it.
+
+Two consequences worth carrying forward:
+
+- **Two columns, one answer.** `users.phone` is who the dealer is to us and
+  `dealers.contactPhone` is what a buyer is shown. Onboarding writes both from
+  one field, so an edit has to as well — a stale mirror publishes the old
+  number.
+- **One predicate for "is this a mobile number".** `isIndianMobile` in
+  contracts, imported by the wizard rather than copied. There were three copies,
+  they agreed with each other and disagreed with the placeholder in the form,
+  which suggests `98400 12345` — a number the validator rejected. Separators are
+  stripped before the test because `toE164` strips them before the write.
+
+---
+
 ## 8. Local development
 
 ```bash

@@ -42,6 +42,7 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     district: 'Vellore',
     state: 'Tamil Nadu',
     pincode: '632007',
+    mapsUrl: 'https://maps.app.goo.gl/auth-fixture',
     ...overrides,
   };
 }

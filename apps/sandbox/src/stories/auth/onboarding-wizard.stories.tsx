@@ -209,6 +209,11 @@ export const AccountPrefilled: Story = {
  * unique **within its city**, so both halves of that pair are on this step and
  * the check is the submit. `BusinessNameTaken` below is that refusal.
  *
+ * The Google Maps link is the last field, spanning both columns. A typed
+ * address is not a location — "18, Gandhi Road" is four pins in one district —
+ * so the dealer is asked for the one that is their gate, and the public
+ * portfolio's "Get directions" is an anchor to exactly this string.
+ *
  * Continue here is the submit. Press it to watch the ~1s "Creating your
  * dealership…" state — nothing is written before that press, which is why a
  * dealer who abandons on step 1 leaves no half-made tenant behind.
@@ -226,10 +231,12 @@ export const BusinessFieldErrors: Story = {
     authActionStub.delayMs = 400;
     authActionStub.result = {
       message: 'That could not be saved.',
+      // All three belong to step 2, deliberately: an error against a step 1
+      // field sends the wizard back to step 1, which is its own story.
       errors: {
         legalName: 'Enter your dealership’s registered name.',
         pincode: 'Pincode must be 6 digits.',
-        phone: 'Enter a 10-digit Indian mobile number.',
+        mapsUrl: 'That is not a Google Maps link.',
       },
     };
   },
@@ -308,15 +315,35 @@ export const BlockersNone: Story = {
 /**
  * Submitting. The stub holds for a minute so the disabled control and its
  * "Creating your dealership…" label stay on screen — press Continue.
- *
- * Note that the error a rejected submit produces can land on a field the
- * dealer cannot see: `phone` belongs to step 1. That is why the banner sits
- * above the stepper rather than inside the fieldset.
  */
 export const BusinessSubmitting: Story = {
   args: { step: 1 },
   beforeEach: () => {
     authActionStub.delayMs = 60_000;
+  },
+};
+
+/**
+ * **The walk-back.** Press Continue on Business and watch the wizard return to
+ * Account.
+ *
+ * A duplicate phone number is answered against `body.phone`, and `phone` is
+ * typed on step 1 — so the message used to be rendered against a fieldset the
+ * dealer could not see, leaving them on Business reading "already registered"
+ * with nothing highlighted. The step now follows the error to the field it
+ * belongs to, in the same render, so there is no flicker to catch.
+ *
+ * A refusal about a step 2 field — a registered name already taken in this city
+ * — deliberately does *not* move: see `BusinessNameTaken`.
+ */
+export const PhoneAlreadyRegistered: Story = {
+  args: { step: 1 },
+  beforeEach: () => {
+    authActionStub.delayMs = 400;
+    authActionStub.result = {
+      message: 'That mobile number is already registered to another dealership.',
+      errors: { phone: 'Already registered.' },
+    };
   },
 };
 

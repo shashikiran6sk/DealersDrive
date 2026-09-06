@@ -212,6 +212,10 @@ export const authDocs: ModuleDocs = {
         '`city`, `district` and `state` are free text, normalised on write — there is no list ' +
         'of places to choose from, and a dealership may be in any of them. The district is ' +
         "what the admin console's location filter is built on.\n\n" +
+        '`mapsUrl` is the dealership\u2019s own Google Maps share link — where the yard is, ' +
+        'rather than what its address string resolves to. It is host-checked (`https`, a ' +
+        'Google Maps domain) because the public portfolio renders it as a link a buyer ' +
+        'clicks, and stored verbatim rather than parsed into coordinates.\n\n' +
         '`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 ' +
         'PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `409 ' +
         'DEALER_NAME_TAKEN` if another dealership already trades under that name **in that ' +
@@ -229,6 +233,7 @@ export const authDocs: ModuleDocs = {
           district: 'Vellore',
           state: 'Tamil Nadu',
           pincode: '632006',
+          mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
           landline: '0416 224 8890',
         },
       },

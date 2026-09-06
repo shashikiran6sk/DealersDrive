@@ -56,6 +56,7 @@ const ONBOARDING_FIELDS = [
   'district',
   'state',
   'pincode',
+  'mapsUrl',
   'landline',
 ] as const;
 
@@ -78,6 +79,7 @@ export async function onboardingAction(
     district: text(formData, 'district').trim(),
     state: text(formData, 'state').trim(),
     pincode: text(formData, 'pincode').trim(),
+    mapsUrl: text(formData, 'mapsUrl').trim(),
     landline: emptyToUndefined(text(formData, 'landline')),
   });
 
@@ -125,6 +127,7 @@ export async function updateOnboardingAction(
     contact: {
       fullName: text(formData, 'fullName').trim(),
       roleTitle: text(formData, 'roleTitle').trim(),
+      phone: text(formData, 'phone').trim(),
       landline: text(formData, 'landline').trim(),
     },
     address: {
@@ -133,6 +136,7 @@ export async function updateOnboardingAction(
       district: text(formData, 'district').trim(),
       state: text(formData, 'state').trim(),
       pincode: text(formData, 'pincode').trim(),
+      mapsUrl: text(formData, 'mapsUrl').trim(),
     },
   });
 

@@ -52,6 +52,7 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     district: 'Vellore',
     state: 'Tamil Nadu',
     pincode: '632007',
+    mapsUrl: 'https://maps.app.goo.gl/onboarding-fixture',
     ...overrides,
   };
 }
@@ -241,6 +242,156 @@ describe('one name per city', () => {
     const profile = await agent.get('/v1/dealer').expect(200);
 
     await agent.patch('/v1/dealer').send({ legalName: profile.body.legalName }).expect(200);
+  });
+});
+
+describe('the yard on a map', () => {
+  const LINK = 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9';
+
+  it('stores the share link exactly as it was pasted', async () => {
+    const { agent } = await dealership({ mapsUrl: `${LINK}?g_st=iw` });
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+
+    // Verbatim, query string and all: what is inside a Maps link is Google's
+    // business, and a "cleaned up" share link stops resolving.
+    expect(profile.body.address.mapsUrl).toBe(`${LINK}?g_st=iw`);
+  });
+
+  /**
+   * The validation that matters, asserted where it is enforced rather than
+   * only in the contracts unit test: a buyer's browser follows this link from
+   * a public page, so a host that is not Google is a stored open redirect.
+   */
+  it.each([
+    ['a link to somewhere else entirely', 'https://evil.example.com/maps'],
+    ['a host that merely contains a Google one', 'https://maps.google.com.evil.test/place'],
+    ['the same link over http', 'http://maps.app.goo.gl/8QwYh2v1kFqL3mNz9'],
+    ['an address typed into the wrong box', '18, Gandhi Road, Katpadi'],
+  ])('refuses %s', async (_label, mapsUrl) => {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    const refused = await agent
+      .post('/v1/auth/onboarding')
+      .send(onboarding({ mapsUrl }))
+      .expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+    expect(JSON.stringify(refused.body)).toContain('mapsUrl');
+  });
+
+  it('is required, and a dealership without one cannot be submitted', async () => {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    const { mapsUrl: _omitted, ...withoutMaps } = onboarding();
+    await agent.post('/v1/auth/onboarding').send(withoutMaps).expect(400);
+
+    await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    const completeness = await agent.get('/v1/dealer/completeness').expect(200);
+    const business = completeness.body.steps.find(
+      (step: { key: string }) => step.key === 'business',
+    );
+
+    expect(business.missing).not.toContain('mapsUrl');
+  });
+
+  it('names the missing link when a dealership predates the question', async () => {
+    const { agent, dealerId } = await dealership();
+    // The state every dealership created before this feature is in. There is
+    // no backfill, so completeness has to say so rather than pass silently.
+    await h.prisma.dealer.update({ where: { id: dealerId }, data: { mapsUrl: null } });
+
+    const completeness = await agent.get('/v1/dealer/completeness').expect(200);
+    const business = completeness.body.steps.find(
+      (step: { key: string }) => step.key === 'business',
+    );
+
+    expect(business.missing).toContain('mapsUrl');
+    expect(completeness.body.canSubmit).toBe(false);
+  });
+
+  it('can be replaced through PATCH when the dealer moves the pin', async () => {
+    const { agent } = await dealership();
+    const moved = 'https://www.google.com/maps/place/New+Yard/@12.91,79.13,17z';
+
+    await agent
+      .patch('/v1/dealer')
+      .send({ address: { mapsUrl: moved } })
+      .expect(200);
+    const refused = await agent
+      .patch('/v1/dealer')
+      .send({ address: { mapsUrl: 'https://evil.example.com/maps' } })
+      .expect(400);
+
+    expect((await agent.get('/v1/dealer').expect(200)).body.address.mapsUrl).toBe(moved);
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+  });
+});
+
+describe('the contact number, after onboarding', () => {
+  /**
+   * The number stopped being a credential when dealers moved to Google
+   * sign-in, so it is editable — and it has to be, because the step that asks
+   * for it is reached again by pressing Back. A read-only box there was a dead
+   * end for the one dealer who most needed it: the one told their number
+   * belongs to somebody else.
+   */
+  it('changes both the account number and the number buyers are given', async () => {
+    const { agent, dealerId } = await dealership();
+
+    await agent
+      .patch('/v1/dealer')
+      .send({ contact: { phone: '98765 43210' } })
+      .expect(200);
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    const dealer = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+
+    // Normalised to E.164 on the way in — the unique index is over the stored
+    // string, so two spellings of one number would be two numbers to it.
+    expect(profile.body.contact.phone).toBe('+919876543210');
+    expect(dealer?.contactPhone).toBe('+919876543210');
+  });
+
+  it('refuses a number another dealership already holds, naming the field', async () => {
+    const first = await dealership();
+    const taken = (await first.agent.get('/v1/dealer').expect(200)).body.contact.phone as string;
+    const { agent } = await dealership();
+
+    const refused = await agent
+      .patch('/v1/dealer')
+      .send({ contact: { phone: taken } })
+      .expect(409);
+
+    expect(refused.body.code).toBe('PHONE_ALREADY_REGISTERED');
+    // Named as the client sent it, so the wizard can mark the box — and, since
+    // `phone` is a step 1 field, walk back to the step that owns it.
+    expect(JSON.stringify(refused.body.errors)).toContain('body.contact.phone');
+  });
+
+  it('lets a dealership re-save its own number', async () => {
+    const { agent } = await dealership();
+    const own = (await agent.get('/v1/dealer').expect(200)).body.contact.phone as string;
+
+    await agent
+      .patch('/v1/dealer')
+      .send({ contact: { phone: own } })
+      .expect(200);
+  });
+
+  it('refuses something that is not an Indian mobile number', async () => {
+    const { agent } = await dealership();
+
+    const refused = await agent
+      .patch('/v1/dealer')
+      .send({ contact: { phone: '12345' } })
+      .expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
   });
 });
 

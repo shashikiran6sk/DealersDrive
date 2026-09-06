@@ -1991,6 +1991,12 @@ DESIGN-SPEC §2.9/§2.10 — the 108 px thumbnail strip and the fullscreen light
 - **API** `GET /v1/dealers/:slug/vehicles`, `GET /v1/dealers/:slug/facets`
 - **Components — Modified** `FilterPanel` (+ `groups`, `dimZeroRows`) · **Reused** `VehicleCard`, `SearchToolbar`, `MobileFilterSheet`, `EnquiryForm`, `VdpCtaStack`
 - **Sandbox** `FilterPanel` with `groups` excluding `dealer` and `dimZeroRows` on
+- **Get directions comes from `dealer.address.mapsUrl`** (**R6**) — the link the
+  dealer pasted on onboarding step 2, rendered as an anchor and nothing more.
+  Nullable: dealerships created before R6 have none, so the button is absent
+  rather than broken. Do not construct a Maps URL from the address string as a
+  fallback — a typed address is several pins in one district, and the wrong one
+  sends a buyer to somebody else's gate.
 - ✅ **The canonical "existing component + props" precedent.** This feature needed a filter panel without a dealer group and added two props instead of creating `PortfolioFilterPanel`. Cite it when applying the reuse rule.
 
 ### F087 — Saved cars
@@ -2125,6 +2131,139 @@ A working local dataset: one admin, a few dealers, some vehicles and listings ac
 - **Backend** `prisma/seed/{index,bootstrap,data,images}.ts` — **without** `prisma/seed/catalog/**`
 - **Files** `scripts/app-up.sh`, `pnpm app:seed`
 - **Components** none · **Sandbox** the seed's vocabulary — Tamil Nadu cities, `₹` formatting, `TN 09 BX 1234` plates — is what sandbox fixtures should imitate
+
+---
+
+# REVISIONS — product changes after the reconstruction
+
+The 97 features above describe the baseline being re-delivered. **Everything in
+this section is a change to the product itself**, asked for after that work
+started, and it is numbered separately for exactly that reason: an `R` is not a
+slice of the baseline, so a reviewer comparing a feature branch against
+`baseline/pre-reorg-2026-09-02` should expect these hunks and no others.
+
+Each entry says which feature it revises. Where a revision made a feature's own
+entry wrong, that entry was corrected in the same PR rather than being left to
+disagree with the code — F019 is the one that changed beyond recognition.
+
+## R1 — A duplicate phone number returns the wizard to step 1
+
+**Revises F038, F039** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+`POST /v1/auth/onboarding` answers a taken number with a 409 naming `body.phone`
+— and `phone` is typed on step 1 while the submit happens on step 2, so the
+message landed against a fieldset the dealer could not see.
+
+- **Frontend** `features/auth/onboarding-wizard.tsx` — `ACCOUNT_FIELDS`, the one
+  list of step-1 fields, used both by the browser-side gate and by the walk-back
+- **Tests** `tests/unit/features/auth/onboarding-wizard.test.tsx` — returns to
+  Account for a step-1 field, stays on Business for a step-2 one
+- **Sandbox** `OnboardingWizard` → `PhoneAlreadyRegistered`
+- The step is adjusted **during render** on the render that first sees a new
+  action result, not in an effect. An effect commits the error against the
+  hidden fieldset first and moves on the next frame; that gap is visible to a
+  test on a slow machine and to a dealer on a slow phone.
+
+## R2 — District on the business step
+
+**Revises F039, F043, F045** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+- **Schema** `Dealer.district`, `@@index([state, district, city])`
+- **Backend** `OnboardingInput.district`, `UpdateDealerInput.address.district`,
+  `DealerProfile.address.district`, completeness names it
+- **Frontend** the Business step's third locality field
+- **Tests** `tests/dealer-onboarding.test.ts` — required, normalised, renamed
+- Required rather than optional because the admin console filters on it, and a
+  filter that omits the dealerships that skipped the question is a filter that
+  lies. Nullable in the database with **no backfill**: a district guessed from a
+  city name is wrong for exactly the towns that need it.
+
+## R3 — Admin dealer filters by city, district and state
+
+**Revises F045** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+- **Backend** `AdminDealerQuery.{district,state}`, `AdminDealerRow.{district,state}`,
+  `AdminDealerFacets` on `AdminDealersResponse`
+- **API** `GET /v1/admin/dealers?state=&district=&city=`
+- **Frontend** `app/(admin)/admin/dealers/page.tsx` — a plain GET form, so the
+  filter is a URL a moderator can send to a colleague
+- **Tests** `tests/unit/modules/admin/admin.service.test.ts`
+- `facets` is deliberately **not** narrowed by the current filter: choosing a
+  state must not empty the district list and strand the operator.
+
+## R4 — Admin sign-in is Google + an allow-list (D8)
+
+**Revises F019** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+Password authentication is removed. See the F019 entry above for what the
+feature is now, and `CONTEXT.md` §7e for why it is shaped this way.
+
+- **Removed** `POST /v1/auth/admin/login`, `modules/auth/password.ts`,
+  `AdminLoginInput`, `AdminLoginForm` (C042), `users.passwordHash`,
+  `@node-rs/argon2`, `DEV_ADMIN_EMAIL` / `DEV_ADMIN_PASSWORD`
+- **Added** `ADMIN_ALLOWLIST`, `modules/auth/admin-allowlist.ts`,
+  `GET /v1/auth/admin/google/start`, `OAuthTransaction.audience`
+- **Tests** `tests/auth.test.ts` → `describe('the admin console')`,
+  `tests/unit/modules/auth/admin-allowlist.test.ts`
+- The allow-list is checked when a session is issued **and** in `resolveAdmin`
+  on every request, so removing an address revokes an open console.
+
+## R5 — `deploy-dev` paused
+
+**Revises F024** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+- **Infra** `.github/workflows/release.yml` — the `deploy-dev` job is commented
+  out with the three steps that turn it back on. `_deploy.yml` and `promote.yml`
+  are untouched.
+- Neither target exists yet, and a workflow that goes red for a reason nobody
+  can act on is one people stop reading.
+
+## R6 — The yard on a map
+
+**Revises F039, F043, F086** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+The dealer's own Google Maps share link, asked for on the business step, so the
+public portfolio can offer **Get directions**.
+
+- **Schema** `Dealer.mapsUrl`
+- **Contracts** `GoogleMapsUrl` (host-checked), `OnboardingInput.mapsUrl`,
+  `UpdateDealerInput.address.mapsUrl`, `DealerProfile.address.mapsUrl`,
+  `AdminDealerDetail.mapsUrl`
+- **Frontend** the Business step's Maps field; the admin dealer page links it
+  beside the yard photograph, which is the other half of the same question
+- **Tests** `packages/contracts/tests/unit/common.test.ts` (the host list),
+  `tests/dealer-onboarding.test.ts` → `describe('the yard on a map')`
+- **Consumed by F086**, which renders it as the portfolio's directions link. It
+  is stored **verbatim**, not parsed into `lat`/`lng`: a share link survives the
+  dealer moving the pin, carries the place's name and reviews, and opens the
+  Maps app on a phone.
+- The host check is a **security** boundary, not a data-quality one: a buyer's
+  browser follows this link from a public page, so an arbitrary URL here would
+  be a self-service open redirect wearing a dealership's name. `https` on a
+  Google Maps domain, nothing else.
+
+## R7 — The contact number is editable again
+
+**Revises F038, F046** · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+- **Contracts** `UpdateDealerInput.contact.phone`; `IndianMobile` /
+  `isIndianMobile` replace three copies of one regex
+- **Backend** `dealers.service.update` normalises to E.164, checks
+  `users.phone` for a clash, and writes both `users.phone` and
+  `dealers.contactPhone`
+- **Frontend** the phone input is no longer `readOnly` once a dealership exists;
+  the wizard's browser-side check imports the shared predicate
+- **Tests** `tests/dealer-onboarding.test.ts` → `describe('the contact number,
+after onboarding')`, plus the service unit tests
+- The field was read-only on the reasoning that it is the login identity and
+  changing it needs an OTP round-trip. Identity has been a Google account since
+  F018; what this holds is the number a **buyer** is given. The read-only box
+  was a dead end for the one dealer who most needed it — the one told their
+  number belongs to somebody else, sent back to a step where they could not
+  change it.
+- The three regex copies disagreed with the placeholder beside them: the form
+  suggests `98400 12345` and the validator rejected it. One predicate now, in
+  the package both apps import.
 
 ---
 

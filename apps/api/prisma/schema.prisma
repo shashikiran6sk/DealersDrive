@@ -143,6 +143,13 @@ model Dealer {
   state              String?
   addressLine        String?
   pincode            String?
+  /// The dealer's own Google Maps share link, stored verbatim.
+  ///
+  /// Not parsed into `lat`/`lng`: a share link survives the dealer moving the
+  /// pin, carries the place's own name and reviews, and opens the Maps app on a
+  /// phone. It is host-checked on write (`GoogleMapsUrl` in contracts) because
+  /// a buyer's browser follows it from a public page.
+  mapsUrl            String?
   lat                Float?
   lng                Float?
   contactPhone       String?
