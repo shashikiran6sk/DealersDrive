@@ -521,6 +521,115 @@ Two consequences worth carrying forward:
 
 ---
 
+## 7h. Three refusals, and why they are three
+
+"Reject" was one word doing three jobs on the admin dealer screen, and the three
+have very different consequences. They are now separate controls with separate
+endpoints, and the distinction is worth carrying forward because the wrong one is
+expensive.
+
+| Control                          | What it does                                                                                         | Reversible              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------- |
+| **Reject file** (one document)   | Deletes that scan from storage, empties the row, reopens the application so the dealer can re-upload | Yes — they upload again |
+| **Request changes** (dealership) | PENDING_APPROVAL → DRAFT with a reason. Nothing is deleted                                           | Yes                     |
+| **Reject** (dealership)          | Deletes the scans, the yard photo, the documents, the membership and the `dealers` row               | **No**                  |
+
+Three things follow from that table.
+
+**Rejecting a document is not rejecting a dealer.** It says "this file is
+unreadable, send another one". Because a PENDING_APPROVAL dealership is shown the
+"we are reviewing this" panel and no form, a document rejection that left the
+status alone would be an instruction the dealer could not follow — so it returns
+the dealership to DRAFT, exactly as _Request changes_ does. It is a request for
+changes scoped to one file.
+
+**The file goes when the document is rejected.** A rejected scan of somebody's
+PAN card will never be read again, and KYC media is the category where "we still
+had a copy" is the wrong answer. The row survives — the checklist is three fixed
+rows — but empty, so the dealer sees the slot they saw before they uploaded.
+
+**Rejecting a dealership is a purge, and it leaves an audit row behind.**
+`audit_logs.dealerId` is a column and not a foreign key, which is what lets the
+record of what was destroyed outlive the row it describes. The whole `before`
+block is written into it for that reason, in the same transaction, before the
+delete. Storage is emptied _first_, because the row is the only thing that knows
+where the bytes are: a KYC key ends in the document row's id.
+
+`statusReason` on a DRAFT dealership is the mark of "an admin looked at this and
+handed it back" — nothing else sets it. The onboarding screen reads it twice: as
+the banner saying what to fix, and as the signal to open at step one rather than
+step three. `POST /v1/dealer/submit` clears it on the way back into the queue.
+
+---
+
+## 7i. A React reconciliation bug that looked like a routing bug
+
+Onboarding steps 1 and 2 share one form, and the Continue button was two
+elements in one slot: `type="button"` with an `onClick` on the Account step,
+`type="submit"` on the Business step. React reconciled them as the **same DOM
+node** and mutated `type` in place.
+
+Click is a discrete event, so React flushes the state update synchronously while
+the event is still being dispatched. By the time the browser performed the
+button's default activation behaviour, the node had become `type="submit"` — so
+one press of Continue on the Account step advanced to Business _and_ submitted
+the form, landing the dealer on the Documents step without ever seeing the fields
+in between.
+
+It only reproduced when the Business step was already filled in, because
+otherwise the submit came back with validation errors and the jump read as an
+ordinary refusal. That is what made it look like a navigation problem.
+
+The fix is a distinct `key` on each button, which makes them distinct elements:
+the clicked node is unmounted, and a removed node has no default action left to
+perform. **Any conditional pair of buttons inside a form is exposed to this** —
+if they differ by `type`, give them keys.
+
+A second, quieter one lived next to it: `local` (which of the two panes is open)
+was `useState`-initialised once, and Next keeps the wizard mounted across a
+`?step=` change — same route, same tree position. So `Back` from the Documents
+step arrived showing whichever pane was open when the page was first entered.
+Both are now reconciled during render rather than in an effect, so the step and
+the pane change in one paint.
+
+---
+
+## 7j. Why CI kept failing on green branches
+
+The working agreement names four commands — `pnpm lint`, `pnpm typecheck`,
+`pnpm test`, `pnpm build` — and CI runs **six** steps. The two extra ones were
+`pnpm format:check` and `pnpm docs:check`, and neither was reachable by running
+the documented gate.
+
+That is the whole explanation for a run of red pull requests whose authors had
+verified them locally first. The failures were never in the code: they were a
+reflowed comment block, a `prettier` disagreement about where a ternary breaks,
+a renamed script quoted in a document. Every one of them arrived as a 45-second
+round trip and a context switch, and every one of them was invisible until the
+push.
+
+A gate that a developer cannot run is not a gate, it is a lottery. So the four
+commands now cover all six:
+
+```json
+"lint": "pnpm format:check && turbo run lint && pnpm docs:check",
+"lint:fix": "pnpm format && turbo run lint -- --fix",
+```
+
+`ci.yml` still runs Format, Lint and Documentation references as three separate
+steps, and that duplication is deliberate: a named step tells you which of the
+three failed without opening the log. Eight seconds of repeated work against a
+round trip that costs a minute and somebody's attention is not a close call.
+
+**If you add a check to `ci.yml`, add it to one of those four commands in the
+same PR.** Anything else re-opens this.
+
+The formatting rule itself is worth stating plainly, because it is the one that
+catches people: run `pnpm format` (or `pnpm lint:fix`) before you commit.
+Prettier reflows comment blocks, and this repository has a great many of them.
+
+---
+
 ## 8. Local development
 
 ```bash

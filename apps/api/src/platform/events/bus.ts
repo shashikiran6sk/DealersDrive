@@ -28,6 +28,7 @@ export type DomainEventType =
   | 'DealerSuspended'
   | 'DealerReinstated'
   | 'DealerApplied'
+  | 'DealerChangesRequested'
   | 'VehicleCreated'
   | 'VehicleUpdated'
   | 'VehicleSold'

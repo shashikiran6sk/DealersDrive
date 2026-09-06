@@ -123,14 +123,54 @@ export const adminDocs: ModuleDocs = {
       errors: [400, 401, 403, 404, 409],
     },
     {
+      method: 'patch',
+      path: '/v1/admin/dealers/:id',
+      operationId: 'updateAdminDealer',
+      tag: 'Admin',
+      summary: "Amend a dealership's details",
+      description:
+        'Edits the answers the dealer gave, from the review screen. A moderator reading a ' +
+        'GSTIN off the certificate in front of them can see that one digit is wrong, and the ' +
+        'alternative to fixing it here is a round trip that costs a working day to correct a ' +
+        'character.\n\n' +
+        'The body is **the same `UpdateDealerInput` `PATCH /v1/dealer` takes**, and the same ' +
+        'service performs the write: locality normalisation, the E.164 rewrite of the phone ' +
+        'number, the name-unique-within-a-city check and the `brandName` mirror all apply ' +
+        'identically. It is partial, so sending one field never blanks another. The one ' +
+        'difference from the dealer path is the audit row — an edit the dealer did not make ' +
+        'has to be attributable to the person who made it.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'UpdateDealerInput',
+        description: 'Any subset of the dealership\u2019s own fields.',
+        example: { gstin: '33AABCS1429B1ZX', address: { city: 'Vellore', pincode: '632001' } },
+      },
+      responses: [{ status: 200, description: 'The amended dealership.', schema: 'DealerProfile' }],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
       method: 'post',
       path: '/v1/admin/dealers/:id/reject',
       operationId: 'rejectDealer',
       tag: 'Admin',
-      summary: 'Reject a dealership',
+      summary: 'Reject a dealership — and destroy the application',
       description:
-        'Rejects the application. The reason is required and at least six characters, because ' +
-        'it is shown to the dealer — "no" without a reason generates a support call.',
+        '**This is destructive and it is not reversible.** Rejecting deletes the three KYC ' +
+        'scans and the yard photograph from object storage, then deletes the `dealers` row ' +
+        'with its documents and its OWNER membership. The applicant keeps their verified ' +
+        'Google account and nothing else: signing in again finds no dealership and starts ' +
+        'onboarding from step one, as a first-time applicant.\n\n' +
+        '**Use `request-changes` instead** for anything short of "this is not a dealership we ' +
+        'will trade with". An unreadable GST certificate or a misspelt legal name is a ' +
+        'correction, and answering it with this endpoint costs a real business every field ' +
+        'they typed.\n\n' +
+        'Only a DRAFT or PENDING_APPROVAL dealership can be rejected — an approved one is ' +
+        'suspended, which is reversible, and a 409 says so. The reason is required, at least ' +
+        'six characters, and is what the dealer is told.\n\n' +
+        'The audit row survives the dealership: `audit_logs.dealerId` is a column rather than ' +
+        'a foreign key, so what was removed, by whom and why is still answerable afterwards.',
       audience: 'admin',
       permission: 'admin:dealer:approve',
       params: 'IdParam',
@@ -139,7 +179,58 @@ export const adminDocs: ModuleDocs = {
         description: 'Shown to the dealer. Minimum six characters.',
         example: { reason: 'The GST certificate does not match the legal name on the PAN card.' },
       },
-      responses: [{ status: 200, description: 'Rejected.', schema: 'DealerModerationResponse' }],
+      responses: [
+        {
+          status: 200,
+          description: 'Purged. The counts are what was actually removed.',
+          schema: 'DealerPurgeResponse',
+          example: {
+            id: '3c8f2b10-2222-4000-8000-000000000002',
+            brandName: 'Sri Lakshmi Motors',
+            documentsDeleted: 3,
+            objectsDeleted: 4,
+            reason: 'The GST certificate does not match the legal name on the PAN card.',
+            purgedAt: '2026-08-17T09:40:00.000Z',
+          },
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/request-changes',
+      operationId: 'requestDealerChanges',
+      tag: 'Admin',
+      summary: 'Send an application back for correction',
+      description:
+        'PENDING_APPROVAL → DRAFT with the reason attached. **Nothing is deleted**: every ' +
+        'field the dealer typed, every document they uploaded and the yard photograph all ' +
+        'stay where they are.\n\n' +
+        'What changes is that the application becomes theirs again. A PENDING_APPROVAL ' +
+        'dealership is shown a "we are reviewing this" panel and no form — that is what stops ' +
+        'a moderator reviewing a moving target — so handing it back means giving up that ' +
+        'guarantee deliberately, and taking the application out of the queue at the same ' +
+        'time. Onboarding reopens filled in, with the reason at the top of it, and ' +
+        '`POST /v1/dealer/submit` clears the reason when they resubmit.\n\n' +
+        'This is the refusal a moderator wants nine times in ten. `reject` is the other one, ' +
+        'and it destroys the application.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'ReasonInput',
+        description: 'What the dealer must fix. Shown verbatim. Minimum six characters.',
+        example: {
+          reason: 'The address proof is an electricity bill from 2024. Send one from this quarter.',
+        },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Returned to the dealer as DRAFT.',
+          schema: 'DealerModerationResponse',
+        },
+      ],
       errors: [400, 401, 403, 404, 409],
     },
     {
@@ -222,10 +313,20 @@ export const adminDocs: ModuleDocs = {
       path: '/v1/admin/documents/:id/reject',
       operationId: 'rejectDealerDocument',
       tag: 'Admin',
-      summary: 'Reject a KYC document',
+      summary: 'Reject a KYC document — ask for that one again',
       description:
-        'Rejects one document with a reason the dealer sees, so they know what to re-upload ' +
-        'rather than guessing. Minimum six characters.',
+        'Rejects **one file**, not the dealership. The scan is unreadable, or it is last ' +
+        "year's electricity bill, or it is a photograph of the wrong page — the other two " +
+        'documents are untouched and no verdict has been reached on the applicant.\n\n' +
+        'Two things follow. The **file is deleted from object storage** and the row is ' +
+        'emptied of its file name: a rejected scan of a PAN card will never be read again, ' +
+        'and KYC media is exactly the category where "we still had a copy" is the wrong ' +
+        'answer. The dealer sees the empty slot they saw before they uploaded, with the ' +
+        'reason underneath saying what to send instead.\n\n' +
+        'And the **application is reopened** — a PENDING_APPROVAL dealership returns to ' +
+        'DRAFT, because otherwise the dealer is told to re-upload and shown no upload box. ' +
+        '`dealerReturnedToDraft` in the response says whether that happened.\n\n' +
+        'The reason is required and at least six characters; the dealer reads it verbatim.',
       audience: 'admin',
       permission: 'admin:document:review',
       params: 'IdParam',

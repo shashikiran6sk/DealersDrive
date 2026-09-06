@@ -221,6 +221,41 @@ export const AccountPrefilled: Story = {
 export const Business: Story = { args: { step: 1 } };
 
 /**
+ * The same step for a dealership that already exists, so every box carries the
+ * dealer's own answer — which is what `Back` from the Documents step lands on.
+ *
+ * The field to look at is **About your dealership**, the last one and the only
+ * optional field on the step that is not a phone number. It is the paragraph
+ * the public portfolio runs under the yard photograph, and it is asked for here
+ * because this is the one moment a dealer is already describing their business;
+ * a profile screen offered later is a screen most of them never open.
+ *
+ * It is deliberately not required. The address and the Maps link are how a
+ * buyer arrives, so a dealership missing one of those is not ready to be seen —
+ * this is editorial, `DealerProfile.about` is nullable, and a dealer who cannot
+ * think of a sentence today must not be held out of the review queue by it.
+ */
+export const BusinessWithDescription: Story = {
+  args: {
+    step: 1,
+    dealer: {
+      legalName: 'Sri Balaji Motors',
+      about:
+        'Family-run since 1998. We specialise in hatchbacks under \u20b96 lakh, every car is inspected in-house before it reaches the yard, and we handle the RC transfer for you.',
+      address: {
+        line: '18, Gandhi Road',
+        city: 'Katpadi',
+        district: 'Vellore',
+        state: 'Tamil Nadu',
+        pincode: '632007',
+        mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
+      },
+      contact: { landline: '0416 224 8890' },
+    } as DealerProfile,
+  },
+};
+
+/**
  * What a rejected submit looks like. The action answers with a banner and
  * per-field messages, and echoes `values` back so the other eight fields
  * survive — press Continue to see it.

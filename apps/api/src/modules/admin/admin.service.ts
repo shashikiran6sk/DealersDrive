@@ -13,6 +13,9 @@ import {
   type AdminOverview,
   type ApproveDealerInput,
   type DealerModerationResponse,
+  type DealerProfile,
+  type DealerPurgeResponse,
+  type UpdateDealerInput,
   type VerifyDocumentResponse,
 } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
@@ -26,6 +29,7 @@ import { DomainError, ForbiddenError, NotFoundError } from '../../platform/error
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
+import { documentKey, type DealersService } from '../dealers/dealers.facade.js';
 
 /**
  * D1–D15. The platform's own console.
@@ -52,12 +56,24 @@ export interface AdminDeps {
   audit: AuditService;
   config: PlatformConfigService;
   storage: StoragePort;
+  /**
+   * The dealer service, for the one write the console makes into a dealership's
+   * own data (D3 edit).
+   *
+   * It is taken as a dependency rather than reimplemented because everything
+   * that makes `PATCH /v1/dealer` correct has to hold for the admin path too:
+   * locality normalisation, the E.164 rewrite that the phone's unique index is
+   * an index *over*, the name-within-a-city duplicate check, and writing
+   * `brandName` from `legalName` so the display mirror cannot drift. A second
+   * copy of that would be a second set of rules, and the two would disagree.
+   */
+  dealers: DealersService;
 }
 
 /** The three documents KYC needs. A dealership is verified when all three are. */
 const REQUIRED_DOCUMENTS = 3;
 
-export function createAdminService({ prisma, audit, config, storage }: AdminDeps) {
+export function createAdminService({ prisma, audit, config, storage, dealers }: AdminDeps) {
   /**
    * Every location a dealership actually sits in, for the console's filters.
    *
@@ -338,7 +354,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
             bytes: null,
             uploadedAt: doc.createdAt.toISOString(),
             viewUrl: readable
-              ? await storage.signedReadUrl(`kyc/${dealerId}/${doc.type}/${doc.id}`, 300)
+              ? await storage.signedReadUrl(documentKey(dealerId, doc.type, doc.id), 300)
               : null,
             viewUrlExpiresAt: readable ? new Date(Date.now() + 300_000).toISOString() : null,
             rejectionReason: doc.rejectionReason,
@@ -388,11 +404,14 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         district: dealer.district,
         state: dealer.state,
         addressLine: dealer.addressLine,
+        pincode: dealer.pincode,
         mapsUrl: dealer.mapsUrl,
         contactName: owner?.user.fullName ?? null,
         contactPhone: dealer.contactPhone,
         contactPhoneDisplay: dealer.contactPhone ? formatPhone(dealer.contactPhone) : null,
         contactEmail: owner?.user.email ?? dealer.contactEmail,
+        landline: dealer.landline,
+        about: dealer.about,
         joinedLabel: formatDate(dealer.createdAt),
         creditBalance: dealer.creditBalance,
         creditsHeld: dealer.creditsHeld,
@@ -423,10 +442,25 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
            * screen, and that is how this was being reported.
            */
           canApprove: dealer.status === 'PENDING_APPROVAL' && allVerified,
-          canReject: dealer.status === 'PENDING_APPROVAL',
+          /*
+           * Rejection destroys the application (see `rejectDealer`), so it is
+           * offered only while there is nothing behind the dealership to
+           * destroy — before it has ever been approved. An ACTIVE dealership
+           * that has gone bad is suspended, which is reversible; a SUSPENDED
+           * one has already been dealt with.
+           */
+          canReject: dealer.status === 'PENDING_APPROVAL' || dealer.status === 'DRAFT',
+          /*
+           * Sending it back is available from exactly the state where the
+           * dealer cannot otherwise act: PENDING_APPROVAL shows them the "we
+           * are reviewing this" panel and no form. From DRAFT they can already
+           * edit everything, so there is nothing to reopen.
+           */
+          canRequestChanges: dealer.status === 'PENDING_APPROVAL',
           canSuspend: dealer.status === 'ACTIVE',
           canReinstate: dealer.status === 'SUSPENDED',
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
+          canEdit: admin.permissions.includes('admin:dealer:approve'),
         },
       };
     },
@@ -500,13 +534,273 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
       });
     },
 
+    /**
+     * D4 reject — and it is a **purge**, not a status change.
+     *
+     * A rejection says "this is not a dealership we will trade with", and the
+     * product's answer to that is to keep nothing: the three KYC scans and the
+     * yard photograph are deleted from object storage, and the `dealers` row
+     * goes with them — taking its documents and its OWNER membership by
+     * cascade. The person keeps their verified Google account and nothing else,
+     * so signing in again finds no membership and drops them at step one of
+     * onboarding as a first-time applicant.
+     *
+     * **This is the destructive answer, and it is the rarer one.** A moderator
+     * who wants a clearer GST certificate, or the legal name spelt as it is on
+     * the PAN card, wants `requestChanges` below — which keeps every field the
+     * dealer typed and merely reopens the form. Rejecting instead would cost a
+     * real business its whole application over a blurry photograph, and the two
+     * controls are separated in the console for that reason.
+     *
+     * Three things make the destruction safe to reason about:
+     *
+     *   · **The audit row outlives the dealership.** `audit_logs.dealerId` is a
+     *     column, not a foreign key, so the record of who rejected what, when
+     *     and why survives the row it refers to. It is written before the
+     *     delete for the same reason.
+     *   · **Storage is emptied before the rows are.** The row is the only thing
+     *     that knows where the bytes are — a KYC scan's key ends in its
+     *     document id. Delete the row first and the scan of somebody's PAN card
+     *     stays in the bucket with nothing left pointing at it, which is a
+     *     retention problem rather than a housekeeping one.
+     *   · **Only an unapproved application can be rejected.** `canReject` is
+     *     DRAFT or PENDING_APPROVAL, so there is never a listing, a payment or
+     *     a buyer's enquiry hanging off the row being removed. An ACTIVE
+     *     dealership that goes bad is *suspended*, which is reversible.
+     */
     async rejectDealer(
+      admin: AdminPrincipal,
+      dealerId: string,
+      reason: string,
+    ): Promise<DealerPurgeResponse> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      const dealer = await prisma.dealer.findUnique({
+        where: { id: dealerId },
+        include: { documents: true },
+      });
+      if (!dealer) throw new NotFoundError('That dealership does not exist.');
+      if (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED') {
+        throw new DomainError(
+          'DEALER_ALREADY_APPROVED',
+          'An approved dealership is suspended, not rejected. Suspension is reversible; this is not.',
+        );
+      }
+
+      /*
+       * Every object this dealership put in the bucket: the KYC scans, whose
+       * keys are derived from the document rows, and the media rows — the yard
+       * photograph, and a logo if one was ever uploaded — which carry their own
+       * `storageKey`.
+       */
+      const media = await prisma.media.findMany({ where: { dealerId } });
+      const keys = [
+        ...dealer.documents.map((doc) => documentKey(dealerId, doc.type, doc.id)),
+        ...media.map((row) => row.storageKey),
+      ];
+
+      /*
+       * `allSettled`, and the count is of what actually went.
+       *
+       * A key that is already gone — a document row whose upload never
+       * completed — must not abort the purge and leave the dealership
+       * half-destroyed. What matters is that the rows are removed; an object
+       * left behind is reconcilable from the audit row, and a `dealers` row
+       * left behind is a dealership the applicant can still sign into.
+       */
+      const removals = await Promise.allSettled(keys.map((key) => storage.delete(key)));
+      const objectsDeleted = removals.filter((result) => result.status === 'fulfilled').length;
+
+      const purgedAt = new Date();
+      await withTransaction(prisma, async (tx) => {
+        // Written first, and with the whole record in `before`, because in a
+        // moment there will be nothing left to describe it.
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId,
+          action: 'dealer.rejected',
+          entityType: 'Dealer',
+          entityId: dealerId,
+          before: {
+            status: dealer.status,
+            slug: dealer.slug,
+            brandName: dealer.brandName,
+            legalName: dealer.legalName,
+            gstin: dealer.gstin,
+            pan: dealer.pan,
+            city: dealer.city,
+            district: dealer.district,
+            state: dealer.state,
+            contactEmail: dealer.contactEmail,
+            documents: dealer.documents.map((doc) => ({ type: doc.type, status: doc.status })),
+          },
+          after: { purged: true, reason, objectsDeleted },
+        });
+
+        await enqueueOutbox(tx, {
+          type: 'DealerRejected',
+          aggregateType: 'Dealer',
+          aggregateId: dealerId,
+          dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'dealer-reject',
+          /*
+           * Ids and the reason, and no PII — the same rule every other payload
+           * follows, and it holds here even though the handler cannot re-fetch
+           * the dealership afterwards. The outbox is a durable table that
+           * outlives the row it describes; putting an applicant's name and
+           * email into it is exactly the thing a rejection is supposed to
+           * remove. The `before` block on the audit row above is where a
+           * notification handler reads what it needs.
+           */
+          payload: { dealerId, reason },
+        });
+
+        await tx.media.deleteMany({ where: { dealerId } });
+        // `dealer_documents` and `dealer_members` are `onDelete: Cascade`.
+        await tx.dealer.delete({ where: { id: dealerId } });
+      });
+
+      return {
+        id: dealerId,
+        brandName: dealer.brandName,
+        documentsDeleted: dealer.documents.length,
+        objectsDeleted,
+        reason,
+        purgedAt: purgedAt.toISOString(),
+      };
+    },
+
+    /**
+     * D4 request changes — the reversible refusal, and the one a moderator
+     * reaches for far more often than rejection.
+     *
+     * PENDING_APPROVAL → DRAFT with the reason attached. Nothing is deleted:
+     * every field the dealer typed, every document they uploaded and the yard
+     * photograph all stay exactly where they are. What changes is that the
+     * application is *theirs* again — the onboarding screen stops showing the
+     * "we are reviewing this" panel and reopens the form, filled in, with the
+     * reason at the top of it.
+     *
+     * The status is the only mechanism that can do this. A dealership is
+     * blocked from editing while PENDING_APPROVAL precisely so that a moderator
+     * is not reviewing a moving target; handing it back means giving up that
+     * guarantee, deliberately, and taking the application out of the queue at
+     * the same time.
+     */
+    async requestChanges(
       admin: AdminPrincipal,
       dealerId: string,
       reason: string,
     ): Promise<DealerModerationResponse> {
       assertPermission(admin, 'admin:dealer:approve');
-      return this.setDealerStatus(admin, dealerId, 'REJECTED', reason, 'dealer.rejected');
+
+      return withTransaction(prisma, async (tx) => {
+        const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
+        if (!dealer) throw new NotFoundError('That dealership does not exist.');
+        if (dealer.status !== 'PENDING_APPROVAL') {
+          throw new DomainError(
+            'NOT_UNDER_REVIEW',
+            'Only an application waiting for a decision can be sent back.',
+          );
+        }
+
+        const updated = await tx.dealer.update({
+          where: { id: dealerId },
+          data: { status: 'DRAFT', statusReason: reason },
+        });
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId,
+          action: 'dealer.changes_requested',
+          entityType: 'Dealer',
+          entityId: dealerId,
+          before: { status: dealer.status },
+          after: { status: 'DRAFT', reason },
+        });
+
+        await enqueueOutbox(tx, {
+          type: 'DealerChangesRequested',
+          aggregateType: 'Dealer',
+          aggregateId: dealerId,
+          dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'dealer-request-changes',
+          payload: { dealerId, reason },
+        });
+
+        return {
+          id: updated.id,
+          status: updated.status,
+          statusLabel: DEALER_STATUS_LABELS[updated.status],
+          creditsGranted: 0,
+          creditBalance: updated.creditBalance,
+          listingsAffected: 0,
+          notifiedAt: new Date().toISOString(),
+        };
+      });
+    },
+
+    /**
+     * D3 edit — the console amending a dealership's own answers.
+     *
+     * A moderator reading a GSTIN off a certificate can see that the dealer
+     * typed one digit wrong, and the alternative to fixing it here is a round
+     * trip that costs a working day to correct a character. So the console can
+     * write the same fields the dealer can.
+     *
+     * It goes through `dealers.update` rather than touching `prisma.dealer`
+     * directly, and that is the whole design: locality normalisation, the
+     * E.164 rewrite, the name-unique-within-a-city check and the `brandName`
+     * mirror are all rules about the *data*, not about who is editing it. An
+     * admin path with its own copy of them would be an admin path that drifts.
+     *
+     * The audit row is what the dealer path does not have, and is the reason
+     * this is not simply the same endpoint: an edit a dealer did not make must
+     * be attributable to the person who made it.
+     */
+    async updateDealer(
+      admin: AdminPrincipal,
+      dealerId: string,
+      input: UpdateDealerInput,
+    ): Promise<DealerProfile> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      const before = await prisma.dealer.findUnique({ where: { id: dealerId } });
+      if (!before) throw new NotFoundError('That dealership does not exist.');
+
+      const profile = await dealers.update(dealerId, input);
+
+      await audit.recordDetached({
+        actorType: 'ADMIN',
+        actorId: admin.userId,
+        dealerId,
+        action: 'dealer.updated',
+        entityType: 'Dealer',
+        entityId: dealerId,
+        before: {
+          legalName: before.legalName,
+          gstin: before.gstin,
+          pan: before.pan,
+          addressLine: before.addressLine,
+          city: before.city,
+          district: before.district,
+          state: before.state,
+          pincode: before.pincode,
+          mapsUrl: before.mapsUrl,
+          contactPhone: before.contactPhone,
+          contactEmail: before.contactEmail,
+          landline: before.landline,
+        },
+        // The fields the admin actually sent, rather than the whole row after
+        // the write: a diff nobody has to compute is a diff nobody gets wrong.
+        after: input,
+      });
+
+      return profile;
     },
 
     /** Suspension pulls every listing out of the catalogue immediately (D4). */
@@ -528,10 +822,18 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
       return this.setDealerStatus(admin, dealerId, 'ACTIVE', note ?? null, 'dealer.reinstated');
     },
 
+    /**
+     * The two reversible moves, in one function: suspend and reinstate.
+     *
+     * REJECTED is deliberately not reachable here any more. It used to be the
+     * third case, and that was what made rejection look like a status change —
+     * `rejectDealer` now destroys the application rather than labelling it, and
+     * the union below is narrowed so the old path cannot be walked by accident.
+     */
     async setDealerStatus(
       admin: AdminPrincipal,
       dealerId: string,
-      status: 'ACTIVE' | 'REJECTED' | 'SUSPENDED',
+      status: 'ACTIVE' | 'SUSPENDED',
       reason: string | null,
       action: string,
     ): Promise<DealerModerationResponse> {
@@ -567,12 +869,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         });
 
         await enqueueOutbox(tx, {
-          type:
-            status === 'SUSPENDED'
-              ? 'DealerSuspended'
-              : status === 'REJECTED'
-                ? 'DealerRejected'
-                : 'DealerReinstated',
+          type: status === 'SUSPENDED' ? 'DealerSuspended' : 'DealerReinstated',
           aggregateType: 'Dealer',
           aggregateId: dealerId,
           dealerId,
@@ -603,6 +900,33 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
       return this.reviewDocument(admin, documentId, 'VERIFIED', null);
     },
 
+    /**
+     * D5 reject — "send me this one again", not "you are not a dealership".
+     *
+     * This is the narrowest of the three refusals in the console and the
+     * distinction is load-bearing, because the word is the same and the
+     * consequence is not. Rejecting a *document* rejects a file: the scan is
+     * unreadable, or it is last year's electricity bill, or it is a photograph
+     * of the wrong page. The other two documents are untouched, the dealership
+     * is untouched, and the only thing being asked for is one upload.
+     *
+     * Two things follow from that, and both are done in `reviewDocument`:
+     *
+     *   · **The file is deleted from storage.** Keeping a rejected scan of
+     *     somebody's PAN card serves nothing — it will never be read again,
+     *     because the dealer is about to replace it — and KYC media is exactly
+     *     the category where "we still had a copy" is the wrong answer. The row
+     *     survives, because the checklist is three fixed rows, but it survives
+     *     empty: no file name, no media id, no readable object behind it. The
+     *     dealer sees the slot they saw before they ever uploaded, with the
+     *     reason underneath saying what to send instead.
+     *   · **The application is reopened.** A PENDING_APPROVAL dealership is
+     *     shown the "we are reviewing this" panel and no form, so a dealer told
+     *     to re-upload could not reach the upload box. The rejection therefore
+     *     returns the dealership to DRAFT — which is the same thing
+     *     `requestChanges` does, because it *is* a request for changes, scoped
+     *     to one document.
+     */
     async rejectDocument(
       admin: AdminPrincipal,
       documentId: string,
@@ -618,7 +942,9 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
       status: 'VERIFIED' | 'REJECTED',
       reason: string | null,
     ): Promise<VerifyDocumentResponse> {
-      return withTransaction(prisma, async (tx) => {
+      const rejecting = status === 'REJECTED';
+
+      const outcome = await withTransaction(prisma, async (tx) => {
         const doc = await tx.dealerDocument.findUnique({ where: { id: documentId } });
         if (!doc) throw new NotFoundError('That document does not exist.');
 
@@ -629,12 +955,46 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
             rejectionReason: reason,
             reviewedBy: admin.userId,
             reviewedAt: new Date(),
+            // A rejected document keeps its row and loses its file. Clearing
+            // these two is what makes the dealer's checklist render an empty
+            // slot rather than a file name they can no longer open.
+            ...(rejecting ? { fileName: null, mediaId: null } : {}),
           },
         });
 
         const all = await tx.dealerDocument.findMany({ where: { dealerId: doc.dealerId } });
         const allVerified =
           all.length === REQUIRED_DOCUMENTS && all.every((row) => row.status === 'VERIFIED');
+
+        /*
+         * Hand the application back so the re-upload is possible at all.
+         *
+         * Scoped to PENDING_APPROVAL: a DRAFT dealership is already editable,
+         * and an ACTIVE one is not in the onboarding flow — a document
+         * rejection against a trading dealership is a compliance matter for
+         * suspension to answer, not a reason to drop it back into onboarding.
+         */
+        const dealer = await tx.dealer.findUnique({ where: { id: doc.dealerId } });
+        const returnToDraft = rejecting && dealer?.status === 'PENDING_APPROVAL';
+        if (returnToDraft) {
+          await tx.dealer.update({
+            where: { id: doc.dealerId },
+            data: {
+              status: 'DRAFT',
+              statusReason: `${DOC_TYPE_LABELS[doc.type]}: ${reason ?? 'Please upload it again.'}`,
+            },
+          });
+
+          await enqueueOutbox(tx, {
+            type: 'DealerChangesRequested',
+            aggregateType: 'Dealer',
+            aggregateId: doc.dealerId,
+            dealerId: doc.dealerId,
+            actor: { type: 'ADMIN', id: admin.userId },
+            traceId: getContext()?.traceId ?? 'document-rejected',
+            payload: { dealerId: doc.dealerId, documentType: doc.type, reason },
+          });
+        }
 
         await audit.record(tx, {
           actorType: 'ADMIN',
@@ -643,12 +1003,35 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
           action: status === 'VERIFIED' ? 'document.verified' : 'document.rejected',
           entityType: 'DealerDocument',
           entityId: documentId,
-          before: { status: doc.status },
-          after: { status, reason },
+          before: { status: doc.status, fileName: doc.fileName },
+          after: { status, reason, fileDeleted: rejecting, dealerReturnedToDraft: returnToDraft },
         });
 
-        return { status, allVerified, dealerCanBeApproved: allVerified };
+        return {
+          key: documentKey(doc.dealerId, doc.type, doc.id),
+          allVerified,
+          dealerReturnedToDraft: returnToDraft,
+        };
       });
+
+      /*
+       * The bytes go after the transaction commits, not inside it.
+       *
+       * Object storage cannot be rolled back. Deleting first and then failing
+       * to commit would leave a row saying UPLOADED with nothing behind it —
+       * the one state the dealer cannot recover from, because the checklist
+       * would offer "Replace" for a file that is not there. Doing it this way
+       * risks the opposite and much cheaper failure: an object nothing points
+       * at, which a sweeper reconciles.
+       */
+      if (rejecting) await storage.delete(outcome.key);
+
+      return {
+        status,
+        allVerified: outcome.allVerified,
+        dealerCanBeApproved: outcome.allVerified,
+        dealerReturnedToDraft: outcome.dealerReturnedToDraft,
+      };
     },
   };
 }

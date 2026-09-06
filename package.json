@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint -- --fix",
+    "lint": "pnpm format:check && turbo run lint && pnpm docs:check",
+    "lint:fix": "pnpm format && turbo run lint -- --fix",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "sandbox": "pnpm --filter @dealers-drive/sandbox sandbox",

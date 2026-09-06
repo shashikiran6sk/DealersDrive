@@ -46,6 +46,10 @@ interface Options {
    */
   dealerRows?: Record<string, unknown>[];
   grouped?: { status: string; _count: { _all: number } }[];
+  /** The dealership's `media` rows — the yard photograph, and a logo if any. */
+  media?: { storageKey: string }[];
+  /** Storage keys whose delete rejects, so the purge's tolerance is testable. */
+  missingKeys?: string[];
 }
 
 const DEALER = '4bafe791-892d-4696-8309-ee23f172211b';
@@ -85,6 +89,10 @@ function setup(options: Options = {}) {
   const detachedAudits: Record<string, unknown>[] = [];
   const outbox: Record<string, unknown>[] = [];
   const signedUrls: string[] = [];
+  const deletedKeys: string[] = [];
+  const deletedDealers: unknown[] = [];
+  const deletedMedia: unknown[] = [];
+  const dealerPatches: { dealerId: string; input: unknown }[] = [];
 
   const resolveDealer = () =>
     Promise.resolve(options.dealer === null ? null : dealerRow(options.dealer ?? {}));
@@ -112,6 +120,22 @@ function setup(options: Options = {}) {
         return Promise.resolve({});
       },
     },
+    media: {
+      deleteMany: (args: unknown) => {
+        deletedMedia.push(args);
+        return Promise.resolve({ count: (options.media ?? []).length });
+      },
+    },
+  };
+
+  // `delete` only exists on the transaction handle, and only rejection calls
+  // it. Assigning it here rather than in the literal keeps the shape above
+  // readable while still letting `tx.dealer.delete` be recorded.
+  (tx.dealer as unknown as { delete: (args: unknown) => Promise<unknown> }).delete = (
+    args: unknown,
+  ) => {
+    deletedDealers.push(args);
+    return Promise.resolve({});
   };
 
   const prisma = {
@@ -126,6 +150,9 @@ function setup(options: Options = {}) {
       },
       findUnique: resolveDealer,
       groupBy: () => Promise.resolve(options.grouped ?? []),
+    },
+    media: {
+      findMany: () => Promise.resolve(options.media ?? []),
     },
     $transaction: <T>(work: (handle: typeof tx) => Promise<T>) => work(tx),
   } as unknown as PrismaClient;
@@ -150,10 +177,33 @@ function setup(options: Options = {}) {
       signedUrls.push(key);
       return Promise.resolve(`https://storage.test/private/${key}?signed`);
     },
+    delete: (key: string) => {
+      deletedKeys.push(key);
+      // A key the option names as already gone rejects, which is what the
+      // purge's `allSettled` exists to survive.
+      return options.missingKeys?.includes(key)
+        ? Promise.reject(new Error('NoSuchKey'))
+        : Promise.resolve();
+    },
   } as unknown as StoragePort;
 
+  /**
+   * The dealer service, as the admin service sees it: one method.
+   *
+   * `updateDealer` delegates the whole write — normalisation, the duplicate
+   * check, the `brandName` mirror — so what this unit can assert is that the
+   * console hands the input over unchanged and audits the result. That the
+   * write itself is right is `dealers.service`'s own test.
+   */
+  const dealers = {
+    update: (dealerId: string, input: unknown) => {
+      dealerPatches.push({ dealerId, input });
+      return Promise.resolve({ id: dealerId, legalName: 'Sri Lakshmi Motors Pvt Ltd' });
+    },
+  } as unknown as Parameters<typeof createAdminService>[0]['dealers'];
+
   return {
-    service: createAdminService({ prisma, audit, config, storage }),
+    service: createAdminService({ prisma, audit, config, storage, dealers }),
     dealerQueries,
     documentUpdates,
     dealerUpdates,
@@ -161,6 +211,10 @@ function setup(options: Options = {}) {
     detachedAudits,
     outbox,
     signedUrls,
+    deletedKeys,
+    deletedDealers,
+    deletedMedia,
+    dealerPatches,
   };
 }
 
@@ -393,6 +447,70 @@ describe('the KYC review', () => {
 
     await expect(h.service.verifyDocument(moderator, 'doc-1')).rejects.toThrow(NotFoundError);
     expect([h.documentUpdates, h.auditRows]).toEqual([[], []]);
+  });
+
+  /**
+   * Rejecting a document rejects a **file**, and the file goes.
+   *
+   * A rejected scan of somebody's PAN card will never be read again — the
+   * dealer is about to replace it — and KYC media is exactly the category where
+   * "we still had a copy" is the wrong answer. The row survives because the
+   * checklist is three fixed rows; it survives empty, which is what makes the
+   * dealer's screen show the slot they saw before they ever uploaded.
+   */
+  it('deletes the rejected file and empties the row of it', async () => {
+    const h = setup({ siblings: [] });
+
+    await h.service.rejectDocument(moderator, 'doc-1', 'Too blurry to read.');
+
+    expect(h.deletedKeys).toEqual(['kyc/dealer-1/GST_CERTIFICATE/doc-1']);
+    expect(h.documentUpdates[0]?.data).toMatchObject({ fileName: null, mediaId: null });
+  });
+
+  /** Verifying keeps the file. It is the one a moderator may want to look at again. */
+  it('leaves a verified document\u2019s file where it is', async () => {
+    const h = setup({ siblings: ALL_VERIFIED });
+
+    await h.service.verifyDocument(moderator, 'doc-1');
+
+    expect(h.deletedKeys).toEqual([]);
+    expect(h.documentUpdates[0]?.data.fileName).toBeUndefined();
+  });
+
+  /**
+   * The dealer has to be able to reach the upload box they are being sent to.
+   *
+   * A PENDING_APPROVAL dealership is shown the "we are reviewing this" panel
+   * and no form, so a document rejection that left the status alone would be an
+   * instruction the dealer could not follow.
+   */
+  it('reopens a PENDING_APPROVAL application, naming the document', async () => {
+    const h = setup({
+      siblings: [],
+      dealer: dealerRow({ status: 'PENDING_APPROVAL' }),
+    });
+
+    const result = await h.service.rejectDocument(moderator, 'doc-1', 'Too blurry to read.');
+
+    expect(h.dealerUpdates[0]?.data).toMatchObject({
+      status: 'DRAFT',
+      statusReason: 'GST certificate: Too blurry to read.',
+    });
+    expect(h.outbox[0]?.eventType).toBe('DealerChangesRequested');
+    expect(result.dealerReturnedToDraft).toBe(true);
+  });
+
+  /**
+   * An ACTIVE dealership is not in the onboarding flow, and a DRAFT one is
+   * already editable. Neither is dropped back into a state it is not in.
+   */
+  it.each(['DRAFT', 'ACTIVE'])('leaves a %s dealership where it is', async (status) => {
+    const h = setup({ siblings: [], dealer: dealerRow({ status }) });
+
+    const result = await h.service.rejectDocument(moderator, 'doc-1', 'Too blurry to read.');
+
+    expect(h.dealerUpdates).toEqual([]);
+    expect(result.dealerReturnedToDraft).toBe(false);
   });
 });
 
@@ -859,17 +977,6 @@ describe('setDealerStatus and its wrappers', () => {
     expect(h.dealerUpdates[0]?.data.statusReason).toBeNull();
   });
 
-  it('rejects with the reason recorded', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
-
-    await h.service.rejectDealer(admin, DEALER, 'GSTIN does not match.');
-
-    expect(h.dealerUpdates[0]?.data).toMatchObject({
-      status: 'REJECTED',
-      statusReason: 'GSTIN does not match.',
-    });
-  });
-
   /** A suspension is not a rejection, and the handlers downstream tell them apart. */
   it('publishes the event matching the new status', async () => {
     const suspended = setup({ dealer: dealerRow({ status: 'ACTIVE' }) });
@@ -904,5 +1011,273 @@ describe('setDealerStatus and its wrappers', () => {
       NotFoundError,
     );
     expect([h.dealerUpdates, h.auditRows, h.outbox]).toEqual([[], [], []]);
+  });
+});
+
+/**
+ * Rejection is a **purge**, and these are the tests that keep it one.
+ *
+ * The behaviour is destructive on purpose — a rejected application leaves no
+ * scans of anybody's PAN card in a bucket and no dealership row to sign back
+ * into — so the assertions are about what is *gone*, and about the two facts
+ * that make it safe: the audit row is written before the delete and outlives it,
+ * and an approved dealership cannot be reached this way at all.
+ */
+describe('rejectDealer', () => {
+  const documents = [
+    { id: 'doc-gst', type: 'GST_CERTIFICATE', status: 'UPLOADED' },
+    { id: 'doc-pan', type: 'PAN_CARD', status: 'VERIFIED' },
+    { id: 'doc-addr', type: 'ADDRESS_PROOF', status: 'UPLOADED' },
+  ];
+
+  function pending(overrides: Record<string, unknown> = {}) {
+    return { dealer: dealerRow({ status: 'PENDING_APPROVAL', documents, ...overrides }) };
+  }
+
+  it('deletes every KYC scan and the yard photograph from storage', async () => {
+    const h = setup({
+      ...pending(),
+      media: [{ storageKey: `dealers/${DEALER}/yard/media-1` }],
+    });
+
+    const result = await h.service.rejectDealer(admin, DEALER, 'Not a dealership.');
+
+    expect(h.deletedKeys).toEqual([
+      `kyc/${DEALER}/GST_CERTIFICATE/doc-gst`,
+      `kyc/${DEALER}/PAN_CARD/doc-pan`,
+      `kyc/${DEALER}/ADDRESS_PROOF/doc-addr`,
+      `dealers/${DEALER}/yard/media-1`,
+    ]);
+    expect(result).toMatchObject({ documentsDeleted: 3, objectsDeleted: 4 });
+  });
+
+  /**
+   * The row is what the applicant signs back into. Leaving it — even blanked —
+   * would put them at the "we are reviewing this" panel forever; removing it
+   * means the next sign-in finds no membership and starts onboarding afresh.
+   */
+  it('deletes the dealership row and its media rows', async () => {
+    const h = setup(pending());
+
+    await h.service.rejectDealer(admin, DEALER, 'Not a dealership.');
+
+    expect(h.deletedDealers).toEqual([{ where: { id: DEALER } }]);
+    expect(h.deletedMedia).toEqual([{ where: { dealerId: DEALER } }]);
+    expect(h.dealerUpdates).toEqual([]);
+  });
+
+  /**
+   * `audit_logs.dealerId` is a column and not a foreign key, which is what lets
+   * the record outlive the dealership. The `before` block is therefore the only
+   * surviving description of what was destroyed, so it carries the whole row.
+   */
+  it('audits what was destroyed before destroying it', async () => {
+    const h = setup(pending());
+
+    await h.service.rejectDealer(admin, DEALER, 'The GSTIN belongs to a different business.');
+
+    expect(h.auditRows[0]).toMatchObject({
+      actorType: 'ADMIN',
+      actorId: 'admin-1',
+      action: 'dealer.rejected',
+      entityType: 'Dealer',
+      before: {
+        status: 'PENDING_APPROVAL',
+        gstin: '33AABCS1429B1ZX',
+        legalName: 'Sri Lakshmi Motors Pvt Ltd',
+      },
+      after: { purged: true, reason: 'The GSTIN belongs to a different business.' },
+    });
+  });
+
+  /**
+   * The event carries ids and the reason, and no PII — the rule the whole
+   * outbox follows, and it matters more here than anywhere: the table is
+   * durable and outlives the row it describes, so an applicant's name and email
+   * sitting in it is exactly what the rejection was supposed to remove.
+   */
+  it('publishes the rejection with ids and the reason, and no PII', async () => {
+    const h = setup(pending());
+
+    await h.service.rejectDealer(admin, DEALER, 'Address proof is illegible.');
+
+    expect(h.outbox[0]).toMatchObject({ eventType: 'DealerRejected' });
+    expect((h.outbox[0]?.payload as { payload: unknown }).payload).toEqual({
+      dealerId: DEALER,
+      reason: 'Address proof is illegible.',
+    });
+  });
+
+  /**
+   * A document row whose upload never completed has no object behind it. That
+   * must not abort the purge and leave the dealership half-destroyed — an
+   * object left in the bucket is reconcilable, a `dealers` row left behind is a
+   * rejected applicant who can still sign in.
+   */
+  it('finishes the purge when an object is already gone', async () => {
+    const h = setup({
+      ...pending(),
+      missingKeys: [`kyc/${DEALER}/PAN_CARD/doc-pan`],
+    });
+
+    const result = await h.service.rejectDealer(admin, DEALER, 'Not a dealership.');
+
+    expect(result.objectsDeleted).toBe(2);
+    expect(h.deletedDealers).toHaveLength(1);
+  });
+
+  /**
+   * The one guard that makes the destruction reasonable to allow at all: only
+   * an application that has never been approved can be thrown away, so there is
+   * never a listing, a payment or a buyer's enquiry hanging off the row.
+   */
+  it.each(['ACTIVE', 'SUSPENDED'])('refuses to purge a %s dealership', async (status) => {
+    const h = setup({ dealer: dealerRow({ status, documents }) });
+
+    await expect(h.service.rejectDealer(admin, DEALER, 'Not a dealership.')).rejects.toThrow(
+      /suspended, not rejected/,
+    );
+    expect([h.deletedKeys, h.deletedDealers, h.auditRows]).toEqual([[], [], []]);
+  });
+
+  it('404s a dealership that does not exist, and deletes nothing', async () => {
+    const h = setup({ dealer: null });
+
+    await expect(h.service.rejectDealer(admin, DEALER, 'Not a dealership.')).rejects.toThrow(
+      NotFoundError,
+    );
+    expect([h.deletedKeys, h.deletedDealers]).toEqual([[], []]);
+  });
+});
+
+/**
+ * Request changes — the reversible refusal, and the one a moderator reaches for
+ * far more often than rejection.
+ *
+ * Everything about it is the opposite of the purge above: nothing is deleted,
+ * the reason is attached rather than only logged, and the dealership comes back
+ * to the queue under its own steam. The tests say so explicitly, because the
+ * two controls sit next to each other in the console and the difference between
+ * them is a real business's whole application.
+ */
+describe('requestChanges', () => {
+  it('hands the application back as DRAFT with the reason attached', async () => {
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+
+    const result = await h.service.requestChanges(admin, DEALER, 'Send a recent address proof.');
+
+    expect(h.dealerUpdates[0]?.data).toMatchObject({
+      status: 'DRAFT',
+      statusReason: 'Send a recent address proof.',
+    });
+    expect(result.status).toBe('DRAFT');
+  });
+
+  it('deletes nothing', async () => {
+    const h = setup({
+      dealer: dealerRow({ status: 'PENDING_APPROVAL' }),
+      media: [{ storageKey: `dealers/${DEALER}/yard/media-1` }],
+    });
+
+    await h.service.requestChanges(admin, DEALER, 'Send a recent address proof.');
+
+    expect([h.deletedKeys, h.deletedDealers, h.deletedMedia]).toEqual([[], [], []]);
+  });
+
+  it('audits and publishes it as its own decision', async () => {
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+
+    await h.service.requestChanges(admin, DEALER, 'Send a recent address proof.');
+
+    expect(h.auditRows[0]).toMatchObject({
+      action: 'dealer.changes_requested',
+      before: { status: 'PENDING_APPROVAL' },
+      after: { status: 'DRAFT', reason: 'Send a recent address proof.' },
+    });
+    expect(h.outbox[0]?.eventType).toBe('DealerChangesRequested');
+  });
+
+  /**
+   * From DRAFT the dealer can already edit everything, and from ACTIVE the
+   * dealership is not in the onboarding flow at all — sending either back would
+   * be a state change with no meaning behind it.
+   */
+  it.each(['DRAFT', 'ACTIVE', 'SUSPENDED'])(
+    'refuses to send back a %s dealership',
+    async (status) => {
+      const h = setup({ dealer: dealerRow({ status }) });
+
+      await expect(h.service.requestChanges(admin, DEALER, 'Fix the address.')).rejects.toThrow(
+        /waiting for a decision/,
+      );
+      expect(h.dealerUpdates).toEqual([]);
+    },
+  );
+
+  it('refuses without admin:dealer:approve', async () => {
+    const support = {
+      ...admin,
+      permissions: ['admin:metrics:read'],
+    } as unknown as AdminPrincipal;
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+
+    await expect(h.service.requestChanges(support, DEALER, 'Fix the address.')).rejects.toThrow(
+      ForbiddenError,
+    );
+    expect(h.dealerUpdates).toEqual([]);
+  });
+});
+
+/**
+ * D3 edit — the console amending a dealership's own answers.
+ *
+ * The write itself is `dealers.update`'s, and deliberately so: normalisation,
+ * the E.164 rewrite and the duplicate check are rules about the data, not about
+ * who is editing it. What this unit owns is the two things the dealer path does
+ * not have — the permission, and an audit row naming the admin.
+ */
+describe('updateDealer', () => {
+  const patch = { gstin: '33AABCS1429B1ZY' };
+
+  it('delegates the write to the dealer service, unchanged', async () => {
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+
+    await h.service.updateDealer(admin, DEALER, patch);
+
+    expect(h.dealerPatches).toEqual([{ dealerId: DEALER, input: patch }]);
+  });
+
+  /** An edit the dealer did not make has to be attributable to whoever made it. */
+  it('audits the edit against the admin, with what was there before', async () => {
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+
+    await h.service.updateDealer(admin, DEALER, patch);
+
+    expect(h.detachedAudits[0]).toMatchObject({
+      actorType: 'ADMIN',
+      actorId: 'admin-1',
+      action: 'dealer.updated',
+      entityType: 'Dealer',
+      before: { gstin: '33AABCS1429B1ZX' },
+      after: patch,
+    });
+  });
+
+  it('refuses without admin:dealer:approve, and writes nothing', async () => {
+    const support = {
+      ...admin,
+      permissions: ['admin:metrics:read'],
+    } as unknown as AdminPrincipal;
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+
+    await expect(h.service.updateDealer(support, DEALER, patch)).rejects.toThrow(ForbiddenError);
+    expect([h.dealerPatches, h.detachedAudits]).toEqual([[], []]);
+  });
+
+  it('404s a dealership that does not exist', async () => {
+    const h = setup({ dealer: null });
+
+    await expect(h.service.updateDealer(admin, DEALER, patch)).rejects.toThrow(NotFoundError);
+    expect(h.dealerPatches).toEqual([]);
   });
 });

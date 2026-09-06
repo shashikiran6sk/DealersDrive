@@ -28,6 +28,7 @@ import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { DealerPrincipal } from '../auth/auth.facade.js';
+import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 
 /**
@@ -73,16 +74,6 @@ const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROO
  * the rest of the application.
  */
 const YARD_PHOTO_URL_TTL_SECONDS = 300;
-
-/** Where a yard photograph lives. Not under `kyc/`: it is not a KYC document. */
-function yardPhotoKey(dealerId: string, mediaId: string): string {
-  return `dealers/${dealerId}/yard/${mediaId}`;
-}
-
-/** Where a KYC document lives. The row's id is the last segment. */
-function documentKey(dealerId: string, type: DealerDocType, documentId: string): string {
-  return `kyc/${dealerId}/${type}/${documentId}`;
-}
 
 export function createDealersService({ prisma, repo, storage }: DealersDeps) {
   function toProfile(dealer: DealerWithRelations): DealerProfile {
@@ -495,7 +486,17 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
 
       const submittedAt = new Date();
       await withTransaction(prisma, async (tx) => {
-        await repo.update(dealerId, { status: 'PENDING_APPROVAL' }, tx);
+        /*
+         * `statusReason` is cleared on the way back into the queue.
+         *
+         * It is set when an admin sends an application back for changes, and
+         * the onboarding screen reads it two ways: as the banner explaining
+         * what to fix, and — since it is the only mark distinguishing a
+         * returned application from one that was never finished — as the signal
+         * to reopen at step one. Leaving it behind would show the dealer a
+         * complaint they have already answered.
+         */
+        await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await enqueueOutbox(tx, {
           type: 'DealerApplied',
           aggregateType: 'Dealer',
