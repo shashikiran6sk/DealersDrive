@@ -8,7 +8,7 @@ import type {
   YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Banner, Blueprint, StatusTag, Stepper } from '@/components/ui/primitives';
@@ -132,14 +132,21 @@ export function OnboardingWizard({
    * reads "that mobile number is already registered" while looking at the city
    * and pincode boxes.
    *
-   * It runs in an effect rather than during render because `useActionState`
-   * delivers the result *as* a render, and moving the step is a state change —
-   * doing it inline would be a set during render. `state` is a fresh object per
-   * submission, so this fires once per answer and not on every keystroke.
+   * Adjusted *during* render, on the render that first sees a new `state`,
+   * rather than in an effect. `useActionState` delivers the answer as a render,
+   * and React re-runs this component immediately on a set made this way — so
+   * the message and the step change land in one paint. An effect would commit
+   * the error against a hidden fieldset first and move on the next frame, and
+   * that gap is real: it is exactly what the test on a slow machine sees.
+   *
+   * `answered` is what makes it fire once per submission instead of on every
+   * render: `state` is a fresh object each time the action resolves.
    */
-  useEffect(() => {
+  const [answered, setAnswered] = useState(state);
+  if (answered !== state) {
+    setAnswered(state);
     if (Object.keys(state.errors ?? {}).some((field) => ACCOUNT_FIELDS.has(field))) setLocal(0);
-  }, [state]);
+  }
 
   const current = step >= 2 ? step : local;
 
