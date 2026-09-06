@@ -413,6 +413,8 @@ export const registry: RegistryEntry[] = [
       'Business',
       'Business (with description)',
       'Business (name taken)',
+      'Changes requested',
+      'Changes requested (multiline)',
       'Documents',
       'Documents (complete)',
       'Review',

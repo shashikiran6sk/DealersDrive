@@ -209,10 +209,14 @@ export const AccountPrefilled: Story = {
  * unique **within its city**, so both halves of that pair are on this step and
  * the check is the submit. `BusinessNameTaken` below is that refusal.
  *
- * The Google Maps link is the last field, spanning both columns. A typed
- * address is not a location — "18, Gandhi Road" is four pins in one district —
- * so the dealer is asked for the one that is their gate, and the public
- * portfolio's "Get directions" is an anchor to exactly this string.
+ * The Google Maps link spans both columns. A typed address is not a location —
+ * "18, Gandhi Road" is four pins in one district — so the dealer is asked for
+ * the one that is their gate, and the public portfolio's "Get directions" is an
+ * anchor to exactly this string.
+ *
+ * The description is the last field, and on this story it is empty. Press
+ * Continue to watch it refuse: it is required, with a 20-character floor. See
+ * `BusinessWithDescription` for what it looks like filled in.
  *
  * Continue here is the submit. Press it to watch the ~1s "Creating your
  * dealership…" state — nothing is written before that press, which is why a
@@ -225,15 +229,17 @@ export const Business: Story = { args: { step: 1 } };
  * dealer's own answer — which is what `Back` from the Documents step lands on.
  *
  * The field to look at is **About your dealership**, the last one and the only
- * optional field on the step that is not a phone number. It is the paragraph
- * the public portfolio runs under the yard photograph, and it is asked for here
- * because this is the one moment a dealer is already describing their business;
- * a profile screen offered later is a screen most of them never open.
+ * multi-line box on the step. It is the paragraph the public portfolio runs
+ * under the yard photograph, and it is asked for here because this is the one
+ * moment a dealer is already describing their business; a profile screen
+ * offered later is a screen most of them never open.
  *
- * It is deliberately not required. The address and the Maps link are how a
- * buyer arrives, so a dealership missing one of those is not ready to be seen —
- * this is editorial, `DealerProfile.about` is nullable, and a dealer who cannot
- * think of a sentence today must not be held out of the review queue by it.
+ * Required, like everything else on this step. The portfolio is the page a
+ * dealership is judged on before anybody drives anywhere, and one with a
+ * photograph, a pin and no sentence reads as an unfinished listing rather than
+ * a business. Compare with `Business` above, where the box is empty: the floor
+ * is 20 characters rather than 1, because a required box with no minimum is
+ * satisfied by `-`.
  */
 export const BusinessWithDescription: Story = {
   args: {
@@ -251,6 +257,58 @@ export const BusinessWithDescription: Story = {
         mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
       },
       contact: { landline: '0416 224 8890' },
+    } as DealerProfile,
+  },
+};
+
+/**
+ * What a dealer sees after a moderator presses **Request changes**.
+ *
+ * `statusReason` is only ever set on a DRAFT dealership by one of two things —
+ * that button, or a rejected document — so its presence is what distinguishes
+ * an application that was looked at and handed back from one that was never
+ * finished. Nothing was deleted; that is what the sentence under the note is
+ * for, and it is why *reject* is a different control with a different outcome.
+ *
+ * **The note is set apart from the sentence below it**, and that is the point
+ * of this story. It was a bare paragraph in the same size and weight as the
+ * reassurance under it — two equal-looking paragraphs, only one of which is
+ * actionable. This is the single line on the screen that a person wrote about
+ * *this* dealership, so it is the line that has to survive being skimmed: a
+ * rule down the left, drawn from `currentColor` so it stays legible in whatever
+ * the banner's tone resolves to, and a heavier weight.
+ *
+ * The banner rides above the stepper on every step, not just the first,
+ * because the thing that needs fixing may be three steps along and a banner
+ * that scrolls away with the step is a banner the dealer reads once.
+ */
+export const ChangesRequested: Story = {
+  args: {
+    step: 0,
+    dealer: {
+      status: 'DRAFT',
+      statusReason:
+        'The address on your GST certificate is in Gudiyatham, but the yard address you entered is in Katpadi. Please correct whichever one is wrong.',
+    } as DealerProfile,
+  },
+};
+
+/**
+ * The same banner carrying two problems rather than one.
+ *
+ * A moderator listing two things types them on two lines, so the note renders
+ * `whitespace-pre-line` — a paragraph that silently reflows a numbered list
+ * into one run-on sentence is a paragraph a dealer half-reads and answers half
+ * of. Worth looking at beside `ChangesRequested` above: the accent rule is what
+ * keeps a note this long from reading as body copy.
+ */
+export const ChangesRequestedMultiline: Story = {
+  args: {
+    step: 0,
+    dealer: {
+      status: 'DRAFT',
+      statusReason:
+        '1. The GST certificate is a photograph of a screen and the number is not legible.\n2. Your Maps pin is on the main road rather than on the yard itself.',
     } as DealerProfile,
   },
 };
@@ -402,7 +460,7 @@ export const Documents: Story = {
   args: {
     step: 2,
     completeness: completeness({
-      business: ['gstin', 'pan'],
+      business: ['about', 'gstin', 'pan'],
       documents: ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF', 'YARD_PHOTO'],
     }),
   },

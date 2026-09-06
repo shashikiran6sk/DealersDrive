@@ -121,7 +121,20 @@ export const UpdateDealerInput = z
      */
     legalName: z.string().trim().min(2).max(160).optional(),
     tagline: z.string().trim().max(200).optional(),
-    about: z.string().trim().max(4000).optional(),
+    /**
+     * Optional here because this schema is a partial patch — a step that does
+     * not carry the description must not be read as clearing it. But it may
+     * not be *emptied*: the same 20-character floor `OnboardingInput` applies
+     * holds when the field is present, so a dealer cannot delete on the
+     * profile screen what onboarding insisted on, and neither can a moderator
+     * clearing the box on the review screen.
+     */
+    about: z
+      .string()
+      .trim()
+      .min(20, 'Tell buyers about your dealership \u2014 a sentence or two.')
+      .max(4000)
+      .optional(),
     gstin: GSTIN.optional(),
     pan: PAN.optional(),
     establishedYear: z.number().int().min(1900).max(2100).optional(),
