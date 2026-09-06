@@ -11,6 +11,8 @@ import { Banner } from '@/components/ui/primitives';
 import {
   approveDealerAction,
   reinstateDealerAction,
+  rejectDealerAction,
+  requestDealerChangesAction,
   suspendDealerAction,
 } from '@/features/admin/actions';
 
@@ -40,6 +42,21 @@ import {
  * **Reinstate is here for the same reason.** SUSPENDED is not a terminal state
  * and the console should not present it as one.
  *
+ * **The two refusals are separated, and separated hard.** They were one word —
+ * "reject" — doing two jobs, and the console offered neither. *Request changes*
+ * hands the application back to the dealer as DRAFT with a note: nothing is
+ * deleted, every field they typed is still there, and they fix the one thing
+ * and resubmit. *Reject* deletes the application — scans, yard photograph,
+ * documents, membership and the dealership row — and the applicant starts over
+ * as a first-time signup. An unreadable GST certificate calls for the first;
+ * answering it with the second costs a real business everything they entered.
+ *
+ * So the two do not look alike. Request changes is an ordinary control sitting
+ * where a moderator will reach it. Reject is behind a disclosure, states what it
+ * destroys in the sentence above the button, and needs the dealership's own name
+ * typed to confirm — the same shape as any other irreversible delete, for the
+ * same reason: the cost of a mis-click here is somebody else's business.
+ *
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline renders a third block here — a standalone credit grant, gated on
  * `actions.canGrantCredits` — and an onboarding-credits field inside the
@@ -59,12 +76,27 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
   const [approvalNote, setApprovalNote] = useState('');
   const [suspendReason, setSuspendReason] = useState('');
   const [reinstateNote, setReinstateNote] = useState('');
+  const [changesReason, setChangesReason] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectConfirm, setRejectConfirm] = useState('');
+  const [rejectOpen, setRejectOpen] = useState(false);
 
   // Waiting for a decision. The button appears on this; whether it is *usable*
   // is `canApprove`, which additionally wants the KYC documents verified.
   const awaitingDecision = dealer.status === 'PENDING_APPROVAL';
 
-  function run(work: () => Promise<{ ok: boolean; message?: string }>, success: string) {
+  function run(
+    work: () => Promise<{ ok: boolean; message?: string }>,
+    success: string,
+    /**
+     * Where to go afterwards, when refreshing is not an option.
+     *
+     * Rejection deletes the dealership, so this page is a 404 the moment it
+     * succeeds — `router.refresh()` would replace the confirmation with a
+     * not-found screen and leave the moderator wondering what happened.
+     */
+    destination?: string,
+  ) {
     setError(null);
     setNotice(null);
     startTransition(async () => {
@@ -74,7 +106,8 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
         return;
       }
       setNotice(success);
-      router.refresh();
+      if (destination) router.push(destination);
+      else router.refresh();
     });
   }
 
@@ -126,6 +159,48 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
               Approving makes this dealer&rsquo;s listings eligible to appear publicly.
             </p>
           )}
+        </div>
+      ) : null}
+
+      {/*
+        The reversible refusal, immediately under approve — because those two
+        are the decisions a moderator actually makes on this screen. Nothing is
+        deleted: the dealer gets their own form back, filled in, with this
+        sentence at the top of it.
+      */}
+      {dealer.actions.canRequestChanges ? (
+        <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
+          <Field
+            id="changesReason"
+            label="What the dealer needs to change"
+            className="min-w-[240px] flex-1"
+          >
+            <Input
+              id="changesReason"
+              value={changesReason}
+              onChange={(event) => setChangesReason(event.target.value)}
+              placeholder="Shown to the dealer verbatim — say exactly what to fix"
+            />
+          </Field>
+          <Button
+            variant="secondary"
+            size="md"
+            loading={pending}
+            disabled={changesReason.trim().length < 6}
+            onClick={() =>
+              run(
+                () =>
+                  requestDealerChangesAction(dealer.id, { reason: changesReason.trim() }),
+                'Sent back to the dealer for changes.',
+              )
+            }
+          >
+            Request changes
+          </Button>
+          <p className="w-full text-[12px] ink-muted">
+            Reopens their application as a draft with everything they entered still in it. They
+            correct what you named here and submit again. Nothing is deleted.
+          </p>
         </div>
       ) : null}
 
@@ -194,16 +269,103 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
       ) : null}
 
       {/*
-        With grants deferred to F054, a DRAFT or REJECTED dealership has nothing
-        to decide — and a card rendering a bare heading reads as a rendering bug
-        rather than as "nothing to do here".
+        Reject — and it is a delete, so it is shaped like one.
+
+        Behind a disclosure rather than beside "Request changes", because the
+        two words read as neighbours and the outcomes are not: one asks for a
+        clearer photograph, the other removes a business's entire application
+        from the platform. What it destroys is spelt out in full before the
+        control appears, and the dealership's own name has to be typed — the
+        standard confirmation for an irreversible delete, and warranted here for
+        the standard reason: the thing being destroyed is somebody else's.
       */}
-      {!awaitingDecision && !dealer.actions.canSuspend && !dealer.actions.canReinstate ? (
+      {dealer.actions.canReject ? (
+        <div className="flex flex-col gap-2 border-t border-(--color-divider) pt-3">
+          {rejectOpen ? (
+            <>
+              <p className="text-[13px] font-medium text-(--color-err)">
+                Rejecting deletes this application permanently.
+              </p>
+              <p className="text-[12px] ink-muted">
+                The {dealer.documents.length} KYC document
+                {dealer.documents.length === 1 ? '' : 's'} and the yard photo are erased from
+                storage, and the dealership record is removed along with everything{' '}
+                {dealer.contactName ?? 'the applicant'} entered. They keep their Google sign-in and
+                nothing else — signing in again starts onboarding from the first step, as a new
+                applicant. This cannot be undone.
+              </p>
+              <p className="text-[12px] ink-muted">
+                If you only need something corrected, use <strong>Request changes</strong> above
+                instead — it keeps everything.
+              </p>
+
+              <Field id="rejectReason" label="Reason" className="flex-1">
+                <Input
+                  id="rejectReason"
+                  value={rejectReason}
+                  onChange={(event) => setRejectReason(event.target.value)}
+                  placeholder="Shown to the dealer verbatim"
+                />
+              </Field>
+
+              <Field
+                id="rejectConfirm"
+                label={`Type "${dealer.brandName}" to confirm`}
+                className="flex-1"
+              >
+                <Input
+                  id="rejectConfirm"
+                  value={rejectConfirm}
+                  onChange={(event) => setRejectConfirm(event.target.value)}
+                  placeholder={dealer.brandName}
+                  autoComplete="off"
+                />
+              </Field>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="destructive"
+                  size="md"
+                  loading={pending}
+                  disabled={
+                    rejectReason.trim().length < 6 ||
+                    rejectConfirm.trim().toLowerCase() !== dealer.brandName.toLowerCase()
+                  }
+                  onClick={() =>
+                    run(
+                      () => rejectDealerAction(dealer.id, { reason: rejectReason.trim() }),
+                      'Application rejected and deleted.',
+                      // The dealership is gone; this page is a 404 now.
+                      '/admin/dealers',
+                    )
+                  }
+                >
+                  Reject and delete permanently
+                </Button>
+                <Button variant="ghost" size="md" onClick={() => setRejectOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Button variant="ghost" size="sm" className="self-start" onClick={() => setRejectOpen(true)}>
+              Reject application…
+            </Button>
+          )}
+        </div>
+      ) : null}
+
+      {/*
+        With grants deferred to F054, a suspended-and-reinstated dealership at
+        rest has nothing to decide — and a card rendering a bare heading reads as
+        a rendering bug rather than as "nothing to do here".
+      */}
+      {!awaitingDecision &&
+      !dealer.actions.canSuspend &&
+      !dealer.actions.canReinstate &&
+      !dealer.actions.canReject ? (
         <p className="text-[13px] ink-muted">
-          No decisions are available from this state.{' '}
-          {dealer.status === 'DRAFT'
-            ? 'The dealership is still completing its application.'
-            : 'The application was rejected and has not been resubmitted.'}
+          No decisions are available from this state.
         </p>
       ) : null}
     </section>

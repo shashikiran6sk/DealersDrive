@@ -101,6 +101,23 @@ export function OnboardingWizard({
    */
   const [local, setLocal] = useState<0 | 1>(step === 1 ? 1 : 0);
 
+  /**
+   * A navigation between steps 1 and 2 has to move the local pair with it.
+   *
+   * `local` is initialised once, and Next keeps this component mounted across a
+   * `?step=` change — same route, same position in the tree — so `Back` from
+   * the Documents step pushed `?step=1` and arrived showing whatever half of
+   * the pair happened to be open, which was Account, because that is what it
+   * was initialised to when the page was entered at step 3. Reconciled during
+   * render rather than in an effect, so the step and the pane change in one
+   * paint instead of the wrong pane being committed first.
+   */
+  const [navigated, setNavigated] = useState(step);
+  if (navigated !== step) {
+    setNavigated(step);
+    setLocal(step === 1 ? 1 : 0);
+  }
+
   // The same two steps, one verb apart: create the dealership, or amend the one
   // that is already there because the dealer pressed Back to get here.
   const edit = dealer !== null;
@@ -157,9 +174,30 @@ export function OnboardingWizard({
     if (Object.keys(found).length === 0) setLocal(1);
   }
 
+  /**
+   * The note an admin sent this application back with.
+   *
+   * `statusReason` is only set on a DRAFT dealership by one thing — a moderator
+   * pressing *Request changes*, or rejecting one document — so its presence is
+   * what distinguishes an application that was looked at and handed back from
+   * one that was never finished. It is shown on every step rather than only the
+   * first, because the thing that needs fixing may be three steps along and a
+   * banner that scrolls away with the step is a banner the dealer reads once.
+   */
+  const sentBack = dealer?.status === 'DRAFT' ? dealer.statusReason : null;
+
   return (
     <div className="flex flex-col gap-[22px]">
       <Stepper steps={ONBOARDING_STEPS} current={current} />
+
+      {sentBack ? (
+        <Banner tone="warn" title="We need one thing changed before we can verify you">
+          <p>{sentBack}</p>
+          <p className="mt-[4px]">
+            Everything you entered is still here. Fix what is named above and submit again.
+          </p>
+        </Banner>
+      ) : null}
 
       {state.message ? (
         <Banner tone="err" title={state.message}>
@@ -219,8 +257,29 @@ export function OnboardingWizard({
              * written until that second press, so a dealer who abandons halfway
              * leaves no half-made tenant behind.
              */}
+            {/**
+             * The `key`s are load-bearing, and this is the bug they fix.
+             *
+             * Without them React reconciles these two elements as the *same*
+             * DOM node and mutates `type` in place. A click is a discrete
+             * event, so React flushes the state update synchronously while the
+             * event is still being dispatched — which means by the time the
+             * browser gets round to the button's default activation behaviour,
+             * the node it is about to activate has become `type="submit"`. One
+             * press of Continue on the Account step therefore advanced to
+             * Business *and* submitted the form, landing the dealer on the
+             * Documents step without ever seeing the fields in between. It only
+             * reproduced when Business was already filled in, because otherwise
+             * the submit came back with validation errors and the jump looked
+             * like an ordinary refusal.
+             *
+             * Distinct keys make them distinct elements: the button that was
+             * clicked is unmounted, and a removed node has no default action
+             * left to perform.
+             */}
             {local === 0 ? (
               <button
+                key="continue-account"
                 type="button"
                 className="btn btn-primary h-[42px] flex-1"
                 onClick={(event) => continueFromAccount(event.currentTarget.form)}
@@ -228,7 +287,12 @@ export function OnboardingWizard({
                 Continue
               </button>
             ) : (
-              <button type="submit" className="btn btn-primary h-[42px] flex-1" disabled={pending}>
+              <button
+                key="continue-business"
+                type="submit"
+                className="btn btn-primary h-[42px] flex-1"
+                disabled={pending}
+              >
                 {pending ? (edit ? 'Saving…' : 'Creating your dealership…') : 'Continue'}
               </button>
             )}

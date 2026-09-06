@@ -43,10 +43,12 @@ const BASE: AdminDealerDetail = {
   state: 'Tamil Nadu',
   mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
   addressLine: '12 Katpadi Road',
+  pincode: '632001',
   contactName: 'Ramesh Kumar',
   contactPhone: '9840012345',
   contactPhoneDisplay: '+91 98400 12345',
   contactEmail: 'owner@sri-lakshmi-motors.in',
+  landline: '0416 224 8890',
   joinedLabel: '01 Dec 2025',
   creditBalance: 39,
   creditsHeld: 2,
@@ -58,9 +60,11 @@ const BASE: AdminDealerDetail = {
   actions: {
     canApprove: false,
     canReject: false,
+    canRequestChanges: false,
     canSuspend: true,
     canReinstate: false,
     canGrantCredits: false,
+    canEdit: true,
   },
 };
 
@@ -99,7 +103,7 @@ type Story = StoryObj<typeof meta>;
 export const PendingAndReadyToApprove: Story = {
   args: {
     dealer: dealer(
-      { canApprove: true, canReject: true, canSuspend: false },
+      { canApprove: true, canReject: true, canRequestChanges: true, canSuspend: false },
       { status: 'PENDING_APPROVAL', statusLabel: 'Pending verification', statusTone: 'warn' },
     ),
   },
@@ -120,7 +124,7 @@ export const PendingAndReadyToApprove: Story = {
 export const PendingWithDocumentsOutstanding: Story = {
   args: {
     dealer: dealer(
-      { canApprove: false, canReject: true, canSuspend: false },
+      { canApprove: false, canReject: true, canRequestChanges: true, canSuspend: false },
       {
         status: 'PENDING_APPROVAL',
         statusLabel: 'Pending verification',
@@ -170,14 +174,46 @@ export const Suspended: Story = {
 };
 
 /**
- * REJECTED — the one genuinely terminal state, with no console action at all.
- * A rejected application is re-made rather than reversed.
+ * A DRAFT dealership — still filling the form in, nothing to decide yet, but
+ * rejectable.
+ *
+ * REJECTED as a *state* no longer occurs on this screen: rejecting deletes the
+ * application outright, so there is no row left to render. The story that used
+ * to show it was showing a screen the console can no longer reach.
  */
-export const Rejected: Story = {
+export const DraftAndIncomplete: Story = {
   args: {
     dealer: dealer(
-      { canApprove: false, canReject: false, canSuspend: false, canReinstate: false },
-      { status: 'REJECTED', statusLabel: 'Rejected', statusTone: 'err' },
+      { canApprove: false, canReject: true, canRequestChanges: false, canSuspend: false },
+      { status: 'DRAFT', statusLabel: 'Draft', statusTone: 'neutral' },
+    ),
+  },
+};
+
+/**
+ * The two refusals, side by side, which is the comparison this screen exists to
+ * make legible.
+ *
+ * **Request changes** is an ordinary control: type six characters, press it,
+ * and the dealer gets their own form back with everything still in it. **Reject
+ * application…** is behind a disclosure, spells out what it destroys, and will
+ * not enable until the dealership's own name is typed into the confirmation box
+ * — because it deletes the KYC scans, the yard photograph, the dealership row
+ * and every field the applicant entered, and none of it comes back.
+ *
+ * Open the reject disclosure and read the paragraph before the button. That
+ * paragraph is the whole reason the two are not styled alike.
+ */
+export const BothRefusals: Story = {
+  args: {
+    dealer: dealer(
+      { canApprove: true, canReject: true, canRequestChanges: true, canSuspend: false },
+      {
+        status: 'PENDING_APPROVAL',
+        statusLabel: 'Pending verification',
+        statusTone: 'warn',
+        documents: [],
+      },
     ),
   },
 };

@@ -156,6 +156,7 @@ export const AdminDealerDetail = z.object({
   district: z.string().nullable(),
   state: z.string().nullable(),
   addressLine: z.string().nullable(),
+  pincode: z.string().nullable(),
   /**
    * The dealer's Google Maps link, for the reviewer.
    *
@@ -168,6 +169,7 @@ export const AdminDealerDetail = z.object({
   contactPhone: z.string().nullable(),
   contactPhoneDisplay: z.string().nullable(),
   contactEmail: z.string().nullable(),
+  landline: z.string().nullable(),
   joinedLabel: z.string(),
   creditBalance: z.number().int(),
   creditsHeld: z.number().int(),
@@ -198,10 +200,27 @@ export const AdminDealerDetail = z.object({
   ),
   actions: z.object({
     canApprove: z.boolean(),
+    /**
+     * Rejection is a **purge**, not a status change — see `DealerPurgeResponse`
+     * below. It is offered from the one state where nothing has been approved
+     * yet, because that is the only state in which throwing the application
+     * away cannot destroy something a buyer has already seen.
+     */
     canReject: z.boolean(),
+    /**
+     * The other half of a refusal, and the one a moderator reaches for far more
+     * often: send the application back for correction without destroying it.
+     *
+     * The distinction is the whole point. "Your GST certificate is unreadable"
+     * and "you are not a dealership" are different answers, and answering the
+     * first with the second costs a real business every field they typed.
+     */
+    canRequestChanges: z.boolean(),
     canSuspend: z.boolean(),
     canReinstate: z.boolean(),
     canGrantCredits: z.boolean(),
+    /** Whether this console may amend the dealer's own answers (D3 edit). */
+    canEdit: z.boolean(),
   }),
 });
 export type AdminDealerDetail = z.infer<typeof AdminDealerDetail>;
@@ -237,6 +256,37 @@ export const DealerModerationResponse = z.object({
 });
 export type DealerModerationResponse = z.infer<typeof DealerModerationResponse>;
 
+/**
+ * What a **rejection** answers with, and it is deliberately not the shape
+ * above.
+ *
+ * Rejecting an application does not move it to a status — it destroys it. The
+ * three KYC scans and the yard photograph are deleted from object storage, the
+ * `dealers` row goes with its documents and its membership, and the person who
+ * applied is left holding a verified Google account and nothing else: signing
+ * in again drops them at step one of onboarding as a first-time applicant.
+ *
+ * That is a different fact from "the status is now REJECTED", so it is reported
+ * as a different fact. `documentsDeleted` and `objectsDeleted` are the counts a
+ * moderator needs to be able to say, later, what was removed — the audit row
+ * outlives the dealership because `audit_logs.dealerId` is a column and not a
+ * foreign key.
+ *
+ * **Request changes is the reversible answer**, and is what a moderator wants
+ * nine times in ten. See `POST /v1/admin/dealers/:id/request-changes`.
+ */
+export const DealerPurgeResponse = z.object({
+  id: Uuid,
+  brandName: z.string(),
+  /** Rows removed from `dealer_documents`. */
+  documentsDeleted: z.number().int(),
+  /** Objects removed from storage: the KYC scans plus the yard photograph. */
+  objectsDeleted: z.number().int(),
+  reason: z.string(),
+  purgedAt: z.string(),
+});
+export type DealerPurgeResponse = z.infer<typeof DealerPurgeResponse>;
+
 // ─────────── D4/D5 moderation input ────────────────────────────────────────
 /** Six characters is what the dialog's disabled confirm button implies (§10). */
 export const ReasonInput = z
@@ -256,5 +306,16 @@ export const VerifyDocumentResponse = z.object({
   status: DocStatus,
   allVerified: z.boolean(),
   dealerCanBeApproved: z.boolean(),
+  /**
+   * Whether rejecting this document sent the whole application back to DRAFT.
+   *
+   * Rejecting one scan is a **request for changes on that scan**, not a verdict
+   * on the dealership — so the dealer has to be able to reach the upload box
+   * again, and a PENDING_APPROVAL dealership cannot: onboarding shows it the
+   * "we are reviewing this" panel and nothing else. The rejection therefore
+   * reopens the application, and this says so, because the console's next
+   * render will show a status the admin did not press a button to change.
+   */
+  dealerReturnedToDraft: z.boolean(),
 });
 export type VerifyDocumentResponse = z.infer<typeof VerifyDocumentResponse>;

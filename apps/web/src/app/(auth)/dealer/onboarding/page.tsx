@@ -88,12 +88,13 @@ export default async function OnboardingPage({
    * they create, so the only floor left is the real one — a submitted
    * dealership has nothing to edit while it is being reviewed.
    *
-   * `landing` is separate from the floor, and stays where it was: a returning
-   * dealer wants the step they had reached, not the one they finished weeks ago.
+   * Where it *opens* when no step is asked for is a separate question, and
+   * `landingStep` below answers it.
    */
   const floor = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : 0;
-  const landing = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : session.dealer ? 2 : 0;
-  const step = Number.isFinite(requested) ? Math.min(3, Math.max(floor, requested)) : landing;
+  const step = Number.isFinite(requested)
+    ? Math.min(3, Math.max(floor, requested))
+    : landingStep(session, dealer, completeness);
 
   return (
     <AuthShell>
@@ -107,6 +108,49 @@ export default async function OnboardingPage({
       />
     </AuthShell>
   );
+}
+
+/**
+ * Which step a dealer arriving with no `?step=` lands on.
+ *
+ * Three cases, and the third is the one that needed a rule.
+ *
+ *   · **No dealership yet** — step 1. There is nothing else it could be.
+ *   · **Waiting for a decision** — step 4, the "we are reviewing this" panel.
+ *     There is nothing to edit while somebody is looking at it.
+ *   · **A draft.** Ordinarily step 3: a returning dealer wants the step they
+ *     had reached, not the one they finished last week.
+ *
+ * An application a moderator **sent back** is a draft too, and landing it on
+ * step 3 would be wrong — the dealer arrives to be told something needs
+ * changing and is put on the screen after the one that usually holds it.
+ * `statusReason` on a DRAFT dealership is the mark of that: nothing else sets
+ * it, so it means "an admin looked at this and handed it back".
+ *
+ * Where it lands then depends on *what* was asked for, and the completeness
+ * answer already knows. A rejected document leaves the Documents step
+ * incomplete — the file was deleted with the rejection — so that is where the
+ * work is. A request for changes to the business details leaves every step
+ * complete, and the only screen that can be meant is the first one, where the
+ * name, address and contact live.
+ *
+ * Deriving it from `completeness` rather than storing a step on the dealership
+ * keeps one answer to "what is outstanding": the same one `POST
+ * /v1/dealer/submit` refuses on.
+ */
+function landingStep(
+  session: AuthSession,
+  dealer: DealerProfile | null,
+  completeness: CompletenessResponse | null,
+): 0 | 1 | 2 | 3 {
+  if (session.dealer?.status === 'PENDING_APPROVAL') return 3;
+  if (!session.dealer) return 0;
+
+  const sentBack = dealer?.status === 'DRAFT' && Boolean(dealer.statusReason);
+  if (!sentBack) return 2;
+
+  const documents = completeness?.steps.find((step) => step.key === 'documents');
+  return documents?.complete === false ? 2 : 0;
 }
 
 /** The session, or the sign-in screen. A 401 here is a redirect, not an error page. */

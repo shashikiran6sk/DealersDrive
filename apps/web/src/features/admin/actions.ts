@@ -4,7 +4,10 @@ import {
   ApproveDealerInput,
   NoteInput,
   ReasonInput,
+  UpdateDealerInput,
   type DealerModerationResponse,
+  type DealerProfile,
+  type DealerPurgeResponse,
   type VerifyDocumentResponse,
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
@@ -143,6 +146,105 @@ export async function rejectDocumentAction(
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not reject that document.');
+  }
+}
+
+/**
+ * The destructive refusal.
+ *
+ * It does not set a status — it deletes the application: the KYC scans and the
+ * yard photograph go from storage, the dealership row goes with its documents
+ * and its membership, and the applicant is left able to start onboarding afresh
+ * as a first-time applicant.
+ *
+ * The dealership no longer exists when this returns, so the caller must
+ * navigate away rather than refresh: `/admin/dealers/{id}` is a 404 from here
+ * on. `requestDealerChangesAction` below is the reversible answer, and is the
+ * one a moderator wants nine times in ten.
+ */
+export async function rejectDealerAction(
+  dealerId: string,
+  input: unknown,
+): Promise<AdminResult<DealerPurgeResponse>> {
+  const parsed = ReasonInput.safeParse(input);
+  if (!parsed.success) return { ok: false, message: 'A rejection needs a reason.' };
+
+  try {
+    const data = await apiSend<DealerPurgeResponse>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/reject`,
+      parsed.data,
+    );
+    refreshAdmin();
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not reject that dealer.');
+  }
+}
+
+/**
+ * The reversible refusal: PENDING_APPROVAL → DRAFT with the reason attached.
+ *
+ * Nothing is deleted. The dealer signs in to their own form again, filled in,
+ * with the reason at the top of it — which is what "the GST certificate is
+ * unreadable" actually calls for, and what rejecting would answer by throwing a
+ * real business's whole application away.
+ */
+export async function requestDealerChangesAction(
+  dealerId: string,
+  input: unknown,
+): Promise<AdminResult<DealerModerationResponse>> {
+  const parsed = ReasonInput.safeParse(input);
+  // The dealer reads it verbatim and corrects against it, so it is the one
+  // field on this control that cannot be left to a default.
+  if (!parsed.success) return { ok: false, message: 'Say what the dealer needs to change.' };
+
+  try {
+    const data = await apiSend<DealerModerationResponse>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/request-changes`,
+      parsed.data,
+    );
+    refreshAdmin();
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not send that back to the dealer.');
+  }
+}
+
+/**
+ * D3 — the console amending the dealer's own answers.
+ *
+ * Parsed against `UpdateDealerInput`, the same schema the API validates with
+ * and the same one `PATCH /v1/dealer` takes, so a GSTIN the API would refuse is
+ * marked against the box the admin typed it into rather than coming back as a
+ * 400 to interpret.
+ */
+export async function updateDealerAction(
+  dealerId: string,
+  input: unknown,
+): Promise<AdminResult<DealerProfile> & { errors?: Record<string, string> }> {
+  const parsed = UpdateDealerInput.safeParse(input);
+  if (!parsed.success) {
+    const errors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const field = issue.path.map(String).join('.');
+      errors[field] ??= issue.message;
+    }
+    return { ok: false, message: 'Some of those details are not valid.', errors };
+  }
+
+  try {
+    const data = await apiSend<DealerProfile>(
+      'PATCH',
+      `/v1/admin/dealers/${dealerId}`,
+      parsed.data,
+    );
+    refreshAdmin();
+    return { ok: true, data };
+  } catch (error) {
+    const result = fail(error, 'We could not save those changes.');
+    return error instanceof ApiError ? { ...result, errors: error.fieldErrors() } : result;
   }
 }
 

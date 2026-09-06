@@ -977,7 +977,11 @@ describe('submitForVerification', () => {
 
     const response = await h.service.submitForVerification('dealer-1');
 
-    expect(h.updates[0]?.data).toEqual({ status: 'PENDING_APPROVAL' });
+    // `statusReason` is cleared on the way in: it holds the note an admin sent
+    // the application back with, and leaving it would show the dealer a
+    // complaint they have already answered — and, since it is what marks a
+    // returned application, reopen the wizard at step one for no reason.
+    expect(h.updates[0]?.data).toEqual({ status: 'PENDING_APPROVAL', statusReason: null });
     expect(response.status).toBe('PENDING_APPROVAL');
     expect(response.statusLabel).toBe('Under review');
   });

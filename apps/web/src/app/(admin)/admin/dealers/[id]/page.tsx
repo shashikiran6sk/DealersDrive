@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 
 import { LogoTile, StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
+import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
 import { DocumentReview } from '@/features/admin/document-review';
 import { ApiError, apiGet } from '@/lib/api';
 import { cn } from '@/lib/cn';
@@ -75,51 +76,20 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
         ))}
       </div>
 
-      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
-        <section className="card gap-0 p-4">
-          <h2 className="mb-2 text-[19px]">Business</h2>
-          <dl>
-            {(
-              [
-                ['GSTIN', dealer.gstin, true],
-                ['PAN', dealer.pan, true],
-                ['City', dealer.city, false],
-                // The two fields the dealer list filters on. A moderator who
-                // has narrowed to a district should be able to confirm on this
-                // screen that the dealership really is in it.
-                ['District', dealer.district, false],
-                ['State', dealer.state, false],
-                ['Address', dealer.addressLine, false],
-                ['Contact', dealer.contactName, false],
-                // The reviewer needs the number to verify the business; this
-                // console is behind admin auth and every view is audited. It is
-                // still absent from every public response (Rule 7).
-                ['Phone', dealer.contactPhoneDisplay, true],
-                ['Email', dealer.contactEmail, false],
-              ] as const
-            ).map(([label, value, mono]) => (
-              <div
-                key={label}
-                className="flex justify-between gap-4 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
-              >
-                <dt className="ink-muted">{label}</dt>
-                <dd className={cn('text-right font-medium', mono && 'font-mono')}>
-                  {value ?? '—'}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
+      {/*
+        Two cards side by side, and the documents underneath at full width.
 
-        <section className="card gap-0 p-4">
-          <h2 className="mb-2 text-[19px]">
-            Documents{' '}
-            <span className="text-[12px] font-normal ink-muted">
-              {dealer.allDocumentsVerified ? 'all verified' : 'verification pending'}
-            </span>
-          </h2>
-          <DocumentReview documents={dealer.documents} />
-        </section>
+        The three used to share one auto-fit row, which meant the KYC checklist
+        — the thing this screen exists for — was squeezed into a third of the
+        page. Every row on it carries a label, a view link, two decisions, a
+        status tag and, when a moderator is rejecting, a reason field: it wraps
+        into four lines per document at that width and the buttons end up under
+        the file name they belong to. Business and Yard photo are short,
+        read-only and pair naturally; the checklist is the working surface and
+        gets the width.
+      */}
+      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
+        <DealerProfileEditor dealer={dealer} />
 
         {/*
           The yard photograph.
@@ -165,6 +135,16 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
           )}
         </section>
       </div>
+
+      <section className="card gap-0 p-4">
+        <h2 className="mb-2 text-[19px]">
+          Documents{' '}
+          <span className="text-[12px] font-normal ink-muted">
+            {dealer.allDocumentsVerified ? 'all verified' : 'verification pending'}
+          </span>
+        </h2>
+        <DocumentReview documents={dealer.documents} />
+      </section>
 
       <DealerAdminActions dealer={dealer} />
 

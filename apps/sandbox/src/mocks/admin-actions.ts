@@ -16,6 +16,12 @@ export interface AdminResult<T = undefined> {
   ok: boolean;
   message?: string;
   data?: T;
+  /**
+   * Field-level refusals, keyed by the path the API answers with
+   * (`body.address.city`). Only `updateDealerAction` returns them — it is the
+   * one action here that renders a form rather than a single reason box.
+   */
+  errors?: Record<string, string>;
 }
 
 /** What the sandbox's actions do next. Set by a story before it renders. */
@@ -62,4 +68,25 @@ export async function verifyDocumentAction(documentId: string) {
 
 export async function rejectDocumentAction(documentId: string, input: unknown) {
   return respond('rejectDocument', documentId, input);
+}
+
+/**
+ * The two refusals, which are two different things behind one word.
+ *
+ * `requestDealerChanges` hands the application back as a draft with everything
+ * in it; `rejectDealer` deletes the application. The stub records which was
+ * called, which is the point — the console's job is to make a moderator's
+ * choice between them deliberate, and a story asserts on the pair.
+ */
+export async function rejectDealerAction(dealerId: string, input: unknown) {
+  return respond('rejectDealer', dealerId, input);
+}
+
+export async function requestDealerChangesAction(dealerId: string, input: unknown) {
+  return respond('requestDealerChanges', dealerId, input);
+}
+
+/** D3 — the console amending the dealer's own answers. */
+export async function updateDealerAction(dealerId: string, input: unknown) {
+  return respond('updateDealer', dealerId, input);
 }

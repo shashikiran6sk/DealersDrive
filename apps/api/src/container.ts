@@ -127,7 +127,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const dealersRepo = createDealersRepository(prisma);
   const dealers = createDealersService({ prisma, repo: dealersRepo, storage });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
-  const admin = createAdminService({ prisma, audit, config, storage });
+  const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage, queue });
 
