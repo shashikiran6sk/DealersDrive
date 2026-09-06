@@ -392,7 +392,7 @@ rollback is `promote.yml` with an older SHA.
 | F016 | Auth guards & authorization model                       | API        | HIGH       |
 | F017 | Auth shell UI                                           | Web        | HIGH       |
 | F018 | **Dealer sign-in with Google OAuth**                    | Full-stack | HIGH       |
-| F019 | Admin sign-in                                           | Full-stack | HIGH       |
+| F019 | Admin sign-in (Google + allow-list)                     | Full-stack | HIGH       |
 | F020 | Sign-out & session revocation                           | Full-stack | HIGH       |
 |      | **TIER 3 — CI/CD**                                      |            |            |
 | F021 | Docker images                                           | Infra      | HIGH       |
@@ -798,19 +798,25 @@ The centred auth layout and heading shared by all three sign-in surfaces.
 
 ### F019 — Admin sign-in
 
-Email + password login for platform staff, on a separate route with a separate session scope.
+Google sign-in for platform staff, on a separate route with a separate session
+scope, restricted to an allow-list of addresses.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F018
-- **Backend** `modules/auth/auth.routes.ts` (admin paths), `password.ts`
-- **Frontend** `app/(auth)/admin/login/page.tsx`, `features/auth/admin-login-form.tsx`
-- **API** `POST /v1/auth/admin/login`
-- **External** `@node-rs/argon2`
-- **Tests** `tests/unit/modules/auth/password.test.ts`, and the `describe('the admin console')` block of `tests/auth.test.ts` — which is where the wrong-password, unknown-account and no-password-at-all cases actually live
-- **Components — New (feature-specific)** `AdminLoginForm` · **Reused** `AuthShell`, `Field`, `Banner`, `Button`
-- **Sandbox** `AdminLoginForm` — idle / server error / field errors / submitting / session expired
+- **Backend** `modules/auth/auth.routes.ts` (admin paths), `admin-allowlist.ts`, `oauth-transaction.ts` (`audience`)
+- **Frontend** `app/(auth)/admin/login/page.tsx`
+- **API** `GET /v1/auth/admin/google/start`, and the admin half of `GET /v1/auth/google/callback`
+- **Tests** the `describe('the admin console')` block of `tests/auth.test.ts`, plus `tests/unit/modules/auth/admin-allowlist.test.ts`
+- **Components — New (feature-specific)** none · **Reused** `AuthShell`, `GoogleSignInButton`, `Banner`
+- **Sandbox** none — the screen is `AuthShell` + `GoogleSignInButton`, both already there
 - Landed in one PR with F015, F016 and F018: `auth.routes.ts` carries the admin
   paths in the same file as the dealer ones, and `auth.test.ts` covers all four
   features at once.
+- **Revised after the reconstruction** — password authentication is gone.
+  `POST /v1/auth/admin/login`, `password.ts`, `AdminLoginInput`,
+  `AdminLoginForm` and `@node-rs/argon2` were all removed; the console is now
+  entered through the same Google flow the dealer console uses, and
+  authorization is `ADMIN_ALLOWLIST` rather than a credential. The entry above
+  describes what is in the tree; the baseline's shape is at the tag.
 
 ### F020 — Sign-out & session revocation
 
@@ -2135,7 +2141,7 @@ Only features that touch components appear.
 | F013    | —                                                                       | Field, **Input** ⭐                                       | —                                           |
 | F017    | Plate, Blueprint                                                        | AuthShell, AuthHeading                                    | —                                           |
 | F018    | AuthShell, AuthHeading, Button, Banner                                  | GoogleSignInButton                                        | —                                           |
-| F019    | AuthShell, Field, Input, Banner, Button                                 | AdminLoginForm                                            | —                                           |
+| F019    | AuthShell, Banner, GoogleSignInButton                                   | —                                                         | —                                           |
 | F020    | Button                                                                  | SignOutButton                                             | —                                           |
 | F026    | Field                                                                   | city picker                                               | —                                           |
 | F035    | —                                                                       | —                                                         | **Plate** (`marker`)                        |
@@ -2208,7 +2214,7 @@ duplication before it starts.
 | F013    | Field (4), **Input**                                                                    |
 | F017    | AuthShell, AuthHeading                                                                  |
 | F018    | GoogleSignInButton                                                                      |
-| F019    | AdminLoginForm                                                                          |
+| F019    | — (revised: the admin screen is `AuthShell` + `GoogleSignInButton`)                     |
 | F020    | SignOutButton                                                                           |
 | F026    | city picker                                                                             |
 | F037    | OnboardingWizard shell (4 steps), Stepper                                               |

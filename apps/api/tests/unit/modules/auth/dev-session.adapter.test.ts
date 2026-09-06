@@ -2,7 +2,11 @@ import type { PrismaClient } from '@prisma/client';
 import type { Request } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 
+import { env } from '../../../../src/config/env.js';
 import { createDevSessionResolver } from '../../../../src/modules/auth/dev-session.adapter.js';
+
+/** The identity `AUTH_MODE=dev` resolves to: the first allow-listed address. */
+const ADMIN_EMAIL = env.adminAllowlist[0] ?? '';
 
 /**
  * CLAUDE.md §5: "The only thing being bypassed locally is the identity
@@ -56,7 +60,7 @@ function setup(rows: { dealer?: DealerRow | null; user?: UserRow | null } = {}) 
   const findFirst = vi.fn(() =>
     Promise.resolve(
       rows.user === undefined
-        ? { id: 'admin-1', email: 'ops@dealers-drive.in', adminRole: 'SUPER_ADMIN' as const }
+        ? { id: 'admin-1', email: ADMIN_EMAIL, adminRole: 'SUPER_ADMIN' as const }
         : rows.user,
     ),
   );
@@ -177,7 +181,7 @@ describe('resolveAdmin', () => {
     expect(await resolver.resolveAdmin(HOSTILE)).toMatchObject({
       kind: 'ADMIN',
       userId: 'admin-1',
-      email: 'ops@dealers-drive.in',
+      email: ADMIN_EMAIL,
       adminRole: 'SUPER_ADMIN',
     });
   });
@@ -189,7 +193,7 @@ describe('resolveAdmin', () => {
     await resolver.resolveAdmin(HOSTILE);
 
     expect(findFirst).toHaveBeenCalledExactlyOnceWith({
-      where: { email: 'ops@dealers-drive.in', isPlatformAdmin: true },
+      where: { email: ADMIN_EMAIL, isPlatformAdmin: true },
     });
   });
 
@@ -233,7 +237,7 @@ describe('resolveAdmin', () => {
    */
   it('returns null when the user has no adminRole', async () => {
     const { resolver } = setup({
-      user: { id: 'admin-3', email: 'ops@dealers-drive.in', adminRole: null },
+      user: { id: 'admin-3', email: ADMIN_EMAIL, adminRole: null },
     });
 
     expect(await resolver.resolveAdmin(HOSTILE)).toBeNull();
@@ -244,7 +248,7 @@ describe('resolveAdmin', () => {
       user: { id: 'admin-4', email: null, adminRole: 'MODERATOR' },
     });
 
-    expect((await resolver.resolveAdmin(HOSTILE))?.email).toBe('ops@dealers-drive.in');
+    expect((await resolver.resolveAdmin(HOSTILE))?.email).toBe(ADMIN_EMAIL);
   });
 
   it('re-reads on every call, so revoking admin takes effect at once', async () => {

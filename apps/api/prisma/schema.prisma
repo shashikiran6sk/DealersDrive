@@ -26,7 +26,6 @@ model User {
   /// verified email and nothing else, and an unverified placeholder must never
   /// occupy the unique index (ARCHITECTURE §8.1).
   phone           String?    @unique
-  passwordHash    String? // ADMINS ONLY. Dealers sign in with Google.
   emailVerifiedAt DateTime?
   phoneVerifiedAt DateTime?
   status          UserStatus @default(ACTIVE)
@@ -137,6 +136,10 @@ model Dealer {
   /// distance sort that reads them is a real feature, and geocoding a typed
   /// address is its problem rather than onboarding's.
   city               String?
+  /// The district the yard sits in, typed by the dealer and normalised on
+  /// write. The admin console filters on it — city on its own is ambiguous
+  /// across India, and support questions are district-shaped.
+  district           String?
   state              String?
   addressLine        String?
   pincode            String?
@@ -191,6 +194,9 @@ model Dealer {
   /// this is the constraint.
   @@unique([legalName, city])
   @@index([status, city])
+  /// The admin console's location filters, which are always narrowed from the
+  /// outside in: a state, then a district within it, then a town.
+  @@index([state, district, city])
   @@map("dealers")
 }
 

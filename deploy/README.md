@@ -101,7 +101,7 @@ Fill in, at minimum:
 - `POSTGRES_PASSWORD` **and** the same string inside `DATABASE_URL`
 - `S3_SECRET_ACCESS_KEY` — MinIO's root password
 - `SESSION_SECRET`, `UPLOAD_SIGNING_SECRET` — 32 random bytes each
-- `DEV_ADMIN_EMAIL` / `DEV_ADMIN_PASSWORD` — what you hand the investor
+- `ADMIN_ALLOWLIST` — the Google address that gets the admin console
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — step 8
 
 `apps/api/src/config/env.ts` validates all of this at boot and **refuses to
@@ -205,9 +205,10 @@ Then, in a browser:
 | Dealer console | after signing in with Google      |
 | Admin sign-in  | `https://__DOMAIN__/admin/login`  |
 
-Admin credentials are the `DEV_ADMIN_EMAIL` / `DEV_ADMIN_PASSWORD` you set in
-step 4. The plaintext is hashed with Argon2id at seed time and never stored,
-logged or returned.
+There are no admin credentials to hand anybody. The console is entered by
+signing in with Google as an address on `ADMIN_ALLOWLIST` from step 4 — the
+same button the dealer console uses, pointed at a different start URL. Every
+other verified Google account is refused after Google confirms it.
 
 Walk the full loop once yourself before the investor does: sign in with Google
 → onboarding → add a vehicle **with a photo** (this is the path that proves the

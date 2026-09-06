@@ -46,6 +46,7 @@ function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
     landline: '0416 222 3344',
     addressLine: '12 Katpadi Road',
     city: 'Vellore',
+    district: 'Vellore',
     state: 'Tamil Nadu',
     pincode: '632001',
     specialities: ['Hatchbacks'],
@@ -478,22 +479,24 @@ describe('toProfile', () => {
     expect(profile.contact.phoneDisplay).toBe('');
   });
 
-  it('reads the city and state off the dealership itself', async () => {
+  it('reads the city, district and state off the dealership itself', async () => {
     const h = setup();
 
     expect((await h.service.profile('dealer-1')).address).toMatchObject({
       city: 'Vellore',
+      district: 'Vellore',
       state: 'Tamil Nadu',
       pincode: '632001',
     });
   });
 
-  it('reports a null city for a dealership that has not set one', async () => {
-    const h = setup({ dealer: { city: null, state: null } });
+  it('reports a null locality for a dealership that has not set one', async () => {
+    const h = setup({ dealer: { city: null, district: null, state: null } });
 
     const profile = await h.service.profile('dealer-1');
 
     expect(profile.address.city).toBeNull();
+    expect(profile.address.district).toBeNull();
     expect(profile.address.state).toBeNull();
   });
 
@@ -563,12 +566,19 @@ describe('update', () => {
     const h = setup();
 
     await h.service.update('dealer-1', {
-      address: { line: '99 New Road', city: 'Chennai', state: 'Tamil Nadu', pincode: '632002' },
+      address: {
+        line: '99 New Road',
+        city: 'Chennai',
+        district: 'Chengalpattu',
+        state: 'Tamil Nadu',
+        pincode: '632002',
+      },
     });
 
     expect(h.updates[0]?.data).toEqual({
       addressLine: '99 New Road',
       city: 'Chennai',
+      district: 'Chengalpattu',
       state: 'Tamil Nadu',
       pincode: '632002',
     });
@@ -782,6 +792,7 @@ describe('completeness', () => {
         legalName: null,
         addressLine: null,
         city: null,
+        district: null,
         state: null,
         pincode: null,
         gstin: null,
@@ -796,6 +807,7 @@ describe('completeness', () => {
       'legalName',
       'addressLine',
       'city',
+      'district',
       'state',
       'pincode',
       'gstin',

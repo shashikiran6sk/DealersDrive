@@ -49,6 +49,7 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     legalName: `Onboarding Motors ${counter}`,
     addressLine: '18, Gandhi Road',
     city: 'Katpadi',
+    district: 'Vellore',
     state: 'Tamil Nadu',
     pincode: '632007',
     ...overrides,
@@ -125,12 +126,45 @@ describe('one name per city', () => {
   });
 
   /** The normalisation is what makes the casing case above hold at the index. */
-  it('stores the city and state in one normalised form', async () => {
-    const { agent } = await dealership({ city: '  hubballi  ', state: 'karnataka' });
+  it('stores the city, district and state in one normalised form', async () => {
+    const { agent } = await dealership({
+      city: '  hubballi  ',
+      district: 'dharwad',
+      state: 'karnataka',
+    });
 
     const profile = await agent.get('/v1/dealer').expect(200);
 
-    expect(profile.body.address).toMatchObject({ city: 'Hubballi', state: 'Karnataka' });
+    expect(profile.body.address).toMatchObject({
+      city: 'Hubballi',
+      district: 'Dharwad',
+      state: 'Karnataka',
+    });
+  });
+
+  /**
+   * The district is asked for on the same step as the city, and it is what the
+   * admin console's location filter is built on — so it is required, and it is
+   * normalised by the same function for the same reason: three spellings of one
+   * district are three useless filter values.
+   */
+  it('requires a district, and normalises a rename of one', async () => {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    const { district: _omitted, ...withoutDistrict } = onboarding();
+    const rejected = await agent.post('/v1/auth/onboarding').send(withoutDistrict).expect(400);
+    expect(rejected.body.code).toBe('VALIDATION_FAILED');
+
+    await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await agent
+      .patch('/v1/dealer')
+      .send({ address: { district: '  tiruvannamalai  ' } })
+      .expect(200);
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.address.district).toBe('Tiruvannamalai');
   });
 
   /**

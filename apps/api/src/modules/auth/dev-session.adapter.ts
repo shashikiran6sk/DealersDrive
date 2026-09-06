@@ -11,8 +11,8 @@ import {
 /**
  * The local development session (CLAUDE.md §5, §17).
  *
- * The identity is *server-configured* — `DEV_DEALER_SLUG` and
- * `DEV_ADMIN_EMAIL` — and re-read from the database on every request, so the
+ * The identity is *server-configured* — `DEV_DEALER_SLUG` and the first entry
+ * on `ADMIN_ALLOWLIST` — and re-read from the database on every request, so the
  * principal always carries a real dealer id, role and current status. That
  * last part matters: suspending the dealer from the admin console takes effect
  * on the very next request, exactly as a revoked session will.
@@ -57,8 +57,14 @@ export function createDevSessionResolver(prisma: PrismaClient): SessionResolver 
     resolveSignedIn: resolveDealer,
 
     async resolveAdmin() {
+      // The same list production checks, read for its first entry rather than
+      // asked about an address. An empty allow-list has no admin to resolve —
+      // here as everywhere else, it closes the console rather than opening it.
+      const email = env.adminAllowlist[0];
+      if (!email) return null;
+
       const user = await prisma.user.findFirst({
-        where: { email: env.DEV_ADMIN_EMAIL, isPlatformAdmin: true },
+        where: { email, isPlatformAdmin: true },
       });
 
       if (!user?.adminRole) return null;
@@ -66,7 +72,7 @@ export function createDevSessionResolver(prisma: PrismaClient): SessionResolver 
       return {
         kind: 'ADMIN',
         userId: user.id,
-        email: user.email ?? env.DEV_ADMIN_EMAIL,
+        email: user.email ?? email,
         adminRole: user.adminRole,
         permissions: permissionsForAdminRole(user.adminRole),
       };

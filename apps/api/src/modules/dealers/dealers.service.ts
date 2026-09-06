@@ -110,6 +110,7 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       address: {
         line: dealer.addressLine,
         city: dealer.city,
+        district: dealer.district,
         state: dealer.state,
         pincode: dealer.pincode,
       },
@@ -267,6 +268,10 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
        */
       const city =
         input.address?.city === undefined ? undefined : normaliseLocality(input.address.city);
+      const district =
+        input.address?.district === undefined
+          ? undefined
+          : normaliseLocality(input.address.district);
       const state =
         input.address?.state === undefined ? undefined : normaliseLocality(input.address.state);
 
@@ -320,6 +325,7 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
             ...(input.contact?.landline === undefined ? {} : { landline: input.contact.landline }),
             ...(input.address?.line === undefined ? {} : { addressLine: input.address.line }),
             ...(city === undefined ? {} : { city }),
+            ...(district === undefined ? {} : { district }),
             ...(state === undefined ? {} : { state }),
             ...(input.address?.pincode === undefined ? {} : { pincode: input.address.pincode }),
           },
@@ -344,6 +350,15 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       if (!dealer.legalName) businessMissing.push('legalName');
       if (!dealer.addressLine) businessMissing.push('addressLine');
       if (!dealer.city) businessMissing.push('city');
+      /*
+       * The district joins the required set rather than sitting beside it as a
+       * nice-to-have. It is asked for on the same step as the city, it is what
+       * the admin console filters on, and a filter that silently omits the
+       * dealerships that skipped the question is a filter that lies. Rows
+       * created before the column existed read as incomplete here, which is
+       * true: they are, and the profile screen is where that is fixed.
+       */
+      if (!dealer.district) businessMissing.push('district');
       if (!dealer.state) businessMissing.push('state');
       if (!dealer.pincode) businessMissing.push('pincode');
       if (!dealer.gstin) businessMissing.push('gstin');

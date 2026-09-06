@@ -2,10 +2,13 @@
 # Release — the only place an image is ever built.
 #
 # Fires on every push to `main`, which after branch protection means: on every
-# merged pull request. It builds the API images from that one commit, pushes
-# them to ECR tagged with the SHA, and deploys that commit to development —
-# both tiers, in order. Production is not touched, ever, by this workflow
-# (promote.yml, and a human, do that).
+# merged pull request. It builds the API images from that one commit and pushes
+# them to ECR tagged with the SHA. Production is not touched, ever, by this
+# workflow (promote.yml, and a human, do that).
+#
+# ⚠️ The `deploy-dev` job is **commented out** at the bottom of this file until
+# Vercel and AWS are configured — see the note there for exactly what to set
+# and what to uncomment. Until then this workflow builds and stops.
 #
 # Two images, one commit — the web image is gone. D7 moved the front end to
 # Vercel, which builds it from the same commit rather than from a registry:
@@ -126,17 +129,40 @@ jobs:
           cache-to: type=gha,scope=migrator,mode=max
           provenance: ${{ vars.AWS_DEPLOY_ENABLED == 'true' }}
 
-  deploy-dev:
-    name: deploy to development
-    needs: build
-    uses: ./.github/workflows/_deploy.yml
-    with:
-      environment: dev
-      sha: ${{ needs.build.outputs.sha }}
-    # Still no `secrets: inherit` — one secret is passed, by name. VERCEL_TOKEN
-    # is a *repository* secret because the token is the same for both
-    # environments; the PROJECT_ID that scopes it to a project is not, and the
-    # called workflow reads that from the environment it enters. So does
-    # AWS_DEPLOY_ROLE_ARN.
-    secrets:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  # ---------------------------------------------------------------------------
+  # deploy-dev is COMMENTED OUT, deliberately and temporarily.
+  #
+  # Neither target exists yet: there is no Vercel project and no AWS account
+  # behind this repository, so every push to `main` ended in a red workflow for
+  # a deployment nobody had asked for. A build that goes red for a reason no
+  # one can act on is a build people stop reading, and the next failure — a
+  # real one — goes with it.
+  #
+  # What still runs is the half that is worth running: `build` above proves
+  # both images build from a clean context on every merge, and discards them
+  # when `AWS_DEPLOY_ENABLED` is not 'true'.
+  #
+  # ── To turn deployment back on ───────────────────────────────────────────
+  #   1. Create the Vercel project and set VERCEL_TOKEN (repository secret) and
+  #      VERCEL_PROJECT_ID / VERCEL_ORG_ID on the `dev` environment.
+  #   2. For the API tier, set the `AWS_DEPLOY_ENABLED` variable to 'true' and
+  #      the AWS role ARNs — or leave it unset and let the Vercel half deploy
+  #      on its own, which `_deploy.yml` already supports.
+  #   3. Uncomment the block below. Nothing else changes; `_deploy.yml` and
+  #      `promote.yml` are untouched and still describe the whole procedure.
+  # ---------------------------------------------------------------------------
+  #
+  # deploy-dev:
+  #   name: deploy to development
+  #   needs: build
+  #   uses: ./.github/workflows/_deploy.yml
+  #   with:
+  #     environment: dev
+  #     sha: ${{ needs.build.outputs.sha }}
+  #   # Still no `secrets: inherit` — one secret is passed, by name.
+  #   # VERCEL_TOKEN is a *repository* secret because the token is the same for
+  #   # both environments; the PROJECT_ID that scopes it to a project is not,
+  #   # and the called workflow reads that from the environment it enters. So
+  #   # does AWS_DEPLOY_ROLE_ARN.
+  #   secrets:
+  #     VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

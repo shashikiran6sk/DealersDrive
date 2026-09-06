@@ -7,22 +7,27 @@ const LOCATION_HEADER = {
 /**
  * PART B — authentication.
  *
- * Two of these operations are browser redirects rather than API calls, and are
- * documented as such: a client library never calls `/google/start`, a person's
- * browser navigates to it. They are in the reference because leaving the only
- * two routes that issue a session undocumented would be the worst possible
+ * Three of these operations are browser redirects rather than API calls, and
+ * are documented as such: a client library never calls `/google/start`, a
+ * person's browser navigates to it. They are in the reference because leaving
+ * the only routes that issue a session undocumented would be the worst possible
  * omission (§32).
+ *
+ * There is no `POST /v1/auth/admin/login` here because there is no such route
+ * any more: the admin console's session comes out of the same Google callback,
+ * and the operation was removed in the PR that removed the endpoint. The
+ * openapi test fails in both directions, which is what keeps that true.
  */
 export const authDocs: ModuleDocs = {
   tag: 'Authentication',
   description:
-    'Dealers sign in with Google (OAuth 2.0 authorization code + PKCE + OIDC nonce); admins ' +
-    'sign in with an email and an Argon2id-hashed password. Both end in the same place: an ' +
-    'opaque `dd_session` cookie backed by a row in `sessions`, revocable instantly ' +
-    '(ARCHITECTURE §8.2).\n\n' +
-    '**No endpoint here accepts an identity.** There is no request body anywhere in this tag ' +
-    'that carries an email as proof of who the caller is — the dealer flow establishes that ' +
-    'from a token Google signed, and the admin flow from a password hash. A `dealerId` is ' +
+    'Everybody signs in with Google (OAuth 2.0 authorization code + PKCE + OIDC nonce) — ' +
+    'dealers and admins alike. Both end in the same place: an opaque `dd_session` cookie ' +
+    'backed by a row in `sessions`, revocable instantly (ARCHITECTURE §8.2).\n\n' +
+    '**No endpoint here accepts an identity, and none accepts a password.** There is no ' +
+    'request body anywhere in this tag that carries a credential: every session is issued ' +
+    'from an email inside a token Google signed. What separates the two consoles is the ' +
+    '`ADMIN_ALLOWLIST` check on that address, not a second login form. A `dealerId` is ' +
     'never accepted anywhere in the API; it is a property of the resolved session (rule 1).',
   operations: [
     {
@@ -45,6 +50,7 @@ export const authDocs: ModuleDocs = {
             google: {
               enabled: true,
               startUrl: 'http://localhost:4000/v1/auth/google/start',
+              adminStartUrl: 'http://localhost:4000/v1/auth/admin/google/start',
               reason: null,
             },
           },
@@ -78,6 +84,33 @@ export const authDocs: ModuleDocs = {
     },
     {
       method: 'get',
+      path: '/v1/auth/admin/google/start',
+      operationId: 'startAdminGoogleSignIn',
+      tag: 'Authentication',
+      summary: 'Begin Google sign-in for the admin console',
+      description:
+        'The same navigation as `/v1/auth/google/start`, with one value changed: the sealed ' +
+        '`dd_oauth` cookie records that this round trip is for the **admin** console, so the ' +
+        'callback issues an `ADMIN`-scope session rather than a dealer one.\n\n' +
+        'It is a separate path rather than a query parameter because the audience decides the ' +
+        'privilege of the session that comes back, and a value the browser could edit on the ' +
+        'return leg would be a way to ask the dealer button for an admin session. Google sees ' +
+        'one registered redirect URI either way.\n\n' +
+        'Starting here grants nothing. The address Google returns must appear on the ' +
+        "deployment's `ADMIN_ALLOWLIST`; anything else ends at " +
+        '`/admin/login?error=not_authorised`.',
+      audience: 'public',
+      responses: [
+        {
+          status: 302,
+          description: 'Redirect to Google, with `dd_oauth` set for the admin console.',
+          headers: LOCATION_HEADER,
+        },
+      ],
+      errors: [503],
+    },
+    {
+      method: 'get',
       path: '/v1/auth/google/callback',
       operationId: 'completeGoogleSignIn',
       tag: 'Authentication',
@@ -94,7 +127,12 @@ export const authDocs: ModuleDocs = {
         'has no dealership yet, or to the requested path when it has. Every failure redirects ' +
         'to `/dealer/login?error=…` instead, so the person sees the sign-in screen rather than ' +
         'a JSON body: `sign_in_failed`, `identity_unverified`, `google_declined`, ' +
-        '`account_link_required`, `account_suspended`, `invalid_callback`.',
+        '`account_link_required`, `account_suspended`, `invalid_callback`.\n\n' +
+        '**Both consoles come back through this one path.** The sealed cookie says which, and ' +
+        'an admin round trip is answered differently in two ways: the address must be on ' +
+        '`ADMIN_ALLOWLIST` — `not_authorised` if it is not — and the session it sets has ' +
+        '`scope = ADMIN`, a 12-hour lifetime, and satisfies `/v1/admin/**` and nothing else. ' +
+        'An admin failure lands on `/admin/login?error=…`, not on the dealer screen.',
       audience: 'public',
       responses: [
         {
@@ -171,8 +209,9 @@ export const authDocs: ModuleDocs = {
         "`status` and no `slug` either — approval is the admin's decision and the slug is " +
         'derived from the registered name (rules 1 and 5). One name, not two: `brandName` is ' +
         'the display mirror of `legalName` and is written by the server.\n\n' +
-        '`city` and `state` are free text, normalised on write — there is no list of cities to ' +
-        'choose from, and a dealership may be in any of them.\n\n' +
+        '`city`, `district` and `state` are free text, normalised on write — there is no list ' +
+        'of places to choose from, and a dealership may be in any of them. The district is ' +
+        "what the admin console's location filter is built on.\n\n" +
         '`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 ' +
         'PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `409 ' +
         'DEALER_NAME_TAKEN` if another dealership already trades under that name **in that ' +
@@ -187,6 +226,7 @@ export const authDocs: ModuleDocs = {
           legalName: 'Sri Lakshmi Automobiles Pvt Ltd',
           addressLine: '14, Katpadi Main Road, Gandhi Nagar',
           city: 'Vellore',
+          district: 'Vellore',
           state: 'Tamil Nadu',
           pincode: '632006',
           landline: '0416 224 8890',
@@ -217,45 +257,6 @@ export const authDocs: ModuleDocs = {
     },
     {
       method: 'post',
-      path: '/v1/auth/admin/login',
-      operationId: 'adminLogin',
-      tag: 'Authentication',
-      summary: 'Admin sign-in',
-      description:
-        'Email and Argon2id password. There is no admin sign-up, no admin OTP and no Google ' +
-        'path into the admin console: admins are created by the seed or by another admin.\n\n' +
-        'The session it issues has `scope = ADMIN` and a 12-hour lifetime, and satisfies only ' +
-        '`/v1/admin/**` — a dealer cookie can never reach an admin route, and an admin cookie ' +
-        'can never reach a dealer one, even for one human holding both seats.\n\n' +
-        'Unknown email and wrong password are indistinguishable: same status, same message, ' +
-        'and a decoy hash verification so the timing matches too.',
-      audience: 'public',
-      rateLimit: '5 attempts per email per 15 minutes, 20 per IP per 15 minutes.',
-      requestBody: {
-        schema: 'AdminLoginInput',
-        example: { email: 'ops@dealers-drive.in', password: '••••••••' },
-      },
-      responses: [
-        {
-          status: 200,
-          description: 'Signed in, with `dd_session` set.',
-          schema: 'AdminSessionResponse',
-          example: {
-            admin: {
-              id: '7d1c9b22-3333-4000-8000-000000000003',
-              email: 'ops@dealers-drive.in',
-              fullName: 'Dealers-Drive Operations',
-              adminRole: 'SUPER_ADMIN',
-            },
-            permissions: ['admin:dealer:approve', 'admin:listing:moderate', 'admin:credit:grant'],
-            sessionExpiresAt: '2026-08-18T21:11:42.000Z',
-          },
-        },
-      ],
-      errors: [400, 401, 429],
-    },
-    {
-      method: 'post',
       path: '/v1/auth/admin/logout',
       operationId: 'adminLogout',
       tag: 'Authentication',
@@ -263,7 +264,9 @@ export const authDocs: ModuleDocs = {
       description:
         'Revokes the presented session and clears the cookie. Unguarded on purpose: signing ' +
         'out has to work when the session has already expired, and it can only ever revoke ' +
-        "the token in the caller's own cookie.",
+        "the token in the caller's own cookie.\n\n" +
+        'Separate from `/v1/auth/logout` only so the two consoles can be reasoned about ' +
+        'separately; both revoke whatever row the presented cookie names.',
       audience: 'public',
       responses: [{ status: 204, description: 'Revoked and cleared.' }],
     },

@@ -3,7 +3,6 @@ import {
   normaliseLocality,
   slugify,
   toE164,
-  type AdminSessionResponse,
   type AuthProvidersResponse,
   type AuthSession,
   type OnboardingInput,
@@ -21,21 +20,18 @@ import {
 } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealersService } from '../dealers/dealers.facade.js';
-import type { OAuthProvider } from './oauth.port.js';
+import { isAllowlistedAdmin } from './admin-allowlist.js';
+import type { OAuthClaims, OAuthProvider } from './oauth.port.js';
 import {
   createOAuthTransaction,
   sealTransaction,
   safeReturnTo,
+  DEFAULT_RETURN_TO,
   OAUTH_TRANSACTION_TTL_SECONDS,
+  type OAuthAudience,
   type OAuthTransaction,
 } from './oauth-transaction.js';
-import { hashPassword, verifyDecoy, verifyPassword } from './password.js';
-import {
-  permissionsForAdminRole,
-  permissionsForRole,
-  type DealerPrincipal,
-  type PendingPrincipal,
-} from './session.port.js';
+import { permissionsForRole, type DealerPrincipal, type PendingPrincipal } from './session.port.js';
 import type { SessionService } from './session.service.js';
 
 /**
@@ -50,8 +46,11 @@ import type { SessionService } from './session.service.js';
  *  2. **A dealership is created by onboarding, not by signing in.** A verified
  *     Google account with no `DealerMember` row is a `PendingPrincipal`: a real
  *     session that can reach exactly one endpoint.
- *  3. **Admins are a separate world.** Different credential, different session
- *     scope, different lifetime, and no path between the two.
+ *  3. **Admins are a separate world.** Same provider now — an admin signs in
+ *     with Google like everybody else — but a different session scope, a
+ *     different lifetime, and no path between the two. What separates them is
+ *     `ADMIN_ALLOWLIST`: a verified address that is not on it gets a dealer
+ *     session and a closed door, never an admin one.
  */
 export interface AuthDeps {
   prisma: PrismaClient;
@@ -61,13 +60,11 @@ export interface AuthDeps {
   audit: AuditService;
 }
 
-/** §8.1 — 5 admin sign-in attempts per email per 15 minutes. */
-export const ADMIN_LOGIN_LIMIT = 5;
-export const ADMIN_LOGIN_WINDOW_SECONDS = 900;
-
 export interface CallbackResult {
   token: string;
   expiresAt: Date;
+  /** Which console the session is for — it decides where a failure sends the browser. */
+  audience: OAuthAudience;
   next: AuthSession['next'];
   returnTo: string;
 }
@@ -131,6 +128,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
         google: {
           enabled,
           startUrl: `${env.API_BASE_URL}/v1/auth/google/start`,
+          adminStartUrl: `${env.API_BASE_URL}/v1/auth/admin/google/start`,
           reason: enabled
             ? null
             : 'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are not set on the API.',
@@ -144,7 +142,10 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
      * `state`, `nonce` and the PKCE verifier are generated here and sealed into
      * a cookie the caller sets. Nothing about this request influences them.
      */
-    startGoogle(returnTo: string | undefined): {
+    startGoogle(
+      returnTo: string | undefined,
+      audience: OAuthAudience = 'DEALER',
+    ): {
       authorizationUrl: string;
       cookie: string;
       maxAgeSeconds: number;
@@ -160,9 +161,12 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
         );
       }
 
-      const transaction = createOAuthTransaction(safeReturnTo(returnTo));
+      const transaction = createOAuthTransaction(
+        safeReturnTo(returnTo, DEFAULT_RETURN_TO[audience]),
+        audience,
+      );
 
-      logger.info({ event: 'auth.oauth.started', provider: 'GOOGLE' }, 'oauth started');
+      logger.info({ event: 'auth.oauth.started', provider: 'GOOGLE', audience }, 'oauth started');
 
       return {
         authorizationUrl: oauth.authorizationUrl({
@@ -210,6 +214,13 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
         { event: 'auth.oauth.verified', provider: 'GOOGLE', subject: claims.subject },
         'oauth identity verified',
       );
+
+      // The audience came out of the sealed cookie this browser was given at
+      // `/start`, never off the callback URL — so a dealer sign-in cannot be
+      // turned into an admin one by editing a query parameter on the way back.
+      if (transaction.audience === 'ADMIN') {
+        return await completeAdminGoogle(claims, transaction, input);
+      }
 
       const existing = await prisma.oAuthIdentity.findUnique({
         where: {
@@ -273,6 +284,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
       return {
         token: session.token,
         expiresAt: session.expiresAt,
+        audience: 'DEALER',
         next,
         returnTo: next === 'ONBOARDING' ? '/dealer/onboarding' : transaction.returnTo,
       };
@@ -292,6 +304,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
       // city filter — then compares the same string rather than five spellings
       // of one town.
       const city = normaliseLocality(input.city);
+      const district = normaliseLocality(input.district);
       const state = normaliseLocality(input.state);
 
       /**
@@ -380,6 +393,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
             // by a field on this request (CLAUDE.md rule 5).
             status: 'DRAFT',
             city,
+            district,
             state,
             addressLine: input.addressLine,
             pincode: input.pincode,
@@ -446,76 +460,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
       await sessions.revoke(token);
       logger.info({ event: 'auth.session.revoked', userId: userId ?? null }, 'session revoked');
     },
-
-    /**
-     * B7 — the admin console's sign-in.
-     *
-     * Every failure answers with the same message and the same status. "No such
-     * account" and "wrong password" are indistinguishable from outside, and the
-     * decoy verification keeps them indistinguishable in timing too.
-     */
-    async adminLogin(input: {
-      email: string;
-      password: string;
-      ip?: string | undefined;
-      userAgent?: string | undefined;
-    }): Promise<{ token: string; expiresAt: Date; response: AdminSessionResponse }> {
-      const email = input.email.trim().toLowerCase();
-      const user = await prisma.user.findFirst({
-        where: { email, isPlatformAdmin: true },
-      });
-
-      const ok = user?.passwordHash
-        ? await verifyPassword(user.passwordHash, input.password)
-        : await verifyDecoy(input.password);
-
-      if (!ok || !user?.adminRole || user.status !== 'ACTIVE') {
-        logger.warn({ event: 'admin.login.failure', email }, 'admin sign-in refused');
-        await audit.recordDetached({
-          actorType: 'SYSTEM',
-          action: 'admin.login.failure',
-          entityType: 'User',
-          entityId: user?.id ?? 'unknown',
-          after: { email },
-        });
-        throw new UnauthorizedError('That email and password do not match.', {
-          code: 'INVALID_CREDENTIALS',
-        });
-      }
-
-      const session = await sessions.issue({
-        userId: user.id,
-        scope: 'ADMIN',
-        ip: input.ip,
-        userAgent: input.userAgent,
-      });
-
-      await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-
-      logger.info({ event: 'admin.login.success', userId: user.id }, 'admin signed in');
-      await audit.recordDetached({
-        actorType: 'ADMIN',
-        actorId: user.id,
-        action: 'admin.login.success',
-        entityType: 'User',
-        entityId: user.id,
-      });
-
-      return {
-        token: session.token,
-        expiresAt: session.expiresAt,
-        response: {
-          admin: {
-            id: user.id,
-            email: user.email ?? email,
-            fullName: user.fullName,
-            adminRole: user.adminRole,
-          },
-          permissions: permissionsForAdminRole(user.adminRole),
-          sessionExpiresAt: session.expiresAt.toISOString(),
-        },
-      };
-    },
   };
 
   /**
@@ -579,6 +523,143 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
     });
   }
 
+  /**
+   * B7 — the admin console's sign-in, which is now the same round trip as the
+   * dealer's with one extra question asked of it.
+   *
+   * The question is the whole authorization model: **is this verified address
+   * on `ADMIN_ALLOWLIST`?** Note what it is asked about — `claims.email`, out of
+   * a token Google signed seconds ago — and not about anything a client sent, a
+   * column on a row, or the address a session once had. A refusal here is a
+   * refusal to *issue*; `resolveAdmin` asks the same question again on every
+   * subsequent request, so taking a name off the list closes a console that is
+   * already open rather than waiting twelve hours for it to expire.
+   *
+   * The account-linking rule that `createIdentity` enforces is deliberately
+   * relaxed for exactly these addresses. There, an existing user row with no
+   * linked identity is a refusal, because a matching email string is not proof
+   * that the same person still holds it. Here the platform team wrote the
+   * address into its own deployment configuration, which is a stronger claim
+   * than the email match — and without the relaxation the seeded admin row and
+   * the Google identity could never be joined at all.
+   */
+  async function completeAdminGoogle(
+    claims: OAuthClaims,
+    transaction: OAuthTransaction,
+    input: { ip?: string | undefined; userAgent?: string | undefined },
+  ): Promise<CallbackResult> {
+    const email = claims.email.trim().toLowerCase();
+
+    if (!isAllowlistedAdmin(email)) {
+      logger.warn(
+        { event: 'admin.login.failure', reason: 'not-allowlisted' },
+        'admin sign-in refused',
+      );
+      await audit.recordDetached({
+        actorType: 'SYSTEM',
+        action: 'admin.login.failure',
+        entityType: 'User',
+        entityId: 'unknown',
+        after: { email, reason: 'NOT_ALLOWLISTED' },
+      });
+      throw new ForbiddenError(
+        'That Google account is not authorised for the Dealers-Drive admin console.',
+        { code: 'ADMIN_NOT_ALLOWLISTED' },
+      );
+    }
+
+    const identity = await prisma.oAuthIdentity.findUnique({
+      where: { provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject } },
+      include: { user: true },
+    });
+
+    if (identity && identity.user.status !== 'ACTIVE') {
+      throw new ForbiddenError('This account has been suspended. Contact support.', {
+        code: 'ACCOUNT_SUSPENDED',
+      });
+    }
+
+    const now = new Date();
+
+    const admin = await withTransaction(prisma, async (tx) => {
+      // By `sub` first, by address second. The subject is what does not move
+      // when somebody renames their Google account; the address is only how a
+      // row seeded before this flow existed is found the first time.
+      const user =
+        identity?.user ??
+        (await tx.user.findUnique({ where: { email } })) ??
+        (await tx.user.create({
+          data: { email, emailVerifiedAt: now, fullName: claims.name ?? null },
+        }));
+
+      const updated = await tx.user.update({
+        where: { id: user.id },
+        data: {
+          isPlatformAdmin: true,
+          // Only ever *granted*, never downgraded: an admin the platform team
+          // has narrowed to MODERATOR by hand must not be widened back to
+          // SUPER_ADMIN by the act of signing in.
+          adminRole: user.adminRole ?? 'SUPER_ADMIN',
+          emailVerifiedAt: user.emailVerifiedAt ?? now,
+          fullName: user.fullName ?? claims.name ?? null,
+          lastLoginAt: now,
+        },
+      });
+
+      if (identity) {
+        await tx.oAuthIdentity.update({
+          where: { id: identity.id },
+          data: {
+            email: claims.email,
+            emailVerified: claims.emailVerified,
+            displayName: claims.name ?? identity.displayName,
+            pictureUrl: claims.picture ?? identity.pictureUrl,
+            lastLoginAt: now,
+          },
+        });
+      } else {
+        await tx.oAuthIdentity.create({
+          data: {
+            userId: updated.id,
+            provider: 'GOOGLE',
+            providerSubject: claims.subject,
+            email: claims.email,
+            emailVerified: claims.emailVerified,
+            displayName: claims.name ?? null,
+            pictureUrl: claims.picture ?? null,
+            lastLoginAt: now,
+          },
+        });
+      }
+
+      return updated;
+    });
+
+    const session = await sessions.issue({
+      userId: admin.id,
+      scope: 'ADMIN',
+      ip: input.ip,
+      userAgent: input.userAgent,
+    });
+
+    logger.info({ event: 'admin.login.success', userId: admin.id }, 'admin signed in');
+    await audit.recordDetached({
+      actorType: 'ADMIN',
+      actorId: admin.id,
+      action: 'admin.login.success',
+      entityType: 'User',
+      entityId: admin.id,
+    });
+
+    return {
+      token: session.token,
+      expiresAt: session.expiresAt,
+      audience: 'ADMIN',
+      next: 'DASHBOARD',
+      returnTo: transaction.returnTo,
+    };
+  }
+
   /** `Sri Lakshmi Motors` → `sri-lakshmi-motors`, `-2` if that is taken. */
   async function uniqueSlug(name: string): Promise<string> {
     const base = slugify(name).slice(0, 60) || 'dealership';
@@ -594,6 +675,3 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
 }
 
 export type AuthService = ReturnType<typeof createAuthService>;
-
-/** Re-exported so the seed hashes passwords the same way sign-in verifies them. */
-export { hashPassword };

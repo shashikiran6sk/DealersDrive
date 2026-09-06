@@ -183,7 +183,7 @@ describe('the dealer boundary', () => {
     'GET /v1/auth/providers',
     'GET /v1/auth/google/start',
     'GET /v1/auth/google/callback',
-    'POST /v1/auth/admin/login',
+    'GET /v1/auth/admin/google/start',
     'POST /v1/auth/admin/logout',
   ])('leaves %s reachable without any session', async (signature) => {
     const [method, url] = signature.split(' ') as [string, string];

@@ -7,6 +7,7 @@ import {
   formatRupees,
   initialsOf,
   type AdminDealerDetail,
+  type AdminDealerFacets,
   type AdminDealerQuery,
   type AdminDealersResponse,
   type AdminOverview,
@@ -57,6 +58,45 @@ export interface AdminDeps {
 const REQUIRED_DOCUMENTS = 3;
 
 export function createAdminService({ prisma, audit, config, storage }: AdminDeps) {
+  /**
+   * Every location a dealership actually sits in, for the console's filters.
+   *
+   * `distinct` on the column rather than a table of places, because there is no
+   * table of places any more — D1 removed it, and the values here were typed by
+   * dealers and normalised on write. Nulls are dropped and the result is sorted
+   * so the select reads alphabetically.
+   */
+  async function locationFacets(): Promise<AdminDealerFacets> {
+    const [cities, districts, states] = await Promise.all([
+      prisma.dealer.findMany({
+        distinct: ['city'],
+        where: { city: { not: null } },
+        select: { city: true },
+        orderBy: { city: 'asc' },
+      }),
+      prisma.dealer.findMany({
+        distinct: ['district'],
+        where: { district: { not: null } },
+        select: { district: true },
+        orderBy: { district: 'asc' },
+      }),
+      prisma.dealer.findMany({
+        distinct: ['state'],
+        where: { state: { not: null } },
+        select: { state: true },
+        orderBy: { state: 'asc' },
+      }),
+    ]);
+
+    const named = (value: string | null): value is string => Boolean(value);
+
+    return {
+      cities: cities.map((row) => row.city).filter(named),
+      districts: districts.map((row) => row.district).filter(named),
+      states: states.map((row) => row.state).filter(named),
+    };
+  }
+
   /**
    * The permission check lives here rather than in the router, in the same
    * function that performs the action — so it cannot be bypassed by a second
@@ -161,14 +201,29 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
      * total per status so the status tabs do not need a second request.
      */
     async dealers(query: AdminDealerQuery): Promise<AdminDealersResponse> {
+      /**
+       * The three location filters, `AND`ed.
+       *
+       * Each is the dealership's own text now rather than a slug on a joined
+       * row, and each is matched case-insensitively — a filter built from one
+       * dealership's `Vellore` still finds another's `vellore`. Combining them
+       * is what makes the console usable at scale: a state narrows to a few
+       * hundred, a district to a few dozen, a town to the one being asked
+       * about.
+       */
+      const where = {
+        ...(query.status ? { status: query.status } : {}),
+        ...(query.city ? { city: { equals: query.city, mode: 'insensitive' as const } } : {}),
+        ...(query.district
+          ? { district: { equals: query.district, mode: 'insensitive' as const } }
+          : {}),
+        ...(query.state ? { state: { equals: query.state, mode: 'insensitive' as const } } : {}),
+        ...(query.q ? { brandName: { contains: query.q, mode: 'insensitive' as const } } : {}),
+      };
+
       const rows = await prisma.dealer.findMany({
         where: {
-          ...(query.status ? { status: query.status } : {}),
-          // The city is the dealership's own text now, not a slug on a joined
-          // row. Matched case-insensitively so a filter built from one
-          // dealership's `Vellore` still finds another's `vellore`.
-          ...(query.city ? { city: { equals: query.city, mode: 'insensitive' as const } } : {}),
-          ...(query.q ? { brandName: { contains: query.q, mode: 'insensitive' } } : {}),
+          ...where,
           ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
         },
         include: { documents: true },
@@ -193,6 +248,15 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
 
       const grouped = await prisma.dealer.groupBy({ by: ['status'], _count: { _all: true } });
 
+      /*
+       * The filter's own options, read off the rows rather than kept in a list
+       * somewhere. Three cheap `DISTINCT`s: the whole table is the domain of
+       * the filter, so they are deliberately *not* narrowed by `where` —
+       * picking a state must not empty the district select and strand the
+       * console with no way back.
+       */
+      const facets = await locationFacets();
+
       return {
         data: page.map((dealer) => ({
           id: dealer.id,
@@ -200,6 +264,8 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
           brandName: dealer.brandName,
           initials: initialsOf(dealer.brandName),
           city: dealer.city ?? '—',
+          district: dealer.district ?? '—',
+          state: dealer.state ?? '—',
           status: dealer.status,
           statusLabel: DEALER_STATUS_LABELS[dealer.status],
           statusTone: DEALER_STATUS_TONES[dealer.status],
@@ -214,6 +280,7 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         })),
         page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
         counts: Object.fromEntries(grouped.map((row) => [row.status, row._count._all])),
+        facets,
       };
     },
 
@@ -318,6 +385,8 @@ export function createAdminService({ prisma, audit, config, storage }: AdminDeps
         gstin: dealer.gstin,
         pan: dealer.pan,
         city: dealer.city,
+        district: dealer.district,
+        state: dealer.state,
         addressLine: dealer.addressLine,
         contactName: owner?.user.fullName ?? null,
         contactPhone: dealer.contactPhone,

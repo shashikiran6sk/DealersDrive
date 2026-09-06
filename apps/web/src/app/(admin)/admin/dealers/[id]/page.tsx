@@ -84,6 +84,11 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
                 ['GSTIN', dealer.gstin, true],
                 ['PAN', dealer.pan, true],
                 ['City', dealer.city, false],
+                // The two fields the dealer list filters on. A moderator who
+                // has narrowed to a district should be able to confirm on this
+                // screen that the dealership really is in it.
+                ['District', dealer.district, false],
+                ['State', dealer.state, false],
                 ['Address', dealer.addressLine, false],
                 ['Contact', dealer.contactName, false],
                 // The reviewer needs the number to verify the business; this

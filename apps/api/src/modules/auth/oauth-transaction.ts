@@ -20,23 +20,45 @@ export const OAUTH_COOKIE = 'dd_oauth';
 /** Longer than any human takes at Google's account chooser, short enough to be useless later. */
 export const OAUTH_TRANSACTION_TTL_SECONDS = 600;
 
+/**
+ * Which console this sign-in is for.
+ *
+ * It is decided at `/start` and sealed, rather than being read off the callback
+ * — because it selects the *scope of the session that gets issued*, and a value
+ * the browser could change on the way back would be a way to ask for an admin
+ * session from the dealer button. Google's redirect URI is registered once and
+ * shared by both flows; this field is what tells them apart when it returns.
+ */
+export type OAuthAudience = 'DEALER' | 'ADMIN';
+
 export interface OAuthTransaction {
   state: string;
   nonce: string;
   codeVerifier: string;
+  audience: OAuthAudience;
   /** A *path* on the web app, never an absolute URL — see `safeReturnTo`. */
   returnTo: string;
   issuedAt: number;
 }
 
-export function createOAuthTransaction(returnTo: string): OAuthTransaction {
+/** Where each console lands when nothing else was asked for. */
+export const DEFAULT_RETURN_TO: Record<OAuthAudience, string> = {
+  DEALER: '/dealer',
+  ADMIN: '/admin',
+};
+
+export function createOAuthTransaction(
+  returnTo: string,
+  audience: OAuthAudience = 'DEALER',
+): OAuthTransaction {
   return {
     state: randomBytes(32).toString('base64url'),
     nonce: randomBytes(32).toString('base64url'),
     // RFC 7636 §4.1 — 43-128 characters of unreserved ASCII. 32 random bytes
     // base64url-encoded lands at 43.
     codeVerifier: randomBytes(32).toString('base64url'),
-    returnTo: safeReturnTo(returnTo),
+    audience,
+    returnTo: safeReturnTo(returnTo, DEFAULT_RETURN_TO[audience]),
     issuedAt: Date.now(),
   };
 }
@@ -71,7 +93,11 @@ export function openTransaction(sealed: string | undefined): OAuthTransaction | 
     typeof transaction.nonce !== 'string' ||
     typeof transaction.codeVerifier !== 'string' ||
     typeof transaction.returnTo !== 'string' ||
-    typeof transaction.issuedAt !== 'number'
+    typeof transaction.issuedAt !== 'number' ||
+    // Unrecognised is not "assume admin" and not "assume dealer": it is a
+    // cookie this build did not mint, and the callback has nothing to do with
+    // it. Refusing here costs a person one click on a sign-in page.
+    (transaction.audience !== 'DEALER' && transaction.audience !== 'ADMIN')
   ) {
     return null;
   }

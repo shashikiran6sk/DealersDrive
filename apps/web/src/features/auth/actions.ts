@@ -1,10 +1,8 @@
 'use server';
 
 import {
-  AdminLoginInput,
   OnboardingInput,
   UpdateDealerInput,
-  type AdminSessionResponse,
   type AuthSession,
   type DealerSubmitResponse,
 } from '@dealers-drive/contracts';
@@ -12,12 +10,12 @@ import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { ApiError, apiSend, apiSignIn, SESSION_COOKIE } from '@/lib/api';
+import { ApiError, apiSend, SESSION_COOKIE } from '@/lib/api';
 
 /**
- * The three writes that change who you are.
+ * The writes that change who you are.
  *
- * All three are Server Actions rather than browser fetches, for one reason:
+ * They are Server Actions rather than browser fetches, for one reason:
  * the session cookie has to be set and cleared server-side (ARCHITECTURE
  * §15.2). No token is ever handed to client JavaScript — there is nothing in
  * `localStorage`, nothing in a React state atom, and nothing a script on the
@@ -31,39 +29,14 @@ export interface ActionState {
   saved?: boolean;
 }
 
-/**
- * Admin sign-in. The API is the only thing that verifies the password; this
- * relays the session it issues onto the browser.
+/*
+ * There is no `adminLoginAction` here any more.
+ *
+ * Admin sign-in is a browser navigation to the API's `/v1/auth/admin/google/
+ * start`, exactly as the dealer's is — no form, no credential crossing this
+ * process, and no session for a Server Action to relay. The cookie is set by
+ * the API on the callback.
  */
-export async function adminLoginAction(
-  _previous: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  const parsed = AdminLoginInput.safeParse({
-    email: text(formData, 'email'),
-    password: text(formData, 'password'),
-  });
-
-  if (!parsed.success) {
-    return { errors: fieldErrors(parsed.error.issues) };
-  }
-
-  try {
-    const { session } = await apiSignIn<AdminSessionResponse>('/v1/auth/admin/login', parsed.data);
-
-    if (!session) return { message: 'Sign-in did not return a session. Try again.' };
-    await setSession(session.value, session.expires);
-  } catch (error) {
-    if (error instanceof ApiError) {
-      // The API answers identically for an unknown account and a wrong
-      // password; repeating its message keeps it that way here.
-      return { message: error.userMessage('That email and password do not match.') };
-    }
-    return { message: 'The admin API is unavailable. Try again shortly.' };
-  }
-
-  redirect('/admin');
-}
 
 /**
  * The fields steps 1 and 2 carry between them, in one list.
@@ -80,6 +53,7 @@ const ONBOARDING_FIELDS = [
   'legalName',
   'addressLine',
   'city',
+  'district',
   'state',
   'pincode',
   'landline',
@@ -101,6 +75,7 @@ export async function onboardingAction(
     legalName: text(formData, 'legalName').trim(),
     addressLine: text(formData, 'addressLine').trim(),
     city: text(formData, 'city').trim(),
+    district: text(formData, 'district').trim(),
     state: text(formData, 'state').trim(),
     pincode: text(formData, 'pincode').trim(),
     landline: emptyToUndefined(text(formData, 'landline')),
@@ -155,6 +130,7 @@ export async function updateOnboardingAction(
     address: {
       line: text(formData, 'addressLine').trim(),
       city: text(formData, 'city').trim(),
+      district: text(formData, 'district').trim(),
       state: text(formData, 'state').trim(),
       pincode: text(formData, 'pincode').trim(),
     },
@@ -257,16 +233,6 @@ export async function submitForVerificationAction(): Promise<ActionState> {
   }
 
   redirect('/dealer/onboarding?step=3');
-}
-
-async function setSession(value: string, expires: Date | undefined): Promise<void> {
-  (await cookies()).set(SESSION_COOKIE, value, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    ...(expires ? { expires } : {}),
-  });
 }
 
 /**

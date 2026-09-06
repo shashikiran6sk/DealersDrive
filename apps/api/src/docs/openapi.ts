@@ -499,7 +499,8 @@ export function buildOpenApiDocument(options: OpenApiOptions = {}): Record<strin
           name: 'dd_session',
           description:
             'The same session cookie, resolved as a platform admin. **Not required by this ' +
-            'build** — the development resolver reads `DEV_ADMIN_EMAIL` server-side.',
+            'build** — the development resolver reads the first `ADMIN_ALLOWLIST` entry ' +
+            'server-side.',
         },
       },
       schemas: catalogue.schemas,

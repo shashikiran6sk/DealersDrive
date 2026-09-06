@@ -281,7 +281,7 @@ Component Sandbox
 ├── Onboarding              (features/auth/)
 │   ├── OnboardingWizard
 │   ├── DocumentUploader
-│   └── AdminLoginForm · SignOutButton
+│   └── SignOutButton
 │
 ├── Public                  (features/{enquiry,saved,report}/)
 │   ├── EnquiryForm

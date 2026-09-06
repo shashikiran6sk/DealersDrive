@@ -39,6 +39,8 @@ const BASE: AdminDealerDetail = {
   gstin: '33AABCS1429B1ZX',
   pan: 'AABCS1429B',
   city: 'Vellore',
+  district: 'Vellore',
+  state: 'Tamil Nadu',
   addressLine: '12 Katpadi Road',
   contactName: 'Ramesh Kumar',
   contactPhone: '9840012345',

@@ -58,6 +58,8 @@ export const DealerProfile = z.object({
   address: z.object({
     line: z.string().nullable(),
     city: z.string().nullable(),
+    /** Nullable for the rows that predate onboarding asking for it. */
+    district: z.string().nullable(),
     state: z.string().nullable(),
     pincode: z.string().nullable(),
   }),
@@ -141,6 +143,8 @@ export const UpdateDealerInput = z
          * ──────────────────────────────────────────────────────────────────
          */
         city: z.string().trim().min(2).max(80).optional(),
+        /** Free text and normalised on write, exactly like `city` and `state`. */
+        district: z.string().trim().min(2).max(80).optional(),
         state: z.string().trim().min(2).max(80).optional(),
         pincode: z
           .string()

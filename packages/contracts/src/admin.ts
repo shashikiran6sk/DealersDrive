@@ -62,6 +62,17 @@ export const AdminDealerQuery = z
      * `Vellore` still finds another's `vellore`.
      */
     city: z.string().trim().min(1).max(80).optional(),
+    /**
+     * District and state, the other two halves of "where".
+     *
+     * The three are `AND`ed rather than treated as one place field, because
+     * that is how the questions arrive: every dealer in Tamil Nadu, every
+     * dealer in Vellore district, or one town inside it. Each is matched
+     * case-insensitively against the dealership's own text for the same reason
+     * `city` is — the values in the column were typed by dealers.
+     */
+    district: z.string().trim().min(1).max(80).optional(),
+    state: z.string().trim().min(1).max(80).optional(),
     q: z.string().max(120).optional(),
     cursor: z.string().max(500).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -75,6 +86,8 @@ export const AdminDealerRow = z.object({
   brandName: z.string(),
   initials: z.string(),
   city: z.string(),
+  district: z.string(),
+  state: z.string(),
   status: DealerStatus,
   statusLabel: z.string(),
   statusTone: StatusTone,
@@ -87,10 +100,28 @@ export const AdminDealerRow = z.object({
 });
 export type AdminDealerRow = z.infer<typeof AdminDealerRow>;
 
+/**
+ * The values the location filters can actually take, computed from the rows
+ * that exist.
+ *
+ * They ship with the list for the same reason `counts` does: a filter offering
+ * a district nobody trades in, or missing the one that was typed yesterday, is
+ * a filter that has to be kept in step by hand. These are distinct values off
+ * the `dealers` table, so the console can only ever offer a filter that matches
+ * something.
+ */
+export const AdminDealerFacets = z.object({
+  cities: z.array(z.string()),
+  districts: z.array(z.string()),
+  states: z.array(z.string()),
+});
+export type AdminDealerFacets = z.infer<typeof AdminDealerFacets>;
+
 export const AdminDealersResponse = z.object({
   data: z.array(AdminDealerRow),
   page: CursorPage,
   counts: z.record(z.string(), z.number().int()),
+  facets: AdminDealerFacets,
 });
 export type AdminDealersResponse = z.infer<typeof AdminDealersResponse>;
 
@@ -122,6 +153,8 @@ export const AdminDealerDetail = z.object({
   gstin: z.string().nullable(),
   pan: z.string().nullable(),
   city: z.string().nullable(),
+  district: z.string().nullable(),
+  state: z.string().nullable(),
   addressLine: z.string().nullable(),
   contactName: z.string().nullable(),
   contactPhone: z.string().nullable(),

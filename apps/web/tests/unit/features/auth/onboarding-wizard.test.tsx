@@ -592,6 +592,26 @@ describe('OnboardingWizard — the Business step', () => {
   });
 
   /**
+   * The district sits between the two, and is required for the same reason
+   * they are: the admin console filters on all three, and a dealership that
+   * skipped the question is one the filter would silently omit.
+   */
+  it('asks for the district alongside the city and the state', async () => {
+    const user = await onBusinessStep();
+
+    const district = screen.getByLabelText('District');
+    expect(district.tagName).toBe('INPUT');
+    expect(district).toHaveAttribute('name', 'district');
+    expect(district).toBeRequired();
+
+    await user.type(district, 'Dharwad');
+    expect(district).toHaveValue('Dharwad');
+    expect(district.closest('form')).toBe(
+      screen.getByRole('button', { name: 'Continue' }).closest('form'),
+    );
+  });
+
+  /**
    * The submit lives here and nowhere else. Both fieldsets are inside it, so
    * the account fields typed on step 1 are still in the FormData that creates
    * the dealership.
@@ -870,6 +890,47 @@ describe('OnboardingWizard — the outstanding-items list', () => {
 
     expect(await screen.findByText('That could not be saved.')).toBeInTheDocument();
     expect(blockersShown()).toEqual([]);
+  });
+
+  /**
+   * A refusal that names a step 1 field has to be *readable*, and it is not
+   * readable on the step that hides that field.
+   *
+   * `PHONE_ALREADY_REGISTERED` is the case this exists for: the number belongs
+   * to another dealership, and the dealer was looking at the city and pincode
+   * boxes when the API said so. The wizard walks back to Account, where the
+   * message renders against the input it is about.
+   */
+  it('returns to Account when the API refuses a field that lives there', async () => {
+    await submitAndFail(
+      {
+        message: 'That mobile number is already registered to another dealership.',
+        errors: { phone: 'Already registered.' },
+      },
+      completeness(),
+    );
+
+    expect(await screen.findByText('Already registered.')).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Phone/).closest('fieldset')).not.toHaveAttribute('hidden');
+    expect(screen.getByLabelText(/^Dealership name/).closest('fieldset')).toHaveAttribute('hidden');
+    // A local move, exactly like Back — the typed answers are still in the form.
+    expect(navigationState.pushed).toEqual([]);
+  });
+
+  /** A refusal about a step 2 field leaves the dealer on step 2. */
+  it('stays on Business when the refusal is about a field there', async () => {
+    await submitAndFail(
+      {
+        message: 'A dealership called Sri Lakshmi Motors is already registered in Vellore.',
+        errors: { legalName: 'Already registered in Vellore.' },
+      },
+      completeness(),
+    );
+
+    expect(await screen.findByText('Already registered in Vellore.')).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Dealership name/).closest('fieldset')).not.toHaveAttribute(
+      'hidden',
+    );
   });
 
   it('shows nothing at all when the action did not fail', () => {

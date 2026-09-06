@@ -39,6 +39,7 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     legalName: dealershipName(),
     addressLine: '18, Gandhi Road',
     city: 'Katpadi',
+    district: 'Vellore',
     state: 'Tamil Nadu',
     pincode: '632007',
     ...overrides,
@@ -138,7 +139,8 @@ describe('a first sign-in', () => {
     // Nothing has claimed a phone number: onboarding collects it, and an
     // unverified placeholder would squat on the unique index (§8.1).
     expect(identity?.user.phone).toBeNull();
-    expect(identity?.user.passwordHash).toBeNull();
+    // A dealer sign-in grants nothing on the admin side, whatever the address.
+    expect(identity?.user.isPlatformAdmin).toBe(false);
   });
 
   it('reports the verified Google account so onboarding need not ask for it', async () => {
@@ -554,66 +556,117 @@ describe('sessions and sign-out', () => {
 });
 
 describe('the admin console', () => {
-  const ADMIN = { email: env.DEV_ADMIN_EMAIL, password: env.DEV_ADMIN_PASSWORD };
+  /**
+   * The first allow-listed address is also the one the seed creates a row for,
+   * which is what makes the second case below meaningful: the Google identity
+   * is linked onto the account that already exists rather than creating a
+   * second one for the same person.
+   */
+  const ALLOWED = env.adminAllowlist[0] ?? '';
 
-  it('signs in with the seeded email and password', async () => {
+  /** A Google account for a given address, distinct per call. */
+  function googleAccount(email: string): void {
+    subjectCounter += 1;
+    h.google.claims = {
+      subject: `admin-sub-${subjectCounter}`,
+      email,
+      emailVerified: true,
+      name: 'Dealers-Drive Operations',
+    };
+  }
+
+  it('signs an allow-listed Google account in to the console', async () => {
+    googleAccount(ALLOWED);
     const agent = h.agent();
 
-    const response = await agent.post('/v1/auth/admin/login').send(ADMIN).expect(200);
+    const { status, location } = await h.signInAdmin(agent);
 
-    expect(response.body.admin.email).toBe(ADMIN.email);
-    expect(response.body.admin.adminRole).toBe('SUPER_ADMIN');
-    expect(response.body.permissions).toContain('admin:listing:moderate');
-    expect(JSON.stringify(response.body)).not.toContain('argon2');
-  });
-
-  it('opens the admin console with that session', async () => {
-    const agent = h.agent();
-    await agent.post('/v1/auth/admin/login').send(ADMIN).expect(200);
-
+    expect(status).toBe(302);
+    expect(location).toBe(`${env.WEB_BASE_URL}/admin`);
     await agent.get('/v1/admin/metrics/overview').expect(200);
   });
 
-  it('refuses a wrong password with the same answer as an unknown account', async () => {
-    const wrong = await h
-      .agent()
-      .post('/v1/auth/admin/login')
-      .send({ ...ADMIN, password: 'not-the-password' })
-      .expect(401);
-    const unknown = await h
-      .agent()
-      .post('/v1/auth/admin/login')
-      .send({ email: 'nobody@dealers-drive.in', password: 'anything' })
-      .expect(401);
+  it('links onto the account that already exists rather than creating a second one', async () => {
+    googleAccount(ALLOWED);
+    await h.signInAdmin(h.agent());
 
-    expect(wrong.body.code).toBe('INVALID_CREDENTIALS');
-    expect(unknown.body.code).toBe(wrong.body.code);
-    expect(unknown.body.detail).toBe(wrong.body.detail);
+    const users = await h.prisma.user.findMany({ where: { email: ALLOWED } });
+
+    expect(users).toHaveLength(1);
+    expect(users[0]?.isPlatformAdmin).toBe(true);
+    expect(users[0]?.adminRole).toBe('SUPER_ADMIN');
   });
 
-  it('refuses a dealer account, which has no password at all', async () => {
-    const response = await h
-      .agent()
-      .post('/v1/auth/admin/login')
-      .send({ email: 'owner@srilakshmimotors.in', password: 'anything' })
-      .expect(401);
+  it('refuses every other Google account, however verified', async () => {
+    googleAccount('someone.else@gmail.com');
+    const agent = h.agent();
 
-    expect(response.body.code).toBe('INVALID_CREDENTIALS');
+    const { location } = await h.signInAdmin(agent);
+
+    expect(location).toBe(`${env.WEB_BASE_URL}/admin/login?error=not_authorised`);
+    await agent.get('/v1/admin/metrics/overview').expect(401);
+  });
+
+  /**
+   * The seeded dealership's owner. It is a real, verified Google account with a
+   * real dealer session available to it — and still not an admin, because the
+   * only thing that grants the console is the allow-list.
+   */
+  it('refuses a dealer address, which is not on the list', async () => {
+    googleAccount('owner@srilakshmimotors.in');
+    const agent = h.agent();
+
+    const { location } = await h.signInAdmin(agent);
+
+    expect(location).toBe(`${env.WEB_BASE_URL}/admin/login?error=not_authorised`);
+  });
+
+  it('does not grant the console to a dealer-scope sign-in by the same address', async () => {
+    googleAccount(ALLOWED);
+    const agent = h.agent();
+
+    // The dealer button, not the admin one: same person, same Google account,
+    // and a session that reaches nothing under /v1/admin.
+    await h.signIn(agent);
+
+    await agent.get('/v1/admin/metrics/overview').expect(401);
+  });
+
+  it('publishes the admin start URL alongside the dealer one', async () => {
+    const response = await h.agent().get('/v1/auth/providers').expect(200);
+
+    expect(response.body.google.adminStartUrl).toBe(
+      `${env.API_BASE_URL}/v1/auth/admin/google/start`,
+    );
   });
 
   it('signs out', async () => {
+    googleAccount(ALLOWED);
     const agent = h.agent();
-    await agent.post('/v1/auth/admin/login').send(ADMIN).expect(200);
-    await agent.post('/v1/auth/admin/logout').expect(204);
+    await h.signInAdmin(agent);
 
+    await agent.post('/v1/auth/admin/logout').expect(204);
     await agent.get('/v1/admin/metrics/overview').expect(401);
   });
 });
 
 describe('the boundary between the two consoles', () => {
-  const ADMIN = { email: env.DEV_ADMIN_EMAIL, password: env.DEV_ADMIN_PASSWORD };
+  /** The allow-listed address, arriving through the admin button. */
+  async function adminAgent() {
+    subjectCounter += 1;
+    h.google.claims = {
+      subject: `boundary-sub-${subjectCounter}`,
+      email: env.adminAllowlist[0] ?? '',
+      emailVerified: true,
+      name: 'Dealers-Drive Operations',
+    };
+    const agent = h.agent();
+    await h.signInAdmin(agent);
+    return agent;
+  }
 
   it('does not let a dealer session reach an admin route', async () => {
+    newAccount();
     const agent = h.agent();
     await h.signIn(agent);
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
@@ -627,15 +680,14 @@ describe('the boundary between the two consoles', () => {
    * one human who holds both seats cannot cross with one cookie.
    */
   it('does not let an admin session reach a dealer route', async () => {
-    const agent = h.agent();
-    await agent.post('/v1/auth/admin/login').send(ADMIN).expect(200);
+    const agent = await adminAgent();
 
     await agent.get('/v1/dealer').expect(401);
     await agent.get('/v1/auth/me').expect(401);
   });
 
   it('issues admin sessions with the shorter lifetime', async () => {
-    await h.agent().post('/v1/auth/admin/login').send(ADMIN).expect(200);
+    await adminAgent();
 
     const session = await h.prisma.session.findFirst({
       where: { scope: 'ADMIN' },

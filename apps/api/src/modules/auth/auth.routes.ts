@@ -1,14 +1,12 @@
-import { AdminLoginInput, OnboardingInput } from '@dealers-drive/contracts';
+import { OnboardingInput } from '@dealers-drive/contracts';
 import { Router } from 'express';
 
 import { env } from '../../config/env.js';
 import { signedInPrincipal } from '../../middleware/auth.js';
-import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
 import { ForbiddenError } from '../../platform/errors.js';
 import type { AuthService } from './auth.service.js';
-import { ADMIN_LOGIN_LIMIT, ADMIN_LOGIN_WINDOW_SECONDS } from './auth.service.js';
-import { openTransaction } from './oauth-transaction.js';
+import { openTransaction, type OAuthAudience } from './oauth-transaction.js';
 import {
   clearOAuthCookie,
   clearSessionCookie,
@@ -21,41 +19,72 @@ import {
 /**
  * PART B — the only routes that may be reached without a session.
  *
- * Two of them are browser navigations rather than API calls: `/google/start`
- * and `/google/callback` answer with a 302, because they are steps in a
- * redirect flow the browser is driving. Everything else here is ordinary JSON.
+ * Three of them are browser navigations rather than API calls:
+ * `/google/start`, `/admin/google/start` and the one `/google/callback` they
+ * both come back through. They answer with a 302 because they are steps in a
+ * redirect flow the browser is driving; everything else here is ordinary JSON.
+ *
+ * **One callback, two consoles.** Google requires every redirect URI to be
+ * registered against the OAuth client, so a second callback path would be a
+ * second thing to register and a second thing to get wrong in an environment.
+ * Which console a round trip belongs to travels in the sealed `dd_oauth`
+ * cookie instead — see `OAuthAudience`.
+ *
+ * There is no `POST /admin/login` any more. Admin sign-in is this same Google
+ * flow, and the address it produces is checked against `ADMIN_ALLOWLIST`; the
+ * API holds no password to verify and no rate limiter guarding one.
  *
  * The callback never renders an error itself. A failed sign-in sends the person
  * back to the sign-in screen with a code in the query string, so they see the
  * product's own error state rather than a JSON body in an address bar.
  */
-export function createPublicAuthRouter(service: AuthService, rateLimit: RateLimiter): Router {
+export function createPublicAuthRouter(service: AuthService): Router {
   const router = Router();
+
+  /**
+   * `/google/start` and `/admin/google/start` are the same handler with one
+   * value changed, and that value is the only difference between the two
+   * consoles' sign-ins: it is sealed into the transaction cookie and decides
+   * the scope of the session the callback issues.
+   */
+  const start =
+    (audience: OAuthAudience) =>
+    (
+      req: Parameters<Parameters<Router['get']>[1]>[0],
+      res: Parameters<Parameters<Router['get']>[1]>[1],
+      next: Parameters<Parameters<Router['get']>[1]>[2],
+    ): void => {
+      try {
+        const returnTo = typeof req.query.returnTo === 'string' ? req.query.returnTo : undefined;
+        const { authorizationUrl, cookie, maxAgeSeconds } = service.startGoogle(returnTo, audience);
+
+        setOAuthCookie(res, cookie, maxAgeSeconds);
+        res.redirect(302, authorizationUrl);
+      } catch (error) {
+        next(error);
+      }
+    };
 
   router.get('/providers', (_req, res) => {
     res.set('Cache-Control', 'no-store');
     res.json(service.providers());
   });
 
-  router.get('/google/start', (req, res, next) => {
-    try {
-      const returnTo = typeof req.query.returnTo === 'string' ? req.query.returnTo : undefined;
-      const { authorizationUrl, cookie, maxAgeSeconds } = service.startGoogle(returnTo);
-
-      setOAuthCookie(res, cookie, maxAgeSeconds);
-      res.redirect(302, authorizationUrl);
-    } catch (error) {
-      next(error);
-    }
-  });
+  router.get('/google/start', start('DEALER'));
+  router.get('/admin/google/start', start('ADMIN'));
 
   router.get('/google/callback', (req, res, next) => {
     void (async () => {
+      // Resolved before the try, because a failure has to know which sign-in
+      // screen to send the browser back to — and the audience is in the cookie,
+      // not in anything the callback carries.
+      let signInPath = '/dealer/login';
       const back = (code: string) =>
-        res.redirect(302, `${env.WEB_BASE_URL}/dealer/login?error=${code}`);
+        res.redirect(302, `${env.WEB_BASE_URL}${signInPath}?error=${code}`);
 
       try {
         const transaction = openTransaction(readOAuthCookie(req));
+        if (transaction?.audience === 'ADMIN') signInPath = '/admin/login';
         // Single-use, whatever happens next: the state and verifier inside are
         // spent the moment Google sends the browser back.
         clearOAuthCookie(res);
@@ -103,46 +132,14 @@ export function createPublicAuthRouter(service: AuthService, rateLimit: RateLimi
           back('account_suspended');
           return;
         }
+        if (code === 'ADMIN_NOT_ALLOWLISTED') {
+          back('not_authorised');
+          return;
+        }
         next(error);
       }
     })();
   });
-
-  /**
-   * B7. Rate-limited per email *and* per IP: the first stops one account being
-   * ground through a password list, the second stops one host doing it across
-   * many accounts.
-   */
-  router.post(
-    '/admin/login',
-    rateLimit('admin-login-ip', { limit: 20, windowSeconds: ADMIN_LOGIN_WINDOW_SECONDS }),
-    validate({ body: AdminLoginInput }),
-    rateLimit('admin-login-email', {
-      limit: ADMIN_LOGIN_LIMIT,
-      windowSeconds: ADMIN_LOGIN_WINDOW_SECONDS,
-      keyBy: (req) => validated<AdminLoginInput>(req, 'body').email.trim().toLowerCase(),
-      message: 'Too many sign-in attempts for that account. Try again in a few minutes.',
-    }),
-    (req, res, next) => {
-      void (async () => {
-        try {
-          const body = validated<AdminLoginInput>(req, 'body');
-          const result = await service.adminLogin({
-            email: body.email,
-            password: body.password,
-            ip: req.ip,
-            userAgent: req.get('user-agent'),
-          });
-
-          setSessionCookie(res, result.token, result.expiresAt);
-          res.set('Cache-Control', 'no-store');
-          res.json(result.response);
-        } catch (error) {
-          next(error);
-        }
-      })();
-    },
-  );
 
   /**
    * Revokes whatever session the caller presents and clears the cookie. No

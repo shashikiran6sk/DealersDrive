@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cookieJar, revalidations } from '../../../setup.js';
 import {
-  adminLoginAction,
   onboardingAction,
   saveBusinessIdsAction,
   signOutAction,
@@ -11,12 +10,16 @@ import {
 } from '../../../../src/features/auth/actions.js';
 
 /**
- * The three writes that change who you are.
+ * The writes that change who you are.
  *
- * All of them are Server Actions for one reason: the session cookie has to be
- * set and cleared server-side. The property worth asserting hardest is the
- * negative one — no token is ever returned to the caller, so there is nothing
- * for client JavaScript to put in `localStorage` even by accident.
+ * They are Server Actions for one reason: the session cookie has to be set and
+ * cleared server-side. The property worth asserting hardest is the negative one
+ * — no token is ever returned to the caller, so there is nothing for client
+ * JavaScript to put in `localStorage` even by accident.
+ *
+ * There is no admin sign-in block here any more. Signing in to the console is a
+ * browser navigation to the API, not a Server Action, so there is nothing in
+ * this process to test: `apps/api/tests/auth.test.ts` covers the allow-list.
  */
 const ORIGINAL_FETCH = globalThis.fetch;
 
@@ -73,6 +76,7 @@ const ONBOARDING = {
   // Typed, not chosen. There is no list of cities and no state the platform is
   // confined to.
   city: 'Vellore',
+  district: 'Vellore',
   state: 'Tamil Nadu',
   pincode: '632006',
   landline: '',
@@ -86,72 +90,6 @@ beforeEach(() => {
 afterEach(() => {
   globalThis.fetch = ORIGINAL_FETCH;
   vi.unstubAllEnvs();
-});
-
-describe('admin sign-in', () => {
-  it('re-issues the session the API handed back, as an HttpOnly cookie', async () => {
-    globalThis.fetch = respond(200, { admin: { id: '1' } }, [
-      'dd_session=issued-token; Path=/; HttpOnly',
-    ]);
-
-    const destination = await redirectOf(
-      adminLoginAction({}, form({ email: 'ops@dealers-drive.in', password: 'x' })),
-    );
-
-    expect(destination).toBe('/admin');
-    expect(cookieJar.get('dd_session')).toBe('issued-token');
-  });
-
-  it('validates before it calls the API at all', async () => {
-    globalThis.fetch = respond(200);
-
-    const state = await adminLoginAction({}, form({ email: 'not-an-email', password: '' }));
-
-    expect(state.errors?.email).toBeTruthy();
-    expect(state.errors?.password).toBeTruthy();
-    expect(calls).toHaveLength(0);
-  });
-
-  /** Whatever the API says, unchanged — it is deliberately indistinguishable. */
-  it('repeats the API refusal rather than inventing its own', async () => {
-    globalThis.fetch = respond(401, {
-      status: 401,
-      code: 'INVALID_CREDENTIALS',
-      title: 'no',
-      detail: 'That email and password do not match.',
-    });
-
-    const state = await adminLoginAction(
-      {},
-      form({ email: 'ops@dealers-drive.in', password: 'x' }),
-    );
-
-    expect(state.message).toBe('That email and password do not match.');
-    expect(cookieJar.has('dd_session')).toBe(false);
-  });
-
-  it('does not sign anyone in when the API issues no cookie', async () => {
-    globalThis.fetch = respond(200, { admin: { id: '1' } }, []);
-
-    const state = await adminLoginAction(
-      {},
-      form({ email: 'ops@dealers-drive.in', password: 'x' }),
-    );
-
-    expect(state.message).toMatch(/did not return a session/);
-    expect(cookieJar.has('dd_session')).toBe(false);
-  });
-
-  it('reports an unreachable API as an outage, not a wrong password', async () => {
-    globalThis.fetch = vi.fn(() => Promise.reject(new Error('ECONNREFUSED')));
-
-    const state = await adminLoginAction(
-      {},
-      form({ email: 'ops@dealers-drive.in', password: 'x' }),
-    );
-
-    expect(state.message).toMatch(/unavailable/);
-  });
 });
 
 describe('onboarding', () => {

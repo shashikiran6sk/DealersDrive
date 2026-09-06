@@ -8,7 +8,7 @@ import type {
   YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Banner, Blueprint, StatusTag, Stepper } from '@/components/ui/primitives';
@@ -49,6 +49,15 @@ import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
  * `DEALER_ALREADY_EXISTS` — so `edit` below picks `PATCH /v1/dealer` instead.
  * The fields, the layout and the validation are the same either way; only the
  * verb changes.
+ *
+ * **A refusal is shown on the step that can act on it.** Both uniqueness
+ * checks — the phone number and the registered name — are answered by the
+ * write, which happens when step 2 submits. But the phone number is typed on
+ * *step 1*, so a 409 against it used to land the dealer on the Business step
+ * with a banner about a field they could not see, and no way to tell which box
+ * was wrong. `ACCOUNT_FIELDS` below is what the wizard walks back for: when the
+ * API names one of them, the form returns to step 1 and the message renders
+ * against the input it belongs to.
  *
  * **Where the duplicate check lands.** A dealership's name has to be unique
  * within its city, and both halves of that pair are typed on step 2 — so the
@@ -113,6 +122,24 @@ export function OnboardingWizard({
   // not cost them the other eight fields.
   const values = state.values ?? {};
   const errors = { ...(state.errors ?? {}), ...accountErrors };
+
+  /**
+   * A refusal that names a step 1 field walks the wizard back to step 1.
+   *
+   * The commonest one by far is `PHONE_ALREADY_REGISTERED`: the number belongs
+   * to another dealership, the API says so against `body.phone`, and `phone` is
+   * three fields up on a step that is currently hidden. Without this the dealer
+   * reads "that mobile number is already registered" while looking at the city
+   * and pincode boxes.
+   *
+   * It runs in an effect rather than during render because `useActionState`
+   * delivers the result *as* a render, and moving the step is a state change —
+   * doing it inline would be a set during render. `state` is a fresh object per
+   * submission, so this fires once per answer and not on every keystroke.
+   */
+  useEffect(() => {
+    if (Object.keys(state.errors ?? {}).some((field) => ACCOUNT_FIELDS.has(field))) setLocal(0);
+  }, [state]);
 
   const current = step >= 2 ? step : local;
 
@@ -216,6 +243,16 @@ export function OnboardingWizard({
     </div>
   );
 }
+
+/**
+ * The fields that live on step 1.
+ *
+ * One list, used for both halves of the same rule: what the browser validates
+ * before it will move off the Account step, and what the wizard walks *back* to
+ * that step for when the API refuses one of them. Two lists would drift, and
+ * the drift would be a dealer stuck on step 2 with an invisible error.
+ */
+const ACCOUNT_FIELDS = new Set(['fullName', 'phone']);
 
 /**
  * The required fields of step 1, read straight off the form.
@@ -443,6 +480,29 @@ function BusinessStep({
               required
               aria-required="true"
               {...invalidProps('city', errors.city)}
+            />
+          </Field>
+
+          {/*
+            The district, beside the city rather than instead of it.
+
+            It is the unit support and moderation actually work in — "every
+            dealer in Vellore district" is a question the admin console can now
+            answer, and "every dealer whose town is spelt Vellore" is not the
+            same question. Free text like its two neighbours, and normalised by
+            the same server-side function, so one district cannot arrive as
+            three filter values.
+          */}
+          <Field id="district" label="District" error={errors.district}>
+            <input
+              id="district"
+              name="district"
+              defaultValue={values.district ?? dealer?.address.district ?? ''}
+              className="input"
+              placeholder="Vellore"
+              required
+              aria-required="true"
+              {...invalidProps('district', errors.district)}
             />
           </Field>
 
@@ -701,6 +761,7 @@ const MISSING_LABELS: Record<string, string> = {
   addressLine: 'Address',
   pincode: 'Pincode',
   city: 'City',
+  district: 'District',
   state: 'State',
   fullName: 'Your name',
   phone: 'Phone number',

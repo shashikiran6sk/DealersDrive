@@ -98,15 +98,32 @@ const envSchema = z.object({
    */
   DEV_DEALER_SLUG: z.string().min(1).default('sri-lakshmi-motors'),
 
-  /** The admin the seed creates, and the account `pnpm db:seed` hashes a password for. */
-  DEV_ADMIN_EMAIL: z.string().min(1).default('ops@dealers-drive.in'),
   /**
-   * Seed input only. Read once by `prisma/seed`, hashed with Argon2id, and
-   * never stored, logged or returned. Required in production *if* the seed is
-   * run there at all — the schema keeps it optional because the API itself
-   * never reads it.
+   * Who may hold an admin session, by verified Google address.
+   *
+   * This is the **entire** admin authorization model, and it is deliberately a
+   * list of addresses in the environment rather than a flag on a row. Two
+   * consequences worth being explicit about:
+   *
+   *  - Adding an admin is a deploy, not a database write. That is the cost, and
+   *    it buys the property that no bug in an admin screen — no mass update, no
+   *    seed run against the wrong database, no unguarded `isPlatformAdmin`
+   *    write — can promote anybody, because the row is not what is consulted.
+   *  - Removing an address takes effect on the next request. The allow-list is
+   *    checked when the session is issued *and* when it is resolved, so
+   *    deleting a name here revokes a console that is already open.
+   *
+   * Comma-separated, compared case-insensitively. Empty means no one may sign
+   * in to the admin console at all, which is the right failure: a
+   * misconfiguration should close the door, not open it.
+   *
+   * The **first** entry is also the account the seed creates and the identity
+   * `AUTH_MODE=dev` resolves to — there is one answer to "who is the admin
+   * here", and it is this variable. A separate `DEV_ADMIN_EMAIL` used to exist
+   * and could disagree with this list, which meant a local database seeded with
+   * an admin nobody was allowed to sign in as.
    */
-  DEV_ADMIN_PASSWORD: z.string().min(8).default('dealers-drive-local-admin'),
+  ADMIN_ALLOWLIST: z.string().default('shashikiran6.sk@gmail.com'),
 
   /**
    * Dealer sign-in — Google OAuth 2.0 / OpenID Connect (authorization code +
@@ -380,6 +397,8 @@ export type Env = z.infer<typeof envSchema> & {
   readonly isDevelopment: boolean;
   readonly isTest: boolean;
   readonly webOrigins: string[];
+  /** `ADMIN_ALLOWLIST`, split and lower-cased. The admin authorization model. */
+  readonly adminAllowlist: string[];
 };
 
 function loadEnv(): Env {
@@ -405,6 +424,10 @@ function loadEnv(): Env {
     isTest: value.NODE_ENV === 'test',
     webOrigins: value.WEB_ORIGIN.split(',')
       .map((origin) => origin.trim())
+      .filter(Boolean),
+    /** `ADMIN_ALLOWLIST`, split and lower-cased once so every comparison matches. */
+    adminAllowlist: value.ADMIN_ALLOWLIST.split(',')
+      .map((email) => email.trim().toLowerCase())
       .filter(Boolean),
   });
 }

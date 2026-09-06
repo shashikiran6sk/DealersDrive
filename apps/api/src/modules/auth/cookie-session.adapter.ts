@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import type { Request } from 'express';
 
+import { isAllowlistedAdmin } from './admin-allowlist.js';
 import { readSessionToken } from './session.cookie.js';
 import type { SessionService } from './session.service.js';
 import {
@@ -76,12 +77,19 @@ export function createCookieSessionResolver(
      * A separate scope, not a separate check: an admin session is a different
      * row with `scope = 'ADMIN'`, so a dealer's cookie cannot reach an admin
      * route even if that same human is also a platform admin.
+     *
+     * The allow-list is asked again here, on every request, and not only when
+     * the session was issued. That is what makes removing an address from
+     * `ADMIN_ALLOWLIST` a revocation rather than a note for next time: a
+     * console already open stops answering on the next click, twelve hours
+     * before the session would have expired on its own.
      */
     async resolveAdmin(req): Promise<AdminPrincipal | null> {
       const session = await sessions.resolve(readSessionToken(req), 'ADMIN');
       const user = session?.user;
 
       if (!user?.isPlatformAdmin || !user.adminRole || user.status !== 'ACTIVE') return null;
+      if (!isAllowlistedAdmin(user.email)) return null;
 
       return {
         kind: 'ADMIN',

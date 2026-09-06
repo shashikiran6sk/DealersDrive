@@ -68,6 +68,7 @@ function dealerRow(overrides: Record<string, unknown> = {}) {
     approvedAt: new Date('2026-01-05T00:00:00.000Z'),
     createdAt: new Date('2025-12-01T00:00:00.000Z'),
     city: 'Vellore',
+    district: 'Vellore',
     state: 'Tamil Nadu',
     documents: [],
     members: [{ user: { fullName: 'Ramesh Kumar', email: 'owner@sri-lakshmi-motors.in' } }],
@@ -78,6 +79,7 @@ function dealerRow(overrides: Record<string, unknown> = {}) {
 function setup(options: Options = {}) {
   const counts = [options.dealers ?? 0, options.pending ?? 0];
   const documentUpdates: { where: unknown; data: Record<string, unknown> }[] = [];
+  const dealerQueries: Record<string, unknown>[] = [];
   const dealerUpdates: { where: unknown; data: Record<string, unknown> }[] = [];
   const auditRows: Record<string, unknown>[] = [];
   const detachedAudits: Record<string, unknown>[] = [];
@@ -115,7 +117,13 @@ function setup(options: Options = {}) {
   const prisma = {
     dealer: {
       count: () => Promise.resolve(counts.shift() ?? 0),
-      findMany: () => Promise.resolve(options.dealerRows ?? []),
+      // Every `findMany` — the page itself and the three facet queries — is
+      // recorded, because what the service asks for is the thing under test in
+      // the filter cases below.
+      findMany: (args: Record<string, unknown>) => {
+        dealerQueries.push(args);
+        return Promise.resolve(options.dealerRows ?? []);
+      },
       findUnique: resolveDealer,
       groupBy: () => Promise.resolve(options.grouped ?? []),
     },
@@ -146,6 +154,7 @@ function setup(options: Options = {}) {
 
   return {
     service: createAdminService({ prisma, audit, config, storage }),
+    dealerQueries,
     documentUpdates,
     dealerUpdates,
     auditRows,
@@ -461,10 +470,77 @@ describe('dealers', () => {
     });
   });
 
-  it('shows an em dash for a dealership with no city', async () => {
-    const h = setup({ dealerRows: [dealerRow({ city: null })] });
+  it('shows an em dash for a dealership with no city, district or state', async () => {
+    const h = setup({ dealerRows: [dealerRow({ city: null, district: null, state: null })] });
 
-    expect((await h.service.dealers({ limit: 24 })).data[0]?.city).toBe('—');
+    expect((await h.service.dealers({ limit: 24 })).data[0]).toMatchObject({
+      city: '—',
+      district: '—',
+      state: '—',
+    });
+  });
+
+  /**
+   * The three location filters are `AND`ed and matched case-insensitively —
+   * the values in those columns were typed by dealers, so `vellore` and
+   * `Vellore` have to be the same filter.
+   */
+  it('filters on city, district and state together, whatever the casing', async () => {
+    const h = setup({ dealerRows: [dealerRow()] });
+
+    await h.service.dealers({
+      limit: 24,
+      city: 'katpadi',
+      district: 'vellore',
+      state: 'tamil nadu',
+      status: 'ACTIVE',
+    });
+
+    expect(h.dealerQueries[0]?.where).toMatchObject({
+      status: 'ACTIVE',
+      city: { equals: 'katpadi', mode: 'insensitive' },
+      district: { equals: 'vellore', mode: 'insensitive' },
+      state: { equals: 'tamil nadu', mode: 'insensitive' },
+    });
+  });
+
+  it('leaves out a filter that was not asked for', async () => {
+    const h = setup({ dealerRows: [dealerRow()] });
+
+    await h.service.dealers({ limit: 24, district: 'Vellore' });
+
+    const where = h.dealerQueries[0]?.where as Record<string, unknown>;
+    expect(Object.keys(where)).toEqual(['district']);
+  });
+
+  /**
+   * The options the console offers, off the rows that exist — and deliberately
+   * unnarrowed by the current filter, so choosing a state cannot empty the
+   * district select and strand the operator with no way back.
+   */
+  it('answers with the locations dealerships are actually in', async () => {
+    const h = setup({
+      dealerRows: [dealerRow({ city: 'Vellore', district: 'Vellore', state: 'Tamil Nadu' })],
+    });
+
+    const response = await h.service.dealers({ limit: 24, state: 'Karnataka' });
+
+    expect(response.facets).toEqual({
+      cities: ['Vellore'],
+      districts: ['Vellore'],
+      states: ['Tamil Nadu'],
+    });
+    // Three `DISTINCT` reads, none of them carrying the caller's filter.
+    for (const query of h.dealerQueries.slice(1)) {
+      expect(query.distinct).toBeDefined();
+      expect(query.where).not.toMatchObject({ state: { equals: 'Karnataka' } });
+    }
+  });
+
+  it('drops a location nothing has been typed into', async () => {
+    const h = setup({ dealerRows: [dealerRow({ district: null })] });
+
+    expect((await h.service.dealers({ limit: 24 })).facets.districts).toEqual([]);
   });
 
   it('reports documents verified only when all three are', async () => {
