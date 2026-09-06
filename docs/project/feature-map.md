@@ -2014,11 +2014,34 @@ DESIGN-SPEC §2.9/§2.10 — the 108 px thumbnail strip and the fullscreen light
 `/dealers/[slug]` — one dealer's inventory, filtered.
 
 - **Status** implemented · **Confidence** MEDIUM · **Depends on** F085, F078, F077
-- **Backend** `modules/search/search.routes.ts` — portfolio paths
-- **Frontend** `app/(public)/dealers/[slug]/page.tsx`
-- **API** `GET /v1/dealers/:slug/vehicles`, `GET /v1/dealers/:slug/facets`
-- **Components — Modified** `FilterPanel` (+ `groups`, `dimZeroRows`) · **Reused** `VehicleCard`, `SearchToolbar`, `MobileFilterSheet`, `EnquiryForm`, `VdpCtaStack`
-- **Sandbox** `FilterPanel` with `groups` excluding `dealer` and `dimZeroRows` on
+- ⚠️ **This feature lands in two parts, and the split is a dependency, not a
+  choice.** The page has three sections. The **header block** and the **about /
+  contact / location row** are answered entirely by `GET /v1/dealers/:slug`,
+  which **F085** already ships — so they land with the route. The **inventory**
+  cannot: it needs `GET /v1/dealers/:slug/vehicles` and `/facets` (**F076**,
+  over the `listing_search` read model **F064** creates) plus `VehicleCard`
+  (F075), `FilterPanel` (F078), `SearchToolbar` (F080) and `MobileFilterSheet`
+  (F079). Nothing on the platform can create a listing until Tiers 9 and 10, so
+  there is no inventory to filter and no facet to count.
+  **Part 2 is the remaining work on this entry; do not tick it until the grid
+  and the filter rail are on the page.**
+- **Backend** `modules/search/search.routes.ts` — portfolio paths · **part 2**
+- **Frontend** `app/(public)/dealers/[slug]/page.tsx` · **part 1**
+- **API** `GET /v1/dealers/:slug` (F085) · `GET /v1/dealers/:slug/vehicles`, `GET /v1/dealers/:slug/facets` — **part 2**
+- **Tests** `apps/web/tests/unit/components/dealers/portfolio-page.test.tsx`
+- **Components — Modified** `FilterPanel` (+ `groups`, `dimZeroRows`) — **part 2** · **Reused, part 1** `Blueprint`, `LogoTile`, `Plate`, `Tag`, `ImageSlot`, `EmptyState` · **Reused, part 2** `VehicleCard`, `SearchToolbar`, `MobileFilterSheet`, `EnquiryForm`, `VdpCtaStack`
+- **Sandbox** `FilterPanel` with `groups` excluding `dealer` and `dimZeroRows` on — **part 2**. Part 1 introduces no component; every element it renders is an existing primitive with an entry.
+- ⚠️ **No `RevealContactButton` and no `EnquiryForm` in part 1.** The first is
+  **F090** and rides on a vehicle — A7 is vehicle-scoped and is the only route
+  that yields a phone number, so the baseline renders the button only when
+  `inventory.data[0]` exists and an empty yard has never shown it. The second is
+  **F089**; the "Enquire with dealer" button anchors to that form, so both
+  arrive together rather than leaving a button that jumps to nothing.
+- ⚠️ **No `geo` block in the JSON-LD.** The baseline emitted `GeoCoordinates`
+  from `dealer.address.lat/lng`, which came off the `cities` row **D6** removed
+  — and were the _town's_ coordinates rather than the yard's, so publishing them
+  as the dealership's location was a claim about somewhere else. `mapsUrl` is a
+  share link rather than a coordinate pair and belongs in the anchor, not here.
 - **Get directions comes from `dealer.address.mapsUrl`** (**R6**) — the link the
   dealer pasted on onboarding step 2, rendered as an anchor and nothing more.
   Nullable: dealerships created before R6 have none, so the button is absent
