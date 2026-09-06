@@ -8,6 +8,13 @@
  */
 export type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 /**
+ * The buyer-facing service, as a type. `routes.ts` mounts its router and the
+ * container constructs it; nothing else in the codebase needs to know it
+ * exists. It is here rather than imported directly for the same reason
+ * `DealersService` is — one door into this module.
+ */
+export type { DealersPublicService } from './dealers.public.service.js';
+/**
  * One consumer, and only for `session()`: the auth module composes the session
  * body it returns from `/v1/auth/me` out of the dealership half this service
  * renders. It is a type-only export, so nothing is constructed across the

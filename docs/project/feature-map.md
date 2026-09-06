@@ -1974,17 +1974,39 @@ DESIGN-SPEC §2.9/§2.10 — the 108 px thumbnail strip and the fullscreen light
 
 `/dealers` — the directory grid with a name search and city chips.
 
-- **Status** implemented · **Confidence** HIGH · **Depends on** F046
-- **Backend** `modules/dealers/dealers.public.service.ts`, `modules/search/search.routes.ts`
+- **Status** implemented · **Confidence** HIGH · **Depends on** F046, F073
+- **Backend** `modules/dealers/{dealers.public.service,dealers.public.routes,dealers.public.docs}.ts`
+- ⚠️ **The routes are in the dealers module, not the search module.** The
+  baseline mounted `/v1/dealers` and `/v1/dealers/:slug` inside
+  `search.routes.ts`, alongside `/v1/vehicles`, and handed that router a
+  `DealersPublicService`. The search module arrives at **F076**; these two paths
+  call `dealersPublic` and nothing else, so they live beside the service that
+  answers them and F076 has no reason to take them back.
 - ⚠️ **D6 impact.** `listActive` derives `citySlug` from `dealer.city` with
   `slugify` rather than reading it off a joined `cities` row. The chip links are
   the same shape they were, and there is no second copy of the name/slug pair to
   fall out of step with the first — which is what the slug column was for.
-- **Frontend** `app/(public)/dealers/page.tsx`, `components/dealers/{dealer-card,directory-filters}.tsx`
+- ⚠️ **Car counts are zero until F076.** The baseline read `search.dealerStats()`,
+  which groups `listing_search` — the read model **F064** creates. This feature
+  declares the shape it needs (`DealerInventoryStats`) and the container passes
+  `noInventoryYet`. Nothing creates a listing yet, so zero is the truth rather
+  than a placeholder, and A8 already specifies that page: a dealership with no
+  live cars still appears, with an em dash. F076 replaces one argument.
+- ⚠️ **`GET /v1/dealers/:slug` lands here, its page at F086.** The feature-map
+  always listed it under F085; the portfolio that renders it is F086.
+- **Frontend** `app/(public)/dealers/page.tsx`, `components/dealers/{dealer-card,directory-filters}.tsx`, `lib/{seo,url}.ts`
+- ⚠️ **`lib/seo.ts` is created here, partially.** It belongs to **F095**, which
+  lands the full §17.2 table. F085 brings the `dealers` and `resolved` cases,
+  because a searchable directory indexable at every `?q=` permutation is exactly
+  the thin-page problem that policy exists to prevent — shipping it and fixing
+  it later would ship the harm. The shape is the baseline's, so F095 extends the
+  same union rather than replacing it. `lib/url.ts` likewise carries only
+  `SearchParamsInput` and `one()`; `FACET_ORDER` and its two walkers arrive with
+  **F077**.
 - **API** `GET /v1/dealers`, `GET /v1/dealers/:slug`
-- **Tests** `tests/unit/modules/dealers/dealers.public.service.test.ts`
-- **Components — New (Shared)** `DirectoryCard`, `DirectoryFilters` · **Reused** `Blueprint`, `LogoTile`, `Plate`, `Tag`, `ImageSlot`
-- **Sandbox** `DirectoryCard` — verified / unverified / no cover / no tagline / 0 / 3 / 5 services / long brand name
+- **Tests** `tests/unit/modules/dealers/dealers.public.service.test.ts`, `apps/web/tests/unit/components/dealers/directory.test.tsx`
+- **Components — New (Shared)** `DirectoryCard`, `DirectoryFilters` · **Reused** `Blueprint`, `LogoTile`, `Plate`, `Tag`, `ImageSlot`, `EmptyState`
+- **Sandbox** `DirectoryCard` — default / no live cars / one car / sparse / no tagline / many services / long brand name / unverified / with cover / in the grid. `DirectoryFilters` — default / filtered / searching / both / one city / no cities / many cities
 - ⚠️ The file is `dealer-card.tsx` but the export is `DirectoryCard`; `DealerCard` is a _contracts type_ (finding D-6). The registry's `aliases` field exists for exactly this.
 
 ### F086 — Dealer portfolio

@@ -5,6 +5,7 @@ import { authDocs } from '../modules/auth/auth.docs.js';
 import { adminDocs } from '../modules/admin/admin.docs.js';
 import { configDocs } from '../modules/config/config.docs.js';
 import { dealersDocs } from '../modules/dealers/dealers.docs.js';
+import { dealersPublicDocs } from '../modules/dealers/dealers.public.docs.js';
 import { healthDocs } from '../modules/health/health.docs.js';
 import { mediaDocs, storageDocs } from '../modules/media/media.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
@@ -37,6 +38,7 @@ import type { Audience, ModuleDocs, OperationSpec, ResponseSpec } from './spec.j
 const MODULES: ModuleDocs[] = [
   authDocs,
   configDocs,
+  dealersPublicDocs,
   dealersDocs,
   adminDocs,
   mediaDocs,
@@ -48,6 +50,7 @@ const MODULES: ModuleDocs[] = [
 const TAG_ORDER = [
   'Authentication',
   'Platform configuration',
+  'Dealers (public)',
   'Dealer account',
   'Admin',
   'Media',
