@@ -287,16 +287,16 @@ one short-label and one long-label scenario.
 
 ## Layer 3 — Layout & navigation
 
-| ID   | Component            | Location                                   | Props                                | States                                                | Consumers | Ownership | Priority |
-| ---- | -------------------- | ------------------------------------------ | ------------------------------------ | ----------------------------------------------------- | --------- | --------- | -------- |
-| C020 | `CustomerHeader`     | `components/layout/customer-header.tsx:18` | `cities: CitiesResponse`             | 3 nav-active states × saved-count 0/n × pre-hydration | 1 layout  | Shared    | **P0**   |
-| C021 | `CustomerFooter`     | `components/layout/customer-footer.tsx:9`  | none                                 | 1                                                     | 1 layout  | Shared    | P3       |
-| C022 | `AuthShell`          | `components/auth/auth-shell.tsx:19`        | `eyebrow?`, `children`, `className?` | 1                                                     | 3 pages   | Shared    | P2       |
-| C023 | `AuthHeading`        | `components/auth/auth-shell.tsx:44`        | `title`, `children?`                 | subtitle present/absent                               | 3 pages   | Shared    | P3       |
-| C024 | `AdminNav`           | `components/admin/admin-nav.tsx:23`        | none — reads `usePathname()`         | 1 per admin route                                     | 1 layout  | Shared    | P2       |
-| C025 | `ConsoleNav`         | `components/dealer/console-nav.tsx:38`     | `items: NavItem[]`                   | 1 per route active                                    | 1 layout  | Shared    | P2       |
-| C026 | `ConsoleTabBar`      | `components/dealer/console-nav.tsx:58`     | `items: NavItem[]`                   | 1 per tab active; mobile-only (`md:hidden`)           | 1 layout  | Shared    | **P1**   |
-| C039 | `GoogleSignInButton` | `components/auth/google-button.tsx:16`     | `href`, `label?`, `disabled?`        | default, disabled                                     | 1 page    | Shared    | P2       |
+| ID   | Component            | Location                                   | Props                                | States                                      | Consumers | Ownership | Priority  |
+| ---- | -------------------- | ------------------------------------------ | ------------------------------------ | ------------------------------------------- | --------- | --------- | --------- |
+| C020 | `CustomerHeader`     | `components/layout/customer-header.tsx:37` | none — reads `usePathname()`         | 5 nav-active states × mobile/tablet         | 1 layout  | Shared    | **P0** ✅ |
+| C021 | `CustomerFooter`     | `components/layout/customer-footer.tsx:9`  | none                                 | 1                                           | 1 layout  | Shared    | P3        |
+| C022 | `AuthShell`          | `components/auth/auth-shell.tsx:19`        | `eyebrow?`, `children`, `className?` | 1                                           | 3 pages   | Shared    | P2        |
+| C023 | `AuthHeading`        | `components/auth/auth-shell.tsx:44`        | `title`, `children?`                 | subtitle present/absent                     | 3 pages   | Shared    | P3        |
+| C024 | `AdminNav`           | `components/admin/admin-nav.tsx:23`        | none — reads `usePathname()`         | 1 per admin route                           | 1 layout  | Shared    | P2        |
+| C025 | `ConsoleNav`         | `components/dealer/console-nav.tsx:38`     | `items: NavItem[]`                   | 1 per route active                          | 1 layout  | Shared    | P2        |
+| C026 | `ConsoleTabBar`      | `components/dealer/console-nav.tsx:58`     | `items: NavItem[]`                   | 1 per tab active; mobile-only (`md:hidden`) | 1 layout  | Shared    | **P1**    |
+| C039 | `GoogleSignInButton` | `components/auth/google-button.tsx:16`     | `href`, `label?`, `disabled?`        | default, disabled                           | 1 page    | Shared    | P2        |
 
 **Coupling note.** `CustomerHeader` (C020), `AdminNav` (C024), `ConsoleNav`
 (C025) and `ConsoleTabBar` (C026) all call `usePathname()`. In the sandbox each
