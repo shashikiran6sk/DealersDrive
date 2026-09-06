@@ -139,7 +139,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [ ] F083 — Vehicle gallery & lightbox
 - [ ] F084 — Similar vehicles
 - [~] F085 — Dealer directory
-- [ ] F086 — Dealer portfolio
+- [~] F086 — Dealer portfolio · ⚠️ header + info row only; the inventory needs F076
 - [ ] F087 — Saved cars
 
 ## Tier 13 — Enquiries
