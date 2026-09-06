@@ -6,6 +6,7 @@ import { createDocsRouter } from './docs/docs.routes.js';
 import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/auth.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
+import { createPublicDealersRouter } from './modules/dealers/dealers.public.routes.js';
 import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
@@ -31,8 +32,8 @@ import { createMediaRouter, createStorageRouter } from './modules/media/media.ro
  * ── Reconstruction note ───────────────────────────────────────────────────
  * Health is mounted as of F006, auth and the two guarded chains as of
  * F016/F018, `/uploads` plus the first router under `/v1/dealer` as of F033,
- * the docs router as of F098, the dealers router as of F040 and the admin
- * router as of F049.
+ * the docs router as of F098, the dealers router as of F040, the public dealer
+ * directory as of F085 and the admin router as of F049.
  */
 export function createRoutes(container: Container): Router {
   const router = Router();
@@ -51,6 +52,7 @@ export function createRoutes(container: Container): Router {
 
   // ── public ────────────────────────────────────────────────────────────
   v1.use(createConfigRouter(container.publicConfig));
+  v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
 
   // ── auth ──────────────────────────────────────────────────────────────
   // Two routers on one prefix, in this order. The first answers the paths that

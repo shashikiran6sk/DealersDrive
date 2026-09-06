@@ -423,6 +423,65 @@ export const registry: RegistryEntry[] = [
     storyId: 'admin-adminnav',
   },
   {
+    id: 'C031',
+    name: 'DirectoryFilters',
+    source: 'apps/web/src/components/dealers/directory-filters.tsx',
+    category: 'Dealer',
+    ownership: 'Feature-specific',
+    purpose: 'The directory name search and city toggle chips. Writes to the URL.',
+    aliases: [
+      'DealerFilters',
+      'CityChips',
+      'DealerSearch',
+      'DirectorySearch',
+      'directory-filters',
+      'CityToggle',
+    ],
+    features: ['F085'],
+    props: ['cities', 'city', 'q'],
+    states: ['default', 'filtered', 'searching', 'both', 'one city', 'no cities', 'many cities'],
+    reusable: false,
+    storyId: 'dealers-directoryfilters',
+  },
+  {
+    id: 'C038',
+    name: 'DirectoryCard',
+    source: 'apps/web/src/components/dealers/dealer-card.tsx',
+    category: 'Dealer',
+    ownership: 'Shared',
+    purpose: 'One dealership in the directory grid. The whole card is one link.',
+    /*
+     * Finding **D-6**, and the reason this field exists. The file is
+     * `dealer-card.tsx`, the export is `DirectoryCard`, and `DealerCard` is a
+     * contracts DTO — so a search for the obvious name has to land here rather
+     * than returning a type and inviting a second card.
+     */
+    aliases: [
+      'DealerCard',
+      'dealer-card',
+      'DealershipCard',
+      'DirectoryTile',
+      'DealerTile',
+      'DealerListItem',
+    ],
+    features: ['F085'],
+    props: ['dealer'],
+    states: [
+      'default',
+      'no live cars',
+      'one car',
+      'sparse',
+      'no tagline',
+      'many services',
+      'long brand name',
+      'unverified',
+      'with cover',
+      'in the grid',
+    ],
+    reusable: true,
+    storyId: 'dealers-directorycard',
+  },
+  {
     id: 'C039',
     name: 'GoogleSignInButton',
     source: 'apps/web/src/components/auth/google-button.tsx',

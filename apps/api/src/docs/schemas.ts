@@ -49,6 +49,7 @@ const INPUT_SCHEMA_NAMES = [
   // query
   'CursorQuery',
   'AdminDealerQuery',
+  'DealerDirectoryQuery',
   // bodies
   'OnboardingInput',
   'MediaPresignInput',
