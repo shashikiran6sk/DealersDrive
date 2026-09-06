@@ -20,7 +20,8 @@ export const adminDocs: ModuleDocs = {
     '**Cross-tenant by design**, which is why every write records who did it. Permissions are ' +
     'per-operation rather than per-role-blanket: `admin:credit:grant` and ' +
     '`admin:config:write` are SUPER_ADMIN only, while a SUPPORT admin can read payments and ' +
-    'audit logs and nothing else. Locally the admin is `DEV_ADMIN_EMAIL`, seeded as ' +
+    'audit logs and nothing else. Locally the admin is the first `ADMIN_ALLOWLIST` ' +
+    'entry, seeded as ' +
     'SUPER_ADMIN.\n\n' +
     'Every response here is `Cache-Control: no-store`.',
   operations: [
@@ -48,8 +49,14 @@ export const adminDocs: ModuleDocs = {
       tag: 'Admin',
       summary: 'All dealerships',
       description:
-        'Every dealership, filterable by status, city or free text, cursor-paginated. ' +
-        '`counts` gives the total per status so the tabs do not need a second request.',
+        'Every dealership, filterable by status, free text and location, cursor-paginated. ' +
+        '`counts` gives the total per status so the tabs do not need a second request, and ' +
+        '`facets` gives the cities, districts and states that actually occur — so the ' +
+        "console's location filters can only ever offer a value that matches something.\n\n" +
+        '`city`, `district` and `state` are `AND`ed and matched case-insensitively against ' +
+        'the text on the dealership. `facets` is deliberately unaffected by the current ' +
+        'filter: narrowing to a state must not empty the district list and strand the ' +
+        'console with no way back.',
       audience: 'admin',
       permission: 'admin:dealer:approve',
       query: 'AdminDealerQuery',

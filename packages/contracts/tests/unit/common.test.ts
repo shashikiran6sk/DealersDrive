@@ -8,6 +8,8 @@ import {
   formatMonthYear,
   formatPhone,
   initialsOf,
+  GoogleMapsUrl,
+  isIndianMobile,
   normaliseLocality,
   slugify,
   timeAgo,
@@ -283,5 +285,96 @@ describe('timeAgo across every unit', () => {
 
   it('never counts backwards for a clock skew into the future', () => {
     expect(timeAgo(new Date(now.getTime() + 60_000), now)).toBe('just now');
+  });
+});
+
+/**
+ * The one field in this package whose validation is a *security* boundary
+ * rather than a data-quality one.
+ *
+ * A dealer pastes this and a buyer's browser follows it from the public
+ * portfolio. Accepting any URL would make the "Get directions" button a
+ * self-service open redirect with a dealership's name on it — so the host is
+ * checked against a list, and the scheme is checked with it.
+ */
+describe('GoogleMapsUrl', () => {
+  it.each([
+    'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
+    'https://goo.gl/maps/abc123',
+    'https://www.google.com/maps/place/Sri+Lakshmi+Motors/@12.9,79.1,17z',
+    'https://maps.google.com/?q=12.9,79.1',
+    'https://www.google.co.in/maps/@12.9,79.1,17z',
+  ])('accepts %s', (url) => {
+    expect(GoogleMapsUrl.safeParse(url).success).toBe(true);
+  });
+
+  it.each([
+    // Not Google at all — the case the check exists for.
+    'https://evil.example.com/maps',
+    // A host that merely *contains* a Google domain. Substring matching would
+    // let this through; comparing the parsed hostname does not.
+    'https://maps.google.com.evil.example/place',
+    'https://google.com.attacker.test/maps',
+    // Right host, wrong scheme: a downgrade a buyer cannot see in a link.
+    'http://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
+    // Not a link at all — what a dealer types when they misread the question.
+    'Sri Lakshmi Motors, Katpadi Road',
+    '',
+  ])('refuses %j', (url) => {
+    expect(GoogleMapsUrl.safeParse(url).success).toBe(false);
+  });
+
+  it('trims what was pasted, and keeps the rest of the link untouched', () => {
+    const link = 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9';
+
+    // Stored verbatim: the query string of a Maps link is Google's business,
+    // and a share link that has been "cleaned up" stops resolving.
+    expect(GoogleMapsUrl.parse(`  ${link}  `)).toBe(link);
+    expect(GoogleMapsUrl.parse(`${link}?g_st=iw`)).toBe(`${link}?g_st=iw`);
+  });
+});
+
+/**
+ * One rule for a phone number, in the package both apps import.
+ *
+ * There were three copies before — the onboarding schema, the profile schema
+ * and the wizard's browser-side check — and they agreed with each other but
+ * not with the placeholder in the form, which shows `98400 12345`. A dealer who
+ * typed what the box suggested was told it was not a phone number.
+ */
+describe('isIndianMobile', () => {
+  it.each([
+    '9840012345',
+    '98400 12345',
+    '98400-12345',
+    '+919840012345',
+    '+91 98400 12345',
+    '  9840012345  ',
+    '919840012345',
+  ])('accepts %j, however it was spaced', (value) => {
+    expect(isIndianMobile(value)).toBe(true);
+  });
+
+  it.each([
+    // Indian mobile numbers start 6-9. A landline typed into the mobile box is
+    // the mistake this catches.
+    '0416224889',
+    '1234567890',
+    // Too short, too long, and not a number at all.
+    '98400123',
+    '98400123456',
+    'nine eight four',
+    '',
+  ])('refuses %j', (value) => {
+    expect(isIndianMobile(value)).toBe(false);
+  });
+
+  it('agrees with toE164 on everything it accepts', () => {
+    // The two are a pair: this decides what may be stored, that decides the one
+    // form it is stored in. A number this accepts and that mangles would be a
+    // silent corruption.
+    for (const value of ['9840012345', '98400 12345', '+91 98400-12345']) {
+      expect(toE164(value)).toBe('+919840012345');
+    }
   });
 });

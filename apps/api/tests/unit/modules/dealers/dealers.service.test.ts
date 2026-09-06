@@ -46,8 +46,10 @@ function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
     landline: '0416 222 3344',
     addressLine: '12 Katpadi Road',
     city: 'Vellore',
+    district: 'Vellore',
     state: 'Tamil Nadu',
     pincode: '632001',
+    mapsUrl: 'https://maps.app.goo.gl/sri-lakshmi-motors',
     specialities: ['Hatchbacks'],
     workingHours: { mon: '9:30–19:00' },
     establishedYear: 2009,
@@ -121,6 +123,8 @@ interface Options {
   pendingListingCount?: number;
   /** What `findConflicting` reports — a name or GSTIN already taken. */
   conflicting?: { legalName: boolean; gstin: boolean };
+  /** Who already holds the number a phone patch asks for, if anybody. */
+  phoneHolder?: { id: string } | null;
   /** One row, or several to be looked up by id — a replacement needs two. */
   media?: Record<string, unknown> | Record<string, unknown>[] | null;
 }
@@ -129,6 +133,7 @@ function setup(options: Options = {}) {
   const updates: { dealerId: string; data: Record<string, unknown> }[] = [];
   const upserts: { type: string; data: Record<string, unknown> }[] = [];
   const userUpdates: Record<string, unknown>[] = [];
+  const phoneLookups: string[] = [];
   const outbox: Record<string, unknown>[] = [];
   const deletes: string[] = [];
   const mediaCreated: Record<string, unknown>[] = [];
@@ -195,6 +200,14 @@ function setup(options: Options = {}) {
   };
 
   const prisma = {
+    // The uniqueness read in front of a phone change. `phoneHolder` is who
+    // already has the number: undefined for nobody, a row for somebody.
+    user: {
+      findUnique: (args: { where: { phone: string } }) => {
+        phoneLookups.push(args.where.phone);
+        return Promise.resolve(options.phoneHolder ?? null);
+      },
+    },
     $transaction: <T>(work: (handle: typeof tx) => Promise<T>) => work(tx),
   } as unknown as PrismaClient;
 
@@ -219,6 +232,7 @@ function setup(options: Options = {}) {
     updates,
     upserts,
     userUpdates,
+    phoneLookups,
     outbox,
     deletes,
     mediaCreated,
@@ -478,22 +492,24 @@ describe('toProfile', () => {
     expect(profile.contact.phoneDisplay).toBe('');
   });
 
-  it('reads the city and state off the dealership itself', async () => {
+  it('reads the city, district and state off the dealership itself', async () => {
     const h = setup();
 
     expect((await h.service.profile('dealer-1')).address).toMatchObject({
       city: 'Vellore',
+      district: 'Vellore',
       state: 'Tamil Nadu',
       pincode: '632001',
     });
   });
 
-  it('reports a null city for a dealership that has not set one', async () => {
-    const h = setup({ dealer: { city: null, state: null } });
+  it('reports a null locality for a dealership that has not set one', async () => {
+    const h = setup({ dealer: { city: null, district: null, state: null } });
 
     const profile = await h.service.profile('dealer-1');
 
     expect(profile.address.city).toBeNull();
+    expect(profile.address.district).toBeNull();
     expect(profile.address.state).toBeNull();
   });
 
@@ -541,14 +557,65 @@ describe('update', () => {
     });
   });
 
-  it('never patches the phone number', async () => {
+  it('leaves the phone alone when the patch does not mention it', async () => {
     const h = setup();
 
     await h.service.update('dealer-1', { contact: { fullName: 'Ramesh K' } });
 
-    // The phone is the identity in this build; changing it would change who the
-    // dealership is without going through verification.
+    // Partial means partial: a patch about a name must not touch the number,
+    // and must not spend a uniqueness read asking about it either.
     expect(JSON.stringify([h.updates, h.userUpdates])).not.toContain('phone');
+    expect(h.phoneLookups).toEqual([]);
+  });
+
+  /**
+   * The number is patchable now — it stopped being a credential when dealers
+   * moved to Google sign-in, and the step that asks for it is reached again by
+   * pressing Back.
+   *
+   * Two columns, one answer: `users.phone` is who the dealer is to us,
+   * `dealers.contactPhone` is what a buyer is shown. Onboarding writes both, so
+   * an edit has to as well — a stale mirror publishes the old number.
+   */
+  it('writes a new phone number to both the user row and the dealership row', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { contact: { phone: '98765 43210' } });
+
+    expect(h.userUpdates[0]).toMatchObject({
+      where: { id: 'user-1' },
+      data: { phone: '+919876543210' },
+    });
+    expect(h.updates[0]?.data).toMatchObject({ contactPhone: '+919876543210' });
+  });
+
+  it('normalises before it checks, so one number cannot be asked about two ways', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { contact: { phone: '+91 98765-43210' } });
+
+    // The unique index is over the stored string; the read in front of it has
+    // to ask about the same string the write will store.
+    expect(h.phoneLookups).toEqual(['+919876543210']);
+  });
+
+  it('refuses a number another user already holds, naming the field', async () => {
+    const h = setup({ phoneHolder: { id: 'someone-else' } });
+
+    await expect(
+      h.service.update('dealer-1', { contact: { phone: '9876543210' } }),
+    ).rejects.toMatchObject({ code: 'PHONE_ALREADY_REGISTERED' });
+
+    expect(h.updates).toEqual([]);
+    expect(h.userUpdates).toEqual([]);
+  });
+
+  it('lets the owner re-save the number they already hold', async () => {
+    const h = setup({ phoneHolder: { id: 'user-1' } });
+
+    await h.service.update('dealer-1', { contact: { phone: '9876543210' } });
+
+    expect(h.updates[0]?.data).toMatchObject({ contactPhone: '+919876543210' });
   });
 
   it('touches no user row when the dealership has no owner', async () => {
@@ -563,14 +630,25 @@ describe('update', () => {
     const h = setup();
 
     await h.service.update('dealer-1', {
-      address: { line: '99 New Road', city: 'Chennai', state: 'Tamil Nadu', pincode: '632002' },
+      address: {
+        line: '99 New Road',
+        city: 'Chennai',
+        district: 'Chengalpattu',
+        state: 'Tamil Nadu',
+        pincode: '632002',
+        mapsUrl: 'https://maps.app.goo.gl/moved-the-pin',
+      },
     });
 
     expect(h.updates[0]?.data).toEqual({
       addressLine: '99 New Road',
       city: 'Chennai',
+      district: 'Chengalpattu',
       state: 'Tamil Nadu',
       pincode: '632002',
+      // Stored verbatim — the host was checked by the schema, and what is
+      // inside a share link is Google's business.
+      mapsUrl: 'https://maps.app.goo.gl/moved-the-pin',
     });
   });
 
@@ -782,8 +860,10 @@ describe('completeness', () => {
         legalName: null,
         addressLine: null,
         city: null,
+        district: null,
         state: null,
         pincode: null,
+        mapsUrl: null,
         gstin: null,
         pan: null,
       },
@@ -796,8 +876,12 @@ describe('completeness', () => {
       'legalName',
       'addressLine',
       'city',
+      'district',
       'state',
       'pincode',
+      // The directions link, named for the same reason the yard photograph is:
+      // the public portfolio is "here is the yard, here is how to reach it".
+      'mapsUrl',
       'gstin',
       'pan',
     ]);

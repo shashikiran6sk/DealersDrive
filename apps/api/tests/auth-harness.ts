@@ -85,6 +85,17 @@ export interface AuthHarness {
   agent(): request.Agent;
   /** Drives start → Google → callback on one agent, returning the final redirect. */
   signIn(agent: request.Agent, returnTo?: string): Promise<{ status: number; location: string }>;
+  /**
+   * The same round trip entered from the admin console's button.
+   *
+   * One method rather than a flag, because the difference is the *start* URL —
+   * which is the whole mechanism: the audience is sealed there, and the shared
+   * callback reads it back out of the cookie.
+   */
+  signInAdmin(
+    agent: request.Agent,
+    returnTo?: string,
+  ): Promise<{ status: number; location: string }>;
   close(): Promise<void>;
 }
 
@@ -98,21 +109,28 @@ export async function createAuthHarness(google = createFakeGoogle()): Promise<Au
     google,
     agent: () => request.agent(app),
 
-    async signIn(agent, returnTo) {
-      const started = await agent
-        .get(`/v1/auth/google/start${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`)
-        .expect(302);
-
-      // The state is read back out of the URL the browser would have followed —
-      // never out of the cookie — because that is the direction Google echoes it.
-      const state = new URL(started.headers.location as string).searchParams.get('state') ?? '';
-      const callback = await agent.get(`/v1/auth/google/callback?code=auth-code&state=${state}`);
-
-      return { status: callback.status, location: (callback.headers.location as string) ?? '' };
-    },
+    signIn: (agent, returnTo) => roundTrip(agent, '/v1/auth/google/start', returnTo),
+    signInAdmin: (agent, returnTo) => roundTrip(agent, '/v1/auth/admin/google/start', returnTo),
 
     async close() {
       await container.prisma.$disconnect();
     },
   };
+
+  async function roundTrip(
+    agent: request.Agent,
+    startPath: string,
+    returnTo?: string,
+  ): Promise<{ status: number; location: string }> {
+    const started = await agent
+      .get(`${startPath}${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`)
+      .expect(302);
+
+    // The state is read back out of the URL the browser would have followed —
+    // never out of the cookie — because that is the direction Google echoes it.
+    const state = new URL(started.headers.location as string).searchParams.get('state') ?? '';
+    const callback = await agent.get(`/v1/auth/google/callback?code=auth-code&state=${state}`);
+
+    return { status: callback.status, location: (callback.headers.location as string) ?? '' };
+  }
 }

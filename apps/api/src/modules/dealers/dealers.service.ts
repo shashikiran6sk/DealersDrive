@@ -3,6 +3,7 @@ import {
   DOC_TYPE_LABELS,
   formatPhone,
   normaliseLocality,
+  toE164,
   type AuthSession,
   type CompletenessResponse,
   type DealerDocumentsResponse,
@@ -110,8 +111,10 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       address: {
         line: dealer.addressLine,
         city: dealer.city,
+        district: dealer.district,
         state: dealer.state,
         pincode: dealer.pincode,
+        mapsUrl: dealer.mapsUrl,
       },
       specialities: dealer.specialities,
       workingHours: dealer.workingHours as Record<string, string | null> | null,
@@ -252,7 +255,15 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       return toProfile(await requireDealer(dealerId));
     },
 
-    /** C2. Partial, so a wizard `Back` never loses data. `phone` is not patchable. */
+    /**
+     * C2. Partial, so a wizard `Back` never loses data.
+     *
+     * `contact.phone` is patchable now, and the change is smaller than it
+     * sounds: the number stopped being a credential when dealers started
+     * signing in with Google, so what is being edited is the contact detail a
+     * buyer is given. It is still unique across users — the check below is the
+     * message; `users.phone`'s unique index is the guarantee.
+     */
     async update(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
       const dealer = await requireDealer(dealerId);
       const owner = dealer.members.find((member) => member.role === 'OWNER');
@@ -267,8 +278,43 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
        */
       const city =
         input.address?.city === undefined ? undefined : normaliseLocality(input.address.city);
+      const district =
+        input.address?.district === undefined
+          ? undefined
+          : normaliseLocality(input.address.district);
       const state =
         input.address?.state === undefined ? undefined : normaliseLocality(input.address.state);
+
+      /**
+       * The contact number, in the one form the column stores.
+       *
+       * `toE164` runs here rather than at the edge for the same reason
+       * `normaliseLocality` does: the uniqueness constraint is an index over
+       * the stored string, so `98400 12345` and `+919840012345` have to become
+       * one value *before* anything compares them.
+       */
+      const phone = input.contact?.phone === undefined ? undefined : toE164(input.contact.phone);
+
+      if (phone !== undefined && owner) {
+        const holder = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
+        if (holder && holder.id !== owner.userId) {
+          throw new ConflictError(
+            'PHONE_ALREADY_REGISTERED',
+            'That mobile number is already registered to another dealership.',
+            {
+              errors: [
+                {
+                  // Named as the client sent it, so the form can mark the box
+                  // the dealer typed into. `apps/web` maps the leaf to `phone`.
+                  field: 'body.contact.phone',
+                  code: 'PHONE_ALREADY_REGISTERED',
+                  message: 'Already registered.',
+                },
+              ],
+            },
+          );
+        }
+      }
 
       /**
        * A rename is checked against the city it will be in once this PATCH
@@ -294,6 +340,7 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
                 ? {}
                 : { roleTitle: input.contact.roleTitle }),
               ...(input.contact.email === undefined ? {} : { email: input.contact.email }),
+              ...(phone === undefined ? {} : { phone }),
             },
           });
         }
@@ -317,11 +364,18 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
             ...(input.specialities === undefined ? {} : { specialities: input.specialities }),
             ...(input.workingHours === undefined ? {} : { workingHours: input.workingHours }),
             ...(input.contact?.email === undefined ? {} : { contactEmail: input.contact.email }),
+            // Two columns, one number: `users.phone` is who the dealer is to us
+            // and `dealers.contactPhone` is what a buyer is shown. Onboarding
+            // writes both from one answer, so an edit has to as well — leaving
+            // the mirror stale would publish the old number.
+            ...(phone === undefined ? {} : { contactPhone: phone }),
             ...(input.contact?.landline === undefined ? {} : { landline: input.contact.landline }),
             ...(input.address?.line === undefined ? {} : { addressLine: input.address.line }),
             ...(city === undefined ? {} : { city }),
+            ...(district === undefined ? {} : { district }),
             ...(state === undefined ? {} : { state }),
             ...(input.address?.pincode === undefined ? {} : { pincode: input.address.pincode }),
+            ...(input.address?.mapsUrl === undefined ? {} : { mapsUrl: input.address.mapsUrl }),
           },
           tx,
         );
@@ -344,8 +398,25 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       if (!dealer.legalName) businessMissing.push('legalName');
       if (!dealer.addressLine) businessMissing.push('addressLine');
       if (!dealer.city) businessMissing.push('city');
+      /*
+       * The district joins the required set rather than sitting beside it as a
+       * nice-to-have. It is asked for on the same step as the city, it is what
+       * the admin console filters on, and a filter that silently omits the
+       * dealerships that skipped the question is a filter that lies. Rows
+       * created before the column existed read as incomplete here, which is
+       * true: they are, and the profile screen is where that is fixed.
+       */
+      if (!dealer.district) businessMissing.push('district');
       if (!dealer.state) businessMissing.push('state');
       if (!dealer.pincode) businessMissing.push('pincode');
+      /*
+       * The directions link, named for the same reason the yard photograph is:
+       * the public portfolio is "here is the yard, here is how to reach it",
+       * and half of that missing is a page that quietly does less. Dealerships
+       * created before the question was asked read as incomplete here, which is
+       * true of them — the Business step is where it is fixed.
+       */
+      if (!dealer.mapsUrl) businessMissing.push('mapsUrl');
       if (!dealer.gstin) businessMissing.push('gstin');
       if (!dealer.pan) businessMissing.push('pan');
 

@@ -155,7 +155,7 @@ order. The full shared-file register is in `docs/project/git-strategy.md` §4.
 
 ## 7. Known divergence from the baseline
 
-Two, both deliberate, and they are the same decision made twice.
+Three deliberate ones. The first two are the same decision made twice.
 
 **D1 removes the seeded database catalogue.** Vehicle details come from the
 external RC lookup or manual entry instead.
@@ -163,6 +163,9 @@ external RC lookup or manual entry instead.
 **D6 removes the `cities` table.** A dealership's `city` and `state` are free
 text it types; `City`, the `locations` module and `GET /v1/cities` are gone,
 and a registered name is unique **per city** rather than globally.
+
+**D8 removes password authentication.** Admins sign in with Google, like
+dealers, and authorization is an allow-list of addresses — see §7e.
 
 The consequence is that the reconstruction is _not_ byte-identical to the
 baseline, so the final convergence check is "the diff contains only the
@@ -406,6 +409,115 @@ would count the entire internet as one bucket. `apps/web/src/lib/api.ts` has a
 `headers` option reserved for forwarding the buyer's IP and nothing uses it
 yet. **This must land before F088–F092**, and `app.set('trust proxy', 1)` in
 `apps/api/src/server.ts` needs revisiting for the extra hop.
+
+**Nothing is deployed automatically today.** Neither target exists yet — no
+Vercel project, no AWS account — so `deploy-dev` in `release.yml` is commented
+out and every merge to `main` builds the two images and stops. The block carries
+the three steps that turn it back on. `_deploy.yml` and `promote.yml` are
+untouched: the procedure is still written down, it is simply not being run.
+
+**The Google OAuth client needs one redirect URI, not two.** Both consoles come
+back through `/v1/auth/google/callback` — see §7e for why the audience travels
+in the cookie instead.
+
+---
+
+## 7e. The admin console has no password, and that is the security model
+
+`POST /v1/auth/admin/login`, `password.ts`, `AdminLoginInput`, `AdminLoginForm`
+and `@node-rs/argon2` are gone, along with `users.passwordHash`. The console is
+entered through the _same_ Google round trip the dealer console uses; what
+separates the two is `ADMIN_ALLOWLIST`.
+
+**Three things about that are load-bearing.**
+
+**The audience is sealed at `/start`, not read at the callback.**
+`/v1/auth/admin/google/start` mints the transaction cookie with
+`audience: 'ADMIN'`; `/v1/auth/google/callback` reads it back out of the sealed,
+HMAC-signed cookie. There is one registered redirect URI at Google for both
+consoles — a second path would be a second thing to register and get wrong per
+environment — and the audience decides the _privilege of the session that is
+issued_, so it must not be a value the browser can edit on the return leg.
+
+**The allow-list is checked twice, and the second check is the point.** Once in
+`completeAdminGoogle` when the session is issued, and again in `resolveAdmin` on
+every request afterwards. That is what makes removing an address a revocation
+rather than a note for next time: a console already open stops answering on the
+next click, instead of twelve hours later when the session expires.
+
+**The first entry is also the seeded admin and the `AUTH_MODE=dev` identity.**
+There used to be a separate `DEV_ADMIN_EMAIL`, and it could disagree with the
+allow-list — which meant a local database seeded with an admin nobody was
+permitted to sign in as. One variable now answers "who is the admin here".
+
+The one relaxation worth knowing about: `createIdentity` refuses a Google
+sign-in whose email matches an existing account with no linked identity
+(`ACCOUNT_LINK_REQUIRED`), because a matching email string is not proof that the
+same person still holds the address. `completeAdminGoogle` deliberately does
+link, for allow-listed addresses only — the platform team wrote that address
+into its own deployment configuration, which is a stronger claim than the email
+match, and without it the seeded admin row and the Google identity could never
+be joined.
+
+**What was traded away.** Adding an admin is now a deploy rather than a database
+write, and the account recovery story is Google's rather than ours. Both are
+deliberate: the first buys the property that no bug in an admin screen can
+promote anybody, because the row is not what is consulted; the second removes
+the only password this product ever stored.
+
+---
+
+## 7f. `district` is required, and the reason is the admin filter
+
+`Dealer.district` sits beside `city` and `state`, typed on onboarding step 2,
+normalised by the same `normaliseLocality`, and required by `completeness`.
+
+Required rather than optional because the admin console filters on it. A filter
+that silently omits the dealerships that skipped the question is a filter that
+lies, and the person reading it has no way to tell. Existing rows read as
+incomplete until somebody fills it in, which is the truth about them.
+
+The column is nullable in the database and there is no backfill. A district
+guessed from a city name would be wrong for exactly the towns that need it most,
+and a wrong value in a filter is worse than an absent one.
+
+---
+
+## 7g. Two fields that look like data and are not
+
+**`dealers.mapsUrl` is a security boundary.** A dealer pastes it, and a buyer's
+browser follows it from the public portfolio's "Get directions". `GoogleMapsUrl`
+in `packages/contracts/src/common.ts` is what stops that being a self-service
+open redirect wearing a dealership's name: `https`, and a hostname that is in
+the list — compared as a parsed hostname, never as a substring, because
+`maps.google.com.attacker.test` contains a Google domain and is not one.
+
+It is stored **verbatim**. Not parsed into `lat`/`lng`, and not "cleaned up": a
+share link survives the dealer moving their pin, carries the place's own name
+and reviews, and opens the Maps app rather than a web map on a phone. Rewriting
+the query string is how a short link stops resolving. `Dealer.lat` / `Dealer.lng`
+remain written by nothing; geocoding is still its own feature's problem.
+
+**The phone number stopped being a credential and nobody moved the field.** It
+was `readOnly` once a dealership existed, and `UpdateDealerInput` refused it,
+both justified by "it is the login identity, and changing it needs an OTP
+round-trip". That was true before F018. Since dealers sign in with Google, this
+is the number a _buyer_ is given — the thing a dealership changes when it swaps
+SIMs — and the read-only box was a dead end for precisely the dealer who needed
+it most: the one told the number is already registered, sent back to a step
+where they could not change it.
+
+Two consequences worth carrying forward:
+
+- **Two columns, one answer.** `users.phone` is who the dealer is to us and
+  `dealers.contactPhone` is what a buyer is shown. Onboarding writes both from
+  one field, so an edit has to as well — a stale mirror publishes the old
+  number.
+- **One predicate for "is this a mobile number".** `isIndianMobile` in
+  contracts, imported by the wizard rather than copied. There were three copies,
+  they agreed with each other and disagreed with the placeholder in the form,
+  which suggests `98400 12345` — a number the validator rejected. Separators are
+  stripped before the test because `toE164` strips them before the write.
 
 ---
 

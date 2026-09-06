@@ -14,7 +14,7 @@
 
 FROM node:24-alpine AS base
 # openssl: Prisma's query engine links against it on musl.
-# libc6-compat: the glibc shim `sharp` and `@node-rs/argon2` prebuilds expect.
+# libc6-compat: the glibc shim the `sharp` prebuilds expect.
 RUN apk add --no-cache openssl libc6-compat
 ENV PNPM_HOME="/pnpm" \
     PATH="/pnpm:$PATH" \

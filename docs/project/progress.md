@@ -160,6 +160,22 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ---
 
+## Revisions — product changes after the reconstruction
+
+Not slices of the baseline: changes to the product itself, asked for after the
+reconstruction started. Numbered `R` so a reviewer can tell them from a feature
+at a glance, and written up in `feature-map.md` under **REVISIONS**.
+
+- [~] R1 — Duplicate phone returns the wizard to step 1 · revises F038/F039 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+- [~] R2 — District on the business step · revises F039/F043/F045 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+- [~] R3 — Admin dealer filters: city, district, state · revises F045 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+- [~] R4 — Admin sign-in is Google + an allow-list (**D8**) · revises F019 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+- [~] R5 — `deploy-dev` paused until Vercel and AWS exist · revises F024 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+- [~] R6 — The yard on a map: `mapsUrl` for the portfolio's directions link · revises F039/F043, consumed by F086 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+- [~] R7 — The contact number is editable again · revises F038/F046 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+
+---
+
 ## Sandbox steps
 
 Tracked here too, because they gate UI features rather than following them.

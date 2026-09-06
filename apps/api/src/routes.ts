@@ -58,7 +58,7 @@ export function createRoutes(container: Container): Router {
   // falls through for everything else; the second guards what is left. Order is
   // the security boundary here: swapping these two lines would leave
   // `/onboarding` open.
-  v1.use('/auth', createPublicAuthRouter(container.auth, container.rateLimit));
+  v1.use('/auth', createPublicAuthRouter(container.auth));
   v1.use('/auth', container.guards.requireSignedIn, createSessionAuthRouter(container.auth));
 
   // ── dealer ────────────────────────────────────────────────────────────

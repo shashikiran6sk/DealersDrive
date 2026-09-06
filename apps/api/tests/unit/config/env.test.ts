@@ -66,7 +66,6 @@ const SCHEMA_KEYS = [
   'API_BASE_URL',
   'DATABASE_URL',
   'DEV_DEALER_SLUG',
-  'DEV_ADMIN_EMAIL',
   'PAYMENT_PROVIDER',
   'STORAGE_DRIVER',
   'STORAGE_LOCAL_DIR',
@@ -88,7 +87,7 @@ const SCHEMA_KEYS = [
   'RATE_LIMIT_ENABLED',
   'DOCS_ENABLED',
   'AUTH_MODE',
-  'DEV_ADMIN_PASSWORD',
+  'ADMIN_ALLOWLIST',
   'GOOGLE_CLIENT_ID',
   'GOOGLE_CLIENT_SECRET',
   'GOOGLE_CALLBACK_URL',
@@ -165,7 +164,26 @@ describe('defaults outside production', () => {
     const loaded = await loadEnv({ NODE_ENV: 'development' });
 
     expect(loaded.DEV_DEALER_SLUG).toBe('sri-lakshmi-motors');
-    expect(loaded.DEV_ADMIN_EMAIL).toBe('ops@dealers-drive.in');
+  });
+
+  /**
+   * The admin allow-list is split and folded once, here, so that every
+   * comparison downstream is a plain `includes` against values that are
+   * already in one form.
+   */
+  it('splits the admin allow-list and lower-cases it', async () => {
+    const loaded = await loadEnv({
+      NODE_ENV: 'development',
+      ADMIN_ALLOWLIST: ' First@Example.com , second@example.com ,',
+    });
+
+    expect(loaded.adminAllowlist).toEqual(['first@example.com', 'second@example.com']);
+  });
+
+  it('defaults the allow-list to the platform owner', async () => {
+    const loaded = await loadEnv({ NODE_ENV: 'development' });
+
+    expect(loaded.adminAllowlist).toEqual(['shashikiran6.sk@gmail.com']);
   });
 
   it('defaults to the development payment provider and local storage', async () => {

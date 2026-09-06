@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../src/config/env.js';
-import { hashPassword } from '../../src/modules/auth/password.js';
 import { DEALERS } from './data.js';
 
 /**
@@ -15,9 +14,10 @@ import { DEALERS } from './data.js';
  *
  * What is here is what the integration suite needs to run at all — the
  * `global-setup` for `tests/*.test.ts` calls this file, and `auth.test.ts`
- * needs two things from it: an admin with a password, and one dealership whose
- * owner address proves that an account with no password cannot sign in to the
- * admin console. The rest arrives with **F097**, which owns this file.
+ * needs two things from it: an admin row that predates Google sign-in, so the
+ * allow-listed address is proved to *link* to it rather than to create a
+ * second, and one dealership whose owner address is not allow-listed. The rest
+ * arrives with **F097**, which owns this file.
  *
  * It needed a third thing until the `cities` table went — a city row to
  * onboard into. Onboarding now types its city, so the suite no longer depends
@@ -28,35 +28,43 @@ const prisma = new PrismaClient();
 const now = new Date();
 
 /**
- * The one admin account, and the only account in the system with a password.
+ * The one admin account, and no credential anywhere on it.
  *
- * `DEV_ADMIN_PASSWORD` is read once, hashed with the same Argon2id parameters
- * sign-in verifies against, and dropped. The plaintext is never written to a
- * row, never logged, and never returned by any endpoint — the value the
- * developer types comes from their own `.env`, not from anything this seed
- * prints. Re-running the seed re-hashes it, so rotating the variable rotates
- * the credential.
+ * There is nothing to seed a password with any more: the console is entered by
+ * signing in with Google as an address on `ADMIN_ALLOWLIST`, and the callback
+ * links that identity onto this row the first time it is used. What this seed
+ * provides is the row itself — a name, a role and a verified address — so the
+ * first sign-in is a link rather than a fresh account with no history.
  */
 async function seedAdmin(): Promise<void> {
+  // The first allow-listed address, because that is the only account anybody
+  // can actually sign in as. Seeding a different one would create a row that
+  // looks like an admin and is refused at the door.
+  const email = env.adminAllowlist[0];
+  if (!email) {
+    console.warn('ADMIN_ALLOWLIST is empty — no admin seeded, and none could sign in.');
+    return;
+  }
+
   await prisma.user.create({
     data: {
       fullName: 'Dealers-Drive Operations',
       roleTitle: 'Platform admin',
-      email: env.DEV_ADMIN_EMAIL,
+      email,
       phone: '+919000000001',
       emailVerifiedAt: now,
       phoneVerifiedAt: now,
       isPlatformAdmin: true,
       adminRole: 'SUPER_ADMIN',
-      passwordHash: await hashPassword(env.DEV_ADMIN_PASSWORD),
     },
   });
 }
 
 /**
- * The owner has **no** `passwordHash`, and that is the point of seeding them:
- * `auth.test.ts` signs in to the admin console with this address and expects
- * the same refusal an unknown account gets. Dealers sign in with Google.
+ * The owner's address is deliberately **not** on `ADMIN_ALLOWLIST`:
+ * `auth.test.ts` takes this dealership through the admin sign-in flow and
+ * expects to be refused, which is the check that the allow-list is doing the
+ * work rather than the session scope alone.
  */
 async function seedDealers(): Promise<void> {
   for (const seed of DEALERS) {
@@ -82,6 +90,7 @@ async function seedDealers(): Promise<void> {
         status: 'ACTIVE',
         approvedAt: now,
         city: seed.city,
+        district: seed.district,
         state: seed.state,
         addressLine: seed.addressLine,
         pincode: seed.pincode,

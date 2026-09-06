@@ -158,69 +158,17 @@ async function sessionCookie(): Promise<string | undefined> {
   }
 }
 
-/**
- * A sign-in call, which is the one place the API's *response* headers matter.
+/*
+ * `apiSignIn` and `sessionFrom` used to live here — a POST whose *response
+ * headers* mattered, because the admin sign-in returned a `Set-Cookie` that had
+ * to be re-issued by this origin.
  *
- * Ordinary calls only need the body. This one also needs the `Set-Cookie` the
- * API issued, because the cookie has to be re-issued by *this* origin: the
- * fetch happened on the Next server, so nothing reached the browser on its own.
- * Returning it rather than setting it keeps this file free of `next/headers`
- * side effects — the Server Action decides what to do with it.
+ * There is no such call any more. Both consoles sign in by navigating the
+ * browser to the API, which sets the cookie itself on the OAuth callback, so
+ * nothing in this app ever relays one. Keeping the helper would have meant
+ * keeping the only code path that copies a session cookie between two
+ * processes, for no caller.
  */
-export interface IssuedSession {
-  value: string;
-  expires?: Date;
-}
-
-export async function apiSignIn<T>(
-  path: string,
-  body: unknown,
-): Promise<{ data: T; session: IssuedSession | null }> {
-  const response = await fetch(`${serverConfig().apiBaseUrl}${path}`, {
-    method: 'POST',
-    cache: 'no-store',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  const text = await response.text();
-  const payload: unknown = text.length > 0 ? JSON.parse(text) : null;
-
-  if (!response.ok) {
-    throw new ApiError(
-      (payload as ProblemDetails | null) ?? {
-        type: 'about:blank',
-        title: 'Request failed',
-        status: response.status,
-        code: 'INTERNAL',
-      },
-    );
-  }
-
-  return { data: payload as T, session: sessionFrom(response.headers.getSetCookie()) };
-}
-
-/** Pulls `dd_session` and its expiry out of the API's Set-Cookie headers. */
-export function sessionFrom(setCookie: string[]): IssuedSession | null {
-  const header = setCookie.find((value) => value.startsWith(`${SESSION_COOKIE}=`));
-  if (!header) return null;
-
-  const [pair, ...attributes] = header.split(';');
-  const value = pair?.slice(SESSION_COOKIE.length + 1) ?? '';
-  if (!value) return null;
-
-  const expiresAttribute = attributes
-    .map((attribute) => attribute.trim())
-    .find((attribute) => attribute.toLowerCase().startsWith('expires='));
-  const expires = expiresAttribute
-    ? new Date(expiresAttribute.slice('expires='.length))
-    : undefined;
-
-  return {
-    value,
-    ...(expires && !Number.isNaN(expires.getTime()) ? { expires } : {}),
-  };
-}
 
 export function apiGet<T>(path: string, options?: RequestOptions): Promise<T> {
   return request<T>('GET', path, undefined, options);

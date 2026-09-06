@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cookieJar } from '../../setup.js';
-import { ApiError, apiGet, apiSend, apiSignIn, qs, sessionFrom } from '../../../src/lib/api.js';
+import { ApiError, apiGet, apiSend, qs } from '../../../src/lib/api.js';
 
 /**
  * The one place the web app talks to the API (Rule 8). Three behaviours here
@@ -487,86 +487,5 @@ describe('forwarding the session', () => {
     await apiGet('/v1/dealer', { revalidate: false });
 
     expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBeUndefined();
-  });
-});
-
-describe('sessionFrom', () => {
-  it('reads the token and its expiry out of Set-Cookie', () => {
-    const session = sessionFrom([
-      'dd_session=abc123; Path=/; Expires=Wed, 19 Aug 2026 03:52:38 GMT; HttpOnly; SameSite=Lax',
-    ]);
-
-    expect(session?.value).toBe('abc123');
-    expect(session?.expires?.toUTCString()).toBe('Wed, 19 Aug 2026 03:52:38 GMT');
-  });
-
-  it('ignores every other cookie the API sets', () => {
-    expect(sessionFrom(['dd_oauth=xyz; Path=/', 'other=1'])).toBeNull();
-    expect(sessionFrom([])).toBeNull();
-  });
-
-  it('accepts a session with no expiry', () => {
-    const session = sessionFrom(['dd_session=abc123; Path=/; HttpOnly']);
-
-    expect(session).toEqual({ value: 'abc123' });
-  });
-
-  it('rejects an empty value rather than issuing a blank session', () => {
-    expect(sessionFrom(['dd_session=; Path=/'])).toBeNull();
-  });
-
-  it('ignores an unparseable expiry rather than issuing an invalid date', () => {
-    expect(sessionFrom(['dd_session=abc; Expires=not-a-date'])).toEqual({ value: 'abc' });
-  });
-});
-
-describe('apiSignIn', () => {
-  function signInResponse(body: unknown, setCookie: string[], status = 200) {
-    return vi.fn((url: string, init: Captured['init']) => {
-      calls.push({ url, init });
-      return Promise.resolve({
-        ok: status >= 200 && status < 300,
-        status,
-        text: () => Promise.resolve(JSON.stringify(body)),
-        headers: { getSetCookie: () => setCookie },
-      } as unknown as Response);
-    });
-  }
-
-  it('returns the body and the issued session together', async () => {
-    globalThis.fetch = signInResponse({ admin: { id: '1' } }, [
-      'dd_session=issued; Path=/; HttpOnly',
-    ]) as unknown as typeof fetch;
-
-    const result = await apiSignIn<{ admin: { id: string } }>('/v1/auth/admin/login', {
-      email: 'a@b.c',
-      password: 'x',
-    });
-
-    expect(result.data.admin.id).toBe('1');
-    expect(result.session?.value).toBe('issued');
-  });
-
-  it('never caches a sign-in', async () => {
-    globalThis.fetch = signInResponse({}, []) as unknown as typeof fetch;
-
-    await apiSignIn('/v1/auth/admin/login', {});
-
-    expect(calls[0]?.init.cache).toBe('no-store');
-  });
-
-  it('throws the problem document on a refusal', async () => {
-    globalThis.fetch = signInResponse(
-      { type: 'about:blank', title: 'no', status: 401, code: 'INVALID_CREDENTIALS' },
-      [],
-      401,
-    ) as unknown as typeof fetch;
-
-    const error = (await apiSignIn('/v1/auth/admin/login', {}).catch(
-      (caught: unknown) => caught,
-    )) as ApiError;
-
-    expect(error).toBeInstanceOf(ApiError);
-    expect(error.code).toBe('INVALID_CREDENTIALS');
   });
 });

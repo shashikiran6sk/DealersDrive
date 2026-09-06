@@ -41,9 +41,14 @@ export const dealersDocs: ModuleDocs = {
       description:
         '**Partial by design.** The onboarding wizard PATCHes only the fields on the current ' +
         'step, so `Back` never blanks what another step filled in.\n\n' +
-        'Notable absences, all deliberate: `phone` (it is the login identity — changing it ' +
-        'needs an OTP round-trip on the new number), `status`, `slug` and `dealerId`. GSTIN ' +
-        'and PAN are validated against their real formats and upper-cased.\n\n' +
+        'Notable absences, all deliberate: `status`, `slug` and `dealerId`. GSTIN and PAN ' +
+        'are validated against their real formats and upper-cased.\n\n' +
+        '`contact.phone` **is** patchable. It stopped being a credential when dealers moved ' +
+        'to Google sign-in, so what this edits is the number a buyer is given — the thing a ' +
+        'dealership changes when it swaps SIMs. It is normalised to E.164 and stays unique ' +
+        'across users: a number another dealership holds is a `409 ' +
+        'PHONE_ALREADY_REGISTERED` naming `body.contact.phone`. Both `users.phone` and the ' +
+        "dealership's public `contactPhone` are written from the one answer.\n\n" +
         '`brandName` is absent too, and for a different reason: a dealership has **one** ' +
         'name. `legalName` is it, and `brandName` is the server-written display mirror of ' +
         'it — a client able to set both is a client able to make them disagree.\n\n' +
@@ -52,8 +57,13 @@ export const dealersDocs: ModuleDocs = {
         'field. A rename is checked against the city this same request moves to, when it ' +
         'moves — so changing both in one call is checked against the pair, not a half-applied ' +
         'combination of them.\n\n' +
-        '`address.city` and `address.state` are free text, normalised on write. There is no ' +
-        'list of cities to choose from and no state the platform is confined to.\n\n' +
+        '`address.city`, `address.district` and `address.state` are free text, normalised on ' +
+        'write. There is no list of cities to choose from and no state the platform is ' +
+        'confined to.\n\n' +
+        '`address.mapsUrl` is the dealership\u2019s own Google Maps share link, stored ' +
+        'verbatim and **host-checked**: `https` on a Google Maps domain, nothing else. A ' +
+        "buyer's browser follows it from the public portfolio, so an arbitrary URL here " +
+        'would be a self-service open redirect wearing a dealership\u2019s name.\n\n' +
         'OWNER only (`dealer:update`) — a manager or salesperson gets a 403.',
       audience: 'dealer',
       permission: 'dealer:update',
@@ -67,10 +77,12 @@ export const dealersDocs: ModuleDocs = {
           address: {
             line: '142 Katpadi Main Road',
             city: 'Vellore',
+            district: 'Vellore',
             state: 'Tamil Nadu',
             pincode: '632007',
+            mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
           },
-          contact: { fullName: 'Karthik Raman', roleTitle: 'Proprietor' },
+          contact: { fullName: 'Karthik Raman', roleTitle: 'Proprietor', phone: '9840012345' },
         },
       },
       responses: [{ status: 200, description: 'The updated dealership.', schema: 'DealerProfile' }],

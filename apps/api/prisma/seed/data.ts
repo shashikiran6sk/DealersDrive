@@ -21,6 +21,7 @@ export interface SeedDealer {
   gstin: string;
   pan: string;
   city: string;
+  district: string;
   state: string;
   addressLine: string;
   pincode: string;
@@ -43,6 +44,7 @@ export const DEALERS: SeedDealer[] = [
     gstin: '33AABCS1429P1ZK',
     pan: 'AABCS1429P',
     city: 'Vellore',
+    district: 'Vellore',
     state: 'Tamil Nadu',
     addressLine: '14, Katpadi Main Road, Gandhi Nagar',
     pincode: '632006',

@@ -29,10 +29,12 @@ const STATUS_TABS = [
   { value: 'REJECTED', label: 'Rejected' },
 ] as const;
 
-/** DESIGN-SPEC §3.17 — Dealer / City / Status / Vehicles / Active / Joined / Manage. */
+/** DESIGN-SPEC §3.17, plus the district and state the location filter works in. */
 const COLUMNS: TableColumn[] = [
   { key: 'dealer', label: 'Dealer' },
   { key: 'city', label: 'City' },
+  { key: 'district', label: 'District' },
+  { key: 'state', label: 'State' },
   { key: 'status', label: 'Status' },
   { key: 'vehicles', label: 'Vehicles' },
   { key: 'active', label: 'Active' },
@@ -41,18 +43,36 @@ const COLUMNS: TableColumn[] = [
   { key: 'actions', label: 'Actions', align: 'right' },
 ];
 
+/** A single-valued search parameter, or nothing. */
+function one(params: SearchParamsInput, key: string): string | undefined {
+  const value = params[key];
+  return typeof value === 'string' && value !== '' ? value : undefined;
+}
+
 export default async function AdminDealersPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParamsInput>;
 }) {
   const params = await searchParams;
-  const status = typeof params.status === 'string' ? params.status : undefined;
+  const status = one(params, 'status');
+  const state = one(params, 'state');
+  const district = one(params, 'district');
+  const city = one(params, 'city');
 
   const dealers = await apiGet<AdminDealersResponse>(
-    `/v1/admin/dealers${qs({ status, limit: 50 })}`,
+    `/v1/admin/dealers${qs({ status, state, district, city, limit: 50 })}`,
     { revalidate: false },
   );
+
+  /**
+   * The status tabs have to carry the location filter with them, and the
+   * location form has to carry the status tab. Otherwise every click on either
+   * one silently discards the other, and an operator who has narrowed to a
+   * district loses it the moment they look at the pending tab.
+   */
+  const tabHref = (value?: string) =>
+    `/admin/dealers${qs({ status: value, state, district, city })}`;
 
   return (
     <div className="flex flex-col gap-4 p-5">
@@ -66,7 +86,7 @@ export default async function AdminDealersPage({
         {STATUS_TABS.map((tab) => (
           <Link
             key={tab.label}
-            href={tab.value ? `/admin/dealers?status=${tab.value}` : '/admin/dealers'}
+            href={tabHref(tab.value)}
             aria-selected={status === tab.value}
             className={cn('seg-opt no-underline')}
           >
@@ -79,6 +99,49 @@ export default async function AdminDealersPage({
           </Link>
         ))}
       </div>
+
+      {/*
+        Where, in three fields, narrowing from the outside in.
+
+        A plain GET `<form>`: the filter belongs in the URL, so a moderator can
+        send "every pending dealer in Vellore district" to a colleague as a
+        link, and the page stays a server component with no client JavaScript at
+        all. The options come from the response's own `facets`, so the filter
+        can only ever offer a place some dealership is actually in — and they
+        are not narrowed by the current selection, which is what stops a state
+        choice from emptying the district list and stranding the operator.
+      */}
+      <form method="get" action="/admin/dealers" className="flex flex-wrap items-end gap-[10px]">
+        {/* The tab, carried through the submit rather than reset by it. */}
+        {status ? <input type="hidden" name="status" value={status} /> : null}
+
+        <LocationFilter name="state" label="State" value={state} options={dealers.facets.states} />
+        <LocationFilter
+          name="district"
+          label="District"
+          value={district}
+          options={dealers.facets.districts}
+        />
+        <LocationFilter name="city" label="City" value={city} options={dealers.facets.cities} />
+
+        <button type="submit" className="btn btn-secondary h-[36px] px-[16px] text-[13px]">
+          Filter
+        </button>
+
+        {/*
+          Clear drops the three location fields and keeps the status tab —
+          `tabHref` is the wrong helper here, because its whole job is to carry
+          the location through.
+        */}
+        {state || district || city ? (
+          <Link
+            href={`/admin/dealers${qs({ status })}`}
+            className="btn btn-ghost h-[36px] px-[12px] text-[12px]"
+          >
+            Clear
+          </Link>
+        ) : null}
+      </form>
 
       {dealers.data.length === 0 ? (
         <EmptyState title="No dealers here" message="Nothing matches this filter." />
@@ -93,6 +156,8 @@ export default async function AdminDealersPage({
                 </div>
               </td>
               <td>{dealer.city}</td>
+              <td>{dealer.district}</td>
+              <td>{dealer.state}</td>
               <td>
                 <StatusTag tone={dealer.statusTone}>{dealer.statusLabel}</StatusTag>
               </td>
@@ -110,5 +175,40 @@ export default async function AdminDealersPage({
         </Table>
       )}
     </div>
+  );
+}
+
+/**
+ * One `<select>` of places, plus its label.
+ *
+ * It is a function in this file rather than a component in `components/ui`
+ * because it is three lines of markup with no state, no variants and exactly
+ * one consumer — the sandbox exists to stop the *fifth* hand-rolled copy of
+ * something, not to receive the first. `select.input` is the shared style; a
+ * new one would have been the actual duplication.
+ */
+function LocationFilter({
+  name,
+  label,
+  value,
+  options,
+}: {
+  name: string;
+  label: string;
+  value: string | undefined;
+  options: string[];
+}) {
+  return (
+    <label className="flex flex-col gap-[4px] text-[11px] uppercase tracking-[0.08em] ink-subtle">
+      {label}
+      <select name={name} defaultValue={value ?? ''} className="input min-w-[160px] text-[13px]">
+        <option value="">All</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

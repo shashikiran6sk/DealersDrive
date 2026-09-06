@@ -29,7 +29,6 @@
     "@aws-sdk/client-s3": "^3",
     "@aws-sdk/s3-request-presigner": "^3",
     "@dealers-drive/contracts": "workspace:*",
-    "@node-rs/argon2": "^2",
     "@prisma/client": "^6.19.3",
     "blurhash": "^2.0.5",
     "cookie-parser": "^1.4.7",

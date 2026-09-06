@@ -51,7 +51,6 @@ const INPUT_SCHEMA_NAMES = [
   'AdminDealerQuery',
   // bodies
   'OnboardingInput',
-  'AdminLoginInput',
   'MediaPresignInput',
   'MediaCommitInput',
   'DocumentPresignInput',

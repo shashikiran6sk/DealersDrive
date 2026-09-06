@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Uuid } from './common.js';
+import { GoogleMapsUrl, IndianMobile, Uuid } from './common.js';
 import { AdminRole, DealerRole, DealerStatus } from './enums.js';
 
 /**
@@ -13,8 +13,11 @@ import { AdminRole, DealerRole, DealerStatus } from './enums.js';
  * email as proof of identity, and that absence is the point: a client that
  * could post `{ email }` and receive a session would make Google decorative.
  *
- * Admins sign in with an email and a password. No dealer schema has a password
- * field, and no admin schema has an OAuth one.
+ * Admins sign in with Google too, and there is no password anywhere in this
+ * file — no schema accepts one, because the API no longer verifies one. What
+ * separates the two consoles is not the credential but the **allow-list**: an
+ * address on `ADMIN_ALLOWLIST` is granted an `ADMIN`-scope session, and every
+ * other verified Google account is refused the admin console outright.
  */
 
 /** Where the client should land once a session exists. */
@@ -27,6 +30,16 @@ export const AuthProvidersResponse = z.object({
     enabled: z.boolean(),
     /** Absolute — the browser navigates here; it is not an API call. */
     startUrl: z.string(),
+    /**
+     * The same flow, entered for the admin console.
+     *
+     * A separate URL rather than a query parameter on `startUrl`, because the
+     * audience decides the *scope of the session that is issued* — it is sealed
+     * into the OAuth transaction cookie at the start and cannot be changed on
+     * the way back. Publishing it costs nothing: the allow-list, not the
+     * secrecy of this path, is what keeps the console closed.
+     */
+    adminStartUrl: z.string(),
     /** Present only when `enabled` is false: what a developer must configure. */
     reason: z.string().nullable(),
   }),
@@ -46,10 +59,7 @@ export const OnboardingInput = z
   .object({
     fullName: z.string().trim().min(2, 'Tell us your name.').max(80),
     roleTitle: z.string().trim().max(60).optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^(\+?91[- ]?)?[6-9]\d{9}$/, 'Enter a 10-digit Indian mobile number.'),
+    phone: IndianMobile,
     /**
      * One name, not two.
      *
@@ -71,25 +81,51 @@ export const OnboardingInput = z
      * city in India.
      */
     city: z.string().trim().min(2, 'Enter your city.').max(80),
+    /**
+     * The district, asked for because the admin console filters on it.
+     *
+     * A city name alone is ambiguous across India — there is a Vellore town in
+     * Vellore district and a Gudiyatham in the same one — and support work is
+     * almost always district-shaped: "every dealer in Vellore district", not
+     * "every dealer whose town is spelt Vellore". Normalised on write like
+     * `city` and `state`, for the same reason: three spellings of one district
+     * are three useless filter values.
+     */
+    district: z.string().trim().min(2, 'Enter your district.').max(80),
     state: z.string().trim().min(2, 'Enter your state.').max(80),
     pincode: z
       .string()
       .trim()
       .regex(/^\d{6}$/, 'Pincode must be 6 digits.'),
+    /**
+     * Where the yard actually is, as a Google Maps link.
+     *
+     * Asked for rather than derived, because a typed address is not a location:
+     * "18, Gandhi Road" resolves to four different pins in one district, and the
+     * buyer who follows the wrong one has already driven there. The dealer knows
+     * which pin is their gate, and Share → Copy link is the shortest way for
+     * them to say so.
+     *
+     * Required, for the same reason the yard photograph is: the public
+     * portfolio is built around "here is the yard, here is how to reach it",
+     * and a directions button that is missing for a third of dealerships is a
+     * button buyers stop looking for. See `GoogleMapsUrl` for why the host is
+     * checked.
+     */
+    mapsUrl: GoogleMapsUrl,
     landline: z.string().trim().max(24).optional(),
   })
   .strict();
 export type OnboardingInput = z.infer<typeof OnboardingInput>;
 
-/** B7 — the admin console's only sign-in. There is no admin sign-up. */
-export const AdminLoginInput = z
-  .object({
-    email: z.string().trim().email('Enter your work email address.').max(160),
-    password: z.string().min(1, 'Enter your password.').max(200),
-  })
-  .strict();
-export type AdminLoginInput = z.infer<typeof AdminLoginInput>;
-
+/**
+ * B7 — what the admin console's Google callback resolves to.
+ *
+ * There is no `AdminLoginInput` any more, and its absence is the contract: no
+ * schema in this package accepts an admin credential, because no endpoint does.
+ * The console's session is issued by the same OAuth callback the dealer flow
+ * uses, to an address the deployment has allow-listed.
+ */
 export const AdminSessionResponse = z.object({
   admin: z.object({
     id: Uuid,

@@ -1,11 +1,12 @@
 'use client';
 
-import type {
-  AuthSession,
-  CompletenessResponse,
-  DealerDocumentDto,
-  DealerProfile,
-  YardPhotoDto,
+import {
+  isIndianMobile,
+  type AuthSession,
+  type CompletenessResponse,
+  type DealerDocumentDto,
+  type DealerProfile,
+  type YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
@@ -49,6 +50,15 @@ import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
  * `DEALER_ALREADY_EXISTS` — so `edit` below picks `PATCH /v1/dealer` instead.
  * The fields, the layout and the validation are the same either way; only the
  * verb changes.
+ *
+ * **A refusal is shown on the step that can act on it.** Both uniqueness
+ * checks — the phone number and the registered name — are answered by the
+ * write, which happens when step 2 submits. But the phone number is typed on
+ * *step 1*, so a 409 against it used to land the dealer on the Business step
+ * with a banner about a field they could not see, and no way to tell which box
+ * was wrong. `ACCOUNT_FIELDS` below is what the wizard walks back for: when the
+ * API names one of them, the form returns to step 1 and the message renders
+ * against the input it belongs to.
  *
  * **Where the duplicate check lands.** A dealership's name has to be unique
  * within its city, and both halves of that pair are typed on step 2 — so the
@@ -113,6 +123,31 @@ export function OnboardingWizard({
   // not cost them the other eight fields.
   const values = state.values ?? {};
   const errors = { ...(state.errors ?? {}), ...accountErrors };
+
+  /**
+   * A refusal that names a step 1 field walks the wizard back to step 1.
+   *
+   * The commonest one by far is `PHONE_ALREADY_REGISTERED`: the number belongs
+   * to another dealership, the API says so against `body.phone`, and `phone` is
+   * three fields up on a step that is currently hidden. Without this the dealer
+   * reads "that mobile number is already registered" while looking at the city
+   * and pincode boxes.
+   *
+   * Adjusted *during* render, on the render that first sees a new `state`,
+   * rather than in an effect. `useActionState` delivers the answer as a render,
+   * and React re-runs this component immediately on a set made this way — so
+   * the message and the step change land in one paint. An effect would commit
+   * the error against a hidden fieldset first and move on the next frame, and
+   * that gap is real: it is exactly what the test on a slow machine sees.
+   *
+   * `answered` is what makes it fire once per submission instead of on every
+   * render: `state` is a fresh object each time the action resolves.
+   */
+  const [answered, setAnswered] = useState(state);
+  if (answered !== state) {
+    setAnswered(state);
+    if (Object.keys(state.errors ?? {}).some((field) => ACCOUNT_FIELDS.has(field))) setLocal(0);
+  }
 
   const current = step >= 2 ? step : local;
 
@@ -218,6 +253,16 @@ export function OnboardingWizard({
 }
 
 /**
+ * The fields that live on step 1.
+ *
+ * One list, used for both halves of the same rule: what the browser validates
+ * before it will move off the Account step, and what the wizard walks *back* to
+ * that step for when the API refuses one of them. Two lists would drift, and
+ * the drift would be a dealer stuck on step 2 with an invisible error.
+ */
+const ACCOUNT_FIELDS = new Set(['fullName', 'phone']);
+
+/**
  * The required fields of step 1, read straight off the form.
  *
  * Off the DOM rather than out of React state, because these inputs are
@@ -236,7 +281,10 @@ function validateAccount(form: HTMLFormElement | null): Record<string, string> {
 
   const errors: Record<string, string> = {};
   if (value('fullName').length < 2) errors.fullName = 'Tell us your name.';
-  if (!/^(\+?91[- ]?)?[6-9]\d{9}$/.test(value('phone'))) {
+  // The same predicate the API validates with, imported rather than copied —
+  // the copy that used to live here disagreed with the placeholder beside it
+  // about whether `98400 12345` is a phone number.
+  if (!isIndianMobile(value('phone'))) {
     errors.phone = 'Enter a 10-digit Indian mobile number.';
   }
   return errors;
@@ -333,12 +381,17 @@ function AccountStep({
             required
             aria-required="true"
             /*
-              The login identity. Changing it needs an OTP round-trip on the new
-              number, which onboarding does not have — so once the dealership
-              exists this reads rather than asks. It is still submitted, because
-              step 1's own validation reads the form.
+              Editable, including on the way back from step 2.
+
+              It was read-only once a dealership existed, on the reasoning that
+              this is the login identity and changing it needs an OTP round-trip
+              on the new number. Neither half holds: identity is the Google
+              account, and this is the number a buyer is given. What the
+              read-only box actually produced was a dead end — a dealer who
+              mistyped their number, or who was told it belongs to somebody
+              else, arrived back on this step and could not change the one field
+              they had been sent here to change.
             */
-            readOnly={dealer !== null}
             {...invalidProps('phone', errors.phone)}
           />
         </Field>
@@ -446,6 +499,29 @@ function BusinessStep({
             />
           </Field>
 
+          {/*
+            The district, beside the city rather than instead of it.
+
+            It is the unit support and moderation actually work in — "every
+            dealer in Vellore district" is a question the admin console can now
+            answer, and "every dealer whose town is spelt Vellore" is not the
+            same question. Free text like its two neighbours, and normalised by
+            the same server-side function, so one district cannot arrive as
+            three filter values.
+          */}
+          <Field id="district" label="District" error={errors.district}>
+            <input
+              id="district"
+              name="district"
+              defaultValue={values.district ?? dealer?.address.district ?? ''}
+              className="input"
+              placeholder="Vellore"
+              required
+              aria-required="true"
+              {...invalidProps('district', errors.district)}
+            />
+          </Field>
+
           <Field id="state" label="State" error={errors.state}>
             <input
               id="state"
@@ -473,6 +549,42 @@ function BusinessStep({
               aria-required="true"
               {...invalidProps('pincode', errors.pincode)}
             />
+          </Field>
+
+          {/*
+            Where the yard is, rather than what its address resolves to.
+
+            A typed address is not a location — "18, Gandhi Road" is four
+            different pins in one district, and the buyer who follows the wrong
+            one has already driven there. The dealer knows which pin is their
+            gate, and this is the shortest way for them to say so. It spans both
+            columns because a share link is longer than a pincode, and the
+            instruction under it is there because "paste a Maps link" is obvious
+            only to somebody who has done it before.
+          */}
+          <Field
+            id="mapsUrl"
+            label="Google Maps location"
+            hint="buyers use this for directions"
+            error={errors.mapsUrl}
+            className="sm:col-span-2"
+          >
+            <input
+              id="mapsUrl"
+              name="mapsUrl"
+              type="url"
+              inputMode="url"
+              defaultValue={values.mapsUrl ?? dealer?.address.mapsUrl ?? ''}
+              className="input"
+              placeholder="https://maps.app.goo.gl/…"
+              required
+              aria-required="true"
+              {...invalidProps('mapsUrl', errors.mapsUrl)}
+            />
+            <p className="mt-[4px] text-[11px] ink-subtle">
+              Open your yard in Google Maps, tap <strong className="font-medium">Share</strong>,
+              then <strong className="font-medium">Copy link</strong> and paste it here.
+            </p>
           </Field>
 
           <Field id="landline" label="Landline" hint="optional" error={errors.landline}>
@@ -701,7 +813,9 @@ const MISSING_LABELS: Record<string, string> = {
   addressLine: 'Address',
   pincode: 'Pincode',
   city: 'City',
+  district: 'District',
   state: 'State',
+  mapsUrl: 'Google Maps location',
   fullName: 'Your name',
   phone: 'Phone number',
   email: 'Email address',

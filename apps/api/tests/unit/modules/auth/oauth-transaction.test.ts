@@ -74,6 +74,26 @@ describe('sealing and opening', () => {
     expect(openTransaction(candidate)).toBeNull();
   });
 
+  /**
+   * The audience decides the *privilege* of the session the callback issues, so
+   * a cookie whose audience this build does not recognise is not something to
+   * guess about — it is refused, and the person clicks the button again.
+   */
+  it('carries the audience it was minted for, and refuses one it does not know', () => {
+    const dealer = createOAuthTransaction('/dealer');
+    const admin = createOAuthTransaction('/admin', 'ADMIN');
+
+    expect(dealer.audience).toBe('DEALER');
+    expect(openTransaction(sealTransaction(admin))?.audience).toBe('ADMIN');
+
+    const forged = sealTransaction({ ...dealer, audience: 'SUPERUSER' } as never);
+    expect(openTransaction(forged)).toBeNull();
+  });
+
+  it('sends an admin sign-in to the admin console when nothing else was asked for', () => {
+    expect(createOAuthTransaction('https://evil.example', 'ADMIN').returnTo).toBe('/admin');
+  });
+
   it('refuses a correctly signed body that is not a transaction', () => {
     // Signed by this very function, so only the *shape* check can reject it.
     const sealed = sealTransaction({ state: 'x' } as never);

@@ -134,6 +134,29 @@ function session(
   };
 }
 
+/**
+ * Enough of `DealerProfile` for steps 1 and 2 to prefill from — the state the
+ * wizard is in when a dealer presses `Back` from Documents, which is when it
+ * amends an existing dealership rather than creating one.
+ */
+function dealerProfile(overrides: Record<string, unknown> = {}) {
+  return {
+    legalName: 'Katpadi Auto Gallery',
+    gstin: null,
+    pan: null,
+    contact: { fullName: 'R. Manikandan', roleTitle: null, phone: '9840012345', landline: null },
+    address: {
+      line: '18, Gandhi Road',
+      city: 'Katpadi',
+      district: 'Vellore',
+      state: 'Tamil Nadu',
+      pincode: '632007',
+      mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
+    },
+    ...overrides,
+  } as never;
+}
+
 /** Which step labels the Stepper has filled — `index <= current`, C015. */
 function filledSteps(): string[] {
   return within(screen.getByRole('list'))
@@ -361,7 +384,14 @@ describe('OnboardingPage — the floor the server sets', () => {
           gstin: null,
           pan: null,
           contact: { fullName: null, roleTitle: null, phone: '9840012345', landline: null },
-          address: { line: null, city: null, state: null, pincode: null },
+          address: {
+            line: null,
+            city: null,
+            district: null,
+            state: null,
+            pincode: null,
+            mapsUrl: null,
+          },
         });
       }
       if (path.startsWith('/v1/dealer/completeness')) return Promise.resolve(completeness());
@@ -508,6 +538,62 @@ describe('OnboardingWizard — the Account step', () => {
   });
 
   /**
+   * The number is editable, and stays editable on the way back from step 2.
+   *
+   * It was read-only once a dealership existed, on the reasoning that it is the
+   * login identity — which stopped being true when dealers moved to Google
+   * sign-in. What the read-only box actually produced was a dead end: a dealer
+   * whose number was refused as already registered arrived back on this step
+   * and could not change the one field they had been sent here to change.
+   */
+  it('lets the phone number be edited once the dealership exists', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        documents={[]}
+        dealer={dealerProfile()}
+        completeness={null}
+        yardPhoto={null}
+      />,
+    );
+
+    const phone = screen.getByLabelText(/^Phone/);
+    expect(phone).not.toHaveAttribute('readonly');
+
+    await user.clear(phone);
+    await user.type(phone, '9876543210');
+    expect(phone).toHaveValue('9876543210');
+  });
+
+  /**
+   * The browser-side check and the API's share one predicate now. They did not
+   * before, and the copy that lived here disagreed with the placeholder in the
+   * box beside it about whether `98400 12345` is a phone number.
+   */
+  it('accepts a number spaced the way the placeholder shows it', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ user: { phone: '' } })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+      />,
+    );
+
+    await user.type(screen.getByLabelText('Full name'), 'R. Manikandan');
+    await user.type(screen.getByLabelText(/^Phone/), '98400 12345');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    // It moved: the step-1 gate did not reject a number typed with a space.
+    expect(filledSteps()).toEqual(['Account', 'Business']);
+  });
+
+  /**
    * The step stays mounted when the wizard moves to Business — it is one form
    * across two screens, so its fields have to still be in the FormData that
    * Continue submits. `hidden` is what makes that invisible rather than absent.
@@ -589,6 +675,54 @@ describe('OnboardingWizard — the Business step', () => {
 
     expect(screen.getByLabelText('City')).toHaveValue('Hubballi');
     expect(screen.getByLabelText('State')).toHaveValue('Karnataka');
+  });
+
+  /**
+   * The district sits between the two, and is required for the same reason
+   * they are: the admin console filters on all three, and a dealership that
+   * skipped the question is one the filter would silently omit.
+   */
+  it('asks for the district alongside the city and the state', async () => {
+    const user = await onBusinessStep();
+
+    const district = screen.getByLabelText('District');
+    expect(district.tagName).toBe('INPUT');
+    expect(district).toHaveAttribute('name', 'district');
+    expect(district).toBeRequired();
+
+    await user.type(district, 'Dharwad');
+    expect(district).toHaveValue('Dharwad');
+    expect(district.closest('form')).toBe(
+      screen.getByRole('button', { name: 'Continue' }).closest('form'),
+    );
+  });
+
+  /**
+   * Where the yard is, rather than what its address string resolves to.
+   *
+   * The portfolio's "Get directions" is an anchor to this and nothing else, so
+   * it is asked for here and required — and the instruction under it matters
+   * as much as the box, because "paste a Maps link" is obvious only to
+   * somebody who has done it before.
+   */
+  it('asks for the Google Maps location, with the instruction to find it', async () => {
+    const user = await onBusinessStep();
+
+    const maps = screen.getByLabelText(/^Google Maps location/);
+    expect(maps).toHaveAttribute('name', 'mapsUrl');
+    expect(maps).toHaveAttribute('type', 'url');
+    expect(maps).toBeRequired();
+    expect(screen.getByText(/Open your yard in Google Maps/)).toBeInTheDocument();
+
+    await user.type(maps, 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9');
+    expect(maps).toHaveValue('https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9');
+  });
+
+  it('carries the link in the same form that creates the dealership', async () => {
+    await onBusinessStep();
+
+    const form = screen.getByRole('button', { name: 'Continue' }).closest('form');
+    expect(form?.querySelector('#mapsUrl')).not.toBeNull();
   });
 
   /**
@@ -870,6 +1004,47 @@ describe('OnboardingWizard — the outstanding-items list', () => {
 
     expect(await screen.findByText('That could not be saved.')).toBeInTheDocument();
     expect(blockersShown()).toEqual([]);
+  });
+
+  /**
+   * A refusal that names a step 1 field has to be *readable*, and it is not
+   * readable on the step that hides that field.
+   *
+   * `PHONE_ALREADY_REGISTERED` is the case this exists for: the number belongs
+   * to another dealership, and the dealer was looking at the city and pincode
+   * boxes when the API said so. The wizard walks back to Account, where the
+   * message renders against the input it is about.
+   */
+  it('returns to Account when the API refuses a field that lives there', async () => {
+    await submitAndFail(
+      {
+        message: 'That mobile number is already registered to another dealership.',
+        errors: { phone: 'Already registered.' },
+      },
+      completeness(),
+    );
+
+    expect(await screen.findByText('Already registered.')).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Phone/).closest('fieldset')).not.toHaveAttribute('hidden');
+    expect(screen.getByLabelText(/^Dealership name/).closest('fieldset')).toHaveAttribute('hidden');
+    // A local move, exactly like Back — the typed answers are still in the form.
+    expect(navigationState.pushed).toEqual([]);
+  });
+
+  /** A refusal about a step 2 field leaves the dealer on step 2. */
+  it('stays on Business when the refusal is about a field there', async () => {
+    await submitAndFail(
+      {
+        message: 'A dealership called Sri Lakshmi Motors is already registered in Vellore.',
+        errors: { legalName: 'Already registered in Vellore.' },
+      },
+      completeness(),
+    );
+
+    expect(await screen.findByText('Already registered in Vellore.')).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Dealership name/).closest('fieldset')).not.toHaveAttribute(
+      'hidden',
+    );
   });
 
   it('shows nothing at all when the action did not fail', () => {

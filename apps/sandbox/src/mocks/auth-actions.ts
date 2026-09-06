@@ -1,8 +1,8 @@
 /**
  * A stand-in for `@/features/auth/actions`.
  *
- * Coupling **C-4** in `component-map.md`: `AdminLoginForm` and `SignOutButton`
- * call Server Actions, which need a Next server to exist. The sandbox has no
+ * Coupling **C-4** in `component-map.md`: `OnboardingWizard` and
+ * `SignOutButton` call Server Actions, which need a Next server to exist. The sandbox has no
  * server and must render with the network off, so `.storybook/main.ts` aliases
  * the real module to this one — the pattern `component-sandbox.md` §8
  * prescribes, and the same one `apps/web/tests/setup.ts` already uses.
@@ -38,13 +38,6 @@ async function respond(action: string, formData: FormData): Promise<ActionState>
 
   await new Promise((resolve) => setTimeout(resolve, authActionStub.delayMs));
   return { ...authActionStub.result, values };
-}
-
-export async function adminLoginAction(
-  _previous: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  return respond('adminLogin', formData);
 }
 
 export async function onboardingAction(
