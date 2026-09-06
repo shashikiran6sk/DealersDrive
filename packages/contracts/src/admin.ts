@@ -170,6 +170,16 @@ export const AdminDealerDetail = z.object({
   contactPhoneDisplay: z.string().nullable(),
   contactEmail: z.string().nullable(),
   landline: z.string().nullable(),
+  /**
+   * The dealership's own description of itself, as typed on the Business step.
+   *
+   * Here because the reviewer edits it. It is the prose that fronts the public
+   * portfolio, it is the one field on that step written for a reader rather
+   * than for a form, and it is therefore the one most likely to arrive needing
+   * a light hand — a phone number in the middle of it, or a claim the review
+   * cannot support.
+   */
+  about: z.string().nullable(),
   joinedLabel: z.string(),
   creditBalance: z.number().int(),
   creditsHeld: z.number().int(),

@@ -332,6 +332,72 @@ describe('the yard on a map', () => {
   });
 });
 
+/**
+ * The dealership in its own words.
+ *
+ * Asked for on the same step as the address, and stored on the same row, but
+ * governed by the opposite rule: the address and the Maps link are how a buyer
+ * arrives, so they are required, and this is editorial, so it is not. The
+ * tests below are mostly about that asymmetry — a dealership with no
+ * description must still reach the review queue.
+ */
+describe('the dealership description', () => {
+  const ABOUT =
+    'Family-run since 1998. We specialise in hatchbacks under \u20b96 lakh, every car inspected in-house.';
+
+  it('is stored from onboarding and read back on the profile', async () => {
+    const { agent } = await dealership({ about: ABOUT });
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+
+    expect(profile.body.about).toBe(ABOUT);
+  });
+
+  /**
+   * The reason it is optional, asserted end to end rather than inferred from
+   * the schema: leaving the box empty must not cost a dealer their place in
+   * the queue.
+   */
+  it('is optional, and its absence does not hold up verification', async () => {
+    const { agent } = await dealership();
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    const completeness = await agent.get('/v1/dealer/completeness').expect(200);
+    const business = completeness.body.steps.find(
+      (step: { key: string }) => step.key === 'business',
+    );
+
+    // NULL rather than '', because every consumer of this field branches on
+    // null and a present-but-blank paragraph renders as a gap on the portfolio.
+    expect(profile.body.about).toBeNull();
+    expect(business.missing).not.toContain('about');
+  });
+
+  it('can be rewritten through PATCH', async () => {
+    const { agent } = await dealership({ about: ABOUT });
+
+    await agent.patch('/v1/dealer').send({ about: 'Now under new management.' }).expect(200);
+
+    expect((await agent.get('/v1/dealer').expect(200)).body.about).toBe(
+      'Now under new management.',
+    );
+  });
+
+  it('refuses a description longer than the column is meant to hold', async () => {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    const refused = await agent
+      .post('/v1/auth/onboarding')
+      .send(onboarding({ about: 'a'.repeat(4001) }))
+      .expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+    expect(JSON.stringify(refused.body)).toContain('about');
+  });
+});
+
 describe('the contact number, after onboarding', () => {
   /**
    * The number stopped being a credential when dealers moved to Google

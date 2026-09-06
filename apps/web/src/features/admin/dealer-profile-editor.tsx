@@ -6,7 +6,7 @@ import { useState, useTransition } from 'react';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, Textarea } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
 import { updateDealerAction } from '@/features/admin/actions';
 
@@ -64,6 +64,15 @@ const FIELDS = [
   { key: 'contactPhone', label: 'Phone', path: 'contact.phone', mono: true },
   { key: 'contactEmail', label: 'Email', path: 'contact.email', mono: false },
   { key: 'landline', label: 'Landline', path: 'contact.landline', mono: true },
+  /*
+   * The one field on this card written for a reader rather than for a form, so
+   * it is the one that is laid out differently: a textarea across both columns
+   * while editing, and a wrapped paragraph rather than a right-aligned value
+   * while reading. It is also the field most likely to need a reviewer's hand —
+   * a phone number smuggled into the prose is exactly the sort of thing rule 7
+   * exists to keep off a public page.
+   */
+  { key: 'about', label: 'About', path: 'about', mono: false, multiline: true },
 ] as const;
 
 type FieldKey = (typeof FIELDS)[number]['key'];
@@ -88,6 +97,7 @@ function initialValues(dealer: AdminDealerDetail): Values {
     contactPhone: dealer.contactPhone ?? '',
     contactEmail: dealer.contactEmail ?? '',
     landline: dealer.landline ?? '',
+    about: dealer.about ?? '',
   };
 }
 
@@ -229,19 +239,34 @@ export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
               id={`dealer-${field.key}`}
               label={field.label}
               error={errorFor(errors, field.path)}
+              className={'multiline' in field ? 'sm:col-span-2' : undefined}
             >
-              <Input
-                id={`dealer-${field.key}`}
-                className={field.mono ? 'font-mono' : undefined}
-                value={values[field.key]}
-                onChange={(event) =>
-                  setValues((current) => ({
-                    ...current,
-                    [field.key]:
-                      'transform' in field ? field.transform(event.target.value) : event.target.value,
-                  }))
-                }
-              />
+              {'multiline' in field ? (
+                <Textarea
+                  id={`dealer-${field.key}`}
+                  rows={4}
+                  maxLength={4000}
+                  value={values[field.key]}
+                  onChange={(event) =>
+                    setValues((current) => ({ ...current, [field.key]: event.target.value }))
+                  }
+                />
+              ) : (
+                <Input
+                  id={`dealer-${field.key}`}
+                  className={field.mono ? 'font-mono' : undefined}
+                  value={values[field.key]}
+                  onChange={(event) =>
+                    setValues((current) => ({
+                      ...current,
+                      [field.key]:
+                        'transform' in field
+                          ? field.transform(event.target.value)
+                          : event.target.value,
+                    }))
+                  }
+                />
+              )}
             </Field>
           ))}
           <p className="text-[12px] ink-muted sm:col-span-2">
@@ -251,25 +276,45 @@ export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
         </div>
       ) : (
         <dl>
-          {FIELDS.map((field) => (
-            <div
-              key={field.key}
-              className="flex justify-between gap-4 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
-            >
-              <dt className="ink-muted">{field.label}</dt>
-              <dd className={`text-right font-medium${field.mono ? ' font-mono' : ''}`}>
-                {/*
+          {FIELDS.map((field) =>
+            'multiline' in field ? (
+              /*
+                A paragraph does not belong in the label-on-the-left, value-on-
+                the-right rhythm the rest of the list keeps: at 13px it wraps to
+                four ragged right-aligned lines. Stacked and left-aligned, with
+                the dealer's own line breaks preserved, it reads the way it will
+                read on the portfolio — which is the thing the reviewer is
+                actually being asked to judge.
+              */
+              <div
+                key={field.key}
+                className="border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
+              >
+                <dt className="ink-muted">{field.label}</dt>
+                <dd className="mt-[4px] whitespace-pre-line font-medium">
+                  {initial[field.key] || '—'}
+                </dd>
+              </div>
+            ) : (
+              <div
+                key={field.key}
+                className="flex justify-between gap-4 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
+              >
+                <dt className="ink-muted">{field.label}</dt>
+                <dd className={`text-right font-medium${field.mono ? ' font-mono' : ''}`}>
+                  {/*
                   The phone is shown formatted while it is being read and raw
                   while it is being edited — `+91 98400 12345` is what a reviewer
                   is checking against a letterhead, and `9840012345` is what the
                   field accepts back.
                 */}
-                {field.key === 'contactPhone'
-                  ? (dealer.contactPhoneDisplay ?? '—')
-                  : initial[field.key] || '—'}
-              </dd>
-            </div>
-          ))}
+                  {field.key === 'contactPhone'
+                    ? (dealer.contactPhoneDisplay ?? '—')
+                    : initial[field.key] || '—'}
+                </dd>
+              </div>
+            ),
+          )}
         </dl>
       )}
     </section>

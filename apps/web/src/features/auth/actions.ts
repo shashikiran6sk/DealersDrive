@@ -58,6 +58,7 @@ const ONBOARDING_FIELDS = [
   'pincode',
   'mapsUrl',
   'landline',
+  'about',
 ] as const;
 
 /** Dealer onboarding — the step between a verified Google identity and a tenant. */
@@ -81,6 +82,7 @@ export async function onboardingAction(
     pincode: text(formData, 'pincode').trim(),
     mapsUrl: text(formData, 'mapsUrl').trim(),
     landline: emptyToUndefined(text(formData, 'landline')),
+    about: emptyToUndefined(text(formData, 'about')),
   });
 
   if (!parsed.success) {
@@ -124,6 +126,7 @@ export async function updateOnboardingAction(
 
   const parsed = UpdateDealerInput.safeParse({
     legalName: text(formData, 'legalName').trim(),
+    about: text(formData, 'about').trim(),
     contact: {
       fullName: text(formData, 'fullName').trim(),
       roleTitle: text(formData, 'roleTitle').trim(),

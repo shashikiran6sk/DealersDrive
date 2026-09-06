@@ -411,6 +411,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         contactPhoneDisplay: dealer.contactPhone ? formatPhone(dealer.contactPhone) : null,
         contactEmail: owner?.user.email ?? dealer.contactEmail,
         landline: dealer.landline,
+        about: dealer.about,
         joinedLabel: formatDate(dealer.createdAt),
         creditBalance: dealer.creditBalance,
         creditsHeld: dealer.creditsHeld,

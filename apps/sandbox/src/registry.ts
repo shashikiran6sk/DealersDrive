@@ -411,6 +411,7 @@ export const registry: RegistryEntry[] = [
       'Account',
       'Account (prefilled)',
       'Business',
+      'Business (with description)',
       'Business (name taken)',
       'Documents',
       'Documents (complete)',

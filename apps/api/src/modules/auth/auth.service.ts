@@ -404,6 +404,11 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
             contactPhone: phone,
             contactEmail: principal.email,
             landline: input.landline ?? null,
+            // Optional on the step that asks for it, so an unanswered box is a
+            // NULL rather than an empty string. `DealerProfile.about` is
+            // nullable and every consumer branches on that; '' would render as
+            // a present-but-blank paragraph on the portfolio.
+            about: input.about ?? null,
             specialities: [],
           },
         });

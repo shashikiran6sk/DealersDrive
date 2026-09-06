@@ -129,7 +129,7 @@ export const adminDocs: ModuleDocs = {
       tag: 'Admin',
       summary: "Amend a dealership's details",
       description:
-        "Edits the answers the dealer gave, from the review screen. A moderator reading a " +
+        'Edits the answers the dealer gave, from the review screen. A moderator reading a ' +
         'GSTIN off the certificate in front of them can see that one digit is wrong, and the ' +
         'alternative to fixing it here is a round trip that costs a working day to correct a ' +
         'character.\n\n' +

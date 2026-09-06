@@ -528,11 +528,11 @@ have very different consequences. They are now separate controls with separate
 endpoints, and the distinction is worth carrying forward because the wrong one is
 expensive.
 
-| Control                          | What it does                                                                                        | Reversible |
-| -------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- |
+| Control                          | What it does                                                                                         | Reversible              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------- |
 | **Reject file** (one document)   | Deletes that scan from storage, empties the row, reopens the application so the dealer can re-upload | Yes — they upload again |
-| **Request changes** (dealership) | PENDING_APPROVAL → DRAFT with a reason. Nothing is deleted                                            | Yes        |
-| **Reject** (dealership)          | Deletes the scans, the yard photo, the documents, the membership and the `dealers` row                | **No**     |
+| **Request changes** (dealership) | PENDING_APPROVAL → DRAFT with a reason. Nothing is deleted                                           | Yes                     |
+| **Reject** (dealership)          | Deletes the scans, the yard photo, the documents, the membership and the `dealers` row               | **No**                  |
 
 Three things follow from that table.
 
@@ -540,7 +540,7 @@ Three things follow from that table.
 unreadable, send another one". Because a PENDING_APPROVAL dealership is shown the
 "we are reviewing this" panel and no form, a document rejection that left the
 status alone would be an instruction the dealer could not follow — so it returns
-the dealership to DRAFT, exactly as *Request changes* does. It is a request for
+the dealership to DRAFT, exactly as _Request changes_ does. It is a request for
 changes scoped to one file.
 
 **The file goes when the document is rejected.** A rejected scan of somebody's
@@ -552,7 +552,7 @@ rows — but empty, so the dealer sees the slot they saw before they uploaded.
 `audit_logs.dealerId` is a column and not a foreign key, which is what lets the
 record of what was destroyed outlive the row it describes. The whole `before`
 block is written into it for that reason, in the same transaction, before the
-delete. Storage is emptied *first*, because the row is the only thing that knows
+delete. Storage is emptied _first_, because the row is the only thing that knows
 where the bytes are: a KYC key ends in the document row's id.
 
 `statusReason` on a DRAFT dealership is the mark of "an admin looked at this and
@@ -572,7 +572,7 @@ node** and mutated `type` in place.
 Click is a discrete event, so React flushes the state update synchronously while
 the event is still being dispatched. By the time the browser performed the
 button's default activation behaviour, the node had become `type="submit"` — so
-one press of Continue on the Account step advanced to Business *and* submitted
+one press of Continue on the Account step advanced to Business _and_ submitted
 the form, landing the dealer on the Documents step without ever seeing the fields
 in between.
 
@@ -591,6 +591,42 @@ was `useState`-initialised once, and Next keeps the wizard mounted across a
 step arrived showing whichever pane was open when the page was first entered.
 Both are now reconciled during render rather than in an effect, so the step and
 the pane change in one paint.
+
+---
+
+## 7j. Why CI kept failing on green branches
+
+The working agreement names four commands — `pnpm lint`, `pnpm typecheck`,
+`pnpm test`, `pnpm build` — and CI runs **six** steps. The two extra ones were
+`pnpm format:check` and `pnpm docs:check`, and neither was reachable by running
+the documented gate.
+
+That is the whole explanation for a run of red pull requests whose authors had
+verified them locally first. The failures were never in the code: they were a
+reflowed comment block, a `prettier` disagreement about where a ternary breaks,
+a renamed script quoted in a document. Every one of them arrived as a 45-second
+round trip and a context switch, and every one of them was invisible until the
+push.
+
+A gate that a developer cannot run is not a gate, it is a lottery. So the four
+commands now cover all six:
+
+```json
+"lint": "pnpm format:check && turbo run lint && pnpm docs:check",
+"lint:fix": "pnpm format && turbo run lint -- --fix",
+```
+
+`ci.yml` still runs Format, Lint and Documentation references as three separate
+steps, and that duplication is deliberate: a named step tells you which of the
+three failed without opening the log. Eight seconds of repeated work against a
+round trip that costs a minute and somebody's attention is not a close call.
+
+**If you add a check to `ci.yml`, add it to one of those four commands in the
+same PR.** Anything else re-opens this.
+
+The formatting rule itself is worth stating plainly, because it is the one that
+catches people: run `pnpm format` (or `pnpm lint:fix`) before you commit.
+Prettier reflows comment blocks, and this repository has a great many of them.
 
 ---
 

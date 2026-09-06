@@ -114,6 +114,24 @@ export const OnboardingInput = z
      */
     mapsUrl: GoogleMapsUrl,
     landline: z.string().trim().max(24).optional(),
+    /**
+     * The dealership in its own words — the paragraph the public portfolio
+     * runs under the yard photograph.
+     *
+     * Asked for here rather than left to a later profile screen because this
+     * is the one moment a dealer is already describing their business, and a
+     * portfolio whose only prose is a generated line about a town is a
+     * portfolio nobody reads twice.
+     *
+     * **Optional, unlike its neighbours on this step.** `mapsUrl` and the
+     * address are facts a buyer needs in order to arrive; this is editorial,
+     * every consumer of `DealerProfile.about` already branches on null, and a
+     * dealer who cannot think of a sentence must not be held out of
+     * verification by it. The bound matches `UpdateDealerInput.about` exactly
+     * so that what onboarding accepts and what the profile screen accepts
+     * cannot drift apart.
+     */
+    about: z.string().trim().max(4000).optional(),
   })
   .strict();
 export type OnboardingInput = z.infer<typeof OnboardingInput>;

@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
+import { Textarea } from '@/components/ui/input';
 import { Banner, Blueprint, StatusTag, Stepper } from '@/components/ui/primitives';
 import {
   onboardingAction,
@@ -661,6 +662,43 @@ function BusinessStep({
               placeholder="0416 224 8890"
               {...invalidProps('landline', errors.landline)}
             />
+          </Field>
+
+          {/*
+            The paragraph the public portfolio runs under the yard photograph.
+
+            Asked for here because this is the one moment a dealer is already
+            describing their business — a separate profile screen later is a
+            screen most of them never open, and a portfolio whose only prose is
+            a generated line about a town reads like a directory entry.
+
+            Optional, and the only optional field on this step that is not a
+            phone number. The address and the Maps link are how a buyer arrives;
+            this is editorial, so a dealer who cannot think of a sentence today
+            must not be held out of verification by it. It uses `Textarea`
+            rather than another hand-written `className="input"` — the bypass
+            this component exists to stop.
+          */}
+          <Field
+            id="about"
+            label="About your dealership"
+            hint="optional — shown on your public page"
+            error={errors.about}
+            className="sm:col-span-2"
+          >
+            <Textarea
+              id="about"
+              name="about"
+              rows={4}
+              maxLength={4000}
+              defaultValue={values.about ?? dealer?.about ?? ''}
+              placeholder="Family-run since 1998. We specialise in hatchbacks under ₹6 lakh, every car inspected in-house, and we handle the RC transfer for you."
+              {...invalidProps('about', errors.about)}
+            />
+            <p className="mt-[4px] text-[11px] ink-subtle">
+              Two or three sentences. What you sell, how long you have been at it, and what a buyer
+              can expect when they walk in.
+            </p>
           </Field>
         </div>
       </div>

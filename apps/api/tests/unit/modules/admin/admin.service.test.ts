@@ -1081,7 +1081,11 @@ describe('rejectDealer', () => {
       actorId: 'admin-1',
       action: 'dealer.rejected',
       entityType: 'Dealer',
-      before: { status: 'PENDING_APPROVAL', gstin: '33AABCS1429B1ZX', legalName: 'Sri Lakshmi Motors Pvt Ltd' },
+      before: {
+        status: 'PENDING_APPROVAL',
+        gstin: '33AABCS1429B1ZX',
+        legalName: 'Sri Lakshmi Motors Pvt Ltd',
+      },
       after: { purged: true, reason: 'The GSTIN belongs to a different business.' },
     });
   });
@@ -1198,14 +1202,17 @@ describe('requestChanges', () => {
    * dealership is not in the onboarding flow at all — sending either back would
    * be a state change with no meaning behind it.
    */
-  it.each(['DRAFT', 'ACTIVE', 'SUSPENDED'])('refuses to send back a %s dealership', async (status) => {
-    const h = setup({ dealer: dealerRow({ status }) });
+  it.each(['DRAFT', 'ACTIVE', 'SUSPENDED'])(
+    'refuses to send back a %s dealership',
+    async (status) => {
+      const h = setup({ dealer: dealerRow({ status }) });
 
-    await expect(h.service.requestChanges(admin, DEALER, 'Fix the address.')).rejects.toThrow(
-      /waiting for a decision/,
-    );
-    expect(h.dealerUpdates).toEqual([]);
-  });
+      await expect(h.service.requestChanges(admin, DEALER, 'Fix the address.')).rejects.toThrow(
+        /waiting for a decision/,
+      );
+      expect(h.dealerUpdates).toEqual([]);
+    },
+  );
 
   it('refuses without admin:dealer:approve', async () => {
     const support = {

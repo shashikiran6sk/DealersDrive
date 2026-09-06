@@ -189,8 +189,7 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
             disabled={changesReason.trim().length < 6}
             onClick={() =>
               run(
-                () =>
-                  requestDealerChangesAction(dealer.id, { reason: changesReason.trim() }),
+                () => requestDealerChangesAction(dealer.id, { reason: changesReason.trim() }),
                 'Sent back to the dealer for changes.',
               )
             }
@@ -348,7 +347,12 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
               </div>
             </>
           ) : (
-            <Button variant="ghost" size="sm" className="self-start" onClick={() => setRejectOpen(true)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start"
+              onClick={() => setRejectOpen(true)}
+            >
               Reject application…
             </Button>
           )}
@@ -364,9 +368,7 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
       !dealer.actions.canSuspend &&
       !dealer.actions.canReinstate &&
       !dealer.actions.canReject ? (
-        <p className="text-[13px] ink-muted">
-          No decisions are available from this state.
-        </p>
+        <p className="text-[13px] ink-muted">No decisions are available from this state.</p>
       ) : null}
     </section>
   );
