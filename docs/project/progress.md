@@ -126,7 +126,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 12 — Public marketplace
 
-- [~] F073 — Public shell — header & footer
+- [x] F073 — Public shell — header & footer · [#69](https://github.com/shashikiran6sk/DealersDrive/pull/69)
 - [ ] F074 — City selector
 - [ ] F075 — Vehicle card
 - [ ] F076 — Search API & facets ⚠️
@@ -138,7 +138,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [ ] F082 — Vehicle detail page
 - [ ] F083 — Vehicle gallery & lightbox
 - [ ] F084 — Similar vehicles
-- [ ] F085 — Dealer directory
+- [~] F085 — Dealer directory
 - [ ] F086 — Dealer portfolio
 - [ ] F087 — Saved cars
 

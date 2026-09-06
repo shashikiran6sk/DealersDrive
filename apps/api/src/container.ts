@@ -12,6 +12,11 @@ import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
 import type { OAuthProvider } from './modules/auth/oauth.port.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
+import {
+  createDealersPublicService,
+  noInventoryYet,
+  type DealersPublicService,
+} from './modules/dealers/dealers.public.service.js';
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
 import { createMediaService, type MediaService } from './modules/media/media.service.js';
 import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
@@ -81,6 +86,8 @@ export interface Container {
   readonly guards: ReturnType<typeof createAuthMiddleware>;
   readonly auth: AuthService;
   readonly dealers: DealersService;
+  /** The buyer-facing view of a dealership: the directory and one portfolio. */
+  readonly dealersPublic: DealersPublicService;
   /** The cross-tenant console. Every write it makes names the admin who made it. */
   readonly admin: AdminService;
   readonly publicConfig: ConfigService;
@@ -126,6 +133,14 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const audit = createAuditService(prisma);
   const dealersRepo = createDealersRepository(prisma);
   const dealers = createDealersService({ prisma, repo: dealersRepo, storage });
+  /*
+   * `noInventoryYet` is the car-count source until **F076**. The baseline read
+   * `search.dealerStats()`, which groups `listing_search` — the read model F064
+   * creates. Nothing creates a listing yet, so every dealership genuinely has
+   * none, and the directory already renders that case with an em dash. F076
+   * replaces this argument and nothing else.
+   */
+  const dealersPublic = createDealersPublicService({ repo: dealersRepo, stats: noInventoryYet });
   const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
@@ -147,6 +162,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     guards,
     auth,
     dealers,
+    dealersPublic,
     admin,
     publicConfig,
     media,

@@ -345,8 +345,10 @@ Both in `components/search/search-toolbar.tsx` (`:11`, `:82`).
 
 ### C031 — `DirectoryFilters`
 
-`components/dealers/directory-filters.tsx:16`. Props:
-`cities: DealerDirectoryResponse['cities']`, `city?`, `q?`. One consumer. **P2.**
+`components/dealers/directory-filters.tsx:23`. Props:
+`cities: DealerDirectoryResponse['cities']`, `city?`, `q?`. States: default,
+filtered, searching, both, one city, no cities, many cities. One consumer.
+**P2** ✅
 
 ---
 
@@ -423,10 +425,10 @@ props. Both **P2**.
 
 ### C038 — `DirectoryCard`
 
-`components/dealers/dealer-card.tsx:14`. Props: `dealer: DealerCardDto`.
+`components/dealers/dealer-card.tsx:22`. Props: `dealer: DealerCardDto`.
 States: verified/unverified, cover/no cover, tagline/none, 0–3+ services (sliced
-at 3), long brand name. Deps: `Blueprint`, `ImageSlot`, `LogoTile`, `Plate`,
-`Tag`. One consumer. No tests. Feature-specific. **P1.**
+at 3), 0/1/n cars, long brand name. Deps: `Blueprint`, `ImageSlot`, `LogoTile`,
+`Plate`, `Tag`. One consumer. Shared. **P1** ✅
 
 > ⚠️ **Finding D-6 — naming.** The file is `dealer-card.tsx`; the export is
 > `DirectoryCard`. Nothing named `DealerCard` exists in the UI — `DealerCard` is
