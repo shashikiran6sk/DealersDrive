@@ -1842,9 +1842,12 @@ The customer chrome: sticky header with logo plate, main nav and saved-cars badg
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F009, F011
 - **Frontend** `app/(public)/layout.tsx`, `components/layout/{customer-header,customer-footer}.tsx`
-- **Components — New (Shared)** `CustomerHeader`, `CustomerFooter`, `HeaderLink` · **Reused** `Plate`, `Button`
-- **Sandbox** `CustomerHeader` — each nav item active × saved count 0/1/99 × pre-hydration. Needs the **pathname control** and, once F087 lands, the `SavedCarsProvider` decorator.
-- The first shared component that cannot render without a React context provider — the driving example for the sandbox's decorator design.
+- **Tests** `apps/web/tests/unit/components/layout/customer-header.test.tsx` — new, with no baseline equivalent; the prefix match and `aria-current` are the only rules here, and both are invisible until they are wrong
+- **Components — New (Shared)** `CustomerHeader`, `CustomerFooter`, `HeaderLink` · **Reused** `Plate`
+- **Sandbox** `CustomerHeader` — each nav item active × mobile/tablet. Needs the **pathname control**; the saved-count states arrive with F087 and the `SavedCarsProvider` decorator.
+- ⚠️ **The header takes no props.** The baseline's `cities: CitiesResponse` is gone with **D6**, and the layout is synchronous as a result: there is no `GET /v1/cities` to fetch and therefore no failure to degrade around. **F074** restores both the chip and the fetch, sourced from the search facets.
+- ⚠️ **No saved-cars badge yet** — **F087**. `Saved cars` is a plain link until the provider exists, so this feature does _not_ need the `SavedCarsProvider` decorator and is not the driving example for it; `VehicleCard` (**F075**) is the first component that cannot render without one.
+- ⚠️ **The nav points at three routes that do not exist yet** — `/cars` (F077), `/dealers` (F085), `/saved` (F087). That is the cost of bringing the shell across before the rooms it frames, and the order Tier 12 chose.
 
 ### F074 — City selector
 

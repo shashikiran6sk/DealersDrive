@@ -82,7 +82,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 7 — Consoles
 
-- [~] F046 — Dealer profile management
+- [x] F046 — Dealer profile management · [#68](https://github.com/shashikiran6sk/DealersDrive/pull/68)
 - [ ] F047 — Dealer console shell & navigation
 - [ ] F048 — Dealer dashboard
 - [x] F049 — Admin console shell & navigation · ⚠️ pulled forward, ahead of Tier 7 — F044 depends on it · [#60](https://github.com/shashikiran6sk/DealersDrive/pull/60)
@@ -126,7 +126,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 12 — Public marketplace
 
-- [ ] F073 — Public shell — header & footer
+- [~] F073 — Public shell — header & footer
 - [ ] F074 — City selector
 - [ ] F075 — Vehicle card
 - [ ] F076 — Search API & facets ⚠️
