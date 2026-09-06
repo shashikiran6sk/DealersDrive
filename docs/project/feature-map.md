@@ -1440,16 +1440,19 @@ The dealer status machine on the admin side: approve, reject, suspend, reinstate
 
 ### F046 — Dealer profile management
 
-The editable business identity after onboarding: trading name, tagline, city, services, contact, cover photo.
+The editable business identity after onboarding: dealership name, tagline, description, services, contact, address, Maps link.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F036, F039, F045
-- **Backend** `modules/dealers/{dealers.routes,dealers.service}.ts`
+- **Backend** — ⚠️ **already landed.** `GET /v1/dealer` and `PATCH /v1/dealer` were mounted by **F038/F039**, because the onboarding wizard's `Back` PATCHes the same endpoint. `dealers.service.update` and its docs operation arrived with them, and this feature adds no backend file.
 - **Frontend** `app/(dealer)/dealer/profile/page.tsx`, `features/dealer/{profile-form,profile-actions}.tsx`
-- **API** `GET /v1/dealer/`, `PATCH /v1/dealer/`
+- **API** `GET /v1/dealer/`, `PATCH /v1/dealer/` — both pre-existing
 - **DB** `Dealer`
-- **Tests** `tests/unit/modules/dealers/{dealers.routes,dealers.service,dealers.facade}.test.ts`
-- **Components — New (feature-specific)** `DealerProfileForm` · **Reused** `Field`, `Input`, `Card`, `Banner`, `Button`
-- **Sandbox** `DealerProfileForm` — empty / populated / field errors / saved / server error. Uses `useActionState`, so the scenario needs a stubbed action.
+- **Tests** `tests/unit/modules/dealers/{dealers.routes,dealers.service}.test.ts` — both present, from F038/F039. `dealers.facade.test.ts` is **not** brought across: it asserts the facade exports nothing at runtime, and this repository's facade exports `documentKey`/`yardPhotoKey` for the admin module (F044). Reinstating it needs the assertion rewritten, which is not this feature's call.
+- **Components — New (feature-specific)** `DealerProfileForm` · **Reused** `Field`, `Input`, `Textarea`, `Banner`, `Button`, `StatusTag`
+- **Sandbox** `DealerProfileForm` — populated / sparse / saved / field refusal / server error / saving. Uses `useActionState`, so the scenario needs a stubbed action (`mocks/dealer-actions.ts`, coupling C-4).
+- ⚠️ **No "Trading name" field.** `brandName` is absent from `UpdateDealerInput` — it is the server-written mirror of `legalName`. The baseline's form edited both.
+- ⚠️ **City, district, state and `mapsUrl` are editable text** (D6, R2, R6); the baseline's city was a disabled box filled in from the `cities` table. The mobile is editable too (R7).
+- ⚠️ **No "View public page →" link yet.** `/dealers/:slug` arrives with **F086**; the link returns with it.
 
 ### F047 — Dealer console shell & navigation
 
