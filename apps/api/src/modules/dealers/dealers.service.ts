@@ -408,6 +408,19 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
        * true of them — the Business step is where it is fixed.
        */
       if (!dealer.mapsUrl) businessMissing.push('mapsUrl');
+      /*
+       * The description, required on the same footing as the address and the
+       * link. The public portfolio is the page a dealership is judged on
+       * before anybody drives anywhere, and one with a photograph, a pin and
+       * no sentence reads as an unfinished listing rather than a business.
+       *
+       * Dealerships created while this was optional — and those created before
+       * it was asked at all — read as incomplete here. That is true of them,
+       * and the Business step is where it is fixed. There is no backfill for
+       * the same reason there is none for `mapsUrl`: nobody but the dealer can
+       * write this sentence.
+       */
+      if (!dealer.about) businessMissing.push('about');
       if (!dealer.gstin) businessMissing.push('gstin');
       if (!dealer.pan) businessMissing.push('pan');
 

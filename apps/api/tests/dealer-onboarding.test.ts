@@ -53,6 +53,7 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     state: 'Tamil Nadu',
     pincode: '632007',
     mapsUrl: 'https://maps.app.goo.gl/onboarding-fixture',
+    about: 'Family-run dealership in Katpadi, trading since 1998.',
     ...overrides,
   };
 }
@@ -335,11 +336,14 @@ describe('the yard on a map', () => {
 /**
  * The dealership in its own words.
  *
- * Asked for on the same step as the address, and stored on the same row, but
- * governed by the opposite rule: the address and the Maps link are how a buyer
- * arrives, so they are required, and this is editorial, so it is not. The
- * tests below are mostly about that asymmetry — a dealership with no
- * description must still reach the review queue.
+ * Asked for on the same step as the address, stored on the same row, and
+ * required on the same footing: the public portfolio is the page a dealership
+ * is judged on before anybody drives anywhere, and one with a photograph, a
+ * pin and no sentence reads as an unfinished listing rather than a business.
+ *
+ * Most of what is asserted below is about the *floor* rather than the
+ * requirement. "Required" with no minimum length is a box satisfied by `-`,
+ * which is not a description and does not make the portfolio any better.
  */
 describe('the dealership description', () => {
   const ABOUT =
@@ -353,23 +357,72 @@ describe('the dealership description', () => {
     expect(profile.body.about).toBe(ABOUT);
   });
 
-  /**
-   * The reason it is optional, asserted end to end rather than inferred from
-   * the schema: leaving the box empty must not cost a dealer their place in
-   * the queue.
-   */
-  it('is optional, and its absence does not hold up verification', async () => {
-    const { agent } = await dealership();
+  it('is required, and onboarding without one is refused', async () => {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
 
-    const profile = await agent.get('/v1/dealer').expect(200);
+    const { about: _omitted, ...withoutAbout } = onboarding();
+    const refused = await agent.post('/v1/auth/onboarding').send(withoutAbout).expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+    expect(JSON.stringify(refused.body)).toContain('about');
+  });
+
+  /**
+   * The floor exists so that "required" means something. A required box with
+   * no minimum is satisfied by a single character, which buys nothing except
+   * the false belief that every portfolio has prose on it.
+   */
+  it('refuses a single evasive word', async () => {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    await agent
+      .post('/v1/auth/onboarding')
+      .send(onboarding({ about: 'cars' }))
+      .expect(400);
+    await agent
+      .post('/v1/auth/onboarding')
+      .send(onboarding({ about: '-' }))
+      .expect(400);
+    // Whitespace is trimmed before the length is counted, so padding does not
+    // buy a way past it either.
+    await agent
+      .post('/v1/auth/onboarding')
+      .send(onboarding({ about: `cars${' '.repeat(40)}` }))
+      .expect(400);
+  });
+
+  /**
+   * The state every dealership created before the question was asked is in,
+   * and the one dealerships created while it was optional are in too. There is
+   * no backfill — nobody but the dealer can write this sentence — so
+   * completeness has to name it rather than pass silently.
+   */
+  it('names the missing description when a dealership predates the question', async () => {
+    const { agent, dealerId } = await dealership();
+    await h.prisma.dealer.update({ where: { id: dealerId }, data: { about: null } });
+
     const completeness = await agent.get('/v1/dealer/completeness').expect(200);
     const business = completeness.body.steps.find(
       (step: { key: string }) => step.key === 'business',
     );
 
-    // NULL rather than '', because every consumer of this field branches on
-    // null and a present-but-blank paragraph renders as a gap on the portfolio.
-    expect(profile.body.about).toBeNull();
+    expect(business.missing).toContain('about');
+    expect(completeness.body.canSubmit).toBe(false);
+  });
+
+  /** And once it is there, it is not what is holding the dealership up. */
+  it('does not appear as outstanding once it has been written', async () => {
+    const { agent } = await dealership({ about: ABOUT });
+
+    const completeness = await agent.get('/v1/dealer/completeness').expect(200);
+    const business = completeness.body.steps.find(
+      (step: { key: string }) => step.key === 'business',
+    );
+
     expect(business.missing).not.toContain('about');
   });
 
@@ -381,6 +434,20 @@ describe('the dealership description', () => {
     expect((await agent.get('/v1/dealer').expect(200)).body.about).toBe(
       'Now under new management.',
     );
+  });
+
+  /**
+   * The partial-patch schema keeps `about` optional — a step that does not
+   * carry it must not clear it — but it may not be *emptied*, or the dealer
+   * could delete on the profile screen what onboarding insisted on.
+   */
+  it('cannot be emptied through PATCH', async () => {
+    const { agent } = await dealership({ about: ABOUT });
+
+    const refused = await agent.patch('/v1/dealer').send({ about: '' }).expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+    expect((await agent.get('/v1/dealer').expect(200)).body.about).toBe(ABOUT);
   });
 
   it('refuses a description longer than the column is meant to hold', async () => {

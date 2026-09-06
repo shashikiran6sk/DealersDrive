@@ -193,8 +193,28 @@ export function OnboardingWizard({
 
       {sentBack ? (
         <Banner tone="warn" title="We need one thing changed before we can verify you">
-          <p>{sentBack}</p>
-          <p className="mt-[4px]">
+          {/*
+            The moderator's own words, set apart from the sentence under them.
+
+            They were a bare `<p>` sitting directly above the reassurance that
+            nothing was lost, in the same size and weight — two paragraphs of
+            equal-looking text, of which only the first is actually actionable.
+            This is the one line in the banner that a person wrote about *this*
+            dealership, and it is the only thing on the screen that says what to
+            fix, so it is the line that has to survive being skimmed.
+
+            A rule down the left and a heavier weight, rather than a second
+            colour: the banner is already `warn`, and the accent is drawn from
+            `currentColor` so it stays legible in whatever the tone resolves to
+            instead of pinning an amber that a future `err` variant would
+            inherit wrongly. `whitespace-pre-line` because a moderator listing
+            two problems types them on two lines and the box should show them
+            that way.
+          */}
+          <p className="my-[2px] whitespace-pre-line border-l-[3px] border-current/40 py-[2px] pl-[10px] text-[14px] font-semibold">
+            {sentBack}
+          </p>
+          <p className="mt-[6px]">
             Everything you entered is still here. Fix what is named above and submit again.
           </p>
         </Banner>
@@ -672,17 +692,19 @@ function BusinessStep({
             screen most of them never open, and a portfolio whose only prose is
             a generated line about a town reads like a directory entry.
 
-            Optional, and the only optional field on this step that is not a
-            phone number. The address and the Maps link are how a buyer arrives;
-            this is editorial, so a dealer who cannot think of a sentence today
-            must not be held out of verification by it. It uses `Textarea`
-            rather than another hand-written `className="input"` — the bypass
-            this component exists to stop.
+            Required, like every other field on this step. It was optional when
+            it was introduced, which in practice meant it would be blank on most
+            rows: a field a form does not insist on is a field that gets
+            skipped. The floor is 20 characters rather than 1, because a
+            required box with no minimum is satisfied by `-`.
+
+            It uses `Textarea` rather than another hand-written
+            `className="input"` — the bypass that component exists to stop.
           */}
           <Field
             id="about"
             label="About your dealership"
-            hint="optional — shown on your public page"
+            hint="shown on your public page"
             error={errors.about}
             className="sm:col-span-2"
           >
@@ -690,9 +712,12 @@ function BusinessStep({
               id="about"
               name="about"
               rows={4}
+              minLength={20}
               maxLength={4000}
               defaultValue={values.about ?? dealer?.about ?? ''}
               placeholder="Family-run since 1998. We specialise in hatchbacks under ₹6 lakh, every car inspected in-house, and we handle the RC transfer for you."
+              required
+              aria-required="true"
               {...invalidProps('about', errors.about)}
             />
             <p className="mt-[4px] text-[11px] ink-subtle">
@@ -918,6 +943,7 @@ const MISSING_LABELS: Record<string, string> = {
   district: 'District',
   state: 'State',
   mapsUrl: 'Google Maps location',
+  about: 'About your dealership',
   fullName: 'Your name',
   phone: 'Phone number',
   email: 'Email address',

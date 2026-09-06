@@ -82,7 +82,7 @@ export async function onboardingAction(
     pincode: text(formData, 'pincode').trim(),
     mapsUrl: text(formData, 'mapsUrl').trim(),
     landline: emptyToUndefined(text(formData, 'landline')),
-    about: emptyToUndefined(text(formData, 'about')),
+    about: text(formData, 'about').trim(),
   });
 
   if (!parsed.success) {

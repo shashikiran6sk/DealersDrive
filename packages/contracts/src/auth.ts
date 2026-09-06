@@ -123,15 +123,29 @@ export const OnboardingInput = z
      * portfolio whose only prose is a generated line about a town is a
      * portfolio nobody reads twice.
      *
-     * **Optional, unlike its neighbours on this step.** `mapsUrl` and the
-     * address are facts a buyer needs in order to arrive; this is editorial,
-     * every consumer of `DealerProfile.about` already branches on null, and a
-     * dealer who cannot think of a sentence must not be held out of
-     * verification by it. The bound matches `UpdateDealerInput.about` exactly
-     * so that what onboarding accepts and what the profile screen accepts
-     * cannot drift apart.
+     * **Required, on the same footing as the address and the Maps link.** It
+     * was optional when it was introduced, on the reasoning that a buyer needs
+     * an address to arrive and only *wants* a description. That reasoning was
+     * wrong about what the portfolio is: it is the page a dealership is judged
+     * on before anybody drives anywhere, and a page with a photograph, a pin
+     * and no sentence reads as an unfinished listing rather than a business.
+     * Optional here would have meant most rows blank, because a field a form
+     * does not insist on is a field that gets skipped.
+     *
+     * The floor is 20 characters, not 1. A required field with no minimum is
+     * satisfied by `-` and buys nothing except the false belief that every
+     * portfolio has prose on it. Twenty is short enough that "Used car dealer
+     * in Vellore since 2004." clears it comfortably and long enough that a
+     * single evasive word does not.
+     *
+     * The upper bound matches `UpdateDealerInput.about` exactly, so what
+     * onboarding accepts and what the profile screen accepts cannot drift.
      */
-    about: z.string().trim().max(4000).optional(),
+    about: z
+      .string()
+      .trim()
+      .min(20, 'Tell buyers about your dealership \u2014 a sentence or two.')
+      .max(4000),
   })
   .strict();
 export type OnboardingInput = z.infer<typeof OnboardingInput>;
