@@ -138,7 +138,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [ ] F082 — Vehicle detail page
 - [ ] F083 — Vehicle gallery & lightbox
 - [ ] F084 — Similar vehicles
-- [~] F085 — Dealer directory
+- [x] F085 — Dealer directory · [#70](https://github.com/shashikiran6sk/DealersDrive/pull/70)
 - [ ] F086 — Dealer portfolio
 - [ ] F087 — Saved cars
 
