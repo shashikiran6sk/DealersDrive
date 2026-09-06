@@ -17,6 +17,7 @@
     "db:migrate:new": "prisma migrate dev --create-only",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed/index.ts",
+    "db:seed:dev": "tsx prisma/seed/dev-dealers.ts",
     "db:bootstrap": "tsx prisma/seed/bootstrap.ts",
     "db:reset": "prisma migrate reset --force --skip-seed",
     "db:studio": "prisma studio",

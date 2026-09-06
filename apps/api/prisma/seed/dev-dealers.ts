@@ -1,0 +1,171 @@
+import { PrismaClient } from '@prisma/client';
+
+import { env } from '../../src/config/env.js';
+import { DEV_DEALERS } from './dev-dealers.data.js';
+
+/**
+ * Writes thirty dealerships across the Vellore, Ranipet and Tirupattur
+ * districts into a **local** database, so the directory and the portfolio page
+ * have something to be looked at.
+ *
+ *     pnpm --filter @dealers-drive/api db:seed:dev
+ *
+ * ── What this is not ────────────────────────────────────────────────────────
+ * It is not part of `pnpm db:seed`, and `tests/global-setup.ts` does not call
+ * it. The test seed stays at one dealership because `auth.test.ts` is written
+ * against one; adding thirty rows to every integration run would cost every
+ * suite and buy no test anything. See the header of `dev-dealers.data.ts`.
+ *
+ * ── Why it refuses to run against a remote database ─────────────────────────
+ * This writes thirty invented dealerships with invented GSTINs. Pointed at a
+ * shared or hosted database that is not a mistake you notice — it is thirty
+ * rows a colleague then has to identify and delete by hand, and on a public
+ * marketplace it is thirty businesses that do not exist. So the host in
+ * `DATABASE_URL` has to be a loopback address, and overriding that has to be
+ * typed out in full:
+ *
+ *     ALLOW_REMOTE_DEV_SEED=yes pnpm --filter @dealers-drive/api db:seed:dev
+ *
+ * ── Re-running it ───────────────────────────────────────────────────────────
+ * Every write is an upsert keyed on the slug or the email, so running it twice
+ * updates thirty rows rather than colliding on `dealers_gstin_key`. That makes
+ * it the right way to pick up an edit to the data file, and it means it can be
+ * run over a database that already has the ordinary seed in it.
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+const prisma = new PrismaClient();
+const now = new Date();
+
+/** Loopback only, unless the operator says otherwise in words. */
+function assertLocalDatabase(): void {
+  if (process.env.ALLOW_REMOTE_DEV_SEED === 'yes') {
+    console.warn('ALLOW_REMOTE_DEV_SEED=yes — writing dev dealerships to a non-local database.');
+    return;
+  }
+
+  if (env.isProduction) {
+    throw new Error('dev-dealers refuses to run with NODE_ENV=production.');
+  }
+
+  const host = new URL(env.DATABASE_URL).hostname;
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+
+  if (!isLocal) {
+    throw new Error(
+      `DATABASE_URL points at "${host}", not at localhost.\n` +
+        'These are thirty invented dealerships — they do not belong in a shared database.\n' +
+        'If you meant it: ALLOW_REMOTE_DEV_SEED=yes pnpm --filter @dealers-drive/api db:seed:dev',
+    );
+  }
+}
+
+/**
+ * The owner account behind a dealership.
+ *
+ * Keyed on the email because that is what a dealer signs in with. No password
+ * and no OAuth identity: these accounts exist to own a row, not to be signed in
+ * as — sign-in is `DEV_DEALER_SLUG` in development, or a real Google account.
+ */
+async function upsertOwner(dealer: (typeof DEV_DEALERS)[number]): Promise<string> {
+  const fields = {
+    fullName: dealer.ownerName,
+    roleTitle: dealer.ownerRole,
+    phone: dealer.phone,
+    emailVerifiedAt: now,
+    phoneVerifiedAt: now,
+  };
+
+  const owner = await prisma.user.upsert({
+    where: { email: dealer.email },
+    update: fields,
+    create: { email: dealer.email, ...fields },
+  });
+
+  return owner.id;
+}
+
+async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
+  const ownerId = await upsertOwner(dealer);
+
+  const fields = {
+    brandName: dealer.brandName,
+    legalName: dealer.legalName,
+    tagline: dealer.tagline,
+    about: dealer.about,
+    gstin: dealer.gstin,
+    pan: dealer.pan,
+    // ACTIVE, and therefore visible: `findPublicBySlug` and `listActive` refuse
+    // anything else, so a DRAFT row would seed a directory of nothing.
+    status: 'ACTIVE' as const,
+    approvedAt: now,
+    city: dealer.city,
+    district: dealer.district,
+    state: 'Tamil Nadu',
+    addressLine: dealer.addressLine,
+    pincode: dealer.pincode,
+    mapsUrl: dealer.mapsUrl,
+    lat: dealer.lat,
+    lng: dealer.lng,
+    contactPhone: dealer.phone,
+    contactEmail: dealer.email,
+    landline: dealer.landline,
+    workingHours: dealer.workingHours,
+    establishedYear: dealer.establishedYear,
+    specialities: dealer.specialities,
+    medianResponseMins: dealer.medianResponseMins,
+  };
+
+  const row = await prisma.dealer.upsert({
+    where: { slug: dealer.slug },
+    update: fields,
+    create: { slug: dealer.slug, ...fields },
+  });
+
+  await prisma.dealerMember.upsert({
+    where: { dealerId_userId: { dealerId: row.id, userId: ownerId } },
+    update: { role: 'OWNER' },
+    create: { dealerId: row.id, userId: ownerId, role: 'OWNER', permissions: [] },
+  });
+
+  // VERIFIED, to match the `isVerified: true` the public profile hard-codes
+  // until the KYC review paths land. A dealership showing a verified badge over
+  // three REQUIRED documents is a screen that contradicts itself.
+  for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const) {
+    await prisma.dealerDocument.upsert({
+      where: { dealerId_type: { dealerId: row.id, type } },
+      update: { status: 'VERIFIED' },
+      create: { dealerId: row.id, type, status: 'VERIFIED' },
+    });
+  }
+}
+
+async function main(): Promise<void> {
+  assertLocalDatabase();
+
+  // Sequential on purpose. Thirty rows is nothing, and a `Promise.all` over
+  // upserts that share unique indexes is how you get a deadlock that only
+  // shows up on someone else's laptop.
+  for (const dealer of DEV_DEALERS) {
+    await seedDealer(dealer);
+  }
+
+  const byDistrict = new Map<string, number>();
+  for (const dealer of DEV_DEALERS) {
+    byDistrict.set(dealer.district, (byDistrict.get(dealer.district) ?? 0) + 1);
+  }
+
+  console.log(`seeded ${String(DEV_DEALERS.length)} dev dealerships`);
+  for (const [district, count] of [...byDistrict].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const towns = [
+      ...new Set(DEV_DEALERS.filter((d) => d.district === district).map((d) => d.city)),
+    ];
+    console.log(`  ${district} district — ${String(count)} across ${towns.join(', ')}`);
+  }
+}
+
+main()
+  .catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  })
+  .finally(() => void prisma.$disconnect());
