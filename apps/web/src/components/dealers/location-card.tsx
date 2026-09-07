@@ -34,16 +34,17 @@ import { Blueprint, ImageSlot } from '@/components/ui/primitives';
  * the same place embed was rendered at a ladder of sizes and the card appears
  * at 400 × 300 and disappears at 384 × 320 and at 400 × 295.
  *
- * That is why this is a full-width block rather than the third card in the
- * info row. At a third of a 1280px page the frame is 372px wide — 400px of
- * column less this card's own 14px of padding on each side — so **every**
- * dealership on the platform got the button, whatever their link said. The map
- * was correct, the place id was correct, and the one thing R14 exists to show
- * was the thing the layout made impossible.
+ * That is why the portfolio pairs this card with Contact and nothing else. At
+ * a third of a 1280px page the frame was 372px wide — 400px of column less this
+ * card's own 14px of padding on each side — so **every** dealership on the
+ * platform got the button, whatever their link said. The map was correct, the
+ * place id was correct, and the one thing R14 exists to show was the thing the
+ * layout made impossible. Half a page gives it 580, which clears the threshold
+ * with room for a browser to round differently.
  *
- * Below `md` the frame is narrower than 400 whatever we do, so the button is
- * what a phone gets. That is Google's fallback and a reasonable one: it opens
- * the listing, rating and all, in the app that has it.
+ * On a narrow window the frame drops back under 400px and Google's button
+ * returns. That is its fallback and a reasonable one: it opens the listing,
+ * rating and all, in the app that has it.
  *
  * A dealership whose link only ever gave coordinates gets the plain pin
  * instead, at any size. The card does not distinguish between them — it renders
@@ -76,9 +77,9 @@ export function LocationCard({
       {/*
         360px, not 220 (**R22**). The frame has to clear 400 × 300 for Google to
         draw the place card at all — see the note above — and 360 leaves the
-        card room to sit above the pin rather than over it. Below `md` no width
-        clears 400, so the height comes back down to something a thumb can
-        scroll past.
+        card room to sit above the pin rather than over it. Below `md` the
+        column is too narrow for the card either way, so the height comes back
+        down to something a thumb can scroll past.
       */}
       <Blueprint className="h-[360px] flex-1 overflow-hidden bg-(--color-surface) max-md:h-[260px]">
         {address.embedUrl ? (
@@ -106,9 +107,9 @@ export function LocationCard({
           href={address.mapsUrl}
           target="_blank"
           rel="noreferrer noopener"
-          /* `max-w` so the button does not stretch to the full width of the
-             page now that the card is one (R22) — a 1232px "Get directions" is
-             a target nobody is going to miss and nobody wants to look at. */
+          /* `max-w` so the button does not stretch the full width of a
+             half-page card (R22) — a 580px "Get directions" is a target nobody
+             is going to miss and nobody wants to look at. */
           className="btn btn-secondary btn-block mt-[10px] md:max-w-[280px]"
         >
           Get directions

@@ -72,12 +72,13 @@ const meta = {
   decorators: [
     (Story) => (
       /*
-        The page column the map now sits in (**R22**), not the 320px info-row
-        cell it used to. That cell is the bug: at 320 — and at the 372 the real
-        row gave it — Google draws an "Open in Maps" button instead of the place
+        Half of the page column, which is what the map gets now that it sits
+        beside Contact and nothing else (**R22**) — not the 320px three-up cell
+        it used to. That cell is the bug: at 320, and at the 372 the real row
+        gave it, Google draws an "Open in Maps" button instead of the place
         card, so a dealership's rating could never appear however good its link.
       */
-      <div style={{ width: 900 }}>
+      <div style={{ width: 608 }}>
         <Story />
       </div>
     ),

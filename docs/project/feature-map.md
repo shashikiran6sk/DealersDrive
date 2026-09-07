@@ -3042,11 +3042,13 @@ and not the other.
 **Revises R14 / F086**
 
 - **Frontend** `location-card.tsx` — the frame is 360px tall (260 below `md`)
-  and no longer capped at 220; `dealers/[slug]/page.tsx` — the map leaves the
-  three-up info row for the page column
-- **Sandbox** the decorator is the page column rather than a 320px cell, with
-  the threshold written down where somebody will hit it
-- **Tests** the frame carries the height the card needs, and not the old floor
+  and no longer capped at 220; `dealers/[slug]/page.tsx` — the About card is
+  removed and Contact and Location become a two-up row
+- **Sandbox** the decorator is a half-page column rather than a 320px cell,
+  with the threshold written down where somebody will hit it
+- **Tests** the frame carries the height the card needs and not the old floor;
+  neither the introduction, its empty state nor the service tags survive, and
+  `about` still reaches the structured data
 
 ### The rating was never going to appear, at any width we were giving it
 
@@ -3079,29 +3081,41 @@ side, so the frame was **372 × 220**. Under both thresholds, on the widest
 screen the design supports. No dealership could show its rating, and no link
 however carefully pasted would have changed that.
 
-### So the map takes the page column
+### So the row is two cards, not three
 
-It is a full-width block below About and Contact now, which makes the frame
-about 1204 × 360 — clear of both thresholds with room to spare, so the card
-survives a browser deciding to round differently. That is also the shape
-**R15** gave the yard photograph, for the same reason: a place is looked at
-rather than glanced past, and the two things on this page worth looking at are
-the yard and where it is.
+**The About card is removed** and the map moves up beside Contact. Half of a
+1232px page is a 608px card and a 580px frame — clear of both thresholds with
+room for a browser to round differently — and the map stays where a reader
+expects it, in the row rather than below it.
 
-Below `md` no layout clears 400px of width, so a phone gets Google's button.
-That is a fair fallback — it opens the listing, rating and all, in the app that
-has it — and the height comes back to 260 there so the map does not eat a
+The threshold has a viewport in it and it is worth writing down: the two
+columns stay side by side down to a 584px viewport, but the frame drops under
+400px at about **920px**, so between those a narrow window gets Google's
+button. Nothing breaks — the map is still the right map and "Get directions" is
+untouched — and on a phone the frame comes back to 260px so it does not eat a
 screen.
 
-### What this cost, and what it did not
+### What the About card cost, and what it did not
 
-The info row is two cards wide instead of three, which is a divergence from
-DESIGN-SPEC §3.6. The alternative was to keep the row and accept that R14, R20
-and the place id on every dealership add up to a feature nobody can see.
+It carried the dealership's introduction and its services as tags. Both leave
+the portfolio: `services` now appears only on the directory card, which shows
+the first three.
 
-Nothing about the URL changed. `embedUrlFor` was right, `mapKindFor` was right,
-the stored data was right — the frame was too small. It is worth saying plainly
-because the three PRs before this one all looked at the URL.
+`about` is still _read_, and in the place it was doing the most work: it is the
+page's meta description and the `AutoDealer` description in the structured
+data, so a dealership's own words still reach a search result. What is gone is
+the paragraph on the page — and with it the empty-state sentence that ran under
+every dealership that had not written one.
+
+This is a divergence from DESIGN-SPEC §3.6, which has three cards in that row.
+The alternative was to keep all three and accept that R14, R20 and the place id
+on every dealership add up to a feature nobody can see.
+
+### Nothing about the URL changed
+
+`embedUrlFor` was right, `mapKindFor` was right, the stored data was right —
+the frame was too small. It is worth saying plainly, because the three PRs
+before this one all looked at the URL.
 
 ---
 

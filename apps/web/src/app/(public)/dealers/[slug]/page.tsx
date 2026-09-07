@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { LocationCard } from '@/components/dealers/location-card';
-import { Blueprint, EmptyState, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
+import { Blueprint, EmptyState, ImageSlot, LogoTile, Plate } from '@/components/ui/primitives';
 import { ApiError, apiGet } from '@/lib/api';
 import { dealerTag, DEALERS_TAG } from '@/lib/cache-tags';
 import { serverConfig } from '@/lib/config';
@@ -19,7 +19,19 @@ export const revalidate = 600;
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline page has three sections. **Two of them land here in full**,
  * because `GET /v1/dealers/:slug` (**F085**) already answers with everything
- * they render: the header block, and the about / contact / location row.
+ * they render: the header block, and the contact / location row.
+ *
+ * ── The About card is gone (R22) ────────────────────────────────────────────
+ * It was the first of three cards in that row: the dealership's introduction,
+ * with its services as tags along the bottom. Removing it is what lets contact
+ * and location sit side by side, and side by side is what gives the map the
+ * 400px it needs to draw a place card rather than a button (**R22**).
+ *
+ * `about` is still read — it is the page's meta description and the
+ * `AutoDealer` description in the structured data, so a search result still
+ * carries the dealer's own words. `services` is now rendered nowhere on this
+ * page; it survives on the directory card, which shows the first three.
+ * ────────────────────────────────────────────────────────────────────────────
  *
  * The third is the inventory, and it cannot land yet. It needs
  * `GET /v1/dealers/:slug/vehicles` and `/facets` — both **F076**, over the
@@ -161,24 +173,24 @@ export default async function DealerPortfolioPage({
         </div>
       </div>
 
-      {/* ── 2. Info row ─────────────────────────────────────────────────── */}
-      <div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
-        <section className="card p-[14px]">
-          <h2 className="eyebrow">About the dealership</h2>
-          <p className="text-[14px] leading-[1.6] ink-secondary">
-            {dealer.about ?? 'This dealership has not written an introduction yet.'}
-          </p>
-          {dealer.services.length > 0 ? (
-            <div className="mt-auto flex flex-wrap gap-[6px] border-t border-(--color-divider) pt-[10px]">
-              {dealer.services.map((service) => (
-                <Tag key={service} className="text-[11px]">
-                  {service}
-                </Tag>
-              ))}
-            </div>
-          ) : null}
-        </section>
+      {/* ── 2. Contact and location, side by side (R22) ─────────────────── */}
+      {/*
+        Two cards, and the width is the point (**R22**).
 
+        The map needs a frame of at least 400 × 300 CSS pixels or Google draws an
+        "Open in Maps" button instead of the dealership's own place card — its
+        name, address and rating. Two columns of a 1232px page give the card
+        608px and the frame inside it 580, which clears that with room to spare;
+        three columns gave it 372 and cleared nothing, which is what R22 was
+        about. The measurements are in `location-card.tsx`.
+
+        The threshold has a viewport in it, and it is worth knowing where: the
+        columns stay side by side down to a 584px viewport, but the frame drops
+        under 400px at about 920px — so between those two a narrow window gets
+        Google's button. Nothing breaks; the map is still the right map, and
+        "Get directions" is unaffected.
+      */}
+      <div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
         <section className="card p-[14px]">
           <h2 className="eyebrow">Contact</h2>
           <dl>
@@ -193,23 +205,7 @@ export default async function DealerPortfolioPage({
             ))}
           </dl>
         </section>
-      </div>
 
-      {/*
-        The map, out of the three-up row and into the page column (**R22**).
-
-        It was the third card beside About and Contact, which made it 372px wide
-        on a 1280px page — 400px of column less the card's own padding. Google
-        draws the place card only at 400 × 300 or larger and collapses it to an
-        "Open in Maps" button below that, so at a third of the row *no*
-        dealership could ever show the thing R14 composes a place embed for: its
-        own name, address and rating, on the map. The measurements are in
-        `location-card.tsx`.
-
-        Full width is also the shape R15 gave the yard photograph, and for the
-        same reason — a place is looked at rather than glanced past.
-      */}
-      <div className="mx-auto max-w-[1280px] px-6 pt-4">
         <LocationCard address={dealer.address} brandName={dealer.brandName} />
       </div>
 

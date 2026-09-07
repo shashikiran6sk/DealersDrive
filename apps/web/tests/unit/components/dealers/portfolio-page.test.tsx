@@ -174,11 +174,44 @@ describe('the dealership it shows', () => {
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
-  it('falls back to a sentence when the dealership wrote no description', async () => {
+  /**
+   * R23 — the About card is gone, and with it the dealership's introduction and
+   * its service tags. `about` is still *read*: it is the page's meta
+   * description and the `AutoDealer` description in the structured data, so a
+   * dealer's own words still reach a search result. What must not happen is the
+   * empty-state sentence surviving as orphaned markup.
+   */
+  it('renders neither the introduction nor its empty state', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params }));
+
+    expect(screen.queryByText(/family-run since 1998/i)).toBeNull();
+    expect(screen.queryByText('About the dealership')).toBeNull();
+  });
+
+  it('says nothing about a description that was never written', async () => {
     serve({ ...DEALER, about: null });
     render(await DealerPortfolioPage({ params }));
 
-    expect(screen.getByText(/has not written an introduction yet/i)).toBeInTheDocument();
+    expect(screen.queryByText(/has not written an introduction yet/i)).toBeNull();
+  });
+
+  /** The services moved off this page entirely; the directory card still shows three. */
+  it('renders no service tags', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params }));
+
+    expect(screen.queryByText('Hatchbacks')).toBeNull();
+    expect(screen.queryByText('RC transfer')).toBeNull();
+  });
+
+  /** But `about` still reaches a search engine, which is the one place it was doing work. */
+  it('keeps the description in the metadata and the structured data', async () => {
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params }));
+
+    const jsonLd = container.querySelector('script[type="application/ld+json"]');
+    expect(jsonLd?.textContent ?? '').toContain('Family-run since 1998');
   });
 });
 

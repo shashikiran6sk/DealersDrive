@@ -378,10 +378,10 @@ name, rating and an in-frame directions control without the card changing shape.
 > ⚠️ **R22 — the frame's size is load-bearing.** Google draws the place card
 > only at roughly **400 × 300 CSS pixels or larger** and collapses it to an
 > "Open in Maps" button below that (measured, not documented — the ladder is in
-> the R22 entry). The card is therefore a full-width block on the portfolio,
-> not the third cell of a three-up row, where the frame was 372 × 220 and no
-> dealership could ever show its rating. Any new consumer that puts this in a
-> narrow column gets the button back, silently.
+> the R22 entry). The portfolio therefore pairs this card with Contact and
+> nothing else, giving it half the page: a 580px frame, against the 372 × 220 of
+> the old three-up row, where no dealership could ever show its rating. Any new
+> consumer that puts this in a narrow column gets the button back, silently.
 
 ### C069 — `LocationSelector`
 
