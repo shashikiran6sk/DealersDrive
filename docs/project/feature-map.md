@@ -2821,6 +2821,75 @@ The dealer's **own** profile read is deliberately not collapsed. That box is
 their stored text, and seeing "Finance, Finance" in it, then watching it become
 one when they save, is the feedback that explains what happened.
 
+## R19 — The district menu, as the baseline drew it — and reachable by keyboard
+
+**Revises R11 / F073**
+
+- **Frontend** `globals.css` — `.dd-nav-item` ported from the baseline;
+  `location-selector.tsx` — the 220px panel, no height cap, and arrow-key
+  navigation over roving focus
+- **Sandbox** `location-selector.stories.tsx` — a `Chosen` story for the
+  highlight the class restores, a decorator that no longer detaches the menu
+  from its button, and a warning on `ManyDistricts`
+- **Tests** eight: opens on the chosen district, arrows move without choosing,
+  the ends do not wrap, Home/End, Enter chooses, focus returns to the button,
+  one tab stop, and `aria-current` on the row
+
+### A class that was used for two revisions before it existed
+
+The dropdown did not look like the design, and the reason was not a value that
+needed tuning. `LocationSelector` landed at **R11** carrying
+`className="dd-nav-item"`; `.dd-nav-item` is defined in the baseline's
+`globals.css` and was never ported. So every option rendered as a bare
+`<button>` — 15px inherited type, no padding, the count jammed against the
+name, no hover — and, worst of the four, **no fill on the district already
+chosen**: `aria-current="true"` had been on that element the whole time with no
+rule to act on it.
+
+The block is checked out of the baseline unchanged. `.dd-nav-item-dark` is
+deliberately left behind: the baseline's admin sidebar used it, ours styles
+itself with utilities and says so in its own docblock, so the variant would be
+dead the moment it landed.
+
+`globals.css` carries an index of which feature introduced which class,
+alongside the rule that a class and its component land together. This is the
+one case where that did not happen, so R19 is on the index — as the exception
+that explains why the rule is written down.
+
+### The arrows, promised twice and implemented never
+
+The baseline's docblock said "Enter/Space opens, arrows move, Esc closes" and
+the baseline implemented Esc and an outside click. This inherited both the
+comment and the gap. `role="listbox"` makes it worse than a missing nicety: the
+role _tells_ a screen reader the arrows work, so the promise was made twice and
+kept neither time.
+
+Focus roves over the real option buttons rather than being tracked with
+`aria-activedescendant`. The options are `<button>`s, so moving real focus is
+what makes Enter, Space and the global `:focus-visible` ring work without
+re-implementing any of them. Arrows move focus and choose nothing — a menu that
+navigated on arrow-down would fire a router push per keystroke — and the ends
+clamp rather than wrap, which is what a listbox does. Choosing hands focus back
+to the trigger, because focus was inside a menu that has just stopped existing.
+
+### The height cap, removed on purpose and worth revisiting
+
+The panel is the baseline's again: 220px rather than 240, and **no
+`max-h-[60vh] overflow-y-auto`**. Removing that is a deliberate trade, made in
+the knowledge of what it costs: past roughly fifteen districts the menu is
+taller than a short viewport and the last rows go under the fold. Tamil Nadu
+has 38 districts, so this is a decision to revisit as the platform spreads —
+one line, back the way it came. The `ManyDistricts` story exists to make the
+cost visible rather than to hide it.
+
+### One thing the sandbox was hiding
+
+The story's decorator was `display: flex` with no `alignItems`, so the
+selector's own `relative` box stretched to the decorator's full height and the
+menu — `top: calc(100% + 6px)` — hung 260px below the button it belongs to. The
+header puts it in a row with `items-center`, so the product never had that gap;
+only the story that was supposed to be verifying it did.
+
 ---
 
 # Feature → Component matrix
