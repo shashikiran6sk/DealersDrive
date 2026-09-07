@@ -90,25 +90,49 @@ describe('DirectoryCard', () => {
   });
 
   /**
-   * R17 — and dropping them does not shrink the card. jsdom computes no layout,
-   * so what is assertable here is that the two rules carrying the height are
-   * present: the floor on the card, and the clamp that stops one long tagline
-   * from setting the height of every card beside it. The row-matching half is
-   * `grid-auto-rows: 1fr` on the directory grid, and it is the sandbox's
-   * `InTheGrid` story that shows it working.
+   * R21 — and dropping them does not change the card's height, because the
+   * height is a constant rather than a floor or a shared maximum.
+   *
+   * R17 asserted a `min-h` and left `grid-auto-rows: 1fr` to make the cards
+   * agree with each other. They did agree — on the tallest card's height, so
+   * one dealership writing a longer tagline still grew every card on the page.
+   * What is asserted now is that the *same* height class is on the card in
+   * every data state; jsdom computes no layout, so the sandbox's
+   * `SameDataTwice` is what measures the result (368px, both grids).
    */
-  it('keeps its height when there is no tagline and no service row', () => {
-    const { container } = render(
-      <DirectoryCard dealer={{ ...DEALER, tagline: null, services: [] }} />,
-    );
+  const heightOf = (dealer: DealerCard): string =>
+    render(<DirectoryCard dealer={dealer} />).container.querySelector('article')?.className ?? '';
 
-    expect(container.querySelector('article')?.className).toContain('min-h-[294px]');
+  it('is the same fixed height with nothing filled in and with everything', () => {
+    const sparse = heightOf({ ...DEALER, tagline: null, services: [] });
+    const full = heightOf({
+      ...DEALER,
+      tagline: 'A'.repeat(200),
+      services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
+    });
+
+    expect(sparse).toContain('h-[368px]');
+    expect(full).toContain('h-[368px]');
+    // And no floor left behind to imply the height is negotiable.
+    expect(sparse).not.toContain('min-h-');
   });
 
-  it('clamps a long tagline rather than growing to fit it', () => {
-    render(<DirectoryCard dealer={{ ...DEALER, tagline: 'A'.repeat(200) }} />);
+  /**
+   * The three bounds that let a constant height hold. Each one is the largest
+   * variable in its row of the card, and each is checked where it is applied
+   * rather than through a rendered pixel jsdom does not compute.
+   */
+  it('clamps the name, clamps the tagline, and clips the prose box', () => {
+    const { container } = render(
+      <DirectoryCard dealer={{ ...DEALER, brandName: 'Sri Venkateswara '.repeat(4) }} />,
+    );
 
-    expect(screen.getByText('A'.repeat(200)).className).toContain('line-clamp-2');
+    expect(container.querySelector('h3')?.className).toContain('line-clamp-2');
+    expect(screen.getByText(DEALER.tagline ?? '').className).toContain('line-clamp-2');
+    // `min-h-0` is what lets the box clip instead of pushing the footer down.
+    const box = container.querySelector('.overflow-hidden');
+    expect(box?.className).toContain('min-h-0');
+    expect(box?.className).toContain('flex-1');
   });
 
   it('names the missing photograph rather than showing a blank frame', () => {

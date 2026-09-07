@@ -1,5 +1,6 @@
 import type { DealerCard } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { useState } from 'react';
 
 import { DirectoryCard } from '@/components/dealers/dealer-card';
 
@@ -22,10 +23,10 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
  *   · **The logo tile crosses the divider.** It is pulled up 34px over the
  *     cover's bottom edge, which is what makes the cover read as a photograph
  *     of premises rather than as a banner.
- *   · **Every optional field is genuinely optional, and none of them changes
- *     the card's height** (R17). No tagline, no services, no cover, no live
- *     cars — each has a story below, because each is the normal state for a
- *     dealership that finished onboarding an hour ago.
+ *   · **The card is one fixed size** (R21), and nothing on it changes that:
+ *     not a missing tagline, not a third service, not a fifty-character name.
+ *     `SameDataTwice` is the story that proves it — two directories, one
+ *     sparse and one full, whose cards measure the same.
  *
  * Both branches are live. A dealership that has uploaded a yard photograph gets
  * `coverUrl` — the 640px rendition, addressed by media id — and one that has
@@ -192,26 +193,23 @@ export const WithCover: Story = {
 };
 
 /**
- * Six dealerships over two rows, which is the only arrangement that shows what
- * **R17** fixed.
+ * Six dealerships over two rows — the arrangement R17 needed, and the one R21
+ * keeps honest.
  *
- * Cards in the *same* row have always matched each other — grid stretches them
- * to the row. The damage was between rows: the second row here is three sparse
- * dealerships, and without `grid-auto-rows: 1fr` it came out visibly shorter
- * than the first, so the grid's rhythm broke at whatever point in the directory
- * the quiet dealerships happened to fall.
+ * Cards in the *same* row have always matched each other; grid stretches them
+ * to the row. What R17 added was matching *between* rows, and what it could not
+ * give was a fixed size: every card took the height of the fullest card on the
+ * page, so the third card's long tagline set the proportions for all six.
  *
- * Two things to check by eye:
+ * The height is a constant now. What to check by eye:
  *
- *   · **Both rows are the same height**, and all six footers sit on one of two
- *     lines. That is `grid-auto-rows: 1fr` on the container.
- *   · **The long tagline is cut at two lines** (third card, first row). Without
- *     the clamp, one talkative dealership would set the height of all six —
- *     the same failure, arrived at from the other direction.
- *
- * The `min-h` floor on the card is the third case and is not visible here: it
- * is what a page where *every* dealership is sparse falls back to, which is
- * `Sparse` on its own.
+ *   · **All six cards are the same height**, as before.
+ *   · **The third card's long tagline is cut at two lines** and does not make
+ *     the other five taller — compare against `SameDataTwice`, which measures
+ *     it rather than asking you to.
+ *   · **The three sparse cards leave the slack empty above a footer that is
+ *     still on the bottom edge.** That empty space is the fixed size doing its
+ *     job, not a card that failed to fill.
  */
 export const InTheGrid: Story = {
   args: { dealer: BASE },
@@ -306,3 +304,143 @@ const GRID: DealerCard[] = [
     yearsLabel: 'Walajapet, Tamil Nadu · 2 years',
   },
 ];
+
+/**
+ * **The worst case, and the one `CARD_HEIGHT` is measured against.** A
+ * registered name that wraps to two lines, a tagline that fills its two, and
+ * three services long enough to wrap to a second row — all at once.
+ *
+ * Nothing here may be cut off. If a font change or a line-height rounding ever
+ * makes it so, this is the story that shows it: the second row of tags is the
+ * first thing to go, and it goes silently, because the box clips rather than
+ * scrolling.
+ */
+export const Fullest: Story = {
+  args: {
+    dealer: {
+      ...BASE,
+      brandName: 'Sri Venkateswara Automobiles and Finance Private Limited',
+      initials: 'SV',
+      yearsLabel: 'Tiruvannamalai, Tamil Nadu · 3 years',
+      tagline:
+        'Family-run since 1998 on Katpadi Main Road, buying directly from single-owner ' +
+        'customers across the whole of the Vellore belt, every car checked in our own workshop.',
+      services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
+    },
+  },
+};
+
+/**
+ * **R21, and the reason it exists.** The same three dealerships, twice: once
+ * with almost nothing filled in, once with taglines and three services each.
+ *
+ * The reported bug is visible only in this comparison, and it is not visible in
+ * either half alone — under R17 every card in the top grid was shorter than
+ * every card in the bottom one, because "equal to each other" is not "fixed".
+ * The two grids now measure the same, and the number is printed under each so
+ * the check is a reading rather than a squint.
+ */
+export const SameDataTwice: Story = {
+  args: { dealer: BASE },
+  parameters: { layout: 'padded', nextjs: { appDirectory: true } },
+  decorators: [
+    () => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 28, width: 960 }}>
+        <MeasuredGrid label="Nothing optional filled in" dealers={SPARSE_ROW} />
+        <MeasuredGrid label="Taglines and three services each" dealers={FULL_ROW} />
+      </div>
+    ),
+  ],
+};
+
+/** The three of them with nothing to say. */
+const SPARSE_ROW: DealerCard[] = [
+  {
+    ...BASE,
+    slug: 'arcot-cars',
+    brandName: 'Arcot cars',
+    initials: 'AC',
+    tagline: null,
+    services: [],
+    carCount: 0,
+    fromPricePaise: null,
+    fromPriceLabel: '—',
+    yearsLabel: 'Arcot, Tamil Nadu · 1 year',
+  },
+  {
+    ...BASE,
+    slug: 'chennai-cars',
+    brandName: 'Chennai cars',
+    initials: 'CC',
+    tagline: null,
+    services: [],
+    carCount: 0,
+    fromPricePaise: null,
+    fromPriceLabel: '—',
+    yearsLabel: 'Vellore, Tamil Nadu · 1 year',
+  },
+  {
+    ...BASE,
+    slug: 'sakthi-cars',
+    brandName: 'Sakthi cars',
+    initials: 'SC',
+    tagline: null,
+    services: [],
+    carCount: 0,
+    fromPricePaise: null,
+    fromPriceLabel: '—',
+    yearsLabel: 'Velachery, Tamilnadu · 1 year',
+  },
+];
+
+/** The same three after they have filled their profiles in. */
+const FULL_ROW: DealerCard[] = [
+  {
+    ...SPARSE_ROW[0]!,
+    tagline: 'Hatchbacks under ₹6 lakh, every one inspected in-house before it is listed',
+    services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
+  },
+  {
+    ...SPARSE_ROW[1]!,
+    tagline:
+      'Family-run since 2014 — single-owner cars with full service history. Family-run since 2014.',
+    services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
+  },
+  {
+    ...SPARSE_ROW[2]!,
+    tagline: 'Mass cars',
+    services: ['insurance', 'return policy'],
+  },
+];
+
+/**
+ * A grid that reports its own card height, because "are these the same size?"
+ * is a question a screenshot answers badly and a number answers exactly.
+ */
+function MeasuredGrid({ label, dealers }: { label: string; dealers: DealerCard[] }) {
+  const [height, setHeight] = useState<number | null>(null);
+
+  return (
+    <div>
+      <div style={{ fontSize: 12, marginBottom: 8, opacity: 0.7 }}>
+        {label} — card height:{' '}
+        <strong data-testid="card-height">{height === null ? '…' : `${String(height)}px`}</strong>
+      </div>
+      <div
+        ref={(node) => {
+          const card = node?.querySelector('article');
+          if (card) setHeight(Math.round(card.getBoundingClientRect().height));
+        }}
+        style={{
+          display: 'grid',
+          gap: 18,
+          gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+        }}
+      >
+        {dealers.map((dealer) => (
+          <DirectoryCard key={dealer.slug} dealer={dealer} />
+        ))}
+      </div>
+    </div>
+  );
+}

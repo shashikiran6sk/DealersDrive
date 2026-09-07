@@ -2954,6 +2954,89 @@ billed Google key in every environment and a number that goes stale between
 refreshes; the place card is Google's own, current, and free. The rating a buyer
 sees stays Google's, exactly as **R14** left it — this only makes it reachable.
 
+## R21 — The directory card is one fixed size
+
+**Revises R17**
+
+- **Frontend** `dealer-card.tsx` — `CARD_HEIGHT` as a hard height, the name
+  clamped to two lines, the prose in a `flex-1 min-h-0 overflow-hidden` box
+  whose children do not shrink; `dealers/page.tsx` — `grid-auto-rows: 1fr`
+  removed
+- **Sandbox** `SameDataTwice`, which renders the reported comparison and prints
+  each grid's measured card height; `Fullest`, the worst case the number is
+  chosen against
+- **Tests** the same height class in every data state, no floor left behind,
+  and the three bounds that let a constant hold
+
+### R17 answered the wrong question
+
+R17 read "the card shrinks when there is no tagline" as "cards in the directory
+should match each other", and delivered that: a `min-h` floor on the card and
+`grid-auto-rows: 1fr` on the grid, so every row took the height of its tallest
+member.
+
+They did match each other. What they were not was **fixed**. The height they all
+agreed on was the fullest card's, so a dealership writing a longer tagline or
+adding a third service still changed the proportions of every card on the page —
+which is what the report was about, seen from the other side. Two screenshots of
+the same directory minutes apart, one before a dealer filled their profile in
+and one after, had visibly different cards.
+
+The failure is instructive: within a row, cards have always matched, because
+grid stretches items to their row. That made the sparse card look correct in
+every check R17 ran, including its own sandbox story, and hid the fact that the
+row itself was still content-sized.
+
+### A constant, and the three things that let it hold
+
+`CARD_HEIGHT` is `h-[368px]`. For a constant to hold, every variable on the card
+has to be bounded:
+
+- **The name is clamped to two lines.** It is the largest variable on the card —
+  "Sri Venkateswara Automobiles and Finance Private Limited" is four lines at
+  this width — and it was never bounded before.
+- **The tagline stays clamped to two lines**, as R17 left it.
+- **The tagline and the tags sit in a `flex-1 min-h-0 overflow-hidden` box.**
+  That box is where the card's slack lives: a full dealership fills it, a sparse
+  one leaves it empty, and neither changes the card. `min-h-0` is what lets a
+  flex child shrink below its content — without it the box pushes the footer
+  down instead of clipping.
+- **Its children carry `shrink-0`.** A flex child shrinks before its parent
+  clips, and a squeezed tag row cuts the bottom off its second line of chips.
+  They keep their natural height; the box clips instead — which it never has to,
+  because the height is sized for the fullest of them.
+
+### The number is measured, not derived
+
+The arithmetic is in the file to be argued with, but 368 was chosen by
+measuring. The worst case — a two-line name, a two-line tagline, and three
+services wrapping to a second row, all at once — needs 95px in the prose box.
+At **362** it fitted with _zero_ headroom, the last row of tags ending exactly
+on the box's bottom edge. Six pixels are added because line heights round and a
+font substitution moves all of this by one or two, and clipping here is silent:
+what it eats first is half a row of chips.
+
+`Fullest` is the story that holds that, and `SameDataTwice` is the one that
+answers the original report — the same three dealerships twice, sparse and full,
+each grid printing its measured card height. Both read 368px.
+
+### What it costs, plainly
+
+A card with a one-line name and nothing optional filled in now spends about
+140px on white space above its footer. That is not a bug to be fixed later; it
+is what a fixed size _is_. The footer stays pinned to the bottom edge, which is
+what makes the space read as a card with room in it rather than as one cut
+short. A directory reads as a grid, and a grid whose cells change proportion
+with their contents does not.
+
+### And the grid rule goes
+
+`grid-auto-rows: 1fr` came in with R17 to make rows agree. With a hard height on
+the card, equal rows are what the card _produces_ rather than something the grid
+has to arrange, and leaving the rule in place would be a second mechanism for a
+job already done — the kind that survives long enough for someone to change one
+and not the other.
+
 ---
 
 # Feature → Component matrix
