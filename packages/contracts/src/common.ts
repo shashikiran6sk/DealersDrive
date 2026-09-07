@@ -193,6 +193,63 @@ export function slugify(input: string): string {
     .slice(0, 80);
 }
 
+/** The longest slug `SlugParam` will carry back in. */
+const DEALER_SLUG_MAX = 120;
+
+/**
+ * How long the trading name may be before the place is appended.
+ *
+ * The location suffix is the whole point of the slug's shape — it is what a
+ * person reads in a bucket listing and in a portfolio URL — so it must survive
+ * a dealership with a very long registered name rather than be truncated off
+ * the end.
+ */
+const DEALER_SLUG_NAME_MAX = 60;
+
+/**
+ * `sri-lakshmi-motors-katpadi-vellore-tamil-nadu`.
+ *
+ * The dealership's address is *in* its slug, and that is deliberate on two
+ * counts. It is the public portfolio's URL, where a place name is the strongest
+ * signal a buyer and a search engine both read; and it is the name of the
+ * dealership's folder in object storage, which is otherwise a UUID nobody can
+ * identify while looking at a bucket.
+ *
+ * ## The slug is assigned once and never recomputed
+ *
+ * It is written at registration, out of the address given there, and no write
+ * path changes it afterwards — not a rename, not a move. Two things depend on
+ * that: a portfolio URL a dealer has printed on a banner keeps working, and
+ * every KYC document's storage key is *derived* from the slug rather than
+ * stored, so a slug that changed underneath them would orphan the files.
+ *
+ * The one thing permitted to change a slug is therefore
+ * `apps/api/scripts/relocate-dealer-storage.ts`, which moves the objects in the
+ * same pass.
+ *
+ * Consecutive duplicate segments collapse, because across India a city and its
+ * district share a name far more often than not — Vellore city sits in Vellore
+ * district — and `…-vellore-vellore-tamil-nadu` reads like a bug.
+ */
+export function dealerSlug(parts: {
+  legalName: string;
+  city?: string | null;
+  district?: string | null;
+  state?: string | null;
+}): string {
+  const name =
+    slugify(parts.legalName).slice(0, DEALER_SLUG_NAME_MAX).replace(/-+$/, '') || 'dealership';
+
+  const place: string[] = [];
+  for (const part of [parts.city, parts.district, parts.state]) {
+    const segment = part ? slugify(part) : '';
+    if (!segment || place[place.length - 1] === segment) continue;
+    place.push(segment);
+  }
+
+  return [name, ...place].join('-').slice(0, DEALER_SLUG_MAX).replace(/-+$/, '');
+}
+
 /**
  * `" VELLORE "` -> `"Vellore"`, `"tamil  nadu"` -> `"Tamil Nadu"`.
  *

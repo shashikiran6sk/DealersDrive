@@ -28,6 +28,23 @@ export function createDealersRepository(prisma: PrismaClient) {
       });
     },
 
+    /**
+     * The dealership's slug, and nothing else.
+     *
+     * Every storage key a dealership owns is derived from it
+     * (`dealer-storage-keys.ts`), and the three KYC write paths need it without
+     * needing anything else about the dealership — so they ask for one column
+     * rather than pulling `dealerInclude`'s documents and members across to
+     * read a string off the row.
+     */
+    async slugById(dealerId: string): Promise<string | null> {
+      const row = await prisma.dealer.findUnique({
+        where: { id: dealerId },
+        select: { slug: true },
+      });
+      return row?.slug ?? null;
+    },
+
     async listActive() {
       const rows = await prisma.dealer.findMany({
         where: { status: 'ACTIVE' },

@@ -652,6 +652,34 @@ Copy `.env.example` to `.env` before running anything that touches the database.
 
 ---
 
+## 8a. A dealership's slug is its storage identity
+
+`dealers.slug` reads `sri-lakshmi-motors-katpadi-vellore-tamil-nadu`, and it is
+two things at once: the URL of the public portfolio, and the name of the
+dealership's folder in the bucket. Everything it owns lives under
+`dealers/{slug}/` — the KYC scans under `documents/`, the yard photograph under
+`yard/`.
+
+A KYC document's key is **derived** from the slug rather than stored
+(`dealer-storage-keys.ts`), which makes one rule load-bearing:
+
+> **Nothing may change a slug without moving that dealership's objects in the
+> same pass.**
+
+No write path does. It is set at registration by `dealerSlug()` and left alone
+— a dealer who corrects their town keeps the slug they had, along with the link
+they may have printed. The single exception is
+`apps/api/scripts/relocate-dealer-storage.ts`, which recomputes every slug and
+copies the objects before it renames anything; it exists for the migration off
+the old `kyc/{uuid}/` layout and is safe to re-run.
+
+Two seeds derive their slugs from the same function rather than typing them, and
+`DEV_DEALER_SLUG` defaults to the string `prisma/seed/data.ts` produces —
+pinned by `tests/unit/config/env.test.ts`, because a drift there breaks dev
+sign-in at run time rather than at build time.
+
+---
+
 ## 9. Where to look when you are stuck
 
 | Question                               | Answer lives in                                   |

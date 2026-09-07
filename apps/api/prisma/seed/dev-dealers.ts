@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../src/config/env.js';
-import { DEV_DEALERS } from './dev-dealers.data.js';
+import { DEV_DEALERS, DEV_STATE } from './dev-dealers.data.js';
 
 /**
  * Writes thirty dealerships across the Vellore, Ranipet and Tirupattur
@@ -100,7 +100,7 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
     approvedAt: now,
     city: dealer.city,
     district: dealer.district,
-    state: 'Tamil Nadu',
+    state: DEV_STATE,
     addressLine: dealer.addressLine,
     pincode: dealer.pincode,
     mapsUrl: dealer.mapsUrl,
@@ -115,9 +115,25 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
     medianResponseMins: dealer.medianResponseMins,
   };
 
+  /*
+   * Keyed on the **GSTIN**, not on the slug.
+   *
+   * The slug is derived from the dealership's name and town now, so it moves
+   * whenever either of those is corrected in the data file — and an upsert
+   * keyed on a value that moves does not update the row, it forks it. The
+   * GSTIN is the row's real identity: unique, invented once, and stable
+   * against every edit that changes the slug. So `slug` travels in the update
+   * payload, which is what makes re-running this the way to pick up a
+   * corrected town.
+   *
+   * That is a licence this seed has and the application does not. A real
+   * dealership's slug is written at registration and never again — see
+   * `dealerSlug` — because printed URLs and derived storage keys both hang
+   * off it.
+   */
   const row = await prisma.dealer.upsert({
-    where: { slug: dealer.slug },
-    update: fields,
+    where: { gstin: dealer.gstin },
+    update: { slug: dealer.slug, ...fields },
     create: { slug: dealer.slug, ...fields },
   });
 

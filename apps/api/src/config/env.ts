@@ -96,7 +96,13 @@ const envSchema = z.object({
    * nothing downstream of `resolvePrincipal` knows the difference, and no route
    * ever reads an identity from a client.
    */
-  DEV_DEALER_SLUG: z.string().min(1).default('sri-lakshmi-motors'),
+  DEV_DEALER_SLUG: z
+    .string()
+    .min(1)
+    // The dealership `prisma/seed/data.ts` writes. Its slug is derived there
+    // rather than typed, so this literal is the copy — and
+    // `tests/unit/config/env.test.ts` fails if the two ever disagree.
+    .default('sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu'),
 
   /**
    * Who may hold an admin session, by verified Google address.

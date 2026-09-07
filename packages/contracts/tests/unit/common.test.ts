@@ -8,6 +8,7 @@ import {
   formatMonthYear,
   formatPhone,
   initialsOf,
+  dealerSlug,
   GoogleMapsUrl,
   isIndianMobile,
   normaliseLocality,
@@ -116,6 +117,72 @@ describe('numbers and identifiers', () => {
     expect(slugify('2021 Maruti Suzuki Swift VXi')).toBe('2021-maruti-suzuki-swift-vxi');
     expect(slugify('  Hyundai   i20 (Asta) ')).toBe('hyundai-i20-asta');
     expect(slugify('x'.repeat(120))).toHaveLength(80);
+  });
+});
+
+/**
+ * A dealership's slug is two things at once — the URL of its public portfolio,
+ * and the name of its folder in object storage — and both are read by people.
+ * That is why the address is in it.
+ *
+ * It is also **derived once and never recomputed**: the KYC document keys hang
+ * off it, so these cases are as much about what the storage layout depends on
+ * as about what a link looks like.
+ */
+describe('dealerSlug', () => {
+  it('puts the place after the name', () => {
+    expect(
+      dealerSlug({
+        legalName: 'Sri Lakshmi Motors',
+        city: 'Katpadi',
+        district: 'Vellore',
+        state: 'Tamil Nadu',
+      }),
+    ).toBe('sri-lakshmi-motors-katpadi-vellore-tamil-nadu');
+  });
+
+  it('collapses a city that shares its district name', () => {
+    // The ordinary Indian case: Vellore town sits in Vellore district, and
+    // `…-vellore-vellore-tamil-nadu` reads like a bug rather than an address.
+    expect(
+      dealerSlug({
+        legalName: 'Annamalai Auto Mart Pvt Ltd',
+        city: 'Vellore',
+        district: 'Vellore',
+        state: 'Tamil Nadu',
+      }),
+    ).toBe('annamalai-auto-mart-pvt-ltd-vellore-tamil-nadu');
+  });
+
+  it('drops the parts a dealership has not given yet', () => {
+    // Onboarding asks for all of them, but a row written before it did — or by
+    // an admin — must still produce a usable slug rather than a trailing dash.
+    expect(dealerSlug({ legalName: 'Green Circle Cars', city: 'Vellore' })).toBe(
+      'green-circle-cars-vellore',
+    );
+    expect(dealerSlug({ legalName: 'Green Circle Cars', city: null, state: null })).toBe(
+      'green-circle-cars',
+    );
+  });
+
+  it('keeps the place when the trading name is enormous', () => {
+    // The suffix is the whole point of the shape, so it survives truncation.
+    // A name capped mid-word must not leave a dash against the town either.
+    const slug = dealerSlug({
+      legalName: `${'Balaji '.repeat(20)}Motors`,
+      city: 'Ambur',
+      district: 'Tirupattur',
+      state: 'Tamil Nadu',
+    });
+    expect(slug.endsWith('-ambur-tirupattur-tamil-nadu')).toBe(true);
+    expect(slug).not.toContain('--');
+    expect(slug.length).toBeLessThanOrEqual(120);
+  });
+
+  it('never yields an empty slug', () => {
+    // A registered name of nothing but punctuation is not a name the schema
+    // accepts, but the fallback is what stops it becoming a bare `-vellore`.
+    expect(dealerSlug({ legalName: '???', city: 'Vellore' })).toBe('dealership-vellore');
   });
 });
 

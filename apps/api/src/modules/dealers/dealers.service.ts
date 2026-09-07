@@ -127,6 +127,21 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
   }
 
   /**
+   * The dealership's storage identity.
+   *
+   * Every object a dealership owns lives under `dealers/{slug}/`, and the key
+   * of a KYC document is derived rather than stored — so each of the three
+   * document paths has to know the slug before it can name a file. One narrow
+   * read, rather than `requireDealer`'s full include, because the slug is the
+   * only thing any of them wants.
+   */
+  async function requireSlug(dealerId: string): Promise<string> {
+    const slug = await repo.slugById(dealerId);
+    if (!slug) throw new NotFoundError('That dealership no longer exists.');
+    return slug;
+  }
+
+  /**
    * Two dealerships in one city must not share a registered name, and no two
    * anywhere may share a GSTIN.
    *
@@ -579,8 +594,9 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
      * there being no route that could serve them, not by a flag (§26.6).
      */
     async presignDocument(dealerId: string, input: DocumentPresignInput): Promise<PresignResponse> {
+      const slug = await requireSlug(dealerId);
       const documentId = randomUUID();
-      const key = documentKey(dealerId, input.type, documentId);
+      const key = documentKey(slug, input.type, documentId);
 
       /**
        * Replacing removes what was there.
@@ -593,7 +609,7 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
        * rather than a housekeeping one.
        */
       const previous = await repo.documentByType(dealerId, input.type);
-      if (previous) await storage.delete(documentKey(dealerId, input.type, previous.id));
+      if (previous) await storage.delete(documentKey(slug, input.type, previous.id));
 
       await repo.upsertDocument(dealerId, input.type, {
         id: documentId,
@@ -624,7 +640,9 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
         throw new NotFoundError('That document does not exist.');
       }
 
-      const object = await storage.head(documentKey(dealerId, type, input.documentId));
+      const object = await storage.head(
+        documentKey(await requireSlug(dealerId), type, input.documentId),
+      );
       if (!object) {
         throw new DomainError('UPLOAD_MISSING', 'The upload did not complete. Try again.');
       }
@@ -644,11 +662,12 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
      * every removed document stayed in storage. That is fixed here.
      */
     async deleteDocument(dealerId: string, type: DealerDocType): Promise<void> {
+      const slug = await requireSlug(dealerId);
       const existing = await repo.documentByType(dealerId, type);
       if (!existing) throw new NotFoundError('That document does not exist.');
 
       await repo.deleteDocument(dealerId, type);
-      await storage.delete(documentKey(dealerId, type, existing.id));
+      await storage.delete(documentKey(slug, type, existing.id));
     },
 
     // ─────────── The yard photograph ──────────────────────────────────────
@@ -699,10 +718,10 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
       dealerId: string,
       input: YardPhotoPresignInput,
     ): Promise<PresignResponse> {
-      await requireDealer(dealerId);
+      const dealer = await requireDealer(dealerId);
 
       const mediaId = randomUUID();
-      const key = yardPhotoKey(dealerId, mediaId);
+      const key = yardPhotoKey(dealer.slug, mediaId);
 
       await repo.createMedia({
         id: mediaId,

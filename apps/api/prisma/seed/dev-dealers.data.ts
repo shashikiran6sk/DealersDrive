@@ -51,6 +51,15 @@
  * ────────────────────────────────────────────────────────────────────────────
  */
 
+import { dealerSlug } from '@dealers-drive/contracts';
+
+/**
+ * One state, and the slug's last segment. Written here rather than in
+ * `dev-dealers.ts` because the slug is derived from it — two copies of the
+ * string would mean a seeded row whose address and whose URL disagree.
+ */
+export const DEV_STATE = 'Tamil Nadu';
+
 /** One town, written once so thirty rows cannot disagree about where it is. */
 interface Town {
   city: string;
@@ -74,7 +83,6 @@ const TOWNS = {
 } as const satisfies Record<string, Town>;
 
 export interface DevDealer {
-  slug: string;
   brandName: string;
   legalName: string;
   tagline: string;
@@ -101,6 +109,8 @@ export interface DevDealer {
  * corrected coordinate cannot leave a stale link behind it.
  */
 export interface DevDealerRow extends DevDealer, Town {
+  /** Derived, not typed: see the note on `DEV_DEALERS` below. */
+  slug: string;
   mapsUrl: string;
   workingHours: { mon_sat: string; sun: string | null };
 }
@@ -119,7 +129,6 @@ function hoursFor(index: number): { mon_sat: string; sun: string | null } {
 const DEALERS: DevDealer[] = [
   // ── Vellore district ──────────────────────────────────────────────────────
   {
-    slug: 'annamalai-auto-mart',
     brandName: 'Annamalai Auto Mart',
     legalName: 'Annamalai Auto Mart Pvt Ltd',
     tagline: 'Fort-road yard since 2009 — every car with a service book.',
@@ -140,7 +149,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 12,
   },
   {
-    slug: 'green-circle-cars',
     brandName: 'Green Circle Cars',
     legalName: 'Green Circle Motors LLP',
     tagline: 'Compact SUVs and MUVs, exchange welcome.',
@@ -161,7 +169,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 25,
   },
   {
-    slug: 'thiru-motors-vellore',
     brandName: 'Thiru Motors',
     legalName: 'Thiru Motors and Finance',
     tagline: 'Finance sorted before you drive out.',
@@ -182,7 +189,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: null,
   },
   {
-    slug: 'cmc-road-autos',
     brandName: 'CMC Road Autos',
     legalName: 'CMC Road Autos Enterprises',
     tagline: 'Diesel SUVs, sold and serviced.',
@@ -203,7 +209,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 45,
   },
   {
-    slug: 'katpadi-car-junction',
     brandName: 'Katpadi Car Junction',
     legalName: 'Katpadi Car Junction Pvt Ltd',
     tagline: 'Two minutes from the railway junction.',
@@ -224,7 +229,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 8,
   },
   {
-    slug: 'vit-gate-motors',
     brandName: 'VIT Gate Motors',
     legalName: 'VIT Gate Motors LLP',
     tagline: 'Small cars for people who are new to driving.',
@@ -245,7 +249,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 15,
   },
   {
-    slug: 'sri-balaji-cars-katpadi',
     brandName: 'Sri Balaji Cars',
     legalName: 'Sri Balaji Cars and Credits',
     tagline: 'Family cars, family business, since 1998.',
@@ -266,7 +269,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 30,
   },
   {
-    slug: 'gudiyatham-auto-hub',
     brandName: 'Gudiyatham Auto Hub',
     legalName: 'Gudiyatham Auto Hub Pvt Ltd',
     tagline: 'The largest yard between Vellore and Krishnagiri.',
@@ -287,7 +289,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 20,
   },
   {
-    slug: 'pernambut-road-motors',
     brandName: 'Pernambut Road Motors',
     legalName: 'Pernambut Road Motors Enterprises',
     tagline: 'Straight prices, no negotiation theatre.',
@@ -308,7 +309,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: null,
   },
   {
-    slug: 'bagayam-motors',
     brandName: 'Bagayam Motors',
     legalName: 'Bagayam Motors and Spares',
     tagline: 'Cars and the workshop to keep them running.',
@@ -329,7 +329,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 60,
   },
   {
-    slug: 'kalinjur-used-cars',
     brandName: 'Kalinjur Used Cars',
     legalName: 'Kalinjur Used Cars LLP',
     tagline: 'CNG and petrol runabouts, city-driven only.',
@@ -352,7 +351,6 @@ const DEALERS: DevDealer[] = [
 
   // ── Ranipet district ──────────────────────────────────────────────────────
   {
-    slug: 'ranipet-auto-world',
     brandName: 'Ranipet Auto World',
     legalName: 'Ranipet Auto World Pvt Ltd',
     tagline: 'Serving the SIPCOT belt since 2010.',
@@ -373,7 +371,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 22,
   },
   {
-    slug: 'walaja-highway-cars',
     brandName: 'Walaja Highway Cars',
     legalName: 'Walaja Highway Cars Enterprises',
     tagline: 'On NH-48, open till nine.',
@@ -394,7 +391,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 35,
   },
   {
-    slug: 'sipcot-car-bazaar',
     brandName: 'SIPCOT Car Bazaar',
     legalName: 'SIPCOT Car Bazaar LLP',
     tagline: 'Company buy-backs and fleet cars.',
@@ -415,7 +411,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: null,
   },
   {
-    slug: 'arcot-fort-motors',
     brandName: 'Arcot Fort Motors',
     legalName: 'Arcot Fort Motors Pvt Ltd',
     tagline: 'Behind the fort, in front on price.',
@@ -436,7 +431,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 40,
   },
   {
-    slug: 'palar-valley-autos',
     brandName: 'Palar Valley Autos',
     legalName: 'Palar Valley Autos Enterprises',
     tagline: 'Pickups and vans for the trade.',
@@ -457,7 +451,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 50,
   },
   {
-    slug: 'arcot-city-cars',
     brandName: 'Arcot City Cars',
     legalName: 'Arcot City Cars LLP',
     tagline: 'Everything under six lakh.',
@@ -478,7 +471,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 14,
   },
   {
-    slug: 'arakkonam-junction-motors',
     brandName: 'Arakkonam Junction Motors',
     legalName: 'Arakkonam Junction Motors Pvt Ltd',
     tagline: 'Railway-town stock, railway-town prices.',
@@ -499,7 +491,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 28,
   },
   {
-    slug: 'thakkolam-road-cars',
     brandName: 'Thakkolam Road Cars',
     legalName: 'Thakkolam Road Cars Enterprises',
     tagline: 'Seven-seaters for large families.',
@@ -520,7 +511,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: null,
   },
   {
-    slug: 'nemili-auto-traders',
     brandName: 'Nemili Auto Traders',
     legalName: 'Nemili Auto Traders LLP',
     tagline: 'Village-route cars, honestly graded.',
@@ -541,7 +531,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 10,
   },
   {
-    slug: 'walajapet-motors',
     brandName: 'Walajapet Motors',
     legalName: 'Walajapet Motors and Finance',
     tagline: 'On the Palar bridge road since 2006.',
@@ -562,7 +551,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 55,
   },
   {
-    slug: 'palar-bridge-autos',
     brandName: 'Palar Bridge Autos',
     legalName: 'Palar Bridge Autos Enterprises',
     tagline: 'Exchange your old car the same day.',
@@ -585,7 +573,6 @@ const DEALERS: DevDealer[] = [
 
   // ── Tirupattur district ───────────────────────────────────────────────────
   {
-    slug: 'tirupattur-car-company',
     brandName: 'Tirupattur Car Company',
     legalName: 'Tirupattur Car Company Pvt Ltd',
     tagline: 'The district headquarters yard.',
@@ -606,7 +593,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 19,
   },
   {
-    slug: 'jolarpettai-road-motors',
     brandName: 'Jolarpettai Road Motors',
     legalName: 'Jolarpettai Road Motors LLP',
     tagline: 'Diesel workhorses, checked and certified.',
@@ -627,7 +613,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 33,
   },
   {
-    slug: 'yelagiri-hills-cars',
     brandName: 'Yelagiri Hills Cars',
     legalName: 'Yelagiri Hills Cars Enterprises',
     tagline: 'Hill-road tested before it is hill-road sold.',
@@ -648,7 +633,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: null,
   },
   {
-    slug: 'vaniyambadi-auto-mart',
     brandName: 'Vaniyambadi Auto Mart',
     legalName: 'Vaniyambadi Auto Mart Pvt Ltd',
     tagline: 'Leather-town trade, forty years of it.',
@@ -669,7 +653,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 26,
   },
   {
-    slug: 'nh-44-car-point',
     brandName: 'NH-44 Car Point',
     legalName: 'NH-44 Car Point LLP',
     tagline: 'Highway yard, open seven days.',
@@ -690,7 +673,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 11,
   },
   {
-    slug: 'vaniyambadi-family-cars',
     brandName: 'Vaniyambadi Family Cars',
     legalName: 'Vaniyambadi Family Cars Enterprises',
     tagline: 'First cars, second chances, fair paperwork.',
@@ -711,7 +693,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 21,
   },
   {
-    slug: 'ambur-motor-house',
     brandName: 'Ambur Motor House',
     legalName: 'Ambur Motor House Pvt Ltd',
     tagline: 'Since 1996 — the oldest yard in the district.',
@@ -732,7 +713,6 @@ const DEALERS: DevDealer[] = [
     medianResponseMins: 48,
   },
   {
-    slug: 'ambur-star-autos',
     brandName: 'Ambur Star Autos',
     legalName: 'Ambur Star Autos LLP',
     tagline: 'Premium pre-owned, fully reconditioned.',
@@ -755,7 +735,15 @@ const DEALERS: DevDealer[] = [
 ];
 
 /**
- * The seed rows, with the town flattened in and the two derived columns built.
+ * The seed rows, with the town flattened in and the three derived columns built.
+ *
+ * `slug` is **derived rather than written**, through the same `dealerSlug` the
+ * registration path uses. Thirty hand-typed slugs were thirty chances for the
+ * seed to disagree with the function that produces every real one — and the
+ * disagreement would be invisible, because a hand-typed slug is a perfectly
+ * valid slug. Deriving it means correcting a town in `TOWNS` corrects the
+ * addresses that follow from it, in the URL and in the bucket, without anybody
+ * remembering to.
  *
  * `mapsUrl` is composed here rather than stored per dealer because these pins
  * are the town's, not the yard's — a real dealer pastes their own Share link at
@@ -767,6 +755,12 @@ export const DEV_DEALERS: DevDealerRow[] = DEALERS.map((dealer, index) => {
   return {
     ...dealer,
     ...town,
+    slug: dealerSlug({
+      legalName: dealer.legalName,
+      city: town.city,
+      district: town.district,
+      state: DEV_STATE,
+    }),
     mapsUrl: `https://www.google.com/maps/search/?api=1&query=${String(town.lat)},${String(town.lng)}`,
     workingHours: hoursFor(index),
   };

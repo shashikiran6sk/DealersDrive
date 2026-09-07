@@ -1,7 +1,7 @@
 import {
+  dealerSlug,
   formatPhone,
   normaliseLocality,
-  slugify,
   toE164,
   type AuthProvidersResponse,
   type AuthSession,
@@ -382,7 +382,10 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
 
         const dealer = await tx.dealer.create({
           data: {
-            slug: await uniqueSlug(input.legalName),
+            // Name *and* place. The slug is the portfolio's URL and the name of
+            // the dealership's folder in object storage, and both are read by
+            // people — see `dealerSlug` in the contracts package.
+            slug: await uniqueSlug({ legalName: input.legalName, city, district, state }),
             // One name, asked for once. `brandName` is the display mirror —
             // written here, and only ever by the server (`UpdateDealerInput`
             // does not carry it).
@@ -668,9 +671,23 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
     };
   }
 
-  /** `Sri Lakshmi Motors` → `sri-lakshmi-motors`, `-2` if that is taken. */
-  async function uniqueSlug(name: string): Promise<string> {
-    const base = slugify(name).slice(0, 60) || 'dealership';
+  /**
+   * `Sri Lakshmi Motors` in Katpadi →
+   * `sri-lakshmi-motors-katpadi-vellore-tamil-nadu`, `-2` if that is taken.
+   *
+   * With the place in it a collision is rare — it now takes two dealerships of
+   * the same registered name in the same town, which the `(legalName, city)`
+   * unique index has already refused by the time this runs. The suffix stays
+   * for the case that index cannot see: a dealership that was renamed, or one
+   * whose town was corrected, leaving its old slug behind.
+   */
+  async function uniqueSlug(parts: {
+    legalName: string;
+    city?: string | null;
+    district?: string | null;
+    state?: string | null;
+  }): Promise<string> {
+    const base = dealerSlug(parts);
 
     for (let attempt = 0; attempt < 50; attempt += 1) {
       const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
