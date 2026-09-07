@@ -181,6 +181,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [ ] R13 — Whatever the share panel gives, and the yard at the foot of the header · revises F038/F046/F086
 - [ ] R14 — A map of the dealership, not a dot on a map · revises F038/F046/F086
 - [ ] R15 — One card of details, and a yard photograph that lines up · revises F086
+- [ ] R16 — The registered name, and a phone row nothing could reveal · revises F085/F086
 
 ---
 

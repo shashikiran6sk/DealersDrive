@@ -281,8 +281,16 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           },
         ],
         contact: [
-          // masked: true, and no number in the payload. A7 is the only way.
-          { key: 'phone', label: 'Phone', value: 'Tap to reveal', masked: true },
+          /*
+           * No phone row at all (**R16**). It said "Tap to reveal" and carried
+           * no digits, which was safe — but nothing on this page can act on it:
+           * A7 is vehicle-scoped, so the button that would reveal a number
+           * belongs to a listing and not to a dealership. An invitation with
+           * nothing behind it reads as a control a buyer failed to find.
+           *
+           * Rule 7 is unchanged and, if anything, easier to hold: there is now
+           * no phone-shaped row in this payload at all.
+           */
           { key: 'city', label: 'City', value: [city, state].filter(Boolean).join(', ') },
           // GSTIN is public — it is on every Indian invoice. PAN never is.
           ...(dealer.gstin

@@ -14,10 +14,11 @@ import { NotFoundError } from '../../../../src/platform/errors.js';
  * Unit tests for `src/modules/dealers/dealers.public.service.ts`.
  *
  * A8–A9, and the rule that governs both: **nothing here returns a phone
- * number** — A7 (`reveal-contact`) is the only route that can. The public
- * profile has to say "Tap to reveal" and carry no digits at all, which is
- * asserted by scanning the whole serialised payload rather than by checking
- * named fields, because a field added later would slip past the named check.
+ * number** — A7 (`reveal-contact`) is the only route that can. Since **R16**
+ * the public profile carries no phone row at all, and it must carry no digits
+ * either, which is asserted by scanning the whole serialised payload rather
+ * than by checking named fields, because a field added later would slip past
+ * the named check.
  *
  * The response-time label is the other thing worth isolating: §14.3 makes a
  * dealer who never touches their inbox degrade their own public stat, and every
@@ -600,8 +601,10 @@ describe('profile', () => {
     // A7 is the only way to get it, and it is rate-limited and logged because
     // every reveal costs an SMS.
     expect(JSON.stringify(profile)).not.toMatch(/\b[6-9]\d{9}\b/);
-    const phone = profile.contact.find((entry) => entry.key === 'phone');
-    expect(phone).toMatchObject({ value: 'Tap to reveal', masked: true });
+    // R16 — and no phone row either. It carried no digits, but the reveal it
+    // invited is vehicle-scoped, so a dealership page had nothing to act on it.
+    expect(profile.contact.some((entry) => entry.key === 'phone')).toBe(false);
+    expect(JSON.stringify(profile)).not.toMatch(/Tap to reveal/);
   });
 
   it('publishes GSTIN but never PAN', async () => {

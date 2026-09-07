@@ -22,8 +22,8 @@ export const dealersPublicDocs: ModuleDocs = {
   description:
     'The buyer-facing view of a dealership. **No response under this tag contains a phone ' +
     'number or an email address**, and that is a property of the schemas rather than of the ' +
-    'handlers: `DealerPublicProfile.contact` carries a row marked `masked` reading "Tap to ' +
-    'reveal", and there is no field in it that could hold a number. ' +
+    'handlers: `DealerPublicProfile.contact` has no phone row at all, and no field in it that ' +
+    'could hold a number. ' +
     '`POST /v1/vehicles/:id/reveal-contact` is the only route that returns one, and it is a ' +
     'POST precisely so it can be rate-limited twice over and logged as a lead (rule 7).',
   operations: [

@@ -57,7 +57,6 @@ const DEALER: DealerPublicProfile = {
     { key: 'response', label: 'Response time', value: 'New dealer' },
   ],
   contact: [
-    { key: 'phone', label: 'Phone', value: 'Tap to reveal', masked: true },
     { key: 'city', label: 'City', value: 'Vellore, Tamil Nadu' },
     { key: 'gstin', label: 'GSTIN', value: '33AABCS1429B1ZX', mono: true },
   ],
@@ -88,14 +87,32 @@ const notListed = () =>
   });
 
 describe('the dealership it shows', () => {
-  it('renders the identity, the address and the registered name', async () => {
+  it('renders the identity and the address', async () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params }));
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sri Lakshmi Motors');
     expect(screen.getByText('VERIFIED DEALER')).toBeInTheDocument();
     expect(screen.getByText('12 Katpadi Road, Vellore 632001, Tamil Nadu')).toBeInTheDocument();
-    expect(screen.getByText('Sri Lakshmi Motors Pvt Ltd')).toBeInTheDocument();
+  });
+
+  /**
+   * R16 — the registered name is not in the rendered page any more. It was a
+   * third line under the trading name saying, on every dealership on the
+   * platform, the same string as the heading two lines above it: `brandName` is
+   * the server-written mirror of `legalName`, so the pair could only ever
+   * disagree by way of a feature that does not exist.
+   *
+   * It stays in the `AutoDealer` structured data, where `legalName` is a
+   * distinct property with a defined meaning and costs a reader nothing.
+   */
+  it('does not repeat the registered name under the trading one', async () => {
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params }));
+
+    expect(screen.queryByText('Sri Lakshmi Motors Pvt Ltd')).toBeNull();
+    const jsonLd = container.querySelector('script[type="application/ld+json"]');
+    expect(jsonLd?.textContent ?? '').toContain('Sri Lakshmi Motors Pvt Ltd');
   });
 
   /**
@@ -125,12 +142,25 @@ describe('the dealership it shows', () => {
     expect(screen.queryByText('Location', { selector: 'dt' })).toBeNull();
   });
 
-  it('renders every contact row, including the masked one', async () => {
+  it('renders every contact row the API sent', async () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params }));
 
-    expect(screen.getByText('Tap to reveal')).toBeInTheDocument();
+    expect(screen.getByText('Vellore, Tamil Nadu')).toBeInTheDocument();
     expect(screen.getByText('33AABCS1429B1ZX')).toBeInTheDocument();
+  });
+
+  /**
+   * R16 — and no phone row, because nothing on this page could act on one. The
+   * reveal is A7, which is vehicle-scoped; an invitation with no control behind
+   * it reads as a button a buyer failed to find.
+   */
+  it('offers no phone row to tap', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params }));
+
+    expect(screen.queryByText(/tap to reveal/i)).toBeNull();
+    expect(screen.queryByText('Phone', { selector: 'dt' })).toBeNull();
   });
 
   /** A stat with no value is an em dash, not a blank `<dd>` reading as a fault. */

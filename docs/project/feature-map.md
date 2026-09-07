@@ -2656,6 +2656,56 @@ bottom border again — `border-b-0` existed because the photograph ran flush
 into the header's divider and the two drew one line twice, which the 20px of
 bottom padding ends.
 
+## R16 — The registered name, and a phone row nothing could reveal
+
+**Revises F085 (A9) / F086**
+
+- **API** `dealers.public.service.ts` — the `phone` row leaves `contact`
+- **Contracts** `public.ts` — the `masked` flag leaves the contact row schema,
+  which nothing sets any more
+- **Frontend** `dealers/[slug]/page.tsx` — the registered name leaves the
+  identity block; the `<dd>` loses its masked branch
+- **Docs** `dealers.public.docs.ts` — the tag description described the row
+- **Tests** the registered name is absent from the page and present in the
+  JSON-LD; no phone row and no "Tap to reveal" in the payload or the page
+
+### A line that said the heading again
+
+Under the trading name sat the registered one, in 13px subtle ink. The comment
+beside it argued that the two are what a buyer checks a GSTIN against and that
+a later feature could make them disagree — but `brandName` is written by the
+server from `legalName` in the one place that writes either, and
+`UpdateDealerInput` does not carry `brandName` precisely so that no client can
+make them differ. So the row rendered the heading twice, two lines apart, on
+every dealership on the platform, and read as a rendering fault.
+
+`legalName` stays in the `AutoDealer` structured data, where it is a distinct
+property with a defined meaning and costs a reader nothing. It is not dead
+code: the field is still in the contract, still composed by A9, and still
+consumed by the JSON-LD this page emits. (The admin console shows a registered
+name too, off `DealerAdminDetail` — a different contract, untouched here.)
+
+### An invitation with nothing behind it
+
+The contact card's first row was **Phone · Tap to reveal**, `masked: true`, and
+no digits anywhere in the payload. Rule 7 was never in question here.
+
+What was in question is what a buyer does with it. The reveal is
+`POST /v1/vehicles/:id/reveal-contact` — **A7, vehicle-scoped**, because a
+reveal is charged and logged against a listing. There is no dealership-scoped
+reveal and there is not going to be one, so the row invited an action that no
+control on this page can perform, on a page whose inventory is empty. A person
+taps it, nothing happens, and they conclude the site is broken rather than that
+they misread a static row.
+
+Removing it also simplifies the boundary rather than weakening it: the schema
+now has no phone-shaped field at all, which is a property a reviewer can check
+by reading the type instead of by reasoning about a flag.
+
+`masked` goes with it. It was one optional boolean set in exactly one place,
+and leaving it behind would be an affordance for reintroducing the same row
+without the argument.
+
 ---
 
 # Feature → Component matrix

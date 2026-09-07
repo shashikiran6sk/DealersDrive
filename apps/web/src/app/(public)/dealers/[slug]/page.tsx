@@ -129,14 +129,6 @@ export default async function DealerPortfolioPage({
             {dealer.address.full ? (
               <p className="mt-[6px] text-[14px] ink-secondary">{dealer.address.full}</p>
             ) : null}
-            {/*
-              The registered name, under the trading one. They are the same
-              string today — `brandName` is the server-written mirror of
-              `legalName` — but the pair is what a buyer checks a GSTIN against,
-              so the row stays rather than being collapsed on the strength of a
-              coincidence that a later feature could undo.
-            */}
-            <p className="mt-[3px] text-[13px] ink-subtle">{dealer.legalName}</p>
           </div>
         </div>
 
@@ -196,13 +188,7 @@ export default async function DealerPortfolioPage({
                 className="flex justify-between gap-4 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
               >
                 <dt className="ink-muted">{row.label}</dt>
-                <dd className={row.mono ? 'font-mono' : row.masked ? 'ink-subtle' : 'font-medium'}>
-                  {/* The number is never in this document. `masked` rows carry
-                      the invitation, not the value (Rule 7, §14.1) — and the
-                      button that acts on it is A7, which is vehicle-scoped and
-                      arrives with F090. */}
-                  {row.value}
-                </dd>
+                <dd className={row.mono ? 'font-mono' : 'font-medium'}>{row.value}</dd>
               </div>
             ))}
           </dl>
