@@ -148,6 +148,7 @@ function setup(options: Options = {}) {
   const deletes: string[] = [];
   const mediaCreated: Record<string, unknown>[] = [];
   const orphaned: string[] = [];
+  const readied: string[] = [];
   const conflictQueries: { dealerId: string; fields: Record<string, unknown> }[] = [];
 
   const row = options.dealer === null ? null : dealer(options.dealer ?? {});
@@ -189,6 +190,10 @@ function setup(options: Options = {}) {
     },
     orphanMedia: (mediaId: string) => {
       orphaned.push(mediaId);
+      return Promise.resolve({});
+    },
+    markMediaReady: (mediaId: string) => {
+      readied.push(mediaId);
       return Promise.resolve({});
     },
     newEnquiryCount: () => Promise.resolve(options.newEnquiryCount ?? 0),
@@ -248,6 +253,7 @@ function setup(options: Options = {}) {
     deletes,
     mediaCreated,
     orphaned,
+    readied,
     conflictQueries,
   };
 }
@@ -1331,6 +1337,43 @@ describe('commitYardPhoto', () => {
     await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
 
     expect(h.updates[0]).toEqual({ dealerId: 'dealer-1', data: { coverMediaId: 'media-1' } });
+  });
+
+  /**
+   * The promotion the public pages depend on.
+   *
+   * `media.serve()` answers only for a READY row, and the only thing that
+   * promotes one is **F034**'s derivative worker — which does not exist, and
+   * whose `media.process` job nothing consumes. So every yard photograph ever
+   * uploaded sat at PENDING and the directory had no image to show, even for an
+   * approved dealership.
+   *
+   * The object has just been HEADed, so this is not optimism: the bytes are
+   * known to be there, and `serve()` falls back to the original for a row with
+   * no variants yet. F034 adds the renditions and `serve()` prefers them; this
+   * line does not change when it lands.
+   */
+  it('marks the upload servable, because nothing else will', async () => {
+    const h = setup({
+      dealer: { coverMediaId: null },
+      media: media({ status: 'PENDING' }),
+      head: { bytes: 184_210, contentType: 'image/jpeg' },
+    });
+
+    await h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' });
+
+    expect(h.readied).toEqual(['media-1']);
+  });
+
+  /** A commit that never gets past the HEAD promotes nothing. */
+  it('leaves an incomplete upload where it is', async () => {
+    const h = setup({ dealer: { coverMediaId: null }, media: media(), head: null });
+
+    await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
+      DomainError,
+    );
+    expect(h.readied).toEqual([]);
+    expect(h.updates).toEqual([]);
   });
 
   /**

@@ -106,11 +106,13 @@ export default async function DealerPortfolioPage({
 
         <Blueprint className="mx-auto h-[170px] max-w-[1280px] border-b-0 bg-(--color-surface) max-md:h-[120px]">
           {dealer.coverUrl ? (
+            /* The 1600px rendition — this is the one place a yard photograph is
+               looked at rather than glanced past. See `dealer-card.tsx` for why
+               it is a plain `<img>` and why the alt is empty. */
             // eslint-disable-next-line @next/next/no-img-element
             <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
           ) : (
-            /* Every dealership takes this branch until **F034** gives an
-               uploaded image a permanent public URL. */
+            /* A dealership that has not uploaded one yet. */
             <ImageSlot label="Dealership frontage / yard photo" />
           )}
         </Blueprint>

@@ -26,9 +26,10 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
  *     no cover, no live cars — each has a story below, because each is the
  *     normal state for a dealership that finished onboarding an hour ago.
  *
- * **Every card takes the no-cover branch today.** There is no permanent public
- * URL for the yard photograph until **F034**, so `coverUrl` is null for every
- * dealership the API returns; `WithCover` below is what F034 turns on.
+ * Both branches are live. A dealership that has uploaded a yard photograph gets
+ * `coverUrl` — the 640px rendition, addressed by media id — and one that has
+ * not gets the `ImageSlot`, which names the shot rather than showing a grey
+ * rectangle. `WithCover` and `Default` are the two, side by side.
  */
 const BASE: DealerCard = {
   slug: 'sri-lakshmi-motors',
@@ -140,7 +141,12 @@ export const LongBrandName: Story = {
  */
 export const Unverified: Story = { args: { dealer: { ...BASE, isVerified: false } } };
 
-/** What **F034** turns on: a real photograph of the yard instead of the slot. */
+/**
+ * A dealership that has uploaded one. The photograph is cropped into the 104px
+ * band with `object-cover`, so the thing to check by eye is that the logo tile
+ * still reads against it — the tile crosses the divider, and a busy photograph
+ * is where that crossing either works or does not.
+ */
 export const WithCover: Story = {
   args: {
     dealer: {

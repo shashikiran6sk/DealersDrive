@@ -13,10 +13,15 @@ import { DERIVATIVE_WIDTHS, mediaUrl, srcsetFor } from '../../../../src/platform
 describe('mediaUrl', () => {
   const mediaId = '0f2ff36b-efd7-4018-afe5-ccd3d2dc4fa9';
 
+  it('names no owner in the path, because one handler serves them all', () => {
+    // A dealership's yard photograph is delivered by the same route as a
+    // vehicle's photo. A URL that said `vehicles` for a cover image is how a
+    // second, identical delivery route gets written.
+    expect(mediaUrl(mediaId, 640)).not.toContain('vehicles');
+  });
+
   it('addresses an image by id and width, never by storage key', () => {
-    expect(mediaUrl(mediaId, 640)).toBe(
-      `${env.MEDIA_BASE_URL}/vehicles/by-media/${mediaId}/640.webp`,
-    );
+    expect(mediaUrl(mediaId, 640)).toBe(`${env.MEDIA_BASE_URL}/by-media/${mediaId}/640.webp`);
   });
 
   it('is built from MEDIA_BASE_URL, so the CDN can move without a code change', () => {

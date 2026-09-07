@@ -173,7 +173,7 @@ export function createStorageRouter(storage: StoragePort, service: MediaService)
 
   // Content-addressed delivery: a new upload is a new id and a new URL, so the
   // cache never has to be invalidated (§12.1).
-  router.get('/media/vehicles/by-media/:mediaId/:width.webp', (req, res, next) => {
+  router.get('/media/by-media/:mediaId/:width.webp', (req, res, next) => {
     void (async () => {
       try {
         const parsed = MediaPath.safeParse({

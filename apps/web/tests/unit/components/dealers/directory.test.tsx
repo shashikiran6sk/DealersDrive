@@ -89,11 +89,33 @@ describe('DirectoryCard', () => {
     expect(screen.queryByText('RC transfer')).toBeNull();
   });
 
-  /** No permanent public image URL until F034 — every card takes this branch. */
   it('names the missing photograph rather than showing a blank frame', () => {
     render(<DirectoryCard dealer={DEALER} />);
 
     expect(screen.getByText(/Sri Lakshmi Motors — yard photo/i)).toBeInTheDocument();
+  });
+
+  /**
+   * The other branch, and the one that was unreachable until the API started
+   * filling `coverUrl` in.
+   *
+   * `alt=""` is asserted rather than assumed: the heading beside the image
+   * already names the dealership, so a described cover would have a screen
+   * reader announce the name twice in a row. That makes the image decorative,
+   * and a decorative image with a description is the usual way a card becomes
+   * tiring to listen to.
+   */
+  it('shows the yard photograph when there is one, without describing it twice', () => {
+    const { container } = render(
+      <DirectoryCard
+        dealer={{ ...DEALER, coverUrl: 'https://media.test/by-media/media-1/640.webp' }}
+      />,
+    );
+
+    const image = container.querySelector('img');
+    expect(image?.getAttribute('src')).toBe('https://media.test/by-media/media-1/640.webp');
+    expect(image?.getAttribute('alt')).toBe('');
+    expect(screen.queryByText(/yard photo/i)).toBeNull();
   });
 
   it('marks a verified dealership, and does not mark one that is not', () => {
