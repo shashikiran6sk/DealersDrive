@@ -301,6 +301,18 @@ component a story renders, build the sandbox with the workspace's
 `pnpm --filter @dealers-drive/sandbox build:sandbox`. Since D7 this is the only
 thing that will tell you.
 
+**`pnpm typecheck` had a second, quieter version of the same hole.** The sandbox
+type-checks its stories against the real components in `apps/web/src`, which it
+reaches through a tsconfig path alias rather than a workspace dependency — a
+Storybook cannot depend on an app. Turbo's task graph therefore did not know
+that changing a component's props invalidates the sandbox's typecheck, so a
+cached PASS survived a change that broke a story: green on the machine that made
+the change, red in CI where the cache is cold. `turbo.json` now names
+`apps/web/src/**` as an input to `typecheck`, which closes it.
+
+The general lesson, and it applies to the next alias somebody adds: **turbo only
+knows about the edges you declare.** A path alias is an edge it cannot see.
+
 ---
 
 ## 7b. The restore ledger

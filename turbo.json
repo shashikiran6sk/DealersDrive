@@ -19,7 +19,17 @@
     },
     "typecheck": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "*.tsbuildinfo"]
+      "outputs": ["dist/**", "*.tsbuildinfo"],
+      // `apps/sandbox` type-checks its stories against the real components in
+      // `apps/web/src`, which it reaches through a tsconfig path alias rather
+      // than a workspace dependency — a Storybook cannot depend on an app. So
+      // turbo's graph does not know that changing a component's props
+      // invalidates the sandbox's typecheck, and a cached PASS survived a
+      // change that broke a story: green locally, red in CI where the cache is
+      // cold. That is the worst shape a check can have. Naming the sources as
+      // an input closes it, at the cost of over-invalidating the other
+      // packages' typechecks — which take seconds.
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/web/src/**"]
     },
     "test": {
       "dependsOn": ["^build"],

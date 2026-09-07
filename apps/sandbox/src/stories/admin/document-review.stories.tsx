@@ -70,7 +70,16 @@ const meta = {
     },
   ],
   argTypes: { documents: { control: 'object' } },
-  args: { documents: [document()] },
+  args: {
+    documents: [document()],
+    /*
+     * Cache invalidation only, and it never reaches the screen: a decision here
+     * can hand a PENDING_APPROVAL application back to DRAFT, which takes the
+     * dealership off the marketplace, so the action clears that portfolio's
+     * cached page (**R12**). Set once on the meta because no story varies it.
+     */
+    dealerSlug: 'sri-lakshmi-motors-vellore-tamil-nadu',
+  },
 } satisfies Meta<typeof DocumentReview>;
 
 export default meta;
