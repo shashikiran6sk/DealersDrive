@@ -12,6 +12,7 @@ import type { PrismaClient } from '@prisma/client';
 import { env } from '../../config/env.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import type { MapsPort } from '../../platform/maps/maps-link.js';
 import {
   ConfigurationError,
   ConflictError,
@@ -58,6 +59,8 @@ export interface AuthDeps {
   oauth: OAuthProvider;
   dealers: DealersService;
   audit: AuditService;
+  /** Where the new yard is, out of the link the dealer pastes on step 2. */
+  maps: MapsPort;
 }
 
 export interface CallbackResult {
@@ -69,7 +72,7 @@ export interface CallbackResult {
   returnTo: string;
 }
 
-export function createAuthService({ prisma, sessions, oauth, dealers, audit }: AuthDeps) {
+export function createAuthService({ prisma, sessions, oauth, dealers, audit, maps }: AuthDeps) {
   /**
    * The Google account on a session — for the onboarding screen, which shows
    * the verified address rather than asking for it again.
@@ -360,6 +363,12 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
         );
       }
 
+      // The yard's pin, out of the link the dealer just pasted. Best-effort and
+      // bounded, and read *before* the transaction opens: an interactive
+      // transaction's budget is wall-clock, and a request to Google is not
+      // something to spend it on. See `platform/maps/maps-link.ts`.
+      const geo = await maps.coordinatesFor(input.mapsUrl);
+
       const created = await withTransaction(prisma, async (tx) => {
         const existing = await tx.dealerMember.findFirst({
           where: { userId: principal.userId, status: 'ACTIVE' },
@@ -404,6 +413,11 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit }: A
             // what is inside the link is Google's business, and rewriting it
             // would break the short links the Share sheet produces.
             mapsUrl: input.mapsUrl,
+            // Read out of that link, not geocoded from the address above. Null
+            // when it could not be read, which is a portfolio without a map
+            // rather than a portfolio with the wrong one.
+            lat: geo?.lat ?? null,
+            lng: geo?.lng ?? null,
             contactPhone: phone,
             contactEmail: principal.email,
             landline: input.landline ?? null,

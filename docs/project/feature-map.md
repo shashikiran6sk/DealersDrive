@@ -2346,7 +2346,7 @@ after onboarding')`, plus the service unit tests
 
 ## R9 — The yard photograph reaches the public pages
 
-**Revises F033, F085, F086** · consumed by the directory and the portfolio
+**Revises F033, F085, F086** · [#76](https://github.com/shashikiran6sk/DealersDrive/pull/76)
 
 - **Backend** `commitYardPhoto` marks the row READY; `repo.readyMediaIds`
   (one query per directory page) and `repo.markMediaReady`;
@@ -2373,6 +2373,46 @@ after onboarding')`, plus the service unit tests
 - `logoUrl` stays null, and not for the same reason: nothing in the product
   writes `logoMediaId`, so there is no image to address. The initials tile is
   the design's answer, not a gap.
+
+## R10 — The yard on a map, not only in a link
+
+**Revises F038, F041, F086** · builds on **R6**
+
+- **Contracts** `DealerPublicProfile.address.geo`; `isGoogleMapsUrl` exported as
+  a predicate, because the schema vets what a dealer types and something else
+  has to vet every redirect after it
+- **Platform** `platform/maps/maps-link.ts` — `coordinatesIn` (pure) and
+  `resolveCoordinates` (follows a short link), behind a `MapsPort` so no unit
+  test reaches the internet
+- **Backend** registration and the profile save resolve the pin into the
+  `lat`/`lng` columns **D6** left unwritten; the profile save re-resolves only
+  when the link changed
+- **Frontend** `LocationCard` (new, C068) — the map and "Get directions",
+  extracted out of the portfolio page
+- **Script** `scripts/backfill-dealer-pins.ts` for the rows that predate this
+- **Tests** the parser's shapes, the redirect walk, the host check, and the
+  card's four states
+- The location card had a grey slot where the map should be, because the only
+  thing the API knew about the yard was an opaque URL. **R6** is still right
+  that the link is stored verbatim — it survives the dealer moving their pin
+  and opens the Maps app on a phone — so the coordinates are read out of it _as
+  well_, never instead.
+- **Never geocoded from the address.** A typed address is several pins in one
+  district, and a map confidently centred on the wrong one is worse than no map
+  because it looks authoritative. No pin, no map — the card shows the slot and
+  the directions button still works.
+- **Following the link is an SSRF surface.** The schema checked the first hop
+  and can check nothing after it, so redirects are followed by hand, every hop
+  is re-validated against the same allow-list, the chain is bounded and the
+  timeout is short. A redirect off Google ends the walk instead of being
+  followed.
+- A keyless `output=embed` iframe rather than the Static Maps API: no key in
+  any environment, nothing billed per crawl, and it pans and zooms. The cost is
+  that a visitor to a portfolio is disclosed to Google on load rather than on
+  click, which `loading="lazy"` limits to visitors who scroll to it.
+- `geo` is deliberately **not** published in `AutoDealer` structured data.
+  These are coordinates off a share link, not surveyed: good enough to centre a
+  map a person is looking at, not good enough to assert to a search engine.
 
 ---
 

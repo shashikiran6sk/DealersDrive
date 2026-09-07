@@ -24,6 +24,7 @@ import { randomUUID } from 'node:crypto';
 
 import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import type { MapsPort } from '../../platform/maps/maps-link.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
@@ -56,6 +57,8 @@ export interface DealersDeps {
   prisma: PrismaClient;
   repo: DealersRepository;
   storage: StoragePort;
+  /** Where the yard is, out of the dealer's own Maps link. Best-effort. */
+  maps: MapsPort;
 }
 
 /**
@@ -75,7 +78,7 @@ const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROO
  */
 const YARD_PHOTO_URL_TTL_SECONDS = 300;
 
-export function createDealersService({ prisma, repo, storage }: DealersDeps) {
+export function createDealersService({ prisma, repo, storage, maps }: DealersDeps) {
   function toProfile(dealer: DealerWithRelations): DealerProfile {
     const owner = dealer.members.find((member) => member.role === 'OWNER');
 
@@ -279,8 +282,8 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
        *
        * A slug resolved against `cities` until the table went; the note on
        * `UpdateDealerInput.address` in contracts records why. `lat`/`lng` came
-       * off that row and are no longer written — nothing reads them yet, and
-       * geocoding a typed address is a separate concern from saving it.
+       * off that row and are written again below — out of the dealer's own
+       * Maps link, never out of the typed address.
        */
       const city =
         input.address?.city === undefined ? undefined : normaliseLocality(input.address.city);
@@ -300,6 +303,26 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
        * one value *before* anything compares them.
        */
       const phone = input.contact?.phone === undefined ? undefined : toE164(input.contact.phone);
+
+      /**
+       * The pin, re-read whenever the link changes.
+       *
+       * Only when it *changes*: a dealer editing their opening hours should not
+       * pay a request to Google for it, and a link that resolved once resolves
+       * to the same place. `null` when the link cannot be resolved — which
+       * clears a stale pin rather than leaving the previous yard's coordinates
+       * attached to a dealership that has moved.
+       *
+       * This is the one place a network call sits on a dealer's save, and it is
+       * bounded and best-effort: `resolveCoordinates` swallows a timeout and
+       * answers null, the "Get directions" anchor is `mapsUrl` either way, and
+       * the location card falls back to the slot it showed before.
+       */
+      const mapsUrl = input.address?.mapsUrl;
+      const geo =
+        mapsUrl === undefined || mapsUrl === dealer.mapsUrl
+          ? undefined
+          : await maps.coordinatesFor(mapsUrl);
 
       if (phone !== undefined && owner) {
         const holder = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
@@ -381,7 +404,8 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
             ...(district === undefined ? {} : { district }),
             ...(state === undefined ? {} : { state }),
             ...(input.address?.pincode === undefined ? {} : { pincode: input.address.pincode }),
-            ...(input.address?.mapsUrl === undefined ? {} : { mapsUrl: input.address.mapsUrl }),
+            ...(mapsUrl === undefined ? {} : { mapsUrl }),
+            ...(geo === undefined ? {} : { lat: geo?.lat ?? null, lng: geo?.lng ?? null }),
           },
           tx,
         );

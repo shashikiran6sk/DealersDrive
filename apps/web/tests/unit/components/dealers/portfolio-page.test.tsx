@@ -45,6 +45,7 @@ const DEALER: DealerPublicProfile = {
     pincode: '632001',
     full: '12 Katpadi Road, Vellore 632001, Tamil Nadu',
     mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
+    geo: { lat: 12.9165, lng: 79.1325 },
   },
   stats: [
     { key: 'cars', label: 'Cars available', value: '0' },
@@ -138,6 +139,47 @@ describe('the phone number', () => {
 });
 
 /**
+ * The map, and the fact that it is drawn from the *resolved pin* rather than
+ * from the address string beside it.
+ *
+ * These are two independent halves of one card: a dealership can have the link
+ * and no coordinates, because a `maps.app.goo.gl` share link carries none until
+ * it is followed and following it is best-effort. Neither half is ever composed
+ * from the typed address — a map confidently centred on the wrong gate is worse
+ * than no map, because it looks authoritative.
+ */
+describe('the location map', () => {
+  it('centres the map on the resolved pin', async () => {
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params }));
+
+    const frame = container.querySelector('iframe');
+    expect(frame?.getAttribute('src')).toContain('q=12.9165,79.1325');
+    // Named for a screen reader, which otherwise announces "iframe".
+    expect(frame?.getAttribute('title')).toMatch(/Sri Lakshmi Motors/);
+  });
+
+  it('shows the slot, not a map of the town, when no pin was resolved', async () => {
+    serve({ ...DEALER, address: { ...DEALER.address, geo: null } });
+    const { container } = render(await DealerPortfolioPage({ params }));
+
+    expect(container.querySelector('iframe')).toBeNull();
+    expect(screen.getByText(/Map — dealership location/i)).toBeInTheDocument();
+    // Not fallen back to the address string, which is the whole point.
+    expect(container.innerHTML).not.toContain('Katpadi+Road');
+    expect(container.innerHTML).not.toContain('output=embed');
+  });
+
+  /** The button does not wait on the map, and the map does not wait on it. */
+  it('keeps the directions button when there is no map', async () => {
+    serve({ ...DEALER, address: { ...DEALER.address, geo: null } });
+    render(await DealerPortfolioPage({ params }));
+
+    expect(screen.getByRole('link', { name: /get directions/i })).toBeInTheDocument();
+  });
+});
+
+/**
  * R6. The dealer's own pin, or nothing — never a URL built from the address
  * string, which is several different gates in one district.
  */
@@ -152,7 +194,8 @@ describe('get directions', () => {
   });
 
   it('is absent, not broken, for a dealership that predates the question', async () => {
-    serve({ ...DEALER, address: { ...DEALER.address, mapsUrl: null } });
+    // No link and therefore no pin: the pin is only ever read out of the link.
+    serve({ ...DEALER, address: { ...DEALER.address, mapsUrl: null, geo: null } });
     const { container } = render(await DealerPortfolioPage({ params }));
 
     expect(screen.queryByRole('link', { name: /get directions/i })).toBeNull();

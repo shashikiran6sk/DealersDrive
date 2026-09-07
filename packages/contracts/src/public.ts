@@ -160,6 +160,21 @@ export const DealerPublicProfile = z.object({
      * ────────────────────────────────────────────────────────────────────────
      */
     mapsUrl: z.string().nullable(),
+    /**
+     * The yard's own coordinates, read out of `mapsUrl` at write time
+     * (`platform/maps/maps-link.ts`) — never geocoded from the address above.
+     *
+     * This is what the location card draws its map at, and the distinction
+     * matters: an address is several pins in one district, and a map centred on
+     * the wrong one is a more confident lie than no map at all. Null when the
+     * dealer's link carried no position and could not be followed to one, and
+     * the card then shows the slot it always did.
+     *
+     * It is deliberately *not* published in `AutoDealer` structured data. These
+     * are still coordinates derived from a share link rather than surveyed, and
+     * a `GeoCoordinates` block is read by machines that will not check.
+     */
+    geo: z.object({ lat: z.number(), lng: z.number() }).nullable(),
   }),
   stats: z.array(z.object({ key: z.string(), label: z.string(), value: z.string() })),
   contact: z.array(

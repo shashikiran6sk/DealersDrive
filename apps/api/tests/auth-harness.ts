@@ -8,6 +8,7 @@ import type {
   OAuthClaims,
   OAuthProvider,
 } from '../src/modules/auth/oauth.port.js';
+import { noMapsLookup } from '../src/platform/maps/maps-link.js';
 import { UnauthorizedError } from '../src/platform/errors.js';
 import { createApp } from '../src/server.js';
 
@@ -100,7 +101,15 @@ export interface AuthHarness {
 }
 
 export async function createAuthHarness(google = createFakeGoogle()): Promise<AuthHarness> {
-  const container = await buildContainer({ oauth: google });
+  /*
+   * No Maps lookup, for the same reason the OAuth provider above is a fake:
+   * a suite that reaches the internet is a suite whose result depends on the
+   * network it runs on. `noMapsLookup` answers null, which is a real state —
+   * a dealership whose share link could not be followed to a pin — so the
+   * onboarding cases below exercise a shape the product has rather than a
+   * disabled one.
+   */
+  const container = await buildContainer({ oauth: google, maps: noMapsLookup });
   const app = createApp(container);
 
   return {

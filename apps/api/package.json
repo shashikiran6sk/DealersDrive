@@ -24,6 +24,7 @@
     "docs:postman": "tsx src/docs/generate-postman.ts",
     "verify:s3": "tsx scripts/verify-s3.ts",
     "storage:relocate": "tsx scripts/relocate-dealer-storage.ts",
+    "maps:backfill": "tsx scripts/backfill-dealer-pins.ts",
     "test": "vitest run --coverage",
     "test:watch": "vitest --project unit"
   },

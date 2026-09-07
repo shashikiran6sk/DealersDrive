@@ -8,6 +8,7 @@ import type {
 } from '../../../../src/modules/dealers/dealers.repository.js';
 import { createDealersService } from '../../../../src/modules/dealers/dealers.service.js';
 import { DomainError, NotFoundError } from '../../../../src/platform/errors.js';
+import type { MapsPort } from '../../../../src/platform/maps/maps-link.js';
 import type { StoragePort } from '../../../../src/platform/storage/storage.port.js';
 
 /**
@@ -137,6 +138,8 @@ interface Options {
   phoneHolder?: { id: string } | null;
   /** One row, or several to be looked up by id — a replacement needs two. */
   media?: Record<string, unknown> | Record<string, unknown>[] | null;
+  /** What the dealer's Maps link resolves to. Omitted means "it did not". */
+  geo?: { lat: number; lng: number } | null;
 }
 
 function setup(options: Options = {}) {
@@ -243,8 +246,23 @@ function setup(options: Options = {}) {
       Promise.resolve(`https://storage.test/signed/${key}?ttl=${ttl}`),
   } as unknown as StoragePort;
 
+  /*
+   * The yard's pin, faked.
+   *
+   * A port rather than a bare call precisely so this stays local: without it
+   * every save below would issue a real request to Google while the suite runs
+   * — slow, flaky, and dependent on the network of whoever is running it.
+   */
+  const mapsLookups: string[] = [];
+  const maps: MapsPort = {
+    coordinatesFor: (mapsUrl: string) => {
+      mapsLookups.push(mapsUrl);
+      return Promise.resolve(options.geo === undefined ? null : options.geo);
+    },
+  };
+
   return {
-    service: createDealersService({ prisma, repo, storage }),
+    service: createDealersService({ prisma, repo, storage, maps }),
     updates,
     upserts,
     userUpdates,
@@ -255,6 +273,7 @@ function setup(options: Options = {}) {
     orphaned,
     readied,
     conflictQueries,
+    mapsLookups,
   };
 }
 
@@ -666,7 +685,55 @@ describe('update', () => {
       // Stored verbatim — the host was checked by the schema, and what is
       // inside a share link is Google's business.
       mapsUrl: 'https://maps.app.goo.gl/moved-the-pin',
+      // A short link carries no coordinates and this fake follows nothing, so
+      // the pin is cleared. That is the point: a dealership that has moved must
+      // not keep the previous yard's coordinates on its portfolio.
+      lat: null,
+      lng: null,
     });
+  });
+
+  /**
+   * The pin is read out of the link, and only ever out of the link.
+   *
+   * `Chennai, Tamil Nadu` is in the same payload and is not consulted: an
+   * address is several gates in one district, and a map centred on the wrong
+   * one is worse than no map because it looks authoritative.
+   */
+  it('writes the pin the dealer’s link resolved to', async () => {
+    const h = setup({ geo: { lat: 12.9165, lng: 79.1325 } });
+
+    await h.service.update('dealer-1', {
+      address: { mapsUrl: 'https://maps.app.goo.gl/moved-the-pin' },
+    });
+
+    expect(h.updates[0]?.data).toMatchObject({ lat: 12.9165, lng: 79.1325 });
+    expect(h.mapsLookups).toEqual(['https://maps.app.goo.gl/moved-the-pin']);
+  });
+
+  /**
+   * A dealer editing their opening hours should not pay a round trip to Google
+   * for it — and a link that resolved once resolves to the same place.
+   */
+  it('does not re-resolve a link that did not change', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', {
+      tagline: 'Now open on Sundays',
+      address: { mapsUrl: 'https://maps.app.goo.gl/sri-lakshmi-motors' },
+    });
+
+    expect(h.mapsLookups).toEqual([]);
+    expect(h.updates[0]?.data).not.toHaveProperty('lat');
+  });
+
+  it('leaves the pin alone when the address is not being edited', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { tagline: 'Now open on Sundays' });
+
+    expect(h.mapsLookups).toEqual([]);
+    expect(h.updates[0]?.data).not.toHaveProperty('lat');
   });
 
   it('writes nothing at all for an empty patch', async () => {

@@ -344,12 +344,28 @@ export const GoogleMapsUrl = z
   .trim()
   .url('Paste the link Google Maps gave you.')
   .max(2048)
-  .refine((value) => {
-    let url: URL;
-    try {
-      url = new URL(value);
-    } catch {
-      return false;
-    }
-    return url.protocol === 'https:' && MAPS_HOSTS.has(url.hostname.toLowerCase());
-  }, 'That is not a Google Maps link. Open your yard in Google Maps, tap Share, and paste the link it gives you.');
+  .refine(
+    isGoogleMapsUrl,
+    'That is not a Google Maps link. Open your yard in Google Maps, tap Share, and paste the link it gives you.',
+  );
+
+/**
+ * `https:` and a hostname on the list above.
+ *
+ * Exported as a predicate, not only as a schema, because the schema checks the
+ * link the *dealer typed* and something else has to check every hop after it.
+ * A `maps.app.goo.gl` share link is a redirect, and the API follows it to
+ * recover the yard's coordinates — so each `Location` it is handed is a URL
+ * chosen by Google rather than by the schema, and a redirect to
+ * `http://169.254.169.254/` is a request the server would otherwise make on
+ * somebody else's behalf. One predicate, applied at every hop.
+ */
+export function isGoogleMapsUrl(value: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  return url.protocol === 'https:' && MAPS_HOSTS.has(url.hostname.toLowerCase());
+}
