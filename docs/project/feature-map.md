@@ -2416,7 +2416,7 @@ after onboarding')`, plus the service unit tests
 
 ## R11 — Districts in the header, and city chips that multi-select
 
-**Revises F085** · restores the baseline's header switcher, differently
+**Revises F085** · [#78](https://github.com/shashikiran6sk/DealersDrive/pull/78)
 
 - **Contracts** `DealerDirectoryQuery.district`; `city` takes a comma-separated
   list; `LocationChip`; `DealerDirectoryResponse.districts`; `PublicLocations`
@@ -2452,6 +2452,39 @@ after onboarding')`, plus the service unit tests
 - `cities` is narrowed by the district and by nothing else, and `districts` by
   nothing at all. A list that dropped the options you did not choose is a list
   you cannot get back out of.
+
+## R12 — A write clears the public page it changed
+
+**Revises F041, F046, F049, F085, F086**
+
+- **Frontend** `lib/cache-tags.ts` — `DEALERS_TAG`, `dealerTag(slug)` and the
+  one `revalidatePublicDealer()` every write path calls; the three public
+  fetches tagged; the dealer's profile save, the yard-photo commit and delete,
+  and the eight admin moderation actions all clear what they changed
+- **Tests** the tags a save emits, that a failed save emits none, and the
+  moderation cases — including the one where a caller omits the slug
+- Two ten-minute windows stood between a write and the page a buyer sees:
+  Next's Data Cache at `revalidate: 600`, and `/dealers/[slug]`'s own route
+  cache at the same. Nothing ever invalidated either. A dealer who corrected
+  their Maps link watched their own portfolio and reasonably concluded the save
+  had failed.
+- **The windows are not the bug.** A directory changes at the pace of
+  onboarding and a portfolio at the pace of a dealer editing it, so a shorter
+  TTL would charge every anonymous visitor a round trip to make one dealer's
+  edit land sooner. What was missing is the write path _saying_ the thing
+  changed, which is the one moment that knows.
+- **Tags rather than `revalidatePath`.** The guarantee wanted is that the fetch
+  is re-issued; a tag says so directly, where reasoning about which cache a
+  path expression reaches is how a cache fix ships that does not fix anything.
+- The admin half is the one that was not merely untidy. Public visibility is
+  `dealer.status === 'ACTIVE'` (rule 6), so a **suspension** is the write that
+  takes a dealership off the marketplace — and its portfolio was served from
+  cache for ten minutes afterwards. Rejecting a KYC document reaches the same
+  place, by handing a PENDING_APPROVAL application back to DRAFT.
+- The API's `Cache-Control: public, max-age=300` is a third window and is not a
+  factor: nothing between the Next server and the API caches — an ALB does not
+  — and no browser reaches those routes directly. It becomes one the day a CDN
+  is put in front of the API, and `lib/cache-tags.ts` is where that note lives.
 
 ---
 

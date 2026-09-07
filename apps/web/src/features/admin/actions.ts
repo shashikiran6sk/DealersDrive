@@ -13,6 +13,7 @@ import {
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
+import { revalidatePublicDealer } from '@/lib/cache-tags';
 
 /**
  * Admin moderation (D4, D6, D9–D12).
@@ -56,13 +57,30 @@ function fail(error: unknown, fallback: string): AdminResult<never> {
   return { ok: false, message: fallback };
 }
 
-function refreshAdmin(): void {
+/**
+ * The console's own pages, and the public ones the decision just changed.
+ *
+ * The second half was missing, and on these paths it is the half that matters:
+ * public visibility is `dealer.status === 'ACTIVE'` (rule 6), so a suspension
+ * is the write that takes a dealership off the marketplace — and the portfolio
+ * went on being served from Next's cache for up to ten minutes afterwards. A
+ * dealership suspended for cause staying up for ten minutes is not untidiness.
+ *
+ * `slug` is passed in rather than read off the response because
+ * `DealerModerationResponse` carries an id and no slug, and every caller is a
+ * screen already rendering `AdminDealerDetail`. Omitting it still clears the
+ * directory and the header, so a caller that forgets degrades to the old
+ * behaviour on one page rather than breaking.
+ */
+function refreshAdmin(slug?: string): void {
   revalidatePath('/admin', 'layout');
+  revalidatePublicDealer(slug);
 }
 
 export async function approveDealerAction(
   dealerId: string,
   input: unknown,
+  slug?: string,
 ): Promise<AdminResult<DealerModerationResponse>> {
   const parsed = ApproveDealerInput.safeParse(input ?? {});
   if (!parsed.success) return { ok: false, message: 'That approval is not valid.' };
@@ -73,7 +91,7 @@ export async function approveDealerAction(
       `/v1/admin/dealers/${dealerId}/approve`,
       parsed.data,
     );
-    refreshAdmin();
+    refreshAdmin(slug);
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not approve that dealer.');
@@ -88,6 +106,7 @@ export async function approveDealerAction(
 export async function reinstateDealerAction(
   dealerId: string,
   input: unknown,
+  slug?: string,
 ): Promise<AdminResult<DealerModerationResponse>> {
   const parsed = NoteInput.safeParse(input ?? {});
   if (!parsed.success) return { ok: false, message: 'That note is not valid.' };
@@ -98,7 +117,7 @@ export async function reinstateDealerAction(
       `/v1/admin/dealers/${dealerId}/reinstate`,
       parsed.data,
     );
-    refreshAdmin();
+    refreshAdmin(slug);
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not reinstate that dealer.');
@@ -114,13 +133,14 @@ export async function reinstateDealerAction(
  */
 export async function verifyDocumentAction(
   documentId: string,
+  slug?: string,
 ): Promise<AdminResult<VerifyDocumentResponse>> {
   try {
     const data = await apiSend<VerifyDocumentResponse>(
       'POST',
       `/v1/admin/documents/${documentId}/verify`,
     );
-    refreshAdmin();
+    refreshAdmin(slug);
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not verify that document.');
@@ -130,6 +150,7 @@ export async function verifyDocumentAction(
 export async function rejectDocumentAction(
   documentId: string,
   input: unknown,
+  slug?: string,
 ): Promise<AdminResult<VerifyDocumentResponse>> {
   const parsed = ReasonInput.safeParse(input);
   // The dealer reads this verbatim and re-uploads against it, so it is the one
@@ -142,7 +163,7 @@ export async function rejectDocumentAction(
       `/v1/admin/documents/${documentId}/reject`,
       parsed.data,
     );
-    refreshAdmin();
+    refreshAdmin(slug);
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not reject that document.');
@@ -165,6 +186,7 @@ export async function rejectDocumentAction(
 export async function rejectDealerAction(
   dealerId: string,
   input: unknown,
+  slug?: string,
 ): Promise<AdminResult<DealerPurgeResponse>> {
   const parsed = ReasonInput.safeParse(input);
   if (!parsed.success) return { ok: false, message: 'A rejection needs a reason.' };
@@ -175,7 +197,7 @@ export async function rejectDealerAction(
       `/v1/admin/dealers/${dealerId}/reject`,
       parsed.data,
     );
-    refreshAdmin();
+    refreshAdmin(slug);
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not reject that dealer.');
@@ -193,6 +215,7 @@ export async function rejectDealerAction(
 export async function requestDealerChangesAction(
   dealerId: string,
   input: unknown,
+  slug?: string,
 ): Promise<AdminResult<DealerModerationResponse>> {
   const parsed = ReasonInput.safeParse(input);
   // The dealer reads it verbatim and corrects against it, so it is the one
@@ -205,7 +228,7 @@ export async function requestDealerChangesAction(
       `/v1/admin/dealers/${dealerId}/request-changes`,
       parsed.data,
     );
-    refreshAdmin();
+    refreshAdmin(slug);
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not send that back to the dealer.');
@@ -240,7 +263,9 @@ export async function updateDealerAction(
       `/v1/admin/dealers/${dealerId}`,
       parsed.data,
     );
-    refreshAdmin();
+    // This one answers with the dealership, so the slug is the row that was
+    // actually written rather than one the caller believed in.
+    refreshAdmin(data.slug);
     return { ok: true, data };
   } catch (error) {
     const result = fail(error, 'We could not save those changes.');
@@ -251,6 +276,7 @@ export async function updateDealerAction(
 export async function suspendDealerAction(
   dealerId: string,
   input: unknown,
+  slug?: string,
 ): Promise<AdminResult<DealerModerationResponse>> {
   const parsed = ReasonInput.safeParse(input);
   if (!parsed.success) return { ok: false, message: 'A suspension needs a reason.' };
@@ -264,7 +290,7 @@ export async function suspendDealerAction(
       `/v1/admin/dealers/${dealerId}/suspend`,
       parsed.data,
     );
-    refreshAdmin();
+    refreshAdmin(slug);
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not suspend that dealer.');

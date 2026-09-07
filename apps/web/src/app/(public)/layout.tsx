@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { CustomerFooter } from '@/components/layout/customer-footer';
 import { CustomerHeader } from '@/components/layout/customer-header';
 import { apiGet } from '@/lib/api';
+import { DEALERS_TAG } from '@/lib/cache-tags';
 
 /**
  * The buyer shell. No authentication anywhere below this layout, and no
@@ -27,9 +28,12 @@ import { apiGet } from '@/lib/api';
 const NO_LOCATIONS: PublicLocations = { districts: [], total: 0 };
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
-  const locations = await apiGet<PublicLocations>('/v1/locations', { revalidate: 600 }).catch(
-    () => NO_LOCATIONS,
-  );
+  const locations = await apiGet<PublicLocations>('/v1/locations', {
+    revalidate: 600,
+    // Tagged, so approving or suspending a dealership moves the header's counts
+    // at once rather than within ten minutes (`lib/cache-tags.ts`).
+    tags: [DEALERS_TAG],
+  }).catch(() => NO_LOCATIONS);
 
   return (
     <div className="flex min-h-dvh flex-col">

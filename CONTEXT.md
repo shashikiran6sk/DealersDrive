@@ -301,6 +301,18 @@ component a story renders, build the sandbox with the workspace's
 `pnpm --filter @dealers-drive/sandbox build:sandbox`. Since D7 this is the only
 thing that will tell you.
 
+**`pnpm typecheck` had a second, quieter version of the same hole.** The sandbox
+type-checks its stories against the real components in `apps/web/src`, which it
+reaches through a tsconfig path alias rather than a workspace dependency — a
+Storybook cannot depend on an app. Turbo's task graph therefore did not know
+that changing a component's props invalidates the sandbox's typecheck, so a
+cached PASS survived a change that broke a story: green on the machine that made
+the change, red in CI where the cache is cold. `turbo.json` now names
+`apps/web/src/**` as an input to `typecheck`, which closes it.
+
+The general lesson, and it applies to the next alias somebody adds: **turbo only
+knows about the edges you declare.** A path alias is an edge it cannot see.
+
 ---
 
 ## 7b. The restore ledger
@@ -682,6 +694,37 @@ Two seeds derive their slugs from the same function rather than typing them, and
 `DEV_DEALER_SLUG` defaults to the string `prisma/seed/data.ts` produces —
 pinned by `tests/unit/config/env.test.ts`, because a drift there breaks dev
 sign-in at run time rather than at build time.
+
+---
+
+## 8b. Public pages are cached, and a write has to say so
+
+Every public read asks for `revalidate: 600`, and `/dealers/[slug]` is
+`export const revalidate = 600` on top of it. Both are right — a directory
+changes at the pace of onboarding, not of browsing — and both mean a change is
+invisible for ten minutes unless something says otherwise.
+
+`apps/web/src/lib/cache-tags.ts` is that something. Two tags, and one function:
+
+```ts
+revalidatePublicDealer(slug); // clears `dealers`, and `dealer:<slug>` if given
+```
+
+**If you add a write path that changes anything a buyer can see, call it.** The
+list today is the dealer's profile save, the yard-photo commit and delete, and
+the eight admin moderation actions — and the last of those is the reason this
+is a rule rather than a nicety: public visibility is `dealer.status ===
+'ACTIVE'`, so suspending a dealership is the write that takes it off the
+marketplace, and without the call its portfolio stays up for ten minutes.
+
+Tags, not `revalidatePath`. The guarantee you want is that the _fetch_ is
+re-issued, and a tag says so directly; a path expression leaves you reasoning
+about which of Next's caches it reaches.
+
+The API sends `Cache-Control: public, max-age=300` as well. It is not a factor
+today — nothing between the Next server and the API caches, and no browser
+reaches those routes — but it will be the day a CDN goes in front of the API,
+and no tag can clear that one.
 
 ---
 

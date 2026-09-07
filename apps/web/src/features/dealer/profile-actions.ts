@@ -4,6 +4,7 @@ import { UpdateDealerInput, type DealerProfile } from '@dealers-drive/contracts'
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
+import { revalidatePublicDealer } from '@/lib/cache-tags';
 
 export interface ProfileFormState {
   status: 'idle' | 'saved' | 'error';
@@ -64,8 +65,9 @@ export async function saveDealerProfileAction(
     return { status: 'error', fieldErrors: flatten(parsed.error.issues) };
   }
 
+  let saved: DealerProfile;
   try {
-    await apiSend<DealerProfile>('PATCH', '/v1/dealer', parsed.data);
+    saved = await apiSend<DealerProfile>('PATCH', '/v1/dealer', parsed.data);
   } catch (error) {
     if (error instanceof ApiError) {
       const fieldErrors = mapApiFields(error.fieldErrors());
@@ -82,6 +84,21 @@ export async function saveDealerProfileAction(
 
   // The dealership's name is in the console top bar and on every public card.
   revalidatePath('/dealer', 'layout');
+
+  /*
+   * And on the public pages, which is the half that was missing.
+   *
+   * Everything on this form is rendered to buyers — the name, the address, the
+   * Maps link the portfolio draws its map from, the opening hours — and none of
+   * it moved until two ten-minute windows had expired. A dealer correcting
+   * their own pin watched a stale page and reasonably concluded the save had
+   * not worked.
+   *
+   * The slug comes off the response rather than the session, because it is the
+   * dealership this PATCH actually wrote: `dealerId` comes from the session on
+   * the API side (rule 1), so the row that answered is the row that changed.
+   */
+  revalidatePublicDealer(saved.slug);
 
   return { status: 'saved', fieldErrors: {} };
 }
