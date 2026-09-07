@@ -12,6 +12,28 @@ import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/prim
  * nested anchor — the heading's link is stretched over the card with
  * `after:absolute after:inset-0` and the affordance is lifted above it.
  *
+ * ## The card keeps its height (R17)
+ *
+ * A tagline and a service row are both optional, and a dealership an hour past
+ * onboarding has neither — so the card used to be as tall as whatever it had to
+ * say. Two things hold the height now, and they do different jobs:
+ *
+ *   · **`min-h`** is the floor: a page where *every* dealership is sparse still
+ *     gets cards of the ordinary size rather than a grid of stubs. The number
+ *     is the card with one line of name, two of tagline and one row of tags —
+ *     104 cover + 1 divider + 28 padding + 42 identity + 36 tagline + 22 tags +
+ *     31 footer + 30 of gaps.
+ *   · **`grid-auto-rows: 1fr`** on the directory grid is what makes the cards
+ *     match *each other*: every implicit row takes the height of the tallest,
+ *     so a dealership with nothing to say is exactly as tall as the one beside
+ *     it that has. It is on the grid rather than here because it is a fact
+ *     about the row, and a card rendered on its own — the sandbox, a future
+ *     "similar dealers" strip — should not be padded to a row it is not in.
+ *
+ * `line-clamp-2` on the tagline is what keeps that bargain affordable. Without
+ * it one dealer writing 200 characters sets the height of every card on the
+ * page, which is the same failure the other way round.
+ *
  * ⚠️ The file is `dealer-card.tsx` and the export is **`DirectoryCard`**.
  * `DealerCard` is the *contracts type* it takes (finding D-6), and the sandbox
  * registry's `aliases` field exists so that somebody searching for either name
@@ -19,7 +41,7 @@ import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/prim
  */
 export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
   return (
-    <article className="card relative gap-[10px] overflow-visible p-0">
+    <article className="card relative min-h-[294px] gap-[10px] overflow-visible p-0">
       <Blueprint className="h-[104px] border-b border-(--color-divider) bg-(--color-surface)">
         {dealer.coverUrl ? (
           /*
@@ -68,8 +90,10 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
           </div>
         </div>
 
+        {/* Two lines at most, so that one verbose dealership cannot set the
+            height of every card in the grid (R17). */}
         {dealer.tagline ? (
-          <p className="text-[12px] leading-[1.5] ink-secondary">{dealer.tagline}</p>
+          <p className="line-clamp-2 text-[12px] leading-[1.5] ink-secondary">{dealer.tagline}</p>
         ) : null}
 
         {dealer.services.length > 0 ? (

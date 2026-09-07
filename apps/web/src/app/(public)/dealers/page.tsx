@@ -140,7 +140,14 @@ export default async function DealerDirectoryPage({
       />
 
       {directory.data.length > 0 ? (
-        <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(290px,1fr))]">
+        /*
+          `grid-auto-rows: 1fr` is what makes every card the same height (R17).
+          A tagline and a service row are optional, so a card was as tall as
+          whatever it had to say and the grid came out ragged. Equal rows are a
+          fact about the row rather than about the card, which is why this lives
+          here and the card carries only its floor.
+        */
+        <div className="grid gap-[18px] [grid-auto-rows:1fr] [grid-template-columns:repeat(auto-fill,minmax(290px,1fr))]">
           {directory.data.map((dealer) => (
             <DirectoryCard key={dealer.slug} dealer={dealer} />
           ))}

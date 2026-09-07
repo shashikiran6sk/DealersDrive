@@ -182,6 +182,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [ ] R14 — A map of the dealership, not a dot on a map · revises F038/F046/F086
 - [ ] R15 — One card of details, and a yard photograph that lines up · revises F086
 - [ ] R16 — The registered name, and a phone row nothing could reveal · revises F085/F086
+- [ ] R17 — A directory card that keeps its height · revises F085
 
 ---
 
