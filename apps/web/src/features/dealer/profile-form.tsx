@@ -1,6 +1,6 @@
 'use client';
 
-import type { DealerProfile } from '@dealers-drive/contracts';
+import type { DealerProfile, MapKind } from '@dealers-drive/contracts';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
@@ -309,6 +309,7 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
             <strong className="font-medium">Copy link</strong> and paste it here. The{' '}
             <strong className="font-medium">Embed a map</strong> code works too.
           </p>
+          <MapKindNote mapsUrl={dealer.address.mapsUrl} kind={dealer.address.mapKind} />
         </Field>
       </section>
 
@@ -346,5 +347,59 @@ function SaveRow() {
         Changes appear on your public dealership page immediately.
       </span>
     </div>
+  );
+}
+
+/**
+ * What the saved link is actually drawing, in words (**R20**).
+ *
+ * A dealer pastes a URL into a box and never sees the map it produces — the
+ * map is on their public page, and the difference between the two kinds of
+ * link is invisible in the box. So the difference is said out loud here:
+ *
+ *   `PLACE`  the frame is their Google listing — name, address, rating
+ *   `POINT`  a correctly-placed pin that names nothing, and the fix
+ *   `NONE`   a link we could not read a position out of at all
+ *
+ * The `POINT` case is the one this exists for, and it is not rare: the Share
+ * sheet on a phone hands out a short link, and whether that link resolves to a
+ * *place* depends on whether the dealer opened their business's own card before
+ * sharing or dropped a pin on their street. Both look identical afterwards.
+ *
+ * `NONE` with no link at all says nothing: the instructions above are the whole
+ * message for a dealer who has not answered yet, and a second line telling them
+ * an empty box is empty would be noise.
+ *
+ * `mapKind` is composed by the API from the same function that builds the embed
+ * URL, so this cannot claim a listing over a page drawing a dot.
+ */
+function MapKindNote({ mapsUrl, kind }: { mapsUrl: string | null; kind: MapKind }) {
+  if (!mapsUrl) return null;
+
+  if (kind === 'PLACE') {
+    return (
+      <p className="mt-[6px] text-[11px] text-(--color-ok)">
+        This link names your dealership, so your public page shows your Google listing on the map —
+        your name, your address and your rating.
+      </p>
+    );
+  }
+
+  if (kind === 'POINT') {
+    return (
+      <p className="mt-[6px] text-[11px] text-(--color-warn)">
+        This link marks the right spot but does not name your dealership, so buyers see a plain pin.
+        To show your listing — with your name and rating — search Google Maps for your business,
+        open its card, then <strong className="font-medium">Share</strong> →{' '}
+        <strong className="font-medium">Copy link</strong>.
+      </p>
+    );
+  }
+
+  return (
+    <p className="mt-[6px] text-[11px] text-(--color-warn)">
+      We could not read a location out of this link, so your public page shows no map. “Get
+      directions” still works. Sharing your business from Google Maps again usually fixes it.
+    </p>
   );
 }

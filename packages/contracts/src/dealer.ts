@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { GoogleMapsUrl, IndianMobile, Uuid } from './common.js';
+import { GoogleMapsUrl, IndianMobile, MapKind, Uuid } from './common.js';
 import { DealerDocType, DealerStatus, DocStatus, MediaStatus } from './enums.js';
 
 /**
@@ -68,6 +68,15 @@ export const DealerProfile = z.object({
      * rows that predate the question, which is what the portfolio branches on.
      */
     mapsUrl: z.string().nullable(),
+    /**
+     * What that link is actually worth as a map (**R20**) — the place card, a
+     * bare pin, or nothing. `NONE` covers both "no link" and "a link we could
+     * not read a position out of"; `mapsUrl` is what tells the two apart.
+     *
+     * On this screen and not on the public one: a buyer looks at the map, and a
+     * dealer looks at a box with a URL in it. See `MapKind`.
+     */
+    mapKind: MapKind,
   }),
   specialities: z.array(z.string()),
   workingHours: z.record(z.string(), z.string().nullable()).nullable(),

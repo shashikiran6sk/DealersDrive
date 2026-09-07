@@ -432,6 +432,29 @@ export const GoogleMapsUrl = z
   .pipe(z.string());
 
 /**
+ * What the map on a dealership's public page turns out to be (**R20**).
+ *
+ * A Google Maps link is not one thing. A link that names a **place** carries
+ * Google's own feature id, and handed back in an embed it returns the place
+ * card — the dealership's name, its address, its rating and review count, and a
+ * directions control inside the frame. A link that only carries **coordinates**
+ * returns a pin in a field of grey: correctly positioned, naming nothing,
+ * confirming nothing to the buyer looking at it.
+ *
+ * Both are valid links and both are stored verbatim (**R6**), so the difference
+ * is invisible to the dealer who pasted one — they see a box with a URL in it
+ * either way. This is what the profile screen tells them with, and it is a
+ * three-way answer rather than a boolean because "no map at all" is a real
+ * state: a share link that could not be followed to either.
+ *
+ * The API derives it with `mapKindFor`, which shares its decision with the
+ * function that builds the embed URL, so the form cannot claim a place card
+ * over a page that is drawing a dot.
+ */
+export const MapKind = z.enum(['PLACE', 'POINT', 'NONE']);
+export type MapKind = z.infer<typeof MapKind>;
+
+/**
  * `https:` and a hostname on the list above.
  *
  * Exported as a predicate, not only as a schema, because the schema checks the
