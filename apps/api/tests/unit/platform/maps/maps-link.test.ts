@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { coordinatesIn, resolveCoordinates } from '../../../../src/platform/maps/maps-link.js';
+import {
+  coordinatesIn,
+  embedUrlFor,
+  placeIdIn,
+  resolveCoordinates,
+  resolvePlace,
+} from '../../../../src/platform/maps/maps-link.js';
 
 /**
  * Unit tests for `src/platform/maps/maps-link.ts`.
@@ -197,5 +203,226 @@ describe('resolveCoordinates', () => {
     expect(
       await resolveCoordinates('https://maps.app.goo.gl/x', fetchImpl as unknown as typeof fetch),
     ).toBeNull();
+  });
+});
+
+/**
+ * The place id is the difference between a map with a dot on it and a map of a
+ * dealership: handed back to Google it returns the place card — the yard's
+ * name, its address, its rating and review count, and a directions control
+ * inside the frame. It is written the same way wherever it appears, which is
+ * what makes one pattern enough.
+ */
+describe('placeIdIn', () => {
+  it('reads the id out of a desktop place URL', () => {
+    expect(
+      placeIdIn(
+        'https://www.google.com/maps/place/Sakthi+Cars/@12.9797,80.2000,17z/data=!3m1!4b1!4m6!3m5!1s0x3a525df9971c98e5:0x35fc11465038924f!8m2!3d12.9797!4d80.2000',
+      ),
+    ).toBe('0x3a525df9971c98e5:0x35fc11465038924f');
+  });
+
+  it('reads it out of an embed blob, where the colon is encoded', () => {
+    expect(
+      placeIdIn(
+        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2000!2d80.2!3d12.97!3m3!1m2!1s0x3a525df9971c98e5%3A0x35fc11465038924f!2sSakthi%20Cars!5e0',
+      ),
+    ).toBe('0x3a525df9971c98e5:0x35fc11465038924f');
+  });
+
+  it('reads the explicit parameter', () => {
+    expect(
+      placeIdIn('https://www.google.com/maps?ftid=0x3A525DF9971C98E5:0x35FC11465038924F'),
+    ).toBe('0x3a525df9971c98e5:0x35fc11465038924f');
+  });
+
+  /**
+   * The same place is written in both cases across Google's own URLs, and two
+   * spellings of one id would store two rows' worth of the same fact.
+   */
+  it('lower-cases, so one place is one string', () => {
+    expect(placeIdIn('https://www.google.com/maps?ftid=0xABC:0xDEF')).toBe('0xabc:0xdef');
+  });
+
+  /**
+   * `0x0:0x0` is what a URL carries where an id would go when the feature was
+   * never resolved — the dev seed writes it. Google answers a blank frame for
+   * it rather than an error, which is the worst of both: no place card, and
+   * nothing to say why.
+   */
+  it('refuses the null id, which draws a blank frame', () => {
+    expect(
+      placeIdIn('https://www.google.com/maps/place/Yard/data=!4m5!3m4!1s0x0:0x0!8m2!3d12!4d79'),
+    ).toBeNull();
+  });
+
+  it('reads nothing from a link that names no place', () => {
+    expect(placeIdIn('https://www.google.com/maps/search/?api=1&query=12.9165,79.1325')).toBeNull();
+    expect(placeIdIn('https://maps.app.goo.gl/abc123')).toBeNull();
+    expect(placeIdIn('not a url at all')).toBeNull();
+  });
+});
+
+describe('resolvePlace', () => {
+  /**
+   * A place URL carries the id and the pin in the same `data` parameter, so
+   * the walk that was already stopping at the coordinates comes away with both
+   * for free.
+   */
+  it('brings the place back with the pin, from one hop', async () => {
+    const place =
+      'https://www.google.com/maps/place/Yard/data=!4m6!3m5!1s0xaaa:0xbbb!8m2!3d12.9165!4d79.1325';
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 302, headers: { location: place } }));
+
+    expect(await resolvePlace('https://maps.app.goo.gl/abc123', fetchImpl)).toEqual({
+      coordinates: { lat: 12.9165, lng: 79.1325 },
+      placeId: '0xaaa:0xbbb',
+    });
+  });
+
+  /**
+   * The id and the pin do not have to arrive together, and a hop that names a
+   * place without placing it must not end the walk — but must not be thrown
+   * away either, because the next hop may be the one with the coordinates.
+   */
+  it('keeps a place id found before the pin', async () => {
+    const named = 'https://www.google.com/maps?ftid=0xaaa:0xbbb';
+    const placed = 'https://www.google.com/maps/@12.9165,79.1325,17z';
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: named } }))
+      .mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: placed } }));
+
+    expect(await resolvePlace('https://maps.app.goo.gl/abc123', fetchImpl)).toEqual({
+      coordinates: { lat: 12.9165, lng: 79.1325 },
+      placeId: '0xaaa:0xbbb',
+    });
+  });
+
+  /**
+   * A place id on its own still draws the map — Google centres the frame on the
+   * place's own pin — so a link that named a place and never placed it is not
+   * the same as a link that said nothing.
+   */
+  it('answers with a place and no pin, which is still a map', async () => {
+    expect(await resolvePlace('https://www.google.com/maps?ftid=0xaaa:0xbbb', vi.fn())).toEqual({
+      coordinates: null,
+      placeId: '0xaaa:0xbbb',
+    });
+  });
+});
+
+/**
+ * The builder that turns all of that into the thing an `<iframe>` points at.
+ *
+ * Its three answers are ordered by how much they are worth, and the ordering is
+ * the behaviour: an embed the dealer chose beats one assembled from its parts,
+ * and a named place beats a bare coordinate every time, because only the first
+ * of each pair comes back with the yard's name, rating and directions on it.
+ */
+describe('embedUrlFor', () => {
+  const label = 'Sri Lakshmi Motors';
+
+  it('returns an embed the dealer pasted, untouched', () => {
+    // Already the map they chose, with the place already in it. Rebuilding it
+    // from what we parsed back out could only lose something.
+    const pasted =
+      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d164827!2d80.09!3d12.96!3m3!1m2!1s0xaaa%3A0xbbb!2sSakthi%20Cars!5e0';
+
+    expect(embedUrlFor({ mapsUrl: pasted, placeId: null, coordinates: null, label })).toBe(pasted);
+  });
+
+  it('builds a place embed around a stored id', () => {
+    const url = embedUrlFor({
+      mapsUrl: 'https://maps.app.goo.gl/abc123',
+      placeId: '0xaaa:0xbbb',
+      coordinates: { lat: 12.9165, lng: 79.1325 },
+      label,
+    });
+
+    expect(url).toBe(
+      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2000!2d79.1325!3d12.9165' +
+        '!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xaaa%3A0xbbb' +
+        '!2sSri%20Lakshmi%20Motors!5e0!3m2!1sen!2sin!4v0!5m2!1sen!2sin',
+    );
+  });
+
+  /**
+   * The migration backfills nothing, so every dealership that saved a place URL
+   * before the column existed has a null `placeId` and an id sitting in plain
+   * sight in the link beside it. Reading it back out is what makes those rows
+   * draw a place card today rather than the next time the dealer saves.
+   */
+  it('falls back to the id inside the stored link', () => {
+    const url = embedUrlFor({
+      mapsUrl:
+        'https://www.google.com/maps/place/Yard/data=!4m6!3m5!1s0xaaa:0xbbb!8m2!3d12.9165!4d79.1325',
+      placeId: null,
+      coordinates: { lat: 12.9165, lng: 79.1325 },
+      label,
+    });
+
+    expect(url).toContain('!1s0xaaa%3A0xbbb');
+  });
+
+  /**
+   * Google re-centres on the place's own pin and ignores the camera, so an id
+   * with no coordinates still draws the right map. `0,0` is the Atlantic, and
+   * it is what the frame falls back to only if the id itself stops resolving —
+   * which is a worse map than none, but a rarer one than no map at all.
+   */
+  it('draws a place that was never given coordinates', () => {
+    const url = embedUrlFor({
+      mapsUrl: null,
+      placeId: '0xaaa:0xbbb',
+      coordinates: null,
+      label,
+    });
+
+    expect(url).toContain('!1d2000!2d0!3d0');
+    expect(url).toContain('!1s0xaaa%3A0xbbb');
+  });
+
+  /**
+   * `!` is what separates fields in a positional blob, so a brand name carrying
+   * one would end the label early and shift every element after it — including
+   * the id. `encodeURIComponent` leaves `!` alone, which is exactly the gap.
+   */
+  it('escapes a brand name that would break the blob', () => {
+    const url = embedUrlFor({
+      mapsUrl: null,
+      placeId: '0xaaa:0xbbb',
+      coordinates: null,
+      label: 'Cars! & Co',
+    });
+
+    expect(url).toContain('!2sCars%21%20%26%20Co!5e0');
+  });
+
+  it('falls back to the plain pin when nothing named a place', () => {
+    expect(
+      embedUrlFor({
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=12.9165,79.1325',
+        placeId: null,
+        coordinates: { lat: 12.9165, lng: 79.1325 },
+        label,
+      }),
+    ).toBe('https://www.google.com/maps?q=12.9165,79.1325&z=16&output=embed');
+  });
+
+  /** No pin and no place is the state the card renders its slot for. */
+  it('draws nothing when the link said nothing', () => {
+    expect(
+      embedUrlFor({
+        mapsUrl: 'https://maps.app.goo.gl/abc123',
+        placeId: null,
+        coordinates: null,
+        label,
+      }),
+    ).toBeNull();
+
+    expect(embedUrlFor({ mapsUrl: null, placeId: null, coordinates: null, label })).toBeNull();
   });
 });

@@ -11,6 +11,7 @@ import {
 
 import { env } from '../../config/env.js';
 import { NotFoundError } from '../../platform/errors.js';
+import { embedUrlFor } from '../../platform/maps/maps-link.js';
 import { mediaUrl } from '../../platform/media/urls.js';
 import type { DealersRepository } from './dealers.repository.js';
 
@@ -249,6 +250,25 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
             dealer.lat === null || dealer.lng === null
               ? null
               : { lat: dealer.lat, lng: dealer.lng },
+          /*
+           * The map the card draws, composed from whatever the dealer's link
+           * turned out to carry — the place card when it named a place, the
+           * plain pin when it only placed one, null when it did neither.
+           *
+           * Composed here rather than in the card because the choice between
+           * those three is a question about the stored link, and the card
+           * would have to re-parse the link to ask it. `embedUrlFor` is in
+           * `platform/maps` with the rest of the Maps URL grammar.
+           */
+          embedUrl: embedUrlFor({
+            mapsUrl: dealer.mapsUrl,
+            placeId: dealer.mapsPlaceId,
+            coordinates:
+              dealer.lat === null || dealer.lng === null
+                ? null
+                : { lat: dealer.lat, lng: dealer.lng },
+            label: dealer.brandName,
+          }),
         },
         stats: [
           { key: 'cars', label: 'Cars available', value: String(carCount) },

@@ -358,17 +358,22 @@ but never sets it.
 
 ### C068 — `LocationCard`
 
-`components/dealers/location-card.tsx:38`. Props:
-`address: DealerPublicProfile['address']`, `brandName: string`. States: map and
-directions, directions only, map only, neither. One consumer (the portfolio),
-where it was inline until **R10**.
+`components/dealers/location-card.tsx:47`. Props:
+`address: DealerPublicProfile['address']`, `brandName: string`. States: place
+card, pin only, directions only, map only, neither. One consumer (the
+portfolio), where it was inline until **R10**.
 
-The four states are the component's whole reason for existing as one: the map
-is `address.geo` and the button is `address.mapsUrl`, and the two are
-independently nullable because a share link carries no coordinates until it is
-followed and following it is best-effort. Neither is ever composed from the
-address. A server component — a Google embed in an `<iframe>` needs no
+The states are the component's whole reason for existing as one: the map is
+`address.embedUrl` and the button is `address.mapsUrl`, and the two are
+independently nullable because a share link carries neither a pin nor a place
+until it is followed and following it is best-effort. Neither is ever composed
+from the address. A server component — a Google embed in an `<iframe>` needs no
 JavaScript of ours. **P2** ✅
+
+Which map is in the frame is **not this component's decision**. `embedUrl` is
+composed by the API (**R14**), so the card renders one `<iframe>` and cannot
+tell a place card from a bare pin — which is what let the map gain the yard's
+name, rating and an in-frame directions control without the card changing shape.
 
 ### C069 — `LocationSelector`
 

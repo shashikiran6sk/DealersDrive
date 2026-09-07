@@ -363,11 +363,12 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         );
       }
 
-      // The yard's pin, out of the link the dealer just pasted. Best-effort and
-      // bounded, and read *before* the transaction opens: an interactive
-      // transaction's budget is wall-clock, and a request to Google is not
-      // something to spend it on. See `platform/maps/maps-link.ts`.
-      const geo = await maps.coordinatesFor(input.mapsUrl);
+      // The yard's pin and the place it names, out of the link the dealer just
+      // pasted. Best-effort and bounded, and read *before* the transaction
+      // opens: an interactive transaction's budget is wall-clock, and a request
+      // to Google is not something to spend it on. See
+      // `platform/maps/maps-link.ts`.
+      const place = await maps.placeFor(input.mapsUrl);
 
       const created = await withTransaction(prisma, async (tx) => {
         const existing = await tx.dealerMember.findFirst({
@@ -416,8 +417,9 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
             // Read out of that link, not geocoded from the address above. Null
             // when it could not be read, which is a portfolio without a map
             // rather than a portfolio with the wrong one.
-            lat: geo?.lat ?? null,
-            lng: geo?.lng ?? null,
+            lat: place.coordinates?.lat ?? null,
+            lng: place.coordinates?.lng ?? null,
+            mapsPlaceId: place.placeId,
             contactPhone: phone,
             contactEmail: principal.email,
             landline: input.landline ?? null,

@@ -179,6 +179,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R11 — Districts in the header, and city chips that multi-select · revises F085 · [#78](https://github.com/shashikiran6sk/DealersDrive/pull/78)
 - [~] R12 — A write clears the public page it changed · revises F041/F046/F049/F085/F086 · [#79](https://github.com/shashikiran6sk/DealersDrive/pull/79)
 - [ ] R13 — Whatever the share panel gives, and the yard at the foot of the header · revises F038/F046/F086
+- [ ] R14 — A map of the dealership, not a dot on a map · revises F038/F046/F086
 
 ---
 

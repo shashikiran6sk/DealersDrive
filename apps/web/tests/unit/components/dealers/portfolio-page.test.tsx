@@ -46,6 +46,9 @@ const DEALER: DealerPublicProfile = {
     full: '12 Katpadi Road, Vellore 632001, Tamil Nadu',
     mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
     geo: { lat: 12.9165, lng: 79.1325 },
+    embedUrl:
+      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2000!2d79.1325!3d12.9165' +
+      '!3m3!1m2!1s0xaaa%3A0xbbb!2sSri%20Lakshmi%20Motors!5e0',
   },
   stats: [
     { key: 'cars', label: 'Cars available', value: '0' },
@@ -139,28 +142,28 @@ describe('the phone number', () => {
 });
 
 /**
- * The map, and the fact that it is drawn from the *resolved pin* rather than
- * from the address string beside it.
+ * The map, and the fact that it is drawn from what the dealer's *link* resolved
+ * to rather than from the address string beside it.
  *
  * These are two independent halves of one card: a dealership can have the link
- * and no coordinates, because a `maps.app.goo.gl` share link carries none until
- * it is followed and following it is best-effort. Neither half is ever composed
- * from the typed address — a map confidently centred on the wrong gate is worse
- * than no map, because it looks authoritative.
+ * and no map, because a `maps.app.goo.gl` share link carries neither a pin nor
+ * a place until it is followed and following it is best-effort. Neither half is
+ * ever composed from the typed address — a map confidently centred on the wrong
+ * gate is worse than no map, because it looks authoritative.
  */
 describe('the location map', () => {
-  it('centres the map on the resolved pin', async () => {
+  it('draws the map the API composed', async () => {
     serve(DEALER);
     const { container } = render(await DealerPortfolioPage({ params }));
 
     const frame = container.querySelector('iframe');
-    expect(frame?.getAttribute('src')).toContain('q=12.9165,79.1325');
+    expect(frame?.getAttribute('src')).toBe(DEALER.address.embedUrl);
     // Named for a screen reader, which otherwise announces "iframe".
     expect(frame?.getAttribute('title')).toMatch(/Sri Lakshmi Motors/);
   });
 
   it('shows the slot, not a map of the town, when no pin was resolved', async () => {
-    serve({ ...DEALER, address: { ...DEALER.address, geo: null } });
+    serve({ ...DEALER, address: { ...DEALER.address, geo: null, embedUrl: null } });
     const { container } = render(await DealerPortfolioPage({ params }));
 
     expect(container.querySelector('iframe')).toBeNull();
@@ -172,7 +175,7 @@ describe('the location map', () => {
 
   /** The button does not wait on the map, and the map does not wait on it. */
   it('keeps the directions button when there is no map', async () => {
-    serve({ ...DEALER, address: { ...DEALER.address, geo: null } });
+    serve({ ...DEALER, address: { ...DEALER.address, geo: null, embedUrl: null } });
     render(await DealerPortfolioPage({ params }));
 
     expect(screen.getByRole('link', { name: /get directions/i })).toBeInTheDocument();
@@ -195,7 +198,10 @@ describe('get directions', () => {
 
   it('is absent, not broken, for a dealership that predates the question', async () => {
     // No link and therefore no pin: the pin is only ever read out of the link.
-    serve({ ...DEALER, address: { ...DEALER.address, mapsUrl: null, geo: null } });
+    serve({
+      ...DEALER,
+      address: { ...DEALER.address, mapsUrl: null, geo: null, embedUrl: null },
+    });
     const { container } = render(await DealerPortfolioPage({ params }));
 
     expect(screen.queryByRole('link', { name: /get directions/i })).toBeNull();

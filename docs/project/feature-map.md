@@ -2546,6 +2546,74 @@ and _then_ wants to see the place. So the header now ends on the photograph, at
 360px, flush to the divider the info row starts from. The logo tile loses its
 negative top margin, which existed only to overlap the image that was above it.
 
+## R14 — A map of the dealership, not a dot on a map
+
+**Revises F038, F046, F086**
+
+- **Contracts** `public.ts` — `DealerPublicProfile.address.embedUrl`
+- **Database** `dealers.mapsPlaceId`, nullable, not backfilled
+- **Backend** `platform/maps/maps-link.ts` — `MapsPlace`, `placeIdIn()`,
+  `resolvePlace()` and `embedUrlFor()`; `MapsPort.coordinatesFor` becomes
+  `placeFor`; both write paths store the place; `dealers.public.service.ts`
+  composes the embed; `scripts/backfill-dealer-pins.ts` fills the new column
+- **Frontend** `LocationCard` renders `address.embedUrl` and grows to 220px
+- **Sandbox** `LocationCard` gains `PinOnly`; `Default` becomes the place card
+- **Tests** the id in all three of its spellings, the null id, a place found
+  before the pin, a place with no pin, and each of `embedUrlFor`'s answers
+
+### What was wrong with the map
+
+R10 drew the yard with `?q=lat,lng&output=embed`, which is a dot. No name on
+it, nothing to confirm the buyer is looking at the right gate, no rating, and
+no way to start navigating without leaving the page — while the dealership's
+own Google listing has all four and the dealer has already handed us the link
+to it.
+
+The fix is not a bigger frame or an API key. It is that a **place id** — the
+`0x…:0x…` pair Google writes into its own share URLs — asks Google a different
+question. Given one, the same keyless embed returns the place card: the
+dealership's name, its address, its rating and review count, the zoom controls,
+and a directions control inside the map.
+
+### Where the id comes from, in the order it is cheapest
+
+The dealer already pasted it, in most cases, and R13 already stores whatever
+they pasted:
+
+1. **An embed URL** — Share → Embed a map. The id is in the `pb` blob, and the
+   URL is returned untouched, because it is already the map they chose.
+2. **A place URL** — the desktop address bar. The id is in `data=`, and it is
+   read back out **at request time**, which is why the migration backfills
+   nothing: those rows already work.
+3. **A short link** — the phone Share sheet. This is the only shape whose id
+   costs a redirect, so it is the only shape the column exists for. It is
+   written by the same write-time resolve that already fetched the pin, and
+   filled in for existing rows by `maps:backfill`.
+
+A dealership whose link only ever carried coordinates keeps the dot. That is
+not a regression, it is the old behaviour, and it is the honest answer when
+nothing named a place.
+
+### The pin stops being the thing the map needs
+
+Handed an id, Google re-centres the frame on the place's own position and
+ignores the coordinates in the blob — verified against the live endpoint, not
+assumed. So `lat`/`lng` go in as a fallback for the day an id stops resolving,
+rather than as the thing being drawn, and a link that named a place without
+placing it now draws a map where it used to draw nothing.
+
+### Two things a reviewer should look at
+
+- **The seeded dealerships still show the dot**, deliberately. `dev-dealers`
+  composes `?api=1&query=lat,lng` for invented yards, which name no place
+  because they are not places. Only a real dealership can render a place card,
+  which is also why exactly one sandbox story uses a real one.
+- **The place card can carry the business's phone number.** Rule 7 is about
+  what _this_ API returns, and it still returns none — but the frame is
+  Google's, and Google shows what it holds about a public business. It is the
+  same disclosure the "Get directions" button makes one press later, brought
+  forward to the moment a buyer scrolls to the map.
+
 ---
 
 # Feature → Component matrix
