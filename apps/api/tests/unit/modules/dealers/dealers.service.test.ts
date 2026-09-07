@@ -29,10 +29,20 @@ import type { StoragePort } from '../../../../src/platform/storage/storage.port.
  * `enquiries` fake and a much larger `prisma` one.
  * ────────────────────────────────────────────────────────────────────────────
  */
+/**
+ * The fixture dealership's folder. Every object it owns hangs off this one
+ * prefix — the KYC scans under `documents/`, the yard photograph under `yard/`
+ * — so a test that asserts a key asserts the layout as well as the file name.
+ */
+const DEALER_ROOT = 'dealers/sri-lakshmi-motors-pvt-ltd-vellore-tamil-nadu';
+
 function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
   return {
     id: 'dealer-1',
-    slug: 'sri-lakshmi-motors',
+    // The slug carries the address now — it is the portfolio's URL *and* the
+    // name of this dealership's folder in the bucket, and every key asserted
+    // below is derived from it.
+    slug: 'sri-lakshmi-motors-pvt-ltd-vellore-tamil-nadu',
     status: 'ACTIVE',
     statusReason: null,
     brandName: 'Sri Lakshmi Motors',
@@ -102,7 +112,7 @@ function media(overrides: Record<string, unknown> = {}): Record<string, unknown>
     id: 'media-1',
     dealerId: 'dealer-1',
     ownerType: 'DEALER_COVER',
-    storageKey: 'dealers/dealer-1/yard/media-1',
+    storageKey: `${DEALER_ROOT}/yard/media-1`,
     mimeType: 'image/jpeg',
     bytes: 184_210,
     fileName: 'yard.jpg',
@@ -144,6 +154,7 @@ function setup(options: Options = {}) {
 
   const repo = {
     findById: () => Promise.resolve(row),
+    slugById: () => Promise.resolve(row?.slug ?? null),
     update: (dealerId: string, data: Record<string, unknown>) => {
       updates.push({ dealerId, data });
       return Promise.resolve(dealer({ ...(options.dealer ?? {}), ...data }));
@@ -264,7 +275,7 @@ describe('session', () => {
       emailVerified: true,
     });
     expect(session.dealer).toMatchObject({
-      slug: 'sri-lakshmi-motors',
+      slug: 'sri-lakshmi-motors-pvt-ltd-vellore-tamil-nadu',
       isVerified: true,
       creditBalance: 39,
       creditsHeld: 2,
@@ -680,7 +691,9 @@ describe('presignDocument', () => {
 
     // §26.6: the promise that buyers never see these is enforced by there being
     // no route that could serve them — and by the key living outside `vehicles/`.
-    expect(presigned.uploadUrl).toContain(`kyc/dealer-1/GST_CERTIFICATE/${presigned.documentId}`);
+    expect(presigned.uploadUrl).toContain(
+      `${DEALER_ROOT}/documents/GST_CERTIFICATE/${presigned.documentId}`,
+    );
     expect(presigned.uploadUrl).not.toContain('vehicles/');
   });
 
@@ -795,9 +808,9 @@ describe('deleteDocument', () => {
     await h.service.deleteDocument('dealer-1', 'GST_CERTIFICATE');
 
     // The object's key ends in the row's id. The baseline deleted the *prefix*
-    // — `kyc/dealer-1/GST_CERTIFICATE` — which is a path no object occupies, so
+    // — the `GST_CERTIFICATE` folder — which is a path no object occupies, so
     // every removed document stayed in storage.
-    expect(h.deletes).toEqual(['kyc/dealer-1/GST_CERTIFICATE/doc-1']);
+    expect(h.deletes).toEqual([`${DEALER_ROOT}/documents/GST_CERTIFICATE/doc-1`]);
   });
 
   it('404s when there was nothing to delete, and touches storage not at all', async () => {
@@ -1232,7 +1245,7 @@ describe('yardPhoto', () => {
     expect(await h.service.yardPhoto('dealer-1')).toMatchObject({
       mediaId: 'media-1',
       fileName: 'yard.jpg',
-      url: 'https://storage.test/signed/dealers/dealer-1/yard/media-1?ttl=300',
+      url: `https://storage.test/signed/${DEALER_ROOT}/yard/media-1?ttl=300`,
       uploadedAt: '2026-09-01T00:00:00.000Z',
     });
   });
@@ -1246,7 +1259,7 @@ describe('yardPhoto', () => {
 });
 
 describe('presignYardPhoto', () => {
-  it('keys the image under the dealership rather than under kyc/', async () => {
+  it('keys the image under the dealership, beside its documents', async () => {
     const h = setup();
 
     const presigned = await h.service.presignYardPhoto('dealer-1', {
@@ -1262,7 +1275,7 @@ describe('presignYardPhoto', () => {
       status: 'PENDING',
       fileName: 'yard.jpg',
     });
-    expect(created?.storageKey).toBe(`dealers/dealer-1/yard/${String(created?.id)}`);
+    expect(created?.storageKey).toBe(`${DEALER_ROOT}/yard/${String(created?.id)}`);
     expect(presigned.mediaId).toBe(created?.id);
   });
 
@@ -1329,8 +1342,8 @@ describe('commitYardPhoto', () => {
     const h = setup({
       dealer: { coverMediaId: 'media-old' },
       media: [
-        media({ id: 'media-old', storageKey: 'dealers/dealer-1/yard/media-old' }),
-        media({ id: 'media-new', storageKey: 'dealers/dealer-1/yard/media-new' }),
+        media({ id: 'media-old', storageKey: `${DEALER_ROOT}/yard/media-old` }),
+        media({ id: 'media-new', storageKey: `${DEALER_ROOT}/yard/media-new` }),
       ],
       head: { bytes: 1, contentType: 'image/jpeg' },
     });
@@ -1339,7 +1352,7 @@ describe('commitYardPhoto', () => {
 
     expect(h.updates[0]?.data).toEqual({ coverMediaId: 'media-new' });
     expect(h.orphaned).toEqual(['media-old']);
-    expect(h.deletes).toEqual(['dealers/dealer-1/yard/media-old']);
+    expect(h.deletes).toEqual([`${DEALER_ROOT}/yard/media-old`]);
   });
 
   /**
@@ -1369,7 +1382,7 @@ describe('deleteYardPhoto', () => {
 
     expect(h.updates[0]).toEqual({ dealerId: 'dealer-1', data: { coverMediaId: null } });
     expect(h.orphaned).toEqual(['media-1']);
-    expect(h.deletes).toEqual(['dealers/dealer-1/yard/media-1']);
+    expect(h.deletes).toEqual([`${DEALER_ROOT}/yard/media-1`]);
   });
 
   it('404s when there is no photograph to remove', async () => {

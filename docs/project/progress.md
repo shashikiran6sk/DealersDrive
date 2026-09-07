@@ -173,6 +173,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R5 — `deploy-dev` paused until Vercel and AWS exist · revises F024 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
 - [~] R6 — The yard on a map: `mapsUrl` for the portfolio's directions link · revises F039/F043, consumed by F086 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
 - [~] R7 — The contact number is editable again · revises F038/F046 · [#65](https://github.com/shashikiran6sk/DealersDrive/pull/65)
+- [ ] R8 — One folder per dealership, named after the dealership · revises F038/F040/F041/F047
 
 ---
 

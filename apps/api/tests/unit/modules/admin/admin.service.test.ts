@@ -54,10 +54,18 @@ interface Options {
 
 const DEALER = '4bafe791-892d-4696-8309-ee23f172211b';
 
+/**
+ * The dealership's folder in the bucket, named after the dealership rather than
+ * after its UUID. Its slug is what the key is derived from, so every assertion
+ * below reads the same way a bucket listing does.
+ */
+const DEALER_SLUG = 'sri-lakshmi-motors-pvt-ltd-vellore-tamil-nadu';
+const DEALER_ROOT = `dealers/${DEALER_SLUG}`;
+
 function dealerRow(overrides: Record<string, unknown> = {}) {
   return {
     id: DEALER,
-    slug: 'sri-lakshmi-motors',
+    slug: DEALER_SLUG,
     brandName: 'Sri Lakshmi Motors',
     legalName: 'Sri Lakshmi Motors Pvt Ltd',
     status: 'ACTIVE',
@@ -463,7 +471,7 @@ describe('the KYC review', () => {
 
     await h.service.rejectDocument(moderator, 'doc-1', 'Too blurry to read.');
 
-    expect(h.deletedKeys).toEqual(['kyc/dealer-1/GST_CERTIFICATE/doc-1']);
+    expect(h.deletedKeys).toEqual([`${DEALER_ROOT}/documents/GST_CERTIFICATE/doc-1`]);
     expect(h.documentUpdates[0]?.data).toMatchObject({ fileName: null, mediaId: null });
   });
 
@@ -726,9 +734,9 @@ describe('dealerDetail', () => {
 
     const detail = await h.service.dealerDetail(admin, DEALER);
 
-    expect(detail.documents[0]?.viewUrl).toContain('kyc/');
+    expect(detail.documents[0]?.viewUrl).toContain(`${DEALER_ROOT}/documents/`);
     expect(detail.documents[0]?.viewUrlExpiresAt).not.toBeNull();
-    expect(h.signedUrls[0]).toBe(`kyc/${DEALER}/GST_CERTIFICATE/doc-1`);
+    expect(h.signedUrls[0]).toBe(`${DEALER_ROOT}/documents/GST_CERTIFICATE/doc-1`);
   });
 
   it('issues no URL for a document that was never uploaded', async () => {
@@ -1037,16 +1045,18 @@ describe('rejectDealer', () => {
   it('deletes every KYC scan and the yard photograph from storage', async () => {
     const h = setup({
       ...pending(),
-      media: [{ storageKey: `dealers/${DEALER}/yard/media-1` }],
+      media: [{ storageKey: `${DEALER_ROOT}/yard/media-1` }],
     });
 
     const result = await h.service.rejectDealer(admin, DEALER, 'Not a dealership.');
 
+    // One folder, four objects: the three private scans and the photograph
+    // that will front the portfolio.
     expect(h.deletedKeys).toEqual([
-      `kyc/${DEALER}/GST_CERTIFICATE/doc-gst`,
-      `kyc/${DEALER}/PAN_CARD/doc-pan`,
-      `kyc/${DEALER}/ADDRESS_PROOF/doc-addr`,
-      `dealers/${DEALER}/yard/media-1`,
+      `${DEALER_ROOT}/documents/GST_CERTIFICATE/doc-gst`,
+      `${DEALER_ROOT}/documents/PAN_CARD/doc-pan`,
+      `${DEALER_ROOT}/documents/ADDRESS_PROOF/doc-addr`,
+      `${DEALER_ROOT}/yard/media-1`,
     ]);
     expect(result).toMatchObject({ documentsDeleted: 3, objectsDeleted: 4 });
   });
@@ -1117,7 +1127,7 @@ describe('rejectDealer', () => {
   it('finishes the purge when an object is already gone', async () => {
     const h = setup({
       ...pending(),
-      missingKeys: [`kyc/${DEALER}/PAN_CARD/doc-pan`],
+      missingKeys: [`${DEALER_ROOT}/documents/PAN_CARD/doc-pan`],
     });
 
     const result = await h.service.rejectDealer(admin, DEALER, 'Not a dealership.');
@@ -1176,7 +1186,7 @@ describe('requestChanges', () => {
   it('deletes nothing', async () => {
     const h = setup({
       dealer: dealerRow({ status: 'PENDING_APPROVAL' }),
-      media: [{ storageKey: `dealers/${DEALER}/yard/media-1` }],
+      media: [{ storageKey: `${DEALER_ROOT}/yard/media-1` }],
     });
 
     await h.service.requestChanges(admin, DEALER, 'Send a recent address proof.');

@@ -64,7 +64,13 @@ async function dealership(overrides: Record<string, unknown> = {}) {
   const agent = h.agent();
   await h.signIn(agent);
   const created = await agent.post('/v1/auth/onboarding').send(onboarding(overrides)).expect(201);
-  return { agent, dealerId: created.body.dealer.id as string };
+  return {
+    agent,
+    dealerId: created.body.dealer.id as string,
+    // The slug is what every storage key this dealership owns is derived from,
+    // so a test that looks at the bucket needs it.
+    dealerSlug: created.body.dealer.slug as string,
+  };
 }
 
 beforeAll(async () => {
@@ -564,7 +570,7 @@ describe('one dealership, one GSTIN', () => {
 /**
  * presign → PUT → commit, then delete. The point of the round trip is the
  * *object*: a document row can be reset without the bytes going anywhere, and
- * that is exactly what the baseline did — it deleted `kyc/{dealer}/{type}`,
+ * that is exactly what the baseline did — it deleted the document's *folder*,
  * the prefix the object lives under rather than the object itself.
  */
 describe('KYC documents — replace and remove', () => {
@@ -607,8 +613,15 @@ describe('KYC documents — replace and remove', () => {
   });
 
   it('resets the row and removes the stored object on delete', async () => {
-    const { agent, dealerId } = await dealership();
+    const { agent, dealerSlug } = await dealership();
     const documentId = await upload(agent, 'PAN_CARD');
+
+    // Named the way a person reading the bucket would name it: the
+    // dealership's own folder, its private `documents/` prefix, then the row's
+    // id. Asserted *before* the delete as well, so a key that stopped being
+    // right fails here rather than passing an existsSync of nothing.
+    const object = storagePath(`dealers/${dealerSlug}/documents/PAN_CARD/${documentId}`);
+    expect(existsSync(object)).toBe(true);
 
     await agent.delete('/v1/dealer/documents/PAN_CARD').expect(204);
 
@@ -624,9 +637,9 @@ describe('KYC documents — replace and remove', () => {
     // but the file behind the old one must not survive it.
     //
     // Checked on disk rather than through the port, because the bug this pins
-    // was *in* the key: the baseline deleted `kyc/{dealer}/{type}`, a prefix no
+    // was *in* the key: the baseline deleted the document's folder, a prefix no
     // object occupies, so every removed document stayed exactly where it was.
-    expect(existsSync(storagePath(`kyc/${dealerId}/PAN_CARD/${documentId}`))).toBe(false);
+    expect(existsSync(object)).toBe(false);
   });
 
   /**

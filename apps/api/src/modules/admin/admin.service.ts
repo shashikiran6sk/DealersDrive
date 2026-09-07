@@ -354,7 +354,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             bytes: null,
             uploadedAt: doc.createdAt.toISOString(),
             viewUrl: readable
-              ? await storage.signedReadUrl(documentKey(dealerId, doc.type, doc.id), 300)
+              ? await storage.signedReadUrl(documentKey(dealer.slug, doc.type, doc.id), 300)
               : null,
             viewUrlExpiresAt: readable ? new Date(Date.now() + 300_000).toISOString() : null,
             rejectionReason: doc.rejectionReason,
@@ -595,7 +595,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
        */
       const media = await prisma.media.findMany({ where: { dealerId } });
       const keys = [
-        ...dealer.documents.map((doc) => documentKey(dealerId, doc.type, doc.id)),
+        ...dealer.documents.map((doc) => documentKey(dealer.slug, doc.type, doc.id)),
         ...media.map((row) => row.storageKey),
       ];
 
@@ -1008,7 +1008,10 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         });
 
         return {
-          key: documentKey(doc.dealerId, doc.type, doc.id),
+          // `dealer` is the row `doc.dealerId` points at, read above; the
+          // foreign key makes it present, and the fallback is there only
+          // because Prisma's type cannot know that.
+          key: dealer ? documentKey(dealer.slug, doc.type, doc.id) : null,
           allVerified,
           dealerReturnedToDraft: returnToDraft,
         };
@@ -1024,7 +1027,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
        * risks the opposite and much cheaper failure: an object nothing points
        * at, which a sweeper reconciles.
        */
-      if (rejecting) await storage.delete(outcome.key);
+      if (rejecting && outcome.key) await storage.delete(outcome.key);
 
       return {
         status,

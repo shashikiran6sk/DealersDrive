@@ -13,6 +13,9 @@
  * so there is nothing to seed and nothing to choose from.
  * ────────────────────────────────────────────────────────────────────────────
  */
+
+import { dealerSlug } from '@dealers-drive/contracts';
+
 export interface SeedDealer {
   slug: string;
   brandName: string;
@@ -37,7 +40,22 @@ export interface SeedDealer {
 
 export const DEALERS: SeedDealer[] = [
   {
-    slug: 'sri-lakshmi-motors',
+    /**
+     * Derived, not typed, through the same `dealerSlug` every registration uses
+     * — a slug carries the dealership's address now, and this row is what
+     * `AUTH_MODE=dev` signs in as, so a hand-typed one would be the single
+     * dealership in the product whose URL and whose bucket folder disagreed
+     * with the rest.
+     *
+     * `DEV_DEALER_SLUG` in `src/config/env.ts` defaults to this exact string,
+     * and `tests/unit/config/env.test.ts` pins the two together.
+     */
+    slug: dealerSlug({
+      legalName: 'Sri Lakshmi Automobiles Pvt Ltd',
+      city: 'Vellore',
+      district: 'Vellore',
+      state: 'Tamil Nadu',
+    }),
     brandName: 'Sri Lakshmi Motors',
     legalName: 'Sri Lakshmi Automobiles Pvt Ltd',
     tagline: 'Family-run since 2014 — single-owner cars with full service history.',

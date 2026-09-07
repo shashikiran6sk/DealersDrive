@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { DEALERS } from '../../../prisma/seed/data.js';
 import type * as envModule from '../../../src/config/env.js';
 import { env } from '../../../src/config/env.js';
 
@@ -163,7 +164,11 @@ describe('defaults outside production', () => {
   it('defaults the identity the dev session resolver reads', async () => {
     const loaded = await loadEnv({ NODE_ENV: 'development' });
 
-    expect(loaded.DEV_DEALER_SLUG).toBe('sri-lakshmi-motors');
+    // Pinned against the seed rather than restated: `AUTH_MODE=dev` looks the
+    // dealership up by this slug, and the seed derives its own from
+    // `dealerSlug`. A change to the slug's shape that missed this default
+    // would leave dev sign-in resolving nothing, at run time, on a laptop.
+    expect(loaded.DEV_DEALER_SLUG).toBe(DEALERS[0]?.slug);
   });
 
   /**

@@ -2316,6 +2316,34 @@ after onboarding')`, plus the service unit tests
   suggests `98400 12345` and the validator rejected it. One predicate now, in
   the package both apps import.
 
+## R8 — One folder per dealership, named after the dealership
+
+**Revises F038, F040, F041, F047** · reshapes `dealers.slug` and the bucket
+
+- **Contracts** `dealerSlug({ legalName, city, district, state })` —
+  `sri-lakshmi-motors-katpadi-vellore-tamil-nadu`. Consecutive duplicate
+  segments collapse, because a city usually shares its district's name
+- **Backend** `dealer-storage-keys.ts` becomes `dealers/{slug}/documents/{type}/{id}`
+  and `dealers/{slug}/yard/{mediaId}`; `uniqueSlug` takes the address;
+  `repo.slugById` serves the three KYC write paths
+- **Seeds** both derive their slugs; the dev seed's upsert keys on the GSTIN,
+  because a key derived from editable data forks rows instead of updating them
+- **Script** `apps/api/scripts/relocate-dealer-storage.ts` — the one thing
+  permitted to change a slug after registration, because it moves the objects in
+  the same pass
+- **Tests** `common.test.ts` → `describe('dealerSlug')`; the storage keys the
+  dealers and admin service tests assert; `dealer-onboarding.test.ts` now
+  asserts the object exists _before_ it is deleted
+- Two problems, one shape. A dealership's uploads were split across `kyc/{uuid}/`
+  and `dealers/{uuid}/yard/`, so the two halves of one application sat in two
+  trees; and both trees were named after a UUID, so a bucket listing could not be
+  read by a person. One folder per dealership, named after the dealership, fixes
+  both — and the slug was already the portfolio's URL, so it is the identifier
+  that was going to be printed on things anyway.
+- **The slug is assigned once and never recomputed.** KYC keys are derived from
+  it rather than stored, so a slug that moved would orphan the files. A dealer
+  who corrects their town keeps their slug — and their link.
+
 ---
 
 # Feature → Component matrix
