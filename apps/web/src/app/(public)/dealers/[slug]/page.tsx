@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { LocationCard } from '@/components/dealers/location-card';
 import { Blueprint, EmptyState, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { ApiError, apiGet } from '@/lib/api';
+import { dealerTag, DEALERS_TAG } from '@/lib/cache-tags';
 import { serverConfig } from '@/lib/config';
 import { seoMetadata } from '@/lib/seo';
 
@@ -49,6 +50,14 @@ async function loadDealer(slug: string): Promise<DealerPublicProfile | null> {
   try {
     return await apiGet<DealerPublicProfile>(`/v1/dealers/${encodeURIComponent(slug)}`, {
       revalidate: 600,
+      /*
+       * Both tags. `dealer:<slug>` is what this dealership's own save clears;
+       * `dealers` is what a moderation decision clears, because approving or
+       * suspending changes whether this page may exist at all — and a suspended
+       * dealership's portfolio staying up for ten minutes is the one stale
+       * window here that is not merely untidy.
+       */
+      tags: [dealerTag(slug), DEALERS_TAG],
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;

@@ -176,7 +176,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R8 — One folder per dealership, named after the dealership · revises F038/F040/F041/F047 · [#75](https://github.com/shashikiran6sk/DealersDrive/pull/75)
 - [~] R9 — The yard photograph reaches the public pages · revises F033/F085/F086 · [#76](https://github.com/shashikiran6sk/DealersDrive/pull/76)
 - [~] R10 — The yard on a map, not only in a link · revises F038/F041/F086 · [#77](https://github.com/shashikiran6sk/DealersDrive/pull/77)
-- [ ] R11 — Districts in the header, and city chips that multi-select · revises F085
+- [~] R11 — Districts in the header, and city chips that multi-select · revises F085 · [#78](https://github.com/shashikiran6sk/DealersDrive/pull/78)
+- [ ] R12 — A write clears the public page it changed · revises F041/F046/F049/F085/F086
 
 ---
 

@@ -143,7 +143,7 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
             {dealer.allDocumentsVerified ? 'all verified' : 'verification pending'}
           </span>
         </h2>
-        <DocumentReview documents={dealer.documents} />
+        <DocumentReview documents={dealer.documents} dealerSlug={dealer.slug} />
       </section>
 
       <DealerAdminActions dealer={dealer} />

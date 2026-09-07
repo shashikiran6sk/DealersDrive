@@ -39,7 +39,20 @@ const DOC_TONE: Record<AdminDealerDetail['documents'][number]['status'], StatusT
 
 type Document = AdminDealerDetail['documents'][number];
 
-export function DocumentReview({ documents }: { documents: Document[] }) {
+export function DocumentReview({
+  documents,
+  dealerSlug,
+}: {
+  documents: Document[];
+  /**
+   * The dealership these documents belong to, for cache invalidation only.
+   *
+   * Rejecting one can hand a PENDING_APPROVAL application back to DRAFT, and a
+   * dealership that is not ACTIVE is not public — so a decision here can remove
+   * a portfolio from the marketplace, and the cached copy has to go with it.
+   */
+  dealerSlug: string;
+}) {
   const [error, setError] = useState<string | null>(null);
 
   if (documents.length === 0) {
@@ -50,7 +63,12 @@ export function DocumentReview({ documents }: { documents: Document[] }) {
     <>
       {error ? <Banner tone="err">{error}</Banner> : null}
       {documents.map((document) => (
-        <DocumentRow key={document.id} document={document} onError={setError} />
+        <DocumentRow
+          key={document.id}
+          document={document}
+          dealerSlug={dealerSlug}
+          onError={setError}
+        />
       ))}
     </>
   );
@@ -58,8 +76,10 @@ export function DocumentReview({ documents }: { documents: Document[] }) {
 
 function DocumentRow({
   document,
+  dealerSlug,
   onError,
 }: {
+  dealerSlug: string;
   document: Document;
   onError: (message: string | null) => void;
 }) {
@@ -115,7 +135,7 @@ function DocumentRow({
               variant="secondary"
               size="sm"
               loading={pending}
-              onClick={() => run(() => verifyDocumentAction(document.id))}
+              onClick={() => run(() => verifyDocumentAction(document.id, dealerSlug))}
             >
               Verify
             </Button>
@@ -148,7 +168,9 @@ function DocumentRow({
             size="sm"
             loading={pending}
             disabled={reason.trim().length < 6}
-            onClick={() => run(() => rejectDocumentAction(document.id, { reason: reason.trim() }))}
+            onClick={() =>
+              run(() => rejectDocumentAction(document.id, { reason: reason.trim() }, dealerSlug))
+            }
           >
             Ask for a new file
           </Button>

@@ -6,6 +6,7 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
 import { DirectoryFilters } from '@/components/dealers/directory-filters';
 import { EmptyState } from '@/components/ui/primitives';
 import { apiGet, qs } from '@/lib/api';
+import { DEALERS_TAG } from '@/lib/cache-tags';
 import { seoMetadata } from '@/lib/seo';
 import { many, one, type SearchParamsInput } from '@/lib/url';
 
@@ -53,7 +54,7 @@ export async function generateMetadata({
   const { city, district, q } = readParams(await searchParams);
   const directory = await apiGet<DealerDirectoryResponse>(
     `/v1/dealers${qs({ city: cityParam(city), district })}`,
-    { revalidate: 600 },
+    { revalidate: 600, tags: [DEALERS_TAG] },
   );
 
   const place = placeName(directory, city, district) ?? 'your area';
@@ -104,7 +105,7 @@ export default async function DealerDirectoryPage({
   const { city, district, q, page } = readParams(await searchParams);
   const directory = await apiGet<DealerDirectoryResponse>(
     `/v1/dealers${qs({ city: cityParam(city), district, q, page })}`,
-    { revalidate: 600 },
+    { revalidate: 600, tags: [DEALERS_TAG] },
   );
 
   const place = placeName(directory, city, district);

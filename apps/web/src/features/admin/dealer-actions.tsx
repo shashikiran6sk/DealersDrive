@@ -136,9 +136,11 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
             onClick={() =>
               run(
                 () =>
-                  approveDealerAction(dealer.id, {
-                    ...(approvalNote.trim() ? { note: approvalNote.trim() } : {}),
-                  }),
+                  approveDealerAction(
+                    dealer.id,
+                    { ...(approvalNote.trim() ? { note: approvalNote.trim() } : {}) },
+                    dealer.slug,
+                  ),
                 'Dealer approved.',
               )
             }
@@ -189,7 +191,12 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
             disabled={changesReason.trim().length < 6}
             onClick={() =>
               run(
-                () => requestDealerChangesAction(dealer.id, { reason: changesReason.trim() }),
+                () =>
+                  requestDealerChangesAction(
+                    dealer.id,
+                    { reason: changesReason.trim() },
+                    dealer.slug,
+                  ),
                 'Sent back to the dealer for changes.',
               )
             }
@@ -220,9 +227,11 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
             onClick={() =>
               run(
                 () =>
-                  reinstateDealerAction(dealer.id, {
-                    ...(reinstateNote.trim() ? { note: reinstateNote.trim() } : {}),
-                  }),
+                  reinstateDealerAction(
+                    dealer.id,
+                    { ...(reinstateNote.trim() ? { note: reinstateNote.trim() } : {}) },
+                    dealer.slug,
+                  ),
                 'Dealer reinstated.',
               )
             }
@@ -253,7 +262,7 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
             disabled={suspendReason.trim().length < 6}
             onClick={() =>
               run(
-                () => suspendDealerAction(dealer.id, { reason: suspendReason.trim() }),
+                () => suspendDealerAction(dealer.id, { reason: suspendReason.trim() }, dealer.slug),
                 'Dealer suspended and their listings withdrawn.',
               )
             }
@@ -332,7 +341,8 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
                   }
                   onClick={() =>
                     run(
-                      () => rejectDealerAction(dealer.id, { reason: rejectReason.trim() }),
+                      () =>
+                        rejectDealerAction(dealer.id, { reason: rejectReason.trim() }, dealer.slug),
                       'Application rejected and deleted.',
                       // The dealership is gone; this page is a 404 now.
                       '/admin/dealers',

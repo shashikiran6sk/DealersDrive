@@ -137,6 +137,38 @@ describe('a complete save', () => {
   });
 
   /**
+   * The half that was missing, and the reason a dealer who corrected their Maps
+   * link watched their own portfolio for ten minutes and concluded the save had
+   * not worked.
+   *
+   * Every field on this form is rendered to buyers, and two ten-minute windows
+   * stood between the write and the page: Next's Data Cache at
+   * `revalidate: 600`, and `/dealers/[slug]`'s own route cache at the same.
+   * Neither was ever cleared. See `lib/cache-tags.ts`.
+   */
+  it('clears the public pages the edit is visible on', async () => {
+    await saveDealerProfileAction(IDLE, form(COMPLETE));
+
+    // The portfolio, by slug — and the directory, its chips and the header's
+    // district counts, which all move when a dealership is renamed or moves.
+    expect(revalidations.tags).toEqual(['dealers', 'dealer:sri-lakshmi-motors']);
+  });
+
+  /**
+   * The slug is taken from the PATCH's own answer rather than from the form or
+   * the session. `dealerId` comes from the session on the API side (rule 1), so
+   * the row that answered is by construction the row that was written — and a
+   * slug read from anywhere else is a guess about which cache to clear.
+   */
+  it('takes the slug from the dealership that answered', async () => {
+    globalThis.fetch = respond(200, { slug: 'velavan-cars-katpadi-vellore-tamil-nadu' });
+
+    await saveDealerProfileAction(IDLE, form(COMPLETE));
+
+    expect(revalidations.tags).toContain('dealer:velavan-cars-katpadi-vellore-tamil-nadu');
+  });
+
+  /**
    * A partial patch. An untouched box must not arrive as an instruction to
    * clear the column behind it — that is what makes this schema partial.
    */
@@ -235,6 +267,9 @@ describe('a refusal', () => {
 
     await saveDealerProfileAction(IDLE, form(COMPLETE));
 
-    expect(revalidations.paths).toEqual([]);
+    // Neither the console nor the public pages: nothing changed, and dropping a
+    // cache entry for a write that did not happen costs every anonymous visitor
+    // a re-render to correct nothing.
+    expect([revalidations.paths, revalidations.tags]).toEqual([[], []]);
   });
 });
