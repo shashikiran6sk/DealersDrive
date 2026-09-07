@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   coordinatesIn,
   embedUrlFor,
+  mapKindFor,
   placeIdIn,
   resolveCoordinates,
   resolvePlace,
@@ -424,5 +425,77 @@ describe('embedUrlFor', () => {
     ).toBeNull();
 
     expect(embedUrlFor({ mapsUrl: null, placeId: null, coordinates: null, label })).toBeNull();
+  });
+});
+
+/**
+ * R20 — the same question `embedUrlFor` answers, asked without building a URL,
+ * because the dealer's own profile screen has to say which of the three a
+ * stored link produces and there is no map on that screen to look at.
+ *
+ * The last test here is the one that matters: the two functions must agree, or
+ * the form ends up claiming a Google listing over a page that is drawing a dot.
+ */
+describe('mapKindFor', () => {
+  const PLACE_URL =
+    'https://www.google.com/maps/place/Yard/data=!4m6!3m5!1s0xaaa:0xbbb!8m2!3d12.9165!4d79.1325';
+  const PIN_URL = 'https://www.google.com/maps/search/?api=1&query=12.9165,79.1325';
+  const HERE = { lat: 12.9165, lng: 79.1325 };
+
+  it('is PLACE when the column names one', () => {
+    expect(mapKindFor({ mapsUrl: PIN_URL, placeId: '0xaaa:0xbbb', coordinates: HERE })).toBe(
+      'PLACE',
+    );
+  });
+
+  /** The rows the migration deliberately did not backfill. */
+  it('is PLACE when only the stored link names one', () => {
+    expect(mapKindFor({ mapsUrl: PLACE_URL, placeId: null, coordinates: HERE })).toBe('PLACE');
+  });
+
+  it('is PLACE for a pasted embed whose blob names a place', () => {
+    const pasted =
+      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d164827!2d80.09!3d12.96' +
+      '!3m3!1m2!1s0xaaa%3A0xbbb!2sSakthi%20Cars!5e0';
+
+    expect(mapKindFor({ mapsUrl: pasted, placeId: null, coordinates: null })).toBe('PLACE');
+  });
+
+  it('is POINT for a pasted embed that names none', () => {
+    const pasted = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d164827!2d80.09!3d12.96';
+
+    expect(mapKindFor({ mapsUrl: pasted, placeId: null, coordinates: null })).toBe('POINT');
+  });
+
+  it('is POINT when there is a pin and nothing named', () => {
+    expect(mapKindFor({ mapsUrl: PIN_URL, placeId: null, coordinates: HERE })).toBe('POINT');
+  });
+
+  it('is NONE when the link said neither, and when there is no link', () => {
+    expect(
+      mapKindFor({ mapsUrl: 'https://maps.app.goo.gl/abc123', placeId: null, coordinates: null }),
+    ).toBe('NONE');
+    expect(mapKindFor({ mapsUrl: null, placeId: null, coordinates: null })).toBe('NONE');
+  });
+
+  /**
+   * The correspondence, stated as a property rather than trusted to a comment:
+   * `NONE` is exactly the set of rows the portfolio draws no map for, and
+   * anything else is a row it does.
+   */
+  it('says NONE for exactly the rows embedUrlFor draws nothing for', () => {
+    const rows = [
+      { mapsUrl: PLACE_URL, placeId: null, coordinates: HERE },
+      { mapsUrl: PIN_URL, placeId: '0xaaa:0xbbb', coordinates: HERE },
+      { mapsUrl: PIN_URL, placeId: null, coordinates: HERE },
+      { mapsUrl: 'https://maps.app.goo.gl/abc123', placeId: null, coordinates: null },
+      { mapsUrl: null, placeId: null, coordinates: null },
+      { mapsUrl: null, placeId: '0xaaa:0xbbb', coordinates: null },
+    ];
+
+    for (const row of rows) {
+      const drawn = embedUrlFor({ ...row, label: 'Sri Lakshmi Motors' });
+      expect(mapKindFor(row) === 'NONE').toBe(drawn === null);
+    }
   });
 });

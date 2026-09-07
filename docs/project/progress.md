@@ -185,6 +185,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [ ] R17 — A directory card that keeps its height · revises F085
 - [ ] R18 — Services are a set, not a list · revises F046/F085/F086
 - [ ] R19 — The district menu, as the baseline drew it, and reachable by keyboard · revises R11/F073
+- [ ] R20 — A Maps link that names the place · revises F046/R14
 
 ---
 

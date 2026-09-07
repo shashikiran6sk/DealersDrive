@@ -57,6 +57,7 @@ const BASE: DealerProfile = {
     state: 'Tamil Nadu',
     pincode: '632001',
     mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
+    mapKind: 'PLACE',
   },
   specialities: ['Hatchbacks', 'RC transfer', 'Exchange'],
   workingHours: { mon_sat: '09:30-20:00', sun: null },
@@ -124,9 +125,29 @@ export const Sparse: Story = {
       establishedYear: null,
       workingHours: null,
       contact: { ...BASE.contact, roleTitle: null, email: null, landline: null },
-      address: { ...BASE.address, line: null, district: null, mapsUrl: null },
+      address: { ...BASE.address, line: null, district: null, mapsUrl: null, mapKind: 'NONE' },
     },
   },
+  decorators: [stub(900, SAVED)],
+};
+
+/**
+ * **R20** — the same saved link, drawing a bare pin instead of a listing.
+ *
+ * This is the state the note exists for, and it is not an edge case: the Share
+ * sheet on a phone hands out the same shape of short link whether the dealer
+ * opened their *business card* first or dropped a pin on their street, and the
+ * box looks identical afterwards. `Populated` is the good case (`PLACE`, in the
+ * ok green); this is the one that tells a dealer what to do about it.
+ */
+export const MapIsOnlyAPin: Story = {
+  args: { dealer: { ...BASE, address: { ...BASE.address, mapKind: 'POINT' } } },
+  decorators: [stub(900, SAVED)],
+};
+
+/** A link we could not read a position out of at all — the third answer. */
+export const MapCouldNotBeRead: Story = {
+  args: { dealer: { ...BASE, address: { ...BASE.address, mapKind: 'NONE' } } },
   decorators: [stub(900, SAVED)],
 };
 

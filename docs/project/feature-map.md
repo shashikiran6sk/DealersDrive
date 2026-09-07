@@ -2890,6 +2890,70 @@ menu — `top: calc(100% + 6px)` — hung 260px below the button it belongs to. 
 header puts it in a row with `items-center`, so the product never had that gap;
 only the story that was supposed to be verifying it did.
 
+## R20 — A Maps link that names the place
+
+**Revises F046 / R14**
+
+- **Contracts** `common.ts` — `MapKind`; `dealer.ts` — `DealerProfile.address`
+  carries it
+- **API** `maps-link.ts` — `mapKindFor()`, sharing `storedPlaceId()` with
+  `embedUrlFor()`; `dealers.service.ts` — composed onto the profile
+- **Frontend** `profile-form.tsx` — `MapKindNote` under the Maps field
+- **Sandbox** two stories, `MapIsOnlyAPin` and `MapCouldNotBeRead`
+- **Tests** the three answers and the property that ties them to `embedUrlFor`;
+  the profile composes them from the stored row; the note says the right thing
+  in each state and nothing at all before a link exists
+
+### "Why is there no rating on my page?"
+
+The question this answers, and the honest answer is that there is only one
+source of a rating and it is conditional. **R14** made the portfolio's map
+Google's own place card — the dealership's name, its address, its rating and
+review count — but only for a link that carries a **place id**. A link with
+coordinates and no place gets `?q=lat,lng&output=embed`: a correctly-positioned
+dot naming nothing. Both are valid Google Maps links, both are stored verbatim
+(**R6**), and in the dealer's own box they are indistinguishable — a URL either
+way.
+
+It is not an edge case. The Share sheet on a phone hands out the same shape of
+short link whether the dealer opened their _business's card_ first or dropped a
+pin on their street, and nothing afterwards tells them which they did. Every
+dealership on the platform today is in the second state, which is why the map
+has no rating on it.
+
+So the form says which one they have, and — for the one that matters — what to
+do about it: search Maps for the business by name, open its card, Share → Copy
+link. A diagnosis without a remedy would just be a nicer way of saying no.
+
+### Three answers, not a boolean
+
+`NONE` is a real state and not an error: a share link that could not be followed
+to a place _or_ a pin, which is what "Get directions" still works over. The form
+tells "no link yet" from "a link that said nothing" with `mapsUrl`, and says
+nothing at all in the first case — the instructions above the note are the whole
+message for a dealer who has not answered, and a second line telling them an
+empty box is empty is noise.
+
+### One decision, in one place
+
+`mapKindFor` shares `storedPlaceId` with `embedUrlFor` rather than re-deriving
+the answer, and a test asserts the correspondence directly: `NONE` is exactly
+the set of rows `embedUrlFor` returns `null` for. Two implementations of "does
+this link name a place" would eventually disagree, and the failure would be
+worse than saying nothing — a form that reports a Google listing over a page
+drawing a dot.
+
+The kind is composed on the **API**, for the same reason `embedUrl` is: the
+question is about a stored value, and the form would otherwise have to re-parse
+a Maps URL in a second implementation, in another package.
+
+### What this is not
+
+Not a rating of our own, and not the Places API. Storing a rating would mean a
+billed Google key in every environment and a number that goes stale between
+refreshes; the place card is Google's own, current, and free. The rating a buyer
+sees stays Google's, exactly as **R14** left it — this only makes it reachable.
+
 ---
 
 # Feature → Component matrix

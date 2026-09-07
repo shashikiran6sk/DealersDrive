@@ -25,7 +25,7 @@ import { randomUUID } from 'node:crypto';
 
 import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
-import type { MapsPort } from '../../platform/maps/maps-link.js';
+import { mapKindFor, type MapsPort } from '../../platform/maps/maps-link.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
@@ -110,6 +110,21 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
         state: dealer.state,
         pincode: dealer.pincode,
         mapsUrl: dealer.mapsUrl,
+        /*
+         * What that link draws (**R20**). Composed here rather than in the form
+         * for the reason `embedUrl` is composed for the portfolio: which of the
+         * three answers a link produces is a question about the stored value,
+         * and the form would have to re-parse the URL to ask it — in a second
+         * implementation, in another package, that could disagree.
+         */
+        mapKind: mapKindFor({
+          mapsUrl: dealer.mapsUrl,
+          placeId: dealer.mapsPlaceId,
+          coordinates:
+            dealer.lat === null || dealer.lng === null
+              ? null
+              : { lat: dealer.lat, lng: dealer.lng },
+        }),
       },
       specialities: dealer.specialities,
       workingHours: dealer.workingHours as Record<string, string | null> | null,

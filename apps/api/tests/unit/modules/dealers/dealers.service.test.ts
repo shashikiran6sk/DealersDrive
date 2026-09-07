@@ -553,6 +553,42 @@ describe('toProfile', () => {
     expect(profile.address.state).toBeNull();
   });
 
+  /**
+   * R20 — the dealer's own screen has to say what their link is worth, because
+   * the map it produces is on a page they are not looking at. The three
+   * answers, from the same function the portfolio's embed URL comes from.
+   */
+  describe('the kind of map the stored link draws', () => {
+    it('is PLACE when the row names a place', async () => {
+      const h = setup({ dealer: { mapsPlaceId: '0xaaa:0xbbb', lat: 12.9165, lng: 79.1325 } });
+
+      expect((await h.service.profile('dealer-1')).address.mapKind).toBe('PLACE');
+    });
+
+    it('is POINT when the row has a pin and names nothing', async () => {
+      const h = setup({ dealer: { mapsPlaceId: null, lat: 12.9165, lng: 79.1325 } });
+
+      expect((await h.service.profile('dealer-1')).address.mapKind).toBe('POINT');
+    });
+
+    /** Half a coordinate is not a place: it would centre a map in the sea. */
+    it('is NONE when the link resolved to neither', async () => {
+      const h = setup({ dealer: { mapsPlaceId: null, lat: 12.9165, lng: null } });
+
+      expect((await h.service.profile('dealer-1')).address.mapKind).toBe('NONE');
+    });
+
+    it('is NONE for a dealership that has not answered yet', async () => {
+      const h = setup({ dealer: { mapsUrl: null, mapsPlaceId: null, lat: null, lng: null } });
+
+      const profile = await h.service.profile('dealer-1');
+
+      // Both halves, because the form tells the two apart with `mapsUrl`.
+      expect(profile.address.mapsUrl).toBeNull();
+      expect(profile.address.mapKind).toBe('NONE');
+    });
+  });
+
   it('serialises dates as ISO strings, and a missing approval as null', async () => {
     const h = setup({ dealer: { approvedAt: null } });
 

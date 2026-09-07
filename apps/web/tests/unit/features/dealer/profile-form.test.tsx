@@ -63,6 +63,7 @@ const DEALER: DealerProfile = {
     state: 'Tamil Nadu',
     pincode: '632001',
     mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
+    mapKind: 'PLACE',
   },
   specialities: ['Hatchbacks', 'RC transfer'],
   workingHours: { mon_sat: '09:30-20:00', sun: null },
@@ -130,13 +131,65 @@ describe('what the form offers', () => {
           pan: null,
           specialities: [],
           establishedYear: null,
-          address: { ...DEALER.address, district: null, mapsUrl: null },
+          address: { ...DEALER.address, district: null, mapsUrl: null, mapKind: 'NONE' },
         }}
       />,
     );
 
     expect(screen.getByLabelText(/^district/i)).toHaveValue('');
     expect(screen.getByLabelText(/google maps location/i)).toHaveValue('');
+  });
+});
+
+/**
+ * R20 — what the saved Maps link is actually drawing, in words.
+ *
+ * A dealer pastes a URL and never sees the map it produces: the map is on their
+ * public page, and the two kinds of link look identical in the box. The `POINT`
+ * case is the one this exists for, and it has to carry the fix rather than only
+ * the diagnosis.
+ */
+describe('the note under the Maps link', () => {
+  it('confirms a link that names the dealership', () => {
+    render(<DealerProfileForm dealer={DEALER} />);
+
+    expect(screen.getByText(/shows your Google listing/i)).toBeInTheDocument();
+  });
+
+  it('says a pin is only a pin, and how to replace it', () => {
+    render(
+      <DealerProfileForm
+        dealer={{ ...DEALER, address: { ...DEALER.address, mapKind: 'POINT' } }}
+      />,
+    );
+
+    expect(screen.getByText(/does not name your dealership/i)).toBeInTheDocument();
+    // The diagnosis is useless without the remedy.
+    expect(screen.getByText(/search Google Maps for your business/i)).toBeInTheDocument();
+  });
+
+  it('says when no location could be read at all', () => {
+    render(
+      <DealerProfileForm dealer={{ ...DEALER, address: { ...DEALER.address, mapKind: 'NONE' } }} />,
+    );
+
+    expect(screen.getByText(/could not read a location/i)).toBeInTheDocument();
+  });
+
+  /**
+   * A dealer who has not answered yet is told how to answer, by the
+   * instructions that were always there. A second line saying an empty box is
+   * empty is noise.
+   */
+  it('says nothing at all when there is no link yet', () => {
+    render(
+      <DealerProfileForm
+        dealer={{ ...DEALER, address: { ...DEALER.address, mapsUrl: null, mapKind: 'NONE' } }}
+      />,
+    );
+
+    expect(screen.queryByText(/could not read a location/i)).toBeNull();
+    expect(screen.queryByText(/shows your Google listing/i)).toBeNull();
   });
 });
 

@@ -353,20 +353,61 @@ const VIEWPORT_METRES = 2000;
  * elements is load-bearing even though their values are not. Substitute the
  * leaves; never add or drop a field.
  */
-export function embedUrlFor(place: {
+/** What a stored link turned out to be worth. */
+export interface StoredPlace {
   mapsUrl: string | null;
   placeId: string | null;
   coordinates: LatLng | null;
-  label: string;
-}): string | null {
+}
+
+/**
+ * The place id a stored row actually has: the column when it was written, and
+ * the link when it was not — which is every dealership that saved a place URL
+ * before the column existed, since the migration deliberately backfills
+ * nothing.
+ */
+function storedPlaceId(place: StoredPlace): string | null {
+  return place.placeId ?? (place.mapsUrl ? placeIdIn(place.mapsUrl) : null);
+}
+
+/**
+ * Which of `embedUrlFor`'s three answers a dealership is going to get (**R20**).
+ *
+ * The same question, asked without building the URL — because it is a question
+ * the *dealer* needs answered on their own profile screen, where there is no
+ * map to look at. A dealership whose link named a place gets Google's place
+ * card, with its name, its address and its rating; one whose link only carried
+ * coordinates gets a dot in a field of grey, and cannot tell from the form why.
+ *
+ * It shares `storedPlaceId` with `embedUrlFor` rather than re-deriving the
+ * answer, so the two cannot disagree about which shape a link produces — which
+ * would be worse than not telling the dealer at all: a form that says "your
+ * listing is showing" over a map that shows a dot.
+ *
+ *   `PLACE`  the frame is the dealership's own Google card
+ *   `POINT`  a pin, correctly placed, naming nothing
+ *   `NONE`   no map at all; `embedUrlFor` returns null for exactly these
+ */
+export type MapKind = 'PLACE' | 'POINT' | 'NONE';
+
+export function mapKindFor(place: StoredPlace): MapKind {
+  // A pasted embed is the map the dealer chose, and it is a place card when the
+  // blob they copied names one.
+  if (place.mapsUrl && isEmbedUrl(place.mapsUrl)) {
+    return storedPlaceId(place) ? 'PLACE' : 'POINT';
+  }
+
+  if (storedPlaceId(place)) return 'PLACE';
+  if (place.coordinates) return 'POINT';
+  return 'NONE';
+}
+
+export function embedUrlFor(place: StoredPlace & { label: string }): string | null {
   const { mapsUrl, coordinates, label } = place;
 
   if (mapsUrl && isEmbedUrl(mapsUrl)) return mapsUrl;
 
-  // The column when it was written, and the link when it was not — which is
-  // every dealership that saved a place URL before the column existed, since
-  // the migration deliberately backfills nothing.
-  const placeId = place.placeId ?? (mapsUrl ? placeIdIn(mapsUrl) : null);
+  const placeId = storedPlaceId(place);
 
   if (placeId) {
     const camera = coordinates ?? { lat: 0, lng: 0 };
