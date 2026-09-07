@@ -24,8 +24,15 @@ import { LocationSelector } from '@/components/layout/location-selector';
  *   · **The shadow.** One of three elements in the product that carries one.
  *   · **"All districts" carries its own count**, so the way back is a fact
  *     rather than an escape hatch with a blank beside it.
- *   · **Keyboard.** Enter or Space opens, Escape closes and returns focus to
- *     the button, an outside click closes it.
+ *   · **The rows are styled at all** (R19). `.dd-nav-item` was used here from
+ *     R11 and never ported out of the baseline, so until now every option was a
+ *     bare `<button>`: no padding, no hover, and no fill on the district
+ *     already chosen — `aria-current` was on the element the whole time with no
+ *     rule to act on it. `Chosen` below is the story that shows it.
+ *   · **Keyboard.** Enter or Space opens, the **arrows move**, Home and End
+ *     jump, Enter chooses, Escape closes and returns focus to the button, an
+ *     outside click closes it. Focus roves over the real buttons, so the
+ *     `:focus-visible` ring shows where the arrows are.
  */
 const LOCATIONS: PublicLocations = {
   districts: [
@@ -42,8 +49,24 @@ const meta = {
   parameters: { layout: 'centered', nextjs: { appDirectory: true } },
   decorators: [
     (Story) => (
-      // Room for the menu, which is absolutely positioned under the button.
-      <div style={{ width: 320, height: 260, display: 'flex', justifyContent: 'flex-end' }}>
+      /*
+        Room for the menu, which is absolutely positioned under the button.
+
+        `alignItems: flex-start` matters and was missing: a flex child stretches
+        by default, so the selector's own `relative` box was 260px tall and the
+        menu — `top: calc(100% + 6px)` — hung 260px below the button it belongs
+        to. The header puts it in a row with `items-center`, so this decorator
+        was showing a gap the product does not have.
+      */
+      <div
+        style={{
+          width: 320,
+          height: 300,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'flex-start',
+        }}
+      >
         <Story />
       </div>
     ),
@@ -58,6 +81,22 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 
 /**
+ * A district chosen, which is the state **R19** made visible: the row carries
+ * `aria-current="true"`, and `.dd-nav-item[aria-current]` fills it with the
+ * accent. Open the menu — Vellore should be the filled row, and the button
+ * above it should agree.
+ *
+ * The story sets the URL through the Next router decorator rather than through
+ * a prop, because the component reads `?district` and nothing else does.
+ */
+export const Chosen: Story = {
+  parameters: {
+    layout: 'centered',
+    nextjs: { appDirectory: true, navigation: { query: { district: 'vellore' } } },
+  },
+};
+
+/**
  * The empty case, and it is not hypothetical: the public layout catches a
  * failed `/v1/locations` and degrades to this rather than letting a throw take
  * the whole document to `global-error`. The button must still be a button, and
@@ -67,8 +106,12 @@ export const NoDistricts: Story = { args: { locations: { districts: [], total: 0
 
 /**
  * Fourteen districts — a state the platform reaches by expanding, not by being
- * mis-seeded. The menu scrolls at 60vh rather than growing past the fold, which
- * is the thing to check here.
+ * mis-seeded.
+ *
+ * ⚠️ **This is the story that carries R19's cost.** The menu was capped at 60vh
+ * and scrolled; the legacy panel has no cap, so past roughly fifteen districts
+ * it grows past the fold instead. Tamil Nadu has 38 of them. The cap is one
+ * line in `location-selector.tsx` and can come back the way it went.
  */
 export const ManyDistricts: Story = {
   args: {

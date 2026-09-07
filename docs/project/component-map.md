@@ -390,6 +390,16 @@ open state, and `useSearchParams`, which is why it sits behind its own
 Choosing a district drops `city` and `page` from the query string, because
 `?district=ranipet&city=katpadi` is an empty page.
 
+**R19 — the rows, and the keys.** This is the only consumer of `.dd-nav-item`,
+and it used the class for two revisions before the class existed: it was never
+ported out of the baseline, so every option rendered unstyled and the chosen
+row's `aria-current` had no rule to colour it. The class is in `globals.css`
+now. The menu is also keyboard-navigable at last — arrows, Home/End, Enter —
+with focus roving over the real option buttons, which is what `role="listbox"`
+has been announcing since R11. The panel takes the baseline's 220px and, with
+it, the baseline's absence of a height cap: past ~15 districts it grows past
+the fold rather than scrolling.
+
 ---
 
 ## Layer 5 — Vehicle (`components/vehicle/`)

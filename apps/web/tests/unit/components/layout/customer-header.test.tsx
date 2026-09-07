@@ -209,6 +209,127 @@ describe('the location selector', () => {
   });
 
   /**
+   * R19 — the arrows, which `role="listbox"` has been promising a screen reader
+   * since R11 without anything implementing them.
+   *
+   * Focus roves over real buttons rather than being tracked with
+   * `aria-activedescendant`, so "where the arrows are" is exactly "what has
+   * focus", and that is what these assert.
+   */
+  describe('the arrow keys', () => {
+    it('opens with focus on the district the URL already names', async () => {
+      setLocation('/dealers', 'district=ranipet');
+      const user = userEvent.setup();
+      render(<CustomerHeader locations={LOCATIONS} />);
+
+      await user.click(screen.getByRole('button', { name: /ranipet/i }));
+
+      expect(screen.getByRole('option', { name: /ranipet/i })).toHaveFocus();
+    });
+
+    it('moves down and up without choosing anything', async () => {
+      setLocation('/dealers');
+      const user = userEvent.setup();
+      render(<CustomerHeader locations={LOCATIONS} />);
+
+      await user.click(screen.getByRole('button', { name: /all districts/i }));
+      await user.keyboard('{ArrowDown}{ArrowDown}');
+      expect(screen.getByRole('option', { name: /ranipet/i })).toHaveFocus();
+
+      await user.keyboard('{ArrowUp}');
+      expect(screen.getByRole('option', { name: /vellore/i })).toHaveFocus();
+
+      // A menu that navigated on arrow-down would fire a router push per key.
+      expect(navigationState.pushed).toEqual([]);
+    });
+
+    it('stops at both ends rather than wrapping', async () => {
+      setLocation('/dealers');
+      const user = userEvent.setup();
+      render(<CustomerHeader locations={LOCATIONS} />);
+
+      await user.click(screen.getByRole('button', { name: /all districts/i }));
+      await user.keyboard('{ArrowUp}');
+      expect(screen.getByRole('option', { name: /all districts/i })).toHaveFocus();
+
+      await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}');
+      expect(screen.getByRole('option', { name: /tirupattur/i })).toHaveFocus();
+    });
+
+    it('jumps to the ends with Home and End', async () => {
+      setLocation('/dealers');
+      const user = userEvent.setup();
+      render(<CustomerHeader locations={LOCATIONS} />);
+
+      await user.click(screen.getByRole('button', { name: /all districts/i }));
+      await user.keyboard('{End}');
+      expect(screen.getByRole('option', { name: /tirupattur/i })).toHaveFocus();
+
+      await user.keyboard('{Home}');
+      expect(screen.getByRole('option', { name: /all districts/i })).toHaveFocus();
+    });
+
+    it('chooses the focused district with Enter', async () => {
+      setLocation('/dealers');
+      const user = userEvent.setup();
+      render(<CustomerHeader locations={LOCATIONS} />);
+
+      await user.click(screen.getByRole('button', { name: /all districts/i }));
+      await user.keyboard('{ArrowDown}{Enter}');
+
+      expect(navigationState.pushed).toEqual(['/dealers?district=vellore']);
+    });
+
+    /**
+     * Focus was inside a menu that has just stopped existing. Left alone it
+     * falls to the body and the next Tab starts from the top of the document.
+     */
+    it('hands focus back to the button after choosing', async () => {
+      setLocation('/dealers');
+      const user = userEvent.setup();
+      render(<CustomerHeader locations={LOCATIONS} />);
+
+      await user.click(screen.getByRole('button', { name: /all districts/i }));
+      await user.keyboard('{ArrowDown}{Enter}');
+
+      expect(screen.getByRole('button', { name: /all districts/i })).toHaveFocus();
+    });
+
+    /** Only one option is in the tab order; the arrows move which one. */
+    it('keeps a single tab stop inside the menu', async () => {
+      setLocation('/dealers', 'district=vellore');
+      const user = userEvent.setup();
+      render(<CustomerHeader locations={LOCATIONS} />);
+
+      await user.click(screen.getByRole('button', { name: /vellore/i }));
+
+      const tabbable = screen
+        .getAllByRole('option')
+        .filter((option) => option.getAttribute('tabindex') === '0');
+      expect(tabbable.map((option) => option.textContent)).toEqual(['Vellore11']);
+    });
+  });
+
+  /**
+   * R19 — `aria-current` has been on the chosen row since R11 with no CSS rule
+   * to act on it, because `.dd-nav-item` was never ported out of the baseline.
+   * The class is asserted rather than the colour: jsdom applies no stylesheet,
+   * and the rule itself is the sandbox's to check by eye.
+   */
+  it('marks the chosen district on the row as well as on the button', async () => {
+    setLocation('/dealers', 'district=ranipet');
+    const user = userEvent.setup();
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    await user.click(screen.getByRole('button', { name: /ranipet/i }));
+
+    const chosen = screen.getByRole('option', { name: /ranipet/i });
+    expect(chosen).toHaveAttribute('aria-current', 'true');
+    expect(chosen).toHaveClass('dd-nav-item');
+    expect(screen.getByRole('option', { name: /vellore/i })).not.toHaveAttribute('aria-current');
+  });
+
+  /**
    * The API is allowed to be unreachable — the layout degrades to an empty list
    * rather than letting a throw take the whole document to `global-error`. The
    * button still has to be a button.

@@ -172,7 +172,13 @@
  *   F011  .blueprint, .corner, .card, .image-slot
  *   F012  .skeleton
  *   F013  .field, .input
- *   F045  .table, .seg/.seg-opt                  ← this PR
+ *   F045  .table, .seg/.seg-opt
+ *   R19   .dd-nav-item                           ← this PR
+ * `.dd-nav-item` is the exception that proves the rule, and it is why the rule
+ * is written down: `LocationSelector` landed at R11 *using* the class, and the
+ * class did not land with it. Every option in the district menu has been an
+ * unstyled `<button>` since — including the one for the district already
+ * chosen, whose `aria-current` had nothing to colour it with.
  * `.table` and `.seg` have no component at all in the baseline — that is
  * finding D-B. `.table` arrives here *with* the `Table` that wraps it, at the
  * first of its five hand-rolled call sites. `.seg` arrives without one: the
@@ -544,6 +550,50 @@
   }
   .table tbody tr:last-child td {
     border-bottom: 0;
+  }
+
+  /*
+   * Menu rows — §2.18. The district dropdown's options, and the only consumer.
+   *
+   * Ported verbatim from the baseline (**R19**). `LocationSelector` arrived at
+   * R11 carrying `className="dd-nav-item"` and the class itself did not come
+   * with it, so every row rendered as a bare `<button>`: no padding, no hover,
+   * and — the one that matters — no highlight on the district a buyer had
+   * already chosen. `aria-current` was on the element the whole time, saying
+   * something no eye could see.
+   *
+   * `display: block` is overridden by the `flex` the component adds — utilities
+   * are a later layer than components — and that is how the baseline had it
+   * too: the block is the fallback for a row that is only text.
+   *
+   * `.dd-nav-item-dark` is deliberately *not* ported with it. The baseline's
+   * admin sidebar used it; ours styles itself with utilities and says so in its
+   * own docblock, so the variant has no consumer and would be dead the moment
+   * it landed.
+   */
+  .dd-nav-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    padding: 5px 10px;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out;
+  }
+  .dd-nav-item:hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+    color: var(--color-ink);
+  }
+  .dd-nav-item[aria-current='true'],
+  .dd-nav-item[aria-current='page'] {
+    background: var(--color-accent);
+    color: #fff;
   }
 }
 
