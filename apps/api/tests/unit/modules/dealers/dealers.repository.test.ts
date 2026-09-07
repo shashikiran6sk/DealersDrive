@@ -141,6 +141,11 @@ describe('listActive', () => {
         'brandName',
         'citySlug',
         'cityName',
+        // The area a buyer drives across, beside the town they name. The
+        // header's selector is built from one and the directory's chips from
+        // the other.
+        'districtSlug',
+        'districtName',
         // The yard photograph, as an id. The public service turns it into a URL
         // only for the page it renders, and only once the bytes are servable.
         'coverMediaId',
@@ -170,10 +175,17 @@ describe('listActive', () => {
    * `cities` is gone, so there is no second copy of the pair to fall out of
    * step with this one — which is what the slug column was for.
    */
-  it('derives the city slug from the city the dealership carries', async () => {
+  it('derives the city and district slugs from the text the dealership carries', async () => {
     const { prisma } = fakePrisma({
       'dealer.findMany': [
-        { slug: 'a', brandName: 'A', specialities: [], city: 'Krishnagiri', state: 'Tamil Nadu' },
+        {
+          slug: 'a',
+          brandName: 'A',
+          specialities: [],
+          city: 'Krishnagiri',
+          district: 'Krishnagiri',
+          state: 'Tamil Nadu',
+        },
       ],
     });
 
@@ -181,6 +193,10 @@ describe('listActive', () => {
 
     expect(dealer?.cityName).toBe('Krishnagiri');
     expect(dealer?.citySlug).toBe('krishnagiri');
+    // The same name in both columns is the ordinary Indian case, and they stay
+    // two facets rather than being collapsed: Katpadi is also in Vellore.
+    expect(dealer?.districtName).toBe('Krishnagiri');
+    expect(dealer?.districtSlug).toBe('krishnagiri');
     expect(dealer?.state).toBe('Tamil Nadu');
   });
 

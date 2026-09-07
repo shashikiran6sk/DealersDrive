@@ -1,3 +1,4 @@
+import type { PublicLocations } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { CustomerHeader } from '@/components/layout/customer-header';
@@ -5,10 +6,11 @@ import { CustomerHeader } from '@/components/layout/customer-header';
 /**
  * DESIGN-SPEC §3.1 — the buyer chrome (C0xx). Sticky, 64px, white on a hairline.
  *
- * **The pathname is the only state it has.** `CustomerHeader` takes no props at
- * all: it reads `usePathname()` and lights the section a visitor is in. So the
- * `nextjs.navigation.pathname` parameter is the control, and there is one story
- * per section rather than one story with a knob.
+ * **The pathname is most of the state it has.** It reads `usePathname()` and
+ * lights the section a visitor is in, so the `nextjs.navigation.pathname`
+ * parameter is the control and there is one story per section rather than one
+ * story with a knob. Its one prop is the district list the location button
+ * offers — see `Layout/LocationSelector` for that component on its own.
  *
  * The rule is prefix matching, and `/` is deliberately not in the nav — the home
  * page lights nothing, because `startsWith('/cars')` is false there and the
@@ -27,23 +29,28 @@ import { CustomerHeader } from '@/components/layout/customer-header';
  *     Mobile 375 to see the row the majority of buyers actually get.
  *
  * ── What is missing, and why ────────────────────────────────────────────────
- * The baseline's header carried a **city chip** and a **saved-cars count**.
- * Neither is here yet:
+ * The **saved-cars count** is **F087**, and needs the `SavedCarsProvider`
+ * decorator this sandbox does not have yet — which is coupling **C-1**, and the
+ * reason `withSavedCars` is on the decorator list in `component-sandbox.md` §8.
+ * When it lands, this file gains the badge at 0/1/99 plus pre-hydration.
  *
- *   · the chip is **F074**, and its list is no longer a `cities` table (**D6**)
- *     but the cities dealers actually trade in, counted from `listing_search`
- *     at **F076**;
- *   · the count is **F087**, and needs the `SavedCarsProvider` decorator this
- *     sandbox does not have yet — which is coupling **C-1**, and the reason
- *     `withSavedCars` is on the decorator list in `component-sandbox.md` §8.
- *
- * When they land, this file gains the states that go with them: the chip
- * closed/open, and the badge at 0/1/99 plus pre-hydration.
+ * The baseline's **city chip** is not missing — it is the location button, and
+ * it lists districts instead. `LocationSelector`'s own stories say why.
  * ───────────────────────────────────────────────────────────────────────────
  */
+const LOCATIONS: PublicLocations = {
+  districts: [
+    { slug: 'vellore', name: 'Vellore', count: 11 },
+    { slug: 'ranipet', name: 'Ranipet', count: 11 },
+    { slug: 'tirupattur', name: 'Tirupattur', count: 8 },
+  ],
+  total: 30,
+};
+
 const meta = {
   title: 'Layout/CustomerHeader',
   component: CustomerHeader,
+  args: { locations: LOCATIONS },
   parameters: {
     layout: 'fullscreen',
     nextjs: { appDirectory: true, navigation: { pathname: '/' } },

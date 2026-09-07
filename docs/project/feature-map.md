@@ -2376,7 +2376,7 @@ after onboarding')`, plus the service unit tests
 
 ## R10 — The yard on a map, not only in a link
 
-**Revises F038, F041, F086** · builds on **R6**
+**Revises F038, F041, F086** · [#77](https://github.com/shashikiran6sk/DealersDrive/pull/77)
 
 - **Contracts** `DealerPublicProfile.address.geo`; `isGoogleMapsUrl` exported as
   a predicate, because the schema vets what a dealer types and something else
@@ -2413,6 +2413,45 @@ after onboarding')`, plus the service unit tests
 - `geo` is deliberately **not** published in `AutoDealer` structured data.
   These are coordinates off a share link, not surveyed: good enough to centre a
   map a person is looking at, not good enough to assert to a search engine.
+
+## R11 — Districts in the header, and city chips that multi-select
+
+**Revises F085** · restores the baseline's header switcher, differently
+
+- **Contracts** `DealerDirectoryQuery.district`; `city` takes a comma-separated
+  list; `LocationChip`; `DealerDirectoryResponse.districts`; `PublicLocations`
+- **Backend** `GET /v1/locations`; `listActive` projects the district;
+  `chipsOf` counts either column; the chips narrow to the chosen district and
+  the districts narrow to nothing
+- **Frontend** `LocationSelector` (new, C069) in the header, the public layout
+  fetching its list, `DirectoryFilters` multi-select with a counted "Clear N
+  towns", `many()` in `lib/url`
+- **Sandbox** `LocationSelector` with its five states; `DirectoryFilters` gains
+  `SeveralTowns` and `WithinADistrict`
+- **Tests** the district filter, multi-city, chip narrowing, place ordering,
+  the locations endpoint, and the selector's keyboard and drop-the-towns
+  behaviour
+- The header had no location control at all — F074 was going to restore the
+  baseline's city switcher off `listing_search` at F076. It does not need to
+  wait: the directory already knows every locality a dealership is in, which is
+  the same source F076 would use and is available now.
+- **Districts rather than cities**, which is a change from the baseline and not
+  only a consequence of **D6** removing the `cities` table. A district is the
+  area somebody drives across, the towns inside give no hint they are related —
+  Arakkonam and Walajapet share one with Arcot and nothing else — and a header
+  dropdown listing every town stops being readable at about thirty. The towns
+  are the chips, narrowed to the district.
+- **The chips are toggles that compose.** A buyer working the Vellore belt
+  wants Katpadi _and_ Vellore, twenty minutes apart; single-select made them run
+  the same search twice. `aria-pressed` already announced a toggle, so this is
+  the behaviour catching up with the announcement — and it needs a counted
+  "Clear N towns", because un-pressing four chips in turn is not an affordance.
+- Changing the district **drops `city` and `page`**: `?district=ranipet&city=katpadi`
+  is an empty page, and letting a buyer navigate into it is worse than deciding
+  for them.
+- `cities` is narrowed by the district and by nothing else, and `districts` by
+  nothing at all. A list that dropped the options you did not choose is a list
+  you cannot get back out of.
 
 ---
 

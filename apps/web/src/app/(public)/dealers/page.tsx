@@ -7,7 +7,7 @@ import { DirectoryFilters } from '@/components/dealers/directory-filters';
 import { EmptyState } from '@/components/ui/primitives';
 import { apiGet, qs } from '@/lib/api';
 import { seoMetadata } from '@/lib/seo';
-import { one, type SearchParamsInput } from '@/lib/url';
+import { many, one, type SearchParamsInput } from '@/lib/url';
 
 /**
  * `/dealers` — the directory grid, a name search and the city chips.
@@ -19,8 +19,30 @@ import { one, type SearchParamsInput } from '@/lib/url';
  */
 export const dynamic = 'force-dynamic';
 
-function readParams(params: SearchParamsInput): { city?: string; q?: string; page?: string } {
-  return { city: one(params, 'city'), q: one(params, 'q'), page: one(params, 'page') };
+/**
+ * The URL is the filter state, so this is the one place it is read.
+ *
+ * `city` is a list — the chips are toggles — and travels as one comma-separated
+ * parameter rather than a repeated one, which is the form the API's schema
+ * accepts and the form that survives being pasted into a chat window.
+ */
+function readParams(params: SearchParamsInput): {
+  city: string[];
+  district?: string;
+  q?: string;
+  page?: string;
+} {
+  return {
+    city: many(params, 'city'),
+    district: one(params, 'district'),
+    q: one(params, 'q'),
+    page: one(params, 'page'),
+  };
+}
+
+/** The list, back in the shape the API and the links both want. */
+function cityParam(city: string[]): string | undefined {
+  return city.length > 0 ? [...city].sort().join(',') : undefined;
 }
 
 export async function generateMetadata({
@@ -28,18 +50,50 @@ export async function generateMetadata({
 }: {
   searchParams: Promise<SearchParamsInput>;
 }): Promise<Metadata> {
-  const { city, q } = readParams(await searchParams);
-  const directory = await apiGet<DealerDirectoryResponse>(`/v1/dealers${qs({ city })}`, {
-    revalidate: 600,
-  });
-  const cityName = directory.cities.find((entry) => entry.slug === city)?.name ?? 'your area';
+  const { city, district, q } = readParams(await searchParams);
+  const directory = await apiGet<DealerDirectoryResponse>(
+    `/v1/dealers${qs({ city: cityParam(city), district })}`,
+    { revalidate: 600 },
+  );
+
+  const place = placeName(directory, city, district) ?? 'your area';
 
   return {
-    title: `Used car dealers in ${cityName}`,
-    description: `Verified independent used-car dealerships in ${cityName}. Identity, GSTIN and address checked before a single car goes live.`,
-    // A name search is a thin, unbounded surface; a city page is a real one.
-    ...seoMetadata({ kind: 'dealers', city, hasQuery: Boolean(q) }),
+    title: `Used car dealers in ${place}`,
+    description: `Verified independent used-car dealerships in ${place}. Identity, GSTIN and address checked before a single car goes live.`,
+    /*
+     * A name search is a thin, unbounded surface; a place page is a real one.
+     * **One** town is a real one — two toggled together is a comparison a buyer
+     * made for themselves, and there is no audience searching for the pair, so
+     * it is passed through as a multi-value and the policy declines to index it
+     * exactly as it declines a name search.
+     */
+    ...seoMetadata({
+      kind: 'dealers',
+      ...(district ? { city: district } : city.length === 1 ? { city: city[0] } : {}),
+      hasQuery: Boolean(q) || city.length > 1,
+    }),
   };
+}
+
+/**
+ * What to call the place in a heading: the town when exactly one is chosen, the
+ * district otherwise, and nothing at all on the unfiltered page.
+ *
+ * The baseline said "Dealers near Tamil Nadu" with no filter at all, which was
+ * a hard-coded state from the days when the platform had five towns in one of
+ * them (D6).
+ */
+function placeName(
+  directory: DealerDirectoryResponse,
+  city: string[],
+  district?: string,
+): string | undefined {
+  if (city.length === 1) {
+    return directory.cities.find((entry) => entry.slug === city[0])?.name;
+  }
+  if (district) return directory.districts.find((entry) => entry.slug === district)?.name;
+  return undefined;
 }
 
 export default async function DealerDirectoryPage({
@@ -47,12 +101,13 @@ export default async function DealerDirectoryPage({
 }: {
   searchParams: Promise<SearchParamsInput>;
 }) {
-  const { city, q, page } = readParams(await searchParams);
-  const directory = await apiGet<DealerDirectoryResponse>(`/v1/dealers${qs({ city, q, page })}`, {
-    revalidate: 600,
-  });
+  const { city, district, q, page } = readParams(await searchParams);
+  const directory = await apiGet<DealerDirectoryResponse>(
+    `/v1/dealers${qs({ city: cityParam(city), district, q, page })}`,
+    { revalidate: 600 },
+  );
 
-  const cityName = directory.cities.find((entry) => entry.slug === city)?.name;
+  const place = placeName(directory, city, district);
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 pb-[60px] pt-[26px]">
@@ -67,7 +122,7 @@ export default async function DealerDirectoryPage({
           hard-coded state from the days when the platform had five towns in one
           of them (D6).
         */}
-        <h1 className="text-[34px]">{cityName ? `Dealers in ${cityName}` : 'Verified dealers'}</h1>
+        <h1 className="text-[34px]">{place ? `Dealers in ${place}` : 'Verified dealers'}</h1>
         <span className="text-[14px] ink-muted tnum">{directory.countLabel}</span>
       </div>
 
@@ -78,7 +133,8 @@ export default async function DealerDirectoryPage({
 
       <DirectoryFilters
         cities={directory.cities}
-        {...(city ? { city } : {})}
+        city={city}
+        {...(district ? { district } : {})}
         {...(q ? { q } : {})}
       />
 
@@ -94,7 +150,7 @@ export default async function DealerDirectoryPage({
           message={
             q
               ? `Nothing here is called "${q}". Clear the search to see every verified dealership.`
-              : 'No verified dealerships have listed cars in this city yet.'
+              : 'No verified dealerships have listed cars in this area yet.'
           }
           action={
             <Link href="/dealers" className="btn btn-primary">
@@ -104,7 +160,7 @@ export default async function DealerDirectoryPage({
         />
       )}
 
-      <Pagination page={directory.page} city={city} q={q} />
+      <Pagination page={directory.page} city={cityParam(city)} district={district} q={q} />
     </div>
   );
 }
@@ -112,10 +168,12 @@ export default async function DealerDirectoryPage({
 function Pagination({
   page,
   city,
+  district,
   q,
 }: {
   page: DealerDirectoryResponse['page'];
   city?: string;
+  district?: string;
   q?: string;
 }) {
   if (page.totalPages <= 1) return null;
@@ -124,7 +182,7 @@ function Pagination({
     <nav className="mt-6 flex items-center justify-between gap-3" aria-label="Pagination">
       {page.page > 1 ? (
         <Link
-          href={`/dealers${qs({ city, q, page: page.page - 1 })}`}
+          href={`/dealers${qs({ city, district, q, page: page.page - 1 })}`}
           rel="prev"
           className="btn btn-secondary"
         >
@@ -138,7 +196,7 @@ function Pagination({
       </span>
       {page.page < page.totalPages ? (
         <Link
-          href={`/dealers${qs({ city, q, page: page.page + 1 })}`}
+          href={`/dealers${qs({ city, district, q, page: page.page + 1 })}`}
           rel="next"
           className="btn btn-secondary"
         >

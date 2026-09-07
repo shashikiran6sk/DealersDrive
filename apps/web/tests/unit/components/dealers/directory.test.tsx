@@ -143,18 +143,47 @@ describe('DirectoryFilters', () => {
     expect(navigationState.pushed).toEqual(['/dealers?city=vellore']);
   });
 
-  /** Pressing the chip that is on is the only way back to every city. */
-  it('clears the filter when the chosen chip is pressed again', async () => {
+  /**
+   * The chips are toggles, not a radio group. A buyer working the Vellore belt
+   * wants Katpadi *and* Vellore — twenty minutes apart — and single-select made
+   * them run the same search twice and hold both results in their head.
+   */
+  it('adds a second city rather than replacing the first', async () => {
     const user = userEvent.setup();
-    render(<DirectoryFilters cities={CITIES} city="vellore" />);
+    render(<DirectoryFilters cities={CITIES} city={['vellore']} />);
+
+    await user.click(screen.getByRole('button', { name: /katpadi/i }));
+
+    expect(navigationState.pushed).toEqual(['/dealers?city=katpadi%2Cvellore']);
+  });
+
+  /**
+   * Sorted, so that choosing the same two towns in either order is the same
+   * URL — one link to share and one cache entry rather than two of each.
+   */
+  it('writes the towns in a stable order however they were picked', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<DirectoryFilters cities={CITIES} city={['katpadi']} />);
+    await user.click(screen.getByRole('button', { name: /vellore/i }));
+    unmount();
+
+    render(<DirectoryFilters cities={CITIES} city={['vellore']} />);
+    await user.click(screen.getByRole('button', { name: /katpadi/i }));
+
+    expect(navigationState.pushed[0]).toBe(navigationState.pushed[1]);
+  });
+
+  it('takes a city back off when its chip is pressed again', async () => {
+    const user = userEvent.setup();
+    render(<DirectoryFilters cities={CITIES} city={['vellore', 'katpadi']} />);
 
     await user.click(screen.getByRole('button', { name: /vellore/i }));
 
-    expect(navigationState.pushed).toEqual(['/dealers']);
+    expect(navigationState.pushed).toEqual(['/dealers?city=katpadi']);
   });
 
-  it('says which chip is on', () => {
-    render(<DirectoryFilters cities={CITIES} city="vellore" />);
+  it('says which chips are on', () => {
+    render(<DirectoryFilters cities={CITIES} city={['vellore']} />);
 
     expect(screen.getByRole('button', { name: /vellore/i })).toHaveAttribute(
       'aria-pressed',
@@ -166,9 +195,47 @@ describe('DirectoryFilters', () => {
     );
   });
 
+  /**
+   * With one chip at a time, pressing the active one cleared the filter and
+   * that was discoverable enough. With several on, un-pressing each in turn is
+   * not — so there is a way out that scales.
+   */
+  it('offers one way out of a multi-selection, counted', async () => {
+    const user = userEvent.setup();
+    render(<DirectoryFilters cities={CITIES} city={['vellore', 'katpadi']} />);
+
+    await user.click(screen.getByRole('button', { name: /clear 2 towns/i }));
+
+    expect(navigationState.pushed).toEqual(['/dealers']);
+  });
+
+  it('does not offer a way out when nothing is chosen', () => {
+    render(<DirectoryFilters cities={CITIES} />);
+
+    expect(screen.queryByRole('button', { name: /clear/i })).toBeNull();
+  });
+
+  /**
+   * The district is the header's filter and this component only carries it —
+   * but it must carry it through every navigation, or choosing a town would
+   * silently widen the search back to the whole platform.
+   */
+  it('carries the district through a chip and a search', async () => {
+    const user = userEvent.setup();
+    render(<DirectoryFilters cities={CITIES} district="vellore" />);
+
+    await user.click(screen.getByRole('button', { name: /katpadi/i }));
+    await user.type(screen.getByLabelText(/search dealership name/i), 'lakshmi{Enter}');
+
+    expect(navigationState.pushed).toEqual([
+      '/dealers?district=vellore&city=katpadi',
+      '/dealers?district=vellore&q=lakshmi',
+    ]);
+  });
+
   it('carries the city through a name search', async () => {
     const user = userEvent.setup();
-    render(<DirectoryFilters cities={CITIES} city="vellore" />);
+    render(<DirectoryFilters cities={CITIES} city={['vellore']} />);
 
     await user.type(screen.getByLabelText(/search dealership name/i), 'lakshmi{Enter}');
 

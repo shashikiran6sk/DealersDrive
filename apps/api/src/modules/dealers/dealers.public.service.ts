@@ -5,6 +5,8 @@ import {
   type DealerDirectoryQuery,
   type DealerDirectoryResponse,
   type DealerPublicProfile,
+  type LocationChip,
+  type PublicLocations,
 } from '@dealers-drive/contracts';
 
 import { env } from '../../config/env.js';
@@ -78,9 +80,20 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
 
       const byDealer = new Map(inventory.map((row) => [row.dealer_slug, row]));
 
-      let filtered = dealers;
-      if (query.city && query.city !== 'all') {
-        filtered = filtered.filter((dealer) => dealer.citySlug === query.city);
+      // The district first: it is the wider filter, and the city chips are
+      // counted over what it leaves.
+      const inDistrict =
+        query.district && query.district !== 'all'
+          ? dealers.filter((dealer) => dealer.districtSlug === query.district)
+          : dealers;
+
+      const cities = citySlugsIn(query.city);
+
+      let filtered = inDistrict;
+      if (cities.size > 0) {
+        filtered = filtered.filter(
+          (dealer) => dealer.citySlug !== null && cities.has(dealer.citySlug),
+        );
       }
       if (query.q) {
         const needle = query.q.toLowerCase();
@@ -144,18 +157,6 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
         };
       });
 
-      // Only cities that actually hold a verified dealership appear as chips.
-      // Counted over every ACTIVE dealership rather than over the filtered page,
-      // so choosing a chip does not empty the row it was chosen from.
-      const cityRows = new Map<string, { slug: string; name: string; count: number }>();
-      for (const dealer of dealers) {
-        if (!dealer.citySlug || !dealer.cityName) continue;
-        const existing = cityRows.get(dealer.citySlug);
-        if (existing) existing.count += 1;
-        else
-          cityRows.set(dealer.citySlug, { slug: dealer.citySlug, name: dealer.cityName, count: 1 });
-      }
-
       return {
         data,
         page: {
@@ -165,7 +166,39 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           totalPages: Math.ceil(total / query.limit),
         },
         countLabel: `${total} verified ${total === 1 ? 'dealership' : 'dealerships'}`,
-        cities: [...cityRows.values()].sort((a, b) => b.count - a.count),
+        /*
+         * The chips, over the **district** and not over the page — so choosing
+         * one cannot empty the row it was chosen from, and a district's towns
+         * stay visible while its dealerships are being filtered by name.
+         *
+         * Narrowed by the district and by nothing else. Narrowing them by the
+         * cities already chosen would delete the chips a buyer needs in order
+         * to change their mind.
+         */
+        cities: chipsOf(inDistrict, (dealer) => [dealer.citySlug, dealer.cityName]),
+        /*
+         * The districts, over every ACTIVE dealership. Never narrowed: this is
+         * what the header offers, and a selector that dropped the options you
+         * did not pick is one you cannot get back out of.
+         */
+        districts: chipsOf(dealers, (dealer) => [dealer.districtSlug, dealer.districtName]),
+      };
+    },
+
+    /**
+     * A12 — the districts the platform trades in, for the header's selector.
+     *
+     * Its own read rather than a slice of the directory's, because the header
+     * is in the public layout: it renders on the home page and on the
+     * catalogue, neither of which has any reason to fetch a page of
+     * dealerships.
+     */
+    async locations(): Promise<PublicLocations> {
+      const dealers = await repo.listActive();
+
+      return {
+        districts: chipsOf(dealers, (dealer) => [dealer.districtSlug, dealer.districtName]),
+        total: dealers.length,
       };
     },
 
@@ -264,6 +297,51 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
 }
 
 export type DealersPublicService = ReturnType<typeof createDealersPublicService>;
+
+/**
+ * `?city=vellore,katpadi` — the chips a buyer has toggled on.
+ *
+ * `all` is accepted as "no filter" rather than as a town, because that is what
+ * the baseline's single-select chip sent when it was cleared and a link that
+ * still says it should not return an empty page.
+ */
+function citySlugsIn(value: string | undefined): Set<string> {
+  if (!value) return new Set();
+  return new Set(
+    value
+      .split(',')
+      .map((slug) => slug.trim())
+      .filter((slug) => slug.length > 0 && slug !== 'all'),
+  );
+}
+
+/**
+ * Counts one place per dealership, busiest first, dropping the rows that never
+ * answered the question.
+ *
+ * One function for the city chips and the district selector because they are
+ * the same computation over a different column — and they were the same
+ * fourteen lines twice before this, which is how the two come to disagree about
+ * whether an unnamed locality is a chip.
+ */
+function chipsOf<T>(
+  rows: readonly T[],
+  place: (row: T) => [slug: string | null, name: string | null],
+): LocationChip[] {
+  const chips = new Map<string, LocationChip>();
+
+  for (const row of rows) {
+    const [slug, name] = place(row);
+    if (!slug || !name) continue;
+    const existing = chips.get(slug);
+    if (existing) existing.count += 1;
+    else chips.set(slug, { slug, name, count: 1 });
+  }
+
+  // Busiest first, then alphabetically — otherwise two districts of the same
+  // size swap places between requests and the row appears to shuffle itself.
+  return [...chips.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
 
 /**
  * "Vellore, Tamil Nadu · 7 years", and gracefully less when a dealership
