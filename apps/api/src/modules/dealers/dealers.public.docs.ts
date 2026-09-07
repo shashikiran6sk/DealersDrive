@@ -34,10 +34,17 @@ export const dealersPublicDocs: ModuleDocs = {
       tag: 'Dealers (public)',
       summary: 'The dealer directory',
       description:
-        'Every ACTIVE dealership, filtered by city slug and by a substring of the trading ' +
-        'name, paged. `cities` carries the chips — only localities that actually hold a ' +
-        'verified dealership, counted over the whole directory rather than over the page, so ' +
-        'choosing a chip cannot empty the row it was chosen from.\n\n' +
+        'Every ACTIVE dealership, filtered by district, by city and by a substring of the ' +
+        'trading name, paged.\n\n' +
+        '`city` takes **one slug or several separated by commas** — the chips are toggles, ' +
+        'and a buyer comparing two neighbouring towns is looking at one market. `district` ' +
+        'takes one. The two are different questions: a city is a town somebody names, a ' +
+        'district is the area they would drive across, and the towns in one give no hint ' +
+        'they are related.\n\n' +
+        '`cities` carries the chips, **narrowed to the chosen district** and counted over it ' +
+        'rather than over the page — so choosing a chip cannot empty the row it was chosen ' +
+        'from. `districts` is never narrowed by anything, because a selector that dropped ' +
+        'the options you did not choose is one you cannot get back out of.\n\n' +
         'A dealership with no live cars still appears, with `fromPriceLabel` as an em dash. ' +
         'It is a verified business that has not listed yet, not an error.\n\n' +
         '`Cache-Control: public, max-age=300`.',
@@ -49,6 +56,33 @@ export const dealersPublicDocs: ModuleDocs = {
           status: 200,
           description: 'The directory page, its count label and its city chips.',
           schema: 'DealerDirectoryResponse',
+        },
+      ],
+    },
+    {
+      method: 'get',
+      path: '/v1/locations',
+      operationId: 'getPublicLocations',
+      tag: 'Dealers (public)',
+      summary: 'The districts the platform trades in',
+      description:
+        "The header's location button, on every public page. A separate read from the " +
+        'directory because the header sits in the public layout and renders on pages that ' +
+        'never ask for a dealership — asking `/v1/dealers` for it would mean fetching a page ' +
+        'of the directory to draw a dropdown.\n\n' +
+        'These are the districts dealerships are **actually** in, counted, derived from the ' +
+        'text each dealership carries. It replaces `GET /v1/cities`, which **D6** withdrew ' +
+        'with the `cities` table: that endpoint listed the five towns somebody had seeded, ' +
+        'so a filter could offer a place with nothing behind it and could miss a place ' +
+        'that had just been typed.\n\n' +
+        '`Cache-Control: public, max-age=300`.',
+      audience: 'public',
+      rateLimit: '120 requests per minute per IP, shared with the other public reads.',
+      responses: [
+        {
+          status: 200,
+          description: 'The districts, busiest first, and the total they are counted out of.',
+          schema: 'PublicLocations',
         },
       ],
     },

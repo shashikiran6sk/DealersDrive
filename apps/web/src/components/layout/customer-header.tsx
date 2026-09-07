@@ -1,9 +1,11 @@
 'use client';
 
+import type { PublicLocations } from '@dealers-drive/contracts';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 
+import { LocationSelector } from '@/components/layout/location-selector';
 import { Plate } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
@@ -16,24 +18,20 @@ import { cn } from '@/lib/cn';
  * client'` should go with it (invariant 8).
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * Two pieces of the baseline's header are held back, each waiting on its own
- * feature:
+ * One piece of the baseline's header is still held back: **the saved-cars
+ * count** is **F087**. `Saved cars` is a plain link here; the badge needs
+ * `SavedCarsProvider`, which reads `localStorage`.
  *
- *   · **The city chip** is **F074**. It is the only part of the header that
- *     reads the query string, and its list is no longer a `cities` table
- *     (**D6** withdrew F026) — it is the cities dealers actually trade in,
- *     counted from `listing_search`, which arrives with **F076**. Until then
- *     there is nothing truthful to put in it, so the chip is absent rather than
- *     stubbed with five seeded towns.
- *   · **The saved-cars count** is **F087**. `Saved cars` is a plain link here;
- *     the badge needs `SavedCarsProvider`, which reads `localStorage`.
+ * The location button is here, and it is **districts** rather than the
+ * baseline's cities — see `LocationSelector` for why that is the better
+ * question at this level, and not merely the one D6 left available.
  *
  * The nav points at `/cars` (**F077**), `/dealers` (**F085**) and `/saved`
  * (**F087**). Those routes land after this one — which is the cost of bringing
  * the shell across before the rooms it frames, and the order Tier 12 chose.
  * ────────────────────────────────────────────────────────────────────────────
  */
-export function CustomerHeader() {
+export function CustomerHeader({ locations }: { locations: PublicLocations }) {
   const pathname = usePathname();
 
   return (
@@ -58,6 +56,17 @@ export function CustomerHeader() {
 
         <div className="ml-auto flex items-center gap-2">
           {/*
+            The selector is the only part of the header that reads the query
+            string, and `useSearchParams` opts a route out of static
+            prerendering unless it sits behind a boundary. Keeping the boundary
+            this tight means the rest of the header — logo, nav, the two doors —
+            still renders on the server, and the button arrives with the same
+            markup a moment later.
+          */}
+          <Suspense fallback={<LocationChipFallback />}>
+            <LocationSelector locations={locations} />
+          </Suspense>
+          {/*
             Both go to `/dealer`. There is one door for a dealership — the
             console decides between "sign in" and "finish onboarding" from the
             session, so the header does not have to guess which of the two a
@@ -77,6 +86,20 @@ export function CustomerHeader() {
         </div>
       </div>
     </header>
+  );
+}
+
+/**
+ * The button's own footprint, so the header does not reflow when the real one
+ * arrives. It reads "All districts" because that is what the button says for
+ * every visitor who has not chosen one.
+ */
+function LocationChipFallback() {
+  return (
+    <span className="btn btn-secondary flex items-center gap-[7px]" aria-hidden="true">
+      <span className="block h-[14px] w-[5px] bg-(--color-accent)" />
+      All districts <span>▾</span>
+    </span>
   );
 }
 

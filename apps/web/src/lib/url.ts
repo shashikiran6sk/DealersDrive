@@ -21,3 +21,18 @@ export function one(params: SearchParamsInput, key: string): string | undefined 
   const value = Array.isArray(raw) ? raw[0] : raw;
   return value === '' ? undefined : value;
 }
+
+/**
+ * A comma-separated parameter, as the list it stands for.
+ *
+ * `?city=vellore,katpadi` rather than `?city=vellore&city=katpadi`: the API
+ * takes one value per key, the shorter form survives being pasted into a chat
+ * window intact, and a single slug still reads as a list of one — so every
+ * link shared before the chips became toggles keeps working.
+ */
+export function many(params: SearchParamsInput, key: string): string[] {
+  return (one(params, key) ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}

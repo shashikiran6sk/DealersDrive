@@ -43,6 +43,8 @@ function activeDealer(overrides: Record<string, unknown> = {}) {
     initials: 'SL',
     cityName: 'Vellore',
     citySlug: 'vellore',
+    districtName: 'Vellore',
+    districtSlug: 'vellore',
     state: 'Tamil Nadu',
     yearsOperating: 17,
     tagline: 'Trusted since 2009',
@@ -205,12 +207,142 @@ describe('directory', () => {
     expect(response.page.total).toBe(1);
   });
 
+  /**
+   * The chips are toggles, so the filter is a set. A buyer working the Vellore
+   * belt is looking at Katpadi *and* Vellore — twenty minutes apart — and
+   * single-select made them run the same search twice.
+   */
+  it('filters by several cities at once', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer(),
+        activeDealer({ slug: 'velavan-cars', citySlug: 'katpadi' }),
+        activeDealer({ slug: 'arcot-autos', citySlug: 'arcot' }),
+      ],
+    });
+
+    const response = await h.service.directory(query({ city: 'vellore,katpadi' }));
+
+    expect(response.data.map((card) => card.slug).sort()).toEqual([
+      'sri-lakshmi-motors',
+      'velavan-cars',
+    ]);
+  });
+
+  /**
+   * Defence in depth, not a user path: `DealerDirectoryQuery` is `.strict()`
+   * and its pattern refuses `vellore,,katpadi` with a 400 naming `query.city`,
+   * so a request shaped like this never reaches the service through the route.
+   * It is asserted anyway because the service is called directly by tests and
+   * will be called directly by F076, and a filter that silently matched a town
+   * named `''` would match nothing while looking like it matched everything.
+   */
+  it('ignores whitespace and empty entries if it is ever handed them', async () => {
+    const h = setup({
+      dealers: [activeDealer(), activeDealer({ slug: 'velavan-cars', citySlug: 'katpadi' })],
+    });
+
+    expect((await h.service.directory(query({ city: ' vellore , ,katpadi' }))).data).toHaveLength(
+      2,
+    );
+  });
+
   it('treats "all" as no city filter', async () => {
     const h = setup({
       dealers: [activeDealer(), activeDealer({ slug: 'velavan-cars', citySlug: 'katpadi' })],
     });
 
     expect((await h.service.directory(query({ city: 'all' }))).data).toHaveLength(2);
+  });
+
+  /**
+   * A district is the area a buyer drives across; a city is a town they name.
+   * The towns inside one give no hint they are related — Arakkonam and
+   * Walajapet share a district with Arcot and with nothing else — which is why
+   * the header asks the wider question and the chips the narrower one.
+   */
+  it('filters by district, across towns that do not look related', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'arcot-autos', citySlug: 'arcot', districtSlug: 'ranipet' }),
+        activeDealer({ slug: 'arakkonam-cars', citySlug: 'arakkonam', districtSlug: 'ranipet' }),
+        activeDealer(),
+      ],
+    });
+
+    const response = await h.service.directory(query({ district: 'ranipet' }));
+
+    expect(response.data.map((card) => card.slug).sort()).toEqual([
+      'arakkonam-cars',
+      'arcot-autos',
+    ]);
+  });
+
+  it('narrows the chips to the chosen district', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'arcot-autos', citySlug: 'arcot', cityName: 'Arcot' }),
+        activeDealer({
+          slug: 'arcot-autos-2',
+          citySlug: 'arcot',
+          cityName: 'Arcot',
+          districtSlug: 'ranipet',
+          districtName: 'Ranipet',
+        }),
+        activeDealer(),
+      ],
+    });
+
+    // Vellore's chips are the towns in Vellore, and Arcot's Vellore-district
+    // namesake is counted there rather than being merged with the Ranipet one.
+    const response = await h.service.directory(query({ district: 'vellore' }));
+
+    expect(response.cities.map((chip) => chip.slug).sort()).toEqual(['arcot', 'vellore']);
+    expect(response.cities.find((chip) => chip.slug === 'arcot')?.count).toBe(1);
+  });
+
+  /**
+   * The header's own options, and the one list that is never narrowed: a
+   * selector that dropped the districts you did not choose is a selector you
+   * cannot get back out of.
+   */
+  it('offers every district whatever else is filtered', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer(),
+        activeDealer({ slug: 'b', districtSlug: 'ranipet', districtName: 'Ranipet' }),
+      ],
+    });
+
+    const response = await h.service.directory(query({ district: 'vellore', city: 'vellore' }));
+
+    expect(response.districts.map((chip) => chip.slug).sort()).toEqual(['ranipet', 'vellore']);
+  });
+
+  it('leaves a dealership with no district out of the selector', async () => {
+    const h = setup({
+      dealers: [activeDealer({ districtSlug: null, districtName: null })],
+    });
+
+    expect((await h.service.directory(query())).districts).toEqual([]);
+  });
+
+  /** Two places of the same size must not swap rows between requests. */
+  it('orders places busiest first, then alphabetically', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'a', citySlug: 'zeta', cityName: 'Zeta' }),
+        activeDealer({ slug: 'b', citySlug: 'alpha', cityName: 'Alpha' }),
+        activeDealer({ slug: 'c', citySlug: 'busiest', cityName: 'Busiest' }),
+        activeDealer({ slug: 'd', citySlug: 'busiest', cityName: 'Busiest' }),
+      ],
+    });
+
+    expect((await h.service.directory(query())).cities.map((chip) => chip.name)).toEqual([
+      'Busiest',
+      'Alpha',
+      'Zeta',
+    ]);
   });
 
   it('searches brand names case-insensitively', async () => {
@@ -400,6 +532,53 @@ describe('directory', () => {
     const h = setup({ dealers: [activeDealer()] });
 
     expect((await h.service.directory(query())).data[0]?.logoUrl).toBeNull();
+  });
+});
+
+/**
+ * A12 — the header's list, on every public page.
+ *
+ * Its own read rather than a slice of the directory's, because the header is in
+ * the public layout: it renders on the home page and on the catalogue, neither
+ * of which has any reason to fetch a page of dealerships.
+ */
+describe('locations', () => {
+  it('answers with the districts dealerships are actually in, counted', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer(),
+        activeDealer({ slug: 'b', districtSlug: 'ranipet', districtName: 'Ranipet' }),
+        activeDealer({ slug: 'c', districtSlug: 'ranipet', districtName: 'Ranipet' }),
+      ],
+    });
+
+    const locations = await h.service.locations();
+
+    expect(locations.districts).toEqual([
+      { slug: 'ranipet', name: 'Ranipet', count: 2 },
+      { slug: 'vellore', name: 'Vellore', count: 1 },
+    ]);
+  });
+
+  /** The "All districts" row is a count, not an escape hatch with no number. */
+  it('counts every ACTIVE dealership, including the ones with no district', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer(),
+        activeDealer({ slug: 'b', districtSlug: null, districtName: null }),
+      ],
+    });
+
+    const locations = await h.service.locations();
+
+    expect(locations.total).toBe(2);
+    expect(locations.districts).toHaveLength(1);
+  });
+
+  it('is empty rather than absent on a platform with no dealerships', async () => {
+    const h = setup({ dealers: [] });
+
+    expect(await h.service.locations()).toEqual({ districts: [], total: 0 });
   });
 });
 

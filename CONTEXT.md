@@ -657,8 +657,13 @@ Copy `.env.example` to `.env` before running anything that touches the database.
 `dealers.slug` reads `sri-lakshmi-motors-katpadi-vellore-tamil-nadu`, and it is
 two things at once: the URL of the public portfolio, and the name of the
 dealership's folder in the bucket. Everything it owns lives under
-`dealers/{slug}/` — the KYC scans under `documents/`, the yard photograph under
-`yard/`.
+`dealers/{slug}/` — the KYC scans under `dealers/{slug}/documents/`, the yard
+photograph under `dealers/{slug}/yard/`.
+
+(Those are object-storage keys, not paths in this repository. Keep the
+`{slug}` placeholder in them when quoting one: `scripts/check-docs.mjs`
+resolves every backticked path against the workspace, and a bare prefix ending
+in a slash looks exactly like a directory somebody renamed.)
 
 A KYC document's key is **derived** from the slug rather than stored
 (`dealer-storage-keys.ts`), which makes one rule load-bearing:

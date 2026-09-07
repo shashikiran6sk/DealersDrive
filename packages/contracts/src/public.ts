@@ -63,6 +63,26 @@ export const DealerDirectoryQuery = z
      */
     city: z
       .string()
+      // One slug, or several separated by commas. The chips are toggles now —
+      // a buyer comparing Katpadi and Vellore is looking at one market, and
+      // making them pick one town at a time is making them run the search
+      // twice. A single slug still parses, so every link already shared keeps
+      // working and the shape below is the same one it always was.
+      .regex(/^[a-z0-9-]+(?:,[a-z0-9-]+)*$/)
+      .max(400)
+      .optional(),
+    /**
+     * The district, as a slug. One at a time.
+     *
+     * Cities and districts answer different questions and the split is
+     * deliberate. A city is a town a buyer names; a district is the area they
+     * would drive across, and the towns in one give no hint they are related —
+     * Arakkonam and Walajapet share a district with Arcot and with nothing
+     * else. So the header picks a district and the chips narrow to the towns
+     * inside it, rather than offering every town on the platform at once.
+     */
+    district: z
+      .string()
       .regex(/^[a-z0-9-]+$/)
       .optional(),
     q: z.string().max(120).optional(),
@@ -106,14 +126,63 @@ export const DealerCard = z.object({
 });
 export type DealerCard = z.infer<typeof DealerCard>;
 
+/**
+ * A place a buyer can filter by, and how many dealerships are in it.
+ *
+ * The slug is derived from the name — `slugify(dealer.city)` — rather than
+ * stored, because **D6** removed the table that used to hold the pair. There is
+ * therefore no second copy of it that can fall out of step with the first,
+ * which is what that column was for.
+ */
+export const LocationChip = z.object({
+  slug: z.string(),
+  name: z.string(),
+  count: z.number().int(),
+});
+export type LocationChip = z.infer<typeof LocationChip>;
+
 export const DealerDirectoryResponse = z.object({
   data: z.array(DealerCard),
   page: OffsetPage,
   countLabel: z.string(),
-  /** The chips. Only cities that hold at least one verified dealership. */
-  cities: z.array(z.object({ slug: z.string(), name: z.string(), count: z.number().int() })),
+  /**
+   * The city chips, **narrowed to the chosen district**. Every town in it that
+   * holds a verified dealership, counted over the district rather than over the
+   * page — so choosing a chip cannot empty the row it was chosen from.
+   */
+  cities: z.array(LocationChip),
+  /**
+   * Every district that holds a verified dealership, and never narrowed by
+   * anything. It is what the header's selector offers, and a selector that
+   * dropped the options you did not choose is a selector you cannot get out of.
+   */
+  districts: z.array(LocationChip),
 });
 export type DealerDirectoryResponse = z.infer<typeof DealerDirectoryResponse>;
+
+/**
+ * A12 — the places the platform trades in, for the header's location button.
+ *
+ * A separate read from the directory's own, because the header sits in the
+ * public layout and is rendered on pages that never call `/v1/dealers` — the
+ * home page and, from F077, the catalogue. Asking the directory for it would
+ * mean every one of those pages fetching a page of dealerships to render a
+ * dropdown.
+ *
+ * ── Deliberate divergence from the baseline ─────────────────────────────────
+ * This replaces `CitiesResponse` and `GET /v1/cities` (F026), which **D6**
+ * withdrew along with the `cities` table. The difference is not only the name:
+ * that endpoint listed the five towns somebody had seeded, and this one lists
+ * the districts dealerships are *actually* in, counted. A location filter can
+ * therefore never offer a place with nothing behind it.
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+export const PublicLocations = z.object({
+  districts: z.array(LocationChip),
+  /** Every ACTIVE dealership, so the "all districts" row can be counted. */
+  total: z.number().int(),
+});
+export type PublicLocations = z.infer<typeof PublicLocations>;
 
 /**
  * A9 — one dealership's public page, as a buyer sees it.

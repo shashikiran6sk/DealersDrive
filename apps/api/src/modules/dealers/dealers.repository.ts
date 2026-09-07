@@ -10,6 +10,20 @@ export const dealerInclude = {
 
 export type DealerWithRelations = Prisma.DealerGetPayload<{ include: typeof dealerInclude }>;
 
+/**
+ * A locality's slug, or null when there is no locality.
+ *
+ * Truthiness rather than `=== null`, and the difference is not pedantry: a
+ * column can hold `''` — `normaliseLocality` maps a field of spaces to it — and
+ * `slugify('')` is an empty slug, which is a filter value that matches
+ * everything and displays as nothing. Both mean "not answered", and both have
+ * to reach the response as null so the chip is dropped rather than rendered
+ * blank.
+ */
+function placeSlug(value: string | null): string | null {
+  return value ? slugify(value) : null;
+}
+
 export function createDealersRepository(prisma: PrismaClient) {
   return {
     async findById(dealerId: string): Promise<DealerWithRelations | null> {
@@ -61,7 +75,12 @@ export function createDealersRepository(prisma: PrismaClient) {
         // as long as the dealership does not move — which is the same promise
         // the slug made, without a table to keep in step with it.
         cityName: dealer.city,
-        citySlug: dealer.city === null ? null : slugify(dealer.city),
+        citySlug: placeSlug(dealer.city),
+        // The area a buyer would drive across, as opposed to the town they
+        // would name. Both are derived from the dealership's own text, so
+        // neither can drift from a lookup table that no longer exists (D6).
+        districtName: dealer.district,
+        districtSlug: placeSlug(dealer.district),
         state: dealer.state,
         // The yard photograph, as an id. The directory turns it into a URL only
         // for the page it is rendering, and only for the rows whose media is

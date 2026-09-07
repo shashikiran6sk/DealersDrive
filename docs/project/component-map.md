@@ -345,10 +345,16 @@ Both in `components/search/search-toolbar.tsx` (`:11`, `:82`).
 
 ### C031 — `DirectoryFilters`
 
-`components/dealers/directory-filters.tsx:23`. Props:
-`cities: DealerDirectoryResponse['cities']`, `city?`, `q?`. States: default,
-filtered, searching, both, one city, no cities, many cities. One consumer.
-**P2** ✅
+`components/dealers/directory-filters.tsx:34`. Props:
+`cities: DealerDirectoryResponse['cities']`, `city?: string[]`, `district?`,
+`q?`. States: default, one town, several towns, searching, town and search,
+within a district, no towns, many towns. One consumer. **P2** ✅
+
+The chips are **multi-select** as of **R11** — `city` is a list, and the row
+carries a counted "Clear N towns" because un-pressing four chips in turn is not
+an affordance. `cities` arrives narrowed to whichever district the header
+chose; this component carries the district through every navigation it makes
+but never sets it.
 
 ### C068 — `LocationCard`
 
@@ -363,6 +369,21 @@ independently nullable because a share link carries no coordinates until it is
 followed and following it is best-effort. Neither is ever composed from the
 address. A server component — a Google embed in an `<iframe>` needs no
 JavaScript of ours. **P2** ✅
+
+### C069 — `LocationSelector`
+
+`components/layout/location-selector.tsx:33`. Props:
+`locations: PublicLocations`. States: all districts, one chosen, open, no
+districts, many districts. One consumer (`CustomerHeader`).
+
+The baseline's header switcher, restored as **districts** rather than cities —
+see R11 for why that is the better question and not merely the one D6 left
+available. A client component for two reasons, both unavoidable: the menu's
+open state, and `useSearchParams`, which is why it sits behind its own
+`Suspense` boundary so the rest of the header still renders on the server.
+
+Choosing a district drops `city` and `page` from the query string, because
+`?district=ranipet&city=katpadi` is an empty page.
 
 ---
 
