@@ -375,6 +375,14 @@ composed by the API (**R14**), so the card renders one `<iframe>` and cannot
 tell a place card from a bare pin — which is what let the map gain the yard's
 name, rating and an in-frame directions control without the card changing shape.
 
+> ⚠️ **R22 — the frame's size is load-bearing.** Google draws the place card
+> only at roughly **400 × 300 CSS pixels or larger** and collapses it to an
+> "Open in Maps" button below that (measured, not documented — the ladder is in
+> the R22 entry). The card is therefore a full-width block on the portfolio,
+> not the third cell of a three-up row, where the frame was 372 × 220 and no
+> dealership could ever show its rating. Any new consumer that puts this in a
+> narrow column gets the button back, silently.
+
 ### C069 — `LocationSelector`
 
 `components/layout/location-selector.tsx:33`. Props:

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { LocationCard } from '@/components/dealers/location-card';
 
 /**
- * The third card in the portfolio's info row.
+ * The portfolio's map, as a full-width block (**R22**).
  *
  * The thing to check by eye is that **the map and the button are independent**.
  * They look like one feature and are not: the button is `mapsUrl`, the link the
@@ -19,6 +19,13 @@ import { LocationCard } from '@/components/dealers/location-card';
  * a directions control, inside the frame. A link that only carried coordinates
  * comes back as an unlabelled dot. Both are real states; the first is worth the
  * place id it costs.
+ *
+ * ⚠️ **And the card only appears in a frame of about 400 × 300 or larger**
+ * (**R22**) — Google collapses it to an "Open in Maps" button in anything
+ * smaller, which is what every dealership on the platform used to get: the map
+ * was the third card in a three-up row, 372px wide, and no link however good
+ * could show a rating there. Widen this story's decorator below 400 and watch
+ * the card become a button; that is the whole bug, reproducible in one drag.
  *
  * Neither half is ever composed from the address. A map confidently centred on
  * the wrong gate is worse than the slot, because it looks authoritative.
@@ -64,8 +71,13 @@ const meta = {
   parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
-      // The info row's cell: `minmax(260px, 1fr)`.
-      <div style={{ width: 320 }}>
+      /*
+        The page column the map now sits in (**R22**), not the 320px info-row
+        cell it used to. That cell is the bug: at 320 — and at the 372 the real
+        row gave it — Google draws an "Open in Maps" button instead of the place
+        card, so a dealership's rating could never appear however good its link.
+      */
+      <div style={{ width: 900 }}>
         <Story />
       </div>
     ),

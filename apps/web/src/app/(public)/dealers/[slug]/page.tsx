@@ -193,7 +193,23 @@ export default async function DealerPortfolioPage({
             ))}
           </dl>
         </section>
+      </div>
 
+      {/*
+        The map, out of the three-up row and into the page column (**R22**).
+
+        It was the third card beside About and Contact, which made it 372px wide
+        on a 1280px page — 400px of column less the card's own padding. Google
+        draws the place card only at 400 × 300 or larger and collapses it to an
+        "Open in Maps" button below that, so at a third of the row *no*
+        dealership could ever show the thing R14 composes a place embed for: its
+        own name, address and rating, on the map. The measurements are in
+        `location-card.tsx`.
+
+        Full width is also the shape R15 gave the yard photograph, and for the
+        same reason — a place is looked at rather than glanced past.
+      */}
+      <div className="mx-auto max-w-[1280px] px-6 pt-4">
         <LocationCard address={dealer.address} brandName={dealer.brandName} />
       </div>
 

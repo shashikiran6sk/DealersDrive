@@ -44,6 +44,28 @@ describe('LocationCard', () => {
     expect(frame?.getAttribute('loading')).toBe('lazy');
   });
 
+  /**
+   * R22 — the frame has to be big enough for Google to draw the place card in.
+   *
+   * Google collapses it to an "Open in Maps" button below roughly 400 × 300 CSS
+   * pixels, measured against a real place embed at a ladder of sizes. That is
+   * why the map is a full-width block and no longer the third card in a
+   * three-up row, where it was 372px wide and *no* dealership could show its
+   * own name, address or rating however good its link was.
+   *
+   * jsdom lays nothing out, so what is asserted is the rule that carries the
+   * height. The width comes from the page, and the portfolio's own test covers
+   * where the card sits.
+   */
+  it('gives the map a frame Google will draw the place card in', () => {
+    const { container } = render(<LocationCard address={ADDRESS} brandName="Sri Lakshmi Motors" />);
+
+    const frame = container.querySelector('iframe')?.parentElement;
+    expect(frame?.className).toContain('h-[360px]');
+    // And not the old 220, which is what produced the button on every page.
+    expect(frame?.className).not.toContain('min-h-[220px]');
+  });
+
   it('names the frame, because a screen reader otherwise announces "iframe"', () => {
     const { container } = render(<LocationCard address={ADDRESS} brandName="Sri Lakshmi Motors" />);
 

@@ -3037,6 +3037,72 @@ has to arrange, and leaving the rule in place would be a second mechanism for a
 job already done — the kind that survives long enough for someone to change one
 and not the other.
 
+## R22 — A map big enough to be a place card
+
+**Revises R14 / F086**
+
+- **Frontend** `location-card.tsx` — the frame is 360px tall (260 below `md`)
+  and no longer capped at 220; `dealers/[slug]/page.tsx` — the map leaves the
+  three-up info row for the page column
+- **Sandbox** the decorator is the page column rather than a 320px cell, with
+  the threshold written down where somebody will hit it
+- **Tests** the frame carries the height the card needs, and not the old floor
+
+### The rating was never going to appear, at any width we were giving it
+
+**R14** composes a place embed so the portfolio's map comes back as Google's
+own place card — the dealership's name, its address, its **rating** and review
+count. **R20** told a dealer whether their link named a place. Both were
+working: every ACTIVE dealership on the platform has a `mapsPlaceId`, three of
+the four store a Google embed URL verbatim, and rendering those URLs shows the
+card with the rating on it.
+
+The page still showed a bare pin, because **Google draws the place card only in
+a frame of about 400 × 300 CSS pixels and collapses it to a small "Open in
+Maps" button in anything smaller.** That is not documented; it was measured, by
+rendering one real place embed at a ladder of sizes:
+
+| frame         | place card |
+| ------------- | ---------- |
+| 400 × 220     | no         |
+| 400 × 280     | no         |
+| 400 × 295     | no         |
+| **400 × 300** | **yes**    |
+| 372 × 300     | no         |
+| 372 × 400     | no         |
+| 384 × 320     | no         |
+| **400 × 320** | **yes**    |
+
+The info row is `repeat(auto-fit, minmax(260px, 1fr))` inside a 1280px page:
+three columns of exactly 400px, less this card's own 14px of padding on each
+side, so the frame was **372 × 220**. Under both thresholds, on the widest
+screen the design supports. No dealership could show its rating, and no link
+however carefully pasted would have changed that.
+
+### So the map takes the page column
+
+It is a full-width block below About and Contact now, which makes the frame
+about 1204 × 360 — clear of both thresholds with room to spare, so the card
+survives a browser deciding to round differently. That is also the shape
+**R15** gave the yard photograph, for the same reason: a place is looked at
+rather than glanced past, and the two things on this page worth looking at are
+the yard and where it is.
+
+Below `md` no layout clears 400px of width, so a phone gets Google's button.
+That is a fair fallback — it opens the listing, rating and all, in the app that
+has it — and the height comes back to 260 there so the map does not eat a
+screen.
+
+### What this cost, and what it did not
+
+The info row is two cards wide instead of three, which is a divergence from
+DESIGN-SPEC §3.6. The alternative was to keep the row and accept that R14, R20
+and the place id on every dealership add up to a feature nobody can see.
+
+Nothing about the URL changed. `embedUrlFor` was right, `mapKindFor` was right,
+the stored data was right — the frame was too small. It is worth saying plainly
+because the three PRs before this one all looked at the URL.
+
 ---
 
 # Feature → Component matrix
