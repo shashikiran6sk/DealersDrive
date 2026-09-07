@@ -140,43 +140,33 @@ export default async function DealerPortfolioPage({
           </div>
         </div>
 
-        <div className="mx-auto grid max-w-[1280px] gap-3 px-6 pb-[20px] [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
-          {dealer.stats.map((stat) => (
-            <Blueprint key={stat.key} className="bg-(--color-surface) p-[14px]">
-              <div className="eyebrow">{stat.label}</div>
-              <div className="font-heading text-[28px] font-bold leading-[1.15] tnum">
-                {stat.value || '—'}
-              </div>
-            </Blueprint>
-          ))}
-        </div>
-
         {/*
-          The yard, last in the header and running to the very bottom of it
-          (R13). It was a 170px strip above the name, which is where a *logo*
-          belongs — a banner, glanced past on the way to the text.
+          The yard, last in the header (R13, R15). It was a 170px strip above
+          the name, which is where a *logo* belongs — a banner, glanced past on
+          the way to the text. Below the identity block it reads the other way
+          round: a buyer reads who this is, and then wants to see the place.
 
-          Below the facts it reads the other way round. A buyer arrives with a
-          question the stats answer in a line each — how many cars, how long
-          they have been trading, which town — and then wants to see the place.
-          So the photograph is what the header ends on, at a size worth looking
-          at, with nothing under it but the divider the info row starts from.
-
-          `border-b-0` because that divider belongs to the wrapper; the two
-          would otherwise draw the same line twice.
+          R15 puts it in the same column as everything else on the page. It ran
+          the full 1280px while every block above and below it is that width
+          *including* its 24px gutter, so the photograph alone hung 24px past
+          both margins — the one element on the page that did not line up. It
+          is inset now, and taller by the 80px the stats grid above it used to
+          occupy, so nothing was traded for the alignment.
         */}
-        <Blueprint className="mx-auto h-[360px] max-w-[1280px] border-b-0 bg-(--color-surface) max-lg:h-[280px] max-md:h-[200px]">
-          {dealer.coverUrl ? (
-            /* The 1600px rendition — this is the one place a yard photograph is
-               looked at rather than glanced past. See `dealer-card.tsx` for why
-               it is a plain `<img>` and why the alt is empty. */
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            /* A dealership that has not uploaded one yet. */
-            <ImageSlot label="Dealership frontage / yard photo" />
-          )}
-        </Blueprint>
+        <div className="mx-auto max-w-[1280px] px-6 pb-[20px]">
+          <Blueprint className="h-[440px] bg-(--color-surface) max-lg:h-[340px] max-md:h-[240px]">
+            {dealer.coverUrl ? (
+              /* The 1600px rendition — this is the one place a yard photograph
+                 is looked at rather than glanced past. See `dealer-card.tsx`
+                 for why it is a plain `<img>` and why the alt is empty. */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              /* A dealership that has not uploaded one yet. */
+              <ImageSlot label="Dealership frontage / yard photo" />
+            )}
+          </Blueprint>
+        </div>
       </div>
 
       {/* ── 2. Info row ─────────────────────────────────────────────────── */}
@@ -200,7 +190,7 @@ export default async function DealerPortfolioPage({
         <section className="card p-[14px]">
           <h2 className="eyebrow">Contact</h2>
           <dl>
-            {dealer.contact.map((row) => (
+            {detailRows(dealer).map((row) => (
               <div
                 key={row.key}
                 className="flex justify-between gap-4 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
@@ -247,6 +237,37 @@ export default async function DealerPortfolioPage({
       </div>
     </div>
   );
+}
+
+type DetailRow = DealerPublicProfile['contact'][number];
+
+/**
+ * One list, not a grid and a list (R15).
+ *
+ * The four stats were four bordered cards across the header — "Cars available",
+ * "Years operating", "Location", "Response time" — set in 28px type, which is
+ * the weight a page gives a number a buyer came for. Nobody comes to a
+ * dealership page for the number 27. They are facts about the dealership in
+ * exactly the register of its GSTIN and its opening hours, so they read as rows
+ * beside them, and the header is left to do the one thing only it can: say who
+ * this is and show the yard.
+ *
+ * `location` is dropped rather than moved. `contact` already carries a City row
+ * with the state on it, and the stat is the same town said a second time — a
+ * duplicate that was invisible while the two lived in different blocks and
+ * would be conspicuous inside one list.
+ *
+ * The API composes both arrays and neither is re-derived here: `value || '—'`
+ * is the em dash the stat cards used for an empty value, kept because a blank
+ * `<dd>` beside a label reads as a rendering fault rather than as "not known".
+ */
+function detailRows(dealer: DealerPublicProfile): DetailRow[] {
+  return [
+    ...dealer.contact,
+    ...dealer.stats
+      .filter((stat) => stat.key !== 'location')
+      .map((stat) => ({ key: stat.key, label: stat.label, value: stat.value || '—' })),
+  ];
 }
 
 /**
