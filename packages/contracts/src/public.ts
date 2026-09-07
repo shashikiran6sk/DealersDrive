@@ -189,10 +189,13 @@ export type PublicLocations = z.infer<typeof PublicLocations>;
  *
  * ## This shape is a privacy boundary
  *
- * `contact` is a list of rows the page renders verbatim, and the phone row
- * carries `masked: true` and the words "Tap to reveal" — **not a number**.
- * That is not a rendering convention a component could forget: there is no
- * field in this schema that could hold one.
+ * `contact` is a list of rows the page renders verbatim, and **none of them is
+ * a phone row** (**R16**). There used to be one carrying `masked: true` and the
+ * words "Tap to reveal", which was already safe — the number was never in the
+ * payload — but the reveal it invited is A7, which is vehicle-scoped, so there
+ * was no control on a dealership page that could act on it. Removing the row
+ * leaves nothing phone-shaped in this schema at all, which is a boundary a
+ * reviewer can check by reading the type.
  *
  * GSTIN is here and PAN is not, and the difference is not squeamishness: a
  * GSTIN is printed on every invoice an Indian business issues and is a thing a
@@ -271,7 +274,6 @@ export const DealerPublicProfile = z.object({
       key: z.string(),
       label: z.string(),
       value: z.string(),
-      masked: z.boolean().optional(),
       mono: z.boolean().optional(),
     }),
   ),
