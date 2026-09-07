@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  distinctServices,
   emiPaise,
   formatDate,
   formatKm,
@@ -225,6 +226,42 @@ describe('normaliseLocality', () => {
     expect(normaliseLocality('Bengaluru')).toBe('Bengaluru');
     expect(normaliseLocality('N.C.R.')).toBe('N.C.R.');
     expect(normaliseLocality('')).toBe('');
+  });
+});
+
+/**
+ * R18. The same write-time guard rail as `normaliseLocality`, applied to the
+ * one other free-text field a dealer types several values into.
+ */
+describe('distinctServices', () => {
+  it('collapses entries that differ only in case or spacing', () => {
+    expect(distinctServices(['Finance', 'finance', 'FINANCE'])).toEqual(['Finance']);
+    expect(distinctServices(['RC transfer', 'RC  transfer'])).toEqual(['RC transfer']);
+  });
+
+  /** The dealer's own capitals, not ours. */
+  it('keeps the first spelling and the dealer’s order', () => {
+    expect(distinctServices(['RC Transfer', 'Finance', 'rc transfer'])).toEqual([
+      'RC Transfer',
+      'Finance',
+    ]);
+  });
+
+  it('trims, and drops what trimming leaves empty', () => {
+    expect(distinctServices([' Finance ', '   ', '', 'Exchange'])).toEqual(['Finance', 'Exchange']);
+  });
+
+  /**
+   * Deliberately narrow, for the reason `normaliseLocality` is: a dealer knows
+   * what they offer. Merging "Loan" into "Loans" would eventually be wrong in a
+   * way nobody could see from the outside.
+   */
+  it('does not merge synonyms, singularise or correct spelling', () => {
+    expect(distinctServices(['Loan', 'Loans', 'Finence'])).toEqual(['Loan', 'Loans', 'Finence']);
+  });
+
+  it('is total on an empty list', () => {
+    expect(distinctServices([])).toEqual([]);
   });
 });
 

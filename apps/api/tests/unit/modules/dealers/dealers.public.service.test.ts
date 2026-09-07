@@ -165,6 +165,35 @@ describe('directory', () => {
     ]);
   });
 
+  /**
+   * R18 — a row written before the services were collapsed at write time.
+   * Nothing backfills the column, so the read has to cover it: a card showing
+   * "Finance" twice reads as a fault of the page, and the two tags are two
+   * React children keyed by the same string.
+   */
+  it('collapses duplicate services a stored row still holds', async () => {
+    const h = setup({
+      dealers: [activeDealer({ specialities: ['Finance', 'finance', 'Exchange', 'FINANCE'] })],
+    });
+
+    expect((await h.service.directory(query())).data[0]?.services).toEqual(['Finance', 'Exchange']);
+  });
+
+  /** Collapsed before the slice, so three distinct services still fill the card. */
+  it('counts the three to the card after collapsing, not before', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ specialities: ['Finance', 'finance', 'Exchange', 'SUVs', 'Sedans'] }),
+      ],
+    });
+
+    expect((await h.service.directory(query())).data[0]?.services).toEqual([
+      'Finance',
+      'Exchange',
+      'SUVs',
+    ]);
+  });
+
   it('builds the location-and-tenure line', async () => {
     const h = setup({ dealers: [activeDealer()] });
 
@@ -605,6 +634,17 @@ describe('profile', () => {
     // invited is vehicle-scoped, so a dealership page had nothing to act on it.
     expect(profile.contact.some((entry) => entry.key === 'phone')).toBe(false);
     expect(JSON.stringify(profile)).not.toMatch(/Tap to reveal/);
+  });
+
+  /** R18, on the portfolio — which lists every service rather than three. */
+  it('collapses duplicate services on the profile too', async () => {
+    const h = setup({
+      profile: publicDealer({ specialities: ['RC Transfer', 'rc  transfer', 'Finance'] }),
+    });
+
+    const profile = await h.service.profile('sri-lakshmi-motors');
+
+    expect(profile.services).toEqual(['RC Transfer', 'Finance']);
   });
 
   it('publishes GSTIN but never PAN', async () => {

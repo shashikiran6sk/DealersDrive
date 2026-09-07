@@ -278,6 +278,48 @@ export function normaliseLocality(input: string): string {
 }
 
 /**
+ * `["Finance", " finance ", "RC transfer"]` -> `["Finance", "RC transfer"]`.
+ *
+ * The same guard rail as `normaliseLocality`, for the same reason and applied
+ * at the same moment. A dealership's services are free text typed into one
+ * comma-separated box, and "Finance, finance" is a slip nobody makes on
+ * purpose — but two entries that differ only in case are two facets of one
+ * service to a filter, two chips on a card, and two React children with the
+ * same `key`, which is what surfaced this: the public page renders a tag per
+ * service and keys it by the string.
+ *
+ * The rules are deliberately narrow:
+ *
+ *   · entries are compared **case-insensitively**, with internal whitespace
+ *     collapsed, because that is the difference a typo makes
+ *   · the **first** spelling wins, so a dealer who wrote "RC Transfer" keeps
+ *     their capitals rather than having ours imposed
+ *   · order is preserved, because the dealer chose it and the card shows the
+ *     first three
+ *
+ * It does not correct spelling, merge synonyms or singularise. "Loan" and
+ * "Loans" stay two services: a dealer knows what they offer, and a function
+ * that guesses would eventually be wrong in a way nobody could see.
+ */
+export function distinctServices(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const kept: string[] = [];
+
+  for (const value of values) {
+    const service = value.trim().replace(/\s+/g, ' ');
+    if (!service) continue;
+
+    const key = service.toLowerCase();
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    kept.push(service);
+  }
+
+  return kept;
+}
+
+/**
  * A ten-digit Indian mobile number, however it was typed.
  *
  * One definition, in the package both apps import, because there were three

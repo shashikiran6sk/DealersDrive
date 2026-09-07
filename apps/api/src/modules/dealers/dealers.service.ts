@@ -1,5 +1,6 @@
 import {
   DEALER_STATUS_LABELS,
+  distinctServices,
   DOC_TYPE_LABELS,
   formatPhone,
   normaliseLocality,
@@ -295,6 +296,25 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
         input.address?.state === undefined ? undefined : normaliseLocality(input.address.state);
 
       /**
+       * The services, collapsed to a set (**R18**).
+       *
+       * Here rather than in the schema, for the reason the localities are here:
+       * this is a normalisation, not a refusal. A dealer who types "Finance,
+       * finance" has made a slip, and the useful answer is one service rather
+       * than a 400 explaining that they typed a word twice. A transform in the
+       * input schema would also have to survive `z.toJSONSchema`, and a
+       * transform cannot be represented in JSON Schema at all.
+       *
+       * The 12-item cap in `UpdateDealerInput` is therefore over what was
+       * *typed*, not over what is kept. Thirteen entries with a duplicate among
+       * them is still a 400 — a rarer accident than the one this fixes, and
+       * moving the cap after the collapse would take `maxItems` out of the
+       * reference.
+       */
+      const specialities =
+        input.specialities === undefined ? undefined : distinctServices(input.specialities);
+
+      /**
        * The contact number, in the one form the column stores.
        *
        * `toE164` runs here rather than at the edge for the same reason
@@ -390,7 +410,7 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
             ...(input.establishedYear === undefined
               ? {}
               : { establishedYear: input.establishedYear }),
-            ...(input.specialities === undefined ? {} : { specialities: input.specialities }),
+            ...(specialities === undefined ? {} : { specialities }),
             ...(input.workingHours === undefined ? {} : { workingHours: input.workingHours }),
             ...(input.contact?.email === undefined ? {} : { contactEmail: input.contact.email }),
             // Two columns, one number: `users.phone` is who the dealer is to us
