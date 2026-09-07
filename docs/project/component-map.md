@@ -465,10 +465,16 @@ props. Both **P2**.
 
 ### C038 — `DirectoryCard`
 
-`components/dealers/dealer-card.tsx:22`. Props: `dealer: DealerCardDto`.
-States: verified/unverified, cover/no cover, tagline/none, 0–3+ services (sliced
-at 3), 0/1/n cars, long brand name. Deps: `Blueprint`, `ImageSlot`, `LogoTile`,
-`Plate`, `Tag`. One consumer. Shared. **P1** ✅
+`components/dealers/dealer-card.tsx:42`. Props: `dealer: DealerCardDto`.
+States: verified/unverified, cover/no cover, tagline/none/overlong, 0–3+
+services (sliced at 3), 0/1/n cars, long brand name. Deps: `Blueprint`,
+`ImageSlot`, `LogoTile`, `Plate`, `Tag`. One consumer. Shared. **P1** ✅
+
+> **R17 — the height is shared with the grid.** The card carries a `min-h`
+> floor and clamps its tagline to two lines; the directory's grid carries
+> `grid-auto-rows: 1fr`, which is what makes cards in a row match each other. A
+> new consumer that lays these out itself has to add the same row rule, or a
+> dealership with no tagline will be the runt of its row again.
 
 > ⚠️ **Finding D-6 — naming.** The file is `dealer-card.tsx`; the export is
 > `DirectoryCard`. Nothing named `DealerCard` exists in the UI — `DealerCard` is

@@ -2706,6 +2706,56 @@ by reading the type instead of by reasoning about a flag.
 and leaving it behind would be an affordance for reintroducing the same row
 without the argument.
 
+## R17 — A directory card that keeps its height
+
+**Revises F085**
+
+- **Frontend** `dealer-card.tsx` — a `min-h` floor and a two-line clamp on the
+  tagline; `dealers/page.tsx` — `grid-auto-rows: 1fr` on the card grid
+- **Sandbox** `directory-card.stories.tsx` — `InTheGrid` becomes the story that
+  shows the fix, with a long tagline and a sparse card side by side; a
+  `LongTagline` story for the clamp
+- **Tests** the floor survives an empty tagline and an empty service row; a
+  200-character tagline is clamped rather than allowed to grow the card
+
+### Two optional fields, one ragged grid
+
+A tagline and a service row are both optional, and a dealership an hour past
+onboarding has neither — so the card was as tall as whatever it had to say.
+Within a row that was invisible, because grid items stretch to the row: the
+damage showed up _between_ rows, as a grid whose rhythm broke wherever a sparse
+dealership happened to land, and as a visibly short card whenever a whole row
+of them was sparse.
+
+The fix is in two halves, deliberately in two places.
+
+**`grid-auto-rows: 1fr` is on the grid**, because equal height is a fact about
+a row and not about a card. Every implicit row takes the height of its tallest
+member, so a dealership with nothing to say is exactly as tall as the one
+beside it that has everything. A card rendered outside a grid — the sandbox
+today, a "similar dealers" strip later — should not be padded to a row it is
+not in, which is why this rule is not on the card.
+
+**`min-h-[294px]` is on the card**, because `1fr` only equalises: a page where
+_every_ dealership is sparse would give a tidy row of stubs. The number is the
+card as it reads with one line of name, two of tagline and one row of tags —
+104 cover + 1 divider + 28 padding + 42 identity + 36 tagline + 22 tags + 31
+footer + 30 of gaps.
+
+### The same failure the other way round
+
+Neither half is safe without a bound on the tagline. The contract allows 200
+characters, and under `1fr` one dealership writing all 200 sets the height of
+every card on the page — a grid of half-empty cards, caused by the rule meant
+to make them consistent. `line-clamp-2` bounds it at the two lines the floor
+already reserves.
+
+Nothing reserves an empty box: a card with no tagline still renders no
+paragraph, and `mt-auto` keeps the footer at the bottom of whatever is left.
+The height is held by the container and the floor, not by placeholder markup —
+which matters for a screen reader, where a reserved empty element is a thing to
+announce and empty space is not.
+
 ---
 
 # Feature → Component matrix

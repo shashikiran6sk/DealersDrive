@@ -89,6 +89,28 @@ describe('DirectoryCard', () => {
     expect(screen.queryByText('RC transfer')).toBeNull();
   });
 
+  /**
+   * R17 — and dropping them does not shrink the card. jsdom computes no layout,
+   * so what is assertable here is that the two rules carrying the height are
+   * present: the floor on the card, and the clamp that stops one long tagline
+   * from setting the height of every card beside it. The row-matching half is
+   * `grid-auto-rows: 1fr` on the directory grid, and it is the sandbox's
+   * `InTheGrid` story that shows it working.
+   */
+  it('keeps its height when there is no tagline and no service row', () => {
+    const { container } = render(
+      <DirectoryCard dealer={{ ...DEALER, tagline: null, services: [] }} />,
+    );
+
+    expect(container.querySelector('article')?.className).toContain('min-h-[294px]');
+  });
+
+  it('clamps a long tagline rather than growing to fit it', () => {
+    render(<DirectoryCard dealer={{ ...DEALER, tagline: 'A'.repeat(200) }} />);
+
+    expect(screen.getByText('A'.repeat(200)).className).toContain('line-clamp-2');
+  });
+
   it('names the missing photograph rather than showing a blank frame', () => {
     render(<DirectoryCard dealer={DEALER} />);
 
