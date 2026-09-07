@@ -98,7 +98,12 @@ describe('the dealership it shows', () => {
     expect(screen.getByText('Sri Lakshmi Motors Pvt Ltd')).toBeInTheDocument();
   });
 
-  it('renders the four stats the API composed, rather than deriving them again', async () => {
+  /**
+   * R15 — the stats are rows in the details card now, not a grid of their own,
+   * and they are still the ones the API composed rather than a second
+   * derivation of the same facts.
+   */
+  it('renders the stats the API composed, rather than deriving them again', async () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params }));
 
@@ -107,12 +112,36 @@ describe('the dealership it shows', () => {
     expect(screen.getByText('New dealer')).toBeInTheDocument();
   });
 
+  /**
+   * The one stat that is not carried across. `contact` already has a City row
+   * with the state on it; two rows saying Vellore in one list is the kind of
+   * duplicate that was invisible while they lived in separate blocks.
+   */
+  it('does not say the town twice in the one list', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params }));
+
+    expect(screen.getByText('Vellore, Tamil Nadu')).toBeInTheDocument();
+    expect(screen.queryByText('Location', { selector: 'dt' })).toBeNull();
+  });
+
   it('renders every contact row, including the masked one', async () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params }));
 
     expect(screen.getByText('Tap to reveal')).toBeInTheDocument();
     expect(screen.getByText('33AABCS1429B1ZX')).toBeInTheDocument();
+  });
+
+  /** A stat with no value is an em dash, not a blank `<dd>` reading as a fault. */
+  it('shows an em dash for a stat the API sent empty', async () => {
+    serve({
+      ...DEALER,
+      stats: DEALER.stats.map((s) => (s.key === 'response' ? { ...s, value: '' } : s)),
+    });
+    render(await DealerPortfolioPage({ params }));
+
+    expect(screen.getByText('—')).toBeInTheDocument();
   });
 
   it('falls back to a sentence when the dealership wrote no description', async () => {

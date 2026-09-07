@@ -2614,6 +2614,48 @@ placing it now draws a map where it used to draw nothing.
   same disclosure the "Get directions" button makes one press later, brought
   forward to the moment a buyer scrolls to the map.
 
+## R15 — One card of details, and a yard photograph that lines up
+
+**Revises F086**
+
+- **Frontend** `dealers/[slug]/page.tsx` — the stats grid is removed and its
+  rows join the contact card through a new `detailRows()`; the yard photograph
+  is inset to the page column and grows to 440px
+- **Tests** the stats read from the details card, the town is not said twice,
+  and an empty stat is an em dash
+
+### Four numbers nobody came for
+
+R13 put the stats between the dealership's name and the yard: four bordered
+cards, each a label and a 28px number. That is the typographic weight a page
+gives a figure a visitor arrived to read — a price, a balance. Nobody arrives
+at a dealership page to read the number 27.
+
+They are facts about the dealership in exactly the register of its GSTIN and
+its opening hours, so they are rows beside them now. The contact card was four
+rows and had room; the header is left doing the one thing only it can do, which
+is say who this is and show the place.
+
+`location` is dropped rather than moved. `contact` already carries a City row
+with the state on it, and the stat is the same town said a second time — a
+duplicate that was invisible while the two lived in different blocks and would
+be conspicuous inside one list. Nothing else is re-derived: both arrays still
+come from A9, and `carCountLabel` still reads the `cars` stat, so the inventory
+heading and the details card cannot disagree.
+
+### The one element on the page that did not line up
+
+Every block on this page is `max-w-[1280px] px-6` — 1280 including a 24px
+gutter. The yard photograph was `max-w-[1280px]` with no gutter, so it alone
+ran 24px past both margins, and the eye reads that as the photograph having
+escaped rather than as the text being indented.
+
+It is inset to the same column now, and it takes back the 80px the stats grid
+was occupying: 440px, 340 below `lg`, 240 below `md`. The frame draws its own
+bottom border again — `border-b-0` existed because the photograph ran flush
+into the header's divider and the two drew one line twice, which the 20px of
+bottom padding ends.
+
 ---
 
 # Feature → Component matrix
