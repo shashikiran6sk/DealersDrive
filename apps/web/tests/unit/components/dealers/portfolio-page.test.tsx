@@ -183,6 +183,65 @@ describe('the dealership it shows', () => {
 });
 
 /**
+ * The introduction, the detail rows and the services chips are **one** card,
+ * beside the map — not an "About the dealership" card and a "Contact" card
+ * saying, in two frames, who this dealership is.
+ *
+ * The assertions are structural rather than visual, because what an edit
+ * breaks here is the grouping and not the type: wrapping either half in a
+ * heading and a `<section>` of its own renders identically on a phone, where
+ * the info row is one column anyway, and silently puts the row back to three
+ * columns on a laptop — with the map, the widest thing in it, the narrowest of
+ * the three.
+ */
+describe('the dealership card', () => {
+  it('keeps the introduction, the facts and the services in one card', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params }));
+
+    const card = screen.getByText(DEALER.about as string).closest('section');
+
+    expect(card).not.toBeNull();
+    expect(card).toHaveTextContent('33AABCS1429B1ZX');
+    expect(card).toHaveTextContent('RC transfer');
+  });
+
+  /** Two cards in the info row, and the map is the second of them. */
+  it('leaves the info row at two cards', async () => {
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params }));
+
+    const cards = container.querySelectorAll('section');
+    expect(cards).toHaveLength(2);
+    expect(cards[1]).toContainElement(container.querySelector('iframe'));
+  });
+
+  it('renders every service the dealership listed', async () => {
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params }));
+
+    expect([...container.querySelectorAll('.tag')].map((tag) => tag.textContent)).toEqual([
+      'Hatchbacks',
+      'RC transfer',
+    ]);
+  });
+
+  /**
+   * A dealership that has named none gets no strip and no empty hairline above
+   * it — the divider belongs to the chips, so it may not outlive them.
+   */
+  it('renders no services strip for a dealership that named none', async () => {
+    serve({ ...DEALER, services: [] });
+    const { container } = render(await DealerPortfolioPage({ params }));
+
+    expect(container.querySelectorAll('.tag')).toHaveLength(0);
+    // The introduction and the facts are still there — only the chips are gone.
+    expect(screen.getByText(DEALER.about as string)).toBeInTheDocument();
+    expect(screen.getByText('33AABCS1429B1ZX')).toBeInTheDocument();
+  });
+});
+
+/**
  * Rule 7, from the outside. A dealer's number appears in no ordinary public
  * response, and `POST /v1/vehicles/:id/reveal-contact` is the only route that
  * yields one — so nothing on this page can render one, including the parts a
