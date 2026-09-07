@@ -775,7 +775,24 @@ export function createDealersService({ prisma, repo, storage }: DealersDeps) {
         throw new DomainError('UPLOAD_MISSING', 'The upload did not complete. Try again.');
       }
 
+      /*
+       * READY, here, at commit.
+       *
+       * `media.serve()` refuses anything that is not READY, and the only thing
+       * that promotes a row is **F034**'s derivative worker — which does not
+       * exist, and whose `media.process` job nothing consumes. So every yard
+       * photograph ever uploaded sat at PENDING, and the public pages had no
+       * image to show even once the dealership was approved.
+       *
+       * Marking it here is not standing in for F034. The object has just been
+       * HEADed, so the bytes are known to be there, and the presigned PUT
+       * signed their content-type and length — which is what lets `serve()`
+       * fall back to the original when a row has no variants yet. F034 adds
+       * the re-encoded renditions and `serve()` prefers them the moment they
+       * exist; nothing on this path changes when it lands.
+       */
       const displaced = dealer.coverMediaId;
+      await repo.markMediaReady(media.id);
       await repo.update(dealerId, { coverMediaId: media.id });
       if (displaced && displaced !== media.id) await discardMedia(displaced);
 

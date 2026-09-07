@@ -22,14 +22,28 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
     <article className="card relative gap-[10px] overflow-visible p-0">
       <Blueprint className="h-[104px] border-b border-(--color-divider) bg-(--color-surface)">
         {dealer.coverUrl ? (
+          /*
+           * The dealership's own yard photograph, cropped to the band.
+           *
+           * `alt=""` on purpose: the card's heading already names the
+           * dealership, and the image carries nothing a buyer would lose — a
+           * screen reader announcing "Annamalai Auto Mart — yard photo" right
+           * before the link that says "Annamalai Auto Mart" is noise.
+           *
+           * A plain `<img>` rather than `next/image` because the bytes come
+           * from `MEDIA_BASE_URL`, which is the API's own origin in every
+           * environment and a CDN host in production — configuring
+           * `remotePatterns` for a host that moves per environment trades a
+           * build-time constant for a runtime 400.
+           */
           // eslint-disable-next-line @next/next/no-img-element
           <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
         ) : (
           /*
-           * Every card takes this branch today: there is no permanent public
-           * URL for the yard photograph until **F034**, so `coverUrl` is null
-           * for every dealership. The slot names the shot rather than showing a
-           * grey rectangle, which is what makes the gap read as pending.
+           * A dealership that has not uploaded one — or whose upload is still
+           * being processed. The slot names the shot rather than showing a grey
+           * rectangle, which is what makes the gap read as pending rather than
+           * broken.
            */
           <ImageSlot label={`${dealer.brandName} — yard photo`} />
         )}

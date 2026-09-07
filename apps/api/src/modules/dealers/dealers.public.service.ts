@@ -9,6 +9,7 @@ import {
 
 import { env } from '../../config/env.js';
 import { NotFoundError } from '../../platform/errors.js';
+import { mediaUrl } from '../../platform/media/urls.js';
 import type { DealersRepository } from './dealers.repository.js';
 
 /**
@@ -41,6 +42,18 @@ export interface DealerInventoryStats {
 export const noInventoryYet: DealerInventoryStats = {
   dealerStats: () => Promise.resolve([]),
 };
+
+/**
+ * The widths the two public surfaces ask for.
+ *
+ * `DirectoryCard`'s cover is a 104px band across a ~290px card, so 640 is one
+ * retina step above what it needs and the smallest rendition that does not
+ * soften on a phone. The portfolio's is a 170px band across the full 1280px
+ * column, which is the one place a yard photograph is looked *at* rather than
+ * glanced past.
+ */
+const CARD_COVER_WIDTH = 640;
+const PORTFOLIO_COVER_WIDTH = 1600;
 
 export interface DealersPublicDeps {
   repo: DealersRepository;
@@ -78,6 +91,12 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       const start = (query.page - 1) * query.limit;
       const paged = filtered.slice(start, start + query.limit);
 
+      // Asked for the page, not for the directory: 24 ids rather than every
+      // ACTIVE dealership's, and one query rather than one per card.
+      const covers = await repo.readyMediaIds(
+        paged.map((dealer) => dealer.coverMediaId).filter((id): id is string => id !== null),
+      );
+
       const data: DealerCard[] = paged.map((dealer) => {
         const stat = byDealer.get(dealer.slug);
         const fromPrice =
@@ -103,16 +122,25 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           fromPriceLabel: fromPrice === null ? '—' : `from ${formatLakh(fromPrice)}`,
           isVerified: true,
           /*
-           * Both null, and both for the same reason: there is no permanent
-           * public URL for an uploaded image until **F034** builds the
-           * derivative pipeline. The yard photograph a dealer uploads at
-           * onboarding is readable today only through a short-lived signed URL,
-           * and a signed URL cannot go in a response this route asks a CDN to
-           * cache for five minutes. `DirectoryCard` renders `ImageSlot` in its
-           * place, which is the state F034 will replace.
+           * No logo yet: nothing in the product writes `logoMediaId`, so there
+           * is no image to address. `DirectoryCard` renders the initials tile,
+           * which is the design's answer for a dealership without one rather
+           * than a gap waiting on a feature.
            */
           logoUrl: null,
-          coverUrl: null,
+          /*
+           * The yard photograph, addressed by media id and width — never by
+           * storage key, so this URL survives the bucket being reorganised
+           * (`platform/media/urls.ts`).
+           *
+           * Null unless the row is READY. A `coverMediaId` pointing at a
+           * PENDING or ORPHAN upload would render as a broken image, and the
+           * `ImageSlot` it replaces is the more honest answer.
+           */
+          coverUrl:
+            dealer.coverMediaId && covers.has(dealer.coverMediaId)
+              ? mediaUrl(dealer.coverMediaId, CARD_COVER_WIDTH)
+              : null,
         };
       });
 
@@ -146,7 +174,10 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       const dealer = await repo.findPublicBySlug(slug);
       if (!dealer) throw new NotFoundError('That dealership is not listed.');
 
-      const inventory = await stats.dealerStats();
+      const [inventory, covers] = await Promise.all([
+        stats.dealerStats(),
+        repo.readyMediaIds(dealer.coverMediaId ? [dealer.coverMediaId] : []),
+      ]);
       const carCount = inventory.find((row) => row.dealer_slug === slug)?.count ?? 0;
 
       const city = dealer.city ?? '';
@@ -202,8 +233,13 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
             ? [{ key: 'hours', label: 'Open', value: humanHours(hours.mon_sat) }]
             : []),
         ],
+        // As above: no logo is written anywhere yet, and the cover is a URL only
+        // once its bytes are actually servable.
         logoUrl: null,
-        coverUrl: null,
+        coverUrl:
+          dealer.coverMediaId && covers.has(dealer.coverMediaId)
+            ? mediaUrl(dealer.coverMediaId, PORTFOLIO_COVER_WIDTH)
+            : null,
         seo: {
           canonical: `${env.WEB_BASE_URL}/dealers/${dealer.slug}`,
           // Indexable only if ACTIVE and holding at least one live listing

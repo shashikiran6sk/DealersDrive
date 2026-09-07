@@ -141,6 +141,9 @@ describe('listActive', () => {
         'brandName',
         'citySlug',
         'cityName',
+        // The yard photograph, as an id. The public service turns it into a URL
+        // only for the page it renders, and only once the bytes are servable.
+        'coverMediaId',
         'id',
         'initials',
         'slug',

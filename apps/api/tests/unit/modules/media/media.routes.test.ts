@@ -96,7 +96,7 @@ describe('the media router', () => {
 describe('the storage router', () => {
   it('declares the presigned PUT and the derivative read', () => {
     expect(signaturesOf(storage).sort()).toEqual(
-      ['PUT /uploads', 'GET /media/vehicles/by-media/:mediaId/:width.webp'].sort(),
+      ['PUT /uploads', 'GET /media/by-media/:mediaId/:width.webp'].sort(),
     );
   });
 

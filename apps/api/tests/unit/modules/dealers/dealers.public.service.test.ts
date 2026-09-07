@@ -79,19 +79,31 @@ function setup(
     dealers?: Record<string, unknown>[];
     stats?: { dealer_slug: string; count: number; from_price: bigint | null }[];
     profile?: Record<string, unknown> | null;
+    /** Media ids whose bytes are actually servable — everything else is not. */
+    ready?: string[];
   } = {},
 ) {
+  const readyIdQueries: string[][] = [];
+
   const repo = {
     listActive: () => Promise.resolve(options.dealers ?? []),
     findPublicBySlug: () => Promise.resolve(options.profile ?? null),
+    readyMediaIds: (ids: string[]) => {
+      readyIdQueries.push(ids);
+      return Promise.resolve(new Set(ids.filter((id) => (options.ready ?? []).includes(id))));
+    },
   } as unknown as DealersRepository;
 
   const stats: DealerInventoryStats = {
     dealerStats: () => Promise.resolve(options.stats ?? []),
   };
 
-  return { service: createDealersPublicService({ repo, stats }) };
+  return { service: createDealersPublicService({ repo, stats }), readyIdQueries };
 }
+
+/** Two uploads, so "only the page's covers" can be told from "every cover". */
+const COVER = '9f1c0a44-1111-4000-8000-00000000000a';
+const OTHER = '9f1c0a44-1111-4000-8000-00000000000b';
 
 const query = (overrides: Partial<DealerDirectoryQuery> = {}): DealerDirectoryQuery => ({
   page: 1,
@@ -325,16 +337,69 @@ describe('directory', () => {
   });
 
   /**
-   * There is no permanent public URL for an uploaded image until F034, and a
-   * short-lived signed URL cannot go in a response the route asks a CDN to
-   * cache for five minutes.
+   * The yard photograph, which is the first thing a buyer sees of a dealership.
+   *
+   * It is addressed by **media id and width**, never by storage key — so the
+   * URL on a page a CDN cached five minutes ago survives the bucket being
+   * reorganised underneath it (`platform/media/urls.ts`).
    */
-  it('carries no image URLs yet', async () => {
-    const h = setup({ dealers: [activeDealer()] });
+  it('addresses the yard photograph by media id, not by storage key', async () => {
+    const h = setup({
+      dealers: [activeDealer({ coverMediaId: COVER })],
+      ready: [COVER],
+    });
 
     const card = (await h.service.directory(query())).data[0];
-    expect(card?.logoUrl).toBeNull();
-    expect(card?.coverUrl).toBeNull();
+
+    expect(card?.coverUrl).toBe(`${env.MEDIA_BASE_URL}/by-media/${COVER}/640.webp`);
+    expect(card?.coverUrl).not.toContain('dealers/');
+  });
+
+  /**
+   * A `coverMediaId` is a pointer, and the row it points at may not be
+   * servable: an upload that never completed is PENDING, a displaced one is
+   * ORPHAN, and `media.serve()` refuses both. Emitting a URL for either is a
+   * broken image on the card, where `ImageSlot` is the more honest answer.
+   */
+  it('shows no cover for an upload that is not ready to be served', async () => {
+    const h = setup({ dealers: [activeDealer({ coverMediaId: COVER })], ready: [] });
+
+    expect((await h.service.directory(query())).data[0]?.coverUrl).toBeNull();
+  });
+
+  it('shows no cover for a dealership that never uploaded one', async () => {
+    const h = setup({ dealers: [activeDealer({ coverMediaId: null })] });
+
+    expect((await h.service.directory(query())).data[0]?.coverUrl).toBeNull();
+  });
+
+  /**
+   * One query for the page, and only for the page.
+   *
+   * The directory reads every ACTIVE dealership in order to count the city
+   * chips; the covers are needed for the 12 rows actually being rendered. Asking
+   * about all of them would grow with the platform for no visible benefit, and
+   * asking per card would be twelve round trips.
+   */
+  it('asks about the covers on the page, not about every dealership', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'a', coverMediaId: COVER }),
+        activeDealer({ slug: 'b', coverMediaId: OTHER }),
+      ],
+      ready: [COVER, OTHER],
+    });
+
+    await h.service.directory(query({ limit: 1 }));
+
+    expect(h.readyIdQueries).toEqual([[COVER]]);
+  });
+
+  /** Nothing writes `logoMediaId`, so there is no image to address. */
+  it('carries no logo URL, because nothing uploads one', async () => {
+    const h = setup({ dealers: [activeDealer()] });
+
+    expect((await h.service.directory(query())).data[0]?.logoUrl).toBeNull();
   });
 });
 

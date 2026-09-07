@@ -63,6 +63,10 @@ export function createDealersRepository(prisma: PrismaClient) {
         cityName: dealer.city,
         citySlug: dealer.city === null ? null : slugify(dealer.city),
         state: dealer.state,
+        // The yard photograph, as an id. The directory turns it into a URL only
+        // for the page it is rendering, and only for the rows whose media is
+        // actually servable — see `readyMediaIds` below.
+        coverMediaId: dealer.coverMediaId,
         tagline: dealer.tagline,
         specialities: dealer.specialities,
         yearsOperating: dealer.establishedYear
@@ -185,6 +189,35 @@ export function createDealersRepository(prisma: PrismaClient) {
 
     async createMedia(data: Prisma.MediaUncheckedCreateInput) {
       return prisma.media.create({ data });
+    },
+
+    /**
+     * Which of these uploads can actually be served.
+     *
+     * `media.serve()` answers only for a READY row, so a `coverMediaId`
+     * pointing at anything else must not become a URL on a public page — the
+     * card would render a broken image where the honest answer is the
+     * `ImageSlot`. One query for the whole directory page rather than one per
+     * card.
+     */
+    async readyMediaIds(mediaIds: string[]): Promise<Set<string>> {
+      if (mediaIds.length === 0) return new Set();
+      const rows = await prisma.media.findMany({
+        where: { id: { in: mediaIds }, status: 'READY' },
+        select: { id: true },
+      });
+      return new Set(rows.map((row) => row.id));
+    },
+
+    /**
+     * The one promotion this module performs, on commit of a yard photograph.
+     *
+     * Vehicle photos are promoted by F034's worker after it re-encodes them.
+     * This one has nothing to re-encode yet and is the dealership's own
+     * deliberate act, so it is READY the moment its bytes are confirmed.
+     */
+    async markMediaReady(mediaId: string) {
+      return prisma.media.update({ where: { id: mediaId }, data: { status: 'READY' } });
     },
 
     /**

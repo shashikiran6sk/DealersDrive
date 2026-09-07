@@ -235,12 +235,14 @@ export const storageDocs: ModuleDocs = {
     },
     {
       method: 'get',
-      path: '/media/vehicles/by-media/:mediaId/:width.webp',
+      path: '/media/by-media/:mediaId/:width.webp',
       operationId: 'getMediaDerivative',
       tag: 'Storage (local only)',
       summary: 'Serve a processed image',
       description:
-        'Content-addressed image delivery. A new upload is a new id and therefore a new URL, ' +
+        'Content-addressed image delivery for every kind of image the product stores — a ' +
+        'vehicle photograph and a dealership yard photograph are the same bytes behind the ' +
+        'same handler. A new upload is a new id and therefore a new URL, ' +
         'so a cache never has to be invalidated — hence ' +
         '`Cache-Control: public, max-age=31536000, immutable`.\n\n' +
         'Available widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the ' +

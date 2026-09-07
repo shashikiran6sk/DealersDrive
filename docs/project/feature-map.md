@@ -2318,7 +2318,7 @@ after onboarding')`, plus the service unit tests
 
 ## R8 — One folder per dealership, named after the dealership
 
-**Revises F038, F040, F041, F047** · reshapes `dealers.slug` and the bucket
+**Revises F038, F040, F041, F047** · [#75](https://github.com/shashikiran6sk/DealersDrive/pull/75)
 
 - **Contracts** `dealerSlug({ legalName, city, district, state })` —
   `sri-lakshmi-motors-katpadi-vellore-tamil-nadu`. Consecutive duplicate
@@ -2343,6 +2343,36 @@ after onboarding')`, plus the service unit tests
 - **The slug is assigned once and never recomputed.** KYC keys are derived from
   it rather than stored, so a slug that moved would orphan the files. A dealer
   who corrects their town keeps their slug — and their link.
+
+## R9 — The yard photograph reaches the public pages
+
+**Revises F033, F085, F086** · consumed by the directory and the portfolio
+
+- **Backend** `commitYardPhoto` marks the row READY; `repo.readyMediaIds`
+  (one query per directory page) and `repo.markMediaReady`;
+  `listActive` projects `coverMediaId`; `dealers.public.service` fills
+  `coverUrl` — 640px on a card, 1600px on the portfolio
+- **Platform** `mediaUrl` drops the `vehicles/` segment: one handler serves
+  every kind of image, and a cover URL claiming to be a vehicle's is how a
+  second identical delivery route gets written
+- **Frontend** no logic change — both pages already branched on `coverUrl`;
+  the comments saying every card takes the no-cover branch are no longer true
+- **Sandbox** `DirectoryCard` → `WithCover` is a live state rather than a
+  preview of F034
+- **Tests** the public service's cover cases (ready / not ready / absent, and
+  that it asks only about the page); `commitYardPhoto` promotes, and does not
+  promote an upload that never landed; the card's cover branch
+- Nothing consumes the `media.process` job — its worker is **F034** — so every
+  yard photograph ever uploaded sat at PENDING, and `media.serve()` answers
+  only for a READY row. The photograph existed, was HEADed at commit, and was
+  unreachable by any public URL.
+- **This does not stand in for F034.** The object's bytes are confirmed before
+  the row is promoted, and `serve()` already falls back to the original when a
+  row has no variants. F034 adds the renditions and `serve()` prefers them;
+  this path does not change when it lands.
+- `logoUrl` stays null, and not for the same reason: nothing in the product
+  writes `logoMediaId`, so there is no image to address. The initials tile is
+  the design's answer, not a gap.
 
 ---
 
