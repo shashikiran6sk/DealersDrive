@@ -2756,6 +2756,71 @@ The height is held by the container and the floor, not by placeholder markup —
 which matters for a screen reader, where a reserved empty element is a thing to
 announce and empty space is not.
 
+## R18 — Services are a set, not a list
+
+**Revises F046 / F085 / F086**
+
+- **Contracts** `common.ts` — `distinctServices()`, beside `normaliseLocality`
+- **API** `dealers.service.ts` — collapsed at write time, beside the localities;
+  `dealers.public.service.ts` — collapsed again when composing the card's three
+  and the portfolio's full list, for rows written before this
+- **Frontend** `profile-form.tsx` — the field hint says repeats are merged
+- **Tests** the helper's rules; the write collapses and keeps the dealer's
+  spelling; a stored row with duplicates does not reach either public shape
+
+### What the dealer actually saw
+
+`Services` is one comma-separated box, and typing "Finance, finance" stored two
+entries. Both public pages render a tag per service and key it by the string,
+so React found two children with the same key and said so — in a dev overlay,
+in a box about a page the dealer had just saved. The message named nothing they
+had typed and nothing they could act on.
+
+### Collapsed, not refused
+
+The obvious alternative is a 400 that says "you listed Finance twice", and it
+is the wrong one. A dealer typing the same word twice has made a slip whose
+intent is not in doubt, and the useful answer is the service they meant. That
+is the argument `normaliseLocality` already made for city and state under **D6**
+— the CLAUDE.md §5 risk in miniature, since without a lookup table `Finance`,
+`finance` and `FINANCE` are three facets of one service — so this is the same
+guard rail applied to the other free-text field a dealer types several values
+into, in the same place: at write time, in the package both apps import.
+
+The rules are narrow on purpose. Comparison is case-insensitive with internal
+whitespace collapsed, because that is the difference a typo makes; the first
+spelling wins, so a dealer who wrote `RC Transfer` keeps their capitals; order
+is preserved, because they chose it and the card shows the first three. It does
+not merge synonyms or singularise — `Loan` and `Loans` stay two services,
+because a dealer knows what they offer and a function that guessed would
+eventually be wrong in a way nobody could see.
+
+### Why the service and not the schema
+
+`normaliseLocality` runs in `dealers.service.ts` rather than in a Zod
+`.transform`, and this follows it for a second reason as well: input schemas
+are converted to the OpenAPI document with `z.toJSONSchema`, and a transform
+cannot be represented in JSON Schema at all — it throws. A transform in
+`UpdateDealerInput` would trade a working reference for a tidier schema file.
+
+One consequence is worth naming: the 12-item cap stays over what was **typed**,
+not over what is kept, so thirteen entries with a duplicate among them is still
+a 400. That is a rarer accident than the one this fixes, and moving the cap
+after the collapse would take `maxItems` out of the reference.
+
+### The rows that already hold duplicates
+
+Nothing backfills the column, and the dealership that reported this has one. So
+the public service collapses again on the way out — before the card's
+`slice(0, 3)`, so a dealership whose first four entries are three distinct
+services still fills its card. The write path is where a duplicate stops being
+created; the read path is what stops the existing ones being rendered, and it
+can go once no row holds one.
+
+The dealer's **own** profile read is deliberately not collapsed. That box is
+their stored text, and seeing "Finance, Finance" in it, then watching it become
+one when they save, is the feedback that explains what happened.
+
 ---
 
 # Feature → Component matrix

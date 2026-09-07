@@ -1309,6 +1309,53 @@ describe('update — the locality', () => {
 });
 
 /**
+ * R18 — the services box is one comma-separated field, and "Finance, finance"
+ * is a slip. It is collapsed on the way in rather than refused, for the reason
+ * a locality is normalised rather than refused: the dealer's intent is not in
+ * doubt, and two entries differing only in case are one service to a filter,
+ * one chip on a card, and two React children with the same key.
+ */
+describe('update — the services', () => {
+  it('collapses entries that differ only in case or spacing', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', {
+      specialities: ['Finance', 'finance', 'RC  transfer', 'rc transfer'],
+    });
+
+    expect(h.updates[0]?.data).toMatchObject({ specialities: ['Finance', 'RC transfer'] });
+  });
+
+  it('keeps the dealer’s own spelling and order', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', {
+      specialities: ['RC Transfer', 'Exchange', 'rc transfer'],
+    });
+
+    expect(h.updates[0]?.data).toMatchObject({ specialities: ['RC Transfer', 'Exchange'] });
+  });
+
+  /** A patch that does not carry the field must not clear the column. */
+  it('leaves the column alone when the patch names no services', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { tagline: 'Trusted since 1998' });
+
+    expect(h.updates[0]?.data).toEqual({ tagline: 'Trusted since 1998' });
+  });
+
+  /** An empty list is a dealer clearing the field, not a patch that omitted it. */
+  it('writes an empty list through', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { specialities: [] });
+
+    expect(h.updates[0]?.data).toMatchObject({ specialities: [] });
+  });
+});
+
+/**
  * The yard photograph — the hero of the dealership's public portfolio.
  *
  * Same presign → PUT → commit pipeline as the KYC documents, under a different

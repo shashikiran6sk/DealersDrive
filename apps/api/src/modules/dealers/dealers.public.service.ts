@@ -1,4 +1,5 @@
 import {
+  distinctServices,
   formatLakh,
   initialsOf,
   type DealerCard,
@@ -129,7 +130,16 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           yearsOperating: dealer.yearsOperating,
           yearsLabel: locationLabel(city, state, dealer.yearsOperating),
           tagline: dealer.tagline,
-          services: dealer.specialities.slice(0, 3),
+          /*
+           * Collapsed on the way out as well as on the way in (**R18**). The
+           * write path is where a duplicate stops being created; this is what
+           * covers the rows that already hold one, because nothing backfills
+           * the column and a card that shows "Finance" twice reads as a fault
+           * of the page rather than of the data. Collapse before the slice, so
+           * a dealership whose first four entries are three distinct services
+           * still gets three chips.
+           */
+          services: distinctServices(dealer.specialities).slice(0, 3),
           carCount: stat?.count ?? 0,
           fromPricePaise: fromPrice,
           // A dealer with zero live cars still appears, with an em dash (A8).
@@ -233,7 +243,9 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
         initials: initialsOf(dealer.brandName),
         isVerified: true,
         about: dealer.about,
-        services: dealer.specialities,
+        // As on the card, and for the same reason (**R18**) — the portfolio
+        // renders one tag per service and keys it by the string.
+        services: distinctServices(dealer.specialities),
         address: {
           line: dealer.addressLine,
           city,

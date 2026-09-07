@@ -183,6 +183,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [ ] R15 — One card of details, and a yard photograph that lines up · revises F086
 - [ ] R16 — The registered name, and a phone row nothing could reveal · revises F085/F086
 - [ ] R17 — A directory card that keeps its height · revises F085
+- [ ] R18 — Services are a set, not a list · revises F046/F085/F086
 
 ---
 

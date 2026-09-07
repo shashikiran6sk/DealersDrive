@@ -120,7 +120,7 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         <Field
           id="specialities"
           label="Services"
-          hint="comma separated, up to 12"
+          hint="comma separated, up to 12 — repeats are merged"
           error={errors.specialities}
         >
           <Input
