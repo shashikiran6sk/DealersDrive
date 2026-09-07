@@ -210,6 +210,13 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           // R6. The link the dealer pasted, and nothing composed from the
           // address — see the note on the field in `contracts/public.ts`.
           mapsUrl: dealer.mapsUrl,
+          // The pin the link resolved to, when it resolved to one. Both halves
+          // have to be present: a row with a latitude and no longitude is not a
+          // place, and centring a map on half a coordinate puts it in the sea.
+          geo:
+            dealer.lat === null || dealer.lng === null
+              ? null
+              : { lat: dealer.lat, lng: dealer.lng },
         },
         stats: [
           { key: 'cars', label: 'Cars available', value: String(carCount) },

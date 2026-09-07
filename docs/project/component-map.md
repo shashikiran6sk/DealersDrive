@@ -350,6 +350,20 @@ Both in `components/search/search-toolbar.tsx` (`:11`, `:82`).
 filtered, searching, both, one city, no cities, many cities. One consumer.
 **P2** ✅
 
+### C068 — `LocationCard`
+
+`components/dealers/location-card.tsx:38`. Props:
+`address: DealerPublicProfile['address']`, `brandName: string`. States: map and
+directions, directions only, map only, neither. One consumer (the portfolio),
+where it was inline until **R10**.
+
+The four states are the component's whole reason for existing as one: the map
+is `address.geo` and the button is `address.mapsUrl`, and the two are
+independently nullable because a share link carries no coordinates until it is
+followed and following it is best-effort. Neither is ever composed from the
+address. A server component — a Google embed in an `<iframe>` needs no
+JavaScript of ours. **P2** ✅
+
 ---
 
 ## Layer 5 — Vehicle (`components/vehicle/`)

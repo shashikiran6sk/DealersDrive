@@ -719,6 +719,33 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'primitives-table--default',
   },
+  {
+    id: 'C068',
+    name: 'LocationCard',
+    source: 'apps/web/src/components/dealers/location-card.tsx',
+    category: 'Dealer',
+    ownership: 'Feature-specific',
+    purpose: "The portfolio's map of the yard, and the button that opens it in Google Maps.",
+    aliases: [
+      'MapCard',
+      'DealerMap',
+      'DirectionsCard',
+      'location-card',
+      'GetDirections',
+      'YardMap',
+      'PortfolioMap',
+    ],
+    features: ['F086'],
+    props: ['address', 'brandName'],
+    /*
+     * Four, and the two middle ones are the point: the map and the button are
+     * independent, because a share link carries no coordinates until it is
+     * followed and following it is best-effort.
+     */
+    states: ['map and directions', 'directions only', 'map only', 'neither'],
+    reusable: false,
+    storyId: 'dealers-locationcard',
+  },
 ];
 
 /** Case-insensitive search across name, aliases, purpose and category. */

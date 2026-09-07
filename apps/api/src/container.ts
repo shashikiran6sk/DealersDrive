@@ -31,6 +31,7 @@ import { createPrisma, installBigIntJson } from './platform/db/prisma.js';
 import { createEventBus, type EventBus } from './platform/events/bus.js';
 import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
 import { createQueue, type Queue } from './platform/jobs/queue.js';
+import { createMapsResolver, type MapsPort } from './platform/maps/maps-link.js';
 import { createStorage } from './platform/storage/factory.js';
 import { ensureBucket } from './platform/storage/s3.adapter.js';
 import type { StoragePort } from './platform/storage/storage.port.js';
@@ -76,6 +77,7 @@ export interface Container {
   readonly outbox: OutboxPublisher;
   /** Local disk, MinIO or R2 — chosen by `STORAGE_DRIVER`, never by a module. */
   readonly storage: StoragePort;
+  readonly maps: MapsPort;
   /** Reads the principal off a request. Cookie-backed, or the dev identity. */
   readonly sessions: SessionResolver;
   /** Issues, resolves and revokes the rows behind those cookies. */
@@ -102,6 +104,7 @@ export interface ContainerOverrides {
   readonly cache?: CachePort;
   readonly queue?: Queue;
   readonly storage?: StoragePort;
+  readonly maps?: MapsPort;
   /** `harness.ts` swaps the whole resolver out; `auth-harness.ts` does not. */
   readonly sessions?: SessionResolver;
   /** The seam `auth-harness.ts` uses: everything above it runs unmodified. */
@@ -124,6 +127,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const bus = createEventBus();
   const outbox = createOutboxPublisher(prisma, bus);
   const storage = overrides.storage ?? createStorage();
+  const maps = overrides.maps ?? createMapsResolver();
 
   const sessionStore = createSessionService(prisma);
   const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
@@ -132,7 +136,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
 
   const audit = createAuditService(prisma);
   const dealersRepo = createDealersRepository(prisma);
-  const dealers = createDealersService({ prisma, repo: dealersRepo, storage });
+  const dealers = createDealersService({ prisma, repo: dealersRepo, storage, maps });
   /*
    * `noInventoryYet` is the car-count source until **F076**. The baseline read
    * `search.dealerStats()`, which groups `listing_search` — the read model F064
@@ -141,7 +145,14 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
    * replaces this argument and nothing else.
    */
   const dealersPublic = createDealersPublicService({ repo: dealersRepo, stats: noInventoryYet });
-  const auth = createAuthService({ prisma, sessions: sessionStore, oauth, dealers, audit });
+  const auth = createAuthService({
+    prisma,
+    sessions: sessionStore,
+    oauth,
+    dealers,
+    audit,
+    maps,
+  });
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage, queue });
@@ -156,6 +167,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     bus,
     outbox,
     storage,
+    maps,
     sessions,
     sessionStore,
     oauth,

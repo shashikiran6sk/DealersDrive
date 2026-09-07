@@ -64,6 +64,11 @@ export const dealersPublicDocs: ModuleDocs = {
         'and is null on dealerships that predate the question — the page renders no ' +
         '"Get directions" rather than composing one from the address, because a typed ' +
         'address is several pins in one district.\n\n' +
+        '`address.geo` is the pin **read out of that link** when the API could follow it to ' +
+        'one, and it is what the portfolio draws its map at. The two are independently ' +
+        'nullable: a `maps.app.goo.gl` share link carries no coordinates until it is ' +
+        'followed, and following it is best-effort, so a dealership can have the link and ' +
+        'no pin. Neither is ever derived from the address.\n\n' +
         '**404 on anything but an ACTIVE dealership.** A suspended or pending dealership is ' +
         'not "temporarily unavailable" to a buyer; it is not listed.\n\n' +
         '`Cache-Control: public, max-age=300`.',

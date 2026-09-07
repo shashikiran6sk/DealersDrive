@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { LocationCard } from '@/components/dealers/location-card';
 import { Blueprint, EmptyState, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { ApiError, apiGet } from '@/lib/api';
 import { serverConfig } from '@/lib/config';
@@ -194,30 +195,7 @@ export default async function DealerPortfolioPage({
           </dl>
         </section>
 
-        <section className="card p-[14px]">
-          <h2 className="eyebrow">Location</h2>
-          <Blueprint className="min-h-[120px] flex-1 bg-(--color-surface)">
-            <ImageSlot label="Map — dealership location" />
-          </Blueprint>
-          {/*
-            R6 — the link the dealer pasted on onboarding step 2, rendered as an
-            anchor and nothing more. Nullable: dealerships created before R6
-            have none, so the button is **absent rather than broken**, and no
-            Maps URL is composed from the address as a fallback — a typed
-            address is several pins in one district, and the wrong one sends a
-            buyer to somebody else's gate.
-          */}
-          {dealer.address.mapsUrl ? (
-            <a
-              href={dealer.address.mapsUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="btn btn-secondary btn-block mt-[10px]"
-            >
-              Get directions
-            </a>
-          ) : null}
-        </section>
+        <LocationCard address={dealer.address} brandName={dealer.brandName} />
       </div>
 
       {/* ── 3. Inventory ────────────────────────────────────────────────── */}
@@ -263,12 +241,16 @@ function carCountLabel(dealer: DealerPublicProfile): string {
  * nobody meant to publish, and rule 7 applies to it exactly as it does to the
  * rendered document.
  *
- * The baseline also emitted a `geo` block from `dealer.address.lat/lng`. **D6**
- * removed the `cities` row those came off, and they were the *town's*
- * coordinates rather than the yard's — so publishing them as the dealership's
- * location would have been a claim about a place that is not the dealership.
- * `mapsUrl` (R6) is the yard, and it is a share link rather than a coordinate
- * pair, so it belongs in the anchor above and not in `GeoCoordinates`.
+ * The baseline emitted a `geo` block from `dealer.address.lat/lng`, and those
+ * were the *town's* coordinates off a `cities` row **D6** removed — a claim
+ * about a place that is not the dealership.
+ *
+ * `address.geo` is the yard now, read out of the dealer's own share link, and
+ * it is still not published here. A `GeoCoordinates` block is read by machines
+ * that will not check it, and these coordinates come from a link a dealer
+ * pasted rather than from anything surveyed: good enough to centre a map a
+ * person is looking at, not good enough to assert to a search engine. The map
+ * is in `LocationCard`; `mapsUrl` (R6) is in the anchor beside it.
  */
 function DealerJsonLd({ dealer }: { dealer: DealerPublicProfile }) {
   const { webBaseUrl } = serverConfig();
