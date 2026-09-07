@@ -657,7 +657,10 @@ function BusinessStep({
             <input
               id="mapsUrl"
               name="mapsUrl"
-              type="url"
+              // `text`, not `url`: Share → Embed copies an `<iframe …>`, which
+              // the server accepts and unwraps (R13), and which native URL
+              // validation would refuse before the form is ever submitted.
+              type="text"
               inputMode="url"
               defaultValue={values.mapsUrl ?? dealer?.address.mapsUrl ?? ''}
               className="input"
@@ -668,7 +671,8 @@ function BusinessStep({
             />
             <p className="mt-[4px] text-[11px] ink-subtle">
               Open your yard in Google Maps, tap <strong className="font-medium">Share</strong>,
-              then <strong className="font-medium">Copy link</strong> and paste it here.
+              then <strong className="font-medium">Copy link</strong> and paste it here. The{' '}
+              <strong className="font-medium">Embed a map</strong> code works too.
             </p>
           </Field>
 

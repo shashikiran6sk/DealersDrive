@@ -88,13 +88,22 @@ const TIMEOUT_MS = 2500;
  *
  *   · `@12.9165,79.1325,17z`  — the map's centre, in a place URL
  *   · `!3d12.9165!4d79.1325`  — the *pin*, in the data parameter
+ *   · `!2d79.1325!3d12.9165`  — the pin again, in an **embed** URL's `pb`
  *   · `?q=`/`?query=`/`?ll=`  — a search or a share link built by hand
  *
  * `!3d…!4d…` is checked before `@…` because when both are present the first is
  * the marker and the second is wherever the map happened to be scrolled to.
+ *
+ * The embed form is the awkward one, and it is worth spelling out because it
+ * reads like a typo. `pb` is a positional blob, and in it **`!2d` is the
+ * longitude and `!3d` the latitude** — the opposite order to `!3d…!4d…` above,
+ * where `3d` is the latitude. The two are matched separately for that reason,
+ * and the embed pattern is checked last so a URL carrying a real `!3d…!4d…`
+ * marker is never read through it.
  */
 const PIN = /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/;
 const CENTRE = /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/;
+const EMBED_PIN = /!2d(-?\d+(?:\.\d+)?)!3d(-?\d+(?:\.\d+)?)/;
 const PAIR = /^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/;
 const QUERY_KEYS = ['q', 'query', 'll', 'center', 'destination'];
 
@@ -134,6 +143,13 @@ export function coordinatesIn(value: string): LatLng | null {
       const found = toLatLng(pair[1], pair[2]);
       if (found) return found;
     }
+  }
+
+  // Longitude first here — see the note on EMBED_PIN.
+  const embed = EMBED_PIN.exec(url.href);
+  if (embed?.[1] && embed[2]) {
+    const found = toLatLng(embed[2], embed[1]);
+    if (found) return found;
   }
 
   return null;

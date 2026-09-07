@@ -2486,6 +2486,66 @@ after onboarding')`, plus the service unit tests
   — and no browser reaches those routes directly. It becomes one the day a CDN
   is put in front of the API, and `lib/cache-tags.ts` is where that note lives.
 
+## R13 — Whatever the share panel gives, and the yard at the foot of the header
+
+**Revises F038, F046, F086**
+
+- **Contracts** `common.ts` — `mapsUrlFrom()`, and `GoogleMapsUrl` wrapped in a
+  `preprocess` that unwraps an `<iframe>` before the host check runs
+- **Backend** `platform/maps/maps-link.ts` — `EMBED_PIN`, the pin inside an
+  embed URL's `pb` blob; `dealers.public.service.ts` — `directionsUrl()`
+- **Frontend** the Maps field in `profile-form.tsx` and `onboarding-wizard.tsx`
+  becomes `type="text"`; `dealers/[slug]/page.tsx` — the yard photograph moves
+  below the identity block and the stats, and grows
+- **Tests** the embed URL and the pasted element, both accepted and both still
+  host-checked; the longitude-first blob; the three `directionsUrl` cases
+
+### The paste
+
+Google's Share panel has two tabs, and a dealer will use either. **Send a link**
+gives `maps.app.goo.gl/…`. **Embed a map** gives an `<iframe src="…/maps/embed?pb=…">`
+— the whole element, because that is what "put a map on your website" wants.
+
+What the field did with those was the worst of the three possible answers. The
+element was refused, with a message saying the thing Google had just handed the
+dealer was not a Google Maps link. The embed URL on its own was **accepted** —
+it is on a Google host — and then resolved to no coordinates, because the pin in
+a `pb` blob is written `!2d<lng>!3d<lat>`, longitude first, and nothing looked
+for it. The dealer saw a saved link and no map, with nothing to say why.
+
+Both are read now. The element is unwrapped to its `src` — narrowly, by regex,
+because this is not an HTML parser and must not become one — and the URL that
+comes out faces exactly the same host check as one typed in, so the wrapper buys
+nobody a redirect off Google. The `pb` blob is parsed last, after `!3d…!4d…`, so
+a URL carrying a real marker is never read through the wrong pattern.
+
+`type="url"` had to go with it: native constraint validation refuses an
+`<iframe …>` in the browser, before a server ever sees it.
+
+### The one place a stored link is not returned verbatim
+
+R6 says the portfolio hands back the dealer's own link and never composes one.
+An embed URL breaks the assumption underneath that rule: it draws a fine map,
+but _opened_ it is a bare embedded frame with no place card and no directions,
+which is the one thing the button exists to do. So for that shape alone,
+`directionsUrl()` builds `/maps/dir/?api=1&destination=<lat>,<lng>` from the
+dealership's own pin — the pin that very URL contains.
+
+This is not what R6 forbids. R6 is about not composing a destination out of a
+**typed address**, because "18, Gandhi Road" is four gates in one district.
+These coordinates came from the dealer's link. Any other shape, or no pin at
+all, is still returned exactly as stored.
+
+### The header reads in the wrong order
+
+The yard photograph was a 170px strip above the dealership's name — a banner,
+in the position a logo occupies, glanced past on the way to the text. Below the
+facts it reads the other way round: a buyer arrives with questions the stats
+answer in a line each — how many cars, how long they have traded, which town —
+and _then_ wants to see the place. So the header now ends on the photograph, at
+360px, flush to the divider the info row starts from. The logo tile loses its
+negative top margin, which existed only to overlap the image that was above it.
+
 ---
 
 # Feature → Component matrix

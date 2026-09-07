@@ -47,6 +47,28 @@ describe('coordinatesIn', () => {
     });
   });
 
+  /**
+   * The embed URL, whose `pb` blob is positional and puts **longitude before
+   * latitude** — `!2d` then `!3d`, the reverse of the `!3d…!4d…` marker above.
+   * Reading it in the order it is written would put a Vellore yard in the
+   * Arabian Sea off Gujarat, which is a plausible-looking wrong answer rather
+   * than an obviously wrong one, and so worth a test of its own.
+   */
+  it('reads the pin out of an embed URL, whose blob is longitude-first', () => {
+    expect(
+      coordinatesIn(
+        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.5!2d79.1453092!3d12.9346947!3m2!1i1024!2i768!4f13.1',
+      ),
+    ).toEqual({ lat: 12.9346947, lng: 79.1453092 });
+  });
+
+  it('prefers a real marker to the embed blob when a URL somehow has both', () => {
+    // `!3d…!4d…` is checked first, so `!2d…!3d…` can never capture across it.
+    expect(
+      coordinatesIn('https://www.google.com/maps/x?pb=!2d10.0!3d20.0!8m2!3d12.9165!4d79.1325'),
+    ).toEqual({ lat: 12.9165, lng: 79.1325 });
+  });
+
   it('reads nothing from a short link, which is the whole reason for the fetch', () => {
     expect(coordinatesIn('https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9')).toBeNull();
   });

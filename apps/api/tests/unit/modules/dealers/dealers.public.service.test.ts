@@ -666,6 +666,49 @@ describe('profile', () => {
     expect(JSON.stringify(profile)).not.toContain('/maps/dir/');
   });
 
+  /**
+   * The one exception, and it is narrow. An **embed** URL draws a fine map but
+   * opens, as a link, as a bare embedded map — no place card, no directions,
+   * no "open in the app". So when that is what was pasted, the button is built
+   * from the dealership's own pin, which is the pin that very URL contains.
+   *
+   * This is not the thing R6 forbids. R6 is about not composing a destination
+   * out of a *typed address*; these coordinates came from the dealer's link.
+   */
+  it('turns a pasted embed link into a directions link, using its own pin', async () => {
+    const h = setup({
+      profile: publicDealer({
+        mapsUrl: 'https://www.google.com/maps/embed?pb=!1m18!2d79.1453092!3d12.9346947!5e0',
+        lat: 12.9346947,
+        lng: 79.1453092,
+      }),
+    });
+
+    const address = (await h.service.profile('x')).address;
+
+    expect(address.mapsUrl).toBe(
+      'https://www.google.com/maps/dir/?api=1&destination=12.9346947,79.1453092',
+    );
+    // The map itself is unaffected — it draws from the pin either way.
+    expect(address.geo).toEqual({ lat: 12.9346947, lng: 79.1453092 });
+  });
+
+  it('leaves an embed link alone when there is no pin to rebuild it from', async () => {
+    // Nothing is invented: a link that goes somewhere beats one that does not.
+    const embed = 'https://www.google.com/maps/embed?pb=!1m18!5e0';
+    const h = setup({ profile: publicDealer({ mapsUrl: embed, lat: null, lng: null }) });
+
+    expect((await h.service.profile('x')).address.mapsUrl).toBe(embed);
+  });
+
+  it('leaves an ordinary share link alone even when the pin is known', async () => {
+    const h = setup({ profile: publicDealer({ lat: 12.9165, lng: 79.1325 }) });
+
+    expect((await h.service.profile('x')).address.mapsUrl).toBe(
+      'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
+    );
+  });
+
   it('carries the district beside the city', async () => {
     const h = setup({ profile: publicDealer({ city: 'Katpadi', district: 'Vellore' }) });
 
