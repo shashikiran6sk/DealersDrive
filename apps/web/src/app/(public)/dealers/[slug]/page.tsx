@@ -114,24 +114,11 @@ export default async function DealerPortfolioPage({
           </Link>
         </div>
 
-        <Blueprint className="mx-auto h-[170px] max-w-[1280px] border-b-0 bg-(--color-surface) max-md:h-[120px]">
-          {dealer.coverUrl ? (
-            /* The 1600px rendition — this is the one place a yard photograph is
-               looked at rather than glanced past. See `dealer-card.tsx` for why
-               it is a plain `<img>` and why the alt is empty. */
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            /* A dealership that has not uploaded one yet. */
-            <ImageSlot label="Dealership frontage / yard photo" />
-          )}
-        </Blueprint>
-
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-start gap-[18px] px-6 pb-[22px] pt-[18px]">
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-start gap-[18px] px-6 pb-[20px]">
           <LogoTile
             initials={dealer.initials}
             size={78}
-            className="relative z-[2] -mt-[46px] max-md:-mt-[34px] max-md:h-[60px] max-md:w-[60px]"
+            className="max-md:h-[60px] max-md:w-[60px]"
           />
 
           <div className="min-w-[260px] flex-1">
@@ -153,7 +140,7 @@ export default async function DealerPortfolioPage({
           </div>
         </div>
 
-        <div className="mx-auto grid max-w-[1280px] gap-3 px-6 pb-[22px] [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
+        <div className="mx-auto grid max-w-[1280px] gap-3 px-6 pb-[20px] [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
           {dealer.stats.map((stat) => (
             <Blueprint key={stat.key} className="bg-(--color-surface) p-[14px]">
               <div className="eyebrow">{stat.label}</div>
@@ -163,6 +150,33 @@ export default async function DealerPortfolioPage({
             </Blueprint>
           ))}
         </div>
+
+        {/*
+          The yard, last in the header and running to the very bottom of it
+          (R13). It was a 170px strip above the name, which is where a *logo*
+          belongs — a banner, glanced past on the way to the text.
+
+          Below the facts it reads the other way round. A buyer arrives with a
+          question the stats answer in a line each — how many cars, how long
+          they have been trading, which town — and then wants to see the place.
+          So the photograph is what the header ends on, at a size worth looking
+          at, with nothing under it but the divider the info row starts from.
+
+          `border-b-0` because that divider belongs to the wrapper; the two
+          would otherwise draw the same line twice.
+        */}
+        <Blueprint className="mx-auto h-[360px] max-w-[1280px] border-b-0 bg-(--color-surface) max-lg:h-[280px] max-md:h-[200px]">
+          {dealer.coverUrl ? (
+            /* The 1600px rendition — this is the one place a yard photograph is
+               looked at rather than glanced past. See `dealer-card.tsx` for why
+               it is a plain `<img>` and why the alt is empty. */
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            /* A dealership that has not uploaded one yet. */
+            <ImageSlot label="Dealership frontage / yard photo" />
+          )}
+        </Blueprint>
       </div>
 
       {/* ── 2. Info row ─────────────────────────────────────────────────── */}

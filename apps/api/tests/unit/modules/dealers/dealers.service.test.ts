@@ -140,6 +140,7 @@ interface Options {
   media?: Record<string, unknown> | Record<string, unknown>[] | null;
   /** What the dealer's Maps link resolves to. Omitted means "it did not". */
   geo?: { lat: number; lng: number } | null;
+  placeId?: string | null;
 }
 
 function setup(options: Options = {}) {
@@ -255,9 +256,12 @@ function setup(options: Options = {}) {
    */
   const mapsLookups: string[] = [];
   const maps: MapsPort = {
-    coordinatesFor: (mapsUrl: string) => {
+    placeFor: (mapsUrl: string) => {
       mapsLookups.push(mapsUrl);
-      return Promise.resolve(options.geo === undefined ? null : options.geo);
+      return Promise.resolve({
+        coordinates: options.geo ?? null,
+        placeId: options.placeId ?? null,
+      });
     },
   };
 
@@ -687,9 +691,11 @@ describe('update', () => {
       mapsUrl: 'https://maps.app.goo.gl/moved-the-pin',
       // A short link carries no coordinates and this fake follows nothing, so
       // the pin is cleared. That is the point: a dealership that has moved must
-      // not keep the previous yard's coordinates on its portfolio.
+      // not keep the previous yard's coordinates on its portfolio — and the
+      // same argument clears the place it used to name.
       lat: null,
       lng: null,
+      mapsPlaceId: null,
     });
   });
 
@@ -709,6 +715,29 @@ describe('update', () => {
 
     expect(h.updates[0]?.data).toMatchObject({ lat: 12.9165, lng: 79.1325 });
     expect(h.mapsLookups).toEqual(['https://maps.app.goo.gl/moved-the-pin']);
+  });
+
+  /**
+   * The place id costs a redirect to discover, which is the only reason it is
+   * stored at all — a link that already carries it has it read back out at
+   * request time. So the one shape that needs the column is the one this
+   * covers: a short link, followed, and what came back kept.
+   */
+  it('writes the place the dealer’s link named, alongside the pin', async () => {
+    const h = setup({
+      geo: { lat: 12.9165, lng: 79.1325 },
+      placeId: '0x3bad1234:0x5678beef',
+    });
+
+    await h.service.update('dealer-1', {
+      address: { mapsUrl: 'https://maps.app.goo.gl/moved-the-pin' },
+    });
+
+    expect(h.updates[0]?.data).toMatchObject({
+      lat: 12.9165,
+      lng: 79.1325,
+      mapsPlaceId: '0x3bad1234:0x5678beef',
+    });
   });
 
   /**

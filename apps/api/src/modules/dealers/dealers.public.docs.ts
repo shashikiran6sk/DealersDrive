@@ -99,10 +99,15 @@ export const dealersPublicDocs: ModuleDocs = {
         '"Get directions" rather than composing one from the address, because a typed ' +
         'address is several pins in one district.\n\n' +
         '`address.geo` is the pin **read out of that link** when the API could follow it to ' +
-        'one, and it is what the portfolio draws its map at. The two are independently ' +
-        'nullable: a `maps.app.goo.gl` share link carries no coordinates until it is ' +
-        'followed, and following it is best-effort, so a dealership can have the link and ' +
-        'no pin. Neither is ever derived from the address.\n\n' +
+        'one. The two are independently nullable: a `maps.app.goo.gl` share link carries no ' +
+        'coordinates until it is followed, and following it is best-effort, so a dealership ' +
+        'can have the link and no pin. Neither is ever derived from the address.\n\n' +
+        '`address.embedUrl` is what the portfolio actually draws, composed from whichever of ' +
+        'those the link turned out to carry. When it **named a place**, this is Google’s ' +
+        '`/maps/embed?pb=…` form and the frame comes back as the place card — the ' +
+        'dealership’s name, address, rating and review count, zoom controls and a directions ' +
+        'control inside the map. When the link only carried coordinates it is the plain ' +
+        '`?q=lat,lng&output=embed` pin, and it is null when the link carried neither.\n\n' +
         '**404 on anything but an ACTIVE dealership.** A suspended or pending dealership is ' +
         'not "temporarily unavailable" to a buyer; it is not listed.\n\n' +
         '`Cache-Control: public, max-age=300`.',

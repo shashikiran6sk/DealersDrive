@@ -710,12 +710,28 @@ describe('OnboardingWizard — the Business step', () => {
 
     const maps = screen.getByLabelText(/^Google Maps location/);
     expect(maps).toHaveAttribute('name', 'mapsUrl');
-    expect(maps).toHaveAttribute('type', 'url');
     expect(maps).toBeRequired();
     expect(screen.getByText(/Open your yard in Google Maps/)).toBeInTheDocument();
 
     await user.type(maps, 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9');
     expect(maps).toHaveValue('https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9');
+  });
+
+  /**
+   * R13. The Share panel's other tab, Embed a map, copies an `<iframe …>`
+   * element rather than a URL, and the server accepts one and keeps the link
+   * out of it. `type="url"` would have the browser refuse that paste before
+   * the form was ever submitted, with a message no dealer can act on — so the
+   * box is `text`, and `inputMode` is what still asks a phone for the URL
+   * keyboard.
+   */
+  it('does not let the browser refuse a pasted embed, before the server sees it', async () => {
+    await onBusinessStep();
+
+    const maps = screen.getByLabelText(/^Google Maps location/);
+    expect(maps).toHaveAttribute('type', 'text');
+    expect(maps).toHaveAttribute('inputmode', 'url');
+    expect(screen.getByText(/Embed a map/)).toBeInTheDocument();
   });
 
   it('carries the link in the same form that creates the dealership', async () => {

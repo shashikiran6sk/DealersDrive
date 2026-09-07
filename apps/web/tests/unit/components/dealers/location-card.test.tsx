@@ -8,10 +8,15 @@ import { LocationCard } from '@/components/dealers/location-card';
  *
  * The card looks like one feature and is two, so these cases are mostly about
  * the seam between them: the **button** is `mapsUrl`, the link the dealer
- * pasted (R6), and the **map** is `geo`, the coordinates the API managed to
- * read out of that link at write time. Following a share link is best-effort,
- * so a dealership with the link and no pin is the ordinary case rather than an
+ * pasted (R6), and the **map** is `embedUrl`, which the API composes from what
+ * that link turned out to carry. Following a share link is best-effort, so a
+ * dealership with the link and no map is the ordinary case rather than an
  * error, and neither half may be composed from the address beside it.
+ *
+ * Which *shape* the embed takes — the place card with the yard's name, rating
+ * and directions on it, or the plain pin — is settled on the server (R14) and
+ * tested there, in `platform/maps/maps-link.test.ts`. The card renders the
+ * frame it is handed, and these cases hold it to exactly that.
  */
 const ADDRESS = {
   line: '14, Katpadi Main Road',
@@ -22,17 +27,20 @@ const ADDRESS = {
   full: '14, Katpadi Main Road, Vellore 632006, Tamil Nadu',
   mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
   geo: { lat: 12.9165, lng: 79.1325 },
+  embedUrl:
+    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2000!2d79.1325!3d12.9165' +
+    '!3m3!1m2!1s0xaaa%3A0xbbb!2sSri%20Lakshmi%20Motors!5e0',
 };
 
 describe('LocationCard', () => {
-  it('draws the map at the resolved pin', () => {
+  it('points the frame at the URL the API composed, and nothing else', () => {
     const { container } = render(<LocationCard address={ADDRESS} brandName="Sri Lakshmi Motors" />);
 
     const frame = container.querySelector('iframe');
-    expect(frame?.getAttribute('src')).toContain('q=12.9165,79.1325');
-    // Keyless embed: a static image would need an API key in every environment,
-    // billed per view of a page built to be crawled.
-    expect(frame?.getAttribute('src')).toContain('output=embed');
+    // Verbatim. The card does not build, rewrite or second-guess this URL —
+    // which is what lets the API change the shape of the map (R14) without the
+    // card knowing there is more than one.
+    expect(frame?.getAttribute('src')).toBe(ADDRESS.embedUrl);
     expect(frame?.getAttribute('loading')).toBe('lazy');
   });
 
@@ -56,9 +64,12 @@ describe('LocationCard', () => {
    * The state a phone-shared link lands in when it could not be followed. The
    * button is what a buyer presses, and it must not wait on the map.
    */
-  it('keeps the directions button when no pin was resolved', () => {
+  it('keeps the directions button when there is no map', () => {
     const { container } = render(
-      <LocationCard address={{ ...ADDRESS, geo: null }} brandName="Sri Lakshmi Motors" />,
+      <LocationCard
+        address={{ ...ADDRESS, geo: null, embedUrl: null }}
+        brandName="Sri Lakshmi Motors"
+      />,
     );
 
     expect(container.querySelector('iframe')).toBeNull();
@@ -66,7 +77,7 @@ describe('LocationCard', () => {
     expect(screen.getByRole('link', { name: /get directions/i })).toBeInTheDocument();
   });
 
-  /** And the reverse: a pin outlives a link that was cleared. */
+  /** And the reverse: a map outlives a link that was cleared. */
   it('keeps the map when there is no link', () => {
     const { container } = render(
       <LocationCard address={{ ...ADDRESS, mapsUrl: null }} brandName="Sri Lakshmi Motors" />,
@@ -84,7 +95,7 @@ describe('LocationCard', () => {
   it('never falls back to the address for either half', () => {
     const { container } = render(
       <LocationCard
-        address={{ ...ADDRESS, mapsUrl: null, geo: null }}
+        address={{ ...ADDRESS, mapsUrl: null, geo: null, embedUrl: null }}
         brandName="Sri Lakshmi Motors"
       />,
     );

@@ -244,6 +244,26 @@ export const DealerPublicProfile = z.object({
      * a `GeoCoordinates` block is read by machines that will not check.
      */
     geo: z.object({ lat: z.number(), lng: z.number() }).nullable(),
+    /**
+     * The map itself, as a URL the location card's `<iframe>` points at.
+     *
+     * Composed, unlike `mapsUrl` — and composed on the server rather than in
+     * the card, because which of the three shapes it takes depends on what the
+     * dealer's link turned out to carry, which is a fact the API holds and the
+     * page would otherwise have to re-derive.
+     *
+     * When the link named a **place**, this is Google's `/maps/embed?pb=…`
+     * form, and the frame comes back as a place card: the dealership's name,
+     * its address, its rating and review count, zoom controls, and a directions
+     * control inside the map. When it carried only coordinates, it is the plain
+     * `?q=lat,lng&output=embed` dot. Null when it carried neither, and the card
+     * shows the slot it always did.
+     *
+     * Not the same question as `mapsUrl`, which is what "Get directions" opens.
+     * A dealership can have one and not the other, and the card renders
+     * whichever halves it has — see `platform/maps/maps-link.ts`.
+     */
+    embedUrl: z.string().nullable(),
   }),
   stats: z.array(z.object({ key: z.string(), label: z.string(), value: z.string() })),
   contact: z.array(

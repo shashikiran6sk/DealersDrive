@@ -145,13 +145,29 @@ model Dealer {
   pincode            String?
   /// The dealer's own Google Maps share link, stored verbatim.
   ///
-  /// Not parsed into `lat`/`lng`: a share link survives the dealer moving the
-  /// pin, carries the place's own name and reviews, and opens the Maps app on a
-  /// phone. It is host-checked on write (`GoogleMapsUrl` in contracts) because
-  /// a buyer's browser follows it from a public page.
+  /// Verbatim is the point: a share link survives the dealer moving their pin,
+  /// carries the place's own name and reviews, and opens the Maps app rather
+  /// than a web map on a phone. It is host-checked on write (`GoogleMapsUrl` in
+  /// contracts) because a buyer's browser follows it from a public page.
+  ///
+  /// The three columns below are read *out* of it at write time (**R10**,
+  /// `platform/maps/maps-link.ts`) and never geocoded from the address above.
+  /// They are what the portfolio draws with; this is what it links to.
   mapsUrl            String?
   lat                Float?
   lng                Float?
+  /// Google's own feature id for the yard, `0x…:0x…`, when the link named one.
+  ///
+  /// The pin centres a map. This makes it a map *of a dealership*: handed back
+  /// to Google in an embed it returns the place card — name, address, rating,
+  /// review count and a directions control inside the frame — where a bare
+  /// `lat,lng` returns an unlabelled dot.
+  ///
+  /// Nullable and not backfilled. A link that already carries the id has it
+  /// read back out at request time, so the only rows this column exists for are
+  /// the ones whose id cost a redirect to discover: `maps.app.goo.gl`, which is
+  /// what Google's Share sheet gives on a phone.
+  mapsPlaceId        String?
   contactPhone       String?
   contactEmail       String?
   landline           String?

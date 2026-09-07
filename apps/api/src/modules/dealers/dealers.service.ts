@@ -305,7 +305,7 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
       const phone = input.contact?.phone === undefined ? undefined : toE164(input.contact.phone);
 
       /**
-       * The pin, re-read whenever the link changes.
+       * The pin, and the place it names, re-read whenever the link changes.
        *
        * Only when it *changes*: a dealer editing their opening hours should not
        * pay a request to Google for it, and a link that resolved once resolves
@@ -319,10 +319,10 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
        * the location card falls back to the slot it showed before.
        */
       const mapsUrl = input.address?.mapsUrl;
-      const geo =
+      const place =
         mapsUrl === undefined || mapsUrl === dealer.mapsUrl
           ? undefined
-          : await maps.coordinatesFor(mapsUrl);
+          : await maps.placeFor(mapsUrl);
 
       if (phone !== undefined && owner) {
         const holder = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
@@ -405,7 +405,13 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
             ...(state === undefined ? {} : { state }),
             ...(input.address?.pincode === undefined ? {} : { pincode: input.address.pincode }),
             ...(mapsUrl === undefined ? {} : { mapsUrl }),
-            ...(geo === undefined ? {} : { lat: geo?.lat ?? null, lng: geo?.lng ?? null }),
+            ...(place === undefined
+              ? {}
+              : {
+                  lat: place.coordinates?.lat ?? null,
+                  lng: place.coordinates?.lng ?? null,
+                  mapsPlaceId: place.placeId,
+                }),
           },
           tx,
         );

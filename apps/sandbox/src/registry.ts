@@ -747,11 +747,13 @@ export const registry: RegistryEntry[] = [
     features: ['F086'],
     props: ['address', 'brandName'],
     /*
-     * Four, and the two middle ones are the point: the map and the button are
-     * independent, because a share link carries no coordinates until it is
-     * followed and following it is best-effort.
+     * Five. The first two are the map Google returns — the place card, with the
+     * yard's name, rating and directions in the frame, against the bare pin a
+     * link that named no place gets. The middle two are the point of the
+     * component: the map and the button are independent, because a share link
+     * carries neither until it is followed and following it is best-effort.
      */
-    states: ['map and directions', 'directions only', 'map only', 'neither'],
+    states: ['place card', 'pin only', 'directions only', 'map only', 'neither'],
     reusable: false,
     storyId: 'dealers-locationcard',
   },

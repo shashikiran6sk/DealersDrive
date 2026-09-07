@@ -2486,6 +2486,134 @@ after onboarding')`, plus the service unit tests
   — and no browser reaches those routes directly. It becomes one the day a CDN
   is put in front of the API, and `lib/cache-tags.ts` is where that note lives.
 
+## R13 — Whatever the share panel gives, and the yard at the foot of the header
+
+**Revises F038, F046, F086**
+
+- **Contracts** `common.ts` — `mapsUrlFrom()`, and `GoogleMapsUrl` wrapped in a
+  `preprocess` that unwraps an `<iframe>` before the host check runs
+- **Backend** `platform/maps/maps-link.ts` — `EMBED_PIN`, the pin inside an
+  embed URL's `pb` blob; `dealers.public.service.ts` — `directionsUrl()`
+- **Frontend** the Maps field in `profile-form.tsx` and `onboarding-wizard.tsx`
+  becomes `type="text"`; `dealers/[slug]/page.tsx` — the yard photograph moves
+  below the identity block and the stats, and grows
+- **Tests** the embed URL and the pasted element, both accepted and both still
+  host-checked; the longitude-first blob; the three `directionsUrl` cases
+
+### The paste
+
+Google's Share panel has two tabs, and a dealer will use either. **Send a link**
+gives `maps.app.goo.gl/…`. **Embed a map** gives an `<iframe src="…/maps/embed?pb=…">`
+— the whole element, because that is what "put a map on your website" wants.
+
+What the field did with those was the worst of the three possible answers. The
+element was refused, with a message saying the thing Google had just handed the
+dealer was not a Google Maps link. The embed URL on its own was **accepted** —
+it is on a Google host — and then resolved to no coordinates, because the pin in
+a `pb` blob is written `!2d<lng>!3d<lat>`, longitude first, and nothing looked
+for it. The dealer saw a saved link and no map, with nothing to say why.
+
+Both are read now. The element is unwrapped to its `src` — narrowly, by regex,
+because this is not an HTML parser and must not become one — and the URL that
+comes out faces exactly the same host check as one typed in, so the wrapper buys
+nobody a redirect off Google. The `pb` blob is parsed last, after `!3d…!4d…`, so
+a URL carrying a real marker is never read through the wrong pattern.
+
+`type="url"` had to go with it: native constraint validation refuses an
+`<iframe …>` in the browser, before a server ever sees it.
+
+### The one place a stored link is not returned verbatim
+
+R6 says the portfolio hands back the dealer's own link and never composes one.
+An embed URL breaks the assumption underneath that rule: it draws a fine map,
+but _opened_ it is a bare embedded frame with no place card and no directions,
+which is the one thing the button exists to do. So for that shape alone,
+`directionsUrl()` builds `/maps/dir/?api=1&destination=<lat>,<lng>` from the
+dealership's own pin — the pin that very URL contains.
+
+This is not what R6 forbids. R6 is about not composing a destination out of a
+**typed address**, because "18, Gandhi Road" is four gates in one district.
+These coordinates came from the dealer's link. Any other shape, or no pin at
+all, is still returned exactly as stored.
+
+### The header reads in the wrong order
+
+The yard photograph was a 170px strip above the dealership's name — a banner,
+in the position a logo occupies, glanced past on the way to the text. Below the
+facts it reads the other way round: a buyer arrives with questions the stats
+answer in a line each — how many cars, how long they have traded, which town —
+and _then_ wants to see the place. So the header now ends on the photograph, at
+360px, flush to the divider the info row starts from. The logo tile loses its
+negative top margin, which existed only to overlap the image that was above it.
+
+## R14 — A map of the dealership, not a dot on a map
+
+**Revises F038, F046, F086**
+
+- **Contracts** `public.ts` — `DealerPublicProfile.address.embedUrl`
+- **Database** `dealers.mapsPlaceId`, nullable, not backfilled
+- **Backend** `platform/maps/maps-link.ts` — `MapsPlace`, `placeIdIn()`,
+  `resolvePlace()` and `embedUrlFor()`; `MapsPort.coordinatesFor` becomes
+  `placeFor`; both write paths store the place; `dealers.public.service.ts`
+  composes the embed; `scripts/backfill-dealer-pins.ts` fills the new column
+- **Frontend** `LocationCard` renders `address.embedUrl` and grows to 220px
+- **Sandbox** `LocationCard` gains `PinOnly`; `Default` becomes the place card
+- **Tests** the id in all three of its spellings, the null id, a place found
+  before the pin, a place with no pin, and each of `embedUrlFor`'s answers
+
+### What was wrong with the map
+
+R10 drew the yard with `?q=lat,lng&output=embed`, which is a dot. No name on
+it, nothing to confirm the buyer is looking at the right gate, no rating, and
+no way to start navigating without leaving the page — while the dealership's
+own Google listing has all four and the dealer has already handed us the link
+to it.
+
+The fix is not a bigger frame or an API key. It is that a **place id** — the
+`0x…:0x…` pair Google writes into its own share URLs — asks Google a different
+question. Given one, the same keyless embed returns the place card: the
+dealership's name, its address, its rating and review count, the zoom controls,
+and a directions control inside the map.
+
+### Where the id comes from, in the order it is cheapest
+
+The dealer already pasted it, in most cases, and R13 already stores whatever
+they pasted:
+
+1. **An embed URL** — Share → Embed a map. The id is in the `pb` blob, and the
+   URL is returned untouched, because it is already the map they chose.
+2. **A place URL** — the desktop address bar. The id is in `data=`, and it is
+   read back out **at request time**, which is why the migration backfills
+   nothing: those rows already work.
+3. **A short link** — the phone Share sheet. This is the only shape whose id
+   costs a redirect, so it is the only shape the column exists for. It is
+   written by the same write-time resolve that already fetched the pin, and
+   filled in for existing rows by `maps:backfill`.
+
+A dealership whose link only ever carried coordinates keeps the dot. That is
+not a regression, it is the old behaviour, and it is the honest answer when
+nothing named a place.
+
+### The pin stops being the thing the map needs
+
+Handed an id, Google re-centres the frame on the place's own position and
+ignores the coordinates in the blob — verified against the live endpoint, not
+assumed. So `lat`/`lng` go in as a fallback for the day an id stops resolving,
+rather than as the thing being drawn, and a link that named a place without
+placing it now draws a map where it used to draw nothing.
+
+### Two things a reviewer should look at
+
+- **The seeded dealerships still show the dot**, deliberately. `dev-dealers`
+  composes `?api=1&query=lat,lng` for invented yards, which name no place
+  because they are not places. Only a real dealership can render a place card,
+  which is also why exactly one sandbox story uses a real one.
+- **The place card can carry the business's phone number.** Rule 7 is about
+  what _this_ API returns, and it still returns none — but the frame is
+  Google's, and Google shows what it holds about a public business. It is the
+  same disclosure the "Get directions" button makes one press later, brought
+  forward to the moment a buyer scrolls to the map.
+
 ---
 
 # Feature → Component matrix

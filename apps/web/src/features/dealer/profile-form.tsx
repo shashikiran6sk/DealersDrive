@@ -287,10 +287,18 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
           hint="buyers use this for directions"
           error={errors.addressMapsUrl}
         >
+          {/*
+            `text`, not `url`, and that is deliberate. The Share panel's other
+            half — Embed — copies a whole `<iframe …>` element to the clipboard,
+            and the server now accepts one and keeps the link out of it (R13).
+            `type="url"` would have the browser refuse that paste before the
+            form is ever submitted, with a message no dealer can act on.
+            `inputMode` still asks a phone for the URL keyboard.
+          */}
           <Input
             id="addressMapsUrl"
             name="addressMapsUrl"
-            type="url"
+            type="text"
             inputMode="url"
             placeholder="https://maps.app.goo.gl/…"
             defaultValue={dealer.address.mapsUrl ?? ''}
@@ -298,7 +306,8 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
           />
           <p className="mt-[4px] text-[11px] ink-subtle">
             Open your yard in Google Maps, tap <strong className="font-medium">Share</strong>, then{' '}
-            <strong className="font-medium">Copy link</strong> and paste it here.
+            <strong className="font-medium">Copy link</strong> and paste it here. The{' '}
+            <strong className="font-medium">Embed a map</strong> code works too.
           </p>
         </Field>
       </section>

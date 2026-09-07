@@ -11,6 +11,7 @@ import {
   dealerSlug,
   GoogleMapsUrl,
   isIndianMobile,
+  mapsUrlFrom,
   normaliseLocality,
   slugify,
   timeAgo,
@@ -364,6 +365,10 @@ describe('timeAgo across every unit', () => {
  * self-service open redirect with a dealership's name on it — so the host is
  * checked against a list, and the scheme is checked with it.
  */
+/** The URL out of Google's Share → Embed panel, trimmed to the parts that matter. */
+const EMBED =
+  'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.5!2d79.1453092!3d12.9346947!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sCHENNAI%20CARS!5e0!3m2!1sen!2sin';
+
 describe('GoogleMapsUrl', () => {
   it.each([
     'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
@@ -398,6 +403,52 @@ describe('GoogleMapsUrl', () => {
     // and a share link that has been "cleaned up" stops resolving.
     expect(GoogleMapsUrl.parse(`  ${link}  `)).toBe(link);
     expect(GoogleMapsUrl.parse(`${link}?g_st=iw`)).toBe(`${link}?g_st=iw`);
+  });
+
+  /**
+   * Share → Embed is the other half of Google's own share panel, and what it
+   * copies to the clipboard is not a URL — it is an `<iframe>` element. A
+   * dealer following a "put a map on your website" guide pastes exactly that.
+   *
+   * Both halves of that panel are now accepted: the embed URL on its own, and
+   * the whole element with the URL inside it. Refusing the element told a
+   * dealer that what Google had just handed them was not a Google Maps link.
+   */
+  it('accepts an embed URL, which is the other thing the share panel gives', () => {
+    expect(GoogleMapsUrl.parse(EMBED)).toBe(EMBED);
+  });
+
+  it('lifts the link out of a pasted <iframe>, and stores only the link', () => {
+    const pasted = `<iframe src="${EMBED}" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+
+    // The HTML is never stored — the width, the style and the closing tag are
+    // all discarded, and what lands in the column is a URL like any other.
+    expect(GoogleMapsUrl.parse(pasted)).toBe(EMBED);
+    expect(GoogleMapsUrl.parse(`  ${pasted}  `)).toBe(EMBED);
+    expect(GoogleMapsUrl.parse(pasted.replace(/"/gu, "'"))).toBe(EMBED);
+  });
+
+  /**
+   * Unwrapping happens *before* the host check, not instead of it. An element
+   * is a way to smuggle a URL past a reader's eye, so the URL that comes out of
+   * one faces exactly the same test as one typed in directly.
+   */
+  it('refuses an <iframe> whose src is not Google, and one with no src at all', () => {
+    expect(
+      GoogleMapsUrl.safeParse('<iframe src="https://evil.example.com/maps"></iframe>').success,
+    ).toBe(false);
+    expect(GoogleMapsUrl.safeParse('<iframe></iframe>').success).toBe(false);
+    // Not an iframe: left alone, and refused for the ordinary reason.
+    expect(
+      GoogleMapsUrl.safeParse('<script src="https://www.google.com/maps"></script>').success,
+    ).toBe(false);
+  });
+
+  it('reads the src of an <iframe>, and leaves anything else exactly as it was', () => {
+    expect(mapsUrlFrom(`<iframe src="${EMBED}"></iframe>`)).toBe(EMBED);
+    expect(mapsUrlFrom(EMBED)).toBe(EMBED);
+    // A word that merely starts with the tag name is not the tag.
+    expect(mapsUrlFrom('<iframely>')).toBe('<iframely>');
   });
 });
 

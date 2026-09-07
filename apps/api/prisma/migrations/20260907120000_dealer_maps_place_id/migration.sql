@@ -1,0 +1,21 @@
+-- Which place the yard is, not merely where it is.
+--
+-- `lat`/`lng` centre a map. They do not say whose gate it is: the embed they
+-- produce is an unlabelled dot, with no name on it, nothing that confirms the
+-- buyer is looking at the right dealership, and no way to start navigating
+-- without leaving the page. Google's own feature id — the `0x…:0x…` pair its
+-- Share panel puts in an embed URL — turns the same frame into the place card:
+-- the dealership's name, its address, its rating and review count, the zoom
+-- controls and a directions control inside the map.
+--
+-- Text, and no index. Nothing filters or joins on it; it is read by id with the
+-- rest of the profile and rendered into one URL.
+--
+-- Nullable, and deliberately not backfilled. Two thirds of the work is done
+-- without it: a stored place URL or embed URL already carries the id, and it is
+-- read back out at request time. The column exists for the one shape that does
+-- not — `maps.app.goo.gl`, the phone Share sheet's link, whose id costs a
+-- redirect to discover and so has to be kept once discovered. Those rows fill
+-- in the next time the dealer saves their profile, and draw the dot until then.
+
+ALTER TABLE "dealers" ADD COLUMN "mapsPlaceId" TEXT;

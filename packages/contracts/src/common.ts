@@ -328,26 +328,66 @@ const MAPS_HOSTS = new Set([
 ]);
 
 /**
+ * The link out of whatever the dealer actually pasted.
+ *
+ * Google offers a dealer three things that all look like "the link to my
+ * business", and they will paste any of them:
+ *
+ *   · the **share link** — `maps.app.goo.gl/…`, one tap on a phone;
+ *   · the **embed URL** — `google.com/maps/embed?pb=…`, from Share → Embed;
+ *   · the whole **`<iframe>`**, which is what that panel actually copies, and
+ *     what a "how to put a map on your website" tutorial tells them to take.
+ *
+ * The first two are already URLs. The third is a fragment of HTML with a URL
+ * inside it, and refusing it with "that is not a Google Maps link" is telling
+ * somebody that the thing Google just handed them is not the thing Google just
+ * handed them. So the `src` is lifted out and the rest is discarded — the HTML
+ * is never stored, and what comes out the other side is a URL that then faces
+ * exactly the same host check as any other.
+ *
+ * Deliberately narrow: the first `src="…"` or `src='…'` of an `<iframe>`, and
+ * nothing else. This is not an HTML parser and must not become one.
+ */
+export function mapsUrlFrom(input: string): string {
+  const value = input.trim();
+  if (!/^<iframe[\s>]/i.test(value)) return value;
+
+  const src = /\ssrc\s*=\s*["']([^"']+)["']/i.exec(value);
+  // A malformed paste falls through as-is, so the schema below refuses it with
+  // its own message rather than this returning something that looks like a URL.
+  return src?.[1]?.trim() ?? value;
+}
+
+/**
  * A Google Maps link to the dealership's yard, as the dealer pasted it.
  *
- * Stored verbatim rather than parsed into coordinates. A share link survives
- * the dealer moving the pin, carries the place's own name and reviews, and
- * opens the Google Maps app on a phone rather than a web map — none of which a
- * `lat,lng` pair extracted at write time would do. Turning it into coordinates
- * is the geocoding feature's problem, not this field's.
+ * Stored verbatim rather than parsed into coordinates — `mapsUrlFrom` only
+ * unwraps an `<iframe>`, it never rewrites a URL. A share link survives the
+ * dealer moving the pin, carries the place's own name and reviews, and opens
+ * the Google Maps app on a phone rather than a web map, none of which a
+ * `lat,lng` pair would do. The coordinates are read out of it *as well*, at
+ * write time, for the map the portfolio draws (**R10**).
  *
  * `https` only: the link is rendered as an anchor on a public page, and a
  * plaintext hop is a downgrade a buyer cannot see.
  */
 export const GoogleMapsUrl = z
-  .string()
-  .trim()
-  .url('Paste the link Google Maps gave you.')
-  .max(2048)
-  .refine(
-    isGoogleMapsUrl,
-    'That is not a Google Maps link. Open your yard in Google Maps, tap Share, and paste the link it gives you.',
-  );
+  .preprocess(
+    (value) => (typeof value === 'string' ? mapsUrlFrom(value) : value),
+    z
+      .string()
+      .trim()
+      .url('Paste the link Google Maps gave you.')
+      .max(2048)
+      .refine(
+        isGoogleMapsUrl,
+        'That is not a Google Maps link. Open your yard in Google Maps, tap Share, and paste the link it gives you.',
+      ),
+  )
+  // The preprocess makes the schema's input `unknown`, and every caller sends a
+  // string. Restated so the inferred type, and the generated reference, still
+  // say so.
+  .pipe(z.string());
 
 /**
  * `https:` and a hostname on the list above.

@@ -11,6 +11,7 @@ import {
 
 import { env } from '../../config/env.js';
 import { NotFoundError } from '../../platform/errors.js';
+import { embedUrlFor } from '../../platform/maps/maps-link.js';
 import { mediaUrl } from '../../platform/media/urls.js';
 import type { DealersRepository } from './dealers.repository.js';
 
@@ -240,9 +241,8 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           state,
           pincode: dealer.pincode,
           full: fullAddress,
-          // R6. The link the dealer pasted, and nothing composed from the
-          // address — see the note on the field in `contracts/public.ts`.
-          mapsUrl: dealer.mapsUrl,
+          // R6, with the one exception `directionsUrl` explains.
+          mapsUrl: directionsUrl(dealer.mapsUrl, dealer.lat, dealer.lng),
           // The pin the link resolved to, when it resolved to one. Both halves
           // have to be present: a row with a latitude and no longitude is not a
           // place, and centring a map on half a coordinate puts it in the sea.
@@ -250,6 +250,25 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
             dealer.lat === null || dealer.lng === null
               ? null
               : { lat: dealer.lat, lng: dealer.lng },
+          /*
+           * The map the card draws, composed from whatever the dealer's link
+           * turned out to carry — the place card when it named a place, the
+           * plain pin when it only placed one, null when it did neither.
+           *
+           * Composed here rather than in the card because the choice between
+           * those three is a question about the stored link, and the card
+           * would have to re-parse the link to ask it. `embedUrlFor` is in
+           * `platform/maps` with the rest of the Maps URL grammar.
+           */
+          embedUrl: embedUrlFor({
+            mapsUrl: dealer.mapsUrl,
+            placeId: dealer.mapsPlaceId,
+            coordinates:
+              dealer.lat === null || dealer.lng === null
+                ? null
+                : { lat: dealer.lat, lng: dealer.lng },
+            label: dealer.brandName,
+          }),
         },
         stats: [
           { key: 'cars', label: 'Cars available', value: String(carCount) },
@@ -297,6 +316,44 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
 }
 
 export type DealersPublicService = ReturnType<typeof createDealersPublicService>;
+
+/**
+ * What "Get directions" should actually open.
+ *
+ * **R6 stores the dealer's link verbatim and this returns it verbatim**, with
+ * one exception: an *embed* URL. `google.com/maps/embed?pb=…` is the src of the
+ * iframe Google's Share → Embed panel hands out, and dealers paste it because
+ * it is what a "put a map on your site" tutorial tells them to copy. It draws a
+ * perfectly good map — the pin is in the `pb` blob — but opened as a link it is
+ * a bare embedded map with no place card and no directions.
+ *
+ * So when that is what was pasted, the button is built from **the dealership's
+ * own pin**, which is the same pin that URL contains. This is not the thing R6
+ * forbids: the prohibition is on composing a destination out of a *typed
+ * address*, because an address is several gates in one district. These
+ * coordinates came from the dealer's own link.
+ *
+ * No pin, or any other kind of link: verbatim, as before.
+ */
+function directionsUrl(
+  mapsUrl: string | null,
+  lat: number | null,
+  lng: number | null,
+): string | null {
+  if (!mapsUrl) return null;
+  if (lat === null || lng === null) return mapsUrl;
+
+  let path: string;
+  try {
+    path = new URL(mapsUrl).pathname;
+  } catch {
+    // A row written before the URL was validated. Not this function's problem.
+    return mapsUrl;
+  }
+
+  if (!path.startsWith('/maps/embed')) return mapsUrl;
+  return `https://www.google.com/maps/dir/?api=1&destination=${String(lat)},${String(lng)}`;
+}
 
 /**
  * `?city=vellore,katpadi` — the chips a buyer has toggled on.
