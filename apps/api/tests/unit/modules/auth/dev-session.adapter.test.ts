@@ -9,6 +9,16 @@ import { createDevSessionResolver } from '../../../../src/modules/auth/dev-sessi
 const ADMIN_EMAIL = env.adminAllowlist[0] ?? '';
 
 /**
+ * The one dealership `AUTH_MODE=dev` signs in as — read from the configuration
+ * rather than restated, because "the slug comes from `DEV_DEALER_SLUG`" is the
+ * property these tests exist to pin. A literal here asserts the *value* of the
+ * default instead, which is a fact about the seed and not about this adapter,
+ * and it fails the day the seed's name changes for reasons that have nothing
+ * to do with the resolver.
+ */
+const DEV_SLUG = env.DEV_DEALER_SLUG;
+
+/**
  * CLAUDE.md §5: "The only thing being bypassed locally is the identity
  * verification mechanism." This adapter is where that promise is kept or
  * broken, so the tests below are mostly about what it *refuses* to read:
@@ -46,7 +56,7 @@ interface UserRow {
 function dealer(overrides: Partial<DealerRow> = {}): DealerRow {
   return {
     id: 'dealer-1',
-    slug: 'sri-lakshmi-motors',
+    slug: DEV_SLUG,
     status: 'ACTIVE',
     members: [{ userId: 'user-1', role: 'OWNER' }],
     ...overrides,
@@ -81,7 +91,7 @@ describe('resolveDealer', () => {
       kind: 'DEALER',
       userId: 'user-1',
       dealerId: 'dealer-1',
-      dealerSlug: 'sri-lakshmi-motors',
+      dealerSlug: DEV_SLUG,
       role: 'OWNER',
       dealerStatus: 'ACTIVE',
     });
@@ -95,7 +105,7 @@ describe('resolveDealer', () => {
 
     expect(findUnique).toHaveBeenCalledOnce();
     const where = (findUnique.mock.calls[0] as unknown as [{ where: { slug: string } }])[0].where;
-    expect(where).toEqual({ slug: 'sri-lakshmi-motors' });
+    expect(where).toEqual({ slug: DEV_SLUG });
     expect(JSON.stringify(findUnique.mock.calls[0])).not.toContain('someone-elses-dealer');
   });
 
