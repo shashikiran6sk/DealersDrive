@@ -7,6 +7,7 @@ import { DirectoryFilters } from '@/components/dealers/directory-filters';
 import { EmptyState } from '@/components/ui/primitives';
 import { apiGet, qs } from '@/lib/api';
 import { DEALERS_TAG } from '@/lib/cache-tags';
+import { getPublicLocations } from '@/lib/locations';
 import { seoMetadata } from '@/lib/seo';
 import { many, one, type SearchParamsInput } from '@/lib/url';
 
@@ -103,10 +104,19 @@ export default async function DealerDirectoryPage({
   searchParams: Promise<SearchParamsInput>;
 }) {
   const { city, district, q, page } = readParams(await searchParams);
-  const directory = await apiGet<DealerDirectoryResponse>(
-    `/v1/dealers${qs({ city: cityParam(city), district, q, page })}`,
-    { revalidate: 600, tags: [DEALERS_TAG] },
-  );
+  /*
+   * Two reads, one round trip. `getPublicLocations` is the same cached fetch
+   * the layout above already made — same URL, same options — so this is a hit
+   * rather than a second call to the API, and the picker below cannot disagree
+   * with the header about which districts exist (**R23**).
+   */
+  const [directory, locations] = await Promise.all([
+    apiGet<DealerDirectoryResponse>(
+      `/v1/dealers${qs({ city: cityParam(city), district, q, page })}`,
+      { revalidate: 600, tags: [DEALERS_TAG] },
+    ),
+    getPublicLocations(),
+  ]);
 
   const place = placeName(directory, city, district);
 
@@ -135,6 +145,7 @@ export default async function DealerDirectoryPage({
       <DirectoryFilters
         cities={directory.cities}
         city={city}
+        locations={locations}
         {...(district ? { district } : {})}
         {...(q ? { q } : {})}
       />

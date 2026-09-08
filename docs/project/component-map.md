@@ -356,6 +356,16 @@ an affordance. `cities` arrives narrowed to whichever district the header
 chose; this component carries the district through every navigation it makes
 but never sets it.
 
+**R23 — the row has two shapes.** With no district, `cities` is every town on
+the _platform_ (44 against the dev seed, five wrapped rows), so the chips give
+way to a `Select district` button that opens `DistrictPicker` (C071). The grid
+underneath is unchanged: no district still means every dealership.
+
+The exception is an **applied** town, which always renders along with its
+`Clear` — `indexPolicy` names `/dealers?city=vellore` an indexable canonical, so
+a buyer can arrive with a town set and no district, and a row that hid itself
+would leave them a filter they can neither see nor clear.
+
 ### C068 — `LocationCard`
 
 `components/dealers/location-card.tsx:47`. Props:
@@ -375,6 +385,30 @@ composed by the API (**R14**), so the card renders one `<iframe>` and cannot
 tell a place card from a bare pin — which is what let the map gain the yard's
 name, rating and an in-frame directions control without the card changing shape.
 
+### C071 — `DistrictPicker`
+
+`components/layout/district-picker.tsx`. Props: `locations: PublicLocations`,
+`children: (chosen: DistrictChip | null) => ReactNode`. States: header trigger,
+directory trigger, one chosen, many states, searching, state filtered, no state
+recorded, no districts. Two consumers (`LocationSelector`, `DirectoryFilters`).
+**Reusable.**
+
+**New at R23**, extracted whole out of C069. Two openers is the moment the
+dialog stops belonging to the header — and what is shared is not only the markup
+but the **selection rule** (drop `city`, drop `page`, go to `/dealers` from
+anywhere else), which a second copy of would let the header and the directory
+disagree about what choosing a district means.
+
+The trigger is a **render prop** because the two callers say different things
+about the same state: the header names the chosen district, and the directory's
+button exists precisely when there is none. `useDistrictSelection` is exported
+beside the component so a third opener — a "near you" suggestion, say —
+inherits the rule rather than restating it.
+
+The dialog's own design is R22's and unchanged: a state is a heading nothing can
+select, a district is a button, the state row filters and never selects, and
+search is a flat list where every row names its state.
+
 ### C069 — `LocationSelector`
 
 `components/layout/location-selector.tsx`. Props: `locations: PublicLocations`.
@@ -387,6 +421,13 @@ see R11 for why that is the better question and not merely the one D6 left
 available. A client component for two reasons, both unavoidable: the dialog's
 open state, and `useSearchParams`, which is why it sits behind its own
 `Suspense` boundary so the rest of the header still renders on the server.
+
+**R23 — the trigger, and only the trigger.** The dialog and the selection rule
+moved to `DistrictPicker` (C071) when the directory became a second opener. The
+button reads **`Select district`** until one is chosen, where it read
+`All districts`: a true description of what is on screen, and a poor description
+of what the button is for. `All districts` is now the dialog's footer button,
+where it is the way back and carries its count.
 
 Choosing a district drops `city` and `page` from the query string, because
 `?district=ranipet&city=katpadi` is an empty page. The choice applies
