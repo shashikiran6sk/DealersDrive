@@ -1,34 +1,35 @@
 import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../src/config/env.js';
-import { DEV_DEALERS, DEV_STATE } from './dev-dealers.data.js';
+import { DEV_DEALERS, DEV_STATES } from './dev-dealers.data.js';
 
 /**
- * Writes thirty dealerships across the Vellore, Ranipet and Tirupattur
- * districts into a **local** database, so the directory and the portfolio page
- * have something to be looked at.
+ * Writes a hundred and twenty dealerships — thirty each in Tamil Nadu,
+ * Karnataka, Andhra Pradesh and Kerala — into a **local** database, so the
+ * directory and the portfolio page have something to be looked at.
  *
  *     pnpm --filter @dealers-drive/api db:seed:dev
  *
  * ── What this is not ────────────────────────────────────────────────────────
  * It is not part of `pnpm db:seed`, and `tests/global-setup.ts` does not call
  * it. The test seed stays at one dealership because `auth.test.ts` is written
- * against one; adding thirty rows to every integration run would cost every
- * suite and buy no test anything. See the header of `dev-dealers.data.ts`.
+ * against one; adding a hundred and nineteen rows to every integration run
+ * would cost every suite and buy no test anything. See the header of
+ * `dev-dealers.data.ts`.
  *
  * ── Why it refuses to run against a remote database ─────────────────────────
- * This writes thirty invented dealerships with invented GSTINs. Pointed at a
- * shared or hosted database that is not a mistake you notice — it is thirty
- * rows a colleague then has to identify and delete by hand, and on a public
- * marketplace it is thirty businesses that do not exist. So the host in
- * `DATABASE_URL` has to be a loopback address, and overriding that has to be
- * typed out in full:
+ * This writes a hundred and twenty invented dealerships with invented GSTINs
+ * across four states. Pointed at a shared or hosted database that is not a
+ * mistake you notice — it is a hundred and twenty rows a colleague then has to
+ * identify and delete by hand, and on a public marketplace it is a hundred and
+ * twenty businesses that do not exist. So the host in `DATABASE_URL` has to be
+ * a loopback address, and overriding that has to be typed out in full:
  *
  *     ALLOW_REMOTE_DEV_SEED=yes pnpm --filter @dealers-drive/api db:seed:dev
  *
  * ── Re-running it ───────────────────────────────────────────────────────────
- * Every write is an upsert keyed on the slug or the email, so running it twice
- * updates thirty rows rather than colliding on `dealers_gstin_key`. That makes
+ * Every write is an upsert keyed on the GSTIN or the email, so running it
+ * twice updates the rows rather than colliding on `dealers_gstin_key`. That makes
  * it the right way to pick up an edit to the data file, and it means it can be
  * run over a database that already has the ordinary seed in it.
  * ────────────────────────────────────────────────────────────────────────────
@@ -53,7 +54,7 @@ function assertLocalDatabase(): void {
   if (!isLocal) {
     throw new Error(
       `DATABASE_URL points at "${host}", not at localhost.\n` +
-        'These are thirty invented dealerships — they do not belong in a shared database.\n' +
+        'These are a hundred and twenty invented dealerships — they do not belong in a shared database.\n' +
         'If you meant it: ALLOW_REMOTE_DEV_SEED=yes pnpm --filter @dealers-drive/api db:seed:dev',
     );
   }
@@ -100,7 +101,7 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
     approvedAt: now,
     city: dealer.city,
     district: dealer.district,
-    state: DEV_STATE,
+    state: dealer.state,
     addressLine: dealer.addressLine,
     pincode: dealer.pincode,
     mapsUrl: dealer.mapsUrl,
@@ -158,24 +159,40 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
 async function main(): Promise<void> {
   assertLocalDatabase();
 
-  // Sequential on purpose. Thirty rows is nothing, and a `Promise.all` over
-  // upserts that share unique indexes is how you get a deadlock that only
-  // shows up on someone else's laptop.
+  // Sequential on purpose. A hundred and twenty rows is a few seconds, and a
+  // `Promise.all` over upserts that share unique indexes is how you get a
+  // deadlock that only shows up on someone else's laptop.
   for (const dealer of DEV_DEALERS) {
     await seedDealer(dealer);
   }
 
-  const byDistrict = new Map<string, number>();
-  for (const dealer of DEV_DEALERS) {
-    byDistrict.set(dealer.district, (byDistrict.get(dealer.district) ?? 0) + 1);
-  }
-
+  /*
+   * State, then district, then the towns inside it.
+   *
+   * The nesting is not decoration: the three levels are the three things the
+   * product groups by, and a run that seeded a town into the wrong district —
+   * or, since this file grew past one state, the wrong state — is visible here
+   * and nowhere else until somebody notices a directory chip in the wrong
+   * place. `DEV_STATES` supplies the order so it does not come out of a `Set`
+   * in whatever order the rows happen to sit in.
+   */
   console.log(`seeded ${String(DEV_DEALERS.length)} dev dealerships`);
-  for (const [district, count] of [...byDistrict].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const towns = [
-      ...new Set(DEV_DEALERS.filter((d) => d.district === district).map((d) => d.city)),
-    ];
-    console.log(`  ${district} district — ${String(count)} across ${towns.join(', ')}`);
+
+  for (const state of DEV_STATES) {
+    const inState = DEV_DEALERS.filter((d) => d.state === state);
+    console.log(`  ${state} — ${String(inState.length)}`);
+
+    const districts = [...new Set(inState.map((d) => d.district))].sort((a, b) =>
+      a.localeCompare(b),
+    );
+
+    for (const district of districts) {
+      const inDistrict = inState.filter((d) => d.district === district);
+      const towns = [...new Set(inDistrict.map((d) => d.city))];
+      console.log(
+        `    ${district} district — ${String(inDistrict.length)} across ${towns.join(', ')}`,
+      );
+    }
   }
 }
 
