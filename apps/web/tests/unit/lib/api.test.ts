@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cookieJar } from '../../setup.js';
-import { ApiError, apiGet, apiSend, qs } from '../../../src/lib/api.js';
+import { PublicLocations } from '@dealers-drive/contracts';
+
+import { ApiError, apiGet, apiGetParsed, apiSend, qs } from '../../../src/lib/api.js';
 
 /**
  * The one place the web app talks to the API (Rule 8). Three behaviours here
@@ -20,6 +22,11 @@ import { ApiError, apiGet, apiSend, qs } from '../../../src/lib/api.js';
  *
  * **An empty body is not an error.** A 204 is the normal answer to a delete,
  * and `JSON.parse('')` throws.
+ *
+ * **A cast is not a check** (R22). `apiGet<T>` promises a shape the compiler
+ * cannot verify, because the bytes come from a process built at a different
+ * time. `apiGetParsed` is for the reads where being wrong about that renders as
+ * a sentence rather than as a break.
  */
 
 const ORIGINAL_FETCH = globalThis.fetch;
@@ -487,5 +494,77 @@ describe('forwarding the session', () => {
     await apiGet('/v1/dealer', { revalidate: false });
 
     expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBeUndefined();
+  });
+});
+
+/**
+ * R22 — the read that is checked rather than asserted, and the incident it
+ * came from.
+ *
+ * `/v1/locations` gained a `state` on each district. For the ten minutes
+ * between the API restarting and Next's fetch cache expiring, the header was
+ * served the previous payload; `state` was `undefined`; and the location dialog
+ * filed every district in the country under **"State not recorded"** — the
+ * product asserting, in its own voice, that it did not know which state Chennai
+ * is in. Nothing threw, nothing logged, and it looked exactly like data.
+ *
+ * These pin the two halves of the fix: the skew throws, and an additive change
+ * does not.
+ */
+describe('apiGetParsed', () => {
+  const CURRENT = {
+    districts: [{ slug: 'chennai', name: 'Chennai', count: 1, state: 'Tamil Nadu' }],
+    total: 1,
+  };
+
+  it('returns the payload when it matches the contract', async () => {
+    globalThis.fetch = respondWith(CURRENT) as unknown as typeof fetch;
+
+    expect(await apiGetParsed(PublicLocations, '/v1/locations')).toEqual(CURRENT);
+  });
+
+  /** The incident, as a test: an older API, one field short. */
+  it('throws on a payload from before a field was added, naming the field', async () => {
+    globalThis.fetch = respondWith({
+      districts: [{ slug: 'chennai', name: 'Chennai', count: 1 }],
+      total: 1,
+    }) as unknown as typeof fetch;
+
+    await expect(apiGetParsed(PublicLocations, '/v1/locations')).rejects.toThrow(
+      /districts\.0\.state/,
+    );
+  });
+
+  /**
+   * `null` is a real answer — the column is nullable, and a district whose
+   * dealerships never filled the state in is still a district. Only *absence*
+   * is the error, which is the direction that hurts.
+   */
+  it('accepts a state that is genuinely null', async () => {
+    globalThis.fetch = respondWith({
+      districts: [{ slug: 'chennai', name: 'Chennai', count: 1, state: null }],
+      total: 1,
+    }) as unknown as typeof fetch;
+
+    await expect(apiGetParsed(PublicLocations, '/v1/locations')).resolves.toBeTruthy();
+  });
+
+  /**
+   * The other direction, and why this is not brittle: a **newer** API that has
+   * added a field this app does not know about still parses. Zod objects ignore
+   * unknown keys, so deploying the API first stays safe.
+   */
+  it('accepts a payload from a newer API carrying fields it does not know', async () => {
+    globalThis.fetch = respondWith({
+      districts: [
+        { slug: 'chennai', name: 'Chennai', count: 1, state: 'Tamil Nadu', carCount: 48 },
+      ],
+      total: 1,
+      nextThing: true,
+    }) as unknown as typeof fetch;
+
+    await expect(apiGetParsed(PublicLocations, '/v1/locations')).resolves.toMatchObject({
+      total: 1,
+    });
   });
 });

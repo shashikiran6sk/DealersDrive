@@ -377,28 +377,91 @@ name, rating and an in-frame directions control without the card changing shape.
 
 ### C069 — `LocationSelector`
 
-`components/layout/location-selector.tsx:33`. Props:
-`locations: PublicLocations`. States: all districts, one chosen, open, no
-districts, many districts. One consumer (`CustomerHeader`).
+`components/layout/location-selector.tsx`. Props: `locations: PublicLocations`.
+States: all districts, one chosen, many states, many districts, searching,
+state filtered, no state recorded, no districts. One consumer
+(`CustomerHeader`).
 
 The baseline's header switcher, restored as **districts** rather than cities —
 see R11 for why that is the better question and not merely the one D6 left
-available. A client component for two reasons, both unavoidable: the menu's
+available. A client component for two reasons, both unavoidable: the dialog's
 open state, and `useSearchParams`, which is why it sits behind its own
 `Suspense` boundary so the rest of the header still renders on the server.
 
 Choosing a district drops `city` and `page` from the query string, because
-`?district=ranipet&city=katpadi` is an empty page.
+`?district=ranipet&city=katpadi` is an empty page. The choice applies
+immediately and closes the dialog — there is no confirm step, and R22
+deliberately did not add one.
 
-**R19 — the rows, and the keys.** This is the only consumer of `.dd-nav-item`,
+**R19 — the rows, and the keys.** This was the only consumer of `.dd-nav-item`,
 and it used the class for two revisions before the class existed: it was never
 ported out of the baseline, so every option rendered unstyled and the chosen
-row's `aria-current` had no rule to colour it. The class is in `globals.css`
-now. The menu is also keyboard-navigable at last — arrows, Home/End, Enter —
-with focus roving over the real option buttons, which is what `role="listbox"`
-has been announcing since R11. The panel takes the baseline's 220px and, with
-it, the baseline's absence of a height cap: past ~15 districts it grows past
-the fold rather than scrolling.
+row's `aria-current` had no rule to colour it.
+
+**R22 — a dialog, grouped by state.** R19 also wrote down the panel's cost:
+past ~15 districts it grew past the fold. That turned out to be the smaller
+half of the problem. 38 districts in one flat column asks the reader to already
+know which state each is in, and the reader who would ask is the one who does
+not.
+
+The component now renders a `Dialog` (C070) instead of an absolutely-positioned
+panel, and the layout carries the hierarchy:
+
+- a **state** is a heading — not focusable, no hover, no cursor change, nothing
+  pressable. A state is not a place the product can be filtered to, so anything
+  that looked clickable would be an invitation to a dead end. Its RTO code sits
+  on a `Plate`, which stretches §4.5's enumeration of four plate uses by one and
+  does so on the one motif that means "a registration authority said this";
+- a **district** is a `<button>`, and the only selectable thing in the dialog.
+  `aria-pressed`, a ✓ and the cobalt fill each say which one is chosen, so none
+  of them is load-bearing alone (§4.15);
+- the **state row** at the top filters and never selects, and is drawn only when
+  there are two states or more;
+- **search** switches to a flat list in which every row names its state.
+  Grouping already makes the pairing visible; a flat filtered list of
+  `Tirupattur / Mysuru / Bengaluru Urban` under four one-row headings would not.
+
+`.dd-nav-item` has **no consumer** as of R22 — it went with the menu rows. It is
+still the class the design spec defines for a menu row and the admin sidebar is
+its next likely user, so it stays in `globals.css` rather than being deleted and
+re-ported; it belongs in the dead-code register until then.
+
+The state each district belongs to comes from `DistrictChip.state` on the
+payload (**R22**), off the dealership's own address. Nothing in the UI infers a
+state from a district's name, and there is nothing it could infer one from — D6
+removed the table that held the pair. `lib/state-codes.ts` maps a state _name_
+to its RTO code and returns `null` for anything it does not recognise; it adds
+no place and no count.
+
+### C070 — `Dialog`
+
+|                      |                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `components/ui/dialog.tsx`                                                                                                                                |
+| **Purpose**          | DESIGN-SPEC §2.14. **New at R22** — the resolution of finding **D-C**, at the first consumer.                                                             |
+| **Props**            | `open`, `onOpenChange`, `trigger`, `title`, `description?`, `closeLabel?`, `className?`, `contentClassName?`, `header?`, `footer?`, `children`            |
+| **States**           | default 440px, with description, wide + scrolling, no footer                                                                                              |
+| **Consumers**        | 1 (`LocationSelector`) — `ReviewActions` (C060) is the next, at F070                                                                                      |
+| **Tests**            | `tests/unit/components/ui/dialog.test.tsx` — the contract only: modal, named, focus in, focus trapped, document inert, focus restored, close button named |
+| **Ownership**        | Primitive                                                                                                                                                 |
+| **Sandbox priority** | **P0** — the trap and the focus restore are invisible with a mouse, and the width override is the thing a caller gets wrong                               |
+| **Confidence**       | HIGH                                                                                                                                                      |
+
+Radix underneath, the design system's classes on top. That direction matters: the
+alternative is a hand-rolled trap, and every item on the list a modal has to get
+right is a bug only a keyboard or screen-reader user meets.
+
+**The trigger goes through Radix**, which is the one thing a caller can get
+wrong. A modal `Content` cancels the focus-scope's own restore and focuses _its_
+trigger, so a dialog opened by a button Radix does not know about closes with
+focus on `<body>` and the next Tab starts at the top of the document. `trigger`
+is a required prop for that reason. Open state stays the caller's, because most
+dialogs close for a reason of their own.
+
+**§2.14's `min(440px, 100%)` is a default, not a rule.** It is the right width
+for the two dialogs the spec draws — a confirmation and a rejection reason. A
+dialog whose content is a grid overrides it through `className`, which is what
+`LocationSelector` does at 880px.
 
 ---
 
@@ -634,7 +697,7 @@ informed.
 | §2.7 Card      | `.card`                        | **none**                      | **32** (30 files)      |
 | §2.13 Table    | `.table`                       | `Table` — **created at F045** | **5** pages            |
 | §2.4 Segmented | `.seg` / `.seg-opt`            | **none**                      | 2 files                |
-| §2.14 Dialog   | `.dialog` / `.dialog-backdrop` | **none** — Radix used instead | **0**                  |
+| §2.14 Dialog   | `.dialog` / `.dialog-backdrop` | `Dialog` — **created at R22** | **0**                  |
 
 **Risk: HIGH.** These are the components a sandbox registry would have surfaced.
 The 5 `.table` implementations across dealer inventory, billing, admin payments,
@@ -651,7 +714,8 @@ were reconstructed; `Table` at **F045**, at the first of its five. Neither was
 a migration — each landed at the moment its first consumer did, which is the
 only point at which this costs nothing. `Segmented` is due at **F091** (its
 `.seg` CSS arrived at F045 with the dealer status tabs, which are `<Link>`s and
-not the control); `Card` and `Dialog` are still open.
+not the control); `Dialog` at **R22**, at its first consumer and as the
+resolution of finding D-C. `Card` is the one still open.
 
 ### D-C — `.dialog` CSS is dead; Radix is the real implementation
 
@@ -659,6 +723,11 @@ not the control); `Card` and `Dialog` are still open.
 consumers. `ReviewActions` uses `@radix-ui/react-dialog` instead. Two dialog
 strategies, one of them dead. **Risk: MEDIUM** — the next developer who needs a
 dialog will pick the wrong one.
+
+**Resolved at R22**, and by the recommendation two sections above rather than by
+choosing between the two: `Dialog` (C070) is Radix wearing `.dialog`, so there
+is one strategy and the CSS has a consumer. It landed with its first consumer
+(`LocationSelector`), which is the only moment this costs nothing.
 
 ### D-D — `ReportPanel` vs `ReportSummary`
 
@@ -694,7 +763,7 @@ Two overlapping tone unions (see finding D-3). **Risk: LOW.**
 | Item                                      | Location                           | Evidence                  |
 | ----------------------------------------- | ---------------------------------- | ------------------------- |
 | `ButtonLink`                              | `components/ui/button.tsx:76`      | zero imports              |
-| `.dialog`, `.dialog-backdrop`             | `globals.css:620–650`              | zero consumers            |
+| `.dd-nav-item`                            | `globals.css`                      | zero consumers since R22  |
 | `.tag-draft`, `.tag-expired`, `.tag-sold` | `globals.css`                      | no prop path reaches them |
 | `react-hook-form`                         | `apps/web/package.json` dependency | **zero** imports in `src` |
 | `@hookform/resolvers`                     | `apps/web/package.json` dependency | **zero** imports in `src` |

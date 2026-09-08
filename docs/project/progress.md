@@ -187,6 +187,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [ ] R19 — The district menu, as the baseline drew it, and reachable by keyboard · revises R11/F073
 - [ ] R20 — A Maps link that names the place · revises F046/R14
 - [ ] R21 — The directory card is one fixed size · revises R17
+- [~] R22 — States group the districts, in a dialog · revises R11/R19/F085
 
 ---
 

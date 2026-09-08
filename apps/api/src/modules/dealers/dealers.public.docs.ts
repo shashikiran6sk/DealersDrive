@@ -75,6 +75,11 @@ export const dealersPublicDocs: ModuleDocs = {
         'with the `cities` table: that endpoint listed the five towns somebody had seeded, ' +
         'so a filter could offer a place with nothing behind it and could miss a place ' +
         'that had just been typed.\n\n' +
+        "Each district carries **the state it is in** (**R22**), off the dealership's own " +
+        '`state` text, because the selector groups by it — and a grouping the client worked ' +
+        'out for itself would be a second source of truth for a pairing no table holds. It ' +
+        'is `null` when the dealerships in that district never filled the field in; the ' +
+        'district is still offered, because it is still a place a buyer can reach.\n\n' +
         '`Cache-Control: public, max-age=300`.',
       audience: 'public',
       rateLimit: '120 requests per minute per IP, shared with the other public reads.',

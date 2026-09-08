@@ -173,12 +173,17 @@
  *   F012  .skeleton
  *   F013  .field, .input
  *   F045  .table, .seg/.seg-opt
- *   R19   .dd-nav-item                           ← this PR
+ *   R19   .dd-nav-item
+ *   R22   .dialog, .dialog-backdrop                ← this PR
  * `.dd-nav-item` is the exception that proves the rule, and it is why the rule
  * is written down: `LocationSelector` landed at R11 *using* the class, and the
  * class did not land with it. Every option in the district menu has been an
  * unstyled `<button>` since — including the one for the district already
  * chosen, whose `aria-current` had nothing to colour it with.
+ * `.dialog` is the mirror image of that mistake and is why the rule is not
+ * "port the CSS": in the baseline the class exists and *nothing renders it*
+ * (finding D-C), so it lands here with the `Dialog` that wears it and with the
+ * first screen that opens one.
  * `.table` and `.seg` have no component at all in the baseline — that is
  * finding D-B. `.table` arrives here *with* the `Table` that wraps it, at the
  * first of its five hand-rolled call sites. `.seg` arrives without one: the
@@ -594,6 +599,71 @@
   .dd-nav-item[aria-current='page'] {
     background: var(--color-accent);
     color: #fff;
+  }
+
+  /*
+   * Dialog — §2.14, ported verbatim from the baseline (**R22**), where it had
+   * *zero* consumers (component-map finding **D-C**): the baseline drew every
+   * dialog with Radix and left 24 lines of CSS describing a component nothing
+   * rendered. Two dialog strategies, one of them dead, and the next developer
+   * with a dialog to build picking whichever they found first.
+   *
+   * `Dialog` resolves that rather than adding a third: Radix keeps the parts
+   * only a library gets right — the focus trap, the scroll lock, `aria-modal`,
+   * restoring focus to whatever opened it — and these classes are what it
+   * wears. One strategy, and the CSS has a consumer.
+   *
+   * 7px is the one radius above 4 in the product, and the shadow is one of the
+   * three in it (§4.1, §4.3). The width is the *generic* dialog's; a dialog
+   * whose content is a grid overrides it, which is what `className` is for.
+   */
+  /*
+   * Ported verbatim, `display: grid` included — and the grid does not do the
+   * centring. Radix portals the overlay and the panel as siblings rather than
+   * nesting one in the other, so the panel centres itself; `Dialog` says so
+   * where it does it. The declarations stay because this is the spec's block
+   * and the next consumer may not be Radix's.
+   */
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 13.6px;
+    background: rgb(43 43 45 / 0.5);
+    z-index: 70;
+  }
+  .dialog {
+    width: min(440px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 10.2px;
+    padding: 13.6px;
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow-lg);
+  }
+  /*
+   * §1.7 `sheet` — 200ms ease-out, a fade and nothing else. No slide, no
+   * scale: "no entrance animations" is the rule and the dialog is the one
+   * exception the spec grants, so it takes the smallest version of it.
+   *
+   * The `@media (prefers-reduced-motion: reduce)` block in `@layer base`
+   * zeroes every animation duration in the document, so there is nothing to
+   * opt out of here.
+   */
+  .dialog-backdrop[data-state='open'],
+  .dialog[data-state='open'] {
+    animation: dd-dialog-fade 200ms ease-out;
+  }
+}
+
+@keyframes dd-dialog-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

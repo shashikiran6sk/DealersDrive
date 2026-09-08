@@ -3258,3 +3258,159 @@ TIER 14  F093 F094 F095 F096 F097             surface polish
 6. **F060 → F076.** Post-D1, search facets depend on make/model strings being
    normalised at write time. F060 must settle normalisation before F076 is
    built, or the facet fragmentation is unrecoverable.
+
+## R22 — States group the districts, and the menu becomes a dialog
+
+**Revises R11 / R19 / F085**
+
+- **Contracts** `public.ts` — `DistrictChip` (`LocationChip` + a nullable
+  `state`); `PublicLocations.districts` and `DealerDirectoryResponse.districts`
+  carry it
+- **API** `dealers.public.service.ts` — `chipsOf` is generic in the chip rather
+  than in a tuple, with `cityChip` and `districtChip` beside it;
+  `dealers.public.docs.ts` — what `state` is and when it is null
+- **Frontend** `ui/dialog.tsx` — **new** `Dialog` (finding D-C, at its first
+  consumer); `globals.css` — `.dialog` / `.dialog-backdrop` ported, plus the
+  200ms fade; `lib/state-codes.ts` — **new**, a state name to its RTO code;
+  `location-selector.tsx` — the dialog, the state grouping, the search and the
+  state filter
+- **Sandbox** `ui/dialog.stories.tsx` — **new**, four states;
+  `location-selector.stories.tsx` — `ManyStates` and `Untidy` replace the
+  scrolling-column warning; registry C070, and C069's states rewritten
+- **Tests** `location-selector.test.tsx` — **new file**, 24 tests moved out of
+  `customer-header.test.tsx` and rewritten; `dialog.test.tsx` — **new**, the
+  eight-point modal contract; `state-codes.test.ts` — **new**; two API tests for
+  the state on a chip
+
+### The height was the smaller half of the problem
+
+R19 restored the baseline's 220px panel with no height cap and wrote down what
+it cost: _"past roughly fifteen districts the menu is taller than a short
+viewport and the last rows go under the fold. Tamil Nadu has 38, so this is a
+decision to revisit when the platform is in more than a handful of them."_
+
+It is worth revisiting for a second reason the note did not reach. Thirty-eight
+districts in one flat column is not merely tall — it is **ambiguous**. `Vellore`,
+`Bangalore`, `Madurai` in one list asks the reader to already know which state
+each is in, and the reader who would ask that question is exactly the one who
+does not. Capping the height and letting it scroll would have fixed the fold and
+left the ambiguity untouched.
+
+So the shape changed rather than the height: a centred dialog, districts grouped
+under the state they are in.
+
+### The hierarchy is the design, and it has one rule
+
+**A state is a heading. A district is a button.** Everything else follows:
+
+- a state heading is not focusable, has no hover, no cursor change and no
+  pressed styling. A state is not a place this product can be filtered to — the
+  URL takes `?district=` and nothing else — so anything that looked pressable
+  would be an invitation to a dead end;
+- the state filter row at the top of the dialog **filters and never selects**.
+  Pressing `Karnataka` narrows what is on screen; it changes nobody's location.
+  It is drawn only when there are two states or more, because one state to move
+  between is a control taking up room;
+- there is exactly **one** way to select a district. The reference design's
+  "Popular Metropolitan Hubs" strip is not here: it selects the same places a
+  second time, through a card that reads as a city rather than a district, and a
+  second selection model for the same value is how the two come to disagree.
+
+### Search, and the one thing it must not undo
+
+Search filters on the district name _and_ the state name, and switches the body
+to a **flat list in which every row names its state**.
+
+The flat list is the point, not an implementation shortcut. Keeping the grouping
+under a filter would answer "which state is Vellore in" with a heading the
+reader has to look up to, across four one-row groups. A result that reads
+`Vellore` alone is the exact ambiguity this revision removes, so a search that
+reintroduced it would undo the change while appearing to be a feature.
+
+The placeholder says `Search district or state` rather than the reference's
+"city, district, taluk or pincode". The payload is districts and the states they
+are in; a placeholder promising fields the data does not have is a bug report
+waiting to be filed.
+
+### The state had to come from the API
+
+`LocationChip` carried `slug`, `name` and `count`, and there is no rule that
+turns "Vellore" into "Tamil Nadu" without a table — **D6** removed the table.
+Grouping worked out on the client would therefore be a second source of truth
+for a pairing nothing holds.
+
+So `DistrictChip` extends `LocationChip` with `state`, taken from the
+dealership's own `state` column — the same text the portfolio prints under the
+dealership's name. Three properties of that are deliberate:
+
+- **it is nullable**, because the column is. A district whose dealerships never
+  filled the field in is still a district the platform trades in, so it is still
+  offered, under a `State not recorded` heading that sorts last however big it
+  is. Dropping it would delete a place a buyer can reach because somebody
+  skipped a form field;
+- **the chip is still keyed by slug**, exactly as before, so the count and the
+  `?district=` filter it sets go on agreeing (§4.11). Two states with a
+  same-named district would share a chip; that is a property of the slug-only
+  URL scheme, and inventing a second answer to it here would make the count and
+  the filter disagree instead;
+- **`chipsOf` stayed one function.** It is generic in the chip rather than in a
+  tuple, so the district list gets its state through the same counting, ordering
+  and dropping rules as the city chips instead of a second copy of them — which
+  is the reason the two were merged in the first place.
+
+### `Dialog`, and the finding it closes
+
+The dialog is `Dialog` (C070), **new** — and new is the surprising part, because
+`.dialog` and `.dialog-backdrop` have been in `globals.css` throughout with
+**zero consumers**. Component-map finding **D-C**: the baseline draws its one
+real dialog with Radix and keeps 24 lines of CSS describing a component nothing
+renders. Two strategies, one of them dead.
+
+The same document's recommendation was that `Dialog` be among the first shared
+components created, "at the moment its first consumer lands". This is that
+moment, and the resolution is not a choice between the two: Radix underneath,
+`.dialog` on top. One strategy, and the CSS has something rendering it.
+
+Radix rather than a hand-rolled trap because the list a modal has to get right
+is longer than it looks and every item on it is a bug only a keyboard or
+screen-reader user meets: focus in, focus trapped, focus back on the trigger,
+the document behind it inert, the body's scroll locked.
+
+**The trigger is a required prop, and the reason is a real bug.** A modal
+`Content` cancels the focus scope's own restore and focuses _its_ trigger
+instead. A dialog opened by a button Radix does not know about therefore closes
+with focus on `<body>`, and the next Tab starts at the top of the document —
+the same trap R19's Esc handler avoided by hand, reintroduced silently. Passing
+the button through `Dialog` is what makes "focus goes back where it came from"
+true.
+
+§2.14's `min(440px, 100%)` stays the default and is overridden to 880px here.
+440 is the width of a confirmation; a grid of 38 districts is a different
+object, and the override is a Tailwind utility beating a component class rather
+than a new component.
+
+### What did not change, on purpose
+
+**Selection is still immediate.** Choosing a district pushes the URL and closes,
+as the dropdown did; `city` and `page` are still dropped, because
+`?district=ranipet&city=katpadi` is still an empty page. The reference design
+draws a `Confirm selection →` footer and adding one would be new business logic
+in a change about the shape of a list — so the footer carries what _is_ chosen,
+named with its state, and the way back to every district beside it.
+
+**The trigger still reads the district's name.** The header is a 64px row; the
+place to spell out "Vellore, Tamil Nadu" is the dialog's footer, and it does.
+
+### Two things this leaves behind
+
+`.dd-nav-item` now has **no consumer** — it was the menu rows, and there are no
+menu rows. It stays in `globals.css`: it is the class §2.18 defines for a menu
+row, the admin sidebar is its next likely user, and deleting a just-ported block
+to re-port it later is churn. It moves to the dead-code register in
+`component-map.md` in the meantime, which is where the old `.dialog` entry was.
+
+The **arrow-key roving** R19 added went with the `role="listbox"`. That role
+promises the arrows work; a dialog with a search field, filter chips and grouped
+buttons is a document, and Tab is what moves through a document. Announcing a
+listbox and shipping a document would be the same broken promise R19 was written
+to fix, pointing the other way.
