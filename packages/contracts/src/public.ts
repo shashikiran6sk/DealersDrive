@@ -141,6 +141,31 @@ export const LocationChip = z.object({
 });
 export type LocationChip = z.infer<typeof LocationChip>;
 
+/**
+ * A district, and **the state it is in** (**R22**).
+ *
+ * The state is here because the header's selector groups by it, and a grouping
+ * the client works out for itself is a second source of truth: there is no rule
+ * that turns "Vellore" into "Tamil Nadu" without a table, and D6 removed the
+ * table. It comes off the dealership's own `state` column, the same text the
+ * portfolio prints under the dealership's name.
+ *
+ * Nullable rather than absent, because it is: `state` is nullable on the
+ * dealership, and a district whose dealerships never filled it in must still be
+ * offered — the selector's list is the platform's coverage, and dropping a
+ * district for a blank field would quietly delete places a buyer can reach. The
+ * UI groups those under a heading that says so.
+ *
+ * One chip per district **slug**, as before, so the count and the `?district=`
+ * filter it sets go on agreeing (§4.11). Two states with a same-named district
+ * would therefore share a chip; that is a property of the slug-only URL scheme
+ * and not something this schema invents a second answer to.
+ */
+export const DistrictChip = LocationChip.extend({
+  state: z.string().nullable(),
+});
+export type DistrictChip = z.infer<typeof DistrictChip>;
+
 export const DealerDirectoryResponse = z.object({
   data: z.array(DealerCard),
   page: OffsetPage,
@@ -155,8 +180,10 @@ export const DealerDirectoryResponse = z.object({
    * Every district that holds a verified dealership, and never narrowed by
    * anything. It is what the header's selector offers, and a selector that
    * dropped the options you did not choose is a selector you cannot get out of.
+   *
+   * Each carries its state (**R22**) — the header groups by it.
    */
-  districts: z.array(LocationChip),
+  districts: z.array(DistrictChip),
 });
 export type DealerDirectoryResponse = z.infer<typeof DealerDirectoryResponse>;
 
@@ -178,7 +205,7 @@ export type DealerDirectoryResponse = z.infer<typeof DealerDirectoryResponse>;
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const PublicLocations = z.object({
-  districts: z.array(LocationChip),
+  districts: z.array(DistrictChip),
   /** Every ACTIVE dealership, so the "all districts" row can be counted. */
   total: z.number().int(),
 });

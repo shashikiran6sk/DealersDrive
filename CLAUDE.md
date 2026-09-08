@@ -74,16 +74,24 @@ Everything about _what_ to build and _in what order_ lives in `docs/project/`:
 
 `docs/screens/` and `docs/Dealers-Drive-UI/` are the original visual references.
 
-**The previous specification files** — `docs/ARCHITECTURE.md`, `docs/API-SPEC.md`,
-`docs/DESIGN-SPEC.md`, `docs/CLAUDE.md`, `docs/ENGINEER-ONBOARDING.md`,
-`docs/DEPLOYMENT.md` — are **not in this repository any more**. They were the
-brief for the original build, and that build is done. They remain readable at the
-baseline whenever you need the original reasoning:
+[`docs/DESIGN-SPEC.md`](docs/DESIGN-SPEC.md) is back in the repository as of
+**R22**, byte-identical to the baseline's. It is the one of the six original
+specification documents that is still being _read_ rather than remembered: every
+UI feature cites it by section, `component-map.md` cites it forty times, and
+"go and check §4.5" was costing a `git show` every time. It is a reference for
+what the product looks like, not a brief for what to build — `feature-map.md` is
+still the only thing that says what to build and in what order.
+
+**The other five previous specification files** — `docs/ARCHITECTURE.md`,
+`docs/API-SPEC.md`, `docs/CLAUDE.md`, `docs/ENGINEER-ONBOARDING.md`,
+`docs/DEPLOYMENT.md` — are **not in this repository**. They were the brief for
+the original build, and that build is done. They remain readable at the baseline
+whenever you need the original reasoning:
 
 ```bash
 git show legacy/pre-reorg:docs/ARCHITECTURE.md
 git show legacy/pre-reorg:docs/API-SPEC.md
-git show legacy/pre-reorg:docs/DESIGN-SPEC.md
+git show legacy/pre-reorg:docs/DEPLOYMENT.md
 ```
 
 The load-bearing rules from those documents are reproduced in §4 below, so you

@@ -585,8 +585,48 @@ describe('locations', () => {
     const locations = await h.service.locations();
 
     expect(locations.districts).toEqual([
-      { slug: 'ranipet', name: 'Ranipet', count: 2 },
-      { slug: 'vellore', name: 'Vellore', count: 1 },
+      { slug: 'ranipet', name: 'Ranipet', count: 2, state: 'Tamil Nadu' },
+      { slug: 'vellore', name: 'Vellore', count: 1, state: 'Tamil Nadu' },
+    ]);
+  });
+
+  /**
+   * R22 — the header groups its districts by state, and the pairing has to be
+   * a fact about the dealership rather than something the client works out.
+   * There is no rule that turns "Mysuru" into "Karnataka" without a table, and
+   * D6 removed the table.
+   */
+  it('carries the state each district is in', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer(),
+        activeDealer({
+          slug: 'b',
+          districtSlug: 'mysuru',
+          districtName: 'Mysuru',
+          state: 'Karnataka',
+        }),
+      ],
+    });
+
+    const locations = await h.service.locations();
+
+    expect(locations.districts.map((chip) => [chip.name, chip.state])).toEqual([
+      ['Mysuru', 'Karnataka'],
+      ['Vellore', 'Tamil Nadu'],
+    ]);
+  });
+
+  /**
+   * A district whose dealership never filled the state in is still a district
+   * the platform trades in. Dropping it would delete a place a buyer can reach
+   * because somebody skipped a form field.
+   */
+  it('offers a district whose dealership named no state, with a null state', async () => {
+    const h = setup({ dealers: [activeDealer({ state: null })] });
+
+    expect((await h.service.locations()).districts).toEqual([
+      { slug: 'vellore', name: 'Vellore', count: 1, state: null },
     ]);
   });
 

@@ -6,6 +6,7 @@ import {
   type DealerDirectoryQuery,
   type DealerDirectoryResponse,
   type DealerPublicProfile,
+  type DistrictChip,
   type LocationChip,
   type PublicLocations,
 } from '@dealers-drive/contracts';
@@ -186,13 +187,13 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
          * cities already chosen would delete the chips a buyer needs in order
          * to change their mind.
          */
-        cities: chipsOf(inDistrict, (dealer) => [dealer.citySlug, dealer.cityName]),
+        cities: chipsOf(inDistrict, cityChip),
         /*
          * The districts, over every ACTIVE dealership. Never narrowed: this is
          * what the header offers, and a selector that dropped the options you
          * did not pick is one you cannot get back out of.
          */
-        districts: chipsOf(dealers, (dealer) => [dealer.districtSlug, dealer.districtName]),
+        districts: chipsOf(dealers, districtChip),
       };
     },
 
@@ -208,7 +209,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
       const dealers = await repo.listActive();
 
       return {
-        districts: chipsOf(dealers, (dealer) => [dealer.districtSlug, dealer.districtName]),
+        districts: chipsOf(dealers, districtChip),
         total: dealers.length,
       };
     },
@@ -400,24 +401,52 @@ function citySlugsIn(value: string | undefined): Set<string> {
  * the same computation over a different column — and they were the same
  * fourteen lines twice before this, which is how the two come to disagree about
  * whether an unnamed locality is a chip.
+ *
+ * `chip` returns the row the place *would* contribute, or `null` when the row
+ * never named one. Generic in the chip rather than in the tuple so the district
+ * list can carry its state (**R22**) through the same counting, ordering and
+ * dropping rules as the towns, instead of a second copy of them.
  */
-function chipsOf<T>(
-  rows: readonly T[],
-  place: (row: T) => [slug: string | null, name: string | null],
-): LocationChip[] {
-  const chips = new Map<string, LocationChip>();
+function chipsOf<T, C extends LocationChip>(rows: readonly T[], chip: (row: T) => C | null): C[] {
+  const chips = new Map<string, C>();
 
   for (const row of rows) {
-    const [slug, name] = place(row);
-    if (!slug || !name) continue;
-    const existing = chips.get(slug);
+    const made = chip(row);
+    if (!made) continue;
+    const existing = chips.get(made.slug);
     if (existing) existing.count += 1;
-    else chips.set(slug, { slug, name, count: 1 });
+    else chips.set(made.slug, made);
   }
 
   // Busiest first, then alphabetically — otherwise two districts of the same
   // size swap places between requests and the row appears to shuffle itself.
   return [...chips.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+/** A town chip, or `null` for a dealership that never named its town. */
+function cityChip(row: { citySlug: string | null; cityName: string | null }): LocationChip | null {
+  return row.citySlug && row.cityName ? { slug: row.citySlug, name: row.cityName, count: 1 } : null;
+}
+
+/**
+ * A district chip, carrying the state it is in (**R22**) — which is what lets
+ * the header group `Vellore` under `Tamil Nadu` without working the pairing out
+ * for itself.
+ *
+ * The state is whatever the **first** dealership counted into the chip typed,
+ * and it is null when that dealership left the field blank. Neither case drops
+ * the district: the selector's list is the platform's coverage, and a district
+ * that vanished because somebody skipped a form field is a place a buyer can no
+ * longer reach.
+ */
+function districtChip(row: {
+  districtSlug: string | null;
+  districtName: string | null;
+  state: string | null;
+}): DistrictChip | null {
+  return row.districtSlug && row.districtName
+    ? { slug: row.districtSlug, name: row.districtName, count: 1, state: row.state }
+    : null;
 }
 
 /**
