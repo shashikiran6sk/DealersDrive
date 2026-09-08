@@ -40,9 +40,9 @@ import { CustomerHeader } from '@/components/layout/customer-header';
  */
 const LOCATIONS: PublicLocations = {
   districts: [
-    { slug: 'vellore', name: 'Vellore', count: 11 },
-    { slug: 'ranipet', name: 'Ranipet', count: 11 },
-    { slug: 'tirupattur', name: 'Tirupattur', count: 8 },
+    { slug: 'vellore', name: 'Vellore', count: 11, state: 'Tamil Nadu' },
+    { slug: 'ranipet', name: 'Ranipet', count: 11, state: 'Tamil Nadu' },
+    { slug: 'tirupattur', name: 'Tirupattur', count: 8, state: 'Tamil Nadu' },
   ],
   total: 30,
 };
