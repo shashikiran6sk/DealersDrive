@@ -243,7 +243,10 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
         legalName: dealer.legalName,
         initials: initialsOf(dealer.brandName),
         isVerified: true,
-        about: dealer.about,
+        // The one line under the name (**R25**). `dealer.about` is deliberately
+        // not here: nothing public reads it any more, and a field that leaves
+        // the API is a field that has to be kept true.
+        tagline: dealer.tagline,
         // As on the card, and for the same reason (**R18**) — the portfolio
         // renders one tag per service and keys it by the string.
         services: distinctServices(dealer.specialities),

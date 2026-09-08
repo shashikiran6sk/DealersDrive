@@ -234,7 +234,28 @@ export const DealerPublicProfile = z.object({
   legalName: z.string(),
   initials: z.string(),
   isVerified: z.boolean(),
-  about: z.string().nullable(),
+  /**
+   * The one line the dealership describes itself in, under its name (**R25**).
+   *
+   * It replaces `about`, which was the paragraph this page used to open with,
+   * and the replacement is a judgement about what a portfolio is read for. The
+   * page already says who this is four other ways — the name, the yard
+   * photograph, the address, the services — and the paragraph sat above all of
+   * them asking to be read first. What a buyer wants from prose here is one
+   * line that says what kind of yard this is; the rest of the answer is the
+   * inventory below it.
+   *
+   * `about` is not published anywhere any more. The column is still there and
+   * the admin console still reads it, because a hundred dealerships have
+   * written into it and nothing is served by destroying that — but no public
+   * response carries it, which is a boundary a reviewer can check by reading
+   * this type.
+   *
+   * Nullable, because the dealerships that predate the question have none.
+   * The page renders nothing rather than a placeholder line: an empty
+   * `<p>` under a heading reads as a rendering fault.
+   */
+  tagline: z.string().nullable(),
   services: z.array(z.string()),
   address: z.object({
     line: z.string().nullable(),
