@@ -58,10 +58,13 @@ function districtOptions(): HTMLElement[] {
 }
 
 describe('the trigger', () => {
-  it('reads "All districts" until one is chosen, and the district after', () => {
+  it('reads "Select district" until one is chosen, and the district after', () => {
     setLocation('/dealers');
     const { unmount } = render(<LocationSelector locations={LOCATIONS} />);
-    expect(screen.getByRole('button', { name: /all districts/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /select district/i })).toBeInTheDocument();
+    // The old label is gone from the trigger — it lives on the dialog's footer
+    // now, where it is the way back rather than the resting state (**R23**).
+    expect(screen.queryByRole('button', { name: /all districts/i })).toBeNull();
     unmount();
 
     setLocation('/dealers', 'district=ranipet');
@@ -75,7 +78,7 @@ describe('the trigger', () => {
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
 
-    const trigger = screen.getByRole('button', { name: /all districts/i });
+    const trigger = screen.getByRole('button', { name: /select district/i });
     expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
@@ -88,7 +91,7 @@ describe('the trigger', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    const trigger = await open(user, /all districts/i);
+    const trigger = await open(user, /select district/i);
 
     await user.keyboard('{Escape}');
 
@@ -104,7 +107,7 @@ describe('the trigger', () => {
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
 
-    screen.getByRole('button', { name: /all districts/i }).focus();
+    screen.getByRole('button', { name: /select district/i }).focus();
     await user.keyboard('{Enter}');
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -123,7 +126,7 @@ describe('states group the districts', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     const tn = screen.getByRole('heading', { name: /tamil nadu/i });
     const ka = screen.getByRole('heading', { name: /karnataka/i });
@@ -154,7 +157,7 @@ describe('states group the districts', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     const heading = screen.getByRole('heading', { name: /tamil nadu/i });
     expect(heading.tagName).toBe('H3');
@@ -167,7 +170,7 @@ describe('states group the districts', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
       'Tamil Nadu',
@@ -194,7 +197,7 @@ describe('states group the districts', () => {
         }}
       />,
     );
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     // Last despite being the bigger of the two: an absence does not lead.
     expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
@@ -233,7 +236,7 @@ describe('choosing a district', () => {
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
 
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
     await user.click(screen.getByRole('button', { name: /^mysuru/i }));
 
     expect(navigationState.pushed).toEqual(['/dealers?district=mysuru']);
@@ -245,7 +248,7 @@ describe('choosing a district', () => {
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
 
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
     expect(screen.queryByRole('button', { name: /confirm/i })).toBeNull();
 
     await user.click(screen.getByRole('button', { name: /^vellore/i }));
@@ -270,7 +273,7 @@ describe('choosing a district', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     expect(screen.getByRole('button', { name: /all districts \(44\)/i })).toBeDisabled();
   });
@@ -304,7 +307,7 @@ describe('choosing a district', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    const trigger = await open(user, /all districts/i);
+    const trigger = await open(user, /select district/i);
 
     await user.click(screen.getByRole('button', { name: /^vellore/i }));
 
@@ -334,7 +337,7 @@ describe('search', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     await user.type(screen.getByLabelText(/search districts/i), 'ur');
 
@@ -350,7 +353,7 @@ describe('search', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     await user.type(screen.getByLabelText(/search districts/i), 'karnataka');
 
@@ -362,7 +365,7 @@ describe('search', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     await user.type(screen.getByLabelText(/search districts/i), 'zzz');
 
@@ -373,7 +376,7 @@ describe('search', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     await user.type(screen.getByLabelText(/search districts/i), 'mysuru');
     await user.click(screen.getByRole('button', { name: /^mysuru/i }));
@@ -393,7 +396,7 @@ describe('the state filter', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     await user.click(screen.getByRole('button', { name: /^karnataka 2$/i }));
 
@@ -406,7 +409,7 @@ describe('the state filter', () => {
     setLocation('/dealers');
     const user = userEvent.setup();
     render(<LocationSelector locations={LOCATIONS} />);
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     await user.click(screen.getByRole('button', { name: /^karnataka 2$/i }));
     await user.click(screen.getByRole('button', { name: /^all states$/i }));
@@ -426,7 +429,7 @@ describe('the state filter', () => {
         }}
       />,
     );
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     expect(screen.queryByRole('group', { name: /filter by state/i })).toBeNull();
   });
@@ -443,7 +446,7 @@ describe('when there is nothing to offer', () => {
     const user = userEvent.setup();
     render(<LocationSelector locations={{ districts: [], total: 0 }} />);
 
-    await open(user, /all districts/i);
+    await open(user, /select district/i);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(/no dealerships are listed yet/i)).toBeInTheDocument();

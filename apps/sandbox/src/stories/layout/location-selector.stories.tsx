@@ -35,6 +35,19 @@ import { LocationSelector } from '@/components/layout/location-selector';
  *   · The state row at the top **filters** and never selects. Press
  *     `Karnataka` and the Tamil Nadu block goes away; nobody's location changed.
  *
+ * ## And **R23** is the third: the label, and who else opens it
+ *
+ * The button reads **`Select district`** until one is chosen, where it used to
+ * read `All districts`. That was a true description of what is on screen and a
+ * poor description of what the button is *for* — it stated a filter setting to
+ * a first-time visitor who needed an invitation. `All districts` is not gone;
+ * it is the dialog's footer button, where it is the way *back* and carries its
+ * count.
+ *
+ * The dialog itself now lives in `DistrictPicker` (C071), because the directory
+ * opens the same one from its own button. This component is the header's
+ * trigger and nothing else.
+ *
  * ## What to check by eye
  *
  *   · **Open it.** The trigger is the only thing rendered until you do.

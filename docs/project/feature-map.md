@@ -3414,3 +3414,137 @@ promises the arrows work; a dialog with a search field, filter chips and grouped
 buttons is a document, and Tab is what moves through a document. Announcing a
 listbox and shipping a document would be the same broken promise R19 was written
 to fix, pointing the other way.
+
+## R23 — Select a district, rather than being told you have every one
+
+**Revises R11 / R22 / F085**
+
+- **Frontend** `layout/district-picker.tsx` — **new**, the dialog and
+  `useDistrictSelection` extracted whole from `location-selector.tsx`;
+  `location-selector.tsx` — reduced to the header's trigger, which now reads
+  `Select district`; `customer-header.tsx` — the Suspense fallback's label;
+  `dealers/directory-filters.tsx` — the town chips become a `Select district`
+  button when there is no district; `lib/locations.ts` — **new**, the
+  `/v1/locations` read the layout and the directory now share;
+  `(public)/layout.tsx` and `(public)/dealers/page.tsx` — both call it
+- **Sandbox** `layout/district-picker.stories.tsx` — **new**, the two triggers
+  side by side; `directory-filters.stories.tsx` — `Default` is the new shape and
+  `AppliedTownWithoutADistrict` is added; registry C071, C031's and C069's
+  states rewritten
+- **Tests** `directory.test.tsx` — five new, the chip tests moved inside a
+  district; `location-selector.test.tsx` — the label
+- **No API change, no contract change, no new dependency.**
+
+### The problem was the town chips, not the district menu
+
+R22 made the district dialog scale — grouped by state, searchable, inside a
+panel with a height. What it did not touch is what `/dealers` renders _before_
+a district is chosen, and that is where the directory actually falls over.
+
+`cities` is counted over `inDistrict`, and with no district `inDistrict` is
+every ACTIVE dealership. So the unfiltered directory renders one chip per town
+**on the platform**: forty-four of them against the 120-dealership dev seed,
+five wrapped rows between the description and the first card. It is a control
+nobody reads, in the most valuable space on the page, and it grows with every
+dealership that signs up — the one thing a filter must not do.
+
+### A default district was the obvious fix and it is the wrong one
+
+The tempting version is to pick a district for the visitor. It was worked
+through and rejected on its own numbers.
+
+`chipsOf` orders districts by count and breaks ties with `localeCompare`. The
+seed's distribution is flat — eight districts hold 11 dealerships each — so
+`districts[0]` is not "the busiest district", it is **the one whose name starts
+earliest in the alphabet**. Bengaluru Urban wins on the letter B.
+
+Then consider a buyer in Wayanad. The page's own `<h1>` would tell them they
+are looking at _Dealers in Bengaluru Urban_ — 225km away, across a state
+border, chosen by an alphabetical tie-break. Nothing on the page marks it as a
+guess, so it does not read as one; it reads as the product being confidently
+wrong about where they are. An invitation that gets ignored costs a click. A
+wrong fact stated in a heading costs more than that, and the buyer has no way
+to know it was a guess.
+
+Geolocation would narrow it — Vercel's `x-vercel-ip-*` headers are free at the
+edge, and a district centroid can be computed off the `lat`/`lng` the
+dealerships already carry from R10. That is worth doing and it is not this
+revision: it needs a resolver route, a state-code map, a cookie for the
+visitor's own last choice, and a redirect so one URL keeps meaning one thing.
+None of it is a reason to ship a wrong guess in the meantime.
+
+### And auto-opening the dialog is worse than either
+
+The other tempting version: land on `/dealers`, open the picker immediately,
+make the visitor choose. It removes the guess, and it introduces two faults the
+guess did not have.
+
+`Dialog` is Radix, and its contract is `aria-modal`, the rest of the document
+inert, and the body's scroll locked. Opening it on arrival is therefore an
+**interstitial over the one dealers URL the indexing policy indexes** —
+`indexPolicy` marks `/dealers` `index, follow` and everything filtered
+`noindex`, and `page.tsx` is `force-dynamic` specifically so that page
+server-renders for search. Putting a blocking modal on it undoes the reason it
+is built that way.
+
+The second fault is worse and is not about crawlers. **Wayanad is not in the
+list**, because the platform has no dealerships there — so a visitor who is
+handed a modal with no `All districts` in it faces a list with no correct
+answer and no way past. R22's own rule already says this: _"a selector that
+dropped the options you did not pick is one you cannot get back out of."_
+
+### So: a button, and the results are untouched
+
+No district still means **every dealership**. The grid does not change, the
+count does not change, `/dealers` stays the canonical indexable page, and the
+name search stays platform-wide. What changes is the row that filters them: one
+`Select district` button and one line saying what it is for, in place of
+forty-four chips.
+
+The header's label moves for the same reason. `All districts` is a true
+description of what is on screen and a poor description of what the button is
+_for_ — it states a filter setting where a first-time visitor needs an
+invitation, and it is the only control in the header that offers to narrow the
+platform to somewhere near them. It is not deleted: it is the dialog's footer
+button, where it is the way _back_ and still carries its count.
+
+### An applied town always shows, district or not
+
+The rule is deliberately **not** "chips only inside a district", and this is the
+part worth reading before changing it.
+
+`indexPolicy` names `/dealers?city=vellore` an indexable canonical. That is a
+URL Google is invited to send people to, and it carries a town with **no**
+district. Hiding the row there would apply a filter the visitor can neither see
+nor clear — a worse fault than the wall this revision removes, because the wall
+was at least honest about what it was doing.
+
+So: every **applied** town renders, and the unapplied ones render once a
+district makes them a readable set. `Clear towns` follows the selection rather
+than the district, for the same reason.
+
+### Why the dialog moved files
+
+Two openers is the moment it stops belonging to the header. What is shared is
+not only the markup but the **selection rule** — drop `city`, drop `page`, go to
+`/dealers` from anywhere else — and a second copy of that rule is how the header
+and the directory come to disagree about what choosing a district means.
+`DistrictPicker` owns both and takes its trigger as a render prop;
+`useDistrictSelection` is exported beside it so a third opener inherits the rule
+rather than restating it.
+
+`lib/locations.ts` exists for the same reason one step down. The layout and the
+directory both read `/v1/locations`, and the `revalidate` and cache tag are what
+make the second read a cache hit rather than a second call to the API. Written
+twice they would eventually differ by a digit, and the symptom would be a header
+and a page disagreeing about which districts exist.
+
+### One thing this leaves behind
+
+`generateMetadata` passes `city: district` into `seoMetadata`, so
+`/dealers?district=vellore` currently declares its canonical to be
+`/dealers?city=vellore` — a different filter. It is a pre-existing fault of R11,
+untouched here because R23 does not change which URLs are reachable. It becomes
+load-bearing the moment anything _lands_ a visitor on a district URL, so it is
+the first thing the geolocation revision has to fix: `SeoRoute` needs a
+`district` arm.
