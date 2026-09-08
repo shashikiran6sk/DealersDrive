@@ -6,7 +6,7 @@ import { useFormStatus } from 'react-dom';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
-import { Input, Textarea } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
 import { saveDealerProfileAction, type ProfileFormState } from '@/features/dealer/profile-actions';
 
@@ -79,47 +79,46 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
           </Field>
         </div>
 
+        {/*
+          The one line the public pages run under the dealership's name — on the
+          portfolio header (R25) and, clamped to two lines, on the directory
+          card.
+
+          Required here as it is in onboarding (**R26**), with the same
+          ten-character floor: a dealer must not be able to delete on the
+          profile screen what the sign-up form would not let them skip. It
+          replaces the `About the dealership` textarea that used to sit under
+          it — nothing public renders that paragraph any more, so a box asking
+          for it would be collecting writing to store.
+        */}
         <Field
           id="tagline"
-          label="Tagline"
-          hint="one line, shown on your directory card"
+          label="One line about your dealership"
+          hint="shown under your name on your public page"
           error={errors.tagline}
         >
           <Input
             id="tagline"
             name="tagline"
+            minLength={10}
             maxLength={200}
             defaultValue={dealer.tagline ?? ''}
+            placeholder="Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house."
+            required
+            aria-required="true"
             {...invalidProps('tagline', errors.tagline)}
           />
         </Field>
 
         {/*
-          The paragraph the public portfolio runs under the yard photograph.
-          Onboarding insists on twenty characters, and so does this box — a
-          dealer must not be able to delete on the profile screen what the
-          sign-up form would not let them skip.
+          Required too (**R26**), and for the reason the tagline is: the first
+          three are on the directory card and all of them are on the portfolio,
+          which makes this the only structured thing a buyer can compare two
+          dealerships by.
         */}
         <Field
-          id="about"
-          label="About the dealership"
-          hint="a sentence or two, shown on your public page"
-          error={errors.about}
-        >
-          <Textarea
-            id="about"
-            name="about"
-            rows={6}
-            minLength={20}
-            maxLength={4000}
-            defaultValue={dealer.about ?? ''}
-            {...invalidProps('about', errors.about)}
-          />
-        </Field>
-
-        <Field
           id="specialities"
-          label="Services"
+          label="Services you offer"
           hint="comma separated, up to 12 — repeats are merged"
           error={errors.specialities}
         >
@@ -127,6 +126,9 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
             id="specialities"
             name="specialities"
             defaultValue={dealer.specialities.join(', ')}
+            placeholder="In-house workshop, RC transfer assistance, Bank loan tie-ups"
+            required
+            aria-required="true"
             {...invalidProps('specialities', errors.specialities)}
           />
         </Field>

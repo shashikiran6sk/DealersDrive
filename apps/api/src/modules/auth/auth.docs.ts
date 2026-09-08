@@ -216,6 +216,11 @@ export const authDocs: ModuleDocs = {
         'rather than what its address string resolves to. It is host-checked (`https`, a ' +
         'Google Maps domain) because the public portfolio renders it as a link a buyer ' +
         'clicks, and stored verbatim rather than parsed into coordinates.\n\n' +
+        '`tagline` and `specialities` are both required (**R26**). They are the whole of what ' +
+        'the public pages render as the dealership\u2019s own words \u2014 the line under its ' +
+        'name on the portfolio, and the first three services on its directory card \u2014 and ' +
+        'a field a form does not insist on is a field that gets skipped. They replace `about`, ' +
+        'which is no longer accepted here and is rendered nowhere public.\n\n' +
         '`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 ' +
         'PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `409 ' +
         'DEALER_NAME_TAKEN` if another dealership already trades under that name **in that ' +
@@ -235,6 +240,9 @@ export const authDocs: ModuleDocs = {
           pincode: '632006',
           mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
           landline: '0416 224 8890',
+          tagline:
+            'Family-run since 1998 \u2014 hatchbacks under \u20b96 lakh, inspected in-house.',
+          specialities: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
         },
       },
       responses: [

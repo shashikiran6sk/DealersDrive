@@ -489,18 +489,26 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
        */
       if (!dealer.mapsUrl) businessMissing.push('mapsUrl');
       /*
-       * The description, required on the same footing as the address and the
-       * link. The public portfolio is the page a dealership is judged on
-       * before anybody drives anywhere, and one with a photograph, a pin and
-       * no sentence reads as an unfinished listing rather than a business.
+       * The line and the services, required on the same footing as the address
+       * and the link (**R26**). The public portfolio is the page a dealership
+       * is judged on before anybody drives anywhere, and one with a photograph,
+       * a pin and no sentence reads as an unfinished listing rather than a
+       * business.
        *
-       * Dealerships created while this was optional — and those created before
-       * it was asked at all — read as incomplete here. That is true of them,
-       * and the Business step is where it is fixed. There is no backfill for
-       * the same reason there is none for `mapsUrl`: nobody but the dealer can
-       * write this sentence.
+       * These two replace `about`, which asked for the same thing at forty
+       * times the length and got either a paragraph nobody read or twenty
+       * characters of "we sell used cars". A dealership whose `about` is
+       * filled in but whose tagline is not therefore reads as incomplete now,
+       * which is correct: nothing public renders `about` any more (R25), so a
+       * portfolio built on it would open with a blank line under the name.
+       *
+       * Dealerships created before either was asked read as incomplete here.
+       * That is true of them, and the Business step is where it is fixed.
+       * There is no backfill for the same reason there is none for `mapsUrl`:
+       * nobody but the dealer can write this sentence.
        */
-      if (!dealer.about) businessMissing.push('about');
+      if (!dealer.tagline) businessMissing.push('tagline');
+      if (dealer.specialities.length === 0) businessMissing.push('specialities');
       if (!dealer.gstin) businessMissing.push('gstin');
       if (!dealer.pan) businessMissing.push('pan');
 

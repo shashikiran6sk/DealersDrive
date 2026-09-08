@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
-import { Textarea } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Banner, Blueprint, StatusTag, Stepper } from '@/components/ui/primitives';
 import {
   onboardingAction,
@@ -689,44 +689,81 @@ function BusinessStep({
           </Field>
 
           {/*
-            The paragraph the public portfolio runs under the yard photograph.
+            The one line the public pages run under the dealership's name.
 
             Asked for here because this is the one moment a dealer is already
             describing their business — a separate profile screen later is a
             screen most of them never open, and a portfolio whose only prose is
             a generated line about a town reads like a directory entry.
 
-            Required, like every other field on this step. It was optional when
-            it was introduced, which in practice meant it would be blank on most
-            rows: a field a form does not insist on is a field that gets
-            skipped. The floor is 20 characters rather than 1, because a
-            required box with no minimum is satisfied by `-`.
+            It replaces a four-row `About your dealership` textarea (**R26**).
+            That box wanted two or three sentences and got either a paragraph
+            nobody read or twenty characters of "we sell used cars": prose is
+            the thing a person filling in a sign-up form at the end of a
+            working day is least able to produce, and a line is a question they
+            can actually answer. Nothing public renders the paragraph any more
+            (R25), so asking for it would be collecting writing to store.
 
-            It uses `Textarea` rather than another hand-written
-            `className="input"` — the bypass that component exists to stop.
+            Required, like every other field on this step, with a floor of ten
+            characters — a required box with no minimum is satisfied by `-`.
           */}
           <Field
-            id="about"
-            label="About your dealership"
-            hint="shown on your public page"
-            error={errors.about}
+            id="tagline"
+            label="One line about your dealership"
+            hint="shown under your name on your public page"
+            error={errors.tagline}
             className="sm:col-span-2"
           >
-            <Textarea
-              id="about"
-              name="about"
-              rows={4}
-              minLength={20}
-              maxLength={4000}
-              defaultValue={values.about ?? dealer?.about ?? ''}
-              placeholder="Family-run since 1998. We specialise in hatchbacks under ₹6 lakh, every car inspected in-house, and we handle the RC transfer for you."
+            <Input
+              id="tagline"
+              name="tagline"
+              minLength={10}
+              maxLength={200}
+              defaultValue={values.tagline ?? dealer?.tagline ?? ''}
+              placeholder="Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house."
               required
               aria-required="true"
-              {...invalidProps('about', errors.about)}
+              {...invalidProps('tagline', errors.tagline)}
             />
             <p className="mt-[4px] text-[11px] ink-subtle">
-              Two or three sentences. What you sell, how long you have been at it, and what a buyer
-              can expect when they walk in.
+              What you sell and what makes your yard worth the drive. One sentence — buyers read
+              this before anything else on the page.
+            </p>
+          </Field>
+
+          {/*
+            What the yard actually does, as a set of short labels.
+
+            The only structured thing on the public pages a buyer can compare
+            two dealerships by: the directory card shows the first three, the
+            portfolio shows all of them. A platform where most rows are empty is
+            a platform where that comparison does not exist, so this is asked
+            for here rather than left to the profile screen.
+
+            Comma separated rather than a chip editor, which is what the profile
+            screen already does — one input, one parse, and the same wording on
+            both screens. Repeats are merged on read (R18), so a dealer typing
+            "RC transfer" twice is not refused for a typo.
+          */}
+          <Field
+            id="specialities"
+            label="Services you offer"
+            hint="comma separated, up to 12"
+            error={errors.specialities}
+            className="sm:col-span-2"
+          >
+            <Input
+              id="specialities"
+              name="specialities"
+              defaultValue={values.specialities ?? dealer?.specialities.join(', ') ?? ''}
+              placeholder="In-house workshop, RC transfer assistance, Bank loan tie-ups"
+              required
+              aria-required="true"
+              {...invalidProps('specialities', errors.specialities)}
+            />
+            <p className="mt-[4px] text-[11px] ink-subtle">
+              Name at least one. Buyers see the first three on your directory card and all of them
+              on your page — finance, exchange, RC transfer, in-house workshop, insurance.
             </p>
           </Field>
         </div>
@@ -947,7 +984,8 @@ const MISSING_LABELS: Record<string, string> = {
   district: 'District',
   state: 'State',
   mapsUrl: 'Google Maps location',
-  about: 'About your dealership',
+  tagline: 'One line about your dealership',
+  specialities: 'Services you offer',
   fullName: 'Your name',
   phone: 'Phone number',
   email: 'Email address',

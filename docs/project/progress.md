@@ -190,7 +190,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R22 — States group the districts, in a dialog · revises R11/R19/F085
 - [ ] R23 — Select a district, rather than being told you have every one · revises R11/R22/F085
 - [~] R24 — The logo tile stays at the top when the name wraps · revises F085/R21 · [#97](https://github.com/shashikiran6sk/DealersDrive/pull/97)
-- [ ] R25 — The tagline is the portfolio's prose, and About is not · revises F085/F086/R15
+- [~] R25 — The tagline is the portfolio's prose, and About is not · revises F085/F086/R15 · [#98](https://github.com/shashikiran6sk/DealersDrive/pull/98)
+- [ ] R26 — Onboarding asks for a line and a service list, not an essay · revises F037/F046/R25
 
 ---
 

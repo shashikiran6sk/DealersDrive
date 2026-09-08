@@ -68,9 +68,16 @@ const FIELDS = [
    * The one field on this card written for a reader rather than for a form, so
    * it is the one that is laid out differently: a textarea across both columns
    * while editing, and a wrapped paragraph rather than a right-aligned value
-   * while reading. It is also the field most likely to need a reviewer's hand —
-   * a phone number smuggled into the prose is exactly the sort of thing rule 7
-   * exists to keep off a public page.
+   * while reading.
+   *
+   * It is also the only field here the product no longer collects. **R25** took
+   * the paragraph off the public portfolio and **R26** took it off onboarding
+   * and off the dealer's own profile screen — so what this box holds is what a
+   * dealership wrote before that, and this is the last screen that reads it.
+   * It stays editable rather than read-only because a reviewer's reason for
+   * touching it has not changed: a phone number smuggled into the prose is
+   * exactly the sort of thing rule 7 exists to catch, and the row is still in
+   * the database.
    */
   { key: 'about', label: 'About', path: 'about', mono: false, multiline: true },
 ] as const;

@@ -115,37 +115,59 @@ export const OnboardingInput = z
     mapsUrl: GoogleMapsUrl,
     landline: z.string().trim().max(24).optional(),
     /**
-     * The dealership in its own words — the paragraph the public portfolio
-     * runs under the yard photograph.
+     * The dealership in one line — the sentence the public portfolio runs
+     * under its name, and the blurb on its directory card.
      *
-     * Asked for here rather than left to a later profile screen because this
-     * is the one moment a dealer is already describing their business, and a
-     * portfolio whose only prose is a generated line about a town is a
-     * portfolio nobody reads twice.
+     * It replaces `about`, which asked for the same thing at forty times the
+     * length. That field wanted two or three sentences and got either a
+     * paragraph nobody read or twenty characters of "we sell used cars": the
+     * form insisted on prose, and prose is the thing a person filling in a
+     * sign-up form at the end of a working day is least able to produce.
      *
-     * **Required, on the same footing as the address and the Maps link.** It
-     * was optional when it was introduced, on the reasoning that a buyer needs
-     * an address to arrive and only *wants* a description. That reasoning was
-     * wrong about what the portfolio is: it is the page a dealership is judged
-     * on before anybody drives anywhere, and a page with a photograph, a pin
-     * and no sentence reads as an unfinished listing rather than a business.
-     * Optional here would have meant most rows blank, because a field a form
-     * does not insist on is a field that gets skipped.
+     * A line is a question a dealer can answer. "Family-run since 1998,
+     * hatchbacks under ₹6 lakh" is the whole of what a buyer wants from this
+     * field, and it is what the two surfaces that render it are sized for
+     * — two clamped lines on the card, one paragraph in the portfolio header.
      *
-     * The floor is 20 characters, not 1. A required field with no minimum is
-     * satisfied by `-` and buys nothing except the false belief that every
-     * portfolio has prose on it. Twenty is short enough that "Used car dealer
-     * in Vellore since 2004." clears it comfortably and long enough that a
-     * single evasive word does not.
+     * **Required, on the same footing as the address and the Maps link.** The
+     * public portfolio is the page a dealership is judged on before anybody
+     * drives anywhere, and a page with a photograph, a pin and no sentence
+     * reads as an unfinished listing rather than a business. Optional here
+     * would mean blank on most rows: a field a form does not insist on is a
+     * field that gets skipped.
      *
-     * The upper bound matches `UpdateDealerInput.about` exactly, so what
-     * onboarding accepts and what the profile screen accepts cannot drift.
+     * The floor is 10 characters, not 1, for the reason `about`'s floor of 20
+     * existed — a required field with no minimum is satisfied by `-` and buys
+     * nothing except the false belief that every portfolio has a line on it.
+     * Ten is short enough that "Since 2004" clears it exactly and long enough
+     * that a single evasive word does not.
+     *
+     * The upper bound matches `UpdateDealerInput.tagline`, so what onboarding
+     * accepts and what the profile screen accepts cannot drift.
      */
-    about: z
-      .string()
-      .trim()
-      .min(20, 'Tell buyers about your dealership \u2014 a sentence or two.')
-      .max(4000),
+    tagline: z.string().trim().min(10, 'One line buyers will read under your name.').max(200),
+    /**
+     * What the yard actually does, as a set of short labels.
+     *
+     * Asked for here rather than left to the profile screen for the same
+     * reason the tagline is: this is the one moment a dealer is already
+     * describing their business. It is also the only structured thing on the
+     * public pages a buyer can compare two dealerships by — the directory card
+     * shows the first three, the portfolio shows all of them — so a platform
+     * where most rows are empty is a platform where the comparison does not
+     * exist.
+     *
+     * At least one, which is the whole of what "required" can mean for a list.
+     * The bounds match `UpdateDealerInput.specialities` exactly: up to twelve,
+     * each at most sixty characters. Duplicates are not refused here — they
+     * are merged on read (**R18**), because a dealer typing "RC transfer" twice
+     * has made a typo rather than an error, and a form that rejects it is
+     * teaching them to be careful about something that does not matter.
+     */
+    specialities: z
+      .array(z.string().trim().min(1).max(60))
+      .min(1, 'Name at least one service you offer.')
+      .max(12),
   })
   .strict();
 export type OnboardingInput = z.infer<typeof OnboardingInput>;
