@@ -289,6 +289,39 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
      * buyer is given. It is still unique across users — the check below is the
      * message; `users.phone`'s unique index is the guarantee.
      */
+    /**
+     * C2b — the same write, while the dealership is still a DRAFT (**R27**).
+     *
+     * `update` above takes `UpdateDealerInput` and always has; what changed in
+     * R27 is who may hand it one. `PATCH /v1/dealer` now validates against
+     * `DealerSelfUpdateInput` — three fields — so the onboarding wizard, which
+     * walks back to the steps that ask for the name and the address, needed a
+     * door of its own.
+     *
+     * The guard is the status and nothing else. A DRAFT dealership is one still
+     * answering these questions, or one a moderator has sent back to fix an
+     * answer: `Request changes` writes `status: 'DRAFT'` with a reason, which is
+     * what makes this the same door in both cases. Nothing has been verified
+     * about a DRAFT, so there is nothing an edit here can invalidate.
+     *
+     * `PROFILE_LOCKED` rather than a 403: the seat is allowed to write — it
+     * holds `dealer:update` and it just wrote the tagline — and what is refused
+     * is the *state*, which is what a 409 says. A dealer never sees this
+     * message; the profile screen does not offer the boxes and the wizard is
+     * only reachable while DRAFT. It is here for the client that goes looking.
+     */
+    async amendDraft(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
+      const dealer = await requireDealer(dealerId);
+      if (dealer.status !== 'DRAFT') {
+        throw new ConflictError(
+          'PROFILE_LOCKED',
+          'This dealership has been submitted for verification, so its name, address and contact details can no longer be edited here.',
+        );
+      }
+
+      return this.update(dealerId, input);
+    },
+
     async update(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {
       const dealer = await requireDealer(dealerId);
       const owner = dealer.members.find((member) => member.role === 'OWNER');

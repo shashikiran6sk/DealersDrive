@@ -151,7 +151,15 @@ export async function updateOnboardingAction(
   }
 
   try {
-    await apiSend('PATCH', '/v1/dealer', parsed.data);
+    /*
+     * `/v1/dealer/onboarding`, not `/v1/dealer` (**R27**). The profile screen's
+     * route now takes three fields — the year, the tagline and the services —
+     * and this step is asking for the name, the address and the contact
+     * details. A DRAFT dealership is one still answering those questions, or
+     * one sent back to fix an answer, and that is exactly what the onboarding
+     * route is guarded to.
+     */
+    await apiSend('PATCH', '/v1/dealer/onboarding', parsed.data);
   } catch (error) {
     if (error instanceof ApiError) {
       return {
@@ -209,7 +217,9 @@ export async function saveBusinessIdsAction(
   if (!parsed.success) return { errors: fieldErrors(parsed.error.issues), values };
 
   try {
-    await apiSend('PATCH', '/v1/dealer', parsed.data);
+    // The onboarding route (**R27**) — GSTIN and PAN are verified against a
+    // document, so they are not on the profile screen's schema either.
+    await apiSend('PATCH', '/v1/dealer/onboarding', parsed.data);
   } catch (error) {
     if (error instanceof ApiError) {
       return {

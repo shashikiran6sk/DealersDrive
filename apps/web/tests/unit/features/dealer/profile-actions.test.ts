@@ -92,19 +92,37 @@ describe('a complete save', () => {
     expect(calls[0]?.init.method).toBe('PATCH');
   });
 
-  it('nests contact and address the way the schema wants them', async () => {
+  /**
+   * **R27 — three keys, and the payload is built rather than filtered.**
+   *
+   * The form no longer offers the locked boxes, so in the browser nothing else
+   * is ever in the FormData. This asserts the second defence: even handed a
+   * complete form — every box the screen used to have — the action sends only
+   * what a dealer is allowed to change. A form that grows a box nobody meant
+   * to accept fails here.
+   */
+  it('sends the three fields a dealer may change, and nothing else', async () => {
     await saveDealerProfileAction(IDLE, form(COMPLETE));
     const body = bodyOf(calls[0]);
 
-    expect(body.legalName).toBe('Sri Lakshmi Motors Pvt Ltd');
+    expect(Object.keys(body).sort()).toEqual(['establishedYear', 'specialities', 'tagline']);
     expect(body.establishedYear).toBe(1998);
-    expect(body.contact).toMatchObject({ phone: '9840012345', roleTitle: 'Owner' });
-    expect(body.address).toMatchObject({
-      city: 'Vellore',
-      district: 'Vellore',
-      mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
-    });
+    expect(body.tagline).toBe('Hatchbacks under ₹6 lakh');
   });
+
+  /**
+   * Named one by one, because a regression here is silent: the payload would
+   * still parse, still save, and quietly carry a field whose edit invalidates
+   * the verification the dealership is trading on.
+   */
+  it.each(['legalName', 'contact', 'address', 'gstin', 'pan', 'about'])(
+    'never carries %s, whatever the form holds',
+    async (key) => {
+      await saveDealerProfileAction(IDLE, form(COMPLETE));
+
+      expect(bodyOf(calls[0])).not.toHaveProperty(key);
+    },
+  );
 
   it('splits the services box on commas and drops the blanks', async () => {
     await saveDealerProfileAction(
@@ -172,15 +190,13 @@ describe('a complete save', () => {
    * clear the column behind it — that is what makes this schema partial.
    */
   it('omits the boxes that were left empty', async () => {
-    await saveDealerProfileAction(
-      IDLE,
-      form({ ...COMPLETE, tagline: '', contactLandline: '  ', addressMapsUrl: '' }),
-    );
+    await saveDealerProfileAction(IDLE, form({ ...COMPLETE, tagline: '', establishedYear: '  ' }));
     const body = bodyOf(calls[0]);
 
     expect(body).not.toHaveProperty('tagline');
-    expect(body.contact).not.toHaveProperty('landline');
-    expect(body.address).not.toHaveProperty('mapsUrl');
+    expect(body).not.toHaveProperty('establishedYear');
+    // And what was answered still goes.
+    expect(body.specialities).toEqual(['Hatchbacks', 'RC transfer', 'Exchange']);
   });
 });
 
@@ -210,18 +226,32 @@ describe('a refusal', () => {
     expect(bodyOf(calls[0])).not.toHaveProperty('about');
   });
 
-  it('names the nested box a local parse refused', async () => {
+  /**
+   * R27 — a bad value in a locked box is not an error, because the box is not
+   * read. It used to be: a mistyped pincode refused the whole save. Now the
+   * pincode is not the dealer's to type, the payload never carries it, and the
+   * three fields that *are* theirs save cleanly regardless of what else the
+   * form is holding.
+   */
+  it('ignores a bad value in a box it no longer reads', async () => {
     const state = await saveDealerProfileAction(
       IDLE,
       form({ ...COMPLETE, addressPincode: '63200', contactEmail: 'not-an-address' }),
     );
 
-    expect(state.status).toBe('error');
-    expect(state.fieldErrors.addressPincode).toBeTruthy();
-    expect(state.fieldErrors.contactEmail).toBeTruthy();
+    expect(state.status).toBe('saved');
+    expect(state.fieldErrors).toEqual({});
+    expect(bodyOf(calls[0])).not.toHaveProperty('address');
   });
 
-  /** `body.address.city` → the input named `addressCity`. */
+  /**
+   * `body.address.city` → the input named `addressCity`.
+   *
+   * The mapping outlives R27's lock: `PATCH /v1/dealer` cannot be handed an
+   * address any more, but the API still answers in dotted paths for the fields
+   * it does take, and the admin console's editor parses refusals through the
+   * same vocabulary.
+   */
   it("folds the API's dotted paths onto the form's input names", async () => {
     globalThis.fetch = respond(409, {
       type: 'about:blank',

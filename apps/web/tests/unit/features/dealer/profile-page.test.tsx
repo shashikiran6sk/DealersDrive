@@ -1,4 +1,5 @@
 import type { AuthSession } from '@dealers-drive/contracts';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
@@ -86,6 +87,46 @@ describe('the profile page guard', () => {
 
     await expect(DealerProfilePage()).resolves.toBeDefined();
     expect(apiGet).toHaveBeenCalledWith('/v1/dealer');
+  });
+
+  /**
+   * **R27 — the meter must not point at a box the dealer cannot type in.**
+   *
+   * It reports the truth either way; what changes is whether a person reading
+   * it has anywhere to go. `tagline` is theirs to fix, so the note stays away.
+   * `mapsUrl` is part of what the verification checked, so the note appears —
+   * a warning with no action attached reads as a broken page.
+   */
+  it.each([
+    ['tagline', false],
+    ['mapsUrl', true],
+    ['district', true],
+  ])('says who fixes an outstanding %s', async (field, expectsNote) => {
+    currentSession.mockResolvedValue(session('DASHBOARD'));
+    apiGet.mockImplementation((path: string) =>
+      path.includes('completeness')
+        ? Promise.resolve({
+            isComplete: false,
+            canSubmit: false,
+            percent: 80,
+            steps: [{ key: 'business', label: 'Business', complete: false, missing: [field] }],
+          })
+        : Promise.resolve({
+            slug: 'x',
+            status: 'ACTIVE',
+            statusLabel: 'Active',
+            legalName: 'Sri Lakshmi Motors Pvt Ltd',
+            brandName: 'Sri Lakshmi Motors',
+            contact: {},
+            address: {},
+            specialities: [],
+          }),
+    );
+
+    render(await DealerProfilePage());
+
+    const note = screen.queryByText(/not editable here/i);
+    expect(note === null).toBe(!expectsNote);
   });
 
   /** A 500 is still a 500 when it genuinely is one — this guard is not a mute. */

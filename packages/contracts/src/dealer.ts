@@ -230,6 +230,66 @@ export const UpdateDealerInput = z
   .strict();
 export type UpdateDealerInput = z.infer<typeof UpdateDealerInput>;
 
+/**
+ * What a dealer may change about their own dealership after onboarding is over
+ * (**R27**) — and, by omission, everything they may not.
+ *
+ * ## Why this is a second schema rather than a check
+ *
+ * `UpdateDealerInput` is what an *admin* may write, and it is the right shape
+ * for that: a moderator with the certificate in hand corrects a misspelt town
+ * or a GSTIN typed a digit wrong. It was also, until now, the shape
+ * `PATCH /v1/dealer` accepted — so the dealership's own name, the address, the
+ * town, the pin and the contact number were all editable from the profile
+ * screen, by the dealer, silently, at any hour.
+ *
+ * Three of those are load-bearing in ways the screen does not admit to:
+ *
+ *   · **The registered name** is what KYC was checked against, and what the
+ *     slug and the public URL are derived from.
+ *   · **The address, town and pin** are what the yard photograph and the
+ *     verification visit were about. A dealership that edits them is not
+ *     correcting a record; it is a different dealership at a different place,
+ *     verified on evidence that no longer describes it.
+ *   · **The mobile and the email** are how a buyer and the platform reach a
+ *     business that has been vouched for.
+ *
+ * A dealership that has genuinely moved closes this account and opens another.
+ * That is a heavier answer than an edit box, and it is the correct one: the
+ * VERIFIED plate is a claim about a place, and there is no way to carry it
+ * across a move without checking the new place.
+ *
+ * So the rule is written as a **type** rather than as a guard in a service.
+ * `.strict()` means a profile save that carries `legalName` is a 400 that names
+ * the field, not a silent success — and a reviewer can see the whole of the
+ * dealer's own authority by reading these three lines. A runtime `if` over
+ * `UpdateDealerInput` would be the same rule stated where it is easy to lose.
+ *
+ * ## What is still theirs
+ *
+ * The three answers that are opinions rather than evidence, and that no
+ * verification rests on: when they started trading, the line they describe
+ * themselves in (R25/R26), and what their yard does. Every one of them is
+ * published, none of them can be used to become a different business, and all
+ * three are exactly what a dealership wants to keep current.
+ *
+ * GSTIN and PAN are absent here too, and they were absent from the *screen*
+ * long before they were absent from the schema — the form has always rendered
+ * them `disabled` under a note saying to contact support. That note is now
+ * true at the API as well.
+ *
+ * ⚠️ The onboarding wizard still needs the full shape: a DRAFT dealership is
+ * one that is still answering these questions, or has been sent back to fix
+ * one. It uses `PATCH /v1/dealer/onboarding`, which takes `UpdateDealerInput`
+ * and refuses anything that is not DRAFT.
+ */
+export const DealerSelfUpdateInput = UpdateDealerInput.pick({
+  establishedYear: true,
+  tagline: true,
+  specialities: true,
+}).strict();
+export type DealerSelfUpdateInput = z.infer<typeof DealerSelfUpdateInput>;
+
 // ─────────── C3 completeness ───────────────────────────────────────────────
 /**
  * The single derived answer to "what is still missing".

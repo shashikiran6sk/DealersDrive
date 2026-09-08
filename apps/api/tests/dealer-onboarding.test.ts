@@ -168,7 +168,7 @@ describe('one name per city', () => {
 
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
     await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ address: { district: '  tiruvannamalai  ' } })
       .expect(200);
 
@@ -202,7 +202,10 @@ describe('one name per city', () => {
     const { agent } = await dealership();
     const renamed = `Renamed Motors ${Date.now()}`;
 
-    const updated = await agent.patch('/v1/dealer').send({ legalName: renamed }).expect(200);
+    const updated = await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ legalName: renamed })
+      .expect(200);
 
     expect(updated.body.legalName).toBe(renamed);
     expect(updated.body.brandName).toBe(renamed);
@@ -213,7 +216,10 @@ describe('one name per city', () => {
     await dealership({ legalName: taken, city: 'Katpadi' });
     const { agent } = await dealership({ city: 'Katpadi' });
 
-    const refused = await agent.patch('/v1/dealer').send({ legalName: taken }).expect(409);
+    const refused = await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ legalName: taken })
+      .expect(409);
 
     expect(refused.body.code).toBe('DEALER_NAME_TAKEN');
   });
@@ -223,7 +229,7 @@ describe('one name per city', () => {
     await dealership({ legalName: taken, city: 'Salem' });
     const { agent } = await dealership({ city: 'Katpadi' });
 
-    await agent.patch('/v1/dealer').send({ legalName: taken }).expect(200);
+    await agent.patch('/v1/dealer/onboarding').send({ legalName: taken }).expect(200);
   });
 
   /**
@@ -237,7 +243,7 @@ describe('one name per city', () => {
     const { agent } = await dealership({ city: 'Katpadi' });
 
     const refused = await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ legalName: taken, address: { city: 'Salem' } })
       .expect(409);
 
@@ -249,7 +255,10 @@ describe('one name per city', () => {
     const { agent } = await dealership();
     const profile = await agent.get('/v1/dealer').expect(200);
 
-    await agent.patch('/v1/dealer').send({ legalName: profile.body.legalName }).expect(200);
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ legalName: profile.body.legalName })
+      .expect(200);
   });
 });
 
@@ -327,11 +336,11 @@ describe('the yard on a map', () => {
     const moved = 'https://www.google.com/maps/place/New+Yard/@12.91,79.13,17z';
 
     await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ address: { mapsUrl: moved } })
       .expect(200);
     const refused = await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ address: { mapsUrl: 'https://evil.example.com/maps' } })
       .expect(400);
 
@@ -547,6 +556,126 @@ describe('the dealership description', () => {
   });
 });
 
+/**
+ * **R27 — what a dealership may change about itself once it is not a DRAFT.**
+ *
+ * `PATCH /v1/dealer` takes `DealerSelfUpdateInput`: the year they started, the
+ * line they describe themselves in, and what their yard does. Everything the
+ * platform *verified* is refused there — and refused by the schema, so a client
+ * gets a 400 that names the field rather than a silent write.
+ *
+ * The split is between preferences and evidence. The registered name is what
+ * KYC was run against; the address, town, pin and map link are what the yard
+ * photograph and the verification were about; the mobile and email are how a
+ * buyer reaches a business that has been vouched for. A dealership that has
+ * genuinely moved closes this account and opens another — there is no in-place
+ * answer, and deliberately no request queue either.
+ *
+ * The onboarding wizard keeps the wider shape on its own route, guarded to
+ * DRAFT: a dealership still answering these questions has had nothing verified
+ * yet, so there is nothing an edit can invalidate.
+ */
+describe('what a dealer may change about themselves', () => {
+  /** Activated, because DRAFT is the state the wider route exists for. */
+  async function activeDealership() {
+    const made = await dealership();
+    await h.prisma.dealer.update({ where: { id: made.dealerId }, data: { status: 'ACTIVE' } });
+    return made;
+  }
+
+  it.each([
+    ['legalName', { legalName: 'Somebody Else Motors' }],
+    ['gstin', { gstin: '33AABCS1429B1Z5' }],
+    ['pan', { pan: 'AABCS1429B' }],
+    ['about', { about: 'Family-run since 1998, every car inspected in-house.' }],
+    ['contact', { contact: { phone: '9840099999' } }],
+    ['address', { address: { city: 'Chennai' } }],
+    // Named as `address`, not `address.mapsUrl`: the whole key is unrecognised,
+    // so the refusal is about the box the dealer would have typed into.
+    ['address', { address: { mapsUrl: 'https://maps.app.goo.gl/elsewhere' } }],
+  ])("refuses %s on the dealer's own PATCH", async (field, body) => {
+    const { agent } = await activeDealership();
+
+    const refused = await agent.patch('/v1/dealer').send(body).expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+    expect(JSON.stringify(refused.body)).toContain(field);
+  });
+
+  it('accepts the three that are still theirs', async () => {
+    const { agent } = await activeDealership();
+
+    await agent
+      .patch('/v1/dealer')
+      .send({
+        establishedYear: 2004,
+        tagline: 'Only diesel SUVs, every one with a service book.',
+        specialities: ['SUVs', 'Exchange'],
+      })
+      .expect(200);
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.establishedYear).toBe(2004);
+    expect(profile.body.tagline).toBe('Only diesel SUVs, every one with a service book.');
+    expect(profile.body.specialities).toEqual(['SUVs', 'Exchange']);
+  });
+
+  /**
+   * The refusal is a refusal and not a partial write. A payload carrying one
+   * allowed field and one locked one must change neither — otherwise the lock
+   * is advisory, and a client that ignores the 400 still moved the address.
+   */
+  it('writes nothing at all when one field in the payload is locked', async () => {
+    const { agent, dealerId } = await activeDealership();
+    const before = await agent.get('/v1/dealer').expect(200);
+
+    await agent
+      .patch('/v1/dealer')
+      .send({ tagline: 'A perfectly good line about us.', address: { city: 'Chennai' } })
+      .expect(400);
+
+    const after = await agent.get('/v1/dealer').expect(200);
+    expect(after.body.tagline).toBe(before.body.tagline);
+    expect(after.body.address.city).toBe(before.body.address.city);
+    // And nothing reached the row behind the API either.
+    const row = await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } });
+    expect(row.city).toBe(before.body.address.city);
+  });
+
+  /**
+   * The wizard's door, and the whole of what separates it from the one above.
+   * A DRAFT dealership is one still answering these questions — or one a
+   * moderator sent back with *Request changes*, which writes `status: DRAFT`
+   * with a reason, so it is the same door.
+   */
+  it('lets a DRAFT dealership still change its name and address', async () => {
+    const { agent } = await dealership();
+
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ address: { city: 'Chennai', district: 'Chennai' } })
+      .expect(200);
+
+    expect((await agent.get('/v1/dealer').expect(200)).body.address.city).toBe('Chennai');
+  });
+
+  it.each(['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED', 'REJECTED', 'CLOSED'] as const)(
+    'refuses the onboarding route once the dealership is %s',
+    async (status) => {
+      const { agent, dealerId } = await dealership();
+      await h.prisma.dealer.update({ where: { id: dealerId }, data: { status } });
+
+      const refused = await agent
+        .patch('/v1/dealer/onboarding')
+        .send({ address: { city: 'Chennai' } })
+        .expect(409);
+
+      expect(refused.body.code).toBe('PROFILE_LOCKED');
+      expect((await agent.get('/v1/dealer').expect(200)).body.address.city).toBe('Katpadi');
+    },
+  );
+});
+
 describe('the contact number, after onboarding', () => {
   /**
    * The number stopped being a credential when dealers moved to Google
@@ -559,7 +688,7 @@ describe('the contact number, after onboarding', () => {
     const { agent, dealerId } = await dealership();
 
     await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ contact: { phone: '98765 43210' } })
       .expect(200);
 
@@ -578,7 +707,7 @@ describe('the contact number, after onboarding', () => {
     const { agent } = await dealership();
 
     const refused = await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ contact: { phone: taken } })
       .expect(409);
 
@@ -593,7 +722,7 @@ describe('the contact number, after onboarding', () => {
     const own = (await agent.get('/v1/dealer').expect(200)).body.contact.phone as string;
 
     await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ contact: { phone: own } })
       .expect(200);
   });
@@ -602,7 +731,7 @@ describe('the contact number, after onboarding', () => {
     const { agent } = await dealership();
 
     const refused = await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ contact: { phone: '12345' } })
       .expect(400);
 
@@ -615,10 +744,10 @@ describe('one dealership, one GSTIN', () => {
 
   it('refuses a GSTIN another dealership already registered', async () => {
     const first = await dealership();
-    await first.agent.patch('/v1/dealer').send({ gstin }).expect(200);
+    await first.agent.patch('/v1/dealer/onboarding').send({ gstin }).expect(200);
 
     const second = await dealership();
-    const refused = await second.agent.patch('/v1/dealer').send({ gstin }).expect(409);
+    const refused = await second.agent.patch('/v1/dealer/onboarding').send({ gstin }).expect(409);
 
     expect(refused.body.code).toBe('GSTIN_ALREADY_REGISTERED');
     expect(refused.body.errors?.[0]?.field).toBe('body.gstin');
@@ -638,8 +767,8 @@ describe('one dealership, one GSTIN', () => {
 
   it('lets a dealership re-save its own GSTIN', async () => {
     const { agent } = await dealership();
-    await agent.patch('/v1/dealer').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
-    await agent.patch('/v1/dealer').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
+    await agent.patch('/v1/dealer/onboarding').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
+    await agent.patch('/v1/dealer/onboarding').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
   });
 });
 
@@ -814,7 +943,7 @@ describe('the yard photograph', () => {
   it('is required before a dealership can be submitted', async () => {
     const { agent } = await dealership();
     await agent
-      .patch('/v1/dealer')
+      .patch('/v1/dealer/onboarding')
       .send({ gstin: `33AABCS${String(1000 + counter)}B1ZX`, pan: 'AABCS1429B' })
       .expect(200);
     for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
