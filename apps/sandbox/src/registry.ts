@@ -485,6 +485,7 @@ export const registry: RegistryEntry[] = [
       'no tagline',
       'many services',
       'long brand name',
+      'short and long name side by side',
       'unverified',
       'with cover',
       'in the grid',

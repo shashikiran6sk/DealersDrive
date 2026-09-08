@@ -135,6 +135,28 @@ describe('DirectoryCard', () => {
     expect(box?.className).toContain('flex-1');
   });
 
+  /**
+   * R24 — the logo tile stays beside the *first* line of the name.
+   *
+   * The row was `items-end`, which bottom-aligned the tile to a block whose
+   * height the name sets, so a name that wrapped to two lines dropped the logo
+   * 21px down the card. jsdom computes no layout, so what is asserted is the
+   * alignment that caused it: the row aligns to the start, and the tile no
+   * longer carries the `-mt-[34px]` that read as a pull-up and was not one.
+   */
+  it('aligns the logo tile to the top of the identity block', () => {
+    const { container } = render(
+      <DirectoryCard dealer={{ ...DEALER, brandName: 'Sri Venkateswara '.repeat(4) }} />,
+    );
+
+    const tile = container.querySelector('span[aria-hidden="true"]');
+    const row = tile?.parentElement;
+
+    expect(row?.className).toContain('items-start');
+    expect(row?.className).not.toContain('items-end');
+    expect(tile?.className).not.toContain('-mt-[34px]');
+  });
+
   it('names the missing photograph rather than showing a blank frame', () => {
     render(<DirectoryCard dealer={DEALER} />);
 
