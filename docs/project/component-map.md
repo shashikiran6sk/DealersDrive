@@ -480,11 +480,13 @@ States: verified/unverified, cover/no cover, tagline/none/overlong, 0–3+
 services (sliced at 3), 0/1/n cars, long brand name. Deps: `Blueprint`,
 `ImageSlot`, `LogoTile`, `Plate`, `Tag`. One consumer. Shared. **P1** ✅
 
-> **R17 — the height is shared with the grid.** The card carries a `min-h`
-> floor and clamps its tagline to two lines; the directory's grid carries
-> `grid-auto-rows: 1fr`, which is what makes cards in a row match each other. A
-> new consumer that lays these out itself has to add the same row rule, or a
-> dealership with no tagline will be the runt of its row again.
+> **R21 — the height is the card's own, and it is a constant.** `CARD_HEIGHT`
+> is a hard `h-[368px]`; the name and the tagline are clamped to two lines each
+> and the prose sits in a `flex-1 min-h-0 overflow-hidden` box. A consumer needs
+> no row rule and should add none — R17's `grid-auto-rows: 1fr` was removed with
+> the floor, because equal rows are now what the card produces rather than
+> something a grid arranges. Changing the type scale or the tag padding means
+> re-measuring the number against the `Fullest` sandbox story.
 
 > ⚠️ **Finding D-6 — naming.** The file is `dealer-card.tsx`; the export is
 > `DirectoryCard`. Nothing named `DealerCard` exists in the UI — `DealerCard` is

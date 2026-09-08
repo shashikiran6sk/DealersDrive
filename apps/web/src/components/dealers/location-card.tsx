@@ -57,7 +57,7 @@ export function LocationCard({
     <section className="card p-[14px]">
       <h2 className="eyebrow">Location</h2>
 
-      <Blueprint className="min-h-[220px] flex-1 overflow-hidden bg-(--color-surface)">
+      <Blueprint className="min-h-[310px] flex-1 overflow-hidden bg-(--color-surface)">
         {address.embedUrl ? (
           <iframe
             /* Composed by the API, not here — see `embedUrlFor` in

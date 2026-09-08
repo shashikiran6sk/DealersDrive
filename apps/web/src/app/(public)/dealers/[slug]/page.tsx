@@ -163,25 +163,29 @@ export default async function DealerPortfolioPage({
 
       {/* ── 2. Info row ─────────────────────────────────────────────────── */}
       <div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+        {/*
+          One card, not two. The introduction and the services chips were a
+          card of their own — "About the dealership" — standing beside this one,
+          and the pair said a single thing in two frames: who this dealership
+          is. That cost a whole card's chrome to separate a sentence from the
+          facts it makes claims about, and put the info row at three columns on
+          a page with two things in it, so on a laptop the map ended up the
+          narrowest of the three.
+
+          Together they read in the order a buyer reads anyway: the
+          introduction, then the facts, then what the yard actually does. The
+          services stay last and below a hairline, because they are a set
+          rather than a row in the list above them, and `mt-auto` keeps them on
+          the floor of the card when the map beside it is the taller of the two.
+        */}
         <section className="card p-[14px]">
           <h2 className="eyebrow">About the dealership</h2>
+
           <p className="text-[14px] leading-[1.6] ink-secondary">
             {dealer.about ?? 'This dealership has not written an introduction yet.'}
           </p>
-          {dealer.services.length > 0 ? (
-            <div className="mt-auto flex flex-wrap gap-[6px] border-t border-(--color-divider) pt-[10px]">
-              {dealer.services.map((service) => (
-                <Tag key={service} className="text-[11px]">
-                  {service}
-                </Tag>
-              ))}
-            </div>
-          ) : null}
-        </section>
 
-        <section className="card p-[14px]">
-          <h2 className="eyebrow">Contact</h2>
-          <dl>
+          <dl className="border-t border-(--color-divider)">
             {detailRows(dealer).map((row) => (
               <div
                 key={row.key}
@@ -192,6 +196,16 @@ export default async function DealerPortfolioPage({
               </div>
             ))}
           </dl>
+
+          {dealer.services.length > 0 ? (
+            <div className="mt-auto flex flex-wrap gap-[6px] border-t border-(--color-divider) pt-[10px]">
+              {dealer.services.map((service) => (
+                <Tag key={service} className="text-[11px]">
+                  {service}
+                </Tag>
+              ))}
+            </div>
+          ) : null}
         </section>
 
         <LocationCard address={dealer.address} brandName={dealer.brandName} />
