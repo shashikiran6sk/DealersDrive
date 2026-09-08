@@ -189,6 +189,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [ ] R21 — The directory card is one fixed size · revises R17
 - [~] R22 — States group the districts, in a dialog · revises R11/R19/F085
 - [ ] R23 — Select a district, rather than being told you have every one · revises R11/R22/F085
+- [ ] R24 — The logo tile stays at the top when the name wraps · revises F085/R21
 
 ---
 

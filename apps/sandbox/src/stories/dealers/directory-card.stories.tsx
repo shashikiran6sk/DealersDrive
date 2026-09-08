@@ -20,9 +20,10 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
  *     above that with `z-[2]` — it is an affordance pointing at the same
  *     destination, not a second one. A nested anchor would be invalid HTML and
  *     would give a screen reader two links to the same page.
- *   · **The logo tile crosses the divider.** It is pulled up 34px over the
- *     cover's bottom edge, which is what makes the cover read as a photograph
- *     of premises rather than as a banner.
+ *   · **The logo tile stays at the top of the identity block** (R24), level
+ *     with the first line of the name. `LongBrandName` is the story that shows
+ *     it: before R24 the tile was bottom-aligned to a block whose height the
+ *     name set, so a two-line name pushed the logo down beside the second line.
  *   · **The card is one fixed size** (R21), and nothing on it changes that:
  *     not a missing tagline, not a third service, not a fifty-character name.
  *     `SameDataTwice` is the story that proves it — two directories, one
@@ -150,6 +151,12 @@ export const ManyServices: Story = {
  * The long-name case. Indian dealership names run long — "Sri Venkateswara
  * Automobiles and Finance Private Limited" is not unusual — and the heading has
  * to wrap beside the VERIFIED plate without pushing it off the card.
+ *
+ * **This is the R24 story.** The thing to check is the logo tile: its top edge
+ * must be level with the *first* line of the name, exactly where it is in
+ * `Default`. It used to slide down to the second line, because the tile was
+ * aligned to the bottom of a block the name's own height set. `ShortAndLongName`
+ * puts the two side by side so the tile is either level across both or is not.
  */
 export const LongBrandName: Story = {
   args: {
@@ -160,6 +167,44 @@ export const LongBrandName: Story = {
       yearsLabel: 'Tiruvannamalai, Tamil Nadu · 3 years',
     },
   },
+};
+
+/**
+ * **R24, and the comparison the bug was reported as.** A one-word name and a
+ * name that wraps, side by side, at the width the grid actually gives a card.
+ *
+ * The logo tiles must start at the same height. They did not: the left card's
+ * tile sat beside "Chennai cars" and the right card's sat beside "CARS", the
+ * second line of "GOWTHAM CARS" — a 21px drop that made a row of cards look
+ * ragged for no reason a reader could see.
+ */
+export const ShortAndLongName: Story = {
+  args: { dealer: BASE },
+  parameters: { layout: 'padded', nextjs: { appDirectory: true } },
+  decorators: [
+    () => (
+      <div style={{ display: 'grid', gap: 18, gridTemplateColumns: '300px 300px' }}>
+        <DirectoryCard
+          dealer={{
+            ...BASE,
+            slug: 'chennai-cars',
+            brandName: 'Chennai cars',
+            initials: 'CC',
+            yearsLabel: 'Vellore, Tamil Nadu · 1 year',
+          }}
+        />
+        <DirectoryCard
+          dealer={{
+            ...BASE,
+            slug: 'gowtham-cars',
+            brandName: 'GOWTHAM CARS AND AUTOMOBILES',
+            initials: 'GC',
+            yearsLabel: 'Chittoor, Andhra Pradesh · 1 year',
+          }}
+        />
+      </div>
+    ),
+  ],
 };
 
 /**

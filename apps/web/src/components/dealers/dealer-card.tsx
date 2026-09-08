@@ -51,8 +51,12 @@ const CARD_HEIGHT = 'h-[368px]';
 /**
  * DESIGN-SPEC §3.5 — the directory card.
  *
- * A 104px blueprint cover, then a body whose 44px logo tile is pulled up over
- * the divider by 34px. The whole card is the link to the portfolio; the inner
+ * A 104px blueprint cover, then a body whose 44px logo tile sits at the top of
+ * the identity block, level with the first line of the name whether the name
+ * runs to one line or two (**R24** — see the note at the tile itself for what
+ * the `-34px` in the spec was actually doing).
+ *
+ * The whole card is the link to the portfolio; the inner
  * "View inventory →" is an affordance, not a second destination, so it is not a
  * nested anchor — the heading's link is stretched over the card with
  * `after:absolute after:inset-0` and the affordance is lifted above it.
@@ -125,10 +129,28 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
       </Blueprint>
 
       <div className="flex flex-1 flex-col gap-[10px] p-[14px]">
-        {/* The tile is pulled up over the cover's bottom edge; the identity
-            block sits beside it, baseline-aligned to the tile's lower half. */}
-        <div className="flex items-end gap-[10px]">
-          <LogoTile initials={dealer.initials} size={44} className="relative z-[2] -mt-[34px]" />
+        {/*
+          The tile sits at the top of the identity block, beside the first line
+          of the name — and stays there however long the name is (**R24**).
+
+          It was `items-end` with a `-mt-[34px]` on the tile, which read as "pull
+          the tile up over the cover's divider" and did nothing of the sort. A
+          negative margin-top does not move a flex item that is aligned to the
+          *bottom* of its line; all it did was shrink the tile's contribution to
+          the line height, which the taller identity block set anyway. What the
+          card actually rendered was a tile whose bottom edge tracked the bottom
+          of the name-and-place block — so a dealership whose name wrapped to two
+          lines got its logo pushed 21px down the card, level with the second
+          word instead of the first.
+
+          `items-start` pins it instead, and the `-mt-[3px]` is what the
+          one-line case already measured: with a single-line name the block is
+          41.4px tall (20.4 of heading + 3 + the 18px place line) and the
+          bottom-aligned tile's top edge landed at -2.6px. So a short name looks
+          exactly as it did, and a long one no longer drags the tile with it.
+        */}
+        <div className="flex items-start gap-[10px]">
+          <LogoTile initials={dealer.initials} size={44} className="relative z-[2] -mt-[3px]" />
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-2">
               {/* Two lines at most (R21). A long registered name is the biggest
