@@ -1,5 +1,6 @@
 import type { ProblemDetails } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
+import type { ZodType } from 'zod';
 
 import { serverConfig } from './config';
 
@@ -172,6 +173,65 @@ async function sessionCookie(): Promise<string | undefined> {
 
 export function apiGet<T>(path: string, options?: RequestOptions): Promise<T> {
   return request<T>('GET', path, undefined, options);
+}
+
+/**
+ * `apiGet`, but the payload is **checked** against the contract it claims to be.
+ *
+ * ## Why this exists (R22)
+ *
+ * `apiGet<T>` is a cast. `T` is a promise the compiler cannot keep, because the
+ * bytes come off a socket from a process built at a different time — and the
+ * failure that taught us this is worth writing down, because it did not look
+ * like a failure.
+ *
+ * R22 added `state` to each district in `/v1/locations`. Between the API
+ * restarting and Next's ten-minute fetch cache expiring, the header was handed
+ * the *old* payload: districts with no `state` key. Nothing threw. `undefined`
+ * flowed into the selector and every district in the country was filed under
+ * **"State not recorded"** — which is not a rendering glitch a reader dismisses
+ * but a **factual claim**, in the product's own voice, that the platform does
+ * not know where Chennai is. Version skew wearing the costume of data.
+ *
+ * `schema.parse` turns that into a throw, and a throw the caller can degrade
+ * from. Losing the dropdown for the few minutes a deploy is skewed is a cost
+ * worth paying; telling a buyer something false for the same few minutes is
+ * not.
+ *
+ * ## When to reach for it
+ *
+ * Not everywhere, and not as a rule pending on the other call sites. Use it
+ * where a **missing or changed field renders as a plausible sentence rather
+ * than as an obvious break** — that is the class this catches and type
+ * assertions cannot. A payload whose absence yields an empty list or a blank
+ * card is already loud enough to need no help.
+ *
+ * Zod objects ignore unknown keys by default, so an additive API change still
+ * parses. Only a field this app *requires* going missing is an error, which is
+ * exactly the skew direction that hurts.
+ */
+export async function apiGetParsed<T>(
+  schema: ZodType<T>,
+  path: string,
+  options?: RequestOptions,
+): Promise<T> {
+  const payload = await request<unknown>('GET', path, undefined, options);
+  const parsed = schema.safeParse(payload);
+
+  if (!parsed.success) {
+    /*
+     * Named, and loud. The caller degrades — that is its business — but a
+     * silent degrade is how a skewed deploy looks identical to an empty
+     * platform for as long as nobody thinks to check.
+     */
+    throw new Error(
+      `GET ${path} did not match its contract: ${parsed.error.issues
+        .map((issue) => `${issue.path.join('.') || '(root)'} ${issue.message}`)
+        .join('; ')}`,
+    );
+  }
+
+  return parsed.data;
 }
 
 export function apiSend<T>(
