@@ -35,7 +35,7 @@ const DEALER: DealerPublicProfile = {
   legalName: 'Sri Lakshmi Motors Pvt Ltd',
   initials: 'SL',
   isVerified: true,
-  about: 'Family-run since 1998, and every car is inspected in-house.',
+  tagline: 'Family-run since 1998, and every car is inspected in-house.',
   services: ['Hatchbacks', 'RC transfer'],
   address: {
     line: '12 Katpadi Road',
@@ -174,18 +174,46 @@ describe('the dealership it shows', () => {
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
-  it('falls back to a sentence when the dealership wrote no description', async () => {
-    serve({ ...DEALER, about: null });
+  /**
+   * R25 — the tagline is the header's one line of prose, under the name and
+   * above the address, and it is the only prose the page has now. The `about`
+   * paragraph that used to open the details card is not rendered anywhere.
+   */
+  it('renders the tagline under the dealership name', async () => {
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params }));
+
+    const tagline = screen.getByText(DEALER.tagline as string);
+
+    expect(tagline.tagName).toBe('P');
+    // 16px — `body-lg`, DESIGN-SPEC §1.3. Larger than the 14px address it sits
+    // above, smaller than the 34px name it sits under.
+    expect(tagline.className).toContain('text-[16px]');
+    // Under the name, before the address: the header's identity column, in
+    // reading order.
+    const heading = container.querySelector('h1');
+    expect(heading?.parentElement?.parentElement).toContainElement(tagline);
+    expect(heading?.compareDocumentPosition(tagline)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  /**
+   * Nothing stands in for it. A placeholder sentence under the name is worse
+   * than the gap: it is prose the dealership did not write, in the one place a
+   * buyer reads as the dealership's own voice.
+   */
+  it('renders no line at all when the dealership wrote no tagline', async () => {
+    serve({ ...DEALER, tagline: null });
     render(await DealerPortfolioPage({ params }));
 
-    expect(screen.getByText(/has not written an introduction yet/i)).toBeInTheDocument();
+    expect(screen.queryByText(/family-run since 1998/i)).toBeNull();
+    expect(screen.queryByText(/has not written an introduction yet/i)).toBeNull();
   });
 });
 
 /**
- * The introduction, the detail rows and the services chips are **one** card,
- * beside the map — not an "About the dealership" card and a "Contact" card
- * saying, in two frames, who this dealership is.
+ * The detail rows and the services chips are **one** card, beside the map — not
+ * an "About the dealership" card and a "Contact" card saying, in two frames,
+ * who this dealership is.
  *
  * The assertions are structural rather than visual, because what an edit
  * breaks here is the grouping and not the type: wrapping either half in a
@@ -195,15 +223,16 @@ describe('the dealership it shows', () => {
  * the three.
  */
 describe('the dealership card', () => {
-  it('keeps the introduction, the facts and the services in one card', async () => {
+  it('keeps the facts and the services in one card', async () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params }));
 
-    const card = screen.getByText(DEALER.about as string).closest('section');
+    const card = screen.getByText('33AABCS1429B1ZX').closest('section');
 
     expect(card).not.toBeNull();
-    expect(card).toHaveTextContent('33AABCS1429B1ZX');
     expect(card).toHaveTextContent('RC transfer');
+    // R25 — and the introduction is not in it, or anywhere else on the page.
+    expect(card).not.toHaveTextContent(DEALER.tagline as string);
   });
 
   /** Two cards in the info row, and the map is the second of them. */
@@ -235,8 +264,7 @@ describe('the dealership card', () => {
     const { container } = render(await DealerPortfolioPage({ params }));
 
     expect(container.querySelectorAll('.tag')).toHaveLength(0);
-    // The introduction and the facts are still there — only the chips are gone.
-    expect(screen.getByText(DEALER.about as string)).toBeInTheDocument();
+    // The facts are still there — only the chips are gone.
     expect(screen.getByText('33AABCS1429B1ZX')).toBeInTheDocument();
   });
 });
@@ -397,7 +425,7 @@ describe('metadata', () => {
   it('does not invent a locality for a dealership that has none', async () => {
     serve({
       ...DEALER,
-      about: null,
+      tagline: null,
       address: { ...DEALER.address, city: '', full: '' },
     });
 

@@ -19,7 +19,7 @@ export const revalidate = 600;
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * The baseline page has three sections. **Two of them land here in full**,
  * because `GET /v1/dealers/:slug` (**F085**) already answers with everything
- * they render: the header block, and the about / contact / location row.
+ * they render: the header block, and the details / location row.
  *
  * The third is the inventory, and it cannot land yet. It needs
  * `GET /v1/dealers/:slug/vehicles` and `/facets` — both **F076**, over the
@@ -76,8 +76,17 @@ export async function generateMetadata({
 
   return {
     title: { absolute: dealer.seo.title },
+    /*
+     * The tagline, where the `about` paragraph used to be (**R25**).
+     *
+     * It is the better of the two for this slot anyway: a meta description is
+     * cut at about 160 characters, and `about` allowed 4,000 — so what a search
+     * result actually showed was the first sentence and a half of an essay,
+     * mid-clause. A tagline is capped at 200 and is already written to be one
+     * line, which is what this field is for.
+     */
     description:
-      dealer.about ??
+      dealer.tagline ??
       `${dealer.brandName} is a verified independent used-car dealership${
         dealer.address.city ? ` in ${dealer.address.city}` : ''
       }.`,
@@ -126,6 +135,27 @@ export default async function DealerPortfolioPage({
               <h1 className="text-[34px] leading-[1.08]">{dealer.brandName}</h1>
               {dealer.isVerified ? <Plate size="chip">VERIFIED DEALER</Plate> : null}
             </div>
+            {/*
+              The dealership in its own words, directly under its name (**R25**).
+
+              `body-lg` — 16px/1.5 — which is the size DESIGN-SPEC §1.3 gives a
+              lead paragraph, and the register this line is in: bigger than the
+              14px address beneath it because it is the sentence, smaller than
+              anything that would compete with the 34px name above it. Not
+              `ink-secondary` like the address either; the address is a
+              reference detail and this is prose meant to be read, so it keeps
+              the body's own ink at weight 500 and lets the address recede
+              beneath it.
+
+              Nothing is rendered when there is none — an empty line between a
+              name and an address reads as a broken page rather than as a
+              dealership that has not written one.
+            */}
+            {dealer.tagline ? (
+              <p className="mt-[8px] max-w-[62ch] text-[16px] font-medium leading-[1.5]">
+                {dealer.tagline}
+              </p>
+            ) : null}
             {dealer.address.full ? (
               <p className="mt-[6px] text-[14px] ink-secondary">{dealer.address.full}</p>
             ) : null}
@@ -172,18 +202,25 @@ export default async function DealerPortfolioPage({
           a page with two things in it, so on a laptop the map ended up the
           narrowest of the three.
 
-          Together they read in the order a buyer reads anyway: the
-          introduction, then the facts, then what the yard actually does. The
-          services stay last and below a hairline, because they are a set
-          rather than a row in the list above them, and `mt-auto` keeps them on
-          the floor of the card when the map beside it is the taller of the two.
+          **The introduction itself is gone (R25).** It was a paragraph of up to
+          4,000 characters that opened the card, and what replaced it is the
+          tagline in the header — one line, above the fold, where a buyer
+          actually reads it. A page that says who this dealership is in a
+          photograph, a name, a line, an address and a service list does not
+          also need an essay, and the essay is the part nobody wrote well.
+
+          What is left is what the card was always better at: the facts, then
+          what the yard actually does. The services stay last and below a
+          hairline, because they are a set rather than a row in the list above
+          them, and `mt-auto` keeps them on the floor of the card when the map
+          beside it is the taller of the two.
+
+          The full service list lives here and nowhere else. The directory card
+          shows the first three — the API slices to three as well — and this is
+          where a buyer who clicked through sees the rest.
         */}
         <section className="card p-[14px]">
-          <h2 className="eyebrow">About the dealership</h2>
-
-          <p className="text-[14px] leading-[1.6] ink-secondary">
-            {dealer.about ?? 'This dealership has not written an introduction yet.'}
-          </p>
+          <h2 className="eyebrow">Dealership details</h2>
 
           <dl className="border-t border-(--color-divider)">
             {detailRows(dealer).map((row) => (
@@ -306,7 +343,7 @@ function DealerJsonLd({ dealer }: { dealer: DealerPublicProfile }) {
         name: dealer.brandName,
         legalName: dealer.legalName,
         url: dealer.seo.canonical,
-        ...(dealer.about ? { description: dealer.about } : {}),
+        ...(dealer.tagline ? { description: dealer.tagline } : {}),
         address: {
           '@type': 'PostalAddress',
           ...(dealer.address.line ? { streetAddress: dealer.address.line } : {}),

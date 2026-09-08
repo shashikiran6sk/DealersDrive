@@ -59,7 +59,7 @@ function publicDealer(overrides: Record<string, unknown> = {}) {
     slug: 'sri-lakshmi-motors',
     brandName: 'Sri Lakshmi Motors',
     legalName: 'Sri Lakshmi Motors Pvt Ltd',
-    about: 'Family-run dealership in Vellore.',
+    tagline: 'Family-run dealership in Vellore.',
     specialities: ['Hatchbacks'],
     addressLine: '12 Katpadi Road',
     pincode: '632001',
