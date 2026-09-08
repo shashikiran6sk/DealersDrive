@@ -198,8 +198,8 @@ describe('what the form does with an answer', () => {
     const user = userEvent.setup();
     render(<DealerProfileForm dealer={DEALER} />);
 
-    await user.clear(screen.getByLabelText(/tagline/i));
-    await user.type(screen.getByLabelText(/tagline/i), 'Only diesel SUVs');
+    await user.clear(screen.getByLabelText(/one line about your dealership/i));
+    await user.type(screen.getByLabelText(/one line about your dealership/i), 'Only diesel SUVs');
     await user.click(screen.getByRole('button', { name: /save changes/i }));
 
     expect(saveDealerProfileAction).toHaveBeenCalled();

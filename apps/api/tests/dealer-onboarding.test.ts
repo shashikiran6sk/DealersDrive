@@ -53,7 +53,8 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     state: 'Tamil Nadu',
     pincode: '632007',
     mapsUrl: 'https://maps.app.goo.gl/onboarding-fixture',
-    about: 'Family-run dealership in Katpadi, trading since 1998.',
+    tagline: 'Family-run dealership in Katpadi, trading since 1998.',
+    specialities: ['Hatchbacks', 'RC transfer'],
     ...overrides,
   };
 }
@@ -340,36 +341,73 @@ describe('the yard on a map', () => {
 });
 
 /**
- * The dealership in its own words.
+ * The dealership in its own words — one line and a set of services (**R26**).
  *
  * Asked for on the same step as the address, stored on the same row, and
  * required on the same footing: the public portfolio is the page a dealership
  * is judged on before anybody drives anywhere, and one with a photograph, a
  * pin and no sentence reads as an unfinished listing rather than a business.
  *
+ * They replace `about`, which asked for the same thing at forty times the
+ * length. Nothing public renders that column any more (R25) and nothing writes
+ * it (R26) — the last two assertions here are what pins that down.
+ *
  * Most of what is asserted below is about the *floor* rather than the
  * requirement. "Required" with no minimum length is a box satisfied by `-`,
  * which is not a description and does not make the portfolio any better.
  */
 describe('the dealership description', () => {
-  const ABOUT =
-    'Family-run since 1998. We specialise in hatchbacks under \u20b96 lakh, every car inspected in-house.';
+  const TAGLINE = 'Family-run since 1998 \u2014 hatchbacks under \u20b96 lakh, inspected in-house.';
 
   it('is stored from onboarding and read back on the profile', async () => {
-    const { agent } = await dealership({ about: ABOUT });
+    const { agent } = await dealership({ tagline: TAGLINE, specialities: ['Hatchbacks'] });
 
     const profile = await agent.get('/v1/dealer').expect(200);
 
-    expect(profile.body.about).toBe(ABOUT);
+    expect(profile.body.tagline).toBe(TAGLINE);
+    expect(profile.body.specialities).toEqual(['Hatchbacks']);
   });
 
-  it('is required, and onboarding without one is refused', async () => {
+  it('is required, and onboarding without a tagline is refused', async () => {
     newAccount();
     const agent = h.agent();
     await h.signIn(agent);
 
-    const { about: _omitted, ...withoutAbout } = onboarding();
-    const refused = await agent.post('/v1/auth/onboarding').send(withoutAbout).expect(400);
+    const { tagline: _omitted, ...withoutTagline } = onboarding();
+    const refused = await agent.post('/v1/auth/onboarding').send(withoutTagline).expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+    expect(JSON.stringify(refused.body)).toContain('tagline');
+  });
+
+  it('is required, and onboarding without a service is refused', async () => {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    const refused = await agent
+      .post('/v1/auth/onboarding')
+      .send(onboarding({ specialities: [] }))
+      .expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+    expect(JSON.stringify(refused.body)).toContain('specialities');
+  });
+
+  /**
+   * `about` is not accepted here any more, and `.strict()` is what says so:
+   * sending it is a 400 that names the field rather than a silent success that
+   * writes a column nothing reads (rule 2).
+   */
+  it('refuses the `about` paragraph it replaced', async () => {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    const refused = await agent
+      .post('/v1/auth/onboarding')
+      .send(onboarding({ about: 'Family-run since 1998, and every car is inspected in-house.' }))
+      .expect(400);
 
     expect(refused.body.code).toBe('VALIDATION_FAILED');
     expect(JSON.stringify(refused.body)).toContain('about');
@@ -387,18 +425,25 @@ describe('the dealership description', () => {
 
     await agent
       .post('/v1/auth/onboarding')
-      .send(onboarding({ about: 'cars' }))
+      .send(onboarding({ tagline: 'cars' }))
       .expect(400);
     await agent
       .post('/v1/auth/onboarding')
-      .send(onboarding({ about: '-' }))
+      .send(onboarding({ tagline: '-' }))
       .expect(400);
     // Whitespace is trimmed before the length is counted, so padding does not
     // buy a way past it either.
     await agent
       .post('/v1/auth/onboarding')
-      .send(onboarding({ about: `cars${' '.repeat(40)}` }))
+      .send(onboarding({ tagline: `cars${' '.repeat(40)}` }))
       .expect(400);
+  });
+
+  /** Ten characters exactly — the floor is a floor, not a wall. */
+  it('accepts a short but real line', async () => {
+    const { agent } = await dealership({ tagline: 'Since 2004' });
+
+    expect((await agent.get('/v1/dealer').expect(200)).body.tagline).toBe('Since 2004');
   });
 
   /**
@@ -407,67 +452,98 @@ describe('the dealership description', () => {
    * no backfill — nobody but the dealer can write this sentence — so
    * completeness has to name it rather than pass silently.
    */
-  it('names the missing description when a dealership predates the question', async () => {
+  it('names the missing line and services when a dealership predates the question', async () => {
     const { agent, dealerId } = await dealership();
-    await h.prisma.dealer.update({ where: { id: dealerId }, data: { about: null } });
+    await h.prisma.dealer.update({
+      where: { id: dealerId },
+      data: { tagline: null, specialities: [] },
+    });
 
     const completeness = await agent.get('/v1/dealer/completeness').expect(200);
     const business = completeness.body.steps.find(
       (step: { key: string }) => step.key === 'business',
     );
 
-    expect(business.missing).toContain('about');
+    expect(business.missing).toContain('tagline');
+    expect(business.missing).toContain('specialities');
     expect(completeness.body.canSubmit).toBe(false);
   });
 
-  /** And once it is there, it is not what is holding the dealership up. */
-  it('does not appear as outstanding once it has been written', async () => {
-    const { agent } = await dealership({ about: ABOUT });
+  /**
+   * And a dealership whose `about` is filled in but whose tagline is not is
+   * still incomplete. That is the R25/R26 pair stated as a behaviour: the
+   * paragraph is not a substitute for the line, because nothing renders it.
+   */
+  it('is not satisfied by the paragraph it replaced', async () => {
+    const { agent, dealerId } = await dealership();
+    await h.prisma.dealer.update({
+      where: { id: dealerId },
+      data: { tagline: null, about: 'Family-run since 1998, every car inspected in-house.' },
+    });
 
     const completeness = await agent.get('/v1/dealer/completeness').expect(200);
     const business = completeness.body.steps.find(
       (step: { key: string }) => step.key === 'business',
     );
 
-    expect(business.missing).not.toContain('about');
+    expect(business.missing).toContain('tagline');
+  });
+
+  /** And once they are there, they are not what is holding the dealership up. */
+  it('does not appear as outstanding once it has been written', async () => {
+    const { agent } = await dealership({ tagline: TAGLINE });
+
+    const completeness = await agent.get('/v1/dealer/completeness').expect(200);
+    const business = completeness.body.steps.find(
+      (step: { key: string }) => step.key === 'business',
+    );
+
+    expect(business.missing).not.toContain('tagline');
+    expect(business.missing).not.toContain('specialities');
   });
 
   it('can be rewritten through PATCH', async () => {
-    const { agent } = await dealership({ about: ABOUT });
+    const { agent } = await dealership({ tagline: TAGLINE });
 
-    await agent.patch('/v1/dealer').send({ about: 'Now under new management.' }).expect(200);
+    await agent.patch('/v1/dealer').send({ tagline: 'Now under new management.' }).expect(200);
 
-    expect((await agent.get('/v1/dealer').expect(200)).body.about).toBe(
+    expect((await agent.get('/v1/dealer').expect(200)).body.tagline).toBe(
       'Now under new management.',
     );
   });
 
   /**
-   * The partial-patch schema keeps `about` optional — a step that does not
-   * carry it must not clear it — but it may not be *emptied*, or the dealer
+   * The partial-patch schema keeps both optional — a step that does not carry
+   * them must not clear them — but neither may be *emptied*, or the dealer
    * could delete on the profile screen what onboarding insisted on.
    */
   it('cannot be emptied through PATCH', async () => {
-    const { agent } = await dealership({ about: ABOUT });
+    const { agent } = await dealership({ tagline: TAGLINE, specialities: ['Hatchbacks'] });
 
-    const refused = await agent.patch('/v1/dealer').send({ about: '' }).expect(400);
+    expect((await agent.patch('/v1/dealer').send({ tagline: '' }).expect(400)).body.code).toBe(
+      'VALIDATION_FAILED',
+    );
+    expect((await agent.patch('/v1/dealer').send({ specialities: [] }).expect(400)).body.code).toBe(
+      'VALIDATION_FAILED',
+    );
 
-    expect(refused.body.code).toBe('VALIDATION_FAILED');
-    expect((await agent.get('/v1/dealer').expect(200)).body.about).toBe(ABOUT);
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.tagline).toBe(TAGLINE);
+    expect(profile.body.specialities).toEqual(['Hatchbacks']);
   });
 
-  it('refuses a description longer than the column is meant to hold', async () => {
+  it('refuses a line longer than the column is meant to hold', async () => {
     newAccount();
     const agent = h.agent();
     await h.signIn(agent);
 
     const refused = await agent
       .post('/v1/auth/onboarding')
-      .send(onboarding({ about: 'a'.repeat(4001) }))
+      .send(onboarding({ tagline: 'a'.repeat(201) }))
       .expect(400);
 
     expect(refused.body.code).toBe('VALIDATION_FAILED');
-    expect(JSON.stringify(refused.body)).toContain('about');
+    expect(JSON.stringify(refused.body)).toContain('tagline');
   });
 });
 

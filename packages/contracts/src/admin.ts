@@ -171,13 +171,18 @@ export const AdminDealerDetail = z.object({
   contactEmail: z.string().nullable(),
   landline: z.string().nullable(),
   /**
-   * The dealership's own description of itself, as typed on the Business step.
+   * The dealership's own description of itself, as typed on the Business step
+   * while that step still asked for it.
    *
-   * Here because the reviewer edits it. It is the prose that fronts the public
-   * portfolio, it is the one field on that step written for a reader rather
-   * than for a form, and it is therefore the one most likely to arrive needing
-   * a light hand — a phone number in the middle of it, or a claim the review
-   * cannot support.
+   * Here because the reviewer edits it, and this is now the **only** surface
+   * that reads it: **R25** replaced it with the tagline on the public
+   * portfolio, and **R26** took it off onboarding and off the dealer's profile
+   * screen. What it holds is history — prose a dealership wrote before the
+   * product stopped asking — kept because a hundred and twenty of them did
+   * write it and a reviewer may still need to correct what is in it.
+   *
+   * Nullable, and increasingly so: every dealership onboarded from R26 onward
+   * has none.
    */
   about: z.string().nullable(),
   joinedLabel: z.string(),

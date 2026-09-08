@@ -129,14 +129,39 @@ export const UpdateDealerInput = z
      * a client able to make them disagree.
      */
     legalName: z.string().trim().min(2).max(160).optional(),
-    tagline: z.string().trim().max(200).optional(),
     /**
      * Optional here because this schema is a partial patch — a step that does
-     * not carry the description must not be read as clearing it. But it may
-     * not be *emptied*: the same 20-character floor `OnboardingInput` applies
-     * holds when the field is present, so a dealer cannot delete on the
+     * not carry the line must not be read as clearing it. But it may not be
+     * *emptied*: the same 10-character floor `OnboardingInput` applies holds
+     * when the field is present (**R26**), so a dealer cannot delete on the
      * profile screen what onboarding insisted on, and neither can a moderator
      * clearing the box on the review screen.
+     */
+    tagline: z
+      .string()
+      .trim()
+      .min(10, 'One line buyers will read under your name.')
+      .max(200)
+      .optional(),
+    /**
+     * The paragraph the portfolio used to open with.
+     *
+     * ── Deliberate divergence, R25/R26 ──────────────────────────
+     * Nothing asks for this any more and nothing public renders it. **R25**
+     * took it off the portfolio, where the tagline replaced it; **R26** took
+     * it off onboarding and off the dealer's own profile screen.
+     *
+     * It stays in this schema, and the column stays in the database, for one
+     * reason: every dealership on the platform has written into it, and the
+     * admin console still shows it to a reviewer — `updateDealerAction` parses
+     * against this same schema, so removing the field here would make that box
+     * unsavable. It is history a moderator can read and correct, not a field
+     * the product collects.
+     *
+     * The floor stays at 20 for the rows that have one. A moderator clearing
+     * the box would be deleting a dealership's own words, and there is no
+     * screen on which that is the intended gesture.
+     * ─────────────────────────────────────────────────────────────────────────
      */
     about: z
       .string()
@@ -147,7 +172,13 @@ export const UpdateDealerInput = z
     gstin: GSTIN.optional(),
     pan: PAN.optional(),
     establishedYear: z.number().int().min(1900).max(2100).optional(),
-    specialities: z.array(z.string().trim().min(1).max(60)).max(12).optional(),
+    /**
+     * The same floor of one that `OnboardingInput` applies (**R26**): present
+     * and empty is a dealer clearing on the profile screen what the sign-up
+     * form would not let them skip. Absent is untouched, as everywhere in this
+     * partial patch.
+     */
+    specialities: z.array(z.string().trim().min(1).max(60)).min(1).max(12).optional(),
     workingHours: z.record(z.string(), z.string().nullable()).optional(),
     contact: z
       .object({

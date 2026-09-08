@@ -43,7 +43,8 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     state: 'Tamil Nadu',
     pincode: '632007',
     mapsUrl: 'https://maps.app.goo.gl/auth-fixture',
-    about: 'Family-run dealership in Katpadi, trading since 1998.',
+    tagline: 'Family-run dealership in Katpadi, trading since 1998.',
+    specialities: ['Hatchbacks', 'RC transfer'],
     ...overrides,
   };
 }

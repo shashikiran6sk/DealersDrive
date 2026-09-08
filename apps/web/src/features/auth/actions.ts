@@ -58,7 +58,8 @@ const ONBOARDING_FIELDS = [
   'pincode',
   'mapsUrl',
   'landline',
-  'about',
+  'tagline',
+  'specialities',
 ] as const;
 
 /** Dealer onboarding — the step between a verified Google identity and a tenant. */
@@ -82,7 +83,8 @@ export async function onboardingAction(
     pincode: text(formData, 'pincode').trim(),
     mapsUrl: text(formData, 'mapsUrl').trim(),
     landline: emptyToUndefined(text(formData, 'landline')),
-    about: text(formData, 'about').trim(),
+    tagline: text(formData, 'tagline').trim(),
+    specialities: servicesOf(text(formData, 'specialities')),
   });
 
   if (!parsed.success) {
@@ -126,7 +128,8 @@ export async function updateOnboardingAction(
 
   const parsed = UpdateDealerInput.safeParse({
     legalName: text(formData, 'legalName').trim(),
-    about: text(formData, 'about').trim(),
+    tagline: text(formData, 'tagline').trim(),
+    specialities: servicesOf(text(formData, 'specialities')),
     contact: {
       fullName: text(formData, 'fullName').trim(),
       roleTitle: text(formData, 'roleTitle').trim(),
@@ -265,7 +268,16 @@ function text(formData: FormData, key: string): string {
 const FORM_FIELD: Record<string, string> = { line: 'addressLine' };
 
 function formField(path: string): string {
-  const leaf = path.split('.').pop() ?? path;
+  const parts = path.split('.');
+  /*
+   * A numeric leaf is an array index, and there is no input named `0`.
+   * `specialities` is the first array this form carries (**R26**), and Zod
+   * answers a too-long entry with `['specialities', 2]` — so the index is
+   * stepped over and the error lands on the box the dealer typed it into.
+   */
+  const leaf = (parts.at(-1) ?? path).match(/^\d+$/)
+    ? (parts.at(-2) ?? path)
+    : (parts.at(-1) ?? path);
   return FORM_FIELD[leaf] ?? leaf;
 }
 
@@ -285,6 +297,23 @@ function apiFieldErrors(error: ApiError): Record<string, string> {
     errors[formField(path)] ??= message;
   }
   return errors;
+}
+
+/**
+ * The services box, as the array the contract wants (**R26**).
+ *
+ * One comma-separated input rather than a chip editor, which is what the
+ * dealer's profile screen already does — the same parse in both places so the
+ * two screens cannot disagree about what "In-house workshop, RC transfer"
+ * means. Repeats are left in: they are merged on read (R18), and refusing a
+ * dealer's typo teaches them to be careful about something that does not
+ * matter.
+ */
+function servicesOf(value: string): string[] {
+  return value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
 }
 
 function emptyToUndefined(value: string): string | undefined {

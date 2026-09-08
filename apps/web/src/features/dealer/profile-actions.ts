@@ -41,7 +41,6 @@ export async function saveDealerProfileAction(
   const parsed = UpdateDealerInput.safeParse({
     ...(text('legalName') ? { legalName: text('legalName') } : {}),
     ...(text('tagline') ? { tagline: text('tagline') } : {}),
-    ...(text('about') ? { about: text('about') } : {}),
     ...(year ? { establishedYear: Number(year) } : {}),
     ...(specialities.length > 0 ? { specialities } : {}),
     contact: {

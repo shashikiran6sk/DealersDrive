@@ -57,7 +57,6 @@ const IDLE = { status: 'idle' as const, fieldErrors: {} };
 const COMPLETE = {
   legalName: 'Sri Lakshmi Motors Pvt Ltd',
   tagline: 'Hatchbacks under ₹6 lakh',
-  about: 'Family-run since 1998, and every car is inspected in-house before it is listed.',
   establishedYear: '1998',
   specialities: 'Hatchbacks, RC transfer, Exchange',
   contactFullName: 'Ramesh Kumar',
@@ -186,13 +185,29 @@ describe('a complete save', () => {
 });
 
 describe('a refusal', () => {
-  it('rejects a description shorter than the floor onboarding insisted on', async () => {
-    const state = await saveDealerProfileAction(IDLE, form({ ...COMPLETE, about: 'Good cars.' }));
+  it('rejects a line shorter than the floor onboarding insisted on', async () => {
+    const state = await saveDealerProfileAction(IDLE, form({ ...COMPLETE, tagline: 'Cars' }));
 
     expect(state.status).toBe('error');
-    expect(state.fieldErrors.about).toBeTruthy();
+    expect(state.fieldErrors.tagline).toBeTruthy();
     // Refused locally: nothing reached the API.
     expect(calls).toHaveLength(0);
+  });
+
+  /**
+   * R26 — `about` is not a field on this form any more, and the action does
+   * not read it. A stray value in the payload must therefore be dropped rather
+   * than forwarded: `UpdateDealerInput` is `.strict()`, so sending it would be
+   * a 400 the dealer could do nothing about.
+   */
+  it('ignores an `about` value that is no longer a box on the form', async () => {
+    const state = await saveDealerProfileAction(
+      IDLE,
+      form({ ...COMPLETE, about: 'Family-run since 1998, every car inspected in-house.' }),
+    );
+
+    expect(state.status).toBe('saved');
+    expect(bodyOf(calls[0])).not.toHaveProperty('about');
   });
 
   it('names the nested box a local parse refused', async () => {

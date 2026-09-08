@@ -423,11 +423,14 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
             contactPhone: phone,
             contactEmail: principal.email,
             landline: input.landline ?? null,
-            // Required by the schema, so this is never '' and never absent.
-            // The column stays nullable for the rows that predate the
-            // question — `completeness` is what names those.
-            about: input.about,
-            specialities: [],
+            // Both required by the schema (**R26**), so neither is ever ''
+            // and neither is ever absent. The columns stay nullable / empty-able
+            // for the rows that predate the question — `completeness` is what
+            // names those.
+            tagline: input.tagline,
+            // Not de-duplicated on write. Repeats are merged on read (R18),
+            // which is the single place that rule lives.
+            specialities: input.specialities,
           },
         });
 

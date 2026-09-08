@@ -144,6 +144,10 @@ function dealerProfile(overrides: Record<string, unknown> = {}) {
     legalName: 'Katpadi Auto Gallery',
     gstin: null,
     pan: null,
+    // Both required on the Business step since **R26**, so both are on the
+    // profile a dealership walking back to it is prefilled from.
+    tagline: 'Family-run dealership in Katpadi, trading since 1998.',
+    specialities: ['Hatchbacks', 'RC transfer'],
     contact: { fullName: 'R. Manikandan', roleTitle: null, phone: '9840012345', landline: null },
     address: {
       line: '18, Gandhi Road',
@@ -383,6 +387,10 @@ describe('OnboardingPage — the floor the server sets', () => {
           legalName: 'A Dealer',
           gstin: null,
           pan: null,
+          // The two the Business step asks for since **R26**. Empty rather
+          // than filled: this dealership is mid-onboarding.
+          tagline: null,
+          specialities: [],
           contact: { fullName: null, roleTitle: null, phone: '9840012345', landline: null },
           address: {
             line: null,
@@ -667,6 +675,66 @@ describe('OnboardingWizard — the Business step', () => {
     expect(state).toHaveAttribute('name', 'state');
   });
 
+  /**
+   * R26 — the two fields that replaced the `About your dealership` textarea.
+   *
+   * Both required, because a field a form does not insist on is a field that
+   * gets skipped, and these two are the whole of what the public pages render
+   * as the dealership's own words: the line under its name on the portfolio
+   * (R25) and the first three services on its directory card.
+   *
+   * The floor on the line is asserted here as well as in the contract. A
+   * `required` box with no `minLength` is satisfied by `-`, and the browser is
+   * the first of the two validators a dealer meets.
+   */
+  it('asks for a tagline and a service list, both required', async () => {
+    await onBusinessStep();
+
+    const tagline = screen.getByLabelText(/one line about your dealership/i);
+    const services = screen.getByLabelText(/services you offer/i);
+
+    for (const field of [tagline, services]) {
+      expect(field.tagName).toBe('INPUT');
+      expect(field).toBeRequired();
+    }
+    expect(tagline).toHaveAttribute('name', 'tagline');
+    expect(tagline).toHaveAttribute('minLength', '10');
+    expect(services).toHaveAttribute('name', 'specialities');
+  });
+
+  /**
+   * And the paragraph is gone. Nothing public renders it (R25) and nothing
+   * writes it (R26), so a box asking for it would be collecting writing to
+   * store — and `OnboardingInput` is `.strict()`, so submitting one would be a
+   * 400 naming a field the dealer can see.
+   */
+  it('no longer asks for the About paragraph', () => {
+    const { container } = render(
+      <OnboardingWizard
+        step={1}
+        session={session()}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+      />,
+    );
+
+    // Anchored: the field that replaced it is labelled "One line about your
+    // dealership", which an unanchored match would hit.
+    expect(screen.queryByLabelText(/^about your dealership/i)).toBeNull();
+    expect(container.querySelector('[name="about"]')).toBeNull();
+    expect(container.querySelector('textarea')).toBeNull();
+  });
+
+  /** Both hints are on the page, because neither question is self-evident. */
+  it('says where each of them is shown', async () => {
+    await onBusinessStep();
+
+    expect(screen.getByText(/buyers read this before anything else/i)).toBeInTheDocument();
+    expect(screen.getByText(/first three on your directory card/i)).toBeInTheDocument();
+  });
+
   it('takes a city and a state the platform has never seen before', async () => {
     const user = await onBusinessStep();
 
@@ -838,7 +906,7 @@ describe('OnboardingWizard — the Documents step', () => {
           dealer: { id: 'd1', slug: 'a', brandName: 'A', status: 'DRAFT' } as never,
         })}
         documents={documents}
-        dealer={dealer as never}
+        dealer={{ specialities: [], ...dealer } as never}
         completeness={blockers}
         yardPhoto={photo}
       />,

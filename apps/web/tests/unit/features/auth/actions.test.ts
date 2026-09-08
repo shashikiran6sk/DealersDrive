@@ -82,9 +82,11 @@ const ONBOARDING = {
   // Where the yard is, rather than what the address string resolves to. The
   // host is checked by the schema — see `GoogleMapsUrl` in contracts.
   mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
-  // The paragraph the public portfolio runs. Required, with a 20-character
-  // floor — "required" with no minimum is a box satisfied by `-`.
-  about: 'Family-run dealership in Katpadi, trading since 1998.',
+  // The line the public pages run under the dealership's name, and the services
+  // its card and its portfolio list. Both required (**R26**), the line with a
+  // 10-character floor — "required" with no minimum is a box satisfied by `-`.
+  tagline: 'Family-run dealership in Katpadi, trading since 1998.',
+  specialities: 'Hatchbacks, RC transfer',
   landline: '',
 };
 
