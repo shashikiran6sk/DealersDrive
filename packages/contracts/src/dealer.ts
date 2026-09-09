@@ -141,7 +141,7 @@ export const UpdateDealerInput = z
       .string()
       .trim()
       .min(10, 'One line buyers will read under your name.')
-      .max(200)
+      .max(200, 'Keep it to one line — 200 characters at most.')
       .optional(),
     /**
      * The paragraph the portfolio used to open with.
@@ -177,8 +177,24 @@ export const UpdateDealerInput = z
      * and empty is a dealer clearing on the profile screen what the sign-up
      * form would not let them skip. Absent is untouched, as everywhere in this
      * partial patch.
+     *
+     * And the same three sentences, word for word (**R30**). The dealer's
+     * profile screen validates against *this* schema and the sign-up wizard
+     * against `OnboardingInput`, so a bound with a message on one side and
+     * Zod's default on the other is one field answering a dealer in two
+     * different voices depending on which screen they were standing on.
      */
-    specialities: z.array(z.string().trim().min(1).max(60)).min(1).max(12).optional(),
+    specialities: z
+      .array(
+        z
+          .string()
+          .trim()
+          .min(1)
+          .max(60, 'Keep each service to a short label — 60 characters at most.'),
+      )
+      .min(1, 'Name at least one service you offer.')
+      .max(12, 'Twelve services at most — list the ones buyers ask for.')
+      .optional(),
     workingHours: z.record(z.string(), z.string().nullable()).optional(),
     contact: z
       .object({
