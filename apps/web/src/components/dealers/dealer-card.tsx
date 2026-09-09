@@ -68,7 +68,8 @@ const TILE_SIZE = 48;
  * The whole card is the link to the portfolio; the inner
  * "View inventory →" is an affordance, not a second destination, so it is not a
  * nested anchor — the heading's link is stretched over the card with
- * `after:absolute after:inset-0` and the affordance is lifted above it.
+ * `after:absolute after:inset-0` and everything below it stays *underneath*
+ * that overlay, so a click anywhere lands on the one link (**R29**).
  *
  * ## R28 — the plate row is its own row
  *
@@ -213,7 +214,18 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
           height contribution below the cover is 24px rather than 48.
         */}
         <div
-          className="relative z-[2] mb-[12px] flex items-end justify-between gap-2"
+          /*
+           * `relative` without a `z-index` (**R29**). It has to be positioned —
+           * the cover above it is, and a static row would paint *under* the
+           * cover instead of straddling it. It must not be *lifted*: `z-[2]`
+           * put it over the heading's stretched overlay, so the 24px band the
+           * tile and the plate sit in was a dead strip across the top of the
+           * card. Positioned and later in the document than the cover is
+           * exactly enough to draw over it, and the overlay — later still —
+           * draws over both, which is what makes the whole card one click
+           * target.
+           */
+          className="relative mb-[12px] flex items-end justify-between gap-2"
           style={{ marginTop: -TILE_SIZE / 2 }}
         >
           <LogoTile
@@ -292,17 +304,27 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
                 <Tag
                   key={service}
                   /*
-                   * The third chip takes the accent, as the reference draws it.
-                   * It is a focal point rather than a claim — nothing makes a
-                   * dealership's third service more important than its first —
-                   * so it is keyed to the *position* and not to the value, and
-                   * a dealership offering one or two services gets a row of
-                   * plain chips rather than a lone highlighted one.
+                   * The **first** chip takes the accent (**R29**).
+                   *
+                   * R28 accented the third, because that is what the UI
+                   * reference draws and every card it draws has three. Keyed
+                   * to the position rather than to the value it was at least
+                   * honest — nothing makes a third service more important than
+                   * a first — but the position it chose was the wrong one. The
+                   * chip row is read left to right and the accent is the eye's
+                   * entry point into it, so putting it last makes the highlight
+                   * land after the reader has already read the row.
+                   *
+                   * It also degrades in the direction the data actually goes.
+                   * The rule is `index === 0`, and every dealership with at
+                   * least one service has an `index === 0` — so the row reads
+                   * the same whether a yard listed one service or twelve,
+                   * rather than losing its accent entirely below three.
                    */
-                  variant={index === 2 ? 'accent' : 'neutral'}
+                  variant={index === 0 ? 'accent' : 'neutral'}
                   className={cn(
                     'border text-[10px]',
-                    index === 2 ? 'border-(--color-accent-200)' : 'border-(--color-neutral-200)',
+                    index === 0 ? 'border-(--color-accent-200)' : 'border-(--color-neutral-200)',
                   )}
                 >
                   {service}
@@ -329,7 +351,17 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
         <span className="whitespace-nowrap text-[12px] ink-subtle tnum">
           {dealer.fromPriceLabel}
         </span>
-        <span className="btn btn-ghost relative z-[2] ml-auto text-[12px]">
+        {/*
+          Not lifted above the heading's overlay (**R29**).
+
+          It carried `relative z-[2]`, which raised the one part of the card
+          that most obviously invites a click above the anchor stretched over
+          everything else — so clicking "View inventory" did nothing at all,
+          while clicking the white space beside it opened the portfolio. It is
+          an affordance for the card's own link, so it belongs *under* that
+          link's overlay: static, in flow, and unclickable in its own right.
+        */}
+        <span className="btn btn-ghost ml-auto text-[12px]">
           View inventory{' '}
           <span aria-hidden="true" className="transition-transform group-hover:translate-x-[2px]">
             →
