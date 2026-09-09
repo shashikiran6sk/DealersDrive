@@ -98,7 +98,7 @@ describe('DirectoryCard', () => {
    * one dealership writing a longer tagline still grew every card on the page.
    * What is asserted now is that the *same* height class is on the card in
    * every data state; jsdom computes no layout, so the sandbox's
-   * `SameDataTwice` is what measures the result (424px, both grids).
+   * `SameDataTwice` is what measures the result (400px, both grids).
    */
   const heightOf = (dealer: DealerCard): string =>
     render(<DirectoryCard dealer={dealer} />).container.querySelector('article')?.className ?? '';
@@ -111,8 +111,8 @@ describe('DirectoryCard', () => {
       services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
     });
 
-    expect(sparse).toContain('h-[424px]');
-    expect(full).toContain('h-[424px]');
+    expect(sparse).toContain('h-[400px]');
+    expect(full).toContain('h-[400px]');
     // And no floor left behind to imply the height is negotiable.
     expect(sparse).not.toContain('min-h-');
   });

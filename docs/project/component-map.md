@@ -603,7 +603,7 @@ services (sliced at 3), 0/1/n cars, long brand name. Deps: `ImageSlot`,
 > the frame is not for plain content cards).
 
 > **R21 — the height is the card's own, and it is a constant.** `CARD_HEIGHT`
-> is a hard `h-[424px]` (`h-[368px]` before R28 re-measured it for the taller
+> is a hard `h-[400px]` (`h-[368px]` before R28 re-measured it for the taller
 > cover and the pledge panel's padding); the name and the tagline are clamped to
 > two lines each and the prose sits in a `flex-1 min-h-0 overflow-hidden` box. A
 > consumer needs no row rule and should add none — R17's `grid-auto-rows: 1fr`

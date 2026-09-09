@@ -16,11 +16,12 @@ import { ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
  *
  * **R21 arrived at 368 by measuring, not by adding up**, and said so: it
  * rendered the `Fullest` story, found the last row of chips ending exactly on
- * the box's bottom edge at 362, and added six for rounding. So this number is
- * not re-derived from scratch either. It is 368 plus the three changes R28
- * makes to the card's vertical stack, each of which is exact, and with every
- * unchanged part — the two-line name, the place line, the tag rows, the footer
- * — cancelling out of the sum:
+ * the box's bottom edge at 362, and added six for rounding. 400 was arrived at
+ * the same way — set against the sandbox with the card on the screen.
+ *
+ * It is worth recording that arithmetic disagreed, because the next person to
+ * change the type scale will reach for arithmetic first. Deriving the number as
+ * a delta from R21's 368 gives 424:
  *
  * ```
  *   368  the measured R21 height
@@ -32,21 +33,27 @@ import { ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
  *   +20  the pledge panel's own padding — the tagline is 36 either way, but it
  *          is now inside 10px top and bottom
  *   ---
- *   424
+ *   424  — and the card measures smaller than that
  * ```
  *
- * The identity block, the prose gaps, the tag rows and the footer are all
- * untouched, so R21's six pixels of headroom survive intact — which is the
- * point of doing it as a delta. `Fullest` is still the story that would show it
- * if a font substitution ate them: clipping here is silent, and what it eats
- * first is half a row of chips.
+ * Which is the same lesson R21 wrote down and is worth not learning twice: the
+ * sum is a sanity check on the shape of the layout, not a source for the
+ * number. It over-counts here because it treats each part as if it were laid
+ * out alone, and the parts it adds up are the parts that were already carrying
+ * slack — the fullest card is the one where the slack goes to zero, and where
+ * it goes to zero is a question only a rendered card answers.
+ *
+ * So `Fullest` is the story that guards this, and it guards it by eye: nothing
+ * on it may be cut off. Clipping here is silent, and what it eats first is half
+ * a row of chips. Re-measure against that story after any change to the type
+ * scale, the tag padding or the cover.
  *
  * A card with a one-line name and nothing optional filled in spends about 150
  * of those on white space above the footer. That is what a fixed size *costs*,
  * and it is worth paying here: a directory reads as a grid, and a grid whose
  * cells change proportion with their contents does not.
  */
-const CARD_HEIGHT = 'h-[424px]';
+const CARD_HEIGHT = 'h-[400px]';
 
 /** The cover band, and the distance the logo tile is pulled up over it. */
 const COVER_HEIGHT = 'h-[128px]';

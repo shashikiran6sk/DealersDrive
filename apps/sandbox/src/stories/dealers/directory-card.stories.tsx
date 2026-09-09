@@ -318,7 +318,7 @@ export const WithCover: Story = {
  * give was a fixed size: every card took the height of the fullest card on the
  * page, so the third card's long tagline set the proportions for all six.
  *
- * The height is a constant now — 424px since **R28** re-measured it for the
+ * The height is a constant now — 400px since **R28** re-measured it for the
  * taller cover and the pledge panel's padding. What to check by eye:
  *
  *   · **All six cards are the same height**, as before.
