@@ -228,26 +228,40 @@ export const Business: Story = { args: { step: 1 } };
  * The same step for a dealership that already exists, so every box carries the
  * dealer's own answer — which is what `Back` from the Documents step lands on.
  *
- * The field to look at is **About your dealership**, the last one and the only
- * multi-line box on the step. It is the paragraph the public portfolio runs
- * under the yard photograph, and it is asked for here because this is the one
- * moment a dealer is already describing their business; a profile screen
+ * The fields to look at are the last two: **One line about your dealership**
+ * and **Services you offer**. They are asked for here because this is the one
+ * moment a dealer is already describing their business \u2014 a profile screen
  * offered later is a screen most of them never open.
  *
- * Required, like everything else on this step. The portfolio is the page a
- * dealership is judged on before anybody drives anywhere, and one with a
+ * ## They replaced a paragraph, and this story is the before-and-after
+ *
+ * The step used to end in **About your dealership**, a multi-line box wanting
+ * two or three sentences. It got one of two things: prose nobody read, or
+ * twenty characters of "we sell used cars" \u2014 the form insisted on prose, and
+ * prose is what a person filling in a sign-up form at the end of a working day
+ * is least able to produce. **R26** replaced it with a line and a list, and
+ * **R33** dropped the column the paragraph was kept in.
+ *
+ * A line is a question a dealer can answer, and a list is one they can answer
+ * without writing at all. The line is what the portfolio runs under the name
+ * and what the directory card carries; the services are the only structured
+ * thing a buyer can compare two dealerships by.
+ *
+ * Both required, like everything else on this step. The portfolio is the page
+ * a dealership is judged on before anybody drives anywhere, and one with a
  * photograph, a pin and no sentence reads as an unfinished listing rather than
- * a business. Compare with `Business` above, where the box is empty: the floor
- * is 20 characters rather than 1, because a required box with no minimum is
- * satisfied by `-`.
+ * a business. Compare with `Business` above, where both boxes are empty: the
+ * tagline's floor is 10 characters rather than 1, and the list's is one entry,
+ * because a required field with no minimum is satisfied by `-`.
  */
-export const BusinessWithDescription: Story = {
+export const BusinessWithTaglineAndServices: Story = {
   args: {
     step: 1,
     dealer: {
       legalName: 'Sri Balaji Motors',
-      about:
-        'Family-run since 1998. We specialise in hatchbacks under \u20b96 lakh, every car is inspected in-house before it reaches the yard, and we handle the RC transfer for you.',
+      tagline:
+        'Family-run since 1998 \u2014 hatchbacks under \u20b96 lakh, every one inspected in-house.',
+      specialities: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
       address: {
         line: '18, Gandhi Road',
         city: 'Katpadi',
@@ -460,7 +474,7 @@ export const Documents: Story = {
   args: {
     step: 2,
     completeness: completeness({
-      business: ['about', 'gstin', 'pan'],
+      business: ['tagline', 'specialities', 'gstin', 'pan'],
       documents: ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF', 'YARD_PHOTO'],
     }),
   },

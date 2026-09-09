@@ -44,7 +44,6 @@ export const DealerProfile = z.object({
   brandName: z.string(),
   legalName: z.string(),
   tagline: z.string().nullable(),
-  about: z.string().nullable(),
   gstin: z.string().nullable(),
   pan: z.string().nullable(),
   contact: z.object({
@@ -143,38 +142,26 @@ export const UpdateDealerInput = z
       .min(10, 'One line buyers will read under your name.')
       .max(200, 'Keep it to one line — 200 characters at most.')
       .optional(),
-    /**
-     * The paragraph the portfolio used to open with.
+    /*
+     * ── `about` was here, and its absence is the decision (R33) ──────────────
+     * The paragraph the portfolio used to open with. It asked a dealership for
+     * two or three sentences about itself and got one of two things: prose
+     * nobody read, or twenty characters of "we sell used cars". The form
+     * insisted on prose, which is what a person filling in a sign-up form at
+     * the end of a working day is least able to produce.
      *
-     * ── Deliberate divergence, R25/R26 ──────────────────────────
-     * Nothing asks for this any more and nothing public renders it. **R25**
-     * took it off the portfolio, where the tagline replaced it; **R26** took
-     * it off onboarding and off the dealer's own profile screen.
+     * Four revisions removed one reader each — **R25** the public portfolio,
+     * where the tagline replaced it; **R26** onboarding and the dealer's own
+     * profile screen; **R32** the admin review screen, the last one; **R33**
+     * this field, `DealerProfile.about`, and the column itself.
      *
-     * **R32 took the last box off it.** The admin review screen was the one
-     * surface still reading the paragraph, and it now reads the tagline and the
-     * service list instead — the two answers a moderator is actually being
-     * asked to judge, because they are the ones a buyer will see. So no screen
-     * writes `about` any longer.
-     *
-     * The field stays here, and the column stays in the database, because the
-     * prose does: a hundred and twenty dealerships wrote into it before the
-     * product stopped asking, and the only way left to correct one of those
-     * rows is this endpoint. Dropping the field and the column is a separate
-     * decision — it deletes data — and it wants its own PR rather than being a
-     * side effect of a screen change.
-     *
-     * The floor stays at 20 for the rows that have one. Clearing the box would
-     * be deleting a dealership's own words, and there is no caller for which
-     * that is the intended gesture.
-     * ─────────────────────────────────────────────────────────────────────────
+     * Recorded rather than silently absent, because "why is there no About"
+     * is a question this schema will be asked. `tagline` above and
+     * `specialities` below are the answer, and neither is a shorter `about`:
+     * both are required at sign-up, both are on the public pages, and both are
+     * on the review screen — three things `about` never was.
+     * ────────────────────────────────────────────────────────────────────────
      */
-    about: z
-      .string()
-      .trim()
-      .min(20, 'Tell buyers about your dealership \u2014 a sentence or two.')
-      .max(4000)
-      .optional(),
     gstin: GSTIN.optional(),
     pan: PAN.optional(),
     establishedYear: z.number().int().min(1900).max(2100).optional(),

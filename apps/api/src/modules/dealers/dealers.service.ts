@@ -92,7 +92,6 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
       brandName: dealer.brandName,
       legalName: dealer.legalName,
       tagline: dealer.tagline,
-      about: dealer.about,
       gstin: dealer.gstin,
       pan: dealer.pan,
       contact: {
@@ -452,7 +451,6 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
               ? {}
               : { legalName: input.legalName, brandName: input.legalName }),
             ...(input.tagline === undefined ? {} : { tagline: input.tagline }),
-            ...(input.about === undefined ? {} : { about: input.about }),
             ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
             ...(input.pan === undefined ? {} : { pan: input.pan }),
             ...(input.establishedYear === undefined
@@ -528,12 +526,12 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
        * a pin and no sentence reads as an unfinished listing rather than a
        * business.
        *
-       * These two replace `about`, which asked for the same thing at forty
+       * These two replaced `about`, which asked for the same thing at forty
        * times the length and got either a paragraph nobody read or twenty
-       * characters of "we sell used cars". A dealership whose `about` is
-       * filled in but whose tagline is not therefore reads as incomplete now,
-       * which is correct: nothing public renders `about` any more (R25), so a
-       * portfolio built on it would open with a blank line under the name.
+       * characters of "we sell used cars". A dealership that had written one
+       * but no tagline reads as incomplete here, which is correct — and moot
+       * since **R33**, which dropped the column: whatever they wrote is not a
+       * line under their name, and there is nothing left to read it out of.
        *
        * Dealerships created before either was asked read as incomplete here.
        * That is true of them, and the Business step is where it is fixed.

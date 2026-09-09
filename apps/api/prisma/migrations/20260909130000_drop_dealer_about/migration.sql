@@ -1,0 +1,36 @@
+-- The paragraph, dropped (R33).
+--
+-- `about` asked a dealership signing up for two or three sentences about
+-- itself, and it got one of two things: a paragraph nobody read, or twenty
+-- characters of "we sell used cars". The form insisted on prose, and prose is
+-- what a person filling in a sign-up form at the end of a working day is least
+-- able to produce.
+--
+-- Four revisions took it apart, each removing one reader:
+--
+--   R25  the public portfolio — the tagline opens the page instead
+--   R26  onboarding, and the dealer's own profile screen
+--   R32  the admin review screen, the last surface that read it
+--   R33  this column, and `about` in `UpdateDealerInput` and `DealerProfile`
+--
+-- **This deletes data, and the application cannot recover it.** What the column
+-- holds is prose the dealerships on the platform wrote before the product
+-- stopped asking. Nothing has read it since R32, nothing has written it since
+-- R26, and after R32 no screen or endpoint could reach it at all. A nullable
+-- column no code path touches is not free: it is a field the next person to
+-- read this schema has to work out the status of, and "it is history, kept in
+-- case" is a status that only ever gets weaker.
+--
+-- What replaced it is not a shorter version of it. `tagline` is the one line a
+-- buyer reads under the dealership's name, and `specialities` is the structured
+-- list a buyer compares two dealerships by. Both are required at onboarding,
+-- both are on the public pages, and both are on the admin review screen — which
+-- is three things `about` was not.
+--
+-- ⚠️ Take a copy of the column before running this against an environment whose
+-- rows matter:
+--
+--     COPY (SELECT id, slug, about FROM dealers WHERE about IS NOT NULL)
+--       TO '/tmp/dealer-about.csv' WITH CSV HEADER;
+
+ALTER TABLE "dealers" DROP COLUMN "about";

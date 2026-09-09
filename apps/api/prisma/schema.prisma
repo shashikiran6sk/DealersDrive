@@ -123,7 +123,6 @@ model Dealer {
   /// GSTIN yet must not collide with every other one that has not either.
   gstin              String?      @unique
   pan                String?
-  about              String?
   tagline            String?
   logoMediaId        String?      @db.Uuid
   coverMediaId       String?      @db.Uuid

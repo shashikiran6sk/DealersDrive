@@ -45,7 +45,6 @@ const DEALER: DealerProfile = {
   brandName: 'Sri Lakshmi Motors',
   legalName: 'Sri Lakshmi Motors Pvt Ltd',
   tagline: 'Hatchbacks under ₹6 lakh',
-  about: 'Family-run since 1998, and every car is inspected in-house before it is listed.',
   gstin: '33AABCS1429B1ZX',
   pan: 'AABCS1429B',
   contact: {
@@ -180,7 +179,6 @@ describe('what the form offers', () => {
         dealer={{
           ...DEALER,
           tagline: null,
-          about: null,
           gstin: null,
           pan: null,
           specialities: [],

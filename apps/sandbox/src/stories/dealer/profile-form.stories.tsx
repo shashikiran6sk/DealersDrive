@@ -38,8 +38,6 @@ const BASE: DealerProfile = {
   brandName: 'Sri Lakshmi Motors',
   legalName: 'Sri Lakshmi Motors Pvt Ltd',
   tagline: 'Hatchbacks under ₹6 lakh, inspected in-house',
-  about:
-    'Family-run since 1998. We specialise in hatchbacks under ₹6 lakh, every car is inspected in-house, and we handle the RC transfer for you.',
   gstin: '33AABCS1429B1ZX',
   pan: 'AABCS1429B',
   contact: {

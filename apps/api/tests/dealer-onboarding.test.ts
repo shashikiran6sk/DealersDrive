@@ -478,25 +478,16 @@ describe('the dealership description', () => {
     expect(completeness.body.canSubmit).toBe(false);
   });
 
-  /**
-   * And a dealership whose `about` is filled in but whose tagline is not is
-   * still incomplete. That is the R25/R26 pair stated as a behaviour: the
-   * paragraph is not a substitute for the line, because nothing renders it.
+  /*
+   * ── One case retired here (R33) ──────────────────────────────────────────
+   * "is not satisfied by the paragraph it replaced" wrote an `about` and a null
+   * tagline and asserted that the dealership was still incomplete. It was the
+   * R25/R26 pair stated as a behaviour, and it needed a column to state it
+   * with. R33 dropped that column, so the case cannot be written any more —
+   * and does not need to be: there is no longer a paragraph for a dealership
+   * to be mistakenly credited for.
+   * ────────────────────────────────────────────────────────────────────────
    */
-  it('is not satisfied by the paragraph it replaced', async () => {
-    const { agent, dealerId } = await dealership();
-    await h.prisma.dealer.update({
-      where: { id: dealerId },
-      data: { tagline: null, about: 'Family-run since 1998, every car inspected in-house.' },
-    });
-
-    const completeness = await agent.get('/v1/dealer/completeness').expect(200);
-    const business = completeness.body.steps.find(
-      (step: { key: string }) => step.key === 'business',
-    );
-
-    expect(business.missing).toContain('tagline');
-  });
 
   /** And once they are there, they are not what is holding the dealership up. */
   it('does not appear as outstanding once it has been written', async () => {
