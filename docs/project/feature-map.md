@@ -3626,3 +3626,60 @@ cookie is present — and catches the 401 from `/v1/dealer`. That is the cheaper
 question and the weaker one: a cookie that exists but no longer works lands on
 onboarding, which bounces it straight back. `currentSession()` costs one call
 and cannot loop, and it is what `(admin)` has been doing since F049.
+
+## R32 — The review screen judges the tagline and the services, not About
+
+**Revises F045 / R25 / R26**
+
+The admin dealer page still carried an **About** box. It was the last surface on
+the platform reading a paragraph the product stopped collecting: **R25** took it
+off the public portfolio, where the tagline replaced it, and **R26** took it off
+onboarding and off the dealer's own profile screen.
+
+So the review screen was showing a moderator prose nobody will ever read, and
+not showing them the sentence that will front the dealership's public page.
+
+- **Contracts** `AdminDealerDetail` — `about` removed, `tagline` and
+  `specialities` added
+- **Backend** `modules/admin/admin.service.ts` — `dealerDetail` maps both, with
+  the services through `distinctServices` (**R18**)
+- **Frontend** `features/admin/dealer-profile-editor.tsx` — the `FIELDS` table's
+  last row becomes two; `multiline` becomes `wide`; `list: true` splits the
+  comma-separated box back into the array the schema wants; `errorFor` matches
+  an index beneath a path
+- **Sandbox** `admin/dealer-profile-editor.stories.tsx`,
+  `admin/dealer-actions.stories.tsx` — the fixtures; registry C062c
+- **Tests** `tests/unit/modules/admin/admin.service.test.ts` — three;
+  `apps/web/tests/unit/features/admin/dealer-profile-editor.test.tsx` — **new**,
+  seven
+- **No route change, no new dependency.**
+
+### Why a moderator may edit them at all
+
+The same reason `About` was editable, and it is not a general "moderators can
+fix typos" argument. These are free text a dealership typed that a **buyer will
+read**, which makes them the two places on the platform where a phone number
+gets smuggled onto a public page. Rule 7 exists to catch that, and this is the
+screen it gets caught on.
+
+### The list is the only field on this card that is not a string
+
+`UpdateDealerInput.specialities` is an array; the box is one comma-separated
+line, the same shape the dealer's own profile form uses, so a moderator and a
+dealer edit the field in the same vocabulary. `list: true` on the `FIELDS` row
+is what tells `patchOf` to split it back apart — without it the patch sends a
+string where the schema wants an array, and `.strict()` answers 400.
+
+`errorFor` grew a prefix match for the same reason. A refusal about one entry
+arrives as `body.specialities.3`, which none of the four exact lookups matched,
+so the one box a moderator had to fix would have been the one box with no
+message on it.
+
+### What is left of `about`
+
+`UpdateDealerInput.about` and the `Dealer.about` column both stay. No screen
+writes the field now, and the docblock says so — but a hundred and twenty
+dealerships wrote into the column before the product stopped asking, and this
+endpoint is the only way left to correct one of those rows. **Dropping the field
+and the column deletes data and wants its own PR**, not a side effect of a
+screen change.

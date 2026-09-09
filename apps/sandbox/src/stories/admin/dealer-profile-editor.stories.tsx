@@ -28,7 +28,16 @@ import { adminActionStub } from '../../mocks/admin-actions';
  *     the row being edited, on a field nobody touched.
  *   · **A refusal lands on the field it names.** The API answers with paths
  *     like `body.address.city`, and `ServerRefusal` below shows what that looks
- *     like against the boxes.
+ *     like against the boxes. A refusal about one entry in a list arrives as
+ *     `body.specialities.3`, which is matched by prefix (**R32**) — otherwise
+ *     the one box a moderator has to fix is the one box with no message on it.
+ *   · **The last two rows are laid out differently, on purpose** (**R32**).
+ *     The tagline and the service list are written for a reader rather than
+ *     for a form, so they run the full width while editing and are stacked and
+ *     left-aligned while reading — the services as chips, which is how they
+ *     appear on the page the moderator is comparing this against. They replace
+ *     `About`, the last box on the platform reading a paragraph the product
+ *     stopped collecting at R26.
  *
  * The Server Action is stubbed — `src/mocks/admin-actions.ts`, coupling C-4.
  */
@@ -55,8 +64,8 @@ const BASE: AdminDealerDetail = {
   contactPhoneDisplay: '+91 98400 12345',
   contactEmail: 'owner@sri-lakshmi-motors.in',
   landline: '0416 224 8890',
-  about:
-    'Family-run since 1998. We specialise in hatchbacks under ₹6 lakh, every car is inspected in-house, and we handle the RC transfer for you.',
+  tagline: 'Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house.',
+  specialities: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
   joinedLabel: '01 Dec 2025',
   creditBalance: 39,
   creditsHeld: 2,
@@ -120,7 +129,8 @@ export const WithGaps: Story = {
       pan: null,
       mapsUrl: null,
       landline: null,
-      about: null,
+      tagline: null,
+      specialities: [],
       pincode: null,
       contactPhoneDisplay: null,
       contactPhone: null,

@@ -6,8 +6,8 @@ import { useState, useTransition } from 'react';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
-import { Input, Textarea } from '@/components/ui/input';
-import { Banner } from '@/components/ui/primitives';
+import { Input } from '@/components/ui/input';
+import { Banner, Tag } from '@/components/ui/primitives';
 import { updateDealerAction } from '@/features/admin/actions';
 
 /**
@@ -65,21 +65,40 @@ const FIELDS = [
   { key: 'contactEmail', label: 'Email', path: 'contact.email', mono: false },
   { key: 'landline', label: 'Landline', path: 'contact.landline', mono: true },
   /*
-   * The one field on this card written for a reader rather than for a form, so
-   * it is the one that is laid out differently: a textarea across both columns
-   * while editing, and a wrapped paragraph rather than a right-aligned value
-   * while reading.
+   * The two fields written for a reader rather than for a form (**R32**), so
+   * they are the two laid out differently: full width while editing, and
+   * stacked and left-aligned rather than right-aligned while reading.
    *
-   * It is also the only field here the product no longer collects. **R25** took
-   * the paragraph off the public portfolio and **R26** took it off onboarding
-   * and off the dealer's own profile screen — so what this box holds is what a
-   * dealership wrote before that, and this is the last screen that reads it.
-   * It stays editable rather than read-only because a reviewer's reason for
-   * touching it has not changed: a phone number smuggled into the prose is
-   * exactly the sort of thing rule 7 exists to catch, and the row is still in
-   * the database.
+   * They replace `About`, which was the last box on the platform reading a
+   * paragraph the product stopped collecting — **R25** took it off the public
+   * portfolio and **R26** off onboarding and off the dealer's own profile
+   * screen. Showing a reviewer prose nobody will read, and *not* showing them
+   * the sentence that will front the dealership's public page, was reviewing
+   * the wrong field.
+   *
+   * The reviewer's reason for being able to edit them is exactly the reason
+   * `About` was editable: these are free text a dealership typed and a buyer
+   * will read, which makes them where a phone number gets smuggled onto a
+   * public page. That is what rule 7 exists to catch, and this is the screen it
+   * gets caught on.
    */
-  { key: 'about', label: 'About', path: 'about', mono: false, multiline: true },
+  { key: 'tagline', label: 'Tagline', path: 'tagline', mono: false, wide: true },
+  {
+    key: 'specialities',
+    label: 'Services',
+    path: 'specialities',
+    mono: false,
+    wide: true,
+    /*
+     * A list in the schema, one comma-separated box on the screen — the same
+     * shape the dealer's own profile form uses, so a moderator and a dealer are
+     * editing the field in the same vocabulary. `list: true` is what tells the
+     * patch to split it back apart; without it the API would be sent a string
+     * where `UpdateDealerInput` wants an array, and `.strict()` would answer
+     * 400 rather than writing something wrong.
+     */
+    list: true,
+  },
 ] as const;
 
 type FieldKey = (typeof FIELDS)[number]['key'];
@@ -104,8 +123,17 @@ function initialValues(dealer: AdminDealerDetail): Values {
     contactPhone: dealer.contactPhone ?? '',
     contactEmail: dealer.contactEmail ?? '',
     landline: dealer.landline ?? '',
-    about: dealer.about ?? '',
+    tagline: dealer.tagline ?? '',
+    specialities: dealer.specialities.join(', '),
   };
+}
+
+/** The services, as the box holds them and as the schema wants them. */
+function servicesOf(value: string): string[] {
+  return value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
 }
 
 /**
@@ -122,7 +150,7 @@ function patchOf(values: Values, initial: Values): Record<string, unknown> {
 
     const [head, leaf] = field.path.split('.');
     if (leaf === undefined) {
-      patch[head as string] = next;
+      patch[head as string] = 'list' in field ? servicesOf(next) : next;
       continue;
     }
     const group = (patch[head as string] as Record<string, unknown> | undefined) ?? {};
@@ -133,10 +161,24 @@ function patchOf(values: Values, initial: Values): Record<string, unknown> {
   return patch;
 }
 
-/** `body.address.city` → the `address.city` row. Also matches a bare leaf. */
+/**
+ * `body.address.city` → the `address.city` row. Also matches a bare leaf.
+ *
+ * And an index beneath the path (**R32**): a refusal about one entry in a list
+ * arrives as `body.specialities.3`, which none of the four exact lookups match.
+ * Without the last clause the box a moderator has to fix is the one box with no
+ * message on it — the form says "those changes did not save" and nothing says
+ * which of eleven services is sixty-one characters long.
+ */
 function errorFor(errors: Record<string, string>, path: string): string | undefined {
   const leaf = path.split('.').pop() ?? path;
-  return errors[path] ?? errors[`body.${path}`] ?? errors[leaf] ?? errors[`body.${leaf}`];
+  const exact = errors[path] ?? errors[`body.${path}`] ?? errors[leaf] ?? errors[`body.${leaf}`];
+  if (exact !== undefined) return exact;
+
+  const beneath = Object.entries(errors).find(
+    ([key]) => key.startsWith(`${path}.`) || key.startsWith(`body.${path}.`),
+  );
+  return beneath?.[1];
 }
 
 export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
@@ -245,35 +287,24 @@ export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
               key={field.key}
               id={`dealer-${field.key}`}
               label={field.label}
+              hint={'list' in field ? 'comma separated, up to 12' : undefined}
               error={errorFor(errors, field.path)}
-              className={'multiline' in field ? 'sm:col-span-2' : undefined}
+              className={'wide' in field ? 'sm:col-span-2' : undefined}
             >
-              {'multiline' in field ? (
-                <Textarea
-                  id={`dealer-${field.key}`}
-                  rows={4}
-                  maxLength={4000}
-                  value={values[field.key]}
-                  onChange={(event) =>
-                    setValues((current) => ({ ...current, [field.key]: event.target.value }))
-                  }
-                />
-              ) : (
-                <Input
-                  id={`dealer-${field.key}`}
-                  className={field.mono ? 'font-mono' : undefined}
-                  value={values[field.key]}
-                  onChange={(event) =>
-                    setValues((current) => ({
-                      ...current,
-                      [field.key]:
-                        'transform' in field
-                          ? field.transform(event.target.value)
-                          : event.target.value,
-                    }))
-                  }
-                />
-              )}
+              <Input
+                id={`dealer-${field.key}`}
+                className={field.mono ? 'font-mono' : undefined}
+                value={values[field.key]}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    [field.key]:
+                      'transform' in field
+                        ? field.transform(event.target.value)
+                        : event.target.value,
+                  }))
+                }
+              />
             </Field>
           ))}
           <p className="text-[12px] ink-muted sm:col-span-2">
@@ -284,22 +315,43 @@ export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
       ) : (
         <dl>
           {FIELDS.map((field) =>
-            'multiline' in field ? (
+            'wide' in field ? (
               /*
-                A paragraph does not belong in the label-on-the-left, value-on-
-                the-right rhythm the rest of the list keeps: at 13px it wraps to
-                four ragged right-aligned lines. Stacked and left-aligned, with
-                the dealer's own line breaks preserved, it reads the way it will
-                read on the portfolio — which is the thing the reviewer is
-                actually being asked to judge.
+                A sentence and a row of chips do not belong in the
+                label-on-the-left, value-on-the-right rhythm the rest of the list
+                keeps: at 13px a tagline wraps to two ragged right-aligned lines
+                and a service list to three. Stacked and left-aligned, they read
+                the way they will read on the dealership's public page — which is
+                the thing the reviewer is actually being asked to judge.
               */
               <div
                 key={field.key}
                 className="border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
               >
                 <dt className="ink-muted">{field.label}</dt>
-                <dd className="mt-[4px] whitespace-pre-line font-medium">
-                  {initial[field.key] || '—'}
+                <dd className="mt-[4px] font-medium">
+                  {'list' in field ? (
+                    /*
+                      As chips rather than as the comma string the box holds.
+                      A moderator is comparing this against the public page,
+                      where they are chips, and the shape is what makes a
+                      dealership that typed one seventy-word "service" obvious
+                      at a glance rather than on a character count.
+                    */
+                    servicesOf(initial[field.key]).length > 0 ? (
+                      <span className="flex flex-wrap gap-[6px]">
+                        {servicesOf(initial[field.key]).map((service) => (
+                          <Tag key={service} variant="neutral" className="text-[11px]">
+                            {service}
+                          </Tag>
+                        ))}
+                      </span>
+                    ) : (
+                      '—'
+                    )
+                  ) : (
+                    initial[field.key] || '—'
+                  )}
                 </dd>
               </div>
             ) : (

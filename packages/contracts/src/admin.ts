@@ -171,20 +171,29 @@ export const AdminDealerDetail = z.object({
   contactEmail: z.string().nullable(),
   landline: z.string().nullable(),
   /**
-   * The dealership's own description of itself, as typed on the Business step
-   * while that step still asked for it.
+   * The dealership in one line, and what its yard does — the two answers
+   * onboarding asks for and the two the public pages render (**R32**).
    *
-   * Here because the reviewer edits it, and this is now the **only** surface
-   * that reads it: **R25** replaced it with the tagline on the public
-   * portfolio, and **R26** took it off onboarding and off the dealer's profile
-   * screen. What it holds is history — prose a dealership wrote before the
-   * product stopped asking — kept because a hundred and twenty of them did
-   * write it and a reviewer may still need to correct what is in it.
+   * They replace `about` on this response, which was the last surface reading
+   * a paragraph the product stopped collecting at R26: **R25** put the tagline
+   * on the portfolio in its place and **R26** took it off onboarding and off
+   * the dealer's own profile screen. A review screen showing a dealership prose
+   * nobody will read, and not showing the sentence that will front its public
+   * page, was reviewing the wrong field.
    *
-   * Nullable, and increasingly so: every dealership onboarded from R26 onward
-   * has none.
+   * Both are what a moderator is actually being asked to judge. The tagline is
+   * the one line a buyer sees under the name; the services are the only
+   * structured thing a buyer can compare two dealerships by — and both are free
+   * text a dealership typed, which is to say both are where a phone number gets
+   * smuggled onto a public page. That is what rule 7 exists to catch, and this
+   * is the screen it gets caught on.
+   *
+   * `tagline` is nullable for the rows that predate R26 asking; `specialities`
+   * is an array that is empty for the same rows, and is de-duplicated on read
+   * (**R18**).
    */
-  about: z.string().nullable(),
+  tagline: z.string().nullable(),
+  specialities: z.array(z.string()),
   joinedLabel: z.string(),
   creditBalance: z.number().int(),
   creditsHeld: z.number().int(),

@@ -49,8 +49,8 @@ const BASE: AdminDealerDetail = {
   contactPhoneDisplay: '+91 98400 12345',
   contactEmail: 'owner@sri-lakshmi-motors.in',
   landline: '0416 224 8890',
-  about:
-    'Family-run since 1998. We specialise in hatchbacks under ₹6 lakh, every car is inspected in-house, and we handle the RC transfer for you.',
+  tagline: 'Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house.',
+  specialities: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
   joinedLabel: '01 Dec 2025',
   creditBalance: 39,
   creditsHeld: 2,
