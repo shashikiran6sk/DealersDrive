@@ -638,6 +638,23 @@ services (sliced at 3), 0/1/n cars, long brand name. Deps: `ImageSlot`,
 > rather than something a grid arranges. Changing the type scale or the tag
 > padding means re-measuring the number against the `Fullest` sandbox story.
 
+> **R34 — a dealer's public words are proposed, not published.** `C062d`
+> `ProfileChangeReview` is the gate: the tagline and the service list are the
+> only free text a dealer writes that a buyer reads, so on an ACTIVE dealership
+> they go to a moderator rather than to the dealership row. Three components
+> changed shape for it:
+>
+> · **`DealerProfileForm` (C063)** gained `ReviewPanel` — what is waiting, what
+> is still live, and on a refusal the moderator's sentence. Its boxes now
+> default to the _proposed_ values, because a form that reset itself to the
+> live value after every save looks exactly like a save that failed.
+> · **`ProfileChangeReview` (C062d)** renders old beside new. A field the edit
+> does not touch reads `unchanged` rather than blank — `[]` means "not part of
+> this edit", and a blank row would read as _clearing the services_.
+> · The **admin dealer list** gained a `Profile edit waiting` line under the
+> name and a `Waiting on review` toggle, so the queue can be found from the
+> page a moderator is already on.
+
 > ⚠️ **Finding D-6 — naming.** The file is `dealer-card.tsx`; the export is
 > `DirectoryCard`. Nothing named `DealerCard` exists in the UI — `DealerCard` is
 > a _contracts DTO type_. A component search for "DealerCard" today returns a
@@ -679,6 +696,7 @@ Compressed to one row each. All are `'use client'` unless noted, all are
 | C062  | `DealerAdminActions`                 | `features/admin/dealer-actions.tsx:36`      | `dealer: AdminDealerDetail`                                                                                 | per dealer status × approve (enabled/disabled) × request changes × reject (disclosure + name confirmation) × suspend form × reinstate × pending × error — grant form at **F054** | F045      | **P0** ✅                                 |
 | C062b | `DocumentReview`                     | `features/admin/document-review.tsx:32`     | `documents: AdminDealerDetail['documents']`                                                                 | awaiting decision, verified, rejected, not uploaded, rejecting, in flight, empty                                                                                                 | F044      | **P0** ✅                                 |
 | C062c | `DealerProfileEditor`                | `features/admin/dealer-profile-editor.tsx`  | `dealer: AdminDealerDetail`                                                                                 | reading, with gaps, editing, read-only seat, saving, server refusal                                                                                                              | F045, R32 | **P0** ✅                                 |
+| C062d | `ProfileChangeReview`                | `features/admin/profile-change-review.tsx`  | `change: AdminProfileChange`                                                                                | both fields, phone number in the tagline, services only, tagline only, nothing live, refusing, already decided, deciding                                                         | R34       | **P0** ✅                                 |
 | C063  | `ModerationStrip`                    | `features/admin/moderation-strip.tsx:12`    | `photos: {id,position,label,url}[]`                                                                         | 0, 1, 12 photos                                                                                                                                                                  | F070      | P2                                        |
 | C064  | `ConfigRow`                          | `features/admin/config-editor.tsx:12`       | `entry: ConfigEntry`                                                                                        | boolean/number/string × clean/dirty/saving/saved/error                                                                                                                           | F072      | **P1**                                    |
 | C065  | `QueryProvider`                      | `features/query/query-provider.tsx:16`      | `children`                                                                                                  | — (provider)                                                                                                                                                                     | F091      | _(decorator)_                             |

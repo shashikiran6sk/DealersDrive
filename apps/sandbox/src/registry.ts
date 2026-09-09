@@ -729,6 +729,39 @@ export const registry: RegistryEntry[] = [
     storyId: 'admin-dealerprofileeditor',
   },
   {
+    id: 'C062d',
+    name: 'ProfileChangeReview',
+    source: 'apps/web/src/features/admin/profile-change-review.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    /**
+     * The gate on the only free text a dealer writes that a buyer reads.
+     * Renders only when something is waiting — `profileChange` is PENDING-only.
+     */
+    purpose: "A dealer's proposed tagline and services, old beside new, with publish and refuse.",
+    aliases: [
+      'ProfileEditReview',
+      'TaglineReview',
+      'PendingProfileChange',
+      'DealerEditApproval',
+      'profile-change-review',
+    ],
+    features: ['R34'],
+    props: ['change'],
+    states: [
+      'both fields changed',
+      'phone number in the tagline',
+      'services only',
+      'tagline only',
+      'nothing live to compare against',
+      'refusing',
+      'already decided',
+      'deciding',
+    ],
+    reusable: false,
+    storyId: 'admin-profilechangereview',
+  },
+  {
     id: 'C062b',
     name: 'DocumentReview',
     source: 'apps/web/src/features/admin/document-review.tsx',

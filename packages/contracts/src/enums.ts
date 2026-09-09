@@ -76,6 +76,25 @@ export type DealerDocType = z.infer<typeof DealerDocType>;
 export const DocStatus = z.enum(['REQUIRED', 'UPLOADING', 'UPLOADED', 'VERIFIED', 'REJECTED']);
 export type DocStatus = z.infer<typeof DocStatus>;
 
+/**
+ * Where a dealer's edit to their own public words has got to (**R34**).
+ *
+ * The tagline and the service list are the two things on a verified dealership
+ * a dealer may still change, and they are also the two pieces of free text a
+ * buyer reads. A number typed into either of them is a phone number on a public
+ * page that bypassed `POST /v1/vehicles/:id/reveal-contact` — which is the one
+ * route allowed to hand one out, rate-limited twice over and logged as a lead
+ * (rule 7). So the edit is proposed rather than applied, and a moderator
+ * decides.
+ *
+ * Three states and no more. There is no DRAFT — a request exists because the
+ * dealer pressed Save — and no WITHDRAWN: a dealer who changes their mind
+ * types the old value back, which resolves the request to nothing and deletes
+ * it. A state for "the dealer took it back" would be a row nobody ever reads.
+ */
+export const ProfileChangeStatus = z.enum(['PENDING', 'APPROVED', 'REJECTED']);
+export type ProfileChangeStatus = z.infer<typeof ProfileChangeStatus>;
+
 export const EnquirySource = z.enum(['LISTING_PAGE', 'CALL_BUTTON', 'DEALER_PAGE']);
 export type EnquirySource = z.infer<typeof EnquirySource>;
 
@@ -190,6 +209,27 @@ export const DEALER_STATUS_TONES: Record<DealerStatus, StatusTone> = {
   SUSPENDED: 'err',
   REJECTED: 'err',
   CLOSED: 'neutral',
+};
+
+/**
+ * R34. Written for the dealer, who is the one who reads them most: the words
+ * say what is happening to *their* edit, not what state a row is in.
+ *
+ * "Not approved" rather than "Rejected" is deliberate. A rejection here is
+ * almost always a phone number in a tagline or a service typed as a sentence —
+ * a correctable mistake, not a judgement on the dealership — and `Rejected` is
+ * the word this product uses for an application that was thrown away.
+ */
+export const PROFILE_CHANGE_STATUS_LABELS: Record<ProfileChangeStatus, string> = {
+  PENDING: 'Waiting for review',
+  APPROVED: 'Published',
+  REJECTED: 'Not approved',
+};
+
+export const PROFILE_CHANGE_STATUS_TONES: Record<ProfileChangeStatus, StatusTone> = {
+  PENDING: 'warn',
+  APPROVED: 'ok',
+  REJECTED: 'err',
 };
 
 export const ENQUIRY_SOURCE_LABELS: Record<EnquirySource, string> = {

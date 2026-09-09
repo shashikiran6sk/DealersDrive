@@ -59,9 +59,17 @@ export default async function AdminDealersPage({
   const state = one(params, 'state');
   const district = one(params, 'district');
   const city = one(params, 'city');
+  /*
+   * R34 — the dealerships waiting on a decision about their own words.
+   *
+   * `'true'` or absent, matching `AdminDealerQuery.pendingEdits`: a querystring
+   * has no booleans, and `?pendingEdits=false` reading as *true* is the shape
+   * of bug that survives review because the URL reads correctly.
+   */
+  const pendingEdits = one(params, 'pendingEdits') === 'true' ? 'true' : undefined;
 
   const dealers = await apiGet<AdminDealersResponse>(
-    `/v1/admin/dealers${qs({ status, state, district, city, limit: 50 })}`,
+    `/v1/admin/dealers${qs({ status, state, district, city, pendingEdits, limit: 50 })}`,
     { revalidate: false },
   );
 
@@ -72,7 +80,7 @@ export default async function AdminDealersPage({
    * district loses it the moment they look at the pending tab.
    */
   const tabHref = (value?: string) =>
-    `/admin/dealers${qs({ status: value, state, district, city })}`;
+    `/admin/dealers${qs({ status: value, state, district, city, pendingEdits })}`;
 
   return (
     <div className="flex flex-col gap-4 p-5">
@@ -114,6 +122,8 @@ export default async function AdminDealersPage({
       <form method="get" action="/admin/dealers" className="flex flex-wrap items-end gap-[10px]">
         {/* The tab, carried through the submit rather than reset by it. */}
         {status ? <input type="hidden" name="status" value={status} /> : null}
+        {/* And the R34 filter, for the same reason. */}
+        {pendingEdits ? <input type="hidden" name="pendingEdits" value="true" /> : null}
 
         <LocationFilter name="state" label="State" value={state} options={dealers.facets.states} />
         <LocationFilter
@@ -135,12 +145,38 @@ export default async function AdminDealersPage({
         */}
         {state || district || city ? (
           <Link
-            href={`/admin/dealers${qs({ status })}`}
+            href={`/admin/dealers${qs({ status, pendingEdits })}`}
             className="btn btn-ghost h-[36px] px-[12px] text-[12px]"
           >
             Clear
           </Link>
         ) : null}
+
+        {/*
+          R34 — the one filter that is a piece of work rather than a place.
+
+          A toggle rather than a fourth select, and pushed to the end of the
+          row: it answers a different question from the three beside it. Those
+          narrow *where*; this one asks *what is waiting for me*. It keeps the
+          location filters when it is turned on, because "pending edits in
+          Vellore district" is a real thing to want.
+        */}
+        <Link
+          href={`/admin/dealers${qs({
+            status,
+            state,
+            district,
+            city,
+            pendingEdits: pendingEdits ? undefined : 'true',
+          })}`}
+          aria-pressed={Boolean(pendingEdits)}
+          className={cn(
+            'btn h-[36px] px-[12px] text-[12px]',
+            pendingEdits ? 'btn-primary' : 'btn-ghost',
+          )}
+        >
+          Waiting on review
+        </Link>
       </form>
 
       {dealers.data.length === 0 ? (
@@ -154,6 +190,17 @@ export default async function AdminDealersPage({
                 <div className="text-[11px] ink-subtle">
                   {dealer.documentsVerified ? 'Documents verified' : 'Documents pending'}
                 </div>
+                {/*
+                  R34. Under the name rather than in a column of its own: it is
+                  true of very few rows at any moment, and a column that is
+                  empty on forty-nine rows out of fifty costs every row width to
+                  say nothing.
+                */}
+                {dealer.hasPendingProfileEdit ? (
+                  <div className="mt-[3px] text-[11px] font-semibold text-(--color-warn)">
+                    Profile edit waiting
+                  </div>
+                ) : null}
               </td>
               <td>{dealer.city}</td>
               <td>{dealer.district}</td>

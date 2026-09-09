@@ -67,6 +67,8 @@ const BASE: DealerProfile = {
   activeListings: 7,
   approvedAt: '2026-01-14T06:12:00.000Z',
   createdAt: '2025-12-01T09:00:00.000Z',
+  /** R34. Nothing waiting on a moderator is the ordinary state. */
+  profileChange: null,
 };
 
 /**

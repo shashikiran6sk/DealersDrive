@@ -2,14 +2,18 @@ import {
   DEALER_STATUS_LABELS,
   distinctServices,
   DOC_TYPE_LABELS,
+  formatDate,
   formatPhone,
   normaliseLocality,
+  PROFILE_CHANGE_STATUS_LABELS,
   toE164,
   type AuthSession,
   type CompletenessResponse,
   type DealerDocumentsResponse,
   type DealerSubmitResponse,
   type DealerProfile,
+  type DealerProfileChange,
+  type DealerSelfUpdateInput,
   type DocumentCommitInput,
   type DocumentPresignInput,
   type PresignResponse,
@@ -28,6 +32,7 @@ import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { mapKindFor, type MapsPort } from '../../platform/maps/maps-link.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
+import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
@@ -60,6 +65,17 @@ export interface DealersDeps {
   storage: StoragePort;
   /** Where the yard is, out of the dealer's own Maps link. Best-effort. */
   maps: MapsPort;
+  /**
+   * R34. The dealer's own submission of a profile edit is audited, not only
+   * the moderator's decision on it — "who typed this" is the first question
+   * asked about a phone number that reached a public page, and a trail that
+   * records only the approval cannot answer it.
+   *
+   * This is the first thing in this service to need the audit port, and it is
+   * the right first thing: every other write here is a dealer editing fields
+   * that are theirs outright.
+   */
+  audit: AuditService;
 }
 
 /**
@@ -79,7 +95,27 @@ const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROO
  */
 const YARD_PHOTO_URL_TTL_SECONDS = 300;
 
-export function createDealersService({ prisma, repo, storage, maps }: DealersDeps) {
+/**
+ * Whether two service lists say the same thing (**R34**).
+ *
+ * Order-insensitive and after `distinctServices`, because neither the order a
+ * dealer typed their services in nor a repeat they typed twice is a change
+ * anybody should be asked to approve. Without this, re-saving the profile
+ * screen without touching the box would put a request in front of a moderator
+ * asking them to agree that nothing had happened — the box is one
+ * comma-separated line, so a dealer editing their tagline re-submits the
+ * services every time.
+ *
+ * A `Set` on both sides rather than a sorted join: the values are already
+ * de-duplicated, so equal sizes plus containment is the whole of it.
+ */
+function sameServices(a: readonly string[], b: readonly string[]): boolean {
+  if (a.length !== b.length) return false;
+  const held = new Set(b);
+  return a.every((value) => held.has(value));
+}
+
+export function createDealersService({ prisma, repo, storage, maps, audit }: DealersDeps) {
   function toProfile(dealer: DealerWithRelations): DealerProfile {
     const owner = dealer.members.find((member) => member.role === 'OWNER');
 
@@ -135,6 +171,34 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
       activeListings: dealer.activeListings,
       approvedAt: dealer.approvedAt?.toISOString() ?? null,
       createdAt: dealer.createdAt.toISOString(),
+      profileChange: toProfileChange(dealer.profileEdits[0]),
+    };
+  }
+
+  /**
+   * The newest proposed edit, if it still has something to say (**R34**).
+   *
+   * `null` for an APPROVED one, and that is the interesting case. Its values
+   * are the ones on the profile beside it — the approval wrote them — so a
+   * banner reporting it would be telling a dealer that the line they can see is
+   * the line they asked for. The two states worth a word are PENDING, which
+   * explains why the page still shows the old text, and REJECTED, which is the
+   * only place a dealer ever learns why.
+   */
+  function toProfileChange(
+    row: DealerWithRelations['profileEdits'][number] | undefined,
+  ): DealerProfileChange | null {
+    if (!row || row.status === 'APPROVED') return null;
+
+    return {
+      id: row.id,
+      status: row.status,
+      statusLabel: PROFILE_CHANGE_STATUS_LABELS[row.status],
+      tagline: row.tagline,
+      specialities: row.specialities,
+      submittedAtLabel: formatDate(row.createdAt),
+      reviewedAtLabel: row.reviewedAt ? formatDate(row.reviewedAt) : null,
+      decisionReason: row.decisionReason,
     };
   }
 
@@ -319,6 +383,139 @@ export function createDealersService({ prisma, repo, storage, maps }: DealersDep
       }
 
       return this.update(dealerId, input);
+    },
+
+    /**
+     * C2 — the dealership editing itself, after onboarding is over, with the
+     * two public sentences held for review (**R34**).
+     *
+     * ## Why this is not just `update`
+     *
+     * Three fields reach this method and they do not all mean the same thing.
+     * `establishedYear` is a fact about the business bounded by 1900 and 2100:
+     * there is no way to write a phone number, a rival's name or a WhatsApp
+     * handle into an integer, so it is published the moment the dealer saves
+     * it. The tagline and the service list are the only prose a dealer writes
+     * that a buyer reads — which makes them the only place a number can reach
+     * a public page without passing `POST /v1/vehicles/:id/reveal-contact`, the
+     * one route allowed to hand one out, rate-limited twice over and logged as
+     * a lead (rule 7).
+     *
+     * Every other field on the profile screen has been read-only since **R27**
+     * for the same family of reasons. These two were left editable because a
+     * dealership is genuinely entitled to revise how it describes itself, and
+     * both facts are true at once. A queue is what reconciles them: the dealer
+     * keeps the pen, and nothing they write is public until somebody has read
+     * it.
+     *
+     * ## What a DRAFT skips, and why that is not a hole
+     *
+     * A dealership that is not ACTIVE writes straight through. Nothing about it
+     * is public — the directory and the portfolio both require
+     * `status === 'ACTIVE'` (rule 6) — so there is no page for a phone number
+     * to appear on, and the whole application is read by a moderator at
+     * approval anyway. Queueing an edit to an invisible field would put a
+     * dealership in the odd position of waiting for permission to finish an
+     * application nobody has started reviewing.
+     *
+     * ## The request is amended, not stacked
+     *
+     * A dealer who edits twice before a decision has *one* proposal, not two.
+     * Two rows would make "what is this dealership asking for" a question with
+     * two answers, and a moderator would have to approve them in the right
+     * order to arrive at what the dealer meant. So a second save merges into
+     * the first, field by field.
+     *
+     * And a value equal to what is already live is not a change: it is removed
+     * from the request, which is how a dealer withdraws one — they type the old
+     * line back. When nothing is left, the row goes, and the screen stops
+     * saying anything is waiting. That is why there is no WITHDRAWN status and
+     * no cancel button to build.
+     */
+    async selfUpdate(
+      dealerId: string,
+      actorUserId: string | null,
+      input: DealerSelfUpdateInput,
+    ): Promise<DealerProfile> {
+      const dealer = await requireDealer(dealerId);
+
+      if (dealer.status !== 'ACTIVE') return this.update(dealerId, input);
+
+      // The year is a fact, not a sentence, so it goes straight in. Doing it
+      // first means a save carrying all three fields still lands the half that
+      // needs no review, rather than making the year wait behind the prose.
+      if (input.establishedYear !== undefined) {
+        await this.update(dealerId, { establishedYear: input.establishedYear });
+      }
+
+      const pending = dealer.profileEdits.find((row) => row.status === 'PENDING') ?? null;
+
+      /*
+       * What the dealership would read like if this request were approved:
+       * the values already waiting, overwritten by the ones just sent.
+       *
+       * `undefined` means the save did not carry the field, so it keeps
+       * whatever the pending request held. That is the merge, and it is the
+       * whole of it.
+       */
+      const proposedTagline = input.tagline ?? pending?.tagline ?? null;
+      const proposedServices =
+        input.specialities === undefined
+          ? (pending?.specialities ?? [])
+          : distinctServices(input.specialities);
+
+      // A value identical to the live one is not a change — it is a dealer
+      // putting back what they had. Dropped here rather than refused, so that
+      // "type the old line back" is how a request is withdrawn.
+      const tagline = proposedTagline === dealer.tagline ? null : proposedTagline;
+      const specialities = sameServices(proposedServices, dealer.specialities)
+        ? []
+        : proposedServices;
+
+      const asksForNothing = tagline === null && specialities.length === 0;
+
+      await withTransaction(prisma, async (tx) => {
+        if (asksForNothing) {
+          // Nothing left to decide. Deleting rather than marking it withdrawn:
+          // a row recording that a dealer briefly considered a different
+          // tagline is not history anybody reads, and leaving it PENDING would
+          // sit in a moderator's queue asking them to approve the status quo.
+          if (pending) await tx.dealerProfileChange.delete({ where: { id: pending.id } });
+          return;
+        }
+
+        const saved = pending
+          ? await tx.dealerProfileChange.update({
+              where: { id: pending.id },
+              data: { tagline, specialities, submittedBy: actorUserId, createdAt: new Date() },
+            })
+          : await tx.dealerProfileChange.create({
+              data: { dealerId, tagline, specialities, submittedBy: actorUserId },
+            });
+
+        /*
+         * The dealer's own submission is audited as well as the decision on it.
+         *
+         * Without this the audit trail can say a moderator approved a tagline
+         * and cannot say who wrote it — and "who typed this" is the first
+         * question asked about a phone number that reached a public page.
+         * `createdAt` is reset above for the same reason the row is amended
+         * rather than replaced: the queue is ordered oldest-first, and a
+         * dealership that keeps editing should not hold the front of it.
+         */
+        await audit.record(tx, {
+          actorType: 'DEALER',
+          actorId: actorUserId,
+          dealerId,
+          action: 'dealer.profile_change.submitted',
+          entityType: 'DealerProfileChange',
+          entityId: saved.id,
+          before: { tagline: dealer.tagline, specialities: dealer.specialities },
+          after: { tagline, specialities },
+        });
+      });
+
+      return toProfile(await requireDealer(dealerId));
     },
 
     async update(dealerId: string, input: UpdateDealerInput): Promise<DealerProfile> {

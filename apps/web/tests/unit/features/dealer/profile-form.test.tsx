@@ -74,6 +74,8 @@ const DEALER: DealerProfile = {
   activeListings: 7,
   approvedAt: '2026-01-14T06:12:00.000Z',
   createdAt: '2025-12-01T09:00:00.000Z',
+  /** R34. Nothing waiting on a moderator is the ordinary state. */
+  profileChange: null,
 };
 
 describe('what the form offers', () => {
@@ -312,5 +314,133 @@ describe('what the form does with an answer', () => {
     await user.click(screen.getByRole('button', { name: /save changes/i }));
 
     expect(await screen.findByText(/your dealership is suspended/i)).toBeInTheDocument();
+  });
+});
+
+/**
+ * R34 — the two sentences on this form go to a moderator, and the screen has to
+ * say so.
+ *
+ * The failure this guards against is not cosmetic. A dealer presses Save, the
+ * page reloads, the tagline box shows the line they typed — and their public
+ * page shows the old one. With nothing on the screen explaining that, the
+ * honest state of the product is invisible, and a dealer who cannot see their
+ * change concludes the save failed and does it again.
+ */
+const PENDING: DealerProfile['profileChange'] = {
+  id: '9a1e4c22-0000-4000-8000-000000000009',
+  status: 'PENDING',
+  statusLabel: 'Waiting for review',
+  tagline: 'Only diesel SUVs, every one with a full service history.',
+  specialities: ['SUVs', 'Exchange'],
+  submittedAtLabel: '09 Sep 2026',
+  reviewedAtLabel: null,
+  decisionReason: null,
+};
+
+describe('an edit waiting for review', () => {
+  it('says what is waiting and what buyers are still seeing', () => {
+    render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
+
+    expect(screen.getByText(/waiting for a quick check/i)).toBeInTheDocument();
+    expect(screen.getByText(/“Only diesel SUVs/)).toBeInTheDocument();
+    expect(screen.getByText('SUVs')).toBeInTheDocument();
+    // The live line is still on the screen, in the box, so the dealer can see
+    // both. What buyers see is the point of the whole panel.
+    expect(screen.getByText(/buyers see the current version/i)).toBeInTheDocument();
+  });
+
+  /**
+   * The boxes hold what the dealer last *typed*, not what is public.
+   *
+   * A form that reset itself to the live value after every save would look
+   * exactly like a save that failed — and a dealer correcting one word of a
+   * refused line would have to type the whole thing again.
+   */
+  it('keeps the dealer’s own words in the boxes', () => {
+    render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
+
+    expect(screen.getByLabelText(/one line about your dealership/i)).toHaveValue(
+      'Only diesel SUVs, every one with a full service history.',
+    );
+    expect(screen.getByLabelText(/services you offer/i)).toHaveValue('SUVs, Exchange');
+  });
+
+  /**
+   * There is no cancel button, so the way out has to be said in words: a
+   * request holding nothing is deleted, which makes "put the old line back" the
+   * withdrawal. Without this sentence a dealer would wait on a moderator to
+   * refuse an edit nobody wanted any more.
+   */
+  it('tells the dealer how to withdraw it', () => {
+    render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
+
+    expect(screen.getByText(/previous wording back and save/i)).toBeInTheDocument();
+  });
+
+  /**
+   * A refusal is the only thing on this screen a dealer must read, and it is
+   * the only account they will ever get of why their line did not appear.
+   */
+  it('shows the moderator’s reason, and says the page is unchanged', () => {
+    render(
+      <DealerProfileForm
+        dealer={{
+          ...DEALER,
+          profileChange: {
+            ...PENDING,
+            status: 'REJECTED',
+            statusLabel: 'Not approved',
+            reviewedAtLabel: '09 Sep 2026',
+            decisionReason: 'The tagline ends with a mobile number. Please remove it.',
+          },
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByText('The tagline ends with a mobile number. Please remove it.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/public page is unchanged/i)).toBeInTheDocument();
+  });
+
+  /**
+   * A refused line is *not* put back in the box. The moderator's reason is
+   * above it and the point is to write something different — restoring the
+   * refused text invites the dealer to press Save again unchanged.
+   */
+  it('does not refill the box with the words that were refused', () => {
+    render(
+      <DealerProfileForm
+        dealer={{
+          ...DEALER,
+          profileChange: { ...PENDING, status: 'REJECTED', decisionReason: 'No numbers, please.' },
+        }}
+      />,
+    );
+
+    expect(screen.getByLabelText(/one line about your dealership/i)).toHaveValue(DEALER.tagline);
+  });
+
+  /** Nothing waiting, nothing said. */
+  it('says nothing at all when there is no edit in flight', () => {
+    render(<DealerProfileForm dealer={DEALER} />);
+
+    expect(screen.queryByText(/waiting for a quick check/i)).toBeNull();
+    expect(screen.queryByText(/not published/i)).toBeNull();
+  });
+
+  /**
+   * And the save banner tells the truth about what just happened. "Your profile
+   * has been saved" alone would be read as "your page has changed" by a dealer
+   * who then looks at their page and finds it has not.
+   */
+  it('says what a save actually did when something is now waiting', async () => {
+    const user = userEvent.setup();
+    render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
+
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(await screen.findByText(/go to us for a quick check/i)).toBeInTheDocument();
   });
 });

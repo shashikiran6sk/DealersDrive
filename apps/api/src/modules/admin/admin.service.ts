@@ -2,20 +2,27 @@ import {
   DEALER_STATUS_LABELS,
   DEALER_STATUS_TONES,
   DOC_TYPE_LABELS,
+  PROFILE_CHANGE_STATUS_LABELS,
+  PROFILE_CHANGE_STATUS_TONES,
   distinctServices,
   formatDate,
   formatPhone,
   formatRupees,
   initialsOf,
+  timeAgo,
   type AdminDealerDetail,
   type AdminDealerFacets,
   type AdminDealerQuery,
   type AdminDealersResponse,
   type AdminOverview,
+  type AdminProfileChange,
+  type AdminProfileChangesResponse,
   type ApproveDealerInput,
   type DealerModerationResponse,
   type DealerProfile,
   type DealerPurgeResponse,
+  type ProfileChangeDecisionResponse,
+  type ProfileChangeStatus,
   type UpdateDealerInput,
   type VerifyDocumentResponse,
 } from '@dealers-drive/contracts';
@@ -26,7 +33,12 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
-import { DomainError, ForbiddenError, NotFoundError } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
@@ -73,6 +85,55 @@ export interface AdminDeps {
 
 /** The three documents KYC needs. A dealership is verified when all three are. */
 const REQUIRED_DOCUMENTS = 3;
+
+/**
+ * One proposed edit, with what is live beside it (**R34**).
+ *
+ * The live values travel with the proposed ones because the question a
+ * moderator is answering is not "is this tagline acceptable" — it is "is this
+ * *change* acceptable", and the two differ whenever the edit is a small
+ * correction to a line that was already approved. A screen showing only the
+ * proposal makes the reviewer hold the old value in their head, and a reviewer
+ * holding a value in their head is one who approves a number appended to a
+ * sentence they half-remember.
+ *
+ * `now` is a parameter so the waiting label is computed against one clock for
+ * a whole queue rather than drifting a second down the page.
+ */
+function toAdminProfileChange(
+  row: {
+    id: string;
+    dealerId: string;
+    status: ProfileChangeStatus;
+    tagline: string | null;
+    specialities: string[];
+    createdAt: Date;
+    decisionReason: string | null;
+  },
+  dealer: { slug: string; brandName: string; tagline: string | null; specialities: string[] },
+  now: Date = new Date(),
+): AdminProfileChange {
+  return {
+    id: row.id,
+    dealerId: row.dealerId,
+    dealerSlug: dealer.slug,
+    dealerName: dealer.brandName,
+    initials: initialsOf(dealer.brandName),
+    status: row.status,
+    statusLabel: PROFILE_CHANGE_STATUS_LABELS[row.status],
+    statusTone: PROFILE_CHANGE_STATUS_TONES[row.status],
+    tagline: row.tagline,
+    specialities: row.specialities,
+    liveTagline: dealer.tagline,
+    // Collapsed on the way out, as everywhere else they are read (**R18**), so
+    // a moderator is not shown a repeat the public pages would have merged.
+    liveSpecialities: distinctServices(dealer.specialities),
+    submittedAt: row.createdAt.toISOString(),
+    submittedAtLabel: formatDate(row.createdAt),
+    waitingLabel: timeAgo(row.createdAt, now),
+    decisionReason: row.decisionReason,
+  };
+}
 
 export function createAdminService({ prisma, audit, config, storage, dealers }: AdminDeps) {
   /**
@@ -124,6 +185,32 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     if (!admin.permissions.includes(permission)) {
       throw new ForbiddenError(`This action needs the ${permission} permission.`);
     }
+  }
+
+  /**
+   * A profile edit that is still waiting for an answer, with its dealership
+   * (**R34**).
+   *
+   * The two failures are told apart on purpose. A change id that does not exist
+   * is a 404; one that has already been decided is a 409, and it is the case
+   * that actually happens — two moderators working the same queue, or one with
+   * the page open in two tabs. Answering the second with a silent success would
+   * show a tick for a button that did nothing, and answering it with a 404
+   * would send them looking for a row that is right there.
+   */
+  async function requirePendingChange(changeId: string) {
+    const change = await prisma.dealerProfileChange.findUnique({
+      where: { id: changeId },
+      include: { dealer: true },
+    });
+    if (!change) throw new NotFoundError('That profile edit does not exist.');
+    if (change.status !== 'PENDING') {
+      throw new ConflictError(
+        'PROFILE_CHANGE_DECIDED',
+        `This edit has already been ${change.status === 'APPROVED' ? 'published' : 'refused'}.`,
+      );
+    }
+    return change;
   }
 
   return {
@@ -236,6 +323,19 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           : {}),
         ...(query.state ? { state: { equals: query.state, mode: 'insensitive' as const } } : {}),
         ...(query.q ? { brandName: { contains: query.q, mode: 'insensitive' as const } } : {}),
+        /*
+         * The dealerships waiting on a decision about their own words
+         * (**R34**).
+         *
+         * A relation filter rather than a denormalised flag on `dealers`: the
+         * queue is small — one row per dealership with an edit in flight — and
+         * a boolean column would be a second copy of the same fact, kept in
+         * step by every path that decides one. The index this rides on is
+         * `(status, createdAt)` on the change table.
+         */
+        ...(query.pendingEdits === 'true'
+          ? { profileEdits: { some: { status: 'PENDING' as const } } }
+          : {}),
       };
 
       const rows = await prisma.dealer.findMany({
@@ -243,7 +343,12 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           ...where,
           ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
         },
-        include: { documents: true },
+        include: {
+          documents: true,
+          // Only whether there is one, not what it says — the row renders a
+          // badge and the detail screen is where it is read.
+          profileEdits: { where: { status: 'PENDING' }, select: { id: true }, take: 1 },
+        },
         orderBy: { createdAt: 'desc' },
         take: query.limit + 1,
       });
@@ -294,6 +399,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           documentsVerified:
             dealer.documents.length === REQUIRED_DOCUMENTS &&
             dealer.documents.every((doc) => doc.status === 'VERIFIED'),
+          hasPendingProfileEdit: dealer.profileEdits.length > 0,
         })),
         page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
         counts: Object.fromEntries(grouped.map((row) => [row.status, row._count._all])),
@@ -313,6 +419,10 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         include: {
           documents: { orderBy: { type: 'asc' } },
           members: { include: { user: true }, where: { role: 'OWNER' } },
+          // PENDING only (**R34**). A decided edit is history: the review card
+          // has nothing to offer about it, the dealer reads the refusal on
+          // their own screen, and the audit log is where a past decision lives.
+          profileEdits: { where: { status: 'PENDING' }, take: 1 },
         },
       });
       if (!dealer) throw new NotFoundError('That dealership does not exist.');
@@ -432,6 +542,9 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         },
         documents,
         allDocumentsVerified: allVerified,
+        profileChange: dealer.profileEdits[0]
+          ? toAdminProfileChange(dealer.profileEdits[0], dealer)
+          : null,
         yardPhotoUrl,
         recentLedger: ledger.map((row) => ({
           id: row.id,
@@ -1043,6 +1156,197 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         allVerified: outcome.allVerified,
         dealerCanBeApproved: outcome.allVerified,
         dealerReturnedToDraft: outcome.dealerReturnedToDraft,
+      };
+    },
+    // ─────────── D3b profile edits awaiting review (R34) ──────────────────
+
+    /**
+     * The queue, oldest first.
+     *
+     * Oldest first and not newest: this is work, and the dealership that has
+     * been waiting longest is the one a moderator owes an answer to. The
+     * dealer's own screen shows nothing but "waiting for review" in the
+     * meantime, so the wait is the whole of their experience of it.
+     *
+     * `admin:dealer:approve` rather than a permission of its own. The judgement
+     * is the same judgement — is this dealership saying something acceptable to
+     * a buyer — and a seat trusted to approve a dealership onto the platform is
+     * trusted to approve a sentence it writes. A separate permission would be a
+     * second thing to grant and a second thing to forget.
+     */
+    async profileChanges(admin: AdminPrincipal): Promise<AdminProfileChangesResponse> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      const rows = await prisma.dealerProfileChange.findMany({
+        where: { status: 'PENDING' },
+        include: { dealer: true },
+        orderBy: { createdAt: 'asc' },
+        take: 100,
+      });
+
+      // One clock for the whole page, so two rows submitted in the same second
+      // do not report different waits because the loop took a moment.
+      const now = new Date();
+
+      return {
+        data: rows.map((row) => toAdminProfileChange(row, row.dealer, now)),
+        pendingCount: rows.length,
+      };
+    },
+
+    /**
+     * Publish it.
+     *
+     * The write is the only place `dealers.tagline` and `dealers.specialities`
+     * move on an ACTIVE dealership, which is what makes the queue a real gate
+     * rather than a notification: there is no second path, so an edit that was
+     * not approved was not published.
+     *
+     * It goes through `dealers.update` rather than touching the columns, for
+     * the reason `updateDealer` does — `distinctServices` and every other rule
+     * about the *data* lives there, and an admin path with its own copy is an
+     * admin path that drifts. The moderator is agreeing to the dealer's words,
+     * not typing them again.
+     *
+     * A rejected or already-approved request is a 409 rather than a silent
+     * success. Two moderators opening the same queue is the ordinary case, and
+     * the second one must be told their button did nothing rather than shown a
+     * tick.
+     */
+    async approveProfileChange(
+      admin: AdminPrincipal,
+      changeId: string,
+    ): Promise<ProfileChangeDecisionResponse> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      const change = await requirePendingChange(changeId);
+
+      /*
+       * `null` and `[]` mean "this request does not touch that field", so they
+       * are omitted from the patch rather than sent as themselves. Sent, they
+       * would be a 400 — the schema floors are ten characters and one entry —
+       * which is the right refusal for a dealer and the wrong outcome here: a
+       * moderator approving a services-only edit would be told their tagline
+       * was too short.
+       */
+      await dealers.update(change.dealerId, {
+        ...(change.tagline === null ? {} : { tagline: change.tagline }),
+        ...(change.specialities.length === 0 ? {} : { specialities: change.specialities }),
+      });
+
+      const decided = await withTransaction(prisma, async (tx) => {
+        const saved = await tx.dealerProfileChange.update({
+          where: { id: changeId },
+          data: { status: 'APPROVED', reviewedBy: admin.userId, reviewedAt: new Date() },
+        });
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId: change.dealerId,
+          action: 'dealer.profile_change.approved',
+          entityType: 'DealerProfileChange',
+          entityId: changeId,
+          before: {
+            tagline: change.dealer.tagline,
+            specialities: change.dealer.specialities,
+          },
+          after: { tagline: change.tagline, specialities: change.specialities },
+        });
+
+        await enqueueOutbox(tx, {
+          type: 'DealerProfileChangeDecided',
+          aggregateType: 'Dealer',
+          aggregateId: change.dealerId,
+          dealerId: change.dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'profile-change-approve',
+          payload: { changeId, dealerId: change.dealerId, published: true },
+        });
+
+        return saved;
+      });
+
+      return {
+        id: decided.id,
+        status: decided.status,
+        statusLabel: PROFILE_CHANGE_STATUS_LABELS[decided.status],
+        dealerId: change.dealerId,
+        dealerSlug: change.dealer.slug,
+        published: true,
+        decidedAt: (decided.reviewedAt ?? new Date()).toISOString(),
+      };
+    },
+
+    /**
+     * Refuse it, and say why.
+     *
+     * **Nothing is restored, because nothing was taken away.** The live columns
+     * were never written, so a refusal is a status change on the request and no
+     * write at all on the dealership — which is what makes this operation safe
+     * to get wrong. A design that published first and rolled back on refusal
+     * would have a window, however short, in which the phone number was on the
+     * page; this one has none.
+     *
+     * The reason is required and is shown to the dealer verbatim. It is the
+     * only thing they will ever be told about why their line did not appear,
+     * and "rejected" with no sentence attached is how a dealer concludes the
+     * product is broken and edits it again the same way.
+     */
+    async rejectProfileChange(
+      admin: AdminPrincipal,
+      changeId: string,
+      reason: string,
+    ): Promise<ProfileChangeDecisionResponse> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      const change = await requirePendingChange(changeId);
+
+      const decided = await withTransaction(prisma, async (tx) => {
+        const saved = await tx.dealerProfileChange.update({
+          where: { id: changeId },
+          data: {
+            status: 'REJECTED',
+            reviewedBy: admin.userId,
+            reviewedAt: new Date(),
+            decisionReason: reason,
+          },
+        });
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId: change.dealerId,
+          action: 'dealer.profile_change.rejected',
+          entityType: 'DealerProfileChange',
+          entityId: changeId,
+          // What was refused, so the trail records the words as well as the
+          // verdict. A rejection whose text is gone cannot be reviewed later.
+          before: { tagline: change.tagline, specialities: change.specialities },
+          after: { status: 'REJECTED', reason },
+        });
+
+        await enqueueOutbox(tx, {
+          type: 'DealerProfileChangeDecided',
+          aggregateType: 'Dealer',
+          aggregateId: change.dealerId,
+          dealerId: change.dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'profile-change-reject',
+          payload: { changeId, dealerId: change.dealerId, published: false, reason },
+        });
+
+        return saved;
+      });
+
+      return {
+        id: decided.id,
+        status: decided.status,
+        statusLabel: PROFILE_CHANGE_STATUS_LABELS[decided.status],
+        dealerId: change.dealerId,
+        dealerSlug: change.dealer.slug,
+        published: false,
+        decidedAt: (decided.reviewedAt ?? new Date()).toISOString(),
       };
     },
   };

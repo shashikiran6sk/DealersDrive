@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import type { AuthHarness } from './auth-harness.js';
 import { createAuthHarness, createFakeGoogle } from './auth-harness.js';
+import { env } from '../src/config/env.js';
 
 /** Where the local-disk adapter puts a key. `STORAGE_LOCAL_DIR` is set by the runner. */
 function storagePath(key: string): string {
@@ -31,6 +32,8 @@ function storagePath(key: string): string {
 let h: AuthHarness;
 
 let counter = 0;
+/** R34's moderator sign-ins, kept off `counter` so a dealer fixture is unaffected. */
+let subjectCounter = 0;
 function newAccount(): void {
   counter += 1;
   h.google.claims = {
@@ -593,8 +596,17 @@ describe('what a dealer may change about themselves', () => {
     expect(JSON.stringify(refused.body)).toContain(field);
   });
 
-  it('accepts the three that are still theirs', async () => {
+  /**
+   * R34 changed what "accepts" means for two of the three.
+   *
+   * The year is written. The tagline and the service list are *accepted* — a
+   * 200, recorded, and reported back on `profileChange` — and not published:
+   * the dealership still reads with the words it had, because those are the
+   * words a buyer is still being shown.
+   */
+  it('writes the year, and holds the two sentences for review', async () => {
     const { agent } = await activeDealership();
+    const before = await agent.get('/v1/dealer').expect(200);
 
     await agent
       .patch('/v1/dealer')
@@ -607,8 +619,16 @@ describe('what a dealer may change about themselves', () => {
 
     const profile = await agent.get('/v1/dealer').expect(200);
     expect(profile.body.establishedYear).toBe(2004);
-    expect(profile.body.tagline).toBe('Only diesel SUVs, every one with a service book.');
-    expect(profile.body.specialities).toEqual(['SUVs', 'Exchange']);
+    // Unchanged, and deliberately compared against what was there before rather
+    // than against a literal: the point is that nothing moved.
+    expect(profile.body.tagline).toBe(before.body.tagline);
+    expect(profile.body.specialities).toEqual(before.body.specialities);
+
+    expect(profile.body.profileChange).toMatchObject({
+      status: 'PENDING',
+      tagline: 'Only diesel SUVs, every one with a service book.',
+      specialities: ['SUVs', 'Exchange'],
+    });
   });
 
   /**
@@ -961,5 +981,292 @@ describe('the yard photograph', () => {
     await uploadYardPhoto(agent);
     const submitted = await agent.post('/v1/dealer/submit').expect(200);
     expect(submitted.body.status).toBe('PENDING_APPROVAL');
+  });
+});
+
+/**
+ * R34 — a dealer's own words wait for a moderator.
+ *
+ * Here rather than in a unit test for the reason the rest of this file is here:
+ * the guarantee is a *sequence across two actors and two tables*, and the thing
+ * most worth proving is what the public row holds at each step of it. A mocked
+ * Prisma would prove that the service called the methods this service calls.
+ *
+ * The partial unique index — one PENDING request per dealership — is also only
+ * real against Postgres.
+ */
+describe('a dealer editing their own public words', () => {
+  /** Signed in as the allow-listed operator, which is a SUPER_ADMIN. */
+  async function moderator() {
+    subjectCounter += 1;
+    h.google.claims = {
+      subject: `moderator-sub-${subjectCounter}`,
+      email: env.adminAllowlist[0] ?? '',
+      emailVerified: true,
+      name: 'Dealers-Drive Operations',
+    };
+    const agent = h.agent();
+    await h.signInAdmin(agent);
+    return agent;
+  }
+
+  /** An ACTIVE dealership — the only state in which any of this applies. */
+  async function trading(overrides: Record<string, unknown> = {}) {
+    const made = await dealership(overrides);
+    await h.prisma.dealer.update({ where: { id: made.dealerId }, data: { status: 'ACTIVE' } });
+    return made;
+  }
+
+  const NEW_LINE = 'Only diesel SUVs now, every one with a full service history.';
+
+  /**
+   * The whole point, in one case: what a buyer sees does not move until a
+   * moderator says so.
+   */
+  it('does not publish the tagline until it is approved', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+
+    const held = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+    expect(held?.tagline).not.toBe(NEW_LINE);
+
+    const queue = await admin.get('/v1/admin/profile-changes').expect(200);
+    const waiting = queue.body.data.find(
+      (row: { dealerId: string }) => row.dealerId === dealerId,
+    ) as { id: string; tagline: string; liveTagline: string };
+    expect(waiting.tagline).toBe(NEW_LINE);
+    // The live value travels with the proposal: the moderator is judging a
+    // change, not a sentence.
+    expect(waiting.liveTagline).toBe(held?.tagline);
+
+    await admin.post(`/v1/admin/profile-changes/${waiting.id}/approve`).expect(200);
+
+    const published = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+    expect(published?.tagline).toBe(NEW_LINE);
+  });
+
+  /**
+   * A refusal is a no-op on the dealership, which is what makes it safe.
+   *
+   * Nothing is restored because nothing was taken away. A design that published
+   * first and rolled back on refusal would have a window — however short — in
+   * which the phone number was on the page.
+   */
+  it('leaves the live words untouched when it is refused, and says why', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+    const before = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+
+    await agent
+      .patch('/v1/dealer')
+      .send({ tagline: 'Best prices — call 98400 12345 direct!' })
+      .expect(200);
+
+    const queue = await admin.get('/v1/admin/profile-changes').expect(200);
+    const waiting = queue.body.data.find(
+      (row: { dealerId: string }) => row.dealerId === dealerId,
+    ) as { id: string };
+
+    const refused = await admin
+      .post(`/v1/admin/profile-changes/${waiting.id}/reject`)
+      .send({ reason: 'The tagline ends with a mobile number. Please remove it.' })
+      .expect(200);
+    expect(refused.body.published).toBe(false);
+
+    const after = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+    expect(after?.tagline).toBe(before?.tagline);
+
+    // And the dealer is told, on the screen that did the editing.
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.profileChange).toMatchObject({
+      status: 'REJECTED',
+      decisionReason: 'The tagline ends with a mobile number. Please remove it.',
+    });
+  });
+
+  /**
+   * Two saves before a decision are one request, not two.
+   *
+   * Two rows would make "what is this dealership asking for" a question with
+   * two answers, and a moderator would have to approve them in the right order
+   * to arrive at what the dealer meant. The partial unique index is what makes
+   * this true under a race; the merge is what makes it true in the ordinary
+   * case.
+   */
+  it('amends the waiting request rather than queueing a second', async () => {
+    const { agent, dealerId } = await trading();
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+    await agent
+      .patch('/v1/dealer')
+      .send({ specialities: ['SUVs', 'Exchange'] })
+      .expect(200);
+
+    const rows = await h.prisma.dealerProfileChange.findMany({
+      where: { dealerId, status: 'PENDING' },
+    });
+    expect(rows).toHaveLength(1);
+    // The second save did not drop the first: both fields are on the one row.
+    expect(rows[0]?.tagline).toBe(NEW_LINE);
+    expect(rows[0]?.specialities).toEqual(['SUVs', 'Exchange']);
+  });
+
+  /**
+   * Typing the old line back is how a dealer withdraws a request.
+   *
+   * That is why there is no WITHDRAWN status and no cancel button: a value
+   * equal to the live one is not a change, so it is removed from the request,
+   * and a request with nothing left in it is deleted.
+   */
+  it('withdraws the request when the dealer types the old value back', async () => {
+    const { agent, dealerId } = await trading();
+    const live = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(1);
+
+    await agent.patch('/v1/dealer').send({ tagline: live?.tagline }).expect(200);
+
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(0);
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.profileChange).toBeNull();
+  });
+
+  /**
+   * Re-saving the form without touching the boxes must not queue anything.
+   *
+   * The services box is one comma-separated line, so a dealer editing their
+   * tagline re-submits the whole list every time. Without the order-insensitive
+   * comparison this would put a request in front of a moderator asking them to
+   * agree that nothing had happened.
+   */
+  it('queues nothing when the services come back in a different order', async () => {
+    const { agent, dealerId } = await trading({ specialities: ['Hatchbacks', 'RC transfer'] });
+    await h.prisma.dealer.update({
+      where: { id: dealerId },
+      data: { specialities: ['Hatchbacks', 'RC transfer'] },
+    });
+
+    await agent
+      .patch('/v1/dealer')
+      .send({ specialities: ['RC transfer', 'Hatchbacks', 'RC transfer'] })
+      .expect(200);
+
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(0);
+  });
+
+  /** The year is a number nothing can be hidden in, so it is published at once. */
+  it('publishes the established year without asking anybody', async () => {
+    const { agent, dealerId } = await trading();
+
+    await agent.patch('/v1/dealer').send({ establishedYear: 2004 }).expect(200);
+
+    const row = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+    expect(row?.establishedYear).toBe(2004);
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(0);
+  });
+
+  /**
+   * A DRAFT dealership writes straight through. Nothing about it is public —
+   * the directory and the portfolio both require ACTIVE (rule 6) — so there is
+   * no page for a phone number to appear on, and the whole application is read
+   * by a moderator at approval anyway.
+   */
+  it('writes straight through while the dealership is still a draft', async () => {
+    const { agent, dealerId } = await dealership();
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+
+    const row = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+    expect(row?.tagline).toBe(NEW_LINE);
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(0);
+  });
+
+  /**
+   * Two moderators working the same queue is the ordinary case. The second must
+   * be told their button did nothing rather than shown a tick.
+   */
+  it('refuses a second decision on the same request', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+    const waiting = await h.prisma.dealerProfileChange.findFirst({ where: { dealerId } });
+
+    await admin.post(`/v1/admin/profile-changes/${waiting?.id}/approve`).expect(200);
+    const again = await admin.post(`/v1/admin/profile-changes/${waiting?.id}/approve`).expect(409);
+
+    expect(again.body.code).toBe('PROFILE_CHANGE_DECIDED');
+  });
+
+  /**
+   * An approval carrying only services must not fail on a tagline that was
+   * never part of the request. `null` means "not in this edit", and sending it
+   * on would be a 400 against a ten-character floor.
+   */
+  it('approves a services-only edit without touching the tagline', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+    const before = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+
+    await agent
+      .patch('/v1/dealer')
+      .send({ specialities: ['SUVs', 'Exchange'] })
+      .expect(200);
+    const waiting = await h.prisma.dealerProfileChange.findFirst({ where: { dealerId } });
+    await admin.post(`/v1/admin/profile-changes/${waiting?.id}/approve`).expect(200);
+
+    const after = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+    expect(after?.specialities).toEqual(['SUVs', 'Exchange']);
+    expect(after?.tagline).toBe(before?.tagline);
+  });
+
+  /** Once it is published there is nothing left to tell the dealer about it. */
+  it('stops reporting the edit once it is live', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+    const waiting = await h.prisma.dealerProfileChange.findFirst({ where: { dealerId } });
+    await admin.post(`/v1/admin/profile-changes/${waiting?.id}/approve`).expect(200);
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.tagline).toBe(NEW_LINE);
+    expect(profile.body.profileChange).toBeNull();
+  });
+
+  /** The moderator finds the work from the dealer list as well as from the queue. */
+  it('flags the dealership in the admin list, and filters on it', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+
+    const filtered = await admin.get('/v1/admin/dealers?pendingEdits=true').expect(200);
+    const row = filtered.body.data.find((entry: { id: string }) => entry.id === dealerId) as
+      { hasPendingProfileEdit: boolean } | undefined;
+    expect(row?.hasPendingProfileEdit).toBe(true);
+    expect(
+      filtered.body.data.every(
+        (entry: { hasPendingProfileEdit: boolean }) => entry.hasPendingProfileEdit,
+      ),
+    ).toBe(true);
+  });
+
+  /** Both halves of the decision are attributable — who typed it, and who agreed. */
+  it('audits the submission and the decision', async () => {
+    const { agent, dealerId } = await trading();
+    const admin = await moderator();
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+    const waiting = await h.prisma.dealerProfileChange.findFirst({ where: { dealerId } });
+    await admin.post(`/v1/admin/profile-changes/${waiting?.id}/approve`).expect(200);
+
+    const trail = await h.prisma.auditLog.findMany({ where: { dealerId } });
+    const actions = trail.map((row) => row.action);
+    expect(actions).toContain('dealer.profile_change.submitted');
+    expect(actions).toContain('dealer.profile_change.approved');
   });
 });

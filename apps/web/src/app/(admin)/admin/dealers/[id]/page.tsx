@@ -7,6 +7,7 @@ import { LogoTile, StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
 import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
 import { DocumentReview } from '@/features/admin/document-review';
+import { ProfileChangeReview } from '@/features/admin/profile-change-review';
 import { ApiError, apiGet } from '@/lib/api';
 import { cn } from '@/lib/cn';
 
@@ -88,6 +89,20 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
         read-only and pair naturally; the checklist is the working surface and
         gets the width.
       */}
+      {/*
+        The proposed change, above the record it would change (**R34**).
+
+        Full width and ahead of the two-card row on purpose: it is the only
+        thing on this screen that somebody is *waiting* on. A moderator opening
+        a dealership has a reason for being here — usually the queue or the
+        badge in the list — and a review card tucked into a third of a row
+        below the KYC checklist is one that gets scrolled past.
+
+        It renders only when there is something waiting. `profileChange` is
+        PENDING-only on the response, so a decided edit simply stops appearing.
+      */}
+      {dealer.profileChange ? <ProfileChangeReview change={dealer.profileChange} /> : null}
+
       <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
         <DealerProfileEditor dealer={dealer} />
 

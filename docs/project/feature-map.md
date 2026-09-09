@@ -3758,3 +3758,140 @@ against a field the form no longer had. It only broke here because the type went
 with the column — which is the argument for deleting a field rather than leaving
 it: a stale story about a removed box is invisible until something stops
 compiling.
+
+## R34 — A dealer's public words are proposed, not published
+
+**Revises F041 / F046 / R26 / R27 / R32**
+
+Until now a verified dealership could put any sentence it liked on its own
+public page, instantly and unread. `tagline` and `specialities` are the only
+free text a dealer writes that a buyer sees — which makes them the only route by
+which a phone number reaches a public page without passing
+`POST /v1/vehicles/:id/reveal-contact`, the one endpoint allowed to hand one
+out, rate-limited twice over and logged as a lead. **Rule 7 had a hole in it.**
+
+- **Schema** `DealerProfileChange`, `ProfileChangeStatus` ·
+  `migrations/20260909160000_dealer_profile_change_review` — the table, the two
+  indexes, the FK, and a **partial unique index** Prisma cannot express
+- **Contracts** `ProfileChangeStatus` + its label/tone tables;
+  `DealerProfileChange` and `DealerProfile.profileChange`; `AdminProfileChange`,
+  `ProfileChangeDecisionResponse`, `AdminProfileChangesResponse`;
+  `AdminDealerDetail.profileChange`, `AdminDealerRow.hasPendingProfileEdit`,
+  `AdminDealerQuery.pendingEdits`
+- **Backend** `dealers.service.selfUpdate` — **new**, and the only behaviour
+  change to a write path; `dealers.repository.dealerInclude` takes the newest
+  edit; `admin.service.{profileChanges,approveProfileChange,rejectProfileChange}`;
+  `DomainEventType` gains `DealerProfileChangeDecided`; `DealersDeps` takes
+  `AuditService`
+- **API** `GET /v1/admin/profile-changes`,
+  `POST /v1/admin/profile-changes/:id/{approve,reject}`;
+  `GET /v1/admin/dealers?pendingEdits=true`; `PATCH /v1/dealer` changes meaning
+- **Frontend** `features/admin/profile-change-review.tsx` — **new** (C062d);
+  `features/dealer/profile-form.tsx` — `ReviewPanel`, and the boxes default to
+  the proposed values; `features/admin/actions.ts` — two actions;
+  `(admin)/admin/dealers/page.tsx` — the badge and the toggle;
+  `(admin)/admin/dealers/[id]/page.tsx` — the card
+- **Sandbox** `admin/profile-change-review.stories.tsx` — **new**, eight
+  states; `mocks/admin-actions.ts` — two stubs; registry C062d
+- **Tests** `dealer-onboarding.test.ts` — twelve integration cases;
+  `profile-change-review.test.tsx` — **new**, five;
+  `profile-form.test.tsx` — six
+- **Docs** `dealers.docs.ts` (`PATCH /v1/dealer` rewritten), `admin.docs.ts`
+  (three operations)
+- **No new dependency.**
+
+### The split is free text against a number
+
+`DealerSelfUpdateInput` carries three fields and they do not all mean the same
+thing. `establishedYear` is an integer bounded by 1900 and 2100: there is no way
+to write a phone number, a rival's name or a WhatsApp handle into it, so it is
+published the moment the dealer saves. The other two are prose, and prose is the
+whole of the risk.
+
+This is why the rule lives in `dealers.service.selfUpdate` and not in the
+schema. A schema says what may be _sent_; it has no access to the dealership's
+status, and "publish now" versus "queue for review" is a question about the row.
+
+### A DRAFT writes straight through, and that is not a hole
+
+Nothing about a non-ACTIVE dealership is public — the directory and the
+portfolio both require `status === 'ACTIVE'` (rule 6) — so there is no page for
+a number to appear on, and the whole application is read by a moderator at
+approval anyway. Queueing an edit to an invisible field would leave a dealership
+waiting for permission to finish an application nobody had started reviewing.
+
+### The request is amended, and withdrawn by retyping
+
+A dealer who edits twice before a decision has **one** proposal. Two rows would
+make "what is this dealership asking for" a question with two answers, and a
+moderator would have to approve them in the right order to arrive at what the
+dealer meant. So a second save merges field by field, and the partial unique
+index — `UNIQUE (dealerId) WHERE status = 'PENDING'` — is what makes that hold
+under a race from two tabs.
+
+A value equal to the live one is not a change: it is dropped from the request,
+and a request holding nothing is deleted. **That is the withdrawal**, and it is
+why there is no `WITHDRAWN` status and no cancel button. `sameServices` makes it
+order-insensitive, which matters more than it looks: the services box is one
+comma-separated line, so a dealer editing only their tagline re-submits the whole
+list every time, and without it every save would queue a request asking a
+moderator to agree that nothing had happened.
+
+### A refusal writes nothing, which is what makes it safe
+
+The live columns are never touched until an approval, so a refusal is a status
+change on the request and **no write at all** on the dealership. There is
+nothing to restore because nothing was taken away.
+
+The alternative — publish, then roll back on refusal — has a window, however
+short, in which the phone number is on the page. That window is the entire thing
+this revision exists to close.
+
+### What the dealer is told, and why the screen had to change
+
+A dealer presses Save, the page reloads, the tagline box shows the line they
+typed, and their public page shows the old one. Without something on the screen
+saying so, the honest state of the product is invisible: a dealer who cannot see
+their change concludes the save failed, does it again, and emails support.
+
+So `ReviewPanel` says what is waiting, what buyers are still seeing, and — on a
+refusal — the moderator's sentence, verbatim. It also states the way out in
+words, because there is no cancel button to point at.
+
+And the boxes keep the dealer's own words rather than resetting to the live
+value. A form that reverted after every save would look exactly like a save that
+failed, and a dealer correcting one word of a refused line would have to type the
+whole thing again.
+
+### Old beside new, on the reviewer's side
+
+The moderator is not asking _"is this tagline acceptable"_. They are asking _"is
+this **change** acceptable"_, and the two differ whenever the edit is a small
+correction to a line that was already approved. So `AdminProfileChange` carries
+`liveTagline` and `liveSpecialities` alongside the proposal — a card showing only
+the new value makes the reviewer hold the old one in their head, and a reviewer
+doing that is one who approves a number appended to a sentence they
+half-remember.
+
+`null` and `[]` on the proposed side keep their database meaning — _this request
+does not touch that field_ — and render as `unchanged`. A blank row under
+Services would read as _the dealer is clearing their services_, and approving
+that reading approves something nobody asked for.
+
+### What is deliberately not here
+
+**No detection.** Nothing scans the tagline for a phone number. A regex over
+ten-digit strings misses `nine eight four zero zero` and teaches a moderator to
+trust the absence of a flag, which is worse than no flag at all. The card's job
+is to put the sentence in front of a person at a size they will read.
+
+**No notification to the dealer.** `DealerProfileChangeDecided` goes on the
+outbox and nothing consumes it yet; the dealer learns the outcome next time they
+open their profile screen. An email belongs with the notification feature that
+owns templates and delivery, not bolted onto this one.
+
+**No SLA and no auto-approve.** A queue nobody works is a product that has
+quietly stopped letting dealers edit their own pages, and the honest answer to
+that is staffing rather than a timer that publishes unread text. The waiting
+time is on every row of the queue and on the review card so that the backlog is
+visible rather than inferred.

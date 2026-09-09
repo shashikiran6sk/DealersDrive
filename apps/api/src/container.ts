@@ -136,7 +136,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
 
   const audit = createAuditService(prisma);
   const dealersRepo = createDealersRepository(prisma);
-  const dealers = createDealersService({ prisma, repo: dealersRepo, storage, maps });
+  const dealers = createDealersService({ prisma, repo: dealersRepo, storage, maps, audit });
   /*
    * `noInventoryYet` is the car-count source until **F076**. The baseline read
    * `search.dealerStats()`, which groups `listing_search` — the read model F064

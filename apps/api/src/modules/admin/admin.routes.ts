@@ -169,6 +169,56 @@ export function createAdminRouter(service: AdminService): Router {
     ),
   );
 
+  /**
+   * D3b — the profile edits waiting for a decision (**R34**).
+   *
+   * A queue of its own rather than a filter on the dealer list, because it is
+   * work rather than a property of a dealership: oldest first, and every row
+   * carries what is live beside what is proposed so a moderator can decide
+   * without opening the dealership.
+   *
+   * The dealer list carries `?pendingEdits=true` as well, for the moderator who
+   * arrives from the other direction — looking at a dealership and wanting to
+   * know whether it is waiting on them.
+   */
+  router.get(
+    '/profile-changes',
+    handle((req) => service.profileChanges(adminPrincipal(req))),
+  );
+
+  /**
+   * Publish it, or refuse it with a reason.
+   *
+   * Keyed by the change rather than by the dealership, the way the document
+   * decisions are: the thing being decided on has an id, and addressing it by
+   * `/dealers/:id/profile-change` would make "which edit" a question the server
+   * answers by guessing at the newest one — which is exactly wrong when a
+   * dealer saves again while a moderator has the page open.
+   *
+   * `ReasonInput` on the refusal, shared with the dealer and document
+   * rejections, and it is not a coincidence: all three are refusals a person
+   * reads verbatim, and all three are worse than useless without a sentence.
+   */
+  router.post(
+    '/profile-changes/:id/approve',
+    validate({ params: IdParam }),
+    handle((req) =>
+      service.approveProfileChange(adminPrincipal(req), validated<IdParamType>(req, 'params').id),
+    ),
+  );
+
+  router.post(
+    '/profile-changes/:id/reject',
+    validate({ params: IdParam, body: ReasonInput }),
+    handle((req) =>
+      service.rejectProfileChange(
+        adminPrincipal(req),
+        validated<IdParamType>(req, 'params').id,
+        validated<ReasonInputType>(req, 'body').reason,
+      ),
+    ),
+  );
+
   router.post(
     '/documents/:id/verify',
     validate({ params: IdParam }),

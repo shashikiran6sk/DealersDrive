@@ -7,6 +7,7 @@ import type {
   DealerWithRelations,
 } from '../../../../src/modules/dealers/dealers.repository.js';
 import { createDealersService } from '../../../../src/modules/dealers/dealers.service.js';
+import type { AuditService } from '../../../../src/platform/audit/audit.service.js';
 import { DomainError, NotFoundError } from '../../../../src/platform/errors.js';
 import type { MapsPort } from '../../../../src/platform/maps/maps-link.js';
 import type { StoragePort } from '../../../../src/platform/storage/storage.port.js';
@@ -74,6 +75,12 @@ function dealer(overrides: Record<string, unknown> = {}): DealerWithRelations {
     activeListings: 7,
     approvedAt: new Date('2026-01-05T00:00:00.000Z'),
     createdAt: new Date('2025-12-01T00:00:00.000Z'),
+    /**
+     * R34. Empty by default: an ordinary dealership has nothing waiting on a
+     * moderator, and `profileChange` on the response is `null`. The tests that
+     * care put a row here.
+     */
+    profileEdits: [],
     members: [
       {
         userId: 'user-1',
@@ -265,8 +272,27 @@ function setup(options: Options = {}) {
     },
   };
 
+  /**
+   * R34's audit port. Recording is asserted where it matters — the integration
+   * suite, against a real table — so the double here only has to exist: this
+   * file's subject is the service's own logic, and an audit row is a side
+   * effect of it rather than a part of it.
+   */
+  const audited: { action: string; entityId: string }[] = [];
+  const audit = {
+    record: (_tx: unknown, entry: { action: string; entityId: string }) => {
+      audited.push({ action: entry.action, entityId: entry.entityId });
+      return Promise.resolve();
+    },
+    recordDetached: (entry: { action: string; entityId: string }) => {
+      audited.push({ action: entry.action, entityId: entry.entityId });
+      return Promise.resolve();
+    },
+  } as unknown as AuditService;
+
   return {
-    service: createDealersService({ prisma, repo, storage, maps }),
+    service: createDealersService({ prisma, repo, storage, maps, audit }),
+    audited,
     updates,
     upserts,
     userUpdates,
