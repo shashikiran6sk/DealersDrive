@@ -83,7 +83,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 7 — Consoles
 
 - [x] F046 — Dealer profile management · [#68](https://github.com/shashikiran6sk/DealersDrive/pull/68)
-- [~] F047 — Dealer console shell & navigation · pulled forward as R31
+- [~] F047 — Dealer console shell & navigation · pulled forward as R31 · [#104](https://github.com/shashikiran6sk/DealersDrive/pull/104)
 - [ ] F048 — Dealer dashboard
 - [x] F049 — Admin console shell & navigation · ⚠️ pulled forward, ahead of Tier 7 — F044 depends on it · [#60](https://github.com/shashikiran6sk/DealersDrive/pull/60)
 
@@ -196,7 +196,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R28 — The directory card, as the UI reference draws it · revises F085/R21/R24 · [#101](https://github.com/shashikiran6sk/DealersDrive/pull/101)
 - [~] R29 — The card is one click target, and the first chip takes the accent · revises R28 · [#102](https://github.com/shashikiran6sk/DealersDrive/pull/102)
 - [~] R30 — A refused service list answers in the dealer's own words · revises R26 · [#103](https://github.com/shashikiran6sk/DealersDrive/pull/103)
-- [ ] R31 — The dealer console gets its shell, early · lands F047
+- [~] R31 — The dealer console gets its shell, early · lands F047 · [#104](https://github.com/shashikiran6sk/DealersDrive/pull/104)
 
 ---
 
