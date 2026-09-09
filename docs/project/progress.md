@@ -197,6 +197,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R29 — The card is one click target, and the first chip takes the accent · revises R28 · [#102](https://github.com/shashikiran6sk/DealersDrive/pull/102)
 - [~] R30 — A refused service list answers in the dealer's own words · revises R26 · [#103](https://github.com/shashikiran6sk/DealersDrive/pull/103)
 - [~] R31 — The dealer console gets its shell, early · lands F047 · [#104](https://github.com/shashikiran6sk/DealersDrive/pull/104)
+- [ ] R32 — The review screen judges the tagline and the services, not About · revises R25/R26/D3
 
 ---
 

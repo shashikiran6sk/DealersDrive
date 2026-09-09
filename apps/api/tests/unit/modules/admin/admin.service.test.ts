@@ -82,6 +82,8 @@ function dealerRow(overrides: Record<string, unknown> = {}) {
     city: 'Vellore',
     district: 'Vellore',
     state: 'Tamil Nadu',
+    tagline: 'Family-run since 1998 — hatchbacks under ₹6 lakh.',
+    specialities: ['In-house workshop', 'RC transfer assistance'],
     documents: [],
     members: [{ user: { fullName: 'Ramesh Kumar', email: 'owner@sri-lakshmi-motors.in' } }],
     ...overrides,
@@ -774,6 +776,49 @@ describe('dealerDetail', () => {
       action: 'dealer.documents.viewed',
       entityId: DEALER,
     });
+  });
+
+  /**
+   * R32 — the two answers a moderator is actually being asked to judge.
+   *
+   * They replace `about` on this response, which was the last surface reading a
+   * paragraph the product stopped collecting at R26. A review screen showing a
+   * dealership prose nobody will read, and not showing the sentence that will
+   * front its public page, was reviewing the wrong field.
+   */
+  it('carries the tagline and the services, and no longer the paragraph', async () => {
+    const h = setup({ dealer: dealerRow() });
+
+    const detail = await h.service.dealerDetail(admin, DEALER);
+
+    expect(detail.tagline).toBe('Family-run since 1998 — hatchbacks under ₹6 lakh.');
+    expect(detail.specialities).toEqual(['In-house workshop', 'RC transfer assistance']);
+    expect(detail).not.toHaveProperty('about');
+  });
+
+  /**
+   * Collapsed on the way out, as on every other surface that reads them
+   * (**R18**). What the reviewer sees is what a buyer gets — otherwise they
+   * would correct a repeat the public pages had already merged.
+   */
+  it('merges a repeated service rather than showing it twice', async () => {
+    const h = setup({
+      dealer: dealerRow({ specialities: ['Finance', 'finance', 'RC transfer', 'Finance'] }),
+    });
+
+    const detail = await h.service.dealerDetail(admin, DEALER);
+
+    expect(detail.specialities).toEqual(['Finance', 'RC transfer']);
+  });
+
+  /** The rows that predate R26 asking for either. */
+  it('reports a dealership that has neither', async () => {
+    const h = setup({ dealer: dealerRow({ tagline: null, specialities: [] }) });
+
+    const detail = await h.service.dealerDetail(admin, DEALER);
+
+    expect(detail.tagline).toBeNull();
+    expect(detail.specialities).toEqual([]);
   });
 
   it('logs nothing when no document could be viewed', async () => {

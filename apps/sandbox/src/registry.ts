@@ -722,7 +722,7 @@ export const registry: RegistryEntry[] = [
       'DealerBusinessDetails',
       'dealer-profile-editor',
     ],
-    features: ['F045'],
+    features: ['F045', 'R32'],
     props: ['dealer'],
     states: ['reading', 'with gaps', 'editing', 'read-only seat', 'saving', 'server refusal'],
     reusable: false,

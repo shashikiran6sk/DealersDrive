@@ -2,6 +2,7 @@ import {
   DEALER_STATUS_LABELS,
   DEALER_STATUS_TONES,
   DOC_TYPE_LABELS,
+  distinctServices,
   formatDate,
   formatPhone,
   formatRupees,
@@ -411,7 +412,15 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         contactPhoneDisplay: dealer.contactPhone ? formatPhone(dealer.contactPhone) : null,
         contactEmail: owner?.user.email ?? dealer.contactEmail,
         landline: dealer.landline,
-        about: dealer.about,
+        tagline: dealer.tagline,
+        /*
+         * Collapsed on the way out, as on every other surface that reads them
+         * (**R18**). A moderator looking at "Finance, finance" would reasonably
+         * correct it — and would be correcting something no buyer ever sees,
+         * because the public pages merge repeats too. What is shown here is
+         * what a buyer gets.
+         */
+        specialities: distinctServices(dealer.specialities),
         joinedLabel: formatDate(dealer.createdAt),
         creditBalance: dealer.creditBalance,
         creditsHeld: dealer.creditsHeld,

@@ -151,16 +151,22 @@ export const UpdateDealerInput = z
      * took it off the portfolio, where the tagline replaced it; **R26** took
      * it off onboarding and off the dealer's own profile screen.
      *
-     * It stays in this schema, and the column stays in the database, for one
-     * reason: every dealership on the platform has written into it, and the
-     * admin console still shows it to a reviewer — `updateDealerAction` parses
-     * against this same schema, so removing the field here would make that box
-     * unsavable. It is history a moderator can read and correct, not a field
-     * the product collects.
+     * **R32 took the last box off it.** The admin review screen was the one
+     * surface still reading the paragraph, and it now reads the tagline and the
+     * service list instead — the two answers a moderator is actually being
+     * asked to judge, because they are the ones a buyer will see. So no screen
+     * writes `about` any longer.
      *
-     * The floor stays at 20 for the rows that have one. A moderator clearing
-     * the box would be deleting a dealership's own words, and there is no
-     * screen on which that is the intended gesture.
+     * The field stays here, and the column stays in the database, because the
+     * prose does: a hundred and twenty dealerships wrote into it before the
+     * product stopped asking, and the only way left to correct one of those
+     * rows is this endpoint. Dropping the field and the column is a separate
+     * decision — it deletes data — and it wants its own PR rather than being a
+     * side effect of a screen change.
+     *
+     * The floor stays at 20 for the rows that have one. Clearing the box would
+     * be deleting a dealership's own words, and there is no caller for which
+     * that is the intended gesture.
      * ─────────────────────────────────────────────────────────────────────────
      */
     about: z
