@@ -31,9 +31,13 @@ const saveDealerProfileAction = vi.fn(
     Promise.resolve({ status: 'saved', fieldErrors: {} }),
 );
 
+/** R34's Cancel. Resolves to `null` on success, or a message. */
+const withdrawProfileChangeAction = vi.fn((): Promise<string | null> => Promise.resolve(null));
+
 vi.mock('@/features/dealer/profile-actions', () => ({
   saveDealerProfileAction: (previous: unknown, formData: unknown) =>
     saveDealerProfileAction(previous as ProfileActions.ProfileFormState, formData as FormData),
+  withdrawProfileChangeAction: () => withdrawProfileChangeAction(),
 }));
 
 const DEALER: DealerProfile = {
@@ -351,31 +355,82 @@ describe('an edit waiting for review', () => {
   });
 
   /**
-   * The boxes hold what the dealer last *typed*, not what is public.
+   * The two boxes are **shut** while a change waits, and hold the proposed
+   * text.
    *
-   * A form that reset itself to the live value after every save would look
-   * exactly like a save that failed — and a dealer correcting one word of a
-   * refused line would have to type the whole thing again.
+   * The dealer has already said what they want; the question in front of them
+   * is no longer "what should this say" but "do I stand by this". Leaving the
+   * boxes live would offer an edit the API refuses with a 409 — the worst of
+   * the three options, because the dealer types a sentence and is then told
+   * they could not have.
    */
-  it('keeps the dealer’s own words in the boxes', () => {
+  it('locks the two boxes and shows the proposed text in them', () => {
     render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
 
-    expect(screen.getByLabelText(/one line about your dealership/i)).toHaveValue(
-      'Only diesel SUVs, every one with a full service history.',
-    );
-    expect(screen.getByLabelText(/services you offer/i)).toHaveValue('SUVs, Exchange');
+    const tagline = screen.getByLabelText(/one line about your dealership/i);
+    const services = screen.getByLabelText(/services you offer/i);
+
+    expect(tagline).toHaveValue('Only diesel SUVs, every one with a full service history.');
+    expect(services).toHaveValue('SUVs, Exchange');
+    expect(tagline).toBeDisabled();
+    expect(services).toBeDisabled();
   });
 
   /**
-   * There is no cancel button, so the way out has to be said in words: a
-   * request holding nothing is deleted, which makes "put the old line back" the
-   * withdrawal. Without this sentence a dealer would wait on a moderator to
-   * refuse an edit nobody wanted any more.
+   * `disabled` **and** no `name`, which is the R27 shape and load-bearing for
+   * the same reason: a disabled control is not submitted, and one with no name
+   * has nothing to be submitted under. So a locked box cannot reach the action
+   * even by accident, and a save in this state carries the established year
+   * and nothing else.
    */
-  it('tells the dealer how to withdraw it', () => {
+  it('sends nothing for a locked box', () => {
+    const { container } = render(
+      <DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />,
+    );
+
+    expect(container.querySelector('[name="tagline"]')).toBeNull();
+    expect(container.querySelector('[name="specialities"]')).toBeNull();
+    // The year is untouched by any of this — it never needed review.
+    expect(container.querySelector('[name="establishedYear"]')).not.toBeNull();
+  });
+
+  /** And they are open again, on the live values, when nothing is waiting. */
+  it('leaves the boxes open when nothing is waiting', () => {
+    const { container } = render(<DealerProfileForm dealer={DEALER} />);
+
+    expect(screen.getByLabelText(/one line about your dealership/i)).toBeEnabled();
+    expect(screen.getByLabelText(/services you offer/i)).toBeEnabled();
+    expect(container.querySelector('[name="tagline"]')).not.toBeNull();
+  });
+
+  /**
+   * Cancel is the only way out, and it is a button rather than something to be
+   * inferred from what the dealer types.
+   */
+  it('withdraws the change when the dealer cancels it', async () => {
+    const user = userEvent.setup();
     render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
 
-    expect(screen.getByText(/previous wording back and save/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /cancel this change/i }));
+
+    expect(withdrawProfileChangeAction).toHaveBeenCalledTimes(1);
+  });
+
+  /** It says what cancelling does, because the boxes unlocking is the point. */
+  it('says what cancelling will do', () => {
+    render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
+
+    expect(screen.getByText(/previous wording comes back/i)).toBeInTheDocument();
+  });
+
+  it('surfaces a failed cancel rather than looking like it worked', async () => {
+    const user = userEvent.setup();
+    withdrawProfileChangeAction.mockResolvedValueOnce('We could not cancel that change.');
+    render(<DealerProfileForm dealer={{ ...DEALER, profileChange: PENDING }} />);
+
+    await user.click(screen.getByRole('button', { name: /cancel this change/i }));
+
+    expect(await screen.findByText('We could not cancel that change.')).toBeInTheDocument();
   });
 
   /**
@@ -409,6 +464,20 @@ describe('an edit waiting for review', () => {
    * above it and the point is to write something different — restoring the
    * refused text invites the dealer to press Save again unchanged.
    */
+  it('does not lock the boxes after a refusal — the point is to rewrite it', () => {
+    render(
+      <DealerProfileForm
+        dealer={{
+          ...DEALER,
+          profileChange: { ...PENDING, status: 'REJECTED', decisionReason: 'No numbers, please.' },
+        }}
+      />,
+    );
+
+    expect(screen.getByLabelText(/one line about your dealership/i)).toBeEnabled();
+    expect(screen.queryByRole('button', { name: /cancel this change/i })).toBeNull();
+  });
+
   it('does not refill the box with the words that were refused', () => {
     render(
       <DealerProfileForm

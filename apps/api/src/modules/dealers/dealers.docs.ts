@@ -77,10 +77,15 @@ export const dealersDocs: ModuleDocs = {
         'with `profileChange` carrying the proposal, its status, and on a refusal the ' +
         'moderator\u2019s reason. A client that renders the response body will show the ' +
         'right thing; one that assumes `200` means published will not.\n\n' +
-        'A second edit before a decision **amends** the waiting request rather than queueing ' +
-        'another, and a value equal to the live one is dropped from it \u2014 so typing the ' +
-        'old line back is how a dealer withdraws a request. When nothing is left, the ' +
-        'request is deleted and `profileChange` is `null`.\n\n' +
+        '**One request at a time.** A second edit to either sentence while one is waiting is a ' +
+        '`409` (`PROFILE_EDIT_PENDING`), not a merge \u2014 the profile screen shows the two ' +
+        'boxes `disabled` with the proposed text in that state, so this is the server-side half ' +
+        'of a rule the form already states. A request that quietly absorbed later edits could ' +
+        'change *after* a moderator started reading it.\n\n' +
+        'A save that proposes nothing new queues nothing: the form re-sends all three fields ' +
+        'every time, so a dealer correcting only their established year would otherwise put a ' +
+        'request in front of a moderator asking them to approve the status quo. That is not a ' +
+        'withdrawal \u2014 `DELETE /v1/dealer/profile-change` is.\n\n' +
         'A dealership that is **not ACTIVE** writes straight through: nothing about it is ' +
         'public (rule 6), so there is no page for a number to appear on, and the whole ' +
         'application is read at approval anyway.',
@@ -107,6 +112,37 @@ export const dealersDocs: ModuleDocs = {
         },
       ],
       errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'delete',
+      path: '/v1/dealer/profile-change',
+      operationId: 'withdrawDealerProfileChange',
+      tag: 'Dealer account',
+      summary: 'Take back a change that is waiting for review',
+      description:
+        'Deletes the dealership\u2019s waiting profile edit (**R34**). What buyers see never ' +
+        'moved, so nothing is restored \u2014 the proposal simply stops existing, the two boxes ' +
+        'on the profile screen unlock, and the row leaves the moderator\u2019s queue.\n\n' +
+        'No id in the path and no body: there is at most one request waiting per dealership, so ' +
+        'naming it would be asking the client for an id it could only have got from the same ' +
+        'response that told it the button should exist.\n\n' +
+        'The row is **deleted**, not marked withdrawn. A record that a dealership briefly ' +
+        'considered a different tagline is not history anybody reads, and a withdrawn row would ' +
+        'have to be filtered out of every read of this table for the sake of nothing.\n\n' +
+        '**404 when nothing is waiting.** The button only renders when there is one, so arriving ' +
+        'here empty-handed is a double-click or a stale page \u2014 both of which want the ' +
+        'screen re-read.\n\n' +
+        'OWNER only (`dealer:update`): withdrawing is the other half of submitting.',
+      audience: 'dealer',
+      permission: 'dealer:update',
+      responses: [
+        {
+          status: 200,
+          description: 'The dealership, with `profileChange` now `null`.',
+          schema: 'DealerProfile',
+        },
+      ],
+      errors: [401, 403, 404],
     },
     {
       method: 'patch',

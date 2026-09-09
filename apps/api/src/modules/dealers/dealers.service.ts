@@ -418,19 +418,35 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
      * dealership in the odd position of waiting for permission to finish an
      * application nobody has started reviewing.
      *
-     * ## The request is amended, not stacked
+     * ## One request at a time, and the boxes are shut while it waits
      *
-     * A dealer who edits twice before a decision has *one* proposal, not two.
-     * Two rows would make "what is this dealership asking for" a question with
-     * two answers, and a moderator would have to approve them in the right
-     * order to arrive at what the dealer meant. So a second save merges into
-     * the first, field by field.
+     * A dealership has at most one proposal outstanding, and a second edit to
+     * either sentence while one is waiting is a **409** rather than a merge.
+     * The profile screen does not offer the boxes at all in that state — they
+     * are `disabled` and show the proposed text — so this refusal is the
+     * server-side half of a rule the form already states, in the same shape
+     * R27 used for the locked fields: the form is why a dealer never sends
+     * one, and this is why it would not be written if they did.
      *
-     * And a value equal to what is already live is not a change: it is removed
-     * from the request, which is how a dealer withdraws one — they type the old
-     * line back. When nothing is left, the row goes, and the screen stops
-     * saying anything is waiting. That is why there is no WITHDRAWN status and
-     * no cancel button to build.
+     * Merging them instead was the first design and it was worse in a way that
+     * only shows up from the moderator's side. A request that quietly absorbs
+     * later edits is a request whose text can change *after* somebody has
+     * started reading it — the queue row a moderator opened and the row they
+     * approve are then not the same words, and nothing tells them so.
+     *
+     * ## Withdrawing is a button, not a coincidence
+     *
+     * `withdrawProfileChange` below deletes the waiting request. There is no
+     * inference from what the dealer typed: an edit that happens to restore the
+     * live value is still an edit, and reading it as a cancellation makes the
+     * cancel path something a dealer has to discover rather than press.
+     *
+     * What survives from that idea is much narrower and is not a withdrawal —
+     * `changed()` below asks whether a save *proposes anything at all*. The
+     * form submits all three fields on every save, so a dealer correcting only
+     * their established year re-sends the tagline and the service list
+     * unchanged, and without that check every such save would put a request in
+     * front of a moderator asking them to approve the status quo.
      */
     async selfUpdate(
       dealerId: string,
@@ -448,50 +464,47 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         await this.update(dealerId, { establishedYear: input.establishedYear });
       }
 
-      const pending = dealer.profileEdits.find((row) => row.status === 'PENDING') ?? null;
+      /*
+       * What this save actually proposes.
+       *
+       * `undefined` is a field the save did not carry; a value equal to what is
+       * already live proposes nothing. The second half is not a withdrawal —
+       * see the note above — it is the answer to "is there anything here to
+       * review", asked because the form re-sends all three fields every time.
+       */
+      const tagline =
+        input.tagline === undefined || input.tagline === dealer.tagline ? null : input.tagline;
+
+      const typedServices =
+        input.specialities === undefined ? null : distinctServices(input.specialities);
+      const specialities =
+        typedServices === null || sameServices(typedServices, dealer.specialities)
+          ? []
+          : typedServices;
+
+      if (tagline === null && specialities.length === 0) {
+        return toProfile(await requireDealer(dealerId));
+      }
 
       /*
-       * What the dealership would read like if this request were approved:
-       * the values already waiting, overwritten by the ones just sent.
-       *
-       * `undefined` means the save did not carry the field, so it keeps
-       * whatever the pending request held. That is the merge, and it is the
-       * whole of it.
+       * One at a time. The boxes are shut on the profile screen while a request
+       * waits, so reaching here means a client went around the form — and a
+       * 409 rather than a 403 because the seat is allowed to write and it is
+       * the *state* that refuses, which is the same reading `amendDraft` gives
+       * `PROFILE_LOCKED`.
        */
-      const proposedTagline = input.tagline ?? pending?.tagline ?? null;
-      const proposedServices =
-        input.specialities === undefined
-          ? (pending?.specialities ?? [])
-          : distinctServices(input.specialities);
-
-      // A value identical to the live one is not a change — it is a dealer
-      // putting back what they had. Dropped here rather than refused, so that
-      // "type the old line back" is how a request is withdrawn.
-      const tagline = proposedTagline === dealer.tagline ? null : proposedTagline;
-      const specialities = sameServices(proposedServices, dealer.specialities)
-        ? []
-        : proposedServices;
-
-      const asksForNothing = tagline === null && specialities.length === 0;
+      const pending = dealer.profileEdits.find((row) => row.status === 'PENDING');
+      if (pending) {
+        throw new ConflictError(
+          'PROFILE_EDIT_PENDING',
+          'You already have a change waiting for review. Cancel it first if you want to write something different.',
+        );
+      }
 
       await withTransaction(prisma, async (tx) => {
-        if (asksForNothing) {
-          // Nothing left to decide. Deleting rather than marking it withdrawn:
-          // a row recording that a dealer briefly considered a different
-          // tagline is not history anybody reads, and leaving it PENDING would
-          // sit in a moderator's queue asking them to approve the status quo.
-          if (pending) await tx.dealerProfileChange.delete({ where: { id: pending.id } });
-          return;
-        }
-
-        const saved = pending
-          ? await tx.dealerProfileChange.update({
-              where: { id: pending.id },
-              data: { tagline, specialities, submittedBy: actorUserId, createdAt: new Date() },
-            })
-          : await tx.dealerProfileChange.create({
-              data: { dealerId, tagline, specialities, submittedBy: actorUserId },
-            });
+        const saved = await tx.dealerProfileChange.create({
+          data: { dealerId, tagline, specialities, submittedBy: actorUserId },
+        });
 
         /*
          * The dealer's own submission is audited as well as the decision on it.
@@ -499,9 +512,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
          * Without this the audit trail can say a moderator approved a tagline
          * and cannot say who wrote it — and "who typed this" is the first
          * question asked about a phone number that reached a public page.
-         * `createdAt` is reset above for the same reason the row is amended
-         * rather than replaced: the queue is ordered oldest-first, and a
-         * dealership that keeps editing should not hold the front of it.
          */
         await audit.record(tx, {
           actorType: 'DEALER',
@@ -512,6 +522,56 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           entityId: saved.id,
           before: { tagline: dealer.tagline, specialities: dealer.specialities },
           after: { tagline, specialities },
+        });
+      });
+
+      return toProfile(await requireDealer(dealerId));
+    },
+
+    /**
+     * The dealer taking their own proposal back (**R34**).
+     *
+     * A button rather than an inference. The first design read "the dealer
+     * retyped the live value" as a cancellation, which made the way out
+     * something to be discovered rather than pressed — and was wrong on its own
+     * terms besides, since an edit that happens to restore the live text is
+     * still an edit.
+     *
+     * The row is **deleted**, not marked withdrawn. A record that a dealership
+     * briefly considered a different tagline is not history anybody reads, and
+     * a WITHDRAWN row would sit in the `[dealerId, createdAt]` read this
+     * service makes on every profile render, having to be filtered out
+     * everywhere for the sake of nothing.
+     *
+     * Nothing waiting is a 404. The button only renders when there is one, so
+     * reaching this with nothing to cancel is a double-click or a stale page —
+     * both of which want the screen re-read, which is what a 404 gets them.
+     */
+    async withdrawProfileChange(
+      dealerId: string,
+      actorUserId: string | null,
+    ): Promise<DealerProfile> {
+      const dealer = await requireDealer(dealerId);
+      const pending = dealer.profileEdits.find((row) => row.status === 'PENDING');
+      if (!pending) {
+        throw new NotFoundError('You have no change waiting for review.');
+      }
+
+      await withTransaction(prisma, async (tx) => {
+        await tx.dealerProfileChange.delete({ where: { id: pending.id } });
+
+        // Audited even though the row is gone: `entityId` outlives it, and
+        // "what happened to the edit I was reviewing" is a question a moderator
+        // will ask about a queue row that vanished under them.
+        await audit.record(tx, {
+          actorType: 'DEALER',
+          actorId: actorUserId,
+          dealerId,
+          action: 'dealer.profile_change.withdrawn',
+          entityType: 'DealerProfileChange',
+          entityId: pending.id,
+          before: { tagline: pending.tagline, specialities: pending.specialities },
+          after: null,
         });
       });
 

@@ -601,28 +601,36 @@ so there is nothing to restore. The tempting alternative — publish now, roll b
 if refused — has a window in which the number is on the page, and closing that
 window is the whole point.
 
-**Two saves are one request.** A dealer editing twice before a decision amends
-the request they already have. Two rows would make "what is this dealership
-asking for" a question with two answers, and a moderator would have to approve
-them in the right order. The guarantee under that is a **partial unique index**,
+**One request at a time, refused rather than merged.** A second edit while one
+waits is a 409. Two rows would make "what is this dealership asking for" a
+question with two answers — and merging them, which was the first design, is
+worse: a request that absorbs later edits can change _after_ a moderator has
+started reading it. The guarantee under that is a **partial unique index**,
 `UNIQUE (dealerId) WHERE status = 'PENDING'` — Prisma's schema language cannot
 express one, so it lives in the migration and the model carries a note pointing
 at it. If you add another "at most one live row per parent" rule, that is the
 pattern.
 
-**Retyping the old value is the withdrawal.** A value equal to the live one is
-dropped from the request, and a request holding nothing is deleted. That is why
-there is no `WITHDRAWN` status and no cancel button — and why the comparison is
-order-insensitive: the services box is one comma-separated line, so a dealer
-editing only their tagline re-submits the whole list every time, and a naive
-comparison would queue a request on every save asking a moderator to agree that
-nothing had changed.
+**Withdrawing is a button, and the boxes are shut until it is pressed.** While a
+change waits, the tagline and services inputs are `disabled` and hold the
+proposed text — `DELETE /v1/dealer/profile-change` is the only way back to an
+editable form. An earlier version inferred the cancellation from the dealer
+retyping the live value, which was wrong twice over: it made the exit something
+to discover rather than press, and an edit that happens to restore the live text
+is still an edit.
+
+What survives from that idea is narrower and is not a withdrawal: the service
+asks whether a save _proposes anything at all_. The form re-sends all three
+fields every time, so a dealer correcting only their established year would
+otherwise queue a request asking a moderator to approve the status quo — and the
+comparison is order-insensitive because the services box is one comma-separated
+line.
 
 **The screen has to say so, or the product looks broken.** The dealer presses
 Save, the box shows what they typed, and their public page does not change.
 Without a panel explaining that, the honest state is invisible and the dealer's
-conclusion is that the save failed. The same reasoning is why the boxes keep the
-dealer's own words rather than resetting to the live value: a form that reverted
+conclusion is that the save failed. The same reasoning is why the locked boxes
+hold the dealer's own words rather than the live ones: a form that reverted
 after every save looks exactly like a save that failed.
 
 **And the reviewer needs the old value on screen.** The question is "is this

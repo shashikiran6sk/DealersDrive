@@ -46,6 +46,8 @@ describe('the surface', () => {
         // R27 — the wider write, guarded to DRAFT. `PATCH /` takes three
         // fields now, so the onboarding wizard needed a door of its own.
         'PATCH /onboarding',
+        // R34 — the dealer taking back a change that is waiting for review.
+        'DELETE /profile-change',
         'GET /completeness',
         'POST /submit',
         'GET /documents',

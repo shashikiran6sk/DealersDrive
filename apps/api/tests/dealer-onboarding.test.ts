@@ -1087,51 +1087,106 @@ describe('a dealer editing their own public words', () => {
   });
 
   /**
-   * Two saves before a decision are one request, not two.
+   * One request at a time. A second edit while one waits is refused rather than
+   * merged.
    *
-   * Two rows would make "what is this dealership asking for" a question with
-   * two answers, and a moderator would have to approve them in the right order
-   * to arrive at what the dealer meant. The partial unique index is what makes
-   * this true under a race; the merge is what makes it true in the ordinary
-   * case.
+   * The profile screen shuts the two boxes in that state, so this is the
+   * server-side half of a rule the form already states — reaching it means a
+   * client went around the form. Merging instead was the first design and it
+   * was worse from the moderator's side: a request that absorbs later edits can
+   * change *after* somebody has started reading it.
    */
-  it('amends the waiting request rather than queueing a second', async () => {
+  it('refuses a second edit while one is already waiting', async () => {
     const { agent, dealerId } = await trading();
 
     await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
-    await agent
+    const refused = await agent
       .patch('/v1/dealer')
       .send({ specialities: ['SUVs', 'Exchange'] })
-      .expect(200);
+      .expect(409);
 
-    const rows = await h.prisma.dealerProfileChange.findMany({
-      where: { dealerId, status: 'PENDING' },
-    });
+    expect(refused.body.code).toBe('PROFILE_EDIT_PENDING');
+    // And the first request is untouched by the attempt.
+    const rows = await h.prisma.dealerProfileChange.findMany({ where: { dealerId } });
     expect(rows).toHaveLength(1);
-    // The second save did not drop the first: both fields are on the one row.
     expect(rows[0]?.tagline).toBe(NEW_LINE);
-    expect(rows[0]?.specialities).toEqual(['SUVs', 'Exchange']);
+    expect(rows[0]?.specialities).toEqual([]);
   });
 
   /**
-   * Typing the old line back is how a dealer withdraws a request.
+   * The year is still writable while a sentence waits.
    *
-   * That is why there is no WITHDRAWN status and no cancel button: a value
-   * equal to the live one is not a change, so it is removed from the request,
-   * and a request with nothing left in it is deleted.
+   * It never needed review, and blocking it would turn one field's queue into a
+   * lock on a field that has nothing to do with it.
    */
-  it('withdraws the request when the dealer types the old value back', async () => {
+  it('still writes the established year while a change is waiting', async () => {
     const { agent, dealerId } = await trading();
-    const live = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+    await agent.patch('/v1/dealer').send({ establishedYear: 2004 }).expect(200);
+
+    const row = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+    expect(row?.establishedYear).toBe(2004);
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(1);
+  });
+
+  /**
+   * Cancelling is a button, and it is the only way out.
+   *
+   * Retyping the live value used to withdraw the request, which made the way
+   * out something a dealer had to discover rather than press — and was wrong on
+   * its own terms besides, since an edit that happens to restore the live text
+   * is still an edit.
+   */
+  it('withdraws the request when the dealer cancels it', async () => {
+    const { agent, dealerId } = await trading();
 
     await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
     expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(1);
 
+    const after = await agent.delete('/v1/dealer/profile-change').expect(200);
+
+    // Deleted, not marked withdrawn — see the note on `withdrawProfileChange`.
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(0);
+    expect(after.body.profileChange).toBeNull();
+    // And the boxes are free again.
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+    expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(1);
+  });
+
+  /** Withdrawing is audited, even though the row it names is gone. */
+  it('audits a withdrawal', async () => {
+    const { agent, dealerId } = await trading();
+
+    await agent.patch('/v1/dealer').send({ tagline: NEW_LINE }).expect(200);
+    await agent.delete('/v1/dealer/profile-change').expect(200);
+
+    const trail = await h.prisma.auditLog.findMany({ where: { dealerId } });
+    expect(trail.map((row) => row.action)).toContain('dealer.profile_change.withdrawn');
+  });
+
+  /**
+   * Nothing waiting is a 404. The button only renders when there is one, so
+   * arriving here empty-handed is a double-click or a stale page — and both
+   * want the screen re-read.
+   */
+  it('answers 404 when there is nothing to cancel', async () => {
+    const { agent } = await trading();
+
+    await agent.delete('/v1/dealer/profile-change').expect(404);
+  });
+
+  /**
+   * Retyping the live value no longer withdraws anything — it simply proposes
+   * nothing, which is a different statement and the only one that survives.
+   */
+  it('queues nothing when the save proposes what is already live', async () => {
+    const { agent, dealerId } = await trading();
+    const live = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+
     await agent.patch('/v1/dealer').send({ tagline: live?.tagline }).expect(200);
 
     expect(await h.prisma.dealerProfileChange.count({ where: { dealerId } })).toBe(0);
-    const profile = await agent.get('/v1/dealer').expect(200);
-    expect(profile.body.profileChange).toBeNull();
   });
 
   /**

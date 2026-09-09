@@ -98,6 +98,46 @@ export async function saveDealerProfileAction(
 }
 
 /**
+ * C2c — the dealer taking their own proposal back (**R34**).
+ *
+ * `DELETE /v1/dealer/profile-change`, and the same two revalidations the save
+ * does. The public pages did not change — the proposal was never published —
+ * but the dealer's own console did, and `revalidatePath('/dealer', 'layout')`
+ * is what re-renders the profile screen with the boxes unlocked.
+ *
+ * `revalidatePublicDealer` is kept for the same reason the admin refusal keeps
+ * it: it costs one re-fetch of a page that comes back identical, and leaving it
+ * out would make this the one write path in the file that has to be reasoned
+ * about separately.
+ *
+ * A bare `Promise<string | null>` rather than a form state, because there is no
+ * form: the panel renders a button, and the only thing it can usefully say back
+ * is what went wrong.
+ */
+export async function withdrawProfileChangeAction(): Promise<string | null> {
+  let saved: DealerProfile;
+  try {
+    saved = await apiSend<DealerProfile>('DELETE', '/v1/dealer/profile-change', undefined);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      // A 404 is the ordinary race — a double-click, or a decision that landed
+      // while the page was open. The screen is stale either way, and re-reading
+      // it is the fix, so it is not worth an error the dealer has to dismiss.
+      if (error.status === 404) {
+        revalidatePath('/dealer', 'layout');
+        return null;
+      }
+      return error.userMessage(error.problem.title);
+    }
+    return 'We could not cancel that change.';
+  }
+
+  revalidatePath('/dealer', 'layout');
+  revalidatePublicDealer(saved.slug);
+  return null;
+}
+
+/**
  * Zod's dotted paths, folded onto the input names the form uses.
  *
  * `contact.email` is the input named `contactEmail`, and `address.mapsUrl` the

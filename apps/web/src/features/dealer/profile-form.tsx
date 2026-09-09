@@ -1,14 +1,18 @@
 'use client';
 
 import type { DealerProfile, DealerProfileChange, MapKind } from '@dealers-drive/contracts';
-import { useActionState, type ReactNode } from 'react';
+import { useActionState, useState, useTransition, type ReactNode } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Banner, Tag } from '@/components/ui/primitives';
-import { saveDealerProfileAction, type ProfileFormState } from '@/features/dealer/profile-actions';
+import {
+  saveDealerProfileAction,
+  withdrawProfileChangeAction,
+  type ProfileFormState,
+} from '@/features/dealer/profile-actions';
 
 const EMPTY: ProfileFormState = { status: 'idle', fieldErrors: {} };
 
@@ -65,17 +69,24 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
   const errors = state.fieldErrors;
 
   /*
-   * The boxes show what the dealer last *typed*, not what is public (**R34**).
+   * While a change waits, the two boxes are **shut** and show the proposed text
+   * (**R34**).
    *
-   * A pending edit means the two differ, and this is the one place the
-   * dealer's own words have to win: a form that reset itself to the live value
-   * after every save would look exactly like a save that failed, and a dealer
-   * correcting a refused line would have to type the whole thing again to
-   * change one word of it.
+   * The dealer has already said what they want; the question in front of them
+   * is no longer "what should this say" but "do I stand by this". Leaving the
+   * boxes live in that state offers an edit the API refuses with a 409, which
+   * is the worst of the three options — worse than locking them, and worse than
+   * silently merging, because the dealer types a sentence and is then told they
+   * could not have.
    *
-   * Only for a PENDING change. A REJECTED one is not put back in the box — the
-   * moderator's reason is above and the point is to write something different.
-   * `ReviewPanel` is what makes sure the live value is still on the screen.
+   * So the boxes hold the proposal, read-only, and the way to change it is the
+   * `Cancel` in `ReviewPanel`: withdraw, and they unlock with the live values
+   * back in them. Two states, both of them honest.
+   *
+   * A REJECTED change locks nothing and is *not* put back in the box. The
+   * moderator's reason is above it and the point is to write something
+   * different — restoring the refused text invites the dealer to press Save
+   * again unchanged.
    */
   const waiting = dealer.profileChange?.status === 'PENDING' ? dealer.profileChange : null;
   const taglineValue = waiting?.tagline ?? dealer.tagline ?? '';
@@ -135,18 +146,31 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         <Field
           id="tagline"
           label="One line about your dealership"
-          hint="shown under your name on your public page — checked before it appears"
+          hint={
+            waiting
+              ? 'waiting for review — cancel above to change it'
+              : 'shown under your name on your public page — checked before it appears'
+          }
           error={errors.tagline}
         >
+          {/*
+            `disabled` **and** no `name` while a change waits, which is the
+            R27 shape and load-bearing for the same reason: a disabled control
+            is not submitted, and one with no name has nothing to be submitted
+            under. So a locked box cannot reach `saveDealerProfileAction` even
+            by accident, and the action does not have to filter it out — a save
+            in this state carries the established year and nothing else.
+          */}
           <Input
             id="tagline"
-            name="tagline"
+            {...(waiting ? {} : { name: 'tagline' })}
             minLength={10}
             maxLength={200}
             defaultValue={taglineValue}
             placeholder="Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house."
-            required
-            aria-required="true"
+            required={!waiting}
+            aria-required={waiting ? undefined : 'true'}
+            disabled={Boolean(waiting)}
             {...invalidProps('tagline', errors.tagline)}
           />
         </Field>
@@ -160,16 +184,21 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         <Field
           id="specialities"
           label="Services you offer"
-          hint="comma separated, up to 12 — checked before they appear"
+          hint={
+            waiting
+              ? 'waiting for review — cancel above to change them'
+              : 'comma separated, up to 12 — checked before they appear'
+          }
           error={errors.specialities}
         >
           <Input
             id="specialities"
-            name="specialities"
+            {...(waiting ? {} : { name: 'specialities' })}
             defaultValue={servicesValue}
             placeholder="In-house workshop, RC transfer assistance, Bank loan tie-ups"
-            required
-            aria-required="true"
+            required={!waiting}
+            aria-required={waiting ? undefined : 'true'}
+            disabled={Boolean(waiting)}
             {...invalidProps('specialities', errors.specialities)}
           />
         </Field>
@@ -290,11 +319,25 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
  * equal-looking paragraphs, only one of which is actionable, is how the
  * actionable one gets skimmed past.
  *
+ * ## Cancel is the only control here, and it is the only way out
+ *
+ * The two boxes below are shut while this panel is showing, so this button is
+ * how a dealer changes their mind: withdraw, and the boxes unlock with the live
+ * values back in them.
+ *
+ * It is a plain button with no confirm step. Nothing is destroyed by it — what
+ * buyers see never moved, and the dealer keeps every word they wrote in the box
+ * in front of them until they replace it. A confirm dialog on an action that
+ * loses nothing is how people learn to click through the ones that do.
+ *
  * Nothing renders for an APPROVED change — the API sends `null` for one, since
  * its values are on the profile by then and a banner announcing that a line the
  * dealer can see is the line they asked for is only ever in the way.
  */
 function ReviewPanel({ change }: { change: DealerProfileChange | null }) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
   if (!change) return null;
 
   if (change.status === 'REJECTED') {
@@ -335,15 +378,27 @@ function ReviewPanel({ change }: { change: DealerProfileChange | null }) {
           </div>
         ) : null}
       </dl>
-      {/*
-        The way out, stated plainly, because there is no cancel button to point
-        at: a request holding nothing is deleted, so putting the old words back
-        *is* withdrawing it. A dealer who wants their old line returned would
-        otherwise wait for a moderator to refuse an edit nobody wanted.
-      */}
-      <p className="mt-[8px] text-[12px] ink-muted">
-        Changed your mind? Put your previous wording back and save — that cancels the check.
-      </p>
+      {error ? <p className="mt-[8px] text-[12px] font-medium">{error}</p> : null}
+
+      <div className="mt-[10px] flex items-center gap-3">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          loading={pending}
+          onClick={() => {
+            setError(null);
+            startTransition(async () => {
+              setError(await withdrawProfileChangeAction());
+            });
+          }}
+        >
+          Cancel this change
+        </Button>
+        <span className="text-[12px]">
+          Your previous wording comes back and the boxes below unlock.
+        </span>
+      </div>
     </Banner>
   );
 }

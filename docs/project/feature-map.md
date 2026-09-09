@@ -3778,17 +3778,21 @@ out, rate-limited twice over and logged as a lead. **Rule 7 had a hole in it.**
   `ProfileChangeDecisionResponse`, `AdminProfileChangesResponse`;
   `AdminDealerDetail.profileChange`, `AdminDealerRow.hasPendingProfileEdit`,
   `AdminDealerQuery.pendingEdits`
-- **Backend** `dealers.service.selfUpdate` — **new**, and the only behaviour
-  change to a write path; `dealers.repository.dealerInclude` takes the newest
-  edit; `admin.service.{profileChanges,approveProfileChange,rejectProfileChange}`;
+- **Backend** `dealers.service.{selfUpdate,withdrawProfileChange}` — **new**,
+  and the only behaviour change to a write path;
+  `dealers.repository.dealerInclude` takes the newest edit;
+  `admin.service.{profileChanges,approveProfileChange,rejectProfileChange}`;
   `DomainEventType` gains `DealerProfileChangeDecided`; `DealersDeps` takes
   `AuditService`
-- **API** `GET /v1/admin/profile-changes`,
+- **API** `DELETE /v1/dealer/profile-change`;
+  `GET /v1/admin/profile-changes`,
   `POST /v1/admin/profile-changes/:id/{approve,reject}`;
   `GET /v1/admin/dealers?pendingEdits=true`; `PATCH /v1/dealer` changes meaning
 - **Frontend** `features/admin/profile-change-review.tsx` — **new** (C062d);
-  `features/dealer/profile-form.tsx` — `ReviewPanel`, and the boxes default to
-  the proposed values; `features/admin/actions.ts` — two actions;
+  `features/dealer/profile-form.tsx` — `ReviewPanel`, `Cancel this change`, and
+  the two boxes locked on the proposed values while one waits;
+  `features/dealer/profile-actions.ts` — `withdrawProfileChangeAction`;
+  `features/admin/actions.ts` — two actions;
   `(admin)/admin/dealers/page.tsx` — the badge and the toggle;
   `(admin)/admin/dealers/[id]/page.tsx` — the card
 - **Sandbox** `admin/profile-change-review.stories.tsx` — **new**, eight
@@ -3820,22 +3824,36 @@ a number to appear on, and the whole application is read by a moderator at
 approval anyway. Queueing an edit to an invisible field would leave a dealership
 waiting for permission to finish an application nobody had started reviewing.
 
-### The request is amended, and withdrawn by retyping
+### One request at a time, and the boxes are shut while it waits
 
-A dealer who edits twice before a decision has **one** proposal. Two rows would
-make "what is this dealership asking for" a question with two answers, and a
-moderator would have to approve them in the right order to arrive at what the
-dealer meant. So a second save merges field by field, and the partial unique
-index — `UNIQUE (dealerId) WHERE status = 'PENDING'` — is what makes that hold
-under a race from two tabs.
+A dealership has at most one proposal outstanding. A second edit to either
+sentence while one waits is a **409** — and the profile screen does not offer
+the boxes at all in that state: they are `disabled`, holding the proposed text,
+which makes the refusal the server-side half of a rule the form already states.
+That is the R27 shape, and the `UNIQUE (dealerId) WHERE status = 'PENDING'`
+partial index is the third defence, for two tabs racing.
 
-A value equal to the live one is not a change: it is dropped from the request,
-and a request holding nothing is deleted. **That is the withdrawal**, and it is
-why there is no `WITHDRAWN` status and no cancel button. `sameServices` makes it
-order-insensitive, which matters more than it looks: the services box is one
-comma-separated line, so a dealer editing only their tagline re-submits the whole
-list every time, and without it every save would queue a request asking a
-moderator to agree that nothing had happened.
+**Merging was the first design and it was worse.** A request that quietly
+absorbs later edits is one whose text can change _after_ a moderator has started
+reading it: the queue row they opened and the row they approve are then not the
+same words, and nothing tells them so.
+
+### Withdrawing is a button
+
+`DELETE /v1/dealer/profile-change` deletes the waiting request, and the boxes
+unlock on the live values. There is no inference from what the dealer typed.
+
+An earlier version read "the dealer retyped the live value" as a cancellation.
+That was wrong twice over: it made the way out something to be discovered rather
+than pressed, and an edit that happens to restore the live text is still an edit
+rather than a statement of intent to cancel.
+
+What survives from it is much narrower and is not a withdrawal — the service
+asks whether a save _proposes anything at all_, because the form re-sends all
+three fields every time and a dealer correcting only their established year
+would otherwise put a request in front of a moderator asking them to approve the
+status quo. `sameServices` makes that comparison order-insensitive for the same
+reason: the services box is one comma-separated line.
 
 ### A refusal writes nothing, which is what makes it safe
 

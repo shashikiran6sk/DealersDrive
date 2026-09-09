@@ -644,10 +644,14 @@ services (sliced at 3), 0/1/n cars, long brand name. Deps: `ImageSlot`,
 > they go to a moderator rather than to the dealership row. Three components
 > changed shape for it:
 >
-> · **`DealerProfileForm` (C063)** gained `ReviewPanel` — what is waiting, what
-> is still live, and on a refusal the moderator's sentence. Its boxes now
-> default to the _proposed_ values, because a form that reset itself to the
-> live value after every save looks exactly like a save that failed.
+> · **`DealerProfileForm` (C044)** gained `ReviewPanel` — what is waiting, what
+> is still live, on a refusal the moderator's sentence, and **`Cancel this
+change`**. While a change waits the tagline and services boxes are `disabled`
+> and hold the _proposed_ text, and carry no `name` — the R27 shape, so a locked
+> box cannot reach the action even by accident. Cancel is the only way out:
+> withdraw, and they unlock on the live values. A _refused_ change locks nothing
+> and is not put back in the box, because the point is to write something
+> different.
 > · **`ProfileChangeReview` (C062d)** renders old beside new. A field the edit
 > does not touch reads `unchanged` rather than blank — `[]` means "not part of
 > this edit", and a blank row would read as _clearing the services_.
