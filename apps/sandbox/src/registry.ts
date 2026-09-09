@@ -423,6 +423,50 @@ export const registry: RegistryEntry[] = [
     storyId: 'admin-adminnav',
   },
   {
+    id: 'C025',
+    name: 'ConsoleNav',
+    source: 'apps/web/src/components/dealer/console-nav.tsx',
+    category: 'Console',
+    ownership: 'Shared',
+    /**
+     * Items in, pathname read (coupling C-3). So `items` is a control and the
+     * pathname is a parameter — one story per route rather than a knob.
+     */
+    purpose: 'The dealer console sidebar nav. Takes its items; reads the pathname for current.',
+    aliases: ['DealerNav', 'DealerSidebar', 'ConsoleSidebar', 'DEALER_NAV', 'console-nav'],
+    features: ['F047', 'R31'],
+    props: ['items'],
+    states: [
+      'dashboard',
+      'inventory',
+      'editing a vehicle',
+      'billing',
+      'profile',
+      'nothing current',
+      'landed routes only',
+    ],
+    reusable: true,
+    storyId: 'dealer-consolenav',
+  },
+  {
+    id: 'C026',
+    name: 'ConsoleTabBar',
+    source: 'apps/web/src/components/dealer/console-nav.tsx',
+    category: 'Console',
+    ownership: 'Shared',
+    /**
+     * `md:hidden`, so it is invisible at a desktop viewport — the 375 and 768
+     * viewport controls are the only way to see it at all.
+     */
+    purpose: 'The 56px bottom tab bar below 768. Five of the six nav items; none renders nothing.',
+    aliases: ['DealerTabBar', 'BottomNav', 'MobileNav', 'TabBar', 'console-tab-bar'],
+    features: ['F047', 'R31'],
+    props: ['items'],
+    states: ['five tabs', 'a tab current', 'nothing landed — renders null'],
+    reusable: true,
+    storyId: 'dealer-consolenav--tab-bar',
+  },
+  {
     id: 'C031',
     name: 'DirectoryFilters',
     source: 'apps/web/src/components/dealers/directory-filters.tsx',

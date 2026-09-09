@@ -287,21 +287,38 @@ one short-label and one long-label scenario.
 
 ## Layer 3 — Layout & navigation
 
-| ID   | Component            | Location                                   | Props                                | States                                      | Consumers | Ownership | Priority  |
-| ---- | -------------------- | ------------------------------------------ | ------------------------------------ | ------------------------------------------- | --------- | --------- | --------- |
-| C020 | `CustomerHeader`     | `components/layout/customer-header.tsx:37` | none — reads `usePathname()`         | 5 nav-active states × mobile/tablet         | 1 layout  | Shared    | **P0** ✅ |
-| C021 | `CustomerFooter`     | `components/layout/customer-footer.tsx:9`  | none                                 | 1                                           | 1 layout  | Shared    | P3        |
-| C022 | `AuthShell`          | `components/auth/auth-shell.tsx:19`        | `eyebrow?`, `children`, `className?` | 1                                           | 3 pages   | Shared    | P2        |
-| C023 | `AuthHeading`        | `components/auth/auth-shell.tsx:44`        | `title`, `children?`                 | subtitle present/absent                     | 3 pages   | Shared    | P3        |
-| C024 | `AdminNav`           | `components/admin/admin-nav.tsx:23`        | none — reads `usePathname()`         | 1 per admin route                           | 1 layout  | Shared    | P2        |
-| C025 | `ConsoleNav`         | `components/dealer/console-nav.tsx:38`     | `items: NavItem[]`                   | 1 per route active                          | 1 layout  | Shared    | P2        |
-| C026 | `ConsoleTabBar`      | `components/dealer/console-nav.tsx:58`     | `items: NavItem[]`                   | 1 per tab active; mobile-only (`md:hidden`) | 1 layout  | Shared    | **P1**    |
-| C039 | `GoogleSignInButton` | `components/auth/google-button.tsx:16`     | `href`, `label?`, `disabled?`        | default, disabled                           | 1 page    | Shared    | P2        |
+| ID   | Component            | Location                                   | Props                                | States                                                                | Consumers | Ownership | Priority  |
+| ---- | -------------------- | ------------------------------------------ | ------------------------------------ | --------------------------------------------------------------------- | --------- | --------- | --------- |
+| C020 | `CustomerHeader`     | `components/layout/customer-header.tsx:37` | none — reads `usePathname()`         | 5 nav-active states × mobile/tablet                                   | 1 layout  | Shared    | **P0** ✅ |
+| C021 | `CustomerFooter`     | `components/layout/customer-footer.tsx:9`  | none                                 | 1                                                                     | 1 layout  | Shared    | P3        |
+| C022 | `AuthShell`          | `components/auth/auth-shell.tsx:19`        | `eyebrow?`, `children`, `className?` | 1                                                                     | 3 pages   | Shared    | P2        |
+| C023 | `AuthHeading`        | `components/auth/auth-shell.tsx:44`        | `title`, `children?`                 | subtitle present/absent                                               | 3 pages   | Shared    | P3        |
+| C024 | `AdminNav`           | `components/admin/admin-nav.tsx:23`        | none — reads `usePathname()`         | 1 per admin route                                                     | 1 layout  | Shared    | P2        |
+| C025 | `ConsoleNav`         | `components/dealer/console-nav.tsx:70`     | `items: NavItem[]`                   | 1 per route active                                                    | 1 layout  | Shared    | P2 ✅     |
+| C026 | `ConsoleTabBar`      | `components/dealer/console-nav.tsx:90`     | `items: NavItem[]`                   | 1 per tab active; mobile-only (`md:hidden`); **empty renders `null`** | 1 layout  | Shared    | **P1** ✅ |
+| C039 | `GoogleSignInButton` | `components/auth/google-button.tsx:16`     | `href`, `label?`, `disabled?`        | default, disabled                                                     | 1 page    | Shared    | P2        |
 
 **Coupling note.** `CustomerHeader` (C020), `AdminNav` (C024), `ConsoleNav`
 (C025) and `ConsoleTabBar` (C026) all call `usePathname()`. In the sandbox each
 needs the router stubbed and the pathname settable _as a control_ — which is
 exactly what makes "which nav item is active" testable for the first time.
+
+> **R31 — two nav lists, and the shell renders the shorter one.**
+> `DEALER_NAV` is the baseline's six items and is what C025 and C026 are _for_;
+> `LANDED_NAV` is the subset whose routes exist. `(dealer)/dealer/layout.tsx`
+> renders `LANDED_NAV`, because a nav item onto a 404 is the console telling a
+> dealer a page exists and then not having it. **F048, F050, F051, F056 and
+> F065 each delete their own line** from the `NOT_YET_BUILT` set as they land;
+> when it is empty the constant goes and `DEALER_NAV` is used directly.
+>
+> C026 returns `null` on an empty list, which is what that subset currently
+> produces — every item carrying a `short` is one of the five routes still to
+> land, and an empty 56px strip pinned over the bottom of every console screen
+> is a reconstruction artefact rather than a state of the product.
+>
+> The sandbox shows both: `Full` is the component as it will be,
+> `AsTheConsoleRendersItToday` is what a dealer sees, and the gap between the
+> two stories is the reconstruction drawn.
 
 ---
 

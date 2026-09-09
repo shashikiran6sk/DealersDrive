@@ -1,12 +1,9 @@
 import type { CompletenessResponse, DealerProfile } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 
-import { redirect } from 'next/navigation';
-
 import { StatusTag } from '@/components/ui/primitives';
 import { DealerProfileForm } from '@/features/dealer/profile-form';
 import { apiGet } from '@/lib/api';
-import { currentSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,36 +23,21 @@ export const metadata: Metadata = { title: 'Dealer profile' };
  *
  * ## Who is allowed to be here
  *
- * Both reads are behind `requireDealer`, which resolves a *dealership* and not
- * merely a signed-in person — so it answers 401 to two quite different visitors,
- * and they belong in two different places:
- *
- *   · nobody signed in at all → the sign-in screen;
- *   · signed in, no dealership yet → the onboarding wizard, because there is no
- *     profile to edit until there is a dealership.
- *
- * `currentSession()` tells the two apart, which is why the guard asks it rather
- * than catching the 401 from `/v1/dealer` — that error cannot distinguish them.
- * Without this, an unauthenticated visit to `/dealer/profile` threw a 401
- * through the render and Next answered **500**.
+ * Nothing on this page asks. The guard is on `(dealer)/dealer/layout.tsx`
+ * (**R31**), which resolves a *dealership* and not merely a signed-in person,
+ * and sends the two kinds of 401 visitor to two different screens — sign-in for
+ * nobody signed in, onboarding for somebody signed in without a dealership.
+ * It was written here at F046 with a note saying F047 should lift it once one
+ * route stopped being the whole segment; it has been lifted, and the next
+ * console page inherits it rather than remembering to repeat it.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The console shell this page hangs inside is **F047**; until it lands this
- * route renders under the root layout, with no dealer navigation around it —
- * and the guard below lives here rather than in `(dealer)/dealer/layout.tsx`,
- * where `(admin)/admin/layout.tsx` keeps its equivalent. **F047 should lift it
- * there**, once one route is not the whole segment.
- *
- * The baseline's "View public page →" link is likewise held back —
+ * The baseline's "View public page →" link is still held back —
  * `/dealers/:slug` arrives with **F086**, and a link to a 404 is worse than no
  * link.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export default async function DealerProfilePage() {
-  const session = await currentSession();
-  if (!session) redirect('/dealer/login?error=session_expired');
-  if (session.next === 'ONBOARDING') redirect('/dealer/onboarding');
-
   const [dealer, completeness] = await Promise.all([
     apiGet<DealerProfile>('/v1/dealer', { revalidate: false }),
     apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false }),

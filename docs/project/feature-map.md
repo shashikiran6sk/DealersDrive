@@ -1460,8 +1460,19 @@ The authenticated dealer chrome: sidebar on desktop, bottom tab bar below 768.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F020, F045
 - **Frontend** `app/(dealer)/dealer/layout.tsx`, `components/dealer/console-nav.tsx`
-- **Components — New (Shared)** `ConsoleNav`, `ConsoleTabBar`, `DEALER_NAV` · **Reused** `Plate`, `SignOutButton`
+- **Components — New (Shared)** `ConsoleNav`, `ConsoleTabBar`, `DEALER_NAV` · **Reused** `Plate`, `Blueprint`, `StatusTag`, `SignOutButton`
+- **Tests** `tests/unit/components/dealer/console-nav.test.tsx`, `tests/unit/features/dealer/console-layout.test.tsx`
 - **Sandbox** each with every route active, driven by a **pathname control**; `ConsoleTabBar` at the 375 and 768 viewports — it is `md:hidden` and cannot be seen otherwise
+- ⚠️ **Landed early, out of tier order, as R31** — see `## R31` in REVISIONS.
+  The shell was asked for while `/dealer/profile` was still the segment's only
+  route, so it renders `LANDED_NAV` rather than `DEALER_NAV` and holds back the
+  two controls that point at routes which do not exist. **F048, F050, F051,
+  F056 and F065 each delete their own line** from `NOT_YET_BUILT`; F051 restores
+  the credits panel's `Buy credits` button and F056 the top bar's `Add vehicle`.
+- **The layout is the console's guard, so F046's guard came here.** F046 wrote
+  it on `(dealer)/dealer/profile/page.tsx` with a note saying this feature
+  should lift it; it is on the layout now, and a console page added later
+  inherits it rather than remembering to repeat it.
 
 ### F048 — Dealer dashboard
 
@@ -3548,3 +3559,70 @@ untouched here because R23 does not change which URLs are reachable. It becomes
 load-bearing the moment anything _lands_ a visitor on a district URL, so it is
 the first thing the geolocation revision has to fix: `SeoRoute` needs a
 `district` arm.
+
+## R31 — The dealer console gets its shell, early
+
+**Lands F047** · revises F046
+
+Not a change to the product: **F047, pulled forward out of tier order**, the way
+F049 was pulled forward for F044. It is written up here rather than only in the
+feature entry because what it delivers is not quite what F047 describes, and the
+difference has to be somewhere a reviewer will find it.
+
+- **Frontend** `app/(dealer)/dealer/layout.tsx` — **new**;
+  `components/dealer/console-nav.tsx` — **new**;
+  `app/(dealer)/dealer/profile/page.tsx` — its guard removed, having moved up
+- **Components — New (Shared)** `ConsoleNav` (C025), `ConsoleTabBar` (C026),
+  `DEALER_NAV`, `LANDED_NAV` · **Reused** `Plate`, `Blueprint`, `StatusTag`,
+  `SignOutButton`
+- **Sandbox** `dealer/console-nav.stories.tsx` — **new**, one story per route
+  plus the two the reconstruction adds; registry C025 and C026
+- **Tests** `tests/unit/components/dealer/console-nav.test.tsx` — **new**;
+  `tests/unit/features/dealer/console-layout.test.tsx` — **new**, carrying the
+  three guard cases that were on `profile-page.test.tsx`
+- **No API change, no contract change, no new dependency.**
+
+### The nav could not be ported as-is, and a filter is not the same as a trim
+
+`DEALER_NAV`'s six items point at six routes and one of them exists. Rendering
+the list whole would give a dealer five links that 404 — the console telling
+them a page exists and then not having it, which is worse than a console that
+does not mention it yet.
+
+So the list is ported verbatim and a second constant says which of it is
+reachable:
+
+```ts
+const NOT_YET_BUILT = new Set([...five hrefs...]);
+export const LANDED_NAV = DEALER_NAV.filter((i) => !NOT_YET_BUILT.has(i.href));
+```
+
+A `Set` rather than a shortened `DEALER_NAV`, deliberately. The six items are
+what F047 delivers and what the sandbox renders in full; a reviewer diffing this
+file against the baseline should find the list identical and the omission stated
+separately, rather than having to work out which two facts a single shortened
+array is carrying. Each of **F048, F050, F051, F056 and F065** deletes its own
+line as it lands, and when the set is empty it goes with it.
+
+`ConsoleTabBar` returns `null` on an empty list for the same reason. Every item
+carrying a `short` is one of the five, so `LANDED_NAV` produces no tabs at all —
+and a bar that renders anyway is a blank 56px strip pinned over the bottom of
+every console screen on a phone.
+
+The two controls in the chrome that point at those routes are held back with
+them: the credits panel's `Buy credits` (F051) and the top bar's `Add vehicle`
+(F056). The credits **balance** is not — it is on `DealerProfile`, the layout
+already has it, and a dealer reading their own balance is the panel's first job.
+
+### The guard moved up, as F046 said it should
+
+F046 put `currentSession()` on the profile page with a note: the console shell
+is F047, and **F047 should lift the guard there** once one route stopped being
+the whole segment. That is what happened. Every screen beneath
+`(dealer)/dealer/` now inherits it, so a page added later cannot forget to ask.
+
+It is F046's guard and not the baseline's. The baseline asks `hasSession()` — a
+cookie is present — and catches the 401 from `/v1/dealer`. That is the cheaper
+question and the weaker one: a cookie that exists but no longer works lands on
+onboarding, which bounces it straight back. `currentSession()` costs one call
+and cannot loop, and it is what `(admin)` has been doing since F049.
