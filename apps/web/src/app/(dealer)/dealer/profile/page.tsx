@@ -89,9 +89,40 @@ export default async function DealerProfilePage() {
             </span>
           ))}
         </div>
+        {/*
+          R27 — the meter still reports the truth, but the form below it can no
+          longer act on most of it.
+
+          The meter was put here so that a profile drifting back below the bar
+          would be obvious on the screen that did the drifting. That reasoning
+          survives for the three fields this screen still writes; for anything
+          else it now points at a box the dealer cannot type in, and a warning
+          with no action attached reads as a broken page. So when something
+          outstanding is not theirs to fix, the line says who fixes it.
+        */}
+        {outstandingNeedsSupport(completeness) ? (
+          <p className="text-[12px] ink-subtle">
+            Some of what is outstanding is not editable here — it is part of what your verification
+            checked. Contact support and we will put it right.
+          </p>
+        ) : null}
       </div>
 
       <DealerProfileForm dealer={dealer} />
     </div>
   );
+}
+
+/**
+ * The three fields the form below still writes (**R27**).
+ *
+ * Named here rather than imported from the form because they are the same
+ * three for a different reason: this is about what the dealer can *act on*,
+ * and the form is about what the dealer can *send*. They agree today, and if
+ * one ever moves without the other the note is wrong rather than the save.
+ */
+const SELF_SERVICE = new Set(['tagline', 'specialities', 'establishedYear']);
+
+function outstandingNeedsSupport(completeness: CompletenessResponse): boolean {
+  return completeness.steps.some((step) => step.missing.some((field) => !SELF_SERVICE.has(field)));
 }
