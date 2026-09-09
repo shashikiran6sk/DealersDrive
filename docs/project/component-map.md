@@ -579,18 +579,37 @@ props. Both **P2**.
 
 ### C038 — `DirectoryCard`
 
-`components/dealers/dealer-card.tsx:42`. Props: `dealer: DealerCardDto`.
+`components/dealers/dealer-card.tsx:118`. Props: `dealer: DealerCardDto`.
 States: verified/unverified, cover/no cover, tagline/none/overlong, 0–3+
-services (sliced at 3), 0/1/n cars, long brand name. Deps: `Blueprint`,
-`ImageSlot`, `LogoTile`, `Plate`, `Tag`. One consumer. Shared. **P1** ✅
+services (sliced at 3), 0/1/n cars, long brand name. Deps: `ImageSlot`,
+`LogoTile`, `Plate`, `Tag`. One consumer. Shared. **P1** ✅
+
+> **R28 — the composition is `docs/Dealers-Drive-UI/Dealer-Card`.** A 128px
+> cover carrying a `YARD VERIFIED` mark; an identity row of the 48px white logo
+> tile and the `VERIFIED DEALER` plate, pulled up 24px so it straddles the
+> cover's bottom edge; the name at full width underneath it; the tagline as a
+> tinted pledge panel with an accent rule and `aria-hidden` quotation marks;
+> the third service chip accented **by position, not by value**; and a footer
+> that runs to the card's edges on a tint.
+>
+> Two things the reference asks for that the card deliberately does not do: it
+> carries **no verification year** (nothing on the platform records when a yard
+> was audited — see the `DealerCard` contract), and it **does not lift or cast a
+> shadow on hover** (§4.1 gives shadows to the city dropdown, the dialog and the
+> mobile sheet, and to nothing else). The border takes the accent instead.
+>
+> `Blueprint` left the card with R28 — the cover is a plain band now, and the
+> four registration marks were never reserved for one (§2.6 is explicit that
+> the frame is not for plain content cards).
 
 > **R21 — the height is the card's own, and it is a constant.** `CARD_HEIGHT`
-> is a hard `h-[368px]`; the name and the tagline are clamped to two lines each
-> and the prose sits in a `flex-1 min-h-0 overflow-hidden` box. A consumer needs
-> no row rule and should add none — R17's `grid-auto-rows: 1fr` was removed with
-> the floor, because equal rows are now what the card produces rather than
-> something a grid arranges. Changing the type scale or the tag padding means
-> re-measuring the number against the `Fullest` sandbox story.
+> is a hard `h-[400px]` (`h-[368px]` before R28 re-measured it for the taller
+> cover and the pledge panel's padding); the name and the tagline are clamped to
+> two lines each and the prose sits in a `flex-1 min-h-0 overflow-hidden` box. A
+> consumer needs no row rule and should add none — R17's `grid-auto-rows: 1fr`
+> was removed with the floor, because equal rows are now what the card produces
+> rather than something a grid arranges. Changing the type scale or the tag
+> padding means re-measuring the number against the `Fullest` sandbox story.
 
 > ⚠️ **Finding D-6 — naming.** The file is `dealer-card.tsx`; the export is
 > `DirectoryCard`. Nothing named `DealerCard` exists in the UI — `DealerCard` is

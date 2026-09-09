@@ -14,7 +14,7 @@ import { indexPolicy } from '@/lib/seo';
  *
  * What is asserted is the behaviour that outlives a restyle: where the card's
  * one link goes, what the filters push onto the URL, and which of those URLs a
- * crawler is invited to index. Nothing here pins the 104px cover or the 34px
+ * crawler is invited to index. Nothing here pins the 128px cover or the 24px
  * overhang — that is what the sandbox is for.
  */
 const DEALER: DealerCard = {
@@ -98,7 +98,7 @@ describe('DirectoryCard', () => {
    * one dealership writing a longer tagline still grew every card on the page.
    * What is asserted now is that the *same* height class is on the card in
    * every data state; jsdom computes no layout, so the sandbox's
-   * `SameDataTwice` is what measures the result (368px, both grids).
+   * `SameDataTwice` is what measures the result (400px, both grids).
    */
   const heightOf = (dealer: DealerCard): string =>
     render(<DirectoryCard dealer={dealer} />).container.querySelector('article')?.className ?? '';
@@ -111,8 +111,8 @@ describe('DirectoryCard', () => {
       services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
     });
 
-    expect(sparse).toContain('h-[368px]');
-    expect(full).toContain('h-[368px]');
+    expect(sparse).toContain('h-[400px]');
+    expect(full).toContain('h-[400px]');
     // And no floor left behind to imply the height is negotiable.
     expect(sparse).not.toContain('min-h-');
   });
@@ -128,23 +128,32 @@ describe('DirectoryCard', () => {
     );
 
     expect(container.querySelector('h3')?.className).toContain('line-clamp-2');
-    expect(screen.getByText(DEALER.tagline ?? '').className).toContain('line-clamp-2');
+    expect(container.querySelector('[data-slot="prose"] p')?.className).toContain('line-clamp-2');
     // `min-h-0` is what lets the box clip instead of pushing the footer down.
-    const box = container.querySelector('.overflow-hidden');
+    // Selected by slot rather than by `.overflow-hidden`: R28 put that class on
+    // the article as well, so the bare selector now matches the card first.
+    const box = container.querySelector('[data-slot="prose"]');
     expect(box?.className).toContain('min-h-0');
     expect(box?.className).toContain('flex-1');
   });
 
   /**
-   * R24 — the logo tile stays beside the *first* line of the name.
+   * R24, kept — and **R28**, which retired the way it was fixed.
    *
-   * The row was `items-end`, which bottom-aligned the tile to a block whose
-   * height the name sets, so a name that wrapped to two lines dropped the logo
-   * 21px down the card. jsdom computes no layout, so what is asserted is the
-   * alignment that caused it: the row aligns to the start, and the tile no
-   * longer carries the `-mt-[34px]` that read as a pull-up and was not one.
+   * The reported bug was a logo tile that slid down the card when the
+   * dealership's name wrapped to two lines: the tile shared a flex row with the
+   * heading and was bottom-aligned to it, so the name's own height set where
+   * the tile landed. R24 pinned the row to `items-start`.
+   *
+   * R28 took the tile out of that row altogether. It sits with the VERIFIED
+   * DEALER plate in a row of their own, straddling the cover's bottom edge, and
+   * the name begins underneath both — so the tile is positioned against the
+   * *cover* and there is no longer any path by which a name can move it. That
+   * is what is asserted, because it is the property that makes the bug
+   * unavailable rather than merely corrected: **the tile and the heading are
+   * not in the same row.**
    */
-  it('aligns the logo tile to the top of the identity block', () => {
+  it('positions the logo tile against the cover, not against the name', () => {
     const { container } = render(
       <DirectoryCard dealer={{ ...DEALER, brandName: 'Sri Venkateswara '.repeat(4) }} />,
     );
@@ -152,9 +161,14 @@ describe('DirectoryCard', () => {
     const tile = container.querySelector('span[aria-hidden="true"]');
     const row = tile?.parentElement;
 
-    expect(row?.className).toContain('items-start');
-    expect(row?.className).not.toContain('items-end');
-    expect(tile?.className).not.toContain('-mt-[34px]');
+    expect(row).not.toBeNull();
+    // Nothing in the tile's row varies with the dealership's data, so nothing
+    // in it can push the tile anywhere.
+    expect(row?.querySelector('h3')).toBeNull();
+    expect(container.querySelector('h3')).not.toBeNull();
+    // And the row is pulled up over the cover by half the tile, which is the
+    // straddle itself rather than a decoration on top of it.
+    expect(row?.getAttribute('style')).toContain('-24px');
   });
 
   it('names the missing photograph rather than showing a blank frame', () => {
@@ -188,11 +202,16 @@ describe('DirectoryCard', () => {
 
   it('marks a verified dealership, and does not mark one that is not', () => {
     const { unmount } = render(<DirectoryCard dealer={DEALER} />);
-    expect(screen.getByText('VERIFIED')).toBeInTheDocument();
+    expect(screen.getByText('VERIFIED DEALER')).toBeInTheDocument();
+    // The audit mark on the cover says the same thing in the place a buyer
+    // looks first, and it carries no year — nothing records when a yard was
+    // audited (R28).
+    expect(screen.getByText('YARD VERIFIED')).toBeInTheDocument();
     unmount();
 
     render(<DirectoryCard dealer={{ ...DEALER, isVerified: false }} />);
-    expect(screen.queryByText('VERIFIED')).toBeNull();
+    expect(screen.queryByText('VERIFIED DEALER')).toBeNull();
+    expect(screen.queryByText('YARD VERIFIED')).toBeNull();
   });
 });
 
