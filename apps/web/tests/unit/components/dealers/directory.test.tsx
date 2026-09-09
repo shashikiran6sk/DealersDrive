@@ -75,6 +75,57 @@ describe('DirectoryCard', () => {
     expect(screen.getByText('1 car listed')).toBeInTheDocument();
   });
 
+  /**
+   * R29 — the click bug the stretched overlay was hiding.
+   *
+   * The card's one link is the heading's anchor, stretched over the whole card
+   * with `after:absolute after:inset-0`. Anything given a `z-index` above that
+   * overlay stops being part of the link and starts being a hole in it, and two
+   * things had one: the "View inventory →" affordance in the footer, and the
+   * identity plate row at the top. So the two regions of the card that most
+   * look like they should be clickable were the only two that were not.
+   *
+   * Asserted as *the absence of a lift* rather than through a synthetic click,
+   * because jsdom computes no layout and no stacking: a click on the affordance
+   * would "pass" in this environment whatever the z-index says. What can be
+   * checked here is the property that causes it, and the sandbox is where the
+   * card is actually clicked.
+   */
+  it('does not lift any part of the card above its own link overlay', () => {
+    const { container } = render(<DirectoryCard dealer={DEALER} />);
+
+    const lifted = container.querySelectorAll('[class*="z-["]');
+    expect(lifted).toHaveLength(0);
+  });
+
+  /**
+   * R29 — the accent moves from the third chip to the first.
+   *
+   * R28 keyed it to the last of three because the UI reference draws three.
+   * Keyed to the first it survives the data: every dealership that lists a
+   * service has a first one, and the row keeps its entry point whether there
+   * are one or twelve.
+   */
+  it('accents the first service chip, not the last', () => {
+    const { container } = render(<DirectoryCard dealer={DEALER} />);
+
+    const chips = [...container.querySelectorAll('.tag')];
+    expect(chips.map((chip) => chip.textContent)).toEqual([
+      'Hatchbacks',
+      'RC transfer',
+      'Exchange',
+    ]);
+    expect(chips[0]?.className).toContain('tag-accent');
+    expect(chips[1]?.className).toContain('tag-neutral');
+    expect(chips[2]?.className).toContain('tag-neutral');
+  });
+
+  it('keeps the accent on a dealership that lists only one service', () => {
+    const { container } = render(<DirectoryCard dealer={{ ...DEALER, services: ['Exchange'] }} />);
+
+    expect(container.querySelector('.tag')?.className).toContain('tag-accent');
+  });
+
   it('shows at most three services even if handed more', () => {
     render(<DirectoryCard dealer={{ ...DEALER, services: ['A', 'B', 'C', 'D', 'E'] }} />);
 

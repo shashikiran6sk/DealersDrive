@@ -28,9 +28,9 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
  *   · **The tagline is a pledge panel** — tinted, with an accent rule down its
  *     left edge and decorative quotation marks. The marks are `aria-hidden`;
  *     the sentence a screen reader gets is the dealer's own, unquoted.
- *   · **The third service chip takes the accent.** Keyed to the position, not
- *     to the value — `ManyServices` and a one-service card in `InTheGrid` are
- *     where that degrades or does not.
+ *   · **The first service chip takes the accent** (**R29**; R28 accented the
+ *     third). Keyed to the position, not to the value — `ServiceChips` is where
+ *     one, two and three sit side by side.
  *   · **The footer runs to the card's edges** on a tint, under a hairline,
  *     rather than sitting inside the body's padding.
  *
@@ -42,11 +42,16 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
  *
  * Three things to check by eye:
  *
- *   · **The whole card is one link.** The heading's anchor is stretched over it
- *     with `after:absolute after:inset-0`, and "View inventory →" is lifted
- *     above that with `z-[2]` — it is an affordance pointing at the same
- *     destination, not a second one. A nested anchor would be invalid HTML and
- *     would give a screen reader two links to the same page.
+ *   · **The whole card is one link — including the two places that used to be
+ *     holes in it** (**R29**). The heading's anchor is stretched over the card
+ *     with `after:absolute after:inset-0`, and nothing is lifted above it.
+ *     "View inventory →" and the logo-tile row both carried `z-[2]`, which took
+ *     them out of the link rather than putting them in it: clicking the words
+ *     "View inventory" did nothing while clicking the gap beside them opened
+ *     the portfolio. Click the affordance, and click the tile, and check both
+ *     navigate. They are affordances for the card's own link, not second
+ *     destinations — a nested anchor would be invalid HTML and would give a
+ *     screen reader two links to the same page.
  *   · **The logo tile does not move when the name wraps.** That was **R24**,
  *     and R28 retired the fix by retiring the cause: the tile is no longer in
  *     the heading's row at all, so its position is fixed against the cover.
@@ -178,18 +183,19 @@ export const ManyServices: Story = {
 };
 
 /**
- * **R28's most arguable line, made easy to argue with.** One service, two, and
- * three, side by side.
+ * One service, two, and three, side by side — and the story R28 wrote to make
+ * its own arguable line easy to argue with. It was argued with, and **R29**
+ * moved the accent to the first chip.
  *
  * The reference accents the third chip on every card it draws, and every card
- * it draws has three. The rule here is keyed to the *position* rather than to
- * the value, because nothing makes a dealership's third service more important
- * than its first — so the accent is a focal point at the end of a full row, and
- * a dealership with one or two services gets plain chips rather than a lone
- * highlighted one that looks like a claim.
+ * it draws has three. Keyed to the position rather than to the value that was
+ * defensible — nothing makes a third service more important than a first — but
+ * it read as a highlight arriving after the row had been read, and it vanished
+ * entirely for any dealership listing fewer than three services. Which is most
+ * of them: the floor is one.
  *
- * If that reads wrong on the page, this is the story that shows it, and the
- * alternative is a single line in `dealer-card.tsx`.
+ * On the first chip the accent is where the eye enters the row, and all three
+ * cards below keep it.
  */
 export const ServiceChips: Story = {
   args: { dealer: BASE },

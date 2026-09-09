@@ -589,8 +589,8 @@ services (sliced at 3), 0/1/n cars, long brand name. Deps: `ImageSlot`,
 > tile and the `VERIFIED DEALER` plate, pulled up 24px so it straddles the
 > cover's bottom edge; the name at full width underneath it; the tagline as a
 > tinted pledge panel with an accent rule and `aria-hidden` quotation marks;
-> the third service chip accented **by position, not by value**; and a footer
-> that runs to the card's edges on a tint.
+> the first service chip accented **by position, not by value** (**R29**; R28
+> accented the third); and a footer that runs to the card's edges on a tint.
 >
 > Two things the reference asks for that the card deliberately does not do: it
 > carries **no verification year** (nothing on the platform records when a yard
@@ -601,6 +601,16 @@ services (sliced at 3), 0/1/n cars, long brand name. Deps: `ImageSlot`,
 > `Blueprint` left the card with R28 — the cover is a plain band now, and the
 > four registration marks were never reserved for one (§2.6 is explicit that
 > the frame is not for plain content cards).
+
+> **R29 — the card is one click target, with no holes in it.** The heading's
+> anchor is stretched over the card with `after:absolute after:inset-0`, and
+> **nothing inside the card may carry a `z-index`**: two things did, and both
+> were holes in the link rather than parts of it. The "View inventory →"
+> affordance did nothing when clicked, and the identity row's 24px band did
+> nothing either. The plate row still needs `relative` — it has to draw over the
+> cover, which is positioned — but not a lift; document order does the rest. A
+> `directory.test.tsx` case asserts the absence of `z-[` anywhere in the card,
+> because that is the property a future decoration would quietly break.
 
 > **R21 — the height is the card's own, and it is a constant.** `CARD_HEIGHT`
 > is a hard `h-[400px]` (`h-[368px]` before R28 re-measured it for the taller

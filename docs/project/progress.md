@@ -194,6 +194,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R26 — Onboarding asks for a line and a service list, not an essay · revises F037/F046/R25 · [#99](https://github.com/shashikiran6sk/DealersDrive/pull/99)
 - [~] R27 — A dealer edits three things about themselves · revises F041/F046/R2/R6/R7
 - [~] R28 — The directory card, as the UI reference draws it · revises F085/R21/R24 · [#101](https://github.com/shashikiran6sk/DealersDrive/pull/101)
+- [~] R29 — The card is one click target, and the first chip takes the accent · revises R28 · [#102](https://github.com/shashikiran6sk/DealersDrive/pull/102)
 
 ---
 
