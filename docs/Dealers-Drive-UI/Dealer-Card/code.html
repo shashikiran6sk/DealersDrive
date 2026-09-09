@@ -1,0 +1,416 @@
+<!DOCTYPE html><html class="h-full bg-[#f4f5f7]" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Verified Dealers | Dealers-Drive Tamil Nadu</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Typography: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              cobalt: '#2f55dd',
+              'cobalt-deep': '#172f7d',
+              'cobalt-light': '#eef2ff',
+              ink: '#14171c',
+              slate: '#5b616e',
+              hairline: 'rgba(20, 23, 28, 0.12)',
+              surface: '#ffffff',
+              bg: '#f4f5f7'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Core Design System Styles -->
+<style data-purpose="design-tokens">
+    /* Blueprint hairline borders and sharp geometry per §1.5 & §4.3 */
+    .border-hairline {
+      border: 1px solid rgba(20, 23, 28, 0.12);
+    }
+    .border-hairline-b {
+      border-bottom: 1px solid rgba(20, 23, 28, 0.12);
+    }
+    .border-hairline-t {
+      border-top: 1px solid rgba(20, 23, 28, 0.12);
+    }
+    
+    /* DD Signature Identity Plate with 5px Left Cobalt Strip */
+    .dd-plate {
+      position: relative;
+      border: 1px solid #14171c;
+      padding-left: 10px;
+      padding-right: 8px;
+      background: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: 1px 1px 0px rgba(20, 23, 28, 0.8);
+    }
+    .dd-plate::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background-color: #2f55dd;
+    }
+
+    /* Architectural card hover transitions */
+    .dealer-card {
+      transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms ease;
+    }
+    .dealer-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -10px rgba(20, 23, 28, 0.12);
+    }
+  </style>
+</head>
+<body class="font-sans text-brand-ink antialiased bg-[#f4f5f7] min-h-screen flex flex-col selection:bg-brand-cobalt selection:text-white">
+<!-- BEGIN: MainHeader -->
+<header class="sticky top-0 z-40 h-16 bg-white border-b border-hairline flex items-center px-4 sm:px-8">
+<div class="max-w-7xl w-full mx-auto flex items-center justify-between">
+<!-- Brand Logo & Main Nav -->
+<div class="flex items-center gap-8">
+<a class="flex items-center gap-2.5 group" href="#">
+<!-- DD Architectural Plate Logo -->
+<div class="dd-plate h-8 items-center px-2.5">
+<span class="font-mono text-xs font-bold tracking-tight text-brand-ink">DD</span>
+</div>
+<span class="font-bold text-base tracking-tight text-brand-ink group-hover:text-brand-cobalt transition-colors">
+            Dealers-Drive
+          </span>
+</a>
+<!-- Main Navigation Links -->
+<nav aria-label="Main Navigation" class="hidden md:flex items-center gap-6 text-[13px] font-medium">
+<a class="text-brand-slate hover:text-brand-ink transition-colors" href="#">Buy cars</a>
+<a class="text-brand-cobalt font-semibold flex items-center gap-1.5 relative py-5 after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-brand-cobalt" href="#">
+            Dealers
+          </a>
+<a class="text-brand-slate hover:text-brand-ink transition-colors" href="#">Saved cars</a>
+</nav>
+</div>
+<!-- Right Header Actions Cluster -->
+<div class="flex items-center gap-3">
+<!-- District Picker Quick Dropdown Trigger -->
+<button class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-hairline text-xs font-medium text-brand-ink hover:bg-neutral-50 transition-colors" type="button">
+<span class="w-1.5 h-3.5 bg-brand-cobalt rounded-none"></span>
+<span class="">Select district</span>
+<svg class="w-3.5 h-3.5 text-brand-slate ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Dealer Sign In -->
+<a class="text-xs font-semibold px-3.5 py-2 text-brand-ink hover:text-brand-cobalt transition-colors" href="#">
+          Dealer login
+        </a>
+<!-- List Cars CTA Button -->
+<a class="bg-brand-cobalt hover:bg-brand-cobalt-deep text-white text-xs font-semibold px-4 py-2 rounded-[3px] transition-all shadow-sm" href="#">
+          List your cars
+        </a>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 py-8 px-4 sm:px-8 max-w-7xl w-full mx-auto">
+<!-- BEGIN: BreadcrumbAndHeader -->
+<section class="mb-8" data-purpose="page-heading">
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-2 text-xs text-brand-slate mb-2.5 font-mono">
+<a class="hover:text-brand-ink transition-colors" href="#">Home</a>
+<span class="text-neutral-400">/</span>
+<span class="text-brand-ink font-medium">Dealers</span>
+</nav>
+<!-- Page Title & Counter Row -->
+<div class="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2 border-b border-hairline pb-4 mb-4">
+<div class="flex items-baseline gap-3.5 flex-wrap">
+<h1 class="text-[32px] sm:text-[34px] leading-tight font-bold tracking-tight text-brand-ink">
+            Verified dealers
+          </h1>
+<span class="text-xs font-mono font-semibold uppercase tracking-wider text-brand-slate bg-neutral-200/70 px-2 py-0.5 rounded-[2px]">
+            18 verified dealerships across Tamil Nadu
+          </span>
+</div>
+</div>
+<!-- Subtitle & Guarantee Notice -->
+<p class="text-[13.5px] leading-relaxed text-brand-slate max-w-3xl">
+        Every dealership below is identity- and GST-verified on-ground by Dealers-Drive. The cars belong strictly to them — physical inventory verified at yard, enquiries go straight to the owner.
+      </p>
+</section>
+<!-- END: BreadcrumbAndHeader -->
+<!-- BEGIN: SearchAndFiltersBar -->
+<section class="mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4" data-purpose="directory-filters">
+<!-- Search Input Container -->
+<div class="relative w-full lg:w-[320px]">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-4 w-4 text-brand-slate" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="w-full pl-9 pr-4 py-2 bg-white text-xs border border-hairline rounded-none text-brand-ink placeholder:text-neutral-400 focus:outline-none focus:border-brand-cobalt focus:ring-1 focus:ring-brand-cobalt transition" placeholder="Search dealership name or locality..." type="text">
+</div>
+<!-- District Toggle Chips per Spec §2.5 -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+<span class="text-brand-slate font-medium text-[11px] uppercase tracking-wider mr-1 hidden sm:inline">District:</span>
+<button class="px-3 py-1.5 bg-brand-ink text-white font-medium rounded-none text-xs whitespace-nowrap shadow-sm">
+          All districts
+        </button>
+<button class="px-3 py-1.5 bg-white border border-hairline text-brand-ink font-medium hover:border-brand-cobalt rounded-none text-xs whitespace-nowrap transition-colors">
+          Chennai
+        </button>
+<button class="px-3 py-1.5 bg-white border border-hairline text-brand-ink font-medium hover:border-brand-cobalt rounded-none text-xs whitespace-nowrap transition-colors">
+          Vellore
+        </button>
+<button class="px-3 py-1.5 bg-white border border-hairline text-brand-ink font-medium hover:border-brand-cobalt rounded-none text-xs whitespace-nowrap transition-colors">
+          Coimbatore
+        </button>
+<button class="px-3 py-1.5 bg-white border border-hairline text-brand-ink font-medium hover:border-brand-cobalt rounded-none text-xs whitespace-nowrap transition-colors">
+          Madurai
+        </button>
+<button class="px-3 py-1.5 bg-white border border-hairline text-brand-ink font-medium hover:border-brand-cobalt rounded-none text-xs whitespace-nowrap transition-colors">
+          Salem
+        </button>
+</div>
+</section>
+<!-- END: SearchAndFiltersBar -->
+<!-- BEGIN: DealershipsGrid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-purpose="dealers-grid">
+<!-- CARD 1: Chennai Cars -->
+<article class="dealer-card bg-white border border-hairline flex flex-col justify-between overflow-hidden shadow-sm" data-purpose="dealer-card">
+<div>
+<!-- Showroom Cover Banner (120px) with Crop -->
+<div class="h-32 w-full overflow-hidden relative bg-neutral-900 border-b border-hairline">
+<img alt="Chennai Cars Showroom Yard" class="w-full h-full object-cover object-center brightness-95 contrast-105 group-hover:scale-105 transition duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwYL0JgfcOM6ut6gsMP3Bkl6QsbNam_iqL52_1_w9rDvW-y88Cq5euiajdnDkXonPLKIevlsZriebjDDLWzBwf6f4kPdrlxXtLUvMZa7E1CLB0Bm5qv9YpPNT1Z3BZykvzhX9JnNZ4MaJVO-KI-GsyRwrhO0RLyahguwdERp2_MSl46VEj2vxMOqvKqkqHjq2KzAM4s_iU9kqC36s45DekFNoMuQF4Y9XU9MTjjE0x4nFqWGFsDH1qA3Cjn2qDBYz6">
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<div class="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-sm text-[10px] font-mono font-medium text-white px-2 py-0.5">
+              YARD VERIFIED · 2024
+            </div>
+</div>
+<!-- Card Content Body -->
+<div class="px-5 pt-0 pb-4"><!-- Overlapping Monogram Tile & Verified Plate Header Row -->
+<div class="flex items-end justify-between -mt-6 mb-3 relative z-10 gap-2">
+  <!-- Crisp Monogram Emblem (48px square) -->
+  <div class="w-12 h-12 bg-white border border-brand-ink shadow-sm flex items-center justify-center font-mono font-bold text-base text-brand-cobalt-deep tracking-tighter flex-shrink-0">
+    SV
+  </div>
+  <!-- Authentic DD Verified Plate with flex-shrink-0 -->
+  <div class="dd-plate h-6 text-[10px] font-mono font-bold tracking-wide uppercase text-brand-ink flex-shrink-0">
+    VERIFIED DEALER
+  </div>
+</div>
+<!-- Dealer Title and Metas with min-w-0 flex-1 support -->
+<div class="mb-3 min-w-0">
+  <h2 class="text-base font-bold text-brand-ink leading-snug tracking-tight hover:text-brand-cobalt transition-colors cursor-pointer line-clamp-2 break-words" title="Sri Venkateshwara Premium Multi-Brand Pre-Owned Cars">
+    Sri Venkateshwara Premium Multi-Brand Pre-Owned Cars
+  </h2>
+  <p class="text-xs text-brand-slate mt-1 font-normal">
+    Katpadi, Vellore, Tamil Nadu <span class="mx-1 font-mono text-neutral-300">•</span> <span class="font-medium text-neutral-700">1 year on DD</span>
+  </p>
+</div>
+<!-- Authentic Dealer Tagline / Pledge with consistent height and line clamping -->
+<div class="bg-neutral-50 border-l-2 border-brand-cobalt p-2.5 mb-4 text-[12px] leading-relaxed text-brand-ink font-normal min-h-[58px] flex items-center">
+  <p class="line-clamp-2 leading-relaxed">“Premier multi-brand verified inventory with 150-point yard inspection &amp; immediate RC handover.”</p>
+</div>
+<!-- Service & Feature Pills Row -->
+<div class="flex flex-wrap gap-1.5 mb-3">
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-neutral-100 text-brand-ink border border-neutral-200">
+    In-house workshop
+  </span>
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-neutral-100 text-brand-ink border border-neutral-200">
+    RC transfer assistance
+  </span>
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-brand-cobalt-light text-brand-cobalt-deep font-medium border border-blue-100">
+    Bank loan tie-ups
+  </span>
+</div></div>
+</div>
+<!-- Card Footer: Inventory Metrics & Action -->
+<div class="px-5 py-3 bg-[#fafbfc] border-hairline-t flex items-center justify-between">
+<div class="flex items-baseline gap-1.5">
+<span class="text-sm font-bold font-mono text-brand-ink">14</span>
+<span class="text-xs text-brand-slate">cars in stock</span>
+<span class="text-[11px] text-neutral-400 font-mono ml-1">· from ₹3.8L</span>
+</div>
+<a class="text-xs font-semibold text-brand-cobalt hover:text-brand-cobalt-deep inline-flex items-center gap-1 group" href="#">
+<span class="">View inventory</span>
+<span class="transform group-hover:translate-x-0.5 transition-transform">→</span>
+</a>
+</div>
+</article>
+<!-- CARD 2: Sakthi Cars -->
+<article class="dealer-card bg-white border border-hairline flex flex-col justify-between overflow-hidden shadow-sm" data-purpose="dealer-card">
+<div>
+<!-- Showroom Cover Banner (120px) with Crop -->
+<div class="h-32 w-full overflow-hidden relative bg-neutral-900 border-b border-hairline">
+<img alt="Sakthi Cars Yard &amp; Facade" class="w-full h-full object-cover object-right brightness-95 contrast-105 group-hover:scale-105 transition duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsjSx_PilDXpCnUatSJcBAisPDL-d9hhjLYtxOKIIjao7DTm1__iQFG-f536rkVihF12hJW49yYfcGwM_oeAekrg8UyeLJzBQXf8jyUU33nnIJUDTa9lNv6uPuH6f16bia573tAq9NHqteL07PhwA4gJHP3nvwoOKi7QZNbXhcdxFlrYDn-sSSZOM9n7H4p4yXSYHUnM0_Xn3ZKDTmWKwaYt1suv02yjEkLVrfahT9P8fXL1t_yOr-hfp-sJoFI81-">
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<div class="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-sm text-[10px] font-mono font-medium text-white px-2 py-0.5">
+              YARD VERIFIED · 2024
+            </div>
+</div>
+<!-- Card Content Body -->
+<div class="px-5 pt-0 pb-4"><!-- Overlapping Monogram Tile & Verified Plate Header Row -->
+<div class="flex items-end justify-between -mt-6 mb-3 relative z-10 gap-2">
+  <!-- Crisp Monogram Emblem -->
+  <div class="w-12 h-12 bg-white border border-brand-ink shadow-sm flex items-center justify-center font-mono font-bold text-base text-brand-cobalt-deep tracking-tighter flex-shrink-0">
+    SC
+  </div>
+  <!-- Authentic DD Verified Plate with flex-shrink-0 -->
+  <div class="dd-plate h-6 text-[10px] font-mono font-bold tracking-wide uppercase text-brand-ink flex-shrink-0">
+    VERIFIED DEALER
+  </div>
+</div>
+<!-- Dealer Title and Metas -->
+<div class="mb-3 min-w-0">
+  <h2 class="text-base font-bold text-brand-ink leading-snug tracking-tight hover:text-brand-cobalt transition-colors cursor-pointer line-clamp-2 break-words" title="Sakthi Cars">
+    Sakthi Cars
+  </h2>
+  <p class="text-xs text-brand-slate mt-1 font-normal">
+    Velachery, Chennai, Tamil Nadu <span class="mx-1 font-mono text-neutral-300">•</span> <span class="font-medium text-neutral-700">1 year on DD</span>
+  </p>
+</div>
+<!-- Authentic Dealer Tagline / Pledge with consistent height and line clamping -->
+<div class="bg-neutral-50 border-l-2 border-brand-cobalt p-2.5 mb-4 text-[12px] leading-relaxed text-brand-ink font-normal min-h-[58px] flex items-center">
+  <p class="line-clamp-2 leading-relaxed">“Specializing in single-owner executive sedans and family compacts with full authorized service history.”</p>
+</div>
+<!-- Service & Feature Pills Row -->
+<div class="flex flex-wrap gap-1.5 mb-3">
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-neutral-100 text-brand-ink border border-neutral-200">
+    Insurance renewal
+  </span>
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-neutral-100 text-brand-ink border border-neutral-200">
+    Return policy
+  </span>
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-brand-cobalt-light text-brand-cobalt-deep font-medium border border-blue-100">
+    Fair exchange value
+  </span>
+</div></div>
+</div>
+<!-- Card Footer: Inventory Metrics & Action -->
+<div class="px-5 py-3 bg-[#fafbfc] border-hairline-t flex items-center justify-between">
+<div class="flex items-baseline gap-1.5">
+<span class="text-sm font-bold font-mono text-brand-ink">22</span>
+<span class="text-xs text-brand-slate">cars in stock</span>
+<span class="text-[11px] text-neutral-400 font-mono ml-1">· from ₹4.6L</span>
+</div>
+<a class="text-xs font-semibold text-brand-cobalt hover:text-brand-cobalt-deep inline-flex items-center gap-1 group" href="#">
+<span class="">View inventory</span>
+<span class="transform group-hover:translate-x-0.5 transition-transform">→</span>
+</a>
+</div>
+</article>
+<!-- CARD 3: Kovai Auto Hub -->
+<article class="dealer-card bg-white border border-hairline flex flex-col justify-between overflow-hidden shadow-sm" data-purpose="dealer-card">
+<div>
+<!-- Showroom Cover Banner (120px) with Crop -->
+<div class="h-32 w-full overflow-hidden relative bg-neutral-900 border-b border-hairline">
+<img alt="Kovai Auto Hub Yard" class="w-full h-full object-cover object-left brightness-95 contrast-105 group-hover:scale-105 transition duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAT_dRamrsk_Pvi2gnijcc8S8_3h5wZ3t0zd6ZCyWkZrf6tUhzwA_GFXK9L_MwM9kSNhFGZT94yr2oBdKE5cM1fh0qAHr6ymrxzeoj00OIP-xSms6kUNiwW2VTtMuXcbPnG5Mj84RoAJSfkTxFpV2W_SftVhyl-oT_ymbVAgacAt52hWn_yoMnb5K7LWIzp-5L1TK7NvRKUAZfVphzCLCwBVHFOWy-u7lvsh6zE0DAU79vSBVZmPcylpJt3W_qPCRvc">
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<div class="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-sm text-[10px] font-mono font-medium text-white px-2 py-0.5">
+              YARD VERIFIED · 2024
+            </div>
+</div>
+<!-- Card Content Body -->
+<div class="px-5 pt-0 pb-4"><!-- Overlapping Monogram Tile & Verified Plate Header Row -->
+<div class="flex items-end justify-between -mt-6 mb-3 relative z-10 gap-2">
+  <!-- Crisp Monogram Emblem -->
+  <div class="w-12 h-12 bg-white border border-brand-ink shadow-sm flex items-center justify-center font-mono font-bold text-base text-brand-cobalt-deep tracking-tighter flex-shrink-0">
+    KS
+  </div>
+  <!-- Authentic DD Verified Plate with flex-shrink-0 -->
+  <div class="dd-plate h-6 text-[10px] font-mono font-bold tracking-wide uppercase text-brand-ink flex-shrink-0">
+    VERIFIED DEALER
+  </div>
+</div>
+<!-- Dealer Title and Metas with enterprise multi-line wrap -->
+<div class="mb-3 min-w-0">
+  <h2 class="text-base font-bold text-brand-ink leading-snug tracking-tight hover:text-brand-cobalt transition-colors cursor-pointer line-clamp-2 break-words" title="Kovai Supreme Auto Hub &amp; Pre-Owned Multi-Brand Studio">
+    Kovai Supreme Auto Hub &amp; Pre-Owned Multi-Brand Studio
+  </h2>
+  <p class="text-xs text-brand-slate mt-1 font-normal">
+    Avinashi Road, Coimbatore <span class="mx-1 font-mono text-neutral-300">•</span> <span class="font-medium text-neutral-700">3 years on DD</span>
+  </p>
+</div>
+<!-- Authentic Dealer Tagline / Pledge with consistent height and line clamping -->
+<div class="bg-neutral-50 border-l-2 border-brand-cobalt p-2.5 mb-4 text-[12px] leading-relaxed text-brand-ink font-normal min-h-[58px] flex items-center">
+  <p class="line-clamp-2 leading-relaxed">“Direct certified SUV &amp; cross-country specialist yard with transparent ownership logs and spot delivery.”</p>
+</div>
+<!-- Service & Feature Pills Row -->
+<div class="flex flex-wrap gap-1.5 mb-3">
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-neutral-100 text-brand-ink border border-neutral-200">
+    1-Year Engine Warranty
+  </span>
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-neutral-100 text-brand-ink border border-neutral-200">
+    Spot loan approval
+  </span>
+  <span class="inline-flex items-center text-[11px] px-2 py-0.5 bg-brand-cobalt-light text-brand-cobalt-deep font-medium border border-blue-100">
+    Clear RC title
+  </span>
+</div></div>
+</div>
+<!-- Card Footer: Inventory Metrics & Action -->
+<div class="px-5 py-3 bg-[#fafbfc] border-hairline-t flex items-center justify-between">
+<div class="flex items-baseline gap-1.5">
+<span class="text-sm font-bold font-mono text-brand-ink">19</span>
+<span class="text-xs text-brand-slate">cars in stock</span>
+<span class="text-[11px] text-neutral-400 font-mono ml-1">· from ₹5.2L</span>
+</div>
+<a class="text-xs font-semibold text-brand-cobalt hover:text-brand-cobalt-deep inline-flex items-center gap-1 group" href="#">
+<span class="">View inventory</span>
+<span class="transform group-hover:translate-x-0.5 transition-transform">→</span>
+</a>
+</div>
+</article>
+</section>
+<!-- END: DealershipsGrid -->
+<!-- BEGIN: VerificationPromiseBanner -->
+<aside class="mt-12 bg-white border border-hairline p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6" data-purpose="verification-banner">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 bg-brand-cobalt-light text-brand-cobalt flex-shrink-0 flex items-center justify-center border border-blue-100">
+<svg class="w-5 h-5 text-brand-cobalt" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-sm font-bold text-brand-ink">What does "Verified Dealer" mean on Dealers-Drive?</h3>
+<p class="text-xs text-brand-slate mt-1 max-w-2xl leading-relaxed">
+            Unlike classified portals, Dealers-Drive physical-audits every yard. We inspect active commercial license, GST certificate, physical car possession (no ghost listings), and verifiable vehicle registration history.
+          </p>
+</div>
+</div>
+<a class="text-xs font-semibold text-brand-cobalt hover:text-brand-cobalt-deep whitespace-nowrap border-b border-brand-cobalt pb-0.5" href="#">
+        Learn our 4-step dealer audit protocol →
+      </a>
+</aside>
+<!-- END: VerificationPromiseBanner -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: MinimalFooter -->
+<footer class="bg-white border-hairline-t py-6 px-4 sm:px-8 text-xs text-brand-slate mt-12">
+<div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="font-mono font-bold text-brand-ink">DD</span>
+<span class="">© 2025 Dealers-Drive Network Private Limited · Tamil Nadu, India</span>
+</div>
+<div class="flex items-center gap-6">
+<a class="hover:text-brand-ink transition-colors" href="#">Yard Audit Rules</a>
+<a class="hover:text-brand-ink transition-colors" href="#">Terms of Inventory</a>
+<a class="hover:text-brand-ink transition-colors" href="#">Dealer Portal</a>
+</div>
+</div>
+</footer>
+<!-- END: MinimalFooter -->
+
+
+</body></html>

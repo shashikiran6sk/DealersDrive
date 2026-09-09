@@ -13,6 +13,33 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
  * for either name has to land here rather than write a second card, which is
  * what the `aliases` field is for.
  *
+ * ## R28 — the card as `docs/Dealers-Drive-UI/Dealer-Card` draws it
+ *
+ * The composition changed; the rules that hold it together did not. What is
+ * new to look at:
+ *
+ *   · **The identity plate row straddles the cover's bottom edge.** A 48px
+ *     white logo tile pulled up 24px on the left, the VERIFIED DEALER plate on
+ *     the right, and the name starting underneath both rather than sharing a
+ *     line with the plate.
+ *   · **YARD VERIFIED sits on the cover**, top right, on an ink wash. There is
+ *     no year on it — nothing on the platform records when a yard was audited,
+ *     so the reference's "· 2024" is deliberately absent.
+ *   · **The tagline is a pledge panel** — tinted, with an accent rule down its
+ *     left edge and decorative quotation marks. The marks are `aria-hidden`;
+ *     the sentence a screen reader gets is the dealer's own, unquoted.
+ *   · **The third service chip takes the accent.** Keyed to the position, not
+ *     to the value — `ManyServices` and a one-service card in `InTheGrid` are
+ *     where that degrades or does not.
+ *   · **The footer runs to the card's edges** on a tint, under a hairline,
+ *     rather than sitting inside the body's padding.
+ *
+ * Deliberately *not* taken from the reference: the card does not lift or cast a
+ * shadow on hover. §4.1 gives shadows to exactly three elements — the city
+ * dropdown, the dialog and the mobile sheet — and a directory of eighteen
+ * lifting cards is not the place to make it four. The border takes the accent
+ * instead.
+ *
  * Three things to check by eye:
  *
  *   · **The whole card is one link.** The heading's anchor is stretched over it
@@ -20,10 +47,10 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
  *     above that with `z-[2]` — it is an affordance pointing at the same
  *     destination, not a second one. A nested anchor would be invalid HTML and
  *     would give a screen reader two links to the same page.
- *   · **The logo tile stays at the top of the identity block** (R24), level
- *     with the first line of the name. `LongBrandName` is the story that shows
- *     it: before R24 the tile was bottom-aligned to a block whose height the
- *     name set, so a two-line name pushed the logo down beside the second line.
+ *   · **The logo tile does not move when the name wraps.** That was **R24**,
+ *     and R28 retired the fix by retiring the cause: the tile is no longer in
+ *     the heading's row at all, so its position is fixed against the cover.
+ *     `ShortAndLongName` is still the story — the two tiles must start level.
  *   · **The card is one fixed size** (R21), and nothing on it changes that:
  *     not a missing tagline, not a third service, not a fifty-character name.
  *     `SameDataTwice` is the story that proves it — two directories, one
@@ -32,7 +59,10 @@ import { DirectoryCard } from '@/components/dealers/dealer-card';
  * Both branches are live. A dealership that has uploaded a yard photograph gets
  * `coverUrl` — the 640px rendition, addressed by media id — and one that has
  * not gets the `ImageSlot`, which names the shot rather than showing a grey
- * rectangle. `WithCover` and `Default` are the two, side by side.
+ * rectangle. `WithCover` and `Default` are the two, side by side. The cover's
+ * gradient wash is on the photograph branch only: it is there so the white tile
+ * has something to sit against on a bright forecourt, and the flat `ImageSlot`
+ * needs no such help.
  */
 const BASE: DealerCard = {
   slug: 'sri-lakshmi-motors',
@@ -148,15 +178,53 @@ export const ManyServices: Story = {
 };
 
 /**
+ * **R28's most arguable line, made easy to argue with.** One service, two, and
+ * three, side by side.
+ *
+ * The reference accents the third chip on every card it draws, and every card
+ * it draws has three. The rule here is keyed to the *position* rather than to
+ * the value, because nothing makes a dealership's third service more important
+ * than its first — so the accent is a focal point at the end of a full row, and
+ * a dealership with one or two services gets plain chips rather than a lone
+ * highlighted one that looks like a claim.
+ *
+ * If that reads wrong on the page, this is the story that shows it, and the
+ * alternative is a single line in `dealer-card.tsx`.
+ */
+export const ServiceChips: Story = {
+  args: { dealer: BASE },
+  parameters: { layout: 'padded', nextjs: { appDirectory: true } },
+  decorators: [
+    () => (
+      <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'repeat(3, 300px)' }}>
+        <DirectoryCard dealer={{ ...BASE, slug: 'one', services: ['Hatchbacks'] }} />
+        <DirectoryCard dealer={{ ...BASE, slug: 'two', services: ['Hatchbacks', 'RC transfer'] }} />
+        <DirectoryCard
+          dealer={{
+            ...BASE,
+            slug: 'three',
+            services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
+          }}
+        />
+      </div>
+    ),
+  ],
+};
+
+/**
  * The long-name case. Indian dealership names run long — "Sri Venkateswara
  * Automobiles and Finance Private Limited" is not unusual — and the heading has
  * to wrap beside the VERIFIED plate without pushing it off the card.
  *
- * **This is the R24 story.** The thing to check is the logo tile: its top edge
- * must be level with the *first* line of the name, exactly where it is in
- * `Default`. It used to slide down to the second line, because the tile was
- * aligned to the bottom of a block the name's own height set. `ShortAndLongName`
- * puts the two side by side so the tile is either level across both or is not.
+ * **This is the R24 story, and R28 is why it now passes trivially.** The thing
+ * to check is the logo tile: its top edge must be exactly where it is in
+ * `Default`, because it is positioned against the cover rather than against the
+ * name. It used to slide down to the second line, when the tile shared a row
+ * with the heading and was aligned to the bottom of it. `ShortAndLongName` puts
+ * the two side by side so the tile is either level across both or is not.
+
+ * With the plate out of the heading's row, the name also has the full width of
+ * the card to wrap in — which is the other half of what this story shows.
  */
 export const LongBrandName: Story = {
   args: {
@@ -177,6 +245,10 @@ export const LongBrandName: Story = {
  * tile sat beside "Chennai cars" and the right card's sat beside "CARS", the
  * second line of "GOWTHAM CARS" — a 21px drop that made a row of cards look
  * ragged for no reason a reader could see.
+ *
+ * Under **R28** the tiles are straddling the cover's bottom edge, which is a
+ * fixed distance from the top of the card, so this is now a check that the
+ * structure is still what it claims rather than a check on an alignment rule.
  */
 export const ShortAndLongName: Story = {
   args: { dealer: BASE },
@@ -246,7 +318,8 @@ export const WithCover: Story = {
  * give was a fixed size: every card took the height of the fullest card on the
  * page, so the third card's long tagline set the proportions for all six.
  *
- * The height is a constant now. What to check by eye:
+ * The height is a constant now — 424px since **R28** re-measured it for the
+ * taller cover and the pledge panel's padding. What to check by eye:
  *
  *   · **All six cards are the same height**, as before.
  *   · **The third card's long tagline is cut at two lines** and does not make
