@@ -145,7 +145,11 @@ export const OnboardingInput = z
      * The upper bound matches `UpdateDealerInput.tagline`, so what onboarding
      * accepts and what the profile screen accepts cannot drift.
      */
-    tagline: z.string().trim().min(10, 'One line buyers will read under your name.').max(200),
+    tagline: z
+      .string()
+      .trim()
+      .min(10, 'One line buyers will read under your name.')
+      .max(200, 'Keep it to one line — 200 characters at most.'),
     /**
      * What the yard actually does, as a set of short labels.
      *
@@ -163,11 +167,26 @@ export const OnboardingInput = z
      * are merged on read (**R18**), because a dealer typing "RC transfer" twice
      * has made a typo rather than an error, and a form that rejects it is
      * teaching them to be careful about something that does not matter.
+     *
+     * **Every bound carries its own sentence** (**R30**). A message left off is
+     * not a message left blank: Zod fills the gap with its own, and its own is
+     * written for the person who wrote the schema. `Too big: expected array to
+     * have <=12 items` is an accurate description of a `ZodArray` and tells a
+     * dealer nothing — they did not type an array, they typed a list of the
+     * things their yard does, and "items" is not a word this screen has used.
+     * These strings are rendered verbatim under the input by
+     * `features/auth/onboarding-wizard.tsx` and `features/dealer/profile-form.tsx`.
      */
     specialities: z
-      .array(z.string().trim().min(1).max(60))
+      .array(
+        z
+          .string()
+          .trim()
+          .min(1)
+          .max(60, 'Keep each service to a short label — 60 characters at most.'),
+      )
       .min(1, 'Name at least one service you offer.')
-      .max(12),
+      .max(12, 'Twelve services at most — list the ones buyers ask for.'),
   })
   .strict();
 export type OnboardingInput = z.infer<typeof OnboardingInput>;
