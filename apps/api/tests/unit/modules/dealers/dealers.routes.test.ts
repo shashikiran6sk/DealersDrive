@@ -22,6 +22,12 @@ import {
  * The baseline asserts nine signatures. **F042 brought the count to eight**;
  * `GET /dashboard` arrives with F048 and closes the file.
  *
+ * `PATCH /onboarding` has no baseline equivalent either. **R27** narrowed
+ * `PATCH /` to the three fields a dealership may change about itself once it
+ * has been verified — the year, the tagline, the services — and the onboarding
+ * wizard, which walks back to the steps that ask for the name and the address,
+ * writes through this one instead. It is refused for anything but a DRAFT.
+ *
  * The four `/yard-photo` routes have no baseline equivalent. They are the same
  * presign → PUT → commit pipeline as the KYC documents, under a different
  * prefix, for the image that fronts the dealership's public portfolio — kept
@@ -37,6 +43,9 @@ describe('the surface', () => {
       [
         'GET /',
         'PATCH /',
+        // R27 — the wider write, guarded to DRAFT. `PATCH /` takes three
+        // fields now, so the onboarding wizard needed a door of its own.
+        'PATCH /onboarding',
         'GET /completeness',
         'POST /submit',
         'GET /documents',

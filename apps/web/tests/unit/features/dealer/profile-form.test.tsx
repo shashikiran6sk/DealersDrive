@@ -85,25 +85,79 @@ describe('what the form offers', () => {
     expect(screen.queryByLabelText(/trading name/i)).toBeNull();
   });
 
-  /** D6, R2 and R6 — three text boxes and a link, not a dropdown over a table. */
-  it('lets the dealer type their own city, district, state and Maps link', () => {
+  /**
+   * **R27 — the rule this screen now exists to enforce.**
+   *
+   * Everything the platform verified is shown and none of it is editable: the
+   * registered name, the whole address including the map link, and the two
+   * ways a buyer reaches the business. Asserted by label rather than by count,
+   * so a box added to the wrong section fails here rather than shipping.
+   */
+  it.each([
+    ['dealership name', /dealership name/i],
+    ['contact name', /contact name/i],
+    ['role', /^role/i],
+    ['email', /^email/i],
+    ['mobile', /^mobile/i],
+    ['landline', /^landline/i],
+    ['street address', /street address/i],
+    ['city', /^city/i],
+    ['district', /^district/i],
+    ['state', /^state/i],
+    ['pincode', /^pincode/i],
+    ['Maps link', /google maps location/i],
+    ['GSTIN', /gstin/i],
+    ['PAN', /^pan/i],
+  ])('shows %s but does not let the dealer edit it', (_label, pattern) => {
     render(<DealerProfileForm dealer={DEALER} />);
 
-    for (const label of [/^city/i, /^district/i, /^state/i]) {
-      expect(screen.getByLabelText(label)).toBeEnabled();
-    }
-    expect(screen.getByLabelText(/google maps location/i)).toHaveValue(
-      'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
-    );
+    expect(screen.getByLabelText(pattern)).toBeDisabled();
   });
 
-  /** R7 — raw, because raw is what the field accepts back. */
-  it('offers the mobile as an editable raw number', () => {
-    render(<DealerProfileForm dealer={DEALER} />);
-    const mobile = screen.getByLabelText(/mobile/i);
+  /**
+   * The half of the lock the browser enforces, and the one that matters most:
+   * a control with no `name` has nothing to be submitted under, so a locked
+   * value cannot reach the action even if `disabled` were lifted by a
+   * stylesheet or a devtools poke.
+   */
+  it('gives the locked boxes no name to be submitted under', () => {
+    const { container } = render(<DealerProfileForm dealer={DEALER} />);
 
-    expect(mobile).toBeEnabled();
-    expect(mobile).toHaveValue('9840012345');
+    expect(
+      [...container.querySelectorAll('input[name]')].map((input) => input.getAttribute('name')),
+    ).toEqual(['establishedYear', 'tagline', 'specialities']);
+  });
+
+  /** The three that are still the dealer's own. */
+  it.each([/established/i, /one line about your dealership/i, /services you offer/i])(
+    'leaves %s editable',
+    (pattern) => {
+      render(<DealerProfileForm dealer={DEALER} />);
+
+      expect(screen.getByLabelText(pattern)).toBeEnabled();
+    },
+  );
+
+  /**
+   * R27 reverses R7, and the mobile is shown formatted now rather than raw.
+   * Raw was what the box *accepted back*; there is no box to accept anything,
+   * so the dealer gets the readable form.
+   */
+  it('shows the mobile as a buyer would read it', () => {
+    render(<DealerProfileForm dealer={DEALER} />);
+
+    expect(screen.getByLabelText(/^mobile/i)).toHaveValue(DEALER.contact.phoneDisplay);
+  });
+
+  /**
+   * Why, said once per section. A control somebody cannot use and is not told
+   * why about reads as a broken page rather than as a locked one.
+   */
+  it('says why the locked sections are locked', () => {
+    render(<DealerProfileForm dealer={DEALER} />);
+
+    expect(screen.getByText(/contact support to change any of them/i)).toBeInTheDocument();
+    expect(screen.getByText(/closes this account and opens a new one/i)).toBeInTheDocument();
   });
 
   it('shows the tax identifiers but does not let them be edited here', () => {
@@ -136,8 +190,10 @@ describe('what the form offers', () => {
       />,
     );
 
-    expect(screen.getByLabelText(/^district/i)).toHaveValue('');
-    expect(screen.getByLabelText(/google maps location/i)).toHaveValue('');
+    // An em dash, not an empty box: a blank control under a label reads as
+    // something you have not filled in yet, and these cannot be filled in.
+    expect(screen.getByLabelText(/^district/i)).toHaveValue('—');
+    expect(screen.getByLabelText(/google maps location/i)).toHaveValue('—');
   });
 });
 
@@ -156,7 +212,7 @@ describe('the note under the Maps link', () => {
     expect(screen.getByText(/shows your Google listing/i)).toBeInTheDocument();
   });
 
-  it('says a pin is only a pin, and how to replace it', () => {
+  it('says a pin is only a pin, and where the remedy is now', () => {
     render(
       <DealerProfileForm
         dealer={{ ...DEALER, address: { ...DEALER.address, mapKind: 'POINT' } }}
@@ -164,8 +220,13 @@ describe('the note under the Maps link', () => {
     );
 
     expect(screen.getByText(/does not name your dealership/i)).toBeInTheDocument();
-    // The diagnosis is useless without the remedy.
-    expect(screen.getByText(/search Google Maps for your business/i)).toBeInTheDocument();
+    /*
+     * The diagnosis is useless without a remedy, and R27 changed what the
+     * remedy is: the link is read-only, so "share your business again" is
+     * advice the dealer cannot act on.
+     */
+    expect(screen.getByText(/changed to your business card/i)).toBeInTheDocument();
+    expect(screen.queryByText(/search Google Maps for your business/i)).toBeNull();
   });
 
   it('says when no location could be read at all', () => {
@@ -205,7 +266,12 @@ describe('what the form does with an answer', () => {
     expect(saveDealerProfileAction).toHaveBeenCalled();
     const formData = saveDealerProfileAction.mock.calls.at(-1)?.[1];
     expect(formData?.get('tagline')).toBe('Only diesel SUVs');
-    expect(formData?.get('addressCity')).toBe('Vellore');
+    expect(formData?.get('specialities')).toBe('Hatchbacks, RC transfer');
+    // R27 — the locked boxes carry no name, so the browser sends nothing for
+    // them. This is the lock observed from the far side of the submit.
+    expect(formData?.get('addressCity')).toBeNull();
+    expect(formData?.get('legalName')).toBeNull();
+    expect(formData?.get('contactPhone')).toBeNull();
     // Rule 1 again, from the other side: nothing identifies the dealership.
     expect(formData?.get('dealerId')).toBeNull();
   });
@@ -222,15 +288,18 @@ describe('what the form does with an answer', () => {
   it('puts a field refusal under the box it names', async () => {
     saveDealerProfileAction.mockResolvedValueOnce({
       status: 'error',
-      fieldErrors: { addressMapsUrl: 'That does not look like a Google Maps link.' },
+      fieldErrors: { tagline: 'One line buyers will read under your name.' },
     });
     const user = userEvent.setup();
     render(<DealerProfileForm dealer={DEALER} />);
 
     await user.click(screen.getByRole('button', { name: /save changes/i }));
 
-    expect(await screen.findByText(/does not look like a google maps link/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/google maps location/i)).toHaveAttribute('aria-invalid', 'true');
+    expect(await screen.findByText(/one line buyers will read/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/one line about your dealership/i)).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
   });
 
   it('falls back to a banner when nothing was named', async () => {

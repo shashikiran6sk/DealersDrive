@@ -39,24 +39,73 @@ export const dealersDocs: ModuleDocs = {
       tag: 'Dealer account',
       summary: 'Update the dealership',
       description:
-        '**Partial by design.** The onboarding wizard PATCHes only the fields on the current ' +
-        'step, so `Back` never blanks what another step filled in.\n\n' +
+        '**Three fields (R27).** `establishedYear`, `tagline` and `specialities` \u2014 and ' +
+        '`DealerSelfUpdateInput` is `.strict()`, so anything else is a `400` naming the ' +
+        'field rather than a silent write.\n\n' +
+        'The absences are the point. A dealership\u2019s registered name is what KYC was ' +
+        'checked against and what its public slug is derived from; its address, town and pin ' +
+        'are what the yard photograph and the verification were *about*; its mobile and ' +
+        'email are how a buyer reaches a business that has been vouched for. None of those ' +
+        'is a preference a dealer may revise \u2014 a dealership that has genuinely moved ' +
+        'closes this account and opens another, because the VERIFIED plate is a claim about ' +
+        'a place and cannot be carried across a move unchecked.\n\n' +
+        'GSTIN and PAN are absent for the neighbouring reason: they were verified against a ' +
+        'document, and a silent edit would invalidate that check. The console has rendered ' +
+        'them read-only since it was built; this is the same rule at the API.\n\n' +
+        'Two routes keep the wider shape. `PATCH /v1/dealer/onboarding` takes ' +
+        '`UpdateDealerInput` while the dealership is a **DRAFT** \u2014 nothing has been ' +
+        'verified about it yet \u2014 and `PATCH /v1/admin/dealers/{id}` takes it for a ' +
+        'moderator with the certificate in hand.\n\n' +
+        '**Partial by design**: an absent field is untouched, never cleared. `tagline` and ' +
+        '`specialities` may not be *emptied* though (R26) \u2014 a dealer must not be able ' +
+        'to delete here what onboarding insisted on.\n\n' +
+        'OWNER only (`dealer:update`) \u2014 a manager or salesperson gets a 403.',
+      audience: 'dealer',
+      permission: 'dealer:update',
+      requestBody: {
+        schema: 'DealerSelfUpdateInput',
+        description: 'Only the fields being changed.',
+        example: {
+          establishedYear: 2009,
+          tagline: 'Family-run since 2009 \u2014 every car with a service book.',
+          specialities: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
+        },
+      },
+      responses: [{ status: 200, description: 'The updated dealership.', schema: 'DealerProfile' }],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'patch',
+      path: '/v1/dealer/onboarding',
+      operationId: 'amendDealerDuringOnboarding',
+      tag: 'Dealer account',
+      summary: 'Amend a DRAFT dealership',
+      description:
+        'The onboarding wizard\u2019s write path, and the only route on which a dealer may ' +
+        'still change their own name, address and contact details (**R27**).\n\n' +
+        '**DRAFT only.** Anything else is a `409 PROFILE_LOCKED`. That covers both cases ' +
+        'that matter: a dealership still working through the wizard, and one a moderator has ' +
+        'sent back with *Request changes* \u2014 which writes `status: DRAFT` with a reason, ' +
+        'so it is the same door. Nothing has been verified about a DRAFT, so there is ' +
+        'nothing an edit here can invalidate.\n\n' +
+        '**Partial by design.** The wizard PATCHes only the fields on the current step, so ' +
+        '`Back` never blanks what another step filled in.\n\n' +
         'Notable absences, all deliberate: `status`, `slug` and `dealerId`. GSTIN and PAN ' +
         'are validated against their real formats and upper-cased.\n\n' +
         '`contact.phone` **is** patchable. It stopped being a credential when dealers moved ' +
-        'to Google sign-in, so what this edits is the number a buyer is given — the thing a ' +
-        'dealership changes when it swaps SIMs. It is normalised to E.164 and stays unique ' +
-        'across users: a number another dealership holds is a `409 ' +
+        'to Google sign-in, so what this edits is the number a buyer is given \u2014 the ' +
+        'thing a dealership changes when it swaps SIMs. It is normalised to E.164 and stays ' +
+        'unique across users: a number another dealership holds is a `409 ' +
         'PHONE_ALREADY_REGISTERED` naming `body.contact.phone`. Both `users.phone` and the ' +
         "dealership's public `contactPhone` are written from the one answer.\n\n" +
         '`brandName` is absent too, and for a different reason: a dealership has **one** ' +
         'name. `legalName` is it, and `brandName` is the server-written display mirror of ' +
-        'it — a client able to set both is a client able to make them disagree.\n\n' +
+        'it \u2014 a client able to set both is a client able to make them disagree.\n\n' +
         '`legalName` is unique **within a city** and `gstin` is unique across the platform. A ' +
         'collision is a 409 (`DEALER_NAME_TAKEN`, `GSTIN_ALREADY_REGISTERED`) naming the ' +
         'field. A rename is checked against the city this same request moves to, when it ' +
-        'moves — so changing both in one call is checked against the pair, not a half-applied ' +
-        'combination of them.\n\n' +
+        'moves \u2014 so changing both in one call is checked against the pair, not a ' +
+        'half-applied combination of them.\n\n' +
         '`address.city`, `address.district` and `address.state` are free text, normalised on ' +
         'write. There is no list of cities to choose from and no state the platform is ' +
         'confined to.\n\n' +
@@ -64,7 +113,7 @@ export const dealersDocs: ModuleDocs = {
         'verbatim and **host-checked**: `https` on a Google Maps domain, nothing else. A ' +
         "buyer's browser follows it from the public portfolio, so an arbitrary URL here " +
         'would be a self-service open redirect wearing a dealership\u2019s name.\n\n' +
-        'OWNER only (`dealer:update`) — a manager or salesperson gets a 403.',
+        'OWNER only (`dealer:update`) \u2014 a manager or salesperson gets a 403.',
       audience: 'dealer',
       permission: 'dealer:update',
       requestBody: {
@@ -72,7 +121,6 @@ export const dealersDocs: ModuleDocs = {
         description: 'Only the fields being changed.',
         example: {
           legalName: 'Sri Lakshmi Motors',
-          tagline: 'Family-run since 2009',
           gstin: '33AABCS1429P1Z5',
           address: {
             line: '142 Katpadi Main Road',

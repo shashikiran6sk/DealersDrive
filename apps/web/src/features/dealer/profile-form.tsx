@@ -1,7 +1,7 @@
 'use client';
 
 import type { DealerProfile, MapKind } from '@dealers-drive/contracts';
-import { useActionState } from 'react';
+import { useActionState, type ReactNode } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import { Field, invalidProps } from '@/components/forms/field';
@@ -16,24 +16,48 @@ const EMPTY: ProfileFormState = { status: 'idle', fieldErrors: {} };
  * The dealer's own record (C1/C2) — the same answers onboarding collected,
  * after onboarding is over.
  *
- * Read-only here on purpose: `status`, `slug`, `creditBalance`, GSTIN and PAN.
- * The first three are the platform's to set; the tax identifiers were verified
- * against a document during onboarding, and a silent edit would invalidate that
- * check. `UpdateDealerInput` accepts them — the *admin* review screen writes
- * them, with the certificate in hand — and there is deliberately no shortcut
- * here that skips that pair of eyes.
+ * ## Three boxes, and a page of read-only facts (**R27**)
  *
- * ── Divergences from the baseline, each forced by a decision since ──────────
- *   · **No "Trading name".** `brandName` is the server-written mirror of
- *     `legalName` and is absent from `UpdateDealerInput`; two boxes able to
- *     disagree is the thing that removal prevents.
- *   · **City, district and state are typed, and editable** (D6, R2). They were
- *     a disabled box filled in from a five-row `cities` table.
- *   · **The Maps link is here** (R6) — the public portfolio's only source for
- *     "Get directions".
- *   · **The mobile is editable again** (R7). It was the login identity when
- *     dealers signed in with a number; identity is a Google account now, and
- *     what this field holds is the number a *buyer* is given.
+ * The dealer may change **when they started trading, the line they describe
+ * themselves in, and what their yard does**. Everything else on this screen is
+ * rendered `disabled` and carries no `name`, so the browser sends nothing for
+ * it — and `DealerSelfUpdateInput` would refuse it if it did. Two defences for
+ * one rule, deliberately: the form is why a dealer never sends a locked field,
+ * and `.strict()` is why it would not be written if they did.
+ *
+ * The split is between *preferences* and *evidence*. The three editable
+ * answers are opinions a dealership is entitled to revise and that nothing
+ * rests on. The locked ones are what the platform checked:
+ *
+ *   · the **registered name** is what KYC was run against, and what the slug
+ *     and public URL are derived from;
+ *   · the **address, town, pin and map link** are what the yard photograph,
+ *     the address proof and the verification were *about*;
+ *   · the **mobile and email** are how a buyer reaches a business that has
+ *     been vouched for;
+ *   · **GSTIN and PAN** were read off a document, and have been read-only here
+ *     since this screen was built.
+ *
+ * A dealership that has genuinely moved does not edit its way to the new
+ * address: it closes this account and opens another, and the new premises are
+ * verified the way the first were. That is a heavier answer than an edit box
+ * and it is the correct one — the VERIFIED plate is a claim about a place, and
+ * there is no honest way to carry it across a move.
+ *
+ * ── What R27 reversed ───────────────────────────────────────────────────────
+ * Three earlier decisions made these boxes editable, and each was right about
+ * its own question and wrong about this one:
+ *   · **R2/D6** made city, district and state typed rather than a dropdown off
+ *     a five-row table. Still true — an admin types them. Not the dealer.
+ *   · **R6** put the Maps link on this screen as the portfolio's only source
+ *     for "Get directions". Still the only source; still not editable here.
+ *   · **R7** made the mobile editable, on the reasoning that it had stopped
+ *     being a login credential. Right about identity, wrong about the field: it
+ *     is the number printed on a verified dealership's public page.
+ *
+ * **No "Trading name"** remains true for its own reason: `brandName` is the
+ * server-written mirror of `legalName`, and two boxes able to disagree is what
+ * its absence prevents.
  * ───────────────────────────────────────────────────────────────────────────
  */
 export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
@@ -49,22 +73,15 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         <h2 className="text-[19px]">Dealership</h2>
 
         <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-          <Field
-            id="legalName"
-            label="Dealership name"
-            hint="as buyers see it"
-            error={errors.legalName}
-          >
-            <Input
-              id="legalName"
-              name="legalName"
-              defaultValue={dealer.legalName}
-              required
-              aria-required="true"
-              {...invalidProps('legalName', errors.legalName)}
-            />
-          </Field>
+          {/*
+            R27 — read-only. The registered name is what KYC was checked
+            against and what the public slug and URL are derived from, so it is
+            not a preference a dealer revises after verification.
+          */}
+          <LockedField id="legalName" label="Dealership name" value={dealer.legalName} />
 
+          {/* Still theirs: a fact about the business that no verification
+              rests on, and one that never becomes a different dealership. */}
           <Field id="establishedYear" label="Established" error={errors.establishedYear}>
             <Input
               id="establishedYear"
@@ -79,18 +96,6 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
           </Field>
         </div>
 
-        {/*
-          The one line the public pages run under the dealership's name — on the
-          portfolio header (R25) and, clamped to two lines, on the directory
-          card.
-
-          Required here as it is in onboarding (**R26**), with the same
-          ten-character floor: a dealer must not be able to delete on the
-          profile screen what the sign-up form would not let them skip. It
-          replaces the `About the dealership` textarea that used to sit under
-          it — nothing public renders that paragraph any more, so a box asking
-          for it would be collecting writing to store.
-        */}
         <Field
           id="tagline"
           label="One line about your dealership"
@@ -136,183 +141,64 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
 
       <section className="card gap-[14px] p-[18px]">
         <h2 className="text-[19px]">Contact</h2>
+        <LockedNote>
+          These are how buyers and we reach a business that has been verified. Contact support to
+          change any of them.
+        </LockedNote>
 
         <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-          <Field id="contactFullName" label="Contact name" error={errors.contactFullName}>
-            <Input
-              id="contactFullName"
-              name="contactFullName"
-              defaultValue={dealer.contact.fullName ?? ''}
-              {...invalidProps('contactFullName', errors.contactFullName)}
-            />
-          </Field>
-
-          <Field id="contactRoleTitle" label="Role" error={errors.contactRoleTitle}>
-            <Input
-              id="contactRoleTitle"
-              name="contactRoleTitle"
-              defaultValue={dealer.contact.roleTitle ?? ''}
-              {...invalidProps('contactRoleTitle', errors.contactRoleTitle)}
-            />
-          </Field>
-
-          <Field id="contactEmail" label="Email" error={errors.contactEmail}>
-            <Input
-              id="contactEmail"
-              name="contactEmail"
-              type="email"
-              defaultValue={dealer.contact.email ?? ''}
-              {...invalidProps('contactEmail', errors.contactEmail)}
-            />
-          </Field>
-
+          <LockedField id="contactFullName" label="Contact name" value={dealer.contact.fullName} />
+          <LockedField id="contactRoleTitle" label="Role" value={dealer.contact.roleTitle} />
+          <LockedField id="contactEmail" label="Email" value={dealer.contact.email} />
           {/*
-            R7 — editable, and raw rather than formatted, because
-            `+91 98400 12345` is what a dealer reads and `9840012345` is what
-            the field accepts back. It stays unique across users, so swapping to
-            a number that belongs to someone else is refused by the API and
-            lands on this box.
+            R27 reverses R7. The number stopped being a credential when dealers
+            moved to Google sign-in, and R7 made it editable again on that
+            reasoning — which was right about identity and wrong about what the
+            field is for. It is the number printed on a verified dealership's
+            public page, and a self-service edit re-points every listing at a
+            phone nobody checked.
           */}
-          <Field
-            id="contactPhone"
-            label="Mobile"
-            hint="the number buyers are given"
-            error={errors.contactPhone}
-          >
-            <Input
-              id="contactPhone"
-              name="contactPhone"
-              type="tel"
-              inputMode="numeric"
-              autoComplete="tel"
-              className="tnum"
-              defaultValue={dealer.contact.phone}
-              {...invalidProps('contactPhone', errors.contactPhone)}
-            />
-          </Field>
-
-          <Field
-            id="contactLandline"
-            label="Landline"
-            hint="optional"
-            error={errors.contactLandline}
-          >
-            <Input
-              id="contactLandline"
-              name="contactLandline"
-              className="tnum"
-              defaultValue={dealer.contact.landline ?? ''}
-              {...invalidProps('contactLandline', errors.contactLandline)}
-            />
-          </Field>
+          <LockedField id="contactPhone" label="Mobile" value={dealer.contact.phoneDisplay} mono />
+          <LockedField id="contactLandline" label="Landline" value={dealer.contact.landline} mono />
         </div>
       </section>
 
       <section className="card gap-[14px] p-[18px]">
         <h2 className="text-[19px]">Address</h2>
+        {/*
+          R27, and the heaviest of the three locks.
 
-        <Field id="addressLine" label="Street address" error={errors.addressLine}>
-          <Input
-            id="addressLine"
-            name="addressLine"
-            autoComplete="street-address"
-            defaultValue={dealer.address.line ?? ''}
-            {...invalidProps('addressLine', errors.addressLine)}
-          />
-        </Field>
+          The yard photograph, the address proof and the verification visit were
+          all about *this* place. A dealership that edits its way to another one
+          is not correcting a record — it is a different business wearing a
+          plate that was granted to the first. There is no in-place answer to
+          that, so there is no edit box and no request queue either: a
+          dealership that has moved closes this account and opens another,
+          and the new address is verified the way the first one was.
+        */}
+        <LockedNote>
+          Your address and map pin are what your verification was about — the yard photograph, the
+          address proof and the check we ran on them. They cannot be edited here. A dealership that
+          has actually moved closes this account and opens a new one, so the new premises are
+          verified the way these were. Contact support to start that.
+        </LockedNote>
+
+        <LockedField id="addressLine" label="Street address" value={dealer.address.line} />
 
         <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
-          {/*
-            City, district and state are three text boxes rather than a dropdown
-            and two disabled mirrors of it (D6, R2). The server normalises case
-            and spacing on write, so one town does not become three facet
-            values — and the name-within-a-city uniqueness check is what the
-            city is really load-bearing for, which is why a refusal here names
-            this box.
-          */}
-          <Field id="addressCity" label="City" error={errors.addressCity}>
-            <Input
-              id="addressCity"
-              name="addressCity"
-              autoComplete="address-level2"
-              placeholder="Vellore"
-              defaultValue={dealer.address.city ?? ''}
-              {...invalidProps('addressCity', errors.addressCity)}
-            />
-          </Field>
-
-          <Field id="addressDistrict" label="District" error={errors.addressDistrict}>
-            <Input
-              id="addressDistrict"
-              name="addressDistrict"
-              placeholder="Vellore"
-              defaultValue={dealer.address.district ?? ''}
-              {...invalidProps('addressDistrict', errors.addressDistrict)}
-            />
-          </Field>
-
-          <Field id="addressState" label="State" error={errors.addressState}>
-            <Input
-              id="addressState"
-              name="addressState"
-              autoComplete="address-level1"
-              placeholder="Tamil Nadu"
-              defaultValue={dealer.address.state ?? ''}
-              {...invalidProps('addressState', errors.addressState)}
-            />
-          </Field>
-
-          <Field id="addressPincode" label="Pincode" error={errors.addressPincode}>
-            <Input
-              id="addressPincode"
-              name="addressPincode"
-              className="tnum"
-              inputMode="numeric"
-              autoComplete="postal-code"
-              maxLength={6}
-              defaultValue={dealer.address.pincode ?? ''}
-              {...invalidProps('addressPincode', errors.addressPincode)}
-            />
-          </Field>
+          <LockedField id="addressCity" label="City" value={dealer.address.city} />
+          <LockedField id="addressDistrict" label="District" value={dealer.address.district} />
+          <LockedField id="addressState" label="State" value={dealer.address.state} />
+          <LockedField id="addressPincode" label="Pincode" value={dealer.address.pincode} mono />
         </div>
 
-        {/*
-          R6 — the pin, not the address. A typed street address is several
-          different gates in one district, and the buyer who follows the wrong
-          one has already driven there. Nullable on rows that predate the
-          question, which is why the portfolio branches rather than composing a
-          Maps URL out of the address.
-        */}
-        <Field
+        <LockedField
           id="addressMapsUrl"
           label="Google Maps location"
-          hint="buyers use this for directions"
-          error={errors.addressMapsUrl}
+          value={dealer.address.mapsUrl}
         >
-          {/*
-            `text`, not `url`, and that is deliberate. The Share panel's other
-            half — Embed — copies a whole `<iframe …>` element to the clipboard,
-            and the server now accepts one and keeps the link out of it (R13).
-            `type="url"` would have the browser refuse that paste before the
-            form is ever submitted, with a message no dealer can act on.
-            `inputMode` still asks a phone for the URL keyboard.
-          */}
-          <Input
-            id="addressMapsUrl"
-            name="addressMapsUrl"
-            type="text"
-            inputMode="url"
-            placeholder="https://maps.app.goo.gl/…"
-            defaultValue={dealer.address.mapsUrl ?? ''}
-            {...invalidProps('addressMapsUrl', errors.addressMapsUrl)}
-          />
-          <p className="mt-[4px] text-[11px] ink-subtle">
-            Open your yard in Google Maps, tap <strong className="font-medium">Share</strong>, then{' '}
-            <strong className="font-medium">Copy link</strong> and paste it here. The{' '}
-            <strong className="font-medium">Embed a map</strong> code works too.
-          </p>
           <MapKindNote mapsUrl={dealer.address.mapsUrl} kind={dealer.address.mapKind} />
-        </Field>
+        </LockedField>
       </section>
 
       <section className="card gap-[14px] p-[18px]">
@@ -335,6 +221,64 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
       <SaveRow />
     </form>
   );
+}
+
+/**
+ * A fact about the dealership, in the shape of the field it used to be
+ * (**R27**).
+ *
+ * `disabled` and **without a `name`**, which is the load-bearing half: a
+ * disabled control is not submitted, and one with no name has nothing to be
+ * submitted under. So a locked value cannot reach `saveDealerProfileAction`
+ * even by accident, and the action does not have to filter it out — it builds
+ * its payload from three keys rather than reading the form.
+ *
+ * A box rather than a `<dl>` row, because that is what this page has always
+ * done with GSTIN and PAN and the eye reads the column as one thing. `—` for a
+ * value the dealership never gave: an empty control under a label reads as a
+ * box you have not filled in yet, which is the opposite of what is true here.
+ *
+ * `children` is for the one field that has something to say about itself —
+ * the Maps link, and what kind of map it draws.
+ */
+function LockedField({
+  id,
+  label,
+  value,
+  mono,
+  children,
+}: {
+  id: string;
+  label: string;
+  value: string | null;
+  mono?: boolean;
+  children?: ReactNode;
+}) {
+  return (
+    <Field id={id} label={label}>
+      <Input
+        id={id}
+        className={mono ? 'font-mono' : undefined}
+        defaultValue={value ?? '—'}
+        disabled
+      />
+      {children}
+    </Field>
+  );
+}
+
+/**
+ * Why a section is read-only, said once at the top of it rather than on every
+ * box in it.
+ *
+ * A control a person cannot use and is not told why about is the worst of the
+ * three states this screen can be in — worse than an editable box and worse
+ * than no box at all, because the dealer's conclusion is that the page is
+ * broken. The same 12px `ink-subtle` note the Tax identifiers section has
+ * carried since this screen was built.
+ */
+function LockedNote({ children }: { children: ReactNode }) {
+  return <p className="text-[12px] ink-subtle">{children}</p>;
 }
 
 function SaveRow() {
@@ -368,9 +312,13 @@ function SaveRow() {
  * *place* depends on whether the dealer opened their business's own card before
  * sharing or dropped a pin on their street. Both look identical afterwards.
  *
- * `NONE` with no link at all says nothing: the instructions above are the whole
- * message for a dealer who has not answered yet, and a second line telling them
- * an empty box is empty would be noise.
+ * `NONE` with no link at all says nothing: there is nothing to diagnose, and a
+ * line telling a dealer that an empty box is empty would be noise.
+ *
+ * **R27 changed what these say to do.** The link is read-only now, so "share
+ * your business from Google Maps again" is advice a dealer cannot act on. The
+ * diagnosis is worth as much as it ever was — it explains a public page that
+ * shows a bare pin — so it stays, and the remedy is support.
  *
  * `mapKind` is composed by the API from the same function that builds the embed
  * URL, so this cannot claim a listing over a page drawing a dot.
@@ -390,10 +338,9 @@ function MapKindNote({ mapsUrl, kind }: { mapsUrl: string | null; kind: MapKind 
   if (kind === 'POINT') {
     return (
       <p className="mt-[6px] text-[11px] text-(--color-warn)">
-        This link marks the right spot but does not name your dealership, so buyers see a plain pin.
-        To show your listing — with your name and rating — search Google Maps for your business,
-        open its card, then <strong className="font-medium">Share</strong> →{' '}
-        <strong className="font-medium">Copy link</strong>.
+        This link marks the right spot but does not name your dealership, so buyers see a plain pin
+        rather than your Google listing. Contact support if you would like it changed to your
+        business card.
       </p>
     );
   }
@@ -401,7 +348,7 @@ function MapKindNote({ mapsUrl, kind }: { mapsUrl: string | null; kind: MapKind 
   return (
     <p className="mt-[6px] text-[11px] text-(--color-warn)">
       We could not read a location out of this link, so your public page shows no map. “Get
-      directions” still works. Sharing your business from Google Maps again usually fixes it.
+      directions” still works. Contact support and we will re-point it.
     </p>
   );
 }

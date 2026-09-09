@@ -1,6 +1,6 @@
 'use server';
 
-import { UpdateDealerInput, type DealerProfile } from '@dealers-drive/contracts';
+import { DealerSelfUpdateInput, type DealerProfile } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
@@ -13,12 +13,23 @@ export interface ProfileFormState {
 }
 
 /**
- * C2 `PATCH /v1/dealer`.
+ * C2 `PATCH /v1/dealer` — three fields (**R27**).
  *
  * Which dealer is being edited is never in this payload — the API takes it from
  * the session (Rule 1). Nor are `status`, `slug` or `creditBalance` accepted by
- * `UpdateDealerInput`: a dealer cannot verify or fund themselves by editing
+ * `DealerSelfUpdateInput`: a dealer cannot verify or fund themselves by editing
  * their own profile.
+ *
+ * And since R27, neither can they edit the record their verification was *about*
+ * — the registered name, the address, the town, the pin, the mobile, the email.
+ * Those are read-only on the form and absent from this schema, which is two
+ * defences for one rule and deliberately so: the disabled inputs are why a
+ * dealer never sends one, and `.strict()` is why it would not be written if
+ * they did.
+ *
+ * The payload is therefore built from three keys rather than filtered down from
+ * the form. A form that grows a box nobody meant to accept is the failure this
+ * shape prevents.
  */
 export async function saveDealerProfileAction(
   _previous: ProfileFormState,
@@ -38,26 +49,10 @@ export async function saveDealerProfileAction(
 
   const year = text('establishedYear');
 
-  const parsed = UpdateDealerInput.safeParse({
-    ...(text('legalName') ? { legalName: text('legalName') } : {}),
-    ...(text('tagline') ? { tagline: text('tagline') } : {}),
+  const parsed = DealerSelfUpdateInput.safeParse({
     ...(year ? { establishedYear: Number(year) } : {}),
+    ...(text('tagline') ? { tagline: text('tagline') } : {}),
     ...(specialities.length > 0 ? { specialities } : {}),
-    contact: {
-      ...(text('contactFullName') ? { fullName: text('contactFullName') } : {}),
-      ...(text('contactRoleTitle') ? { roleTitle: text('contactRoleTitle') } : {}),
-      ...(text('contactEmail') ? { email: text('contactEmail') } : {}),
-      ...(text('contactPhone') ? { phone: text('contactPhone') } : {}),
-      ...(text('contactLandline') ? { landline: text('contactLandline') } : {}),
-    },
-    address: {
-      ...(text('addressLine') ? { line: text('addressLine') } : {}),
-      ...(text('addressCity') ? { city: text('addressCity') } : {}),
-      ...(text('addressDistrict') ? { district: text('addressDistrict') } : {}),
-      ...(text('addressState') ? { state: text('addressState') } : {}),
-      ...(text('addressPincode') ? { pincode: text('addressPincode') } : {}),
-      ...(text('addressMapsUrl') ? { mapsUrl: text('addressMapsUrl') } : {}),
-    },
   });
 
   if (!parsed.success) {
