@@ -330,7 +330,6 @@ export interface DevDealer {
   brandName: string;
   legalName: string;
   tagline: string;
-  about: string;
   gstin: string;
   pan: string;
   town: keyof typeof TOWNS;
@@ -378,8 +377,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Annamalai Auto Mart',
     legalName: 'Annamalai Auto Mart Pvt Ltd',
     tagline: 'Fort-road yard since 2009 — every car with a service book.',
-    about:
-      'Three generations on Officers Line. We stock single-owner hatchbacks and sedans, and every car leaves after a 120-point check and a fresh service.',
     gstin: '33AABCA1001C1ZP',
     pan: 'AABCA1001C',
     town: 'vellore',
@@ -398,8 +395,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Green Circle Cars',
     legalName: 'Green Circle Motors LLP',
     tagline: 'Compact SUVs and MUVs, exchange welcome.',
-    about:
-      'Opposite the Green Circle bus stand. We specialise in compact SUVs and seven-seaters, and we take your old car in exchange the same day.',
     gstin: '33AACFG1002D1ZQ',
     pan: 'AACFG1002D',
     town: 'vellore',
@@ -418,8 +413,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Thiru Motors',
     legalName: 'Thiru Motors and Finance',
     tagline: 'Finance sorted before you drive out.',
-    about:
-      'A small yard with an in-house finance desk. We work with four banks and two NBFCs, so most buyers are approved before they leave the shop.',
     gstin: '33AAEFT1003E1ZR',
     pan: 'AAEFT1003E',
     town: 'vellore',
@@ -438,8 +431,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'CMC Road Autos',
     legalName: 'CMC Road Autos Enterprises',
     tagline: 'Diesel SUVs, sold and serviced.',
-    about:
-      'We deal only in diesel — SUVs, pickups and the occasional sedan. Our own workshop is behind the yard, so anything we sell we can also service.',
     gstin: '33AAFCC1004F1ZS',
     pan: 'AAFCC1004F',
     town: 'vellore',
@@ -458,8 +449,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Katpadi Car Junction',
     legalName: 'Katpadi Car Junction Pvt Ltd',
     tagline: 'Two minutes from the railway junction.',
-    about:
-      'The closest yard to Katpadi junction, which is how most of our buyers find us. Strong on first cars — hatchbacks under five lakh, all petrol.',
     gstin: '33AABCK1005G1ZT',
     pan: 'AABCK1005G',
     town: 'katpadi',
@@ -478,8 +467,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'VIT Gate Motors',
     legalName: 'VIT Gate Motors LLP',
     tagline: 'Small cars for people who are new to driving.',
-    about:
-      'Beside the university gate. Almost everything on our lot is under four lakh and under 60,000 km — student and staff budgets, and we do the RC transfer ourselves.',
     gstin: '33AACFV1006H1ZU',
     pan: 'AACFV1006H',
     town: 'katpadi',
@@ -498,8 +485,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Sri Balaji Cars',
     legalName: 'Sri Balaji Cars and Credits',
     tagline: 'Family cars, family business, since 1998.',
-    about:
-      'Twenty-six years on the same road. We buy directly from first owners in and around Katpadi and we do not deal in accident-repaired cars.',
     gstin: '33AAGFS1007J1ZV',
     pan: 'AAGFS1007J',
     town: 'katpadi',
@@ -518,8 +503,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Gudiyatham Auto Hub',
     legalName: 'Gudiyatham Auto Hub Pvt Ltd',
     tagline: 'The largest yard between Vellore and Krishnagiri.',
-    about:
-      'Forty cars on the lot on any given week. We serve the whole taluk, and we deliver to your door anywhere inside Vellore district at no charge.',
     gstin: '33AABCG1008K1ZW',
     pan: 'AABCG1008K',
     town: 'gudiyatham',
@@ -538,8 +521,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Pernambut Road Motors',
     legalName: 'Pernambut Road Motors Enterprises',
     tagline: 'Straight prices, no negotiation theatre.',
-    about:
-      'One price on the windscreen and that is the price. We publish the service history and the insurance status of every car before you ask for it.',
     gstin: '33AAFPP1009L1ZX',
     pan: 'AAFPP1009L',
     town: 'gudiyatham',
@@ -558,8 +539,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Bagayam Motors',
     legalName: 'Bagayam Motors and Spares',
     tagline: 'Cars and the workshop to keep them running.',
-    about:
-      'A workshop first, a yard second. Everything we sell has been through our own bay, and the first two services after purchase are on us.',
     gstin: '33AAGCB1010M1ZY',
     pan: 'AAGCB1010M',
     town: 'bagayam',
@@ -578,8 +557,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kalinjur Used Cars',
     legalName: 'Kalinjur Used Cars LLP',
     tagline: 'CNG and petrol runabouts, city-driven only.',
-    about:
-      'We stock what people in Vellore actually drive: small petrol cars and CNG conversions with a valid certificate. Nothing on our lot has done highway miles.',
     gstin: '33AACFK1011N1ZZ',
     pan: 'AACFK1011N',
     town: 'bagayam',
@@ -600,8 +577,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Ranipet Auto World',
     legalName: 'Ranipet Auto World Pvt Ltd',
     tagline: 'Serving the SIPCOT belt since 2010.',
-    about:
-      'Most of our buyers work in the SIPCOT estates, so we keep the paperwork simple and we open early enough to catch the morning shift.',
     gstin: '33AABCR1012P1ZA',
     pan: 'AABCR1012P',
     town: 'ranipet',
@@ -620,8 +595,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Walaja Highway Cars',
     legalName: 'Walaja Highway Cars Enterprises',
     tagline: 'On NH-48, open till nine.',
-    about:
-      'Right on the national highway, which means we see cars from Chennai and Bengaluru both. Good stock of highway-driven diesels with full records.',
     gstin: '33AAFCW1013Q1ZB',
     pan: 'AAFCW1013Q',
     town: 'ranipet',
@@ -640,8 +613,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'SIPCOT Car Bazaar',
     legalName: 'SIPCOT Car Bazaar LLP',
     tagline: 'Company buy-backs and fleet cars.',
-    about:
-      'We buy fleet cars from the estates when they come off lease. Single-driver, fully serviced, and priced below what a private sale would fetch.',
     gstin: '33AAGFS1014R1ZC',
     pan: 'AAGFS1014R',
     town: 'ranipet',
@@ -660,8 +631,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Arcot Fort Motors',
     legalName: 'Arcot Fort Motors Pvt Ltd',
     tagline: 'Behind the fort, in front on price.',
-    about:
-      'A twenty-year-old yard in the old town. We know every car we sell because we bought it from someone in Arcot, usually the first owner.',
     gstin: '33AABCA1015S1ZD',
     pan: 'AABCA1015S',
     town: 'arcot',
@@ -680,8 +649,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Palar Valley Autos',
     legalName: 'Palar Valley Autos Enterprises',
     tagline: 'Pickups and vans for the trade.',
-    about:
-      'We deal mainly in light commercial vehicles — pickups, tempo vans, and the small trucks the leather trade runs on. Finance available for GST-registered buyers.',
     gstin: '33AAFPP1016T1ZE',
     pan: 'AAFPP1016T',
     town: 'arcot',
@@ -700,8 +667,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Arcot City Cars',
     legalName: 'Arcot City Cars LLP',
     tagline: 'Everything under six lakh.',
-    about:
-      'A deliberately narrow yard: nothing over six lakh, nothing over eight years old, nothing without two keys and a clean insurance record.',
     gstin: '33AACFA1017U1ZF',
     pan: 'AACFA1017U',
     town: 'arcot',
@@ -720,8 +685,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Arakkonam Junction Motors',
     legalName: 'Arakkonam Junction Motors Pvt Ltd',
     tagline: 'Railway-town stock, railway-town prices.',
-    about:
-      'Half our buyers are railway employees, so we are used to salary-slip finance and we do the whole loan file in the shop.',
     gstin: '33AABCA1018V1ZG',
     pan: 'AABCA1018V',
     town: 'arakkonam',
@@ -740,8 +703,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Thakkolam Road Cars',
     legalName: 'Thakkolam Road Cars Enterprises',
     tagline: 'Seven-seaters for large families.',
-    about:
-      'We stock MUVs and seven-seaters almost exclusively — the cars people around here actually need. Test drives to your house on request.',
     gstin: '33AAFCT1019W1ZH',
     pan: 'AAFCT1019W',
     town: 'arakkonam',
@@ -760,8 +721,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Nemili Auto Traders',
     legalName: 'Nemili Auto Traders LLP',
     tagline: 'Village-route cars, honestly graded.',
-    about:
-      'We grade every car A, B or C on the board and we do not move the grade to make a sale. C-grade cars are cheap and we tell you exactly why.',
     gstin: '33AAGFN1020X1ZJ',
     pan: 'AAGFN1020X',
     town: 'arakkonam',
@@ -780,8 +739,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Walajapet Motors',
     legalName: 'Walajapet Motors and Finance',
     tagline: 'On the Palar bridge road since 2006.',
-    about:
-      'A quiet yard with a long list of repeat buyers. We hold cars back rather than sell something we would not put a family in.',
     gstin: '33AAGCW1021Y1ZK',
     pan: 'AAGCW1021Y',
     town: 'walajapet',
@@ -800,8 +757,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Palar Bridge Autos',
     legalName: 'Palar Bridge Autos Enterprises',
     tagline: 'Exchange your old car the same day.',
-    about:
-      'Bring the RC and the keys and you will have a number before you leave. We buy anything running, and we are the yard other yards sell to.',
     gstin: '33AAFPP1022Z1ZL',
     pan: 'AAFPP1022Z',
     town: 'walajapet',
@@ -822,8 +777,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Tirupattur Car Company',
     legalName: 'Tirupattur Car Company Pvt Ltd',
     tagline: 'The district headquarters yard.',
-    about:
-      'The largest stock in the new district, and the only yard here with an indoor showroom. Cars from Bengaluru and Salem as well as local trade-ins.',
     gstin: '33AABCT1023A1ZM',
     pan: 'AABCT1023A',
     town: 'tirupattur',
@@ -842,8 +795,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Jolarpettai Road Motors',
     legalName: 'Jolarpettai Road Motors LLP',
     tagline: 'Diesel workhorses, checked and certified.',
-    about:
-      'Diesel only, and every engine goes on the compression tester before it goes on the lot. If it does not pass we send it to auction, not to you.',
     gstin: '33AACFJ1024B1ZN',
     pan: 'AACFJ1024B',
     town: 'tirupattur',
@@ -862,8 +813,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Yelagiri Hills Cars',
     legalName: 'Yelagiri Hills Cars Enterprises',
     tagline: 'Hill-road tested before it is hill-road sold.',
-    about:
-      'We take every car up to Yelagiri and back before we list it. If the brakes or the clutch will not take fourteen hairpins, we fix it or we do not sell it.',
     gstin: '33AAFCY1025C1ZP',
     pan: 'AAFCY1025C',
     town: 'tirupattur',
@@ -882,8 +831,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Vaniyambadi Auto Mart',
     legalName: 'Vaniyambadi Auto Mart Pvt Ltd',
     tagline: 'Leather-town trade, forty years of it.',
-    about:
-      'We started as a tannery transport fleet and kept the workshop. Strong stock of vans and pickups alongside the family cars.',
     gstin: '33AABCV1026D1ZQ',
     pan: 'AABCV1026D',
     town: 'vaniyambadi',
@@ -902,8 +849,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'NH-44 Car Point',
     legalName: 'NH-44 Car Point LLP',
     tagline: 'Highway yard, open seven days.',
-    about:
-      'On the Chennai–Bengaluru highway with parking for twenty cars. We stay open on Sundays because that is when people actually come to look.',
     gstin: '33AACFN1027E1ZR',
     pan: 'AACFN1027E',
     town: 'vaniyambadi',
@@ -922,8 +867,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Vaniyambadi Family Cars',
     legalName: 'Vaniyambadi Family Cars Enterprises',
     tagline: 'First cars, second chances, fair paperwork.',
-    about:
-      'We sell mostly to first-time buyers, so we take the time to explain the insurance, the RC transfer and what the loan actually costs over five years.',
     gstin: '33AAFPV1028F1ZS',
     pan: 'AAFPV1028F',
     town: 'vaniyambadi',
@@ -942,8 +885,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Ambur Motor House',
     legalName: 'Ambur Motor House Pvt Ltd',
     tagline: 'Since 1996 — the oldest yard in the district.',
-    about:
-      'Three decades on Vellore Road. We have sold cars to the grandchildren of our first customers, and we still do the paperwork by hand because it never goes missing.',
     gstin: '33AABCA1029G1ZT',
     pan: 'AABCA1029G',
     town: 'ambur',
@@ -962,8 +903,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Ambur Star Autos',
     legalName: 'Ambur Star Autos LLP',
     tagline: 'Premium pre-owned, fully reconditioned.',
-    about:
-      'The upper end of the local market — executive sedans and full-size SUVs, each one reconditioned inside and out before it is photographed.',
     gstin: '33AACFA1030H1ZU',
     pan: 'AACFA1030H',
     town: 'ambur',
@@ -986,8 +925,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Cantonment Car Company',
     legalName: 'Cantonment Car Company Pvt Ltd',
     tagline: 'On Infantry Road since 2004 — every car with a full history.',
-    about:
-      'A Cantonment yard that has outlasted three road-widenings. We buy from first owners in the old city, and every car comes with its service book and both keys or we do not take it in.',
     gstin: '29AABCC2001K1ZL',
     pan: 'AABCC2001K',
     town: 'bengaluru',
@@ -1006,8 +943,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Jayanagar Motors',
     legalName: 'Jayanagar Motors LLP',
     tagline: 'Automatics for people who are done with traffic.',
-    about:
-      'Four blocks from the 4th Block market. We stock automatics almost exclusively — CVTs, torque converters and the odd DCT — because in this city that is what people come back for.',
     gstin: '29AACFJ2002L1ZM',
     pan: 'AACFJ2002L',
     town: 'bengaluru',
@@ -1026,8 +961,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Silk Board Autos',
     legalName: 'Silk Board Autos and Finance',
     tagline: 'Loan approved before the test drive is over.',
-    about:
-      'An in-house finance desk with five banks on the panel. Most of our buyers work in the tech parks down the Outer Ring Road, and most of them are approved the same afternoon.',
     gstin: '29AAEFS2003M1ZN',
     pan: 'AAEFS2003M',
     town: 'bengaluru',
@@ -1046,8 +979,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Malleswaram Car Bazaar',
     legalName: 'Malleswaram Car Bazaar Pvt Ltd',
     tagline: 'Family cars, sold the way they were bought.',
-    about:
-      'A small covered yard behind the 8th Cross market. We deal in seven-seaters and estate-sized hatchbacks, and we will hold a car for a week while a family decides.',
     gstin: '29AAFCM2004N1ZP',
     pan: 'AAFCM2004N',
     town: 'bengaluru',
@@ -1066,8 +997,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Yelahanka Wheels',
     legalName: 'Yelahanka Wheels LLP',
     tagline: 'Airport-road stock, airport-road prices.',
-    about:
-      'Twenty minutes from the terminal, which is why half our buyers are people who drive to Bengaluru twice a month. Strong on diesel sedans with highway kilometres and honest service records.',
     gstin: '29AAGFY2005P1ZQ',
     pan: 'AAGFY2005P',
     town: 'yelahanka',
@@ -1086,8 +1015,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Doddaballapur Road Motors',
     legalName: 'Doddaballapur Road Motors Pvt Ltd',
     tagline: 'Pickups, panel vans and the trades.',
-    about:
-      'We sell to businesses. Pickups, small panel vans and crew cabs, most of them ex-fleet with the maintenance history to prove it, and we handle the commercial RC endorsement ourselves.',
     gstin: '29AABCD2006Q1ZR',
     pan: 'AABCD2006Q',
     town: 'yelahanka',
@@ -1106,8 +1033,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Air Force Road Autos',
     legalName: 'Air Force Road Autos LLP',
     tagline: 'Service-family cars, priced to move.',
-    about:
-      'Beside the air force station gate. Postings mean cars change hands here every few months, so our stock turns fast and almost all of it is single-owner with light kilometres.',
     gstin: '29AACFA2007R1ZS',
     pan: 'AACFA2007R',
     town: 'yelahanka',
@@ -1126,8 +1051,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kengeri Car Point',
     legalName: 'Kengeri Car Point Enterprises',
     tagline: 'First cars, under five lakh, all of them.',
-    about:
-      'Nothing on our lot costs more than five lakh and nothing has crossed 80,000 km. It is a deliberately narrow yard — first-time buyers do not want choice, they want confidence.',
     gstin: '29AAEFK2008S1ZT',
     pan: 'AAEFK2008S',
     town: 'kengeri',
@@ -1146,8 +1069,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Mysore Road Motors',
     legalName: 'Mysore Road Motors Pvt Ltd',
     tagline: 'CNG and petrol, nothing else on the lot.',
-    about:
-      'We stopped buying diesel in 2019 and have not looked back. Factory-fitted CNG hatchbacks and small sedans, every conversion certified, every cylinder within test date.',
     gstin: '29AAFCM2009T1ZU',
     pan: 'AAFCM2009T',
     town: 'kengeri',
@@ -1166,8 +1087,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Anekal Auto Yard',
     legalName: 'Anekal Auto Yard LLP',
     tagline: 'Country-road cars for country roads.',
-    about:
-      'Out past the town on the Chandapura road. We deal in high-clearance cars — compact SUVs and the tougher hatchbacks — because that is what survives the roads our buyers actually drive.',
     gstin: '29AAGFA2010U1ZV',
     pan: 'AAGFA2010U',
     town: 'anekal',
@@ -1186,8 +1105,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Attibele Highway Cars',
     legalName: 'Attibele Highway Cars Pvt Ltd',
     tagline: 'On the Hosur road, open seven days.',
-    about:
-      'A highway yard on the Tamil Nadu border, which means half our paperwork is inter-state and we are very good at it. NOC, re-registration and road tax, handled end to end.',
     gstin: '29AABCA2011V1ZW',
     pan: 'AABCA2011V',
     town: 'anekal',
@@ -1208,8 +1125,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Palace Road Cars',
     legalName: 'Palace Road Cars and Credits',
     tagline: 'Two generations opposite the palace wall.',
-    about:
-      'My father opened this yard in 1994 and I have not moved it. We know most of the cars in this city by their registration numbers, and we will tell you which ones not to buy.',
     gstin: '29AACFP2012W1ZX',
     pan: 'AACFP2012W',
     town: 'mysuru',
@@ -1228,8 +1143,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Chamundi Motors',
     legalName: 'Chamundi Motors and Finance',
     tagline: 'Hill-road tested, every one of them.',
-    about:
-      'Every car we take in goes up the Chamundi Hill road and back before it is photographed. If a clutch or a cooling system is going to complain, it complains on that hill and not on your first weekend.',
     gstin: '29AAEFC2013X1ZY',
     pan: 'AAEFC2013X',
     town: 'mysuru',
@@ -1248,8 +1161,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Saraswathipuram Autos',
     legalName: 'Saraswathipuram Autos Pvt Ltd',
     tagline: 'Small cars for a small city.',
-    about:
-      'Petrol hatchbacks, mostly, and a few compact sedans. Mysuru is a fifteen-minute city and our stock reflects that — low kilometres, city-driven, easy to park.',
     gstin: '29AAFCS2014Y1ZA',
     pan: 'AAFCS2014Y',
     town: 'mysuru',
@@ -1268,8 +1179,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Nanjangud Car Mandi',
     legalName: 'Nanjangud Car Mandi LLP',
     tagline: 'The Sunday yard on the Ooty road.',
-    about:
-      'Busiest on temple days, when the whole district comes through Nanjangud anyway. Wide, cheap stock — this is where a first car is bought in cash and driven home the same evening.',
     gstin: '29AAGFN2015Z1ZB',
     pan: 'AAGFN2015Z',
     town: 'nanjangud',
@@ -1288,8 +1197,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kabini Motors',
     legalName: 'Kabini Motors Pvt Ltd',
     tagline: 'Four-wheel drive, properly checked.',
-    about:
-      'The resorts down at the Kabini backwaters retire their vehicles here, so we see more genuine four-wheel drive than anyone in the district. Each one comes with its transfer-case service done.',
     gstin: '29AABCK2016A1ZC',
     pan: 'AABCK2016A',
     town: 'nanjangud',
@@ -1308,8 +1215,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Temple Town Autos',
     legalName: 'Temple Town Autos Enterprises',
     tagline: 'Paperwork done before you ask about it.',
-    about:
-      'A two-person yard that does its own RTO runs. Insurance, RC transfer, hypothecation removal — you sign once at our desk and collect the book from us a fortnight later.',
     gstin: '29AACFT2017B1ZD',
     pan: 'AACFT2017B',
     town: 'nanjangud',
@@ -1328,8 +1233,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Hunsur Auto Centre',
     legalName: 'Hunsur Auto Centre and Workshop',
     tagline: 'We sell it, we service it, on the same plot.',
-    about:
-      'The workshop came first and the yard grew out of it. Anything we sell we can also repair, and the first two services after a sale are on us because we would rather see the car again.',
     gstin: '29AAEFH2018C1ZE',
     pan: 'AAEFH2018C',
     town: 'hunsur',
@@ -1348,8 +1251,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Coorg Road Cars',
     legalName: 'Coorg Road Cars LLP',
     tagline: 'Estate cars off the Kodagu plantations.',
-    about:
-      'The planters up the road change vehicles every four or five years and we take the trade-ins. Hard-worked but well-maintained — plantation cars are serviced on time because a breakdown there is a whole day lost.',
     gstin: '29AAFCC2019D1ZF',
     pan: 'AAFCC2019D',
     town: 'hunsur',
@@ -1368,8 +1269,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Hunsur Wheels and Finance',
     legalName: 'Hunsur Wheels and Finance LLP',
     tagline: 'Small-town lending, same-day decisions.',
-    about:
-      'A finance desk that understands a farm income, which the banks in the city do not. We lend against the car and against the land record, and we say yes or no on the day.',
     gstin: '29AAGFH2020E1ZG',
     pan: 'AAGFH2020E',
     town: 'hunsur',
@@ -1388,8 +1287,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Periyapatna Motors',
     legalName: 'Periyapatna Motors Pvt Ltd',
     tagline: 'Tobacco-belt cars, straight prices.',
-    about:
-      'One price, written on the windscreen, and we do not move off it. It costs us some sales and it has kept us here since 2011 in a town where everyone knows everyone.',
     gstin: '29AABCP2021F1ZH',
     pan: 'AABCP2021F',
     town: 'periyapatna',
@@ -1408,8 +1305,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Bettadapura Road Autos',
     legalName: 'Bettadapura Road Autos Enterprises',
     tagline: 'Pickups and load carriers, nothing fancy.',
-    about:
-      'Farm vehicles, mostly — pickups, three-quarter tonne load carriers and the occasional jeep. We check the leaf springs and the chassis before anything else, because that is what fails here.',
     gstin: '29AACFB2022G1ZJ',
     pan: 'AACFB2022G',
     town: 'periyapatna',
@@ -1430,8 +1325,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Camp Road Car Company',
     legalName: 'Camp Road Car Company Pvt Ltd',
     tagline: 'Border-town stock, both sides of it.',
-    about:
-      'Belagavi sits an hour from Maharashtra and half our cars carry MH plates when they arrive. Inter-state transfer is routine here and we quote the re-registration cost up front, in the price.',
     gstin: '29AAEFC2023H1ZK',
     pan: 'AAEFC2023H',
     town: 'belagavi',
@@ -1450,8 +1343,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Tilakwadi Motors',
     legalName: 'Tilakwadi Motors LLP',
     tagline: 'Diesel SUVs for the ghat roads.',
-    about:
-      'The road to Goa and the road to Amboli both start here, and neither is kind to a small engine. We deal in diesel SUVs with the turbo history documented and the timing belt done.',
     gstin: '29AAFCT2024J1ZL',
     pan: 'AAFCT2024J',
     town: 'belagavi',
@@ -1470,8 +1361,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Khanapur Road Autos',
     legalName: 'Khanapur Road Autos Enterprises',
     tagline: 'Under four lakh, over a hundred cars.',
-    about:
-      'The cheap end of the Belagavi market and we are not shy about it. Older stock, honestly described, with the accident history written on the tag rather than left for you to find.',
     gstin: '29AAGFK2025K1ZM',
     pan: 'AAGFK2025K',
     town: 'belagavi',
@@ -1490,8 +1379,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Chikkodi Car Junction',
     legalName: 'Chikkodi Car Junction Pvt Ltd',
     tagline: 'Sugar-belt cars, cash or finance.',
-    about:
-      'The cane season sets our calendar — the yard empties in March and fills again by August. Sedans and MUVs mostly, and we hold prices through the lean months rather than dumping stock.',
     gstin: '29AABCC2026L1ZN',
     pan: 'AABCC2026L',
     town: 'chikkodi',
@@ -1510,8 +1397,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Krishna Valley Motors',
     legalName: 'Krishna Valley Motors LLP',
     tagline: 'Seven-seaters for large families.',
-    about:
-      'Almost everything we stock seats seven, because almost everyone who walks in needs it to. We check the third-row belts and the rear air conditioning on every car, which most yards do not.',
     gstin: '29AACFK2027M1ZP',
     pan: 'AACFK2027M',
     town: 'chikkodi',
@@ -1530,8 +1415,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Nipani Road Autos',
     legalName: 'Nipani Road Autos Enterprises',
     tagline: 'Open at six, because the trucks are.',
-    about:
-      'A highway yard on the Pune road that keeps highway hours. If you are passing through at dawn the gate is open and somebody will make you tea while the paperwork is drawn up.',
     gstin: '29AAEFN2028N1ZQ',
     pan: 'AAEFN2028N',
     town: 'chikkodi',
@@ -1550,8 +1433,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Gokak Falls Motors',
     legalName: 'Gokak Falls Motors Pvt Ltd',
     tagline: 'The oldest yard between Belagavi and Bagalkot.',
-    about:
-      'Since 1999, on the same corner. Three of the men who work here have been here more than fifteen years, and they can tell you what a car was worth in this town in any year you name.',
     gstin: '29AAFCG2029P1ZR',
     pan: 'AAFCG2029P',
     town: 'gokak',
@@ -1570,8 +1451,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Ghataprabha Auto Mart',
     legalName: 'Ghataprabha Auto Mart LLP',
     tagline: 'Reconditioned properly, or not sold.',
-    about:
-      'Every car spends a fortnight in the shed before it reaches the lot — paint, upholstery, suspension bushes and a full fluid change. It costs us margin and it means nothing comes back.',
     gstin: '29AAGFG2030Q1ZS',
     pan: 'AAGFG2030Q',
     town: 'gokak',
@@ -1594,8 +1473,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Beach Road Autos',
     legalName: 'Beach Road Autos Pvt Ltd',
     tagline: 'Coastal cars, checked underneath for rust.',
-    about:
-      'Salt air is the enemy in this city and most yards ignore it. We put every car on a lift and look at the sills, the subframe and the brake lines before we quote, and we show you the photographs.',
     gstin: '37AABCB3001T1ZU',
     pan: 'AABCB3001T',
     town: 'visakhapatnam',
@@ -1614,8 +1491,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Dwaraka Nagar Motors',
     legalName: 'Dwaraka Nagar Motors LLP',
     tagline: 'City hatchbacks, twelve years on the same street.',
-    about:
-      'In the middle of the shopping district, which means people walk in without planning to. We keep the stock small and the prices on the windscreen so a browse can become a purchase in an hour.',
     gstin: '37AACFD3002U1ZV',
     pan: 'AACFD3002U',
     town: 'visakhapatnam',
@@ -1634,8 +1509,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Steel City Car Bazaar',
     legalName: 'Steel City Car Bazaar and Finance',
     tagline: 'Salary-slip finance for plant employees.',
-    about:
-      'Most of our buyers work at the steel plant or with its contractors, and the banks understand that paperwork. We have four of them on the panel and a desk that fills the forms for you.',
     gstin: '37AAEFS3003V1ZW',
     pan: 'AAEFS3003V',
     town: 'visakhapatnam',
@@ -1654,8 +1527,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'MVP Colony Cars',
     legalName: 'MVP Colony Cars Pvt Ltd',
     tagline: 'Automatics and premium pre-owned.',
-    about:
-      'The upper end of the Visakhapatnam market. Executive sedans and full-size SUVs, each with a warranty we underwrite ourselves for six months or ten thousand kilometres.',
     gstin: '37AAFCM3004W1ZX',
     pan: 'AAFCM3004W',
     town: 'visakhapatnam',
@@ -1674,8 +1545,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Gajuwaka Auto Point',
     legalName: 'Gajuwaka Auto Point LLP',
     tagline: 'Shift-worker hours — open till ten.',
-    about:
-      'The industrial belt runs three shifts and a yard that shuts at seven is no use to two of them. We are open till ten every night and all day Sunday, and that is the whole business plan.',
     gstin: '37AAGFG3005X1ZY',
     pan: 'AAGFG3005X',
     town: 'gajuwaka',
@@ -1694,8 +1563,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kurmannapalem Motors',
     legalName: 'Kurmannapalem Motors Enterprises',
     tagline: 'Load carriers and crew cabs for the contractors.',
-    about:
-      'We sell to the small contractors around the port — pickups, crew cabs and panel vans, ex-fleet, with the fitness certificate current and the permit transfer arranged.',
     gstin: '37AABCK3006Y1ZA',
     pan: 'AABCK3006Y',
     town: 'gajuwaka',
@@ -1714,8 +1581,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Anakapalle Road Autos',
     legalName: 'Anakapalle Road Autos LLP',
     tagline: 'Exchange your old one, drive out today.',
-    about:
-      'We value your car in twenty minutes with a written breakdown of how we got there. Most of our sales are exchanges, and the difference is settled at the counter before you leave.',
     gstin: '37AACFA3007Z1ZB',
     pan: 'AACFA3007Z',
     town: 'gajuwaka',
@@ -1734,8 +1599,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Pendurthi Car Company',
     legalName: 'Pendurthi Car Company Pvt Ltd',
     tagline: 'Highway yard on the Srikakulam road.',
-    about:
-      'Out where the city stops. Cheaper ground means a bigger lot, so we carry more stock than anyone in the district and we will bring three cars to the city for a test drive if you ask.',
     gstin: '37AAEFP3008A1ZC',
     pan: 'AAEFP3008A',
     town: 'pendurthi',
@@ -1754,8 +1617,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Sabbavaram Junction Cars',
     legalName: 'Sabbavaram Junction Cars Enterprises',
     tagline: 'Small yard, no salesmen, honest tags.',
-    about:
-      'Four cars at a time and the owner is the only person you will speak to. Everything wrong with a car is written on its tag — that is not modesty, it is what stops an argument later.',
     gstin: '37AAFCS3009B1ZD',
     pan: 'AAFCS3009B',
     town: 'pendurthi',
@@ -1774,8 +1635,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Bheemili Beach Motors',
     legalName: 'Bheemili Beach Motors LLP',
     tagline: 'Weekend-drive cars, coastal-checked.',
-    about:
-      'Convertible-weather country, though nobody here buys one. What they do buy are open-top-adjacent things — soft-roaders and hatchbacks with sunroofs — and we have made that our corner of the market.',
     gstin: '37AAGFB3010C1ZE',
     pan: 'AAGFB3010C',
     town: 'bheemunipatnam',
@@ -1794,8 +1653,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Bhimili Auto Traders',
     legalName: 'Bhimili Auto Traders Pvt Ltd',
     tagline: 'Since 2002 — the yard the fishermen use.',
-    about:
-      'Twenty-two years by the harbour road. We buy and sell pickups and hard-worked hatchbacks, and we have never once sold a car on which we could not show the previous owner the registration.',
     gstin: '37AABCB3011D1ZF',
     pan: 'AABCB3011D',
     town: 'bheemunipatnam',
@@ -1816,8 +1673,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Brodipet Car House',
     legalName: 'Brodipet Car House Pvt Ltd',
     tagline: 'In the lanes since 2006, priced for the town.',
-    about:
-      'Guntur buys sensibly and we stock accordingly — diesel sedans and hatchbacks with the kilometres already done, so the depreciation has happened to somebody else.',
     gstin: '37AACFB3012E1ZG',
     pan: 'AACFB3012E',
     town: 'guntur',
@@ -1836,8 +1691,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Chilli Yard Motors',
     legalName: 'Chilli Yard Motors and Finance',
     tagline: 'Harvest-season finance, farmer terms.',
-    about:
-      'The mirchi yard sets the money in this town and the repayment schedules to match. We lend against the crop cycle, with the heavy instalments falling after the season and not before it.',
     gstin: '37AAEFC3013F1ZH',
     pan: 'AAEFC3013F',
     town: 'guntur',
@@ -1856,8 +1709,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Lakshmipuram Autos',
     legalName: 'Lakshmipuram Autos LLP',
     tagline: 'Automatics, because the traffic won.',
-    about:
-      'We switched to automatics only in 2021 and our repeat business doubled. Torque converters and CVTs, each one with the transmission fluid changed and the service invoice on file.',
     gstin: '37AAFCL3014G1ZJ',
     pan: 'AAFCL3014G',
     town: 'guntur',
@@ -1876,8 +1727,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Tenali Car Mandi',
     legalName: 'Tenali Car Mandi Enterprises',
     tagline: 'Delta-district stock, forty cars on the lot.',
-    about:
-      'The biggest yard between Guntur and the coast. Forty cars means somebody walks out with one most days, and it means we can afford to say no to the ones with a story attached.',
     gstin: '37AAGFT3015H1ZK',
     pan: 'AAGFT3015H',
     town: 'tenali',
@@ -1896,8 +1745,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kollipara Road Cars',
     legalName: 'Kollipara Road Cars Pvt Ltd',
     tagline: 'Paddy-country pickups and jeeps.',
-    about:
-      'Bund roads and wet fields, so ground clearance is the first thing we are asked about and the first thing we measure. Four-wheel drive where it is genuine, and we say so when it is not.',
     gstin: '37AABCK3016J1ZL',
     pan: 'AABCK3016J',
     town: 'tenali',
@@ -1916,8 +1763,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Tenali Auto Exchange',
     legalName: 'Tenali Auto Exchange LLP',
     tagline: 'We buy first and sell second.',
-    about:
-      'A buying yard more than a selling one — we pay cash the same day for anything roadworthy and re-sell what we can recondition. If your car is not worth reconditioning we will tell you that too.',
     gstin: '37AACFT3017K1ZM',
     pan: 'AACFT3017K',
     town: 'tenali',
@@ -1936,8 +1781,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Capital Region Motors',
     legalName: 'Capital Region Motors Pvt Ltd',
     tagline: 'Amaravati-road stock, government-employee finance.',
-    about:
-      'The secretariat moved out here and the buyers followed. Salaried finance, quick approvals, and stock that leans towards the quiet end — sedans and small automatics rather than anything loud.',
     gstin: '37AAEFC3018L1ZN',
     pan: 'AAEFC3018L',
     town: 'mangalagiri',
@@ -1956,8 +1799,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Mangalagiri Wheels',
     legalName: 'Mangalagiri Wheels Enterprises',
     tagline: 'Under six lakh, checked by an ex-workshop man.',
-    about:
-      'I spent eighteen years under cars before I started selling them, and I still do the inspection myself. What I will not sell is a car with a repaired chassis, whatever it looks like on top.',
     gstin: '37AAFCM3019M1ZP',
     pan: 'AAFCM3019M',
     town: 'mangalagiri',
@@ -1976,8 +1817,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Undavalli Auto Traders',
     legalName: 'Undavalli Auto Traders LLP',
     tagline: 'Riverside yard, seven days a week.',
-    about:
-      'On the Krishna bank road where the weekend traffic passes. We stay open all seven days because a used car is bought on a Sunday far more often than the trade likes to admit.',
     gstin: '37AAGFU3020N1ZQ',
     pan: 'AAGFU3020N',
     town: 'mangalagiri',
@@ -1996,8 +1835,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Ponnur Motor Works',
     legalName: 'Ponnur Motor Works and Workshop',
     tagline: 'Sold and serviced under the same roof since 1997.',
-    about:
-      'The workshop is older than the yard and it is still the better half of the business. Buy from us and the first year of servicing is at cost, which is how we keep seeing the cars we sold.',
     gstin: '37AABCP3021P1ZR',
     pan: 'AABCP3021P',
     town: 'ponnur',
@@ -2016,8 +1853,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Ponnur Car Point',
     legalName: 'Ponnur Car Point Enterprises',
     tagline: 'A first car, and the licence to go with it.',
-    about:
-      'We run a driving school on the same plot, which sounds like a gimmick and is not: a third of our buyers learn here first and buy the car they learned in, at a price we agreed on day one.',
     gstin: '37AACFP3022Q1ZS',
     pan: 'AACFP3022Q',
     town: 'ponnur',
@@ -2038,8 +1873,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Tungabhadra Motors',
     legalName: 'Tungabhadra Motors Pvt Ltd',
     tagline: 'Rayalaseema stock, priced without theatre.',
-    about:
-      'One price, no bargaining, no salesman commission — which is unusual here and took us three years to make normal. The margin is thin and printed on the tag beside the price.',
     gstin: '37AAEFT3023R1ZT',
     pan: 'AAEFT3023R',
     town: 'kurnool',
@@ -2058,8 +1891,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kurnool Auto Bazaar',
     legalName: 'Kurnool Auto Bazaar LLP',
     tagline: 'Air conditioning that works, in this heat.',
-    about:
-      'Forty-four degrees in May means the first thing anyone checks is the cooling. Every car we sell has its condenser cleaned and its gas topped, and we will let you sit in it idling for an hour.',
     gstin: '37AAFCK3024S1ZU',
     pan: 'AAFCK3024S',
     town: 'kurnool',
@@ -2078,8 +1909,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Nandyal Road Cars',
     legalName: 'Nandyal Road Cars Enterprises',
     tagline: 'Long-distance sedans for long-distance roads.',
-    about:
-      'Everything out here is two hundred kilometres from everything else, so we stock cars built for it — diesel sedans with the timing belt done and the suspension gone through, ready for the highway.',
     gstin: '37AAGFN3025T1ZV',
     pan: 'AAGFN3025T',
     town: 'kurnool',
@@ -2098,8 +1927,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Adoni Cotton Belt Autos',
     legalName: 'Adoni Cotton Belt Autos Pvt Ltd',
     tagline: 'Ginning-season prices, all year round.',
-    about:
-      'Cotton money arrives in November and most yards raise their prices to meet it. We do not, and the traders who noticed that in 2015 are still the people who send us buyers.',
     gstin: '37AABCA3026U1ZW',
     pan: 'AABCA3026U',
     town: 'adoni',
@@ -2118,8 +1945,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Adoni Motor Traders',
     legalName: 'Adoni Motor Traders LLP',
     tagline: 'Karnataka plates, Andhra paperwork, both fine.',
-    about:
-      'The border is twenty kilometres away and cars cross it constantly. We do the NOC and the re-registration in house, and the quoted price includes it — no surprise at the end.',
     gstin: '37AACFA3027V1ZX',
     pan: 'AACFA3027V',
     town: 'adoni',
@@ -2138,8 +1963,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Adoni Star Motors',
     legalName: 'Adoni Star Motors Enterprises',
     tagline: 'Four cars, four honest histories.',
-    about:
-      'A small yard by design. I buy four cars a month, I know every owner I bought them from by name, and I will give you their number if you want to ask them yourself.',
     gstin: '37AAEFA3028W1ZY',
     pan: 'AAEFA3028W',
     town: 'adoni',
@@ -2158,8 +1981,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Yemmiganur Auto Yard',
     legalName: 'Yemmiganur Auto Yard Pvt Ltd',
     tagline: 'The mill town yard since 2005.',
-    about:
-      'Nineteen years beside the handloom cooperative. We finance through the cooperative bank, which lends to weavers on terms no commercial bank will match, and that is most of our business.',
     gstin: '37AAFCY3029X1ZA',
     pan: 'AAFCY3029X',
     town: 'yemmiganur',
@@ -2178,8 +1999,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Yemmiganur Car Company',
     legalName: 'Yemmiganur Car Company LLP',
     tagline: 'CNG, since the pump opened.',
-    about:
-      'The gas station arrived in 2021 and we changed the yard around it within a year. Factory-fitted CNG only — retro-fits are somebody else’s business and, frankly, somebody else’s risk.',
     gstin: '37AAGFY3030Y1ZB',
     pan: 'AAGFY3030Y',
     town: 'yemmiganur',
@@ -2202,8 +2021,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Marine Drive Motors',
     legalName: 'Marine Drive Motors Pvt Ltd',
     tagline: 'Backwater city, rust-checked cars.',
-    about:
-      'Humidity and salt do quiet damage in Kochi and it is always underneath. Every car goes on a lift, and the underbody photographs are in the listing before you ask for them.',
     gstin: '32AABCM4001C1ZD',
     pan: 'AABCM4001C',
     town: 'kochi',
@@ -2222,8 +2039,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kaloor Car Company',
     legalName: 'Kaloor Car Company LLP',
     tagline: 'Automatics and hybrids, city-driven.',
-    about:
-      'Kochi traffic sold this city on automatics a decade before the rest of Kerala. We stock them almost exclusively now, and the hybrids come with a battery health report we pay for.',
     gstin: '32AACFK4002D1ZE',
     pan: 'AACFK4002D',
     town: 'kochi',
@@ -2242,8 +2057,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Vyttila Auto Hub',
     legalName: 'Vyttila Auto Hub and Finance',
     tagline: 'NRI paperwork, done properly.',
-    about:
-      'Half the cars in this district are bought by a family while the owner is in the Gulf. Power of attorney, remittance documentation and delivery to a relative — we have done it a thousand times.',
     gstin: '32AAEFV4003E1ZF',
     pan: 'AAEFV4003E',
     town: 'kochi',
@@ -2262,8 +2075,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Fort Kochi Classics',
     legalName: 'Fort Kochi Classics Pvt Ltd',
     tagline: 'Older cars, kept the way they were meant to be.',
-    about:
-      'We deal in cars past fifteen years old — the Ambassadors, the early Contessas, the odd Standard — and we restore before we sell. It is a slow trade and it is the only one we want.',
     gstin: '32AAFCF4004F1ZG',
     pan: 'AAFCF4004F',
     town: 'kochi',
@@ -2282,8 +2093,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Aluva Junction Autos',
     legalName: 'Aluva Junction Autos LLP',
     tagline: 'Airport road, open till the last flight.',
-    about:
-      'Twenty minutes from the airport and we keep the gate open till eleven, because a man home for three weeks does not want to spend a working morning at a car yard.',
     gstin: '32AAGFA4005G1ZH',
     pan: 'AAGFA4005G',
     town: 'aluva',
@@ -2302,8 +2111,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Periyar Motors',
     legalName: 'Periyar Motors Enterprises',
     tagline: 'Flood-history disclosed, every single car.',
-    about:
-      'After 2018 nobody in Kerala buys a used car without asking, and they are right to. We check for water lines and corroded looms on every intake, and what we find is written in the listing.',
     gstin: '32AABCP4006H1ZJ',
     pan: 'AABCP4006H',
     town: 'aluva',
@@ -2322,8 +2129,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Desom Car Point',
     legalName: 'Desom Car Point Pvt Ltd',
     tagline: 'Under five lakh, all of it road-tested.',
-    about:
-      'A budget yard that does not behave like one. Nothing leaves without a forty-kilometre road test including the ghat road to Perumbavoor, and the fault list from it goes to the buyer.',
     gstin: '32AACFD4007J1ZK',
     pan: 'AACFD4007J',
     town: 'aluva',
@@ -2342,8 +2147,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Perumbavoor Auto Traders',
     legalName: 'Perumbavoor Auto Traders LLP',
     tagline: 'Timber-town pickups and load carriers.',
-    about:
-      'The plywood mills run on pickups and we keep them running. Load carriers, crew cabs and tippers, with the fitness certificate current and the permit endorsement arranged before delivery.',
     gstin: '32AAEFP4008K1ZL',
     pan: 'AAEFP4008K',
     town: 'perumbavoor',
@@ -2362,8 +2165,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Rayonpuram Motors',
     legalName: 'Rayonpuram Motors Enterprises',
     tagline: 'Family cars, and time to decide about them.',
-    about:
-      'No deposit to hold a car for a week, which most yards will not do and which is how families actually buy. Seven-seaters and estate hatchbacks, the two shapes this town asks for.',
     gstin: '32AAFCR4009L1ZM',
     pan: 'AAFCR4009L',
     town: 'perumbavoor',
@@ -2382,8 +2183,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Muvattupuzha Car Bazaar',
     legalName: 'Muvattupuzha Car Bazaar Pvt Ltd',
     tagline: 'Three rivers, one honest yard, since 2003.',
-    about:
-      'Twenty-one years on the Kothamangalam road. We have sold to the same families twice and three times over, which is the only endorsement worth printing.',
     gstin: '32AAGFM4010M1ZN',
     pan: 'AAGFM4010M',
     town: 'muvattupuzha',
@@ -2402,8 +2201,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Vazhakulam Autos',
     legalName: 'Vazhakulam Autos LLP',
     tagline: 'Hill-road diesels for the high range.',
-    about:
-      'The road up to Idukki starts here and it punishes a tired engine. We stock diesels with the turbo and the injectors checked, and we road-test each one on the climb before it is listed.',
     gstin: '32AABCV4011N1ZP',
     pan: 'AABCV4011N',
     town: 'muvattupuzha',
@@ -2424,8 +2221,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Round South Motors',
     legalName: 'Round South Motors Pvt Ltd',
     tagline: 'On the Round since 2001.',
-    about:
-      'Everybody in Thrissur knows where the Round is and that is the whole address. Twenty-three years of city cars, and we still buy most of our stock from people who walk in off it.',
     gstin: '32AACFR4012P1ZQ',
     pan: 'AACFR4012P',
     town: 'thrissur',
@@ -2444,8 +2239,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Gold Souk Cars',
     legalName: 'Gold Souk Cars and Credits',
     tagline: 'Gold-loan finance, if that is the easier route.',
-    about:
-      'This is a gold town and a gold loan clears faster than a car loan, at a rate that is often better. We will arrange either, and we will tell you honestly which one costs you less.',
     gstin: '32AAEFG4013Q1ZR',
     pan: 'AAEFG4013Q',
     town: 'thrissur',
@@ -2464,8 +2257,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Poothole Auto Yard',
     legalName: 'Poothole Auto Yard LLP',
     tagline: 'Small cars, small prices, no drama.',
-    about:
-      'Petrol hatchbacks under four lakh and nothing else. It is a narrow yard on purpose — we know these cars completely, so we can price them in a minute and stand behind the price.',
     gstin: '32AAFCP4014R1ZS',
     pan: 'AAFCP4014R',
     town: 'thrissur',
@@ -2484,8 +2275,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Chalakudy Car House',
     legalName: 'Chalakudy Car House Enterprises',
     tagline: 'On the national highway, open all seven days.',
-    about:
-      'A highway yard between Kochi and Thrissur, which means we sell as much to people passing through as to the town. Prices are on the windscreen for exactly that reason.',
     gstin: '32AAGFC4015S1ZT',
     pan: 'AAGFC4015S',
     town: 'chalakudy',
@@ -2504,8 +2293,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Athirappilly Road Autos',
     legalName: 'Athirappilly Road Autos Pvt Ltd',
     tagline: 'Tourist-route SUVs, hard-checked.',
-    about:
-      'The taxis that run the waterfall route retire here, and they arrive with high kilometres and complete service records. That combination is worth more than a low reading and no history.',
     gstin: '32AABCA4016T1ZU',
     pan: 'AABCA4016T',
     town: 'chalakudy',
@@ -2524,8 +2311,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Koratty Motor Traders',
     legalName: 'Koratty Motor Traders LLP',
     tagline: 'Ex-company cars from the infopark side.',
-    about:
-      'The industrial estate replaces its pool cars on a four-year cycle and we take the batch. Single-fleet history, one workshop, every service on record — the easiest cars in the district to price.',
     gstin: '32AACFK4017U1ZV',
     pan: 'AACFK4017U',
     town: 'chalakudy',
@@ -2544,8 +2329,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Irinjalakuda Auto Centre',
     legalName: 'Irinjalakuda Auto Centre and Workshop',
     tagline: 'Sold here, serviced here, since 1998.',
-    about:
-      'The workshop has been on this plot for twenty-six years and the yard for twenty-two. We would rather sell you a car we can keep an eye on than one we never see again.',
     gstin: '32AAEFI4018V1ZW',
     pan: 'AAEFI4018V',
     town: 'irinjalakuda',
@@ -2564,8 +2347,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Koodalmanikyam Cars',
     legalName: 'Koodalmanikyam Cars Pvt Ltd',
     tagline: 'Temple-town yard, festival-season stock.',
-    about:
-      'Our year turns on the festival — people buy in the weeks before it and we stock up in the months prior. Family cars, mostly, and we can hold one until the auspicious day.',
     gstin: '32AAFCK4019W1ZX',
     pan: 'AAFCK4019W',
     town: 'irinjalakuda',
@@ -2584,8 +2365,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kallettumkara Autos',
     legalName: 'Kallettumkara Autos Enterprises',
     tagline: 'Two cars a week, both of them known.',
-    about:
-      'The smallest yard in this list and it stays that way. I buy from people I know, I sell to people they send, and I have never advertised a car in eleven years of doing it.',
     gstin: '32AAGFK4020X1ZY',
     pan: 'AAGFK4020X',
     town: 'irinjalakuda',
@@ -2604,8 +2383,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Kunnamkulam Motor Mart',
     legalName: 'Kunnamkulam Motor Mart Pvt Ltd',
     tagline: 'The trading town does cars too.',
-    about:
-      'Kunnamkulam trades in everything and has for two centuries, so a buyer here knows what a thing is worth before they walk in. We price accordingly and we do not waste anybody an afternoon.',
     gstin: '32AABCK4021Y1ZA',
     pan: 'AABCK4021Y',
     town: 'kunnamkulam',
@@ -2624,8 +2401,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Arthat Auto Point',
     legalName: 'Arthat Auto Point LLP',
     tagline: 'First cars for a town that walks everywhere.',
-    about:
-      'Small petrol hatchbacks, low kilometres, and a driving instructor on call who will sit with you for the first two weeks at no charge. Most of our buyers have never owned a car before.',
     gstin: '32AACFA4022Z1ZB',
     pan: 'AACFA4022Z',
     town: 'kunnamkulam',
@@ -2646,8 +2421,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Mananchira Motors',
     legalName: 'Mananchira Motors Pvt Ltd',
     tagline: 'City-centre yard, twenty years of it.',
-    about:
-      'Off the maidan, where this city has done its business since long before either of us. Sedans and automatics, and a valuation service the local banks send their own customers to.',
     gstin: '32AAEFM4023A1ZC',
     pan: 'AAEFM4023A',
     town: 'kozhikode',
@@ -2666,8 +2439,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Beach Road Car Company',
     legalName: 'Beach Road Car Company LLP',
     tagline: 'Gulf-return buyers, and the paperwork they need.',
-    about:
-      'Kozhikode has sent people to the Gulf for fifty years and they come home to buy. We work to a three-week window — see it, decide it, register it, fly back — and we have never missed one.',
     gstin: '32AAFCB4024B1ZD',
     pan: 'AAFCB4024B',
     town: 'kozhikode',
@@ -2686,8 +2457,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Wayanad Road Autos',
     legalName: 'Wayanad Road Autos Enterprises',
     tagline: 'Anything that has to climb the Thamarassery ghat.',
-    about:
-      'Nine hairpins and a full load is the test, and we run it on every car before it is listed. If the cooling or the clutch is marginal, that road finds it out in twenty minutes.',
     gstin: '32AAGFW4025C1ZE',
     pan: 'AAGFW4025C',
     town: 'kozhikode',
@@ -2706,8 +2475,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Vadakara Auto Traders',
     legalName: 'Vadakara Auto Traders Pvt Ltd',
     tagline: 'Coast-road yard, honest about the salt.',
-    about:
-      'Everything within a kilometre of this sea rusts and we will not pretend otherwise. What we do is treat the underbody before sale and show you the before-and-after, at our cost.',
     gstin: '32AABCV4026D1ZF',
     pan: 'AABCV4026D',
     town: 'vadakara',
@@ -2726,8 +2493,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Lokanarkavu Cars',
     legalName: 'Lokanarkavu Cars LLP',
     tagline: 'Family yard, third generation on it.',
-    about:
-      'My grandfather sold jeeps here in the sixties and my father sold Ambassadors. What has not changed is that we buy the car, we do not broker it — so the price we quote is our own money at risk.',
     gstin: '32AACFL4027E1ZG',
     pan: 'AACFL4027E',
     town: 'vadakara',
@@ -2746,8 +2511,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Mahe Border Motors',
     legalName: 'Mahe Border Motors Enterprises',
     tagline: 'Two territories, one paperwork desk.',
-    about:
-      'Mahe is Puducherry and it starts a mile from our gate, so half of what we sell needs an inter-territory transfer. It is fiddly, it takes a fortnight, and we quote the cost up front.',
     gstin: '32AAEFM4028F1ZH',
     pan: 'AAEFM4028F',
     town: 'vadakara',
@@ -2766,8 +2529,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Koyilandy Car Point',
     legalName: 'Koyilandy Car Point Pvt Ltd',
     tagline: 'Harbour-town stock, weekday prices.',
-    about:
-      'A fishing town buys in cash and buys in season, so our prices move with the catch and we say so rather than pretending they do not. Hatchbacks and pickups, and both sell.',
     gstin: '32AAFCK4029G1ZJ',
     pan: 'AAFCK4029G',
     town: 'koyilandy',
@@ -2786,8 +2547,6 @@ const DEALERS: DevDealer[] = [
     brandName: 'Quilandy Auto Mart',
     legalName: 'Quilandy Auto Mart LLP',
     tagline: 'Automatics for the highway crawl.',
-    about:
-      'The coastal highway is being six-laned and until it is done nobody wants a manual. We saw that in 2021 and moved the whole yard across, and we have not had a slow month since.',
     gstin: '32AAGFQ4030H1ZK',
     pan: 'AAGFQ4030H',
     town: 'koyilandy',

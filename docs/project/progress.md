@@ -198,6 +198,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R30 — A refused service list answers in the dealer's own words · revises R26 · [#103](https://github.com/shashikiran6sk/DealersDrive/pull/103)
 - [~] R31 — The dealer console gets its shell, early · lands F047 · [#104](https://github.com/shashikiran6sk/DealersDrive/pull/104)
 - [~] R32 — The review screen judges the tagline and the services, not About · revises F045/R25/R26 · [#105](https://github.com/shashikiran6sk/DealersDrive/pull/105)
+- [ ] R33 — The paragraph is dropped, column and all · revises R25/R26/R32 · ⚠️ deletes data
 
 ---
 

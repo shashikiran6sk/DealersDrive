@@ -3683,3 +3683,78 @@ dealerships wrote into the column before the product stopped asking, and this
 endpoint is the only way left to correct one of those rows. **Dropping the field
 and the column deletes data and wants its own PR**, not a side effect of a
 screen change.
+
+> **It got that PR. See `## R33` below** — the field and the column are gone.
+
+## R33 — The paragraph is dropped, column and all
+
+**Revises R25 / R26 / R32** · ⚠️ **deletes data**
+
+The last of four revisions taking `about` apart. R32 said dropping the field and
+the column wanted its own PR because it deletes data; this is that PR.
+
+- **Schema** `Dealer.about` removed ·
+  `migrations/20260909130000_drop_dealer_about` — `ALTER TABLE "dealers" DROP
+COLUMN "about"`
+- **Contracts** `DealerProfile.about` and `UpdateDealerInput.about` removed
+- **Backend** `dealers.service.ts` — the profile mapper and the update's
+  spread; the completeness note that explained why a filled-in paragraph did
+  not satisfy the tagline
+- **Seed** `dev-dealers.data.ts` — the `about` field and 120 paragraphs;
+  `dev-dealers.ts` — the write
+- **Sandbox** `auth/onboarding-wizard.stories.tsx` —
+  `BusinessWithDescription` becomes `BusinessWithTaglineAndServices`, which is
+  what R26 should have done to it; `dealer/profile-form.stories.tsx` — the
+  fixture
+- **Tests** one integration case retired, with a note in its place saying why
+- **No route change, no new dependency.**
+
+### What was actually deleted
+
+The column held prose a dealership wrote about itself at sign-up. Four
+revisions had already removed every reader:
+
+|         |                                                           |
+| ------- | --------------------------------------------------------- |
+| **R25** | the public portfolio — the tagline opens the page instead |
+| **R26** | onboarding, and the dealer's own profile screen           |
+| **R32** | the admin review screen, the last surface that read it    |
+| **R33** | the field in two contracts, and the column                |
+
+So by R32 the data was reachable by nothing: no screen, no endpoint, no report.
+A nullable column no code path touches is not free — it is a field the next
+person to read the schema has to work out the status of, and "history, kept in
+case" is a status that only ever gets weaker.
+
+**The migration cannot be undone by the application.** The SQL file carries the
+`COPY … TO` line to take a snapshot before it runs, and the deployment that
+applies it should take one.
+
+### Why the replacement is not a shorter version of it
+
+`about` asked for two or three sentences and got one of two things: a paragraph
+nobody read, or twenty characters of "we sell used cars". The form insisted on
+prose, and prose is what a person filling in a sign-up form at the end of a
+working day is least able to produce.
+
+`tagline` is one line, which is a question a dealer can answer. `specialities`
+is a list, which is one they can answer without writing at all. Both are
+required, both are on the public pages, and both are on the admin review screen
+— three things `about` never was.
+
+### The absence is recorded where the field was
+
+`UpdateDealerInput` keeps a comment at the position `about` occupied, naming the
+four revisions. "Why is there no About" is a question this schema will be asked,
+and the answer is worth more than the silence a clean deletion leaves. The same
+note is the migration's own header, which is the other place somebody looks.
+
+### One thing this fixed on the way past
+
+`BusinessWithDescription` in the wizard's stories still described **About your
+dealership** as "the last field on the step and the only multi-line box". R26
+removed that box eight months of revisions ago and left the story compiling
+against a field the form no longer had. It only broke here because the type went
+with the column — which is the argument for deleting a field rather than leaving
+it: a stale story about a removed box is invisible until something stops
+compiling.

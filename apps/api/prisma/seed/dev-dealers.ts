@@ -92,7 +92,6 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
     brandName: dealer.brandName,
     legalName: dealer.legalName,
     tagline: dealer.tagline,
-    about: dealer.about,
     gstin: dealer.gstin,
     pan: dealer.pan,
     // ACTIVE, and therefore visible: `findPublicBySlug` and `listActive` refuse
