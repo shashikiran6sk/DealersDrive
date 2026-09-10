@@ -221,7 +221,7 @@ export const UpdateDealerInput = z
      */
     gstin: GSTIN.optional(),
     pan: PAN.optional(),
-    establishedYear: z.number().int().min(1900).max(2100).optional(),
+    establishedYear: z.number().int().min(1900).max(new Date().getFullYear()).optional(),
     /**
      * The same floor of one that `OnboardingInput` applies (**R26**): present
      * and empty is a dealer clearing on the profile screen what the sign-up
