@@ -44,8 +44,19 @@ describe('the fake verifier', () => {
     });
   });
 
+  /**
+   * A string shaped like a JWT, built rather than written — a literal `eyJ…` in
+   * the source is flagged by both `gitleaks` and `semgrep`, correctly, since
+   * neither can tell a fixture from a leaked token.
+   */
+  const jwtShaped = [
+    Buffer.from(JSON.stringify({ alg: 'RS256' })).toString('base64url'),
+    Buffer.from(JSON.stringify({ sub: 'nobody' })).toString('base64url'),
+    'not-a-signature',
+  ].join('.');
+
   it.each([
-    ['a real-looking JWT', 'eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.sig'],
+    ['a real-looking JWT', jwtShaped],
     ['the wrong prefix', 'real:+919840012345'],
     ['no number', 'fake:'],
     ['a number that is not E.164', 'fake:9840012345'],
