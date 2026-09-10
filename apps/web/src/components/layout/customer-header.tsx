@@ -59,29 +59,28 @@ export function CustomerHeader({ locations }: { locations: PublicLocations }) {
             The selector is the only part of the header that reads the query
             string, and `useSearchParams` opts a route out of static
             prerendering unless it sits behind a boundary. Keeping the boundary
-            this tight means the rest of the header — logo, nav, the two doors —
-            still renders on the server, and the button arrives with the same
+            this tight means the rest of the header — logo, nav, the dealer
+            door — still renders on the server, and the button arrives with the same
             markup a moment later.
           */}
           <Suspense fallback={<LocationChipFallback />}>
             <LocationSelector locations={locations} />
           </Suspense>
           {/*
-            Both go to `/dealer`. There is one door for a dealership — the
-            console decides between "sign in" and "finish onboarding" from the
-            session, so the header does not have to guess which of the two a
-            visitor needs, and cannot get it wrong.
+            One door, and it is a `/dealer` link (**R35**). The console already
+            decides between "sign in" and "finish onboarding" from the session,
+            so the header never had to guess which a visitor needed — but two
+            buttons pointing at that one door asked the visitor to guess
+            instead, and either answer took them to the same screen.
+
+            It carries `btn-primary` because it is now the only action in the
+            cluster, and it is visible at every width because it is the only
+            way in: the old secondary button was `hidden sm:inline-flex`, which
+            was affordable while a second button stood beside it and is not now.
           */}
-          <Link
-            href="/dealer"
-            className="btn btn-secondary hidden border-transparent sm:inline-flex"
-          >
+          <Link href="/dealer" className="btn btn-primary">
             <span className="hidden lg:inline">Dealer login</span>
             <span className="lg:hidden">Login</span>
-          </Link>
-          <Link href="/dealer" className="btn btn-primary">
-            <span className="hidden lg:inline">List your cars</span>
-            <span className="lg:hidden">List cars</span>
           </Link>
         </div>
       </div>
