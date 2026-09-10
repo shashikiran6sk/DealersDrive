@@ -349,6 +349,12 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           phoneDisplay: formatPhone(phone),
           email: owner?.user.email ?? null,
           emailVerified: owner?.user.emailVerifiedAt !== null,
+          /**
+           * **R39.** Always about the number above it: any write that changes
+           * `users.phone` clears this timestamp, so there is no state in which
+           * a dealership carries a verified badge for a handset nobody proved.
+           */
+          phoneVerified: owner?.user.phoneVerifiedAt != null,
         },
         dealer: {
           id: dealer.id,
@@ -719,7 +725,28 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
             data: {
               ...(input.contact.fullName === undefined ? {} : { fullName: input.contact.fullName }),
               ...(input.contact.email === undefined ? {} : { email: input.contact.email }),
-              ...(phone === undefined ? {} : { phone }),
+              /*
+               * **R39 — a new number is an unverified number.**
+               *
+               * `phoneVerifiedAt` describes whatever is in `phone`, so the two
+               * move together or the badge starts lying. Writing the number
+               * without clearing the timestamp would carry a verification of
+               * the *old* handset onto the new one — which is worse than never
+               * having verified at all, because the dealership's public page
+               * would then assert something nobody ever proved.
+               *
+               * Clearing it is not a punishment: `POST /v1/auth/phone/verify`
+               * is one OTP away, the onboarding wizard shows the number as
+               * unverified with a Verify button, and a dealer who did not mean
+               * to change it can simply put the old one back and re-verify.
+               *
+               * Only when the number actually changes. A PATCH that re-sends
+               * the same number — the onboarding form does, every step — must
+               * not silently un-verify a dealership that changed its pincode.
+               */
+              ...(phone === undefined || phone === owner.user.phone
+                ? {}
+                : { phone, phoneVerifiedAt: null }),
             },
           });
         }

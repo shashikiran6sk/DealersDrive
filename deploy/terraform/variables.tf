@@ -207,3 +207,44 @@ variable "enable_deletion_protection" {
   type        = bool
   default     = false
 }
+
+# ── Phone verification (R39) ─────────────────────────────────────────────────
+#
+# Three plain variables rather than secrets. A Firebase project id, web API key
+# and auth domain are not credentials: the last two reach every browser through
+# `GET /v1/config/public` and are visible in any page that loads the SDK. What
+# protects the project is the authorised-domain list, the per-project SMS quota
+# and App Check — not the obscurity of a key. Routing them through Parameter
+# Store would imply a guarantee that does not exist.
+#
+# All three default to "", which selects the `fake` driver. `env.ts` refuses
+# that in production, so a production plan with these blank is a deploy that
+# fails at boot with the variable named — which is the intended behaviour until
+# a Firebase project exists.
+
+variable "firebase_project_id" {
+  description = <<-EOT
+    The Firebase project id, and the audience every ID token is checked against.
+
+    This is the check that matters most: anyone can create a Firebase project
+    and sign in to it by phone, and the resulting token is signed by the same
+    Google certificates. `aud` is the only claim that says the token was minted
+    for us.
+
+    Blank selects PHONE_VERIFICATION_DRIVER=fake, which production refuses.
+  EOT
+  type        = string
+  default     = ""
+}
+
+variable "firebase_web_api_key" {
+  description = "The Firebase WEB API key, served to the browser via GET /v1/config/public. Not a secret."
+  type        = string
+  default     = ""
+}
+
+variable "firebase_auth_domain" {
+  description = "e.g. dealers-drive-prod.firebaseapp.com. Served to the browser. Not a secret."
+  type        = string
+  default     = ""
+}

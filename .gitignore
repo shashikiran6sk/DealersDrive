@@ -43,3 +43,10 @@ apps/api/.storage-test/
 
 # Sandbox build output — never deployed
 apps/sandbox/storybook-static/
+
+# Terraform's local provider cache and lock, created by `terraform init` in
+# deploy/terraform. The AWS provider binary alone is ~650 MB — well past
+# GitHub's 100 MB file limit — and CI runs `terraform init -backend=false`
+# itself, so nothing here needs to be committed.
+deploy/terraform/.terraform/
+deploy/terraform/.terraform.lock.hcl

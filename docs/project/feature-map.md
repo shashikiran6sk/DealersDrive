@@ -4205,3 +4205,186 @@ rather than a second rule — and it is what the GSTIN check already did.
 yard-photo block, beside a GSTIN already derived from a counter. That was safe
 only while exactly one test wrote it. Both are derived now, so the next test to
 copy that line cannot break the one above it.
+
+---
+
+## R39 — The mobile number is proved, not typed
+
+**Revises F018 / F037 / F038 / F041 / F046 / R7 / R27 · ⚠️ new dependency**
+
+A dealership's mobile number is the one thing on its public page a buyer acts
+on: they read it, they ring it, and the whole marketplace rests on somebody
+answering. Until now it was a ten-digit string somebody typed into a form. Any
+string that matched `IndianMobile` was accepted, including a rival's, a wrong
+one, or a number nobody has ever held.
+
+`POST /v1/auth/phone/verify` replaces that with an OTP Firebase sends to the
+handset. Onboarding refuses to create a dealership without one.
+
+- **Contracts** `PhoneVerificationInput`, `PhoneVerificationStartInput`,
+  `PhoneVerificationStartResponse` — **new**; `AuthSession.user.phoneVerified`;
+  `PublicConfig.firebase`; **`OnboardingInput.phone` removed**
+- **Platform** `platform/phone/phone.port.ts`, `firebase.adapter.ts`,
+  `fake.adapter.ts`, `factory.ts` — **new**
+- **Backend** `auth.service.{startPhoneVerification,verifyPhone}` — **new**;
+  `auth.service.{me,onboard}`; `assertPhoneFree` extracted;
+  `dealers.service.{toProfile,session,update}`; `config.service.publicConfig`
+- **API** `POST /v1/auth/phone/start`, `POST /v1/auth/phone/verify`;
+  `POST /v1/auth/onboarding` gains `422 PHONE_NOT_VERIFIED`
+- **Env** `PHONE_VERIFICATION_DRIVER`, `FIREBASE_PROJECT_ID`,
+  `FIREBASE_WEB_API_KEY`, `FIREBASE_AUTH_DOMAIN`,
+  `PHONE_VERIFICATION_MAX_AGE_S`, `PHONE_VERIFICATION_FAKE_CODE`
+- **Frontend** `features/auth/phone-verification.tsx` (C073) and
+  `phone-actions.ts` — **new**; the wizard's Account step; the onboarding page
+  fetches `/v1/config/public`
+- **Sandbox** `auth/phone-verification.stories.tsx` — **new**, eleven states;
+  `mocks/phone-actions.ts` and `mocks/phone-firebase.ts` — **new**; registry
+  C073
+- **Tests** `firebase.adapter.test.ts` — **new**, 32 against real cryptography;
+  `fake.adapter.test.ts` — **new**, 10; `phone-verification.test.tsx` — **new**,
+  21; eleven integration cases; the two suites' fixtures verify a number first
+- **Deploy** `.env.example`, `docker-compose.yml`, both AWS env examples,
+  `terraform/ecs.tf` and three new terraform variables
+- **New dependency** `firebase` in `apps/web` — unavoidable, see below. **None
+  on the API.**
+- **No Prisma migration.** `users.phoneVerifiedAt` has existed since the
+  identity migration and was written by nothing.
+
+### The API verifies the token itself, with `node:crypto`
+
+`firebase-admin` is ~50 transitive packages including gRPC and protobuf, to do
+one RS256 signature check and six claim comparisons. The definition of done
+forbids a dependency the baseline did not have, and — more to the point — a
+verifier nobody can read is a verifier nobody audits.
+
+So `firebase.adapter.ts` does it in about 120 lines with the standard library,
+with every check named and reasoned beside it. Its unit test generates an RSA
+key pair, signs tokens with it and primes the public half as the certificate:
+real cryptography, no network, no SMS, and — the part a mocked verifier could
+never do — **every forgery is asserted to fail**. A swapped algorithm, another
+project's audience, a sign-in by email rather than by phone, a code entered
+last month.
+
+The browser is a different matter. Firebase phone auth _requires_ the client
+SDK: reCAPTCHA and `signInWithPhoneNumber` cannot be reimplemented, and there is
+no HTTP endpoint that substitutes for them. `firebase` is therefore a real new
+dependency on `apps/web`, imported **lazily inside the click handler** so the
+~200 KB never reaches any other screen.
+
+### `aud` is the check that carries the whole endpoint
+
+Anyone can create a Firebase project in two minutes, sign in to it by phone, and
+receive a token signed by exactly the same Google certificates this verifier
+trusts. The project id is the only claim that says the token was minted for
+_us_. Without it the endpoint is an open door with a padlock drawn on it, and it
+is the case the unit tests assert most explicitly.
+
+### Freshness comes from `auth_time`, not `iat`
+
+A Firebase ID token can be refreshed for a year off one sign-in, so `iat` says
+only when the browser last asked for a fresh copy. `auth_time` is when a person
+actually entered the code — which is the fact being bought — and it is what a
+ten-minute window is applied to. A token that is perfectly current by `iat` and
+`exp` is still refused when nobody has held the handset in an hour.
+
+### It is not a sign-in, and Google is still the only door
+
+Nothing here issues a session, nothing takes one as an argument, and neither
+route can be reached without one. The caller is an authenticated dealer already.
+A dealer who signs in with Google tomorrow is **not** asked for a code, because
+`phoneVerifiedAt` is a column on the user row rather than anything the session
+carries — which is also why the flag is read fresh on `/v1/auth/me` rather than
+cached in the principal.
+
+### The number leaves `OnboardingInput`
+
+For exactly the reason `email` was never in it: it is a verified fact now, and a
+number in the body would be a number nobody proved. The service reads it off the
+user record and answers `422 PHONE_NOT_VERIFIED` when there is none — a step is
+missing rather than a field, so a client should send the dealer back to it
+rather than highlight a box.
+
+The browser-side check in `validateAccount` changed with it. The question is no
+longer _does this look like a phone number_; it is _has a code reached it_. That
+is the polite half of the rule and the 422 is the load-bearing half: a
+client-side guard is a suggestion.
+
+### `start` exists so the browser and the database agree
+
+`POST /v1/auth/phone/start` normalises to E.164 and checks the number is free,
+and it sends nothing. Doing the conversion in the browser would put two
+implementations of one rule in the product, and the failure when they disagree
+is invisible to everybody: the code arrives, the dealer enters it, the
+verification succeeds, and the number stored is not the number that was texted.
+
+Refusing early is the other half. A number another dealership holds cannot
+become this one's however many codes are sent to it, and Firebase's free tier is
+a **per-project daily SMS count** — a refusal that costs a message costs every
+other dealer one.
+
+### R7 and R27 were arguing about the wrong thing
+
+R7 made the contact number editable; R27 locked it on the profile screen. Both
+were answering _may a dealer change this field_. The answer is yes, and changing
+it is not an **edit** — it is a new claim about a different handset. So the
+verified row shows the number with a `Change` button rather than a box, and
+Change starts the exchange again.
+
+The corollary is enforced in `dealers.service.update`: a PATCH that changes
+`contact.phone` clears `phoneVerifiedAt`. Carrying a verification of the old
+handset onto a new one is worse than never having verified at all, because the
+public page would then assert something nobody ever proved. A PATCH that
+re-sends the _same_ number changes nothing — the onboarding form re-sends every
+field on the step, every time, and a dealer correcting their pincode must not
+lose their badge.
+
+### Verification happens once, and re-verifying is a no-op
+
+Re-verifying the number already on the record answers with the session and
+writes nothing: a double-submitted form, a retried request or an impatient
+second press cannot move the timestamp or write a second audit row. Verifying a
+_different_ number is a different thing and is allowed — a dealership that
+changes its SIM has to be able to say so.
+
+### `fake` is a driver, not a stub
+
+`PHONE_VERIFICATION_DRIVER=fake` accepts `fake:+919840012345` and is what
+`pnpm dev` and the entire test suite run on. Everything above it is unchanged:
+the same routes, the same duplicate checks, the same writes. The optional third
+part (`fake:+91…:123456`) is checked against `PHONE_VERIFICATION_FAKE_CODE`, so
+the _wrong code_ path is reachable locally — a developer who cannot see a
+rejection cannot check that the screen handles one.
+
+`env.ts` refuses it in production, and that refusal is the point of the variable
+existing: a deployment running `fake` would hand every dealership a verified
+badge for a handset nobody holds, on a public page.
+
+### The web config is not a `NEXT_PUBLIC_*`
+
+Rule 9. Those are inlined at build time and force one image per environment.
+The three Firebase web values are served from `GET /v1/config/public` — which
+already exists and already carries every other runtime flag — and read on the
+server by the onboarding page. A Firebase web API key is not a secret: it
+identifies the project and is visible in any page that loads the SDK. What
+protects a project is the authorised-domain list, the SMS quota and App Check.
+
+`null` is a first-class state. A deployment on the `fake` driver has no project,
+and step 1 renders a panel naming the four variables rather than a reCAPTCHA it
+cannot load.
+
+### What is deliberately not here
+
+**No App Check.** It is the right next control — it is what stops a scripted
+client burning the SMS quota — and it needs a reCAPTCHA Enterprise key and a
+domain registration that belong with the production Firebase setup rather than
+with the code. The documentation names it.
+
+**No rate limit of our own on `/phone/start`.** Firebase already enforces a
+per-number and a per-project quota and returns `auth/too-many-requests`, which
+the screen translates. A second limiter in front of an endpoint that sends
+nothing would be a limiter on a database read.
+
+**No SMS through MSG91.** `SmsPort` stays what it was — transactional
+notifications. Firebase owns the code, the retry and the delivery receipt, and
+running an OTP through a second provider would mean owning code generation,
+expiry and replay defence ourselves.

@@ -99,6 +99,24 @@ locals {
     { name = "SMS_DRIVER", value = "console" },
     { name = "JOBS_ENABLED", value = "true" },
 
+    # ── Phone verification (R39) ─────────────────────────────────────────
+    #
+    # Plain environment rather than SSM, for all three. A Firebase project id,
+    # web API key and auth domain are not secrets: the last two are served to
+    # every browser through GET /v1/config/public and are visible in any page
+    # that loads the SDK. What protects the project is the authorised-domain
+    # list, the per-project SMS quota and App Check — not the obscurity of a
+    # key. Putting them in Parameter Store would imply a guarantee that does
+    # not exist and would cost a rotation ceremony for nothing.
+    #
+    # `env.ts` refuses to boot in production on the `fake` driver, and refuses
+    # `firebase` with any of the three blank — so a half-configured project is
+    # a failed deploy rather than a dealer stuck on onboarding step 1.
+    { name = "PHONE_VERIFICATION_DRIVER", value = var.firebase_project_id == "" ? "fake" : "firebase" },
+    { name = "FIREBASE_PROJECT_ID", value = var.firebase_project_id },
+    { name = "FIREBASE_WEB_API_KEY", value = var.firebase_web_api_key },
+    { name = "FIREBASE_AUTH_DOMAIN", value = var.firebase_auth_domain },
+
     # One task runs the schedules. See the comment on the API service below —
     # this is the reason api_desired_count is not simply "however many we like".
     { name = "WORKER_INLINE", value = "true" },

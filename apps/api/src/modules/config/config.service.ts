@@ -50,6 +50,27 @@ export function createConfigService({ config }: ConfigDeps) {
         // flag flip takes effect without a redeploy.
         rcLookupEnabled: rcLookup,
         vehicleReportEnabled: vehicleReport,
+        /**
+         * **R39.** What the browser needs to ask Firebase for an OTP, or null.
+         *
+         * From `env` rather than from `PlatformConfig`: this is deployment
+         * wiring, not a flag somebody flips at runtime, and a half-applied
+         * Firebase project is a screen that cannot send a code. `env.ts`
+         * refuses to boot with `PHONE_VERIFICATION_DRIVER=firebase` and any of
+         * the three missing, so the `null` here means *this deployment does not
+         * do Firebase verification* rather than *somebody forgot a variable*.
+         */
+        firebase:
+          env.PHONE_VERIFICATION_DRIVER === 'firebase' &&
+          env.FIREBASE_WEB_API_KEY &&
+          env.FIREBASE_AUTH_DOMAIN &&
+          env.FIREBASE_PROJECT_ID
+            ? {
+                apiKey: env.FIREBASE_WEB_API_KEY,
+                authDomain: env.FIREBASE_AUTH_DOMAIN,
+                projectId: env.FIREBASE_PROJECT_ID,
+              }
+            : null,
       };
     },
   };

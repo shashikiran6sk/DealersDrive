@@ -54,11 +54,17 @@ export type AuthProvidersResponse = z.infer<typeof AuthProvidersResponse>;
  * one here would let a caller claim an address Google never verified. No
  * `status` and no `slug` either — the state machine owns one and the service
  * derives the other (CLAUDE.md rules 1 and 5).
+ *
+ * **And no `phone`, since R39.** For exactly the reason `email` is absent: it
+ * is a *verified* fact now, established by `POST /v1/auth/phone/verify` against
+ * an OTP Firebase sent to the handset, and a number in this body would be a
+ * number nobody proved. The service reads it off the user record and refuses
+ * the whole request when there is none — which is what makes "verified before
+ * you may continue" a rule rather than a screen.
  */
 export const OnboardingInput = z
   .object({
     fullName: z.string().trim().min(2, 'Tell us your name.').max(80),
-    phone: IndianMobile,
     /**
      * One name, not two.
      *
@@ -235,6 +241,19 @@ export const AuthSession = z.object({
     phoneDisplay: z.string(),
     email: z.string().nullable(),
     emailVerified: z.boolean(),
+    /**
+     * **R39.** Whether an OTP reached this handset and came back.
+     *
+     * It always describes the number in `phone` above, because the two are
+     * written and cleared together: a write that changes the number clears the
+     * timestamp behind this flag, so there is no state in which a dealership
+     * holds a verified badge for a number nobody proved.
+     *
+     * `emailVerified` is its neighbour and is `true` for every session — Google
+     * verified the address before a session existed. This one is genuinely
+     * two-valued, and step 1 of onboarding is where it changes.
+     */
+    phoneVerified: z.boolean(),
   }),
   identity: VerifiedIdentity.nullable(),
   dealer: z
@@ -254,3 +273,50 @@ export const AuthSession = z.object({
   counts: z.object({ newEnquiries: z.number().int(), pendingListings: z.number().int() }),
 });
 export type AuthSession = z.infer<typeof AuthSession>;
+
+// ─────────── B7 phone verification (R39) ───────────────────────────────────
+/**
+ * What the browser hands back after Firebase has confirmed an OTP.
+ *
+ * One field, and it is deliberately **not the phone number**. The number is
+ * inside the token, signed by Google, and taking it from the body instead
+ * would let any caller claim any handset — which is the whole thing this
+ * endpoint exists to prevent. It is the same rule that keeps `email` out of
+ * `OnboardingInput` and `dealerId` out of every schema in this package.
+ *
+ * `.strict()`, so a client that also sends `phone` is told which field it
+ * invented rather than being quietly ignored (rule 2).
+ *
+ * The 4096-character ceiling is a bound, not a format: a Firebase ID token is
+ * a three-segment RS256 JWT of roughly 900 bytes, and anything an order of
+ * magnitude larger is not one. Parsing it is the verifier's job; refusing a
+ * megabyte of it before that is this schema's.
+ */
+export const PhoneVerificationInput = z
+  .object({
+    idToken: z
+      .string()
+      .trim()
+      .min(1, 'The verification did not complete. Try sending the code again.')
+      .max(4096),
+  })
+  .strict();
+export type PhoneVerificationInput = z.infer<typeof PhoneVerificationInput>;
+
+/**
+ * What a client asks for before it can show the OTP form at all.
+ *
+ * The number is normalised to E.164 by the server so the browser hands Firebase
+ * exactly what our records will hold — a mismatch between what was texted and
+ * what is stored is the bug this removes, and it is not one a dealer could
+ * diagnose.
+ */
+export const PhoneVerificationStartInput = z.object({ phone: IndianMobile }).strict();
+export type PhoneVerificationStartInput = z.infer<typeof PhoneVerificationStartInput>;
+
+export const PhoneVerificationStartResponse = z.object({
+  /** `+919840012345` — what to hand `signInWithPhoneNumber`. */
+  phone: z.string(),
+  phoneDisplay: z.string(),
+});
+export type PhoneVerificationStartResponse = z.infer<typeof PhoneVerificationStartResponse>;

@@ -191,7 +191,14 @@ const envSchema = z.object({
   MEDIA_BASE_URL: required('http://localhost:4000/media'),
 
   MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
-  /** `console` locally, `msg91` in production. Mobile OTP is out of scope either way. */
+  /**
+   * `console` locally, `msg91` in production.
+   *
+   * This is **transactional** SMS — a lead notification, not a code. The OTP a
+   * dealer enters at onboarding is sent by Firebase and never touches this port
+   * (**R39**); the comment here used to say mobile OTP was out of scope, and
+   * that has stopped being true of the product while staying true of MSG91.
+   */
   SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
   MSG91_AUTH_KEY: optional(z.string().min(1)),
   MSG91_SENDER_ID: optional(z.string().min(1)),
@@ -233,6 +240,43 @@ const envSchema = z.object({
    * normal local state and must never be an error.
    */
   SENTRY_DSN: optional(z.string().url()),
+
+  /**
+   * ── Phone verification (R39) ──────────────────────────────────────────────
+   *
+   *   fake      — a structured token, no network, no SMS, no Firebase project.
+   *               The default, what `pnpm dev` uses and what the whole test
+   *               suite runs on. Refused in production by the guard below.
+   *   firebase  — the real thing: an ID token verified against Google's
+   *               certificates. Needs `FIREBASE_PROJECT_ID`, and the browser
+   *               needs the three web values under it.
+   *
+   * None of these reach a module. The container picks the adapter.
+   */
+  PHONE_VERIFICATION_DRIVER: z.enum(['fake', 'firebase']).default('fake'),
+  FIREBASE_PROJECT_ID: optional(z.string().min(1)),
+  /**
+   * The **web** API key, served to the browser through `GET /v1/config/public`.
+   *
+   * Not a secret, and not a `NEXT_PUBLIC_*`. It identifies the project to
+   * Google and is visible in any page that loads the Firebase SDK; what
+   * protects the project is the authorised-domain list, the per-project SMS
+   * quota and App Check. Serving it from the API rather than inlining it at
+   * build time is what keeps build-once-promote-many intact (rule 9).
+   */
+  FIREBASE_WEB_API_KEY: optional(z.string().min(1)),
+  FIREBASE_AUTH_DOMAIN: optional(z.string().min(1)),
+  /**
+   * How long after entering the code a token is still proof, in seconds.
+   *
+   * Ten minutes. Checked against the token's `auth_time` — when a person
+   * actually typed the code — rather than `iat`, because a Firebase ID token
+   * can be refreshed for a year off one sign-in and `iat` would therefore
+   * accept a token captured months ago.
+   */
+  PHONE_VERIFICATION_MAX_AGE_S: z.coerce.number().int().positive().default(600),
+  /** What the fake driver accepts as "the code". Meaningless under `firebase`. */
+  PHONE_VERIFICATION_FAKE_CODE: z.string().min(4).max(8).default('123456'),
 
   SUPPORT_EMAIL: z.string().min(1).default('support@dealers-drive.com'),
   SUPPORT_PHONE: z.string().min(1).default('+914162248890'),
@@ -351,6 +395,30 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
     if (!value.S3_SECRET_ACCESS_KEY) {
       require('S3_SECRET_ACCESS_KEY', `is required when STORAGE_DRIVER=${value.STORAGE_DRIVER}.`);
+    }
+  }
+
+  /*
+   * R39. `fake` verifies nothing — it accepts a structured string and writes a
+   * verified timestamp — so a production deployment running it would hand every
+   * dealership a verified badge for a handset nobody holds. That is worse than
+   * having no verification at all, because the badge is on the public page.
+   */
+  if (production && value.PHONE_VERIFICATION_DRIVER === 'fake') {
+    require('PHONE_VERIFICATION_DRIVER', 'must be `firebase` in production — `fake` marks a number verified without an SMS.');
+  }
+
+  if (value.PHONE_VERIFICATION_DRIVER === 'firebase') {
+    if (!value.FIREBASE_PROJECT_ID) {
+      require('FIREBASE_PROJECT_ID', 'is required when PHONE_VERIFICATION_DRIVER=firebase — it is the token audience.');
+    }
+    // The browser cannot send an OTP without these two, so a deployment that
+    // can verify a token but cannot mint one is a dealer stuck on step 1.
+    if (!value.FIREBASE_WEB_API_KEY) {
+      require('FIREBASE_WEB_API_KEY', 'is required when PHONE_VERIFICATION_DRIVER=firebase.');
+    }
+    if (!value.FIREBASE_AUTH_DOMAIN) {
+      require('FIREBASE_AUTH_DOMAIN', 'is required when PHONE_VERIFICATION_DRIVER=firebase.');
     }
   }
 

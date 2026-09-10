@@ -73,7 +73,6 @@ export async function onboardingAction(
 
   const parsed = OnboardingInput.safeParse({
     fullName: text(formData, 'fullName').trim(),
-    phone: text(formData, 'phone').trim(),
     legalName: text(formData, 'legalName').trim(),
     addressLine: text(formData, 'addressLine').trim(),
     city: text(formData, 'city').trim(),

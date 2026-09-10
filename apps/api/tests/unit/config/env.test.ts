@@ -39,6 +39,16 @@ const PRODUCTION_REQUIRED = {
   SESSION_SECRET: 'a-real-production-session-secret',
   UPLOAD_SIGNING_SECRET: 'a-real-production-upload-secret',
   RC_PLATE_HASH_SECRET: 'a-real-production-plate-secret',
+  /*
+   * R39. `fake` verifies nothing — it accepts a structured string and writes a
+   * verified timestamp — so production refuses it, and a production fixture
+   * that omitted these four would be a fixture that could not boot. The
+   * refusal has its own case below.
+   */
+  PHONE_VERIFICATION_DRIVER: 'firebase',
+  FIREBASE_PROJECT_ID: 'dealers-drive-prod',
+  FIREBASE_WEB_API_KEY: 'AIzaSyProductionWebKey',
+  FIREBASE_AUTH_DOMAIN: 'dealers-drive-prod.firebaseapp.com',
 };
 
 /**

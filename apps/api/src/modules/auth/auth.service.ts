@@ -6,6 +6,9 @@ import {
   type AuthProvidersResponse,
   type AuthSession,
   type OnboardingInput,
+  type PhoneVerificationInput,
+  type PhoneVerificationStartInput,
+  type PhoneVerificationStartResponse,
 } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
@@ -16,9 +19,11 @@ import type { MapsPort } from '../../platform/maps/maps-link.js';
 import {
   ConfigurationError,
   ConflictError,
+  DomainError,
   ForbiddenError,
   UnauthorizedError,
 } from '../../platform/errors.js';
+import type { PhoneVerifierPort } from '../../platform/phone/phone.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealersService } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
@@ -61,6 +66,12 @@ export interface AuthDeps {
   audit: AuditService;
   /** Where the new yard is, out of the link the dealer pastes on step 2. */
   maps: MapsPort;
+  /**
+   * Firebase, or the fake driver (**R39**). Asked one question — *did Google
+   * sign a statement that somebody entered a code sent to this handset* — and
+   * given no say in what happens next.
+   */
+  phone: PhoneVerifierPort;
 }
 
 export interface CallbackResult {
@@ -72,7 +83,15 @@ export interface CallbackResult {
   returnTo: string;
 }
 
-export function createAuthService({ prisma, sessions, oauth, dealers, audit, maps }: AuthDeps) {
+export function createAuthService({
+  prisma,
+  sessions,
+  oauth,
+  dealers,
+  audit,
+  maps,
+  phone: phoneVerifier,
+}: AuthDeps) {
   /**
    * The Google account on a session — for the onboarding screen, which shows
    * the verified address rather than asking for it again.
@@ -94,6 +113,34 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
   }
 
   /**
+   * A number nobody else holds, or a 409 naming the box the dealer typed in.
+   *
+   * The unique index on `users.phone` is what actually guarantees it and what
+   * makes two dealers racing safe. This read exists for the other half of the
+   * job: turning the collision into a message rather than into a Prisma P2002
+   * the error handler renders as a 500. Same split as `assertNoDuplicate` in
+   * `dealers.service.ts`, and the same reason.
+   *
+   * Extracted at **R39**, because the rule now has three callers — onboarding,
+   * starting a verification, and completing one — and three copies of it would
+   * be three chances to word the refusal differently.
+   */
+  async function assertPhoneFree(phone: string, userId: string): Promise<void> {
+    const owner = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
+    if (!owner || owner.id === userId) return;
+
+    throw new ConflictError(
+      'PHONE_ALREADY_REGISTERED',
+      'That mobile number is already registered to another dealership.',
+      {
+        errors: [
+          { field: 'body.phone', code: 'PHONE_ALREADY_REGISTERED', message: 'Already registered.' },
+        ],
+      },
+    );
+  }
+
+  /**
    * B4. One shape for both states — with a dealership and without one — so a
    * client has one thing to read and one field to branch on.
    */
@@ -103,16 +150,33 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       return { ...session, identity: await identityFor(principal.userId) };
     }
 
+    /*
+     * R39. Read rather than carried on the principal, and deliberately so: a
+     * session is issued once and lives for weeks, and verification happens in
+     * the middle of one. A flag cached in the principal would show a dealer an
+     * unverified badge for a number they had just proved, until they signed out
+     * — which is the sort of staleness that gets reported as "the site is
+     * broken" rather than as a caching bug.
+     */
+    const [identity, user] = await Promise.all([
+      identityFor(principal.userId),
+      prisma.user.findUnique({
+        where: { id: principal.userId },
+        select: { phone: true, phoneVerifiedAt: true },
+      }),
+    ]);
+
     return {
       next: 'ONBOARDING',
-      identity: await identityFor(principal.userId),
+      identity,
       user: {
         id: principal.userId,
         fullName: principal.fullName,
-        phone: principal.phone ?? '',
-        phoneDisplay: principal.phone ? formatPhone(principal.phone) : '',
+        phone: user?.phone ?? principal.phone ?? '',
+        phoneDisplay: user?.phone ? formatPhone(user.phone) : '',
         email: principal.email,
         emailVerified: true,
+        phoneVerified: user?.phoneVerifiedAt != null,
       },
       dealer: null,
       role: null,
@@ -123,6 +187,118 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
   return {
     me,
+
+    /**
+     * B7a — normalise the number before the browser hands it to Firebase.
+     *
+     * A dealer types `98400 12345`; Firebase wants `+919840012345`; our records
+     * hold E.164. Doing the conversion in the browser would mean two
+     * implementations of one rule, and the failure when they disagree is
+     * invisible to everybody: the OTP arrives, the dealer enters it, the
+     * verification succeeds, and the number stored is not the number that was
+     * texted. `toE164` is the same function `onboard` has always used.
+     *
+     * It also refuses early. A number another dealership already holds cannot
+     * become this one's however many codes are sent to it, and finding that out
+     * *before* the SMS is both kinder to the dealer and cheaper — Firebase's
+     * free tier is a per-project daily SMS count, so a refusal that costs a
+     * message is a refusal that costs everyone else a message.
+     */
+    async startPhoneVerification(
+      principal: DealerPrincipal | PendingPrincipal,
+      input: PhoneVerificationStartInput,
+    ): Promise<PhoneVerificationStartResponse> {
+      const phone = toE164(input.phone);
+      await assertPhoneFree(phone, principal.userId);
+      return { phone, phoneDisplay: formatPhone(phone) };
+    },
+
+    /**
+     * B7b — an OTP came back, so record that this handset is theirs (**R39**).
+     *
+     * ── What this is not ────────────────────────────────────────────────────
+     * It is **not a sign-in**. It issues no session, it takes no session, and
+     * it cannot be reached without one: the caller is already an authenticated
+     * dealer, established by Google. Google remains the only door, and a dealer
+     * who signs in again tomorrow is not asked for a code — `phoneVerifiedAt`
+     * is on the user row, not on the session.
+     *
+     * ── Where the number comes from ─────────────────────────────────────────
+     * Out of the token, signed by Google, and from nowhere else. The request
+     * body carries one field and it is the token; a `phone` alongside it would
+     * be a number nobody proved, which is the entire failure this endpoint
+     * exists to make impossible.
+     */
+    async verifyPhone(
+      principal: DealerPrincipal | PendingPrincipal,
+      input: PhoneVerificationInput,
+    ): Promise<AuthSession> {
+      const verified = await phoneVerifier.verify(input.idToken);
+
+      // Between `start` and here somebody else may have taken the number. The
+      // unique index on `users.phone` is the real guarantee; this turns the
+      // collision into a message about the box the dealer typed in.
+      await assertPhoneFree(verified.phone, principal.userId);
+
+      const existing = await prisma.user.findUnique({
+        where: { id: principal.userId },
+        select: { phone: true, phoneVerifiedAt: true },
+      });
+
+      /*
+       * **Once, and only once.** Re-verifying the number a dealer has already
+       * proved is not an error and not a second write — it is a no-op that
+       * answers with the session, so a double-submitted form or a retried
+       * request cannot move the timestamp or write an audit row twice.
+       *
+       * Re-verifying a *different* number is a different thing entirely and is
+       * allowed: a dealership that changes its SIM has to be able to say so,
+       * and the way it says so is by proving the new handset.
+       */
+      const unchanged = existing?.phoneVerifiedAt != null && existing.phone === verified.phone;
+
+      if (!unchanged) {
+        await prisma.user.update({
+          where: { id: principal.userId },
+          data: { phone: verified.phone, phoneVerifiedAt: new Date() },
+        });
+
+        /*
+         * The dealership's public number is a mirror of the verified one, and
+         * the two are written from the same answer — leaving the mirror stale
+         * would publish a number the dealer had just replaced. Only for a
+         * dealership that exists; during onboarding the create path writes it.
+         */
+        if (principal.kind === 'DEALER') {
+          await prisma.dealer.update({
+            where: { id: principal.dealerId },
+            data: { contactPhone: verified.phone },
+          });
+        }
+
+        await audit.recordDetached({
+          actorType: 'DEALER',
+          actorId: principal.userId,
+          ...(principal.kind === 'DEALER' ? { dealerId: principal.dealerId } : {}),
+          action: 'user.phone_verified',
+          entityType: 'User',
+          entityId: principal.userId,
+          before: { phone: existing?.phone ?? null, verified: existing?.phoneVerifiedAt != null },
+          after: { phone: verified.phone, verified: true, provider: phoneVerifier.driver },
+        });
+
+        logger.info(
+          {
+            userId: principal.userId,
+            provider: phoneVerifier.driver,
+            providerUserId: verified.providerUserId,
+          },
+          'phone verified',
+        );
+      }
+
+      return me(principal);
+    },
 
     providers(): AuthProvidersResponse {
       const enabled = oauth.isConfigured();
@@ -344,23 +520,34 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         );
       }
 
-      const phone = toE164(input.phone);
-      const phoneOwner = await prisma.user.findUnique({ where: { phone } });
-      if (phoneOwner && phoneOwner.id !== principal.userId) {
-        throw new ConflictError(
-          'PHONE_ALREADY_REGISTERED',
-          'That mobile number is already registered to another dealership.',
-          {
-            errors: [
-              {
-                field: 'body.phone',
-                code: 'PHONE_ALREADY_REGISTERED',
-                message: 'Already registered.',
-              },
-            ],
-          },
+      /*
+       * **R39 — the number is read, not accepted.**
+       *
+       * It used to arrive in the body. It comes off the user row now, where
+       * `POST /v1/auth/phone/verify` put it after Firebase confirmed an OTP,
+       * and a dealership cannot be created without one. That is the whole of
+       * "verified before you may continue": not a disabled button, which is a
+       * suggestion, but a request the server refuses.
+       *
+       * A 422 rather than a 400: the body is perfectly well-formed and the
+       * caller is perfectly entitled: what is missing is a step, and the client
+       * that gets this should send the dealer back to it rather than highlight
+       * a field.
+       */
+      const account = await prisma.user.findUnique({
+        where: { id: principal.userId },
+        select: { phone: true, phoneVerifiedAt: true },
+      });
+
+      if (!account?.phone || account.phoneVerifiedAt == null) {
+        throw new DomainError(
+          'PHONE_NOT_VERIFIED',
+          'Verify your mobile number before setting up your dealership.',
         );
       }
+
+      const phone = account.phone;
+      await assertPhoneFree(phone, principal.userId);
 
       // The yard's pin and the place it names, out of the link the dealer just
       // pasted. Best-effort and bounded, and read *before* the transaction

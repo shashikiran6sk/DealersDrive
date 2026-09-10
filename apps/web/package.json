@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Dealers-Drive web \u2014 Next.js 15 App Router",
+  "description": "Dealers-Drive web — Next.js 15 App Router",
   "scripts": {
     "dev": "next dev --turbopack --port 3000",
     "build": "next build",
@@ -24,6 +24,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17",
+    "firebase": "^12.19.0",
     "next": "^15.5.24",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

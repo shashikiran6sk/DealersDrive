@@ -38,6 +38,25 @@ export const PublicConfig = z.object({
   rcLookupEnabled: z.boolean(),
   /** Whether listing pages carry a records check at all. */
   vehicleReportEnabled: z.boolean(),
+  /**
+   * **R39.** What the browser needs to talk to Firebase, or `null` when this
+   * deployment has no phone verification configured.
+   *
+   * It is here rather than in `NEXT_PUBLIC_*` for the reason every other flag
+   * on this shape is (rule 9): those variables are inlined at build time, and
+   * one image per environment is exactly what build-once-promote-many exists to
+   * avoid. A Firebase **web** API key is not a secret — it identifies the
+   * project to Google and is visible in any page that uses the SDK; what
+   * protects the project is the authorised-domain list and App Check, not the
+   * key's obscurity.
+   *
+   * `null` is a first-class state, not a misconfiguration: local development
+   * runs `PHONE_VERIFICATION_DRIVER=fake`, and the wizard renders a
+   * develop-only panel instead of a reCAPTCHA it cannot load.
+   */
+  firebase: z
+    .object({ apiKey: z.string(), authDomain: z.string(), projectId: z.string() })
+    .nullable(),
 });
 export type PublicConfig = z.infer<typeof PublicConfig>;
 

@@ -3,6 +3,7 @@ import type {
   CompletenessResponse,
   DealerDocumentsResponse,
   DealerProfile,
+  PublicConfig,
   YardPhotoDto,
 } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
@@ -60,7 +61,22 @@ export default async function OnboardingPage({
   // `GET /v1/cities` was the fifth request here, fetched for a dropdown on
   // step 2. The city is typed now, so the screen no longer waits on reference
   // data to render a form the dealer fills in themselves.
-  const [documents, dealer, completeness, yardPhoto] = await Promise.all([
+  const [config, documents, dealer, completeness, yardPhoto] = await Promise.all([
+    /*
+     * **R39.** What the browser needs to ask Firebase for an OTP, read on the
+     * server and passed down as a prop.
+     *
+     * Not a `NEXT_PUBLIC_*` (rule 9): those are inlined at build time and would
+     * force one image per environment. Cached for a minute rather than not at
+     * all, because it is deployment wiring that changes at a deploy — every
+     * dealer on step 1 re-fetching it would be a request per page view for an
+     * answer that has not moved.
+     *
+     * A failure here is not a failure of the page. `null` renders the panel
+     * that says verification is not configured, which is exactly what a local
+     * `fake`-driver deployment should show.
+     */
+    apiGet<PublicConfig>('/v1/config/public', { revalidate: 60 }).catch(() => null),
     session.dealer
       ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
       : Promise.resolve(null),
@@ -105,6 +121,7 @@ export default async function OnboardingPage({
         dealer={dealer}
         completeness={completeness}
         yardPhoto={yardPhoto}
+        firebase={config?.firebase ?? null}
       />
     </AuthShell>
   );

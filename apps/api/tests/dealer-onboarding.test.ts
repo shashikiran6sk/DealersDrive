@@ -44,10 +44,39 @@ function newAccount(): void {
   };
 }
 
+/**
+ * The number this account will verify (**R39**).
+ *
+ * It is no longer part of the onboarding body — the API reads it off the user
+ * record, where `POST /v1/auth/phone/verify` put it — so the fixture has to
+ * produce it and `verifyPhone()` below has to put it there.
+ */
+function fixturePhone(): string {
+  return `+9198411${String(10000 + counter).slice(-5)}`;
+}
+
+/**
+ * The OTP round trip, without an OTP.
+ *
+ * `PHONE_VERIFICATION_DRIVER=fake` is what the whole suite runs on: the token
+ * is a structured string rather than a Firebase ID token, so no SMS is sent, no
+ * Firebase project is needed and nothing waits on a network. Everything above
+ * the verifier — the route, the service, the duplicate check, the write — runs
+ * exactly as it does in production.
+ */
+async function verifyPhone(
+  agent: ReturnType<AuthHarness['agent']>,
+  phone: string = fixturePhone(),
+): Promise<void> {
+  await agent
+    .post('/v1/auth/phone/verify')
+    .send({ idToken: `fake:${phone}` })
+    .expect(200);
+}
+
 function onboarding(overrides: Record<string, unknown> = {}) {
   return {
     fullName: 'R. Manikandan',
-    phone: `98411${String(10000 + counter).slice(-5)}`,
     legalName: `Onboarding Motors ${counter}`,
     addressLine: '18, Gandhi Road',
     city: 'Katpadi',
@@ -66,6 +95,8 @@ async function dealership(overrides: Record<string, unknown> = {}) {
   newAccount();
   const agent = h.agent();
   await h.signIn(agent);
+  // R39 — a dealership cannot be created without a verified number.
+  await verifyPhone(agent);
   const created = await agent.post('/v1/auth/onboarding').send(onboarding(overrides)).expect(201);
   return {
     agent,
@@ -116,6 +147,7 @@ describe('one name per city', () => {
     newAccount();
     const second = h.agent();
     await h.signIn(second);
+    await verifyPhone(second);
     await second
       .post('/v1/auth/onboarding')
       .send(onboarding({ legalName: name, city: 'Salem' }))
@@ -163,6 +195,7 @@ describe('one name per city', () => {
     newAccount();
     const agent = h.agent();
     await h.signIn(agent);
+    await verifyPhone(agent);
 
     const { district: _omitted, ...withoutDistrict } = onboarding();
     const rejected = await agent.post('/v1/auth/onboarding').send(withoutDistrict).expect(400);
@@ -305,6 +338,7 @@ describe('the yard on a map', () => {
     newAccount();
     const agent = h.agent();
     await h.signIn(agent);
+    await verifyPhone(agent);
 
     const { mapsUrl: _omitted, ...withoutMaps } = onboarding();
     await agent.post('/v1/auth/onboarding').send(withoutMaps).expect(400);
@@ -779,6 +813,191 @@ describe('one dealership, one GSTIN', () => {
     const { agent } = await dealership();
     await agent.patch('/v1/dealer/onboarding').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
     await agent.patch('/v1/dealer/onboarding').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
+  });
+});
+
+/**
+ * **R39 — the OTP round trip, at the database.**
+ *
+ * The token verifier has its own unit tests against real cryptography
+ * (`platform/phone/firebase.adapter.test.ts`); what is here is everything
+ * *around* it — the uniqueness of a verified number, what happens when one
+ * changes, and the once-and-only-once rule — because all three are properties
+ * of rows rather than of a signature.
+ *
+ * `PHONE_VERIFICATION_DRIVER=fake` throughout, so nobody's phone rings.
+ */
+describe('phone verification', () => {
+  async function signedIn() {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+    return agent;
+  }
+
+  it('normalises what the dealer typed before an SMS is sent', async () => {
+    const agent = await signedIn();
+
+    const started = await agent
+      .post('/v1/auth/phone/start')
+      .send({ phone: '  98411 22111  ' })
+      .expect(200);
+
+    expect(started.body.phone).toBe('+919841122111');
+    expect(started.body.phoneDisplay).toContain('98411');
+  });
+
+  it('turns an accepted token into a verified session', async () => {
+    const agent = await signedIn();
+
+    const before = await agent.get('/v1/auth/me').expect(200);
+    expect(before.body.user.phoneVerified).toBe(false);
+
+    const after = await agent
+      .post('/v1/auth/phone/verify')
+      .send({ idToken: 'fake:+919841122222' })
+      .expect(200);
+
+    expect(after.body.user.phoneVerified).toBe(true);
+    expect(after.body.user.phone).toBe('+919841122222');
+    // And it survives the request: it is a column, not a session flag.
+    const again = await agent.get('/v1/auth/me').expect(200);
+    expect(again.body.user.phoneVerified).toBe(true);
+  });
+
+  /**
+   * **Once, and only once.** A double-submitted form, a retried request or a
+   * dealer who presses Verify twice must not move the timestamp or write a
+   * second audit row — so re-verifying the same number is a no-op that answers
+   * with the session rather than an error.
+   */
+  it('is idempotent for the number already on the record', async () => {
+    const agent = await signedIn();
+    await agent.post('/v1/auth/phone/verify').send({ idToken: 'fake:+919841122333' }).expect(200);
+
+    const user = await h.prisma.user.findUnique({ where: { phone: '+919841122333' } });
+    const first = user?.phoneVerifiedAt;
+
+    await agent.post('/v1/auth/phone/verify').send({ idToken: 'fake:+919841122333' }).expect(200);
+
+    const after = await h.prisma.user.findUnique({ where: { phone: '+919841122333' } });
+    expect(after?.phoneVerifiedAt?.toISOString()).toBe(first?.toISOString());
+  });
+
+  /** A dealership that changes its SIM has to be able to say so. */
+  it('lets a dealer verify a different number', async () => {
+    const agent = await signedIn();
+    await agent.post('/v1/auth/phone/verify').send({ idToken: 'fake:+919841122444' }).expect(200);
+
+    const moved = await agent
+      .post('/v1/auth/phone/verify')
+      .send({ idToken: 'fake:+919841122555' })
+      .expect(200);
+
+    expect(moved.body.user.phone).toBe('+919841122555');
+    expect(moved.body.user.phoneVerified).toBe(true);
+  });
+
+  it('refuses a token it cannot check', async () => {
+    const agent = await signedIn();
+
+    const refused = await agent
+      .post('/v1/auth/phone/verify')
+      .send({ idToken: 'eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.forged' })
+      .expect(401);
+
+    expect(refused.body.code).toBe('PHONE_TOKEN_INVALID');
+  });
+
+  it('refuses a wrong code with a code of its own', async () => {
+    const agent = await signedIn();
+
+    const refused = await agent
+      .post('/v1/auth/phone/verify')
+      .send({ idToken: 'fake:+919841122666:000000' })
+      .expect(401);
+
+    expect(refused.body.code).toBe('PHONE_CODE_INVALID');
+  });
+
+  it('refuses a body that also carries a phone number', async () => {
+    const agent = await signedIn();
+
+    // The number is inside the token, signed. One in the body would be a
+    // number nobody proved, which is the whole point of the endpoint.
+    const refused = await agent
+      .post('/v1/auth/phone/verify')
+      .send({ idToken: 'fake:+919841122777', phone: '9840012345' })
+      .expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+  });
+
+  it('needs a session', async () => {
+    await h
+      .agent()
+      .post('/v1/auth/phone/verify')
+      .send({ idToken: 'fake:+919841122888' })
+      .expect(401);
+    await h.agent().post('/v1/auth/phone/start').send({ phone: '9841122888' }).expect(401);
+  });
+
+  /**
+   * **The badge and the number move together, or the badge starts lying.**
+   *
+   * An onboarding PATCH that changes the contact number clears
+   * `phoneVerifiedAt`: carrying a verification of the *old* handset onto a new
+   * one is worse than never having verified at all, because the dealership's
+   * public page would then assert something nobody ever proved.
+   */
+  it('un-verifies a dealership that changes its number another way', async () => {
+    const { agent } = await dealership();
+
+    const before = await agent.get('/v1/auth/me').expect(200);
+    expect(before.body.user.phoneVerified).toBe(true);
+
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ contact: { phone: '9841133999' } })
+      .expect(200);
+
+    const after = await agent.get('/v1/auth/me').expect(200);
+    expect(after.body.user.phoneVerified).toBe(false);
+    expect(after.body.user.phone).toBe('+919841133999');
+
+    // And one OTP puts it back.
+    await verifyPhone(agent, '+919841133999');
+    const fixed = await agent.get('/v1/auth/me').expect(200);
+    expect(fixed.body.user.phoneVerified).toBe(true);
+  });
+
+  /**
+   * A PATCH that re-sends the same number must not un-verify anybody: the
+   * onboarding form re-sends every field on the step, every time, so a dealer
+   * correcting their pincode would otherwise lose their badge.
+   */
+  it('leaves a dealership verified when the number does not change', async () => {
+    const { agent } = await dealership();
+    const me = await agent.get('/v1/auth/me').expect(200);
+    const phone = (me.body.user.phone as string).replace('+91', '');
+
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ contact: { phone }, address: { pincode: '632014' } })
+      .expect(200);
+
+    const after = await agent.get('/v1/auth/me').expect(200);
+    expect(after.body.user.phoneVerified).toBe(true);
+  });
+
+  /** The public number is a mirror of the verified one, written from the same answer. */
+  it('mirrors a newly verified number onto the dealership', async () => {
+    const { agent } = await dealership();
+
+    await verifyPhone(agent, '+919841144000');
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.contact.phone).toBe('+919841144000');
   });
 });
 

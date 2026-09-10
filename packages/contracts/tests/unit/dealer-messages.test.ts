@@ -59,7 +59,8 @@ function expectHuman(messages: string[]): void {
 /** A wizard that would otherwise be accepted, so the only issue is the one under test. */
 const ONBOARDING = {
   fullName: 'R. Sundaram',
-  phone: '9840012345',
+  // No `phone`: it left this schema at **R39** and is read off the verified
+  // user record instead. `.strict()` would refuse one here.
   legalName: 'Sri Lakshmi Motors',
   addressLine: '14 Katpadi Road',
   city: 'Vellore',

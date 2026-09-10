@@ -52,6 +52,8 @@ const INPUT_SCHEMA_NAMES = [
   'DealerDirectoryQuery',
   // bodies
   'OnboardingInput',
+  'PhoneVerificationStartInput',
+  'PhoneVerificationInput',
   'MediaPresignInput',
   'MediaCommitInput',
   'DocumentPresignInput',

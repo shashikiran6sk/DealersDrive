@@ -334,6 +334,12 @@ describe('unknown throwables', () => {
     vi.stubEnv('SESSION_SECRET', 'a-real-production-session-secret');
     vi.stubEnv('UPLOAD_SIGNING_SECRET', 'a-real-production-upload-secret');
     vi.stubEnv('RC_PLATE_HASH_SECRET', 'a-real-production-plate-secret');
+    // R39 — production refuses `PHONE_VERIFICATION_DRIVER=fake`, which verifies
+    // nothing, so a production fixture has to carry the real one.
+    vi.stubEnv('PHONE_VERIFICATION_DRIVER', 'firebase');
+    vi.stubEnv('FIREBASE_PROJECT_ID', 'dealers-drive-prod');
+    vi.stubEnv('FIREBASE_WEB_API_KEY', 'AIzaSyProductionWebKey');
+    vi.stubEnv('FIREBASE_AUTH_DOMAIN', 'dealers-drive-prod.firebaseapp.com');
 
     try {
       const { errorHandler: productionHandler } =

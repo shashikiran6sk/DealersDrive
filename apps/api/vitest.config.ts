@@ -42,6 +42,11 @@ const ENV = {
   // variable the runner has not — so without this line the suite's behaviour
   // would depend on a file that is not in the repository.
   DOCS_ENABLED: 'false',
+  // R39. The default already, and stated here for the reason DOCS_ENABLED is:
+  // a developer's own `.env` may point at a real Firebase project, and a suite
+  // whose phone verification depended on that file would pass on one laptop and
+  // fail on the next. `fake` needs no project, no network and no SMS.
+  PHONE_VERIFICATION_DRIVER: 'fake',
 };
 
 /**

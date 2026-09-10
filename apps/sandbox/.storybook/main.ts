@@ -44,6 +44,29 @@ const config: StorybookConfig = {
         find: '@/features/dealer/profile-actions',
         replacement: new URL('../src/mocks/dealer-actions.ts', import.meta.url).pathname,
       },
+      /*
+       * R39. Two stubs rather than one, and deliberately: `phone-actions`
+       * stands in for the API and `phone-firebase` for Google. A story showing
+       * "already registered" is exercising the API's refusal and must never
+       * reach Firebase; one showing a wrong code is exercising Firebase's while
+       * the API is never called. Collapsing them makes either impossible to
+       * stage.
+       *
+       * The `firebase/*` entries also keep the real SDK — ~200 KB plus
+       * reCAPTCHA — out of the sandbox bundle entirely.
+       */
+      {
+        find: '@/features/auth/phone-actions',
+        replacement: new URL('../src/mocks/phone-actions.ts', import.meta.url).pathname,
+      },
+      {
+        find: 'firebase/app',
+        replacement: new URL('../src/mocks/phone-firebase.ts', import.meta.url).pathname,
+      },
+      {
+        find: 'firebase/auth',
+        replacement: new URL('../src/mocks/phone-firebase.ts', import.meta.url).pathname,
+      },
       { find: '@', replacement: new URL('../../web/src', import.meta.url).pathname },
     ];
     return viteConfig;

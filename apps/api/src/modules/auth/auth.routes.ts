@@ -1,4 +1,8 @@
-import { OnboardingInput } from '@dealers-drive/contracts';
+import {
+  OnboardingInput,
+  PhoneVerificationInput,
+  PhoneVerificationStartInput,
+} from '@dealers-drive/contracts';
 import { Router } from 'express';
 
 import { env } from '../../config/env.js';
@@ -191,6 +195,47 @@ export function createSessionAuthRouter(service: AuthService): Router {
 
         const body = validated<OnboardingInput>(req, 'body');
         res.status(201).json(await service.onboard(principal, body));
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
+
+  /**
+   * B7 — phone verification (**R39**), two routes and neither of them signs
+   * anybody in.
+   *
+   * They sit behind `requireSignedIn` alongside `/me` and `/onboarding`, which
+   * is the whole security posture in one line: the caller is already an
+   * authenticated dealer, established by Google, and what happens here is a
+   * claim about their handset rather than about who they are.
+   */
+  router.post('/phone/start', validate({ body: PhoneVerificationStartInput }), (req, res, next) => {
+    void (async () => {
+      try {
+        res.set('Cache-Control', 'no-store');
+        res.json(
+          await service.startPhoneVerification(
+            signedInPrincipal(req),
+            validated<PhoneVerificationStartInput>(req, 'body'),
+          ),
+        );
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
+
+  router.post('/phone/verify', validate({ body: PhoneVerificationInput }), (req, res, next) => {
+    void (async () => {
+      try {
+        res.set('Cache-Control', 'no-store');
+        res.json(
+          await service.verifyPhone(
+            signedInPrincipal(req),
+            validated<PhoneVerificationInput>(req, 'body'),
+          ),
+        );
       } catch (error) {
         next(error);
       }
