@@ -4119,3 +4119,89 @@ it is helping and is not.
 directory card shows — but removing and re-adding is a two-click reorder, and a
 drag affordance that has to work on a phone is a great deal of code for a list
 of at most twelve short labels.
+
+---
+
+## R38 — PAN is unique across the platform, as GSTIN already was
+
+**Revises F038 / F041 / F045 / F046**
+
+`dealers.gstin` has carried `@unique` since the identity migration, and the
+service turns a collision into a `409 GSTIN_ALREADY_REGISTERED` naming
+`body.gstin`. `pan` sat in the column beside it, validated for shape and checked
+against nothing.
+
+The asymmetry was not a decision. Both are read off a document by the same
+moderator on the same screen, and both identify **one taxable entity** — so two
+dealerships holding one PAN is either one business applying twice, or a typo
+that has quietly carried somebody else's tax identity into a KYC review.
+
+- **Schema** `Dealer.pan` gains `@unique` ·
+  `migrations/20260910180000_dealer_pan_unique`
+- **Backend** `dealers.repository.findConflicting` — takes `pan`, returns
+  `pan`; `dealers.service.assertNoDuplicate` — the `PAN_ALREADY_REGISTERED`
+  branch, and `pan` added at the one call site
+- **API** No route changes. `PATCH /v1/dealer/onboarding` and
+  `PATCH /v1/admin/dealers/:id` gain a 409 code, and both `*.docs.ts`
+  descriptions say so — `errors: [… 409]` was already declared on each
+- **Frontend** Nothing. `fieldErrors()` strips the `body.` prefix, so
+  `body.pan` already lands on the `pan` key the wizard's `<Field id="pan">` and
+  the admin editor's `errorFor` both read
+- **Tests** `dealer-onboarding.test.ts` — seven integration cases mirroring the
+  GSTIN block; `dealers.service.test.ts` — four unit;
+  `actions.test.ts` — the field-and-banner case, table-driven over both codes
+- **No new dependency.**
+
+### GSTIN is reported first when both collide
+
+A step-3 submit carries both, and both can be duplicates of the same rival row.
+One field error at a time is the shape of every check on this path, and the
+order is not arbitrary: **a GSTIN embeds the PAN of the entity that holds it**
+(characters 3–12). A dealer who corrects the GSTIN usually corrects the PAN with
+it, and naming the derived field first would send them to the wrong document.
+
+### The unique index is the guarantee; the read is the message
+
+This is the same split GSTIN uses and it is worth restating, because the check
+looks redundant next to the constraint. The index is what makes two applications
+racing safe. `findConflicting` exists for the other half of the job: turning a
+collision into a message against the box the dealer just typed in, rather than
+into a Prisma `P2002` the error handler renders as a 500.
+
+`findConflicting` still issues **one query** however many fields are asked
+about — the clauses are OR'd and the three answers are read back off the same
+rows. A dealer filling in step 3 sends GSTIN and PAN together, and two round
+trips to answer one question is a round trip nobody needed.
+
+### A dealership editing itself is excluded, and that is not new code
+
+`id: { not: exceptDealerId }` has always been in the `where`. It is what lets a
+dealer re-save a form without being refused by their own row, and it is now
+covered by two cases that did not exist for GSTIN either: re-saving the same
+PAN, and editing an unrelated field while holding one.
+
+### Nullable, and why that is what makes this deployable
+
+Postgres permits many NULLs in a unique index. Every dealership that has not
+reached step 3 has `pan = NULL`, and none of them collide — so the constraint
+can land now rather than after a backfill. It is the same reason `gstin` is
+nullable _and_ unique rather than one or the other.
+
+⚠️ **The migration fails if two rows already share a PAN**, and failing is the
+correct behaviour: silently keeping a duplicate would leave the database
+disagreeing with the application check that lands in the same commit. The
+migration names the query that finds them.
+
+### Case is handled twice, deliberately
+
+`PAN` in `packages/contracts` is `.trim().toUpperCase()` before the regex, so
+every value ever written is upper-case and the plain unique index is exact.
+`findConflicting` compares case-insensitively anyway. That is belt and braces
+rather than a second rule — and it is what the GSTIN check already did.
+
+### One test fixture had to change
+
+`dealer-onboarding.test.ts` wrote `pan: 'AABCS1429B'` as a literal in the
+yard-photo block, beside a GSTIN already derived from a counter. That was safe
+only while exactly one test wrote it. Both are derived now, so the next test to
+copy that line cannot break the one above it.

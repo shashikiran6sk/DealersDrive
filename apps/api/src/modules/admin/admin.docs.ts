@@ -135,10 +135,15 @@ export const adminDocs: ModuleDocs = {
         'character.\n\n' +
         'The body is **the same `UpdateDealerInput` `PATCH /v1/dealer` takes**, and the same ' +
         'service performs the write: locality normalisation, the E.164 rewrite of the phone ' +
-        'number, the name-unique-within-a-city check and the `brandName` mirror all apply ' +
-        'identically. It is partial, so sending one field never blanks another. The one ' +
-        'difference from the dealer path is the audit row — an edit the dealer did not make ' +
-        'has to be attributable to the person who made it.',
+        'number, the name-unique-within-a-city check, the platform-wide GSTIN and PAN ' +
+        'uniqueness checks (**R38**) and the `brandName` mirror all apply identically. It ' +
+        'is partial, so sending one field never blanks another. The one difference from ' +
+        'the dealer path is the audit row — an edit the dealer did not make has to be ' +
+        'attributable to the person who made it.\n\n' +
+        'That the checks are shared is the point rather than a detail: a moderator ' +
+        'correcting a digit can still only correct it to a value no other dealership ' +
+        'holds, and a 409 here names the field (`GSTIN_ALREADY_REGISTERED`, ' +
+        '`PAN_ALREADY_REGISTERED`) exactly as it does on the dealer route.',
       audience: 'admin',
       permission: 'admin:dealer:approve',
       params: 'IdParam',

@@ -1,0 +1,30 @@
+-- PAN is unique across the platform, as GSTIN already was (R38).
+--
+-- `dealers.gstin` has carried `@unique` since the identity migration; `pan` sat
+-- beside it, validated for shape and checked against nothing. The asymmetry was
+-- not a decision — both are read off a document by the same moderator on the
+-- same screen, and both identify one taxable entity. Two dealerships holding one
+-- PAN is either one business applying twice, or a typo that has quietly carried
+-- somebody else's tax identity into a KYC review.
+--
+-- Nullable, and that is what makes the index usable now rather than after a
+-- backfill: Postgres permits many NULLs in a unique index, so every dealership
+-- that has not reached step 3 of onboarding stays uncollided. It is the same
+-- reason `gstin` is nullable and unique rather than one or the other.
+--
+-- ⚠️ **This migration fails if two rows already share a PAN**, and failing is
+-- the correct behaviour — silently keeping a duplicate would leave the database
+-- disagreeing with the application check that lands in the same commit. Find
+-- them before deploying:
+--
+--     SELECT pan, count(*), array_agg(slug)
+--       FROM dealers WHERE pan IS NOT NULL
+--      GROUP BY pan HAVING count(*) > 1;
+--
+-- Case is not a concern here. `PAN` in `packages/contracts` is
+-- `.trim().toUpperCase()` before the regex, so every value that has ever been
+-- written is upper-case and a plain unique index is exact. The application
+-- check above it compares case-insensitively anyway, which is belt and braces
+-- rather than a second rule.
+
+CREATE UNIQUE INDEX "dealers_pan_key" ON "dealers"("pan");

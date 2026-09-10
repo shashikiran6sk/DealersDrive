@@ -168,12 +168,12 @@ export function createDealersRepository(prisma: PrismaClient) {
     },
 
     /**
-     * One dealership carrying this name **in this city**, or this GSTIN
+     * One dealership carrying this name **in this city**, or this GSTIN or PAN
      * anywhere — ignoring the one asking.
      *
-     * The two unique indexes are the real guarantee; this read is what turns a
-     * collision into a message against the field the dealer just typed. Both
-     * comparisons are case-insensitive, because "Sri Lakshmi Motors" and "SRI
+     * The three unique indexes are the real guarantee; this read is what turns
+     * a collision into a message against the field the dealer just typed. Every
+     * comparison is case-insensitive, because "Sri Lakshmi Motors" and "SRI
      * LAKSHMI MOTORS" in one town are one business applying twice and a
      * case-sensitive index would let the second one through.
      *
@@ -182,14 +182,20 @@ export function createDealersRepository(prisma: PrismaClient) {
      * asked about without a city cannot conflict, and this returns false for
      * it rather than guessing at the dealership's current one. Callers that
      * mean "does this name still fit where I am" pass both.
+     *
+     * **One query, however many fields are asked about.** A dealer filling in
+     * step 3 sends GSTIN and PAN together, and two round trips to answer one
+     * question is a round trip nobody needed — the clauses are OR'd and the
+     * three answers are read back off the same rows (**R38**).
      */
     async findConflicting(
       exceptDealerId: string,
-      fields: { legalName?: string; city?: string; gstin?: string },
-    ): Promise<{ legalName: boolean; gstin: boolean }> {
+      fields: { legalName?: string; city?: string; gstin?: string; pan?: string },
+    ): Promise<{ legalName: boolean; gstin: boolean; pan: boolean }> {
       const legalName = fields.legalName?.toLowerCase();
       const city = fields.city?.toLowerCase();
       const gstin = fields.gstin?.toLowerCase();
+      const pan = fields.pan?.toLowerCase();
       const named = legalName !== undefined && city !== undefined;
 
       const clauses: Prisma.DealerWhereInput[] = [];
@@ -202,11 +208,14 @@ export function createDealersRepository(prisma: PrismaClient) {
       if (gstin !== undefined) {
         clauses.push({ gstin: { equals: gstin, mode: 'insensitive' } });
       }
-      if (clauses.length === 0) return { legalName: false, gstin: false };
+      if (pan !== undefined) {
+        clauses.push({ pan: { equals: pan, mode: 'insensitive' } });
+      }
+      if (clauses.length === 0) return { legalName: false, gstin: false, pan: false };
 
       const rows = await prisma.dealer.findMany({
         where: { id: { not: exceptDealerId }, OR: clauses },
-        select: { legalName: true, city: true, gstin: true },
+        select: { legalName: true, city: true, gstin: true, pan: true },
       });
 
       const lower = (value: string | null): string | null => value?.toLowerCase() ?? null;
@@ -214,7 +223,13 @@ export function createDealersRepository(prisma: PrismaClient) {
         legalName:
           named &&
           rows.some((row) => lower(row.legalName) === legalName && lower(row.city) === city),
-        gstin: rows.some((row) => lower(row.gstin) === gstin),
+        // The `!== undefined` guards are belt and braces rather than a fix:
+        // `lower()` returns `string | null` and never `undefined`, so an
+        // unasked-about field could not have matched anyway. They are here so
+        // the intent — *a field nobody asked about cannot clash* — is stated
+        // rather than inferred from a type two lines away.
+        gstin: gstin !== undefined && rows.some((row) => lower(row.gstin) === gstin),
+        pan: pan !== undefined && rows.some((row) => lower(row.pan) === pan),
       };
     },
 

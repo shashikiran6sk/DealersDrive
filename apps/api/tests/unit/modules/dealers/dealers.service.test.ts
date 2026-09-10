@@ -138,8 +138,8 @@ interface Options {
   head?: { bytes: number; contentType: string } | null;
   newEnquiryCount?: number;
   pendingListingCount?: number;
-  /** What `findConflicting` reports — a name or GSTIN already taken. */
-  conflicting?: { legalName: boolean; gstin: boolean };
+  /** What `findConflicting` reports — a name, GSTIN or PAN already taken. */
+  conflicting?: { legalName: boolean; gstin: boolean; pan: boolean };
   /** Who already holds the number a phone patch asks for, if anybody. */
   phoneHolder?: { id: string } | null;
   /** One row, or several to be looked up by id — a replacement needs two. */
@@ -187,7 +187,7 @@ function setup(options: Options = {}) {
       ),
     findConflicting: (dealerId: string, fields: Record<string, unknown>) => {
       conflictQueries.push({ dealerId, fields });
-      return Promise.resolve(options.conflicting ?? { legalName: false, gstin: false });
+      return Promise.resolve(options.conflicting ?? { legalName: false, gstin: false, pan: false });
     },
     mediaById: (mediaId: string) => {
       if (!options.media) return Promise.resolve(null);
@@ -1238,7 +1238,7 @@ describe('submitForVerification', () => {
  */
 describe('update — the duplicate guard', () => {
   it('refuses a registered name another dealership in the same city holds', async () => {
-    const h = setup({ conflicting: { legalName: true, gstin: false } });
+    const h = setup({ conflicting: { legalName: true, gstin: false, pan: false } });
 
     await expect(
       h.service.update('dealer-1', { legalName: 'Sri Lakshmi Motors Pvt Ltd' }),
@@ -1248,7 +1248,7 @@ describe('update — the duplicate guard', () => {
 
   /** The dealer is told which town it is taken in — the name alone is fine. */
   it('names the city in the refusal', async () => {
-    const h = setup({ conflicting: { legalName: true, gstin: false } });
+    const h = setup({ conflicting: { legalName: true, gstin: false, pan: false } });
 
     await expect(h.service.update('dealer-1', { legalName: 'Velavan Cars' })).rejects.toMatchObject(
       {
@@ -1265,13 +1265,53 @@ describe('update — the duplicate guard', () => {
   });
 
   it('refuses a GSTIN another dealership already holds', async () => {
-    const h = setup({ conflicting: { legalName: false, gstin: true } });
+    const h = setup({ conflicting: { legalName: false, gstin: true, pan: false } });
 
     await expect(h.service.update('dealer-1', { gstin: '33AABCS1429B1ZX' })).rejects.toMatchObject({
       status: 409,
       code: 'GSTIN_ALREADY_REGISTERED',
     });
     expect(h.updates).toEqual([]);
+  });
+
+  /** **R38.** The same rule as the GSTIN above it, and the same shape. */
+  it('refuses a PAN another dealership already holds', async () => {
+    const h = setup({ conflicting: { legalName: false, gstin: false, pan: true } });
+
+    await expect(h.service.update('dealer-1', { pan: 'AABCS1429B' })).rejects.toMatchObject({
+      status: 409,
+      code: 'PAN_ALREADY_REGISTERED',
+      detail: 'That PAN is already registered to another dealership.',
+      errors: [
+        { field: 'body.pan', code: 'PAN_ALREADY_REGISTERED', message: 'Already registered.' },
+      ],
+    });
+    // The refusal happens before the write, so nothing was saved.
+    expect(h.updates).toEqual([]);
+  });
+
+  /**
+   * Both duplicated at once is answered about the GSTIN. One field error at a
+   * time is the shape of every check on this path, and a GSTIN embeds the PAN
+   * of the entity that holds it — so naming the derived field first would send
+   * the dealer to the wrong document.
+   */
+  it('names the GSTIN when the GSTIN and the PAN both collide', async () => {
+    const h = setup({ conflicting: { legalName: false, gstin: true, pan: true } });
+
+    await expect(
+      h.service.update('dealer-1', { gstin: '33AABCS1429B1ZX', pan: 'AABCS1429B' }),
+    ).rejects.toMatchObject({ code: 'GSTIN_ALREADY_REGISTERED' });
+  });
+
+  /** A PAN nobody holds is written, and the check saw it. */
+  it('asks about the PAN it is being sent', async () => {
+    const h = setup();
+
+    await h.service.update('dealer-1', { pan: 'AABCS1429B' });
+
+    expect(h.conflictQueries).toEqual([{ dealerId: 'dealer-1', fields: { pan: 'AABCS1429B' } }]);
+    expect(h.updates[0]?.data).toMatchObject({ pan: 'AABCS1429B' });
   });
 
   /** The dealership asking is excluded, or saving an unchanged form would 409. */

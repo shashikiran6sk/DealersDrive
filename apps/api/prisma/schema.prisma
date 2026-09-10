@@ -121,7 +121,12 @@ model Dealer {
   /// unique index, which is exactly right: a dealership that has not entered a
   /// GSTIN yet must not collide with every other one that has not either.
   gstin              String?      @unique
-  pan                String?
+  /// Unique where present, on the same reasoning as `gstin` above — a PAN
+  /// identifies one taxable entity, so two dealerships holding one is one
+  /// business applying twice or a typo carrying somebody else's identity into a
+  /// KYC review. Nullable, so the many dealerships that have not entered one
+  /// yet do not collide with each other (**R38**).
+  pan                String?      @unique
   tagline            String?
   logoMediaId        String?      @db.Uuid
   coverMediaId       String?      @db.Uuid

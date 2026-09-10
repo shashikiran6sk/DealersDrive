@@ -171,11 +171,16 @@ export const dealersDocs: ModuleDocs = {
         '`brandName` is absent too, and for a different reason: a dealership has **one** ' +
         'name. `legalName` is it, and `brandName` is the server-written display mirror of ' +
         'it \u2014 a client able to set both is a client able to make them disagree.\n\n' +
-        '`legalName` is unique **within a city** and `gstin` is unique across the platform. A ' +
-        'collision is a 409 (`DEALER_NAME_TAKEN`, `GSTIN_ALREADY_REGISTERED`) naming the ' +
-        'field. A rename is checked against the city this same request moves to, when it ' +
-        'moves \u2014 so changing both in one call is checked against the pair, not a ' +
-        'half-applied combination of them.\n\n' +
+        '`legalName` is unique **within a city**; `gstin` and `pan` are each unique across ' +
+        'the platform. A collision is a 409 (`DEALER_NAME_TAKEN`, `GSTIN_ALREADY_REGISTERED`, ' +
+        '`PAN_ALREADY_REGISTERED`) naming the field. A rename is checked against the city ' +
+        'this same request moves to, when it moves \u2014 so changing both in one call is ' +
+        'checked against the pair, not a half-applied combination of them.\n\n' +
+        'A submit carrying a duplicate **GSTIN and** a duplicate PAN is answered about the ' +
+        'GSTIN. One field error at a time is the shape of every check on this path, and a ' +
+        'GSTIN embeds the PAN of the entity that holds it \u2014 so a dealer who corrects ' +
+        'the GSTIN usually corrects the PAN with it, and naming the derived field first ' +
+        'would send them to the wrong document.\n\n' +
         '`address.city`, `address.district` and `address.state` are free text, normalised on ' +
         'write. There is no list of cities to choose from and no state the platform is ' +
         'confined to.\n\n' +
