@@ -11,6 +11,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { ApiError, apiSend, SESSION_COOKIE } from '@/lib/api';
+import { servicesOf } from '@/lib/services';
 
 /**
  * The writes that change who you are.
@@ -304,23 +305,6 @@ function apiFieldErrors(error: ApiError): Record<string, string> {
     errors[formField(path)] ??= message;
   }
   return errors;
-}
-
-/**
- * The services box, as the array the contract wants (**R26**).
- *
- * One comma-separated input rather than a chip editor, which is what the
- * dealer's profile screen already does — the same parse in both places so the
- * two screens cannot disagree about what "In-house workshop, RC transfer"
- * means. Repeats are left in: they are merged on read (R18), and refusing a
- * dealer's typo teaches them to be careful about something that does not
- * matter.
- */
-function servicesOf(value: string): string[] {
-  return value
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
 }
 
 function emptyToUndefined(value: string): string | undefined {

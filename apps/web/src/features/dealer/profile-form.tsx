@@ -8,6 +8,7 @@ import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Banner, Tag } from '@/components/ui/primitives';
+import { ServiceInput } from '@/components/ui/service-input';
 import {
   saveDealerProfileAction,
   withdrawProfileChangeAction,
@@ -90,9 +91,8 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
    */
   const waiting = dealer.profileChange?.status === 'PENDING' ? dealer.profileChange : null;
   const taglineValue = waiting?.tagline ?? dealer.tagline ?? '';
-  const servicesValue = (
-    waiting && waiting.specialities.length > 0 ? waiting.specialities : dealer.specialities
-  ).join(', ');
+  const servicesValue =
+    waiting && waiting.specialities.length > 0 ? waiting.specialities : dealer.specialities;
 
   return (
     <form action={formAction} className="flex flex-col gap-[18px]">
@@ -187,17 +187,16 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
           hint={
             waiting
               ? 'waiting for review — cancel above to change them'
-              : 'comma separated, up to 12 — checked before they appear'
+              : 'one at a time, up to 12 — checked before they appear'
           }
           error={errors.specialities}
         >
-          <Input
+          <ServiceInput
             id="specialities"
             {...(waiting ? {} : { name: 'specialities' })}
-            defaultValue={servicesValue}
-            placeholder="In-house workshop, RC transfer assistance, Bank loan tie-ups"
+            value={servicesValue}
+            placeholder="In-house workshop"
             required={!waiting}
-            aria-required={waiting ? undefined : 'true'}
             disabled={Boolean(waiting)}
             {...invalidProps('specialities', errors.specialities)}
           />

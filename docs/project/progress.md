@@ -201,7 +201,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R33 — The paragraph is dropped, column and all · revises R25/R26/R32 · ⚠️ deletes data · [#106](https://github.com/shashikiran6sk/DealersDrive/pull/106)
 - [~] R34 — A dealer's public words are proposed, not published · revises F041/F046/R26/R27/R32 · [#107](https://github.com/shashikiran6sk/DealersDrive/pull/107)
 - [~] R35 — One door for a dealership, not two · revises F073 · [#109](https://github.com/shashikiran6sk/DealersDrive/pull/109)
-- [ ] R36 — The contact's job title is not a field · revises F038/F041/F046 · ⚠️ deletes data
+- [~] R36 — The contact's job title is not a field · revises F038/F041/F046 · ⚠️ deletes data · [#110](https://github.com/shashikiran6sk/DealersDrive/pull/110)
+- [ ] R37 — Services are added one at a time, and shown as chips · revises F037/F046/R18/R26
 
 ---
 

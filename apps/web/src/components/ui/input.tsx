@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type { ComponentPropsWithRef, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 
 import { cn } from '@/lib/cn';
 
@@ -22,7 +22,14 @@ import { cn } from '@/lib/cn';
  * are three different rules in the stylesheet, and because a caller should get
  * the right DOM element's props typed.
  */
-export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+/**
+ * `ComponentPropsWithRef` rather than `InputHTMLAttributes` so a caller can hold
+ * the element (**R37**): `ServiceInput` returns focus to the draft box after
+ * every chip, and in React 19 `ref` is an ordinary prop on a function component
+ * — it is only the type that had to widen. Nothing else about the component
+ * changes, and no existing call site is affected.
+ */
+export function Input({ className, ...props }: ComponentPropsWithRef<'input'>) {
   return <input className={cn('input', className)} {...props} />;
 }
 

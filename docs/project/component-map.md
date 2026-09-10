@@ -521,6 +521,44 @@ for the two dialogs the spec draws — a confirmation and a rejection reason. A
 dialog whose content is a grid overrides it through `className`, which is what
 `LocationSelector` does at 880px.
 
+### C072 — `ServiceInput`
+
+|                      |                                                                                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `components/ui/service-input.tsx`                                                                                                                                                       |
+| **Purpose**          | DESIGN-SPEC §2.5. **New at R37** — the services list entered one service at a time, as removable chips. Replaces the comma-separated `Input` on both screens that write `specialities`. |
+| **Props**            | `id`, `name?`, `value: string[]`, `placeholder?`, `disabled?`, `required?`, `max?` (12), `maxLength?` (60), `aria-invalid?`, `aria-describedby?`                                        |
+| **States**           | empty, one chip, several, wrapping to two rows, duplicate refused, over-length refused, at the 12 limit, disabled (R34), aria-invalid                                                   |
+| **Dependencies**     | `Input` (C017), `Button` (C001), `Tag` (C011)                                                                                                                                           |
+| **Consumers**        | 2 — `OnboardingWizard`'s business step (F037) and `DealerProfileForm` (F046)                                                                                                            |
+| **Tests**            | `tests/unit/components/ui/service-input.test.tsx` — 14 cases, split between what the dealer sees and what the form submits                                                              |
+| **Ownership**        | Shared                                                                                                                                                                                  |
+| **Sandbox priority** | **P0** — Enter-does-not-submit, paste-splitting and the commit-on-submit are all invisible outside a real `<form>`                                                                      |
+| **Confidence**       | HIGH                                                                                                                                                                                    |
+
+**The hidden input is the whole compatibility story.** It carries
+`services.join(', ')` under `name`, which is byte-for-byte what the comma box
+submitted, so `servicesOf()` in the server actions is unchanged and the contract,
+the route and the API never learn that the editor changed. A screen that has not
+adopted it cannot disagree with one that has.
+
+**The visible box has no `name`.** It is the draft, not the value, and a draft
+must not be submittable — the same rule `LockedField` relies on at R27, and the
+reason `required` sits on the _visible_ control: a browser cannot focus or
+message a hidden one, so putting `required` there would produce a form that
+silently refuses to submit with nothing highlighted.
+
+**A draft the dealer typed but did not add is committed on submit.** Without it,
+the most natural mistake on the screen — type a service, press Continue — loses
+the last entry, and the loss is invisible until the dealer looks at their own
+public page. It writes the hidden input's `value` directly, because a `setState`
+in a submit handler has not flushed by the time the form serialises.
+
+**The chip row is a `group`, not a `list`.** Every onboarding step already
+contains one `<ol>` — the stepper — and a second list role makes
+`getByRole('list')` ambiguous on a screen whose only list is meant to be the
+progress indicator. The directory card's chip row is not a list either.
+
 ---
 
 ## Layer 5 — Vehicle (`components/vehicle/`)

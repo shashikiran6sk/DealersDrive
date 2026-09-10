@@ -697,7 +697,22 @@ describe('OnboardingWizard — the Business step', () => {
     }
     expect(tagline).toHaveAttribute('name', 'tagline');
     expect(tagline).toHaveAttribute('minLength', '10');
-    expect(services).toHaveAttribute('name', 'specialities');
+
+    /*
+     * **R37.** The services box the dealer types into is the *draft*, and a
+     * draft must not be submittable — so it carries no `name` and the hidden
+     * input beside it does. `required` is still on the visible one, because a
+     * browser cannot focus or message a hidden control and the native refusal
+     * would otherwise be a form that silently would not submit.
+     */
+    expect(services).not.toHaveAttribute('name');
+    // `.form` rather than `document.querySelector` — this file has a local
+    // `document()` factory that shadows the global.
+    expect(
+      (services as HTMLInputElement).form?.querySelector(
+        'input[type="hidden"][name="specialities"]',
+      ),
+    ).not.toBeNull();
   });
 
   /**
