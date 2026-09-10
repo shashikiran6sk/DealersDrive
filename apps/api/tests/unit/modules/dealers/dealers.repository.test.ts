@@ -51,12 +51,20 @@ afterEach(() => {
 });
 
 describe('dealerInclude', () => {
-  it('brings the documents and only ACTIVE members', () => {
+  it('brings the documents, only ACTIVE members, and one profile edit', () => {
     // A removed member must not keep appearing as the owner of the dealership.
     // There is no `city: true` any more: the city is a column on the row.
     expect(dealerInclude).toEqual({
       documents: true,
       members: { include: { user: true }, where: { status: 'ACTIVE' } },
+      /*
+       * R34. `take: 1`, newest first, because the profile screen asks one
+       * question — is there anything to tell this dealer about their last
+       * save — and the answer is always about the most recent request. Older
+       * rows are publishing history that nothing renders, and pulling them all
+       * would grow this include without bound on the busiest dealerships.
+       */
+      profileEdits: { orderBy: { createdAt: 'desc' }, take: 1 },
     });
   });
 });

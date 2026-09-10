@@ -84,6 +84,8 @@ function dealerRow(overrides: Record<string, unknown> = {}) {
     state: 'Tamil Nadu',
     tagline: 'Family-run since 1998 — hatchbacks under ₹6 lakh.',
     specialities: ['In-house workshop', 'RC transfer assistance'],
+    /** R34. Empty is the ordinary case: no edit is waiting on a moderator. */
+    profileEdits: [],
     documents: [],
     members: [{ user: { fullName: 'Ramesh Kumar', email: 'owner@sri-lakshmi-motors.in' } }],
     ...overrides,

@@ -72,6 +72,8 @@ const BASE: AdminDealerDetail = {
   counts: { vehicles: 12, active: 7, pending: 1, enquiries: 30 },
   documents: [],
   allDocumentsVerified: false,
+  /** R34. Nothing waiting on a moderator is the ordinary state. */
+  profileChange: null,
   yardPhotoUrl: null,
   recentLedger: [],
   actions: {

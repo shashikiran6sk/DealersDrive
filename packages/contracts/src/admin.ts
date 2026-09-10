@@ -1,7 +1,14 @@
 import { z } from 'zod';
 
 import { CursorPage, Uuid } from './common.js';
-import { AdminRole, DealerDocType, DealerStatus, DocStatus, StatusTone } from './enums.js';
+import {
+  AdminRole,
+  DealerDocType,
+  DealerStatus,
+  DocStatus,
+  ProfileChangeStatus,
+  StatusTone,
+} from './enums.js';
 
 /**
  * PART D — the admin API (API-SPEC D1–D17). Every write here is audit-logged
@@ -74,6 +81,16 @@ export const AdminDealerQuery = z
     district: z.string().trim().min(1).max(80).optional(),
     state: z.string().trim().min(1).max(80).optional(),
     q: z.string().max(120).optional(),
+    /**
+     * Only the dealerships with an edit waiting for review (**R34**).
+     *
+     * `'true'` as a literal rather than a coerced boolean. A querystring has no
+     * booleans — `z.coerce.boolean()` reads every non-empty string as true, so
+     * `?pendingEdits=false` would filter *for* them, which is the shape of bug
+     * that survives review because the URL reads correctly. Either the key is
+     * there with that value or the filter is not applied.
+     */
+    pendingEdits: z.literal('true').optional(),
     cursor: z.string().max(500).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(20),
   })
@@ -97,6 +114,17 @@ export const AdminDealerRow = z.object({
   joinedLabel: z.string(),
   creditBalance: z.number().int(),
   documentsVerified: z.boolean(),
+  /**
+   * Whether this dealership is waiting on a decision about its own words
+   * (**R34**).
+   *
+   * On the row rather than only on the detail response, because the list is
+   * where a moderator finds work. A queue that can only be discovered by
+   * opening dealerships one at a time is a queue that does not get worked, and
+   * an edit nobody reviews is an edit the dealer eventually concludes is
+   * broken.
+   */
+  hasPendingProfileEdit: z.boolean(),
 });
 export type AdminDealerRow = z.infer<typeof AdminDealerRow>;
 
@@ -139,6 +167,48 @@ export const AdminDealerDocument = z.object({
   rejectionReason: z.string().nullable(),
 });
 export type AdminDealerDocument = z.infer<typeof AdminDealerDocument>;
+
+// ─────────── D3b profile edits awaiting review (R34) ───────────────────────
+
+/**
+ * One dealership's proposed edit to its own public words, as a moderator needs
+ * to see it.
+ *
+ * **The live values travel with the proposed ones**, which is the whole shape
+ * of this DTO and the reason it is not `DealerProfileChange` with a dealership
+ * bolted on. The question a moderator is answering is not "is this tagline
+ * acceptable" — it is "is this *change* acceptable", and the two are different
+ * whenever the edit is a small correction to a line that was already approved.
+ * A screen that shows only the proposal makes the reviewer hold the old value
+ * in their head, and a reviewer holding a value in their head is a reviewer who
+ * approves a phone number appended to a sentence they half-remember.
+ *
+ * `null` and `[]` on the proposed side keep the meaning they have in the
+ * database: this request does not touch that field. The console renders those
+ * rows as unchanged rather than as cleared.
+ */
+export const AdminProfileChange = z.object({
+  id: Uuid,
+  dealerId: Uuid,
+  dealerSlug: z.string(),
+  dealerName: z.string(),
+  initials: z.string(),
+  status: ProfileChangeStatus,
+  statusLabel: z.string(),
+  statusTone: StatusTone,
+  /** What the dealer is asking for. `null` / `[]` mean "not part of this edit". */
+  tagline: z.string().nullable(),
+  specialities: z.array(z.string()),
+  /** What buyers see right now, and will keep seeing unless this is approved. */
+  liveTagline: z.string().nullable(),
+  liveSpecialities: z.array(z.string()),
+  submittedAt: z.string(),
+  submittedAtLabel: z.string(),
+  /** "4 hours" — how long this dealership has been waiting on an answer. */
+  waitingLabel: z.string(),
+  decisionReason: z.string().nullable(),
+});
+export type AdminProfileChange = z.infer<typeof AdminProfileChange>;
 
 export const AdminDealerDetail = z.object({
   id: Uuid,
@@ -205,6 +275,14 @@ export const AdminDealerDetail = z.object({
   }),
   documents: z.array(AdminDealerDocument),
   allDocumentsVerified: z.boolean(),
+  /**
+   * The edit this dealership is waiting on, or `null` (**R34**).
+   *
+   * PENDING only. A decided one is history, and the review card has nothing to
+   * offer about it — the audit log is where a past decision is read, and the
+   * dealer's own screen is where the refusal is read.
+   */
+  profileChange: AdminProfileChange.nullable(),
   /**
    * The yard photograph, as a short-lived signed read. A reviewer has to be
    * able to see it: it is the image that will front this dealership's public
@@ -343,3 +421,34 @@ export const VerifyDocumentResponse = z.object({
   dealerReturnedToDraft: z.boolean(),
 });
 export type VerifyDocumentResponse = z.infer<typeof VerifyDocumentResponse>;
+
+/**
+ * The answer to approving or refusing one profile edit (**R34**).
+ *
+ * `dealerSlug` is on it because the console has to clear the public pages this
+ * decision changed, and the slug of the dealership that was actually written is
+ * the only trustworthy source for which pages those are — see
+ * `revalidatePublicDealer`. Reading it off the row the API wrote rather than
+ * off the one the console was rendering with is the difference between clearing
+ * the right portfolio and clearing whichever one the moderator last looked at.
+ *
+ * `published` is what changed for buyers: true on an approval, false on a
+ * refusal, and the console says one of two quite different things depending.
+ */
+export const ProfileChangeDecisionResponse = z.object({
+  id: Uuid,
+  status: ProfileChangeStatus,
+  statusLabel: z.string(),
+  dealerId: Uuid,
+  dealerSlug: z.string(),
+  published: z.boolean(),
+  decidedAt: z.string(),
+});
+export type ProfileChangeDecisionResponse = z.infer<typeof ProfileChangeDecisionResponse>;
+
+/** The queue, oldest first — a moderator works the top of it. */
+export const AdminProfileChangesResponse = z.object({
+  data: z.array(AdminProfileChange),
+  pendingCount: z.number().int(),
+});
+export type AdminProfileChangesResponse = z.infer<typeof AdminProfileChangesResponse>;

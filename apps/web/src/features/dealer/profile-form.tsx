@@ -1,14 +1,18 @@
 'use client';
 
-import type { DealerProfile, MapKind } from '@dealers-drive/contracts';
-import { useActionState, type ReactNode } from 'react';
+import type { DealerProfile, DealerProfileChange, MapKind } from '@dealers-drive/contracts';
+import { useActionState, useState, useTransition, type ReactNode } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Banner } from '@/components/ui/primitives';
-import { saveDealerProfileAction, type ProfileFormState } from '@/features/dealer/profile-actions';
+import { Banner, Tag } from '@/components/ui/primitives';
+import {
+  saveDealerProfileAction,
+  withdrawProfileChangeAction,
+  type ProfileFormState,
+} from '@/features/dealer/profile-actions';
 
 const EMPTY: ProfileFormState = { status: 'idle', fieldErrors: {} };
 
@@ -64,10 +68,53 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
   const [state, formAction] = useActionState(saveDealerProfileAction, EMPTY);
   const errors = state.fieldErrors;
 
+  /*
+   * While a change waits, the two boxes are **shut** and show the proposed text
+   * (**R34**).
+   *
+   * The dealer has already said what they want; the question in front of them
+   * is no longer "what should this say" but "do I stand by this". Leaving the
+   * boxes live in that state offers an edit the API refuses with a 409, which
+   * is the worst of the three options — worse than locking them, and worse than
+   * silently merging, because the dealer types a sentence and is then told they
+   * could not have.
+   *
+   * So the boxes hold the proposal, read-only, and the way to change it is the
+   * `Cancel` in `ReviewPanel`: withdraw, and they unlock with the live values
+   * back in them. Two states, both of them honest.
+   *
+   * A REJECTED change locks nothing and is *not* put back in the box. The
+   * moderator's reason is above it and the point is to write something
+   * different — restoring the refused text invites the dealer to press Save
+   * again unchanged.
+   */
+  const waiting = dealer.profileChange?.status === 'PENDING' ? dealer.profileChange : null;
+  const taglineValue = waiting?.tagline ?? dealer.tagline ?? '';
+  const servicesValue = (
+    waiting && waiting.specialities.length > 0 ? waiting.specialities : dealer.specialities
+  ).join(', ');
+
   return (
     <form action={formAction} className="flex flex-col gap-[18px]">
-      {state.status === 'saved' ? <Banner tone="ok">Your profile has been saved.</Banner> : null}
+      {/*
+        R34 — what "saved" means now, and it is not "published".
+
+        The two sentences on this form go to a moderator, so a bare "Your
+        profile has been saved" would be read as "your page has changed" by a
+        dealer who then looks at their page and finds it has not. The banner
+        that follows a save says what actually happened; `ReviewPanel` below it
+        says what is waiting and what is still live.
+      */}
+      {state.status === 'saved' ? (
+        <Banner tone="ok">
+          {dealer.profileChange?.status === 'PENDING'
+            ? 'Saved. Your line and services go to us for a quick check before they appear on your public page — everything else is already live.'
+            : 'Your profile has been saved.'}
+        </Banner>
+      ) : null}
       {state.message ? <Banner tone="err">{state.message}</Banner> : null}
+
+      <ReviewPanel change={dealer.profileChange} />
 
       <section className="card gap-[14px] p-[18px]">
         <h2 className="text-[19px]">Dealership</h2>
@@ -99,18 +146,31 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         <Field
           id="tagline"
           label="One line about your dealership"
-          hint="shown under your name on your public page"
+          hint={
+            waiting
+              ? 'waiting for review — cancel above to change it'
+              : 'shown under your name on your public page — checked before it appears'
+          }
           error={errors.tagline}
         >
+          {/*
+            `disabled` **and** no `name` while a change waits, which is the
+            R27 shape and load-bearing for the same reason: a disabled control
+            is not submitted, and one with no name has nothing to be submitted
+            under. So a locked box cannot reach `saveDealerProfileAction` even
+            by accident, and the action does not have to filter it out — a save
+            in this state carries the established year and nothing else.
+          */}
           <Input
             id="tagline"
-            name="tagline"
+            {...(waiting ? {} : { name: 'tagline' })}
             minLength={10}
             maxLength={200}
-            defaultValue={dealer.tagline ?? ''}
+            defaultValue={taglineValue}
             placeholder="Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house."
-            required
-            aria-required="true"
+            required={!waiting}
+            aria-required={waiting ? undefined : 'true'}
+            disabled={Boolean(waiting)}
             {...invalidProps('tagline', errors.tagline)}
           />
         </Field>
@@ -124,16 +184,21 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         <Field
           id="specialities"
           label="Services you offer"
-          hint="comma separated, up to 12 — repeats are merged"
+          hint={
+            waiting
+              ? 'waiting for review — cancel above to change them'
+              : 'comma separated, up to 12 — checked before they appear'
+          }
           error={errors.specialities}
         >
           <Input
             id="specialities"
-            name="specialities"
-            defaultValue={dealer.specialities.join(', ')}
+            {...(waiting ? {} : { name: 'specialities' })}
+            defaultValue={servicesValue}
             placeholder="In-house workshop, RC transfer assistance, Bank loan tie-ups"
-            required
-            aria-required="true"
+            required={!waiting}
+            aria-required={waiting ? undefined : 'true'}
+            disabled={Boolean(waiting)}
             {...invalidProps('specialities', errors.specialities)}
           />
         </Field>
@@ -220,6 +285,121 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
 
       <SaveRow />
     </form>
+  );
+}
+
+/**
+ * What is waiting for review, or why the last edit was refused (**R34**).
+ *
+ * ## Why this panel exists at all
+ *
+ * The dealer presses Save, the page reloads, and the tagline box shows the line
+ * they typed — but their public page shows the old one, because the edit is
+ * waiting. Without something on this screen saying so, the honest state of the
+ * product is invisible, and a dealer who cannot see their change concludes the
+ * save failed. Then they do it again. Then they email support.
+ *
+ * So the panel says three things in the order a dealer wants them: that the
+ * edit was received, what it will look like, and what buyers are seeing in the
+ * meantime.
+ *
+ * ## Both values, side by side
+ *
+ * The live value is rendered next to the proposed one rather than left to the
+ * boxes below, because the boxes show what the dealer *typed* — the form
+ * defaults to the proposal once one exists — and "what my page says right now"
+ * would otherwise be the one thing this screen cannot tell them.
+ *
+ * ## A refusal is the only thing here a dealer must read
+ *
+ * `decisionReason` is a sentence a person wrote about this dealership, and it
+ * is the only account they will ever get of why their line did not appear. It
+ * is given the `err` banner and the reason is set apart from the surrounding
+ * copy, for the reason `ChangesRequested` sets its note apart in onboarding: two
+ * equal-looking paragraphs, only one of which is actionable, is how the
+ * actionable one gets skimmed past.
+ *
+ * ## Cancel is the only control here, and it is the only way out
+ *
+ * The two boxes below are shut while this panel is showing, so this button is
+ * how a dealer changes their mind: withdraw, and the boxes unlock with the live
+ * values back in them.
+ *
+ * It is a plain button with no confirm step. Nothing is destroyed by it — what
+ * buyers see never moved, and the dealer keeps every word they wrote in the box
+ * in front of them until they replace it. A confirm dialog on an action that
+ * loses nothing is how people learn to click through the ones that do.
+ *
+ * Nothing renders for an APPROVED change — the API sends `null` for one, since
+ * its values are on the profile by then and a banner announcing that a line the
+ * dealer can see is the line they asked for is only ever in the way.
+ */
+function ReviewPanel({ change }: { change: DealerProfileChange | null }) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  if (!change) return null;
+
+  if (change.status === 'REJECTED') {
+    return (
+      <Banner tone="err" title="Your last change was not published">
+        <p className="border-l-2 border-current pl-[10px] font-medium">{change.decisionReason}</p>
+        <p className="mt-[8px]">
+          Your public page is unchanged. Edit the boxes below and save again — there is nothing else
+          you need to do.
+        </p>
+      </Banner>
+    );
+  }
+
+  return (
+    <Banner tone="warn" title="Waiting for a quick check">
+      <p>
+        You changed how your dealership describes itself on {change.submittedAtLabel}. We read these
+        before they go on your public page — buyers see the current version until then.
+      </p>
+      <dl className="mt-[10px] flex flex-col gap-[8px] text-[12px]">
+        {change.tagline ? (
+          <div>
+            <dt className="ink-muted">Your new line</dt>
+            <dd className="mt-[2px] font-medium">“{change.tagline}”</dd>
+          </div>
+        ) : null}
+        {change.specialities.length > 0 ? (
+          <div>
+            <dt className="ink-muted">Your new services</dt>
+            <dd className="mt-[4px] flex flex-wrap gap-[6px]">
+              {change.specialities.map((service) => (
+                <Tag key={service} variant="neutral" className="text-[11px]">
+                  {service}
+                </Tag>
+              ))}
+            </dd>
+          </div>
+        ) : null}
+      </dl>
+      {error ? <p className="mt-[8px] text-[12px] font-medium">{error}</p> : null}
+
+      <div className="mt-[10px] flex items-center gap-3">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          loading={pending}
+          onClick={() => {
+            setError(null);
+            startTransition(async () => {
+              setError(await withdrawProfileChangeAction());
+            });
+          }}
+        >
+          Cancel this change
+        </Button>
+        <span className="text-[12px]">
+          Your previous wording comes back and the boxes below unlock.
+        </span>
+      </div>
+    </Banner>
   );
 }
 

@@ -292,6 +292,111 @@ export const adminDocs: ModuleDocs = {
       errors: [400, 401, 403, 404],
     },
     {
+      method: 'get',
+      path: '/v1/admin/profile-changes',
+      operationId: 'listProfileChanges',
+      tag: 'Admin',
+      summary: 'Profile edits waiting for a decision',
+      description:
+        'The queue a dealer’s own words wait in (**R34**), **oldest first** — this ' +
+        'is work, and the dealership that has been waiting longest is the one owed an ' +
+        'answer.\n\n' +
+        'Every row carries what is **live** beside what is **proposed**, because the ' +
+        'question is not "is this tagline acceptable" but "is this *change* acceptable", and ' +
+        'the two differ whenever the edit is a small correction to a line already approved. ' +
+        'A reviewer holding the old value in their head is one who approves a number ' +
+        'appended to a sentence they half-remember.\n\n' +
+        '`tagline: null` and `specialities: []` on the proposed side mean *this request does ' +
+        'not touch that field* — unambiguous because neither can be emptied by a ' +
+        'dealer: the floors are ten characters and one entry.\n\n' +
+        'Capped at 100. A backlog longer than that is an operational problem rather than a ' +
+        'pagination one.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      responses: [
+        {
+          status: 200,
+          description: 'Pending edits, oldest first.',
+          schema: 'AdminProfileChangesResponse',
+        },
+      ],
+      errors: [401, 403],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/profile-changes/:id/approve',
+      operationId: 'approveProfileChange',
+      tag: 'Admin',
+      summary: 'Publish a dealer’s proposed tagline or services',
+      description:
+        'Writes the proposed values onto the dealership and marks the request APPROVED ' +
+        '(**R34**).\n\n' +
+        'This is the **only** path by which `tagline` and `specialities` move on an ACTIVE ' +
+        'dealership, which is what makes the queue a gate rather than a notification: there ' +
+        'is no second route, so an edit that was not approved was not published.\n\n' +
+        'It writes through the same `dealers.update` the dealer’s own PATCH uses, so ' +
+        'service de-duplication (R18) and every other rule about the data holds. A field ' +
+        'the request does not carry is not sent — approving a services-only edit must ' +
+        'not fail on a tagline that was never part of it.\n\n' +
+        '`dealerSlug` comes back because the console has to clear the public pages this ' +
+        'decision changed, and the slug of the row that was actually written is the only ' +
+        'trustworthy source for which pages those are.\n\n' +
+        'A request that has already been decided is a **409**, not a silent success. Two ' +
+        'moderators working the same queue is the ordinary case, and the second must be ' +
+        'told their button did nothing rather than shown a tick.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'Published. The dealership’s public pages now show the new words.',
+          schema: 'ProfileChangeDecisionResponse',
+        },
+      ],
+      errors: [401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/profile-changes/:id/reject',
+      operationId: 'rejectProfileChange',
+      tag: 'Admin',
+      summary: 'Refuse a dealer’s proposed tagline or services',
+      description:
+        'Marks the request REJECTED with a reason the dealer reads verbatim (**R34**).\n\n' +
+        '**Nothing is restored, because nothing was taken away.** The live columns were ' +
+        'never written, so a refusal is a status change on the request and no write at all ' +
+        'on the dealership. A design that published first and rolled back on refusal would ' +
+        'have a window, however short, in which the phone number was on the page; this one ' +
+        'has none.\n\n' +
+        'The reason is **required**, minimum six characters, and it is the only thing the ' +
+        'dealer will ever be told about why their line did not appear. "Rejected" with no ' +
+        'sentence attached is how a dealer concludes the product is broken and submits the ' +
+        'same text again.\n\n' +
+        'The dealer sees it on their profile screen as `profileChange.decisionReason` until ' +
+        'they edit again, at which point a new request replaces it.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'ReasonInput',
+        description: 'What was wrong with it. Shown to the dealer verbatim.',
+        example: {
+          reason:
+            'The tagline ends with a mobile number. Buyers reach you through the contact ' +
+            'button, which logs the lead for you — please remove it.',
+        },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Refused. What buyers see is unchanged.',
+          schema: 'ProfileChangeDecisionResponse',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
       method: 'post',
       path: '/v1/admin/documents/:id/verify',
       operationId: 'verifyDealerDocument',

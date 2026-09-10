@@ -184,8 +184,9 @@ model Dealer {
   statusReason       String?
   createdAt          DateTime     @default(now())
 
-  members   DealerMember[]
-  documents DealerDocument[]
+  members       DealerMember[]
+  documents     DealerDocument[]
+  profileEdits  DealerProfileChange[]
   // vehicles    Vehicle[]              ← returns with F055
   // listings    Listing[]              ← returns with F064
   // enquiries   Enquiry[]              ← returns with F088
@@ -264,6 +265,69 @@ model DealerDocument {
   @@map("dealer_documents")
 }
 
+// ─────────── PROFILE EDITS AWAITING REVIEW (R34) ─────────────────────────
+// The two things a verified dealership may still change about itself, held
+// between the dealer pressing Save and a moderator agreeing.
+//
+// **Why they are held at all.** The tagline and the service list are the only
+// free text a dealer writes that a buyer reads, which makes them the only place
+// a phone number can reach a public page without going through
+// `POST /v1/vehicles/:id/reveal-contact` — the one route allowed to hand one
+// out, rate-limited twice over and logged as a lead (rule 7). Everything else
+// on the profile screen has been read-only since R27 for the same family of
+// reasons; these two were left editable because a dealership is entitled to
+// revise how it describes itself. Both facts are true, and a queue is what
+// reconciles them.
+//
+// **The live values are never in this table.** `dealers.tagline` and
+// `dealers.specialities` stay exactly as they were until an approval writes
+// them, which is what makes a rejection a no-op rather than a restore: there is
+// nothing to put back, because nothing was taken away.
+model DealerProfileChange {
+  id       String              @id @default(uuid()) @db.Uuid
+  dealerId String              @db.Uuid
+  status   ProfileChangeStatus @default(PENDING)
+
+  /// The proposed line, or NULL when this request does not touch it.
+  ///
+  /// NULL is unambiguous here in a way it would not be on `dealers.tagline`:
+  /// the field cannot be *emptied* — `DealerSelfUpdateInput` puts a floor of
+  /// ten characters on it — so a request carrying NULL is a request about the
+  /// services only. The same reasoning gives the empty array below its meaning:
+  /// the floor on the list is one entry.
+  tagline      String?
+  specialities String[]
+
+  /// Who typed it. `dealerId` says whose profile; this says whose hands.
+  submittedBy String?   @db.Uuid
+  createdAt   DateTime  @default(now())
+  reviewedBy  String?   @db.Uuid
+  reviewedAt  DateTime?
+  /// Why a moderator refused, shown to the dealer verbatim. NULL on approval:
+  /// there is nothing to explain about a yes.
+  decisionReason String?
+
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  /// The queue, oldest first.
+  ///
+  /// ⚠️ There is a **partial unique index** on this table that is not written
+  /// here, because Prisma's schema language cannot express one:
+  ///
+  ///     UNIQUE (dealerId) WHERE status = 'PENDING'
+  ///
+  /// At most one request waits per dealership. The service never relies on
+  /// catching it — a dealer editing again amends the request they already have,
+  /// since two rows would make "what is this dealership proposing" a question
+  /// with two answers. The index is what makes that true under a race.
+  /// See `migrations/20260909160000_dealer_profile_change_review`.
+  @@index([status, createdAt])
+  /// A dealership's own history, and the newest-first read the profile screen
+  /// makes on every render.
+  @@index([dealerId, createdAt])
+  @@map("dealer_profile_changes")
+}
+
 // ─────────── LOCATIONS ───────────────────────────────────────────────────
 // There is no `City` model, and that is the second deliberate divergence from
 // the baseline after D1.
@@ -308,6 +372,14 @@ enum DocStatus {
   UPLOADING
   UPLOADED
   VERIFIED
+  REJECTED
+}
+
+/// R34. Three states and no more — see `ProfileChangeStatus` in contracts for
+/// why there is no DRAFT and no WITHDRAWN.
+enum ProfileChangeStatus {
+  PENDING
+  APPROVED
   REJECTED
 }
 

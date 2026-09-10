@@ -4,7 +4,7 @@ import type { ReactElement } from 'react';
 
 import { DealerProfileForm } from '@/features/dealer/profile-form';
 
-import { dealerProfileStub, type ProfileFormState } from '../../mocks/dealer-actions';
+import { dealerProfileStub, withdrawStub, type ProfileFormState } from '../../mocks/dealer-actions';
 
 /**
  * C1/C2 — the dealership's own record, after onboarding is over.
@@ -67,6 +67,8 @@ const BASE: DealerProfile = {
   activeListings: 7,
   approvedAt: '2026-01-14T06:12:00.000Z',
   createdAt: '2025-12-01T09:00:00.000Z',
+  /** R34. Nothing waiting on a moderator is the ordinary state. */
+  profileChange: null,
 };
 
 /**
@@ -193,4 +195,91 @@ export const ServerError: Story = {
 export const Saving: Story = {
   args: { dealer: BASE },
   decorators: [stub(3000, SAVED)],
+};
+
+/**
+ * R34 — a change waiting for review, which is the state the two boxes are shut
+ * in.
+ *
+ * Three things to check by eye:
+ *
+ *   · **The tagline and services boxes are `disabled`** and hold the *proposed*
+ *     text, not the live text. The dealer has already said what they want; the
+ *     question in front of them is "do I stand by this", and a live box in that
+ *     state offers an edit the API refuses with a 409.
+ *   · **`Cancel this change` is the only way out**, and it is a button rather
+ *     than something to infer from what the dealer types. Retyping the live
+ *     value used to withdraw the request, which made the exit something to
+ *     discover rather than press.
+ *   · **The established year is still open.** It never needed review, and
+ *     locking it would turn one field's queue into a lock on a field that has
+ *     nothing to do with it.
+ *
+ * The panel carries the live/proposed pair in words because the boxes below can
+ * only show one of them at a time.
+ */
+export const ChangeWaitingForReview: Story = {
+  args: {
+    dealer: {
+      ...BASE,
+      profileChange: {
+        id: '9a1e4c22-0000-4000-8000-000000000009',
+        status: 'PENDING',
+        statusLabel: 'Waiting for review',
+        tagline: 'Only diesel SUVs now, every one with a full service history.',
+        specialities: ['SUVs', 'Exchange', 'Bank loan tie-ups'],
+        submittedAtLabel: '09 Sep 2026',
+        reviewedAtLabel: null,
+        decisionReason: null,
+      },
+    },
+  },
+};
+
+/**
+ * The cancel in flight, so the busy button is visible. Press
+ * `Cancel this change`.
+ */
+export const Cancelling: Story = {
+  ...ChangeWaitingForReview,
+  beforeEach: () => {
+    withdrawStub.delayMs = 8000;
+    withdrawStub.result = null;
+  },
+};
+
+/** And a cancel the API refused — the message lands inside the panel. */
+export const CancelRefused: Story = {
+  ...ChangeWaitingForReview,
+  beforeEach: () => {
+    withdrawStub.delayMs = 500;
+    withdrawStub.result = 'We could not cancel that change.';
+  },
+};
+
+/**
+ * A change a moderator refused.
+ *
+ * The boxes are **open** here and hold the *live* values — the reason is above
+ * them and the point is to write something different, so restoring the refused
+ * text would invite the dealer to press Save again unchanged. There is no
+ * Cancel: there is nothing left waiting.
+ */
+export const ChangeRefused: Story = {
+  args: {
+    dealer: {
+      ...BASE,
+      profileChange: {
+        id: '9a1e4c22-0000-4000-8000-000000000009',
+        status: 'REJECTED',
+        statusLabel: 'Not approved',
+        tagline: 'Best prices in Vellore — call 98400 12345 direct!',
+        specialities: [],
+        submittedAtLabel: '09 Sep 2026',
+        reviewedAtLabel: '09 Sep 2026',
+        decisionReason:
+          'The tagline ends with a mobile number. Buyers reach you through the contact button, which logs the lead for you — please remove it.',
+      },
+    },
+  },
 };
