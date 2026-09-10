@@ -94,7 +94,6 @@ export const DealerProfile = z.object({
   pan: z.string().nullable(),
   contact: z.object({
     fullName: z.string().nullable(),
-    roleTitle: z.string().nullable(),
     phone: z.string(),
     phoneDisplay: z.string(),
     email: z.string().nullable(),
@@ -249,7 +248,6 @@ export const UpdateDealerInput = z
     contact: z
       .object({
         fullName: z.string().trim().min(2).max(80).optional(),
-        roleTitle: z.string().trim().max(60).optional(),
         email: z.string().trim().email().optional(),
         /** The same rule the onboarding form applies, from the same schema. */
         phone: IndianMobile.optional(),

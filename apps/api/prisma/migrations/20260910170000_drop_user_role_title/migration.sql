@@ -1,0 +1,31 @@
+-- The contact's job title, dropped (R36).
+--
+-- `users.roleTitle` was one optional free-text box on the first step of
+-- onboarding, labelled **Role**, holding what the person filling the form
+-- called themselves: "Proprietor", "Owner", "Manager", "Partner".
+--
+-- It had no reader. It was never on the public directory or on a portfolio,
+-- never a filter, never part of a KYC decision, and on the dealer's own profile
+-- screen it was a `LockedField` — a value displayed back to the one person who
+-- had already typed it. A field whose only consumer is the form that collected
+-- it is a field that costs a question and answers none.
+--
+-- It was also actively confusing next to the thing it is not. `DealerMember.role`
+-- (`OWNER` / `MANAGER` / `SALES`) is the authorisation role: it decides what a
+-- seat may do, and `permissionsForRole` reads it on every request. Two fields
+-- called some form of "role" on one dealership, one of them load-bearing and one
+-- of them decorative, is a trap for the next person to change either.
+--
+-- ⚠️ **This deletes data, and the application cannot recover it.** Nothing has
+-- read the column since this revision's application changes, but the rows still
+-- hold what dealers typed. Take a copy first against any environment whose rows
+-- matter:
+--
+--     COPY (SELECT id, "fullName", "roleTitle" FROM users WHERE "roleTitle" IS NOT NULL)
+--       TO '/tmp/user-role-title.csv' WITH CSV HEADER;
+--
+-- `DealerRole`, `AdminRole`, `DealerMember.role` and `User.adminRole` are
+-- untouched. They are the authorisation model, and this revision is explicitly
+-- not about them.
+
+ALTER TABLE "users" DROP COLUMN "roleTitle";

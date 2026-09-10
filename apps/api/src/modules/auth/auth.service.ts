@@ -109,7 +109,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       user: {
         id: principal.userId,
         fullName: principal.fullName,
-        roleTitle: null,
         phone: principal.phone ?? '',
         phoneDisplay: principal.phone ? formatPhone(principal.phone) : '',
         email: principal.email,
@@ -385,7 +384,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           where: { id: principal.userId },
           data: {
             fullName: input.fullName,
-            roleTitle: input.roleTitle ?? null,
             phone,
           },
         });

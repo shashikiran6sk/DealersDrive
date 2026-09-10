@@ -27,7 +27,7 @@ import { ApiError } from '@/lib/api';
  */
 const session = (next: AuthSession['next']): AuthSession =>
   ({
-    user: { id: 'u1', fullName: 'Ramesh Kumar', email: 'owner@example.in', roleTitle: 'Owner' },
+    user: { id: 'u1', fullName: 'Ramesh Kumar', email: 'owner@example.in' },
     dealer: null,
     next,
   }) as unknown as AuthSession;

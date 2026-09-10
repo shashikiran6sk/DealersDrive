@@ -49,7 +49,6 @@ async function seedAdmin(): Promise<void> {
   await prisma.user.create({
     data: {
       fullName: 'Dealers-Drive Operations',
-      roleTitle: 'Platform admin',
       email,
       phone: '+919000000001',
       emailVerifiedAt: now,
@@ -71,7 +70,6 @@ async function seedDealers(): Promise<void> {
     const owner = await prisma.user.create({
       data: {
         fullName: seed.ownerName,
-        roleTitle: seed.ownerRole,
         email: seed.email,
         phone: seed.phone,
         emailVerifiedAt: now,

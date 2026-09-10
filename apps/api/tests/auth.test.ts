@@ -30,7 +30,6 @@ let h: AuthHarness;
 function onboarding(overrides: Record<string, unknown> = {}) {
   return {
     fullName: 'R. Manikandan',
-    roleTitle: 'Proprietor',
     phone: `98400${String(99000 + subjectCounter).slice(-5)}`,
     // One name, and it is unique within a city — two dealerships in one town
     // trading under one registered name is either a duplicate application or

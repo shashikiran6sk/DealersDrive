@@ -100,7 +100,6 @@ function session(
     user: {
       id: '00000000-0000-4000-8000-000000000001',
       fullName: null,
-      roleTitle: null,
       phone: '',
       phoneDisplay: '',
       email: 'karthik@srilakshmimotors.in',
@@ -183,14 +182,14 @@ export const Playground: Story = {};
 export const Account: Story = { args: { step: 0 } };
 
 /**
- * The same step for somebody returning: the user record already holds a name,
- * a role and a phone, and those win over the Google profile. The email does
- * not change either way — it is shown, not asked for.
+ * The same step for somebody returning: the user record already holds a name
+ * and a phone, and those win over the Google profile. The email does not
+ * change either way — it is shown, not asked for.
  */
 export const AccountPrefilled: Story = {
   args: {
     step: 0,
-    session: session({ fullName: 'K. Raman', roleTitle: 'Proprietor', phone: '9840012345' }),
+    session: session({ fullName: 'K. Raman', phone: '9840012345' }),
   },
 };
 

@@ -58,7 +58,6 @@ export type AuthProvidersResponse = z.infer<typeof AuthProvidersResponse>;
 export const OnboardingInput = z
   .object({
     fullName: z.string().trim().min(2, 'Tell us your name.').max(80),
-    roleTitle: z.string().trim().max(60).optional(),
     phone: IndianMobile,
     /**
      * One name, not two.
@@ -232,7 +231,6 @@ export const AuthSession = z.object({
   user: z.object({
     id: Uuid,
     fullName: z.string().nullable(),
-    roleTitle: z.string().nullable(),
     phone: z.string(),
     phoneDisplay: z.string(),
     email: z.string().nullable(),

@@ -34,7 +34,6 @@ export interface SeedDealer {
   email: string;
   landline: string;
   ownerName: string;
-  ownerRole: string;
   establishedYear: number;
 }
 
@@ -72,7 +71,6 @@ export const DEALERS: SeedDealer[] = [
     email: 'owner@srilakshmimotors.in',
     landline: '0416 224 8890',
     ownerName: 'R. Manikandan',
-    ownerRole: 'Proprietor',
     establishedYear: 2014,
   },
 ];

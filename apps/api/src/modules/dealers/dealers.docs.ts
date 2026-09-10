@@ -200,7 +200,7 @@ export const dealersDocs: ModuleDocs = {
             pincode: '632007',
             mapsUrl: 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9',
           },
-          contact: { fullName: 'Karthik Raman', roleTitle: 'Proprietor', phone: '9840012345' },
+          contact: { fullName: 'Karthik Raman', phone: '9840012345' },
         },
       },
       responses: [{ status: 200, description: 'The updated dealership.', schema: 'DealerProfile' }],

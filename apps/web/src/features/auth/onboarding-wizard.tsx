@@ -439,20 +439,6 @@ function AccountStep({
           />
         </Field>
 
-        <Field id="roleTitle" label="Role" hint="optional" error={errors.roleTitle}>
-          <input
-            id="roleTitle"
-            name="roleTitle"
-            className="input"
-            autoComplete="organization-title"
-            placeholder="Proprietor"
-            defaultValue={
-              values.roleTitle ?? dealer?.contact.roleTitle ?? session.user.roleTitle ?? ''
-            }
-            {...invalidProps('roleTitle', errors.roleTitle)}
-          />
-        </Field>
-
         <Field id="phone" label="Phone" hint="+91" error={errors.phone}>
           <input
             id="phone"

@@ -42,7 +42,6 @@ const BASE: DealerProfile = {
   pan: 'AABCS1429B',
   contact: {
     fullName: 'Ramesh Kumar',
-    roleTitle: 'Owner',
     phone: '9840012345',
     phoneDisplay: '+91 98400 12345',
     email: 'owner@sri-lakshmi-motors.in',
@@ -124,7 +123,7 @@ export const Sparse: Story = {
       specialities: [],
       establishedYear: null,
       workingHours: null,
-      contact: { ...BASE.contact, roleTitle: null, email: null, landline: null },
+      contact: { ...BASE.contact, email: null, landline: null },
       address: { ...BASE.address, line: null, district: null, mapsUrl: null, mapKind: 'NONE' },
     },
   },
