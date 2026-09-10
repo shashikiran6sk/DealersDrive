@@ -4026,3 +4026,96 @@ the same call about `dealers.about` for the same reason.
 
 The migration deletes what dealers typed and names the `COPY` that preserves it
 first. Nothing in the application can put the values back.
+
+---
+
+## R37 — Services are added one at a time, and shown as chips
+
+**Revises F037 / F046 / R18 / R26**
+
+`specialities` is `string[]` in the contract and was a single comma-separated
+text box on both screens that write it. That box asked the dealer to hold a
+serialisation format in their head — _is a comma inside a service name allowed?
+does a trailing one make an empty entry?_ — and it hid the fact they most need
+to see, which is **how many services they have named and which**. A dealer
+reading `Finance, exchange, RC transfer, in-house workshop, insurance` back out
+of a one-line input is reading their own answer through a keyhole.
+
+- **Frontend** `components/ui/service-input.tsx` — **new** (C072);
+  `lib/services.ts` — **new**, the `servicesOf` parse, extracted from the three
+  places that had a copy of it; `components/ui/input.tsx` — props widen to
+  `ComponentPropsWithRef<'input'>`; `features/auth/onboarding-wizard.tsx` and
+  `features/dealer/profile-form.tsx` — the two consumers;
+  `features/auth/actions.ts`, `features/dealer/profile-actions.ts`,
+  `features/admin/dealer-profile-editor.tsx` — each drops its local copy
+- **Sandbox** `forms/service-input.stories.tsx` — **new**, seven states;
+  registry C072
+- **Tests** `service-input.test.tsx` — **new**, fourteen;
+  `profile-form.test.tsx` — three rewritten, one added;
+  `onboarding-wizard.test.tsx` — one rewritten
+- **Docs** `component-map.md` C072
+- **No contract, route, schema or migration.** The wire format is unchanged.
+- **No new dependency.**
+
+### The hidden input is the whole compatibility story
+
+The component submits `services.join(', ')` under `name` — byte-for-byte what
+the comma box submitted. `servicesOf()` on the far side was not changed and did
+not need to be, so the contract, the route, the API and the admin editor are
+untouched by a change to how the dealer types. A screen that had not adopted the
+new editor could not have disagreed with one that had.
+
+The visible box carries **no `name`**: it is the draft, not the value, and a
+draft must not be submittable. That is the R27 shape, and it is why `required`
+sits on the visible control instead — a browser cannot focus or message a hidden
+input, so `required` there would have produced a form that silently would not
+submit with nothing on screen highlighted.
+
+### The picture the dealer builds is the picture a buyer gets
+
+Buyers already read this list as chips, on the directory card and on the
+portfolio; so does the admin review screen. Making the editor the same shape —
+`Tag`, the same wrap, the accent on the first chip (**R29**) — means a dealer
+adding a service can see what it will look like where it lands, rather than
+inferring it from a comma.
+
+### Duplicates are refused here and merged elsewhere, and that is not a conflict
+
+R18 made the list a set on read, so `Exchange` twice has never reached a buyer
+twice. What it could not do is tell the dealer, at the moment they typed it,
+that they had already said it. The refusal is an editing affordance and the
+merge is a data rule; removing either would be a regression in a different
+direction.
+
+Case-insensitively, because "RC transfer" and "RC Transfer" are one service and
+a buyer comparing two dealerships should not be shown both. A refused entry
+stays in the box: there is nothing to retype and the message says what to
+change.
+
+### A draft that was typed but not added is still committed
+
+The most natural mistake on this screen is to type a service and press Continue.
+Without a submit handler that commits the draft, that silently discards the last
+thing the dealer wrote, and the loss is invisible until they look at their own
+public page. The handler writes the hidden input's `value` directly — a
+`setState` there has not flushed by the time the form serialises.
+
+### `servicesOf` was written three times
+
+`auth/actions.ts`, `dealer/profile-actions.ts` and
+`admin/dealer-profile-editor.tsx` each had their own copy of the same four-line
+split. Three copies of a parse is how two screens start disagreeing about what
+`In-house workshop, RC transfer` means; the fourth caller was the point to make
+it one.
+
+### What is deliberately not here
+
+**No autocomplete against existing values.** The suggest-existing-values guard
+rail D1 calls for is a real requirement and it needs the facet data F076
+produces — a datalist populated from nothing would be a control that looks like
+it is helping and is not.
+
+**No drag to reorder.** Order is meaningful — the first three are what a
+directory card shows — but removing and re-adding is a two-click reorder, and a
+drag affordance that has to work on a phone is a great deal of code for a list
+of at most twelve short labels.

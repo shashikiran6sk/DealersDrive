@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Banner, Tag } from '@/components/ui/primitives';
 import { updateDealerAction } from '@/features/admin/actions';
+import { servicesOf } from '@/lib/services';
 
 /**
  * D3 — the dealership's own answers, editable from the review screen.
@@ -126,14 +127,6 @@ function initialValues(dealer: AdminDealerDetail): Values {
     tagline: dealer.tagline ?? '',
     specialities: dealer.specialities.join(', '),
   };
-}
-
-/** The services, as the box holds them and as the schema wants them. */
-function servicesOf(value: string): string[] {
-  return value
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
 }
 
 /**

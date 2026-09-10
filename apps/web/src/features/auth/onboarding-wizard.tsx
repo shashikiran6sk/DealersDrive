@@ -13,6 +13,7 @@ import { useActionState, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Input } from '@/components/ui/input';
+import { ServiceInput } from '@/components/ui/service-input';
 import { Banner, Blueprint, StatusTag, Stepper } from '@/components/ui/primitives';
 import {
   onboardingAction,
@@ -23,6 +24,7 @@ import {
 } from '@/features/auth/actions';
 import { DocumentUploader } from '@/features/auth/document-uploader';
 import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
+import { servicesOf } from '@/lib/services';
 
 /**
  * DESIGN-SPEC §3.10 — Account → Business → Documents → Review.
@@ -734,22 +736,24 @@ function BusinessStep({
           <Field
             id="specialities"
             label="Services you offer"
-            hint="comma separated, up to 12"
+            hint="up to 12"
             error={errors.specialities}
             className="sm:col-span-2"
           >
-            <Input
+            <ServiceInput
               id="specialities"
               name="specialities"
-              defaultValue={values.specialities ?? dealer?.specialities.join(', ') ?? ''}
-              placeholder="In-house workshop, RC transfer assistance, Bank loan tie-ups"
+              value={
+                values.specialities ? servicesOf(values.specialities) : (dealer?.specialities ?? [])
+              }
+              placeholder="In-house workshop"
               required
-              aria-required="true"
               {...invalidProps('specialities', errors.specialities)}
             />
             <p className="mt-[4px] text-[11px] ink-subtle">
-              Name at least one. Buyers see the first three on your directory card and all of them
-              on your page — finance, exchange, RC transfer, in-house workshop, insurance.
+              One at a time — type a service and press Add. Buyers see the first three on your
+              directory card and all of them on your page: finance, exchange, RC transfer, in-house
+              workshop, insurance.
             </p>
           </Field>
         </div>

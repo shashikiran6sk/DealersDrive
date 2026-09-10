@@ -1,5 +1,5 @@
 import type { DealerProfile } from '@dealers-drive/contracts';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -170,10 +170,36 @@ describe('what the form offers', () => {
     expect(screen.getByLabelText(/^pan/i)).toBeDisabled();
   });
 
-  it('renders the services as one comma-separated line', () => {
+  /**
+   * **R37.** The services are chips now, and the box beside them is a draft
+   * rather than the value — so what the dealer reads back is the list, not a
+   * serialisation of it. The hidden input is what the browser submits, and its
+   * format is unchanged: `servicesOf()` on the far side never learned about
+   * any of this.
+   */
+  it('renders each service as its own chip, and submits them as one line', () => {
+    const { container } = render(<DealerProfileForm dealer={DEALER} />);
+
+    const chips = within(screen.getByRole('group', { name: /services added/i }));
+    expect(chips.getByText('Hatchbacks')).toBeInTheDocument();
+    expect(chips.getByText('RC transfer')).toBeInTheDocument();
+
+    expect(screen.getByLabelText(/services you offer/i)).toHaveValue('');
+    expect(container.querySelector('input[name="specialities"]')).toHaveValue(
+      'Hatchbacks, RC transfer',
+    );
+  });
+
+  /** Each chip carries its own way out, named after the service it removes. */
+  it('offers a remove control per service', async () => {
+    const user = userEvent.setup();
     render(<DealerProfileForm dealer={DEALER} />);
 
-    expect(screen.getByLabelText(/services/i)).toHaveValue('Hatchbacks, RC transfer');
+    await user.click(screen.getByRole('button', { name: 'Remove Hatchbacks' }));
+
+    const chips = within(screen.getByRole('group', { name: /services added/i }));
+    expect(chips.queryByText('Hatchbacks')).toBeNull();
+    expect(chips.getByText('RC transfer')).toBeInTheDocument();
   });
 
   /** A row that predates R2 and R6 renders empty boxes, not broken ones. */
@@ -346,7 +372,13 @@ describe('an edit waiting for review', () => {
 
     expect(screen.getByText(/waiting for a quick check/i)).toBeInTheDocument();
     expect(screen.getByText(/“Only diesel SUVs/)).toBeInTheDocument();
-    expect(screen.getByText('SUVs')).toBeInTheDocument();
+    /*
+     * Scoped to the panel. Since **R37** the locked box below renders the same
+     * proposed services as chips, so a bare `getByText('SUVs')` is ambiguous —
+     * and the claim being made here is about the panel, not about the box.
+     */
+    const proposed = screen.getByText('Your new services').closest('div');
+    expect(within(proposed as HTMLElement).getByText('SUVs')).toBeInTheDocument();
     // The live line is still on the screen, in the box, so the dealer can see
     // both. What buyers see is the point of the whole panel.
     expect(screen.getByText(/buyers see the current version/i)).toBeInTheDocument();
@@ -369,9 +401,15 @@ describe('an edit waiting for review', () => {
     const services = screen.getByLabelText(/services you offer/i);
 
     expect(tagline).toHaveValue('Only diesel SUVs, every one with a full service history.');
-    expect(services).toHaveValue('SUVs, Exchange');
     expect(tagline).toBeDisabled();
+
+    // R37 — the draft box is shut, and the proposal is the chips beside it.
     expect(services).toBeDisabled();
+    const chips = within(screen.getByRole('group', { name: /services added/i }));
+    expect(chips.getByText('SUVs')).toBeInTheDocument();
+    expect(chips.getByText('Exchange')).toBeInTheDocument();
+    // A locked chip offers no way out — withdrawing the whole change is the way.
+    expect(screen.queryByRole('button', { name: /^Remove /i })).toBeNull();
   });
 
   /**

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
 import { revalidatePublicDealer } from '@/lib/cache-tags';
+import { servicesOf } from '@/lib/services';
 
 export interface ProfileFormState {
   status: 'idle' | 'saved' | 'error';
@@ -42,10 +43,7 @@ export async function saveDealerProfileAction(
     return trimmed.length > 0 ? trimmed : undefined;
   };
 
-  const specialities = (text('specialities') ?? '')
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
+  const specialities = servicesOf(text('specialities') ?? '');
 
   const year = text('establishedYear');
 
