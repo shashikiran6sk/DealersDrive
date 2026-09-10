@@ -224,6 +224,41 @@ describe('the business registrations', () => {
     expect(state.errors?.gstin).toBeTruthy();
     expect(calls).toHaveLength(0);
   });
+
+  /**
+   * **R38.** The API's 409 has to reach the PAN box, not just the banner.
+   *
+   * `fieldErrors()` strips the `body.` prefix, so `body.pan` lands on the `pan`
+   * key the wizard renders `<Field id="pan">` from — the same path GSTIN has
+   * always taken. Asserted because a duplicate that produces only a banner is a
+   * dealer staring at two boxes and being told one of them is wrong.
+   */
+  it.each([
+    [
+      'gstin',
+      'GSTIN_ALREADY_REGISTERED',
+      'That GSTIN is already registered to another dealership.',
+    ],
+    ['pan', 'PAN_ALREADY_REGISTERED', 'That PAN is already registered to another dealership.'],
+  ])('puts a duplicate %s on its own box and in the banner', async (field, code, detail) => {
+    globalThis.fetch = respond(409, {
+      code,
+      detail,
+      errors: [{ field: `body.${field}`, code, message: 'Already registered.' }],
+    });
+
+    const state = await saveBusinessIdsAction(
+      {},
+      form({ gstin: '33AACCP1234H1ZQ', pan: 'AACCP1234H' }),
+    );
+
+    expect(state.errors?.[field]).toBe('Already registered.');
+    expect(state.message).toBe(detail);
+    // And what the dealer typed comes back, so the other box is not emptied by
+    // a refusal about this one.
+    expect(state.values?.pan).toBe('AACCP1234H');
+    expect(state.saved).toBeUndefined();
+  });
 });
 
 describe('submitting for verification', () => {

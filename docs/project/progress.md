@@ -202,7 +202,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R34 — A dealer's public words are proposed, not published · revises F041/F046/R26/R27/R32 · [#107](https://github.com/shashikiran6sk/DealersDrive/pull/107)
 - [~] R35 — One door for a dealership, not two · revises F073 · [#109](https://github.com/shashikiran6sk/DealersDrive/pull/109)
 - [~] R36 — The contact's job title is not a field · revises F038/F041/F046 · ⚠️ deletes data · [#110](https://github.com/shashikiran6sk/DealersDrive/pull/110)
-- [ ] R37 — Services are added one at a time, and shown as chips · revises F037/F046/R18/R26
+- [~] R37 — Services are added one at a time, and shown as chips · revises F037/F046/R18/R26 · [#111](https://github.com/shashikiran6sk/DealersDrive/pull/111)
+- [ ] R38 — PAN is unique across the platform, as GSTIN already was · revises F038/F041/F045/F046
 
 ---
 

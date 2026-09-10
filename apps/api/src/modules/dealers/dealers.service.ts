@@ -224,21 +224,27 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
   /**
    * Two dealerships in one city must not share a registered name, and no two
-   * anywhere may share a GSTIN.
+   * anywhere may share a GSTIN or a PAN.
    *
-   * The unique indexes on `(legalName, city)` and `gstin` are what actually
-   * guarantee it, and they are what makes this safe against two applications
-   * racing. This read exists for the other half of the job: turning a
-   * collision into a message against the field the dealer just typed, rather
-   * than a Prisma P2002 the error handler renders as a 500.
+   * The unique indexes on `(legalName, city)`, `gstin` and `pan` are what
+   * actually guarantee it, and they are what makes this safe against two
+   * applications racing. This read exists for the other half of the job:
+   * turning a collision into a message against the field the dealer just
+   * typed, rather than a Prisma P2002 the error handler renders as a 500.
    *
    * The name is always asked about together with a city — the one being moved
    * to, or the one the dealership is already in — because a name on its own
    * cannot be a duplicate of anything.
+   *
+   * **PAN joined GSTIN at R38.** The asymmetry before it was not a decision:
+   * both are read off a document by the same moderator on the same screen, and
+   * both identify one taxable entity. Two dealerships holding one PAN is
+   * either one business applying twice or a typo that has carried somebody
+   * else's tax identity into a KYC review.
    */
   async function assertNoDuplicate(
     dealerId: string,
-    fields: { legalName?: string; city?: string; gstin?: string },
+    fields: { legalName?: string; city?: string; gstin?: string; pan?: string },
   ): Promise<void> {
     const clash = await repo.findConflicting(dealerId, fields);
 
@@ -269,6 +275,30 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
             {
               field: 'body.gstin',
               code: 'GSTIN_ALREADY_REGISTERED',
+              message: 'Already registered.',
+            },
+          ],
+        },
+      );
+    }
+
+    /*
+     * GSTIN first, then PAN, when a step-3 submit carries both and both clash.
+     * One field error at a time is the shape every other check on this path
+     * uses, and GSTIN is the more specific of the two — a GSTIN embeds the PAN
+     * of the entity that holds it, so a dealer who fixes the GSTIN usually
+     * fixes the PAN with it. Reporting the derived field first would send them
+     * to the wrong document.
+     */
+    if (clash.pan) {
+      throw new ConflictError(
+        'PAN_ALREADY_REGISTERED',
+        'That PAN is already registered to another dealership.',
+        {
+          errors: [
+            {
+              field: 'body.pan',
+              code: 'PAN_ALREADY_REGISTERED',
               message: 'Already registered.',
             },
           ],
@@ -679,6 +709,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           ? {}
           : { legalName: input.legalName, city: nameCity }),
         ...(input.gstin === undefined ? {} : { gstin: input.gstin }),
+        ...(input.pan === undefined ? {} : { pan: input.pan }),
       });
 
       const updated = await withTransaction(prisma, async (tx) => {
