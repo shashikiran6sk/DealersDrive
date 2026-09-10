@@ -40,6 +40,13 @@ export type DomainEventType =
    * dealership's public words were decided on" should not have to subscribe
    * twice and keep the pair in step.
    */
+  /**
+   * R40. A dealership has proposed new public words and a moderator has not
+   * looked yet. Distinct from `DealerProfileChangeDecided`, which is about the
+   * far end of the same request: this one is addressed to the queue, that one
+   * to the dealer.
+   */
+  | 'DealerProfileChangeSubmitted'
   | 'DealerProfileChangeDecided'
   | 'VehicleCreated'
   | 'VehicleUpdated'

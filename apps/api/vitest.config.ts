@@ -52,7 +52,7 @@ const ENV = {
  * would *raise* the percentage. Here every file under `src/` counts whether or
  * not it is imported.
  *
- * Two files are excluded, and only these two:
+ * Three files are excluded, and only these three:
  *   · `types/express.d.ts` — a declaration file. It emits no JavaScript, so
  *     there is nothing to execute or to count.
  *   · `index.ts` — the process entry point. It calls `listen()`, registers
@@ -60,6 +60,11 @@ const ENV = {
  *     it under test would open a port and leave a queue running. Its whole
  *     content is `createApp(await buildContainer())` plus shutdown wiring, both
  *     covered through `server.ts` and `container.ts`.
+ *   · `worker.ts` — the other process entry point (**R40**), and excluded for
+ *     the same reason: it starts pg-boss and the outbox poller at import time.
+ *     Everything it does is `startWorker(await buildContainer())` plus the same
+ *     shutdown wiring, and `startWorker` itself is covered through
+ *     `container.test.ts`.
  */
 const COVERAGE_THRESHOLD = 90;
 
@@ -83,7 +88,7 @@ export default defineConfig({
        * `include` subsumes it.)
        */
       include: ['src/**/*.ts'],
-      exclude: ['src/types/**', 'src/index.ts'],
+      exclude: ['src/types/**', 'src/index.ts', 'src/worker.ts'],
       reporter: ['text-summary', 'html', 'json-summary'],
       reportsDirectory: './coverage',
       thresholds: {

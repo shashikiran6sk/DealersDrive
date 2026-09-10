@@ -4205,3 +4205,138 @@ rather than a second rule — and it is what the GSTIN check already did.
 yard-photo block, beside a GSTIN already derived from a counter. That was safe
 only while exactly one test wrote it. Both are derived now, so the next test to
 copy that line cannot break the one above it.
+
+---
+
+## R40 — Emails are queued, and a separate process sends them
+
+**Revises F031 / F038 / F045 / R34 · ⚠️ new table**
+
+The platform decided things about dealerships and told nobody. A dealer
+submitted an application and heard nothing; a moderator approved one and the
+dealer found out by opening the console; R34 shipped a review queue that nothing
+announced, so a proposal sat waiting until somebody happened to look.
+
+Six messages close that, and **none of them is sent by the API.**
+
+- **Schema** `NotificationDelivery`, `NotificationStatus` ·
+  `migrations/20260911090000_notification_deliveries`
+- **Platform** `platform/mail/{mail.port,console.adapter,resend.adapter,factory}.ts`
+  — **new**; `platform/jobs/queue.ts` — `notification.email` and a retry policy;
+  `platform/events/bus.ts` — `DealerProfileChangeSubmitted`
+- **Backend** `modules/notifications/{templates,notifications.service}.ts` —
+  **new**; `dealers.service.selfUpdate` emits the new event; `container.ts`
+  gains `mailer`, `notifications` and **`startWorker`**
+- **Process** `src/worker.ts` — **new**, the second entrypoint;
+  `dev:worker` and `start:worker` scripts
+- **Env** `MAIL_DRIVER` guarded, `RESEND_API_KEY`
+- **Deploy** a `worker` ECS service and task definition, its own log group,
+  four terraform variables, `RESEND_API_KEY` in SSM, a `worker` compose
+  profile, and the API flipped to `WORKER_INLINE=false`
+- **Tests** `resend.adapter.test.ts` — **new**, 14; `templates.test.ts` —
+  **new**, 20; `notifications.service.test.ts` — **new**, 17; nine integration
+  cases; the harness gains a recording mailer and `drainEmails()`
+- **No new dependency.** Resend is one authenticated `POST`.
+
+### The API never waits on Resend, and never touches it
+
+```
+API request                          Worker process
+  ↓ validate + business operation      ↓ OutboxPublisher polls
+  ↓ enqueueOutbox(tx, …)               ↓ bus.publish(event)
+  ↓ COMMIT                             ↓ queue.send('notification.email', …)
+  ↓ respond   ← the request ends here  ↓ claim → render → Resend
+```
+
+No route, service or request handler in this codebase holds a `MailerPort`. The
+API's entire contribution to an email is **one row in `outbox_events`, written
+inside the transaction that caused it** — which is what makes the email exactly
+as durable as the state change, and no more.
+
+### Why a second process and not a `void`-ed promise
+
+`void mailer.send(…)` after the response _looks_ asynchronous and is not. The
+work still runs on the API's event loop, still holds its memory, still competes
+with the next request, and still dies with a SIGTERM halfway through — with
+nowhere to record that it did. When Resend has a slow minute, every one of those
+becomes the API's slow minute.
+
+Splitting the process gives all four away at once, and it removes the one-task
+cap on the API: `WORKER_INLINE=true` meant N API tasks fired N copies of every
+scheduled job, which is why `api_desired_count` was not simply "however many we
+like".
+
+### Two hops, and the middle one is not skipped
+
+The outbox could enqueue a pg-boss job directly. It does not, because
+`boss.send` is not transactional with the caller's write — "the dealership was
+approved" and "the job exists" would be two commits, and a crash between them is
+a dealer who is verified and never told. The outbox row _is_ the transactional
+part; the bus is how it fans out; the queue is what survives a restart mid-send.
+
+### Idempotency is a unique index, not a flag
+
+pg-boss guarantees **at-least-once**. A duplicate delivery is therefore not a
+bug to prevent — it is a normal event to absorb, and the only version of that
+which survives two workers is a database constraint.
+
+`notification_deliveries.dedupeKey` is
+`<template>:<event id>:<recipient>`, and the worker **claims the row before it
+calls the provider**. A redelivery loses the insert, finds a `SENT` row and
+returns. Resend's own `Idempotency-Key` header is the second line, covering the
+one window the index cannot: a row claimed, a request sent, and the response
+lost coming back.
+
+The key is derived from the **event**, never from the attempt. A key generated
+per job would be unique per delivery and would deduplicate nothing.
+
+### Retryable and permanent are different, and getting it backwards is invisible
+
+A **5xx or a dropped socket** is Resend having a bad minute: rethrown, so
+pg-boss backs off — five attempts over roughly twenty minutes. A **4xx** is us:
+an unverified sending domain, a revoked key, a malformed address. Retrying that
+collects the same 422 five times and then archives a job nobody opens, so it is
+**swallowed deliberately** and the row goes straight to `FAILED` with the
+provider's own sentence — which is usually the exact instruction needed.
+
+### `console` is not a stub, and production refuses it
+
+It prints the recipient, the subject and the **plain-text** body, which is the
+part a developer actually needs — a template rendering `undefined` into a
+sentence is invisible in HTML and obvious in text. Everything above it is
+unchanged: same worker, same claim, same `SENT` row.
+
+`env.ts` refuses it in production. A platform that approves dealerships and
+silently tells nobody is worse than one that fails at boot.
+
+### Ids on the queue, never PII
+
+An event payload carries a dealer id; a job payload carries a template name and
+ids; the **worker** resolves the name and the address at send time. An address
+copied into a queue row is an address that goes stale the moment the dealer
+changes it — and a queue is not a place to keep personal data waiting.
+
+The exception proves the rule: the moderator's review email needs the
+**proposed** tagline, not the live one, so the job carries a
+`profileChangeId` and the worker reads that row. Rendering the dealership's
+current words over "has proposed a change" was a real bug, caught by the
+integration test rather than by review.
+
+### What is deliberately not here
+
+**No SMTP, and Mailpit stays unwired.** `MAIL_DRIVER=smtp` is in the enum
+because the baseline had it there, with no adapter then either; `env.ts` now
+refuses it at boot rather than letting a deployment discover at the first
+approval that nothing sends. Wiring Mailpit means an SMTP client, which means a
+dependency, for a convenience `console` already covers better.
+
+**No unsubscribe, and no preferences.** All six are transactional — they are
+the platform answering something the dealer did — and an unsubscribe link on
+"your application was rejected" is a link to not being told.
+
+**No bounce handling.** Resend reports them by webhook, which needs a public
+endpoint, signature verification and a decision about what a bounced approval
+_means_. `notification_deliveries` is the table that will hold the answer.
+
+**No `notification.enquiry-to-dealer`.** It is in `JOB_NAMES` and belongs to
+the enquiry feature, which has not landed.

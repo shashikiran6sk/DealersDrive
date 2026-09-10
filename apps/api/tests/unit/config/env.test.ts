@@ -39,6 +39,13 @@ const PRODUCTION_REQUIRED = {
   SESSION_SECRET: 'a-real-production-session-secret',
   UPLOAD_SIGNING_SECRET: 'a-real-production-upload-secret',
   RC_PLATE_HASH_SECRET: 'a-real-production-plate-secret',
+  /*
+   * R40. `console` prints and sends nothing, so production refuses it — a
+   * production fixture that omitted these two could not boot. The refusal has
+   * its own case below.
+   */
+  MAIL_DRIVER: 'resend',
+  RESEND_API_KEY: 're_a_real_production_key',
 };
 
 /**

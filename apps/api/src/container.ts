@@ -32,6 +32,12 @@ import { createEventBus, type EventBus } from './platform/events/bus.js';
 import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
 import { createQueue, type Queue } from './platform/jobs/queue.js';
 import { createMapsResolver, type MapsPort } from './platform/maps/maps-link.js';
+import { createMailer } from './platform/mail/factory.js';
+import type { MailerPort } from './platform/mail/mail.port.js';
+import {
+  createNotificationsService,
+  type NotificationsService,
+} from './modules/notifications/notifications.service.js';
 import { createStorage } from './platform/storage/factory.js';
 import { ensureBucket } from './platform/storage/s3.adapter.js';
 import type { StoragePort } from './platform/storage/storage.port.js';
@@ -78,6 +84,10 @@ export interface Container {
   /** Local disk, MinIO or R2 — chosen by `STORAGE_DRIVER`, never by a module. */
   readonly storage: StoragePort;
   readonly maps: MapsPort;
+  /** Console or Resend, by `MAIL_DRIVER` (**R40**). Held by the worker, never by a route. */
+  readonly mailer: MailerPort;
+  /** Who gets told what. Subscribes to the bus and owns the email job handler. */
+  readonly notifications: NotificationsService;
   /** Reads the principal off a request. Cookie-backed, or the dev identity. */
   readonly sessions: SessionResolver;
   /** Issues, resolves and revokes the rows behind those cookies. */
@@ -105,6 +115,8 @@ export interface ContainerOverrides {
   readonly queue?: Queue;
   readonly storage?: StoragePort;
   readonly maps?: MapsPort;
+  /** The seam the notification tests use — a mailer that records instead of sending. */
+  readonly mailer?: MailerPort;
   /** `harness.ts` swaps the whole resolver out; `auth-harness.ts` does not. */
   readonly sessions?: SessionResolver;
   /** The seam `auth-harness.ts` uses: everything above it runs unmodified. */
@@ -128,6 +140,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const outbox = createOutboxPublisher(prisma, bus);
   const storage = overrides.storage ?? createStorage();
   const maps = overrides.maps ?? createMapsResolver();
+  const mailer = overrides.mailer ?? createMailer();
 
   const sessionStore = createSessionService(prisma);
   const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
@@ -156,6 +169,12 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage, queue });
+  /*
+   * Built here, subscribed in `startBackground` (**R40**). Constructing it is
+   * free; *subscribing* it is what decides which process turns an outbox row
+   * into an email, and that is a deployment question rather than a wiring one.
+   */
+  const notifications = createNotificationsService({ prisma, queue, mailer });
 
   return {
     env: overrides.env ?? env,
@@ -168,6 +187,8 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     outbox,
     storage,
     maps,
+    mailer,
+    notifications,
     sessions,
     sessionStore,
     oauth,
@@ -198,7 +219,21 @@ function createResolver(prisma: PrismaClient, sessionStore: SessionService): Ses
   return createCookieSessionResolver(prisma, sessionStore);
 }
 
-/** Starts the background machinery. Not called by tests, which drain inline. */
+/**
+ * Starts the background machinery. Not called by tests, which drain inline.
+ *
+ * ── One image, two process types (R40) ──────────────────────────────────────
+ * `WORKER_INLINE=true` — the default, and what `pnpm dev` and a one-box
+ * deployment use — runs the outbox publisher and the job handlers in the HTTP
+ * process, so the whole product is one command.
+ *
+ * `WORKER_INLINE=false` makes this a **pure API**: it still writes outbox rows
+ * inside its transactions, and it neither drains them nor holds a mailer. A
+ * separate `src/worker.ts` process does that, and `startWorker` below is what
+ * it calls. That split is the point of this revision — the API's tail latency
+ * stops depending on whether Resend is having a good afternoon, and it can be
+ * scaled to N tasks without N copies of every scheduled job firing.
+ */
 export async function startBackground(container: Container): Promise<void> {
   // A fresh MinIO volume has no bucket, and the first photo upload should not be
   // the thing that discovers that.
@@ -212,7 +247,38 @@ export async function startBackground(container: Container): Promise<void> {
   if (!env.JOBS_ENABLED) return;
 
   await container.queue.start();
+
+  /*
+   * The API only drains the outbox and works the queue when it is *also* the
+   * worker. Under `WORKER_INLINE=false` it has written its rows and its job is
+   * done — anything else would be two processes racing for the same jobs, which
+   * `FOR UPDATE SKIP LOCKED` makes safe and duplicated effort makes pointless.
+   */
+  if (!env.WORKER_INLINE) {
+    logger.info('WORKER_INLINE=false — jobs and the outbox belong to the worker process');
+    return;
+  }
+
+  await startWorker(container);
+}
+
+/**
+ * The background half, wherever it runs (**R40**).
+ *
+ * Called by `startBackground` when `WORKER_INLINE=true`, and by `worker.ts`
+ * when it is false. One function, so the two deployments cannot drift into
+ * running different handlers — a worker that subscribed to five of the six
+ * events would be a bug nobody notices until a dealer is not told something.
+ */
+export async function startWorker(container: Container): Promise<void> {
+  container.notifications.subscribe(container.bus);
+  await container.notifications.work();
   container.outbox.start();
+
+  logger.info(
+    { mail: container.mailer.driver, jobs: env.JOBS_ENABLED },
+    'background workers started',
+  );
 }
 
 /** Releases everything the container holds open. Called on SIGTERM. */

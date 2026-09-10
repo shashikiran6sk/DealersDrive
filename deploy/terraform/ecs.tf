@@ -95,13 +95,21 @@ locals {
     { name = "NODE_OPTIONS", value = "--max-old-space-size=${var.api_node_heap_mb}" },
 
     { name = "PAYMENT_PROVIDER", value = "development" },
-    { name = "MAIL_DRIVER", value = "console" },
+    # R40. `env.ts` refuses `console` in production, so a deployment without a
+    # Resend key fails at boot rather than silently telling nobody anything.
+    { name = "MAIL_DRIVER", value = var.mail_driver },
     { name = "SMS_DRIVER", value = "console" },
     { name = "JOBS_ENABLED", value = "true" },
 
-    # One task runs the schedules. See the comment on the API service below —
-    # this is the reason api_desired_count is not simply "however many we like".
-    { name = "WORKER_INLINE", value = "true" },
+    # **R40 — the API is a pure API now.**
+    #
+    # It writes outbox rows inside its transactions and does nothing else in the
+    # background: no polling, no job handlers, no mailer. The `worker` service
+    # below drains them. That is what stops the API's tail latency depending on
+    # whether Resend is having a good afternoon — and it is what removes the
+    # one-task cap, since the schedules now fire in exactly one place by
+    # construction rather than by counting tasks.
+    { name = "WORKER_INLINE", value = "false" },
     { name = "RATE_LIMIT_ENABLED", value = "true" },
     { name = "DOCS_ENABLED", value = var.environment == "production" ? "false" : "true" },
   ]
@@ -229,6 +237,101 @@ resource "aws_ecs_service" "api" {
   }
 
   depends_on = [aws_lb_listener.https]
+}
+
+# ── the worker ────────────────────────────────────────────────────────────
+#
+# **R40.** The same image as the API, a different command, and no port.
+#
+# `node dist/worker.js` instead of `dist/index.js`. It builds the same
+# container — one composition root, one set of adapters — and runs the outbox
+# publisher and the pg-boss handlers. The API runs with `WORKER_INLINE=false`
+# beside it and does neither.
+#
+# **Why this is a service and not a `void mailer.send()` in a request handler:**
+# a fire-and-forget send still occupies the API's event loop, still holds its
+# memory, still dies with a SIGTERM mid-flight, and still has nowhere to record
+# that it failed. When Resend has a slow minute, every one of those becomes the
+# API's slow minute. Here it is a slow minute for a process nobody is waiting on.
+#
+# It also unblocks scaling the API. Under `WORKER_INLINE=true` the API is capped
+# at one task, because N tasks means N copies of every scheduled job firing.
+resource "aws_ecs_task_definition" "worker" {
+  family                   = "${local.name}-worker"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = var.worker_cpu
+  memory                   = var.worker_memory
+  execution_role_arn       = aws_iam_role.execution.arn
+  # The same task role as the API: it reads the same database and the same
+  # bucket. A second role with the same policy is a second thing to keep in step.
+  task_role_arn = aws_iam_role.api_task.arn
+
+  runtime_platform {
+    cpu_architecture        = "X86_64"
+    operating_system_family = "LINUX"
+  }
+
+  container_definitions = jsonencode([
+    {
+      name      = "worker"
+      image     = local.placeholder_image.api
+      essential = true
+      command   = ["node", "dist/worker.js"]
+
+      # The API's environment, with the one flag that distinguishes them.
+      environment = concat(
+        [for pair in local.api_environment : pair if pair.name != "WORKER_INLINE"],
+        [{ name = "WORKER_INLINE", value = "true" }],
+      )
+      secrets = local.api_secrets
+
+      # No portMappings and no healthCheck: there is nothing to connect to. A
+      # worker that has died stops draining the outbox, and *that* is what an
+      # alarm should watch — the age of the oldest unpublished row, not a port.
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.worker.name
+          "awslogs-region"        = var.region
+          "awslogs-stream-prefix" = "worker"
+        }
+      }
+
+      # Longer than the API's 25s. A worker's drain is not a request finishing —
+      # it is a job finishing, and a job may be waiting on Resend. Cutting it
+      # short is safe (pg-boss returns the job to the queue and the dedupe key
+      # stops a second send) but wasteful, and 45s covers a normal handler.
+      stopTimeout = 45
+    },
+  ])
+}
+
+resource "aws_ecs_service" "worker" {
+  name            = "${local.name}-worker"
+  cluster         = aws_ecs_cluster.this.id
+  task_definition = aws_ecs_task_definition.worker.arn
+  desired_count   = var.worker_desired_count
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = var.private_subnet_ids
+    security_groups  = [aws_security_group.tasks.id]
+    assign_public_ip = false
+  }
+
+  # **One at a time, always.** `100/200` would run two workers during a deploy,
+  # which is safe for email — pg-boss hands a job to one worker and the dedupe
+  # key covers the rest — and wrong for the scheduled jobs that arrive later.
+  # There is no load balancer to keep happy, so a moment with no worker costs
+  # nothing but a few seconds of queue depth.
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
+
+  lifecycle {
+    ignore_changes = [task_definition, desired_count]
+  }
 }
 
 # ── the web app ───────────────────────────────────────────────────────────

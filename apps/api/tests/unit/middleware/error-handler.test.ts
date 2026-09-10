@@ -334,6 +334,9 @@ describe('unknown throwables', () => {
     vi.stubEnv('SESSION_SECRET', 'a-real-production-session-secret');
     vi.stubEnv('UPLOAD_SIGNING_SECRET', 'a-real-production-upload-secret');
     vi.stubEnv('RC_PLATE_HASH_SECRET', 'a-real-production-plate-secret');
+    // R40 — production refuses MAIL_DRIVER=console, which sends nothing.
+    vi.stubEnv('MAIL_DRIVER', 'resend');
+    vi.stubEnv('RESEND_API_KEY', 're_a_real_production_key');
 
     try {
       const { errorHandler: productionHandler } =

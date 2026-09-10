@@ -258,10 +258,15 @@ uploads, the full image pipeline.
   replicas. Take backups; `docker compose down -v` erases everything.
 - **Mail and SMS print to the log** (`MAIL_DRIVER=console`, `SMS_DRIVER=console`).
   Nothing is sent. Dealer sign-in does not depend on either — Google verifies
-  the address and there is no OTP anywhere in the product.
+  the address. Switching to `MAIL_DRIVER=resend` with a key is the only change
+  needed to send the six notifications for real (**R40**); the queue, the worker
+  and the idempotency are the same either way.
 - **Payments settle instantly** (`PAYMENT_PROVIDER=development`). No money moves.
 - **One process runs both HTTP and background jobs** (`WORKER_INLINE=true`).
-  Fine for one box; it is why scaling out needs a separate worker entrypoint.
+  Fine for one box. The separate entrypoint that scaling out needs now exists —
+  `node dist/worker.js` (**R40**) — and `docker compose --profile worker up
+worker` runs it here; set `WORKER_INLINE=false` on the API at the same time,
+  or the two race for the same outbox rows.
 - **No Sentry.** The DSN validates but no SDK is installed.
 
 Moving to real production is a configuration change, not a rewrite:
