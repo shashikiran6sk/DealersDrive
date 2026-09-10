@@ -6,6 +6,22 @@ import type { Tx } from '../../platform/db/prisma.js';
 export const dealerInclude = {
   documents: true,
   members: { include: { user: true }, where: { status: 'ACTIVE' as const } },
+  /**
+   * The newest edit this dealership has proposed to its own public words, and
+   * only the newest (**R34**).
+   *
+   * `take: 1` because the profile screen asks one question — *"is there
+   * anything to tell this dealer about their last save"* — and the answer is
+   * always about the most recent request. Older rows are the dealership's
+   * publishing history; nothing renders them, and pulling them all would grow
+   * this include without bound on the busiest dealerships.
+   *
+   * In the include rather than in a second query so that every path holding a
+   * `DealerWithRelations` can answer it. `toProfile` is called from five places
+   * and one of them forgetting to look would be a dealer told nothing about a
+   * refusal.
+   */
+  profileEdits: { orderBy: { createdAt: 'desc' as const }, take: 1 },
 } satisfies Prisma.DealerInclude;
 
 export type DealerWithRelations = Prisma.DealerGetPayload<{ include: typeof dealerInclude }>;

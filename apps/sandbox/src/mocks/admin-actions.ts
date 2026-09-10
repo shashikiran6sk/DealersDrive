@@ -90,3 +90,16 @@ export async function requestDealerChangesAction(dealerId: string, input: unknow
 export async function updateDealerAction(dealerId: string, input: unknown) {
   return respond('updateDealer', dealerId, input);
 }
+
+/**
+ * R34's two decisions, keyed by the change rather than by the dealership — so
+ * `dealerId` above carries the change id for these, as it does for the KYC
+ * pair.
+ */
+export async function approveProfileChangeAction(changeId: string) {
+  return respond('approveProfileChange', changeId, undefined);
+}
+
+export async function rejectProfileChangeAction(changeId: string, input: unknown) {
+  return respond('rejectProfileChange', changeId, input);
+}

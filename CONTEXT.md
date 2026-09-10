@@ -574,6 +574,80 @@ step three. `POST /v1/dealer/submit` clears it on the way back into the queue.
 
 ---
 
+## 7h2. A dealer's public words are proposed, not published (R34)
+
+Rule 7 says a dealer's phone number never appears in an ordinary public
+response: only `POST /v1/vehicles/:id/reveal-contact` returns one, rate-limited
+twice over and logged as a lead. That was true of every _structured_ field and
+false of two free-text ones, and the hole was easy to miss because it did not
+look like a phone-number problem — it looked like a profile screen.
+
+`tagline` and `specialities` are the only prose a dealer writes that a buyer
+reads. R27 made everything else on the profile screen read-only; these two
+stayed editable because a dealership is genuinely entitled to revise how it
+describes itself. So they were also the only route by which a number, a URL or a
+rival's name reached a public page unread.
+
+They now go to a moderator. What follows is what is worth carrying forward.
+
+**Which fields wait is a question about the type, not about the screen.**
+`establishedYear` is an integer bounded by 1900 and 2100 and publishes
+instantly: there is nothing that can be hidden in it. If a fourth self-service
+field is ever added, that is the test to apply — _can a sentence be smuggled into
+this value_ — and not "is this field important".
+
+**A refusal writes nothing.** The live columns are untouched until an approval,
+so there is nothing to restore. The tempting alternative — publish now, roll back
+if refused — has a window in which the number is on the page, and closing that
+window is the whole point.
+
+**One request at a time, refused rather than merged.** A second edit while one
+waits is a 409. Two rows would make "what is this dealership asking for" a
+question with two answers — and merging them, which was the first design, is
+worse: a request that absorbs later edits can change _after_ a moderator has
+started reading it. The guarantee under that is a **partial unique index**,
+`UNIQUE (dealerId) WHERE status = 'PENDING'` — Prisma's schema language cannot
+express one, so it lives in the migration and the model carries a note pointing
+at it. If you add another "at most one live row per parent" rule, that is the
+pattern.
+
+**Withdrawing is a button, and the boxes are shut until it is pressed.** While a
+change waits, the tagline and services inputs are `disabled` and hold the
+proposed text — `DELETE /v1/dealer/profile-change` is the only way back to an
+editable form. An earlier version inferred the cancellation from the dealer
+retyping the live value, which was wrong twice over: it made the exit something
+to discover rather than press, and an edit that happens to restore the live text
+is still an edit.
+
+What survives from that idea is narrower and is not a withdrawal: the service
+asks whether a save _proposes anything at all_. The form re-sends all three
+fields every time, so a dealer correcting only their established year would
+otherwise queue a request asking a moderator to approve the status quo — and the
+comparison is order-insensitive because the services box is one comma-separated
+line.
+
+**The screen has to say so, or the product looks broken.** The dealer presses
+Save, the box shows what they typed, and their public page does not change.
+Without a panel explaining that, the honest state is invisible and the dealer's
+conclusion is that the save failed. The same reasoning is why the locked boxes
+hold the dealer's own words rather than the live ones: a form that reverted
+after every save looks exactly like a save that failed.
+
+**And the reviewer needs the old value on screen.** The question is "is this
+_change_ acceptable", not "is this sentence acceptable". `AdminProfileChange`
+carries `liveTagline` and `liveSpecialities` for that reason. A field the request
+does not touch is `null` / `[]` and must render as **unchanged** — a blank row
+reads as _clearing the services_, and approving that reading approves something
+nobody asked for.
+
+There is deliberately **no detection**: a regex over ten-digit strings misses
+"nine eight four zero zero" and teaches a moderator to trust the absence of a
+flag. And **no auto-approve on a timer** — a queue nobody works is a product that
+has quietly stopped letting dealers edit their pages, and the answer to that is
+staffing, not publishing unread text.
+
+---
+
 ## 7i. A React reconciliation bug that looked like a routing bug
 
 Onboarding steps 1 and 2 share one form, and the Continue button was two

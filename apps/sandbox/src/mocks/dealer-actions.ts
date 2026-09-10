@@ -40,3 +40,22 @@ export async function saveDealerProfileAction(
   await new Promise((resolve) => setTimeout(resolve, dealerProfileStub.delayMs));
   return dealerProfileStub.result;
 }
+
+/**
+ * R34's Cancel. Resolves to `null` on success, or to a message.
+ *
+ * `withdrawResult` is separate from `result` above because the two actions fail
+ * for different reasons and a story usually wants one of them to work while the
+ * other does not.
+ */
+export const withdrawStub: { delayMs: number; result: string | null; calls: number } = {
+  delayMs: 700,
+  result: null,
+  calls: 0,
+};
+
+export async function withdrawProfileChangeAction(): Promise<string | null> {
+  withdrawStub.calls += 1;
+  await new Promise((resolve) => setTimeout(resolve, withdrawStub.delayMs));
+  return withdrawStub.result;
+}

@@ -8,6 +8,7 @@ import {
   type DealerModerationResponse,
   type DealerProfile,
   type DealerPurgeResponse,
+  type ProfileChangeDecisionResponse,
   type VerifyDocumentResponse,
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
@@ -294,5 +295,63 @@ export async function suspendDealerAction(
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not suspend that dealer.');
+  }
+}
+
+/**
+ * D3b — publishing or refusing a dealer's proposed words (**R34**).
+ *
+ * Both actions clear the public pages off the **response**, not off a slug the
+ * console was rendering with. `ProfileChangeDecisionResponse.dealerSlug` is the
+ * row the API actually wrote, which is the only trustworthy answer to "which
+ * portfolio changed" — a moderator with two tabs open would otherwise clear
+ * whichever dealership they last looked at.
+ *
+ * A refusal clears them too, and that is not wasted work: nothing about the
+ * dealership moved, but the console's own dealer list and the review card did,
+ * and `refreshAdmin` is what re-renders those. The public tags being dropped as
+ * well costs one re-fetch of a page that will come back identical.
+ */
+export async function approveProfileChangeAction(
+  changeId: string,
+): Promise<AdminResult<ProfileChangeDecisionResponse>> {
+  try {
+    const data = await apiSend<ProfileChangeDecisionResponse>(
+      'POST',
+      `/v1/admin/profile-changes/${changeId}/approve`,
+      {},
+    );
+    refreshAdmin(data.dealerSlug);
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not publish that change.');
+  }
+}
+
+export async function rejectProfileChangeAction(
+  changeId: string,
+  input: unknown,
+): Promise<AdminResult<ProfileChangeDecisionResponse>> {
+  /*
+   * Re-parsed here as well as at the API, for the reason every action in this
+   * file does it: a six-character floor enforced only server-side reaches the
+   * moderator as a 400 they have to interpret. The floor itself is the point —
+   * this sentence is the whole of what the dealer will be told.
+   */
+  const parsed = ReasonInput.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, message: 'Tell the dealer what was wrong with it — a sentence is enough.' };
+  }
+
+  try {
+    const data = await apiSend<ProfileChangeDecisionResponse>(
+      'POST',
+      `/v1/admin/profile-changes/${changeId}/reject`,
+      parsed.data,
+    );
+    refreshAdmin(data.dealerSlug);
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not refuse that change.');
   }
 }

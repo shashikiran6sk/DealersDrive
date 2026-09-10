@@ -47,6 +47,10 @@ describe('the surface', () => {
         'POST /dealers/:id/reinstate',
         'POST /documents/:id/verify',
         'POST /documents/:id/reject',
+        // R34 — the queue a dealer's own words wait in, and the two decisions.
+        'GET /profile-changes',
+        'POST /profile-changes/:id/approve',
+        'POST /profile-changes/:id/reject',
       ].sort(),
     );
   });

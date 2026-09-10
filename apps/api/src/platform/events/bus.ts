@@ -29,6 +29,18 @@ export type DomainEventType =
   | 'DealerReinstated'
   | 'DealerApplied'
   | 'DealerChangesRequested'
+  /**
+   * R34. A moderator decided on a dealership's proposed tagline or service
+   * list. `payload.published` says which way, because the two mean opposite
+   * things downstream: an approval changed what buyers see and a refusal
+   * changed only what the dealer is told.
+   *
+   * One event for both verdicts rather than two, for the reason the dealer
+   * status machine emits one per transition: a consumer that cares about "this
+   * dealership's public words were decided on" should not have to subscribe
+   * twice and keep the pair in step.
+   */
+  | 'DealerProfileChangeDecided'
   | 'VehicleCreated'
   | 'VehicleUpdated'
   | 'VehicleSold'

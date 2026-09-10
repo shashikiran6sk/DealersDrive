@@ -1,7 +1,13 @@
 import { z } from 'zod';
 
 import { GoogleMapsUrl, IndianMobile, MapKind, Uuid } from './common.js';
-import { DealerDocType, DealerStatus, DocStatus, MediaStatus } from './enums.js';
+import {
+  DealerDocType,
+  DealerStatus,
+  DocStatus,
+  MediaStatus,
+  ProfileChangeStatus,
+} from './enums.js';
 
 /**
  * PART C — the dealer console (API-SPEC C1–C20). Every shape here is read or
@@ -33,6 +39,46 @@ export const PresignResponse = z.object({
   maxBytes: z.number().int().optional(),
 });
 export type PresignResponse = z.infer<typeof PresignResponse>;
+
+/**
+ * C2b — a dealer's edit to their own public words, and where it has got to
+ * (**R34**).
+ *
+ * The dealer's own view of it. What it answers is the question the profile
+ * screen has to answer after a save: *"I pressed Save and the page still shows
+ * the old line — did it work?"* Without this the honest answer is invisible,
+ * and a dealer who cannot see their edit concludes the save failed and does it
+ * again.
+ *
+ * **The values here are the proposed ones, not the live ones.** `tagline` is
+ * `null` and `specialities` is empty when the request does not touch that
+ * field — the fields have floors of ten characters and one entry respectively,
+ * so neither empty value is a thing a dealer could have asked for. What is
+ * currently public is on `DealerProfile` itself, which is what makes the two
+ * renderable side by side.
+ *
+ * Exactly one of these reaches the screen at a time, and which one is a
+ * question of `status`:
+ *
+ *   · `PENDING`   the proposal, with what is live beside it
+ *   · `REJECTED`  what a moderator refused, and `decisionReason` — the only
+ *                 field on this shape a dealer must read
+ *   · `APPROVED`  nothing. The values are on the profile now, and a banner
+ *                 announcing that a line the dealer can see is the line they
+ *                 asked for is a banner that only ever gets in the way.
+ */
+export const DealerProfileChange = z.object({
+  id: Uuid,
+  status: ProfileChangeStatus,
+  statusLabel: z.string(),
+  tagline: z.string().nullable(),
+  specialities: z.array(z.string()),
+  submittedAtLabel: z.string(),
+  reviewedAtLabel: z.string().nullable(),
+  /** Shown verbatim, and the reason a refusal is worth more than a 400. */
+  decisionReason: z.string().nullable(),
+});
+export type DealerProfileChange = z.infer<typeof DealerProfileChange>;
 
 // ─────────── C1/C2 dealer profile ──────────────────────────────────────────
 export const DealerProfile = z.object({
@@ -87,6 +133,17 @@ export const DealerProfile = z.object({
   activeListings: z.number().int(),
   approvedAt: z.string().nullable(),
   createdAt: z.string(),
+  /**
+   * The dealership's most recent edit to its own public words, if that edit
+   * still has something to say (**R34**).
+   *
+   * The *most recent*, not the pending one, because a refusal has to reach the
+   * dealer and a queue the dealer cannot see is a queue they will fight. It
+   * resolves to `null` once the newest request is APPROVED — at which point its
+   * values are the ones above it on this shape, and there is nothing left to
+   * report.
+   */
+  profileChange: DealerProfileChange.nullable(),
 });
 export type DealerProfile = z.infer<typeof DealerProfile>;
 
@@ -287,10 +344,32 @@ export type UpdateDealerInput = z.infer<typeof UpdateDealerInput>;
  * them `disabled` under a note saying to contact support. That note is now
  * true at the API as well.
  *
+ * ## Two of the three are proposals, not writes (**R34**)
+ *
+ * Accepting a field and *publishing* it are different questions, and this
+ * schema only answers the first. On an ACTIVE dealership the tagline and the
+ * service list go to `DealerProfileChange` and wait for a moderator; only
+ * `establishedYear` reaches the dealership row directly.
+ *
+ * The split is between free text and a number. A year is a fact about the
+ * business that cannot carry a message: there is no way to write a phone
+ * number, a rival's name or a WhatsApp handle into an integer bounded by 1900
+ * and 2100. The other two are the only prose a dealer writes that a buyer
+ * reads, which makes them the only place either could reach a public page
+ * without passing `POST /v1/vehicles/:id/reveal-contact` — the one route
+ * allowed to hand a number out, rate-limited twice over and logged (rule 7).
+ *
+ * This is why the moderation lives in `dealers.service.selfUpdate` and not
+ * here. A schema says what may be *sent*; it has no access to the dealership's
+ * status, and "publish immediately" versus "queue for review" is a question
+ * about the row, not about the payload.
+ *
  * ⚠️ The onboarding wizard still needs the full shape: a DRAFT dealership is
  * one that is still answering these questions, or has been sent back to fix
  * one. It uses `PATCH /v1/dealer/onboarding`, which takes `UpdateDealerInput`
- * and refuses anything that is not DRAFT.
+ * and refuses anything that is not DRAFT — and writes directly, because
+ * nothing about a DRAFT is public and the whole application is reviewed before
+ * it becomes so.
  */
 export const DealerSelfUpdateInput = UpdateDealerInput.pick({
   establishedYear: true,
