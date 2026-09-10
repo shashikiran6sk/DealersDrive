@@ -70,7 +70,6 @@ function assertLocalDatabase(): void {
 async function upsertOwner(dealer: (typeof DEV_DEALERS)[number]): Promise<string> {
   const fields = {
     fullName: dealer.ownerName,
-    roleTitle: dealer.ownerRole,
     phone: dealer.phone,
     emailVerifiedAt: now,
     phoneVerifiedAt: now,

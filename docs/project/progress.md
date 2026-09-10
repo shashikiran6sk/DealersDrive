@@ -200,7 +200,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R32 — The review screen judges the tagline and the services, not About · revises F045/R25/R26 · [#105](https://github.com/shashikiran6sk/DealersDrive/pull/105)
 - [~] R33 — The paragraph is dropped, column and all · revises R25/R26/R32 · ⚠️ deletes data · [#106](https://github.com/shashikiran6sk/DealersDrive/pull/106)
 - [~] R34 — A dealer's public words are proposed, not published · revises F041/F046/R26/R27/R32 · [#107](https://github.com/shashikiran6sk/DealersDrive/pull/107)
-- [ ] R35 — One door for a dealership, not two · revises F073
+- [~] R35 — One door for a dealership, not two · revises F073 · [#109](https://github.com/shashikiran6sk/DealersDrive/pull/109)
+- [ ] R36 — The contact's job title is not a field · revises F038/F041/F046 · ⚠️ deletes data
 
 ---
 

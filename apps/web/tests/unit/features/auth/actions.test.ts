@@ -67,7 +67,6 @@ function form(fields: Record<string, string>): FormData {
 
 const ONBOARDING = {
   fullName: 'R. Manikandan',
-  roleTitle: 'Proprietor',
   phone: '9840012345',
   // One name. `brandName` is the server's display mirror of it and is not a
   // field the form carries any more.
@@ -150,9 +149,9 @@ describe('onboarding', () => {
   it('drops an empty optional rather than sending a blank string', async () => {
     globalThis.fetch = respond(201, {});
 
-    await redirectOf(onboardingAction({}, form({ ...ONBOARDING, roleTitle: '' })));
+    await redirectOf(onboardingAction({}, form({ ...ONBOARDING, landline: '' })));
 
-    expect(bodyOf(calls[0])).not.toContain('roleTitle');
+    expect(bodyOf(calls[0])).not.toContain('landline');
   });
 
   /**

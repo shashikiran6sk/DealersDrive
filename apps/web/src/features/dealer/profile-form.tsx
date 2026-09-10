@@ -213,7 +213,6 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
 
         <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
           <LockedField id="contactFullName" label="Contact name" value={dealer.contact.fullName} />
-          <LockedField id="contactRoleTitle" label="Role" value={dealer.contact.roleTitle} />
           <LockedField id="contactEmail" label="Email" value={dealer.contact.email} />
           {/*
             R27 reverses R7. The number stopped being a credential when dealers

@@ -108,7 +108,6 @@ function session(
     user: {
       id: '00000000-0000-4000-8000-000000000001',
       fullName: null,
-      roleTitle: null,
       // A real number, because step 1 now refuses to advance without one and
       // nearly every test below walks through it.
       phone: '9840012345',
@@ -148,7 +147,7 @@ function dealerProfile(overrides: Record<string, unknown> = {}) {
     // profile a dealership walking back to it is prefilled from.
     tagline: 'Family-run dealership in Katpadi, trading since 1998.',
     specialities: ['Hatchbacks', 'RC transfer'],
-    contact: { fullName: 'R. Manikandan', roleTitle: null, phone: '9840012345', landline: null },
+    contact: { fullName: 'R. Manikandan', phone: '9840012345', landline: null },
     address: {
       line: '18, Gandhi Road',
       city: 'Katpadi',
@@ -391,7 +390,7 @@ describe('OnboardingPage — the floor the server sets', () => {
           // than filled: this dealership is mid-onboarding.
           tagline: null,
           specialities: [],
-          contact: { fullName: null, roleTitle: null, phone: '9840012345', landline: null },
+          contact: { fullName: null, phone: '9840012345', landline: null },
           address: {
             line: null,
             city: null,
@@ -531,7 +530,7 @@ describe('OnboardingWizard — the Account step', () => {
       <OnboardingWizard
         step={0}
         session={session({
-          user: { fullName: 'K. Raman', roleTitle: 'Proprietor', phone: '9840012345' },
+          user: { fullName: 'K. Raman', phone: '9840012345' },
         })}
         documents={[]}
         dealer={null}
@@ -541,7 +540,6 @@ describe('OnboardingWizard — the Account step', () => {
     );
 
     expect(screen.getByLabelText('Full name')).toHaveValue('K. Raman');
-    expect(screen.getByLabelText(/^Role/)).toHaveValue('Proprietor');
     expect(screen.getByLabelText(/^Phone/)).toHaveValue('9840012345');
   });
 

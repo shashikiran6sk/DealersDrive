@@ -132,7 +132,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       pan: dealer.pan,
       contact: {
         fullName: owner?.user.fullName ?? null,
-        roleTitle: owner?.user.roleTitle ?? null,
         phone: dealer.contactPhone ?? owner?.user.phone ?? '',
         phoneDisplay: formatPhone(dealer.contactPhone ?? owner?.user.phone ?? ''),
         email: owner?.user.email ?? dealer.contactEmail,
@@ -316,7 +315,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         user: {
           id: principal.userId,
           fullName: owner?.user.fullName ?? null,
-          roleTitle: owner?.user.roleTitle ?? null,
           phone,
           phoneDisplay: formatPhone(phone),
           email: owner?.user.email ?? null,
@@ -689,9 +687,6 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
             where: { id: owner.userId },
             data: {
               ...(input.contact.fullName === undefined ? {} : { fullName: input.contact.fullName }),
-              ...(input.contact.roleTitle === undefined
-                ? {}
-                : { roleTitle: input.contact.roleTitle }),
               ...(input.contact.email === undefined ? {} : { email: input.contact.email }),
               ...(phone === undefined ? {} : { phone }),
             },

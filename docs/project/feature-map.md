@@ -3960,3 +3960,69 @@ The footer's `For dealers` link also points at `/dealer`. It is a nav link in a
 list of four destinations rather than a call to action beside another call to
 action, and removing it would leave the foot of the page with no route to the
 console at all.
+
+---
+
+## R36 — The contact's job title is not a field
+
+**Revises F038 / F041 / F046 · ⚠️ deletes data**
+
+Onboarding step 1 asked three questions and one of them had no reader. **Role**
+— optional, free text, placeholder "Proprietor" — collected what the person
+filling the form called themselves and then did nothing with it. It was never
+on the directory, never on a portfolio, never a filter, never part of a KYC
+decision. On the dealer's own profile screen it was a `LockedField`: a value
+shown back, uneditable, to the one person who had already typed it.
+
+- **Schema** `User.roleTitle` dropped ·
+  `migrations/20260910170000_drop_user_role_title`
+- **Contracts** `OnboardingInput.roleTitle`, `AuthSession.user.roleTitle`,
+  `DealerProfile.contact.roleTitle`, `UpdateDealerInput.contact.roleTitle`
+- **Backend** `auth.service.{me,onboard}`, `dealers.service.{toProfile,session,
+selfUpdate}` — every write and read of the column
+- **API** No route changes. Three request/response **examples** in
+  `auth.docs.ts` and `dealers.docs.ts` lose the key; the schemas themselves are
+  generated from contracts and follow on their own
+- **Frontend** `features/auth/onboarding-wizard.tsx` — the `Field`;
+  `features/auth/actions.ts` — `ONBOARDING_FIELDS` and both parse calls;
+  `features/dealer/profile-form.tsx` — the `LockedField`
+- **Seeds** `seed/index.ts`, `seed/dev-dealers.ts`, and `ownerRole` off both
+  seed data files
+- **Sandbox** `auth/onboarding-wizard.stories.tsx`,
+  `dealer/profile-form.stories.tsx`
+- **Tests** eight files; `profile-form.test.tsx` drops `role` from the
+  locked-field table, and `actions.test.ts` re-points its
+  drops-an-empty-optional case at `landline`
+- **No new dependency.**
+
+### The authorisation roles are untouched, and that is the point
+
+`DealerRole` (`OWNER` / `MANAGER` / `SALES`), `AdminRole`, `DealerMember.role`
+and `User.adminRole` are the permission model. `permissionsForRole` reads one on
+every authenticated request, and `session.port.ts` asserts the matrix. None of
+it is in scope here.
+
+That two unrelated things were both called some form of _role_ on one
+dealership is half the reason this field is worth removing rather than leaving
+to rot. One of the two decides what a seat may do; the other was a job title on
+a business card. A reader of the schema had to work out which was which before
+touching either.
+
+### `landline` inherits a test, and that is not an accident
+
+`actions.test.ts` had a case proving the action drops an empty optional rather
+than sending `""` — a real rule, because `.strict()` Zod would take a blank
+string as a value rather than as an absence. `roleTitle` happened to be the
+optional it demonstrated with. `landline` is the other one, so the case moves
+rather than goes: the rule outlived the field it was written against.
+
+### Dropping the column rather than leaving it nullable
+
+`roleTitle` is nullable, so leaving it costs nothing at runtime. It costs
+something every time somebody reads the schema: a column no code path touches
+is a question — _is this dead, or is something I have not found still writing
+it?_ — and the honest answer gets harder to reach the longer it sits. R33 made
+the same call about `dealers.about` for the same reason.
+
+The migration deletes what dealers typed and names the `COPY` that preserves it
+first. Nothing in the application can put the values back.

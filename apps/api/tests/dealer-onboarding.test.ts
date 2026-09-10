@@ -47,7 +47,6 @@ function newAccount(): void {
 function onboarding(overrides: Record<string, unknown> = {}) {
   return {
     fullName: 'R. Manikandan',
-    roleTitle: 'Proprietor',
     phone: `98411${String(10000 + counter).slice(-5)}`,
     legalName: `Onboarding Motors ${counter}`,
     addressLine: '18, Gandhi Road',

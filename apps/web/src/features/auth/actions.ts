@@ -48,7 +48,6 @@ export interface ActionState {
  */
 const ONBOARDING_FIELDS = [
   'fullName',
-  'roleTitle',
   'phone',
   'legalName',
   'addressLine',
@@ -73,7 +72,6 @@ export async function onboardingAction(
 
   const parsed = OnboardingInput.safeParse({
     fullName: text(formData, 'fullName').trim(),
-    roleTitle: emptyToUndefined(text(formData, 'roleTitle')),
     phone: text(formData, 'phone').trim(),
     legalName: text(formData, 'legalName').trim(),
     addressLine: text(formData, 'addressLine').trim(),
@@ -132,7 +130,6 @@ export async function updateOnboardingAction(
     specialities: servicesOf(text(formData, 'specialities')),
     contact: {
       fullName: text(formData, 'fullName').trim(),
-      roleTitle: text(formData, 'roleTitle').trim(),
       phone: text(formData, 'phone').trim(),
       landline: text(formData, 'landline').trim(),
     },

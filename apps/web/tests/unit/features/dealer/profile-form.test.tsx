@@ -53,7 +53,6 @@ const DEALER: DealerProfile = {
   pan: 'AABCS1429B',
   contact: {
     fullName: 'Ramesh Kumar',
-    roleTitle: 'Owner',
     phone: '9840012345',
     phoneDisplay: '+91 98400 12345',
     email: 'owner@sri-lakshmi-motors.in',
@@ -101,7 +100,6 @@ describe('what the form offers', () => {
   it.each([
     ['dealership name', /dealership name/i],
     ['contact name', /contact name/i],
-    ['role', /^role/i],
     ['email', /^email/i],
     ['mobile', /^mobile/i],
     ['landline', /^landline/i],

@@ -165,7 +165,6 @@ export const authDocs: ModuleDocs = {
             user: {
               id: '9a2f1d44-1111-4000-8000-000000000001',
               fullName: 'Karthik Raman',
-              roleTitle: 'Proprietor',
               phone: '+919840012345',
               phoneDisplay: '+91 98400 12345',
               email: 'karthik@srilakshmimotors.in',
@@ -230,7 +229,6 @@ export const authDocs: ModuleDocs = {
         schema: 'OnboardingInput',
         example: {
           fullName: 'R. Manikandan',
-          roleTitle: 'Proprietor',
           phone: '9840012345',
           legalName: 'Sri Lakshmi Automobiles Pvt Ltd',
           addressLine: '14, Katpadi Main Road, Gandhi Nagar',
