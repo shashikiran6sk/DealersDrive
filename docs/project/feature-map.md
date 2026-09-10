@@ -3913,3 +3913,50 @@ quietly stopped letting dealers edit their own pages, and the honest answer to
 that is staffing rather than a timer that publishes unread text. The waiting
 time is on every row of the queue and on the review card so that the backlog is
 visible rather than inferred.
+
+---
+
+## R35 — One door for a dealership, not two
+
+**Revises F073 / DESIGN-SPEC §3.1**
+
+The buyer header carried two buttons — `Dealer login` and `List your cars` —
+and both were `<Link href="/dealer">`. The console already resolves the session
+and decides between _sign in_ and _finish onboarding_ on its own, which is why
+one href was ever enough. The second button did not add a destination; it added
+a question with one answer, in the busiest 200px of the page.
+
+- **Frontend** `components/layout/customer-header.tsx` — the `List your cars`
+  link is gone; the surviving link takes `btn-primary` and loses
+  `hidden sm:inline-flex`
+- **Sandbox** `layout/customer-header.stories.tsx` — prose only; the `Mobile`
+  and `Tablet` stories now show the row they describe
+- **Tests** `customer-header.test.tsx` — `the two dealer doors` becomes
+  `the dealer door`, and gains a case that counts the `/dealer` links
+- **Docs** `DESIGN-SPEC.md` §3.1
+- **No contract, route, schema or migration.** Nothing outside the header
+  referred to the removed button.
+
+### Why the survivor is primary, and why it stopped hiding
+
+The removed button was the `btn-primary` of the pair; the one that remains was
+`btn-secondary` with a transparent border **and** `hidden sm:inline-flex` —
+invisible below 640px. That was affordable when a second button stood next to
+it and carried the small screen alone. With one button left, keeping the old
+classes would have deleted the dealer entrance from every phone, which is the
+larger share of the traffic. So it inherits both the weight and the visibility
+of the button it replaced.
+
+### The label is `Dealer login`, not `List your cars`
+
+`List your cars` describes what a dealership eventually does; `Dealer login`
+describes what the button does when pressed. A returning dealer with fifty
+cars already listed is the more common presser of it, and the console tells a
+first-time visitor what to do next anyway.
+
+### What was deliberately left alone
+
+The footer's `For dealers` link also points at `/dealer`. It is a nav link in a
+list of four destinations rather than a call to action beside another call to
+action, and removing it would leave the foot of the page with no route to the
+console at all.

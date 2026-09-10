@@ -343,9 +343,11 @@ Global frame: content `max-width:1280px`, `margin:0 auto`, `padding:0 24px`; des
 
 ### 3.1 Customer header — sticky
 
-`position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid --color-divider; height:64px`, inner flex `gap:28px`. Order: logo plate + wordmark (16px/700) · nav links `Buy cars` / `Dealers` / `Saved cars (n)` at 14px, `gap:22px` · right cluster `gap:8px`: city selector, `Dealer login` (`btn-secondary`, transparent border), `List your cars` (`btn-primary`).
+`position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid --color-divider; height:64px`, inner flex `gap:28px`. Order: logo plate + wordmark (16px/700) · nav links `Buy cars` / `Dealers` / `Saved cars (n)` at 14px, `gap:22px` · right cluster `gap:8px`: city selector, `Dealer login` (`btn-primary`).
 
-768: nav links collapse into a hamburger sheet; city selector and both CTAs stay. 375: links hidden, logo + city + CTAs only; CTA labels shorten to `Login` / `List cars`.
+768: nav links collapse into a hamburger sheet; city selector and the CTA stay. 375: links hidden, logo + city + CTA only; the CTA label shortens to `Login`.
+
+**R35** removed the second CTA. `List your cars` (`btn-primary`) sat beside `Dealer login` and pointed at the same `/dealer` route, so the pair read as a choice and had one outcome; the surviving button takes the primary weight and is visible at every width, because it is now the only way in.
 
 ### 3.2 Homepage
 

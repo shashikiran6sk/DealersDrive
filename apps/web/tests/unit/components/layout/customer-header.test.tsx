@@ -81,19 +81,37 @@ describe('which section is current', () => {
   });
 });
 
-describe('the two dealer doors', () => {
+describe('the dealer door', () => {
   /**
-   * Both go to `/dealer`. The console decides between "sign in" and "finish
-   * onboarding" from the session, so the header never has to guess which of the
-   * two a visitor needs — and therefore cannot get it wrong.
+   * There is one, and it goes to `/dealer`. The console decides between "sign
+   * in" and "finish onboarding" from the session, so the header never has to
+   * guess which of the two a visitor needs — and therefore cannot get it wrong.
    */
-  it('points both at the same door', () => {
+  it('points at the console', () => {
     setLocation('/');
     render(<CustomerHeader locations={LOCATIONS} />);
 
-    for (const name of [/dealer login|^login$/i, /list (your )?cars/i]) {
-      expect(screen.getByRole('link', { name })).toHaveAttribute('href', '/dealer');
-    }
+    expect(screen.getByRole('link', { name: /dealer login|^login$/i })).toHaveAttribute(
+      'href',
+      '/dealer',
+    );
+  });
+
+  /**
+   * **R35.** The second button said "List your cars" and went to exactly the
+   * same place, which made it a choice with one outcome. `getAllByRole` rather
+   * than `getByRole` so this fails on a duplicate rather than on the query.
+   */
+  it('offers only one of them', () => {
+    setLocation('/');
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    const doors = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '/dealer');
+
+    expect(doors).toHaveLength(1);
+    expect(screen.queryByRole('link', { name: /list (your )?cars/i })).not.toBeInTheDocument();
   });
 });
 

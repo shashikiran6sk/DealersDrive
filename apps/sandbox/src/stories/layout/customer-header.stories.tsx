@@ -23,10 +23,11 @@ import { CustomerHeader } from '@/components/layout/customer-header';
  *     (DESIGN-SPEC §4.15), and here that is a navigation aid rather than a
  *     nicety: a monochrome display and a screen reader must both be able to say
  *     where the reader is.
- *   · **The nav disappears below 768px** (`hidden md:flex`), and the two
- *     buttons shorten in stages — "Dealer login" to "Login" below `lg`, and the
- *     secondary button vanishes entirely below `sm`. Switch the viewport to
- *     Mobile 375 to see the row the majority of buyers actually get.
+ *   · **The nav disappears below 768px** (`hidden md:flex`), and the dealer
+ *     button shortens from "Dealer login" to "Login" below `lg`. It never
+ *     vanishes: since **R35** it is the only door into the console, so it is
+ *     visible at every width. Switch the viewport to Mobile 375 to see the row
+ *     the majority of buyers actually get.
  *
  * ── What is missing, and why ────────────────────────────────────────────────
  * The **saved-cars count** is **F087**, and needs the `SavedCarsProvider`
@@ -95,7 +96,7 @@ export const SavedCars: Story = {
   parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/saved' } } },
 };
 
-/** Below 768px the nav is gone and the secondary button with it. */
+/** Below 768px the nav is gone; the logo, the district button and the one door remain. */
 export const Mobile: Story = {
   parameters: {
     nextjs: { appDirectory: true, navigation: { pathname: '/cars' } },
@@ -103,7 +104,7 @@ export const Mobile: Story = {
   },
 };
 
-/** Between `sm` and `lg`: the nav is back, the button labels are still short. */
+/** Between `sm` and `lg`: the nav is back, the button label is still short. */
 export const Tablet: Story = {
   parameters: {
     nextjs: { appDirectory: true, navigation: { pathname: '/cars' } },
