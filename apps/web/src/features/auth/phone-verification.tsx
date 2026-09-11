@@ -432,14 +432,27 @@ function messageFor(error: unknown): string {
   const hint = SETUP_HINTS[code];
 
   /*
-   * The detail goes in the *printed line*, not only in a structured argument.
-   * An object argument is expandable in a browser console and collapses to
-   * `[object Object]` everywhere else — including any log forwarder — and the
-   * one thing this line exists to carry is the provider's own sentence.
+   * `warn`, not `error`, and the reason is specific rather than stylistic.
+   *
+   * Next's dev overlay patches `console.error` only
+   * (`next-devtools/…/intercept-console-error.js`) and, when the first argument
+   * is not an `Error`, takes **`args[1]`** as one — which is exactly the raw
+   * error this line wants to attach. The result was a full-screen overlay on a
+   * *handled* failure: a dealer mistyping an OTP in development interrupted the
+   * very flow being tested, for something the screen already reports properly.
+   * An overlay is for faults that break the page, and none of these does.
+   *
+   * It is also the right level on its own terms, and the one the API already
+   * uses for this same class of event — `logger.warn(…, 'phone verification
+   * token rejected')`. A provider refusing a request we then explain to the
+   * dealer is a warning, not an unhandled error.
+   *
+   * The detail goes in the *printed line*, not only in the structured argument:
+   * an object is expandable in a browser console and collapses to
+   * `[object Object]` everywhere else, and the provider's own sentence is the
+   * one thing this line exists to carry.
    */
-  // `console.error` is permitted by the lint config; it is the only record of
-  // why this failed, and the dealer-facing message deliberately carries none.
-  console.error(
+  console.warn(
     [
       '[phone-verification] Firebase rejected the request',
       `  code:   ${code || '(none)'}`,

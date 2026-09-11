@@ -242,7 +242,7 @@ describe('sending a code', () => {
    */
   it('logs the provider’s own code and message, whatever the code', async () => {
     const user = userEvent.setup();
-    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const logged = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     signInWithPhoneNumber.mockRejectedValue(
       Object.assign(new Error('Firebase: Error (auth/billing-not-enabled).'), {
         code: 'auth/billing-not-enabled',
@@ -261,10 +261,39 @@ describe('sending a code', () => {
     logged.mockRestore();
   });
 
+  /**
+   * **`console.warn`, never `console.error`** — pinned, because the difference
+   * is invisible until it is a full-screen overlay.
+   *
+   * Next's dev overlay patches `console.error` only, and when the first
+   * argument is not an `Error` it takes `args[1]` as one — which is exactly the
+   * raw error attached here. Using `error` therefore interrupted development
+   * with an overlay every time a dealer mistyped a code, for a failure the
+   * screen already reports properly.
+   */
+  it('does not raise a Next dev overlay for a handled failure', async () => {
+    const user = userEvent.setup();
+    const asError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const asWarn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    signInWithPhoneNumber.mockRejectedValue(
+      Object.assign(new Error('firebase'), { code: 'auth/invalid-phone-number' }),
+    );
+    view();
+
+    await user.type(screen.getByLabelText(/^Mobile/), '9840012345');
+    await user.click(screen.getByRole('button', { name: /send code/i }));
+    await screen.findByText(/does not look like a mobile number/i);
+
+    expect(asWarn).toHaveBeenCalled();
+    expect(asError).not.toHaveBeenCalled();
+    asError.mockRestore();
+    asWarn.mockRestore();
+  });
+
   /** An error with no `code` at all still reaches the console. */
   it('logs a failure that carries no code', async () => {
     const user = userEvent.setup();
-    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const logged = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     signInWithPhoneNumber.mockRejectedValue(new Error('something else entirely'));
     view();
 
