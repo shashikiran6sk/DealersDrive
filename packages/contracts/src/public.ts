@@ -38,6 +38,8 @@ export const PublicConfig = z.object({
   rcLookupEnabled: z.boolean(),
   /** Whether listing pages carry a records check at all. */
   vehicleReportEnabled: z.boolean(),
+  /** OTP transport is server-side; no provider credentials reach the browser. */
+  phoneVerificationEnabled: z.boolean(),
 });
 export type PublicConfig = z.infer<typeof PublicConfig>;
 

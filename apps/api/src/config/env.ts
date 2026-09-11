@@ -191,7 +191,13 @@ const envSchema = z.object({
   MEDIA_BASE_URL: required('http://localhost:4000/media'),
 
   MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
-  /** `console` locally, `msg91` in production. Mobile OTP is out of scope either way. */
+  /**
+   * `console` locally, `msg91` in production.
+   *
+   * This is **transactional** SMS — a lead notification, not a code. The OTP a
+   * dealer enters at onboarding uses the separate MSG91 managed OTP adapter
+   * (**R39**), selected independently by PHONE_VERIFICATION_DRIVER.
+   */
   SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
   MSG91_AUTH_KEY: optional(z.string().min(1)),
   MSG91_SENDER_ID: optional(z.string().min(1)),
@@ -233,6 +239,18 @@ const envSchema = z.object({
    * normal local state and must never be an error.
    */
   SENTRY_DSN: optional(z.string().url()),
+
+  /** Managed SendOTP; the fake driver is strictly for local development. */
+  PHONE_VERIFICATION_DRIVER: z.enum(['fake', 'msg91']).default('fake'),
+  MSG91_OTP_TEMPLATE_ID: optional(z.string().min(1)),
+  MSG91_OTP_TIMEOUT_MS: z.coerce.number().int().min(100).max(5000).default(4000),
+  PHONE_VERIFICATION_FAKE_CODE: z
+    .string()
+    .regex(/^\d{6}$/)
+    .default('123456'),
+  PHONE_SEND_USER_LIMIT: z.coerce.number().int().positive().default(5),
+  PHONE_SEND_IP_LIMIT: z.coerce.number().int().positive().default(20),
+  PHONE_SEND_DAILY_LIMIT: z.coerce.number().int().positive().default(500),
 
   SUPPORT_EMAIL: z.string().min(1).default('support@dealers-drive.com'),
   SUPPORT_PHONE: z.string().min(1).default('+914162248890'),
@@ -352,6 +370,16 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     if (!value.S3_SECRET_ACCESS_KEY) {
       require('S3_SECRET_ACCESS_KEY', `is required when STORAGE_DRIVER=${value.STORAGE_DRIVER}.`);
     }
+  }
+
+  if (production && value.PHONE_VERIFICATION_DRIVER === 'fake') {
+    require('PHONE_VERIFICATION_DRIVER', 'must be `msg91` in production — fake does not send an SMS.');
+  }
+  if (value.PHONE_VERIFICATION_DRIVER === 'msg91') {
+    if (!value.MSG91_AUTH_KEY)
+      require('MSG91_AUTH_KEY', 'is required when PHONE_VERIFICATION_DRIVER=msg91.');
+    if (!value.MSG91_OTP_TEMPLATE_ID)
+      require('MSG91_OTP_TEMPLATE_ID', 'is required when PHONE_VERIFICATION_DRIVER=msg91.');
   }
 
   if (value.SMS_DRIVER === 'msg91') {

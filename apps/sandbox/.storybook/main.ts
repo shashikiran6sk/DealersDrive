@@ -44,6 +44,10 @@ const config: StorybookConfig = {
         find: '@/features/dealer/profile-actions',
         replacement: new URL('../src/mocks/dealer-actions.ts', import.meta.url).pathname,
       },
+      {
+        find: '@/features/auth/phone-actions',
+        replacement: new URL('../src/mocks/phone-actions.ts', import.meta.url).pathname,
+      },
       { find: '@', replacement: new URL('../../web/src', import.meta.url).pathname },
     ];
     return viteConfig;

@@ -4205,3 +4205,61 @@ rather than a second rule — and it is what the GSTIN check already did.
 yard-photo block, beside a GSTIN already derived from a counter. That was safe
 only while exactly one test wrote it. Both are derived now, so the next test to
 copy that line cannot break the one above it.
+
+---
+
+## R39 — Phone ownership through MSG91 managed OTP
+
+**Revises F018 / F037 / F038 / F041 / F046 / R7 / R27**
+
+Google remains the login provider. Onboarding requires proof of phone ownership.
+This is the requested MSG91 alternative; the Firebase branch is preserved.
+
+- **Contracts:** PhoneVerificationStartInput/Response, PhoneVerificationInput,
+  AuthSession.user.phoneVerified, PublicConfig.phoneVerificationEnabled.
+  OnboardingInput.phone is removed; onboarding reads verified server state.
+- **API:** POST /v1/auth/phone/start and POST /v1/auth/phone/verify.
+  Modules: auth service/routes/docs, phone-challenges.service, config service,
+  dealer verification reset on contact edit.
+- **Provider:** platform/phone/{phone.port,factory,fake.adapter,msg91.adapter}.ts.
+  Standard SendOTP v5 generates and verifies codes. No new runtime package.
+- **Database:** PhoneVerificationChallenge; migration
+  20260911140000_phone_verification_challenges. One row per phone, bound to user.
+- **UI:** C073 PhoneVerification, onboarding wizard/page, phone server actions,
+  Auth/PhoneVerification stories and action mock.
+- **Tests:** provider unit tests, auth/onboarding challenge integration tests,
+  phone verification and wizard UI tests.
+- **Deployment:** env examples, Docker, Terraform and SSM MSG91_AUTH_KEY.
+
+### Challenge lifecycle
+
+Start normalizes an Indian mobile, checks availability, counts sends and asks
+MSG91 to send six digits. It returns an opaque UUID, phone, expiry and cooldown.
+Verify accepts only challengeId and code, checks ownership/expiry/attempts,
+then consumes the challenge atomically with the user and dealership phone writes.
+Replay and foreign challenges are refused. A fresh verification of an unchanged
+phone does not move the original timestamp.
+
+MSG91 verification is phone-scoped. PostgreSQL locks serialize sends/verifies
+per phone; another user cannot replace a live challenge. Resend rotates the id.
+Calls time out after four seconds (configurable up to five); sends are never
+automatically retried. A timeout can still mean an SMS was delivered.
+
+Codes expire in five minutes. Resend cooldown is 60 seconds. Five guesses per
+challenge, 30 verification requests per user per five minutes. Default sends:
+five/hour per phone, five/hour per user, 20/hour per IP, 500 per daily counter
+window. User/IP/daily limits are configurable, independent of RATE_LIMIT_ENABLED.
+Counters use CachePort and fail closed; rejected transactions do not restore
+guesses. Windows start on first request, not calendar midnight.
+
+No OTP or provider credential is persisted or logged. Challenge rows are reused
+per phone and cascade with user deletion. Existing dealers remain unverified
+until they prove their number, without a forced login migration.
+
+### Setup
+
+See [MSG91 phone OTP](msg91-phone-otp.md). Apply the migration before the API.
+Use PHONE_VERIFICATION_DRIVER=msg91, MSG91_AUTH_KEY and MSG91_OTP_TEMPLATE_ID.
+Complete the standard SendOTP/DLT template setup; the OTP Widget is a different
+product. Browser calls go only to our API, so localhost is supported.
+The fake driver uses code 123456 locally and is refused in production.

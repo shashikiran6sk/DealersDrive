@@ -3,6 +3,7 @@ import type {
   CompletenessResponse,
   DealerDocumentsResponse,
   DealerProfile,
+  PublicConfig,
   YardPhotoDto,
 } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
@@ -60,7 +61,9 @@ export default async function OnboardingPage({
   // `GET /v1/cities` was the fifth request here, fetched for a dropdown on
   // step 2. The city is typed now, so the screen no longer waits on reference
   // data to render a form the dealer fills in themselves.
-  const [documents, dealer, completeness, yardPhoto] = await Promise.all([
+  const [config, documents, dealer, completeness, yardPhoto] = await Promise.all([
+    // Provider credentials stay on the API; expose only availability.
+    apiGet<PublicConfig>('/v1/config/public', { revalidate: 60 }).catch(() => null),
     session.dealer
       ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
       : Promise.resolve(null),
@@ -105,6 +108,7 @@ export default async function OnboardingPage({
         dealer={dealer}
         completeness={completeness}
         yardPhoto={yardPhoto}
+        phoneVerificationEnabled={config?.phoneVerificationEnabled ?? false}
       />
     </AuthShell>
   );

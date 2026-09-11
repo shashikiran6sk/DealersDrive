@@ -1001,6 +1001,43 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'forms-serviceinput',
   },
+  {
+    id: 'C073',
+    name: 'PhoneVerification',
+    source: 'apps/web/src/features/auth/phone-verification.tsx',
+    category: 'Forms',
+    ownership: 'Feature-shared',
+    purpose:
+      'The mobile number, proved by a MSG91 OTP. NEW at R39 — replaces the plain phone box on onboarding step 1. Not a sign-in: Google remains the dealer door.',
+    aliases: [
+      'OtpInput',
+      'OTP',
+      'PhoneInput',
+      'MobileVerification',
+      'MSG91',
+      'SendCode',
+      'VerifyPhone',
+      'phone',
+      'mobile',
+    ],
+    features: ['R39', 'F037'],
+    props: ['phoneVerificationEnabled', 'initialPhone', 'initialPhoneDisplay', 'verified', 'error'],
+    states: [
+      'empty',
+      'prefilled',
+      'code sent',
+      'verified',
+      'already registered',
+      'wrong code',
+      'expired code',
+      'too many requests',
+      'network failed',
+      'provider unavailable',
+      'step refused to continue',
+    ],
+    reusable: true,
+    storyId: 'auth-phoneverification',
+  },
 ];
 
 /** Case-insensitive search across name, aliases, purpose and category. */

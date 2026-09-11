@@ -27,10 +27,40 @@ let h: AuthHarness;
  * worth testing (it has its own case below), not something to trip over
  * everywhere else.
  */
+/**
+ * The number this account will verify (**R39**).
+ *
+ * It left the onboarding body at R39 — the API reads it off the user record,
+ * where `POST /v1/auth/phone/verify` put it — so it is produced here and put
+ * there by `verifyPhone()` below.
+ */
+function fixturePhone(): string {
+  return `+9198400${String(99000 + subjectCounter).slice(-5)}`;
+}
+
+/** Drive the same challenge flow as the browser, using the offline provider. */
+async function verifyPhone(
+  agent: ReturnType<AuthHarness['agent']>,
+  phone: string = fixturePhone(),
+): Promise<void> {
+  const started = await agent.post('/v1/auth/phone/start').send({ phone }).expect(200);
+  await agent
+    .post('/v1/auth/phone/verify')
+    .send({ challengeId: started.body.challengeId, code: '123456' })
+    .expect(200);
+}
+
+/** The two steps a dealership now needs before it can be created (**R39**). */
+async function signedInAndVerified(): Promise<ReturnType<AuthHarness['agent']>> {
+  const agent = h.agent();
+  await h.signIn(agent);
+  await verifyPhone(agent);
+  return agent;
+}
+
 function onboarding(overrides: Record<string, unknown> = {}) {
   return {
     fullName: 'R. Manikandan',
-    phone: `98400${String(99000 + subjectCounter).slice(-5)}`,
     // One name, and it is unique within a city — two dealerships in one town
     // trading under one registered name is either a duplicate application or
     // an impersonation. So it varies per account for the same reason the phone
@@ -188,8 +218,7 @@ describe('a first sign-in', () => {
 
 describe('onboarding', () => {
   it('creates the dealership, the OWNER seat and the KYC placeholders', async () => {
-    const agent = h.agent();
-    await h.signIn(agent);
+    const agent = await signedInAndVerified();
 
     const created = await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
 
@@ -234,6 +263,7 @@ describe('onboarding', () => {
     const agent = h.agent();
     await h.signIn(agent);
     await agent.get('/v1/dealer').expect(401);
+    await verifyPhone(agent);
 
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
 
@@ -247,8 +277,7 @@ describe('onboarding', () => {
   });
 
   it('refuses a second dealership on the same account', async () => {
-    const agent = h.agent();
-    await h.signIn(agent);
+    const agent = await signedInAndVerified();
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
 
     const again = await agent.post('/v1/auth/onboarding').send(onboarding()).expect(403);
@@ -256,17 +285,74 @@ describe('onboarding', () => {
     expect(again.body.code).toBe('DEALER_ALREADY_EXISTS');
   });
 
+  /**
+   * **R39 moved this refusal one endpoint earlier**, which is where it belongs:
+   * a number another dealership holds cannot become this one's however many
+   * codes are sent to it, and finding that out before the SMS is both kinder to
+   * the dealer and cheaper — every send consumes the provider balance.
+   *
+   * Asserted at both ends. `/phone/start` refuses before anything is sent, and
+   * `/phone/verify` refuses again after the token has been checked: between the
+   * two, somebody else may have taken the number.
+   */
   it('refuses a phone number another dealership already uses', async () => {
     const agent = h.agent();
     await h.signIn(agent);
 
     // +919840012345 belongs to the seeded Sri Lakshmi Motors owner.
-    const conflict = await agent
-      .post('/v1/auth/onboarding')
-      .send(onboarding({ phone: '9840012345' }))
+    const early = await agent
+      .post('/v1/auth/phone/start')
+      .send({ phone: '9840012345' })
       .expect(409);
+    expect(early.body.code).toBe('PHONE_ALREADY_REGISTERED');
+  });
 
-    expect(conflict.body.code).toBe('PHONE_ALREADY_REGISTERED');
+  /**
+   * **R39.** The gate, from the far side: a body that is perfectly well-formed,
+   * a caller who is perfectly entitled, and a step that has not happened.
+   *
+   * A 422 rather than a 400, because nothing is wrong with a field — the client
+   * that gets this should send the dealer back to the verification step rather
+   * than highlight a box.
+   */
+  it('refuses to create a dealership for an unverified number', async () => {
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    const refused = await agent.post('/v1/auth/onboarding').send(onboarding()).expect(422);
+
+    expect(refused.body.code).toBe('PHONE_NOT_VERIFIED');
+  });
+
+  /**
+   * And the number that lands on the dealership is the one that was proved,
+   * not one the body could have carried — `OnboardingInput` has no `phone`
+   * field at all, so `.strict()` refuses one outright.
+   */
+  it('takes the number from the verified record, and refuses one in the body', async () => {
+    const agent = h.agent();
+    await h.signIn(agent);
+    const phone = fixturePhone();
+    await verifyPhone(agent, phone);
+
+    const created = await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    expect(created.body.user.phone).toBe(phone);
+    expect(created.body.user.phoneVerified).toBe(true);
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.contact.phone).toBe(phone);
+  });
+
+  it('refuses a phone in the onboarding body', async () => {
+    const agent = await signedInAndVerified();
+
+    const refused = await agent
+      .post('/v1/auth/onboarding')
+      .send({ ...onboarding(), phone: '9840012345' })
+      .expect(400);
+
+    expect(refused.body.code).toBe('VALIDATION_FAILED');
+    expect(JSON.stringify(refused.body)).toContain('phone');
   });
 
   /**
@@ -276,8 +362,7 @@ describe('onboarding', () => {
    * it has to be filled in.
    */
   it('accepts a city the platform has never seen, and refuses an empty one', async () => {
-    const agent = h.agent();
-    await h.signIn(agent);
+    const agent = await signedInAndVerified();
 
     const created = await agent
       .post('/v1/auth/onboarding')
@@ -329,6 +414,7 @@ describe('a returning dealer', () => {
   it('is recognised by provider subject and goes straight to the console', async () => {
     const first = h.agent();
     await h.signIn(first);
+    await verifyPhone(first);
     const created = await first.post('/v1/auth/onboarding').send(onboarding()).expect(201);
     // What admin approval does. Until then the dealership is DRAFT and the
     // dealer is sent back to finish onboarding, which the next test pins.
@@ -355,6 +441,7 @@ describe('a returning dealer', () => {
   it('sends a dealer with an unfinished dealership back to onboarding', async () => {
     const first = h.agent();
     await h.signIn(first);
+    await verifyPhone(first);
     await first.post('/v1/auth/onboarding').send(onboarding()).expect(201);
     await first.post('/v1/auth/logout').expect(204);
 
@@ -382,8 +469,7 @@ describe('a returning dealer', () => {
    */
   it('follows the account when the Google email changes', async () => {
     const claims = newAccount();
-    const agent = h.agent();
-    await h.signIn(agent);
+    const agent = await signedInAndVerified();
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
 
     h.google.claims = { ...claims, email: 'renamed@example.com' };
@@ -669,8 +755,7 @@ describe('the boundary between the two consoles', () => {
 
   it('does not let a dealer session reach an admin route', async () => {
     newAccount();
-    const agent = h.agent();
-    await h.signIn(agent);
+    const agent = await signedInAndVerified();
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
 
     await agent.get('/v1/admin/metrics/overview').expect(401);

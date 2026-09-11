@@ -44,10 +44,32 @@ function newAccount(): void {
   };
 }
 
+/**
+ * The number this account will verify (**R39**).
+ *
+ * It is no longer part of the onboarding body — the API reads it off the user
+ * record, where `POST /v1/auth/phone/verify` put it — so the fixture has to
+ * produce it and `verifyPhone()` below has to put it there.
+ */
+function fixturePhone(): string {
+  return `+9198411${String(10000 + counter).slice(-5)}`;
+}
+
+/** Drive the same challenge flow as the browser, using the offline provider. */
+async function verifyPhone(
+  agent: ReturnType<AuthHarness['agent']>,
+  phone: string = fixturePhone(),
+): Promise<void> {
+  const started = await agent.post('/v1/auth/phone/start').send({ phone }).expect(200);
+  await agent
+    .post('/v1/auth/phone/verify')
+    .send({ challengeId: started.body.challengeId, code: '123456' })
+    .expect(200);
+}
+
 function onboarding(overrides: Record<string, unknown> = {}) {
   return {
     fullName: 'R. Manikandan',
-    phone: `98411${String(10000 + counter).slice(-5)}`,
     legalName: `Onboarding Motors ${counter}`,
     addressLine: '18, Gandhi Road',
     city: 'Katpadi',
@@ -66,6 +88,8 @@ async function dealership(overrides: Record<string, unknown> = {}) {
   newAccount();
   const agent = h.agent();
   await h.signIn(agent);
+  // R39 — a dealership cannot be created without a verified number.
+  await verifyPhone(agent);
   const created = await agent.post('/v1/auth/onboarding').send(onboarding(overrides)).expect(201);
   return {
     agent,
@@ -116,6 +140,7 @@ describe('one name per city', () => {
     newAccount();
     const second = h.agent();
     await h.signIn(second);
+    await verifyPhone(second);
     await second
       .post('/v1/auth/onboarding')
       .send(onboarding({ legalName: name, city: 'Salem' }))
@@ -163,6 +188,7 @@ describe('one name per city', () => {
     newAccount();
     const agent = h.agent();
     await h.signIn(agent);
+    await verifyPhone(agent);
 
     const { district: _omitted, ...withoutDistrict } = onboarding();
     const rejected = await agent.post('/v1/auth/onboarding').send(withoutDistrict).expect(400);
@@ -305,6 +331,7 @@ describe('the yard on a map', () => {
     newAccount();
     const agent = h.agent();
     await h.signIn(agent);
+    await verifyPhone(agent);
 
     const { mapsUrl: _omitted, ...withoutMaps } = onboarding();
     await agent.post('/v1/auth/onboarding').send(withoutMaps).expect(400);
@@ -779,6 +806,231 @@ describe('one dealership, one GSTIN', () => {
     const { agent } = await dealership();
     await agent.patch('/v1/dealer/onboarding').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
     await agent.patch('/v1/dealer/onboarding').send({ gstin: '33AABCS1429B1Z5' }).expect(200);
+  });
+});
+
+/**
+ * **R39 — the OTP round trip, at the database.**
+ *
+ * The token verifier has its own unit tests against real cryptography
+ * (`platform/phone/msg91.adapter.test.ts`); what is here is everything
+ * *around* it — the uniqueness of a verified number, what happens when one
+ * changes, and the once-and-only-once rule — because all three are properties
+ * of rows rather than of a signature.
+ *
+ * `PHONE_VERIFICATION_DRIVER=fake` throughout, so nobody's phone rings.
+ */
+describe('phone verification', () => {
+  async function signedIn() {
+    newAccount();
+    const agent = h.agent();
+    await h.signIn(agent);
+    return agent;
+  }
+  async function start(agent: ReturnType<AuthHarness['agent']>, phone = fixturePhone()) {
+    return (await agent.post('/v1/auth/phone/start').send({ phone }).expect(200)).body as {
+      challengeId: string;
+      phone: string;
+      phoneDisplay: string;
+    };
+  }
+  it('normalises a number and returns an opaque challenge', async () => {
+    const agent = await signedIn();
+    const result = await start(agent, ' 98411 22111 ');
+    expect(result.phone).toBe('+919841122111');
+    expect(result.phoneDisplay).toContain('98411');
+    expect(result.challengeId).toMatch(/^[0-9a-f-]{36}$/);
+  });
+  it('persists verification and rejects replay without moving the timestamp', async () => {
+    const agent = await signedIn();
+    const challenge = await start(agent);
+    const payload = { challengeId: challenge.challengeId, code: '123456' };
+    const result = await agent.post('/v1/auth/phone/verify').send(payload).expect(200);
+    expect(result.body.user.phoneVerified).toBe(true);
+    const before = await h.prisma.user.findUniqueOrThrow({ where: { phone: challenge.phone } });
+    await agent.post('/v1/auth/phone/verify').send(payload).expect(401);
+    const after = await h.prisma.user.findUniqueOrThrow({ where: { phone: challenge.phone } });
+    expect(after.phoneVerifiedAt).toEqual(before.phoneVerifiedAt);
+    expect((await agent.get('/v1/auth/me')).body.user.phoneVerified).toBe(true);
+  });
+  it('refuses other users and does not let them replace a live challenge', async () => {
+    const first = await signedIn();
+    const challenge = await start(first);
+    const second = await signedIn();
+    await second
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: challenge.challengeId, code: '123456' })
+      .expect(401);
+    await second.post('/v1/auth/phone/start').send({ phone: challenge.phone }).expect(409);
+    await first
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: challenge.challengeId, code: '123456' })
+      .expect(200);
+  });
+  it('limits guesses even though failed verification rolls back the transaction', async () => {
+    const agent = await signedIn();
+    const challenge = await start(agent);
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const response = await agent
+        .post('/v1/auth/phone/verify')
+        .send({ challengeId: challenge.challengeId, code: '000000' })
+        .expect(401);
+      expect(response.body.code).toBe('PHONE_CODE_INVALID');
+    }
+    await agent
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: challenge.challengeId, code: '123456' })
+      .expect(429);
+  });
+  it('expires challenges before contacting the provider', async () => {
+    const agent = await signedIn();
+    const challenge = await start(agent);
+    await h.prisma.phoneVerificationChallenge.update({
+      where: { id: challenge.challengeId },
+      data: { expiresAt: new Date(0) },
+    });
+    await agent
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: challenge.challengeId, code: '123456' })
+      .expect(401);
+  });
+  it('enforces cooldown and invalidates the old challenge on resend', async () => {
+    const agent = await signedIn();
+    const first = await start(agent);
+    await agent.post('/v1/auth/phone/start').send({ phone: first.phone }).expect(429);
+    await h.prisma.phoneVerificationChallenge.update({
+      where: { id: first.challengeId },
+      data: { sentAt: new Date(Date.now() - 61000) },
+    });
+    const second = await start(agent, first.phone);
+    expect(second.challengeId).not.toBe(first.challengeId);
+    await agent
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: first.challengeId, code: '123456' })
+      .expect(401);
+    await agent
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: second.challengeId, code: '123456' })
+      .expect(200);
+  });
+  it('allows only one concurrent verification to consume a challenge', async () => {
+    const agent = await signedIn();
+    const challenge = await start(agent);
+    const results = await Promise.all(
+      [1, 2].map(() =>
+        agent
+          .post('/v1/auth/phone/verify')
+          .send({ challengeId: challenge.challengeId, code: '123456' }),
+      ),
+    );
+    expect(results.map((r) => r.status).sort()).toEqual([200, 401]);
+  });
+  it('rechecks phone uniqueness when another account claims it after send', async () => {
+    const agent = await signedIn();
+    const challenge = await start(agent);
+    await h.prisma.user.create({ data: { phone: challenge.phone } });
+    const response = await agent
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: challenge.challengeId, code: '123456' })
+      .expect(409);
+    expect(response.body.code).toBe('PHONE_ALREADY_REGISTERED');
+    expect(
+      (
+        await h.prisma.phoneVerificationChallenge.findUniqueOrThrow({
+          where: { id: challenge.challengeId },
+        })
+      ).consumedAt,
+    ).toBeNull();
+  });
+  it('updates both phone mirrors when an existing dealer verifies a new handset', async () => {
+    const { agent, dealerId } = await dealership();
+    const phone = '+919841122555';
+    const challenge = await start(agent, phone);
+    await agent
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: challenge.challengeId, code: '123456' })
+      .expect(200);
+    expect(
+      (await h.prisma.dealer.findUniqueOrThrow({ where: { id: dealerId } })).contactPhone,
+    ).toBe(phone);
+    expect((await agent.get('/v1/auth/me')).body.user.phone).toBe(phone);
+  });
+  it('refuses client-supplied phones and the former token contract', async () => {
+    const agent = await signedIn();
+    const challenge = await start(agent);
+    await agent
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: challenge.challengeId, code: '123456', phone: '9840012345' })
+      .expect(400);
+    await agent.post('/v1/auth/phone/verify').send({ idToken: 'fake:+919841122777' }).expect(400);
+  });
+  it('requires a session and restricts sends to Indian mobiles', async () => {
+    await h.agent().post('/v1/auth/phone/start').send({ phone: '9841122888' }).expect(401);
+    await h
+      .agent()
+      .post('/v1/auth/phone/verify')
+      .send({ challengeId: '10000000-0000-4000-8000-000000000001', code: '123456' })
+      .expect(401);
+    const agent = await signedIn();
+    await agent.post('/v1/auth/phone/start').send({ phone: '+14155552671' }).expect(400);
+  });
+
+  /**
+   * **The badge and the number move together, or the badge starts lying.**
+   *
+   * An onboarding PATCH that changes the contact number clears
+   * `phoneVerifiedAt`: carrying a verification of the *old* handset onto a new
+   * one is worse than never having verified at all, because the dealership's
+   * public page would then assert something nobody ever proved.
+   */
+  it('un-verifies a dealership that changes its number another way', async () => {
+    const { agent } = await dealership();
+
+    const before = await agent.get('/v1/auth/me').expect(200);
+    expect(before.body.user.phoneVerified).toBe(true);
+
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ contact: { phone: '9841133999' } })
+      .expect(200);
+
+    const after = await agent.get('/v1/auth/me').expect(200);
+    expect(after.body.user.phoneVerified).toBe(false);
+    expect(after.body.user.phone).toBe('+919841133999');
+
+    // And one OTP puts it back.
+    await verifyPhone(agent, '+919841133999');
+    const fixed = await agent.get('/v1/auth/me').expect(200);
+    expect(fixed.body.user.phoneVerified).toBe(true);
+  });
+
+  /**
+   * A PATCH that re-sends the same number must not un-verify anybody: the
+   * onboarding form re-sends every field on the step, every time, so a dealer
+   * correcting their pincode would otherwise lose their badge.
+   */
+  it('leaves a dealership verified when the number does not change', async () => {
+    const { agent } = await dealership();
+    const me = await agent.get('/v1/auth/me').expect(200);
+    const phone = (me.body.user.phone as string).replace('+91', '');
+
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ contact: { phone }, address: { pincode: '632014' } })
+      .expect(200);
+
+    const after = await agent.get('/v1/auth/me').expect(200);
+    expect(after.body.user.phoneVerified).toBe(true);
+  });
+
+  /** The public number is a mirror of the verified one, written from the same answer. */
+  it('mirrors a newly verified number onto the dealership', async () => {
+    const { agent } = await dealership();
+
+    await verifyPhone(agent, '+919841144000');
+
+    const profile = await agent.get('/v1/dealer').expect(200);
+    expect(profile.body.contact.phone).toBe('+919841144000');
   });
 });
 

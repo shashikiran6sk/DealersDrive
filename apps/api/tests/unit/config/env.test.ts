@@ -39,6 +39,15 @@ const PRODUCTION_REQUIRED = {
   SESSION_SECRET: 'a-real-production-session-secret',
   UPLOAD_SIGNING_SECRET: 'a-real-production-upload-secret',
   RC_PLATE_HASH_SECRET: 'a-real-production-plate-secret',
+  /*
+   * R39. `fake` proves no handset ownership — it accepts a fixed code and writes a
+   * verified timestamp — so production refuses it, and a production fixture
+   * that omitted these settings would be a fixture that could not boot. The
+   * refusal has its own case below.
+   */
+  PHONE_VERIFICATION_DRIVER: 'msg91',
+  MSG91_AUTH_KEY: 'test-auth-key',
+  MSG91_OTP_TEMPLATE_ID: 'test-template',
 };
 
 /**
@@ -102,6 +111,13 @@ const SCHEMA_KEYS = [
   'S3_FORCE_PATH_STYLE',
   'MSG91_AUTH_KEY',
   'MSG91_SENDER_ID',
+  'PHONE_VERIFICATION_DRIVER',
+  'PHONE_VERIFICATION_FAKE_CODE',
+  'MSG91_OTP_TEMPLATE_ID',
+  'MSG91_OTP_TIMEOUT_MS',
+  'PHONE_SEND_USER_LIMIT',
+  'PHONE_SEND_IP_LIMIT',
+  'PHONE_SEND_DAILY_LIMIT',
   'SENTRY_DSN',
 ];
 
@@ -458,6 +474,32 @@ describe('configurations that must not boot', () => {
 
     expect(message).toContain('S3_ACCESS_KEY_ID');
     expect(message).toContain('S3_SECRET_ACCESS_KEY');
+  });
+
+  it('refuses fake phone verification in production', async () => {
+    const message = await refuses({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      PHONE_VERIFICATION_DRIVER: 'fake',
+    });
+    expect(message).toContain('PHONE_VERIFICATION_DRIVER');
+  });
+
+  it('refuses managed OTP without both the auth key and template', async () => {
+    const message = await refuses({ PHONE_VERIFICATION_DRIVER: 'msg91' });
+    expect(message).toContain('MSG91_AUTH_KEY');
+    expect(message).toContain('MSG91_OTP_TEMPLATE_ID');
+  });
+
+  it('accepts managed OTP on localhost without notification sender configuration', async () => {
+    const loaded = await loadEnv({
+      PHONE_VERIFICATION_DRIVER: 'msg91',
+      MSG91_AUTH_KEY: 'test-key',
+      MSG91_OTP_TEMPLATE_ID: 'test-template',
+      WEB_ORIGIN: 'http://localhost:3000',
+    });
+    expect(loaded.PHONE_VERIFICATION_DRIVER).toBe('msg91');
+    expect(loaded.SMS_DRIVER).toBe('console');
   });
 
   it('refuses MSG91 without an auth key and sender id', async () => {

@@ -99,6 +99,11 @@ locals {
     { name = "SMS_DRIVER", value = "console" },
     { name = "JOBS_ENABLED", value = "true" },
 
+    # Managed OTP credentials are supplied through SSM, never browser config.
+    { name = "PHONE_VERIFICATION_DRIVER", value = var.msg91_otp_template_id == "" ? "fake" : "msg91" },
+    { name = "MSG91_OTP_TEMPLATE_ID", value = var.msg91_otp_template_id },
+    { name = "PHONE_SEND_DAILY_LIMIT", value = tostring(var.phone_send_daily_limit) },
+
     # One task runs the schedules. See the comment on the API service below —
     # this is the reason api_desired_count is not simply "however many we like".
     { name = "WORKER_INLINE", value = "true" },

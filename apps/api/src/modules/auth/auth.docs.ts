@@ -24,9 +24,9 @@ export const authDocs: ModuleDocs = {
     'Everybody signs in with Google (OAuth 2.0 authorization code + PKCE + OIDC nonce) — ' +
     'dealers and admins alike. Both end in the same place: an opaque `dd_session` cookie ' +
     'backed by a row in `sessions`, revocable instantly (ARCHITECTURE §8.2).\n\n' +
-    '**No endpoint here accepts an identity, and none accepts a password.** There is no ' +
-    'request body anywhere in this tag that carries a credential: every session is issued ' +
-    'from an email inside a token Google signed. What separates the two consoles is the ' +
+    '**No endpoint here accepts a user identity or login password.** Sessions are issued ' +
+    'from a token Google signed. The authenticated phone endpoints accept an OTP only to ' +
+    'prove contact ownership; they never issue a login session. What separates the two consoles is the ' +
     '`ADMIN_ALLOWLIST` check on that address, not a second login form. A `dealerId` is ' +
     'never accepted anywhere in the API; it is a property of the resolved session (rule 1).',
   operations: [
@@ -220,6 +220,12 @@ export const authDocs: ModuleDocs = {
         'name on the portfolio, and the first three services on its directory card \u2014 and ' +
         'a field a form does not insist on is a field that gets skipped. They replace `about`, ' +
         'which is no longer accepted here and is rendered nowhere public.\n\n' +
+        'There is no `phone` field either, since **R39**, and for the reason `email` has ' +
+        'never had one: it is a verified fact now. `POST /v1/auth/phone/verify` writes it ' +
+        'after MSG91 confirms an OTP, and this endpoint reads it off the user record. A ' +
+        'session with no verified number is a `422 PHONE_NOT_VERIFIED` \u2014 a step is ' +
+        'missing rather than a field, so the client should send the dealer back to it rather ' +
+        'than highlight a box.\n\n' +
         '`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 ' +
         'PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `409 ' +
         'DEALER_NAME_TAKEN` if another dealership already trades under that name **in that ' +
@@ -229,7 +235,6 @@ export const authDocs: ModuleDocs = {
         schema: 'OnboardingInput',
         example: {
           fullName: 'R. Manikandan',
-          phone: '9840012345',
           legalName: 'Sri Lakshmi Automobiles Pvt Ltd',
           addressLine: '14, Katpadi Main Road, Gandhi Nagar',
           city: 'Vellore',
@@ -251,6 +256,60 @@ export const authDocs: ModuleDocs = {
         },
       ],
       errors: [401, 403, 409, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/auth/phone/start',
+      operationId: 'startPhoneVerification',
+      tag: 'Authentication',
+      summary: 'Send a phone verification code',
+      description:
+        'Normalises an Indian mobile number, checks availability and sends a six-digit MSG91 OTP. ' +
+        'Requires the existing Google session. Returns a user-bound challenge with five-minute expiry. ' +
+        'Call this endpoint again after the 60-second cooldown to resend; the old challenge is invalidated. ' +
+        'Limits: five sends/hour per phone, configurable user/IP hourly limits and a daily project ceiling. ' +
+        'Counters use CachePort and fail closed. A different user cannot replace a live phone challenge.',
+      audience: 'dealer',
+      requestBody: {
+        schema: 'PhoneVerificationStartInput',
+        example: { phone: '9840012345' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The opaque challenge, normalized phone, expiry and resend cooldown.',
+          schema: 'PhoneVerificationStartResponse',
+        },
+      ],
+      errors: [400, 401, 409, 429, 503],
+    },
+    {
+      method: 'post',
+      path: '/v1/auth/phone/verify',
+      operationId: 'verifyPhone',
+      tag: 'Authentication',
+      summary: 'Verify and consume a phone challenge',
+      description:
+        'Verifies a six-digit code against a challenge owned by the session user. ' +
+        'The phone is read from the database challenge; the body cannot supply one. ' +
+        'Five attempts per challenge, 30 checks per user per five minutes. Expired, replaced, consumed ' +
+        'or foreign challenges return PHONE_CODE_EXPIRED. Wrong codes return PHONE_CODE_INVALID. ' +
+        'The challenge is consumed atomically with users.phone, phoneVerifiedAt and the dealership contact mirror. ' +
+        'Concurrent claims still respect users.phone uniqueness. This does not create a login session.',
+      audience: 'dealer',
+      requestBody: {
+        schema: 'PhoneVerificationInput',
+        description: 'The challenge returned by start and the six-digit SMS code.',
+        example: { challengeId: '10000000-0000-4000-8000-000000000001', code: '123456' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The session, with `user.phoneVerified` now true.',
+          schema: 'AuthSession',
+        },
+      ],
+      errors: [400, 401, 409, 429, 503],
     },
     {
       method: 'post',

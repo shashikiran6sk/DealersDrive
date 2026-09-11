@@ -983,3 +983,19 @@ as make and model.
 be wrong for the target state. Their stories should be written **after** F060
 settles the input shape, not before — or written now against free text, which is
 the decided direction. Everything else in this map is stable under D1.
+
+## C073 — PhoneVerification (R39)
+
+Source: `apps/web/src/features/auth/phone-verification.tsx`. Reused by the
+onboarding Account step; uses Field, Input, Button and StatusTag.
+
+Props: `phoneVerificationEnabled`, `initialPhone`, `initialPhoneDisplay`,
+`verified`, `error`. States: empty, prefilled, sending, code entry, resend
+cooldown, verified, changed number, duplicate number, wrong/expired code,
+rate limit and provider unavailable. Six-digit input supports OTP autofill.
+
+The component calls authenticated server actions. MSG91 and its credentials
+stay on the API. A hidden `phoneVerified` flag drives the wizard's UX gate;
+the API independently requires a persisted verified number before onboarding.
+Sandbox: `Auth/PhoneVerification`; the action mock sends no SMS. Enter `123456`
+for success and another code for refusal. No browser provider SDK is required.

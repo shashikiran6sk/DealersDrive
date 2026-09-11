@@ -18,7 +18,13 @@ const ADMIN_URL = 'postgresql://dealersdrive:dealersdrive@localhost:5432/dealers
 function run(command: string, args: string[]): void {
   execFileSync(command, args, {
     stdio: 'inherit',
-    env: { ...process.env, DATABASE_URL: TEST_URL, NODE_ENV: 'test', JOBS_ENABLED: 'false' },
+    env: {
+      ...process.env,
+      DATABASE_URL: TEST_URL,
+      NODE_ENV: 'test',
+      JOBS_ENABLED: 'false',
+      PHONE_VERIFICATION_DRIVER: 'fake',
+    },
   });
 }
 

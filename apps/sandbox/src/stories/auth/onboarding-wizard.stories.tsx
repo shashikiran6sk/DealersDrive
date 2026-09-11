@@ -104,6 +104,13 @@ function session(
       phoneDisplay: '',
       email: 'karthik@srilakshmimotors.in',
       emailVerified: true,
+      /*
+       * **R39.** Unverified by default, because that is what a brand-new
+       * account looks like and step 1 refuses to advance from it. Stories about
+       * step 2 and beyond pass `phoneVerified: true`, the same way a dealer
+       * would have arrived there.
+       */
+      phoneVerified: false,
       ...overrides,
     },
     identity: {

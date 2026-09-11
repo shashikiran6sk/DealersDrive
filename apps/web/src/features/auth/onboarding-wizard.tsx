@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  isIndianMobile,
   type AuthSession,
   type CompletenessResponse,
   type DealerDocumentDto,
@@ -23,6 +22,7 @@ import {
   type ActionState,
 } from '@/features/auth/actions';
 import { DocumentUploader } from '@/features/auth/document-uploader';
+import { PhoneVerification } from '@/features/auth/phone-verification';
 import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
 import { servicesOf } from '@/lib/services';
 
@@ -84,6 +84,7 @@ export function OnboardingWizard({
   dealer,
   completeness,
   yardPhoto,
+  phoneVerificationEnabled = true,
 }: {
   step: OnboardingStep;
   session: AuthSession;
@@ -91,6 +92,8 @@ export function OnboardingWizard({
   dealer: DealerProfile | null;
   completeness: CompletenessResponse | null;
   yardPhoto: YardPhotoDto | null;
+  /** Whether the API's phone verification configuration is available. */
+  phoneVerificationEnabled?: boolean;
 }) {
   const router = useRouter();
   /**
@@ -251,6 +254,7 @@ export function OnboardingWizard({
             dealer={dealer}
             errors={errors}
             values={values}
+            phoneVerificationEnabled={phoneVerificationEnabled}
             hidden={local === 1}
           />
           <BusinessStep dealer={dealer} errors={errors} values={values} hidden={local === 0} />
@@ -368,11 +372,18 @@ function validateAccount(form: HTMLFormElement | null): Record<string, string> {
 
   const errors: Record<string, string> = {};
   if (value('fullName').length < 2) errors.fullName = 'Tell us your name.';
-  // The same predicate the API validates with, imported rather than copied —
-  // the copy that used to live here disagreed with the placeholder beside it
-  // about whether `98400 12345` is a phone number.
-  if (!isIndianMobile(value('phone'))) {
-    errors.phone = 'Enter a 10-digit Indian mobile number.';
+  /*
+   * **R39.** The question is no longer "does this look like a phone number" —
+   * it is "has a code reached it". `PhoneVerification` writes a hidden
+   * `phoneVerified` field, and the format check that used to live here is now
+   * the API's, applied before the SMS is sent.
+   *
+   * This is the polite half of the rule. The load-bearing half is
+   * `POST /v1/auth/onboarding` refusing with `422 PHONE_NOT_VERIFIED`, because
+   * a client-side guard is a suggestion and a server-side one is a rule.
+   */
+  if (value('phoneVerified') !== 'true') {
+    errors.phone = 'Verify your mobile number to continue.';
   }
   return errors;
 }
@@ -382,12 +393,14 @@ function AccountStep({
   dealer,
   errors,
   values,
+  phoneVerificationEnabled,
   hidden,
 }: {
   session: AuthSession;
   dealer: DealerProfile | null;
   errors: Record<string, string>;
   values: Record<string, string>;
+  phoneVerificationEnabled: boolean;
   hidden: boolean;
 }) {
   return (
@@ -441,33 +454,27 @@ function AccountStep({
           />
         </Field>
 
-        <Field id="phone" label="Phone" hint="+91" error={errors.phone}>
-          <input
-            id="phone"
-            name="phone"
-            className="input tnum"
-            type="tel"
-            inputMode="numeric"
-            autoComplete="tel-national"
-            placeholder="98400 12345"
-            defaultValue={values.phone ?? dealer?.contact.phone ?? session.user.phone}
-            required
-            aria-required="true"
-            /*
-              Editable, including on the way back from step 2.
+        {/*
+          **R39 — the number is proved rather than typed.**
 
-              It was read-only once a dealership existed, on the reasoning that
-              this is the login identity and changing it needs an OTP round-trip
-              on the new number. Neither half holds: identity is the Google
-              account, and this is the number a buyer is given. What the
-              read-only box actually produced was a dead end — a dealer who
-              mistyped their number, or who was told it belongs to somebody
-              else, arrived back on this step and could not change the one field
-              they had been sent here to change.
-            */
-            {...invalidProps('phone', errors.phone)}
-          />
-        </Field>
+          It stopped being an ordinary box when it stopped being an ordinary
+          claim: what goes on a dealership's public page and takes a buyer's
+          call is now a handset somebody held an OTP on. `PhoneVerification`
+          owns the whole exchange — number, code, verified badge and the way
+          back to change it.
+
+          R7 and R27 argued about whether this field should be editable, and
+          both were answering the wrong question. It is editable; changing it
+          simply is not an *edit*. It is a new claim about a different handset,
+          and it goes through a code like the first one did.
+        */}
+        <PhoneVerification
+          phoneVerificationEnabled={phoneVerificationEnabled}
+          initialPhone={dealer?.contact.phone ?? session.user.phone ?? ''}
+          initialPhoneDisplay={dealer?.contact.phoneDisplay ?? session.user.phoneDisplay ?? ''}
+          verified={session.user.phoneVerified}
+          error={errors.phone}
+        />
 
         <Field id="email" label="Email">
           <input

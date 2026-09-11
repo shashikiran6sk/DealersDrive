@@ -87,6 +87,9 @@ x-api-env: &api-env
   # Mailpit below receives nothing today. It stays for the day one is written.
   MAIL_DRIVER: console
   SMS_DRIVER: console
+  # Local OTP flow sends no SMS; enter the six-digit code below.
+  PHONE_VERIFICATION_DRIVER: fake
+  PHONE_VERIFICATION_FAKE_CODE: '123456'
 
   JOBS_ENABLED: 'true'
   WORKER_INLINE: 'true'

@@ -23,6 +23,7 @@
 locals {
   # Read by the API at task start, via the task definition's `secrets` block.
   api_secret_names = [
+    "MSG91_AUTH_KEY",
     "DATABASE_URL",
     "SESSION_SECRET",
     "UPLOAD_SIGNING_SECRET",

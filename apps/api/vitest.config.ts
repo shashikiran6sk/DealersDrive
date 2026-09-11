@@ -42,6 +42,11 @@ const ENV = {
   // variable the runner has not — so without this line the suite's behaviour
   // would depend on a file that is not in the repository.
   DOCS_ENABLED: 'false',
+  // Never send real SMS in tests, even if the developer has live credentials.
+  PHONE_VERIFICATION_DRIVER: 'fake',
+  PHONE_VERIFICATION_FAKE_CODE: '123456',
+  PHONE_SEND_IP_LIMIT: '10000',
+  PHONE_SEND_DAILY_LIMIT: '10000',
 };
 
 /**

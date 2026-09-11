@@ -32,6 +32,8 @@ import { createEventBus, type EventBus } from './platform/events/bus.js';
 import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
 import { createQueue, type Queue } from './platform/jobs/queue.js';
 import { createMapsResolver, type MapsPort } from './platform/maps/maps-link.js';
+import { createPhoneVerifier } from './platform/phone/factory.js';
+import type { PhoneVerifierPort } from './platform/phone/phone.port.js';
 import { createStorage } from './platform/storage/factory.js';
 import { ensureBucket } from './platform/storage/s3.adapter.js';
 import type { StoragePort } from './platform/storage/storage.port.js';
@@ -78,6 +80,8 @@ export interface Container {
   /** Local disk, MinIO or R2 — chosen by `STORAGE_DRIVER`, never by a module. */
   readonly storage: StoragePort;
   readonly maps: MapsPort;
+  /** MSG91, or the fake driver — chosen by `PHONE_VERIFICATION_DRIVER` (**R39**). */
+  readonly phone: PhoneVerifierPort;
   /** Reads the principal off a request. Cookie-backed, or the dev identity. */
   readonly sessions: SessionResolver;
   /** Issues, resolves and revokes the rows behind those cookies. */
@@ -105,6 +109,8 @@ export interface ContainerOverrides {
   readonly queue?: Queue;
   readonly storage?: StoragePort;
   readonly maps?: MapsPort;
+  /** The seam that lets the suite verify a phone without an SMS (**R39**). */
+  readonly phone?: PhoneVerifierPort;
   /** `harness.ts` swaps the whole resolver out; `auth-harness.ts` does not. */
   readonly sessions?: SessionResolver;
   /** The seam `auth-harness.ts` uses: everything above it runs unmodified. */
@@ -128,6 +134,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const outbox = createOutboxPublisher(prisma, bus);
   const storage = overrides.storage ?? createStorage();
   const maps = overrides.maps ?? createMapsResolver();
+  const phoneVerifier = overrides.phone ?? createPhoneVerifier();
 
   const sessionStore = createSessionService(prisma);
   const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
@@ -152,6 +159,8 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     dealers,
     audit,
     maps,
+    phone: phoneVerifier,
+    cache,
   });
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
@@ -168,6 +177,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     outbox,
     storage,
     maps,
+    phone: phoneVerifier,
     sessions,
     sessionStore,
     oauth,

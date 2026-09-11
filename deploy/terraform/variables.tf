@@ -207,3 +207,16 @@ variable "enable_deletion_protection" {
   type        = bool
   default     = false
 }
+
+# Managed phone OTP (R39). MSG91_AUTH_KEY belongs in SSM SecureString.
+variable "msg91_otp_template_id" {
+  description = "Approved SendOTP template. Blank selects fake, refused in production."
+  type        = string
+  default     = ""
+}
+
+variable "phone_send_daily_limit" {
+  description = "Maximum OTP send requests per daily counter window."
+  type        = number
+  default     = 500
+}

@@ -204,6 +204,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R36 — The contact's job title is not a field · revises F038/F041/F046 · ⚠️ deletes data · [#110](https://github.com/shashikiran6sk/DealersDrive/pull/110)
 - [~] R37 — Services are added one at a time, and shown as chips · revises F037/F046/R18/R26 · [#111](https://github.com/shashikiran6sk/DealersDrive/pull/111)
 - [ ] R38 — PAN is unique across the platform, as GSTIN already was · revises F038/F041/F045/F046
+- [~] R39 — The mobile number is proved with MSG91 OTP, not typed · revises F018/F037/F038/F041/F046/R7/R27
 
 ---
 

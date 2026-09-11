@@ -6,8 +6,13 @@ import {
   type AuthProvidersResponse,
   type AuthSession,
   type OnboardingInput,
+  type PhoneVerificationInput,
+  type PhoneVerificationStartInput,
+  type PhoneVerificationStartResponse,
 } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
+import type { CachePort } from '../../platform/cache/cache.port.js';
+import { createPhoneChallenges } from './phone-challenges.service.js';
 
 import { env } from '../../config/env.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
@@ -16,9 +21,11 @@ import type { MapsPort } from '../../platform/maps/maps-link.js';
 import {
   ConfigurationError,
   ConflictError,
+  DomainError,
   ForbiddenError,
   UnauthorizedError,
 } from '../../platform/errors.js';
+import type { PhoneVerifierPort } from '../../platform/phone/phone.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealersService } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
@@ -61,6 +68,9 @@ export interface AuthDeps {
   audit: AuditService;
   /** Where the new yard is, out of the link the dealer pastes on step 2. */
   maps: MapsPort;
+  /** Managed phone verification; independent of Google login. */
+  phone: PhoneVerifierPort;
+  cache: CachePort;
 }
 
 export interface CallbackResult {
@@ -72,7 +82,17 @@ export interface CallbackResult {
   returnTo: string;
 }
 
-export function createAuthService({ prisma, sessions, oauth, dealers, audit, maps }: AuthDeps) {
+export function createAuthService({
+  prisma,
+  sessions,
+  oauth,
+  dealers,
+  audit,
+  maps,
+  phone: phoneVerifier,
+  cache,
+}: AuthDeps) {
+  const challenges = createPhoneChallenges(prisma, cache, phoneVerifier);
   /**
    * The Google account on a session — for the onboarding screen, which shows
    * the verified address rather than asking for it again.
@@ -94,6 +114,34 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
   }
 
   /**
+   * A number nobody else holds, or a 409 naming the box the dealer typed in.
+   *
+   * The unique index on `users.phone` is what actually guarantees it and what
+   * makes two dealers racing safe. This read exists for the other half of the
+   * job: turning the collision into a message rather than into a Prisma P2002
+   * the error handler renders as a 500. Same split as `assertNoDuplicate` in
+   * `dealers.service.ts`, and the same reason.
+   *
+   * Extracted at **R39**, because the rule now has three callers — onboarding,
+   * starting a verification, and completing one — and three copies of it would
+   * be three chances to word the refusal differently.
+   */
+  async function assertPhoneFree(phone: string, userId: string): Promise<void> {
+    const owner = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
+    if (!owner || owner.id === userId) return;
+
+    throw new ConflictError(
+      'PHONE_ALREADY_REGISTERED',
+      'That mobile number is already registered to another dealership.',
+      {
+        errors: [
+          { field: 'body.phone', code: 'PHONE_ALREADY_REGISTERED', message: 'Already registered.' },
+        ],
+      },
+    );
+  }
+
+  /**
    * B4. One shape for both states — with a dealership and without one — so a
    * client has one thing to read and one field to branch on.
    */
@@ -103,16 +151,33 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       return { ...session, identity: await identityFor(principal.userId) };
     }
 
+    /*
+     * R39. Read rather than carried on the principal, and deliberately so: a
+     * session is issued once and lives for weeks, and verification happens in
+     * the middle of one. A flag cached in the principal would show a dealer an
+     * unverified badge for a number they had just proved, until they signed out
+     * — which is the sort of staleness that gets reported as "the site is
+     * broken" rather than as a caching bug.
+     */
+    const [identity, user] = await Promise.all([
+      identityFor(principal.userId),
+      prisma.user.findUnique({
+        where: { id: principal.userId },
+        select: { phone: true, phoneVerifiedAt: true },
+      }),
+    ]);
+
     return {
       next: 'ONBOARDING',
-      identity: await identityFor(principal.userId),
+      identity,
       user: {
         id: principal.userId,
         fullName: principal.fullName,
-        phone: principal.phone ?? '',
-        phoneDisplay: principal.phone ? formatPhone(principal.phone) : '',
+        phone: user?.phone ?? principal.phone ?? '',
+        phoneDisplay: user?.phone ? formatPhone(user.phone) : '',
         email: principal.email,
         emailVerified: true,
+        phoneVerified: user?.phoneVerifiedAt != null,
       },
       dealer: null,
       role: null,
@@ -123,6 +188,73 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
   return {
     me,
+
+    /** A paid send, authorized and rate-limited before contacting MSG91. */
+    async startPhoneVerification(
+      principal: DealerPrincipal | PendingPrincipal,
+      input: PhoneVerificationStartInput,
+      ip: string = 'unknown',
+    ): Promise<PhoneVerificationStartResponse> {
+      const phone = toE164(input.phone);
+      await assertPhoneFree(phone, principal.userId);
+      return challenges.start(principal.userId, phone, ip);
+    },
+
+    /** Consume a user-bound challenge; never accept a phone from the client. */
+    async verifyPhone(
+      principal: DealerPrincipal | PendingPrincipal,
+      input: PhoneVerificationInput,
+    ): Promise<AuthSession> {
+      const result = await challenges.verify(
+        principal.userId,
+        input.challengeId,
+        input.code,
+        async (tx, phone) => {
+          const owner = await tx.user.findUnique({ where: { phone }, select: { id: true } });
+          if (owner && owner.id !== principal.userId) {
+            throw new ConflictError(
+              'PHONE_ALREADY_REGISTERED',
+              'That mobile number is already registered to another dealership.',
+            );
+          }
+          const existing = await tx.user.findUniqueOrThrow({
+            where: { id: principal.userId },
+            select: { phone: true, phoneVerifiedAt: true },
+          });
+          const changed = existing.phone !== phone || existing.phoneVerifiedAt == null;
+          if (changed) {
+            await tx.user.update({
+              where: { id: principal.userId },
+              data: { phone, phoneVerifiedAt: new Date() },
+            });
+            if (principal.kind === 'DEALER') {
+              await tx.dealer.update({
+                where: { id: principal.dealerId },
+                data: { contactPhone: phone },
+              });
+            }
+          }
+          return {
+            phone,
+            changed,
+            before: { phone: existing.phone, verified: existing.phoneVerifiedAt != null },
+          };
+        },
+      );
+      if (result.changed) {
+        await audit.recordDetached({
+          actorType: 'DEALER',
+          actorId: principal.userId,
+          ...(principal.kind === 'DEALER' ? { dealerId: principal.dealerId } : {}),
+          action: 'user.phone_verified',
+          entityType: 'User',
+          entityId: principal.userId,
+          before: result.before,
+          after: { phone: result.phone, verified: true, provider: phoneVerifier.driver },
+        });
+      }
+      return me(principal);
+    },
 
     providers(): AuthProvidersResponse {
       const enabled = oauth.isConfigured();
@@ -344,23 +476,34 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         );
       }
 
-      const phone = toE164(input.phone);
-      const phoneOwner = await prisma.user.findUnique({ where: { phone } });
-      if (phoneOwner && phoneOwner.id !== principal.userId) {
-        throw new ConflictError(
-          'PHONE_ALREADY_REGISTERED',
-          'That mobile number is already registered to another dealership.',
-          {
-            errors: [
-              {
-                field: 'body.phone',
-                code: 'PHONE_ALREADY_REGISTERED',
-                message: 'Already registered.',
-              },
-            ],
-          },
+      /*
+       * **R39 — the number is read, not accepted.**
+       *
+       * It used to arrive in the body. It comes off the user row now, where
+       * `POST /v1/auth/phone/verify` put it after MSG91 confirmed an OTP,
+       * and a dealership cannot be created without one. That is the whole of
+       * "verified before you may continue": not a disabled button, which is a
+       * suggestion, but a request the server refuses.
+       *
+       * A 422 rather than a 400: the body is perfectly well-formed and the
+       * caller is perfectly entitled: what is missing is a step, and the client
+       * that gets this should send the dealer back to it rather than highlight
+       * a field.
+       */
+      const account = await prisma.user.findUnique({
+        where: { id: principal.userId },
+        select: { phone: true, phoneVerifiedAt: true },
+      });
+
+      if (!account?.phone || account.phoneVerifiedAt == null) {
+        throw new DomainError(
+          'PHONE_NOT_VERIFIED',
+          'Verify your mobile number before setting up your dealership.',
         );
       }
+
+      const phone = account.phone;
+      await assertPhoneFree(phone, principal.userId);
 
       // The yard's pin and the place it names, out of the link the dealer just
       // pasted. Best-effort and bounded, and read *before* the transaction

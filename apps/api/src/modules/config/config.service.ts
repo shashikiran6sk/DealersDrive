@@ -50,6 +50,7 @@ export function createConfigService({ config }: ConfigDeps) {
         // flag flip takes effect without a redeploy.
         rcLookupEnabled: rcLookup,
         vehicleReportEnabled: vehicleReport,
+        phoneVerificationEnabled: true,
       };
     },
   };

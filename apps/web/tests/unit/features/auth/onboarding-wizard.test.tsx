@@ -110,10 +110,16 @@ function session(
       fullName: null,
       // A real number, because step 1 now refuses to advance without one and
       // nearly every test below walks through it.
-      phone: '9840012345',
-      phoneDisplay: '98400 12345',
+      phone: '+919840012345',
+      phoneDisplay: '+91 98400 12345',
       email: 'karthik@srilakshmimotors.in',
       emailVerified: true,
+      /*
+       * **R39.** Verified by default, because step 1 refuses to advance without
+       * it and nearly every test below is about something else. The unverified
+       * case is asserted deliberately, in its own block, by overriding this.
+       */
+      phoneVerified: true,
       ...overrides.user,
     },
     identity:
@@ -285,7 +291,10 @@ describe('OnboardingWizard — the frame', () => {
     render(
       <OnboardingWizard
         step={0}
-        session={session({ user: { phone: '' }, identity: { name: null } })}
+        session={session({
+          user: { phone: '', phoneDisplay: '', phoneVerified: false },
+          identity: { name: null },
+        })}
         documents={[]}
         dealer={null}
         completeness={null}
@@ -297,7 +306,8 @@ describe('OnboardingWizard — the frame', () => {
 
     expect(filledSteps()).toEqual(['Account']);
     expect(screen.getByText('Tell us your name.')).toBeInTheDocument();
-    expect(screen.getByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
+    // **R39.** The question is no longer whether the number *looks* like one.
+    expect(screen.getByText('Verify your mobile number to continue.')).toBeInTheDocument();
   });
 
   it('advances once the required fields are filled', async () => {
@@ -305,7 +315,7 @@ describe('OnboardingWizard — the frame', () => {
     render(
       <OnboardingWizard
         step={0}
-        session={session({ user: { phone: '' }, identity: { name: null } })}
+        session={session({ user: { fullName: null }, identity: { name: null } })}
         documents={[]}
         dealer={null}
         completeness={null}
@@ -317,19 +327,27 @@ describe('OnboardingWizard — the frame', () => {
     expect(filledSteps()).toEqual(['Account']);
 
     await user.type(screen.getByLabelText('Full name'), 'Karthik Raman');
-    await user.type(screen.getByLabelText(/^Phone/), '9840012345');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     expect(filledSteps()).toEqual(['Account', 'Business']);
   });
 
-  /** A malformed number is refused as firmly as a missing one. */
-  it('refuses a phone number that is not an Indian mobile', async () => {
+  /**
+   * **R39.** A number that has not been through an OTP is refused as firmly as
+   * a missing name — and a number that merely *looks* right is no longer
+   * enough, which is the whole change. The session below holds a perfectly
+   * well-formed mobile number and `phoneVerified: false`.
+   *
+   * This is the polite half of the rule. The load-bearing half is
+   * `POST /v1/auth/onboarding` answering `422 PHONE_NOT_VERIFIED`, because a
+   * client-side guard is a suggestion and a server-side one is a rule.
+   */
+  it('refuses to leave Account until the number has been verified', async () => {
     const user = userEvent.setup();
     render(
       <OnboardingWizard
         step={0}
-        session={session({ user: { phone: '12345' } })}
+        session={session({ user: { phoneVerified: false } })}
         documents={[]}
         dealer={null}
         completeness={null}
@@ -340,7 +358,24 @@ describe('OnboardingWizard — the frame', () => {
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     expect(filledSteps()).toEqual(['Account']);
-    expect(screen.getByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
+    expect(screen.getByText('Verify your mobile number to continue.')).toBeInTheDocument();
+  });
+
+  /** And a verified one shows the badge rather than a box and a button. */
+  it('shows a verified number as verified', () => {
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+      />,
+    );
+
+    expect(screen.getByText('Verified')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /send code/i })).toBeNull();
   });
 });
 
@@ -530,7 +565,11 @@ describe('OnboardingWizard — the Account step', () => {
       <OnboardingWizard
         step={0}
         session={session({
-          user: { fullName: 'K. Raman', phone: '9840012345' },
+          user: {
+            fullName: 'K. Raman',
+            phone: '+919840012345',
+            phoneDisplay: '+91 98400 12345',
+          },
         })}
         documents={[]}
         dealer={null}
@@ -540,7 +579,8 @@ describe('OnboardingWizard — the Account step', () => {
     );
 
     expect(screen.getByLabelText('Full name')).toHaveValue('K. Raman');
-    expect(screen.getByLabelText(/^Phone/)).toHaveValue('9840012345');
+    // **R39.** The number is shown as verified rather than offered as a box.
+    expect(screen.getByLabelText(/^Mobile/)).toHaveValue('+91 98400 12345');
   });
 
   /**
@@ -552,7 +592,7 @@ describe('OnboardingWizard — the Account step', () => {
    * whose number was refused as already registered arrived back on this step
    * and could not change the one field they had been sent here to change.
    */
-  it('lets the phone number be edited once the dealership exists', async () => {
+  it('lets a verified number be changed, through a code rather than a box', async () => {
     const user = userEvent.setup();
     render(
       <OnboardingWizard
@@ -565,25 +605,36 @@ describe('OnboardingWizard — the Account step', () => {
       />,
     );
 
-    const phone = screen.getByLabelText(/^Phone/);
-    expect(phone).not.toHaveAttribute('readonly');
+    // Verified: shown, not editable, and the way out is a button.
+    expect(screen.getByLabelText(/^Mobile/)).toBeDisabled();
 
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+
+    /*
+     * **R39.** R7 and R27 argued about whether this field should be editable
+     * and both were answering the wrong question. It is changeable; changing
+     * it is not an *edit* — it is a new claim about a different handset, and it
+     * goes through a code like the first one did.
+     */
+    const phone = screen.getByLabelText(/^Mobile/);
+    expect(phone).toBeEnabled();
     await user.clear(phone);
     await user.type(phone, '9876543210');
     expect(phone).toHaveValue('9876543210');
+    expect(screen.getByRole('button', { name: /send code/i })).toBeEnabled();
   });
 
   /**
-   * The browser-side check and the API's share one predicate now. They did not
-   * before, and the copy that lived here disagreed with the placeholder in the
-   * box beside it about whether `98400 12345` is a phone number.
+   * **R39.** The number reaches the API through `POST /v1/auth/phone/verify`
+   * and never through the onboarding body, so the form must not carry one —
+   * `OnboardingInput` has no `phone` field at all and `.strict()` would refuse
+   * it. What the form carries is the verified E.164 value and the flag.
    */
-  it('accepts a number spaced the way the placeholder shows it', async () => {
-    const user = userEvent.setup();
-    render(
+  it('submits the verified number rather than a typed one', () => {
+    const { container } = render(
       <OnboardingWizard
         step={0}
-        session={session({ user: { phone: '' } })}
+        session={session()}
         documents={[]}
         dealer={null}
         completeness={null}
@@ -591,12 +642,9 @@ describe('OnboardingWizard — the Account step', () => {
       />,
     );
 
-    await user.type(screen.getByLabelText('Full name'), 'R. Manikandan');
-    await user.type(screen.getByLabelText(/^Phone/), '98400 12345');
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
-
-    // It moved: the step-1 gate did not reject a number typed with a space.
-    expect(filledSteps()).toEqual(['Account', 'Business']);
+    expect(container.querySelector('input[name="phoneVerified"]')).toHaveValue('true');
+    // The visible control is disabled, so the browser submits nothing for it.
+    expect(screen.getByLabelText(/^Mobile/)).toBeDisabled();
   });
 
   /**
@@ -1122,7 +1170,7 @@ describe('OnboardingWizard — the outstanding-items list', () => {
     );
 
     expect(await screen.findByText('Already registered.')).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Phone/).closest('fieldset')).not.toHaveAttribute('hidden');
+    expect(screen.getByLabelText(/^Mobile/).closest('fieldset')).not.toHaveAttribute('hidden');
     expect(screen.getByLabelText(/^Dealership name/).closest('fieldset')).toHaveAttribute('hidden');
     // A local move, exactly like Back — the typed answers are still in the form.
     expect(navigationState.pushed).toEqual([]);

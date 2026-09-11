@@ -35,11 +35,27 @@ model User {
   lastLoginAt     DateTime?
   createdAt       DateTime   @default(now())
 
-  sessions    Session[]
-  memberships DealerMember[]
-  identities  OAuthIdentity[]
+  sessions        Session[]
+  memberships     DealerMember[]
+  identities      OAuthIdentity[]
+  phoneChallenges PhoneVerificationChallenge[]
 
   @@map("users")
+}
+
+/// MSG91 verification is phone-scoped; only one challenge may own a number.
+/// No OTP is persisted. Resending rotates the opaque id.
+model PhoneVerificationChallenge {
+  id         String    @id @default(uuid()) @db.Uuid
+  phone      String    @unique
+  userId     String    @db.Uuid
+  expiresAt  DateTime
+  sentAt     DateTime
+  consumedAt DateTime?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("phone_verification_challenges")
 }
 
 model Session {

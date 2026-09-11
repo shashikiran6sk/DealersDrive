@@ -54,11 +54,17 @@ export type AuthProvidersResponse = z.infer<typeof AuthProvidersResponse>;
  * one here would let a caller claim an address Google never verified. No
  * `status` and no `slug` either — the state machine owns one and the service
  * derives the other (CLAUDE.md rules 1 and 5).
+ *
+ * **And no `phone`, since R39.** For exactly the reason `email` is absent: it
+ * is a *verified* fact now, established by `POST /v1/auth/phone/verify` against
+ * an OTP MSG91 sent to the handset, and a number in this body would be a
+ * number nobody proved. The service reads it off the user record and refuses
+ * the whole request when there is none — which is what makes "verified before
+ * you may continue" a rule rather than a screen.
  */
 export const OnboardingInput = z
   .object({
     fullName: z.string().trim().min(2, 'Tell us your name.').max(80),
-    phone: IndianMobile,
     /**
      * One name, not two.
      *
@@ -235,6 +241,19 @@ export const AuthSession = z.object({
     phoneDisplay: z.string(),
     email: z.string().nullable(),
     emailVerified: z.boolean(),
+    /**
+     * **R39.** Whether an OTP reached this handset and came back.
+     *
+     * It always describes the number in `phone` above, because the two are
+     * written and cleared together: a write that changes the number clears the
+     * timestamp behind this flag, so there is no state in which a dealership
+     * holds a verified badge for a number nobody proved.
+     *
+     * `emailVerified` is its neighbour and is `true` for every session — Google
+     * verified the address before a session existed. This one is genuinely
+     * two-valued, and step 1 of onboarding is where it changes.
+     */
+    phoneVerified: z.boolean(),
   }),
   identity: VerifiedIdentity.nullable(),
   dealer: z
@@ -254,3 +273,25 @@ export const AuthSession = z.object({
   counts: z.object({ newEnquiries: z.number().int(), pendingListings: z.number().int() }),
 });
 export type AuthSession = z.infer<typeof AuthSession>;
+
+// ─────────── B7 phone verification (R39) ───────────────────────────────────
+/** The phone belongs to a server-side, user-bound challenge, never this body. */
+export const PhoneVerificationInput = z
+  .object({
+    challengeId: Uuid,
+    code: z.string().regex(/^\d{6}$/, 'Enter the six-digit code.'),
+  })
+  .strict();
+export type PhoneVerificationInput = z.infer<typeof PhoneVerificationInput>;
+
+export const PhoneVerificationStartInput = z.object({ phone: IndianMobile }).strict();
+export type PhoneVerificationStartInput = z.infer<typeof PhoneVerificationStartInput>;
+
+export const PhoneVerificationStartResponse = z.object({
+  challengeId: Uuid,
+  phone: z.string(),
+  phoneDisplay: z.string(),
+  expiresAt: z.iso.datetime(),
+  resendAfterSeconds: z.number().int().nonnegative(),
+});
+export type PhoneVerificationStartResponse = z.infer<typeof PhoneVerificationStartResponse>;
