@@ -23,4 +23,9 @@ regexes = [
   # rather than on the file, so a real secret added to the same test is still
   # caught.
   '''key:\s*['"]dealers/''',
+  # The history scanner includes all fetched branches, including the separate
+  # Firebase alternative. Commit a581d1a has this deliberately forged fixture:
+  # {"alg":"RS256"}.{"sub":"1"}.forged — no valid signature or credentials.
+  # Match only that exact inert literal, not a file, arbitrary JWT, or commit.
+  '''eyJhbGciOiJSUzI1NiJ9\.eyJzdWIiOiIxIn0\.forged''',
 ]
