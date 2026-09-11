@@ -334,6 +334,14 @@ describe('unknown throwables', () => {
     vi.stubEnv('SESSION_SECRET', 'a-real-production-session-secret');
     vi.stubEnv('UPLOAD_SIGNING_SECRET', 'a-real-production-upload-secret');
     vi.stubEnv('RC_PLATE_HASH_SECRET', 'a-real-production-plate-secret');
+    /*
+     * This file does **not** mock dotenv the way `env.test.ts` does, so every
+     * variable it has not stubbed is filled in from whatever `.env` sits at the
+     * repo root. `CACHE_DRIVER=memory` is the normal local setting and is
+     * refused in production — so without this line the test passes in CI, where
+     * there is no `.env`, and fails on the machine of anyone who has one.
+     */
+    vi.stubEnv('CACHE_DRIVER', 'postgres');
     // R39 — production refuses `PHONE_VERIFICATION_DRIVER=fake`, which verifies
     // nothing, so a production fixture has to carry the real one.
     vi.stubEnv('PHONE_VERIFICATION_DRIVER', 'firebase');

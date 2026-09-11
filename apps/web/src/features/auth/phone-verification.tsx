@@ -376,14 +376,79 @@ export function PhoneVerification({
 }
 
 /**
- * Firebase's error codes, said once in the product's own voice.
+ * What a dealer is told when the deployment, rather than the dealer, is wrong.
  *
- * Only the ones a dealer can actually meet are named. Everything else falls
- * through to a sentence that does not pretend to know what went wrong, because
- * a wrong guess about the cause is worse than an honest "try again".
+ * None of these is anything they can act on — a Firebase project without
+ * billing is not a mistyped number — so the message says so plainly instead of
+ * inviting them to try again into the same wall. The *actionable* half goes to
+ * the console, in `SETUP_HINTS`.
+ */
+const MISCONFIGURED =
+  'Phone verification is unavailable right now. This is on us — please contact support.';
+
+/**
+ * What the person reading the console should do about it.
+ *
+ * Every one of these produced the same dead-end "that did not work" before, and
+ * every one is a console setting rather than a code change. The hint is the
+ * whole point: an error that names the fix turns a support ticket into a
+ * two-minute job.
+ */
+const SETUP_HINTS: Record<string, string> = {
+  'auth/billing-not-enabled':
+    'Firebase Phone Authentication requires the Blaze (pay-as-you-go) plan. Firebase console → ⚙ → Usage and billing → Details & settings → Modify plan → Blaze. Set a budget alert at the same time.',
+  'auth/operation-not-allowed':
+    'Phone sign-in is not enabled on this Firebase project. Console → Authentication → Sign-in method → Phone → Enable.',
+  'auth/unauthorized-domain':
+    'This host is not in the project’s authorised domains. Console → Authentication → Settings → Authorised domains. `localhost` is there by default; a deployed host is not.',
+  'auth/invalid-app-credential':
+    'The reCAPTCHA token was rejected. Usually the authorised-domain list, or an App Check enforcement with no provider registered for this host.',
+  'auth/api-key-not-valid':
+    'FIREBASE_WEB_API_KEY does not match this project. Console → Project settings → General → Your apps → Web app.',
+  'auth/invalid-api-key':
+    'FIREBASE_WEB_API_KEY does not match this project. Console → Project settings → General → Your apps → Web app.',
+  'auth/internal-error':
+    'Often FIREBASE_AUTH_DOMAIN: it must be the full `<project>.firebaseapp.com`, and its /__/auth/iframe must load.',
+};
+
+/**
+ * Firebase's error codes, said once in the product's own voice — **and logged,
+ * always**.
+ *
+ * The logging is the part that was missing, and its absence is what made this
+ * function actively harmful. An unrecognised code fell through to "contact
+ * support if it keeps happening", which told the dealer nothing and told
+ * support less: the provider's own explanation was caught, mapped to a sentence
+ * that disclaimed knowledge of the cause, and dropped. The first real
+ * misconfiguration this met — `auth/billing-not-enabled`, which is not in the
+ * SDK's own error map either and so arrives as a kebab-cased server string —
+ * was undiagnosable from the screen.
+ *
+ * A dealer never opens a console. The person they contact always does.
  */
 function messageFor(error: unknown): string {
   const code = (error as { code?: string } | null)?.code ?? '';
+  const detail = error instanceof Error ? error.message : String(error);
+  const hint = SETUP_HINTS[code];
+
+  /*
+   * The detail goes in the *printed line*, not only in a structured argument.
+   * An object argument is expandable in a browser console and collapses to
+   * `[object Object]` everywhere else — including any log forwarder — and the
+   * one thing this line exists to carry is the provider's own sentence.
+   */
+  // `console.error` is permitted by the lint config; it is the only record of
+  // why this failed, and the dealer-facing message deliberately carries none.
+  console.error(
+    [
+      '[phone-verification] Firebase rejected the request',
+      `  code:   ${code || '(none)'}`,
+      `  detail: ${detail}`,
+      ...(hint ? [`  fix:    ${hint}`] : []),
+    ].join('\n'),
+    // The error itself too, so the stack is one click away.
+    error,
+  );
 
   switch (code) {
     case 'auth/invalid-verification-code':
@@ -401,6 +466,22 @@ function messageFor(error: unknown): string {
       return 'The security check did not pass. Reload the page and try again.';
     case 'auth/network-request-failed':
       return 'The network dropped. Check your connection and try again.';
+
+    /*
+     * Deployment faults, not dealer faults. Grouped because the dealer-facing
+     * answer is identical for all of them — there is nothing they can do — and
+     * because telling somebody to "try again" against a project with no billing
+     * is an instruction to fail repeatedly.
+     */
+    case 'auth/billing-not-enabled':
+    case 'auth/operation-not-allowed':
+    case 'auth/unauthorized-domain':
+    case 'auth/invalid-app-credential':
+    case 'auth/api-key-not-valid':
+    case 'auth/invalid-api-key':
+    case 'auth/internal-error':
+      return MISCONFIGURED;
+
     default:
       return 'That did not work. Try again, or contact support if it keeps happening.';
   }

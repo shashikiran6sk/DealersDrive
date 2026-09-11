@@ -199,6 +199,82 @@ describe('sending a code', () => {
 
     expect(await screen.findByText(expected)).toBeInTheDocument();
   });
+
+  /**
+   * **Deployment faults, not dealer faults.**
+   *
+   * `auth/billing-not-enabled` is the one that prompted this: Firebase Phone
+   * Authentication requires the Blaze plan, the SDK has no mapping for the
+   * server's `BILLING_NOT_ENABLED` so it arrives kebab-cased, and it used to
+   * fall through to "try again" — an instruction to fail repeatedly against a
+   * project that cannot send anything.
+   *
+   * None of these is something a dealer can act on, so all six say so.
+   */
+  it.each([
+    ['auth/billing-not-enabled'],
+    ['auth/operation-not-allowed'],
+    ['auth/unauthorized-domain'],
+    ['auth/invalid-app-credential'],
+    ['auth/api-key-not-valid'],
+    ['auth/internal-error'],
+  ])('does not blame the dealer for %s', async (code) => {
+    const user = userEvent.setup();
+    signInWithPhoneNumber.mockRejectedValue(Object.assign(new Error('firebase'), { code }));
+    view();
+
+    await user.type(screen.getByLabelText(/^Mobile/), '9840012345');
+    await user.click(screen.getByRole('button', { name: /send code/i }));
+
+    expect(await screen.findByText(/unavailable right now\. This is on us/i)).toBeInTheDocument();
+    // And never the sentence that invites them to keep trying.
+    expect(screen.queryByText(/try again, or contact support/i)).toBeNull();
+  });
+
+  /**
+   * **The defect this whole block exists because of.**
+   *
+   * A dealer never opens a console; the person they contact always does. When
+   * the provider's own explanation is caught, mapped to a sentence that
+   * disclaims knowledge of the cause, and dropped, the failure is undiagnosable
+   * from the screen — which is exactly what happened the first time a real
+   * project was wired up.
+   */
+  it('logs the provider’s own code and message, whatever the code', async () => {
+    const user = userEvent.setup();
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    signInWithPhoneNumber.mockRejectedValue(
+      Object.assign(new Error('Firebase: Error (auth/billing-not-enabled).'), {
+        code: 'auth/billing-not-enabled',
+      }),
+    );
+    view();
+
+    await user.type(screen.getByLabelText(/^Mobile/), '9840012345');
+    await user.click(screen.getByRole('button', { name: /send code/i }));
+    await screen.findByText(/unavailable right now/i);
+
+    const printed = logged.mock.calls.flat().map(String).join(' ');
+    expect(printed).toContain('auth/billing-not-enabled');
+    // And the fix, not just the symptom.
+    expect(printed).toMatch(/Blaze/);
+    logged.mockRestore();
+  });
+
+  /** An error with no `code` at all still reaches the console. */
+  it('logs a failure that carries no code', async () => {
+    const user = userEvent.setup();
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    signInWithPhoneNumber.mockRejectedValue(new Error('something else entirely'));
+    view();
+
+    await user.type(screen.getByLabelText(/^Mobile/), '9840012345');
+    await user.click(screen.getByRole('button', { name: /send code/i }));
+    await screen.findByText(/that did not work/i);
+
+    expect(logged.mock.calls.flat().map(String).join(' ')).toContain('something else entirely');
+    logged.mockRestore();
+  });
 });
 
 describe('entering the code', () => {
