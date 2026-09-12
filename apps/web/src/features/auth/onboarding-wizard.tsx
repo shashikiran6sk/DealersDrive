@@ -468,16 +468,6 @@ function AccountStep({
             {...invalidProps('phone', errors.phone)}
           />
         </Field>
-
-        <Field id="email" label="Email">
-          <input
-            id="email"
-            className="input"
-            value={session.identity?.email ?? session.user.email ?? ''}
-            disabled
-            readOnly
-          />
-        </Field>
       </div>
     </fieldset>
   );
