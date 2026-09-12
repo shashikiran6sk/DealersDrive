@@ -213,6 +213,30 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
    * nothing went wrong.
    */
   async function handleEmailJob(job: EmailJob): Promise<void> {
+    /*
+     * Rejection is the one notification whose subject is deliberately gone
+     * before the outbox is published. Its non-FK audit snapshot survives the
+     * purge and is therefore the source of both recipient and rendering data.
+     */
+    if (job.template === 'dealer.application.rejected') {
+      const snapshot = await rejectedApplicationSnapshot(job.dealerId);
+      if (snapshot) {
+        await sendOne(
+          job,
+          { email: snapshot.recipientEmail, name: snapshot.recipientName },
+          {
+            dealerName: snapshot.dealerName,
+            contactName: snapshot.recipientName,
+            reason: job.reason ?? null,
+          },
+          // The dealer row no longer exists. A nullable delivery reference
+          // preserves the send record without violating its foreign key.
+          null,
+        );
+        return;
+      }
+    }
+
     const recipients = await recipientsFor(job);
     if (recipients.length === 0) {
       logger.warn(
@@ -264,6 +288,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
     job: EmailJob,
     recipient: { email: string; name: string | null },
     context: TemplateContext,
+    deliveryDealerId: string | null = job.dealerId,
   ): Promise<void> {
     const dedupeKey = `${job.template}:${job.subjectId}:${recipient.email.toLowerCase()}`;
     const message = render(job.template, context);
@@ -277,7 +302,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
           template: job.template,
           recipient: recipient.email,
           subject: message.subject,
-          dealerId: job.dealerId,
+          dealerId: deliveryDealerId,
           attempts: 1,
         },
       });
@@ -391,6 +416,36 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
     const email = owner?.user.email;
     return email ? [{ email, name: owner.user.fullName }] : [];
   }
+
+  async function rejectedApplicationSnapshot(dealerId: string): Promise<{
+    dealerName: string;
+    recipientEmail: string;
+    recipientName: string | null;
+  } | null> {
+    const audit = await prisma.auditLog.findFirst({
+      where: {
+        action: 'dealer.rejected',
+        entityType: 'Dealer',
+        entityId: dealerId,
+      },
+      orderBy: { id: 'desc' },
+      select: { before: true },
+    });
+    const before = recordOf(audit?.before);
+    if (!before) return null;
+
+    // `contactEmail` supports audit rows written before `recipientEmail`
+    // was introduced, so already-queued rejection events remain deliverable.
+    const recipientEmail = stringOf(before.recipientEmail) ?? stringOf(before.contactEmail);
+    const dealerName = stringOf(before.brandName) ?? stringOf(before.legalName);
+    if (!recipientEmail || !dealerName) return null;
+
+    return {
+      dealerName,
+      recipientEmail,
+      recipientName: stringOf(before.recipientName),
+    };
+  }
 }
 
 export type NotificationsService = ReturnType<typeof createNotificationsService>;
@@ -411,6 +466,16 @@ function base(event: DomainEvent, template: TemplateName, audience: 'dealer' | '
 function reasonOf(event: DomainEvent): string | null {
   const payload = event.payload as { reason?: unknown };
   return typeof payload.reason === 'string' ? payload.reason : null;
+}
+
+function recordOf(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function stringOf(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
 /** Prisma's P2002. Duck-typed, so a test can throw one without the client. */
