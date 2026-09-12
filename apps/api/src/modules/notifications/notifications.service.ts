@@ -156,7 +156,20 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         });
       });
 
-      // 4 — a dealership proposes new public words: tell the moderators.
+      // 4 — suspension and reinstatement are both reversible account events,
+      // and both must be visible to the dealer.
+      bus.on('DealerSuspended', async (event) => {
+        await enqueue({
+          ...base(event, 'dealer.account.suspended', 'dealer'),
+          reason: reasonOf(event),
+        });
+      });
+
+      bus.on('DealerReinstated', async (event) => {
+        await enqueue(base(event, 'dealer.account.reinstated', 'dealer'));
+      });
+
+      // 5 — a dealership proposes new public words: tell the moderators.
       bus.on('DealerProfileChangeSubmitted', async (event) => {
         const payload = event.payload as { profileChangeId?: unknown };
         await enqueue({
@@ -168,7 +181,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         });
       });
 
-      // 5 and 6 — the decision on it. One event carries both verdicts, because
+      // 6 and 7 — the decision on it. One event carries both verdicts, because
       // R34 chose one event for "this dealership's public words were decided
       // on"; `payload.published` is which way.
       bus.on('DealerProfileChangeDecided', async (event) => {

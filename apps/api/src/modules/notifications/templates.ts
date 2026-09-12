@@ -31,6 +31,8 @@ export type TemplateName =
   | 'dealer.application.approved'
   | 'dealer.application.rejected'
   | 'dealer.application.changes-requested'
+  | 'dealer.account.suspended'
+  | 'dealer.account.reinstated'
   | 'admin.profile-change.submitted'
   | 'dealer.profile-change.approved'
   | 'dealer.profile-change.rejected';
@@ -150,6 +152,31 @@ export function render(template: TemplateName, context: TemplateContext): Render
           'Your application is saved. Open it, make the change, and submit it again — you do not have to start over.',
         ],
         action: { label: 'Open your application', url: CONSOLE },
+      });
+
+    case 'dealer.account.suspended':
+      return compose({
+        subject: `Your dealership has been suspended — ${context.dealerName}`,
+        heading: 'Your dealership has been suspended',
+        greeting: context.contactName,
+        paragraphs: [
+          `${context.dealerName} is currently suspended on Dealers-Drive. Its page and vehicle listings are no longer visible to buyers.`,
+        ],
+        quote: context.reason,
+        paragraphsAfter: [
+          'If you have questions or believe this is a mistake, reply to this email and our support team will help.',
+        ],
+      });
+
+    case 'dealer.account.reinstated':
+      return compose({
+        subject: `Your dealership is active again — ${context.dealerName}`,
+        heading: 'Your dealership has been reinstated',
+        greeting: context.contactName,
+        paragraphs: [
+          `${context.dealerName} is active again on Dealers-Drive. Its public page is available to buyers, and previously approved listings can be shown again.`,
+        ],
+        action: { label: 'Go to your console', url: CONSOLE },
       });
 
     case 'admin.profile-change.submitted':
