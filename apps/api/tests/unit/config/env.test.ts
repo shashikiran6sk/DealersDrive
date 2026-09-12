@@ -85,6 +85,7 @@ const SCHEMA_KEYS = [
   'RC_PLATE_HASH_SECRET',
   'MEDIA_BASE_URL',
   'MAIL_DRIVER',
+  'RESEND_API_KEY',
   'SMS_DRIVER',
   'MAIL_FROM',
   'SUPPORT_EMAIL',
@@ -310,6 +311,33 @@ describe('production', () => {
       DOCS_ENABLED: 'true',
     });
     expect(on.DOCS_ENABLED).toBe(true);
+  });
+
+  it.each([
+    [
+      'Resend shared test sender',
+      { MAIL_FROM: 'Dealers-Drive <onboarding@resend.dev>' },
+      'MAIL_FROM',
+    ],
+    ['no-reply sender', { MAIL_FROM: 'Dealers-Drive <no-reply@dealers-drive.com>' }, 'MAIL_FROM'],
+    ['localhost email links', { WEB_BASE_URL: 'http://localhost:3000' }, 'WEB_BASE_URL'],
+  ])('refuses %s', async (_case, override, expectedVariable) => {
+    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit');
+    });
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    try {
+      await expect(
+        loadEnv({ NODE_ENV: 'production', ...PRODUCTION_REQUIRED, ...override }),
+      ).rejects.toThrow('process.exit');
+      expect(error.mock.calls.map((call) => String(call[0])).join('\n')).toContain(
+        expectedVariable,
+      );
+    } finally {
+      exit.mockRestore();
+      error.mockRestore();
+    }
   });
 });
 

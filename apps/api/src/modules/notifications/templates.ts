@@ -169,7 +169,7 @@ export function render(template: TemplateName, context: TemplateContext): Render
         heading: 'Your change is live',
         greeting: context.contactName,
         paragraphs: [
-          `The change you made to ${context.dealerName}'s public page has been approved and buyers can see it now.`,
+          `The change you made to the public page for ${context.dealerName} has been approved and buyers can see it now.`,
         ],
         action: { label: 'See your page', url: publicPage(context) },
       });
