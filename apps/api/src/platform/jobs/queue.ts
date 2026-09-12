@@ -34,6 +34,17 @@ export const JOB_NAMES = [
   'notification.listing-reviewed',
   'notification.dealer-reviewed',
   'notification.invoice',
+  /**
+   * **R40.** One name for every email, and the payload says which.
+   *
+   * The alternative — a queue per template — was considered and is worse in
+   * both directions: eight queues to create, poll, monitor and drain, and a
+   * ninth the day somebody adds a message. What a queue name is *for* is
+   * separating work with different shapes: a different concurrency, a
+   * different retry budget, a different priority. Eight transactional emails
+   * have none of that; they are one kind of work with eight bodies.
+   */
+  'notification.email',
   'listings.expire-sweep',
   'counters.reconcile',
   'cache.sweep-counters',
@@ -48,6 +59,20 @@ const PRIORITIES: Partial<Record<JobName, number>> = {
   'media.process': 50,
   'search.index-listing': 50,
   'search.remove-listing': 50,
+};
+
+/**
+ * How hard a job tries before it is somebody's problem (**R40**).
+ *
+ * Five attempts with exponential backoff is roughly twenty minutes of trying,
+ * which covers the failure this is actually for: a provider having a bad
+ * minute. Beyond that the fault is not transient — an unverified domain, a
+ * revoked key — and a sixth attempt is twenty more minutes of pretending
+ * otherwise. `notification_deliveries` carries the `FAILED` row and the
+ * provider's own sentence for what happens next.
+ */
+const RETRY: Partial<Record<JobName, { retryLimit: number; retryDelay: number }>> = {
+  'notification.email': { retryLimit: 5, retryDelay: 30 },
 };
 
 export function createQueue(): Queue {
@@ -81,7 +106,8 @@ export function createQueue(): Queue {
       if (!started) return;
       await boss.send(name, data, {
         priority: options?.priority ?? PRIORITIES[name] ?? 0,
-        retryLimit: 3,
+        retryLimit: RETRY[name]?.retryLimit ?? 3,
+        ...(RETRY[name] ? { retryDelay: RETRY[name].retryDelay } : {}),
         retryBackoff: true,
       });
     },

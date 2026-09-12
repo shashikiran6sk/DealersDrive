@@ -551,6 +551,29 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           before: { tagline: dealer.tagline, specialities: dealer.specialities },
           after: { tagline, specialities },
         });
+
+        /*
+         * **R40.** A queue nobody is told about is a queue nobody works, and
+         * R34 shipped the request without one — a dealership's proposal sat
+         * waiting until a moderator happened to open the console.
+         *
+         * In the transaction, like every other outbox write on this path: the
+         * email is then exactly as durable as the request it is about, and a
+         * rollback cannot leave a moderator reading about a change that does
+         * not exist.
+         */
+        await enqueueOutbox(tx, {
+          type: 'DealerProfileChangeSubmitted',
+          aggregateType: 'DealerProfileChange',
+          aggregateId: saved.id,
+          dealerId,
+          // `actorUserId` is nullable on this path — an admin editing on a
+          // dealer's behalf has no dealer seat — and `actor.id` is optional
+          // rather than nullable, so the key is dropped instead of nulled.
+          actor: { type: 'DEALER', ...(actorUserId === null ? {} : { id: actorUserId }) },
+          traceId: getContext()?.traceId ?? 'profile-change-submitted',
+          payload: { dealerId, profileChangeId: saved.id },
+        });
       });
 
       return toProfile(await requireDealer(dealerId));

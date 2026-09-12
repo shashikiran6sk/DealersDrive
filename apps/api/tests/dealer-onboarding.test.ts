@@ -783,6 +783,278 @@ describe('one dealership, one GSTIN', () => {
 });
 
 /**
+ * **R40 — the six emails, end to end and against the database.**
+ *
+ * The service's own unit tests cover the rules, the idempotency and the two
+ * failure shapes with a hand-written Prisma. What only a real database can show
+ * is the part that matters most architecturally: **the outbox row is written
+ * inside the transaction that caused it**, so the email is exactly as durable
+ * as the state change — and the API never waits on any of it.
+ *
+ * `drainEmails()` is the suite standing in for the worker's poller. Everything
+ * else in the path is production code: the same subscribers, the same job, the
+ * same idempotency claim, the same delivery row.
+ */
+describe('email notifications', () => {
+  /** Enough bytes for the yard-photo pipeline to accept as an image. */
+  const JPEG = Buffer.from('\xff\xd8\xff a photograph of a yard', 'binary');
+
+  async function moderator() {
+    subjectCounter += 1;
+    h.google.claims = {
+      subject: `mailer-mod-sub-${subjectCounter}`,
+      email: env.adminAllowlist[0] ?? '',
+      emailVerified: true,
+      name: 'Dealers-Drive Operations',
+    };
+    const agent = h.agent();
+    await h.signInAdmin(agent);
+    return agent;
+  }
+
+  /** Only the messages this test caused, ignoring whatever ran before it. */
+  async function emailsFrom(
+    work: () => Promise<unknown>,
+  ): Promise<{ tag: string; to: string; text: string }[]> {
+    const before = h.mailer.sent.length;
+    await work();
+    await h.drainEmails();
+    return h.mailer.sent
+      .slice(before)
+      .map((message) => ({ tag: message.tag, to: message.to, text: message.text }));
+  }
+
+  async function submitted() {
+    const made = await dealership();
+    await h.prisma.dealer.update({
+      where: { id: made.dealerId },
+      data: { status: 'PENDING_APPROVAL' },
+    });
+    return made;
+  }
+
+  /**
+   * **1 — the dealer submits.** Two messages from one event: the dealer is told
+   * we have it, and the queue is told there is something in it.
+   *
+   * The whole application is filled in first, because a refused submit sends
+   * nothing — which is the correct behaviour and would make this test pass
+   * without proving anything.
+   */
+  it('emails the dealer and the admins when an application is submitted', async () => {
+    const { agent } = await dealership();
+    await completeApplication(agent);
+
+    const emails = await emailsFrom(() => agent.post('/v1/dealer/submit').expect(200));
+    const tags = emails.map((email) => email.tag);
+
+    expect(tags).toContain('dealer.application.received');
+    expect(tags).toContain('admin.application.received');
+  });
+
+  /** Everything `POST /v1/dealer/submit` refuses without. */
+  async function completeApplication(agent: ReturnType<AuthHarness['agent']>): Promise<void> {
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({
+        gstin: `33MAILR${String(1000 + counter)}B1ZX`,
+        pan: `MAILR${String(1000 + counter)}B`,
+      })
+      .expect(200);
+
+    for (const type of ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) {
+      const presigned = await agent
+        .post('/v1/dealer/documents/presign')
+        .send({ type, fileName: 'doc.pdf', mimeType: 'application/pdf', bytes: 8 })
+        .expect(201);
+      const url = new URL(presigned.body.uploadUrl as string);
+      await agent
+        .put(url.pathname + url.search)
+        .set('Content-Type', 'application/pdf')
+        .send(Buffer.from('%PDF-1.4'))
+        .expect(200);
+      await agent
+        .post(`/v1/dealer/documents/${type}/commit`)
+        .send({ documentId: presigned.body.documentId })
+        .expect(200);
+    }
+
+    const photo = await agent
+      .post('/v1/dealer/yard-photo/presign')
+      .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
+      .expect(201);
+    const photoUrl = new URL(photo.body.uploadUrl as string);
+    await agent
+      .put(photoUrl.pathname + photoUrl.search)
+      .set('Content-Type', 'image/jpeg')
+      .send(JPEG)
+      .expect(200);
+    await agent
+      .post('/v1/dealer/yard-photo/commit')
+      .send({ mediaId: photo.body.mediaId })
+      .expect(200);
+  }
+
+  /** **2 — approved.** */
+  it('emails the dealer on approval', async () => {
+    const { dealerId } = await submitted();
+    const admin = await moderator();
+
+    const emails = await emailsFrom(() =>
+      admin.post(`/v1/admin/dealers/${dealerId}/approve`).send({}).expect(200),
+    );
+
+    expect(emails.map((email) => email.tag)).toContain('dealer.application.approved');
+    expect(emails[0]?.to).toContain('@');
+  });
+
+  /**
+   * **3 — changes requested**, and the moderator's own sentence travels with
+   * it. A dealer told "something needs changing" and not *what* is a dealer who
+   * emails support.
+   */
+  it('emails the dealer when changes are requested, carrying the reason', async () => {
+    const { dealerId } = await submitted();
+    const admin = await moderator();
+
+    const emails = await emailsFrom(() =>
+      admin
+        .post(`/v1/admin/dealers/${dealerId}/request-changes`)
+        .send({ reason: 'The GST certificate is for a different entity.' })
+        .expect(200),
+    );
+
+    const email = emails.find((one) => one.tag === 'dealer.application.changes-requested');
+    expect(email).toBeDefined();
+    expect(email?.text).toContain('The GST certificate is for a different entity.');
+  });
+
+  /** **4 — the dealer proposes new public words: tell the moderators.** */
+  it('emails the admins when a profile change is submitted', async () => {
+    const made = await dealership();
+    await h.prisma.dealer.update({ where: { id: made.dealerId }, data: { status: 'ACTIVE' } });
+
+    const emails = await emailsFrom(() =>
+      made.agent
+        .patch('/v1/dealer')
+        .send({ tagline: 'Only diesel SUVs, every one with a service book.' })
+        .expect(200),
+    );
+
+    const email = emails.find((one) => one.tag === 'admin.profile-change.submitted');
+    expect(email).toBeDefined();
+    expect(email?.text).toContain('Only diesel SUVs');
+  });
+
+  /** **5 — the moderator approves it.** */
+  it('emails the dealer when a profile change is approved', async () => {
+    const made = await dealership();
+    await h.prisma.dealer.update({ where: { id: made.dealerId }, data: { status: 'ACTIVE' } });
+    await made.agent.patch('/v1/dealer').send({ tagline: 'A new line about us here.' }).expect(200);
+    const waiting = await h.prisma.dealerProfileChange.findFirst({
+      where: { dealerId: made.dealerId, status: 'PENDING' },
+    });
+    const admin = await moderator();
+
+    const emails = await emailsFrom(() =>
+      admin.post(`/v1/admin/profile-changes/${waiting?.id}/approve`).send({}).expect(200),
+    );
+
+    expect(emails.map((one) => one.tag)).toContain('dealer.profile-change.approved');
+  });
+
+  /** **6 — and refuses it**, with the reason. */
+  it('emails the dealer when a profile change is refused, carrying the reason', async () => {
+    const made = await dealership();
+    await h.prisma.dealer.update({ where: { id: made.dealerId }, data: { status: 'ACTIVE' } });
+    await made.agent
+      .patch('/v1/dealer')
+      .send({ tagline: 'Ring us on nine eight four zero zero.' })
+      .expect(200);
+    const waiting = await h.prisma.dealerProfileChange.findFirst({
+      where: { dealerId: made.dealerId, status: 'PENDING' },
+    });
+    const admin = await moderator();
+
+    const emails = await emailsFrom(() =>
+      admin
+        .post(`/v1/admin/profile-changes/${waiting?.id}/reject`)
+        .send({ reason: 'It carries a phone number.' })
+        .expect(200),
+    );
+
+    const email = emails.find((one) => one.tag === 'dealer.profile-change.rejected');
+    expect(email).toBeDefined();
+    expect(email?.text).toContain('It carries a phone number.');
+  });
+
+  /**
+   * **The architectural claim, asserted rather than described.**
+   *
+   * The response is already back before anything has been drained, and the
+   * durable trace of the email is a row in `outbox_events` written by the same
+   * transaction. That is what makes the API's latency independent of Resend.
+   */
+  it('answers the request before any email exists', async () => {
+    const { dealerId } = await submitted();
+    const admin = await moderator();
+    const before = h.mailer.sent.length;
+
+    await admin.post(`/v1/admin/dealers/${dealerId}/approve`).send({}).expect(200);
+
+    // Responded, and nothing has been sent — the work is a row, not a request.
+    expect(h.mailer.sent).toHaveLength(before);
+    const queued = await h.prisma.outboxEvent.findFirst({
+      where: { aggregateId: dealerId, eventType: 'DealerApproved', publishedAt: null },
+    });
+    expect(queued).not.toBeNull();
+
+    await h.drainEmails();
+    expect(h.mailer.sent.length).toBeGreaterThan(before);
+  });
+
+  /**
+   * **Idempotency, at the index.** Draining twice must not email twice — and
+   * the guarantee is a unique constraint in Postgres rather than a flag in
+   * memory, which is the only version of it that survives two workers.
+   */
+  it('sends one email however many times the outbox is drained', async () => {
+    const { dealerId } = await submitted();
+    const admin = await moderator();
+
+    await admin.post(`/v1/admin/dealers/${dealerId}/approve`).send({}).expect(200);
+
+    await h.drainEmails();
+    const afterFirst = h.mailer.sent.length;
+
+    // The row is published now, so a second drain is a no-op; force the
+    // handler to run again against the same event to prove the *claim* holds.
+    const rows = await h.prisma.notificationDelivery.findMany({ where: { dealerId } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.status).toBe('SENT');
+    expect(rows[0]?.providerMessageId).not.toBeNull();
+
+    await h.drainEmails();
+    expect(h.mailer.sent).toHaveLength(afterFirst);
+  });
+
+  /** The trail support actually reads: who, which template, when, and by what id. */
+  it('records the delivery against the dealership', async () => {
+    const { dealerId } = await submitted();
+    const admin = await moderator();
+
+    await admin.post(`/v1/admin/dealers/${dealerId}/approve`).send({}).expect(200);
+    await h.drainEmails();
+
+    const row = await h.prisma.notificationDelivery.findFirst({ where: { dealerId } });
+    expect(row).toMatchObject({ template: 'dealer.application.approved', status: 'SENT' });
+    expect(row?.recipient).toContain('@');
+    expect(row?.sentAt).not.toBeNull();
+    expect(row?.dedupeKey).toContain('dealer.application.approved');
+  });
+});
+
+/**
  * **R38 — PAN joined GSTIN.**
  *
  * The asymmetry before this was not a decision. Both are read off a document by

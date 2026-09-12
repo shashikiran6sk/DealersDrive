@@ -9,6 +9,7 @@ import type {
   OAuthProvider,
 } from '../src/modules/auth/oauth.port.js';
 import { noMapsLookup } from '../src/platform/maps/maps-link.js';
+import type { MailMessage, MailerPort } from '../src/platform/mail/mail.port.js';
 import { UnauthorizedError } from '../src/platform/errors.js';
 import { createApp } from '../src/server.js';
 
@@ -97,10 +98,45 @@ export interface AuthHarness {
     agent: request.Agent,
     returnTo?: string,
   ): Promise<{ status: number; location: string }>;
+  /** Every email the run has produced, in order (**R40**). */
+  mailer: RecordingMailer;
+  /**
+   * Publishes whatever the last write put in the outbox, then returns.
+   *
+   * The suite's stand-in for the worker's poller: the queue is inline, so
+   * draining a row runs the subscriber, the job and the send synchronously.
+   */
+  drainEmails(): Promise<number>;
   close(): Promise<void>;
 }
 
-export async function createAuthHarness(google = createFakeGoogle()): Promise<AuthHarness> {
+/**
+ * A mailer that records instead of sending (**R40**).
+ *
+ * Not `console`, which would only log: a test has to be able to say *who was
+ * written to, about what*. Everything above it — the subscribers, the
+ * idempotency claim, the delivery row — is the production path.
+ */
+export function createRecordingMailer(): RecordingMailer {
+  const sent: MailMessage[] = [];
+  return {
+    driver: 'console',
+    sent,
+    send(message) {
+      sent.push(message);
+      return Promise.resolve({ providerMessageId: `recorded-${String(sent.length)}` });
+    },
+  };
+}
+
+export interface RecordingMailer extends MailerPort {
+  readonly sent: MailMessage[];
+}
+
+export async function createAuthHarness(
+  google = createFakeGoogle(),
+  mailer: RecordingMailer = createRecordingMailer(),
+): Promise<AuthHarness> {
   /*
    * No Maps lookup, for the same reason the OAuth provider above is a fake:
    * a suite that reaches the internet is a suite whose result depends on the
@@ -109,13 +145,30 @@ export async function createAuthHarness(google = createFakeGoogle()): Promise<Au
    * onboarding cases below exercise a shape the product has rather than a
    * disabled one.
    */
-  const container = await buildContainer({ oauth: google, maps: noMapsLookup });
+  const container = await buildContainer({ oauth: google, maps: noMapsLookup, mailer });
   const app = createApp(container);
+
+  /*
+   * **R40.** The suite is its own worker.
+   *
+   * `JOBS_ENABLED=false` makes the queue inline, so a job runs on `send`; what
+   * is missing is the outbox drain, which in production is a poller. Wiring the
+   * subscribers here and exposing `drainEmails()` lets a test assert on the
+   * email a write produced *on the next line*, with no sleep and no background
+   * timer against the test database.
+   *
+   * Everything above the drain is production code: the same subscribers, the
+   * same handler, the same idempotency claim. Only the poller is replaced.
+   */
+  container.notifications.subscribe(container.bus);
+  await container.notifications.work();
 
   return {
     app,
     prisma: container.prisma,
     google,
+    mailer,
+    drainEmails: () => container.outbox.drain(),
     agent: () => request.agent(app),
 
     signIn: (agent, returnTo) => roundTrip(agent, '/v1/auth/google/start', returnTo),

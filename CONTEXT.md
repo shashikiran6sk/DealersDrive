@@ -716,6 +716,59 @@ Prettier reflows comment blocks, and this repository has a great many of them.
 
 ---
 
+## 7k. The API sends no email, and that is load-bearing (R40)
+
+There are two Node processes now. `src/index.ts` serves HTTP; `src/worker.ts`
+drains the outbox and works the pg-boss queue. Same image, same container, same
+`startWorker` function — one composition root, so the two cannot drift into
+running different handlers.
+
+**No route, service or request handler holds a `MailerPort`.** If you find
+yourself importing one outside `modules/notifications`, stop: the API's entire
+contribution to an email is one `outbox_events` row written inside the
+transaction that caused it.
+
+The tempting shortcut is `void mailer.send(…)` after the response. It looks
+asynchronous and is not: the work still runs on the API's event loop, still
+holds its memory, still dies with a SIGTERM mid-flight, and still has nowhere to
+record that it failed. When the provider has a slow minute, every one of those
+becomes the API's slow minute.
+
+Locally `WORKER_INLINE=true` keeps it one process, so `pnpm dev` is still one
+command. Production runs `WORKER_INLINE=false` on the API and one worker task
+beside it. **Set them together or not at all** — an API with `true` and a worker
+beside it means two processes racing for the same rows, which is safe
+(`FOR UPDATE SKIP LOCKED`) and pointless.
+
+Three things about the queue that are easy to get wrong later:
+
+- **pg-boss is at-least-once.** A duplicate delivery is not a bug to prevent, it
+  is a normal event to absorb. `notification_deliveries.dedupeKey` is a unique
+  index and the worker claims the row _before_ calling the provider.
+- **The dedupe key comes from the event**, never from the attempt. A key
+  generated per job is unique per delivery and deduplicates nothing.
+- **A 4xx from the provider is not retried.** Five more attempts collect the
+  same 422. It is marked `FAILED` with the provider's sentence, which is usually
+  the instruction.
+
+## 7l. The integration suite has a flaky test, and it is not new
+
+The API integration tests fail intermittently — measured at **1 run in 12** on
+`main` at `087c839` — always somewhere in the OAuth sign-in round trip
+(`GET /v1/auth/google/start` answering 200 instead of 302, a session 401 a
+moment later, a 200 whose body is not the shape the route returns), and never
+the same test twice. It reproduces with `--no-file-parallelism`, so it is not
+the two integration files contending for the database.
+
+It is worth knowing two things about it. First, **it is not yours**: a red run
+whose failure is in a sign-in helper you did not touch is almost certainly this.
+Re-run before investigating. Second, **it gets likelier as the suite grows** —
+R40's nine new integration cases took the observed rate to 3 in 12 — so it will
+have to be found rather than tolerated.
+
+Nobody has diagnosed it yet. Start with `tests/auth-harness.ts:roundTrip` and
+print the body on the failing assertion.
+
 ## 8. Local development
 
 ```bash

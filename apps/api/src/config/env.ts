@@ -190,7 +190,20 @@ const envSchema = z.object({
   UPLOAD_SIGNING_SECRET: z.string().min(8).default('dealers-drive-local-upload-secret'),
   MEDIA_BASE_URL: required('http://localhost:4000/media'),
 
+  /**
+   * Where the six transactional emails go (**R40**).
+   *
+   *   console  — prints the recipient, the subject and the plain-text body.
+   *              The default, what `pnpm dev` and the whole test suite use, and
+   *              refused in production.
+   *   resend   — the real provider, over its HTTP API. Needs RESEND_API_KEY.
+   *   smtp     — **not implemented.** In the enum because the baseline had it
+   *              there, with no adapter behind it then either. The guard below
+   *              refuses it at boot rather than letting a deployment discover
+   *              at the first approval that nothing sends.
+   */
   MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
+  RESEND_API_KEY: optional(z.string().min(1)),
   /** `console` locally, `msg91` in production. Mobile OTP is out of scope either way. */
   SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
   MSG91_AUTH_KEY: optional(z.string().min(1)),
@@ -352,6 +365,24 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     if (!value.S3_SECRET_ACCESS_KEY) {
       require('S3_SECRET_ACCESS_KEY', `is required when STORAGE_DRIVER=${value.STORAGE_DRIVER}.`);
     }
+  }
+
+  /*
+   * R40. `console` prints and sends nothing, which in production means a dealer
+   * is verified and never told — and the failure is silent, because the log
+   * line says the email was "sent". Loud at boot is the only acceptable place
+   * for that to be discovered.
+   */
+  if (production && value.MAIL_DRIVER === 'console') {
+    require('MAIL_DRIVER', 'must be `resend` in production — `console` sends nothing.');
+  }
+
+  if (value.MAIL_DRIVER === 'smtp') {
+    require('MAIL_DRIVER', 'is not implemented. Use `console` locally or `resend` in production — there is no SMTP adapter.');
+  }
+
+  if (value.MAIL_DRIVER === 'resend' && !value.RESEND_API_KEY) {
+    require('RESEND_API_KEY', 'is required when MAIL_DRIVER=resend.');
   }
 
   if (value.SMS_DRIVER === 'msg91') {

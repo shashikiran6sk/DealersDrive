@@ -23,4 +23,26 @@ regexes = [
   # rather than on the file, so a real secret added to the same test is still
   # caught.
   '''key:\s*['"]dealers/''',
+  # The JWT-shaped test fixtures (**R39**). `generic-api-key` reads any
+  # three-segment base64 string as a credential, which is the right default —
+  # it cannot tell a fixture from a leaked token.
+  #
+  # This is one decodable, provably inert value, not a file and not a path. The
+  # two segments are literally:
+  #
+  #     eyJhbGciOiJSUzI1NiJ9  →  {"alg":"RS256"}
+  #     eyJzdWIiOiIxIn0       →  {"sub":"1"}
+  #
+  # A JOSE header naming an algorithm, and a payload whose only claim is the
+  # string "1". No key, no signature over anything, nothing to revoke. A real
+  # Firebase ID token carries `aud`, `iss`, `exp` and `auth_time` and matches
+  # none of this — so a genuine token committed to a test is still caught.
+  #
+  # It is needed because the scan covers **history** and the commit that
+  # introduced these literals cannot be rewritten (CLAUDE.md: never rewrite Git
+  # history). The current tree builds the same strings at runtime with
+  # `Buffer.from(…).toString('base64url')` precisely so that no new literal is
+  # added — see `jwtShaped()` in `dealer-onboarding.test.ts` and
+  # `fake.adapter.test.ts`.
+  '''eyJhbGciOiJSUzI1NiJ9\.eyJzdWIiOiIxIn0\.''',
 ]

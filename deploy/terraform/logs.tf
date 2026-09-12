@@ -19,6 +19,16 @@ resource "aws_cloudwatch_log_group" "web" {
   retention_in_days = var.log_retention_days
 }
 
+# R40. The worker's own group, not a stream inside the API's.
+#
+# The two processes fail in different ways and are read for different reasons —
+# "is the API up" versus "why has that dealer not had their approval email" —
+# and a single group makes the second question a grep through the first.
+resource "aws_cloudwatch_log_group" "worker" {
+  name              = "/dealers-drive/${var.environment}/worker"
+  retention_in_days = var.log_retention_days
+}
+
 resource "aws_cloudwatch_log_group" "migrate" {
   name              = "/dealers-drive/${var.environment}/migrate"
   retention_in_days = var.log_retention_days

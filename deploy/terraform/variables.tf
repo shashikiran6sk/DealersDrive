@@ -207,3 +207,49 @@ variable "enable_deletion_protection" {
   type        = bool
   default     = false
 }
+
+# ── The worker (R40) ─────────────────────────────────────────────────────────
+
+variable "worker_cpu" {
+  description = <<-EOT
+    Fargate CPU units for the worker. Smaller than the API's on purpose.
+
+    It renders eight short emails and posts them to an HTTPS endpoint. What it
+    spends is wall-clock waiting on a provider, not CPU — and a task sized for
+    work it does not do is a bill for capacity nobody uses.
+  EOT
+  type        = string
+  default     = "256"
+}
+
+variable "worker_memory" {
+  description = "Fargate memory for the worker, in MiB."
+  type        = string
+  default     = "512"
+}
+
+variable "worker_desired_count" {
+  description = <<-EOT
+    How many worker tasks. **One.**
+
+    pg-boss hands each job to exactly one worker, so more would be safe for
+    email. The scheduled jobs are the reason to be careful: N workers means N
+    copies of every cron firing. Scale the API instead — that is what
+    WORKER_INLINE=false bought.
+  EOT
+  type        = number
+  default     = 1
+}
+
+variable "mail_driver" {
+  description = <<-EOT
+    `resend` in production, `console` anywhere still being set up.
+
+    `env.ts` refuses `console` in production, so this must be `resend` there and
+    RESEND_API_KEY must be in Parameter Store — otherwise the task fails at boot
+    with the variable named, which is the intended behaviour. The alternative is
+    a platform that approves dealerships and silently tells nobody.
+  EOT
+  type        = string
+  default     = "console"
+}

@@ -83,12 +83,17 @@ x-api-env: &api-env
   UPLOAD_SIGNING_SECRET: dealers-drive-local-upload-secret
 
   PAYMENT_PROVIDER: development
-  # `console` is the only mailer that exists — there is no SMTP adapter, so
-  # Mailpit below receives nothing today. It stays for the day one is written.
+  # `console` prints the recipient, the subject and the plain-text body to the
+  # log — which is what a developer checking a template actually wants to read.
+  # `resend` is the production driver (**R40**); there is still no SMTP adapter,
+  # so Mailpit below receives nothing and `MAIL_DRIVER=smtp` is refused at boot.
   MAIL_DRIVER: console
   SMS_DRIVER: console
 
   JOBS_ENABLED: 'true'
+  # One box, one process: the API drains its own outbox and works its own jobs.
+  # Production runs `WORKER_INLINE=false` with the `worker` service below
+  # (**R40**) — `docker compose --profile worker up` runs that shape locally.
   WORKER_INLINE: 'true'
   RATE_LIMIT_ENABLED: 'true'
   DOCS_ENABLED: 'true'
@@ -228,6 +233,31 @@ services:
       postgres:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  # ── the worker, as production runs it (R40) ──────────────────────────────
+  #
+  # Not in the `app` profile: `pnpm app:up` gives the one-process shape, which is
+  # what a laptop wants. `docker compose --profile worker up worker` starts this
+  # beside the API — and to get the *production* split, set `WORKER_INLINE=false`
+  # on the api service so it stops draining its own outbox.
+  #
+  # Same image, different command. That is the whole difference between the two
+  # processes, and it is deliberate: one composition root, one set of adapters,
+  # one place a driver is chosen.
+  worker:
+    image: dealers-drive-api:local
+    container_name: dd-worker
+    profiles: [worker]
+    restart: unless-stopped
+    command: ['node', 'dist/worker.js']
+    environment:
+      <<: *api-env
+      WORKER_INLINE: 'true'
+    depends_on:
+      postgres:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
