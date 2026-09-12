@@ -108,14 +108,29 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
 
   return {
     /**
-     * Wires the six rules onto the bus. Called once, by the process that runs
+     * Wires the notification rules onto the bus. Called once, by the process that runs
      * the outbox — which is the worker, or the API when `WORKER_INLINE=true`.
      */
     subscribe(bus: EventBus): void {
       // 1 — a dealership submits its application: tell the dealer, and us.
+      // A returned application gets explicit resubmission wording so neither
+      // audience mistakes it for the first submission arriving again.
       bus.on('DealerApplied', async (event) => {
-        await enqueue(base(event, 'dealer.application.received', 'dealer'));
-        await enqueue(base(event, 'admin.application.received', 'admin'));
+        const resubmitted = (event.payload as { resubmitted?: unknown }).resubmitted === true;
+        await enqueue(
+          base(
+            event,
+            resubmitted ? 'dealer.application.resubmitted' : 'dealer.application.received',
+            'dealer',
+          ),
+        );
+        await enqueue(
+          base(
+            event,
+            resubmitted ? 'admin.application.resubmitted' : 'admin.application.received',
+            'admin',
+          ),
+        );
       });
 
       // 2 — approved.
@@ -358,7 +373,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
    * Who to write to, resolved at send time rather than carried on the job.
    *
    * A `dealer` audience is the OWNER's address — the person who applied, and
-   * the only seat that can act on any of these six messages. An `admin`
+   * the only seat that can act on any of these messages. An `admin`
    * audience is `ADMIN_ALLOWLIST`, which is the same list that decides who may
    * hold an admin session: a moderation queue email going to somebody who
    * cannot open the queue would be a leak with no purpose.
