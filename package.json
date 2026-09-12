@@ -2,7 +2,7 @@
   "name": "dealers-drive",
   "version": "0.0.0",
   "private": true,
-  "description": "Dealers-Drive \u2014 B2B2C used-car marketplace monorepo",
+  "description": "Dealers-Drive — B2B2C used-car marketplace monorepo",
   "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": ">=24"
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "prettier": "^3.9.6",
+    "prisma": "^7.10.0",
     "turbo": "^2.10.12",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
