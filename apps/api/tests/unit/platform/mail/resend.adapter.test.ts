@@ -5,6 +5,10 @@ import {
   PermanentMailError,
 } from '../../../../src/platform/mail/resend.adapter.js';
 import { createConsoleMailer } from '../../../../src/platform/mail/console.adapter.js';
+import {
+  mailDeliverabilityIssues,
+  mailboxAddress,
+} from '../../../../src/platform/mail/deliverability.js';
 import { createMailer } from '../../../../src/platform/mail/factory.js';
 import { env } from '../../../../src/config/env.js';
 
@@ -74,6 +78,7 @@ describe('a message Resend accepts', () => {
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
     expect(body.to).toEqual([MESSAGE.to]);
     expect(body.from).toBe(env.MAIL_FROM);
+    expect(body.reply_to).toBe(env.SUPPORT_EMAIL);
     // Both bodies, always: a message with no plain-text part scores worse with
     // every spam filter that looks.
     expect(body.html).toBe(MESSAGE.html);
@@ -133,5 +138,49 @@ describe('the console driver', () => {
 describe('the factory', () => {
   it('builds the driver the environment names', () => {
     expect(createMailer().driver).toBe(env.MAIL_DRIVER === 'resend' ? 'resend' : 'console');
+  });
+});
+
+describe('deliverability configuration diagnostics', () => {
+  it('identifies the shared test sender and localhost links from the incident', () => {
+    const issues = mailDeliverabilityIssues({
+      MAIL_DRIVER: 'resend',
+      MAIL_FROM: 'Dealers-Drive <onboarding@resend.dev>',
+      WEB_BASE_URL: 'http://localhost:3000',
+    });
+
+    expect(issues.map((issue) => issue.code)).toEqual([
+      'resend_test_domain',
+      'non_public_link_base',
+    ]);
+    expect(issues[0]).toMatchObject({ senderDomain: 'resend.dev', linkHost: 'localhost' });
+  });
+
+  it('reports no configuration warning for a verified-domain HTTPS setup', () => {
+    expect(
+      mailDeliverabilityIssues({
+        MAIL_DRIVER: 'resend',
+        MAIL_FROM: 'Dealers-Drive <updates@dealers-drive.com>',
+        WEB_BASE_URL: 'https://www.dealers-drive.com',
+      }),
+    ).toEqual([]);
+  });
+
+  it('does not apply Resend diagnostics to the console driver', () => {
+    expect(
+      mailDeliverabilityIssues({
+        MAIL_DRIVER: 'console',
+        MAIL_FROM: 'Dealers-Drive <onboarding@resend.dev>',
+        WEB_BASE_URL: 'http://localhost:3000',
+      }),
+    ).toEqual([]);
+  });
+
+  it('extracts a sender address with or without a display name', () => {
+    expect(mailboxAddress('Dealers-Drive <Updates@Dealers-Drive.com>')).toBe(
+      'updates@dealers-drive.com',
+    );
+    expect(mailboxAddress('updates@dealers-drive.com')).toBe('updates@dealers-drive.com');
+    expect(mailboxAddress('not a mailbox')).toBeNull();
   });
 });

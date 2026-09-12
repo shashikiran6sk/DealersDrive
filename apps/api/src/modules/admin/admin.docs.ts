@@ -247,8 +247,8 @@ export const adminDocs: ModuleDocs = {
       description:
         "**Pulls every one of the dealership's cars out of the catalogue at once**, because " +
         'public visibility requires `dealer.status = ACTIVE` as well as an approved listing. ' +
-        'The dealer keeps read access to their own console — they need to see why — but can ' +
-        'publish nothing.\n\n' +
+        'Every member account is blocked from sign-in and its existing sessions are revoked. ' +
+        'The suspension email carries the reason and support path.\n\n' +
         '`listingsAffected` in the response is how many listings left the catalogue. ' +
         'Reversible with reinstate.',
       audience: 'admin',
@@ -277,7 +277,8 @@ export const adminDocs: ModuleDocs = {
       description:
         'Sets the dealership ACTIVE again and re-indexes its listings, so the cars that were ' +
         'approved before the suspension come back — the suspension hid them, it did not ' +
-        'un-approve them.',
+        'un-approve them. Member accounts are restored, but revoked sessions stay revoked and ' +
+        'each person must sign in again.',
       audience: 'admin',
       permission: 'admin:dealer:approve',
       params: 'IdParam',

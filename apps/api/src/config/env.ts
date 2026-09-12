@@ -4,6 +4,8 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
+import { mailboxAddress } from '../platform/mail/deliverability.js';
+
 /**
  * Loads .env from the app directory first, then the repo root. dotenv never
  * overwrites a variable that is already set, so real environment variables
@@ -191,7 +193,7 @@ const envSchema = z.object({
   MEDIA_BASE_URL: required('http://localhost:4000/media'),
 
   /**
-   * Where the six transactional emails go (**R40**).
+   * Where transactional emails go (**R40**).
    *
    *   console  — prints the recipient, the subject and the plain-text body.
    *              The default, what `pnpm dev` and the whole test suite use, and
@@ -208,7 +210,7 @@ const envSchema = z.object({
   SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
   MSG91_AUTH_KEY: optional(z.string().min(1)),
   MSG91_SENDER_ID: optional(z.string().min(1)),
-  MAIL_FROM: z.string().min(1).default('Dealers-Drive <no-reply@dealers-drive.com>'),
+  MAIL_FROM: z.string().min(1).default('Dealers-Drive <updates@dealers-drive.com>'),
 
   /**
    * Where registration lookups come from (ARCHITECTURE §6.3).
@@ -383,6 +385,30 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
 
   if (value.MAIL_DRIVER === 'resend' && !value.RESEND_API_KEY) {
     require('RESEND_API_KEY', 'is required when MAIL_DRIVER=resend.');
+  }
+
+  if (production && value.MAIL_DRIVER === 'resend') {
+    const sender = mailboxAddress(value.MAIL_FROM);
+    if (!sender) {
+      require('MAIL_FROM', 'must contain a valid sender address, for example `Dealers-Drive <updates@dealers-drive.com>`.');
+    } else {
+      const [localPart, domain] = sender.split('@');
+      if (domain === 'resend.dev') {
+        require('MAIL_FROM', 'must use a verified domain in production — resend.dev is a shared test-only domain.');
+      }
+      if (localPart === 'no-reply' || localPart === 'noreply') {
+        require('MAIL_FROM', 'must use a monitored sender in production; avoid no-reply addresses.');
+      }
+    }
+
+    try {
+      const base = new URL(value.WEB_BASE_URL);
+      if (base.protocol !== 'https:' || ['localhost', '127.0.0.1', '::1'].includes(base.hostname)) {
+        require('WEB_BASE_URL', 'must be a public HTTPS origin when Resend is enabled in production.');
+      }
+    } catch {
+      require('WEB_BASE_URL', 'must be an absolute public HTTPS URL.');
+    }
   }
 
   if (value.SMS_DRIVER === 'msg91') {

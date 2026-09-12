@@ -47,7 +47,13 @@ interface Row {
 }
 
 /** A unique index, in fifteen lines. It is the whole idempotency guarantee. */
-function fakePrisma(options: { owner?: { email: string | null; fullName: string | null } } = {}) {
+function fakePrisma(
+  options: {
+    owner?: { email: string | null; fullName: string | null } | null;
+    dealer?: Record<string, unknown> | null;
+    rejectedSnapshot?: Record<string, unknown> | null;
+  } = {},
+) {
   const rows = new Map<string, Row>();
   const owner =
     options.owner === undefined
@@ -102,16 +108,29 @@ function fakePrisma(options: { owner?: { email: string | null; fullName: string 
     },
     dealer: {
       findUnique: () =>
-        Promise.resolve({
-          brandName: 'Sri Lakshmi Motors',
-          legalName: 'Sri Lakshmi Motors Pvt Ltd',
-          slug: 'sri-lakshmi-motors',
-          tagline: 'Family-run since 1998.',
-          specialities: ['In-house workshop'],
-        }),
+        Promise.resolve(
+          options.dealer === null
+            ? null
+            : {
+                brandName: 'Sri Lakshmi Motors',
+                legalName: 'Sri Lakshmi Motors Pvt Ltd',
+                slug: 'sri-lakshmi-motors',
+                tagline: 'Family-run since 1998.',
+                specialities: ['In-house workshop'],
+                ...options.dealer,
+              },
+        ),
     },
     dealerMember: {
       findFirst: () => Promise.resolve(owner === null ? null : { user: owner }),
+    },
+    auditLog: {
+      findFirst: () =>
+        Promise.resolve(
+          options.rejectedSnapshot === undefined || options.rejectedSnapshot === null
+            ? null
+            : { before: options.rejectedSnapshot },
+        ),
     },
   } as unknown as PrismaClient;
 
@@ -163,7 +182,7 @@ const JOB: EmailJob = {
   subjectId: 'evt-1',
 };
 
-describe('the six rules', () => {
+describe('the notification rules', () => {
   /** Every case asserts the *template*, because that is the product decision. */
   async function templatesFor(
     type: DomainEvent['type'],
@@ -181,6 +200,13 @@ describe('the six rules', () => {
     await expect(templatesFor('DealerApplied')).resolves.toEqual([
       'dealer.application.received',
       'admin.application.received',
+    ]);
+  });
+
+  it('uses distinct dealer and admin emails when an application is resubmitted', async () => {
+    await expect(templatesFor('DealerApplied', { resubmitted: true })).resolves.toEqual([
+      'dealer.application.resubmitted',
+      'admin.application.resubmitted',
     ]);
   });
 
@@ -207,6 +233,35 @@ describe('the six rules', () => {
     expect(mailer.sent[0]?.text).toContain('The GST certificate is for another entity.');
   });
 
+  it('sends a rejection from the surviving audit snapshot after the dealer is purged', async () => {
+    const { service, mailer, rows } = setup({
+      owner: null,
+      dealer: null,
+      // `contactEmail` is the historical snapshot field, proving queued
+      // events from before the fix can also be recovered.
+      rejectedSnapshot: {
+        brandName: 'Sri Lakshmi Motors',
+        legalName: 'Sri Lakshmi Motors Pvt Ltd',
+        contactEmail: 'applicant@example.com',
+        recipientName: 'Karthik Raman',
+      },
+    });
+
+    await service.handleEmailJob({
+      ...JOB,
+      template: 'dealer.application.rejected',
+      reason: 'The GST certificate is for another entity.',
+    });
+
+    expect(mailer.sent[0]).toMatchObject({
+      to: 'applicant@example.com',
+      tag: 'dealer.application.rejected',
+    });
+    expect(mailer.sent[0]?.text).toContain('Sri Lakshmi Motors');
+    expect(mailer.sent[0]?.text).toContain('The GST certificate is for another entity.');
+    expect([...rows.values()][0]?.dealerId).toBeNull();
+  });
+
   it('emails the dealer when changes are requested', async () => {
     await expect(
       templatesFor('DealerChangesRequested', { reason: 'Upload a clearer PAN card.' }),
@@ -217,6 +272,22 @@ describe('the six rules', () => {
     await expect(templatesFor('DealerProfileChangeSubmitted')).resolves.toEqual([
       'admin.profile-change.submitted',
     ]);
+  });
+
+  it('emails the dealer when the dealership is suspended', async () => {
+    const { service, mailer } = setup();
+    const bus = createEventBus();
+    service.subscribe(bus);
+    await service.work();
+
+    await bus.publish(event('DealerSuspended', { reason: 'GST registration has expired.' }));
+
+    expect(mailer.sent[0]?.tag).toBe('dealer.account.suspended');
+    expect(mailer.sent[0]?.text).toContain('GST registration has expired.');
+  });
+
+  it('emails the dealer when the dealership is reinstated', async () => {
+    await expect(templatesFor('DealerReinstated')).resolves.toEqual(['dealer.account.reinstated']);
   });
 
   /** One event, two verdicts. `payload.published` is which way (R34). */
