@@ -27,6 +27,11 @@ import type { MailerPort, MailMessage, MailResult } from './mail.port.js';
  */
 const ENDPOINT = 'https://api.resend.com/emails';
 
+/** Resend tag names and values only accept this provider-specific alphabet. */
+function resendTagValue(value: string): string {
+  return value.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 256);
+}
+
 /** Marks a failure the worker must not retry. See the note above. */
 export class PermanentMailError extends Error {
   readonly permanent = true;
@@ -61,7 +66,7 @@ export function createResendMailer(fetchImpl: typeof fetch = fetch): MailerPort 
             subject: message.subject,
             html: message.html,
             text: message.text,
-            tags: [{ name: 'template', value: message.tag }],
+            tags: [{ name: 'template', value: resendTagValue(message.tag) }],
           }),
         });
       } catch (error) {

@@ -78,7 +78,9 @@ describe('a message Resend accepts', () => {
     // every spam filter that looks.
     expect(body.html).toBe(MESSAGE.html);
     expect(body.text).toBe(MESSAGE.text);
-    expect(body.tags).toEqual([{ name: 'template', value: MESSAGE.tag }]);
+    // Resend rejects dots (and every character outside [A-Za-z0-9_-]) in
+    // either half of a tag, while our internal template names use dots.
+    expect(body.tags).toEqual([{ name: 'template', value: 'dealer_application_approved' }]);
   });
 });
 
