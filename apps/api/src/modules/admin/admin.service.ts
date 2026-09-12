@@ -973,8 +973,18 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       action: string,
     ): Promise<DealerModerationResponse> {
       return withTransaction(prisma, async (tx) => {
-        const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
+        const dealer = await tx.dealer.findUnique({
+          where: { id: dealerId },
+          include: {
+            members: {
+              where: { status: 'ACTIVE' },
+              select: { userId: true },
+            },
+          },
+        });
         if (!dealer) throw new NotFoundError('That dealership does not exist.');
+
+        const memberUserIds = [...new Set(dealer.members.map((member) => member.userId))];
 
         const updated = await tx.dealer.update({
           where: { id: dealerId },
@@ -991,6 +1001,26 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         // `Listing` arrives with F064; until then no listing can be affected,
         // which is why this reads zero rather than being left out of the shape.
         const listings = 0;
+
+        if (memberUserIds.length > 0) {
+          await tx.user.updateMany({
+            where: {
+              id: { in: memberUserIds },
+              status: status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED',
+            },
+            data: { status: status === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE' },
+          });
+
+          if (status === 'SUSPENDED') {
+            // An account-level block must end every browser session, including
+            // one held by a member who is also a platform admin. Reinstatement
+            // never un-revokes these rows; the person signs in again.
+            await tx.session.updateMany({
+              where: { userId: { in: memberUserIds }, revokedAt: null },
+              data: { revokedAt: new Date() },
+            });
+          }
+        }
 
         await audit.record(tx, {
           actorType: 'ADMIN',

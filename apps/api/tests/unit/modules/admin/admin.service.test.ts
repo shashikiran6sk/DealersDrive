@@ -87,7 +87,12 @@ function dealerRow(overrides: Record<string, unknown> = {}) {
     /** R34. Empty is the ordinary case: no edit is waiting on a moderator. */
     profileEdits: [],
     documents: [],
-    members: [{ user: { fullName: 'Ramesh Kumar', email: 'owner@sri-lakshmi-motors.in' } }],
+    members: [
+      {
+        userId: 'user-1',
+        user: { fullName: 'Ramesh Kumar', email: 'owner@sri-lakshmi-motors.in' },
+      },
+    ],
     ...overrides,
   };
 }
@@ -105,6 +110,8 @@ function setup(options: Options = {}) {
   const deletedDealers: unknown[] = [];
   const deletedMedia: unknown[] = [];
   const dealerPatches: { dealerId: string; input: unknown }[] = [];
+  const userUpdates: unknown[] = [];
+  const sessionUpdates: unknown[] = [];
 
   const resolveDealer = () =>
     Promise.resolve(options.dealer === null ? null : dealerRow(options.dealer ?? {}));
@@ -136,6 +143,18 @@ function setup(options: Options = {}) {
       deleteMany: (args: unknown) => {
         deletedMedia.push(args);
         return Promise.resolve({ count: (options.media ?? []).length });
+      },
+    },
+    user: {
+      updateMany: (args: unknown) => {
+        userUpdates.push(args);
+        return Promise.resolve({ count: 1 });
+      },
+    },
+    session: {
+      updateMany: (args: unknown) => {
+        sessionUpdates.push(args);
+        return Promise.resolve({ count: 1 });
       },
     },
   };
@@ -227,6 +246,8 @@ function setup(options: Options = {}) {
     deletedDealers,
     deletedMedia,
     dealerPatches,
+    userUpdates,
+    sessionUpdates,
   };
 }
 
@@ -994,6 +1015,39 @@ describe('setDealerStatus and its wrappers', () => {
     expect(response.listingsAffected).toBe(0);
   });
 
+  it('blocks every active member account and revokes every session on suspension', async () => {
+    const h = setup({
+      dealer: dealerRow({
+        status: 'ACTIVE',
+        members: [
+          { userId: 'owner-1', role: 'OWNER' },
+          { userId: 'manager-1', role: 'MANAGER' },
+        ],
+      }),
+    });
+
+    await h.service.suspendDealer(admin, DEALER, 'GST expired.');
+
+    expect(h.userUpdates).toEqual([
+      {
+        where: {
+          id: { in: ['owner-1', 'manager-1'] },
+          status: 'ACTIVE',
+        },
+        data: { status: 'SUSPENDED' },
+      },
+    ]);
+    expect(h.sessionUpdates).toEqual([
+      {
+        where: {
+          userId: { in: ['owner-1', 'manager-1'] },
+          revokedAt: null,
+        },
+        data: { revokedAt: expect.any(Date) },
+      },
+    ]);
+  });
+
   it('reinstates, clearing the suspension', async () => {
     const h = setup({ dealer: dealerRow({ status: 'SUSPENDED' }) });
 
@@ -1004,6 +1058,13 @@ describe('setDealerStatus and its wrappers', () => {
       statusReason: 'Documents renewed.',
       suspendedAt: null,
     });
+    expect(h.userUpdates).toEqual([
+      {
+        where: { id: { in: ['user-1'] }, status: 'SUSPENDED' },
+        data: { status: 'ACTIVE' },
+      },
+    ]);
+    expect(h.sessionUpdates).toEqual([]);
   });
 
   it('keeps the original approval date on reinstatement', async () => {

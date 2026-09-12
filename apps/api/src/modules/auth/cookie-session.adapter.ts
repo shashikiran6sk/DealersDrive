@@ -54,6 +54,11 @@ export function createCookieSessionResolver(
       };
     }
 
+    // Account status is the primary block, and this dealer-status check is the
+    // backstop if a legacy or manually changed row was suspended before its
+    // member account was updated.
+    if (membership.dealer.status === 'SUSPENDED') return null;
+
     return {
       kind: 'DEALER',
       userId: session.userId,

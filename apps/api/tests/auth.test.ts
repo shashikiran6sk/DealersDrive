@@ -396,6 +396,115 @@ describe('a returning dealer', () => {
   });
 });
 
+describe('a suspended dealership account', () => {
+  it('blocks Google sign-in, invalidates every session, and requires sign-in after reinstatement', async () => {
+    const dealerClaims = { ...h.google.claims };
+    const firstDevice = h.agent();
+    await h.signIn(firstDevice);
+    const created = await firstDevice.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await h.prisma.dealer.update({
+      where: { id: created.body.dealer.id },
+      data: { status: 'ACTIVE', approvedAt: new Date() },
+    });
+
+    const secondDevice = h.agent();
+    await h.signIn(secondDevice);
+    const identity = await h.prisma.oAuthIdentity.findUniqueOrThrow({
+      where: {
+        provider_providerSubject: {
+          provider: 'GOOGLE',
+          providerSubject: dealerClaims.subject,
+        },
+      },
+    });
+    expect(
+      await h.prisma.session.count({
+        where: { userId: identity.userId, scope: 'DEALER', revokedAt: null },
+      }),
+    ).toBeGreaterThanOrEqual(2);
+
+    h.google.claims = {
+      subject: `suspension-admin-${String(subjectCounter)}`,
+      email: env.adminAllowlist[0] ?? '',
+      emailVerified: true,
+      name: 'Dealers-Drive Operations',
+    };
+    const admin = h.agent();
+    await h.signInAdmin(admin);
+    await admin
+      .post(`/v1/admin/dealers/${String(created.body.dealer.id)}/suspend`)
+      .send({ reason: 'GST registration has expired.' })
+      .expect(200);
+
+    expect(await h.prisma.user.findUniqueOrThrow({ where: { id: identity.userId } })).toMatchObject(
+      { status: 'SUSPENDED' },
+    );
+    expect(
+      await h.prisma.session.count({
+        where: { userId: identity.userId, scope: 'DEALER', revokedAt: null },
+      }),
+    ).toBe(0);
+    await firstDevice.get('/v1/auth/me').expect(401);
+    await secondDevice.get('/v1/auth/me').expect(401);
+
+    // Google identifies the account by its stable subject, so changing the
+    // address cannot walk around the suspension.
+    h.google.claims = { ...dealerClaims, email: `renamed-${dealerClaims.email}` };
+    const blocked = h.agent();
+    const blockedSignIn = await h.signIn(blocked);
+    expect(blockedSignIn.location).toContain('error=account_suspended');
+    expect(
+      await h.prisma.session.count({
+        where: { userId: identity.userId, scope: 'DEALER', revokedAt: null },
+      }),
+    ).toBe(0);
+
+    await admin
+      .post(`/v1/admin/dealers/${String(created.body.dealer.id)}/reinstate`)
+      .send({ note: 'Registration renewed.' })
+      .expect(200);
+    expect(await h.prisma.user.findUniqueOrThrow({ where: { id: identity.userId } })).toMatchObject(
+      { status: 'ACTIVE' },
+    );
+
+    const restored = h.agent();
+    const restoredSignIn = await h.signIn(restored);
+    expect(restoredSignIn.location).toBe(`${env.WEB_BASE_URL}/dealer`);
+    await restored.get('/v1/auth/me').expect(200);
+
+    // Reinstatement restores the account, not a browser token that was
+    // explicitly revoked during suspension.
+    await firstDevice.get('/v1/auth/me').expect(401);
+    await secondDevice.get('/v1/auth/me').expect(401);
+  });
+
+  it('blocks a legacy dealer-status-only suspension as a backstop', async () => {
+    const dealerClaims = { ...h.google.claims };
+    const signedIn = h.agent();
+    await h.signIn(signedIn);
+    const created = await signedIn.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await h.prisma.dealer.update({
+      where: { id: created.body.dealer.id },
+      data: { status: 'SUSPENDED', suspendedAt: new Date() },
+    });
+
+    const identity = await h.prisma.oAuthIdentity.findUniqueOrThrow({
+      where: {
+        provider_providerSubject: {
+          provider: 'GOOGLE',
+          providerSubject: dealerClaims.subject,
+        },
+      },
+      include: { user: true },
+    });
+    expect(identity.user.status).toBe('ACTIVE');
+    await signedIn.get('/v1/auth/me').expect(401);
+
+    const blockedSignIn = await h.signIn(h.agent());
+    expect(blockedSignIn.location).toContain('error=account_suspended');
+  });
+});
+
 describe('what a bad round trip does', () => {
   it('refuses a callback whose state does not match the cookie', async () => {
     const agent = h.agent();
