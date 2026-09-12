@@ -101,6 +101,16 @@ describe('the tagline says what is wrong in the dealer’s own words', () => {
   });
 });
 
+describe('established year', () => {
+  it.each([1899, 2000.5, 2090, 2400])('explains invalid year %s', (establishedYear) => {
+    expectHuman(messagesFor(UpdateDealerInput.safeParse({ establishedYear })));
+  });
+
+  it.each([1900, new Date().getFullYear()])('accepts boundary year %s', (establishedYear) => {
+    expect(UpdateDealerInput.safeParse({ establishedYear }).success).toBe(true);
+  });
+});
+
 /**
  * The two schemas are the same field on two screens — the sign-up wizard
  * validates against `OnboardingInput` and the profile screen against

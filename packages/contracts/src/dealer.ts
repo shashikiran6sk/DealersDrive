@@ -220,7 +220,14 @@ export const UpdateDealerInput = z
      */
     gstin: GSTIN.optional(),
     pan: PAN.optional(),
-    establishedYear: z.number().int().min(1900).max(new Date().getFullYear()).optional(),
+    establishedYear: z
+      .number()
+      .int('Enter a whole year.')
+      .min(1900, 'Enter a year from 1900 onwards.')
+      .refine((year) => year <= new Date().getFullYear(), {
+        message: 'Established year cannot be in the future.',
+      })
+      .optional(),
     /**
      * The same floor of one that `OnboardingInput` applies (**R26**): present
      * and empty is a dealer clearing on the profile screen what the sign-up

@@ -201,6 +201,12 @@ describe('a complete save', () => {
 });
 
 describe('a refusal', () => {
+  it.each(['2090', '2400'])('rejects future year %s before calling the API', async (year) => {
+    const state = await saveDealerProfileAction(IDLE, form({ ...COMPLETE, establishedYear: year }));
+    expect(state.fieldErrors.establishedYear).toBe('Established year cannot be in the future.');
+    expect(calls).toHaveLength(0);
+  });
+
   it('rejects a line shorter than the floor onboarding insisted on', async () => {
     const state = await saveDealerProfileAction(IDLE, form({ ...COMPLETE, tagline: 'Cars' }));
 
