@@ -669,7 +669,7 @@ describe('what a dealer may change about themselves', () => {
     expect((await agent.get('/v1/dealer').expect(200)).body.address.city).toBe('Chennai');
   });
 
-  it.each(['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED', 'REJECTED', 'CLOSED'] as const)(
+  it.each(['PENDING_APPROVAL', 'ACTIVE', 'REJECTED', 'CLOSED'] as const)(
     'refuses the onboarding route once the dealership is %s',
     async (status) => {
       const { agent, dealerId } = await dealership();
@@ -684,6 +684,17 @@ describe('what a dealer may change about themselves', () => {
       expect((await agent.get('/v1/dealer').expect(200)).body.address.city).toBe('Katpadi');
     },
   );
+
+  it('makes every dealer route unauthorized once the dealership is suspended', async () => {
+    const { agent, dealerId } = await dealership();
+    await h.prisma.dealer.update({ where: { id: dealerId }, data: { status: 'SUSPENDED' } });
+
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ address: { city: 'Chennai' } })
+      .expect(401);
+    await agent.get('/v1/dealer').expect(401);
+  });
 });
 
 describe('the contact number, after onboarding', () => {
