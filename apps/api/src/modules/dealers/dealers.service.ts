@@ -420,7 +420,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
      * ## Why this is not just `update`
      *
      * Three fields reach this method and they do not all mean the same thing.
-     * `establishedYear` is a fact about the business bounded by 1900 and 2100:
+     * `establishedYear` is a fact bounded by 1900 and the current year:
      * there is no way to write a phone number, a rival's name or a WhatsApp
      * handle into an integer, so it is published the moment the dealer saves
      * it. The tagline and the service list are the only prose a dealer writes
