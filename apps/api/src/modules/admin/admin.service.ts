@@ -699,7 +699,14 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const dealer = await prisma.dealer.findUnique({
         where: { id: dealerId },
-        include: { documents: true },
+        include: {
+          documents: true,
+          members: {
+            where: { role: 'OWNER', status: 'ACTIVE' },
+            take: 1,
+            select: { user: { select: { email: true, fullName: true } } },
+          },
+        },
       });
       if (!dealer) throw new NotFoundError('That dealership does not exist.');
       if (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED') {
@@ -735,6 +742,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const purgedAt = new Date();
       await withTransaction(prisma, async (tx) => {
+        const owner = dealer.members[0]?.user;
         // Written first, and with the whole record in `before`, because in a
         // moment there will be nothing left to describe it.
         await audit.record(tx, {
@@ -755,6 +763,11 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             district: dealer.district,
             state: dealer.state,
             contactEmail: dealer.contactEmail,
+            // The membership is deleted with the dealership. Keep the actual
+            // notification recipient in the surviving audit snapshot so the
+            // worker can still send after the purge commits.
+            recipientEmail: owner?.email ?? dealer.contactEmail,
+            recipientName: owner?.fullName ?? null,
             documents: dealer.documents.map((doc) => ({ type: doc.type, status: doc.status })),
           },
           after: { purged: true, reason, objectsDeleted },

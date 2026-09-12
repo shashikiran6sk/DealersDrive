@@ -1142,6 +1142,8 @@ describe('rejectDealer', () => {
         status: 'PENDING_APPROVAL',
         gstin: '33AABCS1429B1ZX',
         legalName: 'Sri Lakshmi Motors Pvt Ltd',
+        recipientEmail: 'owner@sri-lakshmi-motors.in',
+        recipientName: 'Ramesh Kumar',
       },
       after: { purged: true, reason: 'The GSTIN belongs to a different business.' },
     });

@@ -958,6 +958,34 @@ describe('email notifications', () => {
     );
   });
 
+  it('emails the dealer after a rejected application has been purged', async () => {
+    const made = await submitted();
+    const membership = await h.prisma.dealerMember.findFirstOrThrow({
+      where: { dealerId: made.dealerId, role: 'OWNER' },
+      include: { user: true },
+    });
+    const dealer = await h.prisma.dealer.findUniqueOrThrow({ where: { id: made.dealerId } });
+    const admin = await moderator();
+
+    const emails = await emailsFrom(() =>
+      admin
+        .post(`/v1/admin/dealers/${made.dealerId}/reject`)
+        .send({ reason: 'The GSTIN belongs to a different business.' })
+        .expect(200),
+    );
+
+    const email = emails.find((one) => one.tag === 'dealer.application.rejected');
+    expect(email).toMatchObject({ to: membership.user.email });
+    expect(email?.text).toContain(dealer.brandName);
+    expect(email?.text).toContain('The GSTIN belongs to a different business.');
+    expect(await h.prisma.dealer.findUnique({ where: { id: made.dealerId } })).toBeNull();
+
+    const delivery = await h.prisma.notificationDelivery.findFirstOrThrow({
+      where: { template: 'dealer.application.rejected', recipient: membership.user.email ?? '' },
+    });
+    expect(delivery).toMatchObject({ status: 'SENT', dealerId: null });
+  });
+
   /** **4 — the dealer proposes new public words: tell the moderators.** */
   it('emails the admins when a profile change is submitted', async () => {
     const made = await dealership();
