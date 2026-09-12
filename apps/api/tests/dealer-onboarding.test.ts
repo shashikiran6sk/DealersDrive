@@ -669,7 +669,7 @@ describe('what a dealer may change about themselves', () => {
     expect((await agent.get('/v1/dealer').expect(200)).body.address.city).toBe('Chennai');
   });
 
-  it.each(['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED', 'REJECTED', 'CLOSED'] as const)(
+  it.each(['PENDING_APPROVAL', 'ACTIVE', 'REJECTED', 'CLOSED'] as const)(
     'refuses the onboarding route once the dealership is %s',
     async (status) => {
       const { agent, dealerId } = await dealership();
@@ -684,6 +684,17 @@ describe('what a dealer may change about themselves', () => {
       expect((await agent.get('/v1/dealer').expect(200)).body.address.city).toBe('Katpadi');
     },
   );
+
+  it('makes every dealer route unauthorized once the dealership is suspended', async () => {
+    const { agent, dealerId } = await dealership();
+    await h.prisma.dealer.update({ where: { id: dealerId }, data: { status: 'SUSPENDED' } });
+
+    await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ address: { city: 'Chennai' } })
+      .expect(401);
+    await agent.get('/v1/dealer').expect(401);
+  });
 });
 
 describe('the contact number, after onboarding', () => {
@@ -783,7 +794,7 @@ describe('one dealership, one GSTIN', () => {
 });
 
 /**
- * **R40 — the six emails, end to end and against the database.**
+ * **R40 — transactional emails, end to end and against the database.**
  *
  * The service's own unit tests cover the rules, the idempotency and the two
  * failure shapes with a hand-written Prisma. What only a real database can show
@@ -927,6 +938,90 @@ describe('email notifications', () => {
     const email = emails.find((one) => one.tag === 'dealer.application.changes-requested');
     expect(email).toBeDefined();
     expect(email?.text).toContain('The GST certificate is for a different entity.');
+  });
+
+  it('uses new dealer and admin messages after requested changes are resubmitted', async () => {
+    const made = await dealership();
+    await completeApplication(made.agent);
+    await made.agent.post('/v1/dealer/submit').expect(200);
+    await h.drainEmails();
+
+    const admin = await moderator();
+    await admin
+      .post(`/v1/admin/dealers/${made.dealerId}/request-changes`)
+      .send({ reason: 'Upload a clearer PAN card.' })
+      .expect(200);
+    await h.drainEmails();
+
+    const emails = await emailsFrom(() => made.agent.post('/v1/dealer/submit').expect(200));
+    const tags = emails.map((email) => email.tag);
+
+    expect(tags).toEqual(
+      expect.arrayContaining(['dealer.application.resubmitted', 'admin.application.resubmitted']),
+    );
+    expect(tags).not.toContain('dealer.application.received');
+    expect(tags).not.toContain('admin.application.received');
+    expect(emails.find((email) => email.tag === 'dealer.application.resubmitted')?.text).toContain(
+      'Thank you for resubmitting the details',
+    );
+    expect(emails.find((email) => email.tag === 'admin.application.resubmitted')?.text).toContain(
+      'has resubmitted its application',
+    );
+  });
+
+  it('emails the dealer after a rejected application has been purged', async () => {
+    const made = await submitted();
+    const membership = await h.prisma.dealerMember.findFirstOrThrow({
+      where: { dealerId: made.dealerId, role: 'OWNER' },
+      include: { user: true },
+    });
+    const dealer = await h.prisma.dealer.findUniqueOrThrow({ where: { id: made.dealerId } });
+    const admin = await moderator();
+
+    const emails = await emailsFrom(() =>
+      admin
+        .post(`/v1/admin/dealers/${made.dealerId}/reject`)
+        .send({ reason: 'The GSTIN belongs to a different business.' })
+        .expect(200),
+    );
+
+    const email = emails.find((one) => one.tag === 'dealer.application.rejected');
+    expect(email).toMatchObject({ to: membership.user.email });
+    expect(email?.text).toContain(dealer.brandName);
+    expect(email?.text).toContain('The GSTIN belongs to a different business.');
+    expect(await h.prisma.dealer.findUnique({ where: { id: made.dealerId } })).toBeNull();
+
+    const delivery = await h.prisma.notificationDelivery.findFirstOrThrow({
+      where: { template: 'dealer.application.rejected', recipient: membership.user.email ?? '' },
+    });
+    expect(delivery).toMatchObject({ status: 'SENT', dealerId: null });
+  });
+
+  it('emails the dealer when suspended and when reinstated', async () => {
+    const made = await dealership();
+    await h.prisma.dealer.update({ where: { id: made.dealerId }, data: { status: 'ACTIVE' } });
+    const admin = await moderator();
+
+    const suspended = await emailsFrom(() =>
+      admin
+        .post(`/v1/admin/dealers/${made.dealerId}/suspend`)
+        .send({ reason: 'GST registration has expired.' })
+        .expect(200),
+    );
+    const suspension = suspended.find((email) => email.tag === 'dealer.account.suspended');
+    expect(suspension).toBeDefined();
+    expect(suspension?.text).toContain('GST registration has expired.');
+
+    const reinstated = await emailsFrom(() =>
+      admin
+        .post(`/v1/admin/dealers/${made.dealerId}/reinstate`)
+        .send({ note: 'Documents renewed; case resolved.' })
+        .expect(200),
+    );
+    const reinstatement = reinstated.find((email) => email.tag === 'dealer.account.reinstated');
+    expect(reinstatement).toBeDefined();
+    expect(reinstatement?.text).toContain('active again');
+    expect(reinstatement?.text).not.toContain('Documents renewed');
   });
 
   /** **4 — the dealer proposes new public words: tell the moderators.** */

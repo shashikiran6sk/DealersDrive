@@ -62,6 +62,7 @@ export function createResendMailer(fetchImpl: typeof fetch = fetch): MailerPort 
           },
           body: JSON.stringify({
             from: env.MAIL_FROM,
+            reply_to: env.SUPPORT_EMAIL,
             to: [message.to],
             subject: message.subject,
             html: message.html,

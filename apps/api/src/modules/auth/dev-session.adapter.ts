@@ -29,7 +29,7 @@ export function createDevSessionResolver(prisma: PrismaClient): SessionResolver 
       where: { slug: env.DEV_DEALER_SLUG },
       include: {
         members: {
-          where: { status: 'ACTIVE', role: 'OWNER' },
+          where: { status: 'ACTIVE', role: 'OWNER', user: { status: 'ACTIVE' } },
           take: 1,
           orderBy: { id: 'asc' },
         },
@@ -37,7 +37,7 @@ export function createDevSessionResolver(prisma: PrismaClient): SessionResolver 
     });
 
     const membership = dealer?.members[0];
-    if (!dealer || !membership) return null;
+    if (!dealer || dealer.status === 'SUSPENDED' || !membership) return null;
 
     return {
       kind: 'DEALER',

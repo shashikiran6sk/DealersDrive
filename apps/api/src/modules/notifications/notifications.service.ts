@@ -108,14 +108,29 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
 
   return {
     /**
-     * Wires the six rules onto the bus. Called once, by the process that runs
+     * Wires the notification rules onto the bus. Called once, by the process that runs
      * the outbox — which is the worker, or the API when `WORKER_INLINE=true`.
      */
     subscribe(bus: EventBus): void {
       // 1 — a dealership submits its application: tell the dealer, and us.
+      // A returned application gets explicit resubmission wording so neither
+      // audience mistakes it for the first submission arriving again.
       bus.on('DealerApplied', async (event) => {
-        await enqueue(base(event, 'dealer.application.received', 'dealer'));
-        await enqueue(base(event, 'admin.application.received', 'admin'));
+        const resubmitted = (event.payload as { resubmitted?: unknown }).resubmitted === true;
+        await enqueue(
+          base(
+            event,
+            resubmitted ? 'dealer.application.resubmitted' : 'dealer.application.received',
+            'dealer',
+          ),
+        );
+        await enqueue(
+          base(
+            event,
+            resubmitted ? 'admin.application.resubmitted' : 'admin.application.received',
+            'admin',
+          ),
+        );
       });
 
       // 2 — approved.
@@ -141,7 +156,20 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         });
       });
 
-      // 4 — a dealership proposes new public words: tell the moderators.
+      // 4 — suspension and reinstatement are both reversible account events,
+      // and both must be visible to the dealer.
+      bus.on('DealerSuspended', async (event) => {
+        await enqueue({
+          ...base(event, 'dealer.account.suspended', 'dealer'),
+          reason: reasonOf(event),
+        });
+      });
+
+      bus.on('DealerReinstated', async (event) => {
+        await enqueue(base(event, 'dealer.account.reinstated', 'dealer'));
+      });
+
+      // 5 — a dealership proposes new public words: tell the moderators.
       bus.on('DealerProfileChangeSubmitted', async (event) => {
         const payload = event.payload as { profileChangeId?: unknown };
         await enqueue({
@@ -153,7 +181,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         });
       });
 
-      // 5 and 6 — the decision on it. One event carries both verdicts, because
+      // 6 and 7 — the decision on it. One event carries both verdicts, because
       // R34 chose one event for "this dealership's public words were decided
       // on"; `payload.published` is which way.
       bus.on('DealerProfileChangeDecided', async (event) => {
@@ -198,6 +226,30 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
    * nothing went wrong.
    */
   async function handleEmailJob(job: EmailJob): Promise<void> {
+    /*
+     * Rejection is the one notification whose subject is deliberately gone
+     * before the outbox is published. Its non-FK audit snapshot survives the
+     * purge and is therefore the source of both recipient and rendering data.
+     */
+    if (job.template === 'dealer.application.rejected') {
+      const snapshot = await rejectedApplicationSnapshot(job.dealerId);
+      if (snapshot) {
+        await sendOne(
+          job,
+          { email: snapshot.recipientEmail, name: snapshot.recipientName },
+          {
+            dealerName: snapshot.dealerName,
+            contactName: snapshot.recipientName,
+            reason: job.reason ?? null,
+          },
+          // The dealer row no longer exists. A nullable delivery reference
+          // preserves the send record without violating its foreign key.
+          null,
+        );
+        return;
+      }
+    }
+
     const recipients = await recipientsFor(job);
     if (recipients.length === 0) {
       logger.warn(
@@ -249,6 +301,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
     job: EmailJob,
     recipient: { email: string; name: string | null },
     context: TemplateContext,
+    deliveryDealerId: string | null = job.dealerId,
   ): Promise<void> {
     const dedupeKey = `${job.template}:${job.subjectId}:${recipient.email.toLowerCase()}`;
     const message = render(job.template, context);
@@ -262,7 +315,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
           template: job.template,
           recipient: recipient.email,
           subject: message.subject,
-          dealerId: job.dealerId,
+          dealerId: deliveryDealerId,
           attempts: 1,
         },
       });
@@ -322,7 +375,9 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
           deliveryId: claimed?.id,
           providerMessageId: result.providerMessageId,
         },
-        'email sent',
+        // This is provider acceptance, not an inbox-placement claim. Resend
+        // cannot see whether Gmail subsequently chooses Inbox or Spam.
+        'email accepted by provider',
       );
     } catch (error) {
       const permanent = error instanceof PermanentMailError;
@@ -358,7 +413,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
    * Who to write to, resolved at send time rather than carried on the job.
    *
    * A `dealer` audience is the OWNER's address — the person who applied, and
-   * the only seat that can act on any of these six messages. An `admin`
+   * the only seat that can act on any of these messages. An `admin`
    * audience is `ADMIN_ALLOWLIST`, which is the same list that decides who may
    * hold an admin session: a moderation queue email going to somebody who
    * cannot open the queue would be a leak with no purpose.
@@ -375,6 +430,36 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
 
     const email = owner?.user.email;
     return email ? [{ email, name: owner.user.fullName }] : [];
+  }
+
+  async function rejectedApplicationSnapshot(dealerId: string): Promise<{
+    dealerName: string;
+    recipientEmail: string;
+    recipientName: string | null;
+  } | null> {
+    const audit = await prisma.auditLog.findFirst({
+      where: {
+        action: 'dealer.rejected',
+        entityType: 'Dealer',
+        entityId: dealerId,
+      },
+      orderBy: { id: 'desc' },
+      select: { before: true },
+    });
+    const before = recordOf(audit?.before);
+    if (!before) return null;
+
+    // `contactEmail` supports audit rows written before `recipientEmail`
+    // was introduced, so already-queued rejection events remain deliverable.
+    const recipientEmail = stringOf(before.recipientEmail) ?? stringOf(before.contactEmail);
+    const dealerName = stringOf(before.brandName) ?? stringOf(before.legalName);
+    if (!recipientEmail || !dealerName) return null;
+
+    return {
+      dealerName,
+      recipientEmail,
+      recipientName: stringOf(before.recipientName),
+    };
   }
 }
 
@@ -396,6 +481,16 @@ function base(event: DomainEvent, template: TemplateName, audience: 'dealer' | '
 function reasonOf(event: DomainEvent): string | null {
   const payload = event.payload as { reason?: unknown };
   return typeof payload.reason === 'string' ? payload.reason : null;
+}
+
+function recordOf(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function stringOf(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
 /** Prisma's P2002. Duck-typed, so a test can throw one without the client. */

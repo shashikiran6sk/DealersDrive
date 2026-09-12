@@ -3,7 +3,7 @@
  *
  * The port is deliberately thin: an address, a subject, two bodies and a tag.
  * No attachments, no CC, no templates, no scheduling — none of which any of the
- * six messages needs, and every one of which would be a shape a second provider
+ * transactional messages need, and every one of which would be a shape a second provider
  * has to be bent into later.
  *
  * ── Where this is called from, and where it is not ──────────────────────────

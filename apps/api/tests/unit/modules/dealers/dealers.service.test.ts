@@ -1180,7 +1180,31 @@ describe('submitForVerification', () => {
 
     // One table: the notification is exactly as durable as the state change.
     expect(h.outbox).toHaveLength(1);
-    expect(h.outbox[0]).toMatchObject({ eventType: 'DealerApplied', aggregateType: 'Dealer' });
+    expect(h.outbox[0]).toMatchObject({
+      eventType: 'DealerApplied',
+      aggregateType: 'Dealer',
+      payload: {
+        dealerId: 'dealer-1',
+        payload: { dealerId: 'dealer-1', resubmitted: false },
+      },
+    });
+  });
+
+  it('marks an application returned for changes as a resubmission', async () => {
+    const h = setup({
+      documents: verified,
+      dealer: { status: 'DRAFT', statusReason: 'Upload a clearer PAN card.' },
+    });
+
+    await h.service.submitForVerification('dealer-1');
+
+    expect(h.outbox[0]).toMatchObject({
+      eventType: 'DealerApplied',
+      payload: {
+        dealerId: 'dealer-1',
+        payload: { dealerId: 'dealer-1', resubmitted: true },
+      },
+    });
   });
 
   it('refuses a second submission', async () => {

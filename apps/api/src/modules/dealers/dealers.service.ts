@@ -923,6 +923,12 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       }
 
       const submittedAt = new Date();
+      // A returned application is still a DRAFT, so capture the moderator's
+      // note before the transaction clears it. The event must carry this
+      // distinction: by the time the worker renders the email, the row is back
+      // in PENDING_APPROVAL and no longer says whether this was its first trip
+      // through the queue.
+      const resubmitted = Boolean(dealer.statusReason);
       await withTransaction(prisma, async (tx) => {
         /*
          * `statusReason` is cleared on the way back into the queue.
@@ -942,7 +948,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           dealerId,
           actor: { type: 'DEALER' },
           traceId: getContext()?.traceId ?? 'dealer-submit',
-          payload: { dealerId },
+          payload: { dealerId, resubmitted },
         });
       });
 

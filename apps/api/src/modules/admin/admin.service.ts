@@ -699,7 +699,14 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const dealer = await prisma.dealer.findUnique({
         where: { id: dealerId },
-        include: { documents: true },
+        include: {
+          documents: true,
+          members: {
+            where: { role: 'OWNER', status: 'ACTIVE' },
+            take: 1,
+            select: { user: { select: { email: true, fullName: true } } },
+          },
+        },
       });
       if (!dealer) throw new NotFoundError('That dealership does not exist.');
       if (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED') {
@@ -735,6 +742,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const purgedAt = new Date();
       await withTransaction(prisma, async (tx) => {
+        const owner = dealer.members[0]?.user;
         // Written first, and with the whole record in `before`, because in a
         // moment there will be nothing left to describe it.
         await audit.record(tx, {
@@ -755,6 +763,11 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             district: dealer.district,
             state: dealer.state,
             contactEmail: dealer.contactEmail,
+            // The membership is deleted with the dealership. Keep the actual
+            // notification recipient in the surviving audit snapshot so the
+            // worker can still send after the purge commits.
+            recipientEmail: owner?.email ?? dealer.contactEmail,
+            recipientName: owner?.fullName ?? null,
             documents: dealer.documents.map((doc) => ({ type: doc.type, status: doc.status })),
           },
           after: { purged: true, reason, objectsDeleted },
@@ -960,8 +973,18 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       action: string,
     ): Promise<DealerModerationResponse> {
       return withTransaction(prisma, async (tx) => {
-        const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
+        const dealer = await tx.dealer.findUnique({
+          where: { id: dealerId },
+          include: {
+            members: {
+              where: { status: 'ACTIVE' },
+              select: { userId: true },
+            },
+          },
+        });
         if (!dealer) throw new NotFoundError('That dealership does not exist.');
+
+        const memberUserIds = [...new Set(dealer.members.map((member) => member.userId))];
 
         const updated = await tx.dealer.update({
           where: { id: dealerId },
@@ -978,6 +1001,26 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         // `Listing` arrives with F064; until then no listing can be affected,
         // which is why this reads zero rather than being left out of the shape.
         const listings = 0;
+
+        if (memberUserIds.length > 0) {
+          await tx.user.updateMany({
+            where: {
+              id: { in: memberUserIds },
+              status: status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED',
+            },
+            data: { status: status === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE' },
+          });
+
+          if (status === 'SUSPENDED') {
+            // An account-level block must end every browser session, including
+            // one held by a member who is also a platform admin. Reinstatement
+            // never un-revokes these rows; the person signs in again.
+            await tx.session.updateMany({
+              where: { userId: { in: memberUserIds }, revokedAt: null },
+              data: { revokedAt: new Date() },
+            });
+          }
+        }
 
         await audit.record(tx, {
           actorType: 'ADMIN',
@@ -997,7 +1040,13 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           dealerId,
           actor: { type: 'ADMIN', id: admin.userId },
           traceId: getContext()?.traceId ?? action,
-          payload: { dealerId },
+          payload: {
+            dealerId,
+            // The dealer needs the suspension reason. A reinstatement note is
+            // explicitly internal in the API contract and does not leave the
+            // admin surface.
+            ...(status === 'SUSPENDED' ? { reason } : {}),
+          },
         });
 
         return {

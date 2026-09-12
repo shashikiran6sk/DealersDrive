@@ -263,6 +263,15 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         orderBy: { id: 'asc' },
       });
 
+      // The account-status check above handles suspensions performed by the
+      // current admin workflow. This dealer-status guard also blocks legacy or
+      // manually suspended rows whose member account was never updated.
+      if (membership?.dealer.status === 'SUSPENDED') {
+        throw new ForbiddenError('This dealership has been suspended. Contact support.', {
+          code: 'ACCOUNT_SUSPENDED',
+        });
+      }
+
       const session = await sessions.issue({
         userId,
         scope: 'DEALER',

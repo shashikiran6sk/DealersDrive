@@ -337,6 +337,7 @@ describe('unknown throwables', () => {
     // R40 — production refuses MAIL_DRIVER=console, which sends nothing.
     vi.stubEnv('MAIL_DRIVER', 'resend');
     vi.stubEnv('RESEND_API_KEY', 're_a_real_production_key');
+    vi.stubEnv('MAIL_FROM', 'Dealers-Drive <updates@dealers-drive.com>');
 
     try {
       const { errorHandler: productionHandler } =

@@ -109,7 +109,7 @@ describe('resolveDealer', () => {
     expect(JSON.stringify(findUnique.mock.calls[0])).not.toContain('someone-elses-dealer');
   });
 
-  it('only accepts an ACTIVE OWNER membership as the seat', async () => {
+  it('only accepts an active account with an ACTIVE OWNER membership as the seat', async () => {
     const { resolver, findUnique } = setup();
 
     await resolver.resolveDealer(HOSTILE);
@@ -119,7 +119,11 @@ describe('resolveDealer', () => {
         { include: { members: { where: unknown; take: number } } },
       ]
     )[0];
-    expect(args.include.members.where).toEqual({ status: 'ACTIVE', role: 'OWNER' });
+    expect(args.include.members.where).toEqual({
+      status: 'ACTIVE',
+      role: 'OWNER',
+      user: { status: 'ACTIVE' },
+    });
     expect(args.include.members.take).toBe(1);
   });
 
@@ -161,10 +165,10 @@ describe('resolveDealer', () => {
    * The reason this re-reads rather than caching: a suspension applied in the
    * admin console must bite on the very next request, not at the next restart.
    */
-  it('reports the dealer status as stored, so a suspension bites immediately', async () => {
+  it('returns no principal for a suspended dealer', async () => {
     const { resolver } = setup({ dealer: dealer({ status: 'SUSPENDED' }) });
 
-    expect((await resolver.resolveDealer(HOSTILE))?.dealerStatus).toBe('SUSPENDED');
+    expect(await resolver.resolveDealer(HOSTILE)).toBeNull();
   });
 
   it('re-reads the database on every call', async () => {
