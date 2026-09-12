@@ -74,6 +74,7 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
   const [notice, setNotice] = useState<string | null>(null);
 
   const [approvalNote, setApprovalNote] = useState('');
+  const [approvalConfirm, setApprovalConfirm] = useState('');
   const [suspendReason, setSuspendReason] = useState('');
   const [reinstateNote, setReinstateNote] = useState('');
   const [changesReason, setChangesReason] = useState('');
@@ -84,6 +85,9 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
   // Waiting for a decision. The button appears on this; whether it is *usable*
   // is `canApprove`, which additionally wants the KYC documents verified.
   const awaitingDecision = dealer.status === 'PENDING_APPROVAL';
+  const approvalPhrase = `approve ${dealer.brandName.trim().toLowerCase()}`;
+  const canApprove =
+    dealer.actions.canApprove && approvalConfirm.trim().toLowerCase() === approvalPhrase;
 
   function run(
     work: () => Promise<{ ok: boolean; message?: string }>,
@@ -128,22 +132,37 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
               placeholder="Internal — not shown to the dealer"
             />
           </Field>
+          <Field
+            id="approvalConfirm"
+            label="Confirm approval"
+            hint={`type “${approvalPhrase}”`}
+            className="min-w-[220px] flex-1"
+          >
+            <Input
+              id="approvalConfirm"
+              value={approvalConfirm}
+              onChange={(event) => setApprovalConfirm(event.target.value)}
+              autoComplete="off"
+              disabled={pending}
+            />
+          </Field>
           <Button
             variant="primary"
             size="md"
             loading={pending}
-            disabled={!dealer.actions.canApprove}
-            onClick={() =>
-              run(
-                () =>
-                  approveDealerAction(
-                    dealer.id,
-                    { ...(approvalNote.trim() ? { note: approvalNote.trim() } : {}) },
-                    dealer.slug,
-                  ),
-                'Dealer approved.',
-              )
-            }
+            disabled={!canApprove}
+            onClick={() => {
+              if (!canApprove || pending) return;
+              run(async () => {
+                const result = await approveDealerAction(
+                  dealer.id,
+                  { ...(approvalNote.trim() ? { note: approvalNote.trim() } : {}) },
+                  dealer.slug,
+                );
+                if (result.ok) setApprovalConfirm('');
+                return result;
+              }, 'Dealer approved.');
+            }}
           >
             Approve dealer
           </Button>

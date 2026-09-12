@@ -1,6 +1,11 @@
 'use client';
 
-import type { DealerProfile, DealerProfileChange, MapKind } from '@dealers-drive/contracts';
+import {
+  DealerSelfUpdateInput,
+  type DealerProfile,
+  type DealerProfileChange,
+  type MapKind,
+} from '@dealers-drive/contracts';
 import { useActionState, useState, useTransition, type ReactNode } from 'react';
 import { useFormStatus } from 'react-dom';
 
@@ -68,6 +73,8 @@ const EMPTY: ProfileFormState = { status: 'idle', fieldErrors: {} };
 export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
   const [state, formAction] = useActionState(saveDealerProfileAction, EMPTY);
   const errors = state.fieldErrors;
+  const [yearError, setYearError] = useState<string>();
+  const establishedYearError = yearError ?? errors.establishedYear;
 
   /*
    * While a change waits, the two boxes are **shut** and show the proposed text
@@ -129,16 +136,24 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
 
           {/* Still theirs: a fact about the business that no verification
               rests on, and one that never becomes a different dealership. */}
-          <Field id="establishedYear" label="Established" error={errors.establishedYear}>
+          <Field id="establishedYear" label="Established" error={establishedYearError}>
             <Input
               id="establishedYear"
               name="establishedYear"
               type="number"
               min={1900}
-              max={2100}
+              max={new Date().getFullYear()}
               className="tnum"
               defaultValue={dealer.establishedYear ?? ''}
-              {...invalidProps('establishedYear', errors.establishedYear)}
+              onChange={() => setYearError(undefined)}
+              onInvalid={(event) => {
+                event.preventDefault();
+                const result = DealerSelfUpdateInput.safeParse({
+                  establishedYear: event.currentTarget.valueAsNumber,
+                });
+                setYearError(result.error?.issues[0]?.message ?? 'Enter a valid year.');
+              }}
+              {...invalidProps('establishedYear', establishedYearError)}
             />
           </Field>
         </div>
@@ -167,7 +182,7 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
             minLength={10}
             maxLength={200}
             defaultValue={taglineValue}
-            placeholder="Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house."
+            placeholder="Quality pre-owned cars since 1998 — professionally inspected, with expert support."
             required={!waiting}
             aria-required={waiting ? undefined : 'true'}
             disabled={Boolean(waiting)}

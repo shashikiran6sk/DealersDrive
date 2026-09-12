@@ -82,6 +82,22 @@ const DEALER: DealerProfile = {
 };
 
 describe('what the form offers', () => {
+  it.each([2090, 2400])('shows an inline error for the future year %s', async (year) => {
+    const user = userEvent.setup();
+    render(<DealerProfileForm dealer={DEALER} />);
+    const input = screen.getByLabelText(/established/i);
+    await user.clear(input);
+    await user.type(input, String(year));
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    expect(screen.getByText('Established year cannot be in the future.')).toBeVisible();
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    await user.clear(input);
+    await user.type(input, String(new Date().getFullYear()));
+    expect(input).toBeValid();
+    expect(screen.queryByText('Established year cannot be in the future.')).toBeNull();
+  });
+
   it('shows the dealership under its one name', () => {
     render(<DealerProfileForm dealer={DEALER} />);
 

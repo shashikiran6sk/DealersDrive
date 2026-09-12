@@ -475,7 +475,7 @@ describe('OnboardingPage — the floor the server sets', () => {
  * step 2 does not blank the four fields on step 1.
  */
 describe('OnboardingWizard — the Account step', () => {
-  it('shows the Google address as a read-only verified field, never an input to fill', () => {
+  it('shows the verified address once in the Google account block without an email field', () => {
     render(
       <OnboardingWizard
         step={0}
@@ -487,10 +487,8 @@ describe('OnboardingWizard — the Account step', () => {
       />,
     );
 
-    const email = screen.getByLabelText('Email');
-    expect(email).toHaveValue('karthik@srilakshmimotors.in');
-    expect(email).toBeDisabled();
-    expect(email).not.toHaveAttribute('name');
+    expect(screen.getAllByText('karthik@srilakshmimotors.in')).toHaveLength(1);
+    expect(screen.queryByLabelText('Email')).toBeNull();
     expect(screen.getByText('Verified with Google')).toBeInTheDocument();
   });
 
@@ -507,7 +505,8 @@ describe('OnboardingWizard — the Account step', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Email')).toHaveValue('karthik@srilakshmimotors.in');
+    expect(screen.getByText('karthik@srilakshmimotors.in')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Email')).toBeNull();
   });
 
   it('prefills the name from the Google profile when the user record has none', () => {
