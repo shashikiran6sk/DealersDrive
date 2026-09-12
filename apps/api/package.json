@@ -34,7 +34,7 @@
     "@aws-sdk/client-s3": "^3",
     "@aws-sdk/s3-request-presigner": "^3",
     "@dealers-drive/contracts": "workspace:*",
-    "@prisma/client": "^6.19.3",
+    "@prisma/client": "^7.10.0",
     "blurhash": "^2.0.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
