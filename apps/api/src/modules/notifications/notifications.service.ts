@@ -362,7 +362,9 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
           deliveryId: claimed?.id,
           providerMessageId: result.providerMessageId,
         },
-        'email sent',
+        // This is provider acceptance, not an inbox-placement claim. Resend
+        // cannot see whether Gmail subsequently chooses Inbox or Spam.
+        'email accepted by provider',
       );
     } catch (error) {
       const permanent = error instanceof PermanentMailError;
