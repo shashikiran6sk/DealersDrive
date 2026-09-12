@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@dealers-drive/contracts": "workspace:*",
-    "next": "^15.5.24",
+    "next": "^15.5.25",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -21,8 +21,8 @@
     "@storybook/nextjs-vite": "^10.5.10",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
-    "eslint": "^10.9.1",
+    "@types/react-dom": "^19.2.7",
+    "eslint": "^10.10.0",
     "storybook": "^10.5.10",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
