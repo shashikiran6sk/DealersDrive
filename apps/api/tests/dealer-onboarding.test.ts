@@ -783,7 +783,7 @@ describe('one dealership, one GSTIN', () => {
 });
 
 /**
- * **R40 — the six emails, end to end and against the database.**
+ * **R40 — transactional emails, end to end and against the database.**
  *
  * The service's own unit tests cover the rules, the idempotency and the two
  * failure shapes with a hand-written Prisma. What only a real database can show
@@ -927,6 +927,35 @@ describe('email notifications', () => {
     const email = emails.find((one) => one.tag === 'dealer.application.changes-requested');
     expect(email).toBeDefined();
     expect(email?.text).toContain('The GST certificate is for a different entity.');
+  });
+
+  it('uses new dealer and admin messages after requested changes are resubmitted', async () => {
+    const made = await dealership();
+    await completeApplication(made.agent);
+    await made.agent.post('/v1/dealer/submit').expect(200);
+    await h.drainEmails();
+
+    const admin = await moderator();
+    await admin
+      .post(`/v1/admin/dealers/${made.dealerId}/request-changes`)
+      .send({ reason: 'Upload a clearer PAN card.' })
+      .expect(200);
+    await h.drainEmails();
+
+    const emails = await emailsFrom(() => made.agent.post('/v1/dealer/submit').expect(200));
+    const tags = emails.map((email) => email.tag);
+
+    expect(tags).toEqual(
+      expect.arrayContaining(['dealer.application.resubmitted', 'admin.application.resubmitted']),
+    );
+    expect(tags).not.toContain('dealer.application.received');
+    expect(tags).not.toContain('admin.application.received');
+    expect(emails.find((email) => email.tag === 'dealer.application.resubmitted')?.text).toContain(
+      'Thank you for resubmitting the details',
+    );
+    expect(emails.find((email) => email.tag === 'admin.application.resubmitted')?.text).toContain(
+      'has resubmitted its application',
+    );
   });
 
   /** **4 — the dealer proposes new public words: tell the moderators.** */

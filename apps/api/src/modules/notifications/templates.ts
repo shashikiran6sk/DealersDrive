@@ -1,10 +1,10 @@
 import { env } from '../../config/env.js';
 
 /**
- * The six messages, as data (**R40**).
+ * Transactional messages, as data (**R40**).
  *
  * ── Why they are functions and not files ────────────────────────────────────
- * Six short transactional emails do not need a templating engine, a build step
+ * These short transactional emails do not need a templating engine, a build step
  * or a directory of `.mjml`. They need to be readable next to the rule that
  * sends them, diffable in a pull request, and impossible to render with an
  * `undefined` in the middle of a sentence — which a typed function gives and a
@@ -26,6 +26,8 @@ import { env } from '../../config/env.js';
 export type TemplateName =
   | 'dealer.application.received'
   | 'admin.application.received'
+  | 'dealer.application.resubmitted'
+  | 'admin.application.resubmitted'
   | 'dealer.application.approved'
   | 'dealer.application.rejected'
   | 'dealer.application.changes-requested'
@@ -78,6 +80,29 @@ export function render(template: TemplateName, context: TemplateContext): Render
           'It is in the moderation queue now.',
         ],
         action: { label: 'Open the queue', url: ADMIN_QUEUE },
+      });
+
+    case 'dealer.application.resubmitted':
+      return compose({
+        subject: 'Thanks for resubmitting your application — Dealers-Drive',
+        heading: 'Your updated application is with us',
+        greeting: context.contactName,
+        paragraphs: [
+          `Thank you for resubmitting the details for ${context.dealerName}. We have received your updates and the application is back with our review team.`,
+          'You do not need to do anything else unless we contact you again.',
+        ],
+        action: { label: 'View your application', url: CONSOLE },
+      });
+
+    case 'admin.application.resubmitted':
+      return compose({
+        subject: `Dealer application resubmitted — ${context.dealerName}`,
+        heading: 'A dealer has resubmitted an application',
+        paragraphs: [
+          `${context.dealerName} has resubmitted its application after making the requested changes.`,
+          'The updated application is back in the moderation queue.',
+        ],
+        action: { label: 'Review the application', url: ADMIN_QUEUE },
       });
 
     case 'dealer.application.approved':
@@ -192,7 +217,7 @@ interface Composition {
 }
 
 /**
- * One shape for all eight, so a new message cannot arrive with a different
+ * One shape for every template, so a new message cannot arrive with a different
  * footer, a different width or a missing plain-text body.
  *
  * `escape` runs over every interpolated value without exception. None of them

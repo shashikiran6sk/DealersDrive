@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { render, type TemplateName } from '../../../../src/modules/notifications/templates.js';
 
 /**
- * The eight messages (**R40**).
+ * The transactional messages (**R40**).
  *
  * What is worth pinning here is not the wording — that will change, and a test
  * that fails when somebody improves a sentence is a tax. It is the three things
@@ -18,6 +18,8 @@ import { render, type TemplateName } from '../../../../src/modules/notifications
 const ALL: TemplateName[] = [
   'dealer.application.received',
   'admin.application.received',
+  'dealer.application.resubmitted',
+  'admin.application.resubmitted',
   'dealer.application.approved',
   'dealer.application.rejected',
   'dealer.application.changes-requested',
@@ -95,6 +97,22 @@ describe('the moderator’s own words', () => {
     const email = render('dealer.application.rejected', { ...CONTEXT, reason: null });
 
     expect(email.html).not.toContain('<blockquote');
+  });
+});
+
+describe('application resubmission', () => {
+  it('thanks the dealer for resubmitting the details', () => {
+    const email = render('dealer.application.resubmitted', CONTEXT);
+
+    expect(email.subject).toContain('Thanks for resubmitting');
+    expect(email.text).toContain('Thank you for resubmitting the details');
+  });
+
+  it('tells the admin that the dealer resubmitted the application', () => {
+    const email = render('admin.application.resubmitted', CONTEXT);
+
+    expect(email.subject).toContain('application resubmitted');
+    expect(email.text).toContain('has resubmitted its application');
   });
 });
 

@@ -163,7 +163,7 @@ const JOB: EmailJob = {
   subjectId: 'evt-1',
 };
 
-describe('the six rules', () => {
+describe('the notification rules', () => {
   /** Every case asserts the *template*, because that is the product decision. */
   async function templatesFor(
     type: DomainEvent['type'],
@@ -181,6 +181,13 @@ describe('the six rules', () => {
     await expect(templatesFor('DealerApplied')).resolves.toEqual([
       'dealer.application.received',
       'admin.application.received',
+    ]);
+  });
+
+  it('uses distinct dealer and admin emails when an application is resubmitted', async () => {
+    await expect(templatesFor('DealerApplied', { resubmitted: true })).resolves.toEqual([
+      'dealer.application.resubmitted',
+      'admin.application.resubmitted',
     ]);
   });
 
