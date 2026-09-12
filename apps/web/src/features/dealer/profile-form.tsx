@@ -182,7 +182,7 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
             minLength={10}
             maxLength={200}
             defaultValue={taglineValue}
-            placeholder="Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house."
+            placeholder="Quality pre-owned cars since 1998 — professionally inspected, with expert support."
             required={!waiting}
             aria-required={waiting ? undefined : 'true'}
             disabled={Boolean(waiting)}

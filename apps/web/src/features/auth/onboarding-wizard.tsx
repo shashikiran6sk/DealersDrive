@@ -698,7 +698,7 @@ function BusinessStep({
               minLength={10}
               maxLength={200}
               defaultValue={values.tagline ?? dealer?.tagline ?? ''}
-              placeholder="Family-run since 1998 — hatchbacks under ₹6 lakh, every one inspected in-house."
+              placeholder="Quality pre-owned cars since 1998 — professionally inspected, with expert support."
               required
               aria-required="true"
               {...invalidProps('tagline', errors.tagline)}
