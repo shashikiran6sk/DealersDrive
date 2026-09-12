@@ -23,6 +23,8 @@ const ALL: TemplateName[] = [
   'dealer.application.approved',
   'dealer.application.rejected',
   'dealer.application.changes-requested',
+  'dealer.account.suspended',
+  'dealer.account.reinstated',
   'admin.profile-change.submitted',
   'dealer.profile-change.approved',
   'dealer.profile-change.rejected',
@@ -84,6 +86,7 @@ describe('the moderator’s own words', () => {
   it.each([
     ['dealer.application.rejected'],
     ['dealer.application.changes-requested'],
+    ['dealer.account.suspended'],
     ['dealer.profile-change.rejected'],
   ] as [TemplateName][])('%s carries the reason verbatim', (template) => {
     const email = render(template, CONTEXT);

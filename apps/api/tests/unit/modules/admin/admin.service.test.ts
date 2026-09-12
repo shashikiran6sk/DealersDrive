@@ -1045,6 +1045,13 @@ describe('setDealerStatus and its wrappers', () => {
     expect(suspended.outbox[0]?.eventType).toBe('DealerSuspended');
     expect(rejected.outbox[0]?.eventType).toBe('DealerRejected');
     expect(reinstated.outbox[0]?.eventType).toBe('DealerReinstated');
+    expect((suspended.outbox[0]?.payload as { payload: unknown }).payload).toEqual({
+      dealerId: DEALER,
+      reason: 'Under review.',
+    });
+    expect((reinstated.outbox[0]?.payload as { payload: unknown }).payload).toEqual({
+      dealerId: DEALER,
+    });
   });
 
   it('audit-logs each move with its own action name', async () => {

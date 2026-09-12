@@ -986,6 +986,33 @@ describe('email notifications', () => {
     expect(delivery).toMatchObject({ status: 'SENT', dealerId: null });
   });
 
+  it('emails the dealer when suspended and when reinstated', async () => {
+    const made = await dealership();
+    await h.prisma.dealer.update({ where: { id: made.dealerId }, data: { status: 'ACTIVE' } });
+    const admin = await moderator();
+
+    const suspended = await emailsFrom(() =>
+      admin
+        .post(`/v1/admin/dealers/${made.dealerId}/suspend`)
+        .send({ reason: 'GST registration has expired.' })
+        .expect(200),
+    );
+    const suspension = suspended.find((email) => email.tag === 'dealer.account.suspended');
+    expect(suspension).toBeDefined();
+    expect(suspension?.text).toContain('GST registration has expired.');
+
+    const reinstated = await emailsFrom(() =>
+      admin
+        .post(`/v1/admin/dealers/${made.dealerId}/reinstate`)
+        .send({ note: 'Documents renewed; case resolved.' })
+        .expect(200),
+    );
+    const reinstatement = reinstated.find((email) => email.tag === 'dealer.account.reinstated');
+    expect(reinstatement).toBeDefined();
+    expect(reinstatement?.text).toContain('active again');
+    expect(reinstatement?.text).not.toContain('Documents renewed');
+  });
+
   /** **4 — the dealer proposes new public words: tell the moderators.** */
   it('emails the admins when a profile change is submitted', async () => {
     const made = await dealership();

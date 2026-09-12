@@ -1010,7 +1010,13 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           dealerId,
           actor: { type: 'ADMIN', id: admin.userId },
           traceId: getContext()?.traceId ?? action,
-          payload: { dealerId },
+          payload: {
+            dealerId,
+            // The dealer needs the suspension reason. A reinstatement note is
+            // explicitly internal in the API contract and does not leave the
+            // admin surface.
+            ...(status === 'SUSPENDED' ? { reason } : {}),
+          },
         });
 
         return {

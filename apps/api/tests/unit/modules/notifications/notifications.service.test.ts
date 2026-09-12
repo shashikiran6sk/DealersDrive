@@ -274,6 +274,22 @@ describe('the notification rules', () => {
     ]);
   });
 
+  it('emails the dealer when the dealership is suspended', async () => {
+    const { service, mailer } = setup();
+    const bus = createEventBus();
+    service.subscribe(bus);
+    await service.work();
+
+    await bus.publish(event('DealerSuspended', { reason: 'GST registration has expired.' }));
+
+    expect(mailer.sent[0]?.tag).toBe('dealer.account.suspended');
+    expect(mailer.sent[0]?.text).toContain('GST registration has expired.');
+  });
+
+  it('emails the dealer when the dealership is reinstated', async () => {
+    await expect(templatesFor('DealerReinstated')).resolves.toEqual(['dealer.account.reinstated']);
+  });
+
   /** One event, two verdicts. `payload.published` is which way (R34). */
   it('emails the dealer on an approved profile change', async () => {
     await expect(templatesFor('DealerProfileChangeDecided', { published: true })).resolves.toEqual([
