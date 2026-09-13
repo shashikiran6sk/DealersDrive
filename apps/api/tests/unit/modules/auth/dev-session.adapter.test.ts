@@ -122,7 +122,11 @@ describe('resolveDealer', () => {
     expect(args.include.members.where).toEqual({
       status: 'ACTIVE',
       role: 'OWNER',
-      user: { status: 'ACTIVE' },
+      user: {
+        status: 'ACTIVE',
+        // R41 — the dealer seat, and only the dealer seat.
+        roles: { none: { role: 'DEALER', status: 'SUSPENDED' } },
+      },
     });
     expect(args.include.members.take).toBe(1);
   });
@@ -207,7 +211,14 @@ describe('resolveAdmin', () => {
     await resolver.resolveAdmin(HOSTILE);
 
     expect(findFirst).toHaveBeenCalledExactlyOnceWith({
-      where: { email: ADMIN_EMAIL, isPlatformAdmin: true },
+      where: {
+        email: ADMIN_EMAIL,
+        isPlatformAdmin: true,
+        // R41 — the operations seat, which a dealership suspension never
+        // touches. It is asked about here so the dev resolver refuses exactly
+        // what the cookie resolver refuses.
+        roles: { none: { role: 'ADMIN', status: 'SUSPENDED' } },
+      },
     });
   });
 

@@ -206,6 +206,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R38 — PAN is unique across the platform, as GSTIN already was · revises F038/F041/F045/F046 · [#112](https://github.com/shashikiran6sk/DealersDrive/pull/112)
 - [ ] R39 — The mobile number is proved, not typed · revises F018/F037/F038/F041/F046/R7/R27 · ⚠️ new dependency
 - [ ] R40 — Emails are queued, and a separate process sends them · revises F031/F038/F045/R34 · ⚠️ new table
+- [~] R41 — A dealership suspension closes a seat, not an account · revises F014/F016/F019/F045 · ⚠️ new table
 
 ---
 

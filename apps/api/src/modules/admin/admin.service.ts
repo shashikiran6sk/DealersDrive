@@ -41,7 +41,7 @@ import {
 } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
-import type { AdminPrincipal } from '../auth/auth.facade.js';
+import { setSeatStatus, type AdminPrincipal } from '../auth/auth.facade.js';
 import { documentKey, type DealersService } from '../dealers/dealers.facade.js';
 
 /**
@@ -1003,20 +1003,27 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         const listings = 0;
 
         if (memberUserIds.length > 0) {
-          await tx.user.updateMany({
-            where: {
-              id: { in: memberUserIds },
-              status: status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED',
-            },
-            data: { status: status === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE' },
+          // The **dealer seat**, not the account (**R41**).
+          //
+          // This used to write `users.status`, which is the whole person: a
+          // member who also moderates the platform lost the admin console
+          // because a dealership in Vellore was suspended. The seat is the
+          // right unit — it closes the door this decision is about and leaves
+          // every other one alone.
+          await setSeatStatus(tx, {
+            userIds: memberUserIds,
+            role: 'DEALER',
+            status: status === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE',
+            reason,
           });
 
           if (status === 'SUSPENDED') {
-            // An account-level block must end every browser session, including
-            // one held by a member who is also a platform admin. Reinstatement
-            // never un-revokes these rows; the person signs in again.
+            // Scoped to DEALER for the same reason. An admin session held by
+            // one of these people survives; their dealer console does not.
+            // Reinstatement never un-revokes these rows — the person signs in
+            // again, which is how the seat check runs afresh.
             await tx.session.updateMany({
-              where: { userId: { in: memberUserIds }, revokedAt: null },
+              where: { userId: { in: memberUserIds }, scope: 'DEALER', revokedAt: null },
               data: { revokedAt: new Date() },
             });
           }

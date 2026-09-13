@@ -4340,3 +4340,42 @@ _means_. `notification_deliveries` is the table that will hold the answer.
 
 **No `notification.enquiry-to-dealer`.** It is in `JOB_NAMES` and belongs to
 the enquiry feature, which has not landed.
+
+## R41 — A dealership suspension closes a seat, not an account
+
+**Revises F014, F016, F019, F045**
+
+One human can be two things: a dealership owner and a platform admin. Suspending
+the dealership used to write `users.status = 'SUSPENDED'` onto every member and
+revoke every session they held, so the admin console closed too — for a decision
+about a yard.
+
+- **Schema** `UserRole` (`user_roles`), `PlatformRole` (DEALER | ADMIN),
+  `UserRoleStatus` (ACTIVE | SUSPENDED), `User.roles`
+- **Migration** `20260913090000_user_role_seats` — creates the table, backfills a
+  seat per membership and per platform admin, then releases the account-level
+  flag a dealership suspension had set. `setDealerStatus` was its only writer,
+  so every such row was suspended for a reason the backfill has just recorded in
+  the right place
+- **Backend** `modules/auth/roles.ts` (new — `isSeatSuspended`, `ensureSeat`,
+  `setSeatStatus`, exported through `auth.facade.ts`),
+  `cookie-session.adapter.ts`, `dev-session.adapter.ts`, `auth.service.ts`,
+  `session.service.ts` (`resolve` loads the seats; `revokeAllForUser` takes a
+  scope), `admin.service.ts` (`setDealerStatus`)
+- **API** no route added, changed or removed — the OpenAPI document is untouched
+- **Tests** `tests/unit/modules/auth/roles.test.ts` (new),
+  `tests/auth.test.ts` — a member who is also an admin keeps their console after
+  their dealership is suspended,
+  `tests/unit/modules/admin/admin.service.test.ts`,
+  `tests/unit/modules/auth/{auth.facade,dev-session.adapter}.test.ts`
+- **Components** none · **Sandbox** none
+- A seat row **refuses** its role when it is SUSPENDED and an absent row says
+  nothing. It can close a door and never open one, which is what makes the table
+  safe to introduce beneath `ADMIN_ALLOWLIST`, `isPlatformAdmin` and the
+  dealership's own status — all three still decide.
+- `ensureSeat` upserts with an empty `update`, so signing in again never lifts a
+  suspension.
+- ⚠️ `apps/api/vitest.config.ts` now sets **two** addresses on
+  `ADMIN_ALLOWLIST`. Proving the split needs one operator to suspend a
+  dealership whose owner holds an operations seat of their own; a test that
+  counts admin emails has to count distinct templates, not messages.

@@ -81,6 +81,15 @@ async function upsertOwner(dealer: (typeof DEV_DEALERS)[number]): Promise<string
     create: { email: dealer.email, ...fields },
   });
 
+  // The dealer seat (**R41**). Idempotent, like everything else here: this
+  // script is re-run against a database that already has these people, and an
+  // owner whose seat was closed by a suspension must not have it reopened.
+  await prisma.userRole.upsert({
+    where: { userId_role: { userId: owner.id, role: 'DEALER' } },
+    update: {},
+    create: { userId: owner.id, role: 'DEALER' },
+  });
+
   return owner.id;
 }
 

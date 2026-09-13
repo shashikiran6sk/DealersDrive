@@ -53,6 +53,15 @@ function dealershipName(): string {
   return `Katpadi Auto Gallery ${subjectCounter}`;
 }
 
+/**
+ * The second allow-listed address (**R41**), held by the person who is both a
+ * dealership owner and a platform admin. It is a *second* entry rather than the
+ * first because the suspension has to be performed by somebody else — an
+ * operator suspending their own dealership would prove the same mechanism with
+ * a scenario nobody has.
+ */
+const DUAL_SEAT_ADMIN = env.adminAllowlist[1] ?? '';
+
 /** A fresh Google account for each test, so no two tests share an identity. */
 let subjectCounter = 0;
 function newAccount(overrides: { email?: string; emailVerified?: boolean } = {}) {
@@ -436,8 +445,15 @@ describe('a suspended dealership account', () => {
       .send({ reason: 'GST registration has expired.' })
       .expect(200);
 
+    // R41 — the dealer **seat** closes; the account does not. The distinction
+    // is the whole of this change: `users.status` is every door this person has.
+    expect(
+      await h.prisma.userRole.findUniqueOrThrow({
+        where: { userId_role: { userId: identity.userId, role: 'DEALER' } },
+      }),
+    ).toMatchObject({ status: 'SUSPENDED', reason: 'GST registration has expired.' });
     expect(await h.prisma.user.findUniqueOrThrow({ where: { id: identity.userId } })).toMatchObject(
-      { status: 'SUSPENDED' },
+      { status: 'ACTIVE' },
     );
     expect(
       await h.prisma.session.count({
@@ -463,9 +479,11 @@ describe('a suspended dealership account', () => {
       .post(`/v1/admin/dealers/${String(created.body.dealer.id)}/reinstate`)
       .send({ note: 'Registration renewed.' })
       .expect(200);
-    expect(await h.prisma.user.findUniqueOrThrow({ where: { id: identity.userId } })).toMatchObject(
-      { status: 'ACTIVE' },
-    );
+    expect(
+      await h.prisma.userRole.findUniqueOrThrow({
+        where: { userId_role: { userId: identity.userId, role: 'DEALER' } },
+      }),
+    ).toMatchObject({ status: 'ACTIVE', reason: null, suspendedAt: null });
 
     const restored = h.agent();
     const restoredSignIn = await h.signIn(restored);
@@ -502,6 +520,90 @@ describe('a suspended dealership account', () => {
 
     const blockedSignIn = await h.signIn(h.agent());
     expect(blockedSignIn.location).toContain('error=account_suspended');
+  });
+
+  /**
+   * **R41, and the reason it exists.**
+   *
+   * One human, two seats: they own a dealership and they moderate the
+   * platform. Suspending the dealership is a decision about the yard, and it
+   * used to take the admin console with it — `users.status` is the account, and
+   * every session they held was revoked, admin one included.
+   *
+   * Everything below is the same round trip a person makes: sign in as a
+   * dealer, onboard, sign in to the console with the same Google account, then
+   * have operations suspend the dealership. The dealer door closes. The
+   * operations door does not.
+   */
+  it('closes the dealer seat of a member who is also an admin, and leaves their console open', async () => {
+    const dualSeat = newAccount({ email: DUAL_SEAT_ADMIN });
+    const dealerDevice = h.agent();
+    await h.signIn(dealerDevice);
+    const created = await dealerDevice.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await h.prisma.dealer.update({
+      where: { id: created.body.dealer.id },
+      data: { status: 'ACTIVE', approvedAt: new Date() },
+    });
+
+    // The same Google account, entering by the console's own door. Same
+    // `sub`, so it is the same person and the same row — a second seat, not a
+    // second account.
+    const consoleDevice = h.agent();
+    await h.signInAdmin(consoleDevice);
+    await consoleDevice.get('/v1/admin/metrics/overview').expect(200);
+
+    const identity = await h.prisma.oAuthIdentity.findUniqueOrThrow({
+      where: {
+        provider_providerSubject: { provider: 'GOOGLE', providerSubject: dualSeat.subject },
+      },
+    });
+    expect(await h.prisma.userRole.count({ where: { userId: identity.userId } })).toBe(2);
+
+    h.google.claims = {
+      subject: `operations-${String(subjectCounter)}`,
+      email: env.adminAllowlist[0] ?? '',
+      emailVerified: true,
+      name: 'Dealers-Drive Operations',
+    };
+    const operations = h.agent();
+    await h.signInAdmin(operations);
+    await operations
+      .post(`/v1/admin/dealers/${String(created.body.dealer.id)}/suspend`)
+      .send({ reason: 'GST registration has expired.' })
+      .expect(200);
+
+    // The dealer console is shut, by the seat and by the session.
+    await dealerDevice.get('/v1/auth/me').expect(401);
+    expect(
+      await h.prisma.userRole.findUniqueOrThrow({
+        where: { userId_role: { userId: identity.userId, role: 'DEALER' } },
+      }),
+    ).toMatchObject({ status: 'SUSPENDED' });
+
+    // The operations console is not. This is the assertion the whole revision
+    // is for: the session was never revoked, and the seat was never closed.
+    await consoleDevice.get('/v1/admin/metrics/overview').expect(200);
+    expect(
+      await h.prisma.userRole.findUniqueOrThrow({
+        where: { userId_role: { userId: identity.userId, role: 'ADMIN' } },
+      }),
+    ).toMatchObject({ status: 'ACTIVE' });
+    expect(
+      await h.prisma.session.count({
+        where: { userId: identity.userId, scope: 'ADMIN', revokedAt: null },
+      }),
+    ).toBe(1);
+
+    // And signing in again keeps the split: the console admits them, the
+    // dealer door does not.
+    h.google.claims = { ...dualSeat };
+    const consoleAgain = h.agent();
+    const consoleSignIn = await h.signInAdmin(consoleAgain);
+    expect(consoleSignIn.location).toBe(`${env.WEB_BASE_URL}/admin`);
+    await consoleAgain.get('/v1/admin/metrics/overview').expect(200);
+
+    const dealerAgain = await h.signIn(h.agent());
+    expect(dealerAgain.location).toContain('error=account_suspended');
   });
 });
 

@@ -13,3 +13,11 @@ export type {
   SessionResolver,
 } from './session.port.js';
 export { permissionsForAdminRole, permissionsForRole } from './session.port.js';
+
+/**
+ * Per-role seats (**R41**). Exported because the admin console closes a
+ * dealership's members' dealer seats when it suspends them, and that write
+ * belongs to auth rather than to moderation — `users.status`, sessions and
+ * seats are one model, and it has one owner.
+ */
+export { ensureSeat, isSeatSuspended, setSeatStatus, type RoleSeat } from './roles.js';

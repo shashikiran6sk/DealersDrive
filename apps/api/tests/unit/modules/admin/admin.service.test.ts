@@ -111,6 +111,8 @@ function setup(options: Options = {}) {
   const deletedMedia: unknown[] = [];
   const dealerPatches: { dealerId: string; input: unknown }[] = [];
   const userUpdates: unknown[] = [];
+  const seatCreates: unknown[] = [];
+  const seatUpdates: unknown[] = [];
   const sessionUpdates: unknown[] = [];
 
   const resolveDealer = () =>
@@ -143,6 +145,16 @@ function setup(options: Options = {}) {
       deleteMany: (args: unknown) => {
         deletedMedia.push(args);
         return Promise.resolve({ count: (options.media ?? []).length });
+      },
+    },
+    userRole: {
+      createMany: (args: unknown) => {
+        seatCreates.push(args);
+        return Promise.resolve({ count: 1 });
+      },
+      updateMany: (args: unknown) => {
+        seatUpdates.push(args);
+        return Promise.resolve({ count: 1 });
       },
     },
     user: {
@@ -247,6 +259,8 @@ function setup(options: Options = {}) {
     deletedMedia,
     dealerPatches,
     userUpdates,
+    seatCreates,
+    seatUpdates,
     sessionUpdates,
   };
 }
@@ -1015,7 +1029,15 @@ describe('setDealerStatus and its wrappers', () => {
     expect(response.listingsAffected).toBe(0);
   });
 
-  it('blocks every active member account and revokes every session on suspension', async () => {
+  /**
+   * R41 — the seat, not the account.
+   *
+   * This used to write `users.status`, and `users.status` is the whole person.
+   * A member who also moderates the platform lost the admin console because a
+   * dealership was suspended, which is a consequence nobody asked for and
+   * nobody could see. Both assertions below are about what is *not* touched.
+   */
+  it('closes every member dealer seat and revokes their dealer sessions on suspension', async () => {
     const h = setup({
       dealer: dealerRow({
         status: 'ACTIVE',
@@ -1028,24 +1050,55 @@ describe('setDealerStatus and its wrappers', () => {
 
     await h.service.suspendDealer(admin, DEALER, 'GST expired.');
 
-    expect(h.userUpdates).toEqual([
+    // The account itself is left alone.
+    expect(h.userUpdates).toEqual([]);
+
+    // A member who has never signed in has no seat row yet, so the write is a
+    // create-then-update pair rather than an update.
+    expect(h.seatCreates).toEqual([
       {
-        where: {
-          id: { in: ['owner-1', 'manager-1'] },
-          status: 'ACTIVE',
-        },
-        data: { status: 'SUSPENDED' },
+        data: [
+          { userId: 'owner-1', role: 'DEALER' },
+          { userId: 'manager-1', role: 'DEALER' },
+        ],
+        skipDuplicates: true,
       },
     ]);
+    expect(h.seatUpdates).toEqual([
+      {
+        where: { userId: { in: ['owner-1', 'manager-1'] }, role: 'DEALER' },
+        data: { status: 'SUSPENDED', reason: 'GST expired.', suspendedAt: expect.any(Date) },
+      },
+    ]);
+
+    // Scoped. An admin session one of these people holds survives.
     expect(h.sessionUpdates).toEqual([
       {
         where: {
           userId: { in: ['owner-1', 'manager-1'] },
+          scope: 'DEALER',
           revokedAt: null,
         },
         data: { revokedAt: expect.any(Date) },
       },
     ]);
+  });
+
+  it('reopens the dealer seats on reinstatement, and revokes nothing', async () => {
+    const h = setup({
+      dealer: dealerRow({ status: 'SUSPENDED', members: [{ userId: 'owner-1', role: 'OWNER' }] }),
+    });
+
+    await h.service.reinstateDealer(admin, DEALER, 'Registration renewed.');
+
+    expect(h.seatUpdates).toEqual([
+      {
+        where: { userId: { in: ['owner-1'] }, role: 'DEALER' },
+        data: { status: 'ACTIVE', reason: null, suspendedAt: null },
+      },
+    ]);
+    // Reinstatement restores the seat, never a token that was revoked.
+    expect(h.sessionUpdates).toEqual([]);
   });
 
   it('reinstates, clearing the suspension', async () => {
@@ -1058,10 +1111,12 @@ describe('setDealerStatus and its wrappers', () => {
       statusReason: 'Documents renewed.',
       suspendedAt: null,
     });
-    expect(h.userUpdates).toEqual([
+    // R41 — the seat is reopened; the account was never closed.
+    expect(h.userUpdates).toEqual([]);
+    expect(h.seatUpdates).toEqual([
       {
-        where: { id: { in: ['user-1'] }, status: 'SUSPENDED' },
-        data: { status: 'ACTIVE' },
+        where: { userId: { in: ['user-1'] }, role: 'DEALER' },
+        data: { status: 'ACTIVE', reason: null, suspendedAt: null },
       },
     ]);
     expect(h.sessionUpdates).toEqual([]);

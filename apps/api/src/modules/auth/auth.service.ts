@@ -32,6 +32,7 @@ import {
   type OAuthAudience,
   type OAuthTransaction,
 } from './oauth-transaction.js';
+import { ensureSeat, isSeatSuspended } from './roles.js';
 import { permissionsForRole, type DealerPrincipal, type PendingPrincipal } from './session.port.js';
 import type { SessionService } from './session.service.js';
 
@@ -228,7 +229,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         where: {
           provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject },
         },
-        include: { user: true },
+        include: { user: { include: { roles: true } } },
       });
 
       let userId: string;
@@ -236,6 +237,16 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       if (existing) {
         if (existing.user.status !== 'ACTIVE') {
           throw new ForbiddenError('This account has been suspended. Contact support.', {
+            code: 'ACCOUNT_SUSPENDED',
+          });
+        }
+
+        // The dealer seat (**R41**). Closed by a dealership suspension, and
+        // closed here rather than at the account, which is what leaves the same
+        // person's admin sign-in — a different start URL, a different scope and
+        // a different seat — working.
+        if (isSeatSuspended(existing.user.roles, 'DEALER')) {
+          throw new ForbiddenError('This dealership has been suspended. Contact support.', {
             code: 'ACCOUNT_SUSPENDED',
           });
         }
@@ -263,14 +274,19 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         orderBy: { id: 'asc' },
       });
 
-      // The account-status check above handles suspensions performed by the
-      // current admin workflow. This dealer-status guard also blocks legacy or
-      // manually suspended rows whose member account was never updated.
+      // The seat check above handles suspensions performed by the current admin
+      // workflow. This dealer-status guard also blocks legacy or manually
+      // suspended rows whose member seat was never closed.
       if (membership?.dealer.status === 'SUSPENDED') {
         throw new ForbiddenError('This dealership has been suspended. Contact support.', {
           code: 'ACCOUNT_SUSPENDED',
         });
       }
+
+      // Everyone who signs in as a dealer holds a dealer seat. The upsert never
+      // reopens a closed one — the refusal above has already left, so reaching
+      // this line means the seat is open or has never existed.
+      await ensureSeat(prisma, { userId, role: 'DEALER' });
 
       const session = await sessions.issue({
         userId,
@@ -607,12 +623,21 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
     const identity = await prisma.oAuthIdentity.findUnique({
       where: { provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject } },
-      include: { user: true },
+      include: { user: { include: { roles: true } } },
     });
 
     if (identity && identity.user.status !== 'ACTIVE') {
       throw new ForbiddenError('This account has been suspended. Contact support.', {
         code: 'ACCOUNT_SUSPENDED',
+      });
+    }
+
+    // The operations seat, which a dealership suspension does not touch
+    // (**R41**). Nothing closes this one yet; the check is here so that when
+    // something does, it is refused at the door rather than one screen in.
+    if (identity && isSeatSuspended(identity.user.roles, 'ADMIN')) {
+      throw new ForbiddenError('Your admin access has been withdrawn.', {
+        code: 'ADMIN_ACCESS_REVOKED',
       });
     }
 
@@ -668,6 +693,8 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           },
         });
       }
+
+      await ensureSeat(tx, { userId: updated.id, role: 'ADMIN' });
 
       return updated;
     });
