@@ -51,6 +51,12 @@ describe('the surface', () => {
         'GET /profile-changes',
         'POST /profile-changes/:id/approve',
         'POST /profile-changes/:id/reject',
+        // F072 — the settings screen, and R42's admin access on it.
+        'GET /config',
+        'PUT /config/:key',
+        'GET /access',
+        'POST /access',
+        'DELETE /access/:id',
       ].sort(),
     );
   });

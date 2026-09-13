@@ -41,6 +41,14 @@ const config: StorybookConfig = {
         replacement: new URL('../src/mocks/admin-actions.ts', import.meta.url).pathname,
       },
       {
+        find: '@/features/admin/config-actions',
+        replacement: new URL('../src/mocks/config-actions.ts', import.meta.url).pathname,
+      },
+      {
+        find: '@/features/admin/access-actions',
+        replacement: new URL('../src/mocks/access-actions.ts', import.meta.url).pathname,
+      },
+      {
         find: '@/features/dealer/profile-actions',
         replacement: new URL('../src/mocks/dealer-actions.ts', import.meta.url).pathname,
       },

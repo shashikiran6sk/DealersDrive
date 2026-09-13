@@ -383,6 +383,57 @@ The exception is an **applied** town, which always renders along with its
 a buyer can arrive with a town set and no district, and a row that hid itself
 would leave them a filter they can neither see nor clear.
 
+**R43 — the search is no longer this component's.** The raw
+`<input className="input">` and the `<form>` around it are gone, replaced by
+`DealerSearchBox` (C074). What stays here is the URL: the box reports a chosen
+term through `onSearch`, and `go()` writes `?q=` exactly as it did for the form.
+The `useState`/`useEffect` pair that mirrored `q` into the input went with the
+form — the box is keyed on the applied search, so a navigation resets it.
+
+### C073 — `AutocompletePanel` · `useAutocomplete` · `HighlightedText`
+
+`components/ui/autocomplete.tsx`. Props (`AutocompletePanel`):
+`autocomplete: UseAutocomplete<T>`, `label`, `placeholder`, `groupLabel`,
+`emptyMessage: (search) => string`, `children: (autocomplete) => ReactNode`.
+States: closed, loading, rows, nothing found, endpoint failed. **NEW at R43.**
+Shared, reusable, **P1**.
+
+**It knows nothing about what is in the list**, and that is the whole design.
+The caller supplies an `AutocompleteSource<T>` — `suggest`, `keyOf`, `valueOf` —
+and a row renderer; everything else is here: the 300 ms debounce
+(`lib/use-debounced-value.ts`), the `AbortController`, the stale-answer guard,
+the first row highlighted after every fresh answer, ↑/↓ with wrapping, Escape,
+the outside-pointerdown close, and the ARIA 1.2 combobox wiring
+(`role="combobox"` + `aria-activedescendant`, so focus never leaves the input).
+
+`DealerSearchBox` (C074) is the first consumer. **The vehicle/model search at
+F077 is the second, and must not write a second one of these** — that is the
+D-6 failure caught before the duplicate exists rather than after.
+
+`HighlightedText` marks every occurrence of the search, case-insensitively, in
+`<mark>`. It renders the text unmarked when it does not contain the search,
+which is the correct answer for a row matched on something other than the label
+being drawn.
+
+### C074 — `DealerSearchBox`
+
+`components/dealers/dealer-search-box.tsx`. Props: `q?`, `district?`,
+`city?: string[]`, `districtName?`, `onSearch: (term: string | null) => void`,
+`className?`. States: empty, typing, loading, recommendations (first
+highlighted), arrowed, matched on a place, nothing found, endpoint failed, a
+search already applied. One consumer (C031). **NEW at R43.** **P1**
+
+The dealer half of the typeahead, and nothing else: the source (`fetch` against
+`/api/search/dealers`, passing the page's own `district` and `city` through so a
+suggestion cannot vanish when it is chosen), the row, and what choosing one
+means — `onSearch(brandName)`, which `DirectoryFilters` turns into `?q=`.
+
+The row draws `DealerSuggestion`: a 28px initials tile, the name with the typed
+characters marked, a meta line, a verified tag, and `Select ↵` on the
+highlighted row — the one affordance that explains the default highlight.
+**`matchedOn` decides which of the two lines is marked**: a dealership offered
+because its _town_ matched has none of the typed characters in its name.
+
 ### C068 — `LocationCard`
 
 `components/dealers/location-card.tsx:47`. Props:
@@ -740,7 +791,8 @@ Compressed to one row each. All are `'use client'` unless noted, all are
 | C062c | `DealerProfileEditor`                | `features/admin/dealer-profile-editor.tsx`  | `dealer: AdminDealerDetail`                                                                                 | reading, with gaps, editing, read-only seat, saving, server refusal                                                                                                                                          | F045, R32 | **P0** ✅                                 |
 | C062d | `ProfileChangeReview`                | `features/admin/profile-change-review.tsx`  | `change: AdminProfileChange`                                                                                | both fields, phone number in the tagline, services only, tagline only, nothing live, refusing, already decided, deciding                                                                                     | R34       | **P0** ✅                                 |
 | C063  | `ModerationStrip`                    | `features/admin/moderation-strip.tsx:12`    | `photos: {id,position,label,url}[]`                                                                         | 0, 1, 12 photos                                                                                                                                                                                              | F070      | P2                                        |
-| C064  | `ConfigRow`                          | `features/admin/config-editor.tsx:12`       | `entry: ConfigEntry`                                                                                        | boolean/number/string × clean/dirty/saving/saved/error                                                                                                                                                       | F072      | **P1**                                    |
+| C064  | `ConfigRow`                          | `features/admin/config-editor.tsx`          | `entry: ConfigEntry`                                                                                        | number/boolean/string-list × clean/dirty/saving/saved/error, **plus the placeholder — a key nothing reads yet renders read-only**                                                                            | F072      | **P1** ✅                                 |
+| C064b | `AdminAccessPanel`                   | `features/admin/admin-access.tsx`           | `entries: AdminAccessEntry[]`, `currentUserId`                                                              | allow-listed only, allow-listed + granted, your own row, an address nobody has signed in with, granting, refused                                                                                             | R42       | **P1** ✅                                 |
 | C065  | `QueryProvider`                      | `features/query/query-provider.tsx:16`      | `children`                                                                                                  | — (provider)                                                                                                                                                                                                 | F091      | _(decorator)_                             |
 
 ---

@@ -193,7 +193,10 @@ describe('the notification rules', () => {
     service.subscribe(bus);
     await service.work();
     await bus.publish(event(type, payload));
-    return mailer.sent.map((message) => message.tag);
+    // Distinct templates, because the admin audience is the allow-list and the
+    // list has more than one address on it: one template, fanned out, is one
+    // rule. Which addresses it reaches is the `recipients` block's question.
+    return [...new Set(mailer.sent.map((message) => message.tag))];
   }
 
   it('emails the dealer and the admins when an application arrives', async () => {

@@ -38,8 +38,63 @@ model User {
   sessions    Session[]
   memberships DealerMember[]
   identities  OAuthIdentity[]
+  roles       UserRole[]
 
   @@map("users")
+}
+
+/// What one person is allowed to be, one row per seat (**R41**).
+///
+/// `users.status` above is an *account*-level switch — the whole person, every
+/// door. This table is the per-role one, and the split is the point: one human
+/// can hold a dealership seat and an operations seat, and suspending the
+/// dealership must close the first without touching the second.
+///
+/// Before this table existed, suspending a dealership wrote `SUSPENDED` onto
+/// every member's `users` row and revoked every session they held. For a member
+/// who was also a platform admin that was a second, invisible consequence: the
+/// admin console went dark for a decision that was about a yard in Vellore.
+///
+/// **The rule is one sentence.** A row here refuses its role when it is
+/// `SUSPENDED`; an absent row says nothing, and the checks that already existed
+/// — the dealership's own status, `isPlatformAdmin`, the admin allow-list —
+/// still decide. That is what makes the table safe to add to a live database:
+/// it can only ever close a door, never open one.
+model UserRole {
+  id     String         @id @default(uuid()) @db.Uuid
+  userId String         @db.Uuid
+  role   PlatformRole
+  status UserRoleStatus @default(ACTIVE)
+
+  /// Why the seat was closed, in the words the person is shown. NULL while ACTIVE.
+  reason      String?
+  suspendedAt DateTime?
+  grantedAt   DateTime  @default(now())
+  /// The admin who granted the seat, where one did. NULL for a seat the product
+  /// created on its own — every dealer who signs in gets a DEALER row.
+  grantedBy   String?   @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// One row per seat per person. The upsert every sign-in performs rests on it.
+  @@unique([userId, role])
+  /// "Who holds an operations seat" — the admin-access list, and the only read
+  /// this table has that is not keyed by a user.
+  @@index([role, status])
+  @@map("user_roles")
+}
+
+/// The two seats a person can hold. Deliberately **not** `DealerRole`, which is
+/// a rank *within* one dealership (OWNER/MANAGER/SALES), nor `AdminRole`, which
+/// is a rank within the console. This is which console you may enter at all.
+enum PlatformRole {
+  DEALER
+  ADMIN
+}
+
+enum UserRoleStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 model Session {

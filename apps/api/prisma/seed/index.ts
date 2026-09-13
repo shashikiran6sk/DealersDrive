@@ -55,6 +55,10 @@ async function seedAdmin(): Promise<void> {
       phoneVerifiedAt: now,
       isPlatformAdmin: true,
       adminRole: 'SUPER_ADMIN',
+      // The operations seat (**R41**). The first admin sign-in would create it
+      // anyway; seeding it means `AUTH_MODE=dev`, which never signs anybody in,
+      // resolves the same row shape production does.
+      roles: { create: { role: 'ADMIN' } },
     },
   });
 }
@@ -74,6 +78,7 @@ async function seedDealers(): Promise<void> {
         phone: seed.phone,
         emailVerifiedAt: now,
         phoneVerifiedAt: now,
+        roles: { create: { role: 'DEALER' } },
       },
     });
 

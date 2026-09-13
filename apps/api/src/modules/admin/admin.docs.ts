@@ -449,5 +449,123 @@ export const adminDocs: ModuleDocs = {
       responses: [{ status: 200, description: 'Rejected.', schema: 'VerifyDocumentResponse' }],
       errors: [400, 401, 403, 404, 409],
     },
+    {
+      method: 'get',
+      path: '/v1/admin/config',
+      operationId: 'getAdminConfig',
+      tag: 'Admin',
+      summary: 'Platform configuration',
+      description:
+        'Every `platform_config` entry with its declared type, current value and label — ' +
+        'including the keys `GET /v1/config/public` withholds. This is where the listing ' +
+        'duration, minimum photo count, GST percentage and reveal caps come from, so ' +
+        'behaviour can be tuned without a deploy.\n\n' +
+        '`readBy` names the code that consults the key, and is **null when nothing does ' +
+        'yet** — the table carries every knob the product will ever have, while the code ' +
+        'that reads them arrives feature by feature. The console renders that second kind ' +
+        'read-only: a control that changes no behaviour is worse than no control, because ' +
+        'an operator who sets it believes they have changed something.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      responses: [{ status: 200, description: 'All configuration.', schema: 'ConfigResponse' }],
+      errors: [401, 403],
+    },
+    {
+      method: 'put',
+      path: '/v1/admin/config/:key',
+      operationId: 'updateAdminConfig',
+      tag: 'Admin',
+      summary: 'Change one configuration value',
+      description:
+        'Sets one key. `value` is a number, boolean, string or string array, and is checked ' +
+        "against the key's declared type — a string where a number belongs is a **422**, " +
+        'not a silently broken platform. `platform_config.value` is a JSON column, so ' +
+        'without that check it would be stored happily and read back as `NaN` days later.' +
+        '\n\n' +
+        'Audit-logged with the before and after values. SUPER_ADMIN only ' +
+        '(`admin:config:write`). The whole configuration comes back, so a console that has ' +
+        'just written one key does not need a second request to redraw the screen.',
+      audience: 'admin',
+      permission: 'admin:config:write',
+      params: 'ConfigKeyParam',
+      requestBody: {
+        schema: 'UpdateConfigInput',
+        description: 'The new value, typed to match the key.',
+        example: { value: 8 },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Updated. Returns the full configuration.',
+          schema: 'ConfigResponse',
+        },
+      ],
+      errors: [400, 401, 403, 404, 422],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/access',
+      operationId: 'listAdminAccess',
+      tag: 'Admin',
+      summary: 'Who may open the admin console',
+      description:
+        'Both answers to that question in one list.\n\n' +
+        '`source: ALLOWLIST` is an address in `ADMIN_ALLOWLIST` — the deployment says so, ' +
+        'and it cannot be withdrawn here. `source: GRANT` is a seat a SUPER_ADMIN handed ' +
+        'out through this API, recorded with who handed it over.\n\n' +
+        '`userId` is null for an allow-listed address nobody has signed in with yet: there ' +
+        'is no row for them, and a list that left them out would be wrong about who can ' +
+        'get in.',
+      audience: 'admin',
+      permission: 'admin:access:manage',
+      responses: [
+        { status: 200, description: 'Everyone with access.', schema: 'AdminAccessResponse' },
+      ],
+      errors: [401, 403],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/access',
+      operationId: 'grantAdminAccess',
+      tag: 'Admin',
+      summary: 'Grant admin access to an email address',
+      description:
+        'Creates the account if that address is new to the platform — the ordinary case, a ' +
+        'colleague who has never signed in. **They still sign in with Google**, and the ' +
+        'address here has to be the one Google knows them by; this is what lets the console ' +
+        'admit them when they do.\n\n' +
+        'Granting is also how a withdrawn seat is restored. Audit-logged as ' +
+        '`admin.access.granted`. SUPER_ADMIN only (`admin:access:manage`).',
+      audience: 'admin',
+      permission: 'admin:access:manage',
+      requestBody: {
+        schema: 'GrantAdminAccessInput',
+        description: 'The address and the seat they get.',
+        example: { email: 'ops.two@dealers-drive.in', adminRole: 'MODERATOR' },
+      },
+      responses: [{ status: 201, description: 'Granted.', schema: 'AdminAccessEntry' }],
+      errors: [400, 401, 403],
+    },
+    {
+      method: 'delete',
+      path: '/v1/admin/access/:id',
+      operationId: 'revokeAdminAccess',
+      tag: 'Admin',
+      summary: 'Withdraw a granted admin seat',
+      description:
+        'Deletes the grant, clears the platform-admin flag and **revokes their admin ' +
+        'sessions** — the console closes on their next click, not at the next expiry. A ' +
+        'dealer seat the same person holds is untouched.\n\n' +
+        'Three refusals, each a door somebody could otherwise not walk back out of: your ' +
+        'own seat (**403**, there may be nobody left to let you back in), an allow-listed ' +
+        'address (**409** — the environment admits them, so remove it there), and a seat ' +
+        'nobody granted (**404**; every admin sign-in leaves a seat behind, and only a ' +
+        "grant is this endpoint's to withdraw).",
+      audience: 'admin',
+      permission: 'admin:access:manage',
+      params: 'IdParam',
+      responses: [{ status: 204, description: 'Withdrawn.' }],
+      errors: [400, 401, 403, 404, 409],
+    },
   ],
 };
