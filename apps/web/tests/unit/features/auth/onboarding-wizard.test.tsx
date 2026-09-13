@@ -34,6 +34,9 @@ const FAKE_WIDGET = {
   reason: null,
 } as const;
 
+/** CI runs every workspace concurrently; leave React transitions room to settle under load. */
+const TRANSITION_TIMEOUT = 5_000;
+
 /**
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * **New, with no baseline equivalent.** `component-map.md` records that no
@@ -213,20 +216,29 @@ async function leaveAccount(user: ReturnType<typeof userEvent.setup>): Promise<v
    * which is a test that passes on a fast machine and fails on a loaded one.
    * So wait for whichever landed, then branch on it.
    */
-  await waitFor(() => {
-    const opened = screen.queryAllByLabelText(/^Digit /).length > 0;
-    const refused = [/^Full name/, /^Phone/].some(
-      (label) => screen.queryByLabelText(label)?.getAttribute('aria-invalid') === 'true',
-    );
-    expect(opened || refused).toBe(true);
-  });
+  await waitFor(
+    () => {
+      const opened = screen.queryAllByLabelText(/^Digit /).length > 0;
+      const refused = [/^Full name/, /^Phone/].some(
+        (label) => screen.queryByLabelText(label)?.getAttribute('aria-invalid') === 'true',
+      );
+      expect(opened || refused).toBe(true);
+    },
+    { timeout: TRANSITION_TIMEOUT },
+  );
 
   const boxes = screen.queryAllByLabelText(/^Digit /);
   if (boxes.length === 0) return;
 
   await user.type(boxes[0]!, '123456');
   await user.click(screen.getByRole('button', { name: 'Verify & continue' }));
-  await user.click(await screen.findByRole('button', { name: 'Continue to business details' }));
+  await user.click(
+    await screen.findByRole(
+      'button',
+      { name: 'Continue to business details' },
+      { timeout: TRANSITION_TIMEOUT },
+    ),
+  );
 }
 
 /** Which step labels the Stepper has filled — `index <= current`, C015. */

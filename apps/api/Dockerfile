@@ -74,7 +74,7 @@ RUN pnpm install --frozen-lockfile --prod --filter @dealers-drive/api...
 # The CLI itself is a dev dependency, so it is fetched for this one command and
 # never becomes part of the image's dependency tree.
 COPY apps/api/prisma apps/api/prisma
-RUN pnpm dlx prisma@6.19.3 generate --schema=apps/api/prisma/schema.prisma \
+RUN pnpm dlx prisma@7.10.0 generate --schema=apps/api/prisma/schema.prisma \
  && rm -rf /pnpm/store /root/.local/share/pnpm /root/.cache
 
 COPY --from=build /app/packages/contracts/dist packages/contracts/dist
