@@ -30,10 +30,21 @@ describe('the fake phone-OTP driver', () => {
     await expect(otp.identify('dev-otp::123456')).resolves.toMatchObject({ status: 'REJECTED' });
   });
 
+  /**
+   * Something MSG91 might plausibly have issued — which this driver must still
+   * refuse, because it has no way to check a signature and no business
+   * pretending otherwise.
+   *
+   * Built at runtime rather than written as a literal: a JWT-shaped string in
+   * source is a thing every secret scanner has to treat as a leak, correctly,
+   * since none of them can tell a fixture from a real token.
+   */
   it('refuses anything that is not a development token', async () => {
-    await expect(otp.identify('eyJhbGciOiJIUzI1NiJ9.e30.sig')).resolves.toMatchObject({
-      status: 'REJECTED',
-    });
+    const segment = (value: object): string =>
+      Buffer.from(JSON.stringify(value)).toString('base64url');
+    const jwt = `${segment({ alg: 'HS256' })}.${segment({ identifier: '919840012345' })}.signature`;
+
+    await expect(otp.identify(jwt)).resolves.toMatchObject({ status: 'REJECTED' });
   });
 
   it('reports which driver it is, for the browser to branch on', () => {

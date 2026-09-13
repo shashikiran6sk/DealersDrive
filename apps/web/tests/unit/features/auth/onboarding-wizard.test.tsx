@@ -4,7 +4,7 @@ import type {
   DealerDocumentDto,
   YardPhotoDto,
 } from '@dealers-drive/contracts';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -205,7 +205,21 @@ async function leaveAccount(user: ReturnType<typeof userEvent.setup>): Promise<v
 
   await user.click(screen.getByRole('button', { name: 'Send OTP' }));
 
-  // Nothing was sent: the step's own validation refused a name or a number.
+  /*
+   * The press settles inside a transition, and it has two outcomes: the panel
+   * opens, or the step's own validation refuses a name or a number. Reading
+   * the DOM on the next tick cannot tell "refused" from "not rendered yet" —
+   * which is a test that passes on a fast machine and fails on a loaded one.
+   * So wait for whichever landed, then branch on it.
+   */
+  await waitFor(() => {
+    const opened = screen.queryAllByLabelText(/^Digit /).length > 0;
+    const refused = [/^Full name/, /^Phone/].some(
+      (label) => screen.queryByLabelText(label)?.getAttribute('aria-invalid') === 'true',
+    );
+    expect(opened || refused).toBe(true);
+  });
+
   const boxes = screen.queryAllByLabelText(/^Digit /);
   if (boxes.length === 0) return;
 

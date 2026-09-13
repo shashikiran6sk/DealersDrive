@@ -328,10 +328,16 @@ export const authDocs: ModuleDocs = {
       audience: 'dealer',
       requestBody: {
         schema: 'VerifyPhoneInput',
+        /*
+         * The token is described rather than illustrated. A JWT-shaped literal
+         * in source is a thing every secret scanner has to treat as a leak —
+         * correctly, since none of them can tell a sample from a real one — and
+         * an example that says what the value *is* reads better in Swagger UI
+         * than sixty characters of base64 that decode to nothing useful.
+         */
         example: {
           phone: '9840012345',
-          accessToken:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWVyIjoiOTE5ODQwMDEyMzQ1In0.signature',
+          accessToken: '<the signed token verifyOtp() handed the page>',
         },
       },
       responses: [

@@ -1,5 +1,5 @@
 import type { PhoneOtpWidget } from '@dealers-drive/contracts';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -84,7 +84,12 @@ describe('PhoneVerification', () => {
 
     await user.click(screen.getByRole('button', { name: 'Send OTP' }));
 
-    expect(props.onBeforeSend).toHaveBeenCalled();
+    // Waited for rather than read on the next tick: the send runs inside a
+    // transition, so "no boxes yet" and "no boxes, ever" look the same until
+    // it has settled — and only one of them is what this test means.
+    await waitFor(() => {
+      expect(props.onBeforeSend).toHaveBeenCalled();
+    });
     expect(screen.queryAllByLabelText(/^Digit /)).toHaveLength(0);
   });
 
@@ -94,7 +99,7 @@ describe('PhoneVerification', () => {
 
     await user.click(screen.getByRole('button', { name: 'Send OTP' }));
 
-    expect(screen.getByText(/No SMS is sent in this environment/)).toBeInTheDocument();
+    expect(await screen.findByText(/No SMS is sent in this environment/)).toBeInTheDocument();
     expect(screen.getByText('123456')).toBeInTheDocument();
     expect(screen.getAllByLabelText(/^Digit /)).toHaveLength(6);
   });
@@ -112,10 +117,12 @@ describe('PhoneVerification', () => {
      * provider to name it — and the trailing nonce is what keeps the server's
      * replay guard from refusing a second attempt in one sitting.
      */
-    expect(verifyPhoneAction).toHaveBeenCalledWith(
-      '9840012345',
-      expect.stringMatching(/^dev-otp:919840012345:123456:\d+$/),
-    );
+    await waitFor(() => {
+      expect(verifyPhoneAction).toHaveBeenCalledWith(
+        '9840012345',
+        expect.stringMatching(/^dev-otp:919840012345:123456:\d+$/),
+      );
+    });
     expect(props.onVerified).toHaveBeenCalledWith('+919840012345');
   });
 
@@ -130,7 +137,7 @@ describe('PhoneVerification', () => {
 
     await sendAndEnter(user, '111111');
 
-    expect(screen.getByText(/That code could not be verified/)).toBeInTheDocument();
+    expect(await screen.findByText(/That code could not be verified/)).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(props.onVerified).not.toHaveBeenCalled();
   });
