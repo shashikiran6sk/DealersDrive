@@ -513,18 +513,7 @@ function AccountStep({
           />
         </Field>
 
-        <Field
-          id="phone"
-          label="Phone"
-          hint="+91"
-          error={errors.phone}
-          /*
-            The one line on this step that says why it is asked for. The
-            baseline's hint was the country code and nothing else, which left
-            "we are about to send you a message" to be discovered by pressing
-            the button.
-          */
-        >
+        <Field id="phone" label="Phone" hint="+91" error={errors.phone}>
           <input
             id="phone"
             name="phone"
@@ -539,27 +528,25 @@ function AccountStep({
             }}
             required
             aria-required="true"
-            /*
-              Editable, including after it has been verified and including on
-              the way back from step 2.
-
-              It was read-only once a dealership existed, on the reasoning that
-              this is the login identity and changing it needs an OTP round-trip
-              on the new number. Neither half holds: identity is the Google
-              account, and R39 gave the form that round trip — changing the
-              number simply drops the panel below back to "Send OTP", which is
-              the honest consequence rather than a locked box. What the
-              read-only field actually produced was a dead end for the one
-              dealer who most needed the box: the one told their number belongs
-              to somebody else.
-            */
+            /**
+             * Settled once it has been proved.
+             *
+             * A verified number is a fact about a handset somebody answered,
+             * and typing over it would quietly throw that away — which is what
+             * used to happen, including on the way back from step 2, where the
+             * box looked exactly as editable as it had before the code was
+             * sent.
+             *
+             * `readOnly` rather than `disabled`, and the difference is
+             * load-bearing: a disabled input is **not submitted**, so the
+             * number would vanish from the FormData that creates the
+             * dealership. Read-only keeps it in the form, out of the tab order
+             * for editing, and announced as read-only.
+             */
+            readOnly={phoneVerified}
+            aria-readonly={phoneVerified || undefined}
             {...invalidProps('phone', errors.phone)}
           />
-          <p className="mt-[4px] text-[11px] ink-subtle">
-            {phoneVerified
-              ? 'Verified — buyers will be given this number.'
-              : 'We send a one-time code to this number by SMS.'}
-          </p>
         </Field>
       </div>
     </fieldset>

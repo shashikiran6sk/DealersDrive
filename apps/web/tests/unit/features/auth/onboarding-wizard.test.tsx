@@ -626,15 +626,12 @@ describe('OnboardingWizard — the Account step', () => {
   });
 
   /**
-   * The number is editable, and stays editable on the way back from step 2.
-   *
-   * It was read-only once a dealership existed, on the reasoning that it is the
-   * login identity — which stopped being true when dealers moved to Google
-   * sign-in. What the read-only box actually produced was a dead end: a dealer
-   * whose number was refused as already registered arrived back on this step
-   * and could not change the one field they had been sent here to change.
+   * A proved number is settled (**R39**), and stays settled on the way back
+   * from step 2 — which is where it used to come undone: the box looked exactly
+   * as editable as it had before the code was sent, so typing over it silently
+   * discarded a verification.
    */
-  it('lets the phone number be edited once the dealership exists', async () => {
+  it('will not let a proved number be typed over', async () => {
     const user = userEvent.setup();
     render(
       <OnboardingWizard
@@ -649,9 +646,84 @@ describe('OnboardingWizard — the Account step', () => {
     );
 
     const phone = screen.getByLabelText(/^Phone/);
+    expect(phone).toHaveAttribute('readonly');
+
+    await user.type(phone, '9876543210');
+    expect(phone).toHaveValue('9840012345');
+  });
+
+  /**
+   * `readOnly`, not `disabled`, and the difference is the whole reason the
+   * wizard still works: a disabled input is not submitted, so the number would
+   * be missing from the FormData that creates the dealership.
+   */
+  it('still carries the proved number in the form', () => {
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+      />,
+    );
+
+    const phone = screen.getByLabelText(/^Phone/);
+    expect(phone).not.toBeDisabled();
+    expect(phone).toHaveAttribute('name', 'phone');
+    expect(phone.closest('form')).not.toBeNull();
+  });
+
+  /**
+   * The case that was reported: step 2 and back again.
+   *
+   * The panel stays mounted across a local move, so the fact it renders from
+   * has to survive one — and the box has to still be read-only when the dealer
+   * returns to look at it.
+   */
+  it('keeps a proved number settled after a trip to Business and back', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+      />,
+    );
+
+    await leaveAccount(user);
+    expect(filledSteps()).toEqual(['Account', 'Business']);
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+
+    expect(filledSteps()).toEqual(['Account']);
+    expect(screen.getByLabelText(/^Phone/)).toHaveAttribute('readonly');
+  });
+
+  /** Until it is proved, it is an ordinary field. */
+  it('lets an unproved number be edited', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ user: { phone: '', phoneVerified: false } })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+      />,
+    );
+
+    const phone = screen.getByLabelText(/^Phone/);
     expect(phone).not.toHaveAttribute('readonly');
 
-    await user.clear(phone);
     await user.type(phone, '9876543210');
     expect(phone).toHaveValue('9876543210');
   });

@@ -243,13 +243,32 @@ describe('PhoneVerification', () => {
 
     await user.click(screen.getByRole('button', { name: 'Send OTP' }));
 
-    expect(await screen.findByText(/already registered to another dealership/)).toBeInTheDocument();
+    /*
+     * Reported to the step, which owns the input the refusal is about — and
+     * **not** also rendered here. Both at once printed the same sentence twice,
+     * three lines apart.
+     */
+    await waitFor(() => {
+      expect(props.onRefused).toHaveBeenCalledWith(
+        'That mobile number is already registered to another dealership.',
+      );
+    });
+    expect(screen.queryByText(/already registered to another dealership/)).toBeNull();
     // No code panel: nothing was sent, so there is nothing to type.
     expect(screen.queryAllByLabelText(/^Digit /)).toHaveLength(0);
-    // And the step is told, so the message lands under the box too.
-    expect(props.onRefused).toHaveBeenCalledWith(
-      'That mobile number is already registered to another dealership.',
-    );
+  });
+
+  /** With no field to mark — the sandbox — the panel says it itself. */
+  it('shows the refusal itself when nothing else will', async () => {
+    const user = userEvent.setup();
+    vi.mocked(checkPhoneAvailabilityAction).mockResolvedValue({
+      error: 'That mobile number is already registered to another dealership.',
+    });
+    renderPanel({ onRefused: undefined });
+
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+
+    expect(await screen.findByText(/already registered to another dealership/)).toBeInTheDocument();
   });
 
   /** The number has not changed since the check that let the first code out. */

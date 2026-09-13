@@ -181,8 +181,17 @@ export function PhoneVerification({
       if (!resend) {
         const available = await checkPhoneAvailabilityAction(phone);
         if (available.error) {
-          onRefused?.(available.error);
-          setFailure(available.error);
+          /*
+             One message, not two.
+ 
+             This is a refusal about the value in the input, so it belongs under
+             the input — which is what `onRefused` puts it there for. Setting
+             `failure` as well printed the same sentence twice, once under the
+             box and once in this panel, three lines apart. The fallback is for
+             a caller that owns no field to mark, which is the sandbox.
+           */
+          if (onRefused) onRefused(available.error);
+          else setFailure(available.error);
           setStage('idle');
           return;
         }
