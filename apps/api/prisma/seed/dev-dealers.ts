@@ -1,3 +1,4 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../src/config/env.js';
@@ -34,7 +35,7 @@ import { DEV_DEALERS, DEV_STATES } from './dev-dealers.data.js';
  * run over a database that already has the ordinary seed in it.
  * ────────────────────────────────────────────────────────────────────────────
  */
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DATABASE_URL }) });
 const now = new Date();
 
 /** Loopback only, unless the operator says otherwise in words. */

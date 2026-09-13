@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
 /**
@@ -23,7 +24,7 @@ function run(command: string, args: string[]): void {
 }
 
 export async function setup(): Promise<void> {
-  const admin = new PrismaClient({ datasources: { db: { url: ADMIN_URL } } });
+  const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: ADMIN_URL }) });
 
   try {
     // Dropped and recreated each run: a suite that starts from whatever the
