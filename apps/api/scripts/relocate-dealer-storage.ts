@@ -36,6 +36,7 @@
  * place has nothing to copy and nothing to rename.
  */
 import { dealerSlug } from '@dealers-drive/contracts';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, type DealerDocType } from '@prisma/client';
 
 import { env } from '../src/config/env.js';
@@ -43,7 +44,7 @@ import { documentKey, yardPhotoKey } from '../src/modules/dealers/dealer-storage
 import { createStorage } from '../src/platform/storage/factory.js';
 import type { StoragePort } from '../src/platform/storage/storage.port.js';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DATABASE_URL }) });
 const storage: StoragePort = createStorage();
 const dryRun = process.argv.includes('--dry-run');
 

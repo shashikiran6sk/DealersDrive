@@ -34,11 +34,13 @@
  * without writing anything, which is the fastest way to find out whether the
  * `maps.app.goo.gl` links your dealers actually paste can be followed.
  */
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
+import { env } from '../src/config/env.js';
 import { createMapsResolver } from '../src/platform/maps/maps-link.js';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DATABASE_URL }) });
 const maps = createMapsResolver();
 const dryRun = process.argv.includes('--dry-run');
 const all = process.argv.includes('--all');

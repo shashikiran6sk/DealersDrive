@@ -11,9 +11,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Prisma 7: the connection URL is no longer declared here. Migrate reads it
+// from `prisma.config.ts`; the running server passes it to `@prisma/adapter-pg`
+// in `platform/db/prisma.ts`.
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ─────────── IDENTITY (dealers and admins only — no buyer accounts) ──────

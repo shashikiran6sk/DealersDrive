@@ -18,6 +18,13 @@ loadEnv({
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
+  // Prisma 7 removed `datasource { url = ... }` from the schema file itself —
+  // the connection string for Migrate now lives here instead (see
+  // `platform/db/prisma.ts` for the `@prisma/adapter-pg` the running server
+  // actually connects with).
+  datasource: {
+    url: process.env.DATABASE_URL,
+  },
   migrations: {
     seed: 'tsx prisma/seed/index.ts',
   },

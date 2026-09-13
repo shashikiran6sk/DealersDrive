@@ -1,3 +1,4 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../config/env.js';
@@ -15,15 +16,21 @@ export type Db = PrismaClient;
  * A transaction handle. Repositories accept it so a service can compose several
  * writes — a credit movement and the state change it pays for — into one
  * transaction (§26.2).
+ *
+ * Mirrors Prisma's own `ITXClientDenyList` (the set a `$transaction` callback
+ * client omits). Prisma 7 dropped `$transaction` from that list — nested
+ * transactions are allowed now — so it must not be omitted here either, or
+ * this type silently stops matching `Prisma.TransactionClient` and every
+ * helper that accepts either (e.g. `roles.ts`) fails to typecheck.
  */
-export type Tx = Omit<
-  PrismaClient,
-  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
->;
+export type Tx = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$use' | '$extends'>;
 
 export function createPrisma(): PrismaClient {
+  // Prisma 7 dropped the `datasources` override in favour of a driver
+  // adapter — the client no longer opens the connection itself, `pg` does.
+  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
   return new PrismaClient({
-    datasources: { db: { url: env.DATABASE_URL } },
+    adapter,
     log: env.isDevelopment ? ['warn', 'error'] : ['error'],
     // See `DB_TRANSACTION_TIMEOUT_MS` in config/env.ts. Prisma's 5s default is
     // shorter than a settlement takes against an out-of-region database, and
