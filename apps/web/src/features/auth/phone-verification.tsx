@@ -169,8 +169,22 @@ export function PhoneVerification({
       setAttemptsLeft(LOCAL_ATTEMPTS);
       setResendAt(Date.now() + RESEND_SECONDS * 1000);
       setStage('code');
-    } catch {
-      setFailure('We could not send a code to that number. Check it and try again.');
+    } catch (error) {
+      /*
+       * The reason, when there is one worth showing.
+       *
+       * This used to be a bare `catch {}` under one fixed sentence, which is
+       * the wrong trade for a provider integration: "check it and try again"
+       * is useless advice when the actual problem is that the script is
+       * blocked or the domain is not allow-listed, and the person who can fix
+       * that is the one reading this screen. The full error object goes to the
+       * console either way — see `lib/msg91-widget.ts`.
+       */
+      setFailure(
+        error instanceof Error && error.message.startsWith('The verification service')
+          ? error.message
+          : 'We could not send a code to that number. Check it and try again.',
+      );
       setStage(resend ? 'failed' : 'idle');
     } finally {
       busy.current = false;
@@ -211,10 +225,16 @@ export function PhoneVerification({
       setStage('idle');
       setCode('');
       onVerified(result.phone ?? phone);
-    } catch {
+    } catch (error) {
       // The widget refused the code itself and never minted a token, so the API
-      // was not reached. Same outcome for the dealer, same panel.
-      refuse(WRONG_CODE);
+      // was not reached. A wrong code is the overwhelmingly likely reason and
+      // reads as one; anything the widget itself reports is shown instead,
+      // because that is a problem the dealer cannot solve by retyping.
+      refuse(
+        error instanceof Error && error.message.startsWith('The verification service')
+          ? error.message
+          : WRONG_CODE,
+      );
     } finally {
       busy.current = false;
     }

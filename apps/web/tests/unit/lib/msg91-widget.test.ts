@@ -24,10 +24,18 @@ import {
  *     instead of a hopeful one.
  */
 interface FakeWidget {
-  initSendOTP: ReturnType<typeof vi.fn>;
+  initSendOTP: ReturnType<typeof vi.fn<(...args: unknown[]) => void>>;
   sendOtp: ReturnType<typeof vi.fn>;
   verifyOtp: ReturnType<typeof vi.fn>;
 }
+
+/**
+ * How long the widget waits before attaching its methods, in ms. `0` is the
+ * old assumption — that `initSendOTP` returning means ready — and anything
+ * above it is what actually happens: the widget fetches its configuration
+ * first.
+ */
+let exposeAfterMs = 0;
 
 function installScript(): FakeWidget {
   const fake: FakeWidget = {
@@ -41,7 +49,26 @@ function installScript(): FakeWidget {
   // Stand in for the provider's `<script>`: appending it fires `onload`, which
   // is where `initSendOTP` is called from.
   vi.spyOn(document.head, 'append').mockImplementation(((node: HTMLScriptElement) => {
-    Object.assign(window, fake);
+    /*
+     * The script defines `initSendOTP` and nothing else. The three methods are
+     * attached by *calling* it, after the widget has fetched its configuration
+     * — which is the gap the loader has to wait out, and the gap that used to
+     * swallow a `sendOtp` call whole.
+     */
+    Object.assign(window, {
+      initSendOTP: (...args: unknown[]) => {
+        fake.initSendOTP(...args);
+        const expose = () => {
+          Object.assign(window, {
+            sendOtp: fake.sendOtp,
+            retryOtp: vi.fn(),
+            verifyOtp: fake.verifyOtp,
+          });
+        };
+        if (exposeAfterMs === 0) expose();
+        else setTimeout(expose, exposeAfterMs);
+      },
+    });
     node.onload?.(new Event('load'));
   }) as typeof document.head.append);
 
@@ -50,9 +77,14 @@ function installScript(): FakeWidget {
 
 beforeEach(() => {
   resetMsg91Widget();
+  exposeAfterMs = 0;
+  // The loader polls for readiness and every call carries a deadline, so the
+  // cases below drive the clock rather than wait on it.
+  vi.useFakeTimers();
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   for (const key of ['initSendOTP', 'sendOtp', 'retryOtp', 'verifyOtp']) {
     delete (window as unknown as Record<string, unknown>)[key];
@@ -140,7 +172,72 @@ describe('verifyMsg91Otp', () => {
     await expect(verifyMsg91Otp('000000')).rejects.toThrow('OTP not verified');
   });
 
-  it('rejects before the widget is ready rather than calling nothing', async () => {
-    await expect(verifyMsg91Otp('123456')).rejects.toThrow('not ready');
+  it('rejects before the script is loaded rather than calling nothing', async () => {
+    await expect(verifyMsg91Otp('123456')).rejects.toThrow('not loaded');
+  });
+});
+
+/**
+ * The two ways a callback API hangs, and the reason this module wraps them at
+ * all (**R39**).
+ *
+ * Both of these were real: pressing **Send OTP** against a live widget span an
+ * spinner for ever, sent no message and showed no error. A promise that never
+ * settles is the worst failure mode a UI can have, because there is nothing to
+ * report and nothing to retry — so both are now rejections.
+ */
+describe('a widget that is not ready yet', () => {
+  it('waits for the methods instead of calling into nothing', async () => {
+    exposeAfterMs = 300;
+    const fake = installScript();
+
+    const loaded = loadMsg91Widget({ widgetId: 'w1', tokenAuth: 't1' });
+    // `initSendOTP` has returned, and `sendOtp` is still undefined — which is
+    // exactly the window the old code resolved in.
+    expect((window as unknown as Record<string, unknown>).sendOtp).toBeUndefined();
+
+    await vi.advanceTimersByTimeAsync(400);
+    await loaded;
+    await sendMsg91Otp('919840012345');
+
+    expect(fake.sendOtp).toHaveBeenCalledOnce();
+  });
+
+  it('gives up rather than waiting for methods that never arrive', async () => {
+    exposeAfterMs = 60_000;
+    installScript();
+
+    const loaded = loadMsg91Widget({ widgetId: 'w1', tokenAuth: 't1' }).catch(
+      (error: Error) => error.message,
+    );
+    await vi.advanceTimersByTimeAsync(20_000);
+
+    await expect(loaded).resolves.toMatch(/did not finish starting up/);
+  });
+});
+
+describe('a widget that never answers', () => {
+  it('rejects rather than leaving the caller waiting for ever', async () => {
+    const fake = installScript();
+    // Called, and neither callback ever invoked. Nothing is thrown, nothing is
+    // logged, and before the timeout nothing ever resolved either.
+    fake.sendOtp.mockImplementation(() => undefined);
+    await loadMsg91Widget({ widgetId: 'w1', tokenAuth: 't1' });
+
+    const pending = sendMsg91Otp('919840012345').catch((error: Error) => error.message);
+    await vi.advanceTimersByTimeAsync(25_000);
+
+    await expect(pending).resolves.toMatch(/did not respond to sendOtp/);
+  });
+
+  it('does the same for a code that is never judged', async () => {
+    const fake = installScript();
+    fake.verifyOtp.mockImplementation(() => undefined);
+    await loadMsg91Widget({ widgetId: 'w1', tokenAuth: 't1' });
+
+    const pending = verifyMsg91Otp('123456').catch((error: Error) => error.message);
+    await vi.advanceTimersByTimeAsync(25_000);
+
+    await expect(pending).resolves.toMatch(/did not respond to verifyOtp/);
   });
 });

@@ -1,3 +1,5 @@
+import type { Server } from 'node:http';
+
 import express from 'express';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -86,8 +88,21 @@ async function appFor(userId: string | (() => string)) {
   );
   app.use(errorHandler);
 
-  return app;
+  /*
+   * One listener for the file, not one per request (CONTEXT.md §7l).
+   *
+   * `request(app)` calls `app.listen(0)` and closes it again when the request
+   * ends, so thirty-one requests are thirty-one ephemeral ports handed back to
+   * the operating system — and on a machine with other servers on it, one of
+   * them can be taken between requests and the next call dials a stranger.
+   */
+  const server = app.listen(0);
+  servers.push(server);
+  return server;
 }
+
+/** Closed in `afterEach`, so a file of these does not leak listeners. */
+const servers: Server[] = [];
 
 const BODY = { phone: '9840012345', accessToken: 'dev-otp:919840012345:123456' };
 
@@ -95,7 +110,17 @@ beforeEach(() => {
   vi.resetModules();
 });
 
-afterEach(() => {
+afterEach(async () => {
+  await Promise.all(
+    servers.splice(0).map(
+      (server) =>
+        new Promise<void>((resolve) => {
+          server.close(() => {
+            resolve();
+          });
+        }),
+    ),
+  );
   vi.unstubAllEnvs();
   vi.resetModules();
 });
