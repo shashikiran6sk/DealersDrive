@@ -56,6 +56,7 @@ export function createCookieSessionResolver(
         email: session.user.email,
         fullName: session.user.fullName,
         phone: session.user.phone,
+        phoneVerified: session.user.phoneVerifiedAt !== null,
         permissions: [],
       };
     }

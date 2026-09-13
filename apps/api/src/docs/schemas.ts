@@ -67,6 +67,7 @@ const INPUT_SCHEMA_NAMES = [
   'ConfigKeyParam',
   'UpdateConfigInput',
   'GrantAdminAccessInput',
+  'VerifyPhoneInput',
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────
    * The baseline lists 42 names. The rest are exported by contracts modules

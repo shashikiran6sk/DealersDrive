@@ -33,6 +33,7 @@ import {
   type OAuthTransaction,
 } from './oauth-transaction.js';
 import { ensureSeat, isSeatSuspended } from './roles.js';
+import { assertPhoneVerified } from './verified-phone.js';
 import { permissionsForRole, type DealerPrincipal, type PendingPrincipal } from './session.port.js';
 import type { SessionService } from './session.service.js';
 
@@ -112,6 +113,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         fullName: principal.fullName,
         phone: principal.phone ?? '',
         phoneDisplay: principal.phone ? formatPhone(principal.phone) : '',
+        phoneVerified: principal.phoneVerified,
         email: principal.email,
         emailVerified: true,
       },
@@ -366,23 +368,24 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         );
       }
 
+      /**
+       * The number has to have been proved before it can be built into a
+       * dealership (**R39**).
+       *
+       * This used to be a uniqueness lookup: any number nobody else held was
+       * accepted, and onboarding then wrote it onto the user row. Both halves
+       * moved to `POST /v1/auth/phone/verify` — see `verified-phone.ts` for why
+       * `users.phone` now has exactly one writer — and what is left here is the
+       * assertion that the number on this request is the one the session
+       * already proved.
+       *
+       * The uniqueness refusal moved with it, which is also where it belongs:
+       * the collision is now reported on the step that owns the field, at the
+       * moment the claim is made, instead of two steps later when the dealer
+       * has finished typing their address.
+       */
       const phone = toE164(input.phone);
-      const phoneOwner = await prisma.user.findUnique({ where: { phone } });
-      if (phoneOwner && phoneOwner.id !== principal.userId) {
-        throw new ConflictError(
-          'PHONE_ALREADY_REGISTERED',
-          'That mobile number is already registered to another dealership.',
-          {
-            errors: [
-              {
-                field: 'body.phone',
-                code: 'PHONE_ALREADY_REGISTERED',
-                message: 'Already registered.',
-              },
-            ],
-          },
-        );
-      }
+      await assertPhoneVerified(prisma, principal.userId, phone, 'body.phone');
 
       // The yard's pin and the place it names, out of the link the dealer just
       // pasted. Best-effort and bounded, and read *before* the transaction
@@ -402,12 +405,15 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           );
         }
 
+        /*
+         * `fullName` only. `users.phone` was written here and is not any more:
+         * it already holds this number, because `assertPhoneVerified` above
+         * refused the request otherwise, and a second writer is exactly what
+         * `verified-phone.ts` exists to prevent.
+         */
         await tx.user.update({
           where: { id: principal.userId },
-          data: {
-            fullName: input.fullName,
-            phone,
-          },
+          data: { fullName: input.fullName },
         });
 
         const dealer = await tx.dealer.create({

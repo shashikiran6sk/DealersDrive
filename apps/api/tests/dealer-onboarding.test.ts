@@ -66,7 +66,15 @@ async function dealership(overrides: Record<string, unknown> = {}) {
   newAccount();
   const agent = h.agent();
   await h.signIn(agent);
-  const created = await agent.post('/v1/auth/onboarding').send(onboarding(overrides)).expect(201);
+  const body = onboarding(overrides);
+  /*
+   * The number is proved before the dealership is created (**R39**).
+   * `POST /v1/auth/onboarding` refuses one that is not the session's verified
+   * number, so this is not test scaffolding around the feature — it is the
+   * feature, walked by every fixture that passes through here.
+   */
+  await h.proveNumber(agent, String(body.phone));
+  const created = await agent.post('/v1/auth/onboarding').send(body).expect(201);
   return {
     agent,
     dealerId: created.body.dealer.id as string,
@@ -116,10 +124,9 @@ describe('one name per city', () => {
     newAccount();
     const second = h.agent();
     await h.signIn(second);
-    await second
-      .post('/v1/auth/onboarding')
-      .send(onboarding({ legalName: name, city: 'Salem' }))
-      .expect(201);
+    const body = onboarding({ legalName: name, city: 'Salem' });
+    await h.proveNumber(second, String(body.phone));
+    await second.post('/v1/auth/onboarding').send(body).expect(201);
   });
 
   /** Case is not a difference — in either field. */
@@ -168,6 +175,7 @@ describe('one name per city', () => {
     const rejected = await agent.post('/v1/auth/onboarding').send(withoutDistrict).expect(400);
     expect(rejected.body.code).toBe('VALIDATION_FAILED');
 
+    await h.proveNumber(agent, String(onboarding().phone));
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
     await agent
       .patch('/v1/dealer/onboarding')
@@ -309,6 +317,7 @@ describe('the yard on a map', () => {
     const { mapsUrl: _omitted, ...withoutMaps } = onboarding();
     await agent.post('/v1/auth/onboarding').send(withoutMaps).expect(400);
 
+    await h.proveNumber(agent, String(onboarding().phone));
     await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
     const completeness = await agent.get('/v1/dealer/completeness').expect(200);
     const business = completeness.body.steps.find(
@@ -704,10 +713,15 @@ describe('the contact number, after onboarding', () => {
    * for it is reached again by pressing Back. A read-only box there was a dead
    * end for the one dealer who most needed it: the one told their number
    * belongs to somebody else.
+   *
+   * **R39** changed what editing it costs, not whether it is allowed: the new
+   * number has to be proved before the dealership will carry it, exactly as
+   * the first one was.
    */
-  it('changes both the account number and the number buyers are given', async () => {
+  it('publishes a new number once it has been proved', async () => {
     const { agent, dealerId } = await dealership();
 
+    await h.proveNumber(agent, '9876543210');
     await agent
       .patch('/v1/dealer/onboarding')
       .send({ contact: { phone: '98765 43210' } })
@@ -722,20 +736,55 @@ describe('the contact number, after onboarding', () => {
     expect(dealer?.contactPhone).toBe('+919876543210');
   });
 
-  it('refuses a number another dealership already holds, naming the field', async () => {
+  /**
+   * The gate, from the other side: a number that is merely *typed* into the
+   * patch does not reach either column (**R39**).
+   *
+   * This is the case `users.phone`'s single-writer rule exists for. Before it,
+   * any number nobody else held was accepted here on the strength of having
+   * been sent — which meant the contact number a buyer is given had never been
+   * shown to ring anybody.
+   */
+  it('refuses a number this account has not proved', async () => {
+    const { agent, dealerId } = await dealership();
+
+    const refused = await agent
+      .patch('/v1/dealer/onboarding')
+      .send({ contact: { phone: '9876543210' } })
+      .expect(422);
+
+    expect(refused.body.code).toBe('PHONE_NOT_VERIFIED');
+    // Named as the client sent it, so the wizard can mark the box — and, since
+    // `phone` is a step 1 field, walk back to the step that owns it.
+    expect(JSON.stringify(refused.body.errors)).toContain('body.contact.phone');
+
+    const dealer = await h.prisma.dealer.findUnique({ where: { id: dealerId } });
+    expect(dealer?.contactPhone).not.toBe('+919876543210');
+  });
+
+  /**
+   * The uniqueness refusal moved to the claim (**R39**).
+   *
+   * It used to be answered by this patch and by the create. Both of those now
+   * assert against a number the session has already proved — and a number
+   * another dealership holds can never become that — so the collision is
+   * reported on step 1, against the box the dealer typed into, at the moment
+   * they ask for a code.
+   */
+  it('refuses to prove a number another dealership already holds', async () => {
     const first = await dealership();
     const taken = (await first.agent.get('/v1/dealer').expect(200)).body.contact.phone as string;
     const { agent } = await dealership();
 
     const refused = await agent
-      .patch('/v1/dealer/onboarding')
-      .send({ contact: { phone: taken } })
+      .post('/v1/auth/phone/verify')
+      // A token of its own, so this is refused for the reason under test
+      // rather than by the replay guard.
+      .send({ phone: taken, accessToken: `dev-otp:${taken.replace(/\D/g, '')}:123456:stolen` })
       .expect(409);
 
     expect(refused.body.code).toBe('PHONE_ALREADY_REGISTERED');
-    // Named as the client sent it, so the wizard can mark the box — and, since
-    // `phone` is a step 1 field, walk back to the step that owns it.
-    expect(JSON.stringify(refused.body.errors)).toContain('body.contact.phone');
+    expect(JSON.stringify(refused.body.errors)).toContain('body.phone');
   });
 
   it('lets a dealership re-save its own number', async () => {

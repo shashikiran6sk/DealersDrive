@@ -46,6 +46,15 @@ const PRODUCTION_REQUIRED = {
    */
   MAIL_DRIVER: 'resend',
   RESEND_API_KEY: 're_a_real_production_key',
+  /*
+   * R39. `fake` accepts a fixed code and proves nothing about who holds the
+   * handset, so production refuses it — and the msg91 driver needs all three
+   * of these. Both refusals have their own cases below.
+   */
+  PHONE_OTP_DRIVER: 'msg91',
+  MSG91_AUTH_KEY: 'a-real-msg91-auth-key',
+  MSG91_WIDGET_ID: '36696d6e706c393937373539',
+  MSG91_WIDGET_TOKEN: '461234TTQ0dXNwMjY4OTY4NzQ1',
 };
 
 /**
@@ -117,6 +126,11 @@ const SCHEMA_KEYS = [
   'S3_FORCE_PATH_STYLE',
   'MSG91_AUTH_KEY',
   'MSG91_SENDER_ID',
+  'PHONE_OTP_DRIVER',
+  'PHONE_OTP_DEV_CODE',
+  'PHONE_OTP_TIMEOUT_MS',
+  'MSG91_WIDGET_ID',
+  'MSG91_WIDGET_TOKEN',
   'SENTRY_DSN',
 ];
 
@@ -519,6 +533,32 @@ describe('configurations that must not boot', () => {
     expect(message).toContain('MSG91_SENDER_ID');
   });
 
+  /**
+   * R39. The widget cannot initialise without its two values, and the
+   * server-side check cannot be made without the auth key. Refused outside
+   * production too, like the Attestr token — a preview environment pointed at
+   * MSG91 with no credentials would fail every verification silently, and
+   * nobody would know until a dealer could not finish signing up.
+   */
+  it('refuses the MSG91 OTP widget without its credentials', async () => {
+    const message = await refuses({ PHONE_OTP_DRIVER: 'msg91' });
+
+    expect(message).toContain('MSG91_AUTH_KEY');
+    expect(message).toContain('MSG91_WIDGET_ID');
+    expect(message).toContain('MSG91_WIDGET_TOKEN');
+  });
+
+  /** A fixed code proves nothing about who is holding the handset. */
+  it('refuses the development OTP driver in production', async () => {
+    const message = await refuses({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      PHONE_OTP_DRIVER: 'fake',
+    });
+
+    expect(message).toContain('PHONE_OTP_DRIVER');
+  });
+
   it('refuses production without a Google client, because dealers sign in with it', async () => {
     const { GOOGLE_CLIENT_ID: _id, GOOGLE_CLIENT_SECRET: _secret, ...rest } = PRODUCTION_REQUIRED;
     const message = await refuses({ NODE_ENV: 'production', ...rest });
@@ -570,6 +610,7 @@ describe('configurations that must not boot', () => {
 
     expect(loaded.STORAGE_DRIVER).toBe('r2');
     expect(loaded.AUTH_MODE).toBe('cookie');
+    expect(loaded.PHONE_OTP_DRIVER).toBe('msg91');
   });
 
   it('refuses a metrics endpoint without a strong scrape token', async () => {

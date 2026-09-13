@@ -99,6 +99,13 @@ locals {
     # Resend key fails at boot rather than silently telling nobody anything.
     { name = "MAIL_DRIVER", value = var.mail_driver },
     { name = "SMS_DRIVER", value = "console" },
+    # R39. `env.ts` refuses `fake` in production, so a deployment without the
+    # widget credentials fails at boot rather than accepting a fixed code. The
+    # two values below reach the browser through GET /v1/auth/phone/widget;
+    # MSG91_AUTH_KEY does not, and is in Parameter Store.
+    { name = "PHONE_OTP_DRIVER", value = var.phone_otp_driver },
+    { name = "MSG91_WIDGET_ID", value = var.msg91_widget_id },
+    { name = "MSG91_WIDGET_TOKEN", value = var.msg91_widget_token },
     { name = "JOBS_ENABLED", value = "true" },
 
     # **R40 — the API is a pure API now.**

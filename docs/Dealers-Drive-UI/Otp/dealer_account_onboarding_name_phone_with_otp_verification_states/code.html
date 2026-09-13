@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#f4f5f7]" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dealers-Drive for Dealers — Account Onboarding &amp; OTP Verification</title>
+<!-- Tailwind CSS CDN with Forms and Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent: {
+              DEFAULT: '#2f55dd',
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#3b66f5',
+              600: '#2f55dd',
+              700: '#2344b5',
+            },
+            neutral: {
+              surface: '#eaecf0',
+              canvas: '#f4f5f7',
+              inactive: '#d4d4d7',
+              charcoal: '#14171c',
+              subtle: '#636975',
+              border: '#dce0e5'
+            },
+            status: {
+              ok: '#0f7a5a',
+              'ok-bg': '#e6f4ef',
+              'ok-border': '#9cd6be',
+              err: '#b3261e',
+              'err-bg': '#fbe9e7',
+              'err-border': '#f5c2bc',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['SF Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="custom-plate-and-inputs">
+    /* Number Plate Motif as defined in specification */
+    .dd-plate {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 1px solid #14171c;
+      border-left: 5px solid #2f55dd;
+      font-family: 'SF Mono', 'Menlo', monospace;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    
+    /* Tabular numbers for clean alignment in OTP and timer */
+    .tnum {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Custom outline styles for focused input elements */
+    .focus-ring:focus-within {
+      border-color: #2f55dd;
+      box-shadow: 0 0 0 1px #2f55dd;
+    }
+
+    .error-ring {
+      border-color: #b3261e !important;
+      background-color: #fffbfa !important;
+      box-shadow: 0 0 0 1px #b3261e;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+<body class="h-full font-sans text-neutral-charcoal antialiased bg-[#f4f5f7] flex flex-col">
+<!-- BEGIN: TopBar -->
+<header class="w-full bg-white border-b border-[#e2e4e9] sticky top-0 z-30 shadow-xs" data-purpose="top-navigation">
+<div class="max-w-[1180px] mx-auto px-6 h-16 flex items-center justify-between">
+<!-- Left side logo with Plate Motif -->
+<div class="flex items-center gap-3.5">
+<div aria-label="DD Logo" class="dd-plate w-10 h-7 text-xs text-neutral-charcoal shadow-xs">
+          DD
+        </div>
+<div class="flex items-baseline gap-2">
+<span class="text-base font-semibold tracking-tight text-neutral-charcoal">Dealers-Drive</span>
+<span class="text-xs font-medium uppercase tracking-wider text-neutral-subtle bg-neutral-surface px-1.5 py-0.5 rounded-[3px]">for dealers</span>
+</div>
+</div>
+<!-- Right side navigation link -->
+<div>
+<a class="text-sm font-medium text-neutral-subtle hover:text-accent flex items-center gap-1.5 transition-colors duration-150" href="#marketplace">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Back to marketplace
+        </a>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: InteractiveStateSwitcher -->
+<!-- Interactive State Switcher / Quick Jump Bar -->
+<aside class="bg-neutral-charcoal text-white text-xs py-2.5 px-6 sticky top-16 z-20 shadow-md" data-purpose="prototype-state-switcher">
+<div class="max-w-[1180px] mx-auto flex flex-wrap items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+<span class="font-medium tracking-wide">OTP Verification States (All 4 Displayed Live Below):</span>
+</div>
+<div class="flex items-center gap-1.5 bg-neutral-800 p-1 rounded">
+<button class="px-3 py-1 rounded-[3px] font-medium bg-accent text-white transition-all text-xs" id="btn-state-input" onclick="highlightState('state-1-card')">
+          1. Send Code
+        </button>
+<button class="px-3 py-1 rounded-[3px] font-medium text-neutral-300 hover:text-white transition-all text-xs" id="btn-state-verify" onclick="highlightState('state-2-card')">
+          2. Active OTP
+        </button>
+<button class="px-3 py-1 rounded-[3px] font-medium text-neutral-300 hover:text-white transition-all text-xs" id="btn-state-error" onclick="highlightState('state-3-card')">
+          3. Failure State
+        </button>
+<button class="px-3 py-1 rounded-[3px] font-medium text-neutral-300 hover:text-white transition-all text-xs" id="btn-state-success" onclick="highlightState('state-4-card')">
+          4. Success State
+        </button>
+<div class="h-4 w-px bg-neutral-700 mx-1"></div>
+<button class="px-2.5 py-1 rounded-[3px] font-medium text-neutral-300 hover:text-white transition-all text-xs flex items-center gap-1" id="btn-view-toggle" onclick="toggleFilterMode()">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span id="filter-status-label">Show Single Mode</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: InteractiveStateSwitcher -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-[1180px] w-full mx-auto px-6 py-10" data-purpose="onboarding-stepper-and-form">
+<!-- BEGIN: StepperHeader -->
+<div class="mb-10 max-w-[840px]" data-purpose="process-stepper">
+<div class="grid grid-cols-4 gap-3 mb-2.5">
+<!-- Step 1: Account (Active) -->
+<div>
+<div class="h-[5px] w-full bg-accent rounded-full mb-2"></div>
+<span class="text-sm font-semibold text-accent block">Account</span>
+</div>
+<!-- Step 2: Business -->
+<div>
+<div class="h-[5px] w-full bg-neutral-inactive rounded-full mb-2"></div>
+<span class="text-sm font-medium text-neutral-subtle block">Business</span>
+</div>
+<!-- Step 3: Documents -->
+<div>
+<div class="h-[5px] w-full bg-neutral-inactive rounded-full mb-2"></div>
+<span class="text-sm font-medium text-neutral-subtle block">Documents</span>
+</div>
+<!-- Step 4: Review -->
+<div>
+<div class="h-[5px] w-full bg-neutral-inactive rounded-full mb-2"></div>
+<span class="text-sm font-medium text-neutral-subtle block">Review</span>
+</div>
+</div>
+</div>
+<!-- END: StepperHeader -->
+<!-- Main Form Section Container -->
+<div class="max-w-[840px] bg-white border border-neutral-border rounded-[6px] shadow-sm p-8 sm:p-10">
+<!-- Screen Heading & Subtitle -->
+<header class="mb-8">
+<h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-charcoal">Create your account</h1>
+<p class="mt-2 text-sm sm:text-base text-neutral-subtle">
+          This is the person who will manage the dealership on Dealers-Drive.
+        </p>
+</header>
+<!-- BEGIN: CoreAccountForm -->
+<form class="space-y-8" id="onboarding-form" onsubmit="event.preventDefault();">
+<!-- Side-by-Side 2-Column Grid: ONLY Full Name & Phone Number (role & email remain removed) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+<!-- Field 1: Full Name -->
+<div>
+<label class="block text-sm font-semibold text-neutral-charcoal mb-1.5" for="full-name">
+              Full name <span class="text-accent">*</span>
+</label>
+<div class="relative">
+<input class="w-full h-12 px-3.5 bg-white border border-[#cfd4dc] rounded-[4px] text-neutral-charcoal text-base font-normal placeholder-neutral-subtle focus:border-accent focus:ring-1 focus:ring-accent transition-colors" id="full-name" name="full-name" placeholder="Enter full name" required="" type="text" value="R. Manikandan"/>
+</div>
+<p class="mt-1.5 text-xs text-neutral-subtle">Legal name as per identity documents.</p>
+</div>
+<!-- Field 2: Phone Number with Country Prefix Box -->
+<div>
+<label class="block text-sm font-semibold text-neutral-charcoal mb-1.5" for="phone-number">
+              Phone number <span class="text-accent">*</span>
+</label>
+<div class="flex rounded-[4px] border border-[#cfd4dc] overflow-hidden focus-ring h-12 bg-white transition-all">
+<!-- Prefix Box: 62px width, centered, #eaecf0 background -->
+<div class="w-[62px] min-w-[62px] bg-neutral-surface flex items-center justify-center border-r border-[#cfd4dc] select-none">
+<span class="text-sm font-medium text-neutral-charcoal tnum">+91</span>
+</div>
+<!-- Mobile digits input -->
+<input class="flex-1 h-full px-3.5 border-0 text-base text-neutral-charcoal placeholder-neutral-subtle tnum focus:ring-0 focus:outline-none" id="phone-number" maxlength="12" name="phone-number" placeholder="10-digit mobile" required="" type="tel" value="98400 12345"/>
+</div>
+<p class="mt-1.5 text-xs text-neutral-subtle">We'll send a one-time verification code via SMS.</p>
+</div>
+</div>
+<!-- SECTION: Comprehensive OTP Verification Sequence / Grid (All 4 states visible directly) -->
+<div class="pt-6 border-t border-neutral-border space-y-6" id="otp-states-container">
+<div class="flex items-center justify-between pb-1">
+<div>
+<h2 class="text-xs uppercase font-bold tracking-wider text-neutral-subtle">OTP Verification States (Design Specification)</h2>
+<p class="text-xs text-neutral-subtle mt-0.5">All 4 lifecycle verification states rendered below for review and verification.</p>
+</div>
+<span class="text-[11px] font-semibold bg-neutral-surface text-neutral-charcoal px-2 py-0.5 rounded-[3px] border border-[#dce0e5]">
+            4 States Active
+</span>
+</div>
+<!-- STATE 1: Send Code / Initial Action -->
+<div class="otp-state-card border border-neutral-border rounded-[6px] p-5 sm:p-6 bg-[#fafbfc] transition-all" id="state-1-card">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="w-5 h-5 rounded-full bg-neutral-charcoal text-white text-[11px] font-bold flex items-center justify-center">1</span>
+<span class="text-xs font-bold uppercase tracking-wider text-neutral-charcoal">State 1: Send Code / Initial Action</span>
+</div>
+<span class="text-xs font-mono text-neutral-subtle bg-white px-2 py-0.5 rounded border border-neutral-border">Initial</span>
+</div>
+<p class="text-xs text-neutral-subtle mb-4">Click below to dispatch a 6-digit authentication token to <span class="font-semibold text-neutral-charcoal tnum">+91 98400 12345</span>.</p>
+<div class="flex items-center gap-3">
+<button class="h-12 px-6 rounded-[4px] border border-[#cfd4dc] bg-white text-neutral-charcoal font-medium text-sm hover:bg-neutral-50 transition-colors" type="button">
+              Back
+            </button>
+<button class="flex-1 sm:flex-initial h-12 px-8 rounded-[4px] bg-accent text-white font-medium text-sm hover:bg-accent-700 transition-colors shadow-xs flex items-center justify-center gap-2" onclick="highlightState('state-2-card')" type="button">
+<span>Send OTP →</span>
+</button>
+</div>
+</div>
+<!-- STATE 2: Active OTP Code Entry -->
+<div class="otp-state-card border-2 border-accent bg-accent-50/30 rounded-[6px] p-5 sm:p-6 transition-all shadow-xs" id="state-2-card">
+<div class="flex items-start justify-between flex-wrap gap-2 mb-3">
+<div class="flex items-center gap-2">
+<span class="w-5 h-5 rounded-full bg-accent text-white text-[11px] font-bold flex items-center justify-center">2</span>
+<span class="text-xs font-bold uppercase tracking-wider text-accent-700">State 2: Active OTP Code Entry</span>
+</div>
+<span class="text-xs font-mono text-accent-700 bg-white px-2 py-0.5 rounded border border-accent/30 font-medium">In Progress</span>
+</div>
+<div class="flex items-start justify-between flex-wrap gap-2 mb-2">
+<div>
+<h3 class="text-base font-bold text-neutral-charcoal flex items-center gap-2">
+<svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                Verify mobile number
+              </h3>
+<p class="text-sm text-neutral-subtle mt-1">
+                We sent a 6-digit verification code to <span class="font-semibold text-neutral-charcoal tnum">+91 98400 12345</span>
+</p>
+</div>
+<button class="text-xs font-semibold text-accent hover:underline" onclick="highlightState('state-1-card')" type="button">
+              Change number
+            </button>
+</div>
+<!-- 6 individual 52x58px OTP input boxes with active focus ring -->
+<div class="my-5" data-purpose="otp-cell-inputs">
+<div class="flex items-center gap-2.5 sm:gap-3 justify-start max-w-full overflow-x-auto py-1">
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] border border-[#cfd4dc] bg-white text-neutral-charcoal focus:border-accent focus:ring-1 focus:ring-accent" maxlength="1" type="text" value="5"/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] border border-[#cfd4dc] bg-white text-neutral-charcoal focus:border-accent focus:ring-1 focus:ring-accent" maxlength="1" type="text" value="2"/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] border border-[#cfd4dc] bg-white text-neutral-charcoal focus:border-accent focus:ring-1 focus:ring-accent" maxlength="1" type="text" value="8"/>
+<input autofocus="" class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] border-2 border-accent bg-white text-neutral-charcoal ring-2 ring-accent/20 focus:border-accent focus:ring-1 focus:ring-accent" maxlength="1" placeholder="·" type="text" value=""/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] border border-[#cfd4dc] bg-white text-neutral-charcoal focus:border-accent focus:ring-1 focus:ring-accent" maxlength="1" placeholder="·" type="text" value=""/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] border border-[#cfd4dc] bg-white text-neutral-charcoal focus:border-accent focus:ring-1 focus:ring-accent" maxlength="1" placeholder="·" type="text" value=""/>
+</div>
+</div>
+<!-- Countdown timer and resend link -->
+<div class="flex items-center justify-between pt-1 text-sm">
+<div class="flex items-center gap-1.5 text-neutral-subtle">
+<svg class="w-4 h-4 text-neutral-subtle" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+<polyline points="12 6 12 12 16 14" stroke-width="2"></polyline>
+</svg>
+<span>Resend OTP in <span class="font-semibold text-neutral-charcoal tnum" id="demo-timer">00:24</span></span>
+</div>
+<button class="text-xs font-semibold text-neutral-400 cursor-not-allowed uppercase tracking-wider" disabled="" type="button">
+              Resend OTP
+            </button>
+</div>
+<!-- CTA Button: Verify & continue -->
+<div class="mt-6 flex items-center gap-3">
+<button class="h-11 px-6 rounded-[4px] bg-accent text-white font-medium text-sm hover:bg-accent-700 transition-colors shadow-xs flex items-center gap-2" onclick="highlightState('state-4-card')" type="button">
+<span>Verify &amp; continue</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<button class="h-11 px-5 rounded-[4px] border border-[#cfd4dc] bg-white text-neutral-charcoal font-medium text-sm hover:bg-neutral-50 transition-colors" onclick="highlightState('state-1-card')" type="button">
+              Cancel
+            </button>
+</div>
+</div>
+<!-- STATE 3: Verification Failure (Error State) -->
+<div class="otp-state-card border border-status-err-border bg-status-err-bg rounded-[6px] p-5 sm:p-6 transition-all" id="state-3-card">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="w-5 h-5 rounded-full bg-status-err text-white text-[11px] font-bold flex items-center justify-center">3</span>
+<span class="text-xs font-bold uppercase tracking-wider text-status-err">State 3: Verification Failure (Error State)</span>
+</div>
+<span class="text-xs font-mono text-status-err bg-white px-2 py-0.5 rounded border border-status-err-border font-medium">Failed</span>
+</div>
+<!-- Error banner with red background & message -->
+<div class="flex items-start gap-3 p-3.5 bg-white/70 border border-status-err-border rounded-[4px] mb-4">
+<div class="mt-0.5 w-5 h-5 rounded-full bg-status-err text-white flex items-center justify-center shrink-0">
+<span class="text-xs font-bold leading-none">!</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-status-err">Invalid code entered</h4>
+<p class="text-xs sm:text-sm text-[#8c1d18] mt-0.5">
+                Invalid code entered. Please check the SMS or click resend (<span class="font-semibold tnum">2 attempts remaining</span>).
+              </p>
+</div>
+</div>
+<!-- 6 individual 52x58px OTP input boxes with red error border -->
+<div class="my-4">
+<div class="flex items-center gap-2.5 sm:gap-3 justify-start max-w-full overflow-x-auto py-1">
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] error-ring text-status-err" maxlength="1" type="text" value="7"/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] error-ring text-status-err" maxlength="1" type="text" value="3"/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] error-ring text-status-err" maxlength="1" type="text" value="1"/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] error-ring text-status-err" maxlength="1" type="text" value="9"/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] error-ring text-status-err" maxlength="1" type="text" value="0"/>
+<input class="w-[52px] h-[58px] text-center text-[22px] font-bold tnum rounded-[4px] error-ring text-status-err" maxlength="1" type="text" value="4"/>
+</div>
+</div>
+<!-- Actions: Try again or resend options -->
+<div class="flex items-center gap-3 pt-2">
+<button class="h-10 px-5 rounded-[4px] bg-status-err text-white text-xs font-semibold hover:bg-[#992019] transition-colors shadow-xs" onclick="highlightState('state-2-card')" type="button">
+              Try again
+            </button>
+<button class="h-10 px-4 rounded-[4px] border border-status-err text-status-err bg-white text-xs font-semibold hover:bg-status-err-bg transition-colors" onclick="alert('A fresh OTP code has been dispatched via SMS.'); highlightState('state-2-card');" type="button">
+              Resend code
+            </button>
+</div>
+</div>
+<!-- STATE 4: Verification Success State -->
+<div class="otp-state-card border border-status-ok-border bg-status-ok-bg rounded-[6px] p-5 sm:p-6 transition-all" id="state-4-card">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="w-5 h-5 rounded-full bg-status-ok text-white text-[11px] font-bold flex items-center justify-center">4</span>
+<span class="text-xs font-bold uppercase tracking-wider text-status-ok">State 4: Verification Success</span>
+</div>
+<span class="text-xs font-mono text-status-ok bg-white px-2 py-0.5 rounded border border-status-ok-border font-bold">Verified</span>
+</div>
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-full bg-status-ok text-white flex items-center justify-center shrink-0 shadow-xs">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<div class="flex-1">
+<h3 class="text-base font-bold text-status-ok">Phone verified successfully</h3>
+<p class="text-sm text-status-ok/90 mt-0.5">
+<span class="font-medium tnum">+91 98400 12345</span> has been authenticated and linked to <span class="font-semibold">R. Manikandan</span>.
+              </p>
+</div>
+<span class="hidden sm:inline-block text-xs font-bold uppercase tracking-wider bg-white px-2.5 py-1 rounded text-status-ok border border-status-ok-border">
+              SUCCESS
+            </span>
+</div>
+<div class="mt-6 pt-5 border-t border-status-ok-border/60 flex items-center justify-between flex-wrap gap-3">
+<span class="text-xs font-medium text-status-ok/80">Next: Register dealership &amp; trade credentials</span>
+<button class="h-12 px-6 rounded-[4px] bg-accent text-white font-medium text-sm hover:bg-accent-700 transition-colors shadow-xs flex items-center gap-2" type="button">
+<span>Continue to Business details →</span>
+</button>
+</div>
+</div>
+</div>
+<!-- END: OTP Verification Sequence -->
+</form>
+<!-- END: CoreAccountForm -->
+</div>
+<!-- Supplementary Information / Help Notice -->
+<div class="max-w-[840px] mt-6 flex items-center justify-between text-xs text-neutral-subtle px-1">
+<div class="flex items-center gap-1.5">
+<svg class="w-4 h-4 text-neutral-subtle" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Your data is protected under 256-bit encryption for KYC compliance.</span>
+</div>
+<a class="underline hover:text-accent font-medium" href="#help">Need help signing up?</a>
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: InteractivePrototypeLogic -->
+<script data-purpose="otp-state-controller">
+    let singleMode = false;
+
+    // Highlight or scroll to a specific state while preserving full visibility
+    function highlightState(cardId) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+
+      const stateMap = {
+        'state-1-card': 'input',
+        'state-2-card': 'verify',
+        'state-3-card': 'error',
+        'state-4-card': 'success'
+      };
+
+      const buttons = ['input', 'verify', 'error', 'success'];
+      buttons.forEach(btn => {
+        const el = document.getElementById(`btn-state-${btn}`);
+        if (el) {
+          el.className = 'px-3 py-1 rounded-[3px] font-medium text-neutral-300 hover:text-white transition-all text-xs';
+        }
+      });
+
+      const activeKey = stateMap[cardId];
+      const activeBtn = document.getElementById(`btn-state-${activeKey}`);
+      if (activeBtn) {
+        activeBtn.className = 'px-3 py-1 rounded-[3px] font-medium bg-accent text-white transition-all text-xs';
+      }
+
+      if (singleMode) {
+        document.querySelectorAll('.otp-state-card').forEach(c => c.classList.add('hidden'));
+        card.classList.remove('hidden');
+      } else {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Pulse highlight animation
+        card.classList.add('ring-4', 'ring-accent/30');
+        setTimeout(() => {
+          card.classList.remove('ring-4', 'ring-accent/30');
+        }, 1200);
+      }
+    }
+
+    // Toggle between showing all states simultaneously and focusing single card
+    function toggleFilterMode() {
+      singleMode = !singleMode;
+      const label = document.getElementById('filter-status-label');
+      if (singleMode) {
+        label.innerText = 'Show All States';
+        highlightState('state-2-card');
+      } else {
+        label.innerText = 'Show Single Mode';
+        document.querySelectorAll('.otp-state-card').forEach(c => c.classList.remove('hidden'));
+      }
+    }
+
+    // OTP auto-tab navigation for input cells
+    document.addEventListener('DOMContentLoaded', () => {
+      const otpContainer = document.querySelector('[data-purpose="otp-cell-inputs"]');
+      if (otpContainer) {
+        const inputs = otpContainer.querySelectorAll('input');
+        inputs.forEach((input, idx) => {
+          input.addEventListener('keyup', (e) => {
+            if (e.key >= '0' && e.key <= '9') {
+              if (idx < inputs.length - 1) {
+                inputs[idx + 1].focus();
+              }
+            } else if (e.key === 'Backspace') {
+              if (idx > 0 && input.value === '') {
+                inputs[idx - 1].focus();
+              }
+            }
+          });
+        });
+      }
+    });
+  </script>
+<!-- END: InteractivePrototypeLogic -->
+</body></html>

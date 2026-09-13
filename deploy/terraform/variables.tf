@@ -253,3 +253,38 @@ variable "mail_driver" {
   type        = string
   default     = "console"
 }
+
+variable "phone_otp_driver" {
+  description = <<-EOT
+    Who proves a dealer's mobile number (**R39**). `msg91` in production.
+
+    `env.ts` refuses `fake` in production — it accepts a fixed code and proves
+    nothing about who holds the handset — so this must be `msg91` there, with
+    MSG91_AUTH_KEY in Parameter Store and the two widget values below set.
+    Otherwise the task fails at boot with the variable named, which is the
+    intended behaviour: a dealership built around an unproved number publishes
+    a contact that has never been shown to reach anybody.
+  EOT
+  type        = string
+  default     = "fake"
+}
+
+variable "msg91_widget_id" {
+  description = <<-EOT
+    `configuration.widgetId` for the MSG91 OTP widget (**R39**).
+
+    Not a secret in the Parameter Store sense — the browser needs it, because
+    the widget initialises with it. It is still served from the API rather than
+    baked into the web bundle (rule 9), and from a **session-guarded** route,
+    because whoever holds it and the token below can make this account send
+    messages.
+  EOT
+  type        = string
+  default     = ""
+}
+
+variable "msg91_widget_token" {
+  description = "`configuration.tokenAuth` for the MSG91 OTP widget (**R39**). See msg91_widget_id."
+  type        = string
+  default     = ""
+}

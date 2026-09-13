@@ -6,6 +6,7 @@ import {
   type CompletenessResponse,
   type DealerDocumentDto,
   type DealerProfile,
+  type PhoneOtpWidget,
   type YardPhotoDto,
 } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
@@ -23,6 +24,7 @@ import {
   type ActionState,
 } from '@/features/auth/actions';
 import { DocumentUploader } from '@/features/auth/document-uploader';
+import { PhoneVerification } from '@/features/auth/phone-verification';
 import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
 import { servicesOf } from '@/lib/services';
 
@@ -84,6 +86,7 @@ export function OnboardingWizard({
   dealer,
   completeness,
   yardPhoto,
+  phoneWidget,
 }: {
   step: OnboardingStep;
   session: AuthSession;
@@ -91,6 +94,8 @@ export function OnboardingWizard({
   dealer: DealerProfile | null;
   completeness: CompletenessResponse | null;
   yardPhoto: YardPhotoDto | null;
+  /** `GET /v1/auth/phone/widget` (**R39**), or null when it could not be read. */
+  phoneWidget: PhoneOtpWidget | null;
 }) {
   const router = useRouter();
   /**
@@ -171,10 +176,52 @@ export function OnboardingWizard({
 
   const current = step >= 2 ? step : local;
 
-  function continueFromAccount(form: HTMLFormElement | null): void {
+  /**
+   * Step 1's two answers, held here rather than in the DOM (**R39**).
+   *
+   * Everything else on this form is uncontrolled — `defaultValue`, read back
+   * out of `form.elements` — and that was right while the fields were only
+   * ever read on submit. The mobile number stopped being one of those: the
+   * verification panel below renders it, sends a message to it and compares
+   * what came back against it, all between keystrokes. A value three
+   * components need to agree about, live, is state.
+   *
+   * `fullName` comes with it because the success panel names the person the
+   * number was linked to, and a name read once on mount would be the one they
+   * had typed before they corrected it.
+   */
+  const [fullName, setFullName] = useState(
+    values.fullName ??
+      dealer?.contact.fullName ??
+      session.user.fullName ??
+      session.identity?.name ??
+      '',
+  );
+  const [phone, setPhone] = useState(
+    localDigits(values.phone ?? dealer?.contact.phone ?? session.user.phone),
+  );
+
+  /**
+   * The number this account has proved, as ten digits — or null.
+   *
+   * Seeded from the session, which is the only authority on it, and moved only
+   * by `POST /v1/auth/phone/verify` answering yes. Comparing it to what is in
+   * the box is what makes editing the number drop the panel out of its
+   * verified state: there is one fact here and one place it is read from,
+   * rather than a "verified" flag that could outlive the value it was about.
+   */
+  const [verifiedPhone, setVerifiedPhone] = useState<string | null>(() => {
+    const digits = localDigits(session.user.phone);
+    // The length check is not belt-and-braces: a session with no number at all
+    // reduces to `''`, and `'' === ''` would make an empty box read as verified.
+    return session.user.phoneVerified && digits.length === 10 ? digits : null;
+  });
+  const phoneVerified = verifiedPhone !== null && verifiedPhone === localDigits(phone);
+
+  function continueFromAccount(form: HTMLFormElement | null): boolean {
     const found = validateAccount(form);
     setAccountErrors(found);
-    if (Object.keys(found).length === 0) setLocal(1);
+    return Object.keys(found).length === 0;
   }
 
   /**
@@ -248,77 +295,78 @@ export function OnboardingWizard({
         <form action={submit} className="flex flex-col gap-[18px]" noValidate>
           <AccountStep
             session={session}
-            dealer={dealer}
             errors={errors}
-            values={values}
             hidden={local === 1}
+            fullName={fullName}
+            onFullNameChange={setFullName}
+            phone={phone}
+            onPhoneChange={setPhone}
+            phoneVerified={phoneVerified}
           />
           <BusinessStep dealer={dealer} errors={errors} values={values} hidden={local === 0} />
 
-          <div className="flex gap-[8px]">
-            {/*
-              Step 1 is the first step, and the first step has nothing behind
-              it. The baseline sent `Back` here to `/dealer/login`, which is not
-              a step of this wizard — it signs the dealer out of the flow they
-              are halfway through.
-            */}
-            {local === 1 ? (
-              <button
-                type="button"
-                className="btn btn-secondary h-[42px] px-[18px]"
-                onClick={() => setLocal(0)}
-              >
-                Back
-              </button>
-            ) : null}
+          {/**
+           * Step 1's forward action is inside the panel, not in the footer.
+           *
+           * It is three different buttons across three states — Send OTP,
+           * Verify & continue, Continue to business details — and a footer that
+           * tried to draw the right one would be a second copy of the panel's
+           * state machine. The footer below is therefore step 2's alone.
+           *
+           * The panel stays mounted while step 2 is showing, `hidden`, for the
+           * reason the fieldsets do: unmounting it on a local move would throw
+           * away a countdown and a half-typed code every time the dealer
+           * pressed Back.
+           */}
+          <div hidden={local === 1}>
+            <PhoneVerification
+              widget={phoneWidget}
+              phone={phone}
+              fullName={fullName}
+              verified={phoneVerified}
+              onBeforeSend={continueFromAccount}
+              onVerified={(verified) => {
+                setVerifiedPhone(localDigits(verified));
+              }}
+              onContinue={() => {
+                setLocal(1);
+              }}
+            />
+          </div>
+
+          {/*
+            Step 2's footer, and only step 2's — which is why the whole row is
+            hidden on step 1 rather than each button being conditional.
+
+            Step 1 is the first step, and the first step has nothing behind it:
+            the baseline sent `Back` here to `/dealer/login`, which is not a
+            step of this wizard — it signs the dealer out of the flow they are
+            halfway through. Its forward action is in the verification panel
+            above, because a number that has not been proved is not a step
+            anyone may leave.
+          */}
+          <div className="flex gap-[8px]" hidden={local === 0}>
+            <button
+              type="button"
+              className="btn btn-secondary h-[42px] px-[18px]"
+              onClick={() => setLocal(0)}
+            >
+              Back
+            </button>
 
             {/**
-             * Continue means two different things, and the difference is the
-             * point of the two-step form. On Account it is a local move — taken
-             * only once the required fields on it are filled — and on Business
-             * it is the submit that creates or amends the dealership. Nothing is
-             * written until that second press, so a dealer who abandons halfway
-             * leaves no half-made tenant behind.
-             */}
-            {/**
-             * The `key`s are load-bearing, and this is the bug they fix.
+             * One button now, and it is always the submit.
              *
-             * Without them React reconciles these two elements as the *same*
-             * DOM node and mutates `type` in place. A click is a discrete
-             * event, so React flushes the state update synchronously while the
-             * event is still being dispatched — which means by the time the
-             * browser gets round to the button's default activation behaviour,
-             * the node it is about to activate has become `type="submit"`. One
-             * press of Continue on the Account step therefore advanced to
-             * Business *and* submitted the form, landing the dealer on the
-             * Documents step without ever seeing the fields in between. It only
-             * reproduced when Business was already filled in, because otherwise
-             * the submit came back with validation errors and the jump looked
-             * like an ordinary refusal.
-             *
-             * Distinct keys make them distinct elements: the button that was
-             * clicked is unmounted, and a removed node has no default action
-             * left to perform.
+             * It used to be two — a local move on Account, a submit on Business
+             * — reconciled as one DOM node and needing distinct `key`s to stop
+             * a single press doing both. R39 removed the pair rather than the
+             * symptom: the Account step's forward action moved into the
+             * verification panel above, because a number that has not been
+             * proved is not a step anyone may leave.
              */}
-            {local === 0 ? (
-              <button
-                key="continue-account"
-                type="button"
-                className="btn btn-primary h-[42px] flex-1"
-                onClick={(event) => continueFromAccount(event.currentTarget.form)}
-              >
-                Continue
-              </button>
-            ) : (
-              <button
-                key="continue-business"
-                type="submit"
-                className="btn btn-primary h-[42px] flex-1"
-                disabled={pending}
-              >
-                {pending ? (edit ? 'Saving…' : 'Creating your dealership…') : 'Continue'}
-              </button>
-            )}
+            <button type="submit" className="btn btn-primary h-[42px] flex-1" disabled={pending}>
+              {pending ? (edit ? 'Saving…' : 'Creating your dealership…') : 'Continue'}
+            </button>
           </div>
         </form>
       ) : null}
@@ -377,18 +425,40 @@ function validateAccount(form: HTMLFormElement | null): Record<string, string> {
   return errors;
 }
 
+/**
+ * Ten digits, whatever shape the number arrived in.
+ *
+ * `users.phone` is E.164 (`+919840012345`), `dealers.contactPhone` mirrors it,
+ * and the box asks for the ten digits under the `+91` prefix beside it. One
+ * reduction, used for the box's value *and* for the comparison that decides
+ * whether the number in it is the verified one — two would eventually disagree,
+ * and the disagreement would be a dealer re-verifying a number they had
+ * already proved.
+ */
+function localDigits(value: string | null | undefined): string {
+  const digits = (value ?? '').replace(/\D/g, '');
+  return digits.length > 10 ? digits.slice(-10) : digits;
+}
+
 function AccountStep({
   session,
-  dealer,
   errors,
-  values,
   hidden,
+  fullName,
+  onFullNameChange,
+  phone,
+  onPhoneChange,
+  phoneVerified,
 }: {
   session: AuthSession;
-  dealer: DealerProfile | null;
   errors: Record<string, string>;
-  values: Record<string, string>;
   hidden: boolean;
+  fullName: string;
+  onFullNameChange: (value: string) => void;
+  phone: string;
+  onPhoneChange: (value: string) => void;
+  /** Whether the number in the box is the one this account proved (**R39**). */
+  phoneVerified: boolean;
 }) {
   return (
     <fieldset hidden={hidden} className="m-0 border-0 p-0">
@@ -428,20 +498,28 @@ function AccountStep({
             name="fullName"
             className="input"
             autoComplete="name"
-            defaultValue={
-              values.fullName ??
-              dealer?.contact.fullName ??
-              session.user.fullName ??
-              session.identity?.name ??
-              ''
-            }
+            value={fullName}
+            onChange={(event) => {
+              onFullNameChange(event.target.value);
+            }}
             required
             aria-required="true"
             {...invalidProps('fullName', errors.fullName)}
           />
         </Field>
 
-        <Field id="phone" label="Phone" hint="+91" error={errors.phone}>
+        <Field
+          id="phone"
+          label="Phone"
+          hint="+91"
+          error={errors.phone}
+          /*
+            The one line on this step that says why it is asked for. The
+            baseline's hint was the country code and nothing else, which left
+            "we are about to send you a message" to be discovered by pressing
+            the button.
+          */
+        >
           <input
             id="phone"
             name="phone"
@@ -450,23 +528,33 @@ function AccountStep({
             inputMode="numeric"
             autoComplete="tel-national"
             placeholder="98400 12345"
-            defaultValue={values.phone ?? dealer?.contact.phone ?? session.user.phone}
+            value={phone}
+            onChange={(event) => {
+              onPhoneChange(event.target.value);
+            }}
             required
             aria-required="true"
             /*
-              Editable, including on the way back from step 2.
+              Editable, including after it has been verified and including on
+              the way back from step 2.
 
               It was read-only once a dealership existed, on the reasoning that
               this is the login identity and changing it needs an OTP round-trip
               on the new number. Neither half holds: identity is the Google
-              account, and this is the number a buyer is given. What the
-              read-only box actually produced was a dead end — a dealer who
-              mistyped their number, or who was told it belongs to somebody
-              else, arrived back on this step and could not change the one field
-              they had been sent here to change.
+              account, and R39 gave the form that round trip — changing the
+              number simply drops the panel below back to "Send OTP", which is
+              the honest consequence rather than a locked box. What the
+              read-only field actually produced was a dead end for the one
+              dealer who most needed the box: the one told their number belongs
+              to somebody else.
             */
             {...invalidProps('phone', errors.phone)}
           />
+          <p className="mt-[4px] text-[11px] ink-subtle">
+            {phoneVerified
+              ? 'Verified — buyers will be given this number.'
+              : 'We send a one-time code to this number by SMS.'}
+          </p>
         </Field>
       </div>
     </fieldset>

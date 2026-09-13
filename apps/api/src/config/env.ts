@@ -239,10 +239,56 @@ const envSchema = z.object({
    */
   MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
   RESEND_API_KEY: optional(z.string().min(1)),
-  /** `console` locally, `msg91` in production. Mobile OTP is out of scope either way. */
+  /** `console` locally, `msg91` in production. Transactional SMS, not the OTP. */
   SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
+  /**
+   * One key, two uses — transactional SMS (`SMS_DRIVER`) and the OTP widget's
+   * server-side check (`PHONE_OTP_DRIVER`). It is the same MSG91 account, so a
+   * second variable holding the same secret would be a second thing to rotate.
+   */
   MSG91_AUTH_KEY: optional(z.string().min(1)),
   MSG91_SENDER_ID: optional(z.string().min(1)),
+
+  /**
+   * Who proves a dealer's mobile number (**R39**).
+   *
+   *   fake   — no SMS, no widget script, no network. Accepts the development
+   *            token shape described in `platform/phone-otp/fake.adapter.ts`,
+   *            whose code is `PHONE_OTP_DEV_CODE`. The default, and what the
+   *            test suite uses: onboarding works end to end on it.
+   *   msg91  — the real thing. The widget runs in the dealer's browser and
+   *            sends the SMS; this process only asks MSG91 whose handset the
+   *            resulting token proves.
+   *
+   * Refused in production below, exactly as `CACHE_DRIVER=memory` and
+   * `STORAGE_DRIVER=local` are — a development bypass of an ownership check is
+   * not something a deployment should be able to reach by leaving a variable
+   * unset.
+   */
+  PHONE_OTP_DRIVER: z.enum(['fake', 'msg91']).default('fake'),
+  /**
+   * `widgetId` and `tokenAuth` from the MSG91 widget configuration.
+   *
+   * Both reach the browser — the widget cannot initialise without them — but
+   * they are served from `GET /v1/auth/phone/widget` rather than inlined as
+   * `NEXT_PUBLIC_*` (rule 9), so rotating one is a restart rather than a
+   * rebuild of the web image.
+   */
+  MSG91_WIDGET_ID: optional(z.string().min(1)),
+  MSG91_WIDGET_TOKEN: optional(z.string().min(1)),
+  /**
+   * How long the server waits for MSG91 to say whose token this is.
+   *
+   * Four seconds, matching `RC_LOOKUP_TIMEOUT_MS` and for the same reason: a
+   * dealer is watching a spinner and "try again" is one press away, so failing
+   * fast beats succeeding slowly.
+   */
+  PHONE_OTP_TIMEOUT_MS: z.coerce.number().int().positive().default(4000),
+  /** The six digits the `fake` driver accepts. Never reachable in production. */
+  PHONE_OTP_DEV_CODE: z
+    .string()
+    .regex(/^\d{4,8}$/)
+    .default('123456'),
   MAIL_FROM: z.string().min(1).default('Dealers-Drive <updates@dealers-drive.com>'),
 
   /**
@@ -449,6 +495,24 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     if (!value.MSG91_SENDER_ID) require('MSG91_SENDER_ID', 'is required when SMS_DRIVER=msg91.');
   }
 
+  /*
+   * Checked outside production too, like the Attestr token below and for the
+   * same reason: a preview environment pointed at the MSG91 widget with no
+   * credentials would refuse every verification silently, and nobody would
+   * know until a dealer could not finish signing up.
+   */
+  if (value.PHONE_OTP_DRIVER === 'msg91') {
+    if (!value.MSG91_AUTH_KEY) {
+      require('MSG91_AUTH_KEY', 'is required when PHONE_OTP_DRIVER=msg91.');
+    }
+    if (!value.MSG91_WIDGET_ID) {
+      require('MSG91_WIDGET_ID', 'is required when PHONE_OTP_DRIVER=msg91.');
+    }
+    if (!value.MSG91_WIDGET_TOKEN) {
+      require('MSG91_WIDGET_TOKEN', 'is required when PHONE_OTP_DRIVER=msg91.');
+    }
+  }
+
   // Checked outside production too: pointing a preview environment at Attestr
   // with no token would spend nothing and fail every lookup silently, which is
   // a worse outcome than refusing to boot.
@@ -489,6 +553,10 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
 
   if (value.CACHE_DRIVER === 'memory') {
     require('CACHE_DRIVER', 'must be `postgres` in production — an in-process counter behind N tasks permits N times every rate limit, silently.');
+  }
+
+  if (value.PHONE_OTP_DRIVER === 'fake') {
+    require('PHONE_OTP_DRIVER', 'must be `msg91` in production — `fake` accepts a fixed code and proves nothing about who holds the handset.');
   }
 
   if (value.SESSION_SECRET === LOCAL_SESSION_SECRET) {

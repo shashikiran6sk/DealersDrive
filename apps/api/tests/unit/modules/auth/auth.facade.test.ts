@@ -26,8 +26,8 @@ function filesUnder(directory: string): string[] {
 
 describe('the exported surface', () => {
   /**
-   * The permission helpers, the seat writers (**R41**) and the allow-list
-   * question (**R42**).
+   * The permission helpers, the seat writers (**R41**), the allow-list
+   * question (**R42**) and the verified-number assertion (**R39**).
    *
    * The seat helpers are here because `users.status`, `sessions` and
    * `user_roles` are one model with one owner: the admin console has to close a
@@ -42,6 +42,7 @@ describe('the exported surface', () => {
   it('exposes only the permission helpers, the seat writers and the allow-list check', () => {
     expect(Object.keys(auth).sort()).toEqual(
       [
+        'assertPhoneVerified',
         'ensureSeat',
         'grantSeat',
         'hasGrantedSeat',

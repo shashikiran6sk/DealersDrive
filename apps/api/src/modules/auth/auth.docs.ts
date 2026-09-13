@@ -167,6 +167,7 @@ export const authDocs: ModuleDocs = {
               fullName: 'Karthik Raman',
               phone: '+919840012345',
               phoneDisplay: '+91 98400 12345',
+              phoneVerified: true,
               email: 'karthik@srilakshmimotors.in',
               emailVerified: true,
             },
@@ -220,8 +221,13 @@ export const authDocs: ModuleDocs = {
         'name on the portfolio, and the first three services on its directory card \u2014 and ' +
         'a field a form does not insist on is a field that gets skipped. They replace `about`, ' +
         'which is no longer accepted here and is rendered nowhere public.\n\n' +
+        '`phone` must already be the number this session **proved** through `POST ' +
+        '/v1/auth/phone/verify` (**R39**). Onboarding does not write `users.phone`; it asserts ' +
+        'that the column already holds this number and refuses with `422 PHONE_NOT_VERIFIED` ' +
+        'otherwise, which is what makes the OTP round trip unskippable rather than merely ' +
+        'expected. `PHONE_ALREADY_REGISTERED` is answered by the verify endpoint now, at the ' +
+        'moment the claim is made.\n\n' +
         '`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 ' +
-        'PHONE_ALREADY_REGISTERED` if the number belongs to another dealership, `409 ' +
         'DEALER_NAME_TAKEN` if another dealership already trades under that name **in that ' +
         'city** — the same name in another city is not a collision.',
       audience: 'dealer',
@@ -251,6 +257,96 @@ export const authDocs: ModuleDocs = {
         },
       ],
       errors: [401, 403, 409, 422],
+    },
+    {
+      method: 'get',
+      path: '/v1/auth/phone/widget',
+      operationId: 'getPhoneOtpWidget',
+      tag: 'Authentication',
+      summary: 'Credentials for the MSG91 OTP widget',
+      description:
+        'What the onboarding screen initialises `verify.msg91.com/otp-provider.js` with ' +
+        '(**R39**). Served from the API rather than inlined as `NEXT_PUBLIC_*`, so rotating a ' +
+        'widget is a restart and not a rebuild of the web image (rule 9).\n\n' +
+        '**Behind a session on purpose.** The widget sends the SMS from the browser, so ' +
+        'whoever holds `widgetId` and `tokenAuth` can spend this MSG91 balance — which makes ' +
+        'who may read them the only gate the API still owns over that spend. On ' +
+        '`GET /v1/config/public` that gate would have been the open internet, and that ' +
+        'response is additionally `Cache-Control: public`.\n\n' +
+        '`MSG91_AUTH_KEY` is **not** here and never will be: it is the credential that makes ' +
+        '`POST /v1/auth/phone/verify` a server-to-server call.\n\n' +
+        '`driver: "fake"` is the local and test configuration — no widget script, no SMS, and ' +
+        '`devCode` is the code that will be accepted. `env.ts` refuses it in production.\n\n' +
+        '`Cache-Control: no-store`. Rate-limited to 30 an hour per session, because each call ' +
+        'is a licence to send messages.',
+      audience: 'dealer',
+      responses: [
+        {
+          status: 200,
+          description: 'The widget configuration for this deployment.',
+          schema: 'PhoneOtpWidget',
+          example: {
+            enabled: true,
+            driver: 'msg91',
+            widgetId: '36696d6e706c393937373539',
+            tokenAuth: '461234TTQ0dXNwMjY4OTY4NzQ1',
+            devCode: null,
+            reason: null,
+          },
+        },
+      ],
+      errors: [401, 429],
+    },
+    {
+      method: 'post',
+      path: '/v1/auth/phone/verify',
+      operationId: 'verifyPhone',
+      tag: 'Authentication',
+      summary: 'Prove a mobile number with the widget access token',
+      description:
+        'The server half of the MSG91 OTP widget (**R39**). The browser runs `sendOtp` and ' +
+        '`verifyOtp`; the six digits never reach this API. What arrives is the signed access ' +
+        'token `verifyOtp` produced, and this endpoint takes it to ' +
+        '`control.msg91.com/api/v5/widget/verifyAccessToken` with the server-only ' +
+        '`MSG91_AUTH_KEY` and asks whose handset it proves.\n\n' +
+        '**`phone` is not trusted input — it is the assertion being checked.** The identifier ' +
+        'MSG91 names must be this number, or the request is refused; without that a dealer ' +
+        'could verify a handset they hold and register a number they do not.\n\n' +
+        'On success `users.phone` and `users.phoneVerifiedAt` are written, and this endpoint ' +
+        'is the **only** thing in the API that writes them. Onboarding and `PATCH /v1/dealer` ' +
+        'assert against them rather than setting them.\n\n' +
+        'It issues no session and grants no permission. Identity is the Google account and ' +
+        'already was; this proves that the number a buyer will be given rings the dealership ' +
+        'that published it.\n\n' +
+        '`422 PHONE_VERIFICATION_FAILED` when the token is refused, names a different number, ' +
+        'or has already been presented — one message for all three, because telling a caller ' +
+        'which number a token belongs to is telling them something about somebody else. ' +
+        '`409 PHONE_ALREADY_REGISTERED` when another dealership holds the number. ' +
+        '`503 PHONE_OTP_UNAVAILABLE` when MSG91 did not answer, which is deliberately not the ' +
+        'same answer as a wrong code.\n\n' +
+        'Rate-limited to 10 presentations in 10 minutes per session.',
+      audience: 'dealer',
+      requestBody: {
+        schema: 'VerifyPhoneInput',
+        example: {
+          phone: '9840012345',
+          accessToken:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWVyIjoiOTE5ODQwMDEyMzQ1In0.signature',
+        },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The number is proved and recorded against this account.',
+          schema: 'VerifyPhoneResponse',
+          example: {
+            phone: '+919840012345',
+            phoneDisplay: '+91 98400 12345',
+            verifiedAt: '2026-09-13T09:41:22.000Z',
+          },
+        },
+      ],
+      errors: [400, 401, 409, 422, 429, 503],
     },
     {
       method: 'post',

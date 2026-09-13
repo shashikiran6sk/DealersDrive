@@ -11,6 +11,7 @@ import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js'
 import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
 import type { OAuthProvider } from './modules/auth/oauth.port.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
+import { createPhoneService, type PhoneService } from './modules/auth/phone.service.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import {
   createDealersPublicService,
@@ -32,6 +33,8 @@ import { createEventBus, type EventBus } from './platform/events/bus.js';
 import { createOutboxPublisher, type OutboxPublisher } from './platform/events/outbox-publisher.js';
 import { createQueue, type Queue } from './platform/jobs/queue.js';
 import { createMapsResolver, type MapsPort } from './platform/maps/maps-link.js';
+import { createPhoneOtp } from './platform/phone-otp/factory.js';
+import type { PhoneOtpPort } from './platform/phone-otp/phone-otp.port.js';
 import { createMailer } from './platform/mail/factory.js';
 import type { MailerPort } from './platform/mail/mail.port.js';
 import {
@@ -56,6 +59,7 @@ import { logger } from './platform/telemetry/logger.js';
  *   storage   — local disk · MinIO · R2, by STORAGE_DRIVER
  *   cache     — process memory · Postgres, by CACHE_DRIVER
  *   sms       — console · MSG91, by SMS_DRIVER
+ *   phone otp — fixed dev code · the MSG91 widget, by PHONE_OTP_DRIVER
  *   payments  — `createDevelopmentPaymentProvider` today, Razorpay later
  *   rc        — deterministic mock · Attestr, by RC_LOOKUP_DRIVER
  *
@@ -97,6 +101,10 @@ export interface Container {
   /** The guard chain. `auth` below is the module that issues the sessions. */
   readonly guards: ReturnType<typeof createAuthMiddleware>;
   readonly auth: AuthService;
+  /** Whose handset an OTP access token proves. Fake or MSG91, by `PHONE_OTP_DRIVER`. */
+  readonly phoneOtp: PhoneOtpPort;
+  /** B8 — the only writer of `users.phone` (**R39**). */
+  readonly phone: PhoneService;
   readonly dealers: DealersService;
   /** The buyer-facing view of a dealership: the directory and one portfolio. */
   readonly dealersPublic: DealersPublicService;
@@ -121,6 +129,8 @@ export interface ContainerOverrides {
   readonly sessions?: SessionResolver;
   /** The seam `auth-harness.ts` uses: everything above it runs unmodified. */
   readonly oauth?: OAuthProvider;
+  /** The MSG91 seam (**R39**) — a fake verdict, with no network and no widget. */
+  readonly phoneOtp?: PhoneOtpPort;
 }
 
 /**
@@ -166,6 +176,8 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     audit,
     maps,
   });
+  const phoneOtp = overrides.phoneOtp ?? createPhoneOtp();
+  const phone = createPhoneService({ prisma, otp: phoneOtp, cache });
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage, queue });
@@ -194,6 +206,8 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     oauth,
     guards,
     auth,
+    phoneOtp,
+    phone,
     dealers,
     dealersPublic,
     admin,

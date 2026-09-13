@@ -1,3 +1,4 @@
+import type request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { env } from '../src/config/env.js';
@@ -46,6 +47,24 @@ function onboarding(overrides: Record<string, unknown> = {}) {
     specialities: ['Hatchbacks', 'RC transfer'],
     ...overrides,
   };
+}
+
+/**
+ * Proves the number, then creates the dealership (**R39**).
+ *
+ * `POST /v1/auth/onboarding` refuses a number the session has not verified, so
+ * every create goes through the OTP endpoint first. The status is a parameter
+ * rather than a chained `.expect` because the proof has to be awaited before
+ * the create can be built.
+ */
+async function onboard(
+  agent: request.Agent,
+  overrides: Record<string, unknown> = {},
+  status = 201,
+) {
+  const body = onboarding(overrides);
+  await h.proveNumber(agent, String(body.phone));
+  return agent.post('/v1/auth/onboarding').send(body).expect(status);
 }
 
 /** The registered name this account's dealership will carry. */
@@ -200,7 +219,7 @@ describe('onboarding', () => {
     const agent = h.agent();
     await h.signIn(agent);
 
-    const created = await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    const created = await onboard(agent);
 
     // `brandName` is the server-written mirror of the one name that was asked
     // for. There is no second name field on the request at all.
@@ -244,7 +263,7 @@ describe('onboarding', () => {
     await h.signIn(agent);
     await agent.get('/v1/dealer').expect(401);
 
-    await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await onboard(agent);
 
     const me = await agent.get('/v1/auth/me').expect(200);
     expect(me.body.dealer.brandName).toBe(dealershipName());
@@ -258,24 +277,43 @@ describe('onboarding', () => {
   it('refuses a second dealership on the same account', async () => {
     const agent = h.agent();
     await h.signIn(agent);
-    await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await onboard(agent);
 
     const again = await agent.post('/v1/auth/onboarding').send(onboarding()).expect(403);
 
     expect(again.body.code).toBe('DEALER_ALREADY_EXISTS');
   });
 
-  it('refuses a phone number another dealership already uses', async () => {
+  /**
+   * The refusal moved to the claim (**R39**).
+   *
+   * Onboarding no longer asks whether anybody else holds this number — it
+   * asks whether *this* session has proved it, and a number somebody else
+   * holds can never become that. So the collision is answered at the moment
+   * the dealer asks for a code, on the step that owns the field.
+   */
+  it('refuses to prove a phone number another dealership already uses', async () => {
     const agent = h.agent();
     await h.signIn(agent);
 
     // +919840012345 belongs to the seeded Sri Lakshmi Motors owner.
     const conflict = await agent
-      .post('/v1/auth/onboarding')
-      .send(onboarding({ phone: '9840012345' }))
+      .post('/v1/auth/phone/verify')
+      .send({ phone: '9840012345', accessToken: 'dev-otp:919840012345:123456:seeded' })
       .expect(409);
 
     expect(conflict.body.code).toBe('PHONE_ALREADY_REGISTERED');
+  });
+
+  /** And the create refuses a number that was merely typed into it. */
+  it('refuses a dealership built around an unproved number', async () => {
+    const agent = h.agent();
+    await h.signIn(agent);
+
+    const refused = await agent.post('/v1/auth/onboarding').send(onboarding()).expect(422);
+
+    expect(refused.body.code).toBe('PHONE_NOT_VERIFIED');
+    expect(JSON.stringify(refused.body.errors)).toContain('body.phone');
   });
 
   /**
@@ -288,10 +326,7 @@ describe('onboarding', () => {
     const agent = h.agent();
     await h.signIn(agent);
 
-    const created = await agent
-      .post('/v1/auth/onboarding')
-      .send(onboarding({ city: 'hubballi', state: 'karnataka' }))
-      .expect(201);
+    const created = await onboard(agent, { city: 'hubballi', state: 'karnataka' });
 
     expect(created.body.dealer.status).toBe('DRAFT');
 
@@ -338,7 +373,7 @@ describe('a returning dealer', () => {
   it('is recognised by provider subject and goes straight to the console', async () => {
     const first = h.agent();
     await h.signIn(first);
-    const created = await first.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    const created = await onboard(first);
     // What admin approval does. Until then the dealership is DRAFT and the
     // dealer is sent back to finish onboarding, which the next test pins.
     await h.prisma.dealer.update({
@@ -364,7 +399,7 @@ describe('a returning dealer', () => {
   it('sends a dealer with an unfinished dealership back to onboarding', async () => {
     const first = h.agent();
     await h.signIn(first);
-    await first.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await onboard(first);
     await first.post('/v1/auth/logout').expect(204);
 
     const { location } = await h.signIn(h.agent());
@@ -393,7 +428,7 @@ describe('a returning dealer', () => {
     const claims = newAccount();
     const agent = h.agent();
     await h.signIn(agent);
-    await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await onboard(agent);
 
     h.google.claims = { ...claims, email: 'renamed@example.com' };
     const later = h.agent();
@@ -410,7 +445,7 @@ describe('a suspended dealership account', () => {
     const dealerClaims = { ...h.google.claims };
     const firstDevice = h.agent();
     await h.signIn(firstDevice);
-    const created = await firstDevice.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    const created = await onboard(firstDevice);
     await h.prisma.dealer.update({
       where: { id: created.body.dealer.id },
       data: { status: 'ACTIVE', approvedAt: new Date() },
@@ -500,7 +535,7 @@ describe('a suspended dealership account', () => {
     const dealerClaims = { ...h.google.claims };
     const signedIn = h.agent();
     await h.signIn(signedIn);
-    const created = await signedIn.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    const created = await onboard(signedIn);
     await h.prisma.dealer.update({
       where: { id: created.body.dealer.id },
       data: { status: 'SUSPENDED', suspendedAt: new Date() },
@@ -539,7 +574,7 @@ describe('a suspended dealership account', () => {
     const dualSeat = newAccount({ email: DUAL_SEAT_ADMIN });
     const dealerDevice = h.agent();
     await h.signIn(dealerDevice);
-    const created = await dealerDevice.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    const created = await onboard(dealerDevice);
     await h.prisma.dealer.update({
       where: { id: created.body.dealer.id },
       data: { status: 'ACTIVE', approvedAt: new Date() },
@@ -882,7 +917,7 @@ describe('the boundary between the two consoles', () => {
     newAccount();
     const agent = h.agent();
     await h.signIn(agent);
-    await agent.post('/v1/auth/onboarding').send(onboarding()).expect(201);
+    await onboard(agent);
 
     await agent.get('/v1/admin/metrics/overview').expect(401);
     await agent.get('/v1/admin/dealers').expect(401);

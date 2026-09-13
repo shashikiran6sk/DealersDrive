@@ -4536,3 +4536,121 @@ gets the "No dealership matches …" row and no navigation. That is deliberate �
 the box is now a chooser rather than a free-text field — but it is the one
 behaviour a buyer could previously rely on and can no longer, and it is the
 thing to revisit first if the empty state turns out to be a dead end in use.
+
+## R39 — The mobile number is proved, not typed
+
+**Revises F014 / F018 / F037 / F038 / F046 / R27 / R34**
+
+Onboarding asked for a mobile number and wrote whatever was in the box. It was
+checked for shape — ten digits, starting 6–9 — and for uniqueness, and nothing
+else. Both of those are checks on a _string_.
+
+That number is the one thing on the public portfolio a buyer acts on. "Get
+directions" needs the yard to exist; the phone row needs the handset to be in
+the dealer's pocket, and nothing on the platform had ever shown that it was. A
+mistyped digit publishes a stranger's number under a dealership's name, with a
+reveal endpoint that costs an SMS every time somebody presses it.
+
+**The number is now proved.** MSG91's OTP widget puts a code on the handset,
+the dealer enters it, and the API takes the resulting access token to MSG91 and
+asks whose handset it belongs to.
+
+### The single-writer rule, which is the whole design
+
+`users.phone` is written by `POST /v1/auth/phone/verify` and by **nothing
+else** — the same shape of invariant as rule 5, and for the same reason. A
+column several call sites may set is a column whose meaning drifts, and the
+meaning here is specific: it holds a number somebody proved they hold. A number
+somebody typed is a different fact, and once both can land in the column there
+is no way to tell them apart afterwards.
+
+So onboarding and the profile edit stopped _setting_ it. They assert that the
+number they were handed is already the verified one on the session's user row,
+and refuse otherwise (`assertPhoneVerified`, exported through
+`auth.facade.ts`). That makes the round trip unskippable by construction rather
+than by a check somebody has to remember to add to the next write path.
+
+`PHONE_ALREADY_REGISTERED` moved with it, and landed somewhere better: the
+collision is now answered at the moment the claim is made, on the step that
+owns the field, instead of two steps later when the dealer has finished typing
+their address.
+
+### The widget, and what it costs us
+
+**MSG91's widget sends the SMS from the browser.** The six digits never reach
+this API, and neither does the send — which means the API cannot rate-limit it.
+That is a real consequence of the widget design and is worth stating rather
+than papering over. The two controls that remain are:
+
+1. **who gets the widget credentials.** `GET /v1/auth/phone/widget` is behind
+   `requireSignedIn`, so an SMS can only be provoked by somebody who has already
+   completed a Google sign-in — not by the open internet. They are deliberately
+   **not** on `GET /v1/config/public`, which is anonymous and
+   `Cache-Control: public`.
+2. **how often a token may be presented.** Ten in ten minutes per session, and
+   a token that has been accepted once is never accepted again.
+
+MSG91's own per-identifier limits are the third, and they are the only thing
+standing between one signed-in account and repeated sends. If that proves too
+loose in practice the answer is an API-side send endpoint — a different
+integration, not a tightening of this one.
+
+### Three refusals, and why they are three
+
+`identify()` answers `VERIFIED`, `REJECTED` or `UNAVAILABLE`. Collapsing the
+last two would tell a dealer their code was wrong during a vendor outage and
+send them round the resend loop spending SMS against a provider that is down.
+
+`REJECTED` and "the token proves a different number" are deliberately the _same_
+message to the caller, though: naming the number a token belongs to would
+confirm it to whoever is holding a stolen one.
+
+### Where the identifier comes from
+
+MSG91 publishes the `verifyAccessToken` request and not its response body, and
+the shape reported in the wild varies. The adapter looks in the response first
+and in the access token's own payload second. Reading the JWT is sound **only in
+that order** — the signature has already been checked, by MSG91, in the call
+above, so a forged token never reaches step 2 and a genuine token's payload
+cannot be edited without invalidating the signature that got it past step 1. A
+verification that names nobody is `REJECTED`, because accepting it would be
+accepting any valid token for any number.
+
+- **Schema** none — `users.phone` and `users.phoneVerifiedAt` have existed since
+  F014 and were both unused for what they describe
+- **Contracts** `PhoneOtpWidget`, `VerifyPhoneInput`, `VerifyPhoneResponse` and
+  `AuthSession.user.phoneVerified` in `packages/contracts/src/auth.ts`
+- **Backend** `platform/phone-otp/{phone-otp.port,fake.adapter,msg91.adapter,factory}.ts`,
+  `modules/auth/{phone.service,verified-phone,auth.routes,auth.docs,auth.facade,auth.service,session.port,cookie-session.adapter}.ts`,
+  `modules/dealers/dealers.service.ts`, `container.ts`, `routes.ts`,
+  `config/env.ts`, `docs/schemas.ts` (`INPUT_SCHEMA_NAMES`)
+- **API** `GET /v1/auth/phone/widget`, `POST /v1/auth/phone/verify`
+- **Config** `PHONE_OTP_DRIVER` (`fake` · `msg91`), `MSG91_WIDGET_ID`,
+  `MSG91_WIDGET_TOKEN`, `PHONE_OTP_DEV_CODE`, `PHONE_OTP_TIMEOUT_MS`;
+  `MSG91_AUTH_KEY` is shared with `SMS_DRIVER` and is server-only
+- **Frontend** `components/ui/otp-input.tsx`,
+  `features/auth/{phone-verification.tsx,phone-actions.ts,onboarding-wizard.tsx}`,
+  `lib/msg91-widget.ts`, `app/(auth)/dealer/onboarding/page.tsx`
+- **Tests** `tests/phone-verification.test.ts`,
+  `tests/unit/platform/phone-otp/{fake,msg91}.adapter.test.ts`,
+  `tests/unit/platform/phone-otp/factory.test.ts`,
+  `tests/unit/modules/auth/{phone.service,verified-phone}.test.ts`,
+  `apps/web/tests/unit/{components/ui/otp-input,features/auth/phone-verification,lib/msg91-widget}.test.*`
+- **Components — New (shared)** `OtpInput` (C075) · **New (feature-specific)**
+  `PhoneVerification` (C040b) · **Changed** `OnboardingWizard` (C040) takes
+  `phoneWidget`, holds `fullName`/`phone` as state, and no longer draws its own
+  Continue on step 1
+- **Sandbox** `Forms/OtpInput` — empty · partly typed · filled · invalid ·
+  disabled; `Forms/PhoneVerification` — send code · code entry · refused ·
+  attempts spent · verified · not configured · service unreachable;
+  `Forms/OnboardingWizard` — `AccountVerified`, `PhoneNotVerified`
+
+**Not verified: real SMS delivery.** No MSG91 widget was configured for this
+branch, so the `msg91` adapter is exercised against a stubbed `fetch` and the
+documented request shape. The first real send should be watched, and India
+requires DLT registration of the entity, the header and each template before
+any transactional SMS is delivered.
+
+**What is deliberately not here.** No session, no permission and no second
+factor: identity is the Google account and already was. And no API-side send —
+the widget owns that, which is what the spend note above is about.

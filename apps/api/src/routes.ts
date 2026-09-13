@@ -67,7 +67,11 @@ export function createRoutes(container: Container): Router {
   // the security boundary here: swapping these two lines would leave
   // `/onboarding` open.
   v1.use('/auth', createPublicAuthRouter(container.auth));
-  v1.use('/auth', container.guards.requireSignedIn, createSessionAuthRouter(container.auth));
+  v1.use(
+    '/auth',
+    container.guards.requireSignedIn,
+    createSessionAuthRouter(container.auth, container.phone, container.rateLimit),
+  );
 
   // ── dealer ────────────────────────────────────────────────────────────
   const dealer = Router();

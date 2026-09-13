@@ -14,6 +14,26 @@ import type * as ApiModule from '@/lib/api';
 import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-wizard';
 
 /**
+ * The MSG91 seam, at its `fake` setting (**R39**).
+ *
+ * No widget script is loaded on this driver and none is loaded here, which is
+ * the point: what the wizard does with a proved number, and what it refuses to
+ * do without one, are the same on both drivers.
+ */
+vi.mock('@/features/auth/phone-actions', () => ({
+  verifyPhoneAction: vi.fn((phone: string) => Promise.resolve({ verified: true, phone })),
+}));
+
+const FAKE_WIDGET = {
+  enabled: true,
+  driver: 'fake',
+  widgetId: null,
+  tokenAuth: null,
+  devCode: '123456',
+  reason: null,
+} as const;
+
+/**
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * **New, with no baseline equivalent.** `component-map.md` records that no
  * feature component has a test except the four marked ✅, and C040 is not one
@@ -112,6 +132,13 @@ function session(
       // nearly every test below walks through it.
       phone: '9840012345',
       phoneDisplay: '98400 12345',
+      /*
+       * Proved, by default (**R39**). Nearly every test below walks *through*
+       * step 1 to reach something else, and the OTP round trip is the subject
+       * of exactly two of them — so the fixture is the state a returning
+       * dealer is in, and the tests that care start from an unproved number.
+       */
+      phoneVerified: true,
       email: 'karthik@srilakshmimotors.in',
       emailVerified: true,
       ...overrides.user,
@@ -160,6 +187,33 @@ function dealerProfile(overrides: Record<string, unknown> = {}) {
   } as never;
 }
 
+/**
+ * Leaves the Account step the way a dealer does (**R39**).
+ *
+ * There is no "Continue" on step 1 any more, and that is the feature: the
+ * forward action is *Send OTP* until the number has been proved, and *Continue
+ * to business details* once it has. Every test that only wants to be on step 2
+ * goes through here, so the shape of the round trip lives in one place rather
+ * than in fifteen.
+ */
+async function leaveAccount(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const settled = screen.queryByRole('button', { name: 'Continue to business details' });
+  if (settled) {
+    await user.click(settled);
+    return;
+  }
+
+  await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+
+  // Nothing was sent: the step's own validation refused a name or a number.
+  const boxes = screen.queryAllByLabelText(/^Digit /);
+  if (boxes.length === 0) return;
+
+  await user.type(boxes[0]!, '123456');
+  await user.click(screen.getByRole('button', { name: 'Verify & continue' }));
+  await user.click(await screen.findByRole('button', { name: 'Continue to business details' }));
+}
+
 /** Which step labels the Stepper has filled — `index <= current`, C015. */
 function filledSteps(): string[] {
   return within(screen.getByRole('list'))
@@ -178,6 +232,7 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -202,6 +257,7 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
     expect(filledSteps()).toEqual([...expected]);
@@ -222,10 +278,11 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     expect(filledSteps()).toEqual(['Account', 'Business']);
     expect(navigationState.pushed).toEqual([]);
@@ -241,6 +298,7 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -267,6 +325,7 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -290,14 +349,17 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     expect(filledSteps()).toEqual(['Account']);
     expect(screen.getByText('Tell us your name.')).toBeInTheDocument();
     expect(screen.getByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
+    // And no message was sent for a number the dealer has not finished typing.
+    expect(screen.queryAllByLabelText(/^Digit /)).toHaveLength(0);
   });
 
   it('advances once the required fields are filled', async () => {
@@ -310,15 +372,16 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
     expect(filledSteps()).toEqual(['Account']);
 
     await user.type(screen.getByLabelText('Full name'), 'Karthik Raman');
     await user.type(screen.getByLabelText(/^Phone/), '9840012345');
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     expect(filledSteps()).toEqual(['Account', 'Business']);
   });
@@ -334,10 +397,11 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     expect(filledSteps()).toEqual(['Account']);
     expect(screen.getByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
@@ -484,6 +548,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -502,6 +567,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -518,6 +584,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -535,6 +602,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -561,6 +629,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={dealerProfile()}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -587,12 +656,13 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
     await user.type(screen.getByLabelText('Full name'), 'R. Manikandan');
     await user.type(screen.getByLabelText(/^Phone/), '98400 12345');
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     // It moved: the step-1 gate did not reject a number typed with a space.
     expect(filledSteps()).toEqual(['Account', 'Business']);
@@ -613,10 +683,11 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     const fullName = screen.getByLabelText('Full name');
     expect(fullName).toBeInTheDocument();
@@ -647,9 +718,10 @@ describe('OnboardingWizard — the Business step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
     return user;
   }
 
@@ -729,6 +801,7 @@ describe('OnboardingWizard — the Business step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -879,6 +952,7 @@ describe('OnboardingWizard — the Business step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -918,9 +992,23 @@ describe('OnboardingWizard — the Documents step', () => {
           dealer: { id: 'd1', slug: 'a', brandName: 'A', status: 'DRAFT' } as never,
         })}
         documents={documents}
-        dealer={{ specialities: [], ...dealer } as never}
+        /*
+         * `contact` is here now because step 1 reads it on every render, not
+         * only when it is the visible step (**R39**): the number it holds is
+         * what the verification panel compares the session's verified one
+         * against, so it is initialised with the component rather than with
+         * the fieldset.
+         */
+        dealer={
+          {
+            specialities: [],
+            contact: { fullName: 'R. Manikandan', phone: '9840012345', landline: null },
+            ...dealer,
+          } as never
+        }
         completeness={blockers}
         yardPhoto={photo}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
   }
@@ -1067,9 +1155,11 @@ describe('OnboardingWizard — the outstanding-items list', () => {
         dealer={null}
         completeness={blockers}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
+    // Opened on Business, so this is the submit itself rather than a local move.
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     return user;
   }
@@ -1152,6 +1242,7 @@ describe('OnboardingWizard — the outstanding-items list', () => {
         dealer={null}
         completeness={completeness({ business: ['gstin'] })}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -1189,6 +1280,7 @@ describe('OnboardingWizard — the Review step', () => {
         dealer={null}
         completeness={blockers}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
   }

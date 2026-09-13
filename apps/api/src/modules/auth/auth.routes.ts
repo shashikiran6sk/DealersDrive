@@ -1,12 +1,14 @@
-import { OnboardingInput } from '@dealers-drive/contracts';
-import { Router } from 'express';
+import { OnboardingInput, VerifyPhoneInput } from '@dealers-drive/contracts';
+import { Router, type Request } from 'express';
 
 import { env } from '../../config/env.js';
 import { signedInPrincipal } from '../../middleware/auth.js';
+import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
 import { ForbiddenError } from '../../platform/errors.js';
 import { recordOAuthAttempt, type OAuthReason } from '../../platform/telemetry/metrics.js';
 import type { AuthService } from './auth.service.js';
+import type { PhoneService } from './phone.service.js';
 import { openTransaction, type OAuthAudience } from './oauth-transaction.js';
 import {
   clearOAuthCookie,
@@ -173,11 +175,26 @@ export function createPublicAuthRouter(service: AuthService): Router {
 }
 
 /**
- * B4–B6 — the routes behind `requireSignedIn`: a verified identity, with or
+ * B4–B8 — the routes behind `requireSignedIn`: a verified identity, with or
  * without a dealership.
+ *
+ * The two phone routes are here rather than on the public router, and that is
+ * a deliberate spend control (**R39**). MSG91's widget sends the SMS from the
+ * browser, so whoever holds `widgetId` and `tokenAuth` can spend the account's
+ * balance — which makes "who may read them" the only gate the API still owns.
+ * Behind a session that gate is the set of people who have completed a Google
+ * sign-in; on `GET /v1/config/public` it would have been the internet, and
+ * that response is additionally `Cache-Control: public`.
  */
-export function createSessionAuthRouter(service: AuthService): Router {
+export function createSessionAuthRouter(
+  service: AuthService,
+  phone: PhoneService,
+  rateLimit: RateLimiter,
+): Router {
   const router = Router();
+
+  /** Counted per person, not per address: a dealership is often one office NAT. */
+  const byUser = (req: Request): string => signedInPrincipal(req).userId;
 
   router.get('/me', (req, res, next) => {
     void (async () => {
@@ -207,6 +224,61 @@ export function createSessionAuthRouter(service: AuthService): Router {
       }
     })();
   });
+
+  /**
+   * B8a — the widget configuration.
+   *
+   * Rate-limited even though it is a read. Each call is a licence to send SMS
+   * from a browser, so the limit is on *starting* verifications rather than on
+   * reading a config: thirty an hour is far more than a person signing up
+   * needs and far less than a script would want.
+   */
+  router.get(
+    '/phone/widget',
+    rateLimit('auth.phone.widget', {
+      limit: 30,
+      windowSeconds: 3600,
+      keyBy: byUser,
+      code: 'PHONE_OTP_RATE_LIMITED',
+      message: 'Too many verification attempts. Try again in a little while.',
+    }),
+    (_req, res) => {
+      res.set('Cache-Control', 'no-store');
+      res.json(phone.widget());
+    },
+  );
+
+  /**
+   * B8b — the widget's access token, checked with MSG91 and recorded.
+   *
+   * The tighter of the two limits, because this is the one that writes. Ten
+   * presentations in ten minutes covers a dealer who mistypes a code twice and
+   * asks for a fresh one; it does not cover walking a stolen token through a
+   * list of numbers.
+   */
+  router.post(
+    '/phone/verify',
+    rateLimit('auth.phone.verify', {
+      limit: 10,
+      windowSeconds: 600,
+      keyBy: byUser,
+      code: 'PHONE_OTP_RATE_LIMITED',
+      message: 'Too many verification attempts. Try again in a little while.',
+    }),
+    validate({ body: VerifyPhoneInput }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const principal = signedInPrincipal(req);
+          const body = validated<VerifyPhoneInput>(req, 'body');
+          res.set('Cache-Control', 'no-store');
+          res.json(await phone.verify(principal.userId, body, { ip: req.ip }));
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
 
   router.post('/logout', (req, res, next) => {
     void (async () => {

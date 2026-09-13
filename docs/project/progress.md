@@ -204,7 +204,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R36 — The contact's job title is not a field · revises F038/F041/F046 · ⚠️ deletes data · [#110](https://github.com/shashikiran6sk/DealersDrive/pull/110)
 - [~] R37 — Services are added one at a time, and shown as chips · revises F037/F046/R18/R26 · [#111](https://github.com/shashikiran6sk/DealersDrive/pull/111)
 - [~] R38 — PAN is unique across the platform, as GSTIN already was · revises F038/F041/F045/F046 · [#112](https://github.com/shashikiran6sk/DealersDrive/pull/112)
-- [ ] R39 — The mobile number is proved, not typed · revises F018/F037/F038/F041/F046/R7/R27 · ⚠️ new dependency
+- [~] R39 — The mobile number is proved, not typed · revises F014/F018/F037/F038/F046/R27/R34 · MSG91 OTP widget, no new package
 - [ ] R40 — Emails are queued, and a separate process sends them · revises F031/F038/F045/R34 · ⚠️ new table
 - [~] R41 — A dealership suspension closes a seat, not an account · revises F014/F016/F019/F045 · ⚠️ new table
 - [~] R42 — An admin can grant admin access, by email · revises F019/F072 · lands with F072

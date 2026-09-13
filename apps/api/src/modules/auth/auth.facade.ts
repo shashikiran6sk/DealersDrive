@@ -38,3 +38,13 @@ export {
  * never the answer's source.
  */
 export { isAllowlistedAdmin } from './admin-allowlist.js';
+
+/**
+ * The one rule every write that stores a dealer's number obeys (**R39**).
+ *
+ * Exported because the profile edit is a *dealers* write and the column it
+ * would otherwise touch belongs to auth: `users.phone` holds a number somebody
+ * proved, and `POST /v1/auth/phone/verify` is the only thing that may put one
+ * there. This hands out the assertion, never the write.
+ */
+export { assertPhoneVerified } from './verified-phone.js';

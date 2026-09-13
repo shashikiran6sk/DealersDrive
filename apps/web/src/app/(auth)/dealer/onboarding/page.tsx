@@ -3,6 +3,7 @@ import type {
   CompletenessResponse,
   DealerDocumentsResponse,
   DealerProfile,
+  PhoneOtpWidget,
   YardPhotoDto,
 } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
@@ -60,7 +61,7 @@ export default async function OnboardingPage({
   // `GET /v1/cities` was the fifth request here, fetched for a dropdown on
   // step 2. The city is typed now, so the screen no longer waits on reference
   // data to render a form the dealer fills in themselves.
-  const [documents, dealer, completeness, yardPhoto] = await Promise.all([
+  const [documents, dealer, completeness, yardPhoto, phoneWidget] = await Promise.all([
     session.dealer
       ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
       : Promise.resolve(null),
@@ -73,6 +74,19 @@ export default async function OnboardingPage({
     session.dealer
       ? apiGet<YardPhotoDto>('/v1/dealer/yard-photo', { revalidate: false })
       : Promise.resolve(null),
+    /*
+     * The MSG91 widget's credentials (**R39**), read on the server and handed
+     * down as a prop.
+     *
+     * They have to reach the browser — the widget cannot initialise without
+     * them — but not as `NEXT_PUBLIC_*`, which is inlined at build time and
+     * would make rotating a widget a rebuild of this image (rule 9). Fetched
+     * here rather than by the client component so the panel has them on its
+     * first paint, and `null` on failure rather than a thrown page: a dealer
+     * should be told mobile verification is unavailable, not shown an error
+     * screen instead of their sign-up form.
+     */
+    phoneWidgetOrNull(),
   ]);
 
   const requested = Number((await searchParams).step ?? NaN);
@@ -105,6 +119,7 @@ export default async function OnboardingPage({
         dealer={dealer}
         completeness={completeness}
         yardPhoto={yardPhoto}
+        phoneWidget={phoneWidget}
       />
     </AuthShell>
   );
@@ -151,6 +166,23 @@ function landingStep(
 
   const documents = completeness?.steps.find((step) => step.key === 'documents');
   return documents?.complete === false ? 2 : 0;
+}
+
+/**
+ * `GET /v1/auth/phone/widget`, or null (**R39**).
+ *
+ * A verification service that cannot be reached is a state this screen renders
+ * — see `PhoneVerification`'s `enabled` branch — rather than a reason to fail
+ * the whole page. The one thing it must never do is silently let onboarding
+ * proceed without a code: it does not, because the API refuses the create with
+ * `PHONE_NOT_VERIFIED` regardless of what this answered.
+ */
+async function phoneWidgetOrNull(): Promise<PhoneOtpWidget | null> {
+  try {
+    return await apiGet<PhoneOtpWidget>('/v1/auth/phone/widget', { revalidate: false });
+  } catch {
+    return null;
+  }
 }
 
 /** The session, or the sign-in screen. A 401 here is a redirect, not an error page. */

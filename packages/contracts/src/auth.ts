@@ -233,6 +233,18 @@ export const AuthSession = z.object({
     fullName: z.string().nullable(),
     phone: z.string(),
     phoneDisplay: z.string(),
+    /**
+     * Whether `phone` is the number this person proved, rather than one they
+     * typed (**R39**).
+     *
+     * It is not derivable from `phone` being non-empty, and the difference is
+     * the whole of R39: `users.phone` is only ever written by a completed OTP
+     * round trip now, so an unverified session simply has none. The onboarding
+     * screen reads this to decide whether step 1 asks for a code or shows the
+     * number as settled, and the API refuses to build a dealership around a
+     * number this is false for.
+     */
+    phoneVerified: z.boolean(),
     email: z.string().nullable(),
     emailVerified: z.boolean(),
   }),
@@ -254,3 +266,88 @@ export const AuthSession = z.object({
   counts: z.object({ newEnquiries: z.number().int(), pendingListings: z.number().int() }),
 });
 export type AuthSession = z.infer<typeof AuthSession>;
+
+/**
+ * ── R39 · the mobile number is proved, not typed ───────────────────────────
+ *
+ * Three shapes, and the split between them is the trust boundary.
+ *
+ * `PhoneOtpWidget` is what the browser needs in order to talk to MSG91 at all.
+ * `VerifyPhoneInput` is what the browser hands *back* — an opaque token it
+ * cannot forge. `VerifyPhoneResponse` is the server's own verdict, and it is
+ * the only thing in this exchange the product acts on: nothing the client says
+ * about whether a code was right is believed, because the only place that can
+ * be answered is a server-to-server call carrying `MSG91_AUTH_KEY`.
+ *
+ * The OTP proves **ownership of a handset and nothing else**. It issues no
+ * session, grants no permission and is not a second factor: identity is the
+ * Google account, and it already was before the code was sent. What this buys
+ * is that the number a buyer is given rings the dealership that published it.
+ */
+
+/**
+ * `GET /v1/auth/phone/widget` — the credentials the MSG91 OTP widget is
+ * initialised with.
+ *
+ * **Served from the API rather than baked into the bundle** (rule 9). They are
+ * per-deployment values, a rotation must not be a rebuild, and `NEXT_PUBLIC_*`
+ * would inline them at build time and end build-once-promote-many.
+ *
+ * **Behind a session, and not on `GET /v1/config/public`.** The widget sends
+ * the SMS from the browser, so whoever holds these two strings can spend this
+ * account's balance. Putting them on the public bootstrap payload — which is
+ * additionally `Cache-Control: public` — would hand that to the internet.
+ * Behind `requireSignedIn` the cost is bounded by the set of people who have
+ * already completed a Google sign-in, which is the smallest gate the widget
+ * design allows us to put in front of it.
+ */
+export const PhoneOtpWidget = z.object({
+  /** False when this deployment cannot verify a number at all; `reason` says why. */
+  enabled: z.boolean(),
+  /**
+   * Which adapter answers `POST /v1/auth/phone/verify`.
+   *
+   * `fake` is the local default: no widget script is loaded, no SMS is sent,
+   * and the code below is accepted. `env.ts` refuses it in production, exactly
+   * as it refuses `CACHE_DRIVER=memory` and `STORAGE_DRIVER=local` there.
+   */
+  driver: z.enum(['fake', 'msg91']),
+  /** `configuration.widgetId`. Null under the `fake` driver. */
+  widgetId: z.string().nullable(),
+  /** `configuration.tokenAuth`. Null under the `fake` driver. */
+  tokenAuth: z.string().nullable(),
+  /** The code the `fake` driver accepts, so the screen can say so. Null for `msg91`. */
+  devCode: z.string().nullable(),
+  /** What a developer must configure, when `enabled` is false. */
+  reason: z.string().nullable(),
+});
+export type PhoneOtpWidget = z.infer<typeof PhoneOtpWidget>;
+
+/**
+ * `POST /v1/auth/phone/verify` — the widget's access token, and the number it
+ * is claimed to prove.
+ *
+ * Both, not just the token. The server asks MSG91 which identifier the token
+ * belongs to and refuses unless it is this one, so a dealer cannot verify a
+ * handset they hold and then register a number they do not. Sending the phone
+ * is therefore not trusted input — it is the assertion being checked.
+ */
+export const VerifyPhoneInput = z
+  .object({
+    phone: IndianMobile,
+    /**
+     * The JWT `verifyOtp` handed the page. Bounded because it is proxied to a
+     * third party: an unbounded string here is an unbounded request body there.
+     */
+    accessToken: z.string().trim().min(1, 'The verification token is missing.').max(4096),
+  })
+  .strict();
+export type VerifyPhoneInput = z.infer<typeof VerifyPhoneInput>;
+
+/** What the server recorded. The client renders it; it never derives it. */
+export const VerifyPhoneResponse = z.object({
+  phone: z.string(),
+  phoneDisplay: z.string(),
+  verifiedAt: z.string(),
+});
+export type VerifyPhoneResponse = z.infer<typeof VerifyPhoneResponse>;
