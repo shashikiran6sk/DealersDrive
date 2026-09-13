@@ -258,17 +258,23 @@ describe('the public surface', () => {
    * to serve. The unmounted paths kept here are the ones the *existing* mounts
    * could plausibly swallow, `/v1/dealers` above all.
    */
-  it.each(['GET /v1/config/public', 'GET /v1/dealers', 'GET /v1/vehicles', 'GET /v1/cities'])(
-    'runs no guard for %s',
-    async (signature) => {
-      const [method, url] = signature.split(' ') as [string, string];
-      const result = await dispatch(method, url);
+  it.each([
+    'GET /v1/config/public',
+    'GET /v1/dealers',
+    // The typeahead (**R43**). Public for the same reason the directory is —
+    // and mounted under a namespace of its own, so this is also the assertion
+    // that `/v1/search/*` did not land inside a guarded prefix.
+    'GET /v1/search/dealers',
+    'GET /v1/vehicles',
+    'GET /v1/cities',
+  ])('runs no guard for %s', async (signature) => {
+    const [method, url] = signature.split(' ') as [string, string];
+    const result = await dispatch(method, url);
 
-      expect(result.dealerGuard, signature).toBe(false);
-      expect(result.adminGuard, signature).toBe(false);
-      expect(result.signedInGuard, signature).toBe(false);
-    },
-  );
+    expect(result.dealerGuard, signature).toBe(false);
+    expect(result.adminGuard, signature).toBe(false);
+    expect(result.signedInGuard, signature).toBe(false);
+  });
 
   /**
    * Mounted *before* the auth routers, and this is what proves the order does

@@ -61,6 +61,50 @@ export const dealersPublicDocs: ModuleDocs = {
     },
     {
       method: 'get',
+      path: '/v1/search/dealers',
+      operationId: 'suggestDealers',
+      tag: 'Dealers (public)',
+      summary: 'Dealer suggestions, while the buyer is still typing',
+      description:
+        'The typeahead behind the directory\u2019s search box (**R43**). It answers after the ' +
+        'first character and is called on a 300 ms debounce, so it is shaped for that: six ' +
+        'rows, no cover photograph, no price string, no service list \u2014 an avatar\u2019s ' +
+        'letters, a name and one line underneath.\n\n' +
+        'It is **not** `GET /v1/dealers` with a small `limit`. That composes a media URL per ' +
+        'row, two price strings and the chip tallies over the whole platform, and a dropdown ' +
+        'throws all of it away on every keystroke.\n\n' +
+        'The match is wider than the grid\u2019s: `search` is tried against the trading ' +
+        'name **and against the town and district**, because a buyer typing "katpadi" has ' +
+        'named a place and the useful answer is the yards in it. `matchedOn` says which ' +
+        'field put the row in the list, so the dropdown can underline the characters that ' +
+        'earned it rather than searching the name for letters that are not there.\n\n' +
+        'Ranking is name-prefix, then name-word, then name-anywhere, then place; ties break ' +
+        'on cars in the yard and then alphabetically, so two identical requests cannot ' +
+        'return the rows in two orders.\n\n' +
+        '`city` and `district` narrow it exactly as they narrow the directory, and the box ' +
+        'passes through whatever the page\u2019s own URL carries \u2014 a suggestion that ' +
+        'vanishes when it is chosen, because the grid behind it is still filtered, is worse ' +
+        'than no suggestion.\n\n' +
+        '`search` is echoed back in the response. Answers to a fast typist can arrive out of ' +
+        'order, and comparing this against what is in the input is how the client drops a ' +
+        'stale one that was already on the wire when its query was replaced.\n\n' +
+        '`countLabel` counts **everything that matched**, not the rows returned \u2014 ' +
+        '"18 matching yards" over six rows tells a buyer to keep typing.\n\n' +
+        '`Cache-Control: public, max-age=60` \u2014 a fifth of the directory\u2019s, ' +
+        'because this is answered per keystroke.',
+      audience: 'public',
+      query: 'DealerSuggestQuery',
+      rateLimit: '120 requests per minute per IP, shared with the other public reads.',
+      responses: [
+        {
+          status: 200,
+          description: 'The suggestions, best match first, and the count they were cut from.',
+          schema: 'DealerSuggestResponse',
+        },
+      ],
+    },
+    {
+      method: 'get',
       path: '/v1/locations',
       operationId: 'getPublicLocations',
       tag: 'Dealers (public)',

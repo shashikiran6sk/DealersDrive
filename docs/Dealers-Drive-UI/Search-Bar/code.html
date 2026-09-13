@@ -1,0 +1,1187 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Dealers-Drive — Verified Dealers in Vellore</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+    /* DESIGN-SPEC.md Tokens & Foundations */
+    :root {
+      --color-accent-100: #eef2ff;
+      --color-accent-200: #dbe3ff;
+      --color-accent-300: #b9c8ff;
+      --color-accent-600: #2f55dd;
+      --color-accent-700: #1e3fae;
+      --color-accent-800: #172f7d;
+      --color-accent-900: #101f4f;
+
+      --color-neutral-100: #f5f5f8;
+      --color-neutral-200: #e7e7ea;
+      --color-neutral-300: #d4d4d7;
+      --color-neutral-400: #b7b7ba;
+      --color-neutral-700: #5d5d60;
+      --color-neutral-800: #424244;
+      --color-neutral-900: #2b2b2d;
+
+      --color-bg: #f4f5f7;
+      --color-surface: #eaecf0;
+      --color-text: #14171c;
+      --color-accent: #2f55dd;
+      --color-divider: rgba(20, 23, 28, 0.15);
+      --row-rule: rgba(20, 23, 28, 0.08);
+
+      --font-heading: 'Cabinet Grotesk', 'Inter', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      --shadow-lg: 0 12px 32px rgba(43, 43, 45, 0.22);
+      --radius-md: 4px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.005em;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Sticky Navigation Header */
+    header.customer-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #ffffff;
+      border-bottom: 1px solid var(--color-divider);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+    }
+
+    .header-inner {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    /* .dd-plate as per spec */
+    .dd-plate {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid #14171c;
+      background: #f4f5f7;
+      padding: 3px 9px 3px 0;
+      border-radius: 0;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      line-height: 1.5;
+      color: #14171c;
+    }
+
+    .dd-plate::before {
+      content: '';
+      width: 5px;
+      align-self: stretch;
+      background: var(--color-accent-600);
+      display: block;
+    }
+
+    .brand-wordmark {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      color: color-mix(in srgb, var(--color-text) 70%, transparent);
+      text-decoration: none;
+      transition: color 120ms ease-out;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--color-accent-600);
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Buttons per spec */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 1.2;
+      padding: 6.8px 12.24px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background-color 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--color-accent-600);
+      color: #f4f5f7;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-accent-700);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border-color: var(--color-divider);
+      color: var(--color-text);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(20, 23, 28, 0.07);
+    }
+
+    .district-trigger {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      font-size: 13px;
+      background: #ffffff;
+      border: 1px solid var(--color-divider);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+    }
+
+    .district-indicator {
+      width: 4px;
+      height: 14px;
+      background: var(--color-accent-600);
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+      flex: 1;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumb {
+      font-size: 12px;
+      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+      margin-bottom: 12px;
+    }
+
+    .breadcrumb a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    /* Header text */
+    .page-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 2.125rem;
+      line-height: 1.1;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .result-count-label {
+      font-size: 14px;
+      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .page-description {
+      font-size: 15px;
+      line-height: 1.55;
+      color: color-mix(in srgb, var(--color-text) 70%, transparent);
+      max-width: 68ch;
+      margin-bottom: 24px;
+      text-wrap: pretty;
+    }
+
+    /* Blueprint corners container */
+    .blueprint {
+      position: relative;
+      border: 1px solid var(--color-divider);
+      border-radius: 0;
+      background: #ffffff;
+    }
+
+    .blueprint .corner {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      pointer-events: none;
+    }
+
+    .blueprint .corner.tl { top: -1px; left: -1px; border-top: 2px solid var(--color-text); border-left: 2px solid var(--color-text); }
+    .blueprint .corner.tr { top: -1px; right: -1px; border-top: 2px solid var(--color-text); border-right: 2px solid var(--color-text); }
+    .blueprint .corner.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--color-text); border-left: 2px solid var(--color-text); }
+    .blueprint .corner.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--color-text); border-right: 2px solid var(--color-text); }
+
+    /* Search & Autocomplete Hub */
+    .search-zone {
+      position: relative;
+      max-width: 480px;
+      margin-bottom: 28px;
+      z-index: 30;
+    }
+
+    .search-input-shell {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid var(--color-divider);
+      border-radius: var(--radius-md);
+      padding: 1px 4px;
+      height: 38px;
+      transition: border-color 120ms ease-out, box-shadow 120ms ease-out;
+    }
+
+    .search-input-shell:focus-within {
+      border-color: var(--color-accent-600);
+      outline: 2px solid var(--color-accent-600);
+      outline-offset: 0;
+    }
+
+    .search-icon-prefix {
+      padding-left: 8px;
+      padding-right: 6px;
+      color: color-mix(in srgb, var(--color-text) 50%, transparent);
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      height: 36px;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      color: var(--color-text);
+      caret-color: var(--color-accent-600);
+      outline: none;
+    }
+
+    .search-input::placeholder {
+      color: color-mix(in srgb, var(--color-text) 45%, transparent);
+    }
+
+    .clear-btn {
+      background: transparent;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: color-mix(in srgb, var(--color-text) 50%, transparent);
+      font-size: 12px;
+    }
+
+    .clear-btn:hover {
+      background: rgba(20, 23, 28, 0.08);
+      color: var(--color-text);
+    }
+
+    .shortcut-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-neutral-100);
+      border: 1px solid var(--color-divider);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+      margin-right: 4px;
+    }
+
+    /* THE AUTOCOMPLETE / RECOMMENDATION DROPDOWN */
+    .autocomplete-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid var(--color-divider);
+      border-radius: 0;
+      box-shadow: var(--shadow-lg);
+      z-index: 100;
+      overflow: hidden;
+      display: block;
+    }
+
+    /* Section group header */
+    .dropdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px 5px;
+      background: #fafafc;
+      border-bottom: 1px solid var(--row-rule);
+    }
+
+    .group-label {
+      font-size: 9.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+    }
+
+    /* Autocomplete item list */
+    .suggestion-list {
+      list-style: none;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--row-rule);
+      transition: background-color 80ms ease-out, color 80ms ease-out;
+      user-select: none;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    /* DEFAULT & KEYBOARD/CURSOR HIGHLIGHT STATE */
+    .suggestion-item.is-highlighted {
+      background-color: var(--color-accent-100);
+      border-left: 3px solid var(--color-accent-600);
+      padding-left: 9px;
+    }
+
+    .suggestion-item.is-highlighted .match-title {
+      color: var(--color-accent-800);
+      font-weight: 600;
+    }
+
+    .suggestion-item.is-highlighted .enter-chip {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .item-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-surface);
+      color: color-mix(in srgb, var(--color-text) 70%, transparent);
+      border: 1px solid var(--color-divider);
+      flex-shrink: 0;
+      border-radius: 0;
+    }
+
+    .dealer-avatar-chip {
+      width: 28px;
+      height: 28px;
+      background: var(--color-accent-200);
+      color: var(--color-accent-800);
+      font-weight: 700;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+      font-family: var(--font-heading);
+      flex-shrink: 0;
+    }
+
+    .item-text-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .match-title {
+      font-size: 13.5px;
+      color: var(--color-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .match-title mark {
+      background: transparent;
+      color: var(--color-accent-600);
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .match-meta {
+      font-size: 11px;
+      color: color-mix(in srgb, var(--color-text) 58%, transparent);
+      font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* .tag variant styles per spec */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 10.5px;
+      letter-spacing: 0.02em;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-family: var(--font-body);
+    }
+
+    .tag-neutral {
+      background: var(--color-neutral-100);
+      color: var(--color-neutral-800);
+      border: 1px solid var(--color-divider);
+    }
+
+    .tag-verified {
+      background: #e6f4ef;
+      color: #0f7a5a;
+      font-weight: 600;
+      font-size: 10px;
+      letter-spacing: 0.03em;
+    }
+
+    .item-stat {
+      font-size: 11.5px;
+      font-variant-numeric: tabular-nums;
+      color: color-mix(in srgb, var(--color-text) 60%, transparent);
+    }
+
+    .enter-chip {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 1px 4px;
+      background: #ffffff;
+      border: 1px solid var(--color-accent-300);
+      color: var(--color-accent-800);
+      border-radius: 2px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 100ms;
+    }
+
+    /* Dropdown Footer Keyboard hints */
+    .dropdown-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      background: var(--color-neutral-100);
+      border-top: 1px solid var(--color-divider);
+      font-size: 10.5px;
+      color: color-mix(in srgb, var(--color-text) 60%, transparent);
+    }
+
+    .nav-hints {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .key-pair {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .kbd-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      background: #ffffff;
+      border: 1px solid var(--color-divider);
+      border-radius: 2px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    /* Showcase grid to present the underlying page context */
+    .context-deck {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 24px;
+      margin-top: 16px;
+    }
+
+    .filter-card {
+      background: #ffffff;
+      border: 1px solid var(--color-divider);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border-radius: var(--radius-md);
+      height: fit-content;
+    }
+
+    .filter-card h4 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sample-listing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* DESIGN-SPEC §3.5 Dealer Directory Card */
+    .dealer-card {
+      background: #ffffff;
+      border: 1px solid var(--color-divider);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 120ms ease-out;
+    }
+
+    .dealer-card:hover {
+      border-color: var(--color-accent-600);
+    }
+
+    .dealer-cover {
+      height: 104px;
+      background: linear-gradient(135deg, var(--color-surface) 0%, #d8dde8 100%);
+      border-bottom: 1px solid var(--color-divider);
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+    }
+
+    .dealer-cover-meta {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .dealer-card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      flex: 1;
+    }
+
+    .dealer-avatar-badge {
+      width: 44px;
+      height: 44px;
+      background: var(--color-accent-600);
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #ffffff;
+      border-radius: 0;
+      margin-top: -38px;
+      z-index: 2;
+      box-shadow: 0 2px 6px rgba(20, 23, 28, 0.12);
+      margin-bottom: 12px;
+    }
+
+    .dealer-header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .dealer-name {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text);
+      line-height: 1.25;
+    }
+
+    .dealer-location-sub {
+      font-size: 12px;
+      color: color-mix(in srgb, var(--color-text) 60%, transparent);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 10px;
+    }
+
+    .dealer-blurb {
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: color-mix(in srgb, var(--color-text) 75%, transparent);
+      margin-bottom: 12px;
+      min-height: 36px;
+    }
+
+    .dealer-tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .dealer-footer-row {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--row-rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .inventory-stat {
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      color: var(--color-accent-800);
+    }
+
+    .inventory-start-price {
+      font-size: 11px;
+      color: color-mix(in srgb, var(--color-text) 55%, transparent);
+      display: block;
+    }
+
+    .inventory-link {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent-600);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 120ms ease-out;
+    }
+
+    .inventory-link:hover {
+      color: var(--color-accent-800);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<!-- Sticky Customer Header (§3.1) -->
+<header class="customer-header">
+<div class="header-inner">
+<div class="brand-cluster">
+<div class="dd-plate">DD</div>
+<a class="brand-wordmark" href="#">Dealers-Drive</a>
+<ul class="nav-links">
+<li class=""><a href="#" class="">Buy cars</a></li>
+<li class=""><a aria-current="true" class="active" href="#">Dealers</a></li>
+<li class=""><a href="#" class="">Saved cars <span style="font-variant-numeric: tabular-nums;" class="">(3)</span></a></li>
+</ul>
+</div>
+<div class="header-actions">
+<button class="district-trigger" id="district-btn">
+<span class="district-indicator"></span>
+<span class="">Vellore, TN</span>
+<span style="font-size: 10px; color: #5d5d60;" class="">▾</span>
+</button>
+<a class="btn btn-secondary" href="#">Dealer login</a>
+<a class="btn btn-primary" href="#">List your cars</a>
+</div>
+</div>
+</header>
+<main>
+<div class="breadcrumb">
+<a href="#" class="">Home</a> / <a href="#" class="">Dealers</a> / Vellore
+    </div>
+<div class="page-title-row">
+<h1 class="page-title">Verified dealers in Vellore</h1>
+<span class="result-count-label">12 verified dealerships</span>
+</div>
+<p class="page-description">
+      Every dealership below is identity- and GST-verified by Dealers-Drive. Direct contact with authenticated dealer yards in Vellore district.
+    </p>
+<!-- Search Autocomplete Hub with Live Recommendation Dropdown -->
+<div class="search-zone" id="search-zone-container" style="max-width: 360px;">
+<!-- Search Input Container -->
+<div class="search-input-shell" id="search-input-box" style="height: 34px; padding: 0px 4px;">
+<div class="search-icon-prefix">
+<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="16">
+<circle cx="11" cy="11" r="8"></circle>
+<line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+</svg>
+</div>
+<input aria-autocomplete="list" aria-controls="autocomplete-results" aria-expanded="true" autocomplete="off" class="search-input" id="search-input" placeholder="Search dealership name, yard or locality in Vellore..." spellcheck="false" type="text" value="Vel" style="height: 32px; font-size: 13px;">
+<button class="clear-btn" id="clear-search-btn" title="Clear input">✕</button>
+<div class="shortcut-badge">ESC to close</div>
+</div>
+<!-- Autocomplete Dropdown Component -->
+<div class="autocomplete-dropdown" id="autocomplete-results" role="listbox">
+<!-- Section 1: DEALERSHIPS IN VELLORE DISTRICT -->
+<div class="dropdown-group-header">
+<span class="group-label">Dealerships in Vellore District</span>
+<span class="item-stat">4 matching yards</span>
+</div>
+<ul class="suggestion-list" id="dealer-suggestions" role="group">
+<!-- Item 1: Default HIGHLIGHTED element per specification -->
+<li aria-selected="true" class="suggestion-item is-highlighted" data-index="0" data-val="Vellore Cars" role="option">
+<div class="item-left">
+<div class="dealer-avatar-chip">VC</div>
+<div class="item-text-stack">
+<span class="match-title"><mark>Vel</mark>lore Cars</span>
+<span class="match-meta">42 cars in yard · Katpadi Road, Vellore · GST: 33AAAAA0000A1Z5 · 8 yrs</span>
+</div>
+</div>
+<div class="item-right">
+<span class="tag tag-verified">✓ YARD VERIFIED</span>
+<span class="enter-chip">Select ↵</span>
+</div>
+</li>
+<!-- Item 2 -->
+<li aria-selected="false" class="suggestion-item" data-index="1" data-val="Vellore Star Auto Yards" role="option">
+<div class="item-left">
+<div class="dealer-avatar-chip">VS</div>
+<div class="item-text-stack">
+<span class="match-title"><mark>Vel</mark>lore Star Auto Yards</span>
+<span class="match-meta">18 cars in yard · Gandhi Nagar, Vellore · 5 yrs</span>
+</div>
+</div>
+<div class="item-right">
+<span class="tag tag-verified">✓ YARD VERIFIED</span>
+<span class="enter-chip">Select ↵</span>
+</div>
+</li>
+<!-- Item 3 -->
+<li aria-selected="false" class="suggestion-item" data-index="2" data-val="Royal Vellore Motors" role="option">
+<div class="item-left">
+<div class="dealer-avatar-chip">RW</div>
+<div class="item-text-stack">
+<span class="match-title">Royal <mark>Vel</mark>lore Motors</span>
+<span class="match-meta">29 cars in yard · Arcot Road, Vellore · 11 yrs</span>
+</div>
+</div>
+<div class="item-right">
+<span class="tag tag-verified">✓ YARD VERIFIED</span>
+<span class="enter-chip">Select ↵</span>
+</div>
+</li>
+<!-- Item 4 -->
+<li aria-selected="false" class="suggestion-item" data-index="3" data-val="Honest Wheels Vellore" role="option">
+<div class="item-left">
+<div class="dealer-avatar-chip">HW</div>
+<div class="item-text-stack">
+<span class="match-title">Honest Wheels <mark>Vel</mark>lore</span>
+<span class="match-meta">31 cars in yard · Bagayam, Vellore · 4 yrs</span>
+</div>
+</div>
+<div class="item-right">
+<span class="tag tag-verified">✓ YARD VERIFIED</span>
+<span class="enter-chip">Select ↵</span>
+</div>
+</li>
+</ul>
+<!-- Section 2: LOCALITIES & HUBS IN VELLORE -->
+
+
+<!-- Accessible Keyboard & Navigation Footer Bar -->
+
+</div>
+</div>
+<!-- Underlying Page Mockup for Context (Dealers Directory) -->
+<div class="context-deck">
+<!-- Sidebar Filters for Localities in Vellore -->
+<aside class="filter-card blueprint">
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+<h4 class="">Vellore Localities</h4>
+<div style="font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input checked="" style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">Katpadi (4)</span>
+</label>
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input checked="" style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">Gandhi Nagar (3)</span>
+</label>
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">Bagayam (2)</span>
+</label>
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">Arcot Road (2)</span>
+</label>
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">Sathuvachari (1)</span>
+</label>
+</div>
+<div style="border-top: 1px solid var(--row-rule); padding-top: 12px;">
+<h4 class="">Dealer Experience</h4>
+<div style="font-size: 13px; display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input checked="" style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">5+ Years in Vellore (8)</span>
+</label>
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">10+ Years Established (4)</span>
+</label>
+</div>
+</div>
+<div style="border-top: 1px solid var(--row-rule); padding-top: 12px;">
+<h4 class="">Yard Inventory Size</h4>
+<div style="font-size: 13px; display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input checked="" style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">20+ vehicles in stock (6)</span>
+</label>
+<label style="display: flex; gap: 8px; align-items: center; cursor: pointer;">
+<input style="accent-color: var(--color-accent-600);" type="checkbox">
+<span class="">Direct RC on site (12)</span>
+</label>
+</div>
+</div>
+</aside>
+<!-- Verified Dealers Directory Grid (§3.5) -->
+<div class="sample-listing-grid">
+<!-- Dealer Card 1: Vellore Cars -->
+<article class="dealer-card">
+<div class="dealer-cover">
+<div class="dd-plate" style="background:#ffffff; font-size:11px;">TN-23 VELLORE</div>
+<div class="dealer-cover-meta">
+<span class="tag tag-verified">✓ YARD VERIFIED</span>
+</div>
+</div>
+<div class="dealer-card-body">
+<div class="dealer-avatar-badge">VC</div>
+<div class="dealer-header-info">
+<div>
+<h3 class="dealer-name">Vellore Cars</h3>
+<div class="dealer-location-sub">Katpadi Road, Vellore · 8 years established</div>
+</div>
+</div>
+<p class="dealer-blurb">
+              Direct yard inventory specializing in single-owner sedans and family SUVs with authenticated service logs.
+            </p>
+<div class="dealer-tags-row">
+<span class="tag tag-neutral">RC Transfer</span>
+<span class="tag tag-neutral">Zero Markup</span>
+<span class="tag tag-neutral">Inspection Ready</span>
+</div>
+<div class="dealer-footer-row">
+<div>
+<span class="inventory-stat">42 cars listed</span>
+<span class="inventory-start-price">from ₹4.20 Lakh</span>
+</div>
+<a class="inventory-link" href="#">View inventory →</a>
+</div>
+</div>
+</article>
+<!-- Dealer Card 2: Vellore Star Auto Yards -->
+<article class="dealer-card">
+<div class="dealer-cover">
+<div class="dd-plate" style="background:#ffffff; font-size:11px;">TN-23 VELLORE</div>
+<div class="dealer-cover-meta">
+<span class="tag tag-verified">✓ YARD VERIFIED</span>
+</div>
+</div>
+<div class="dealer-card-body">
+<div class="dealer-avatar-badge" style="background: #1e3fae;">VS</div>
+<div class="dealer-header-info">
+<div>
+<h3 class="dealer-name">Vellore Star Auto Yards</h3>
+<div class="dealer-location-sub">Gandhi Nagar, Vellore · 5 years established</div>
+</div>
+</div>
+<p class="dealer-blurb">
+              Specialized in certified city hatchbacks and diesel compacts. On-spot RC verification and quick transfer paperwork.
+            </p>
+<div class="dealer-tags-row">
+<span class="tag tag-neutral">RC Transfer</span>
+<span class="tag tag-neutral">Zero Markup</span>
+<span class="tag tag-neutral">Inspection Ready</span>
+</div>
+<div class="dealer-footer-row">
+<div>
+<span class="inventory-stat">18 cars listed</span>
+<span class="inventory-start-price">from ₹3.60 Lakh</span>
+</div>
+<a class="inventory-link" href="#">View inventory →</a>
+</div>
+</div>
+</article>
+<!-- Dealer Card 3: Royal Vellore Motors -->
+<article class="dealer-card">
+<div class="dealer-cover">
+<div class="dd-plate" style="background:#ffffff; font-size:11px;">TN-23 VELLORE</div>
+<div class="dealer-cover-meta">
+<span class="tag tag-verified">✓ YARD VERIFIED</span>
+</div>
+</div>
+<div class="dealer-card-body">
+<div class="dealer-avatar-badge" style="background: #172f7d;">RW</div>
+<div class="dealer-header-info">
+<div>
+<h3 class="dealer-name">Royal Vellore Motors</h3>
+<div class="dealer-location-sub">Arcot Road, Vellore · 11 years established</div>
+</div>
+</div>
+<p class="dealer-blurb">
+              Vellore’s premier multibrand yard holding documented executive sedans and top-end compact SUVs.
+            </p>
+<div class="dealer-tags-row">
+<span class="tag tag-neutral">RC Transfer</span>
+<span class="tag tag-neutral">Zero Markup</span>
+<span class="tag tag-neutral">Inspection Ready</span>
+</div>
+<div class="dealer-footer-row">
+<div>
+<span class="inventory-stat">29 cars listed</span>
+<span class="inventory-start-price">from ₹5.10 Lakh</span>
+</div>
+<a class="inventory-link" href="#">View inventory →</a>
+</div>
+</div>
+</article>
+<!-- Dealer Card 4: Honest Wheels Vellore -->
+<article class="dealer-card">
+<div class="dealer-cover">
+<div class="dd-plate" style="background:#ffffff; font-size:11px;">TN-23 VELLORE</div>
+<div class="dealer-cover-meta">
+<span class="tag tag-verified">✓ YARD VERIFIED</span>
+</div>
+</div>
+<div class="dealer-card-body">
+<div class="dealer-avatar-badge" style="background: #2b2b2d;">HW</div>
+<div class="dealer-header-info">
+<div>
+<h3 class="dealer-name">Honest Wheels Vellore</h3>
+<div class="dealer-location-sub">Bagayam, Vellore · 4 years established</div>
+</div>
+</div>
+<p class="dealer-blurb">
+              Transparent pricing pledge with physical inspection bay open for customer mechanics at Bagayam Yard.
+            </p>
+<div class="dealer-tags-row">
+<span class="tag tag-neutral">RC Transfer</span>
+<span class="tag tag-neutral">Zero Markup</span>
+<span class="tag tag-neutral">Inspection Ready</span>
+</div>
+<div class="dealer-footer-row">
+<div>
+<span class="inventory-stat">31 cars listed</span>
+<span class="inventory-start-price">from ₹3.90 Lakh</span>
+</div>
+<a class="inventory-link" href="#">View inventory →</a>
+</div>
+</div>
+</article>
+</div>
+</div>
+</main>
+<script>
+    // Dealer Search Autocomplete & Recommendation Interaction Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('search-input');
+      const clearBtn = document.getElementById('clear-search-btn');
+      const dropdown = document.getElementById('autocomplete-results');
+      const items = Array.from(document.querySelectorAll('.suggestion-item'));
+      
+      // Default highlight index is 0 (First dealer "Vellore Cars" highlighted by default)
+      let activeIndex = 0;
+
+      function updateHighlight(newIndex, scrollIntoView = true) {
+        if (items.length === 0) return;
+        
+        if (newIndex < 0) {
+          newIndex = items.length - 1;
+        } else if (newIndex >= items.length) {
+          newIndex = 0;
+        }
+
+        activeIndex = newIndex;
+
+        items.forEach((item, idx) => {
+          if (idx === activeIndex) {
+            item.classList.add('is-highlighted');
+            item.setAttribute('aria-selected', 'true');
+            if (scrollIntoView) {
+              item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          } else {
+            item.classList.remove('is-highlighted');
+            item.setAttribute('aria-selected', 'false');
+          }
+        });
+      }
+
+      // Initial state: first item highlighted
+      updateHighlight(0, false);
+
+      // Mouse hover event on each item: cursor movements update the highlighted item
+      items.forEach((item, idx) => {
+        item.addEventListener('mouseenter', () => {
+          updateHighlight(idx, false);
+        });
+
+        item.addEventListener('click', () => {
+          const val = item.getAttribute('data-val');
+          if (val) {
+            searchInput.value = val;
+            searchInput.focus();
+          }
+        });
+      });
+
+      // Keyboard navigation: ArrowUp / ArrowDown / Enter / Escape
+      searchInput.addEventListener('keydown', (e) => {
+        if (dropdown.style.display === 'none') {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            dropdown.style.display = 'block';
+            updateHighlight(0);
+            e.preventDefault();
+            return;
+          }
+        }
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          updateHighlight(activeIndex + 1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          updateHighlight(activeIndex - 1);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (items[activeIndex]) {
+            const val = items[activeIndex].getAttribute('data-val');
+            searchInput.value = val;
+            items[activeIndex].style.backgroundColor = 'var(--color-accent-200)';
+            setTimeout(() => {
+              items[activeIndex].style.backgroundColor = '';
+            }, 180);
+          }
+        } else if (e.key === 'Escape') {
+          dropdown.style.display = 'none';
+        }
+      });
+
+      // Reopen dropdown on focus or typing
+      searchInput.addEventListener('focus', () => {
+        dropdown.style.display = 'block';
+        updateHighlight(activeIndex, false);
+      });
+
+      searchInput.addEventListener('input', () => {
+        dropdown.style.display = 'block';
+        updateHighlight(0, false);
+      });
+
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchInput.focus();
+        updateHighlight(0, false);
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        const searchZone = document.getElementById('search-zone-container');
+        if (!searchZone.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+
+</body></html>

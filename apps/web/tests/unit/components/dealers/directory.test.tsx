@@ -1,7 +1,7 @@
-import type { DealerCard, PublicLocations } from '@dealers-drive/contracts';
-import { render, screen } from '@testing-library/react';
+import type { DealerCard, DealerSuggestResponse, PublicLocations } from '@dealers-drive/contracts';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { navigationState } from '../../../setup';
 
@@ -279,7 +279,57 @@ const LOCATIONS: PublicLocations = {
   total: 19,
 };
 
+/**
+ * The suggest endpoint the search box calls (**R43**).
+ *
+ * One dealership, so "type and take the first row" is unambiguous. The real
+ * debounce, abort and stale guard are all still in play — this replaces the
+ * network and nothing else.
+ */
+const SUGGESTION: DealerSuggestResponse = {
+  search: 'lakshmi',
+  data: [
+    {
+      slug: 'sri-lakshmi-motors',
+      brandName: 'Sri Lakshmi Motors',
+      initials: 'SL',
+      metaLabel: '7 cars in yard · Vellore',
+      matchedOn: 'brandName',
+      carCount: 7,
+      isVerified: true,
+    },
+  ],
+  countLabel: '1 matching yard',
+};
+
+const fetchMock = vi.fn();
+
+/** Type, wait for the debounced answer, take the highlighted row. */
+async function chooseSuggestion(
+  user: ReturnType<typeof userEvent.setup>,
+  typed: string,
+): Promise<void> {
+  await user.type(screen.getByRole('combobox'), typed);
+  await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1));
+  await user.keyboard('{Enter}');
+}
+
 describe('DirectoryFilters', () => {
+  beforeEach(() => {
+    fetchMock.mockReset();
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : input.toString();
+      const search = new URL(url, 'http://localhost').searchParams.get('search') ?? '';
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ ...SUGGESTION, search }),
+      } as Response);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
   it('pushes the chosen city onto the URL', async () => {
     const user = userEvent.setup();
     render(<DirectoryFilters locations={LOCATIONS} cities={CITIES} district="vellore" />);
@@ -410,16 +460,26 @@ describe('DirectoryFilters', () => {
    * but it must carry it through every navigation, or choosing a town would
    * silently widen the search back to the whole platform.
    */
+  /**
+   * **R43 — the search is chosen, not typed.** The `<form>` that submitted raw
+   * text is gone; what reaches `?q=` is a recommendation the buyer picked, and
+   * `chooseSuggestion` below is what a buyer does to get one: type, wait for
+   * the debounced answer, press Enter on the highlighted row.
+   *
+   * What is asserted is unchanged and is the point of these three tests: the
+   * component still composes the *same URL*, carrying whatever district and
+   * towns are already applied. Only the way the term arrives has moved.
+   */
   it('carries the district through a chip and a search', async () => {
     const user = userEvent.setup();
     render(<DirectoryFilters locations={LOCATIONS} cities={CITIES} district="vellore" />);
 
     await user.click(screen.getByRole('button', { name: /katpadi/i }));
-    await user.type(screen.getByLabelText(/search dealership name/i), 'lakshmi{Enter}');
+    await chooseSuggestion(user, 'lakshmi');
 
     expect(navigationState.pushed).toEqual([
       '/dealers?district=vellore&city=katpadi',
-      '/dealers?district=vellore&q=lakshmi',
+      '/dealers?district=vellore&q=Sri+Lakshmi+Motors',
     ]);
   });
 
@@ -427,9 +487,9 @@ describe('DirectoryFilters', () => {
     const user = userEvent.setup();
     render(<DirectoryFilters locations={LOCATIONS} cities={CITIES} city={['vellore']} />);
 
-    await user.type(screen.getByLabelText(/search dealership name/i), 'lakshmi{Enter}');
+    await chooseSuggestion(user, 'lakshmi');
 
-    expect(navigationState.pushed).toEqual(['/dealers?city=vellore&q=lakshmi']);
+    expect(navigationState.pushed).toEqual(['/dealers?city=vellore&q=Sri+Lakshmi+Motors']);
   });
 
   it('carries the search through a chip', async () => {
@@ -443,13 +503,20 @@ describe('DirectoryFilters', () => {
     expect(navigationState.pushed).toEqual(['/dealers?district=vellore&city=katpadi&q=lakshmi']);
   });
 
+  /**
+   * Whitespace is not a search, and as of **R43** it is not even a request: the
+   * box trims before it decides whether it has a question to ask. So there is
+   * nothing to choose, Enter has no highlighted row, and the URL does not move
+   * at all — where the old form pushed a bare `/dealers`.
+   */
   it('ignores a search that is only whitespace', async () => {
     const user = userEvent.setup();
     render(<DirectoryFilters locations={LOCATIONS} cities={CITIES} />);
 
-    await user.type(screen.getByLabelText(/search dealership name/i), '   {Enter}');
+    await user.type(screen.getByRole('combobox'), '   {Enter}');
 
-    expect(navigationState.pushed).toEqual(['/dealers']);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(navigationState.pushed).toEqual([]);
   });
 
   /**

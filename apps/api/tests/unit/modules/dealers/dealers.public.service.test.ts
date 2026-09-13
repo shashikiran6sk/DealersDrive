@@ -1,4 +1,4 @@
-import type { DealerDirectoryQuery } from '@dealers-drive/contracts';
+import type { DealerDirectoryQuery, DealerSuggestQuery } from '@dealers-drive/contracts';
 import { describe, expect, it, vi } from 'vitest';
 
 import { env } from '../../../../src/config/env.js';
@@ -562,6 +562,243 @@ describe('directory', () => {
     const h = setup({ dealers: [activeDealer()] });
 
     expect((await h.service.directory(query())).data[0]?.logoUrl).toBeNull();
+  });
+});
+
+/**
+ * A8b — the typeahead behind the directory's search box (**R43**).
+ *
+ * Three things are worth isolating, and they are the three a typeahead usually
+ * gets wrong:
+ *
+ *   · **The match is wider than the grid's** — name, town and district — and
+ *     `matchedOn` says which of them earned the row, because that is what the
+ *     dropdown underlines. A row matched on its town has none of the typed
+ *     characters in its name, and a client that assumed otherwise would mark
+ *     nothing while claiming a match.
+ *   · **The ordering is total.** Rank, then cars in the yard, then the name.
+ *     Two identical requests that returned the rows in two orders would make a
+ *     dropdown appear to shuffle itself under the buyer's fingers.
+ *   · **`countLabel` counts the matches, not the rows returned.** Six rows out
+ *     of eighteen is a signal to keep typing; six rows labelled "6" is a claim
+ *     the platform has six dealerships.
+ */
+describe('suggest', () => {
+  const suggestQuery = (overrides: Partial<DealerSuggestQuery> = {}): DealerSuggestQuery => ({
+    search: 'vel',
+    limit: 6,
+    ...overrides,
+  });
+
+  it('matches the trading name, case-insensitively', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'velavan-cars', brandName: 'Velavan Cars' }),
+        activeDealer({ slug: 'other-motors', brandName: 'Other Motors' }),
+      ],
+    });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'VELAVAN' }));
+
+    expect(response.data.map((row) => row.slug)).toEqual(['velavan-cars']);
+    expect(response.data[0]?.matchedOn).toBe('brandName');
+  });
+
+  it('matches the town, so naming a place offers the yards in it', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'katpadi-cars', brandName: 'Anand Motors', cityName: 'Katpadi' }),
+        activeDealer({ slug: 'elsewhere', brandName: 'Anand Motors', cityName: 'Arcot' }),
+      ],
+    });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'katpadi' }));
+
+    expect(response.data.map((row) => row.slug)).toEqual(['katpadi-cars']);
+    // What the dropdown underlines: the place, because the place is the reason.
+    expect(response.data[0]?.matchedOn).toBe('city');
+  });
+
+  it('matches the district when the town does not', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ cityName: 'Katpadi', districtName: 'Ranipet' }),
+        activeDealer({ slug: 'far-away', cityName: 'Arcot', districtName: 'Mysuru' }),
+      ],
+    });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'ranipet' }));
+
+    expect(response.data).toHaveLength(1);
+    expect(response.data[0]?.matchedOn).toBe('district');
+  });
+
+  it('prefers a name over a place, so a dealership called after its town leads', async () => {
+    const h = setup({
+      dealers: [
+        // Trades in Vellore, but is not called it.
+        activeDealer({ slug: 'anand-motors', brandName: 'Anand Motors', cityName: 'Vellore' }),
+        activeDealer({ slug: 'vellore-cars', brandName: 'Vellore Cars', cityName: 'Vellore' }),
+      ],
+    });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'vel' }));
+
+    expect(response.data.map((row) => row.slug)).toEqual(['vellore-cars', 'anand-motors']);
+    expect(response.data[0]?.matchedOn).toBe('brandName');
+    expect(response.data[1]?.matchedOn).toBe('city');
+  });
+
+  it('ranks a name prefix above a word start, and a word start above a substring', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'inside', brandName: 'Assrivad Motors', cityName: 'Arcot' }),
+        activeDealer({ slug: 'word', brandName: 'Kumaresan Sri Motors', cityName: 'Arcot' }),
+        activeDealer({ slug: 'prefix', brandName: 'Sri Lakshmi Motors', cityName: 'Arcot' }),
+      ],
+    });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'sri' }));
+
+    expect(response.data.map((row) => row.slug)).toEqual(['prefix', 'word', 'inside']);
+  });
+
+  it('breaks a rank tie on cars in the yard, then on the name', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'quiet', brandName: 'Velocity B' }),
+        activeDealer({ slug: 'busy', brandName: 'Velocity C' }),
+        activeDealer({ slug: 'also-quiet', brandName: 'Velocity A' }),
+      ],
+      stats: [{ dealer_slug: 'busy', count: 12, from_price: null }],
+    });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'velocity' }));
+
+    expect(response.data.map((row) => row.slug)).toEqual(['busy', 'also-quiet', 'quiet']);
+  });
+
+  it('narrows by the district the page is already filtered to', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'in-scope', brandName: 'Velavan Cars', districtSlug: 'vellore' }),
+        activeDealer({ slug: 'out-of-scope', brandName: 'Velavan Cars', districtSlug: 'mysuru' }),
+      ],
+    });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'vel', district: 'vellore' }));
+
+    // A suggestion that vanishes the moment it is chosen — because the grid
+    // behind it is still filtered by district — is worse than no suggestion.
+    expect(response.data.map((row) => row.slug)).toEqual(['in-scope']);
+  });
+
+  it('narrows by the towns the page is already filtered to', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ slug: 'katpadi', brandName: 'Velavan Cars', citySlug: 'katpadi' }),
+        activeDealer({ slug: 'arcot', brandName: 'Velavan Cars', citySlug: 'arcot' }),
+      ],
+    });
+
+    const response = await h.service.suggest(
+      suggestQuery({ search: 'vel', city: 'katpadi,ambur' }),
+    );
+
+    expect(response.data.map((row) => row.slug)).toEqual(['katpadi']);
+  });
+
+  it('cuts to the limit but counts everything that matched', async () => {
+    const h = setup({
+      dealers: Array.from({ length: 9 }, (_, index) =>
+        activeDealer({ slug: `velocity-${String(index)}`, brandName: `Velocity ${String(index)}` }),
+      ),
+    });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'velocity', limit: 6 }));
+
+    expect(response.data).toHaveLength(6);
+    // Not "6 matching yards": the label is what tells a buyer to keep typing.
+    expect(response.countLabel).toBe('9 matching yards');
+  });
+
+  it('says "yard" in the singular', async () => {
+    const h = setup({ dealers: [activeDealer({ brandName: 'Velavan Cars' })] });
+
+    expect((await h.service.suggest(suggestQuery())).countLabel).toBe('1 matching yard');
+  });
+
+  it('echoes the search back, so the client can drop a stale answer', async () => {
+    const h = setup({ dealers: [activeDealer({ brandName: 'Velavan Cars' })] });
+
+    expect((await h.service.suggest(suggestQuery({ search: 'vela' }))).search).toBe('vela');
+  });
+
+  it('answers with an empty list rather than an error when nothing matches', async () => {
+    const h = setup({ dealers: [activeDealer()] });
+
+    const response = await h.service.suggest(suggestQuery({ search: 'zzzz' }));
+
+    expect(response.data).toEqual([]);
+    expect(response.countLabel).toBe('0 matching yards');
+  });
+
+  it('composes the meta line from the inventory and the place', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({
+          slug: 'velavan-cars',
+          brandName: 'Velavan Cars',
+          cityName: 'Katpadi',
+          districtName: 'Vellore',
+        }),
+      ],
+      stats: [{ dealer_slug: 'velavan-cars', count: 42, from_price: null }],
+    });
+
+    expect((await h.service.suggest(suggestQuery())).data[0]?.metaLabel).toBe(
+      '42 cars in yard · Katpadi, Vellore',
+    );
+  });
+
+  it('drops the car count rather than saying zero', async () => {
+    const h = setup({
+      dealers: [activeDealer({ brandName: 'Velavan Cars', cityName: 'Katpadi' })],
+      stats: [],
+    });
+
+    // Until F076 every dealership has zero, and six rows of "0 cars in yard"
+    // reads as a broken endpoint rather than an empty catalogue.
+    expect((await h.service.suggest(suggestQuery())).data[0]?.metaLabel).toBe('Katpadi, Vellore');
+  });
+
+  it('does not repeat a town that is also the district', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer({ brandName: 'Velavan Cars', cityName: 'Vellore', districtName: 'Vellore' }),
+      ],
+    });
+
+    expect((await h.service.suggest(suggestQuery())).data[0]?.metaLabel).toBe('Vellore');
+  });
+
+  it('returns nothing that could hold a phone number (rule 7)', async () => {
+    const h = setup({ dealers: [activeDealer({ brandName: 'Velavan Cars' })] });
+
+    const response = await h.service.suggest(suggestQuery());
+
+    // Scanned rather than checked field by field, so a field added later cannot
+    // slip past — the same test the public profile gets.
+    expect(JSON.stringify(response)).not.toMatch(/\d{10}/);
+    expect(Object.keys(response.data[0] ?? {})).toEqual([
+      'slug',
+      'brandName',
+      'initials',
+      'metaLabel',
+      'matchedOn',
+      'carCount',
+      'isVerified',
+    ]);
   });
 });
 

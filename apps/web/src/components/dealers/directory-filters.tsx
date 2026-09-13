@@ -2,8 +2,8 @@
 
 import type { DealerDirectoryResponse, PublicLocations } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
+import { DealerSearchBox } from '@/components/dealers/dealer-search-box';
 import { DistrictPicker } from '@/components/layout/district-picker';
 import { cn } from '@/lib/cn';
 
@@ -83,13 +83,15 @@ export function DirectoryFilters({
   locations: PublicLocations;
 }) {
   const router = useRouter();
-  const [query, setQuery] = useState(q ?? '');
-
-  // The input is uncontrolled by the URL between submits, but a navigation —
-  // a chip, the back button, a shared link — has to win over what was typed.
-  useEffect(() => setQuery(q ?? ''), [q]);
-
   const selected = new Set(city ?? []);
+
+  /*
+   * The district's *name*, for the dropdown's heading and placeholder. Read off
+   * the list the picker already has rather than added as a prop: the page has
+   * the slug in the URL and the names in `locations`, and a second copy of that
+   * pairing is the thing D6 removed a table to avoid.
+   */
+  const districtName = locations.districts.find((entry) => entry.slug === district)?.name;
 
   /*
    * Every town in the district, or — with no district to bound them — only the
@@ -112,28 +114,28 @@ export function DirectoryFilters({
   function toggle(slug: string) {
     const next = new Set(selected);
     if (!next.delete(slug)) next.add(slug);
-    go({ city: [...next], ...(query.trim() ? { q: query.trim() } : {}) });
+    go({ city: [...next], ...(q ? { q } : {}) });
   }
 
   return (
     <div className="mb-[22px] flex flex-wrap items-center gap-2">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          go({ city: [...selected], ...(query.trim() ? { q: query.trim() } : {}) });
+      {/*
+        The search box, with recommendations (**R43**). It is keyed on the
+        applied search so that a navigation — a chip, the back button, a shared
+        link — resets what is in it: the box owns what is typed between
+        searches, and the URL owns what has been searched for. The effect that
+        used to reconcile the two is gone with the form it belonged to.
+      */}
+      <DealerSearchBox
+        key={q ?? ''}
+        {...(q ? { q } : {})}
+        {...(district ? { district } : {})}
+        city={[...selected]}
+        {...(districtName ? { districtName } : {})}
+        onSearch={(term) => {
+          go({ city: [...selected], ...(term ? { q: term } : {}) });
         }}
-      >
-        <label className="sr-only" htmlFor="dealer-search">
-          Search dealership name
-        </label>
-        <input
-          id="dealer-search"
-          className="input max-w-[260px]"
-          placeholder="Search dealership name"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-      </form>
+      />
 
       {visible.map((entry) => {
         const on = selected.has(entry.slug);
@@ -168,7 +170,7 @@ export function DirectoryFilters({
         <button
           type="button"
           className="btn btn-ghost text-[12px]"
-          onClick={() => go({ city: [], ...(query.trim() ? { q: query.trim() } : {}) })}
+          onClick={() => go({ city: [], ...(q ? { q } : {}) })}
         >
           Clear {selected.size === 1 ? 'town' : `${String(selected.size)} towns`}
         </button>
