@@ -51,6 +51,14 @@ const ENV = {
   // variable the runner has not — so without this line the suite's behaviour
   // would depend on a file that is not in the repository.
   DOCS_ENABLED: 'false',
+  // Pinned *on*, the opposite of `DOCS_ENABLED` above, for the same reason:
+  // `tests/unit/docs/openapi.test.ts` walks the actual mounted router, and
+  // `/internal/metrics` is only in it when this is true. Left to `env.ts`'s
+  // default (`false`), that test passes or fails depending on whether the
+  // developer's own `.env` happens to turn metrics on — CI's does not, so it
+  // would fail there specifically.
+  METRICS_ENABLED: 'true',
+  METRICS_SCRAPE_TOKEN: 'test-metrics-scrape-token-0123456789abcdef',
 };
 
 /**
