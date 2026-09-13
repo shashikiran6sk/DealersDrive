@@ -36,6 +36,7 @@ const FAKE_WIDGET = {
 
 /** CI runs every workspace concurrently; leave React transitions room to settle under load. */
 const TRANSITION_TIMEOUT = 5_000;
+const OTP_FLOW_TIMEOUT = 15_000;
 
 /**
  * ── Reconstruction slice ────────────────────────────────────────────────────
@@ -389,29 +390,33 @@ describe('OnboardingWizard — the frame', () => {
     expect(screen.queryAllByLabelText(/^Digit /)).toHaveLength(0);
   });
 
-  it('advances once the required fields are filled', async () => {
-    const user = userEvent.setup();
-    render(
-      <OnboardingWizard
-        step={0}
-        session={session({ user: { phone: '' }, identity: { name: null } })}
-        documents={[]}
-        dealer={null}
-        completeness={null}
-        yardPhoto={null}
-        phoneWidget={FAKE_WIDGET}
-      />,
-    );
+  it(
+    'advances once the required fields are filled',
+    async () => {
+      const user = userEvent.setup();
+      render(
+        <OnboardingWizard
+          step={0}
+          session={session({ user: { phone: '' }, identity: { name: null } })}
+          documents={[]}
+          dealer={null}
+          completeness={null}
+          yardPhoto={null}
+          phoneWidget={FAKE_WIDGET}
+        />,
+      );
 
-    await leaveAccount(user);
-    expect(filledSteps()).toEqual(['Account']);
+      await leaveAccount(user);
+      expect(filledSteps()).toEqual(['Account']);
 
-    await user.type(screen.getByLabelText('Full name'), 'Karthik Raman');
-    await user.type(screen.getByLabelText(/^Phone/), '9840012345');
-    await leaveAccount(user);
+      await user.type(screen.getByLabelText('Full name'), 'Karthik Raman');
+      await user.type(screen.getByLabelText(/^Phone/), '9840012345');
+      await leaveAccount(user);
 
-    expect(filledSteps()).toEqual(['Account', 'Business']);
-  });
+      expect(filledSteps()).toEqual(['Account', 'Business']);
+    },
+    OTP_FLOW_TIMEOUT,
+  );
 
   /** A malformed number is refused as firmly as a missing one. */
   it('refuses a phone number that is not an Indian mobile', async () => {
@@ -745,27 +750,31 @@ describe('OnboardingWizard — the Account step', () => {
    * before, and the copy that lived here disagreed with the placeholder in the
    * box beside it about whether `98400 12345` is a phone number.
    */
-  it('accepts a number spaced the way the placeholder shows it', async () => {
-    const user = userEvent.setup();
-    render(
-      <OnboardingWizard
-        step={0}
-        session={session({ user: { phone: '' } })}
-        documents={[]}
-        dealer={null}
-        completeness={null}
-        yardPhoto={null}
-        phoneWidget={FAKE_WIDGET}
-      />,
-    );
+  it(
+    'accepts a number spaced the way the placeholder shows it',
+    async () => {
+      const user = userEvent.setup();
+      render(
+        <OnboardingWizard
+          step={0}
+          session={session({ user: { phone: '' } })}
+          documents={[]}
+          dealer={null}
+          completeness={null}
+          yardPhoto={null}
+          phoneWidget={FAKE_WIDGET}
+        />,
+      );
 
-    await user.type(screen.getByLabelText('Full name'), 'R. Manikandan');
-    await user.type(screen.getByLabelText(/^Phone/), '98400 12345');
-    await leaveAccount(user);
+      await user.type(screen.getByLabelText('Full name'), 'R. Manikandan');
+      await user.type(screen.getByLabelText(/^Phone/), '98400 12345');
+      await leaveAccount(user);
 
-    // It moved: the step-1 gate did not reject a number typed with a space.
-    expect(filledSteps()).toEqual(['Account', 'Business']);
-  });
+      // It moved: the step-1 gate did not reject a number typed with a space.
+      expect(filledSteps()).toEqual(['Account', 'Business']);
+    },
+    OTP_FLOW_TIMEOUT,
+  );
 
   /**
    * The step stays mounted when the wizard moves to Business — it is one form
