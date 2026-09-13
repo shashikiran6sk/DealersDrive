@@ -794,6 +794,75 @@ export const registry: RegistryEntry[] = [
     storyId: 'admin-documentreview',
   },
   {
+    id: 'C064',
+    name: 'ConfigRow',
+    source: 'apps/web/src/features/admin/config-editor.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    /**
+     * Two shapes, not one. A key something reads gets a control typed to match
+     * it; a key nothing reads yet gets its value and a tag, because an editable
+     * control that changes no behaviour tells an operator otherwise.
+     */
+    purpose:
+      'One platform setting — the declared type picks the control, and `readBy` decides whether there is one.',
+    aliases: [
+      'ConfigEditor',
+      'SettingRow',
+      'PlatformConfigRow',
+      'FeatureFlagRow',
+      'AdminSetting',
+      'config-editor',
+    ],
+    features: ['F072'],
+    props: ['entry'],
+    states: [
+      'number',
+      'boolean',
+      'string list',
+      'dirty',
+      'saving',
+      'saved',
+      'server refusal',
+      'placeholder — nothing reads this key yet',
+    ],
+    reusable: false,
+    storyId: 'admin-configrow',
+  },
+  {
+    id: 'C064b',
+    name: 'AdminAccessPanel',
+    source: 'apps/web/src/features/admin/admin-access.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    /**
+     * The one screen that hands out a cross-tenant seat. Its two refusals —
+     * your own row, and an allow-listed address — are states worth looking at,
+     * because both are places an operator could otherwise lock somebody out.
+     */
+    purpose: 'Who may open the admin console: grant access by email, withdraw a grant.',
+    aliases: [
+      'AdminAccess',
+      'AdminUsers',
+      'GrantAdmin',
+      'AllowlistPanel',
+      'OperatorList',
+      'admin-access',
+    ],
+    features: ['R42'],
+    props: ['entries', 'currentUserId'],
+    states: [
+      'allow-listed only',
+      'allow-listed and granted',
+      'your own row',
+      'an address nobody has signed in with',
+      'granting',
+      'refused',
+    ],
+    reusable: false,
+    storyId: 'admin-adminaccesspanel',
+  },
+  {
     id: 'C066',
     name: 'Table',
     source: 'apps/web/src/components/ui/table.tsx',

@@ -471,11 +471,26 @@ into its own deployment configuration, which is a stronger claim than the email
 match, and without it the seeded admin row and the Google identity could never
 be joined.
 
-**What was traded away.** Adding an admin is now a deploy rather than a database
-write, and the account recovery story is Google's rather than ours. Both are
-deliberate: the first buys the property that no bug in an admin screen can
-promote anybody, because the row is not what is consulted; the second removes
-the only password this product ever stored.
+**What was traded away.** The account recovery story is Google's rather than
+ours, which removes the only password this product ever stored.
+
+**And what R42 traded back.** Adding an admin used to be a deploy. It is now
+also a row: a SUPER_ADMIN grants access by email on the settings screen, which
+writes a `user_roles` seat with `grantedBy` set.
+
+`grantedBy` is the whole of the distinction and it is worth understanding before
+touching either check. **Every admin sign-in already leaves an ADMIN seat
+behind** (R41's `ensureSeat`), so a seat's _existence_ means "has signed in
+once" and nothing more — reading it as permission would make `ADMIN_ALLOWLIST`
+vacuous, and an address removed from the environment would go on working
+forever on the strength of its own last visit. Only `grantSeat` sets
+`grantedBy`, and only the settings screen calls it.
+
+So the allow-list keeps its original property for the addresses on it: they
+cannot be added or removed from inside the product. What a grant adds is a
+second, auditable list that can be — and the console shows which row came from
+where, refusing to offer a Withdraw control for an allow-listed address rather
+than offering one that could not keep its promise.
 
 ---
 

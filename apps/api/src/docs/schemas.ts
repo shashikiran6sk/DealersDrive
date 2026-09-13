@@ -63,6 +63,9 @@ const INPUT_SCHEMA_NAMES = [
   'ReasonInput',
   'ApproveDealerInput',
   'NoteInput',
+  'ConfigKeyParam',
+  'UpdateConfigInput',
+  'GrantAdminAccessInput',
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────
    * The baseline lists 42 names. The rest are exported by contracts modules

@@ -1,15 +1,21 @@
 import {
   AdminDealerQuery,
   ApproveDealerInput,
+  ConfigKeyParam,
+  GrantAdminAccessInput,
   IdParam,
   NoteInput,
   ReasonInput,
+  UpdateConfigInput,
   UpdateDealerInput,
   type AdminDealerQuery as AdminDealerQueryType,
   type ApproveDealerInput as ApproveDealerInputType,
+  type ConfigKeyParam as ConfigKeyParamType,
+  type GrantAdminAccessInput as GrantAdminAccessInputType,
   type IdParam as IdParamType,
   type NoteInput as NoteInputType,
   type ReasonInput as ReasonInputType,
+  type UpdateConfigInput as UpdateConfigInputType,
   type UpdateDealerInput as UpdateDealerInputType,
 } from '@dealers-drive/contracts';
 import { Router } from 'express';
@@ -237,6 +243,70 @@ export function createAdminRouter(service: AdminService): Router {
         validated<ReasonInputType>(req, 'body').reason,
       ),
     ),
+  );
+
+  /**
+   * D14 — the settings screen (**F072**).
+   *
+   * One key per write rather than a blob PATCH over the table. These values
+   * govern money and moderation — the GST percentage, the listing duration, the
+   * reveal caps — so "what did this admin change" should be a row in the audit
+   * log, not a diff somebody has to compute.
+   */
+  router.get(
+    '/config',
+    handle((req) => service.config(adminPrincipal(req))),
+  );
+
+  router.put(
+    '/config/:key',
+    validate({ params: ConfigKeyParam, body: UpdateConfigInput }),
+    handle((req) =>
+      service.setConfig(
+        adminPrincipal(req),
+        validated<ConfigKeyParamType>(req, 'params').key,
+        validated<UpdateConfigInputType>(req, 'body').value,
+      ),
+    ),
+  );
+
+  /**
+   * Who may open this console (**R42**).
+   *
+   * `DELETE` rather than a status field, because withdrawing a grant is not a
+   * state the grant can be in — it is the grant not existing. The allow-list is
+   * the other half of the answer and is deliberately not writable from here: it
+   * lives in the deployment, and the list this returns says which rows came
+   * from where.
+   */
+  router.get(
+    '/access',
+    handle((req) => service.adminAccess(adminPrincipal(req))),
+  );
+
+  router.post(
+    '/access',
+    validate({ body: GrantAdminAccessInput }),
+    handle(
+      (req) =>
+        service.grantAdminAccess(
+          adminPrincipal(req),
+          validated<GrantAdminAccessInputType>(req, 'body'),
+        ),
+      201,
+    ),
+  );
+
+  router.delete(
+    '/access/:id',
+    validate({ params: IdParam }),
+    handle(async (req) => {
+      await service.revokeAdminAccess(
+        adminPrincipal(req),
+        validated<IdParamType>(req, 'params').id,
+      );
+      return undefined;
+    }),
   );
 
   return router;

@@ -10,6 +10,8 @@ import {
   formatRupees,
   initialsOf,
   timeAgo,
+  type AdminAccessEntry,
+  type AdminAccessResponse,
   type AdminDealerDetail,
   type AdminDealerFacets,
   type AdminDealerQuery,
@@ -18,6 +20,8 @@ import {
   type AdminProfileChange,
   type AdminProfileChangesResponse,
   type ApproveDealerInput,
+  type ConfigResponse,
+  type GrantAdminAccessInput,
   type DealerModerationResponse,
   type DealerProfile,
   type DealerPurgeResponse,
@@ -28,9 +32,14 @@ import {
 } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
+import { env } from '../../config/env.js';
 import { getContext } from '../../middleware/request-context.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
-import type { PlatformConfigService } from '../../platform/config/platform-config.js';
+import {
+  CONFIG_READERS,
+  type ConfigDefinition,
+  type PlatformConfigService,
+} from '../../platform/config/platform-config.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import {
@@ -41,7 +50,12 @@ import {
 } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
-import { setSeatStatus, type AdminPrincipal } from '../auth/auth.facade.js';
+import {
+  grantSeat,
+  isAllowlistedAdmin,
+  setSeatStatus,
+  type AdminPrincipal,
+} from '../auth/auth.facade.js';
 import { documentKey, type DealersService } from '../dealers/dealers.facade.js';
 
 /**
@@ -1405,10 +1419,326 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         decidedAt: (decided.reviewedAt ?? new Date()).toISOString(),
       };
     },
+
+    // ─────────── D14 configuration (F072) ─────────────────────────────────
+
+    /**
+     * Every setting, including the ones `GET /v1/config/public` withholds.
+     *
+     * `readBy` is what makes the screen honest: the table holds every knob the
+     * product will ever have, and most of the code that consults them has not
+     * been reconstructed. A key nothing reads is shown read-only rather than
+     * hidden — "what will the listing duration be" is a fair question — and
+     * `CONFIG_READERS` beside the defaults is the one place that answers it.
+     */
+    async config(admin: AdminPrincipal): Promise<ConfigResponse> {
+      assertPermission(admin, 'admin:config:write');
+      return { data: (await config.all()).map(configEntry) };
+    },
+
+    /**
+     * One key, one value, one audit row.
+     *
+     * The type check is the part the baseline documents and does not perform.
+     * `PlatformConfig.value` is JSON, so a string where a number belongs is
+     * stored happily and read back by `config.number()` as `NaN` — which
+     * surfaces days later as a GST figure nobody can explain. The declared type
+     * is already on the row; comparing against it costs one function.
+     */
+    async setConfig(admin: AdminPrincipal, key: string, value: unknown): Promise<ConfigResponse> {
+      assertPermission(admin, 'admin:config:write');
+
+      const before = (await config.all()).find((entry) => entry.key === key);
+      if (!before) throw new NotFoundError('That configuration key does not exist.');
+
+      if (!matchesDeclaredType(before.type, value)) {
+        throw new DomainError(
+          'CONFIG_TYPE_MISMATCH',
+          `${key} is a ${before.type}, and this value is not one.`,
+        );
+      }
+
+      await config.set(key, value, admin.userId);
+
+      await audit.recordDetached({
+        actorType: 'ADMIN',
+        actorId: admin.userId,
+        action: 'config.updated',
+        entityType: 'PlatformConfig',
+        entityId: key,
+        before: { value: before.value },
+        after: { value },
+      });
+
+      return { data: (await config.all()).map(configEntry) };
+    },
+
+    // ─────────── who may open this console (R42) ──────────────────────────
+
+    /**
+     * Everybody who can sign in to the admin console, from both directions.
+     *
+     * Two sources, and the list would be lying if it showed only one.
+     * `ADMIN_ALLOWLIST` is the deployment's answer and is checked on every
+     * request; a **grant** is a `user_roles` row with `grantedBy` set, made
+     * here by a SUPER_ADMIN. An allow-listed address nobody has signed in with
+     * yet has no row at all, and still appears — with a null `userId`, because
+     * there is nothing to address it by until they arrive.
+     */
+    async adminAccess(admin: AdminPrincipal): Promise<AdminAccessResponse> {
+      assertPermission(admin, 'admin:access:manage');
+
+      const users = await prisma.user.findMany({
+        where: {
+          OR: [{ isPlatformAdmin: true }, { roles: { some: { role: 'ADMIN' } } }],
+        },
+        include: { roles: { where: { role: 'ADMIN' } } },
+        orderBy: { email: 'asc' },
+      });
+
+      // One read for every granting admin's address, rather than one per row.
+      const granterIds = [
+        ...new Set(
+          users
+            .map((user) => user.roles[0]?.grantedBy)
+            .filter((id): id is string => typeof id === 'string'),
+        ),
+      ];
+      const granters = granterIds.length
+        ? await prisma.user.findMany({
+            where: { id: { in: granterIds } },
+            select: { id: true, email: true },
+          })
+        : [];
+      const granterEmail = new Map(granters.map((row) => [row.id, row.email]));
+
+      const seen = new Set<string>();
+      const data: AdminAccessEntry[] = [];
+
+      for (const user of users) {
+        const email = (user.email ?? '').toLowerCase();
+        const seat = user.roles[0];
+        const allowlisted = isAllowlistedAdmin(user.email);
+        const granted = seat?.status === 'ACTIVE' && seat.grantedBy !== null;
+
+        // A row that is neither allow-listed nor granted is somebody whose
+        // access has already been withdrawn. It is history, not access.
+        if (!allowlisted && !granted) continue;
+
+        if (email) seen.add(email);
+
+        data.push({
+          userId: user.id,
+          email: user.email ?? '',
+          fullName: user.fullName,
+          adminRole: user.adminRole ?? 'SUPPORT',
+          source: allowlisted ? 'ALLOWLIST' : 'GRANT',
+          sourceLabel: allowlisted ? 'Allow-listed' : 'Granted',
+          grantedByEmail: seat?.grantedBy ? (granterEmail.get(seat.grantedBy) ?? null) : null,
+          grantedAt: granted && seat ? seat.grantedAt.toISOString() : null,
+          lastLoginLabel: user.lastLoginAt ? timeAgo(user.lastLoginAt) : 'Never',
+          canRevoke: !allowlisted && granted && user.id !== admin.userId,
+          revokeBlockedReason: allowlisted
+            ? 'Set in ADMIN_ALLOWLIST'
+            : user.id === admin.userId
+              ? 'This is you'
+              : null,
+        });
+      }
+
+      // The allow-listed addresses nobody has signed in with yet.
+      for (const email of env.adminAllowlist) {
+        if (seen.has(email)) continue;
+        data.push({
+          userId: null,
+          email,
+          fullName: null,
+          adminRole: 'SUPER_ADMIN',
+          source: 'ALLOWLIST',
+          sourceLabel: 'Allow-listed',
+          grantedByEmail: null,
+          grantedAt: null,
+          lastLoginLabel: 'Never',
+          canRevoke: false,
+          revokeBlockedReason: 'Set in ADMIN_ALLOWLIST',
+        });
+      }
+
+      data.sort((a, b) => a.email.localeCompare(b.email));
+
+      return { data, currentUserId: admin.userId };
+    },
+
+    /**
+     * Hand somebody a seat.
+     *
+     * The row is created if the address is new to the platform, which is the
+     * ordinary case — a colleague who has never signed in. They still sign in
+     * with Google; this is what makes the console let them past the door when
+     * they do, and `completeAdminGoogle` links the Google identity onto this
+     * row the first time.
+     *
+     * Granting is also how a withdrawn seat is restored, so the update reopens
+     * a suspended one. That is a deliberate act by a SUPER_ADMIN either way.
+     */
+    async grantAdminAccess(
+      admin: AdminPrincipal,
+      input: GrantAdminAccessInput,
+    ): Promise<AdminAccessEntry> {
+      assertPermission(admin, 'admin:access:manage');
+
+      const email = input.email;
+
+      return withTransaction(prisma, async (tx) => {
+        const existing = await tx.user.findUnique({ where: { email } });
+        const user = existing
+          ? await tx.user.update({
+              where: { id: existing.id },
+              data: { isPlatformAdmin: true, adminRole: input.adminRole },
+            })
+          : await tx.user.create({
+              data: { email, isPlatformAdmin: true, adminRole: input.adminRole },
+            });
+
+        const seat = await grantSeat(tx, {
+          userId: user.id,
+          role: 'ADMIN',
+          grantedBy: admin.userId,
+        });
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          action: 'admin.access.granted',
+          entityType: 'User',
+          entityId: user.id,
+          after: { email, adminRole: input.adminRole },
+        });
+
+        return {
+          userId: user.id,
+          email,
+          fullName: user.fullName,
+          adminRole: input.adminRole,
+          source: 'GRANT' as const,
+          sourceLabel: 'Granted',
+          grantedByEmail: admin.email,
+          grantedAt: seat.grantedAt.toISOString(),
+          lastLoginLabel: user.lastLoginAt ? timeAgo(user.lastLoginAt) : 'Never',
+          canRevoke: user.id !== admin.userId,
+          revokeBlockedReason: user.id === admin.userId ? 'This is you' : null,
+        };
+      });
+    },
+
+    /**
+     * Take a seat back.
+     *
+     * Three refusals, and each of them is a door somebody could otherwise walk
+     * through and not walk back out of:
+     *
+     *   **Your own seat.** There may be nobody left who can let you back in.
+     *   **An allow-listed address.** The environment is what admits them, and a
+     *   control that appeared to change that and did not would be worse than
+     *   none.
+     *   **A seat nobody granted.** Every admin sign-in leaves an ADMIN seat
+     *   behind (**R41**); only a grant carries `grantedBy`, and only a grant is
+     *   this screen's to withdraw.
+     */
+    async revokeAdminAccess(admin: AdminPrincipal, userId: string): Promise<void> {
+      assertPermission(admin, 'admin:access:manage');
+
+      if (userId === admin.userId) {
+        throw new ForbiddenError('You cannot withdraw your own admin access.', {
+          code: 'ADMIN_ACCESS_SELF',
+        });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { roles: { where: { role: 'ADMIN' } } },
+      });
+      if (!user) throw new NotFoundError('That operator does not exist.');
+
+      if (isAllowlistedAdmin(user.email)) {
+        throw new ConflictError(
+          'ADMIN_ACCESS_ALLOWLISTED',
+          'That address is on ADMIN_ALLOWLIST. Remove it from the deployment to withdraw access.',
+        );
+      }
+
+      const seat = user.roles[0];
+      if (!seat || seat.grantedBy === null) {
+        throw new NotFoundError('That operator does not hold a granted seat.');
+      }
+
+      await withTransaction(prisma, async (tx) => {
+        await tx.userRole.delete({ where: { id: seat.id } });
+        await tx.user.update({
+          where: { id: user.id },
+          data: { isPlatformAdmin: false, adminRole: null },
+        });
+        // Their console closes on the next click, not at the next expiry. The
+        // dealer seat, if they hold one, is untouched — this is R41 read in the
+        // other direction.
+        await tx.session.updateMany({
+          where: { userId: user.id, scope: 'ADMIN', revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          action: 'admin.access.revoked',
+          entityType: 'User',
+          entityId: user.id,
+          before: { email: user.email, adminRole: user.adminRole },
+        });
+      });
+    },
   };
 }
 
 export type AdminService = ReturnType<typeof createAdminService>;
+
+/**
+ * A config row as the console reads it.
+ *
+ * `updatedAt` is null here, as it is in the baseline: `PlatformConfigService`
+ * answers with the resolved value and its declared type, and does not carry the
+ * row's timestamp. The console renders "last changed" only when there is one.
+ */
+function configEntry(entry: ConfigDefinition): ConfigResponse['data'][number] {
+  return {
+    key: entry.key,
+    value: entry.value,
+    type: entry.type,
+    label: entry.label,
+    updatedAt: null,
+    readBy: CONFIG_READERS[entry.key] ?? null,
+  };
+}
+
+/**
+ * Does this value match what the key says it is?
+ *
+ * `PlatformConfig.value` is a JSON column, so it will store anything: a string
+ * where a number belongs is written happily, and read back by `config.number()`
+ * as `NaN`. That surfaces days later as a GST figure nobody can account for,
+ * which is why this is a 422 at the door rather than a mystery in a report.
+ */
+function matchesDeclaredType(type: ConfigDefinition['type'], value: unknown): boolean {
+  switch (type) {
+    case 'number':
+      return typeof value === 'number' && Number.isFinite(value);
+    case 'boolean':
+      return typeof value === 'boolean';
+    case 'string[]':
+      return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
+    case 'string':
+      return typeof value === 'string';
+  }
+}
 
 /** ₹1.2 Cr rather than ₹12,00,00,000 — a stat tile has one line to work with. */
 function compactRupees(paise: number): string {

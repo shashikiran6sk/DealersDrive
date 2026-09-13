@@ -2,7 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 import type { Request } from 'express';
 
 import { isAllowlistedAdmin } from './admin-allowlist.js';
-import { isSeatSuspended } from './roles.js';
+import { hasGrantedSeat, isSeatSuspended } from './roles.js';
 import { readSessionToken } from './session.cookie.js';
 import type { SessionService } from './session.service.js';
 import {
@@ -106,7 +106,14 @@ export function createCookieSessionResolver(
 
       if (!user?.isPlatformAdmin || !user.adminRole || user.status !== 'ACTIVE') return null;
       if (isSeatSuspended(user.roles, 'ADMIN')) return null;
-      if (!isAllowlistedAdmin(user.email)) return null;
+
+      // Two ways in, and no third (**R42**). The allow-list is the
+      // deployment's answer; a *granted* seat is one a SUPER_ADMIN handed over
+      // on the settings screen, and `grantedBy` is what tells it from the seat
+      // every admin sign-in leaves behind. Reading mere existence as permission
+      // would make the allow-list vacuous — an address taken off it would keep
+      // working forever on the strength of its own last visit.
+      if (!isAllowlistedAdmin(user.email) && !hasGrantedSeat(user.roles, 'ADMIN')) return null;
 
       return {
         kind: 'ADMIN',
