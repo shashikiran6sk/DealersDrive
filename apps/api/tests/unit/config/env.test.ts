@@ -69,6 +69,13 @@ const SCHEMA_KEYS = [
   'PORT',
   'HOST',
   'LOG_LEVEL',
+  'METRICS_ENABLED',
+  'METRICS_SCRAPE_TOKEN',
+  'DB_SLOW_OPERATION_MS',
+  'GRAFANA_CLOUD_LOGS_ENABLED',
+  'GRAFANA_CLOUD_LOKI_URL',
+  'GRAFANA_CLOUD_LOKI_USER',
+  'GRAFANA_CLOUD_LOKI_TOKEN',
   'WEB_ORIGIN',
   'WEB_BASE_URL',
   'API_BASE_URL',
@@ -157,6 +164,8 @@ describe('the loaded env', () => {
     expect(typeof env.RATE_LIMIT_ENABLED).toBe('boolean');
     expect(typeof env.WORKER_INLINE).toBe('boolean');
     expect(typeof env.DOCS_ENABLED).toBe('boolean');
+    expect(typeof env.METRICS_ENABLED).toBe('boolean');
+    expect(typeof env.GRAFANA_CLOUD_LOGS_ENABLED).toBe('boolean');
   });
 });
 
@@ -462,6 +471,14 @@ describe('validation', () => {
     expect(loaded.RATE_LIMIT_ENABLED).toBe(false);
     expect(loaded.WORKER_INLINE).toBe(false);
   });
+
+  it('keeps observability exporters off by default outside deployment', async () => {
+    const loaded = await loadEnv({ NODE_ENV: 'development' });
+
+    expect(loaded.METRICS_ENABLED).toBe(false);
+    expect(loaded.GRAFANA_CLOUD_LOGS_ENABLED).toBe(false);
+    expect(loaded.DB_SLOW_OPERATION_MS).toBe(500);
+  });
 });
 
 /**
@@ -553,6 +570,20 @@ describe('configurations that must not boot', () => {
 
     expect(loaded.STORAGE_DRIVER).toBe('r2');
     expect(loaded.AUTH_MODE).toBe('cookie');
+  });
+
+  it('refuses a metrics endpoint without a strong scrape token', async () => {
+    const message = await refuses({ METRICS_ENABLED: 'true', METRICS_SCRAPE_TOKEN: 'short' });
+
+    expect(message).toContain('METRICS_SCRAPE_TOKEN');
+  });
+
+  it('refuses the Loki transport unless all endpoint credentials are present', async () => {
+    const message = await refuses({ GRAFANA_CLOUD_LOGS_ENABLED: 'true' });
+
+    expect(message).toContain('GRAFANA_CLOUD_LOKI_URL');
+    expect(message).toContain('GRAFANA_CLOUD_LOKI_USER');
+    expect(message).toContain('GRAFANA_CLOUD_LOKI_TOKEN');
   });
 });
 

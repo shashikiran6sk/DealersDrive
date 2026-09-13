@@ -18,14 +18,15 @@ inventory; buyers browse publicly without an account.
 
 ## Where things are
 
-|                                                                          |                                                              |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| [`CLAUDE.md`](CLAUDE.md)                                                 | How to work on this repository. Required reading.            |
-| [`CONTEXT.md`](CONTEXT.md)                                               | Current state of the reconstruction, and why it is happening |
-| [`docs/project/feature-map.md`](docs/project/feature-map.md)             | The 97 features, in order, with their exact files            |
-| [`docs/project/component-map.md`](docs/project/component-map.md)         | All 65 UI components                                         |
-| [`docs/project/component-sandbox.md`](docs/project/component-sandbox.md) | The component sandbox                                        |
-| [`docs/project/git-strategy.md`](docs/project/git-strategy.md)           | Branching, risk register, verification gate                  |
+|                                                                          |                                                               |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| [`CLAUDE.md`](CLAUDE.md)                                                 | How to work on this repository. Required reading.             |
+| [`CONTEXT.md`](CONTEXT.md)                                               | Current state of the reconstruction, and why it is happening  |
+| [`docs/project/feature-map.md`](docs/project/feature-map.md)             | The 97 features, in order, with their exact files             |
+| [`docs/project/component-map.md`](docs/project/component-map.md)         | All 65 UI components                                          |
+| [`docs/project/component-sandbox.md`](docs/project/component-sandbox.md) | The component sandbox                                         |
+| [`docs/project/git-strategy.md`](docs/project/git-strategy.md)           | Branching, risk register, verification gate                   |
+| [`docs/observability.md`](docs/observability.md)                         | Grafana Cloud metrics, logs, dashboards and production alerts |
 
 ## Stack
 

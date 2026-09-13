@@ -33,6 +33,10 @@ export interface RequestContext {
   ip: string;
   userId?: string;
   dealerId?: string;
+  /** Cumulative Prisma time for request-vs-database bottleneck analysis. */
+  dbDurationSeconds?: number;
+  /** Number of Prisma operations performed while handling this request. */
+  dbOperationCount?: number;
 }
 
 const storage = new AsyncLocalStorage<RequestContext>();
@@ -154,6 +158,8 @@ export const requestContext: RequestHandler = (req, res, next) => {
     traceId: inherited ?? nanoid(10),
     traceInherited: inherited !== undefined,
     ip: clientIp(req.ip, req.socket.remoteAddress),
+    dbDurationSeconds: 0,
+    dbOperationCount: 0,
   };
 
   res.setHeader(TRACE_ID_HEADER, context.traceId);
