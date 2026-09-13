@@ -122,7 +122,7 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 - [ ] F069 — Moderation queue
 - [ ] F070 — Listing review & decisions
 - [ ] F071 — Listing takedown
-- [ ] F072 — Admin platform config editor
+- [~] F072 — Admin platform config editor · ⚠️ pulled forward, ahead of Tier 11 — the settings screen the console's nav already links at
 
 ## Tier 12 — Public marketplace
 
@@ -207,6 +207,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [ ] R39 — The mobile number is proved, not typed · revises F018/F037/F038/F041/F046/R7/R27 · ⚠️ new dependency
 - [ ] R40 — Emails are queued, and a separate process sends them · revises F031/F038/F045/R34 · ⚠️ new table
 - [~] R41 — A dealership suspension closes a seat, not an account · revises F014/F016/F019/F045 · ⚠️ new table
+- [~] R42 — An admin can grant admin access, by email · revises F019/F072 · lands with F072
 
 ---
 

@@ -1835,13 +1835,35 @@ Post-approval removal, kept separate from rejection because it acts on a live li
 The UI over F029: edit a setting or flip a flag, with the value type driving the control.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F029, F049, F030
-- **Backend** `modules/admin/admin.routes.ts` — config paths
+- **Backend** `modules/admin/{admin.routes,admin.service,admin.docs}.ts` — config paths
 - **Frontend** `app/(admin)/admin/config/page.tsx`, `features/admin/{config-editor,config-actions}.tsx`
-- **API** `GET /v1/admin/config`, `PUT /v1/admin/config/:key`, `GET /v1/admin/audit-logs`
+- **API** `GET /v1/admin/config`, `PUT /v1/admin/config/:key`
 - **DB** `PlatformConfig`, `AuditLog`
-- **Components — New (feature-specific)** `ConfigRow` · **Reused** `Button`, `Banner`, `Field`, `Input`, `Table`
-- **Sandbox** `ConfigRow` — boolean / number / string × clean / dirty / saving / saved / error
-- ⚠️ **Do not split** the config editor from the audit-log view; they are one admin screen and one route file.
+- **Components — New (feature-specific)** `ConfigRow` · **Reused** `Button`, `Banner`, `Input`, `Select`, `Textarea`, `Tag`
+- **Sandbox** `ConfigRow` — number / boolean / string-list × clean / dirty / saving / saved / error, **plus the placeholder**
+- ⚠️ **Entry corrected on landing.** Three things in the list above were wrong:
+  - **`GET /v1/admin/audit-logs` is not part of this feature.** The baseline's
+    config _screen_ never rendered an audit view — the endpoint simply sat in
+    the same route file. The "do not split" warning was about that file, and
+    the file is still one file; the audit endpoint lands with the screen that
+    reads it, rather than being mounted here with no caller. An endpoint no
+    client calls is surface with no cover.
+  - **`Field` and `Table` are not reused here.** The baseline's rows write
+    their own `<label>` and are not tabular. `Select` and `Textarea` are, and
+    were missing from the list.
+  - **`readBy` is new on `ConfigEntry`.** `CONFIG_DEFAULTS` holds every knob
+    the product will ever have and most of the code that reads them has not
+    been reconstructed, so the screen marks a key nothing reads as read-only.
+    See the placeholder state in the sandbox.
+- ⚠️ **The `PUT` answers with the whole configuration**, which is what the
+  baseline's own OpenAPI entry says and not what its service returned (it
+  answered `{key, value, previousValue, …}`, a shape no contract described and
+  no caller read). The reference here is generated from contracts, so the two
+  could not both stay.
+- ⚠️ **The declared type is enforced on write** — a 422, as the baseline
+  documents and does not implement. `platform_config.value` is a JSON column:
+  `"18"` where `18` belongs is stored happily and read back as `NaN`.
+- **R42 lands on this screen** — admin access by email, below.
 
 ---
 
@@ -4379,3 +4401,51 @@ about a yard.
   `ADMIN_ALLOWLIST`. Proving the split needs one operator to suspend a
   dealership whose owner holds an operations seat of their own; a test that
   counts admin emails has to count distinct templates, not messages.
+
+## R42 — An admin can grant admin access, by email
+
+**Revises F019, F072** · lands with **F072**
+
+`ADMIN_ALLOWLIST` was the entire admin authorization model: a list of addresses
+in the environment, checked when a session is issued and again on every request
+afterwards. That bought a property worth naming — no bug in an admin screen
+could promote anybody, because the row was not what was consulted — and it cost
+a deploy every time somebody joined the team.
+
+A **grant** is the second answer, and it is deliberately narrower than the first.
+
+- **Schema** no new table — a grant is a `user_roles` row with `role = 'ADMIN'`
+  and `grantedBy` set (**R41**)
+- **Backend** `modules/auth/roles.ts` (`grantSeat`, `hasGrantedSeat`, both
+  exported through `auth.facade.ts` with `isAllowlistedAdmin`),
+  `cookie-session.adapter.ts`, `auth.service.ts` (`completeAdminGoogle`),
+  `admin.service.ts`, `session.port.ts` (`admin:access:manage`)
+- **API** `GET /v1/admin/access`, `POST /v1/admin/access`,
+  `DELETE /v1/admin/access/:id`
+- **Frontend** `features/admin/{admin-access,access-actions}.tsx`, rendered on
+  `/admin/config`
+- **Tests** `tests/unit/modules/admin/admin.service.test.ts`,
+  `apps/web/tests/unit/features/admin/{admin-access,access-actions}.test.*`
+- **Components — New (feature-specific)** `AdminAccessPanel` · **Reused**
+  `Table`, `Field`, `Input`, `Select`, `Button`, `Banner`, `Tag`
+- **Sandbox** `AdminAccessPanel` — allow-listed only / allow-listed + granted /
+  your own row / an address nobody has signed in with / granting / refused
+
+**`grantedBy` is what tells the two apart, and it is load-bearing.** Every admin
+sign-in already leaves an ADMIN seat behind (R41's `ensureSeat`), so "has a
+seat" cannot mean "is allowed in" — it would make the allow-list vacuous, and an
+address removed from the environment would keep working forever on the strength
+of its own last visit. Only `grantSeat` sets `grantedBy`, and only this screen
+calls it.
+
+**The allow-list still cannot be edited from the console.** Those rows show
+`Allow-listed` and no Withdraw control: removing an address is still a change to
+the deployment, and a button that appeared to do it and did not would be worse
+than no button.
+
+**Three refusals, all server-side.** Your own seat (403 — there may be nobody
+left to let you back in), an allow-listed address (409), and a seat nobody
+granted (404).
+
+**Withdrawing revokes their admin sessions and nothing else.** A dealer seat the
+same person holds is untouched — R41 read in the other direction.

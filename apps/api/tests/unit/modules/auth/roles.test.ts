@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   ensureSeat,
+  grantSeat,
+  hasGrantedSeat,
   isSeatSuspended,
   seatSuspensionReason,
   setSeatStatus,
@@ -151,5 +153,71 @@ describe('setSeatStatus', () => {
 
     expect(h.createMany).not.toHaveBeenCalled();
     expect(h.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * R42 — the difference between a seat somebody was *given* and one they merely
+ * left behind.
+ *
+ * Every admin sign-in upserts an ADMIN seat, so existence means "has signed in
+ * once". Reading that as permission would make `ADMIN_ALLOWLIST` vacuous: an
+ * address taken off the list would go on working forever on the strength of its
+ * own last visit. `grantedBy` is the whole of the distinction.
+ */
+describe('hasGrantedSeat', () => {
+  it('accepts a seat an admin granted', () => {
+    expect(
+      hasGrantedSeat([{ role: 'ADMIN', status: 'ACTIVE', grantedBy: 'admin-1' }], 'ADMIN'),
+    ).toBe(true);
+  });
+
+  it('refuses the seat a sign-in left behind', () => {
+    expect(hasGrantedSeat([{ role: 'ADMIN', status: 'ACTIVE', grantedBy: null }], 'ADMIN')).toBe(
+      false,
+    );
+    // `ensureSeat` writes null; a row read without the column is the same thing.
+    expect(hasGrantedSeat([{ role: 'ADMIN', status: 'ACTIVE' }], 'ADMIN')).toBe(false);
+  });
+
+  it('refuses a granted seat that has been closed', () => {
+    expect(
+      hasGrantedSeat([{ role: 'ADMIN', status: 'SUSPENDED', grantedBy: 'admin-1' }], 'ADMIN'),
+    ).toBe(false);
+  });
+
+  it('refuses a grant for the other role', () => {
+    expect(
+      hasGrantedSeat([{ role: 'DEALER', status: 'ACTIVE', grantedBy: 'admin-1' }], 'ADMIN'),
+    ).toBe(false);
+  });
+
+  it('refuses when there is no seat at all', () => {
+    expect(hasGrantedSeat([], 'ADMIN')).toBe(false);
+  });
+});
+
+describe('grantSeat', () => {
+  /**
+   * Unlike `ensureSeat`, this one **reopens**. Granting access to somebody
+   * whose access was withdrawn is the same act as granting it the first time,
+   * and a SUPER_ADMIN is doing both deliberately.
+   */
+  it('records the granter and reopens a closed seat', async () => {
+    const h = db();
+
+    await grantSeat(h.prisma, { userId: 'user-2', role: 'ADMIN', grantedBy: 'admin-1' });
+
+    expect(h.upsert).toHaveBeenCalledExactlyOnceWith({
+      where: { userId_role: { userId: 'user-2', role: 'ADMIN' } },
+      create: { userId: 'user-2', role: 'ADMIN', grantedBy: 'admin-1' },
+      update: {
+        status: 'ACTIVE',
+        reason: null,
+        suspendedAt: null,
+        grantedBy: 'admin-1',
+        grantedAt: expect.any(Date),
+      },
+    });
   });
 });

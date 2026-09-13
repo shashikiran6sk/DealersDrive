@@ -603,7 +603,25 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
   ): Promise<CallbackResult> {
     const email = claims.email.trim().toLowerCase();
 
-    if (!isAllowlistedAdmin(email)) {
+    /**
+     * The second way in (**R42**).
+     *
+     * A grant is a `user_roles` row with `grantedBy` set, made by a SUPER_ADMIN
+     * on the settings screen — usually for somebody who has never signed in, so
+     * it is looked up by address here rather than by Google's subject. The
+     * allow-list remains the first answer and is still checked on every request
+     * afterwards.
+     */
+    const granted = await prisma.user.findFirst({
+      where: {
+        email,
+        isPlatformAdmin: true,
+        roles: { some: { role: 'ADMIN', status: 'ACTIVE', grantedBy: { not: null } } },
+      },
+      select: { id: true },
+    });
+
+    if (!isAllowlistedAdmin(email) && !granted) {
       logger.warn(
         { event: 'admin.login.failure', reason: 'not-allowlisted' },
         'admin sign-in refused',

@@ -25,6 +25,14 @@ export interface RoleSeat {
   role: PlatformRole;
   status: UserRoleStatus;
   reason?: string | null;
+  /**
+   * The admin who handed the seat over, where one did (**R42**).
+   *
+   * Null for a seat the product created on its own — `ensureSeat` writes one on
+   * every sign-in. That distinction is load-bearing for the admin console: see
+   * `hasGrantedSeat` below.
+   */
+  grantedBy?: string | null;
 }
 
 /**
@@ -45,6 +53,28 @@ export function seatSuspensionReason(
 ): string | null {
   const seat = seats.find((entry) => entry.role === role && entry.status === 'SUSPENDED');
   return seat?.reason ?? null;
+}
+
+/**
+ * Is this seat one an admin **granted** (**R42**)?
+ *
+ * Deliberately not "does an active seat exist". Every admin sign-in leaves an
+ * ADMIN seat behind, so existence means only "has signed in once" — and reading
+ * it as permission would make `ADMIN_ALLOWLIST` vacuous: an address taken off
+ * the list would keep working forever on the strength of its own last visit.
+ *
+ * `grantedBy` is set by exactly one thing, `grantSeat`, called by exactly one
+ * caller: a SUPER_ADMIN on the settings screen. That is what makes it an
+ * authorization fact rather than a footprint.
+ */
+export function hasGrantedSeat(seats: readonly RoleSeat[], role: PlatformRole): boolean {
+  return seats.some(
+    (seat) =>
+      seat.role === role &&
+      seat.status === 'ACTIVE' &&
+      seat.grantedBy !== null &&
+      seat.grantedBy !== undefined,
+  );
 }
 
 /**
@@ -101,5 +131,31 @@ export async function setSeatStatus(
       input.status === 'SUSPENDED'
         ? { status: 'SUSPENDED', reason: input.reason ?? null, suspendedAt: new Date() }
         : { status: 'ACTIVE', reason: null, suspendedAt: null },
+  });
+}
+
+/**
+ * Hand a seat over deliberately (**R42**).
+ *
+ * The difference from `ensureSeat` is `grantedBy`, and it is the whole
+ * difference: this is an authorization fact — somebody decided — where the
+ * other is a footprint. It also **reopens** a closed seat, because granting
+ * access to somebody whose access was withdrawn is the same act as granting it
+ * the first time, and a SUPER_ADMIN is doing both on purpose.
+ */
+export async function grantSeat(
+  db: Db,
+  input: { userId: string; role: PlatformRole; grantedBy: string },
+): Promise<{ grantedAt: Date }> {
+  return db.userRole.upsert({
+    where: { userId_role: { userId: input.userId, role: input.role } },
+    create: { userId: input.userId, role: input.role, grantedBy: input.grantedBy },
+    update: {
+      status: 'ACTIVE',
+      reason: null,
+      suspendedAt: null,
+      grantedBy: input.grantedBy,
+      grantedAt: new Date(),
+    },
   });
 }
