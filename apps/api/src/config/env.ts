@@ -55,6 +55,31 @@ const envSchema = z.object({
   HOST: z.string().min(1).default('0.0.0.0'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
+  /**
+   * Prometheus/OpenMetrics exposition for Grafana Cloud's managed Metrics
+   * Endpoint scraper. The endpoint is bearer-authenticated and deliberately
+   * outside the public API namespace.
+   */
+  METRICS_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  METRICS_SCRAPE_TOKEN: optional(z.string().min(32)),
+  /** A query at or above this duration is counted and logged as slow. */
+  DB_SLOW_OPERATION_MS: z.coerce.number().int().positive().default(500),
+
+  /**
+   * Optional direct Loki transport. It runs in Pino's worker thread, batches
+   * writes, keeps stdout as a fallback, and is enabled explicitly per runtime.
+   */
+  GRAFANA_CLOUD_LOGS_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  GRAFANA_CLOUD_LOKI_URL: optional(z.string().url()),
+  GRAFANA_CLOUD_LOKI_USER: optional(z.string().min(1)),
+  GRAFANA_CLOUD_LOKI_TOKEN: optional(z.string().min(1)),
+
   /** Comma-separated browser origins allowed to call this API with credentials. */
   WEB_ORIGIN: required('http://localhost:3000'),
   /** Absolute base of the public site — used for canonical URLs and SEO. */
@@ -429,6 +454,22 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
   // a worse outcome than refusing to boot.
   if (value.RC_LOOKUP_DRIVER === 'attestr' && !value.ATTESTR_AUTH_TOKEN) {
     require('ATTESTR_AUTH_TOKEN', 'is required when RC_LOOKUP_DRIVER=attestr.');
+  }
+
+  if (value.METRICS_ENABLED && !value.METRICS_SCRAPE_TOKEN) {
+    require('METRICS_SCRAPE_TOKEN', 'is required when METRICS_ENABLED=true (minimum 32 characters).');
+  }
+
+  if (value.GRAFANA_CLOUD_LOGS_ENABLED) {
+    if (!value.GRAFANA_CLOUD_LOKI_URL) {
+      require('GRAFANA_CLOUD_LOKI_URL', 'is required when GRAFANA_CLOUD_LOGS_ENABLED=true.');
+    }
+    if (!value.GRAFANA_CLOUD_LOKI_USER) {
+      require('GRAFANA_CLOUD_LOKI_USER', 'is required when GRAFANA_CLOUD_LOGS_ENABLED=true.');
+    }
+    if (!value.GRAFANA_CLOUD_LOKI_TOKEN) {
+      require('GRAFANA_CLOUD_LOKI_TOKEN', 'is required when GRAFANA_CLOUD_LOGS_ENABLED=true.');
+    }
   }
 
   if (!production) return;

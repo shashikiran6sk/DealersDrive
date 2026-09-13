@@ -324,6 +324,7 @@ describe('unknown throwables', () => {
     vi.stubEnv('WEB_BASE_URL', 'https://dealers-drive.com');
     vi.stubEnv('API_BASE_URL', 'https://api.dealers-drive.com');
     vi.stubEnv('DATABASE_URL', 'postgresql://u:p@db:5432/d');
+    vi.stubEnv('CACHE_DRIVER', 'postgres');
     vi.stubEnv('MEDIA_BASE_URL', 'https://api.dealers-drive.com/media');
     // Production refuses to boot without these; see `env.test.ts`.
     vi.stubEnv('GOOGLE_CLIENT_ID', 'client.apps.googleusercontent.com');

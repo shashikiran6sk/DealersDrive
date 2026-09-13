@@ -26,6 +26,7 @@ function fakeReq(overrides: Partial<Request> = {}): Request {
     method: 'GET',
     path: '/v1/vehicles',
     originalUrl: '/v1/vehicles',
+    route: { path: '/vehicles' },
     ...overrides,
   } as Request;
 }
@@ -67,7 +68,7 @@ describe('requestLogger', () => {
     expect(info.mock.calls[0]?.[1]).toBe('request completed');
   });
 
-  it('records method, url, status and duration', () => {
+  it('records method, normalized route, status and duration', () => {
     const res = fakeRes(201);
     requestLogger(fakeReq({ method: 'POST', originalUrl: '/v1/dealer/vehicles' }), res, vi.fn());
 
@@ -75,8 +76,9 @@ describe('requestLogger', () => {
 
     expect(info.mock.calls[0]?.[0]).toMatchObject({
       method: 'POST',
-      url: '/v1/dealer/vehicles',
+      route: '/v1/dealer/vehicles',
       status: 201,
+      status_code: 201,
     });
   });
 
@@ -138,26 +140,39 @@ describe('requestLogger', () => {
     expect(info).not.toHaveBeenCalled();
   });
 
-  it('logs originalUrl, not the rewritten url', () => {
+  it('never logs URLs, parameter values, OAuth codes or search text', () => {
     const res = fakeRes();
-    requestLogger(fakeReq({ path: '/vehicles', originalUrl: '/v1/dealer/vehicles' }), res, vi.fn());
+    requestLogger(
+      fakeReq({
+        path: '/v1/auth/google/callback',
+        originalUrl: '/v1/auth/google/callback?code=sensitive&state=secret',
+        route: { path: '/google/callback' },
+      }),
+      res,
+      vi.fn(),
+    );
 
     res.emit('finish');
 
-    expect((info.mock.calls[0]?.[0] as { url: string }).url).toBe('/v1/dealer/vehicles');
+    expect(info.mock.calls[0]?.[0]).toMatchObject({
+      route: '/v1/auth/google/callback',
+    });
+    expect(info.mock.calls[0]?.[0]).not.toHaveProperty('path');
+    expect(info.mock.calls[0]?.[0]).not.toHaveProperty('url');
+    expect(JSON.stringify(info.mock.calls[0]?.[0])).not.toContain('sensitive');
   });
 
   it('logs once per request even with several in flight', () => {
     const first = fakeRes();
     const second = fakeRes();
 
-    requestLogger(fakeReq({ originalUrl: '/a' }), first, vi.fn());
-    requestLogger(fakeReq({ originalUrl: '/b' }), second, vi.fn());
+    requestLogger(fakeReq({ originalUrl: '/a', route: { path: '/a' } }), first, vi.fn());
+    requestLogger(fakeReq({ originalUrl: '/b', route: { path: '/b' } }), second, vi.fn());
     second.emit('finish');
     first.emit('finish');
 
     expect(info).toHaveBeenCalledTimes(2);
-    expect((info.mock.calls[0]?.[0] as { url: string }).url).toBe('/b');
-    expect((info.mock.calls[1]?.[0] as { url: string }).url).toBe('/a');
+    expect((info.mock.calls[0]?.[0] as { route: string }).route).toBe('/b');
+    expect((info.mock.calls[1]?.[0] as { route: string }).route).toBe('/a');
   });
 });

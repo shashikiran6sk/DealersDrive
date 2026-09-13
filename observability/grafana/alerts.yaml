@@ -1,0 +1,118 @@
+namespace: dealers-drive
+groups:
+  - name: production-api
+    interval: 1m
+    rules:
+      - alert: DealersDriveHigh5xxRate
+        expr: |
+          sum(rate(dealers_drive_http_requests_total{service="dealers-drive-api",environment="production",status_code=~"5.."}[5m]))
+          / clamp_min(sum(rate(dealers_drive_http_requests_total{service="dealers-drive-api",environment="production"}[5m])), 0.001) > 0.05
+        for: 5m
+        labels:
+          {
+            service: dealers-drive-api,
+            environment: production,
+            severity: critical,
+            team: platform,
+          }
+        annotations:
+          summary: Dealers Drive API 5xx rate is above 5%
+          description: Investigate the Errors dashboard and correlate affected requests by traceId in Loki.
+
+      - alert: DealersDriveMeaningful4xxRate
+        expr: |
+          sum(rate(dealers_drive_http_requests_total{service="dealers-drive-api",environment="production",status_code=~"400|409|429"}[10m]))
+          / clamp_min(sum(rate(dealers_drive_http_requests_total{service="dealers-drive-api",environment="production"}[10m])), 0.001) > 0.20
+        for: 10m
+        labels:
+          { service: dealers-drive-api, environment: production, severity: warning, team: platform }
+        annotations:
+          summary: Meaningful Dealers Drive 4xx rate is above 20%
+          description: Authentication-related 401/403 and normal 404 traffic are excluded to reduce noise.
+
+      - alert: DealersDriveHighP95Latency
+        expr: |
+          histogram_quantile(0.95, sum by (le) (rate(dealers_drive_http_request_duration_seconds_bucket{service="dealers-drive-api",environment="production"}[5m]))) > 1
+        for: 10m
+        labels:
+          { service: dealers-drive-api, environment: production, severity: warning, team: platform }
+        annotations:
+          summary: Dealers Drive API p95 latency exceeds one second
+          description: Compare endpoint request duration with attributed database time.
+
+      - alert: DealersDriveHighP99Latency
+        expr: |
+          histogram_quantile(0.99, sum by (le) (rate(dealers_drive_http_request_duration_seconds_bucket{service="dealers-drive-api",environment="production"}[5m]))) > 2
+        for: 5m
+        labels:
+          {
+            service: dealers-drive-api,
+            environment: production,
+            severity: critical,
+            team: platform,
+          }
+        annotations:
+          summary: Dealers Drive API p99 latency exceeds two seconds
+          description: Inspect Endpoint Performance, database latency, and matching trace exemplars.
+
+      - alert: DealersDriveSlowDatabaseOperations
+        expr: sum(increase(dealers_drive_db_slow_operations_total{service="dealers-drive-api",environment="production"}[5m])) > 5
+        for: 5m
+        labels:
+          { service: dealers-drive-api, environment: production, severity: warning, team: platform }
+        annotations:
+          summary: Dealers Drive has repeated slow database operations
+          description: More than five operations crossed DB_SLOW_OPERATION_MS in five minutes.
+
+      - alert: DealersDriveDatabaseErrors
+        expr: sum(increase(dealers_drive_db_errors_total{service="dealers-drive-api",environment="production"}[5m])) > 0
+        for: 2m
+        labels:
+          {
+            service: dealers-drive-api,
+            environment: production,
+            severity: critical,
+            team: platform,
+          }
+        annotations:
+          summary: Dealers Drive database operations are failing
+          description: Inspect the Database Performance dashboard by bounded model and operation labels.
+
+      - alert: DealersDriveServiceUnavailable
+        expr: absent_over_time(dealers_drive_service_up{service="dealers-drive-api",environment="production"}[5m]) == 1
+        for: 1m
+        labels:
+          {
+            service: dealers-drive-api,
+            environment: production,
+            severity: critical,
+            team: platform,
+          }
+        annotations:
+          summary: Dealers Drive API metrics endpoint is unavailable
+          description: Grafana Cloud has received no application heartbeat for five minutes.
+
+      - alert: DealersDriveReadinessFailure
+        expr: sum(increase(dealers_drive_http_requests_total{service="dealers-drive-api",environment="production",route="/health/ready",status_code="503"}[5m])) > 0
+        for: 2m
+        labels:
+          {
+            service: dealers-drive-api,
+            environment: production,
+            severity: critical,
+            team: platform,
+          }
+        annotations:
+          summary: Dealers Drive readiness checks are failing
+          description: Check database and cache dependencies before restarting application instances.
+
+      - alert: DealersDriveUnusualTrafficSpike
+        expr: |
+          sum(rate(dealers_drive_http_requests_total{service="dealers-drive-api",environment="production"}[5m]))
+          / clamp_min(sum(rate(dealers_drive_http_requests_total{service="dealers-drive-api",environment="production"}[1h])), 0.001) > 3
+        for: 10m
+        labels:
+          { service: dealers-drive-api, environment: production, severity: warning, team: platform }
+        annotations:
+          summary: Dealers Drive traffic is over three times its one-hour baseline
+          description: Confirm a legitimate campaign or investigate abusive traffic and endpoint error rates.

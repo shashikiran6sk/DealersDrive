@@ -9,6 +9,7 @@ import { errorHandler } from './middleware/error-handler.js';
 import { notFound } from './middleware/not-found.js';
 import { requestContext } from './middleware/request-context.js';
 import { requestLogger } from './middleware/request-logger.js';
+import { requestMetrics } from './middleware/request-metrics.js';
 import { createRoutes } from './routes.js';
 
 /**
@@ -19,13 +20,14 @@ import { createRoutes } from './routes.js';
  * The middleware order IS the security model. Do not reorder casually:
  *   1. request-context  — first, so everything below has a traceId, including
  *                         errors thrown by the body parser
- *   2. helmet / cors    — reject before doing any work
- *   3. body parsers     — bounded, so a huge body cannot exhaust memory
+ *   2. request-metrics  — counts every response, including parser/security errors
+ *   3. helmet / cors    — reject before doing any work
+ *   4. body parsers     — bounded, so a huge body cannot exhaust memory
  *      + cookie parser    — before routes, so the session resolver can read it
- *   4. request-logger   — after context, so its lines carry the traceId
- *   5. routes
- *   6. not-found        — anything unmatched becomes a NotFoundError
- *   7. error-handler    — last, always
+ *   5. request-logger   — after context, so its lines carry the traceId
+ *   6. routes
+ *   7. not-found        — anything unmatched becomes a NotFoundError
+ *   8. error-handler    — last, always
  */
 export function createApp(container: Container): Express {
   const app = express();
@@ -36,6 +38,7 @@ export function createApp(container: Container): Express {
   app.disable('x-powered-by');
 
   app.use(requestContext);
+  app.use(requestMetrics);
 
   app.use(helmet());
   app.use(

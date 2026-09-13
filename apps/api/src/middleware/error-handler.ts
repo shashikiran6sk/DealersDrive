@@ -11,6 +11,7 @@ import {
   titleFromCode,
 } from '../platform/errors.js';
 import { logger } from '../platform/telemetry/logger.js';
+import { normalizedHttpRoute } from '../platform/telemetry/http-route.js';
 import { getTraceId } from './request-context.js';
 
 const PROBLEM_CONTENT_TYPE = 'application/problem+json';
@@ -194,7 +195,8 @@ export function errorHandler(
     status: problem.status,
     code: problem.code,
     method: req.method,
-    url: req.originalUrl,
+    route: normalizedHttpRoute(req),
+    status_code: problem.status,
   };
 
   if (problem.status >= 500) {

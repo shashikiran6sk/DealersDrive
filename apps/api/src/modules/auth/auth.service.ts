@@ -213,10 +213,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         nonce: transaction.nonce,
       });
 
-      logger.info(
-        { event: 'auth.oauth.verified', provider: 'GOOGLE', subject: claims.subject },
-        'oauth identity verified',
-      );
+      logger.info({ event: 'auth.oauth.verified', provider: 'GOOGLE' }, 'oauth identity verified');
 
       // The audience came out of the sealed cookie this browser was given at
       // `/start`, never off the callback URL — so a dealer sign-in cannot be

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../config/env.js';
+import { instrumentDbOperation } from '../telemetry/metrics.js';
 
 /**
  * The one PrismaClient for the process.
@@ -22,7 +23,7 @@ export type Tx = Omit<
 >;
 
 export function createPrisma(): PrismaClient {
-  return new PrismaClient({
+  const client = new PrismaClient({
     datasources: { db: { url: env.DATABASE_URL } },
     log: env.isDevelopment ? ['warn', 'error'] : ['error'],
     // See `DB_TRANSACTION_TIMEOUT_MS` in config/env.ts. Prisma's 5s default is
@@ -33,6 +34,25 @@ export function createPrisma(): PrismaClient {
       maxWait: env.DB_TRANSACTION_MAX_WAIT_MS,
     },
   });
+
+  /*
+   * One extension at the composition root covers model calls, raw operations
+   * and transaction clients. Only the bounded model and operation names become
+   * labels; args and SQL are never recorded.
+   *
+   * Prisma's extended client is structurally compatible at runtime, but its
+   * generated type deliberately omits a few extension-building internals. The
+   * rest of this application accepts PrismaClient as its stable port, so the
+   * cast keeps instrumentation from leaking through every service signature.
+   */
+  return client.$extends({
+    name: 'dealers-drive-observability',
+    query: {
+      $allOperations({ model, operation, query, args }) {
+        return instrumentDbOperation(model, operation, () => query(args));
+      },
+    },
+  }) as unknown as PrismaClient;
 }
 
 /**

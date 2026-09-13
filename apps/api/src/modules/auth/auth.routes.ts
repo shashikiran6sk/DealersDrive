@@ -5,6 +5,7 @@ import { env } from '../../config/env.js';
 import { signedInPrincipal } from '../../middleware/auth.js';
 import { validate, validated } from '../../middleware/validate.js';
 import { ForbiddenError } from '../../platform/errors.js';
+import { recordOAuthAttempt, type OAuthReason } from '../../platform/telemetry/metrics.js';
 import type { AuthService } from './auth.service.js';
 import { openTransaction, type OAuthAudience } from './oauth-transaction.js';
 import {
@@ -79,12 +80,16 @@ export function createPublicAuthRouter(service: AuthService): Router {
       // screen to send the browser back to — and the audience is in the cookie,
       // not in anything the callback carries.
       let signInPath = '/dealer/login';
-      const back = (code: string) =>
+      let audience: OAuthAudience = 'DEALER';
+      const back = (code: OAuthReason) => {
+        recordOAuthAttempt(audience, 'failure', code);
         res.redirect(302, `${env.WEB_BASE_URL}${signInPath}?error=${code}`);
+      };
 
       try {
         const transaction = openTransaction(readOAuthCookie(req));
-        if (transaction?.audience === 'ADMIN') signInPath = '/admin/login';
+        audience = transaction?.audience ?? 'DEALER';
+        if (audience === 'ADMIN') signInPath = '/admin/login';
         // Single-use, whatever happens next: the state and verifier inside are
         // spent the moment Google sends the browser back.
         clearOAuthCookie(res);
@@ -111,6 +116,7 @@ export function createPublicAuthRouter(service: AuthService): Router {
         });
 
         setSessionCookie(res, result.token, result.expiresAt);
+        recordOAuthAttempt(result.audience, 'success', 'completed');
         res.redirect(302, `${env.WEB_BASE_URL}${result.returnTo}`);
       } catch (error) {
         // A failed sign-in is a screen, not a JSON body — but a bug is still a
@@ -140,6 +146,7 @@ export function createPublicAuthRouter(service: AuthService): Router {
           back('not_authorised');
           return;
         }
+        recordOAuthAttempt(audience, 'error', 'internal');
         next(error);
       }
     })();

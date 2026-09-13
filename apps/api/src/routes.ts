@@ -10,6 +10,7 @@ import { createPublicDealersRouter } from './modules/dealers/dealers.public.rout
 import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
+import { createMetricsRouter } from './platform/telemetry/metrics.routes.js';
 
 /**
  * Every module router is mounted here and nowhere else — one file to read to
@@ -37,6 +38,11 @@ import { createMediaRouter, createStorageRouter } from './modules/media/media.ro
  */
 export function createRoutes(container: Container): Router {
   const router = Router();
+
+  if (env.METRICS_ENABLED) {
+    // The cross-field env validation guarantees this whenever metrics are on.
+    router.use(createMetricsRouter(env.METRICS_SCRAPE_TOKEN!));
+  }
 
   router.use('/health', createHealthRouter(container));
   router.use(createStorageRouter(container.storage, container.media));

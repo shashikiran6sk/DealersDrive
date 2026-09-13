@@ -52,7 +52,11 @@ describe('the shared logger', () => {
 
     log.info('hello');
 
-    expect(lines[0]).toMatchObject({ service: 'dealers-drive-api', env: 'test' });
+    expect(lines[0]).toMatchObject({
+      service: 'dealers-drive-api',
+      env: 'test',
+      environment: 'local',
+    });
   });
 
   it('writes the level as a label rather than as pino’s numeric code', () => {
@@ -64,12 +68,13 @@ describe('the shared logger', () => {
     expect(lines[0]?.level).toBe('warn');
   });
 
-  it('timestamps in ISO 8601', () => {
+  it('timestamps in epoch milliseconds for CloudWatch and Loki', () => {
     const { lines, log } = probe();
 
     log.info('when');
 
-    expect(String(lines[0]?.time)).toMatch(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/);
+    expect(lines[0]?.time).toEqual(expect.any(Number));
+    expect(String(lines[0]?.time)).toHaveLength(13);
   });
 });
 
@@ -82,7 +87,7 @@ describe('the request-context mixin', () => {
     expect(lines[0]).toMatchObject({ traceId: 'trace-abc' });
   });
 
-  it('adds userId and dealerId once auth has run', () => {
+  it('does not copy principal IDs into centralized request logs', () => {
     const { lines, log } = probe();
 
     runWithContext(
@@ -90,11 +95,9 @@ describe('the request-context mixin', () => {
       () => log.info('after auth'),
     );
 
-    expect(lines[0]).toMatchObject({
-      traceId: 'trace-1',
-      userId: 'user-1',
-      dealerId: 'dealer-1',
-    });
+    expect(lines[0]).toMatchObject({ traceId: 'trace-1' });
+    expect(lines[0]).not.toHaveProperty('userId');
+    expect(lines[0]).not.toHaveProperty('dealerId');
   });
 
   it('omits userId and dealerId on a public read', () => {
@@ -143,6 +146,18 @@ describe('the request-context mixin', () => {
 });
 
 describe('redaction', () => {
+  it('never centralizes uncontrolled error messages that can contain credentials', () => {
+    const { lines, log } = probe();
+    const error = Object.assign(new Error('request failed with token=super-secret'), {
+      code: 'PROVIDER_FAILED',
+    });
+
+    log.error({ err: error }, 'provider request failed');
+
+    expect(lines[0]?.err).toMatchObject({ type: 'Error', code: 'PROVIDER_FAILED' });
+    expect(JSON.stringify(lines[0])).not.toContain('super-secret');
+  });
+
   it('censors credentials at the top level', () => {
     const { lines, log } = probe();
 
@@ -190,12 +205,33 @@ describe('redaction', () => {
     expect(headers['set-cookie']).toBe('[redacted]');
   });
 
-  it('leaves ordinary fields alone', () => {
+  it('censors direct identifiers and leaves ordinary measurements alone', () => {
     const { lines, log } = probe();
 
     log.info({ dealerId: 'dealer-1', pricePaise: 64_500_00 }, 'listing published');
 
-    expect(lines[0]).toMatchObject({ dealerId: 'dealer-1', pricePaise: 6_450_000 });
+    expect(lines[0]).toMatchObject({ dealerId: '[redacted]', pricePaise: 6_450_000 });
+  });
+
+  it('censors notification and URL fields that can carry PII or signed values', () => {
+    const { lines, log } = probe();
+
+    log.info(
+      {
+        recipient: 'dealer@example.com',
+        subject: 'Update for Named Dealer',
+        dedupeKey: 'template:dealer@example.com',
+        url: 'https://storage.example/signed?token=secret',
+      },
+      'notification',
+    );
+
+    expect(lines[0]).toMatchObject({
+      recipient: '[redacted]',
+      subject: '[redacted]',
+      dedupeKey: '[redacted]',
+      url: '[redacted]',
+    });
   });
 });
 

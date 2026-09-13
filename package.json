@@ -25,7 +25,9 @@
     "app:up": "bash scripts/app-up.sh",
     "app:down": "docker compose --profile app down",
     "app:logs": "docker compose --profile app logs -f api web",
-    "app:seed": "docker compose run --rm seed"
+    "app:seed": "docker compose run --rm seed",
+    "observability:dashboards:build": "node scripts/build-grafana-dashboards.mjs",
+    "observability:dashboards:publish": "node scripts/publish-grafana-dashboards.mjs"
   },
   "devDependencies": {
     "prettier": "^3.9.6",
