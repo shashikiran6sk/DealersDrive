@@ -134,6 +134,35 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
   },
 ];
 
+/**
+ * Who reads each key, and the honest empty half (**F072**).
+ *
+ * `CONFIG_DEFAULTS` above is the complete list — every knob the product will
+ * ever have, brought across whole so the table does not grow a row per feature.
+ * What is *not* complete is the code that consults them: `listing.durationDays`
+ * waits on the listing state machine, the reveal caps on contact reveal, the RC
+ * knobs on the lookup port.
+ *
+ * A settings screen that offered all of them equally would be lying by
+ * omission — an operator who sets "minimum photos" to 8 and watches it save has
+ * been told the platform now wants eight photos. So a key something reads names
+ * its reader here, and `GET /v1/admin/config` hands that string to the console:
+ * a key with no entry renders read-only, under "Not in use yet".
+ *
+ * **Add the line in the same PR as the code that reads the key.** It is one
+ * line, it sits beside the default it describes, and it is the only thing
+ * between the settings screen and a page of decorative controls.
+ */
+export const CONFIG_READERS: Record<string, string> = {
+  'billing.gstPercent': "the admin console's revenue figure",
+  'listing.minPhotos': 'GET /v1/config/public',
+  'listing.durationDays': 'GET /v1/config/public',
+  'enquiry.rateLimitPerHour': 'GET /v1/config/public',
+  'photoRequests.enabled': 'GET /v1/config/public',
+  'feature.rcLookup': 'GET /v1/config/public',
+  'feature.vehicleReport': 'GET /v1/config/public',
+};
+
 export interface PlatformConfigService {
   number(key: string): Promise<number>;
   boolean(key: string): Promise<boolean>;

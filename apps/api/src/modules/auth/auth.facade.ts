@@ -13,3 +13,28 @@ export type {
   SessionResolver,
 } from './session.port.js';
 export { permissionsForAdminRole, permissionsForRole } from './session.port.js';
+
+/**
+ * Per-role seats (**R41**). Exported because the admin console closes a
+ * dealership's members' dealer seats when it suspends them, and that write
+ * belongs to auth rather than to moderation — `users.status`, sessions and
+ * seats are one model, and it has one owner.
+ */
+export {
+  ensureSeat,
+  grantSeat,
+  hasGrantedSeat,
+  isSeatSuspended,
+  setSeatStatus,
+  type RoleSeat,
+} from './roles.js';
+
+/**
+ * Who the deployment says may hold an admin seat (**R42**).
+ *
+ * Exported because the settings screen has to *show* the difference between an
+ * allow-listed address and a granted one, and refuse to withdraw the first. The
+ * list itself is still read only here, from `env` — this hands out the question,
+ * never the answer's source.
+ */
+export { isAllowlistedAdmin } from './admin-allowlist.js';

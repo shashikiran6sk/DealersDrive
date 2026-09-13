@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 import type { Request } from 'express';
 
 import { isAllowlistedAdmin } from './admin-allowlist.js';
+import { hasGrantedSeat, isSeatSuspended } from './roles.js';
 import { readSessionToken } from './session.cookie.js';
 import type { SessionService } from './session.service.js';
 import {
@@ -36,6 +37,11 @@ export function createCookieSessionResolver(
   async function signedIn(req: Request): Promise<DealerPrincipal | PendingPrincipal | null> {
     const session = await sessions.resolve(readSessionToken(req), 'DEALER');
     if (!session || session.user.status !== 'ACTIVE') return null;
+
+    // The dealer seat, and only the dealer seat (**R41**). An admin session
+    // held by the same person is resolved by `resolveAdmin` below, against its
+    // own seat, and is unaffected by whatever happened to this one.
+    if (isSeatSuspended(session.user.roles, 'DEALER')) return null;
 
     const membership = await prisma.dealerMember.findFirst({
       where: { userId: session.userId, status: 'ACTIVE' },
@@ -83,6 +89,11 @@ export function createCookieSessionResolver(
      * row with `scope = 'ADMIN'`, so a dealer's cookie cannot reach an admin
      * route even if that same human is also a platform admin.
      *
+     * The ADMIN seat is asked about here and nowhere else, for the same reason
+     * (**R41**): a dealership suspension closes a DEALER seat, and this line is
+     * the one that has to keep reading ACTIVE afterwards for a person who holds
+     * both.
+     *
      * The allow-list is asked again here, on every request, and not only when
      * the session was issued. That is what makes removing an address from
      * `ADMIN_ALLOWLIST` a revocation rather than a note for next time: a
@@ -94,7 +105,15 @@ export function createCookieSessionResolver(
       const user = session?.user;
 
       if (!user?.isPlatformAdmin || !user.adminRole || user.status !== 'ACTIVE') return null;
-      if (!isAllowlistedAdmin(user.email)) return null;
+      if (isSeatSuspended(user.roles, 'ADMIN')) return null;
+
+      // Two ways in, and no third (**R42**). The allow-list is the
+      // deployment's answer; a *granted* seat is one a SUPER_ADMIN handed over
+      // on the settings screen, and `grantedBy` is what tells it from the seat
+      // every admin sign-in leaves behind. Reading mere existence as permission
+      // would make the allow-list vacuous — an address taken off it would keep
+      // working forever on the strength of its own last visit.
+      if (!isAllowlistedAdmin(user.email) && !hasGrantedSeat(user.roles, 'ADMIN')) return null;
 
       return {
         kind: 'ADMIN',

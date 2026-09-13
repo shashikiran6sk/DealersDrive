@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AdminOverview } from '@dealers-drive/contracts';
 
+import { env } from '../../../../src/config/env.js';
 import { createAdminService } from '../../../../src/modules/admin/admin.service.js';
 import type { AuditService } from '../../../../src/platform/audit/audit.service.js';
 import type { PlatformConfigService } from '../../../../src/platform/config/platform-config.js';
@@ -50,6 +51,10 @@ interface Options {
   media?: { storageKey: string }[];
   /** Storage keys whose delete rejects, so the purge's tolerance is testable. */
   missingKeys?: string[];
+  /** F072 — what `config.all()` answers with. */
+  configEntries?: { key: string; label: string; type: string; value: unknown }[];
+  /** R42 — the `users` rows the admin-access list reads. */
+  adminUsers?: Record<string, unknown>[];
 }
 
 const DEALER = '4bafe791-892d-4696-8309-ee23f172211b';
@@ -111,6 +116,12 @@ function setup(options: Options = {}) {
   const deletedMedia: unknown[] = [];
   const dealerPatches: { dealerId: string; input: unknown }[] = [];
   const userUpdates: unknown[] = [];
+  const seatCreates: unknown[] = [];
+  const seatUpdates: unknown[] = [];
+  const seatUpserts: unknown[] = [];
+  const seatDeletes: unknown[] = [];
+  const userWrites: unknown[] = [];
+  const configWrites: { key: string; value: unknown; updatedBy: string | null }[] = [];
   const sessionUpdates: unknown[] = [];
 
   const resolveDealer = () =>
@@ -145,10 +156,48 @@ function setup(options: Options = {}) {
         return Promise.resolve({ count: (options.media ?? []).length });
       },
     },
+    userRole: {
+      createMany: (args: unknown) => {
+        seatCreates.push(args);
+        return Promise.resolve({ count: 1 });
+      },
+      updateMany: (args: unknown) => {
+        seatUpdates.push(args);
+        return Promise.resolve({ count: 1 });
+      },
+      upsert: (args: unknown) => {
+        seatUpserts.push(args);
+        return Promise.resolve({ grantedAt: new Date('2026-09-13T00:00:00.000Z') });
+      },
+      delete: (args: unknown) => {
+        seatDeletes.push(args);
+        return Promise.resolve({});
+      },
+    },
     user: {
       updateMany: (args: unknown) => {
         userUpdates.push(args);
         return Promise.resolve({ count: 1 });
+      },
+      findUnique: (args: { where: { email?: string } }) =>
+        Promise.resolve(
+          args.where.email === 'known@dealers-drive.test'
+            ? { id: 'user-known', email: args.where.email, fullName: 'Known Operator' }
+            : null,
+        ),
+      create: (args: { data: Record<string, unknown> }) => {
+        userWrites.push({ op: 'create', ...args });
+        return Promise.resolve({ id: 'user-new', fullName: null, lastLoginAt: null, ...args.data });
+      },
+      update: (args: { where: unknown; data: Record<string, unknown> }) => {
+        userWrites.push({ op: 'update', ...args });
+        return Promise.resolve({
+          id: 'user-known',
+          email: 'known@dealers-drive.test',
+          fullName: 'Known Operator',
+          lastLoginAt: null,
+          ...args.data,
+        });
       },
     },
     session: {
@@ -185,11 +234,29 @@ function setup(options: Options = {}) {
     media: {
       findMany: () => Promise.resolve(options.media ?? []),
     },
+    user: {
+      findMany: (args: { where?: { id?: { in?: string[] } } }) =>
+        Promise.resolve(
+          args.where?.id?.in
+            ? [{ id: 'admin-1', email: 'ops@dealers-drive.test' }]
+            : (options.adminUsers ?? []),
+        ),
+      findUnique: (args: { where: { id: string } }) =>
+        Promise.resolve(
+          (options.adminUsers ?? []).find((row) => (row as { id?: string }).id === args.where.id) ??
+            null,
+        ),
+    },
     $transaction: <T>(work: (handle: typeof tx) => Promise<T>) => work(tx),
   } as unknown as PrismaClient;
 
   const config = {
     number: () => Promise.resolve(options.gstPercent ?? 18),
+    all: () => Promise.resolve(options.configEntries ?? CONFIG_ROWS),
+    set: (key: string, value: unknown, updatedBy: string | null) => {
+      configWrites.push({ key, value, updatedBy });
+      return Promise.resolve({ key, value });
+    },
   } as unknown as PlatformConfigService;
 
   const audit = {
@@ -247,9 +314,25 @@ function setup(options: Options = {}) {
     deletedMedia,
     dealerPatches,
     userUpdates,
+    seatCreates,
+    seatUpdates,
+    seatUpserts,
+    seatDeletes,
+    userWrites,
+    configWrites,
     sessionUpdates,
   };
 }
+
+/**
+ * Two settings, and the split is the thing under test: one key something reads
+ * and one nothing reads yet. `billing.gstPercent` is in `CONFIG_READERS`;
+ * `otp.maxAttempts` is deliberately not.
+ */
+const CONFIG_ROWS = [
+  { key: 'billing.gstPercent', label: 'GST percent', type: 'number', value: 18 },
+  { key: 'otp.maxAttempts', label: 'OTP attempts allowed', type: 'number', value: 3 },
+];
 
 const DOCUMENT = {
   id: 'doc-1',
@@ -270,7 +353,22 @@ const admin: AdminPrincipal = {
   userId: 'admin-1',
   email: 'ops@dealers-drive.test',
   adminRole: 'SUPER_ADMIN',
-  permissions: ['admin:metrics:read', 'admin:dealer:approve'],
+  permissions: [
+    'admin:metrics:read',
+    'admin:dealer:approve',
+    // F072 and R42 — the settings screen and the access list on it.
+    'admin:config:write',
+    'admin:access:manage',
+  ],
+} as unknown as AdminPrincipal;
+
+/** A seat that may read the console and change nothing on it. */
+const support: AdminPrincipal = {
+  kind: 'ADMIN',
+  userId: 'support-1',
+  email: 'support@dealers-drive.test',
+  adminRole: 'SUPPORT',
+  permissions: ['admin:metrics:read', 'admin:payment:read'],
 } as unknown as AdminPrincipal;
 
 function statFor(overview: AdminOverview, key: string): AdminOverview['stats'][number] | undefined {
@@ -1015,7 +1113,15 @@ describe('setDealerStatus and its wrappers', () => {
     expect(response.listingsAffected).toBe(0);
   });
 
-  it('blocks every active member account and revokes every session on suspension', async () => {
+  /**
+   * R41 — the seat, not the account.
+   *
+   * This used to write `users.status`, and `users.status` is the whole person.
+   * A member who also moderates the platform lost the admin console because a
+   * dealership was suspended, which is a consequence nobody asked for and
+   * nobody could see. Both assertions below are about what is *not* touched.
+   */
+  it('closes every member dealer seat and revokes their dealer sessions on suspension', async () => {
     const h = setup({
       dealer: dealerRow({
         status: 'ACTIVE',
@@ -1028,24 +1134,55 @@ describe('setDealerStatus and its wrappers', () => {
 
     await h.service.suspendDealer(admin, DEALER, 'GST expired.');
 
-    expect(h.userUpdates).toEqual([
+    // The account itself is left alone.
+    expect(h.userUpdates).toEqual([]);
+
+    // A member who has never signed in has no seat row yet, so the write is a
+    // create-then-update pair rather than an update.
+    expect(h.seatCreates).toEqual([
       {
-        where: {
-          id: { in: ['owner-1', 'manager-1'] },
-          status: 'ACTIVE',
-        },
-        data: { status: 'SUSPENDED' },
+        data: [
+          { userId: 'owner-1', role: 'DEALER' },
+          { userId: 'manager-1', role: 'DEALER' },
+        ],
+        skipDuplicates: true,
       },
     ]);
+    expect(h.seatUpdates).toEqual([
+      {
+        where: { userId: { in: ['owner-1', 'manager-1'] }, role: 'DEALER' },
+        data: { status: 'SUSPENDED', reason: 'GST expired.', suspendedAt: expect.any(Date) },
+      },
+    ]);
+
+    // Scoped. An admin session one of these people holds survives.
     expect(h.sessionUpdates).toEqual([
       {
         where: {
           userId: { in: ['owner-1', 'manager-1'] },
+          scope: 'DEALER',
           revokedAt: null,
         },
         data: { revokedAt: expect.any(Date) },
       },
     ]);
+  });
+
+  it('reopens the dealer seats on reinstatement, and revokes nothing', async () => {
+    const h = setup({
+      dealer: dealerRow({ status: 'SUSPENDED', members: [{ userId: 'owner-1', role: 'OWNER' }] }),
+    });
+
+    await h.service.reinstateDealer(admin, DEALER, 'Registration renewed.');
+
+    expect(h.seatUpdates).toEqual([
+      {
+        where: { userId: { in: ['owner-1'] }, role: 'DEALER' },
+        data: { status: 'ACTIVE', reason: null, suspendedAt: null },
+      },
+    ]);
+    // Reinstatement restores the seat, never a token that was revoked.
+    expect(h.sessionUpdates).toEqual([]);
   });
 
   it('reinstates, clearing the suspension', async () => {
@@ -1058,10 +1195,12 @@ describe('setDealerStatus and its wrappers', () => {
       statusReason: 'Documents renewed.',
       suspendedAt: null,
     });
-    expect(h.userUpdates).toEqual([
+    // R41 — the seat is reopened; the account was never closed.
+    expect(h.userUpdates).toEqual([]);
+    expect(h.seatUpdates).toEqual([
       {
-        where: { id: { in: ['user-1'] }, status: 'SUSPENDED' },
-        data: { status: 'ACTIVE' },
+        where: { userId: { in: ['user-1'] }, role: 'DEALER' },
+        data: { status: 'ACTIVE', reason: null, suspendedAt: null },
       },
     ]);
     expect(h.sessionUpdates).toEqual([]);
@@ -1406,5 +1545,370 @@ describe('updateDealer', () => {
 
     await expect(h.service.updateDealer(admin, DEALER, patch)).rejects.toThrow(NotFoundError);
     expect(h.dealerPatches).toEqual([]);
+  });
+});
+
+/**
+ * F072 — the settings screen's API.
+ *
+ * Two properties carry it. `readBy` tells the console which keys anything
+ * actually reads, because the table holds every knob the product will ever have
+ * and most of the code that consults them has not been reconstructed; and the
+ * declared type is enforced on write, which the baseline documents and does not
+ * do.
+ */
+describe('config', () => {
+  it('names the reader for a key something reads, and nothing for one nothing does', async () => {
+    const h = setup();
+
+    const { data } = await h.service.config(admin);
+
+    expect(data.find((entry) => entry.key === 'billing.gstPercent')?.readBy).toBe(
+      "the admin console's revenue figure",
+    );
+    // The console renders this one read-only. An editable control that changes
+    // no behaviour tells an operator they have changed something.
+    expect(data.find((entry) => entry.key === 'otp.maxAttempts')?.readBy).toBeNull();
+  });
+
+  it('is refused to a seat without admin:config:write', async () => {
+    const h = setup();
+
+    await expect(h.service.config(support)).rejects.toBeInstanceOf(ForbiddenError);
+  });
+
+  it('writes one key, and audits the value it replaced', async () => {
+    const h = setup();
+
+    await h.service.setConfig(admin, 'billing.gstPercent', 12);
+
+    expect(h.configWrites).toEqual([
+      { key: 'billing.gstPercent', value: 12, updatedBy: 'admin-1' },
+    ]);
+    expect(h.detachedAudits.at(-1)).toMatchObject({
+      action: 'config.updated',
+      entityType: 'PlatformConfig',
+      entityId: 'billing.gstPercent',
+      before: { value: 18 },
+      after: { value: 12 },
+    });
+  });
+
+  /**
+   * `platform_config.value` is a JSON column, so it stores anything. A string
+   * where a number belongs is read back by `config.number()` as `NaN`, which
+   * surfaces days later as a GST figure nobody can account for.
+   */
+  it('refuses a value that is not the type the key declares', async () => {
+    const h = setup();
+
+    await expect(h.service.setConfig(admin, 'billing.gstPercent', 'twelve')).rejects.toMatchObject({
+      status: 422,
+      code: 'CONFIG_TYPE_MISMATCH',
+    });
+    expect(h.configWrites).toEqual([]);
+  });
+
+  /** Each declared type has its own arm, and each has its own way of being wrong. */
+  it('accepts a boolean, a string and a list against their declared types', async () => {
+    const h = setup({
+      configEntries: [
+        { key: 'feature.similarCars', label: 'Similar cars', type: 'boolean', value: true },
+        { key: 'support.note', label: 'Support note', type: 'string', value: 'Call us' },
+        { key: 'listing.presets', label: 'Presets', type: 'string[]', value: ['Too few photos.'] },
+      ],
+    });
+
+    await h.service.setConfig(admin, 'feature.similarCars', false);
+    await h.service.setConfig(admin, 'support.note', 'Write to us');
+    await h.service.setConfig(admin, 'listing.presets', ['Too few photos.', 'Price is off.']);
+
+    expect(h.configWrites.map((write) => write.value)).toEqual([
+      false,
+      'Write to us',
+      ['Too few photos.', 'Price is off.'],
+    ]);
+  });
+
+  it('refuses a list with something in it that is not a string', async () => {
+    const h = setup({
+      configEntries: [
+        { key: 'listing.presets', label: 'Presets', type: 'string[]', value: ['Too few photos.'] },
+      ],
+    });
+
+    await expect(h.service.setConfig(admin, 'listing.presets', ['fine', 7])).rejects.toMatchObject({
+      code: 'CONFIG_TYPE_MISMATCH',
+    });
+  });
+
+  /** `NaN` is a number to `typeof` and is not one to anybody else. */
+  it('refuses NaN where a number belongs', async () => {
+    const h = setup();
+
+    await expect(
+      h.service.setConfig(admin, 'billing.gstPercent', Number.NaN),
+    ).rejects.toMatchObject({ code: 'CONFIG_TYPE_MISMATCH' });
+  });
+
+  it('404s on a key that does not exist', async () => {
+    const h = setup();
+
+    await expect(h.service.setConfig(admin, 'billing.vatPercent', 12)).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+  });
+});
+
+/**
+ * R42 — who may open the console.
+ *
+ * The distinction every case below turns on: an **allow-listed** address is the
+ * deployment's answer and cannot be withdrawn here, while a **grant** is a
+ * `user_roles` row with `grantedBy` set, made by a SUPER_ADMIN on this screen.
+ */
+describe('adminAccess', () => {
+  const GRANTED = {
+    id: 'user-granted',
+    email: 'ops.two@dealers-drive.in',
+    fullName: 'Second Operator',
+    adminRole: 'MODERATOR',
+    isPlatformAdmin: true,
+    lastLoginAt: null,
+    roles: [
+      {
+        id: 'seat-1',
+        role: 'ADMIN',
+        status: 'ACTIVE',
+        grantedBy: 'admin-1',
+        grantedAt: new Date('2026-09-10T00:00:00.000Z'),
+      },
+    ],
+  };
+
+  /** A seat that was withdrawn: the row survives, the access does not. */
+  const WITHDRAWN = {
+    id: 'user-gone',
+    email: 'left@dealers-drive.in',
+    fullName: 'Former Operator',
+    adminRole: null,
+    isPlatformAdmin: false,
+    lastLoginAt: null,
+    roles: [],
+  };
+
+  it('lists a granted seat, and says who granted it', async () => {
+    const h = setup({ adminUsers: [GRANTED] });
+
+    const { data } = await h.service.adminAccess(admin);
+    const entry = data.find((row) => row.email === 'ops.two@dealers-drive.in');
+
+    expect(entry).toMatchObject({
+      source: 'GRANT',
+      sourceLabel: 'Granted',
+      adminRole: 'MODERATOR',
+      grantedByEmail: 'ops@dealers-drive.test',
+      canRevoke: true,
+    });
+  });
+
+  /**
+   * An address in `ADMIN_ALLOWLIST` that nobody has signed in with has no row
+   * at all — and a list that omitted it would be wrong about who can get in.
+   */
+  it('includes an allow-listed address with no account yet, and refuses to withdraw it', async () => {
+    const h = setup({ adminUsers: [] });
+
+    const { data } = await h.service.adminAccess(admin);
+
+    expect(data.length).toBeGreaterThan(0);
+    for (const entry of data) {
+      expect(entry).toMatchObject({
+        source: 'ALLOWLIST',
+        canRevoke: false,
+        revokeBlockedReason: 'Set in ADMIN_ALLOWLIST',
+      });
+    }
+  });
+
+  it('reports when they were last here, and says so when they never were', async () => {
+    const h = setup({
+      adminUsers: [
+        { ...GRANTED, lastLoginAt: new Date(Date.now() - 90 * 60 * 1000) },
+        { ...GRANTED, id: 'user-fresh', email: 'fresh@dealers-drive.in', lastLoginAt: null },
+      ],
+    });
+
+    const { data } = await h.service.adminAccess(admin);
+
+    expect(data.find((row) => row.email === 'ops.two@dealers-drive.in')?.lastLoginLabel).toBe(
+      '1 hour ago',
+    );
+    expect(data.find((row) => row.email === 'fresh@dealers-drive.in')?.lastLoginLabel).toBe(
+      'Never',
+    );
+  });
+
+  /**
+   * The account that granted the seat may itself have been withdrawn since.
+   * The seat stands — it was granted, and by whom is history rather than a
+   * dependency — so the row renders without a name instead of not at all.
+   */
+  it('survives a granter whose own account is gone', async () => {
+    const h = setup({
+      adminUsers: [
+        {
+          ...GRANTED,
+          roles: [{ ...GRANTED.roles[0], grantedBy: 'admin-vanished' }],
+        },
+      ],
+    });
+
+    const { data } = await h.service.adminAccess(admin);
+
+    expect(data.find((row) => row.email === 'ops.two@dealers-drive.in')).toMatchObject({
+      source: 'GRANT',
+      grantedByEmail: null,
+    });
+  });
+
+  it('leaves a withdrawn operator off the list entirely', async () => {
+    const h = setup({ adminUsers: [WITHDRAWN] });
+
+    const { data } = await h.service.adminAccess(admin);
+
+    expect(data.some((entry) => entry.email === 'left@dealers-drive.in')).toBe(false);
+  });
+
+  it('is refused to a seat without admin:access:manage', async () => {
+    const h = setup();
+
+    await expect(h.service.adminAccess(support)).rejects.toBeInstanceOf(ForbiddenError);
+  });
+});
+
+describe('grantAdminAccess', () => {
+  it('creates the account when the address is new, and records who granted it', async () => {
+    const h = setup();
+
+    const entry = await h.service.grantAdminAccess(admin, {
+      email: 'new.operator@dealers-drive.in',
+      adminRole: 'MODERATOR',
+    });
+
+    expect(h.userWrites).toEqual([
+      {
+        op: 'create',
+        data: {
+          email: 'new.operator@dealers-drive.in',
+          isPlatformAdmin: true,
+          adminRole: 'MODERATOR',
+        },
+      },
+    ]);
+    expect(h.seatUpserts).toEqual([
+      expect.objectContaining({
+        create: { userId: 'user-new', role: 'ADMIN', grantedBy: 'admin-1' },
+      }),
+    ]);
+    expect(entry).toMatchObject({ source: 'GRANT', grantedByEmail: 'ops@dealers-drive.test' });
+    expect(h.auditRows.at(-1)).toMatchObject({ action: 'admin.access.granted' });
+  });
+
+  it('promotes an account that already exists rather than creating a second one', async () => {
+    const h = setup();
+
+    await h.service.grantAdminAccess(admin, {
+      email: 'known@dealers-drive.test',
+      adminRole: 'SUPPORT',
+    });
+
+    expect(h.userWrites).toEqual([
+      expect.objectContaining({
+        op: 'update',
+        data: { isPlatformAdmin: true, adminRole: 'SUPPORT' },
+      }),
+    ]);
+  });
+
+  it('is refused to a seat without admin:access:manage', async () => {
+    const h = setup();
+
+    await expect(
+      h.service.grantAdminAccess(support, { email: 'x@y.in', adminRole: 'SUPPORT' }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
+  });
+});
+
+describe('revokeAdminAccess', () => {
+  const GRANTED = {
+    id: 'user-granted',
+    email: 'ops.two@dealers-drive.in',
+    fullName: 'Second Operator',
+    adminRole: 'MODERATOR',
+    isPlatformAdmin: true,
+    lastLoginAt: null,
+    roles: [{ id: 'seat-1', role: 'ADMIN', status: 'ACTIVE', grantedBy: 'admin-1' }],
+  };
+
+  it('deletes the seat, clears the flag and ends their admin sessions only', async () => {
+    const h = setup({ adminUsers: [GRANTED] });
+
+    await h.service.revokeAdminAccess(admin, 'user-granted');
+
+    expect(h.seatDeletes).toEqual([{ where: { id: 'seat-1' } }]);
+    expect(h.userWrites).toEqual([
+      expect.objectContaining({ data: { isPlatformAdmin: false, adminRole: null } }),
+    ]);
+    // A dealer seat the same person holds is untouched — R41 read the other way.
+    expect(h.sessionUpdates).toEqual([
+      {
+        where: { userId: 'user-granted', scope: 'ADMIN', revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      },
+    ]);
+  });
+
+  /** There may be nobody left who can let you back in. */
+  it('refuses to withdraw your own seat', async () => {
+    const h = setup({ adminUsers: [GRANTED] });
+
+    await expect(h.service.revokeAdminAccess(admin, 'admin-1')).rejects.toMatchObject({
+      status: 403,
+      code: 'ADMIN_ACCESS_SELF',
+    });
+  });
+
+  /** The environment admits them. A control that pretended otherwise would lie. */
+  it('refuses to withdraw an allow-listed address', async () => {
+    const allowlisted = {
+      ...GRANTED,
+      id: 'user-allowlisted',
+      email: env.adminAllowlist[0] ?? '',
+    };
+    const h = setup({ adminUsers: [allowlisted] });
+
+    await expect(h.service.revokeAdminAccess(admin, 'user-allowlisted')).rejects.toMatchObject({
+      status: 409,
+      code: 'ADMIN_ACCESS_ALLOWLISTED',
+    });
+    expect(h.seatDeletes).toEqual([]);
+  });
+
+  /**
+   * Every admin sign-in leaves an ADMIN seat behind (**R41**). Only a grant
+   * carries `grantedBy`, and only a grant is this endpoint's to withdraw.
+   */
+  it('refuses a seat nobody granted', async () => {
+    const signedInOnly = {
+      ...GRANTED,
+      id: 'user-footprint',
+      roles: [{ id: 'seat-2', role: 'ADMIN', status: 'ACTIVE', grantedBy: null }],
+    };
+    const h = setup({ adminUsers: [signedInOnly] });
+
+    await expect(h.service.revokeAdminAccess(admin, 'user-footprint')).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
   });
 });

@@ -330,3 +330,110 @@ export const DealerPublicProfile = z.object({
   seo: z.object({ canonical: z.string(), title: z.string(), isIndexable: z.boolean() }),
 });
 export type DealerPublicProfile = z.infer<typeof DealerPublicProfile>;
+
+// ─────────── A8b — search suggestions ───────────────────────────────────────
+/**
+ * What every typeahead on the platform asks for (**R43**).
+ *
+ * One query grammar rather than one per surface, because a suggest endpoint
+ * always takes the same three things: the characters typed so far, how many
+ * rows to answer with, and — where the page already narrows a set — the filter
+ * that narrows it. `/v1/search/vehicles` arrives at **F076** and has no reason
+ * to invent a second spelling of `search`.
+ *
+ * `search` is `.min(1)`: the box calls after one character, and a suggest
+ * request with nothing in it is the caller's bug, not an empty result set. It
+ * is trimmed first, so a box holding one space is a 400 naming `search` rather
+ * than a scan of every dealership on the platform.
+ *
+ * `.strict()` like every other input here, so `?q=vel` — the *directory's*
+ * parameter, which is the one a hand-written call is most likely to reach for
+ * — is a 400 that names `q` rather than a silently unfiltered list.
+ */
+export const SuggestQuery = z
+  .object({
+    search: z.string().trim().min(1).max(120),
+    /**
+     * Deliberately small, and capped well below the directory's 48.
+     *
+     * A dropdown is read, not paged: past about ten rows it stops being a
+     * shortlist and becomes a second results page rendered over the first one,
+     * and the arrow keys that are the whole point of it become a scroll.
+     */
+    limit: z.coerce.number().int().min(1).max(10).default(6),
+  })
+  .strict();
+export type SuggestQuery = z.infer<typeof SuggestQuery>;
+
+/**
+ * The dealer typeahead's query — `SuggestQuery`, plus the place the directory
+ * is already looking at.
+ *
+ * `district` and `city` are here because the box sits *inside* a filtered page:
+ * a buyer who has chosen Vellore and typed "sri" is asking about Vellore, and
+ * offering them a Sri Lakshmi Motors in Ernakulam is offering a row that
+ * disappears the moment they pick it — the grid behind it is still filtered by
+ * district. They take the same shapes `DealerDirectoryQuery` uses, so the box
+ * passes the URL's own parameters through rather than re-encoding them.
+ */
+export const DealerSuggestQuery = SuggestQuery.extend({
+  city: z
+    .string()
+    .regex(/^[a-z0-9-]+(?:,[a-z0-9-]+)*$/)
+    .max(400)
+    .optional(),
+  district: z
+    .string()
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
+}).strict();
+export type DealerSuggestQuery = z.infer<typeof DealerSuggestQuery>;
+
+/**
+ * One row in the dealer dropdown.
+ *
+ * **It is not a `DealerCard`.** A card carries a cover photograph, a tagline, a
+ * service list and two composed price strings, and every one of those is a
+ * field the dropdown would fetch and throw away — six of them per keystroke,
+ * against an endpoint that answers while somebody is still typing. So this is
+ * the row as drawn: an avatar's letters, a name, one line underneath it.
+ *
+ * `matchedOn` is what the highlighter marks. The server answers it rather than
+ * letting the client re-derive it because the server is what decided the row
+ * matched: it is the *reason* the row is in the list, and a client that
+ * searches the name for the typed characters would mark nothing at all on a
+ * dealership matched by its town.
+ *
+ * No phone number and no email, like everything else under this tag — and, as
+ * on the card, nothing here could hold one (rule 7).
+ */
+export const DealerSuggestion = z.object({
+  slug: z.string(),
+  brandName: z.string(),
+  initials: z.string(),
+  /** "42 cars in yard · Katpadi, Vellore" — composed once, on the server. */
+  metaLabel: z.string(),
+  /** Which field put this row in the list: what the dropdown marks. */
+  matchedOn: z.enum(['brandName', 'city', 'district']),
+  carCount: z.number().int(),
+  isVerified: z.boolean(),
+});
+export type DealerSuggestion = z.infer<typeof DealerSuggestion>;
+
+/**
+ * The dropdown's payload.
+ *
+ * `search` is echoed back deliberately. The box fires a request per debounced
+ * keystroke and the answers can arrive out of order — a two-character query
+ * against a cold cache can land *after* the four-character one that replaced
+ * it — so the client compares this against what is in the input and drops
+ * anything stale. The abort controller is the first defence; this is the one
+ * that works when the request was already on the wire.
+ */
+export const DealerSuggestResponse = z.object({
+  search: z.string(),
+  data: z.array(DealerSuggestion),
+  /** "4 matching yards" — the dropdown's group header (`DESIGN-SPEC §3.5`). */
+  countLabel: z.string(),
+});
+export type DealerSuggestResponse = z.infer<typeof DealerSuggestResponse>;

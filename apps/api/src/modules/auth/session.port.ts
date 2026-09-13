@@ -94,6 +94,14 @@ export const ADMIN_PERMISSIONS = {
   'admin:payment:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
   'admin:payment:refund': ['SUPER_ADMIN'],
   'admin:config:write': ['SUPER_ADMIN'],
+  /**
+   * Who may open this console (**R42**). SUPER_ADMIN only, and separate from
+   * `admin:config:write` even though the two currently name the same seat: one
+   * changes what the platform does, the other changes who may change it, and a
+   * future SUPPORT-plus role should be able to hold the first without the
+   * second.
+   */
+  'admin:access:manage': ['SUPER_ADMIN'],
   'admin:audit:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
   'admin:metrics:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
 } as const satisfies Record<string, readonly AdminRole[]>;

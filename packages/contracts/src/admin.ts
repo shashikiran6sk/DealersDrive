@@ -452,3 +452,104 @@ export const AdminProfileChangesResponse = z.object({
   pendingCount: z.number().int(),
 });
 export type AdminProfileChangesResponse = z.infer<typeof AdminProfileChangesResponse>;
+
+// ─────────── D14 configuration (F072) ──────────────────────────────────────
+/**
+ * One row on the settings screen.
+ *
+ * `readBy` is the field the baseline does not have, and it is what makes the
+ * screen honest. `CONFIG_DEFAULTS` on the server is the complete list of knobs
+ * the product will ever have; the code that *consults* them arrives feature by
+ * feature. A key nothing reads yet is shown read-only, because an editable
+ * control that changes no behaviour tells an operator they have changed
+ * something. It names the reader rather than carrying a boolean so the console
+ * can say which code, and so that adding a consumer is one line beside the
+ * default rather than a second list to keep in step.
+ */
+export const ConfigEntry = z.object({
+  key: z.string(),
+  value: z.union([z.number(), z.boolean(), z.string(), z.array(z.string())]),
+  type: z.enum(['number', 'boolean', 'string', 'string[]']),
+  label: z.string(),
+  updatedAt: z.string().nullable(),
+  /** Who consults this key today, or null while nothing does. */
+  readBy: z.string().nullable(),
+});
+export type ConfigEntry = z.infer<typeof ConfigEntry>;
+
+export const ConfigResponse = z.object({ data: z.array(ConfigEntry) });
+export type ConfigResponse = z.infer<typeof ConfigResponse>;
+
+/**
+ * One value, typed to match its key.
+ *
+ * A blob PATCH over the whole table would make "what did this admin change" a
+ * diff somebody has to compute, and these values govern money and moderation —
+ * the GST percentage, the listing duration, the reveal caps. One key, one
+ * write, one audit row.
+ */
+export const UpdateConfigInput = z
+  .object({
+    value: z.union([z.number(), z.boolean(), z.string(), z.array(z.string())]),
+  })
+  .strict();
+export type UpdateConfigInput = z.infer<typeof UpdateConfigInput>;
+
+export const ConfigKeyParam = z.object({ key: z.string().min(1).max(80) }).strict();
+export type ConfigKeyParam = z.infer<typeof ConfigKeyParam>;
+
+// ─────────── admin access (R42) ────────────────────────────────────────────
+/**
+ * One person who can open the admin console.
+ *
+ * `source` is the whole of the authorization story in one field. `ALLOWLIST` is
+ * an address in `ADMIN_ALLOWLIST`, written into the deployment — it cannot be
+ * withdrawn from the console, because the environment is what says so. `GRANT`
+ * is a seat a SUPER_ADMIN handed out here, recorded with who handed it over,
+ * and it can be withdrawn the same way.
+ *
+ * `userId` is null for an allow-listed address nobody has signed in with yet:
+ * there is no row for them, and the list would be lying about who can get in if
+ * it left them out.
+ */
+export const AdminAccessEntry = z.object({
+  userId: Uuid.nullable(),
+  email: z.string(),
+  fullName: z.string().nullable(),
+  adminRole: AdminRole,
+  source: z.enum(['ALLOWLIST', 'GRANT']),
+  sourceLabel: z.string(),
+  grantedByEmail: z.string().nullable(),
+  grantedAt: z.string().nullable(),
+  lastLoginLabel: z.string(),
+  canRevoke: z.boolean(),
+  /** Why the Withdraw control is absent, shown in its place. Null when it is not. */
+  revokeBlockedReason: z.string().nullable(),
+});
+export type AdminAccessEntry = z.infer<typeof AdminAccessEntry>;
+
+export const AdminAccessResponse = z.object({
+  data: z.array(AdminAccessEntry),
+  /** The operator reading the screen, so their own row can refuse to offer Withdraw. */
+  currentUserId: Uuid,
+});
+export type AdminAccessResponse = z.infer<typeof AdminAccessResponse>;
+
+/**
+ * Hand somebody a seat in the console.
+ *
+ * The address is trimmed and lower-cased **by the schema**, on both sides of
+ * the wire, because the value on the left was typed by a person and the value
+ * it will be compared against came out of a token Google signed. Neither is
+ * canonical, so the comparison is made to be.
+ *
+ * There is no `adminRole` default of SUPER_ADMIN: the narrowest useful seat is
+ * the right thing to hand out by accident.
+ */
+export const GrantAdminAccessInput = z
+  .object({
+    email: z.string().trim().toLowerCase().email().max(160),
+    adminRole: AdminRole.default('MODERATOR'),
+  })
+  .strict();
+export type GrantAdminAccessInput = z.infer<typeof GrantAdminAccessInput>;

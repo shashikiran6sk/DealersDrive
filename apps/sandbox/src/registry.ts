@@ -473,7 +473,7 @@ export const registry: RegistryEntry[] = [
     category: 'Dealer',
     ownership: 'Feature-specific',
     purpose:
-      'The directory name search, its city toggle chips, and — with no district — the Select district button. Writes to the URL.',
+      'The directory filter row: the search box (DealerSearchBox since R43), the city toggle chips, and — with no district — the Select district button. Writes to the URL.',
     aliases: [
       'DealerFilters',
       'CityChips',
@@ -482,7 +482,7 @@ export const registry: RegistryEntry[] = [
       'directory-filters',
       'CityToggle',
     ],
-    features: ['F085', 'R23'],
+    features: ['F085', 'R23', 'R43'],
     props: ['cities', 'city', 'district', 'q', 'locations'],
     states: [
       'no district',
@@ -794,6 +794,75 @@ export const registry: RegistryEntry[] = [
     storyId: 'admin-documentreview',
   },
   {
+    id: 'C064',
+    name: 'ConfigRow',
+    source: 'apps/web/src/features/admin/config-editor.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    /**
+     * Two shapes, not one. A key something reads gets a control typed to match
+     * it; a key nothing reads yet gets its value and a tag, because an editable
+     * control that changes no behaviour tells an operator otherwise.
+     */
+    purpose:
+      'One platform setting — the declared type picks the control, and `readBy` decides whether there is one.',
+    aliases: [
+      'ConfigEditor',
+      'SettingRow',
+      'PlatformConfigRow',
+      'FeatureFlagRow',
+      'AdminSetting',
+      'config-editor',
+    ],
+    features: ['F072'],
+    props: ['entry'],
+    states: [
+      'number',
+      'boolean',
+      'string list',
+      'dirty',
+      'saving',
+      'saved',
+      'server refusal',
+      'placeholder — nothing reads this key yet',
+    ],
+    reusable: false,
+    storyId: 'admin-configrow',
+  },
+  {
+    id: 'C064b',
+    name: 'AdminAccessPanel',
+    source: 'apps/web/src/features/admin/admin-access.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    /**
+     * The one screen that hands out a cross-tenant seat. Its two refusals —
+     * your own row, and an allow-listed address — are states worth looking at,
+     * because both are places an operator could otherwise lock somebody out.
+     */
+    purpose: 'Who may open the admin console: grant access by email, withdraw a grant.',
+    aliases: [
+      'AdminAccess',
+      'AdminUsers',
+      'GrantAdmin',
+      'AllowlistPanel',
+      'OperatorList',
+      'admin-access',
+    ],
+    features: ['R42'],
+    props: ['entries', 'currentUserId'],
+    states: [
+      'allow-listed only',
+      'allow-listed and granted',
+      'your own row',
+      'an address nobody has signed in with',
+      'granting',
+      'refused',
+    ],
+    reusable: false,
+    storyId: 'admin-adminaccesspanel',
+  },
+  {
     id: 'C066',
     name: 'Table',
     source: 'apps/web/src/components/ui/table.tsx',
@@ -1000,6 +1069,74 @@ export const registry: RegistryEntry[] = [
     ],
     reusable: true,
     storyId: 'forms-serviceinput',
+  },
+  {
+    id: 'C073',
+    name: 'AutocompletePanel',
+    source: 'apps/web/src/components/ui/autocomplete.tsx',
+    category: 'Search',
+    ownership: 'Shared',
+    purpose:
+      'The typeahead: 300ms debounce, abort, stale-answer guard, first row highlighted, arrow keys, combobox ARIA. NEW at R43 — knows nothing about what is in the list, so the vehicle search at F077 reuses it.',
+    aliases: [
+      'Autocomplete',
+      'useAutocomplete',
+      'Typeahead',
+      'Combobox',
+      'SearchSuggest',
+      'Suggest',
+      'Suggestions',
+      'Recommendations',
+      'HighlightedText',
+      'SearchDropdown',
+      'autocomplete',
+      'debounce',
+    ],
+    features: ['R43'],
+    props: ['autocomplete', 'label', 'placeholder', 'groupLabel', 'emptyMessage', 'children'],
+    states: [
+      'closed',
+      'loading',
+      'rows',
+      'nothing found',
+      'endpoint failed',
+      'stale answer dropped',
+    ],
+    reusable: true,
+    storyId: 'search-dealersearchbox',
+  },
+  {
+    id: 'C074',
+    name: 'DealerSearchBox',
+    source: 'apps/web/src/components/dealers/dealer-search-box.tsx',
+    category: 'Search',
+    ownership: 'Feature-specific',
+    purpose:
+      'The directory search with dealer recommendations. NEW at R43 — replaces the plain 260px input inside DirectoryFilters. Supplies the search term; the grid still filters on ?q=.',
+    aliases: [
+      'DealerAutocomplete',
+      'DealerTypeahead',
+      'DirectorySearch',
+      'DealerSearch',
+      'SearchDealers',
+      'dealer-search-box',
+      'YardSearch',
+    ],
+    features: ['R43', 'F085'],
+    props: ['q', 'district', 'city', 'districtName', 'onSearch', 'className'],
+    states: [
+      'empty',
+      'typing (debouncing)',
+      'loading',
+      'recommendations, first highlighted',
+      'arrowed to another row',
+      'matched on a place',
+      'nothing found',
+      'endpoint failed',
+      'a search already applied',
+    ],
+    reusable: false,
+    storyId: 'search-dealersearchbox',
   },
 ];
 

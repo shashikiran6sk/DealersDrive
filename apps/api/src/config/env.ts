@@ -109,17 +109,25 @@ const envSchema = z.object({
   /**
    * Who may hold an admin session, by verified Google address.
    *
-   * This is the **entire** admin authorization model, and it is deliberately a
-   * list of addresses in the environment rather than a flag on a row. Two
-   * consequences worth being explicit about:
+   * This was the **entire** admin authorization model until **R42**, and it is
+   * still the first half: a list of addresses in the environment rather than a
+   * flag on a row. Two consequences worth being explicit about:
    *
-   *  - Adding an admin is a deploy, not a database write. That is the cost, and
-   *    it buys the property that no bug in an admin screen — no mass update, no
-   *    seed run against the wrong database, no unguarded `isPlatformAdmin`
-   *    write — can promote anybody, because the row is not what is consulted.
+   *  - An address here cannot be added or removed from the console. That is the
+   *    cost, and it buys the property that no bug in an admin screen — no mass
+   *    update, no seed run against the wrong database, no unguarded
+   *    `isPlatformAdmin` write — can promote anybody on this list, because the
+   *    list is not in the database.
    *  - Removing an address takes effect on the next request. The allow-list is
    *    checked when the session is issued *and* when it is resolved, so
    *    deleting a name here revokes a console that is already open.
+   *
+   * **The second half, since R42.** A SUPER_ADMIN can grant admin access from
+   * the settings screen, which writes a `user_roles` row with `grantedBy` set.
+   * `grantedBy` is the whole distinction: every admin sign-in leaves an ADMIN
+   * seat behind, so a seat's *existence* means only "has signed in once" —
+   * reading that as permission would make this list vacuous. A grant is
+   * withdrawn the same way it was made, and it never touches this variable.
    *
    * Comma-separated, compared case-insensitively. Empty means no one may sign
    * in to the admin console at all, which is the right failure: a
@@ -460,7 +468,7 @@ export type Env = z.infer<typeof envSchema> & {
   readonly isDevelopment: boolean;
   readonly isTest: boolean;
   readonly webOrigins: string[];
-  /** `ADMIN_ALLOWLIST`, split and lower-cased. The admin authorization model. */
+  /** `ADMIN_ALLOWLIST`, split and lower-cased. Half the admin authorization model — see R42 for the other. */
   readonly adminAllowlist: string[];
 };
 

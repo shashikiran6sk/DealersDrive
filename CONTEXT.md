@@ -471,11 +471,78 @@ into its own deployment configuration, which is a stronger claim than the email
 match, and without it the seeded admin row and the Google identity could never
 be joined.
 
-**What was traded away.** Adding an admin is now a deploy rather than a database
-write, and the account recovery story is Google's rather than ours. Both are
-deliberate: the first buys the property that no bug in an admin screen can
-promote anybody, because the row is not what is consulted; the second removes
-the only password this product ever stored.
+**What was traded away.** The account recovery story is Google's rather than
+ours, which removes the only password this product ever stored.
+
+**And what R42 traded back.** Adding an admin used to be a deploy. It is now
+also a row: a SUPER_ADMIN grants access by email on the settings screen, which
+writes a `user_roles` seat with `grantedBy` set.
+
+`grantedBy` is the whole of the distinction and it is worth understanding before
+touching either check. **Every admin sign-in already leaves an ADMIN seat
+behind** (R41's `ensureSeat`), so a seat's _existence_ means "has signed in
+once" and nothing more — reading it as permission would make `ADMIN_ALLOWLIST`
+vacuous, and an address removed from the environment would go on working
+forever on the strength of its own last visit. Only `grantSeat` sets
+`grantedBy`, and only the settings screen calls it.
+
+So the allow-list keeps its original property for the addresses on it: they
+cannot be added or removed from inside the product. What a grant adds is a
+second, auditable list that can be — and the console shows which row came from
+where, refusing to offer a Withdraw control for an allow-listed address rather
+than offering one that could not keep its promise.
+
+---
+
+## 7e2. One person, two seats — and why `users.status` is not the switch (R41)
+
+`users.status` is an **account**: one flag for the whole person, every door.
+That is the right unit for exactly one thing — an account the platform is
+closing altogether — and it was the wrong unit for the one place that used it.
+
+Suspending a dealership used to write `SUSPENDED` onto every member's `users`
+row and revoke every session they held. For most dealerships that is
+indistinguishable from the right behaviour. For a member who is _also_ a
+platform admin it is not: the admin console went dark because of a decision
+about a yard in Vellore, and nothing in the console said so. One human, two
+jobs, one switch between them.
+
+`user_roles` is the per-seat layer. One row per (person, role), where role is
+`DEALER` or `ADMIN` — deliberately neither `DealerRole` (OWNER/MANAGER/SALES, a
+rank _inside_ one dealership) nor `AdminRole` (SUPPORT/MODERATOR/SUPER_ADMIN, a
+rank inside the console). This is which door you may enter at all.
+
+**The rule is one sentence, and it is what makes the table safe.** A seat row
+refuses its role when it is `SUSPENDED`; an absent row says nothing. It can
+close a door and it can never open one, so every check that existed before it —
+the dealership's own status, `isPlatformAdmin`, `ADMIN_ALLOWLIST` — still
+decides, and this is a veto laid over the top.
+
+Three consequences worth knowing:
+
+- **`setDealerStatus` writes seats, not accounts.** `setSeatStatus(tx, { role:
+'DEALER' })`, exported through `auth.facade.ts` because `users`, `sessions`
+  and `user_roles` are one model with one owner.
+- **Session revocation is scoped.** `session.updateMany` on suspension carries
+  `scope: 'DEALER'`. An admin session the same person holds is untouched, which
+  is the whole point; `revokeAllForUser` takes an optional scope for the same
+  reason and still means _everything_ when it is omitted.
+- **Signing in never reopens a seat.** `ensureSeat` upserts with an empty
+  `update`. A suspension that a dealer could lift by pressing the button again
+  would not be a suspension.
+
+The migration backfills a `DEALER` seat for every member, an `ADMIN` seat for
+every platform admin, and then **releases `users.status` for the accounts a
+dealership suspension had set**. That last statement is safe because
+`setDealerStatus` was the only writer of `users.status = 'SUSPENDED'` in the
+codebase; every such account was suspended by a dealership decision, which the
+first statement has just recorded in the place it belongs.
+
+⚠️ The test suite now runs with **two** addresses on `ADMIN_ALLOWLIST`
+(`apps/api/vitest.config.ts`), because proving this needs one operator to
+suspend a dealership whose owner holds an operations seat of their own. Anything
+asserting on how many emails an admin fan-out produces has to count distinct
+templates rather than messages.
 
 ---
 
@@ -852,6 +919,40 @@ The API sends `Cache-Control: public, max-age=300` as well. It is not a factor
 today — nothing between the Next server and the API caches, and no browser
 reaches those routes — but it will be the day a CDN goes in front of the API,
 and no tag can clear that one.
+
+---
+
+## 8c. A debounce is not what makes a typeahead correct (R43)
+
+The directory's search box asks an endpoint while somebody is typing, and there
+are **three** defences in it. The first two are the ones everybody writes. The
+third is the one that is usually missing, and it is the only one that catches
+the bug a user actually sees.
+
+1. **Debounce** — `lib/use-debounced-value.ts`, 300 ms. Stops it asking per
+   keystroke. "vellore" is one request, not seven.
+2. **Abort** — an `AbortController` in the effect's cleanup. Cancels the request
+   the buyer has already typed past, and covers unmount for free.
+3. **The stale guard** — every suggest response **echoes the search it
+   answered**, and a reply that is not the current question is dropped.
+
+Three exists because of what one and two cannot do. Once bytes are on the wire,
+abort is advisory: a two-character query against a cold cache can resolve _after_
+the four-character one that replaced it, and the dropdown then shows answers to
+something the buyer finished typing past half a second ago. Nothing throws;
+nothing logs; the list is simply wrong, intermittently, and only for fast
+typists — which is to say, never on the machine of whoever is debugging it.
+
+`DealerSuggestResponse.search` exists for this and for nothing else. **A suggest
+endpoint added later must echo its query back too**, or the generic
+`useAutocomplete` cannot be made correct over it — the field is part of the
+`SuggestPayload<T>` contract, not a convenience.
+
+The related trap, and the reason for the `chosen` ref in `useAutocomplete`:
+choosing a row writes that row's label into the input, which is a change to the
+value, which debounces into a request for the thing that was just chosen — and
+reopens the dropdown over a page that is already navigating. Any control that
+writes to its own input needs to remember that it did.
 
 ---
 

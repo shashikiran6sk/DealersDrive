@@ -29,7 +29,18 @@ export function createDevSessionResolver(prisma: PrismaClient): SessionResolver 
       where: { slug: env.DEV_DEALER_SLUG },
       include: {
         members: {
-          where: { status: 'ACTIVE', role: 'OWNER', user: { status: 'ACTIVE' } },
+          where: {
+            status: 'ACTIVE',
+            role: 'OWNER',
+            user: {
+              status: 'ACTIVE',
+              // The dealer seat, matching what the cookie resolver checks
+              // (**R41**). A suspension closes this one and leaves an admin
+              // seat the same person holds open — which `resolveAdmin` below
+              // asks about separately.
+              roles: { none: { role: 'DEALER', status: 'SUSPENDED' } },
+            },
+          },
           take: 1,
           orderBy: { id: 'asc' },
         },
@@ -64,7 +75,11 @@ export function createDevSessionResolver(prisma: PrismaClient): SessionResolver 
       if (!email) return null;
 
       const user = await prisma.user.findFirst({
-        where: { email, isPlatformAdmin: true },
+        where: {
+          email,
+          isPlatformAdmin: true,
+          roles: { none: { role: 'ADMIN', status: 'SUSPENDED' } },
+        },
       });
 
       if (!user?.adminRole) return null;

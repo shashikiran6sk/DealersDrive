@@ -30,6 +30,15 @@ const ENV = {
   RATE_LIMIT_ENABLED: 'false',
   LOG_LEVEL: 'silent',
   STORAGE_LOCAL_DIR: '.storage-test',
+  /*
+   * Two addresses, not the one the default carries (**R41**).
+   *
+   * `auth.test.ts` needs an operator to suspend a dealership whose owner holds
+   * an operations seat of their own — two distinct allow-listed people. The
+   * first entry stays exactly what it was, because the seed creates a row for
+   * it and several tests reach for `adminAllowlist[0]` by name.
+   */
+  ADMIN_ALLOWLIST: 'shashikiran6.sk@gmail.com,dual.seat@dealers-drive.test',
   // Local disk, not MinIO: the suite must not need a container running, and
   // the presign→PUT→commit contract it exercises is identical either way.
   STORAGE_DRIVER: 'local',

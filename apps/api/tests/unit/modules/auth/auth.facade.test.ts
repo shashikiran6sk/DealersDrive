@@ -25,9 +25,32 @@ function filesUnder(directory: string): string[] {
 }
 
 describe('the exported surface', () => {
-  it('exposes only the two permission helpers at runtime', () => {
+  /**
+   * The permission helpers, the seat writers (**R41**) and the allow-list
+   * question (**R42**).
+   *
+   * The seat helpers are here because `users.status`, `sessions` and
+   * `user_roles` are one model with one owner: the admin console has to close a
+   * dealer seat when it suspends a dealership, and to hand an operations seat
+   * over on the settings screen. Exporting them is what keeps those writes
+   * inside auth rather than letting moderation reach for `prisma.userRole`.
+   *
+   * None of them widens what the facade can do: each takes a database handle
+   * and a role, and none returns or builds a principal. `isAllowlistedAdmin`
+   * answers a question about an address and hands out nothing at all.
+   */
+  it('exposes only the permission helpers, the seat writers and the allow-list check', () => {
     expect(Object.keys(auth).sort()).toEqual(
-      ['permissionsForAdminRole', 'permissionsForRole'].sort(),
+      [
+        'ensureSeat',
+        'grantSeat',
+        'hasGrantedSeat',
+        'isAllowlistedAdmin',
+        'isSeatSuspended',
+        'permissionsForAdminRole',
+        'permissionsForRole',
+        'setSeatStatus',
+      ].sort(),
     );
   });
 
