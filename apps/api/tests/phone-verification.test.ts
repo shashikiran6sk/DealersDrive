@@ -89,6 +89,86 @@ describe('the widget configuration', () => {
   });
 });
 
+describe('asking whether a number is free', () => {
+  it('is refused without a session', async () => {
+    await h.agent().post('/v1/auth/phone/availability').send({ phone: '9842200001' }).expect(401);
+  });
+
+  it('says yes to a number nobody holds', async () => {
+    const agent = await signedIn();
+
+    await agent.post('/v1/auth/phone/availability').send({ phone: freeNumber() }).expect(204);
+  });
+
+  it('says yes to the number this account already holds', async () => {
+    const agent = await signedIn();
+    const phone = freeNumber();
+    await agent
+      .post('/v1/auth/phone/verify')
+      .send({ phone, accessToken: devToken(phone) })
+      .expect(200);
+
+    await agent.post('/v1/auth/phone/availability').send({ phone }).expect(204);
+  });
+
+  /**
+   * The point of the endpoint: this refusal used to arrive *with the
+   * verification*, which meant an SMS had already been paid for and delivered
+   * to a handset whose owner never asked for one.
+   */
+  it('refuses a number another account holds, before anything is sent', async () => {
+    const first = await signedIn();
+    const phone = freeNumber();
+    await first
+      .post('/v1/auth/phone/verify')
+      .send({ phone, accessToken: devToken(phone) })
+      .expect(200);
+
+    const second = await signedIn();
+    const refused = await second.post('/v1/auth/phone/availability').send({ phone }).expect(409);
+
+    expect(refused.body.code).toBe('PHONE_ALREADY_REGISTERED');
+    // Named as the client sent it, so the wizard marks the box on step 1.
+    expect(JSON.stringify(refused.body.errors)).toContain('body.phone');
+  });
+
+  /** It answers about the caller's own claim, and says nothing about anyone else. */
+  it('never says who holds a taken number', async () => {
+    const first = await signedIn();
+    const phone = freeNumber();
+    await first
+      .post('/v1/auth/phone/verify')
+      .send({ phone, accessToken: devToken(phone) })
+      .expect(200);
+    const holder = await h.prisma.user.findUnique({ where: { phone: `+91${phone}` } });
+
+    const second = await signedIn();
+    const refused = await second.post('/v1/auth/phone/availability').send({ phone }).expect(409);
+
+    const body = JSON.stringify(refused.body);
+    expect(body).not.toContain(holder?.id ?? 'no-holder');
+    expect(body).not.toContain(holder?.email ?? 'no-email');
+  });
+
+  it('refuses something that is not an Indian mobile number', async () => {
+    const agent = await signedIn();
+
+    await agent.post('/v1/auth/phone/availability').send({ phone: '12345' }).expect(400);
+  });
+
+  /** Rule 2 — an unknown field is a 400 that names it. */
+  it('refuses a body carrying anything else', async () => {
+    const agent = await signedIn();
+
+    const refused = await agent
+      .post('/v1/auth/phone/availability')
+      .send({ phone: freeNumber(), userId: 'someone-else' })
+      .expect(400);
+
+    expect(JSON.stringify(refused.body.errors)).toContain('userId');
+  });
+});
+
 describe('proving a number', () => {
   it('is refused without a session', async () => {
     await h

@@ -1,4 +1,8 @@
-import { OnboardingInput, VerifyPhoneInput } from '@dealers-drive/contracts';
+import {
+  OnboardingInput,
+  PhoneAvailabilityInput,
+  VerifyPhoneInput,
+} from '@dealers-drive/contracts';
 import { Router, type Request } from 'express';
 
 import { env } from '../../config/env.js';
@@ -249,7 +253,48 @@ export function createSessionAuthRouter(
   );
 
   /**
-   * B8b — the widget's access token, checked with MSG91 and recorded.
+   * B8b — may this account claim this number?
+   *
+   * The first of the two calls step 1 makes, and the cheap one. It is asked
+   * before the browser sends anything, because the send is the browser's and
+   * the API cannot refuse one that is already on its way — so a number
+   * somebody else holds has to be caught here or not at all, and "not at all"
+   * means paying for a message to tell a dealer they cannot have their own
+   * number.
+   *
+   * **Rate-limited because it is a lookup about other people's numbers.** A
+   * yes/no about whether the platform knows a number is a yes/no somebody
+   * could walk a list through, so it is behind the session like everything
+   * else here and capped at the same order as the widget itself. It never says
+   * who holds one.
+   */
+  router.post(
+    '/phone/availability',
+    rateLimit('auth.phone.availability', {
+      limit: 30,
+      windowSeconds: 3600,
+      keyBy: byUser,
+      code: 'PHONE_OTP_RATE_LIMITED',
+      message: 'Too many verification attempts. Try again in a little while.',
+    }),
+    validate({ body: PhoneAvailabilityInput }),
+    (req, res, next) => {
+      void (async () => {
+        try {
+          const principal = signedInPrincipal(req);
+          const body = validated<PhoneAvailabilityInput>(req, 'body');
+          await phone.assertAvailable(principal.userId, body);
+          res.set('Cache-Control', 'no-store');
+          res.status(204).end();
+        } catch (error) {
+          next(error);
+        }
+      })();
+    },
+  );
+
+  /**
+   * B8c — the widget's access token, checked with MSG91 and recorded.
    *
    * The tighter of the two limits, because this is the one that writes. Ten
    * presentations in ten minutes covers a dealer who mistypes a code twice and

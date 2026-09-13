@@ -4,6 +4,7 @@ import type { PrismaClient } from '@prisma/client';
 import {
   formatPhone,
   toE164,
+  type PhoneAvailabilityInput,
   type PhoneOtpWidget,
   type VerifyPhoneInput,
   type VerifyPhoneResponse,
@@ -102,6 +103,31 @@ export function createPhoneService({ prisma, otp, cache }: PhoneServiceDeps) {
       }
 
       return { enabled: true, driver: 'msg91', widgetId, tokenAuth, devCode: null, reason: null };
+    },
+
+    /**
+     * B8b — is this number free for this account to claim?
+     *
+     * Called before the widget sends anything, which is the only reason it
+     * exists as its own endpoint: the send happens in the browser, so the API
+     * cannot refuse one in flight. The alternative — letting the refusal arrive
+     * with the verification — spends an SMS to tell a dealer their number
+     * belongs to somebody else, and delivers it to a handset whose owner did
+     * not ask for it.
+     *
+     * The read is not the guarantee and is not pretending to be one. Two people
+     * can pass this check for the same number at the same instant; the unique
+     * index on `users.phone` decides, and `verify` below answers the loser with
+     * the same refusal. This is the cheap, early copy of a question that is
+     * asked again where it can actually be enforced.
+     *
+     * Deliberately says nothing about who holds a taken number — see
+     * `PhoneAvailabilityInput` for why that matters.
+     */
+    async assertAvailable(userId: string, input: PhoneAvailabilityInput): Promise<void> {
+      const phone = toE164(input.phone);
+      const holder = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
+      if (holder && holder.id !== userId) throw alreadyRegistered();
     },
 
     /**

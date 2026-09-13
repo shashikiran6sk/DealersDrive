@@ -299,6 +299,40 @@ export const authDocs: ModuleDocs = {
     },
     {
       method: 'post',
+      path: '/v1/auth/phone/availability',
+      operationId: 'checkPhoneAvailability',
+      tag: 'Authentication',
+      summary: 'May this account claim this number?',
+      description:
+        'The first of the two calls onboarding step 1 makes, and the cheap one (**R39**). Step 1 ' +
+        'asks three questions in order — is it a number, is it free, then send — and only the ' +
+        'third costs anything.\n\n' +
+        '**It exists because the send is the browser\u2019s.** MSG91\u2019s widget sends the SMS, ' +
+        'so the API cannot refuse one already in flight: a number another dealership holds is ' +
+        'either caught here or caught at verification, and the second spends a message to tell a ' +
+        'dealer they cannot have their own number \u2014 delivered to a handset whose owner never ' +
+        'asked for one.\n\n' +
+        '`204` when the number is free for this account, including when this account already ' +
+        'holds it. `409 PHONE_ALREADY_REGISTERED` naming `body.phone` when another one does.\n\n' +
+        '**The read is not the guarantee.** Two callers can pass this at the same instant; the ' +
+        'unique index on `users.phone` decides, and `POST /v1/auth/phone/verify` answers the ' +
+        'loser with the same refusal. This is the early, cheap copy of a question that is asked ' +
+        'again where it can be enforced.\n\n' +
+        '**It never says who holds a number.** A yes/no about whether the platform knows a ' +
+        'number is something a caller could walk a list through, so it is behind the session and ' +
+        'rate-limited to 30 an hour \u2014 and answers nothing but yes or no. The phone is in the ' +
+        'body rather than the query string for the same reason a dealer\u2019s number is kept out ' +
+        'of URLs everywhere else: access logs.',
+      audience: 'dealer',
+      requestBody: {
+        schema: 'PhoneAvailabilityInput',
+        example: { phone: '9840012345' },
+      },
+      responses: [{ status: 204, description: 'The number is free for this account to claim.' }],
+      errors: [400, 401, 409, 429],
+    },
+    {
+      method: 'post',
       path: '/v1/auth/phone/verify',
       operationId: 'verifyPhone',
       tag: 'Authentication',

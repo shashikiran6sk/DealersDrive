@@ -4575,6 +4575,30 @@ collision is now answered at the moment the claim is made, on the step that
 owns the field, instead of two steps later when the dealer has finished typing
 their address.
 
+### Three questions, in order, and only the third costs anything
+
+Step 1 asks: **is it a number** (in the browser, the same predicate the API
+validates with) · **is it free** (`POST /v1/auth/phone/availability`) · then
+sends.
+
+The middle one is not an optimisation. The uniqueness refusal used to arrive
+_with the verification_, which meant a dealer who typed a number another
+dealership holds paid for an SMS, read the code off their own handset, and only
+then learned they could not have it — and the message was delivered to a phone
+whose owner had never asked for one. It is the same refusal, the same message
+and the same field; it is asked a round trip earlier because that is where it is
+free.
+
+The early read is **not** the guarantee and does not pretend to be. Two callers
+can pass it for one number at the same instant; the unique index decides, and
+`verify` answers the loser identically. It is the cheap copy of a question that
+is asked again where it can be enforced.
+
+It answers `204` or `409` and nothing else — never who holds a number. A yes/no
+about what the platform knows is something a caller could walk a list through,
+so it sits behind the session like the rest of this module and is capped at the
+same order as the widget itself.
+
 ### The widget, and what it costs us
 
 **MSG91's widget sends the SMS from the browser.** The six digits never reach
@@ -4618,13 +4642,15 @@ accepting any valid token for any number.
 
 - **Schema** none — `users.phone` and `users.phoneVerifiedAt` have existed since
   F014 and were both unused for what they describe
-- **Contracts** `PhoneOtpWidget`, `VerifyPhoneInput`, `VerifyPhoneResponse` and
-  `AuthSession.user.phoneVerified` in `packages/contracts/src/auth.ts`
+- **Contracts** `PhoneOtpWidget`, `PhoneAvailabilityInput`, `VerifyPhoneInput`,
+  `VerifyPhoneResponse` and `AuthSession.user.phoneVerified` in
+  `packages/contracts/src/auth.ts`
 - **Backend** `platform/phone-otp/{phone-otp.port,fake.adapter,msg91.adapter,factory}.ts`,
   `modules/auth/{phone.service,verified-phone,auth.routes,auth.docs,auth.facade,auth.service,session.port,cookie-session.adapter}.ts`,
   `modules/dealers/dealers.service.ts`, `container.ts`, `routes.ts`,
   `config/env.ts`, `docs/schemas.ts` (`INPUT_SCHEMA_NAMES`)
-- **API** `GET /v1/auth/phone/widget`, `POST /v1/auth/phone/verify`
+- **API** `GET /v1/auth/phone/widget`, `POST /v1/auth/phone/availability`,
+  `POST /v1/auth/phone/verify`
 - **Config** `PHONE_OTP_DRIVER` (`fake` · `msg91`), `MSG91_WIDGET_ID`,
   `MSG91_WIDGET_TOKEN`, `PHONE_OTP_DEV_CODE`, `PHONE_OTP_TIMEOUT_MS`;
   `MSG91_AUTH_KEY` is shared with `SMS_DRIVER` and is server-only

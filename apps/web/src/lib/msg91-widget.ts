@@ -223,9 +223,26 @@ export function sendMsg91Otp(identifier: string): Promise<void> {
   });
 }
 
-/** `retryOtp`. `null` is the documented channel value for a default widget. */
-export function retryMsg91Otp(): Promise<void> {
-  return call('retryOtp', (target, resolve, reject) => {
+/**
+ * Resend, by whichever route the widget will actually take.
+ *
+ * `retryOtp` is the documented one, and `null` is the documented channel value
+ * for a default configuration. It is also the one that fails on a widget whose
+ * settings name no retry channel — `retry method not provided` — and that is a
+ * dashboard setting, not something the page can fix or the dealer should care
+ * about. A resend that does nothing is worse than a resend that takes the long
+ * way round.
+ *
+ * So the long way round is the fallback: `sendOtp` again, which is the same
+ * operation from the dealer's side and is known to work, because it is how the
+ * first code got there. MSG91 issues a fresh request and `verifyOtp` checks
+ * against the latest, which is exactly what "send it again" means.
+ *
+ * The failure is logged rather than swallowed — a deployment that falls back on
+ * every resend has a widget to configure, and that should be visible.
+ */
+export function retryMsg91Otp(identifier: string): Promise<void> {
+  return call<void>('retryOtp', (target, resolve, reject) => {
     target.retryOtp?.(
       null,
       () => {
@@ -233,6 +250,13 @@ export function retryMsg91Otp(): Promise<void> {
       },
       reject,
     );
+  }).catch(async (error: unknown) => {
+    console.warn(
+      '[msg91] retryOtp was refused; resending instead. Configure a retry channel on the widget ' +
+        'to use the provider’s own resend.',
+      error,
+    );
+    await sendMsg91Otp(identifier);
   });
 }
 

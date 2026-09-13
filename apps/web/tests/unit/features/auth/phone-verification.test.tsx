@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PhoneVerification } from '@/features/auth/phone-verification';
-import { verifyPhoneAction } from '@/features/auth/phone-actions';
+import { checkPhoneAvailabilityAction, verifyPhoneAction } from '@/features/auth/phone-actions';
 
 /**
  * R39 — the four states of step 1's mobile check.
@@ -21,6 +21,7 @@ import { verifyPhoneAction } from '@/features/auth/phone-actions';
  * the server action and the refusals, is the production path.
  */
 vi.mock('@/features/auth/phone-actions', () => ({
+  checkPhoneAvailabilityAction: vi.fn(),
   verifyPhoneAction: vi.fn(),
 }));
 
@@ -42,6 +43,7 @@ function renderPanel(overrides: Partial<Parameters<typeof PhoneVerification>[0]>
     onVerified: vi.fn(),
     onContinue: vi.fn(),
     onBeforeSend: vi.fn(() => true),
+    onRefused: vi.fn(),
     ...overrides,
   };
   render(<PhoneVerification {...props} />);
@@ -63,6 +65,8 @@ async function sendAndEnter(user: ReturnType<typeof userEvent.setup>, code: stri
 
 beforeEach(() => {
   vi.mocked(verifyPhoneAction).mockReset();
+  // Free unless a case says otherwise — step 1 asks this before every send.
+  vi.mocked(checkPhoneAvailabilityAction).mockReset().mockResolvedValue({});
 });
 
 describe('PhoneVerification', () => {
@@ -213,6 +217,49 @@ describe('PhoneVerification', () => {
 
     expect(screen.getByText('Mobile verification is unavailable')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send OTP' })).toBeNull();
+  });
+
+  /**
+   * The ordering the whole check rests on: is it a number, is it free, then
+   * send. Only the third costs anything, and the second used to be answered by
+   * the verification — after the SMS had gone out.
+   */
+  it('asks whether the number is free before it sends anything', async () => {
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await screen.findAllByLabelText(/^Digit /);
+
+    expect(checkPhoneAvailabilityAction).toHaveBeenCalledWith('9840012345');
+  });
+
+  it('sends nothing when the number belongs to another dealership', async () => {
+    const user = userEvent.setup();
+    vi.mocked(checkPhoneAvailabilityAction).mockResolvedValue({
+      error: 'That mobile number is already registered to another dealership.',
+    });
+    const props = renderPanel();
+
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+
+    expect(await screen.findByText(/already registered to another dealership/)).toBeInTheDocument();
+    // No code panel: nothing was sent, so there is nothing to type.
+    expect(screen.queryAllByLabelText(/^Digit /)).toHaveLength(0);
+    // And the step is told, so the message lands under the box too.
+    expect(props.onRefused).toHaveBeenCalledWith(
+      'That mobile number is already registered to another dealership.',
+    );
+  });
+
+  /** The number has not changed since the check that let the first code out. */
+  it('does not re-check on a resend', async () => {
+    const user = userEvent.setup();
+    renderPanel({ initialStage: 'code' });
+
+    await user.click(screen.getByRole('button', { name: 'Resend code' }));
+
+    expect(checkPhoneAvailabilityAction).not.toHaveBeenCalled();
   });
 
   /** The sandbox's way into the states a real message would otherwise be needed for. */

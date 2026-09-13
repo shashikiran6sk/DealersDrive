@@ -108,6 +108,56 @@ describe('the widget configuration', () => {
   });
 });
 
+describe('asking whether a number is free', () => {
+  function service(prisma = prismaWith(null)) {
+    return createPhoneService({ prisma, otp: otpAnswering(VERIFIED), cache });
+  }
+
+  it('passes a number nobody holds', async () => {
+    await expect(service().assertAvailable(USER, { phone: '9840012345' })).resolves.toBeUndefined();
+  });
+
+  it('passes the number this account already holds', async () => {
+    const prisma = prismaWith({ id: USER });
+
+    await expect(
+      service(prisma).assertAvailable(USER, { phone: '9840012345' }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('refuses a number another account holds', async () => {
+    const prisma = prismaWith({ id: 'somebody-else' });
+
+    await expect(
+      service(prisma).assertAvailable(USER, { phone: '9840012345' }),
+    ).rejects.toMatchObject({ code: 'PHONE_ALREADY_REGISTERED', status: 409 });
+  });
+
+  /**
+   * The index is over the stored string, so the question has to be asked about
+   * the same string a write would store — `98400 12345` and `+919840012345`
+   * are one number.
+   */
+  it('normalises before it asks', async () => {
+    const prisma = prismaWith(null);
+    await service(prisma).assertAvailable(USER, { phone: '98400 12345' });
+
+    expect(prisma.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { phone: '+919840012345' } }),
+    );
+  });
+
+  /** It costs no provider call: the whole point is to run before one. */
+  it('does not touch the provider', async () => {
+    const otp = otpAnswering(VERIFIED);
+    await createPhoneService({ prisma: prismaWith(null), otp, cache }).assertAvailable(USER, {
+      phone: '9840012345',
+    });
+
+    expect(otp.identify).not.toHaveBeenCalled();
+  });
+});
+
 describe('verifying a number', () => {
   function service(otp: PhoneOtpPort, prisma = prismaWith(null)) {
     return createPhoneService({ prisma, otp, cache });

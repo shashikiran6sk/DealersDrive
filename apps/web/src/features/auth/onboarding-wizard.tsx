@@ -325,6 +325,11 @@ export function OnboardingWizard({
               fullName={fullName}
               verified={phoneVerified}
               onBeforeSend={continueFromAccount}
+              onRefused={(message) => {
+                // Against the box, not only in the panel — it is a refusal
+                // about the number the dealer typed.
+                setAccountErrors((found) => ({ ...found, phone: message }));
+              }}
               onVerified={(verified) => {
                 setVerifiedPhone(localDigits(verified));
               }}

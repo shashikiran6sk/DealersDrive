@@ -324,6 +324,27 @@ export const PhoneOtpWidget = z.object({
 export type PhoneOtpWidget = z.infer<typeof PhoneOtpWidget>;
 
 /**
+ * `POST /v1/auth/phone/availability` — may this account claim this number?
+ *
+ * Asked **before** a message is sent, and that ordering is the whole point.
+ * The uniqueness refusal used to arrive with the verification: the dealer typed
+ * a number somebody else holds, an SMS went to it, they read the code off a
+ * handset that is theirs, and only then were they told the number is taken.
+ * That is a wasted send, a wasted minute, and a message delivered to a phone
+ * whose owner never asked for one.
+ *
+ * So step 1 asks three questions in order — is it a number, is it free, then
+ * send — and only the third costs anything.
+ *
+ * It answers `204` or `409`, and nothing else. There is no shape here that says
+ * *who* holds a number: this is a yes/no about the caller's own ability to
+ * claim one, behind a session and rate-limited, precisely so it cannot become a
+ * way to ask the platform which numbers it knows.
+ */
+export const PhoneAvailabilityInput = z.object({ phone: IndianMobile }).strict();
+export type PhoneAvailabilityInput = z.infer<typeof PhoneAvailabilityInput>;
+
+/**
  * `POST /v1/auth/phone/verify` — the widget's access token, and the number it
  * is claimed to prove.
  *

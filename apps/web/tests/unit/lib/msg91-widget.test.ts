@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   loadMsg91Widget,
   resetMsg91Widget,
+  retryMsg91Otp,
   sendMsg91Otp,
   verifyMsg91Otp,
 } from '@/lib/msg91-widget';
@@ -26,6 +27,7 @@ import {
 interface FakeWidget {
   initSendOTP: ReturnType<typeof vi.fn<(...args: unknown[]) => void>>;
   sendOtp: ReturnType<typeof vi.fn>;
+  retryOtp: ReturnType<typeof vi.fn>;
   verifyOtp: ReturnType<typeof vi.fn>;
 }
 
@@ -41,6 +43,9 @@ function installScript(): FakeWidget {
   const fake: FakeWidget = {
     initSendOTP: vi.fn(),
     sendOtp: vi.fn((_id: string, success: (data: unknown) => void) => {
+      success({ type: 'success' });
+    }),
+    retryOtp: vi.fn((_channel: string | null, success: (data: unknown) => void) => {
       success({ type: 'success' });
     }),
     verifyOtp: vi.fn(),
@@ -61,7 +66,7 @@ function installScript(): FakeWidget {
         const expose = () => {
           Object.assign(window, {
             sendOtp: fake.sendOtp,
-            retryOtp: vi.fn(),
+            retryOtp: fake.retryOtp,
             verifyOtp: fake.verifyOtp,
           });
         };
@@ -239,5 +244,66 @@ describe('a widget that never answers', () => {
     await vi.advanceTimersByTimeAsync(25_000);
 
     await expect(pending).resolves.toMatch(/did not respond to verifyOtp/);
+  });
+});
+
+/**
+ * Resend, and the widget setting that breaks it.
+ *
+ * `retryOtp` is the documented resend, and it answers `retry method not
+ * provided` on a widget whose settings name no retry channel — which is a
+ * dashboard setting, invisible from here, and not something a dealer can do
+ * anything about. A Resend button that silently does nothing is worse than one
+ * that takes the long way round.
+ */
+describe('retryMsg91Otp', () => {
+  async function ready(): Promise<FakeWidget> {
+    const fake = installScript();
+    await loadMsg91Widget({ widgetId: 'w1', tokenAuth: 't1' });
+    return fake;
+  }
+
+  it('uses the provider’s own resend when the widget offers one', async () => {
+    const fake = await ready();
+
+    await retryMsg91Otp('919840012345');
+
+    expect(fake.retryOtp).toHaveBeenCalledOnce();
+    // `null` is the documented channel for a default configuration.
+    expect(fake.retryOtp.mock.calls[0]?.[0]).toBeNull();
+    expect(fake.sendOtp).not.toHaveBeenCalled();
+  });
+
+  it('sends again when the widget has no retry channel configured', async () => {
+    const fake = await ready();
+    fake.retryOtp.mockImplementation(
+      (_channel: string | null, _success: unknown, failure: (error: unknown) => void) => {
+        failure(new Error('retry method not provided'));
+      },
+    );
+
+    await retryMsg91Otp('919840012345');
+
+    expect(fake.sendOtp).toHaveBeenCalledWith(
+      '919840012345',
+      expect.any(Function),
+      expect.any(Function),
+    );
+  });
+
+  /** A resend that cannot happen at all is still a rejection, not a hang. */
+  it('rejects when neither route works', async () => {
+    const fake = await ready();
+    const refuse = (
+      _first: unknown,
+      _success: unknown,
+      failure: (error: unknown) => void,
+    ): void => {
+      failure(new Error('nope'));
+    };
+    fake.retryOtp.mockImplementation(refuse);
+    fake.sendOtp.mockImplementation(refuse);
+
+    await expect(retryMsg91Otp('919840012345')).rejects.toThrow('nope');
   });
 });

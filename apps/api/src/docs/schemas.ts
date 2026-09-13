@@ -67,6 +67,7 @@ const INPUT_SCHEMA_NAMES = [
   'ConfigKeyParam',
   'UpdateConfigInput',
   'GrantAdminAccessInput',
+  'PhoneAvailabilityInput',
   'VerifyPhoneInput',
   /*
    * ── Reconstruction slice ──────────────────────────────────────────────

@@ -21,6 +21,7 @@ import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-w
  * do without one, are the same on both drivers.
  */
 vi.mock('@/features/auth/phone-actions', () => ({
+  checkPhoneAvailabilityAction: vi.fn(() => Promise.resolve({})),
   verifyPhoneAction: vi.fn((phone: string) => Promise.resolve({ verified: true, phone })),
 }));
 

@@ -22,12 +22,28 @@ export interface PhoneVerificationState {
 export const phoneActionStub: {
   delayMs: number;
   result: PhoneVerificationState;
+  availability: { error?: string };
   calls: { phone: string; accessToken: string }[];
+  availabilityChecks: string[];
 } = {
   delayMs: 600,
   result: { verified: true },
+  availability: {},
   calls: [],
+  availabilityChecks: [],
 };
+
+/**
+ * `POST /v1/auth/phone/availability` — asked before anything is sent.
+ *
+ * Free by default. A story that wants the taken-number refusal sets
+ * `phoneActionStub.availability`.
+ */
+export async function checkPhoneAvailabilityAction(phone: string): Promise<{ error?: string }> {
+  phoneActionStub.availabilityChecks.push(phone);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  return phoneActionStub.availability;
+}
 
 export async function verifyPhoneAction(
   phone: string,

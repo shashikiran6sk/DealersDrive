@@ -41,6 +41,7 @@ function phoneService(): PhoneService {
       devCode: '123456',
       reason: null,
     }),
+    assertAvailable: () => Promise.resolve(),
     verify: () =>
       Promise.resolve({
         phone: '+919840012345',

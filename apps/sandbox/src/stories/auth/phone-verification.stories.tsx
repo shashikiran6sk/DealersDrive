@@ -101,6 +101,11 @@ const meta = {
   title: 'Forms/PhoneVerification',
   component: Harness,
   parameters: { layout: 'fullscreen' },
+  beforeEach: () => {
+    // Free, unless the story about a taken number says otherwise.
+    phoneActionStub.availability = {};
+    phoneActionStub.result = { verified: true };
+  },
 } satisfies Meta<typeof Harness>;
 
 export default meta;
@@ -111,7 +116,25 @@ export const SendCode: Story = {
   args: {},
   beforeEach: () => {
     phoneActionStub.result = { verified: true };
+    phoneActionStub.availability = {};
     phoneActionStub.calls = [];
+  },
+};
+
+/**
+ * The check that runs **before** a message is sent: the number belongs to
+ * another dealership, so nothing is sent at all.
+ *
+ * This refusal used to arrive with the verification — after the SMS had been
+ * paid for and delivered to a handset whose owner had never asked for one.
+ * Press **Send OTP** and watch it stop here.
+ */
+export const NumberAlreadyRegistered: Story = {
+  args: {},
+  beforeEach: () => {
+    phoneActionStub.availability = {
+      error: 'That mobile number is already registered to another dealership.',
+    };
   },
 };
 

@@ -1200,10 +1200,12 @@ export const registry: RegistryEntry[] = [
       'onVerified',
       'onContinue',
       'onBeforeSend',
+      'onRefused',
       'initialStage',
     ],
     states: [
       'send code',
+      'number already registered (before any send)',
       'code entry',
       'refused, attempts left',
       'attempts spent',

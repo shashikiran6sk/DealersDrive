@@ -1,6 +1,10 @@
 'use server';
 
-import { VerifyPhoneInput, type VerifyPhoneResponse } from '@dealers-drive/contracts';
+import {
+  PhoneAvailabilityInput,
+  VerifyPhoneInput,
+  type VerifyPhoneResponse,
+} from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
@@ -58,4 +62,34 @@ export async function verifyPhoneAction(
   revalidatePath('/dealer/onboarding');
 
   return { verified: true, phone: result.phone, phoneDisplay: result.phoneDisplay };
+}
+
+/**
+ * Is this number free, asked **before** a message is sent (**R39**).
+ *
+ * The order step 1 works in is: is it a number, is it free, then send. Only the
+ * third costs anything, and the second used to be answered by the verification
+ * — so a dealer who typed a number another dealership holds paid for an SMS,
+ * read the code off their own handset, and only then found out.
+ *
+ * `204` is free. Anything else is the API's own sentence, which is rendered
+ * against the phone box rather than as a banner: the refusal is about the value
+ * in front of them.
+ */
+export async function checkPhoneAvailabilityAction(phone: string): Promise<{ error?: string }> {
+  const parsed = PhoneAvailabilityInput.safeParse({ phone: phone.trim() });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Enter a 10-digit Indian mobile number.' };
+  }
+
+  try {
+    await apiSend<void>('POST', '/v1/auth/phone/availability', parsed.data);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { error: error.userMessage('That number could not be checked.') };
+    }
+    return { error: 'The API is unavailable. Try again shortly.' };
+  }
+
+  return {};
 }

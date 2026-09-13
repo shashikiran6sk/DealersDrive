@@ -6,7 +6,7 @@ import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { OtpInput } from '@/components/ui/otp-input';
 import { StatusTag } from '@/components/ui/primitives';
-import { verifyPhoneAction } from '@/features/auth/phone-actions';
+import { checkPhoneAvailabilityAction, verifyPhoneAction } from '@/features/auth/phone-actions';
 import { loadMsg91Widget, retryMsg91Otp, sendMsg91Otp, verifyMsg91Otp } from '@/lib/msg91-widget';
 
 /**
@@ -77,6 +77,16 @@ export interface PhoneVerificationProps {
    */
   onBeforeSend: (form: HTMLFormElement | null) => boolean;
   /**
+   * A refusal about the number itself, reported so the step can mark the box.
+   *
+   * "That mobile number is already registered to another dealership" is about
+   * the value in the input, not about this panel — so it belongs under the
+   * input, with `aria-invalid` on it, like every other field refusal in this
+   * form. The panel shows it too, because the panel is where the press
+   * happened.
+   */
+  onRefused?: (message: string) => void;
+  /**
    * Where the panel opens. `idle` in the product, always — this exists so the
    * sandbox can render the states that are otherwise only reachable by sending
    * a real message.
@@ -92,6 +102,7 @@ export function PhoneVerification({
   onVerified,
   onContinue,
   onBeforeSend,
+  onRefused,
   initialStage = 'idle',
 }: PhoneVerificationProps) {
   const captchaId = useId();
@@ -154,6 +165,29 @@ export function PhoneVerification({
     busy.current = true;
     setFailure(null);
     try {
+      /**
+       * Three questions, in this order, and only the third costs anything.
+       *
+       * `onBeforeSend` above asked whether it is a number. This asks whether it
+       * is *free* — before the widget sends, because the widget sends from the
+       * browser and the API cannot refuse a message already on its way. It used
+       * to be answered by the verification, which meant a dealer who typed a
+       * number another dealership holds paid for an SMS, read the code off
+       * their own handset, and only then was told they could not have it.
+       *
+       * Not repeated on a resend: the number has not changed since the check
+       * that let the first code out.
+       */
+      if (!resend) {
+        const available = await checkPhoneAvailabilityAction(phone);
+        if (available.error) {
+          onRefused?.(available.error);
+          setFailure(available.error);
+          setStage('idle');
+          return;
+        }
+      }
+
       if (widget.driver === 'msg91') {
         await loadMsg91Widget({
           widgetId: widget.widgetId ?? '',
@@ -161,7 +195,7 @@ export function PhoneVerification({
           captchaRenderId: captchaId,
         });
         // MSG91 wants `919840012345` — country code included, no `+`.
-        if (resend) await retryMsg91Otp();
+        if (resend) await retryMsg91Otp(identifierOf(phone));
         else await sendMsg91Otp(identifierOf(phone));
       }
 

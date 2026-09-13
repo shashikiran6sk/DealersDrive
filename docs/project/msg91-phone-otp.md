@@ -116,11 +116,16 @@ restart the API.
 The widget sends from the browser, so the API cannot count sends. What it does
 count:
 
-| Control                                   | Limit                  |
-| ----------------------------------------- | ---------------------- |
-| `GET /v1/auth/phone/widget`, per session  | 30 / hour              |
-| `POST /v1/auth/phone/verify`, per session | 10 / 10 minutes        |
-| One access token                          | one verification, ever |
+| Control                                         | Limit                  |
+| ----------------------------------------------- | ---------------------- |
+| `GET /v1/auth/phone/widget`, per session        | 30 / hour              |
+| `POST /v1/auth/phone/availability`, per session | 30 / hour              |
+| `POST /v1/auth/phone/verify`, per session       | 10 / 10 minutes        |
+| One access token                                | one verification, ever |
+
+The availability limit is there because that endpoint is a lookup about numbers
+the caller does not own. It answers nothing but yes or no, and never who holds
+one — but a yes/no is still something a caller could walk a list through.
 
 And what it does not: **how many messages one signed-in account can provoke.**
 `GET /v1/auth/phone/widget` behind `requireSignedIn` bounds that by the set of
