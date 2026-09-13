@@ -1,3 +1,4 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../src/config/env.js';
@@ -24,7 +25,7 @@ import { DEALERS } from './data.js';
  * on reference data existing before it runs.
  * ────────────────────────────────────────────────────────────────────────────
  */
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DATABASE_URL }) });
 const now = new Date();
 
 /**
