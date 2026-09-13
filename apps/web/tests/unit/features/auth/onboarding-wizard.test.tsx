@@ -231,8 +231,17 @@ async function leaveAccount(user: ReturnType<typeof userEvent.setup>): Promise<v
   const boxes = screen.queryAllByLabelText(/^Digit /);
   if (boxes.length === 0) return;
 
-  await user.type(boxes[0]!, '123456');
-  await user.click(screen.getByRole('button', { name: 'Verify & continue' }));
+  /*
+   * Paste is the widget's SMS-autofill path and commits the complete code in
+   * one render. Typing six keys through six controlled inputs could outrun
+   * React under CI load and leave the submit button disabled when it was
+   * clicked; user-event does not reject a click on a disabled button.
+   */
+  await user.click(boxes[0]!);
+  await user.paste('123456');
+  const verify = screen.getByRole('button', { name: 'Verify & continue' });
+  await waitFor(() => expect(verify).toBeEnabled(), { timeout: TRANSITION_TIMEOUT });
+  await user.click(verify);
   await user.click(
     await screen.findByRole(
       'button',
