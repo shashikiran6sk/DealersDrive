@@ -95,9 +95,11 @@ describe('ensureSeat', () => {
 
     await ensureSeat(h.prisma, { userId: 'user-2', role: 'ADMIN', grantedBy: 'admin-1' });
 
-    expect(h.upsert.mock.calls[0]?.[0]).toMatchObject({
-      create: { grantedBy: 'admin-1' },
-    });
+    expect(h.upsert).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        create: { userId: 'user-2', role: 'ADMIN', grantedBy: 'admin-1' },
+      }),
+    );
   });
 });
 
