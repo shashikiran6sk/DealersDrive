@@ -55,6 +55,11 @@ export function createSessionService(prisma: PrismaClient) {
      * The live session behind a token, or null. Expiry and revocation are part
      * of the query rather than a check afterwards, so there is no window where
      * a revoked row is read and then acted on.
+     *
+     * The user's seats come back with it (**R41**). They are read on every
+     * request — a closed DEALER seat has to stop answering on the next click,
+     * the way a revoked session does — and pulling them here costs nothing: it
+     * is the same round trip that was already fetching the user.
      */
     async resolve(token: string | undefined, scope: SessionScope) {
       if (!token) return null;
@@ -66,7 +71,7 @@ export function createSessionService(prisma: PrismaClient) {
           revokedAt: null,
           expiresAt: { gt: new Date() },
         },
-        include: { user: true },
+        include: { user: { include: { roles: true } } },
       });
     },
 
@@ -79,10 +84,17 @@ export function createSessionService(prisma: PrismaClient) {
       });
     },
 
-    /** Every seat, everywhere — used when an account is suspended or compromised. */
-    async revokeAllForUser(userId: string): Promise<void> {
+    /**
+     * Every session this person holds, or only the ones for one console.
+     *
+     * The scope argument is **R41**: closing a dealership seat must end the
+     * dealer's browser sessions and leave an admin session they hold alone.
+     * Omitting it keeps the old meaning — every seat, everywhere — which is
+     * what an account-level suspension still wants.
+     */
+    async revokeAllForUser(userId: string, scope?: SessionScope): Promise<void> {
       await prisma.session.updateMany({
-        where: { userId, revokedAt: null },
+        where: { userId, revokedAt: null, ...(scope ? { scope } : {}) },
         data: { revokedAt: new Date() },
       });
     },

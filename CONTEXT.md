@@ -479,6 +479,58 @@ the only password this product ever stored.
 
 ---
 
+## 7e2. One person, two seats — and why `users.status` is not the switch (R41)
+
+`users.status` is an **account**: one flag for the whole person, every door.
+That is the right unit for exactly one thing — an account the platform is
+closing altogether — and it was the wrong unit for the one place that used it.
+
+Suspending a dealership used to write `SUSPENDED` onto every member's `users`
+row and revoke every session they held. For most dealerships that is
+indistinguishable from the right behaviour. For a member who is _also_ a
+platform admin it is not: the admin console went dark because of a decision
+about a yard in Vellore, and nothing in the console said so. One human, two
+jobs, one switch between them.
+
+`user_roles` is the per-seat layer. One row per (person, role), where role is
+`DEALER` or `ADMIN` — deliberately neither `DealerRole` (OWNER/MANAGER/SALES, a
+rank _inside_ one dealership) nor `AdminRole` (SUPPORT/MODERATOR/SUPER_ADMIN, a
+rank inside the console). This is which door you may enter at all.
+
+**The rule is one sentence, and it is what makes the table safe.** A seat row
+refuses its role when it is `SUSPENDED`; an absent row says nothing. It can
+close a door and it can never open one, so every check that existed before it —
+the dealership's own status, `isPlatformAdmin`, `ADMIN_ALLOWLIST` — still
+decides, and this is a veto laid over the top.
+
+Three consequences worth knowing:
+
+- **`setDealerStatus` writes seats, not accounts.** `setSeatStatus(tx, { role:
+'DEALER' })`, exported through `auth.facade.ts` because `users`, `sessions`
+  and `user_roles` are one model with one owner.
+- **Session revocation is scoped.** `session.updateMany` on suspension carries
+  `scope: 'DEALER'`. An admin session the same person holds is untouched, which
+  is the whole point; `revokeAllForUser` takes an optional scope for the same
+  reason and still means _everything_ when it is omitted.
+- **Signing in never reopens a seat.** `ensureSeat` upserts with an empty
+  `update`. A suspension that a dealer could lift by pressing the button again
+  would not be a suspension.
+
+The migration backfills a `DEALER` seat for every member, an `ADMIN` seat for
+every platform admin, and then **releases `users.status` for the accounts a
+dealership suspension had set**. That last statement is safe because
+`setDealerStatus` was the only writer of `users.status = 'SUSPENDED'` in the
+codebase; every such account was suspended by a dealership decision, which the
+first statement has just recorded in the place it belongs.
+
+⚠️ The test suite now runs with **two** addresses on `ADMIN_ALLOWLIST`
+(`apps/api/vitest.config.ts`), because proving this needs one operator to
+suspend a dealership whose owner holds an operations seat of their own. Anything
+asserting on how many emails an admin fan-out produces has to count distinct
+templates rather than messages.
+
+---
+
 ## 7f. `district` is required, and the reason is the admin filter
 
 `Dealer.district` sits beside `city` and `state`, typed on onboarding step 2,

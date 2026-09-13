@@ -132,7 +132,11 @@ export function createPublicAuthRouter(service: AuthService): Router {
           back('account_suspended');
           return;
         }
-        if (code === 'ADMIN_NOT_ALLOWLISTED') {
+        // Both refusals of an operations seat land on the same screen: one is
+        // "you were never on the list", the other "your seat was closed"
+        // (**R41**), and neither is worth telling an unauthenticated caller
+        // apart from the other.
+        if (code === 'ADMIN_NOT_ALLOWLISTED' || code === 'ADMIN_ACCESS_REVOKED') {
           back('not_authorised');
           return;
         }
