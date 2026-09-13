@@ -4449,3 +4449,90 @@ granted (404).
 
 **Withdrawing revokes their admin sessions and nothing else.** A dealer seat the
 same person holds is untouched — R41 read in the other direction.
+
+## R43 — The directory search recommends, and the old input is gone
+
+**Revises F085** · lands the shared typeahead the vehicle search (**F077**) reuses
+
+The directory's search was a plain 260px input inside a `<form>`: type the
+trading name, press Enter, get `?q=<whatever was typed>`. It asked a buyer to
+spell a dealership's name correctly with no help and no feedback — and on a
+platform where the same yard may be registered as "Sri Lakshmi Motors" or "Sree
+Lakshmi Motors", that is a coin toss between the grid and an empty state.
+
+**That input is removed, not augmented.** It is replaced by a typeahead that
+calls a suggest endpoint after the first character, holds the request back
+300 ms, highlights the first recommendation, and takes whatever is highlighted
+on Enter.
+
+- **Schema** none
+- **Contracts** `SuggestQuery`, `DealerSuggestQuery`, `DealerSuggestion`,
+  `DealerSuggestResponse` in `packages/contracts/src/public.ts`
+- **Backend** `dealers.public.service.ts` (`suggest`, `matchDealer`,
+  `suggestMeta`), `dealers.public.routes.ts`, `dealers.public.docs.ts`,
+  `docs/schemas.ts` (`INPUT_SCHEMA_NAMES`)
+- **API** `GET /v1/search/dealers`
+- **Frontend** `components/ui/autocomplete.tsx`,
+  `components/dealers/dealer-search-box.tsx`, `lib/use-debounced-value.ts`,
+  `app/api/search/dealers/route.ts`, `components/dealers/directory-filters.tsx`
+- **Tests** `tests/unit/modules/dealers/dealers.public.service.test.ts`,
+  `tests/unit/routes.test.ts`,
+  `apps/web/tests/unit/components/dealers/dealer-search-box.test.tsx`,
+  `apps/web/tests/unit/lib/use-debounced-value.test.tsx`,
+  `apps/web/tests/unit/app/api/search-dealers-route.test.ts`
+- **Components — New (shared)** `AutocompletePanel` / `useAutocomplete` /
+  `HighlightedText` (C073) · **New (feature-specific)** `DealerSearchBox` (C074)
+  · **Removed** the raw `<input className="input">` inside `DirectoryFilters`
+- **Sandbox** `Search/DealerSearchBox` — default · no district · a search
+  already applied · matched on a place · loading · nothing found · endpoint
+  failed · slow endpoint
+
+**`?q=` on the grid is unchanged, and that is the point.** This is a better way
+to _arrive at_ a search term, not a different kind of search. Choosing a
+recommendation navigates to `/dealers?q=<that dealership's exact trading name>`
+— a URL that was always valid, is shareable, server-renders, and survives the
+back button like every other filter in the product. Nothing about the directory
+service, its paging or its SEO policy moves.
+
+**It does not jump to the dealership.** `/dealers/<slug>` was the alternative
+and it is wrong here: the box sits above a grid the buyer is reading, and a
+control that replaces that page with a different one is a link pretending to be
+a filter. The card is already the way to the portfolio.
+
+**The endpoint is `/v1/search/dealers`, not `/v1/dealers/suggest`.** The
+namespace is the deliverable: `/v1/search/vehicles` arrives at F076/F077 with
+the same `SuggestQuery` grammar and the same `search` / `data` / `countLabel`
+response shape. It is mounted in the dealers module all the same, for the reason
+`dealers.public.routes.ts` already gives — it calls `dealersPublic` and nothing
+else, and the path is about the audience rather than the folder.
+
+**Three things make a typeahead correct, and only two of them are obvious.**
+Debounce stops it asking per keystroke; abort cancels what the buyer has moved
+past. Neither helps once bytes are on the wire — a two-character query against a
+cold cache can resolve _after_ the four-character one that replaced it — so
+every response **echoes the search it answered**, and the client drops anything
+that is not the current question. `DealerSuggestResponse.search` exists for that
+and for nothing else.
+
+**`matchedOn` is why the server decides what to underline.** The suggest match
+is wider than the grid's: name, town and district, because a buyer typing
+"katpadi" has named a place and the useful answer is the yards in it. A client
+that searched the _name_ for the typed characters would mark nothing at all on
+such a row while still claiming a match.
+
+**The suggestion is not a `DealerCard`.** A card carries a cover photograph, a
+tagline, a service list and two composed price strings — six fields fetched and
+thrown away per keystroke, plus a media query per row. `DealerSuggestion` is the
+row as drawn: initials, a name, one meta line.
+
+**A dealership with no live cars shows the place and nothing else**, rather than
+"0 cars in yard". Until F076 every dealership has zero, and six identical zeroes
+over a dropdown reads as a broken endpoint rather than an empty catalogue — the
+same call the card's em dash makes (A8).
+
+⚠️ **Enter with no recommendations does nothing.** The raw-text submit path went
+with the old input, so a buyer who types something that matches no dealership
+gets the "No dealership matches …" row and no navigation. That is deliberate —
+the box is now a chooser rather than a free-text field — but it is the one
+behaviour a buyer could previously rely on and can no longer, and it is the
+thing to revisit first if the empty state turns out to be a dead end in use.

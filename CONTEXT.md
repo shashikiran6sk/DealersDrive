@@ -922,6 +922,40 @@ and no tag can clear that one.
 
 ---
 
+## 8c. A debounce is not what makes a typeahead correct (R43)
+
+The directory's search box asks an endpoint while somebody is typing, and there
+are **three** defences in it. The first two are the ones everybody writes. The
+third is the one that is usually missing, and it is the only one that catches
+the bug a user actually sees.
+
+1. **Debounce** — `lib/use-debounced-value.ts`, 300 ms. Stops it asking per
+   keystroke. "vellore" is one request, not seven.
+2. **Abort** — an `AbortController` in the effect's cleanup. Cancels the request
+   the buyer has already typed past, and covers unmount for free.
+3. **The stale guard** — every suggest response **echoes the search it
+   answered**, and a reply that is not the current question is dropped.
+
+Three exists because of what one and two cannot do. Once bytes are on the wire,
+abort is advisory: a two-character query against a cold cache can resolve _after_
+the four-character one that replaced it, and the dropdown then shows answers to
+something the buyer finished typing past half a second ago. Nothing throws;
+nothing logs; the list is simply wrong, intermittently, and only for fast
+typists — which is to say, never on the machine of whoever is debugging it.
+
+`DealerSuggestResponse.search` exists for this and for nothing else. **A suggest
+endpoint added later must echo its query back too**, or the generic
+`useAutocomplete` cannot be made correct over it — the field is part of the
+`SuggestPayload<T>` contract, not a convenience.
+
+The related trap, and the reason for the `chosen` ref in `useAutocomplete`:
+choosing a row writes that row's label into the input, which is a change to the
+value, which debounces into a request for the thing that was just chosen — and
+reopens the dropdown over a page that is already navigating. Any control that
+writes to its own input needs to remember that it did.
+
+---
+
 ## 9. Where to look when you are stuck
 
 | Question                               | Answer lives in                                   |

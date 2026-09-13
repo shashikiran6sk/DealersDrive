@@ -6,6 +6,9 @@ import {
   type DealerDirectoryQuery,
   type DealerDirectoryResponse,
   type DealerPublicProfile,
+  type DealerSuggestion,
+  type DealerSuggestQuery,
+  type DealerSuggestResponse,
   type DistrictChip,
   type LocationChip,
   type PublicLocations,
@@ -194,6 +197,102 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
          * did not pick is one you cannot get back out of.
          */
         districts: chipsOf(dealers, districtChip),
+      };
+    },
+
+    /**
+     * A8b — the dealer typeahead (**R43**).
+     *
+     * The same `listActive()` read the directory makes, matched differently and
+     * cut to six rows. It is deliberately *not* `directory()` with a small
+     * `limit`: that composes a cover URL per row (a second query), a price
+     * string, a service list and two chip tallies over the whole platform —
+     * all of it thrown away by a dropdown, and all of it recomputed on every
+     * debounced keystroke.
+     *
+     * ## Why the match is wider than the grid's
+     *
+     * `directory()` filters on the trading name alone. This also matches the
+     * town and the district, because the box is a **suggest** and the two
+     * answer different questions: the grid is showing what a buyer asked for,
+     * and the dropdown is offering what they might have meant. Somebody typing
+     * "katpadi" has named a place, and the useful answer is the four yards in
+     * it rather than nothing at all.
+     *
+     * `matchedOn` travels with the row so the dropdown can mark the characters
+     * that put it there — see `DealerSuggestion`.
+     *
+     * ## Ordering
+     *
+     * Rank first, then inventory, then the name. The rank is the point: a
+     * dealership *called* "Vellore Cars" is a better answer to "vel" than one
+     * that merely trades in Vellore, and a prefix is a better answer than a
+     * substring — "Sri" should offer Sri Lakshmi Motors before Kumaresan Sri
+     * Motors. Ties break on cars in the yard and then alphabetically, so the
+     * list does not reshuffle itself between two identical requests.
+     */
+    async suggest(query: DealerSuggestQuery): Promise<DealerSuggestResponse> {
+      const [dealers, inventory] = await Promise.all([repo.listActive(), stats.dealerStats()]);
+      const byDealer = new Map(inventory.map((row) => [row.dealer_slug, row]));
+
+      /*
+       * Narrowed by the page's own filters before anything is matched. The box
+       * sits inside a filtered directory, and a row that vanishes when it is
+       * chosen — because the grid behind it is still filtered by district — is
+       * worse than no row at all.
+       */
+      const cities = citySlugsIn(query.city);
+      const inScope = dealers.filter((dealer) => {
+        if (query.district && query.district !== 'all' && dealer.districtSlug !== query.district) {
+          return false;
+        }
+        if (cities.size > 0 && (dealer.citySlug === null || !cities.has(dealer.citySlug))) {
+          return false;
+        }
+        return true;
+      });
+
+      const needle = query.search.trim().toLowerCase();
+
+      const ranked = inScope
+        .map((dealer) => ({ dealer, hit: matchDealer(dealer, needle) }))
+        .filter(
+          (row): row is { dealer: (typeof inScope)[number]; hit: SuggestHit } => row.hit !== null,
+        )
+        .sort(
+          (a, b) =>
+            a.hit.rank - b.hit.rank ||
+            (byDealer.get(b.dealer.slug)?.count ?? 0) - (byDealer.get(a.dealer.slug)?.count ?? 0) ||
+            a.dealer.brandName.localeCompare(b.dealer.brandName),
+        );
+
+      const data: DealerSuggestion[] = ranked.slice(0, query.limit).map(({ dealer, hit }) => {
+        const carCount = byDealer.get(dealer.slug)?.count ?? 0;
+        return {
+          slug: dealer.slug,
+          brandName: dealer.brandName,
+          initials: dealer.initials,
+          metaLabel: suggestMeta(carCount, dealer.cityName, dealer.districtName),
+          matchedOn: hit.field,
+          carCount,
+          isVerified: true,
+        };
+      });
+
+      /*
+       * The count is over everything that matched, not over the six returned —
+       * "4 matching yards" above four rows and "18 matching yards" above six
+       * are both true, and the second is the one that tells a buyer to keep
+       * typing rather than to conclude the platform has six dealerships.
+       */
+      const total = ranked.length;
+
+      return {
+        // Echoed back so the client can drop an answer that arrived late. See
+        // `DealerSuggestResponse`.
+        search: query.search,
+        data,
+        countLabel: `${total} matching ${total === 1 ? 'yard' : 'yards'}`,
       };
     },
 
@@ -487,4 +586,92 @@ function clock(value: string | undefined): string {
   const suffix = hour >= 12 ? 'pm' : 'am';
   const display = hour % 12 === 0 ? 12 : hour % 12;
   return minuteText === '00' ? `${display}${suffix}` : `${display}:${minuteText}${suffix}`;
+}
+
+/**
+ * Why a row is in the dropdown, and how strongly.
+ *
+ * Lower ranks sort first. The ladder is deliberately coarse — a name prefix, a
+ * name, then a place — because it is answering "which of these did they mean",
+ * and a finer score over six rows is a tie-break nobody can perceive.
+ */
+interface SuggestHit {
+  field: DealerSuggestion['matchedOn'];
+  rank: number;
+}
+
+const RANK_NAME_PREFIX = 0;
+const RANK_NAME_WORD = 1;
+const RANK_NAME_ANYWHERE = 2;
+const RANK_PLACE = 3;
+
+/**
+ * The one place that decides whether a dealership answers what was typed.
+ *
+ * **The name is tried before the place, and the best hit wins**, so a
+ * dealership called "Vellore Cars" in Vellore is a name match rather than a
+ * town match — which is what `matchedOn` then tells the dropdown to underline.
+ *
+ * A word-boundary hit outranks a bare substring: "sri" should offer Sri Lakshmi
+ * Motors above Kumaresan Sri Motors, and both above a dealership that merely
+ * has the letters somewhere inside a word.
+ */
+function matchDealer(
+  dealer: { brandName: string; cityName: string | null; districtName: string | null },
+  needle: string,
+): SuggestHit | null {
+  const name = dealer.brandName.toLowerCase();
+
+  if (name.startsWith(needle)) return { field: 'brandName', rank: RANK_NAME_PREFIX };
+  if (startsAWord(name, needle)) return { field: 'brandName', rank: RANK_NAME_WORD };
+  if (name.includes(needle)) return { field: 'brandName', rank: RANK_NAME_ANYWHERE };
+
+  // The place, and the town before the district: a town is the narrower claim,
+  // so it is the more specific reason to have offered the row.
+  if (dealer.cityName?.toLowerCase().includes(needle)) {
+    return { field: 'city', rank: RANK_PLACE };
+  }
+  if (dealer.districtName?.toLowerCase().includes(needle)) {
+    return { field: 'district', rank: RANK_PLACE };
+  }
+  return null;
+}
+
+/** Does the needle start any word of the haystack — "sri" in "Lakshmi Sri Motors". */
+function startsAWord(haystack: string, needle: string): boolean {
+  let at = haystack.indexOf(needle);
+  while (at > 0) {
+    // A separator, rather than `\s`, so "R.K. Motors" matched on "motors" and a
+    // hyphenated name both count as word starts.
+    if (/[^a-z0-9]/.test(haystack[at - 1] ?? '')) return true;
+    at = haystack.indexOf(needle, at + 1);
+  }
+  return false;
+}
+
+/**
+ * "42 cars in yard · Katpadi, Vellore" — the one line under a suggestion.
+ *
+ * **A dealership with no live cars gets the place and nothing else**, rather
+ * than "0 cars in yard". That is the same call the directory card makes with
+ * its em dash (A8), and it matters more here: until **F076** every dealership
+ * on the platform has zero, so a naive label would render six identical zeroes
+ * over a dropdown and read as a broken endpoint rather than an empty catalogue.
+ *
+ * The town and the district collapse when they are the same word, which in
+ * Indian district naming they very often are — "Vellore, Vellore" is not a
+ * place anybody writes.
+ */
+function suggestMeta(
+  carCount: number,
+  cityName: string | null,
+  districtName: string | null,
+): string {
+  const place = [cityName, districtName === cityName ? null : districtName]
+    .filter((part): part is string => Boolean(part))
+    .join(', ');
+
+  return [carCount > 0 ? `${String(carCount)} cars in yard` : null, place || null]
+    .filter((part): part is string => part !== null)
+    .join(' · ');
 }
