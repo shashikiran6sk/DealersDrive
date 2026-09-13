@@ -288,8 +288,8 @@ export const authDocs: ModuleDocs = {
           example: {
             enabled: true,
             driver: 'msg91',
-            widgetId: '36696d6e706c393937373539',
-            tokenAuth: '461234TTQ0dXNwMjY4OTY4NzQ1',
+            widgetId: 'example-widget-id',
+            tokenAuth: 'example-widget-token',
             devCode: null,
             reason: null,
           },

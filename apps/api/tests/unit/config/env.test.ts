@@ -53,8 +53,8 @@ const PRODUCTION_REQUIRED = {
    */
   PHONE_OTP_DRIVER: 'msg91',
   MSG91_AUTH_KEY: 'a-real-msg91-auth-key',
-  MSG91_WIDGET_ID: '36696d6e706c393937373539',
-  MSG91_WIDGET_TOKEN: '461234TTQ0dXNwMjY4OTY4NzQ1',
+  MSG91_WIDGET_ID: 'example-widget-id',
+  MSG91_WIDGET_TOKEN: 'example-widget-token',
 };
 
 /**

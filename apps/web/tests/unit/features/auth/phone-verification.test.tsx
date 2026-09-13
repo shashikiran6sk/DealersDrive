@@ -48,9 +48,16 @@ function renderPanel(overrides: Partial<Parameters<typeof PhoneVerification>[0]>
   return props;
 }
 
+/**
+ * Send, type, verify.
+ *
+ * `findAllByLabelText` rather than `getAll`: opening the panel and handing the
+ * token over both happen inside a transition, so the assertion has to wait for
+ * the render that follows rather than for the click to return.
+ */
 async function sendAndEnter(user: ReturnType<typeof userEvent.setup>, code: string) {
   await user.click(screen.getByRole('button', { name: 'Send OTP' }));
-  await user.type(screen.getAllByLabelText(/^Digit /)[0]!, code);
+  await user.type((await screen.findAllByLabelText(/^Digit /))[0]!, code);
   await user.click(screen.getByRole('button', { name: 'Verify & continue' }));
 }
 
@@ -133,14 +140,20 @@ describe('PhoneVerification', () => {
     vi.mocked(verifyPhoneAction).mockResolvedValue({ error: 'Not verified.' });
     renderPanel();
 
+    /*
+     * The count between presses is the synchronisation point, not decoration:
+     * each verification resolves inside a transition, and pressing again before
+     * that render lands would be pressing a disabled button — which passes or
+     * fails depending on how loaded the machine is.
+     */
     await sendAndEnter(user, '111111');
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      await user.clear(screen.getAllByLabelText(/^Digit /)[0]!);
-      await user.type(screen.getAllByLabelText(/^Digit /)[0]!, '111111');
-      await user.click(screen.getByRole('button', { name: 'Verify & continue' }));
-    }
+    expect(await screen.findByText('2')).toBeInTheDocument();
 
-    expect(screen.getByText('Ask for a new code to try again.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Verify & continue' }));
+    expect(await screen.findByText('1')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Verify & continue' }));
+    expect(await screen.findByText('Ask for a new code to try again.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Verify & continue' })).toBeDisabled();
   });
 

@@ -45,4 +45,18 @@ regexes = [
   # added — see `jwtShaped()` in `dealer-onboarding.test.ts` and
   # `fake.adapter.test.ts`.
   '''eyJhbGciOiJSUzI1NiJ9\.eyJzdWIiOiIxIn0\.''',
+  # One invented MSG91 widget-token fixture (**R39**), and only that literal.
+  #
+  # It was never issued by MSG91 or by anybody else — it was typed to look like
+  # a widget token in an OpenAPI example and two env fixtures, which is exactly
+  # why `generic-api-key` reads it as one. There is nothing to revoke.
+  #
+  # It is here for the same reason the JWT entry above is: the scan covers
+  # **history**, and the commit that introduced the literal cannot be rewritten
+  # (CLAUDE.md: never rewrite Git history). **The current tree does not contain
+  # it** — the three sites now read `example-widget-token`, which is a
+  # placeholder to a scanner and to a person alike, and is the shape any future
+  # fixture should take. A real widget token committed to the same files is
+  # still caught, because this matches one exact string and nothing else.
+  '''461234TTQ0dXNwMjY4OTY4NzQ1''',
 ]
