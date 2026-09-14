@@ -124,8 +124,9 @@ export function tokenSignature(text, signatureFileName = 'sig.tsx') {
     if (node.kind >= ts.SyntaxKind.FirstJSDocNode && node.kind <= ts.SyntaxKind.LastJSDocNode) {
       return;
     }
+    // A prose-only JSX container renders nothing and is stripped; a directive one survives.
     if (ts.isJsxExpression(node) && node.expression === undefined) {
-      if (!node.getText(file).match(/\/[*/]/)) return;
+      if (!isDirective(node.getText(file).replace(/^\{/, ''))) return;
     }
     const children = node
       .getChildren(file)
