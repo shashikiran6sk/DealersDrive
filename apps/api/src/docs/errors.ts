@@ -1,5 +1,6 @@
 import { PROBLEM_TYPE_BASE } from '../platform/errors.js';
 import type { JsonSchema } from './schemas.js';
+import { MALFORMED_REQUEST } from '../platform/messages.js';
 
 /**
  * The error half of the contract, written once.
@@ -72,7 +73,7 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
     {
       validationFailed: {
         summary: 'A field failed validation',
-        value: problem(400, 'VALIDATION_FAILED', 'The request did not match the expected shape.', {
+        value: problem(400, 'VALIDATION_FAILED', MALFORMED_REQUEST, {
           errors: [
             {
               field: 'body.pricePaise',
@@ -84,7 +85,7 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
       },
       unrecognizedKey: {
         summary: 'An unknown field or query parameter',
-        value: problem(400, 'VALIDATION_FAILED', 'The request did not match the expected shape.', {
+        value: problem(400, 'VALIDATION_FAILED', MALFORMED_REQUEST, {
           errors: [
             {
               field: 'query.colour',

@@ -12,6 +12,7 @@ import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
 import { buildSchemaCatalogue, type JsonSchema, type SchemaCatalogue } from './schemas.js';
 import type { Audience, ModuleDocs, OperationSpec, ResponseSpec } from './spec.js';
+import { TAG_ORDER } from './tags.js';
 
 /**
  * Assembles the OpenAPI document.
@@ -49,17 +50,6 @@ const MODULES: ModuleDocs[] = [
 ];
 
 /** Tag order in the UI: buyer-facing, then dealer, then admin, then plumbing. */
-const TAG_ORDER = [
-  'Authentication',
-  'Platform configuration',
-  'Dealers (public)',
-  'Dealer account',
-  'Admin',
-  'Media',
-  'Health',
-  'Storage (local only)',
-  'Metrics',
-];
 
 /** The marker `media.docs.ts` uses for the one endpoint that takes raw bytes. */
 const RAW_BINARY = '__raw_binary__';

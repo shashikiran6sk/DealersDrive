@@ -20,6 +20,7 @@ import {
 } from '../../platform/errors.js';
 import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
+import { ALREADY_REGISTERED } from '../../platform/messages.js';
 
 /**
  * B8 — proving the mobile number (**R39**).
@@ -283,7 +284,7 @@ function alreadyRegistered(): ConflictError {
     'That mobile number is already registered to another dealership.',
     {
       errors: [
-        { field: 'body.phone', code: 'PHONE_ALREADY_REGISTERED', message: 'Already registered.' },
+        { field: 'body.phone', code: 'PHONE_ALREADY_REGISTERED', message: ALREADY_REGISTERED },
       ],
     },
   );

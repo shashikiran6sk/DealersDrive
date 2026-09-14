@@ -1,4 +1,5 @@
 import type { ModuleDocs } from '../../docs/spec.js';
+import { DOC_TAGS } from '../../docs/tags.js';
 
 const LOCATION_HEADER = {
   Location: { description: 'Where the browser is sent next.', schema: { type: 'string' } },
@@ -19,7 +20,7 @@ const LOCATION_HEADER = {
  * openapi test fails in both directions, which is what keeps that true.
  */
 export const authDocs: ModuleDocs = {
-  tag: 'Authentication',
+  tag: DOC_TAGS.auth,
   description:
     'Everybody signs in with Google (OAuth 2.0 authorization code + PKCE + OIDC nonce) — ' +
     'dealers and admins alike. Both end in the same place: an opaque `dd_session` cookie ' +
@@ -34,7 +35,7 @@ export const authDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/auth/providers',
       operationId: 'getAuthProviders',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'Which sign-in methods work here',
       description:
         'Lets the sign-in screen render a working button or an explanation, rather than a ' +
@@ -61,7 +62,7 @@ export const authDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/auth/google/start',
       operationId: 'startGoogleSignIn',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'Begin Google sign-in',
       description:
         'A browser navigation, not an API call. Mints `state`, an OIDC `nonce` and a PKCE ' +
@@ -86,7 +87,7 @@ export const authDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/auth/admin/google/start',
       operationId: 'startAdminGoogleSignIn',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'Begin Google sign-in for the admin console',
       description:
         'The same navigation as `/v1/auth/google/start`, with one value changed: the sealed ' +
@@ -113,7 +114,7 @@ export const authDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/auth/google/callback',
       operationId: 'completeGoogleSignIn',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: "Google's redirect back",
       description:
         'Verifies `state` against the sealed cookie, exchanges the authorization code at ' +
@@ -146,7 +147,7 @@ export const authDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/auth/me',
       operationId: 'getSession',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'Who am I',
       description:
         'The resolved session. One shape covers both states: a verified Google identity with ' +
@@ -199,7 +200,7 @@ export const authDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/auth/onboarding',
       operationId: 'completeOnboarding',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'Create the dealership',
       description:
         'The one endpoint a session with no dealership may call. Creates the user record, the ' +
@@ -262,7 +263,7 @@ export const authDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/auth/phone/widget',
       operationId: 'getPhoneOtpWidget',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'Credentials for the MSG91 OTP widget',
       description:
         'What the onboarding screen initialises `verify.msg91.com/otp-provider.js` with ' +
@@ -301,7 +302,7 @@ export const authDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/auth/phone/availability',
       operationId: 'checkPhoneAvailability',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'May this account claim this number?',
       description:
         'The first of the two calls onboarding step 1 makes, and the cheap one (**R39**). Step 1 ' +
@@ -335,7 +336,7 @@ export const authDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/auth/phone/verify',
       operationId: 'verifyPhone',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'Prove a mobile number with the widget access token',
       description:
         'The server half of the MSG91 OTP widget (**R39**). The browser runs `sendOtp` and ' +
@@ -392,7 +393,7 @@ export const authDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/auth/logout',
       operationId: 'logout',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'End the session',
       description:
         'Revokes the `sessions` row behind the presented cookie and clears the cookie. The ' +
@@ -406,7 +407,7 @@ export const authDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/auth/admin/logout',
       operationId: 'adminLogout',
-      tag: 'Authentication',
+      tag: DOC_TAGS.auth,
       summary: 'End the admin session',
       description:
         'Revokes the presented session and clears the cookie. Unguarded on purpose: signing ' +

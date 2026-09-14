@@ -1,4 +1,5 @@
 import type { ModuleDocs } from '../../docs/spec.js';
+import { DOC_TAGS } from '../../docs/tags.js';
 
 /**
  * A8–A9. The dealer directory, and one dealership's public page.
@@ -18,7 +19,7 @@ import type { ModuleDocs } from '../../docs/spec.js';
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const dealersPublicDocs: ModuleDocs = {
-  tag: 'Dealers (public)',
+  tag: DOC_TAGS.dealersPublic,
   description:
     'The buyer-facing view of a dealership. **No response under this tag contains a phone ' +
     'number or an email address**, and that is a property of the schemas rather than of the ' +
@@ -31,7 +32,7 @@ export const dealersPublicDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/dealers',
       operationId: 'getDealerDirectory',
-      tag: 'Dealers (public)',
+      tag: DOC_TAGS.dealersPublic,
       summary: 'The dealer directory',
       description:
         'Every ACTIVE dealership, filtered by district, by city and by a substring of the ' +
@@ -63,7 +64,7 @@ export const dealersPublicDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/search/dealers',
       operationId: 'suggestDealers',
-      tag: 'Dealers (public)',
+      tag: DOC_TAGS.dealersPublic,
       summary: 'Dealer suggestions, while the buyer is still typing',
       description:
         'The typeahead behind the directory\u2019s search box (**R43**). It answers after the ' +
@@ -107,7 +108,7 @@ export const dealersPublicDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/locations',
       operationId: 'getPublicLocations',
-      tag: 'Dealers (public)',
+      tag: DOC_TAGS.dealersPublic,
       summary: 'The districts the platform trades in',
       description:
         "The header's location button, on every public page. A separate read from the " +
@@ -139,7 +140,7 @@ export const dealersPublicDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/dealers/:slug',
       operationId: 'getDealerPublicProfile',
-      tag: 'Dealers (public)',
+      tag: DOC_TAGS.dealersPublic,
       summary: "One dealership's public page",
       description:
         'The portfolio header: who the dealership is, what it does, where the yard is and ' +

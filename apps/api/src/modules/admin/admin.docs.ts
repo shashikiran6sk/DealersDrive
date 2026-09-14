@@ -1,4 +1,5 @@
 import type { ModuleDocs } from '../../docs/spec.js';
+import { DOC_TAGS } from '../../docs/tags.js';
 
 /**
  * D1–D15. The platform's own console.
@@ -13,7 +14,7 @@ import type { ModuleDocs } from '../../docs/spec.js';
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const adminDocs: ModuleDocs = {
-  tag: 'Admin',
+  tag: DOC_TAGS.admin,
   description:
     'Platform moderation: dealer verification, KYC review, the listing queue, payments, ' +
     'configuration and the audit log.\n\n' +
@@ -29,7 +30,7 @@ export const adminDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/admin/metrics/overview',
       operationId: 'getAdminOverview',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Platform metrics',
       description:
         'The admin landing page: dealer and listing counts, payments and revenue over the ' +
@@ -46,7 +47,7 @@ export const adminDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/admin/dealers',
       operationId: 'listAdminDealers',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'All dealerships',
       description:
         'Every dealership, filterable by status, free text and location, cursor-paginated. ' +
@@ -69,7 +70,7 @@ export const adminDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/admin/dealers/:id',
       operationId: 'getAdminDealerDetail',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'One dealership, with review context',
       description:
         'Everything a moderator needs on one screen: the profile, the KYC documents with ' +
@@ -86,7 +87,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/dealers/:id/approve',
       operationId: 'approveDealer',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Approve a dealership',
       description:
         'Sets the dealership ACTIVE, which is what makes its listings eligible to appear ' +
@@ -126,7 +127,7 @@ export const adminDocs: ModuleDocs = {
       method: 'patch',
       path: '/v1/admin/dealers/:id',
       operationId: 'updateAdminDealer',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: "Amend a dealership's details",
       description:
         'Edits the answers the dealer gave, from the review screen. A moderator reading a ' +
@@ -159,7 +160,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/dealers/:id/reject',
       operationId: 'rejectDealer',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Reject a dealership — and destroy the application',
       description:
         '**This is destructive and it is not reversible.** Rejecting deletes the three KYC ' +
@@ -205,7 +206,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/dealers/:id/request-changes',
       operationId: 'requestDealerChanges',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Send an application back for correction',
       description:
         'PENDING_APPROVAL → DRAFT with the reason attached. **Nothing is deleted**: every ' +
@@ -242,7 +243,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/dealers/:id/suspend',
       operationId: 'suspendDealer',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Suspend a dealership',
       description:
         "**Pulls every one of the dealership's cars out of the catalogue at once**, because " +
@@ -272,7 +273,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/dealers/:id/reinstate',
       operationId: 'reinstateDealer',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Reinstate a suspended dealership',
       description:
         'Sets the dealership ACTIVE again and re-indexes its listings, so the cars that were ' +
@@ -301,7 +302,7 @@ export const adminDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/admin/profile-changes',
       operationId: 'listProfileChanges',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Profile edits waiting for a decision',
       description:
         'The queue a dealer’s own words wait in (**R34**), **oldest first** — this ' +
@@ -332,7 +333,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/profile-changes/:id/approve',
       operationId: 'approveProfileChange',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Publish a dealer’s proposed tagline or services',
       description:
         'Writes the proposed values onto the dealership and marks the request APPROVED ' +
@@ -366,7 +367,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/profile-changes/:id/reject',
       operationId: 'rejectProfileChange',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Refuse a dealer’s proposed tagline or services',
       description:
         'Marks the request REJECTED with a reason the dealer reads verbatim (**R34**).\n\n' +
@@ -406,7 +407,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/documents/:id/verify',
       operationId: 'verifyDealerDocument',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Verify a KYC document',
       description:
         'Marks one document verified. `allVerified` in the response says whether that was the ' +
@@ -423,7 +424,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/documents/:id/reject',
       operationId: 'rejectDealerDocument',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Reject a KYC document — ask for that one again',
       description:
         'Rejects **one file**, not the dealership. The scan is unreadable, or it is last ' +
@@ -453,7 +454,7 @@ export const adminDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/admin/config',
       operationId: 'getAdminConfig',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Platform configuration',
       description:
         'Every `platform_config` entry with its declared type, current value and label — ' +
@@ -474,7 +475,7 @@ export const adminDocs: ModuleDocs = {
       method: 'put',
       path: '/v1/admin/config/:key',
       operationId: 'updateAdminConfig',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Change one configuration value',
       description:
         'Sets one key. `value` is a number, boolean, string or string array, and is checked ' +
@@ -506,7 +507,7 @@ export const adminDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/admin/access',
       operationId: 'listAdminAccess',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Who may open the admin console',
       description:
         'Both answers to that question in one list.\n\n' +
@@ -527,7 +528,7 @@ export const adminDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/admin/access',
       operationId: 'grantAdminAccess',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Grant admin access to an email address',
       description:
         'Creates the account if that address is new to the platform — the ordinary case, a ' +
@@ -550,7 +551,7 @@ export const adminDocs: ModuleDocs = {
       method: 'delete',
       path: '/v1/admin/access/:id',
       operationId: 'revokeAdminAccess',
-      tag: 'Admin',
+      tag: DOC_TAGS.admin,
       summary: 'Withdraw a granted admin seat',
       description:
         'Deletes the grant, clears the platform-admin flag and **revokes their admin ' +

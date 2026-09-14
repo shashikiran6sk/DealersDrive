@@ -2,6 +2,7 @@ import { CONTRACTS_VERSION } from '@dealers-drive/contracts';
 
 import type { JsonSchema } from '../../docs/schemas.js';
 import type { ModuleDocs } from '../../docs/spec.js';
+import { DOC_TAGS } from '../../docs/tags.js';
 
 /** Shared by the 200 and the 503 — the same body, a different verdict. */
 const READINESS: JsonSchema = {
@@ -32,7 +33,7 @@ const READINESS: JsonSchema = {
  * so they must not move when the API version does.
  */
 export const healthDocs: ModuleDocs = {
-  tag: 'Health',
+  tag: DOC_TAGS.health,
   description:
     'Liveness and readiness probes. Two endpoints rather than one because they answer ' +
     'different questions: whether the process is alive, and whether it can serve traffic. ' +
@@ -43,7 +44,7 @@ export const healthDocs: ModuleDocs = {
       method: 'get',
       path: '/health/live',
       operationId: 'getLiveness',
-      tag: 'Health',
+      tag: DOC_TAGS.health,
       summary: 'Liveness probe',
       description:
         'Returns 200 whenever the process is running. **Touches no dependency** — that is the ' +
@@ -67,7 +68,7 @@ export const healthDocs: ModuleDocs = {
       method: 'get',
       path: '/health/ready',
       operationId: 'getReadiness',
-      tag: 'Health',
+      tag: DOC_TAGS.health,
       summary: 'Readiness probe',
       description:
         'Checks the dependencies and names the ones that are down. **503 with a body**, not a ' +

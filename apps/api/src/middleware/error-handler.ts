@@ -15,6 +15,7 @@ import {
 import { logger } from '../platform/telemetry/logger.js';
 import { normalizedHttpRoute } from '../platform/telemetry/http-route.js';
 import { getTraceId } from './request-context.js';
+import { MALFORMED_REQUEST } from '../platform/messages.js';
 
 const PROBLEM_CONTENT_TYPE = 'application/problem+json';
 
@@ -133,7 +134,7 @@ function toProblem(error: unknown, traceId: string): ProblemDetails {
       400,
       'VALIDATION_FAILED',
       traceId,
-      'The request did not match the expected shape.',
+      MALFORMED_REQUEST,
       fieldErrorsFromZod(error),
       'Validation failed',
     );

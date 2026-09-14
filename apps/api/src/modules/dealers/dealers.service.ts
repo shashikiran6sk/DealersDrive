@@ -40,6 +40,12 @@ import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
+import {
+  ALREADY_REGISTERED,
+  DOCUMENT_NOT_FOUND,
+  UPLOAD_INCOMPLETE,
+  UPLOAD_NOT_FOUND,
+} from '../../platform/messages.js';
 
 /**
  * ── Reconstruction slice ────────────────────────────────────────────────────
@@ -279,7 +285,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
             {
               field: 'body.gstin',
               code: 'GSTIN_ALREADY_REGISTERED',
-              message: 'Already registered.',
+              message: ALREADY_REGISTERED,
             },
           ],
         },
@@ -303,7 +309,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
             {
               field: 'body.pan',
               code: 'PAN_ALREADY_REGISTERED',
-              message: 'Already registered.',
+              message: ALREADY_REGISTERED,
             },
           ],
         },
@@ -1066,14 +1072,14 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     async commitDocument(dealerId: string, type: DealerDocType, input: DocumentCommitInput) {
       const doc = await repo.documentById(input.documentId);
       if (!doc || doc.dealerId !== dealerId || doc.type !== type) {
-        throw new NotFoundError('That document does not exist.');
+        throw new NotFoundError(DOCUMENT_NOT_FOUND);
       }
 
       const object = await storage.head(
         documentKey(await requireSlug(dealerId), type, input.documentId),
       );
       if (!object) {
-        throw new DomainError('UPLOAD_MISSING', 'The upload did not complete. Try again.');
+        throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
       }
 
       await repo.upsertDocument(dealerId, type, { status: 'UPLOADED', mediaId: null });
@@ -1093,7 +1099,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     async deleteDocument(dealerId: string, type: DealerDocType): Promise<void> {
       const slug = await requireSlug(dealerId);
       const existing = await repo.documentByType(dealerId, type);
-      if (!existing) throw new NotFoundError('That document does not exist.');
+      if (!existing) throw new NotFoundError(DOCUMENT_NOT_FOUND);
 
       await repo.deleteDocument(dealerId, type);
       await storage.delete(documentKey(slug, type, existing.id));
@@ -1196,12 +1202,12 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
       const media = await repo.mediaById(input.mediaId);
       if (!media || media.dealerId !== dealerId || media.ownerType !== 'DEALER_COVER') {
-        throw new NotFoundError('That upload does not exist.');
+        throw new NotFoundError(UPLOAD_NOT_FOUND);
       }
 
       const object = await storage.head(media.storageKey);
       if (!object) {
-        throw new DomainError('UPLOAD_MISSING', 'The upload did not complete. Try again.');
+        throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
       }
 
       /*

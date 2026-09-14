@@ -1,4 +1,5 @@
 import type { ModuleDocs } from '../../docs/spec.js';
+import { DOC_TAGS } from '../../docs/tags.js';
 
 /**
  * A14. The client-safe slice of `platform_config`.
@@ -9,7 +10,7 @@ import type { ModuleDocs } from '../../docs/spec.js';
  * were public reference data fetched by the same shell.
  */
 export const configDocs: ModuleDocs = {
-  tag: 'Platform configuration',
+  tag: DOC_TAGS.config,
   description:
     'The subset of platform configuration a browser is allowed to see. Deliberately a ' +
     '*subset*: the admin-only keys are filtered server-side and never appear here, so ' +
@@ -19,7 +20,7 @@ export const configDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/config/public',
       operationId: 'getPublicConfig',
-      tag: 'Platform configuration',
+      tag: DOC_TAGS.config,
       summary: 'Client-safe platform configuration',
       description:
         'Listing duration, minimum photo count, support contacts, EMI assumptions, the ' +

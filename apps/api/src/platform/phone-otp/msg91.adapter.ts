@@ -1,6 +1,7 @@
 import { env } from '../../config/env.js';
 import { logger } from '../telemetry/logger.js';
 import type { MsisdnDigits, PhoneOtpPort, PhoneOtpVerdict } from './phone-otp.port.js';
+import { isRecord } from '../errors.js';
 
 /**
  * MSG91's OTP widget, verified server-side (**R39**).
@@ -184,8 +185,4 @@ function asIdentifier(value: unknown): MsisdnDigits | null {
   if (typeof value !== 'string' && typeof value !== 'number') return null;
   const text = String(value).trim().replace(/^\+/, '');
   return /^\d{8,15}$/.test(text) ? text : null;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }

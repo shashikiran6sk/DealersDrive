@@ -57,6 +57,8 @@ import {
   type AdminPrincipal,
 } from '../auth/auth.facade.js';
 import { documentKey, type DealersService } from '../dealers/dealers.facade.js';
+import { DOCUMENT_NOT_FOUND } from '../../platform/messages.js';
+import { DEALER_NOT_FOUND } from './admin.messages.js';
 
 /**
  * D1–D15. The platform's own console.
@@ -439,7 +441,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           profileEdits: { where: { status: 'PENDING' }, take: 1 },
         },
       });
-      if (!dealer) throw new NotFoundError('That dealership does not exist.');
+      if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
 
       /*
        * ── Reconstruction slice ──────────────────────────────────────────────
@@ -625,7 +627,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       return withTransaction(prisma, async (tx) => {
         const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
-        if (!dealer) throw new NotFoundError('That dealership does not exist.');
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
         if (dealer.status === 'ACTIVE') {
           throw new DomainError('ALREADY_ACTIVE', 'That dealership is already active.');
         }
@@ -722,7 +724,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           },
         },
       });
-      if (!dealer) throw new NotFoundError('That dealership does not exist.');
+      if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
       if (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED') {
         throw new DomainError(
           'DEALER_ALREADY_APPROVED',
@@ -847,7 +849,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       return withTransaction(prisma, async (tx) => {
         const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
-        if (!dealer) throw new NotFoundError('That dealership does not exist.');
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
         if (dealer.status !== 'PENDING_APPROVAL') {
           throw new DomainError(
             'NOT_UNDER_REVIEW',
@@ -919,7 +921,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       assertPermission(admin, 'admin:dealer:approve');
 
       const before = await prisma.dealer.findUnique({ where: { id: dealerId } });
-      if (!before) throw new NotFoundError('That dealership does not exist.');
+      if (!before) throw new NotFoundError(DEALER_NOT_FOUND);
 
       const profile = await dealers.update(dealerId, input);
 
@@ -996,7 +998,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             },
           },
         });
-        if (!dealer) throw new NotFoundError('That dealership does not exist.');
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
 
         const memberUserIds = [...new Set(dealer.members.map((member) => member.userId))];
 
@@ -1138,7 +1140,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const outcome = await withTransaction(prisma, async (tx) => {
         const doc = await tx.dealerDocument.findUnique({ where: { id: documentId } });
-        if (!doc) throw new NotFoundError('That document does not exist.');
+        if (!doc) throw new NotFoundError(DOCUMENT_NOT_FOUND);
 
         await tx.dealerDocument.update({
           where: { id: documentId },

@@ -1,4 +1,5 @@
 import type { ModuleDocs } from '../../docs/spec.js';
+import { DOC_TAGS } from '../../docs/tags.js';
 
 /**
  * C14, plus the two storage routes that stand in for R2 locally.
@@ -9,7 +10,7 @@ import type { ModuleDocs } from '../../docs/spec.js';
  * and image processing would compete with request handling for CPU.
  */
 export const mediaDocs: ModuleDocs = {
-  tag: 'Media',
+  tag: DOC_TAGS.media,
   description:
     'Vehicle photos: signed direct-to-storage uploads, ordering, and delivery.\n\n' +
     '**The flow is three calls.** `POST /v1/dealer/media/presign` returns a signed URL; the ' +
@@ -22,7 +23,7 @@ export const mediaDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/dealer/media/presign',
       operationId: 'presignMedia',
-      tag: 'Media',
+      tag: DOC_TAGS.media,
       summary: 'Get a signed upload URL for a photo',
       description:
         'Step 1 of 3. `ownerId` must be a vehicle (or dealership) **the acting dealer owns** — ' +
@@ -71,7 +72,7 @@ export const mediaDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/dealer/media/:id/commit',
       operationId: 'commitMedia',
-      tag: 'Media',
+      tag: DOC_TAGS.media,
       summary: 'Confirm an upload and queue processing',
       description:
         'Step 3 of 3. Confirms the bytes landed and queues re-encoding, EXIF stripping and ' +
@@ -110,7 +111,7 @@ export const mediaDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/dealer/media/:id',
       operationId: 'getMedia',
-      tag: 'Media',
+      tag: DOC_TAGS.media,
       summary: "Poll one photo's processing status",
       description:
         'The poll target from commit. `status` moves PENDING → READY, or → FAILED with ' +
@@ -128,7 +129,7 @@ export const mediaDocs: ModuleDocs = {
       method: 'delete',
       path: '/v1/dealer/media/:id',
       operationId: 'deleteMedia',
-      tag: 'Media',
+      tag: DOC_TAGS.media,
       summary: 'Delete a photo',
       description: "Removes the photo and its derivatives. Another dealer's photo id is a 404.",
       audience: 'dealer',
@@ -156,7 +157,7 @@ export const mediaDocs: ModuleDocs = {
  * changes — the presign response already points wherever the bytes should go.
  */
 export const storageDocs: ModuleDocs = {
-  tag: 'Storage (local only)',
+  tag: DOC_TAGS.storage,
   description:
     'The local stand-ins for object storage. `PUT /uploads` terminates a presigned upload; ' +
     '`GET /media/…` serves processed images. Both are replaced by R2 and the Cloudflare ' +
@@ -167,7 +168,7 @@ export const storageDocs: ModuleDocs = {
       method: 'put',
       path: '/uploads',
       operationId: 'putUpload',
-      tag: 'Storage (local only)',
+      tag: DOC_TAGS.storage,
       summary: 'Terminate a presigned upload',
       description:
         'Step 2 of the upload flow, and the only endpoint in the API that takes raw bytes.\n\n' +
@@ -237,7 +238,7 @@ export const storageDocs: ModuleDocs = {
       method: 'get',
       path: '/media/by-media/:mediaId/:width.webp',
       operationId: 'getMediaDerivative',
-      tag: 'Storage (local only)',
+      tag: DOC_TAGS.storage,
       summary: 'Serve a processed image',
       description:
         'Content-addressed image delivery for every kind of image the product stores — a ' +

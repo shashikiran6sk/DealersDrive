@@ -12,6 +12,7 @@ import type { Queue } from '../../platform/jobs/queue.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { DomainError, NotFoundError } from '../../platform/errors.js';
 import { mediaUrl } from '../../platform/media/urls.js';
+import { UPLOAD_INCOMPLETE, UPLOAD_NOT_FOUND } from '../../platform/messages.js';
 
 /**
  * Presign → the client uploads straight to storage → commit.
@@ -108,11 +109,11 @@ export function createMediaService({ prisma, storage, queue }: MediaDeps) {
       position?: number,
     ): Promise<MediaCommitResponse> {
       const media = await prisma.media.findFirst({ where: { id: mediaId, dealerId } });
-      if (!media) throw new NotFoundError('That upload does not exist.');
+      if (!media) throw new NotFoundError(UPLOAD_NOT_FOUND);
 
       const object = await storage.head(media.storageKey);
       if (!object) {
-        throw new DomainError('UPLOAD_MISSING', 'The upload did not complete. Try again.');
+        throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
       }
       if (object.bytes !== media.bytes) {
         await prisma.media.update({ where: { id: mediaId }, data: { status: 'FAILED' } });
@@ -146,7 +147,7 @@ export function createMediaService({ prisma, storage, queue }: MediaDeps) {
      */
     async get(dealerId: string, mediaId: string): Promise<VehicleMediaDto> {
       const media = await prisma.media.findFirst({ where: { id: mediaId, dealerId } });
-      if (!media) throw new NotFoundError('That upload does not exist.');
+      if (!media) throw new NotFoundError(UPLOAD_NOT_FOUND);
 
       return {
         mediaId: media.id,
@@ -178,7 +179,7 @@ export function createMediaService({ prisma, storage, queue }: MediaDeps) {
      */
     async remove(dealerId: string, mediaId: string): Promise<void> {
       const media = await prisma.media.findFirst({ where: { id: mediaId, dealerId } });
-      if (!media) throw new NotFoundError('That upload does not exist.');
+      if (!media) throw new NotFoundError(UPLOAD_NOT_FOUND);
 
       await prisma.media.update({ where: { id: mediaId }, data: { status: 'ORPHAN' } });
     },
