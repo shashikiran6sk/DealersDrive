@@ -1,15 +1,27 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { AdminNav } from '@/components/admin/admin-nav';
+import { ADMIN_NAV, AdminNav, LANDED_ADMIN_NAV } from '@/components/admin/admin-nav';
 
 /**
  * DESIGN-SPEC §3.17 — the admin sidebar nav (C024), on the cobalt-900 field.
  *
- * **The pathname is the whole component.** `AdminNav` reads `usePathname()` and
- * decides which item is current; it takes no props at all, so the only way to
- * see any state other than the default is to tell the router where it is. The
+ * **The pathname is most of the component.** `AdminNav` reads `usePathname()`
+ * and decides which item is current; the only way to see any state other than
+ * the default is to tell the router where it is. The
  * `nextjs.navigation.pathname` parameter is that control, and it is why this
  * file has one story per route rather than one story with a knob.
+ *
+ * ## Two lists, and why the shell renders the shorter one (F048)
+ *
+ * `ADMIN_NAV` is the baseline's five items and is what the console will be.
+ * `items` defaults to `LANDED_ADMIN_NAV` — the subset whose routes exist —
+ * because `/admin/listings` (**F069**) and `/admin/payments` (**F053**) do not,
+ * and two of five items in a cross-tenant operations console leading to a 404
+ * is the mistake the dealer console has never made.
+ *
+ * The stories below pass `ADMIN_NAV` so every route's current state can be
+ * seen; `AsTheConsoleRendersItToday` is what an operator actually gets, and the
+ * gap between it and `Dashboard` is the reconstruction, drawn.
  *
  * The rule it implements is not "starts with", uniformly: `/admin` would then
  * be current on every page, since every admin path starts with it. Dashboard
@@ -23,6 +35,7 @@ import { AdminNav } from '@/components/admin/admin-nav';
 const meta = {
   title: 'Admin/AdminNav',
   component: AdminNav,
+  args: { items: ADMIN_NAV },
   parameters: {
     layout: 'centered',
     nextjs: { appDirectory: true, navigation: { pathname: '/admin' } },
@@ -76,4 +89,17 @@ export const Configuration: Story = {
  */
 export const NothingCurrent: Story = {
   parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/admin/audit-logs' } } },
+};
+
+/**
+ * What an operator actually sees (**F048**): three items, because three routes
+ * exist. Listings and Payments return with F069 and F053.
+ *
+ * Worth looking at beside `Dashboard` above rather than assuming — the sidebar
+ * is noticeably shorter, and the note pinned to its foot is carrying more of
+ * the panel than it was designed to.
+ */
+export const AsTheConsoleRendersItToday: Story = {
+  args: { items: LANDED_ADMIN_NAV },
+  parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/admin' } } },
 };

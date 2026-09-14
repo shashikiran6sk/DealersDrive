@@ -4,12 +4,15 @@ import {
   DOC_TYPE_LABELS,
   formatDate,
   formatPhone,
+  initialsOf,
   normaliseLocality,
   PROFILE_CHANGE_STATUS_LABELS,
+  timeAgo,
   toE164,
   type AuthSession,
   type CompletenessResponse,
   type DealerDocumentsResponse,
+  type DashboardResponse,
   type DealerSubmitResponse,
   type DealerProfile,
   type DealerProfileChange,
@@ -1231,6 +1234,173 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       await repo.update(dealerId, { coverMediaId: null });
       await discardMedia(dealer.coverMediaId);
     },
+
+    // ─────────── C18 dashboard ────────────────────────────────────────────
+
+    /**
+     * One round trip, everything. `heightPct` is computed here against the
+     * week's max so the chart cannot disagree with the numbers beside it.
+     *
+     * ── Reconstruction slice ──────────────────────────────────────────────
+     * Every line below is the baseline's. What is held back is the six reads
+     * it is built from — `viewRollups`, `previousWeekViews`, `enquiryCounts`,
+     * `recentEnquiries`, `expiringListingCount` and `weeklyActivity` — each of
+     * which queries a model that does not exist yet and each of which
+     * therefore answers with the truth for zero rows. The repository carries
+     * the baseline's query against each one, and the feature that restores it.
+     *
+     * The derivation is deliberately **not** sliced. It is the part a reviewer
+     * has to check against the baseline, and the part a later feature must not
+     * re-invent; holding it back and computing zeros inline would hide it, and
+     * restoring the models would then mean rewriting code that was never in
+     * question.
+     * ──────────────────────────────────────────────────────────────────────
+     */
+    async dashboard(dealerId: string): Promise<DashboardResponse> {
+      const dealer = await requireDealer(dealerId);
+      const owner = dealer.members.find((member) => member.role === 'OWNER');
+
+      const weekStart = startOfDayUtc(new Date(Date.now() - 6 * 86_400_000));
+
+      const [rollups, previousTotalOrNull, enquiryCounts, recent, expiringSoon, activity] =
+        await Promise.all([
+          repo.viewRollups(dealerId, weekStart),
+          repo.previousWeekViews(dealerId, weekStart),
+          repo.enquiryCounts(dealerId, weekStart),
+          repo.recentEnquiries(dealerId, 4),
+          repo.expiringListingCount(dealerId, new Date(Date.now() + 7 * 86_400_000)),
+          repo.weeklyActivity(dealerId, weekStart, startOfMonthUtc()),
+        ]);
+
+      const byDay = new Map(
+        rollups.map((row) => [row.day.toISOString().slice(0, 10), row.views ?? 0]),
+      );
+
+      const series: DashboardResponse['viewsChart']['series'] = [];
+      for (let index = 0; index < 7; index += 1) {
+        const day = new Date(weekStart.getTime() + index * 86_400_000);
+        const key = day.toISOString().slice(0, 10);
+        series.push({
+          day: day.toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' }),
+          date: key,
+          views: byDay.get(key) ?? 0,
+          heightPct: 0,
+        });
+      }
+
+      /*
+       * One, not zero. Every height is a percentage of this, and a quiet week
+       * is exactly the week a dealer looks at — a divide-by-zero there would
+       * render `NaN%` on the one screen that has to keep working when there is
+       * nothing to show.
+       */
+      const max = Math.max(1, ...series.map((point) => point.views));
+      for (const point of series) {
+        point.heightPct = Math.round((point.views / max) * 100);
+      }
+
+      const weekTotal = series.reduce((sum, point) => sum + point.views, 0);
+      /*
+       * Null is "no data for last week"; zero is a real week with no traffic.
+       * Reporting the first as the second is a fabricated −100% trend, which is
+       * why the repository keeps the distinction rather than flattening it.
+       */
+      const viewDelta =
+        previousTotalOrNull === null || previousTotalOrNull === 0
+          ? null
+          : Math.round(((weekTotal - previousTotalOrNull) / previousTotalOrNull) * 100);
+
+      const firstName = (owner?.user.fullName ?? dealer.brandName).split(' ').pop() ?? '';
+
+      return {
+        greeting: `${greeting()}, ${firstName}`,
+        subline: 'Here is what happened across your inventory in the last 7 days.',
+        stats: [
+          {
+            key: 'activeListings',
+            label: 'Active listings',
+            value: dealer.activeListings,
+            valueLabel: String(dealer.activeListings),
+            delta:
+              activity.listingsAddedThisWeek > 0
+                ? `+${String(activity.listingsAddedThisWeek)} this week`
+                : 'No change this week',
+            deltaTone: activity.listingsAddedThisWeek > 0 ? 'ok' : 'neutral',
+          },
+          {
+            key: 'credits',
+            label: 'Available credits',
+            value: dealer.creditBalance,
+            valueLabel: dealer.creditBalance.toLocaleString('en-IN'),
+            delta: `${String(activity.creditsUsedThisMonth)} used this month`,
+            deltaTone: 'neutral',
+          },
+          {
+            key: 'newEnquiries',
+            label: 'New enquiries',
+            value: enquiryCounts.thisWeek,
+            valueLabel: String(enquiryCounts.thisWeek),
+            delta:
+              enquiryCounts.previousWeek === 0
+                ? 'First week of enquiries'
+                : `${enquiryCounts.thisWeek - enquiryCounts.previousWeek >= 0 ? '+' : '−'}${String(
+                    Math.abs(enquiryCounts.thisWeek - enquiryCounts.previousWeek),
+                  )} vs last week`,
+            deltaTone: enquiryCounts.thisWeek >= enquiryCounts.previousWeek ? 'ok' : 'warn',
+          },
+          {
+            key: 'views',
+            label: 'Vehicle views',
+            value: weekTotal,
+            valueLabel: weekTotal.toLocaleString('en-IN'),
+            delta:
+              viewDelta === null
+                ? 'No data for last week'
+                : `${viewDelta >= 0 ? '+' : '−'}${String(Math.abs(viewDelta))}% vs last week`,
+            deltaTone: viewDelta === null || viewDelta >= 0 ? 'ok' : 'warn',
+          },
+        ],
+        viewsChart: {
+          title: 'Views this week',
+          totalLabel: `${weekTotal.toLocaleString('en-IN')} total`,
+          max,
+          series,
+        },
+        recentEnquiries: recent.map((enquiry) => ({
+          id: enquiry.id,
+          initials: initialsOf(enquiry.name),
+          name: enquiry.name,
+          vehicleTitle: enquiry.vehicle
+            ? [
+                enquiry.vehicle.year,
+                enquiry.vehicle.make.name,
+                enquiry.vehicle.model.name,
+                enquiry.vehicle.variant?.name,
+              ]
+                .filter(Boolean)
+                .join(' ')
+            : null,
+          phoneDisplay: formatPhone(enquiry.phone),
+          callHref: `tel:${enquiry.phone}`,
+          timeAgoLabel: timeAgo(enquiry.createdAt),
+        })),
+        creditBalance: dealer.creditBalance,
+        creditsHeld: dealer.creditsHeld,
+        alerts:
+          expiringSoon > 0
+            ? [
+                {
+                  type: 'EXPIRING_SOON',
+                  count: expiringSoon,
+                  message: `${String(expiringSoon)} listing${expiringSoon === 1 ? '' : 's'} expire${
+                    expiringSoon === 1 ? 's' : ''
+                  } in the next 7 days.`,
+                  href: '/dealer/inventory?status=ACTIVE',
+                },
+              ]
+            : [],
+      };
+    },
   };
 }
 
@@ -1258,4 +1428,33 @@ function documentStatusLabel(
     default:
       return 'Required — PDF or JPG, max 5 MB';
   }
+}
+
+/**
+ * The time of day **in IST**, not in the server's zone.
+ *
+ * The API runs in UTC, and "Good evening" at 21:00 IST is 15:30 UTC — an
+ * afternoon by the clock the process is keeping. The dealers are in India; the
+ * greeting is theirs, so it is computed in their zone.
+ */
+function greeting(): string {
+  const hour = Number(
+    new Date().toLocaleString('en-GB', {
+      hour: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Kolkata',
+    }),
+  );
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function startOfDayUtc(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
+function startOfMonthUtc(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 }

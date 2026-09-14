@@ -61,16 +61,26 @@ describe('ConsoleNav', () => {
  * and the shell renders that one — a nav item onto a 404 is the console saying
  * a page exists and then not having it.
  *
- * The assertion is deliberately *not* "there is exactly one item". Each of
- * F048, F050, F051, F056 and F065 adds one as it lands, and a test that has to
- * be edited by five unrelated features is a test people stop reading. What must
+ * The assertion is deliberately *not* "there are exactly n items". Each of
+ * F050, F051, F056 and F065 adds one as it lands, and a test that has to be
+ * edited by four unrelated features is a test people stop reading. What must
  * hold at every one of those steps is that `LANDED_NAV` is a subset of
- * `DEALER_NAV` and that `/dealer/profile` — the route that exists — is in it.
+ * `DEALER_NAV` and that the routes which exist are in it.
  */
 describe('the nav the console actually renders', () => {
-  it('offers only routes that exist, and offers the one that does', () => {
+  it('offers only routes that exist, and offers the ones that do', () => {
     expect(LANDED_NAV.every((item) => DEALER_NAV.includes(item))).toBe(true);
     expect(LANDED_NAV.map((item) => item.href)).toContain('/dealer/profile');
+    // **F048.** `/dealer` was held back until there was a page under it.
+    expect(LANDED_NAV.map((item) => item.href)).toContain('/dealer');
+  });
+
+  it('keeps the order the baseline declares', () => {
+    expect(LANDED_NAV.map((item) => item.href)).toEqual(
+      DEALER_NAV.map((item) => item.href).filter((href) =>
+        LANDED_NAV.some((item) => item.href === href),
+      ),
+    );
   });
 });
 
@@ -90,14 +100,42 @@ describe('ConsoleTabBar', () => {
   });
 
   /**
-   * And nothing at all when no route with a `short` has landed. Rendering the
-   * bar anyway would pin an empty 56px white strip over the bottom of every
-   * console screen on a phone — a reconstruction artefact rather than a state
-   * of the product.
+   * And nothing at all when it is handed nothing. Rendering the bar anyway
+   * would pin an empty 56px white strip over the bottom of every console screen
+   * on a phone — a reconstruction artefact rather than a state of the product.
    */
   it('renders nothing rather than an empty bar', () => {
-    const { container } = render(<ConsoleTabBar items={LANDED_NAV} />);
+    const { container } = render(<ConsoleTabBar items={[]} />);
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  /**
+   * ── The reconstruction accommodation (F048) ────────────────────────────────
+   * The sidebar is `hidden md:flex`, so below 768 this bar is the *only*
+   * navigation the console has. Applying §3.11's rule literally today — "the
+   * five items carrying a `short`" — would give a phone one tab and no way to
+   * reach `/dealer/profile` at all.
+   *
+   * So while the bar is short of its five, the items without a `short` keep a
+   * place in it. The two cases below are the two ends of that: what a dealer
+   * gets on a phone today, and that the accommodation costs nothing once the
+   * console is complete.
+   * ──────────────────────────────────────────────────────────────────────────
+   */
+  it('keeps every console screen reachable while the bar is under-full', () => {
+    render(<ConsoleTabBar items={LANDED_NAV} />);
+
+    const labels = screen.getAllByRole('link').map((link) => link.textContent);
+
+    expect(labels).toContain('Home');
+    expect(labels).toContain('Dealer profile');
+  });
+
+  it('falls back to the five the spec draws, the moment they all exist', () => {
+    render(<ConsoleTabBar items={DEALER_NAV} />);
+
+    expect(screen.getAllByRole('link')).toHaveLength(5);
+    expect(screen.queryByText('Dealer profile')).toBeNull();
   });
 });

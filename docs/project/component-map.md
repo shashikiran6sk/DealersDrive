@@ -313,17 +313,19 @@ cells are what this design asks for, so the keyboard work is paid for once.
 
 ## Layer 3 — Layout & navigation
 
-| ID    | Component            | Location                                   | Props                                    | States                                                                | Consumers            | Ownership        | Priority  |
-| ----- | -------------------- | ------------------------------------------ | ---------------------------------------- | --------------------------------------------------------------------- | -------------------- | ---------------- | --------- |
-| C020  | `CustomerHeader`     | `components/layout/customer-header.tsx:37` | none — reads `usePathname()`             | 5 nav-active states × mobile/tablet                                   | 1 layout             | Shared           | **P0** ✅ |
-| C021  | `CustomerFooter`     | `components/layout/customer-footer.tsx:93` | `social`, `supportEmail`, `supportPhone` | 4 — published / none published / API unreachable / mobile             | 1 layout             | Shared           | P3 ✅     |
-| C021c | `SocialIcon`         | `components/layout/social-icons.tsx:58`    | `network`                                | 6, one per network                                                    | 1 (`CustomerFooter`) | Feature-specific | P3 ✅     |
-| C022  | `AuthShell`          | `components/auth/auth-shell.tsx:19`        | `eyebrow?`, `children`, `className?`     | 1                                                                     | 3 pages              | Shared           | P2        |
-| C023  | `AuthHeading`        | `components/auth/auth-shell.tsx:44`        | `title`, `children?`                     | subtitle present/absent                                               | 3 pages              | Shared           | P3        |
-| C024  | `AdminNav`           | `components/admin/admin-nav.tsx:23`        | none — reads `usePathname()`             | 1 per admin route                                                     | 1 layout             | Shared           | P2        |
-| C025  | `ConsoleNav`         | `components/dealer/console-nav.tsx:70`     | `items: NavItem[]`                       | 1 per route active                                                    | 1 layout             | Shared           | P2 ✅     |
-| C026  | `ConsoleTabBar`      | `components/dealer/console-nav.tsx:90`     | `items: NavItem[]`                       | 1 per tab active; mobile-only (`md:hidden`); **empty renders `null`** | 1 layout             | Shared           | **P1** ✅ |
-| C039  | `GoogleSignInButton` | `components/auth/google-button.tsx:16`     | `href`, `label?`, `disabled?`            | default, disabled                                                     | 1 page               | Shared           | P2        |
+| ID    | Component            | Location                                    | Props                                                        | States                                                                                                           | Consumers            | Ownership        | Priority  |
+| ----- | -------------------- | ------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | -------------------- | ---------------- | --------- |
+| C020  | `CustomerHeader`     | `components/layout/customer-header.tsx:37`  | none — reads `usePathname()`                                 | 5 nav-active states × mobile/tablet                                                                              | 1 layout             | Shared           | **P0** ✅ |
+| C021  | `CustomerFooter`     | `components/layout/customer-footer.tsx:93`  | `social`, `supportEmail`, `supportPhone`                     | 4 — published / none published / API unreachable / mobile                                                        | 1 layout             | Shared           | P3 ✅     |
+| C021c | `SocialIcon`         | `components/layout/social-icons.tsx:58`     | `network`                                                    | 6, one per network                                                                                               | 1 (`CustomerFooter`) | Feature-specific | P3 ✅     |
+| C022  | `AuthShell`          | `components/auth/auth-shell.tsx:19`         | `eyebrow?`, `children`, `className?`                         | 1                                                                                                                | 3 pages              | Shared           | P2        |
+| C023  | `AuthHeading`        | `components/auth/auth-shell.tsx:44`         | `title`, `children?`                                         | subtitle present/absent                                                                                          | 3 pages              | Shared           | P3        |
+| C024  | `AdminNav`           | `components/admin/admin-nav.tsx:75`         | `items?` — defaults to the landed set; reads `usePathname()` | 1 per admin route, + landed-today                                                                                | 1 layout             | Shared           | P2 ✅     |
+| C025  | `ConsoleNav`         | `components/dealer/console-nav.tsx:70`      | `items: NavItem[]`                                           | 1 per route active                                                                                               | 1 layout             | Shared           | P2 ✅     |
+| C026  | `ConsoleTabBar`      | `components/dealer/console-nav.tsx:103`     | `items: NavItem[]`                                           | 1 per tab active; mobile-only (`md:hidden`); under-full carries the `short`-less items; **empty renders `null`** | 1 layout             | Shared           | **P1** ✅ |
+| C077  | `ViewsChart`         | `components/dealer/dashboard-panels.tsx:41` | `chart`                                                      | ordinary week / no views / one spike / first day of trading                                                      | 1 page               | Shared           | P2 ✅     |
+| C078  | `RecentEnquiries`    | `components/dealer/dashboard-panels.tsx:93` | `enquiries`                                                  | four leads / none yet / general enquiry / long names at phone width                                              | 1 page               | Shared           | P2 ✅     |
+| C039  | `GoogleSignInButton` | `components/auth/google-button.tsx:16`      | `href`, `label?`, `disabled?`                                | default, disabled                                                                                                | 1 page               | Shared           | P2        |
 
 **Coupling note.** `CustomerHeader` (C020), `AdminNav` (C024), `ConsoleNav`
 (C025) and `ConsoleTabBar` (C026) all call `usePathname()`. In the sandbox each
@@ -334,14 +336,22 @@ exactly what makes "which nav item is active" testable for the first time.
 > `DEALER_NAV` is the baseline's six items and is what C025 and C026 are _for_;
 > `LANDED_NAV` is the subset whose routes exist. `(dealer)/dealer/layout.tsx`
 > renders `LANDED_NAV`, because a nav item onto a 404 is the console telling a
-> dealer a page exists and then not having it. **F048, F050, F051, F056 and
-> F065 each delete their own line** from the `NOT_YET_BUILT` set as they land;
-> when it is empty the constant goes and `DEALER_NAV` is used directly.
+> dealer a page exists and then not having it. **F050, F051, F056 and F065 each
+> delete their own line** from the `NOT_YET_BUILT` set as they land; when it is
+> empty the constant goes and `DEALER_NAV` is used directly. **F048 deleted
+> `/dealer`.**
 >
-> C026 returns `null` on an empty list, which is what that subset currently
-> produces — every item carrying a `short` is one of the five routes still to
-> land, and an empty 56px strip pinned over the bottom of every console screen
-> is a reconstruction artefact rather than a state of the product.
+> **F048 applies the same rule to C024.** `/admin/listings` (F069) and
+> `/admin/payments` (F053) were offered from F049 onward, so two of five items
+> in the operations console led to a 404; `LANDED_ADMIN_NAV` is the admin side's
+> `LANDED_NAV`, and F053 and F069 each delete their own line.
+>
+> **C026 grew one rule at F048.** §3.11 gives the bar five items and drops
+> `Dealer profile`; four of those five are still to land, and the sidebar is
+> `hidden md:flex`, so applying the rule literally today gives a phone one tab
+> and no way to reach `/dealer/profile` at all. While the bar is short of its
+> five it also carries the items without a `short`. The accommodation removes
+> itself when the fifth lands. It still returns `null` when handed nothing.
 >
 > The sandbox shows both: `Full` is the component as it will be,
 > `AsTheConsoleRendersItToday` is what a dealer sees, and the gap between the

@@ -69,6 +69,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <span className="text-[14px] font-semibold">Operations</span>
 
           <div className="ml-auto flex items-center gap-3">
+            {/*
+              The badge is a link onto `/admin/listings` (**F069**), which does
+              not exist — but it cannot render one today: `headerBadge.count` is
+              the pending-listing count, and with no `Listing` model
+              `overview()` computes it as a hard zero. So the branch is
+              unreachable rather than broken, and it is left as the baseline has
+              it so that F069 restores the badge by adding a model rather than
+              by editing this file. The nav item beside it *was* reachable,
+              which is why `admin-nav.tsx` is the file this feature changed.
+            */}
             {overview.headerBadge.count > 0 ? (
               <Link href="/admin/listings" className="no-underline">
                 <StatusTag tone={overview.headerBadge.tone}>{overview.headerBadge.label}</StatusTag>

@@ -7,6 +7,7 @@ import {
   DocStatus,
   MediaStatus,
   ProfileChangeStatus,
+  StatusTone,
 } from './enums.js';
 
 /**
@@ -569,3 +570,69 @@ export const MediaCommitResponse = z.object({
   estimatedSeconds: z.number().int(),
 });
 export type MediaCommitResponse = z.infer<typeof MediaCommitResponse>;
+
+// ─────────── C18 dashboard ─────────────────────────────────────────────────
+/**
+ * The console landing page in one response (**F048**).
+ *
+ * One request rather than six, and every number already formatted. The console
+ * renders what it is handed and computes nothing — which is rule 6 (§4.11) in
+ * its most literal form: two screens cannot disagree about a count if only one
+ * place ever counts.
+ *
+ * `heightPct` is the sharp end of that. The bar chart's heights are computed
+ * **server-side against the week's own maximum**, so the drawing and the
+ * numbers printed beside it come from one calculation. A component deriving its
+ * own ratio is a component that can render a 40-view day taller than a 60-view
+ * one after somebody changes what `max` means.
+ */
+export const DashboardResponse = z.object({
+  greeting: z.string(),
+  subline: z.string(),
+  stats: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      value: z.number().int(),
+      valueLabel: z.string(),
+      delta: z.string(),
+      deltaTone: StatusTone,
+    }),
+  ),
+  viewsChart: z.object({
+    title: z.string(),
+    totalLabel: z.string(),
+    max: z.number().int(),
+    /** heightPct is server-computed so the chart cannot disagree with the numbers. */
+    series: z.array(
+      z.object({
+        day: z.string(),
+        date: z.string(),
+        views: z.number().int(),
+        heightPct: z.number().int(),
+      }),
+    ),
+  }),
+  recentEnquiries: z.array(
+    z.object({
+      id: Uuid,
+      initials: z.string(),
+      name: z.string(),
+      vehicleTitle: z.string().nullable(),
+      phoneDisplay: z.string(),
+      callHref: z.string(),
+      timeAgoLabel: z.string(),
+    }),
+  ),
+  creditBalance: z.number().int(),
+  creditsHeld: z.number().int(),
+  alerts: z.array(
+    z.object({
+      type: z.string(),
+      count: z.number().int(),
+      message: z.string(),
+      href: z.string(),
+    }),
+  ),
+});
+export type DashboardResponse = z.infer<typeof DashboardResponse>;
