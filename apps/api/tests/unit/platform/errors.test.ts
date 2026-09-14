@@ -9,6 +9,11 @@ import {
   PROBLEM_TYPE_BASE,
   RateLimitError,
   UnauthorizedError,
+  awsStatusCode,
+  errorCode,
+  errorNumber,
+  errorString,
+  isRecord,
   problemTypeFromCode,
   titleFromCode,
 } from '../../../src/platform/errors.js';
@@ -157,5 +162,72 @@ describe('titleFromCode', () => {
   it('handles a single word and an empty string without throwing', () => {
     expect(titleFromCode('CONFLICT')).toBe('Conflict');
     expect(titleFromCode('')).toBe('');
+  });
+});
+
+/**
+ * The narrowing helpers exist so that nothing in `src` has to assert the shape
+ * of a value it did not construct — a driver's error, an AWS SDK fault. Each one
+ * must answer `undefined` for every shape it was not given, because a wrong
+ * answer here becomes a wrong HTTP status somewhere else.
+ */
+describe('isRecord', () => {
+  it('accepts objects and arrays', () => {
+    expect(isRecord({})).toBe(true);
+    expect(isRecord({ code: 'P2002' })).toBe(true);
+    expect(isRecord([])).toBe(true);
+  });
+
+  it('rejects null and every primitive', () => {
+    expect(isRecord(null)).toBe(false);
+    expect(isRecord(undefined)).toBe(false);
+    expect(isRecord('P2002')).toBe(false);
+    expect(isRecord(42)).toBe(false);
+  });
+});
+
+describe('errorString', () => {
+  it('reads a string property off a record', () => {
+    expect(errorString({ code: 'P2002' }, 'code')).toBe('P2002');
+  });
+
+  it('answers undefined for a non-record, a missing key and a non-string value', () => {
+    expect(errorString('P2002', 'code')).toBeUndefined();
+    expect(errorString({}, 'code')).toBeUndefined();
+    expect(errorString({ code: 409 }, 'code')).toBeUndefined();
+  });
+});
+
+describe('errorNumber', () => {
+  it('reads a number property off a record', () => {
+    expect(errorNumber({ status: 503 }, 'status')).toBe(503);
+  });
+
+  it('answers undefined for a non-record, a missing key and a non-number value', () => {
+    expect(errorNumber(null, 'status')).toBeUndefined();
+    expect(errorNumber({}, 'status')).toBeUndefined();
+    expect(errorNumber({ status: '503' }, 'status')).toBeUndefined();
+  });
+});
+
+describe('errorCode', () => {
+  it('reads the `code` every driver error carries', () => {
+    expect(errorCode({ code: 'ECONNREFUSED' })).toBe('ECONNREFUSED');
+    expect(errorCode(new NotFoundError())).toBe('NOT_FOUND');
+    expect(errorCode(new Error('ECONNREFUSED'))).toBeUndefined();
+    expect(errorCode('ECONNREFUSED')).toBeUndefined();
+  });
+});
+
+describe('awsStatusCode', () => {
+  it('reads the status the SDK hides under $metadata', () => {
+    expect(awsStatusCode({ $metadata: { httpStatusCode: 404 } })).toBe(404);
+  });
+
+  it('answers undefined when any link in that chain is the wrong shape', () => {
+    expect(awsStatusCode('NoSuchKey')).toBeUndefined();
+    expect(awsStatusCode({})).toBeUndefined();
+    expect(awsStatusCode({ $metadata: 404 })).toBeUndefined();
+    expect(awsStatusCode({ $metadata: { httpStatusCode: '404' } })).toBeUndefined();
   });
 });
