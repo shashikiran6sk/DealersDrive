@@ -428,13 +428,16 @@ export const registry: RegistryEntry[] = [
     category: 'Admin',
     ownership: 'Shared',
     /**
-     * No props at all: it reads `usePathname()` (coupling C-3), so the
-     * pathname is the control — one story per route rather than a knob.
+     * It reads `usePathname()` (coupling C-3), so the pathname is the control
+     * — one story per route rather than a knob. `items` defaults to the landed
+     * set so the shell needs no knowledge of the slice (**F048**).
      */
-    purpose: 'The admin sidebar nav. Reads the pathname; takes nothing.',
+    purpose:
+      'The admin sidebar nav. Reads the pathname; renders only the routes that exist unless ' +
+      'handed a list.',
     aliases: ['AdminSidebar', 'AdminMenu', 'OpsNav', 'ConsoleNav', 'admin-nav'],
-    features: ['F049'],
-    props: [],
+    features: ['F049', 'F048'],
+    props: ['items?'],
     states: [
       'dashboard',
       'listings',
@@ -443,6 +446,7 @@ export const registry: RegistryEntry[] = [
       'payments',
       'configuration',
       'nothing current',
+      'as the console renders it today (three items)',
     ],
     reusable: true,
     storyId: 'admin-adminnav',
@@ -483,13 +487,63 @@ export const registry: RegistryEntry[] = [
      * `md:hidden`, so it is invisible at a desktop viewport — the 375 and 768
      * viewport controls are the only way to see it at all.
      */
-    purpose: 'The 56px bottom tab bar below 768. Five of the six nav items; none renders nothing.',
+    purpose:
+      'The 56px bottom tab bar below 768. Five of the six nav items once they all exist; ' +
+      'while it is under-full it also carries the items without a `short`, because the ' +
+      'sidebar is hidden at this width and a console screen must not be unreachable.',
     aliases: ['DealerTabBar', 'BottomNav', 'MobileNav', 'TabBar', 'console-tab-bar'],
-    features: ['F047', 'R31'],
+    features: ['F047', 'R31', 'F048'],
     props: ['items'],
-    states: ['five tabs', 'a tab current', 'nothing landed — renders null'],
+    states: [
+      "the spec's five tabs",
+      'a tab current',
+      'under-full — Dashboard + Dealer profile',
+      'handed nothing — renders null',
+    ],
     reusable: true,
     storyId: 'dealer-consolenav--tab-bar',
+  },
+  {
+    id: 'C077',
+    name: 'ViewsChart',
+    source: 'apps/web/src/components/dealer/dashboard-panels.tsx',
+    category: 'Console',
+    ownership: 'Shared',
+    /**
+     * Search here before hand-rolling another bar chart. It is the only one in
+     * the product, and `.table` being hand-rolled five separate times in the
+     * baseline is what this registry exists to prevent.
+     */
+    purpose:
+      'The seven-day bar chart on the dealer dashboard. Heights are heightPct from the API, ' +
+      'never a ratio computed on screen, so it cannot disagree with the total beside it.',
+    aliases: ['BarChart', 'ViewsPanel', 'WeeklyChart', 'Sparkline', 'dashboard-chart'],
+    features: ['F048'],
+    props: ['chart'],
+    states: ['an ordinary week', 'no views at all', 'one spike', 'the first day of trading'],
+    reusable: true,
+    storyId: 'dealer-dashboardpanels--chart',
+  },
+  {
+    id: 'C078',
+    name: 'RecentEnquiries',
+    source: 'apps/web/src/components/dealer/dashboard-panels.tsx',
+    category: 'Console',
+    ownership: 'Shared',
+    purpose:
+      'The four newest leads, each one tap from a call. F051 and F065 both want a panel of ' +
+      'this shape — extend it rather than writing a second one.',
+    aliases: ['LeadsPanel', 'EnquiryList', 'RecentLeads', 'dashboard-enquiries'],
+    features: ['F048'],
+    props: ['enquiries'],
+    states: [
+      'four leads',
+      'none yet — the day-one state',
+      'a general enquiry (no vehicle)',
+      'long names at phone width',
+    ],
+    reusable: true,
+    storyId: 'dealer-dashboardpanels--enquiries',
   },
   {
     id: 'C031',

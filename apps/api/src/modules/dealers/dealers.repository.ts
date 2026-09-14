@@ -305,7 +305,166 @@ export function createDealersRepository(prisma: PrismaClient) {
     async pendingListingCount(_dealerId: string): Promise<number> {
       return 0;
     },
+
+    /*
+     * ── C18, the dashboard's six reads (F048) ─────────────────────────────
+     *
+     * Every one of them queries a model that does not exist yet:
+     * `ListingViewDaily` and `Listing` at **F064**, `Enquiry` at **F088**,
+     * `CreditTransaction` at **F050**. So each returns the answer that is true
+     * with no rows — an empty result or a zero — with the baseline's query in
+     * the comment above it.
+     *
+     * **They are on the repository rather than inlined in the service, and
+     * that is the whole point of doing it this way.** `dashboard()` keeps the
+     * baseline's derivation intact and verbatim — the greeting, the seven-day
+     * series, the height scaling, the four delta sentences — because that is
+     * the code a reviewer has to check against the baseline and the code a
+     * later feature must not re-invent. What is held back is six queries, each
+     * one line, each named. A service that computed zeros inline would hide the
+     * derivation behind the slice, and restoring the models would then mean
+     * rewriting the part that was never in question.
+     *
+     * Each of these is restored by the feature named against it, and F048's
+     * entry in the feature map lists them.
+     */
+
+    /**
+     * Daily view rollups for this dealership since `from`.
+     *
+     * Baseline:
+     * ```ts
+     * prisma.listingViewDaily.groupBy({
+     *   by: ['day'],
+     *   where: { dealerId, day: { gte: from } },
+     *   _sum: { views: true },
+     * })
+     * ```
+     * `ListingViewDaily` arrives at **F064**.
+     */
+    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F064
+    async viewRollups(
+      _dealerId: string,
+      _from: Date,
+    ): Promise<{ day: Date; views: number | null }[]> {
+      return [];
+    },
+
+    /**
+     * Views in the week before `from`, or null when that week has no rows at
+     * all.
+     *
+     * **Null and zero are different answers and the dashboard renders them
+     * differently**: null is "no data for last week", zero is a real week with
+     * no traffic, and reporting the first as the second fabricates a −100%
+     * trend. Prisma's `_sum` is null for an empty aggregate, which is exactly
+     * the distinction wanted, so the shape is kept rather than flattened.
+     *
+     * Baseline:
+     * ```ts
+     * (await prisma.listingViewDaily.aggregate({
+     *   where: { dealerId, day: { gte: previousWeekStart, lt: from } },
+     *   _sum: { views: true },
+     * }))._sum.views
+     * ```
+     * `ListingViewDaily` arrives at **F064**.
+     */
+    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F064
+    async previousWeekViews(_dealerId: string, _from: Date): Promise<number | null> {
+      return null;
+    },
+
+    /**
+     * NEW enquiries since `from`, and every non-SPAM enquiry in the week
+     * before it — the pair the "vs last week" sentence is built from.
+     *
+     * One method for two counts because they are only ever wanted together and
+     * must be measured against one clock.
+     *
+     * Baseline: two `prisma.enquiry.count` calls. `Enquiry` arrives at
+     * **F088**.
+     */
+    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F088
+    async enquiryCounts(
+      _dealerId: string,
+      _from: Date,
+    ): Promise<{ thisWeek: number; previousWeek: number }> {
+      return { thisWeek: 0, previousWeek: 0 };
+    },
+
+    /**
+     * The newest enquiries, for the console's right-hand panel.
+     *
+     * Baseline: `enquiries.recentForDealer(dealerId, limit)` — a facade call
+     * into the enquiries module, which arrives at **F088** and brings the
+     * `EnquiriesService` dependency with it.
+     */
+    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F088
+    async recentEnquiries(_dealerId: string, _limit: number): Promise<RecentEnquiryRow[]> {
+      return [];
+    },
+
+    /**
+     * Approved listings expiring inside seven days — the dashboard's one
+     * alert.
+     *
+     * Baseline:
+     * ```ts
+     * prisma.listing.count({
+     *   where: { dealerId, status: 'APPROVED', expiresAt: { lte: horizon } },
+     * })
+     * ```
+     * `Listing` arrives at **F064**.
+     */
+    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F064
+    async expiringListingCount(_dealerId: string, _horizon: Date): Promise<number> {
+      return 0;
+    },
+
+    /**
+     * Credits spent on listing submissions this calendar month, and listings
+     * approved since `from` — the two "delta" numbers under the stat cards.
+     *
+     * Baseline: a `prisma.creditTransaction.count` on `reason: 'HOLD_SUBMIT'`
+     * and a `prisma.listing.count` on `approvedAt`. `CreditTransaction`
+     * arrives at **F050** and `Listing` at **F064**.
+     */
+    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F050/F064
+    async weeklyActivity(
+      _dealerId: string,
+      _weekStart: Date,
+      _monthStart: Date,
+    ): Promise<{ creditsUsedThisMonth: number; listingsAddedThisWeek: number }> {
+      return { creditsUsedThisMonth: 0, listingsAddedThisWeek: 0 };
+    },
   };
+}
+
+/**
+ * One enquiry as the dashboard panel needs it (**F048**).
+ *
+ * Declared here rather than inferred from a Prisma payload because the model it
+ * will be inferred *from* does not exist yet. When `Enquiry` lands at F088 this
+ * becomes a `Prisma.EnquiryGetPayload<…>` and the shape below is what that
+ * payload has to satisfy — which is the useful half of writing it out: the
+ * fields the console actually reads are recorded, rather than "whatever the
+ * include happened to select".
+ *
+ * `vehicle` is null for a general enquiry — somebody asking the dealership a
+ * question rather than asking about one car — and the panel renders that as
+ * "General enquiry" rather than dropping the row.
+ */
+export interface RecentEnquiryRow {
+  id: string;
+  name: string;
+  phone: string;
+  createdAt: Date;
+  vehicle: {
+    year: number;
+    make: { name: string };
+    model: { name: string };
+    variant: { name: string } | null;
+  } | null;
 }
 
 export type DealersRepository = ReturnType<typeof createDealersRepository>;

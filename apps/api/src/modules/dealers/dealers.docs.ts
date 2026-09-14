@@ -8,7 +8,8 @@ import type { ModuleDocs } from '../../docs/spec.js';
  * router beside it — an operation lands in the same PR that mounts its route,
  * which is what `tests/unit/docs/openapi.test.ts` checks in both directions.
  * F040 brought the checklist, F041 five more, F043 the completeness read,
- * **F042 the submit**. `getDealerDashboard` (F048) is what remains.
+ * **F042 the submit** and **F048 `getDealerDashboard`**, which is the last of
+ * them. Every operation the baseline documents here is now present.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export const dealersDocs: ModuleDocs = {
@@ -438,6 +439,30 @@ export const dealersDocs: ModuleDocs = {
       permission: 'document:upload',
       responses: [{ status: 204, description: 'Removed.' }],
       errors: [401, 403, 404],
+    },
+    {
+      method: 'get',
+      path: '/v1/dealer/dashboard',
+      operationId: 'getDealerDashboard',
+      tag: 'Dealer account',
+      summary: 'Console dashboard',
+      description:
+        'The console landing page in one response: headline stats, the credit balance, ' +
+        'recent leads, a seven-day view chart and any account-level banner. Every number ' +
+        'arrives formatted and `viewsChart.series[].heightPct` is computed server-side ' +
+        'against the week\u2019s own maximum, so the chart cannot disagree with the figures ' +
+        'printed beside it (rule 6).\n\n' +
+        'Any dealer seat may read it \u2014 a salesperson who cannot see their own dashboard ' +
+        'has a broken console.\n\n' +
+        '`Cache-Control: no-store` \u2014 a stale credit balance is worse than a slow one.\n\n' +
+        '\u26a0\ufe0f **Partially reconstructed.** The view rollups, enquiry counts, recent ' +
+        'leads, expiry alert and the two activity deltas read models that do not exist yet ' +
+        '(`ListingViewDaily` and `Listing` at F064, `Enquiry` at F088, `CreditTransaction` ' +
+        'at F050), so each reports the answer that is true with no rows. The shape is the ' +
+        'final one; `activeListings`, `creditBalance` and `creditsHeld` are real today.',
+      audience: 'dealer',
+      responses: [{ status: 200, description: 'Dashboard payload.', schema: 'DashboardResponse' }],
+      errors: [401, 404],
     },
   ],
 };

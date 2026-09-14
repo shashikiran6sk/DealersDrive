@@ -1,10 +1,11 @@
 import type { PrismaClient } from '@prisma/client';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { DealerPrincipal } from '../../../../src/modules/auth/auth.facade.js';
 import type {
   DealersRepository,
   DealerWithRelations,
+  RecentEnquiryRow,
 } from '../../../../src/modules/dealers/dealers.repository.js';
 import { createDealersService } from '../../../../src/modules/dealers/dealers.service.js';
 import type { AuditService } from '../../../../src/platform/audit/audit.service.js';
@@ -26,9 +27,15 @@ import type { StoragePort } from '../../../../src/platform/storage/storage.port.
  * `commitDocument` and `deleteDocument`**, along with the `storage` fake and
  * the transaction stub they need.
  *
- * F043 brought `completeness` and **F042 `submitForVerification`**, which is
- * six of the seven. `dashboard` arrives with F048 — the last of which needs the
- * `enquiries` fake and a much larger `prisma` one.
+ * F043 brought `completeness` and F042 `submitForVerification`, and **F048
+ * `dashboard`** is the seventh and last.
+ *
+ * The dashboard's six reads are sliced on the *repository* (see
+ * `dealers.repository.ts`), so the derivation they feed — the greeting, the
+ * seven-day series, the height scaling and the four delta sentences — is the
+ * baseline's and is tested here in full by stubbing those reads. What the
+ * baseline tests and this file cannot is the queries themselves; those cases
+ * return with `Listing`, `Enquiry` and `CreditTransaction`.
  * ────────────────────────────────────────────────────────────────────────────
  */
 /**
@@ -151,6 +158,15 @@ interface Options {
   /** What the dealer's Maps link resolves to. Omitted means "it did not". */
   geo?: { lat: number; lng: number } | null;
   placeId?: string | null;
+  // ── C18 dashboard (F048) ─────────────────────────────────────────────────
+  /** Daily view rollups, as `viewRollups` would return them. */
+  rollups?: { day: Date; views: number | null }[];
+  /** Last week's total. `null` — the default — is "that week has no rows". */
+  previousViews?: number | null;
+  enquiryCounts?: { thisWeek: number; previousWeek: number };
+  recent?: RecentEnquiryRow[];
+  expiringSoon?: number;
+  activity?: { creditsUsedThisMonth: number; listingsAddedThisWeek: number };
 }
 
 function setup(options: Options = {}) {
@@ -212,6 +228,15 @@ function setup(options: Options = {}) {
     },
     newEnquiryCount: () => Promise.resolve(options.newEnquiryCount ?? 0),
     pendingListingCount: () => Promise.resolve(options.pendingListingCount ?? 0),
+    // C18. Each of these is a query held back until its model exists; the
+    // defaults are what the sliced repository actually answers today.
+    viewRollups: () => Promise.resolve(options.rollups ?? []),
+    previousWeekViews: () => Promise.resolve(options.previousViews ?? null),
+    enquiryCounts: () => Promise.resolve(options.enquiryCounts ?? { thisWeek: 0, previousWeek: 0 }),
+    recentEnquiries: () => Promise.resolve(options.recent ?? []),
+    expiringListingCount: () => Promise.resolve(options.expiringSoon ?? 0),
+    weeklyActivity: () =>
+      Promise.resolve(options.activity ?? { creditsUsedThisMonth: 0, listingsAddedThisWeek: 0 }),
   } as unknown as DealersRepository;
 
   const tx = {
@@ -1784,5 +1809,323 @@ describe('completeness — the yard photograph', () => {
     await expect(h.service.submitForVerification('dealer-1')).rejects.toMatchObject({
       code: 'PROFILE_INCOMPLETE',
     });
+  });
+});
+
+/**
+ * C18 — the console landing page (**F048**).
+ *
+ * Every assertion here is about **derivation**: the greeting, the shape of the
+ * week, how a bar height is scaled, and the four sentences under the stat
+ * cards. That is deliberate — the six reads behind this method are sliced on
+ * the repository until their models exist, so the queries are not what this
+ * file can check, and the arithmetic over them is both what the baseline wrote
+ * and what a later feature must not re-invent.
+ *
+ * The fixtures therefore stub the repository. When `ListingViewDaily`,
+ * `Enquiry`, `Listing` and `CreditTransaction` land, these tests do not change:
+ * only the thing behind the stub does.
+ */
+describe('dashboard', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('greets the owner by first name', async () => {
+    const h = setup();
+
+    const dashboard = await h.service.dashboard('dealer-1');
+
+    expect(dashboard.greeting).toMatch(/^Good (morning|afternoon|evening), Kumar$/);
+  });
+
+  it('falls back to the brand name when no owner name is on file', async () => {
+    const h = setup({
+      dealer: {
+        members: [{ userId: 'user-1', role: 'OWNER', user: { fullName: null, phone: '9' } }],
+      },
+    });
+
+    expect((await h.service.dashboard('dealer-1')).greeting).toMatch(/Motors$/);
+  });
+
+  /**
+   * The API runs in UTC and the dealers are in India. "Good evening" at 21:00
+   * IST is 15:30 UTC — an afternoon by the clock the process keeps — so the
+   * greeting is computed in `Asia/Kolkata` and this is the test that says so.
+   */
+  it('greets by the hour in IST, not in the server zone', async () => {
+    vi.useFakeTimers();
+    // 03:30 UTC is 09:00 IST — morning here, the previous evening in UTC-8.
+    vi.setSystemTime(new Date('2026-08-17T03:30:00.000Z'));
+    expect((await setup().service.dashboard('dealer-1')).greeting).toContain('Good morning');
+
+    vi.setSystemTime(new Date('2026-08-17T09:30:00.000Z'));
+    expect((await setup().service.dashboard('dealer-1')).greeting).toContain('Good afternoon');
+
+    vi.setSystemTime(new Date('2026-08-17T14:30:00.000Z'));
+    expect((await setup().service.dashboard('dealer-1')).greeting).toContain('Good evening');
+  });
+
+  it('builds a seven-day series even with no views at all', async () => {
+    const h = setup({ rollups: [] });
+
+    const chart = (await h.service.dashboard('dealer-1')).viewsChart;
+
+    // A chart with three bars because three days had traffic is a chart that
+    // lies about the week.
+    expect(chart.series).toHaveLength(7);
+    expect(chart.series.every((point) => point.views === 0)).toBe(true);
+  });
+
+  it('scales bar heights against the week’s maximum', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-17T12:00:00.000Z'));
+    const h = setup({
+      rollups: [
+        { day: new Date(Date.UTC(2026, 7, 17)), views: 40 },
+        { day: new Date(Date.UTC(2026, 7, 16)), views: 10 },
+      ],
+    });
+
+    const chart = (await h.service.dashboard('dealer-1')).viewsChart;
+    const byDate = new Map(chart.series.map((point) => [point.date, point]));
+
+    expect(chart.max).toBe(40);
+    expect(byDate.get('2026-08-17')?.heightPct).toBe(100);
+    expect(byDate.get('2026-08-16')?.heightPct).toBe(25);
+  });
+
+  /** A quiet week is exactly the week a dealer looks at; `NaN%` is not a bar. */
+  it('never divides by zero on a quiet week', async () => {
+    const h = setup({ rollups: [] });
+
+    const chart = (await h.service.dashboard('dealer-1')).viewsChart;
+
+    expect(chart.max).toBe(1);
+    expect(chart.series.every((point) => point.heightPct === 0)).toBe(true);
+  });
+
+  it('totals the week and labels it in the Indian grouping', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-17T12:00:00.000Z'));
+    const h = setup({
+      rollups: [
+        { day: new Date(Date.UTC(2026, 7, 17)), views: 1200 },
+        { day: new Date(Date.UTC(2026, 7, 16)), views: 300 },
+      ],
+    });
+
+    const dashboard = await h.service.dashboard('dealer-1');
+
+    expect(dashboard.viewsChart.totalLabel).toBe('1,500 total');
+    expect(dashboard.stats.find((stat) => stat.key === 'views')?.value).toBe(1500);
+  });
+
+  it('treats a rollup row with a null sum as zero', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-17T12:00:00.000Z'));
+    const h = setup({ rollups: [{ day: new Date(Date.UTC(2026, 7, 17)), views: null }] });
+
+    expect((await h.service.dashboard('dealer-1')).viewsChart.series.at(-1)?.views).toBe(0);
+  });
+
+  /**
+   * Null is "that week has no rows"; zero is a real week with no traffic. The
+   * repository keeps the two apart precisely so this sentence can, and a
+   * "−100%" against a week with no data would be a fabricated trend.
+   */
+  it('reports no comparison when there is no previous week', async () => {
+    const h = setup({ previousViews: null });
+
+    const views = (await h.service.dashboard('dealer-1')).stats.find(
+      (stat) => stat.key === 'views',
+    );
+
+    expect(views?.delta).toBe('No data for last week');
+    expect(views?.deltaTone).toBe('ok');
+  });
+
+  it('reports the view trend against the previous week', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-17T12:00:00.000Z'));
+    const up = setup({
+      rollups: [{ day: new Date(Date.UTC(2026, 7, 17)), views: 150 }],
+      previousViews: 100,
+    });
+    const down = setup({
+      rollups: [{ day: new Date(Date.UTC(2026, 7, 17)), views: 50 }],
+      previousViews: 100,
+    });
+
+    const upStat = (await up.service.dashboard('dealer-1')).stats.find((s) => s.key === 'views');
+    const downStat = (await down.service.dashboard('dealer-1')).stats.find(
+      (s) => s.key === 'views',
+    );
+
+    expect(upStat?.delta).toBe('+50% vs last week');
+    expect(upStat?.deltaTone).toBe('ok');
+    expect(downStat?.delta).toBe('−50% vs last week');
+    expect(downStat?.deltaTone).toBe('warn');
+  });
+
+  it('reports the four stats the console renders, in order', async () => {
+    const h = setup();
+
+    expect((await h.service.dashboard('dealer-1')).stats.map((stat) => stat.key)).toEqual([
+      'activeListings',
+      'credits',
+      'newEnquiries',
+      'views',
+    ]);
+  });
+
+  it('says "No change this week" rather than "+0"', async () => {
+    const h = setup();
+
+    const listings = (await h.service.dashboard('dealer-1')).stats.find(
+      (stat) => stat.key === 'activeListings',
+    );
+
+    expect(listings?.delta).toBe('No change this week');
+    expect(listings?.deltaTone).toBe('neutral');
+  });
+
+  it('counts the listings added this week when there are some', async () => {
+    const h = setup({ activity: { creditsUsedThisMonth: 4, listingsAddedThisWeek: 3 } });
+
+    const stats = await h.service.dashboard('dealer-1');
+
+    expect(stats.stats.find((stat) => stat.key === 'activeListings')?.delta).toBe('+3 this week');
+    expect(stats.stats.find((stat) => stat.key === 'credits')?.delta).toBe('4 used this month');
+  });
+
+  it('formats the credit balance in the Indian grouping', async () => {
+    const h = setup({ dealer: { creditBalance: 12_500 } });
+
+    expect(
+      (await h.service.dashboard('dealer-1')).stats.find((stat) => stat.key === 'credits')
+        ?.valueLabel,
+    ).toBe('12,500');
+  });
+
+  it('calls out the first week of enquiries instead of comparing to zero', async () => {
+    const h = setup({ enquiryCounts: { thisWeek: 3, previousWeek: 0 } });
+
+    expect(
+      (await h.service.dashboard('dealer-1')).stats.find((stat) => stat.key === 'newEnquiries')
+        ?.delta,
+    ).toBe('First week of enquiries');
+  });
+
+  it('compares enquiries against last week once there is a last week', async () => {
+    const down = setup({ enquiryCounts: { thisWeek: 2, previousWeek: 5 } });
+    const up = setup({ enquiryCounts: { thisWeek: 8, previousWeek: 5 } });
+
+    const downStat = (await down.service.dashboard('dealer-1')).stats.find(
+      (s) => s.key === 'newEnquiries',
+    );
+    const upStat = (await up.service.dashboard('dealer-1')).stats.find(
+      (s) => s.key === 'newEnquiries',
+    );
+
+    expect(downStat?.delta).toBe('−3 vs last week');
+    expect(downStat?.deltaTone).toBe('warn');
+    expect(upStat?.delta).toBe('+3 vs last week');
+    expect(upStat?.deltaTone).toBe('ok');
+  });
+
+  it('renders recent enquiries with initials, a tel: link and a relative time', async () => {
+    const h = setup({
+      recent: [
+        {
+          id: 'enquiry-1',
+          name: 'Anitha R',
+          phone: '9876543210',
+          createdAt: new Date(Date.now() - 3_600_000),
+          vehicle: {
+            year: 2021,
+            make: { name: 'Maruti Suzuki' },
+            model: { name: 'Alto 800' },
+            variant: { name: 'VXI' },
+          },
+        },
+      ],
+    });
+
+    const recent = (await h.service.dashboard('dealer-1')).recentEnquiries[0];
+
+    expect(recent).toMatchObject({
+      initials: 'AR',
+      vehicleTitle: '2021 Maruti Suzuki Alto 800 VXI',
+      phoneDisplay: '+91 98765 43210',
+      callHref: 'tel:9876543210',
+    });
+    expect(recent?.timeAgoLabel.length).toBeGreaterThan(0);
+  });
+
+  /**
+   * Somebody asking the dealership a question rather than asking about one
+   * car. The row is kept — a lead is a lead — and the panel labels it.
+   */
+  it('leaves the vehicle title null on a general enquiry', async () => {
+    const h = setup({
+      recent: [
+        {
+          id: 'enquiry-1',
+          name: 'Anitha R',
+          phone: '9876543210',
+          createdAt: new Date(),
+          vehicle: null,
+        },
+      ],
+    });
+
+    expect((await h.service.dashboard('dealer-1')).recentEnquiries[0]?.vehicleTitle).toBe(null);
+  });
+
+  it('raises the expiry alert only when something is expiring', async () => {
+    expect((await setup().service.dashboard('dealer-1')).alerts).toEqual([]);
+
+    const [alert] = (await setup({ expiringSoon: 1 }).service.dashboard('dealer-1')).alerts;
+
+    // Singular, because "1 listings expire" is the kind of thing that makes a
+    // product look unfinished on the one screen a dealer opens daily.
+    expect(alert?.message).toBe('1 listing expires in the next 7 days.');
+    expect(alert?.href).toBe('/dealer/inventory?status=ACTIVE');
+
+    const [plural] = (await setup({ expiringSoon: 4 }).service.dashboard('dealer-1')).alerts;
+    expect(plural?.message).toBe('4 listings expire in the next 7 days.');
+  });
+
+  it('carries the credit balance and the held credits from the dealership row', async () => {
+    const dashboard = await setup().service.dashboard('dealer-1');
+
+    expect(dashboard.creditBalance).toBe(39);
+    expect(dashboard.creditsHeld).toBe(2);
+  });
+
+  it('refuses a dealership that no longer exists', async () => {
+    await expect(setup({ dealer: null }).service.dashboard('dealer-1')).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+  });
+
+  /**
+   * ── Reconstruction slice ──────────────────────────────────────────────────
+   * What today's sliced repository actually answers, asserted so the zeros are
+   * a recorded state rather than an accident. When `ListingViewDaily`,
+   * `Enquiry`, `Listing` and `CreditTransaction` land, **this case is the one
+   * that should fail** — which is exactly what is wanted of it.
+   * ──────────────────────────────────────────────────────────────────────────
+   */
+  it('answers with an empty week while the models behind it do not exist', async () => {
+    const dashboard = await setup().service.dashboard('dealer-1');
+
+    expect(dashboard.viewsChart.series.map((point) => point.views)).toEqual([0, 0, 0, 0, 0, 0, 0]);
+    expect(dashboard.recentEnquiries).toEqual([]);
+    expect(dashboard.alerts).toEqual([]);
+    // Real, and read off the dealership row rather than counted.
+    expect(dashboard.stats.find((stat) => stat.key === 'activeListings')?.value).toBe(7);
   });
 });

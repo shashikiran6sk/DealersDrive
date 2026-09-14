@@ -19,8 +19,9 @@ import {
  * and `document:upload` appear in §8.3 against OWNER alone.
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline asserts nine signatures. **F042 brought the count to eight**;
- * `GET /dashboard` arrives with F048 and closes the file.
+ * The baseline asserts nine signatures. F042 brought the count to eight and
+ * **F048 `GET /dashboard`** closes the file — every route the baseline declares
+ * on this router is now mounted.
  *
  * `PATCH /onboarding` has no baseline equivalent either. **R27** narrowed
  * `PATCH /` to the three fields a dealership may change about itself once it
@@ -58,6 +59,7 @@ describe('the surface', () => {
         'POST /yard-photo/presign',
         'POST /yard-photo/commit',
         'DELETE /yard-photo',
+        'GET /dashboard',
       ].sort(),
     );
   });
@@ -89,7 +91,7 @@ describe('permissions', () => {
    * salesperson who cannot see their own dealership has a broken console. The
    * tenant scope still comes from the principal, so nothing here is unscoped.
    */
-  it.each(['GET /', 'GET /completeness', 'GET /documents'])(
+  it.each(['GET /', 'GET /completeness', 'GET /documents', 'GET /dashboard'])(
     'leaves %s open to any authenticated seat',
     (signature) => {
       expect(permissionsOn(routeFor(router, signature) as never)).toEqual([]);

@@ -1869,3 +1869,63 @@ describe('a dealer editing their own public words', () => {
     expect(actions).toContain('dealer.profile_change.approved');
   });
 });
+
+/**
+ * C18 — the console dashboard (**F048**).
+ *
+ * Here rather than in the unit file because what is being checked is the
+ * *route*: that a real session reaches it, that the dealership it answers about
+ * is the session's and not one named in the request, and that the response is
+ * not cacheable. None of those is a property of the derivation the unit tests
+ * cover, and all three would pass against a mock that had them wrong.
+ */
+describe('the dealer dashboard', () => {
+  it('answers about the dealership on the session', async () => {
+    const { agent } = await dealership({ legalName: 'Dashboard Motors' });
+
+    const { body } = await agent.get('/v1/dealer/dashboard').expect(200);
+
+    expect(body.greeting).toMatch(/^Good (morning|afternoon|evening), Manikandan$/);
+    expect(body.viewsChart.series).toHaveLength(7);
+    expect(body.stats.map((stat: { key: string }) => stat.key)).toEqual([
+      'activeListings',
+      'credits',
+      'newEnquiries',
+      'views',
+    ]);
+  });
+
+  /**
+   * **Rule 1.** No endpoint on this router takes a `dealerId`, and a query
+   * string offering one is not quietly ignored — the router declares no query
+   * schema, so there is nothing for it to bind to, and the dealership answered
+   * about is still the session's. The second dealership exists precisely so
+   * that "it happened to return the right one" is not the reason this passes.
+   */
+  it('cannot be pointed at another dealership', async () => {
+    const other = await dealership({ legalName: 'Somebody Else Motors' });
+    const mine = await dealership({ legalName: 'My Own Motors' });
+
+    const { body } = await mine.agent
+      .get(`/v1/dealer/dashboard?dealerId=${other.dealerId}`)
+      .expect(200);
+
+    // The greeting is built from the owner on the *session's* dealership, and
+    // the credit balance is that row's.
+    expect(body.creditBalance).toBe(0);
+    expect(body.greeting).toContain('Manikandan');
+  });
+
+  it('refuses a caller with no session', async () => {
+    await h.agent().get('/v1/dealer/dashboard').expect(401);
+  });
+
+  /** A stale credit balance is worse than a slow one. */
+  it('is never cached', async () => {
+    const { agent } = await dealership();
+
+    const response = await agent.get('/v1/dealer/dashboard').expect(200);
+
+    expect(response.headers['cache-control']).toBe('no-store');
+  });
+});

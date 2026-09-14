@@ -1477,15 +1477,95 @@ The authenticated dealer chrome: sidebar on desktop, bottom tab bar below 768.
 ### F048 — Dealer dashboard
 
 The console landing page: stat cards, recent activity, and the next action.
+**Also lands `/admin`**, and makes both navs honest — see below.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F047
-- **Backend** `modules/dealers/dealers.routes.ts` — dashboard path
-- **Frontend** `app/(dealer)/dealer/page.tsx`
-- **API** `GET /v1/dealer/dashboard`
-- **DB** reads `Listing`, `Enquiry`, `ListingViewDaily`, `Dealer`
-- **Components — Reused** `StatCard`, `EmptyState`, `Banner`, `Button`
-- **Sandbox** `StatCard` — every delta tone, no delta, long value
-- ⚠️ `StatCard` currently has **one** consumer; the billing page renders the same block from raw markup. Reuse it in F051 rather than repeating that.
+- **Backend** `modules/dealers/{dealers.routes,dealers.service,dealers.repository,dealers.docs}.ts`
+- **Frontend** `app/(dealer)/dealer/page.tsx`, `app/(admin)/admin/page.tsx`,
+  `components/dealer/{dashboard-panels,console-nav}.tsx`,
+  `components/admin/admin-nav.tsx`
+- **Contracts** `DashboardResponse`
+- **API** `GET /v1/dealer/dashboard` — `Cache-Control: no-store`, no permission
+  (any dealer seat; the tenant scope is the principal's)
+- **DB** reads `Dealer`. `Listing`, `Enquiry`, `ListingViewDaily` and
+  `CreditTransaction` are **sliced** — see below
+- **Tests** `tests/unit/modules/dealers/{dealers.service,dealers.routes}.test.ts`,
+  `tests/dealer-onboarding.test.ts` (four route cases),
+  `apps/web/tests/unit/features/{dealer,admin}/dashboard-page.test.tsx`,
+  `apps/web/tests/unit/components/dealer/console-nav.test.tsx`
+- **Components — New (Shared)** `ViewsChart` (C077), `RecentEnquiries` (C078) ·
+  **Changed** `AdminNav` (C024) takes `items`, `ConsoleTabBar` (C026) ·
+  **Reused** `StatCard`, `Banner`, `Avatar`
+- **Sandbox** `Dealer/DashboardPanels` — an ordinary week / no views at all /
+  one spike / the first day of trading; four leads / none yet / a general
+  enquiry / long names at phone width. `Admin/AdminNav` and
+  `Dealer/ConsoleNav` each gain an _as the console renders it today_ story
+- ⚠️ `StatCard` now has one consumer still; the billing page renders the same
+  block from raw markup. Reuse it in F051 rather than repeating that.
+
+#### `/dealer` was a 404, and it is where the public header points
+
+The buyer header's primary button is a `/dealer` link (**R35**), and the
+`(dealer)` segment had a layout with no page under it. Every visitor who pressed
+`Dealer login` got a 404. The same was true of `/admin`, whose own sidebar's
+first item pointed at it — **F049**'s entry says "no page sits under this layout
+yet" and this is the feature that changes it.
+
+#### The six reads are sliced on the repository, not in the service
+
+`dashboard()` queries four models that do not exist: `ListingViewDaily` and
+`Listing` (**F064**), `Enquiry` (**F088**), `CreditTransaction` (**F050**). Each
+query is held on `dealers.repository.ts` as `viewRollups`,
+`previousWeekViews`, `enquiryCounts`, `recentEnquiries`, `expiringListingCount`
+and `weeklyActivity`, carrying the baseline's query in a comment and the feature
+that restores it — the pattern `newEnquiryCount` and `pendingListingCount`
+already set.
+
+**The derivation is deliberately not sliced.** The greeting, the seven-day
+series, the height scaling and the four delta sentences are the baseline's and
+are tested in full by stubbing those reads. Computing zeros inline in the
+service would have hidden the part a reviewer must check against the baseline,
+and restoring the models would then have meant rewriting code that was never in
+question.
+
+`previousWeekViews` returns `number | null` rather than a number, and the
+distinction is load-bearing: null is "that week has no rows" and zero is a real
+week with no traffic, so flattening them would render a fabricated −100% trend.
+
+#### `AdminNav` renders only the routes that exist
+
+`/admin/listings` (**F069**) and `/admin/payments` (**F053**) were offered from
+F049 until now, so two of five items in a cross-tenant operations console led to
+a 404 — the mistake `console-nav.tsx` was written to avoid on the dealer side.
+`NOT_YET_BUILT` and `LANDED_ADMIN_NAV` apply the same rule, and **F053 and F069
+each delete their own line.** `items` is a prop defaulting to the landed set, so
+the shell needs no knowledge of the slice and the sandbox can still draw the
+console as it will be.
+
+#### The tab bar keeps every console screen reachable
+
+§3.11 gives the bar five items and drops `Dealer profile`, because the credits
+card moves into Billing below 768 and the profile is reached from there. Four of
+those five are still F050/F051/F056/F065, and the sidebar is `hidden md:flex` —
+so applying the rule literally would give a phone one tab and **no way to reach
+`/dealer/profile` at all**.
+
+While the bar is short of its five it therefore also carries the items without a
+`short`. The accommodation removes itself: when the fifth lands, the branch
+yields nothing and the bar is exactly §3.11's.
+
+#### Deliberate differences from the baseline
+
+- `ViewsChart` and `RecentEnquiries` are **their own file**, not private
+  functions inside the page. The baseline has no sandbox; this repository's
+  definition of done says a component with no sandbox entry is not done, and a
+  component cannot have one if it cannot be imported. A hand-rolled bar chart is
+  exactly what gets rebuilt from scratch by the next feature that wants one.
+- `All enquiries →` on the leads panel and `Open queue →` on the admin
+  moderation panel are **held back** — they point at F065 and F069. Each returns
+  with its screen, and a test in each page's file fails when it does.
+- `greeting()`, `startOfDayUtc()` and `startOfMonthUtc()` are the baseline's,
+  moved across with the method that uses them.
 
 ### F049 — Admin console shell & navigation
 
@@ -1518,11 +1598,12 @@ review it in.
   hand-rolls its `DD` badge with a bordered `<span>` rather than rendering
   `Plate`. Left as the baseline has it — noted as a reuse opportunity, not
   changed while porting.
-- **No page sits under this layout yet.** `/admin/dealers` and
-  `/admin/dealers/:id` arrive with **F045**; the dashboard, listings, payments
-  and config pages belong to F050 and later. Next emits no route for a layout
-  with no page, so the shell is inert until F045 — which is the correct order:
-  the chrome exists before the first screen that needs it.
+- **No page sat under this layout at first.** `/admin/dealers` and
+  `/admin/dealers/:id` arrived with **F045** and `/admin/config` with F072; the
+  dashboard the sidebar's own first item points at is **F048**, and until it
+  landed `/admin` was a 404 the console linked to. Next emits no route for a
+  layout with no page, so the shell was inert until F045 — which is the correct
+  order: the chrome exists before the first screen that needs it.
 
 ---
 

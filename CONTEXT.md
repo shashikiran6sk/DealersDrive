@@ -1082,6 +1082,56 @@ make what they type safe to interpolate.
 
 ---
 
+## 8e. Slice the query, never the derivation (F048)
+
+Most of this reconstruction's features want a model that has not landed. There
+are two ways to ship anyway, and only one of them is reversible cheaply.
+
+The **wrong** one is to compute the answer inline in the service:
+
+```ts
+// Don't. The derivation is now hidden behind the slice.
+const weekTotal = 0;
+const viewDelta = null;
+```
+
+The **right** one is to hold the _query_, on the repository, and leave every line
+of arithmetic above it exactly as the baseline wrote it:
+
+```ts
+// dealers.repository.ts — the query is what waits, and it says so
+// eslint-disable-next-line @typescript-eslint/require-await -- restored at F064
+async viewRollups(_dealerId: string, _from: Date): Promise<{ day: Date; views: number | null }[]> {
+  return [];
+}
+```
+
+Three things follow, and they are the reason this is a rule rather than a taste:
+
+- **The derivation stays reviewable.** It is what `git diff` against the
+  baseline has to show as unchanged, and it is the part a later feature must not
+  re-invent. `dashboard()`'s seven-day series, height scaling and four delta
+  sentences are 90 lines of it; the slice is six one-line stubs.
+- **It stays tested.** Every legacy test about the arithmetic comes across by
+  stubbing the repository, and **does not change** when the model lands — only
+  the thing behind the stub does. F048 brought 22 of them that way.
+- **Restoring it is one function body.** `newEnquiryCount` and
+  `pendingListingCount` had already set this pattern; F048 added six more.
+
+**Keep the shape the real query would return, not a simpler one.**
+`previousWeekViews` answers `number | null` because Prisma's `_sum` is null for
+an empty aggregate, and the dashboard renders the two differently — null is "no
+data for last week", zero is a real week with no traffic, and flattening them
+would print a fabricated −100% trend. A stub that returns `0` would have made
+that bug impossible to see until F064.
+
+And **assert the sliced state**. F048's last service test pins the zeros
+explicitly, so they are a recorded decision rather than an accident — and it is
+the test that should fail on the day the models arrive, which is exactly what is
+wanted of it.
+
+---
+
 ## 9. Where to look when you are stuck
 
 | Question                               | Answer lives in                                   |

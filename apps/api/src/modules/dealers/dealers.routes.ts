@@ -30,8 +30,8 @@ import type { DealersService } from './dealers.service.js';
  *
  * ── Reconstruction slice ────────────────────────────────────────────────────
  * F040 mounted the document checklist, F041 five more, F043 the completeness
- * read, **F042 the submit**. `GET /dashboard` arrives with **F048** and closes
- * the module.
+ * read, **F042 the submit** and **F048 `GET /dashboard`**, which closes the
+ * module. Every route the baseline declares here is now mounted.
  * ────────────────────────────────────────────────────────────────────────────
  */
 export function createDealersRouter(service: DealersService): Router {
@@ -299,6 +299,29 @@ export function createDealersRouter(service: DealersService): Router {
         const { dealerId } = dealerPrincipal(req);
         await service.deleteYardPhoto(dealerId);
         res.status(204).end();
+      } catch (error) {
+        next(error);
+      }
+    })();
+  });
+
+  /**
+   * C18 — the console landing page (**F048**).
+   *
+   * No permission: `requireDealer` has already run, and a salesperson who
+   * cannot see their own dashboard has a broken console. The tenant scope still
+   * comes from the principal, so nothing here is unscoped.
+   *
+   * `no-store`, and the credit balance is why. Every other read on this router
+   * is a profile a dealer is looking at; this one carries a number they are
+   * about to spend, and a stale balance is worse than a slow one.
+   */
+  router.get('/dashboard', (req, res, next) => {
+    void (async () => {
+      try {
+        const { dealerId } = dealerPrincipal(req);
+        res.set('Cache-Control', 'no-store');
+        res.json(await service.dashboard(dealerId));
       } catch (error) {
         next(error);
       }
