@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 
 import { setLocation } from '../../../setup';
 
-import { CustomerFooter } from '@/components/layout/customer-footer';
 import { CustomerHeader } from '@/components/layout/customer-header';
 
 /**
@@ -112,22 +111,5 @@ describe('the dealer door', () => {
 
     expect(doors).toHaveLength(1);
     expect(screen.queryByRole('link', { name: /list (your )?cars/i })).not.toBeInTheDocument();
-  });
-});
-
-describe('the footer', () => {
-  it('carries the sentence the marketplace rests on', () => {
-    render(<CustomerFooter />);
-
-    expect(screen.getByText(/owned, priced and warranted by the dealer/i)).toBeInTheDocument();
-  });
-
-  it('links the four buyer destinations', () => {
-    render(<CustomerFooter />);
-    const footer = screen.getByRole('navigation', { name: /footer/i });
-
-    expect(
-      Array.from(footer.querySelectorAll('a')).map((link) => link.getAttribute('href')),
-    ).toEqual(['/cars', '/dealers', '/saved', '/dealer']);
   });
 });

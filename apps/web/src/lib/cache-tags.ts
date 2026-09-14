@@ -48,6 +48,19 @@ import { revalidateTag } from 'next/cache';
  */
 export const DEALERS_TAG = 'dealers';
 
+/**
+ * `GET /v1/config/public` — the payload every public page's footer is built
+ * from (**R44**).
+ *
+ * Its own tag rather than `DEALERS_TAG`, because it changes for an entirely
+ * different reason and at an entirely different rate: a dealership is approved
+ * several times a day, and a social link is corrected twice a year. Sharing a
+ * tag would mean every approval re-fetched a payload that had not moved, and —
+ * the half that actually matters — an operator correcting a dead Instagram link
+ * would have to wait for an unrelated write to clear it.
+ */
+export const CONFIG_TAG = 'public-config';
+
 /** One dealership's public page. */
 export function dealerTag(slug: string): string {
   return `dealer:${slug}`;
@@ -64,4 +77,16 @@ export function dealerTag(slug: string): string {
 export function revalidatePublicDealer(slug?: string | null): void {
   revalidateTag(DEALERS_TAG);
   if (slug) revalidateTag(dealerTag(slug));
+}
+
+/**
+ * Every public page that renders a value from `/v1/config/public` — which, via
+ * the footer, is all of them.
+ *
+ * Called from the admin config action. Without it a corrected social link waits
+ * out the ten-minute window on a page the operator is looking at while they fix
+ * it, which reads as the save not having worked.
+ */
+export function revalidatePublicConfig(): void {
+  revalidateTag(CONFIG_TAG);
 }

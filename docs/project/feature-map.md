@@ -4680,3 +4680,88 @@ any transactional SMS is delivered.
 **What is deliberately not here.** No session, no permission and no second
 factor: identity is the Google account and already was. And no API-side send —
 the widget owns that, which is what the spend note above is about.
+
+## R44 — A footer worth having, and the social links live in configuration
+
+**Revises F073** · adds six `social.*` platform config keys
+
+The baseline's footer was one row: a wordmark, the sentence the marketplace
+rests on, and four links floated right. That is the right footer for a product
+with four pages, and the wrong one for a product that asks a buyer to hand a
+dealership their phone number — there was nowhere on any public page to find out
+how to reach a person, and nowhere the platform could be seen to exist off the
+platform.
+
+- **Config** `social.instagram`, `social.facebook`, `social.youtube`,
+  `social.linkedin`, `social.x`, `social.whatsapp` — `string`, default `''`,
+  each named in `CONFIG_READERS` so `/admin/config` renders them editable
+- **Platform** `platform/config/platform-config.ts` — `string(key)` on
+  `PlatformConfigService`, the one reader the interface did not have
+- **Backend** `modules/config/config.service.ts` — `SOCIAL_NETWORKS` and the
+  `https:`-only `socialHref` guard; `modules/config/config.docs.ts` — the
+  operation's description
+- **API** no route added, changed or removed. `GET /v1/config/public` grows a
+  field, and its schema is generated from `packages/contracts`, so the OpenAPI
+  document follows without a hand-written line (§4a)
+- **Contracts** `SocialLink`; `PublicConfig.social`
+- **Frontend** `components/layout/{customer-footer,social-icons}.tsx`,
+  `lib/public-config.ts` (new), `lib/cache-tags.ts` (`CONFIG_TAG`,
+  `revalidatePublicConfig`), `features/admin/config-actions.ts`,
+  `app/(public)/layout.tsx`
+- **Tests** `apps/api/tests/unit/modules/config/config.service.test.ts` — nine
+  new cases, five of them the scheme guard;
+  `apps/web/tests/unit/components/layout/customer-footer.test.tsx` — **new**,
+  eleven; the two footer cases leave `customer-header.test.tsx`
+- **Components — Changed** `CustomerFooter` (C021) now takes `social`,
+  `supportEmail`, `supportPhone` · **New (feature-specific)** `SocialIcon`
+  (C021c)
+- **Sandbox** `Layout/CustomerFooter` — default · no social accounts published ·
+  two networks · API unreachable · tablet · mobile
+- **No new dependency.** The six marks are inline SVG at `currentColor`; an icon
+  library for six paths is not a dependency this repository takes on.
+
+### The social links are configuration, and that is the decision worth reading
+
+A marketing account is opened, renamed and closed on a timescale that has
+nothing to do with a release. Putting the URLs in code means an hour of CI to
+correct a dead Instagram link on every public page in the product; putting them
+in `NEXT_PUBLIC_*` means one image per environment and the end of
+build-once-promote-many (Rule 9). So they are `platform_config` rows: edited at
+`/admin/config` beside the GST percentage and the reveal caps, audit-logged like
+every other key, and read at request time through `GET /v1/config/public`.
+
+`revalidatePublicConfig()` is what makes that feel immediate. Without it a
+corrected link waits out the public shell's ten-minute window on the very page
+the operator is looking at while they fix it, which reads as the save not having
+worked.
+
+### The scheme check is a security boundary, not a tidy-up
+
+These six values are typed into a text box by an operator and rendered into an
+`href` on **every public page in the product**. That is exactly the shape a
+`javascript:` or `data:` URI is looking for, so `socialHref` refuses anything
+that is not an `https:` URL — once, on the way out of the API, rather than
+trusted at six render sites. A mistyped value, a bare `@handle` and a plain-HTTP
+profile all drop out of the payload, and the footer draws one icon fewer. Five
+of the nine new service tests are that guard.
+
+### Which links it offers, and which it refuses to invent
+
+**Exactly the destinations `CustomerHeader` offers.** Two of them — `/cars`
+(**F077**) and `/saved` (**F087**) — have not landed. The header carries them
+anyway, deliberately (F073's reconstruction note), and a footer quietly
+disagreeing with the header about which sections the site has is the more
+confusing of the two states.
+
+What it does **not** do is invent an About, a Terms, a Privacy or a Careers page
+to square the columns off. A footer link onto a 404 is the product telling a
+buyer a page exists and then not having it — the same rule `console-nav.tsx`
+follows for a console route that has not been built. The columns that are
+complete today are the ones needing no route at all: a `mailto:`, a `tel:` and
+six outbound profiles.
+
+⚠️ **Those legal pages are a real gap, and this revision does not close it.** A
+marketplace handling enquiries needs a privacy policy and terms of use, and
+neither exists anywhere in the reconstruction or in the baseline. It wants its
+own feature and its own copy review, not a link added here to a page nobody
+wrote.

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { CustomerFooter } from '@/components/layout/customer-footer';
 import { CustomerHeader } from '@/components/layout/customer-header';
 import { getPublicLocations } from '@/lib/locations';
+import { getPublicConfig } from '@/lib/public-config';
 
 /**
  * The buyer shell. No authentication anywhere below this layout, and no
@@ -18,16 +19,31 @@ import { getPublicLocations } from '@/lib/locations';
  * list rather than throwing, all moved to `lib/locations.ts` at **R23**, when
  * the directory became a second caller. The reasoning is there in full.
  *
+ * The second fetch is the footer's, added at **R44**: the support contacts and
+ * the social links it renders are platform configuration rather than code, so
+ * an operator can correct a number or a dead profile link from `/admin/config`
+ * without a deploy (Rule 9 — `NEXT_PUBLIC_*` would bake them into the image).
+ * It degrades the same way the first one does, and for the same reason: a throw
+ * in a layout escapes every boundary below the root.
+ *
+ * The two run together. They are independent reads of two different endpoints,
+ * and awaiting them in sequence would put a round trip on every public page for
+ * no reason.
+ *
  * `SavedCarsProvider` wraps this tree from **F087**.
  */
 export default async function PublicLayout({ children }: { children: ReactNode }) {
-  const locations = await getPublicLocations();
+  const [locations, config] = await Promise.all([getPublicLocations(), getPublicConfig()]);
 
   return (
     <div className="flex min-h-dvh flex-col">
       <CustomerHeader locations={locations} />
       <main className="flex-1">{children}</main>
-      <CustomerFooter />
+      <CustomerFooter
+        social={config.social}
+        supportEmail={config.supportEmail}
+        supportPhone={config.supportPhone}
+      />
     </div>
   );
 }

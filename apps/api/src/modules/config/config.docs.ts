@@ -22,9 +22,13 @@ export const configDocs: ModuleDocs = {
       tag: 'Platform configuration',
       summary: 'Client-safe platform configuration',
       description:
-        'Listing duration, minimum photo count, support contacts, EMI assumptions and the ' +
-        'public feature flags. The values the front end must not hard-code, because changing ' +
-        'them is an operations action rather than a deploy.\n\n' +
+        'Listing duration, minimum photo count, support contacts, EMI assumptions, the ' +
+        'public feature flags and the social links the buyer footer renders. The values the ' +
+        'front end must not hard-code, because changing them is an operations action rather ' +
+        'than a deploy.\n\n' +
+        '`social` carries only the networks an operator has published a URL for, and only ' +
+        'ones that parse as `https:` — a mistyped or non-HTTPS value is dropped here rather ' +
+        'than rendered into an `href` on every public page.\n\n' +
         '`Cache-Control: public, max-age=60`.',
       audience: 'public',
       responses: [{ status: 200, description: 'Public configuration.', schema: 'PublicConfig' }],
