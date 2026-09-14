@@ -120,6 +120,27 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
     value: false,
   },
 
+  // ── where the platform can be found, off the platform ────────────────────
+  //
+  // The footer's social row. These are configuration rather than code for one
+  // reason worth stating: a marketing account is opened, renamed and closed on
+  // a timescale that has nothing to do with a release, and an hour spent
+  // waiting for a deploy to correct a dead Instagram link on every public page
+  // is an hour nobody should have to spend.
+  //
+  // **An empty string means "we do not publish one".** The footer renders no
+  // icon at all for an empty value rather than a link to a profile that does
+  // not exist — the same rule the console nav follows for a route that has not
+  // landed. `GET /v1/config/public` additionally refuses anything that is not
+  // an `https:` URL, so a typo, a `javascript:` URI or a bare handle drops out
+  // of the payload instead of reaching a buyer's page (see `config.service.ts`).
+  { key: 'social.instagram', label: 'Instagram URL', type: 'string', value: '' },
+  { key: 'social.facebook', label: 'Facebook URL', type: 'string', value: '' },
+  { key: 'social.youtube', label: 'YouTube URL', type: 'string', value: '' },
+  { key: 'social.linkedin', label: 'LinkedIn URL', type: 'string', value: '' },
+  { key: 'social.x', label: 'X (Twitter) URL', type: 'string', value: '' },
+  { key: 'social.whatsapp', label: 'WhatsApp URL', type: 'string', value: '' },
+
   {
     key: 'listing.rejectionReasonPresets',
     label: 'Rejection reason presets',
@@ -161,11 +182,26 @@ export const CONFIG_READERS: Record<string, string> = {
   'photoRequests.enabled': 'GET /v1/config/public',
   'feature.rcLookup': 'GET /v1/config/public',
   'feature.vehicleReport': 'GET /v1/config/public',
+  'social.instagram': "GET /v1/config/public — the public footer's social row",
+  'social.facebook': "GET /v1/config/public — the public footer's social row",
+  'social.youtube': "GET /v1/config/public — the public footer's social row",
+  'social.linkedin': "GET /v1/config/public — the public footer's social row",
+  'social.x': "GET /v1/config/public — the public footer's social row",
+  'social.whatsapp': "GET /v1/config/public — the public footer's social row",
 };
 
 export interface PlatformConfigService {
   number(key: string): Promise<number>;
   boolean(key: string): Promise<boolean>;
+  /**
+   * A `string` key, trimmed.
+   *
+   * Trimmed here rather than at each caller because the value was typed into a
+   * text box by a person, and a trailing space on a URL is the difference
+   * between a link that works and one that 404s in a way nobody can see by
+   * looking at the field.
+   */
+  string(key: string): Promise<string>;
   stringList(key: string): Promise<string[]>;
   /**
    * A `feature.*` flag. Distinct from `boolean()` only in that it refuses a key
@@ -277,6 +313,10 @@ export function createPlatformConfig(
     async boolean(key) {
       const entry = await read(key);
       return Boolean(entry.value);
+    },
+    async string(key) {
+      const entry = await read(key);
+      return typeof entry.value === 'string' ? entry.value.trim() : '';
     },
     async stringList(key) {
       const entry = await read(key);

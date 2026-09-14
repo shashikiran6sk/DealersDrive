@@ -209,6 +209,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R41 — A dealership suspension closes a seat, not an account · revises F014/F016/F019/F045 · ⚠️ new table
 - [~] R42 — An admin can grant admin access, by email · revises F019/F072 · lands with F072
 - [ ] R43 — The directory search recommends, and the old input is gone · revises F085 · lands the typeahead F077 reuses
+- [~] R44 — A footer worth having, and the social links live in configuration · revises F073 · adds six `social.*` config keys
 
 ---
 

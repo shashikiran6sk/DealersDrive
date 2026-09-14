@@ -4,6 +4,7 @@ import { UpdateConfigInput, type ConfigEntry } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
+import { revalidatePublicConfig } from '@/lib/cache-tags';
 
 export interface ConfigResult {
   ok: boolean;
@@ -45,6 +46,14 @@ export async function updateConfigAction(
   try {
     await apiSend('PUT', `/v1/admin/config/${encodeURIComponent(key)}`, parsed.data);
     revalidatePath('/admin/config');
+    /*
+     * Some of these keys are rendered on public pages — the social links in
+     * the footer are (**R44**) — and those pages hold the payload for ten
+     * minutes. Clearing the tag unconditionally rather than only for the keys
+     * that are public: the set of public keys is a fact about the API, and a
+     * second copy of it here would be wrong the first time one is added.
+     */
+    revalidatePublicConfig();
     return { ok: true };
   } catch (error) {
     if (error instanceof ApiError) {

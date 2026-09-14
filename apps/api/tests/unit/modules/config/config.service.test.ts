@@ -15,10 +15,11 @@ import type { PlatformConfigService } from '../../../../src/platform/config/plat
  * `search` stubs dropped because this service takes neither.
  * ────────────────────────────────────────────────────────────────────────────
  */
-function config(values: Record<string, number | boolean> = {}): PlatformConfigService {
+function config(values: Record<string, number | boolean | string> = {}): PlatformConfigService {
   return {
     number: (key: string) => Promise.resolve(Number(values[key] ?? 0)),
     boolean: (key: string) => Promise.resolve(Boolean(values[key])),
+    string: (key: string) => Promise.resolve(String(values[key] ?? '')),
     stringList: () => Promise.resolve([]),
     all: () => Promise.resolve([]),
     set: () => Promise.reject(new Error('not used')),
@@ -97,5 +98,65 @@ describe('publicConfig', () => {
       rcLookupEnabled: false,
       vehicleReportEnabled: false,
     });
+  });
+});
+
+/**
+ * The social row (**R44**).
+ *
+ * These six values are typed into a text box on `/admin/config` and rendered
+ * into an `href` on every public page in the product, which is exactly the
+ * shape of an injected URI. The scheme is therefore checked **here**, once, on
+ * the way out — so these are tests of a security boundary rather than of a
+ * formatting nicety.
+ */
+describe('social links', () => {
+  it('carries the networks that have a URL, in the order the footer draws them', async () => {
+    const service = createConfigService({
+      config: config({
+        'social.instagram': 'https://instagram.com/dealersdrive',
+        'social.youtube': 'https://youtube.com/@dealersdrive',
+      }),
+    });
+
+    expect((await service.publicConfig()).social).toEqual([
+      { network: 'instagram', label: 'Instagram', href: 'https://instagram.com/dealersdrive' },
+      { network: 'youtube', label: 'YouTube', href: 'https://youtube.com/@dealersdrive' },
+    ]);
+  });
+
+  /**
+   * An empty key means "we do not publish one". It is absent rather than
+   * present-and-empty so the footer renders what it is handed and has no rule
+   * of its own about which links are real.
+   */
+  it('reports none at all on a fresh deployment', async () => {
+    expect((await createConfigService({ config: config() }).publicConfig()).social).toEqual([]);
+  });
+
+  it.each([
+    ['a javascript: URI', 'javascript:alert(1)'],
+    ['a data: URI', 'data:text/html,<script>alert(1)</script>'],
+    ['plain HTTP', 'http://instagram.com/dealersdrive'],
+    ['a bare handle', '@dealersdrive'],
+    ['an unparseable value', 'instagram.com/dealersdrive'],
+  ])('drops %s rather than putting it in an href', async (_case, value) => {
+    const service = createConfigService({ config: config({ 'social.instagram': value }) });
+
+    expect((await service.publicConfig()).social).toEqual([]);
+  });
+
+  /** One bad value must not take the good ones with it. */
+  it('keeps the valid networks when one is mistyped', async () => {
+    const service = createConfigService({
+      config: config({
+        'social.instagram': 'javascript:alert(1)',
+        'social.facebook': 'https://facebook.com/dealersdrive',
+      }),
+    });
+
+    expect((await service.publicConfig()).social).toEqual([
+      { network: 'facebook', label: 'Facebook', href: 'https://facebook.com/dealersdrive' },
+    ]);
   });
 });

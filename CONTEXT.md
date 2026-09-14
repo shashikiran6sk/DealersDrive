@@ -976,14 +976,16 @@ Every public read asks for `revalidate: 600`, and `/dealers/[slug]` is
 changes at the pace of onboarding, not of browsing — and both mean a change is
 invisible for ten minutes unless something says otherwise.
 
-`apps/web/src/lib/cache-tags.ts` is that something. Two tags, and one function:
+`apps/web/src/lib/cache-tags.ts` is that something. Three tags, two functions:
 
 ```ts
 revalidatePublicDealer(slug); // clears `dealers`, and `dealer:<slug>` if given
+revalidatePublicConfig(); // clears `public-config` — the footer's payload (R44)
 ```
 
 **If you add a write path that changes anything a buyer can see, call it.** The
-list today is the dealer's profile save, the yard-photo commit and delete, and
+list today is the dealer's profile save, the yard-photo commit and delete, the
+admin config save (**R44** — some of those keys are rendered in the footer), and
 the eight admin moderation actions — and the last of those is the reason this
 is a rule rather than a nicety: public visibility is `dealer.status ===
 'ACTIVE'`, so suspending a dealership is the write that takes it off the
@@ -1031,6 +1033,52 @@ choosing a row writes that row's label into the input, which is a change to the
 value, which debounces into a request for the thing that was just chosen — and
 reopens the dropdown over a page that is already navigating. Any control that
 writes to its own input needs to remember that it did.
+
+---
+
+## 8d. A string an operator types is a string a buyer's browser executes (R44)
+
+The footer's social links come from `platform_config`, edited at
+`/admin/config`. That is the right home for them — a marketing account is
+opened, renamed and closed on a timescale that has nothing to do with a release,
+and the alternatives are a deploy per correction or a `NEXT_PUBLIC_*` that ends
+build-once-promote-many (Rule 9).
+
+It also introduces a shape this codebase did not previously have: **a
+configuration value that is rendered into an `href` on every public page in the
+product.** Every other key is a number, a boolean or a list of sentences; none
+of them reaches the DOM as a URL.
+
+So `config.service.ts` refuses anything that is not an `https:` URL before it
+goes on the payload:
+
+```ts
+function socialHref(value: string): string | null {
+  if (value === '') return null;
+  try {
+    return new URL(value).protocol === 'https:' ? value : null;
+  } catch {
+    return null;
+  }
+}
+```
+
+Three things about where that lives are deliberate:
+
+- **On the way out of the API, not in the component.** One check, at the single
+  place the value becomes public, rather than one per render site — and the
+  footer then has no rule of its own about which links are real.
+- **A drop, not an error.** A mistyped URL shows the operator a missing icon on
+  the page they are editing, which is a clearer signal than a 400 on a save
+  that looked fine.
+- **Not in `UpdateConfigInput`.** The schema is `.strict()` and typed per key,
+  but it is generic over every `string` key; teaching it that `social.*` means
+  "URL" would put a per-key rule in a shared contract.
+
+**If you add another config key whose value ends up in an `href`, an `src` or a
+`style`, guard it the same way and in the same place.** The admin console is
+audit-logged and permission-checked, which bounds who can do this — it does not
+make what they type safe to interpolate.
 
 ---
 

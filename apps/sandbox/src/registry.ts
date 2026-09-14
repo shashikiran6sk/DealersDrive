@@ -346,12 +346,37 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/components/layout/customer-footer.tsx',
     category: 'Layout',
     ownership: 'Shared',
-    purpose: 'The buyer footer, and the one line saying the dealer is the merchant.',
+    purpose:
+      'The buyer footer — four columns, the configured social row, and the one line saying ' +
+      'the dealer is the merchant.',
     aliases: ['PublicFooter', 'SiteFooter', 'Footer', 'customer-footer'],
-    features: ['F073'],
-    props: ['none'],
-    states: ['default', 'mobile (nav wraps)'],
+    features: ['F073', 'R44'],
+    props: ['social', 'supportEmail', 'supportPhone'],
+    states: [
+      'default (six networks, both contacts)',
+      'no social accounts published',
+      'two networks',
+      'API unreachable (no contacts, no social)',
+      'tablet (two columns)',
+      'mobile (one column)',
+    ],
     reusable: true,
+    storyId: 'layout-customerfooter',
+  },
+  {
+    id: 'C021c',
+    name: 'SocialIcon',
+    source: 'apps/web/src/components/layout/social-icons.tsx',
+    category: 'Layout',
+    ownership: 'Feature-specific',
+    purpose:
+      'One social mark as inline SVG at currentColor. Inline rather than an icon library, ' +
+      'because no new dependency is added that the baseline did not have.',
+    aliases: ['SocialMark', 'BrandIcon', 'social-icons'],
+    features: ['R44'],
+    props: ['network'],
+    states: ['instagram', 'facebook', 'youtube', 'linkedin', 'x', 'whatsapp'],
+    reusable: false,
     storyId: 'layout-customerfooter',
   },
   {

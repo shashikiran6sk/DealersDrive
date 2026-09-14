@@ -21,6 +21,27 @@ import { z } from 'zod';
  */
 
 // ─────────── A14 public config ─────────────────────────────────────────────
+
+/**
+ * One place the platform can be found off the platform (**R44**).
+ *
+ * `network` is a closed set rather than free text because the footer draws an
+ * icon from it, and an icon is not something a configuration value can invent.
+ * `label` is what a screen reader announces and what the `title` says; `href`
+ * is the URL an operator typed into `/admin/config`, already checked to be an
+ * `https:` one before it was put on this payload.
+ *
+ * The array carries **only the networks that have a URL**. A network nobody has
+ * opened an account for is absent, not present-and-empty, so the footer renders
+ * what it is given and has no rule of its own about which links are real.
+ */
+export const SocialLink = z.object({
+  network: z.enum(['instagram', 'facebook', 'youtube', 'linkedin', 'x', 'whatsapp']),
+  label: z.string(),
+  href: z.string(),
+});
+export type SocialLink = z.infer<typeof SocialLink>;
+
 export const PublicConfig = z.object({
   mediaBaseUrl: z.string(),
   captchaSiteKey: z.string().nullable(),
@@ -38,6 +59,11 @@ export const PublicConfig = z.object({
   rcLookupEnabled: z.boolean(),
   /** Whether listing pages carry a records check at all. */
   vehicleReportEnabled: z.boolean(),
+  /**
+   * Where the platform can be found off the platform, in the order the footer
+   * renders it (**R44**). Empty until an operator publishes one.
+   */
+  social: z.array(SocialLink),
 });
 export type PublicConfig = z.infer<typeof PublicConfig>;
 
