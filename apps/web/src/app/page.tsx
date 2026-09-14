@@ -1,7 +1,3 @@
-/**
- * Placeholder route. `next build` needs at least one page, and the homepage is
- * F081 — so this holds the slot without pretending to be the product.
- */
 export default function Page() {
   return (
     <main>

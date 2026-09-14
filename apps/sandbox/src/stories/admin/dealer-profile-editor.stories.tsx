@@ -5,42 +5,6 @@ import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
 
 import { adminActionStub } from '../../mocks/admin-actions';
 
-/**
- * D3 (C062c) — the dealership's own answers, editable from the review screen.
- *
- * **Why it is not just a definition list.** It was one, and that is right for
- * the reviews that end in a decision and wrong for the ones that end in a
- * correction. A moderator holding the GST certificate can see that the dealer
- * typed one digit of the GSTIN wrong or spelt the district `Vellore Dist.`; the
- * alternative to fixing it here is a round trip that costs a working day per
- * character.
- *
- * Three things to check by eye:
- *
- *   · **It reads before it writes.** The card is a definition list until *Edit*
- *     is pressed. A review screen full of live inputs invites edits that were
- *     meant to be readings, and these same values are what a reviewer compares
- *     against a document.
- *   · **Save is disabled until something actually changed**, and only what
- *     changed is sent. `UpdateDealerInput` is partial; re-writing `legalName`
- *     and `city` with the same values on every save would put the
- *     duplicate-name check in the position of having to ignore a collision with
- *     the row being edited, on a field nobody touched.
- *   · **A refusal lands on the field it names.** The API answers with paths
- *     like `body.address.city`, and `ServerRefusal` below shows what that looks
- *     like against the boxes. A refusal about one entry in a list arrives as
- *     `body.specialities.3`, which is matched by prefix (**R32**) — otherwise
- *     the one box a moderator has to fix is the one box with no message on it.
- *   · **The last two rows are laid out differently, on purpose** (**R32**).
- *     The tagline and the service list are written for a reader rather than
- *     for a form, so they run the full width while editing and are stacked and
- *     left-aligned while reading — the services as chips, which is how they
- *     appear on the page the moderator is comparing this against. They replace
- *     `About`, the last box on the platform reading a paragraph the product
- *     stopped collecting at R26.
- *
- * The Server Action is stubbed — `src/mocks/admin-actions.ts`, coupling C-4.
- */
 const BASE: AdminDealerDetail = {
   id: '3c8f2b10-2222-4000-8000-000000000002',
   slug: 'sri-lakshmi-motors',
@@ -72,7 +36,6 @@ const BASE: AdminDealerDetail = {
   counts: { vehicles: 12, active: 7, pending: 1, enquiries: 30 },
   documents: [],
   allDocumentsVerified: false,
-  /** R34. Nothing waiting on a moderator is the ordinary state. */
   profileChange: null,
   yardPhotoUrl: null,
   recentLedger: [],
@@ -116,14 +79,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The resting state: everything the dealer entered, read-only, with one Edit. */
 export const Reading: Story = { args: { dealer: dealer() } };
 
-/**
- * A half-finished application. Every empty field reads `—` rather than
- * disappearing — the reviewer's question is often "what has *not* been
- * answered", and a row that vanishes cannot answer it.
- */
 export const WithGaps: Story = {
   args: {
     dealer: dealer({
@@ -140,19 +97,10 @@ export const WithGaps: Story = {
   },
 };
 
-/**
- * A SUPPORT seat, which may read the record and not change it. The Edit button
- * is absent rather than disabled: there is no state from which this operator can
- * reach the form, so offering it would be a control that never works.
- */
 export const ReadOnlySeat: Story = {
   args: { dealer: dealer({ actions: { ...BASE.actions, canEdit: false } }) },
 };
 
-/**
- * The save in flight. Press Edit, change a field, press Save — the stub holds
- * for eight seconds so the busy button and the frozen form are visible.
- */
 export const Saving: Story = {
   args: { dealer: dealer() },
   decorators: [
@@ -164,13 +112,6 @@ export const Saving: Story = {
   ],
 };
 
-/**
- * The API refused, and named the field.
- *
- * `GSTIN_ALREADY_REGISTERED` is the one that actually happens: two applications
- * for one registration, and the second is a duplicate rather than a typo. Press
- * Edit, change anything, press Save.
- */
 export const ServerRefusal: Story = {
   args: { dealer: dealer() },
   decorators: [

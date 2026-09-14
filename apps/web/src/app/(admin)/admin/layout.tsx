@@ -10,24 +10,8 @@ import { StatusTag } from '@/components/ui/primitives';
 import { SignOutButton } from '@/features/auth/sign-out';
 import { ApiError, apiGet } from '@/lib/api';
 
-/**
- * DESIGN-SPEC §3.17 — the admin shell. Ground `#f5f5f8`, 206px cobalt-900
- * sidebar, 54px white top bar.
- *
- * Desktop-first by design: at 768 the sidebar collapses to a top row and tables
- * scroll inside their bordered container.
- */
 export const dynamic = 'force-dynamic';
 
-/*
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline spreads `seoMetadata({ kind: 'private' })` from `lib/seo.ts`
- * here. That file is the whole indexing policy in one function and belongs to
- * **F095**; what it resolves to for a `private` route is the literal below. The
- * same substitution was made at both sign-in screens and at the onboarding
- * wizard, for the same reason — a cross-tenant operations console must be
- * `noindex` from the day it exists.
- */
 const PRIVATE_ROBOTS: Metadata['robots'] = { index: false, follow: false };
 
 export const metadata: Metadata = {
@@ -36,9 +20,6 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  // The header badge is a live count of the queue — never a hard-coded number
-  // (Rule 6, §4.11). It is also the guard: a 401 here means no admin session,
-  // and every admin page sits beneath this layout.
   const overview = await requireAdmin();
 
   return (
@@ -69,16 +50,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <span className="text-[14px] font-semibold">Operations</span>
 
           <div className="ml-auto flex items-center gap-3">
-            {/*
-              The badge is a link onto `/admin/listings` (**F069**), which does
-              not exist — but it cannot render one today: `headerBadge.count` is
-              the pending-listing count, and with no `Listing` model
-              `overview()` computes it as a hard zero. So the branch is
-              unreachable rather than broken, and it is left as the baseline has
-              it so that F069 restores the badge by adding a model rather than
-              by editing this file. The nav item beside it *was* reachable,
-              which is why `admin-nav.tsx` is the file this feature changed.
-            */}
             {overview.headerBadge.count > 0 ? (
               <Link href="/admin/listings" className="no-underline">
                 <StatusTag tone={overview.headerBadge.tone}>{overview.headerBadge.label}</StatusTag>

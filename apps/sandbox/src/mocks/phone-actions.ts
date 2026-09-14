@@ -1,16 +1,3 @@
-/**
- * A stand-in for `@/features/auth/phone-actions` (**R39**).
- *
- * Coupling **C-4** in `component-map.md`, for the same reason the auth actions
- * have one: `PhoneVerification` posts the widget's access token through a
- * Server Action, and the sandbox has no server. `.storybook/main.ts` aliases
- * the real module to this one.
- *
- * What it must *not* do is decide anything the real endpoint decides. The
- * component under test is the one that hands a token over and renders what
- * comes back — so this stub answers, slowly enough to see, whatever the story
- * set.
- */
 export interface PhoneVerificationState {
   verified?: boolean;
   phone?: string;
@@ -18,7 +5,6 @@ export interface PhoneVerificationState {
   error?: string;
 }
 
-/** What the sandbox's verification answers. Set by a story before it renders. */
 export const phoneActionStub: {
   delayMs: number;
   result: PhoneVerificationState;
@@ -33,12 +19,6 @@ export const phoneActionStub: {
   availabilityChecks: [],
 };
 
-/**
- * `POST /v1/auth/phone/availability` — asked before anything is sent.
- *
- * Free by default. A story that wants the taken-number refusal sets
- * `phoneActionStub.availability`.
- */
 export async function checkPhoneAvailabilityAction(phone: string): Promise<{ error?: string }> {
   phoneActionStub.availabilityChecks.push(phone);
   await new Promise((resolve) => setTimeout(resolve, 150));

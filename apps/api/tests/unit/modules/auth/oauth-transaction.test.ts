@@ -101,6 +101,12 @@ describe('sealing and opening', () => {
     expect(openTransaction(sealed)).toBeNull();
   });
 
+  it('refuses a correctly signed body that is not an object at all', () => {
+    const sealed = sealTransaction(42 as never);
+
+    expect(openTransaction(sealed)).toBeNull();
+  });
+
   it('refuses a body that is signed but not JSON', () => {
     const sealed = sealTransaction(createOAuthTransaction('/dealer'));
     const signature = sealed.split('.')[1] as string;

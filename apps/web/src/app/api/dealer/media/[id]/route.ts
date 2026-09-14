@@ -7,14 +7,6 @@ import { NextResponse } from 'next/server';
 
 import { ApiError, apiGet, apiSend } from '@/lib/api';
 
-/**
- * BFF for C14 commit and poll.
- *
- * `POST` commits an uploaded object at a position; `GET` is the poll the
- * uploader runs until processing reports READY or FAILED. Both are proxied so
- * the API base URL stays server-side (Rule 9) and the session — not a
- * client-supplied dealer id — decides whose media this is (Rule 1).
- */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },

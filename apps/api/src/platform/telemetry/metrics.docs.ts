@@ -1,13 +1,8 @@
 import type { ModuleDocs } from '../../docs/spec.js';
+import { DOC_TAGS } from '../../docs/tags.js';
 
-/**
- * Mounted only when `METRICS_ENABLED` (the cross-field env validation
- * guarantees `METRICS_SCRAPE_TOKEN` whenever it is), so this operation exists
- * in the reference regardless of the environment that generated it — the
- * document describes the API surface, not one deployment's flags.
- */
 export const metricsDocs: ModuleDocs = {
-  tag: 'Metrics',
+  tag: DOC_TAGS.metrics,
   description:
     'A Prometheus scrape endpoint for Grafana Cloud. Not part of the public API surface — ' +
     'infrastructure polls it, clients never do.',
@@ -16,7 +11,7 @@ export const metricsDocs: ModuleDocs = {
       method: 'get',
       path: '/internal/metrics',
       operationId: 'getMetrics',
-      tag: 'Metrics',
+      tag: DOC_TAGS.metrics,
       summary: 'Scrape Prometheus metrics',
       description:
         'Returns the process metrics in Prometheus exposition format. Guarded by a bearer ' +

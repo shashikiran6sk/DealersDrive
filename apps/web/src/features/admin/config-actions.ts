@@ -11,14 +11,6 @@ export interface ConfigResult {
   message?: string;
 }
 
-/**
- * D14 — platform configuration.
- *
- * These values govern money and moderation (GST percent, listing duration,
- * minimum photos, rate limits), so each one is written individually with its
- * declared type rather than as a blob PATCH — a string where a number belongs
- * would silently change what a credit costs.
- */
 export async function updateConfigAction(
   key: string,
   type: ConfigEntry['type'],
@@ -46,13 +38,6 @@ export async function updateConfigAction(
   try {
     await apiSend('PUT', `/v1/admin/config/${encodeURIComponent(key)}`, parsed.data);
     revalidatePath('/admin/config');
-    /*
-     * Some of these keys are rendered on public pages — the social links in
-     * the footer are (**R44**) — and those pages hold the payload for ten
-     * minutes. Clearing the tag unconditionally rather than only for the keys
-     * that are public: the set of public keys is a fact about the API, and a
-     * second copy of it here would be wrong the first time one is added.
-     */
     revalidatePublicConfig();
     return { ok: true };
   } catch (error) {

@@ -4,10 +4,6 @@ import { getContext } from '../../middleware/request-context.js';
 import type { Tx } from '../db/prisma.js';
 import { logger } from '../telemetry/logger.js';
 
-/**
- * Every admin write, and every cross-tenant read of private data, lands here
- * with the actor's identity (ARCHITECTURE §7 layer 4, §21).
- */
 export interface AuditEntry {
   actorType: 'DEALER' | 'ADMIN' | 'SYSTEM';
   actorId?: string | null;
@@ -20,9 +16,7 @@ export interface AuditEntry {
 }
 
 export interface AuditService {
-  /** Inside a transaction, so the record cannot outlive a rolled-back write. */
   record(tx: Tx, entry: AuditEntry): Promise<void>;
-  /** Outside one, for reads — an audit row for a read has nothing to roll back with. */
   recordDetached(entry: AuditEntry): Promise<void>;
 }
 
@@ -36,7 +30,9 @@ export function createAuditService(prisma: PrismaClient): AuditService {
       action: entry.action,
       entityType: entry.entityType,
       entityId: entry.entityId,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma's InputJsonValue does not accept its own JsonNull
       before: (entry.before ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma's InputJsonValue does not accept its own JsonNull
       after: (entry.after ?? Prisma.JsonNull) as Prisma.InputJsonValue,
       ip: context?.ip ?? null,
       traceId: context?.traceId ?? null,
@@ -52,7 +48,6 @@ export function createAuditService(prisma: PrismaClient): AuditService {
       try {
         await prisma.auditLog.create({ data: toRow(entry) });
       } catch (error) {
-        // Never fail a request because the audit write failed; alert instead.
         logger.error({ err: error, action: entry.action }, 'audit write failed');
       }
     },

@@ -1,7 +1,9 @@
+import { noCommentsInSrc } from '@dealers-drive/config/eslint/no-comments';
 import { nodeConfig } from '@dealers-drive/config/eslint/node';
 
 export default [
   ...nodeConfig({ tsconfigRootDir: import.meta.dirname }),
+  noCommentsInSrc(),
   {
     /**
      * Tests and the seed.

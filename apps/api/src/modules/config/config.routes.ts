@@ -1,21 +1,13 @@
 import { Router } from 'express';
 
 import type { ConfigService } from './config.service.js';
+import { getConfigPublic } from './routes/get-config-public.js';
+import type { ConfigRoute } from './routes/route.js';
 
-/** A14 — public, cached at the edge, no session anywhere. */
+const ROUTES: ConfigRoute[] = [getConfigPublic];
+
 export function createConfigRouter(service: ConfigService): Router {
   const router = Router();
-
-  router.get('/config/public', (_req, res, next) => {
-    void (async () => {
-      try {
-        res.set('Cache-Control', 'public, max-age=60');
-        res.json(await service.publicConfig());
-      } catch (error) {
-        next(error);
-      }
-    })();
-  });
-
+  for (const route of ROUTES) route(router, { service });
   return router;
 }

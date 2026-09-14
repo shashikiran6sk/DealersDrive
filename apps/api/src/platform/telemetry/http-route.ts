@@ -1,14 +1,7 @@
 import type { Request } from 'express';
 
-/**
- * Turns Express's route-local pattern and the original path into one stable,
- * full route template. Values such as dealer slugs and UUIDs must never become
- * metric labels or Loki stream labels.
- *
- * Express leaves `req.route.path` behind after a route matches, but restores
- * `req.baseUrl` while unwinding nested routers. Counting path segments lets us
- * recover the mount prefix without depending on Express internals.
- */
+import { isRecord } from '../errors.js';
+
 export function normalizedHttpRoute(req: Request): string {
   const routePath = routePattern(req);
   if (routePath === undefined) return 'unmatched';
@@ -23,7 +16,7 @@ export function normalizedHttpRoute(req: Request): string {
 }
 
 function routePattern(req: Request): string | undefined {
-  const value = (req.route as { path?: unknown } | undefined)?.path;
+  const value = isRecord(req.route) ? req.route.path : undefined;
   return typeof value === 'string' ? value : undefined;
 }
 

@@ -1,16 +1,5 @@
 import { retryAfterSeconds, type CachePort, type CounterResult } from './cache.port.js';
 
-/**
- * `CachePort` in process memory.
- *
- * Correct for exactly one running process, which is what `pnpm dev` and the
- * test suite are. `env.ts` refuses this driver in production, because the
- * failure mode there is silent: nothing errors, every limit is simply N times
- * looser than the number written next to it.
- *
- * Single-threaded JavaScript makes `increment` atomic for free — there is no
- * await between the read and the write, so no other request can interleave.
- */
 interface Window {
   count: number;
   resetAt: number;

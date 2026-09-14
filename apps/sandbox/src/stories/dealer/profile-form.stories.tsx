@@ -6,29 +6,6 @@ import { DealerProfileForm } from '@/features/dealer/profile-form';
 
 import { dealerProfileStub, withdrawStub, type ProfileFormState } from '../../mocks/dealer-actions';
 
-/**
- * C1/C2 — the dealership's own record, after onboarding is over.
- *
- * Four things to check by eye:
- *
- *   · **What is missing from the form is the point.** There is no "Trading
- *     name": `brandName` is the server-written mirror of `legalName`, and two
- *     boxes able to disagree is exactly what leaving it out prevents. GSTIN and
- *     PAN render disabled — they were verified against a document, and the
- *     admin review screen is where a correction belongs.
- *   · **City, district, state and the Maps link are typed and editable**
- *     (D6, R2, R6). They were a dropdown over a five-row table and two disabled
- *     mirrors of it, which meant a dealer in Salem could not finish this form.
- *   · **The mobile is editable** (R7), and shows the raw number rather than the
- *     `+91 98400 12345` display form, because raw is what the field accepts
- *     back.
- *   · **A refusal lands on the box it names.** `ServerRefusal` below is the
- *     API's answer to a duplicate dealership name in one city and a Maps link
- *     that is not a Google host — the two most likely real failures.
- *
- * The Server Action is stubbed — `src/mocks/dealer-actions.ts`, coupling C-4.
- * The stub waits 900ms so the save button's loading state is visible.
- */
 const BASE: DealerProfile = {
   id: '3c8f2b10-2222-4000-8000-000000000002',
   slug: 'sri-lakshmi-motors',
@@ -66,15 +43,9 @@ const BASE: DealerProfile = {
   activeListings: 7,
   approvedAt: '2026-01-14T06:12:00.000Z',
   createdAt: '2025-12-01T09:00:00.000Z',
-  /** R34. Nothing waiting on a moderator is the ordinary state. */
   profileChange: null,
 };
 
-/**
- * Setting the stub in a decorator rather than in `beforeEach`, to match the
- * idiom the admin and auth stories already use: it runs on every re-render, so
- * a control change cannot leave the previous story's stub in place.
- */
 function stub(delayMs: number, result: ProfileFormState) {
   return function withStub(Story: () => ReactElement) {
     dealerProfileStub.delayMs = delayMs;
@@ -102,17 +73,11 @@ const SAVED: ProfileFormState = { status: 'saved', fieldErrors: {} };
 export default meta;
 type Story = StoryObj<typeof DealerProfileForm>;
 
-/** A dealership that finished onboarding and has answered everything. */
 export const Populated: Story = {
   args: { dealer: BASE },
   decorators: [stub(900, SAVED)],
 };
 
-/**
- * A row that predates R2 and R6 — no district, no Maps link — and never wrote a
- * tagline or a service list. Every optional box is empty, which is what the
- * completeness meter on the page is counting.
- */
 export const Sparse: Story = {
   args: {
     dealer: {
@@ -130,41 +95,21 @@ export const Sparse: Story = {
   decorators: [stub(900, SAVED)],
 };
 
-/**
- * **R20** — the same saved link, drawing a bare pin instead of a listing.
- *
- * This is the state the note exists for, and it is not an edge case: the Share
- * sheet on a phone hands out the same shape of short link whether the dealer
- * opened their *business card* first or dropped a pin on their street, and the
- * box looks identical afterwards. `Populated` is the good case (`PLACE`, in the
- * ok green); this is the one that tells a dealer what to do about it.
- */
 export const MapIsOnlyAPin: Story = {
   args: { dealer: { ...BASE, address: { ...BASE.address, mapKind: 'POINT' } } },
   decorators: [stub(900, SAVED)],
 };
 
-/** A link we could not read a position out of at all — the third answer. */
 export const MapCouldNotBeRead: Story = {
   args: { dealer: { ...BASE, address: { ...BASE.address, mapKind: 'NONE' } } },
   decorators: [stub(900, SAVED)],
 };
 
-/**
- * The form after a successful save. `useActionState` holds this until the next
- * submit — the banner is not auto-dismissed (DESIGN-SPEC §2.15).
- */
 export const Saved: Story = {
   args: { dealer: BASE },
   decorators: [stub(0, SAVED)],
 };
 
-/**
- * Two field-level refusals, in the API's own vocabulary. `address.mapsUrl` and
- * `legalName` come back as `body.address.mapsUrl` and `body.legalName`; the
- * action folds them onto the input names, which is what puts the message under
- * the right box.
- */
 export const ServerRefusal: Story = {
   args: { dealer: BASE },
   decorators: [
@@ -178,7 +123,6 @@ export const ServerRefusal: Story = {
   ],
 };
 
-/** A 5xx, or anything the API refused without naming a field. */
 export const ServerError: Story = {
   args: { dealer: BASE },
   decorators: [
@@ -190,33 +134,11 @@ export const ServerError: Story = {
   ],
 };
 
-/** The save button mid-flight — the stub waits three seconds. */
 export const Saving: Story = {
   args: { dealer: BASE },
   decorators: [stub(3000, SAVED)],
 };
 
-/**
- * R34 — a change waiting for review, which is the state the two boxes are shut
- * in.
- *
- * Three things to check by eye:
- *
- *   · **The tagline and services boxes are `disabled`** and hold the *proposed*
- *     text, not the live text. The dealer has already said what they want; the
- *     question in front of them is "do I stand by this", and a live box in that
- *     state offers an edit the API refuses with a 409.
- *   · **`Cancel this change` is the only way out**, and it is a button rather
- *     than something to infer from what the dealer types. Retyping the live
- *     value used to withdraw the request, which made the exit something to
- *     discover rather than press.
- *   · **The established year is still open.** It never needed review, and
- *     locking it would turn one field's queue into a lock on a field that has
- *     nothing to do with it.
- *
- * The panel carries the live/proposed pair in words because the boxes below can
- * only show one of them at a time.
- */
 export const ChangeWaitingForReview: Story = {
   args: {
     dealer: {
@@ -235,10 +157,6 @@ export const ChangeWaitingForReview: Story = {
   },
 };
 
-/**
- * The cancel in flight, so the busy button is visible. Press
- * `Cancel this change`.
- */
 export const Cancelling: Story = {
   ...ChangeWaitingForReview,
   beforeEach: () => {
@@ -247,7 +165,6 @@ export const Cancelling: Story = {
   },
 };
 
-/** And a cancel the API refused — the message lands inside the panel. */
 export const CancelRefused: Story = {
   ...ChangeWaitingForReview,
   beforeEach: () => {
@@ -256,14 +173,6 @@ export const CancelRefused: Story = {
   },
 };
 
-/**
- * A change a moderator refused.
- *
- * The boxes are **open** here and hold the *live* values — the reason is above
- * them and the point is to write something different, so restoring the refused
- * text would invite the dealer to press Save again unchanged. There is no
- * Cancel: there is nothing left waiting.
- */
 export const ChangeRefused: Story = {
   args: {
     dealer: {

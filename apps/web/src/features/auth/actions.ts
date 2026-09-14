@@ -13,40 +13,13 @@ import { redirect } from 'next/navigation';
 import { ApiError, apiSend, SESSION_COOKIE } from '@/lib/api';
 import { servicesOf } from '@/lib/services';
 
-/**
- * The writes that change who you are.
- *
- * They are Server Actions rather than browser fetches, for one reason:
- * the session cookie has to be set and cleared server-side (ARCHITECTURE
- * §15.2). No token is ever handed to client JavaScript — there is nothing in
- * `localStorage`, nothing in a React state atom, and nothing a script on the
- * page could read.
- */
 export interface ActionState {
   message?: string;
   errors?: Record<string, string>;
-  /** What was submitted, so a rejected form re-renders with it rather than blank. */
   values?: Record<string, string>;
   saved?: boolean;
 }
 
-/*
- * There is no `adminLoginAction` here any more.
- *
- * Admin sign-in is a browser navigation to the API's `/v1/auth/admin/google/
- * start`, exactly as the dealer's is — no form, no credential crossing this
- * process, and no session for a Server Action to relay. The cookie is set by
- * the API on the callback.
- */
-
-/**
- * The fields steps 1 and 2 carry between them, in one list.
- *
- * They are echoed back on a rejection so a bad pincode does not cost the dealer
- * the other eight answers, and the list is written once because a field missing
- * from it fails silently — the form re-renders blank in exactly one box, which
- * is the kind of bug nobody reports.
- */
 const ONBOARDING_FIELDS = [
   'fullName',
   'phone',
@@ -62,7 +35,6 @@ const ONBOARDING_FIELDS = [
   'specialities',
 ] as const;
 
-/** Dealer onboarding — the step between a verified Google identity and a tenant. */
 export async function onboardingAction(
   _previous: ActionState,
   formData: FormData,
@@ -106,17 +78,6 @@ export async function onboardingAction(
   redirect('/dealer/onboarding?step=2');
 }
 
-/**
- * Steps 1 and 2 again, for a dealership that already exists.
- *
- * `Back` from the documents step has to lead somewhere, and once a tenant has
- * been created the create path cannot be walked a second time — it would refuse
- * with `DEALER_ALREADY_EXISTS`. So the same two steps PATCH instead, which is
- * what `PATCH /v1/dealer` is partial for.
- *
- * `phone` is deliberately not sent. It is the login identity, and changing it
- * needs an OTP round-trip on the new number that onboarding does not have.
- */
 export async function updateOnboardingAction(
   _previous: ActionState,
   formData: FormData,
@@ -149,14 +110,6 @@ export async function updateOnboardingAction(
   }
 
   try {
-    /*
-     * `/v1/dealer/onboarding`, not `/v1/dealer` (**R27**). The profile screen's
-     * route now takes three fields — the year, the tagline and the services —
-     * and this step is asking for the name, the address and the contact
-     * details. A DRAFT dealership is one still answering those questions, or
-     * one sent back to fix an answer, and that is exactly what the onboarding
-     * route is guarded to.
-     */
     await apiSend('PATCH', '/v1/dealer/onboarding', parsed.data);
   } catch (error) {
     if (error instanceof ApiError) {
@@ -172,36 +125,15 @@ export async function updateOnboardingAction(
   redirect('/dealer/onboarding?step=2');
 }
 
-/**
- * Sign out, for either console.
- *
- * The API call is what matters: it revokes the `sessions` row, so the token
- * stops working everywhere rather than merely being forgotten by this browser.
- * Clearing the cookie afterwards is housekeeping, and is deliberately done even
- * if the revoke failed — a browser holding a cookie it believes in is worse
- * than one that has to sign in again.
- */
 export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promise<void> {
   const path = scope === 'admin' ? '/v1/auth/admin/logout' : '/v1/auth/logout';
 
-  try {
-    await apiSend<void>('POST', path);
-  } catch {
-    // Already expired, already revoked, API down — all end the same way.
-  }
+  await apiSend<void>('POST', path).catch(() => undefined);
 
   (await cookies()).delete(SESSION_COOKIE);
   redirect(scope === 'admin' ? '/admin/login' : '/dealer/login');
 }
 
-/**
- * C2, from onboarding step 3 — the two registrations the KYC review needs
- * alongside the uploaded documents (DESIGN-SPEC §3.10).
- *
- * A separate write from the dealership itself because it happens after the
- * tenant exists, and because a dealer can come back to it: `PATCH /v1/dealer`
- * is partial, so filling one field never blanks the other.
- */
 export async function saveBusinessIdsAction(
   _previous: ActionState,
   formData: FormData,
@@ -215,8 +147,6 @@ export async function saveBusinessIdsAction(
   if (!parsed.success) return { errors: fieldErrors(parsed.error.issues), values };
 
   try {
-    // The onboarding route (**R27**) — GSTIN and PAN are verified against a
-    // document, so they are not on the profile screen's schema either.
     await apiSend('PATCH', '/v1/dealer/onboarding', parsed.data);
   } catch (error) {
     if (error instanceof ApiError) {
@@ -233,13 +163,6 @@ export async function saveBusinessIdsAction(
   return { values, saved: true };
 }
 
-/**
- * C4 — the last step of onboarding: hand the dealership to a moderator.
- *
- * The dealer does not become ACTIVE here. This submits an *event*; the state
- * machine and an admin decide the rest (Rule 5), which is why the success path
- * lands on a "we're reviewing this" panel rather than on the dashboard.
- */
 export async function submitForVerificationAction(): Promise<ActionState> {
   try {
     await apiSend<DealerSubmitResponse>('POST', '/v1/dealer/submit');
@@ -253,36 +176,15 @@ export async function submitForVerificationAction(): Promise<ActionState> {
   redirect('/dealer/onboarding?step=3');
 }
 
-/**
- * A form field as text. `FormData.get` can return a `File`, and `String(file)`
- * is `[object File]` — a value that would validate as a string and then be
- * saved as one. Anything that is not text reads as absent.
- */
 function text(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === 'string' ? value : '';
 }
 
-/**
- * A validation path, as the name of the input it belongs to.
- *
- * The wizard's fields are flat — `city`, `addressLine`, `pincode` — and both
- * validators answer in paths: Zod with `['address', 'city']`, the API with
- * `body.address.city`. Neither matches an input, so before this an error
- * against anything nested rendered against no field at all: the dealer saw a
- * banner saying something was wrong and not one box highlighted. Taking the
- * leaf fixes every case but one, and `line` is that one.
- */
 const FORM_FIELD: Record<string, string> = { line: 'addressLine' };
 
 function formField(path: string): string {
   const parts = path.split('.');
-  /*
-   * A numeric leaf is an array index, and there is no input named `0`.
-   * `specialities` is the first array this form carries (**R26**), and Zod
-   * answers a too-long entry with `['specialities', 2]` — so the index is
-   * stepped over and the error lands on the box the dealer typed it into.
-   */
   const leaf = (parts.at(-1) ?? path).match(/^\d+$/)
     ? (parts.at(-2) ?? path)
     : (parts.at(-1) ?? path);
@@ -298,7 +200,6 @@ function fieldErrors(issues: { path: PropertyKey[]; message: string }[]): Record
   return errors;
 }
 
-/** The same, for the field errors the API answers a 400 or a 409 with. */
 function apiFieldErrors(error: ApiError): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const [path, message] of Object.entries(error.fieldErrors())) {

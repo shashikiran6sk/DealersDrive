@@ -10,17 +10,9 @@ const MAX_ATTEMPTS = 10;
 export interface OutboxPublisher {
   start(): void;
   stop(): void;
-  /** Drains the outbox once. Tests call this instead of waiting for the timer. */
   drain(): Promise<number>;
 }
 
-/**
- * Reads unpublished outbox rows every two seconds and hands them to the
- * in-process bus. `FOR UPDATE SKIP LOCKED` means several workers can drain the
- * same table without either of them seeing the other's rows.
- *
- * When the sink becomes a broker, this is the only file that changes.
- */
 export function createOutboxPublisher(prisma: PrismaClient, bus: EventBus): OutboxPublisher {
   let timer: NodeJS.Timeout | undefined;
   let running = false;
@@ -35,6 +27,7 @@ export function createOutboxPublisher(prisma: PrismaClient, bus: EventBus): Outb
         FOR UPDATE SKIP LOCKED`;
 
     for (const row of rows) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the outbox row holds the event as Json
       const event = row.payload as DomainEvent;
       try {
         await bus.publish(event);

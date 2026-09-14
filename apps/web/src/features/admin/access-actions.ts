@@ -11,18 +11,6 @@ export interface AccessResult {
   entry?: AdminAccessEntry;
 }
 
-/**
- * Who may open the admin console (**R42**).
- *
- * This is the most consequential write on the settings screen and the only one
- * that hands somebody a cross-tenant seat, so it goes through the same
- * `.strict()` contract the API validates with before the request leaves — a
- * typo'd field becomes a message in the form rather than a 400 to interpret.
- *
- * The address is lower-cased and trimmed by the schema, on both sides, because
- * the value on the left was typed by a person and the value it will eventually
- * be compared against came out of a Google identity token.
- */
 export async function grantAdminAccessAction(input: {
   email: string;
   adminRole: string;

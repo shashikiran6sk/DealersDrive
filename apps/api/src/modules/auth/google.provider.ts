@@ -4,18 +4,10 @@ import { googleCredentials, isGoogleConfigured } from '../../config/env.js';
 import { UnauthorizedError } from '../../platform/errors.js';
 import type { AuthorizationRequest, OAuthClaims, OAuthProvider } from './oauth.port.js';
 
-/**
- * Google OAuth 2.0 / OpenID Connect — authorization code flow with PKCE.
- *
- * The endpoints are pinned rather than discovered. Google's discovery document
- * has not moved in a decade, and a network round trip on every sign-in to be
- * told the same three URLs buys nothing but a new failure mode.
- */
 const AUTHORIZATION_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 const ISSUERS = new Set(['https://accounts.google.com', 'accounts.google.com']);
 
-/** Clock skew allowed when checking `exp`. */
 const LEEWAY_SECONDS = 60;
 
 interface TokenResponse {
@@ -55,9 +47,6 @@ export function createGoogleOAuthProvider(fetchImpl: typeof fetch = fetch): OAut
       url.searchParams.set('nonce', request.nonce);
       url.searchParams.set('code_challenge', challengeFor(request.codeVerifier));
       url.searchParams.set('code_challenge_method', 'S256');
-      // No refresh token is wanted: the application session is the thing that
-      // outlives the sign-in, and a stored Google refresh token would be a
-      // long-lived credential this product has no use for.
       url.searchParams.set('access_type', 'online');
       url.searchParams.set('prompt', request.prompt ?? 'select_account');
 
@@ -83,11 +72,10 @@ export function createGoogleOAuthProvider(fetchImpl: typeof fetch = fetch): OAut
         }).toString(),
       });
 
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
       const payload = (await response.json().catch(() => null)) as TokenResponse | null;
 
       if (!response.ok || !payload?.id_token) {
-        // `error_description` is Google's, and safe to log — it describes the
-        // request, not the code. The code itself is never logged anywhere.
         throw new UnauthorizedError('Google could not verify that sign-in. Please try again.', {
           code: 'OAUTH_EXCHANGE_FAILED',
           cause: payload?.error_description ?? payload?.error,
@@ -99,19 +87,6 @@ export function createGoogleOAuthProvider(fetchImpl: typeof fetch = fetch): OAut
   };
 }
 
-/**
- * The ID token's payload, without signature verification — and that is correct
- * here, not a shortcut.
- *
- * OpenID Connect Core §3.1.3.7 item 6: a token received directly from the token
- * endpoint over a TLS connection whose server certificate has been validated
- * may be trusted without checking its signature. This code holds exactly that
- * position — it POSTed to `oauth2.googleapis.com` itself, with a client secret,
- * over Node's TLS stack. The token never passed through a browser, so there is
- * no untrusted hop between Google and this function.
- *
- * The claims are still checked below: issuer, audience, expiry and nonce.
- */
 function decodeIdToken(idToken: string): IdTokenClaims {
   const segments = idToken.split('.');
   const payload = segments[1];
@@ -123,6 +98,7 @@ function decodeIdToken(idToken: string): IdTokenClaims {
   }
 
   try {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
     return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as IdTokenClaims;
   } catch (cause) {
     throw new UnauthorizedError('Google returned an identity token this API cannot read.', {
@@ -145,8 +121,6 @@ function claimsFrom(
   if (!claims.exp || claims.exp + LEEWAY_SECONDS < Math.floor(Date.now() / 1000)) {
     reject('That sign-in has expired. Please try again.');
   }
-  // The nonce is what ties this identity token to *this* browser's sign-in, and
-  // is the reason a replayed token from elsewhere cannot be used here.
   if (claims.nonce !== expected.nonce)
     reject('That sign-in could not be verified. Please try again.');
   if (!claims.sub) reject('Google did not return an account identifier.');
@@ -159,7 +133,9 @@ function claimsFrom(
   }
 
   return {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
     subject: claims.sub as string,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
     email: (claims.email as string).toLowerCase(),
     emailVerified: true,
     ...(claims.name === undefined ? {} : { name: claims.name }),
@@ -167,7 +143,6 @@ function claimsFrom(
   };
 }
 
-/** PKCE S256: `BASE64URL(SHA256(verifier))` (RFC 7636 §4.2). */
 function challengeFor(codeVerifier: string): string {
   return createHash('sha256').update(codeVerifier).digest('base64url');
 }

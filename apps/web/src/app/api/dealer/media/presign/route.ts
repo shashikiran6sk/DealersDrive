@@ -3,14 +3,6 @@ import { NextResponse } from 'next/server';
 
 import { ApiError, apiSend } from '@/lib/api';
 
-/**
- * BFF for C14 presign.
- *
- * The upload itself goes **direct from the browser to object storage** — that
- * is the whole point of the presigned PUT, and it is why 10MB photos never
- * touch this server (ARCHITECTURE §12.1). Only the signing call is proxied,
- * because it needs the API base URL and the session.
- */
 export async function POST(request: Request): Promise<NextResponse> {
   let body: unknown;
   try {

@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 
 import { ApiError, apiSend } from '@/lib/api';
 
-/** BFF for C5 commit — the step that turns an uploaded object into a record. */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ type: string }> },

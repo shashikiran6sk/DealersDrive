@@ -71,6 +71,7 @@ Everything about _what_ to build and _in what order_ lives in `docs/project/`:
 | [`docs/project/component-map.md`](docs/project/component-map.md)         | All 65 UI components — props, states, consumers, coupling, sandbox priority                                                                                              |
 | [`docs/project/component-sandbox.md`](docs/project/component-sandbox.md) | How the component sandbox is built and how it gates UI work                                                                                                              |
 | [`docs/project/git-strategy.md`](docs/project/git-strategy.md)           | Branching, the init commit, risk register, the verification gate                                                                                                         |
+| [`docs/code/README.md`](docs/code/README.md)                             | **Why the code is the way it is.** Every note that was once a comment in `apps/*/src`, on a page mirroring the source path. Walk down from the index.                    |
 
 `docs/screens/` and `docs/Dealers-Drive-UI/` are the original visual references.
 
@@ -254,13 +255,13 @@ production and off inside it, by `DOCS_ENABLED`.
 
 ## What to write, and where
 
-| You did this                         | Do this too                                                                                      |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| Added a route to an existing module  | Add an `OperationSpec` to that module's `*.docs.ts`                                              |
-| Added a whole module                 | Create `<module>.docs.ts`, then add it to `MODULES` **and** `TAG_ORDER` in `src/docs/openapi.ts` |
-| Added a params/query/body Zod schema | Add its export name to `INPUT_SCHEMA_NAMES` in `src/docs/schemas.ts`                             |
-| Changed a response shape             | Nothing — response schemas are generated from `packages/contracts`                               |
-| Removed a route                      | Remove its operation, or the test fails in the other direction                                   |
+| You did this                         | Do this too                                                                                                                       |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Added a route to an existing module  | Add an `OperationSpec` to that module's `*.docs.ts`                                                                               |
+| Added a whole module                 | Create `<module>.docs.ts`, then add it to `MODULES` in `src/docs/openapi.ts` **and** `DOC_TAGS`/`TAG_ORDER` in `src/docs/tags.ts` |
+| Added a params/query/body Zod schema | Add its export name to `INPUT_SCHEMA_NAMES` in `src/docs/schemas.ts`                                                              |
+| Changed a response shape             | Nothing — response schemas are generated from `packages/contracts`                                                                |
+| Removed a route                      | Remove its operation, or the test fails in the other direction                                                                    |
 
 ## What you must not write
 
@@ -291,6 +292,147 @@ The second matters as much as the first: a reference listing an endpoint that
 `operationId`, a path parameter the params schema does not declare, and an
 `INPUT_SCHEMA_NAMES` entry contracts no longer exports. Those failures surface
 as a failed boot, not a wrong page.
+
+---
+
+# 4b. Code layout — where a thing goes
+
+These are the shapes the code is already in. They are cheap to keep and
+expensive to restore, which is the whole argument: the sandbox exists because
+`Button` was bypassed 75 % of the time and `.table` was hand-rolled five times,
+and both of those started as one file that was slightly too hard to find.
+
+## Components
+
+**Every React component has its own folder**, and the folder is named for the
+component in kebab-case:
+
+```
+components/ui/button/
+  index.ts              the barrel — this is what callers import
+  button.tsx            the main component, and nothing else
+  button-link.tsx       a second component gets a second file
+  button.variants.ts    the cva table and buttonClass
+  spinner.tsx           a private sub-component still gets its own file
+```
+
+`index.ts` is what makes this cheap: `@/components/ui/button` keeps working
+whatever the folder is rearranged into, so splitting a file that has grown is
+never a rename across forty call sites.
+
+**A component file contains its component.** When a second one appears beside
+it — a row, a panel, a footer — it moves to its own file in the same folder and
+is re-exported from the barrel. `apps/web/src/components/dealers/dealer-card/`
+is the shape to copy: the card, its cover, its footer, its constants.
+
+## Routes — one per file
+
+**An API route lives in its own file.** `<module>.routes.ts` keeps its export
+and becomes the list:
+
+```
+modules/admin/
+  admin.routes.ts          createAdminRouter — the ROUTES array, in order
+  routes/
+    route.ts               the module's RouteRegistrar alias
+    handle.ts              a wrapper the module's routes share
+    get-dealers.ts         one file, one route
+    patch-dealer.ts
+    post-dealer-approve.ts
+```
+
+The file is named for the verb and the path it answers, and it exports one
+registrar: `(router, deps) => { router.post('/dealers/:id/approve', …); }`.
+**The array in `<module>.routes.ts` is the registration order**, and order is
+load-bearing — Express matches in it — so a new route goes in the position it
+would have been mounted, not at the end.
+
+A helper two routes share (`handle`, a rate-limit shape, a local Zod schema)
+goes in its own file beside them, never back into the aggregator. Adding a
+route is: one new file, one import, one line in the array, and its
+`OperationSpec` in the module's `*.docs.ts` (§4a).
+
+## Helpers, types and constants
+
+| What                                       | Where it goes                                         |
+| ------------------------------------------ | ----------------------------------------------------- |
+| A helper only this component uses          | `<component>/utils.ts`                                |
+| A helper two components could use          | `apps/web/src/lib/` — this repo's utils folder        |
+| A type only this component uses            | `<component>/<component>.types.ts`, or inline if tiny |
+| A type two components or features share    | `apps/web/src/types/`                                 |
+| A shape the API and the web app both speak | `packages/contracts` — never a second copy            |
+| Repeated strings, limits, routes, lookups  | `<component>/<component>.constants.ts`                |
+| A sentence more than one API module says   | `apps/api/src/platform/messages.ts`                   |
+| A sentence one API module says             | `<module>.messages.ts` beside it                      |
+
+`apps/web/src/lib/` **is** this repo's utils folder, and there is deliberately
+no second one: `cn`, `plural`, `nav`, `url`, `upload` and `fetch-json` are there,
+and a parallel utils folder would be a junk drawer competing with a junk drawer.
+Check `lib/` before writing a helper — `pluralLabel` and `isCurrentPath` both
+exist because the same four lines had been written twice.
+
+**Do not hardcode user-facing text inside a `return`.** A label, a placeholder,
+an `aria-label`, an error sentence, a confirmation — it goes in the constants
+file as a named value, and a value that takes an argument is a function there
+(`removeLabel: (service: string) => …`). The reason is not tidiness: "Select
+district" appears on three different controls, and the three had drifted apart
+before it had one definition.
+
+## Types
+
+**Use a type or an interface wherever it makes a contract clearer or reusable**,
+and keep it local when it is not reused. Props that run past a few fields belong
+in `<component>.types.ts`; two fields inline are fine.
+
+**No new `any`, ever** — `@typescript-eslint/no-explicit-any` is an error with
+no exemption, and the repository has none left to grandfather in. `unknown` plus
+a narrowing check is the answer wherever a value genuinely is unknown.
+
+**No new `as` assertions.** `@typescript-eslint/consistent-type-assertions` is
+set to `assertionStyle: 'never'`. An assertion tells the compiler to stop
+asking, and the failure it hides surfaces as wrong data rather than as an error
+— which is exactly what R22 caught when a skewed payload filed every district in
+the country under "State not recorded". Reach for a type guard (`isRecord`,
+`errorCode` in `platform/errors.ts`), a Zod parse (`apiGetParsed`), or a
+narrowing helper instead.
+
+Two exemptions, both deliberate:
+
+- **Tests and stories** may assert. A fixture is being _made_ to stand in for a
+  contract type, rather than arriving from outside and being trusted.
+- **A genuine boundary** — a JSON body, a Prisma `Json` column, an environment
+  variable, a library that types its own callback as `never` — carries a
+  `// eslint-disable-next-line @typescript-eslint/consistent-type-assertions --`
+  with the reason on the same line. If you cannot name the boundary in a
+  clause, it is not one.
+
+## Comments — there are none
+
+**`src` carries no prose.** Not a docblock, not a one-liner, not a `//` at the
+end of a line. What a file does is the code; **why** it does it is a page under
+[`docs/code`](docs/code/README.md), addressed by the source path it came from.
+
+`dealers-drive/no-comments` is an ESLint error on `src/**`, so this is not a
+convention somebody has to remember.
+
+**The one exception is a toolchain directive** — `eslint-disable`,
+`@ts-expect-error`, `prettier-ignore`, a coverage pragma. Those are not prose:
+they are read by the build, and deleting one changes what it does. Inside JSX a
+directive still needs its `{/* … */}` container; the container is part of the
+directive.
+
+**When you would have written a comment, write the page instead.** Find the file
+under `docs/code` that mirrors the source folder, add a `###` heading naming the
+declaration, and put the reasoning under it. Then look again at the code: half
+of what wanted a comment wanted a named constant or a smaller function, and
+§4b's constants and helper rules are where that goes.
+
+## Refactors preserve behaviour
+
+A refactor changes where code lives, not what it does. No business logic, no API
+behaviour, no UI behaviour, no routing, no state management. The test suite
+passing unchanged is the evidence, and a refactor that needed a test edited is a
+refactor that changed something — say which, in the PR, or put it back.
 
 ---
 
@@ -342,7 +484,7 @@ and, for anything that mounts or changes an API route:
 
 ```
 ☐ Every route the feature adds has an operation in the module's *.docs.ts
-☐ A new module is listed in MODULES and TAG_ORDER in src/docs/openapi.ts
+☐ A new module is in MODULES (src/docs/openapi.ts) and DOC_TAGS + TAG_ORDER (src/docs/tags.ts)
 ☐ A new params/query/body schema is in INPUT_SCHEMA_NAMES
 ☐ tests/unit/docs/openapi.test.ts is green — it fails in both directions
 ☐ The operation was read in Swagger UI at /api/docs, not just compiled

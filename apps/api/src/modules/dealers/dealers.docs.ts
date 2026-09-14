@@ -1,19 +1,8 @@
 import type { ModuleDocs } from '../../docs/spec.js';
+import { DOC_TAGS } from '../../docs/tags.js';
 
-/**
- * C1–C5 and C18. The dealership's own record and its console.
- *
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline module documents nine operations. This file grows with the
- * router beside it — an operation lands in the same PR that mounts its route,
- * which is what `tests/unit/docs/openapi.test.ts` checks in both directions.
- * F040 brought the checklist, F041 five more, F043 the completeness read,
- * **F042 the submit** and **F048 `getDealerDashboard`**, which is the last of
- * them. Every operation the baseline documents here is now present.
- * ────────────────────────────────────────────────────────────────────────────
- */
 export const dealersDocs: ModuleDocs = {
-  tag: 'Dealer account',
+  tag: DOC_TAGS.dealerAccount,
   description:
     'The acting dealership: profile, KYC documents, verification submission and dashboard. ' +
     'Every one of these reads and writes exactly one dealership — the one the ' +
@@ -24,7 +13,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/dealer',
       operationId: 'getDealerProfile',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'The dealership record',
       description:
         'The full private profile — including the fields the public profile withholds, such ' +
@@ -37,7 +26,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'patch',
       path: '/v1/dealer',
       operationId: 'updateDealerProfile',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Update the dealership',
       description:
         '**Three fields (R27).** `establishedYear`, `tagline` and `specialities` \u2014 and ' +
@@ -118,7 +107,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'delete',
       path: '/v1/dealer/profile-change',
       operationId: 'withdrawDealerProfileChange',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Take back a change that is waiting for review',
       description:
         'Deletes the dealership\u2019s waiting profile edit (**R34**). What buyers see never ' +
@@ -149,7 +138,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'patch',
       path: '/v1/dealer/onboarding',
       operationId: 'amendDealerDuringOnboarding',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Amend a DRAFT dealership',
       description:
         'The onboarding wizard\u2019s write path, and the only route on which a dealer may ' +
@@ -216,7 +205,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/dealer/completeness',
       operationId: 'getDealerCompleteness',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Onboarding progress',
       description:
         'Which onboarding steps are done, what is missing from each, and whether the ' +
@@ -232,7 +221,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/dealer/submit',
       operationId: 'submitDealerForVerification',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Submit for verification',
       description:
         'Hands the dealership to the moderation queue. Takes no body — everything it needs ' +
@@ -255,7 +244,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/dealer/documents',
       operationId: 'listDealerDocuments',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'KYC document status',
       description:
         'All three required documents — GST certificate, PAN card, address proof — each with ' +
@@ -271,7 +260,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/dealer/documents/presign',
       operationId: 'presignDealerDocument',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Get an upload URL for a KYC document',
       description:
         'Step 1 of 2. Returns a short-lived signed `PUT` URL; the file goes **straight to ' +
@@ -307,7 +296,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/dealer/documents/:type/commit',
       operationId: 'commitDealerDocument',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Confirm a KYC upload',
       description:
         'Step 2 of 2. Verifies the object actually landed in storage before marking the ' +
@@ -335,7 +324,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'delete',
       path: '/v1/dealer/documents/:type',
       operationId: 'deleteDealerDocument',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Remove a KYC document',
       description:
         'Deletes the row and the stored object, so a wrong file can be replaced. OWNER only ' +
@@ -350,7 +339,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/dealer/yard-photo',
       operationId: 'getDealerYardPhoto',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'The yard photograph',
       description:
         'The image that fronts the dealership\u2019s public portfolio. `url` is a **short-lived ' +
@@ -372,7 +361,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/dealer/yard-photo/presign',
       operationId: 'presignDealerYardPhoto',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Get an upload URL for the yard photograph',
       description:
         'Step 1 of 2, and the same presign \u2192 `PUT` \u2192 commit pipeline the KYC documents ' +
@@ -400,7 +389,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'post',
       path: '/v1/dealer/yard-photo/commit',
       operationId: 'commitDealerYardPhoto',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Confirm the yard photograph upload',
       description:
         'Step 2 of 2. HEADs the object before adopting it \u2014 a presign never followed by a ' +
@@ -428,7 +417,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'delete',
       path: '/v1/dealer/yard-photo',
       operationId: 'deleteDealerYardPhoto',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Remove the yard photograph',
       description:
         'Clears `coverMediaId` and deletes the stored object. The dealership then reads as ' +
@@ -444,7 +433,7 @@ export const dealersDocs: ModuleDocs = {
       method: 'get',
       path: '/v1/dealer/dashboard',
       operationId: 'getDealerDashboard',
-      tag: 'Dealer account',
+      tag: DOC_TAGS.dealerAccount,
       summary: 'Console dashboard',
       description:
         'The console landing page in one response: headline stats, the credit balance, ' +

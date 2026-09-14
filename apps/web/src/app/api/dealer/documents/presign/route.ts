@@ -3,14 +3,6 @@ import { NextResponse } from 'next/server';
 
 import { ApiError, apiSend } from '@/lib/api';
 
-/**
- * BFF for C5 document presign.
- *
- * Same shape as the media presign beside it, and for the same reason: the file
- * goes **straight from the browser to storage**, and only the signing call is
- * proxied — because it needs the API base URL and the session, neither of which
- * belongs in a browser bundle (Rule 9).
- */
 export async function POST(request: Request): Promise<NextResponse> {
   let body: unknown;
   try {
