@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Button, ButtonLink, buttonClass } from '../../../../src/components/ui/button.js';
+import { Button, ButtonLink, buttonClass } from '../../../../src/components/ui/button/index.js';
 
 /**
  * DESIGN-SPEC §2.1: one `btn-primary` per view — the single forward action.
