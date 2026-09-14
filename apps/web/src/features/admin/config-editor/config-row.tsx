@@ -6,27 +6,23 @@ import { useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/input';
-import { Banner, Tag } from '@/components/ui/primitives';
+import { Banner } from '@/components/ui/primitives';
 import { updateConfigAction } from '@/features/admin/config-actions';
+
+import { BOOLEAN_VALUE, CONFIG_EDITOR_TEXT } from './config-editor.constants';
+import { PlaceholderRow } from './placeholder-row';
+import { toInput } from './utils';
 
 /**
  * D14 — one row, one value, one save.
  *
- * ## The row has two shapes, and the second one is the honest half
- *
- * A `platform_config` row is a number in a table until something reads it. The
- * table is complete — every key the product will ever need is already in
- * `CONFIG_DEFAULTS` — but most of the code that consults them has not been
- * reconstructed yet: `listing.durationDays` waits on F064, the reveal caps on
- * F090, the RC lookup knobs on F057.
- *
- * So the row renders a control when the API says something reads the key, and a
+ * The row renders a control when the API says something reads the key, and a
  * **placeholder** when nothing does. A placeholder is deliberately not an
  * editable field that quietly does nothing: an operator who sets "minimum
- * photos" to 8 and watches it save has been told the platform now requires
- * eight photos, and nothing on this screen would ever contradict them.
+ * photos" to 8 and watches it save has been told the platform now requires eight
+ * photos, and nothing on this screen would ever contradict them.
  *
- * `readBy` comes from the API rather than from a list in this file, because the
+ * `readBy` comes from the API rather than a list in this file, because the
  * question it answers — *does any running code consult this key* — is a fact
  * about the server.
  */
@@ -45,7 +41,7 @@ export function ConfigRow({ entry }: { entry: ConfigEntry }) {
     startTransition(async () => {
       const result = await updateConfigAction(entry.key, entry.type, value);
       if (!result.ok) {
-        setError(result.message ?? 'We could not save that setting.');
+        setError(result.message ?? CONFIG_EDITOR_TEXT.saveFailed);
         return;
       }
       setSaved(true);
@@ -72,8 +68,8 @@ export function ConfigRow({ entry }: { entry: ConfigEntry }) {
             value={value}
             onChange={(event) => setValue(event.target.value)}
           >
-            <option value="true">Enabled</option>
-            <option value="false">Disabled</option>
+            <option value={BOOLEAN_VALUE.true}>{CONFIG_EDITOR_TEXT.enabled}</option>
+            <option value={BOOLEAN_VALUE.false}>{CONFIG_EDITOR_TEXT.disabled}</option>
           </Select>
         ) : entry.type === 'string[]' ? (
           <Textarea
@@ -94,57 +90,22 @@ export function ConfigRow({ entry }: { entry: ConfigEntry }) {
         )}
 
         <Button variant="secondary" loading={pending} disabled={!dirty} onClick={save}>
-          Save
+          {CONFIG_EDITOR_TEXT.save}
         </Button>
       </div>
 
       <p className="text-[11px] ink-faint">
-        {entry.type === 'string[]' ? 'One entry per line. ' : ''}
-        Read by {entry.readBy}.
+        {entry.type === 'string[]' ? CONFIG_EDITOR_TEXT.oneEntryPerLine : ''}
+        {CONFIG_EDITOR_TEXT.readBy(entry.readBy)}
       </p>
       {entry.updatedAt ? (
-        <p className="text-[11px] ink-faint">Last changed {entry.updatedAt.slice(0, 10)}</p>
+        <p className="text-[11px] ink-faint">
+          {CONFIG_EDITOR_TEXT.lastChanged(entry.updatedAt.slice(0, 10))}
+        </p>
       ) : null}
 
       {error ? <Banner tone="err">{error}</Banner> : null}
-      {saved && !dirty ? <Banner tone="ok">Saved.</Banner> : null}
+      {saved && !dirty ? <Banner tone="ok">{CONFIG_EDITOR_TEXT.saved}</Banner> : null}
     </div>
   );
-}
-
-/**
- * A key nothing reads yet.
- *
- * The value is shown, because "what will this be when the feature lands" is a
- * real question, and the control is not, because changing it would change
- * nothing and say otherwise.
- */
-function PlaceholderRow({ entry }: { entry: ConfigEntry }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-(--color-divider) px-4 py-3 last:border-b-0">
-      <div className="min-w-[220px] flex-1">
-        <div className="text-[12px] ink-secondary">{entry.label}</div>
-        <div className="font-mono text-[11px] ink-faint">{entry.key}</div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-[12px] ink-muted tnum">{displayValue(entry)}</span>
-        <Tag>Not in use yet</Tag>
-      </div>
-    </div>
-  );
-}
-
-function toInput(entry: ConfigEntry): string {
-  if (Array.isArray(entry.value)) return entry.value.join('\n');
-  return String(entry.value);
-}
-
-/** The stored value as one line — a list becomes "3 entries" rather than a wall. */
-function displayValue(entry: ConfigEntry): string {
-  if (Array.isArray(entry.value)) {
-    return entry.value.length === 1 ? '1 entry' : `${String(entry.value.length)} entries`;
-  }
-  if (typeof entry.value === 'boolean') return entry.value ? 'Enabled' : 'Disabled';
-  return String(entry.value);
 }
