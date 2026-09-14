@@ -36,9 +36,7 @@ export function AccountStep({
       <h1 className="font-heading text-[34px] font-semibold leading-[1.1] tracking-[-0.02em]">
         {ONBOARDING_TEXT.accountHeading}
       </h1>
-      <p className="mb-[20px] mt-[8px] text-[15px] ink-secondary">
-        {ONBOARDING_TEXT.accountIntro}
-      </p>
+      <p className="mb-[20px] mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.accountIntro}</p>
 
       {/*
         The verified identity, shown rather than asked for. Google has already

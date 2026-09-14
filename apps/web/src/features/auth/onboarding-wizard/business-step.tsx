@@ -16,12 +16,7 @@ export interface BusinessStepProps {
   values: Record<string, string>;
 }
 
-export function BusinessStep({
-  dealer,
-  errors,
-  hidden,
-  values,
-}: BusinessStepProps) {
+export function BusinessStep({ dealer, errors, hidden, values }: BusinessStepProps) {
   return (
     <fieldset hidden={hidden} className="m-0 border-0 p-0">
       <legend className="sr-only">{ONBOARDING_TEXT.businessLegend}</legend>

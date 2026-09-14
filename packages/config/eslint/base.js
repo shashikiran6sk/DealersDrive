@@ -58,10 +58,7 @@ export function baseConfig({ tsconfigRootDir }) {
          * runtime in a way that surfaces. The two remaining boundaries carry a
          * scoped disable naming why.
          */
-        '@typescript-eslint/consistent-type-assertions': [
-          'error',
-          { assertionStyle: 'never' },
-        ],
+        '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
         '@typescript-eslint/no-misused-promises': 'error',
         '@typescript-eslint/switch-exhaustiveness-check': 'error',
         'no-console': ['error', { allow: ['warn', 'error'] }],

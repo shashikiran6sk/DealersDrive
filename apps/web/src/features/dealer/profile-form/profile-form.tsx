@@ -9,7 +9,8 @@ import { Banner } from '@/components/ui/primitives';
 import { ServiceInput } from '@/components/ui/service-input';
 import { saveDealerProfileAction } from '@/features/dealer/profile-actions';
 
-import { LockedField, LockedNote } from './locked-field';
+import { LockedField } from './locked-field';
+import { LockedNote } from './locked-note';
 import { MapKindNote } from './map-kind-note';
 import { EMPTY_FORM_STATE, MIN_YEAR, PROFILE_FORM_TEXT } from './profile-form.constants';
 import { ReviewPanel } from './review-panel';

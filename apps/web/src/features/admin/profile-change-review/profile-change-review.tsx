@@ -12,7 +12,11 @@ import { approveProfileChangeAction, rejectProfileChangeAction } from '@/feature
 import type { ActionResult } from '@/types';
 
 import { Comparison } from './comparison';
-import { EMPTY_VALUE, MIN_REFUSAL_REASON, PROFILE_CHANGE_TEXT } from './profile-change-review.constants';
+import {
+  EMPTY_VALUE,
+  MIN_REFUSAL_REASON,
+  PROFILE_CHANGE_TEXT,
+} from './profile-change-review.constants';
 import { ReviewRow } from './review-row';
 
 /**
@@ -139,7 +143,12 @@ export function ProfileChangeReview({ change }: { change: AdminProfileChange }) 
           >
             {PROFILE_CHANGE_TEXT.publish}
           </Button>
-          <Button variant="secondary" size="sm" disabled={pending} onClick={() => setRefusing(true)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={pending}
+            onClick={() => setRefusing(true)}
+          >
             {PROFILE_CHANGE_TEXT.refuseOpen}
           </Button>
         </div>

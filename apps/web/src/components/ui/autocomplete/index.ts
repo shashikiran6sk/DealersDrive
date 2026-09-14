@@ -1,5 +1,9 @@
 export { AutocompletePanel, type AutocompletePanelProps } from './autocomplete-panel';
-export { AUTOCOMPLETE_TEXT, SUGGEST_DEBOUNCE_MS, SUGGEST_MIN_CHARS } from './autocomplete.constants';
+export {
+  AUTOCOMPLETE_TEXT,
+  SUGGEST_DEBOUNCE_MS,
+  SUGGEST_MIN_CHARS,
+} from './autocomplete.constants';
 export type {
   AutocompleteResult,
   AutocompleteSource,

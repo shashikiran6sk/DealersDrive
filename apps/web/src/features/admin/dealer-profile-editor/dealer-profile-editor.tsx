@@ -98,7 +98,13 @@ export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
               <Button variant="ghost" size="sm" onClick={cancel} disabled={pending}>
                 {DEALER_EDITOR_TEXT.cancel}
               </Button>
-              <Button variant="primary" size="sm" loading={pending} disabled={!dirty} onClick={save}>
+              <Button
+                variant="primary"
+                size="sm"
+                loading={pending}
+                disabled={!dirty}
+                onClick={save}
+              >
                 {DEALER_EDITOR_TEXT.save}
               </Button>
             </div>

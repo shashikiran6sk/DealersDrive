@@ -32,7 +32,11 @@ export function ApproveBlock({
 
   return (
     <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
-      <Field id="approvalNote" label={DEALER_ACTIONS_TEXT.noteLabel} className="min-w-[220px] flex-1">
+      <Field
+        id="approvalNote"
+        label={DEALER_ACTIONS_TEXT.noteLabel}
+        className="min-w-[220px] flex-1"
+      >
         <Input
           id="approvalNote"
           value={note}

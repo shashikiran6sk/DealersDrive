@@ -11,7 +11,12 @@ import { Captcha } from './captcha';
 import { PhoneCodePanel } from './phone-code-panel';
 import { PhoneUnavailable } from './phone-unavailable';
 import { PhoneVerified } from './phone-verified';
-import { LOCAL_ATTEMPTS, OTP_DIGITS, PHONE_TEXT, RESEND_SECONDS } from './phone-verification.constants';
+import {
+  LOCAL_ATTEMPTS,
+  OTP_DIGITS,
+  PHONE_TEXT,
+  RESEND_SECONDS,
+} from './phone-verification.constants';
 import type { PhoneStage, PhoneVerificationProps } from './phone-verification.types';
 import { identifierOf, isServiceFailure } from './utils';
 

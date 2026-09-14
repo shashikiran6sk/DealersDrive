@@ -47,13 +47,7 @@ export interface DirectoryFiltersProps {
  * document inert behind it, leaves a visitor who cannot find their district with
  * no way forward at all.
  */
-export function DirectoryFilters({
-  cities,
-  city,
-  district,
-  q,
-  locations,
-}: DirectoryFiltersProps) {
+export function DirectoryFilters({ cities, city, district, q, locations }: DirectoryFiltersProps) {
   const router = useRouter();
   const selected = new Set(city ?? []);
 

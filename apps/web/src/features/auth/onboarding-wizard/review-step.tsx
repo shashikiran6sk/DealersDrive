@@ -14,10 +14,7 @@ export interface ReviewStepProps {
   completeness: CompletenessResponse | null;
 }
 
-export function ReviewStep({
-  session,
-  completeness,
-}: ReviewStepProps) {
+export function ReviewStep({ session, completeness }: ReviewStepProps) {
   const [state, submit, pending] = useActionState<ActionState, FormData>(
     async () => submitForVerificationAction(),
     {},
@@ -53,9 +50,7 @@ export function ReviewStep({
             ? ONBOARDING_TEXT.reviewingIntro(session.dealer?.brandName ?? 'your dealership')
             : ONBOARDING_TEXT.submitIntro}
         </p>
-        <p className="mt-[8px] text-[14px] leading-[1.6] ink-body">
-          {ONBOARDING_TEXT.prepareNote}
-        </p>
+        <p className="mt-[8px] text-[14px] leading-[1.6] ink-body">{ONBOARDING_TEXT.prepareNote}</p>
       </Blueprint>
 
       <form action={submit} className="flex gap-[8px]">

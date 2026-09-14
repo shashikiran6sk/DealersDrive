@@ -9,11 +9,7 @@ import { StatusTag } from '@/components/ui/primitives';
 import { rejectDocumentAction, verifyDocumentAction } from '@/features/admin/actions';
 import type { ActionResult } from '@/types';
 
-import {
-  DOC_TONE,
-  DOCUMENT_REVIEW_TEXT,
-  MIN_REJECTION_REASON,
-} from './document-review.constants';
+import { DOC_TONE, DOCUMENT_REVIEW_TEXT, MIN_REJECTION_REASON } from './document-review.constants';
 import type { AdminDocument } from './document-review.types';
 
 export interface DocumentRowProps {

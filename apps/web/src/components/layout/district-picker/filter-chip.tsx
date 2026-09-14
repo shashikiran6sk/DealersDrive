@@ -19,7 +19,10 @@ export function FilterChip({
       type="button"
       aria-pressed={pressed}
       onClick={onClick}
-      className={cn('btn text-[12px] px-[10px] py-[4px]', pressed ? 'btn-primary' : 'btn-secondary')}
+      className={cn(
+        'btn text-[12px] px-[10px] py-[4px]',
+        pressed ? 'btn-primary' : 'btn-secondary',
+      )}
     >
       {children}
     </button>

@@ -62,8 +62,7 @@ export function DistrictOption({
               <span aria-hidden="true"> · </span>
             </>
           ) : null}
-          <span className="tnum">{district.count}</span>{' '}
-          {pluralLabel(district.count, 'dealership')}
+          <span className="tnum">{district.count}</span> {pluralLabel(district.count, 'dealership')}
         </span>
       </span>
       {selected ? (

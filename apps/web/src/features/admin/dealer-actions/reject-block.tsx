@@ -46,12 +46,7 @@ export function RejectBlock({
   if (!open) {
     return (
       <div className="flex flex-col gap-2 border-t border-(--color-divider) pt-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="self-start"
-          onClick={() => onOpenChange(true)}
-        >
+        <Button variant="ghost" size="sm" className="self-start" onClick={() => onOpenChange(true)}>
           {DEALER_ACTIONS_TEXT.rejectOpen}
         </Button>
       </div>

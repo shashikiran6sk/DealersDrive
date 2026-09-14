@@ -195,7 +195,11 @@ export function LocationDialog({
         <p className="text-[13px] ink-muted">{DISTRICT_PICKER_TEXT.nothingListed}</p>
       ) : (
         visible.map((group) => (
-          <section key={group.key} aria-labelledby={`state-${group.key}`} className="space-y-[10px]">
+          <section
+            key={group.key}
+            aria-labelledby={`state-${group.key}`}
+            className="space-y-[10px]"
+          >
             <StateHeading group={group} />
             <DistrictGrid>
               {group.districts.map((district) => (

@@ -55,9 +55,7 @@ export function DocumentsStep({
         <h1 className="font-heading text-[34px] font-semibold leading-[1.1] tracking-[-0.02em]">
           {ONBOARDING_TEXT.documentsHeading}
         </h1>
-        <p className="mt-[8px] text-[15px] ink-secondary">
-          {ONBOARDING_TEXT.documentsIntro}
-        </p>
+        <p className="mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.documentsIntro}</p>
       </div>
 
       {state.message ? <Banner tone="err">{state.message}</Banner> : null}

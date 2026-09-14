@@ -30,7 +30,11 @@ export function RequestChangesBlock({
 }: RequestChangesBlockProps) {
   return (
     <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
-      <Field id="changesReason" label={DEALER_ACTIONS_TEXT.changesLabel} className="min-w-[240px] flex-1">
+      <Field
+        id="changesReason"
+        label={DEALER_ACTIONS_TEXT.changesLabel}
+        className="min-w-[240px] flex-1"
+      >
         <Input
           id="changesReason"
           value={reason}

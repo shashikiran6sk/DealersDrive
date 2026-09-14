@@ -17,16 +17,14 @@ export interface ReinstateBlockProps extends ActionBlockProps {
 }
 
 /** SUSPENDED is not a terminal state and the console should not present it as one. */
-export function ReinstateBlock({
-  dealer,
-  pending,
-  run,
-  note,
-  onNoteChange,
-}: ReinstateBlockProps) {
+export function ReinstateBlock({ dealer, pending, run, note, onNoteChange }: ReinstateBlockProps) {
   return (
     <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
-      <Field id="reinstateNote" label={DEALER_ACTIONS_TEXT.noteLabel} className="min-w-[220px] flex-1">
+      <Field
+        id="reinstateNote"
+        label={DEALER_ACTIONS_TEXT.noteLabel}
+        className="min-w-[220px] flex-1"
+      >
         <Input
           id="reinstateNote"
           value={note}

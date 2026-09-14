@@ -49,10 +49,7 @@ export function outstandingLabels(completeness: CompletenessResponse | null): st
 }
 
 /** The same, for one named step. */
-export function stepOutstanding(
-  completeness: CompletenessResponse | null,
-  key: string,
-): string[] {
+export function stepOutstanding(completeness: CompletenessResponse | null, key: string): string[] {
   const step = completeness?.steps.find((candidate) => candidate.key === key);
   return (step?.missing ?? []).map((field) => MISSING_LABELS[field] ?? field);
 }

@@ -25,7 +25,11 @@ export interface SuspendBlockProps extends ActionBlockProps {
 export function SuspendBlock({ dealer, pending, run, reason, onReasonChange }: SuspendBlockProps) {
   return (
     <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">
-      <Field id="suspendReason" label={DEALER_ACTIONS_TEXT.suspendLabel} className="min-w-[240px] flex-1">
+      <Field
+        id="suspendReason"
+        label={DEALER_ACTIONS_TEXT.suspendLabel}
+        className="min-w-[240px] flex-1"
+      >
         <Input
           id="suspendReason"
           value={reason}
