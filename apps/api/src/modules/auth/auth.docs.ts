@@ -4,20 +4,6 @@ const LOCATION_HEADER = {
   Location: { description: 'Where the browser is sent next.', schema: { type: 'string' } },
 } as const;
 
-/**
- * PART B — authentication.
- *
- * Three of these operations are browser redirects rather than API calls, and
- * are documented as such: a client library never calls `/google/start`, a
- * person's browser navigates to it. They are in the reference because leaving
- * the only routes that issue a session undocumented would be the worst possible
- * omission (§32).
- *
- * There is no `POST /v1/auth/admin/login` here because there is no such route
- * any more: the admin console's session comes out of the same Google callback,
- * and the operation was removed in the PR that removed the endpoint. The
- * openapi test fails in both directions, which is what keeps that true.
- */
 export const authDocs: ModuleDocs = {
   tag: 'Authentication',
   description:
@@ -362,13 +348,6 @@ export const authDocs: ModuleDocs = {
       audience: 'dealer',
       requestBody: {
         schema: 'VerifyPhoneInput',
-        /*
-         * The token is described rather than illustrated. A JWT-shaped literal
-         * in source is a thing every secret scanner has to treat as a leak —
-         * correctly, since none of them can tell a sample from a real one — and
-         * an example that says what the value *is* reads better in Swagger UI
-         * than sixty characters of base64 that decode to nothing useful.
-         */
         example: {
           phone: '9840012345',
           accessToken: '<the signed token verifyOtp() handed the page>',

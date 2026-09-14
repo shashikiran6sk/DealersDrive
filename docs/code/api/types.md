@@ -1,0 +1,21 @@
+# api / types
+
+Parent: [api](../README.md)
+
+The notes below belonged to the files named under each heading. Each heading is the
+declaration the note sat above.
+
+## `apps/api/src/types/express.d.ts`
+
+### `valid?: ValidatedData`
+
+Values parsed by `validate()`. Populated per-source, so a route that
+only declares a body schema leaves `query` and `params` undefined.
+Read it through `validated<T>(req, 'body')`.
+
+### `principal?: Principal`
+
+Who is making this request, resolved from the session by
+`requireDealer` / `requireAdmin`. It is the only source of `dealerId`
+in the entire API — a controller that reads one from the body, the
+query or the path is a bug (CLAUDE.md rule 1).

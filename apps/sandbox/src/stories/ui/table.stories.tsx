@@ -3,21 +3,6 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { StatusTag } from '@/components/ui/primitives';
 import { NumericCell, Table } from '@/components/ui/table';
 
-/**
- * DESIGN-SPEC §2.13 — the table, **new at F045**.
- *
- * `.table` has existed in `globals.css` since the first stylesheet and had no
- * React wrapper, so the same markup was written by hand in five pages (finding
- * D-B). This is the first of those five in the reconstruction, which makes it
- * the moment the duplication costs nothing to prevent.
- *
- * The story that earns its place is **Overflow**. A table wider than its column
- * has to scroll inside its own bordered box; a page that scrolls sideways
- * instead is the admin console's most common layout bug below 768px, and it is
- * invisible on the desktop the console is designed on. The container is part of
- * the component precisely so a caller cannot forget it — this scenario is how
- * you check that by eye rather than by trusting the prop.
- */
 const meta = {
   title: 'Primitives/Table',
   component: Table,
@@ -42,7 +27,6 @@ const ROWS = [
   { name: 'Kovai Auto Mart', city: 'Coimbatore', tone: 'err', label: 'Suspended', n: 0 },
 ] as const;
 
-/** The admin dealer list, which is what the component was extracted from. */
 export const Default: Story = {
   args: {
     columns: COLUMNS,
@@ -69,11 +53,6 @@ export const Default: Story = {
   },
 };
 
-/**
- * One row. The last row drops its bottom border, so a single-row table has no
- * dangling rule under it — worth seeing, because it is the only row that
- * exercises `tbody tr:last-child`.
- */
 export const SingleRow: Story = {
   args: {
     columns: COLUMNS.slice(0, 4),
@@ -90,11 +69,6 @@ export const SingleRow: Story = {
   },
 };
 
-/**
- * Wider than its container. The bordered box scrolls; the page must not.
- * Resize the preview and check that the page itself never gains a horizontal
- * scrollbar — that is the whole reason the container lives in the component.
- */
 export const Overflow: Story = {
   decorators: [
     (Story) => (
@@ -131,12 +105,6 @@ export const Overflow: Story = {
   },
 };
 
-/**
- * No rows. The component renders an empty `<tbody>` rather than a message —
- * "nothing here" is the page's decision, not the table's, because the wording
- * depends on whether a filter is applied. `EmptyState` is what the admin pages
- * render instead of a table when the list comes back empty.
- */
 export const NoRows: Story = {
   args: { columns: COLUMNS.slice(0, 4), children: null },
 };

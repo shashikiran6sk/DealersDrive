@@ -10,51 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Banner, Tag } from '@/components/ui/primitives';
 import { approveProfileChangeAction, rejectProfileChangeAction } from '@/features/admin/actions';
 
-/**
- * D3b — the review card for a dealer's proposed tagline and service list
- * (**R34**).
- *
- * ## What it is guarding
- *
- * These two fields are the only free text a dealer writes that a buyer reads.
- * Everything else on their profile screen has been read-only since R27, and
- * these were left editable because a dealership is entitled to revise how it
- * describes itself. That leaves exactly one route by which a phone number can
- * reach a public page without passing `POST /v1/vehicles/:id/reveal-contact` —
- * the one endpoint allowed to hand one out, rate-limited twice over and logged
- * as a lead. This card is where that gets caught.
- *
- * A moderator reading it is not asking "is this a nice tagline". They are
- * asking whether it contains a number, a URL, a rival's name, or a claim the
- * platform would be repeating on the dealership's behalf.
- *
- * ## Old beside new, always
- *
- * The live value is rendered next to the proposed one because the question is
- * *"is this change acceptable"* rather than *"is this sentence acceptable"*, and
- * the two differ whenever the edit is a small correction to a line that was
- * already approved. A card showing only the proposal makes the reviewer hold the
- * old value in their head, and a reviewer holding a value in their head is one
- * who approves a number appended to a sentence they half-remember.
- *
- * A field the request does not touch says so rather than rendering blank — an
- * empty row under "Services" reads as *they are clearing their services*, which
- * is the opposite of what `[]` means here.
- *
- * ## The refusal needs a sentence, and the button says so
- *
- * `Refuse` is disabled until there is a reason of substance behind it, the way
- * suspension is. The dealer reads that sentence verbatim on their own profile
- * screen and it is the only account they will get of why their line did not
- * appear — "rejected" with nothing attached is how a dealer concludes the
- * product is broken and submits the same text again.
- *
- * Neither decision is behind a confirm step. Both are reversible in the way that
- * matters: a refused edit can be resubmitted by the dealer in a minute, and a
- * wrongly published one can be edited back. That is a different category from
- * `Reject dealership`, which destroys an application, and it should not be
- * dressed up as though it were the same.
- */
 export function ProfileChangeReview({ change }: { change: AdminProfileChange }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -70,8 +25,6 @@ export function ProfileChangeReview({ change }: { change: AdminProfileChange }) 
         setMessage(result.message ?? 'That decision did not go through.');
         return;
       }
-      // The card disappears on the next render: `profileChange` is PENDING-only,
-      // so a decided edit is simply no longer there.
       router.refresh();
     });
   }
@@ -182,15 +135,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-/**
- * Now, and what it would become.
- *
- * `proposed === null` is the case worth the branch: it means *this request does
- * not touch this field*, and it has to read as **unchanged** rather than as
- * cleared. Rendering an empty row would tell the moderator the dealer wants
- * their services removed, and approving that reading would be approving
- * something nobody asked for.
- */
 function Comparison<T>({
   live,
   proposed,

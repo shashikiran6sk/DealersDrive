@@ -1,11 +1,5 @@
 import type { ModuleDocs } from '../../docs/spec.js';
 
-/**
- * Mounted only when `METRICS_ENABLED` (the cross-field env validation
- * guarantees `METRICS_SCRAPE_TOKEN` whenever it is), so this operation exists
- * in the reference regardless of the environment that generated it — the
- * document describes the API surface, not one deployment's flags.
- */
 export const metricsDocs: ModuleDocs = {
   tag: 'Metrics',
   description:

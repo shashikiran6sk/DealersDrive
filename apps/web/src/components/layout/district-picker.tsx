@@ -10,77 +10,11 @@ import { Plate } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 import { stateCode } from '@/lib/state-codes';
 
-/**
- * DESIGN-SPEC §2.14 / §2.18 — the district dialog, and everything that selects
- * a district.
- *
- * ## Why this is its own file (R23)
- *
- * R22 built the dialog inside `LocationSelector`, because the header was the
- * only thing that opened one. **R23 gives the directory a second opener**: with
- * no district chosen the town chips are every town on the platform, which is
- * five rows of them at 120 dealerships and unreadable well before 200, so the
- * row is replaced by a `Select district` button until a district narrows it.
- *
- * Two openers is the moment the dialog stops belonging to the header. What is
- * shared is not only the markup but the *selection rule* — drop `city` and
- * `page`, go to the directory from anywhere else — and a second copy of that
- * rule is how the header and the directory come to disagree about what
- * choosing a district means.
- *
- * So `DistrictPicker` owns the open state, the selection and the dialog, and
- * takes its trigger as a render prop. `LocationSelector` is the header's
- * trigger; `DirectoryFilters` is the directory's. Neither knows how a district
- * is applied.
- *
- * ## Districts, not cities
- *
- * The baseline's version of this listed cities, off a five-row `cities` table
- * that **D6** removed. Districts is the better question at this level and would
- * have been even with the table: a district is the area somebody would drive
- * across, the towns inside it give no hint they are related — Arakkonam and
- * Walajapet share a district with Arcot and with nothing else — and a header
- * dropdown listing every town on the platform stops being readable at about
- * thirty. The towns are the chips on the directory, narrowed to whatever is
- * chosen here.
- *
- * ## Why it is a dialog (R22)
- *
- * R19 restored the baseline's 220px panel with no height cap, and wrote down
- * what that cost: *"past roughly fifteen districts the menu is taller than a
- * short viewport and the last rows go under the fold. Tamil Nadu has 38, so
- * this is a decision to revisit when the platform is in more than a handful of
- * them."* It also listed those 38 as one flat column — and a flat column is the
- * real problem, not the height. `Vellore`, `Bangalore`, `Madurai` in one list
- * asks a buyer to know which state each is in, and the ones who would ask are
- * exactly the ones who do not know.
- *
- * So the menu became a centred dialog that says it: a **state** is a heading
- * you cannot click, and the **districts** under it are the buttons. The
- * hierarchy is the whole point — nothing here selects a state, and there is no
- * second way to select a district either.
- *
- * ## Keyboard
- *
- * Enter or Space opens; the dialog then takes focus, traps it, closes on
- * Escape or a backdrop click and hands focus back to the trigger — all of it
- * Radix's, which is why `Dialog` exists (see its docblock, and component-map
- * finding **D-C**). Every district is a real `<button>`, so Tab reaches them
- * and Enter and Space choose them without anything here re-implementing that.
- */
 export function DistrictPicker({
   locations,
   children,
 }: {
   locations: PublicLocations;
-  /**
-   * The control that opens the dialog, given whichever district is currently
-   * in the URL so the trigger can name it.
-   *
-   * A render prop rather than a plain node because the two triggers say
-   * different things about the same state: the header names the chosen
-   * district, and the directory's button exists precisely when there is none.
-   */
   children: (chosen: DistrictChip | null) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -96,32 +30,11 @@ export function DistrictPicker({
         select(slug);
         setOpen(false);
       }}
-      /*
-        The button is handed to the dialog rather than wired up outside it.
-        Radix's modal content restores focus to *its* trigger on close, so a
-        button it does not know about leaves focus on `<body>` — see `Dialog`.
-        It also means `aria-haspopup="dialog"` and `aria-expanded` are Radix's
-        to keep true rather than two more attributes to remember.
-      */
       trigger={children(chosen)}
     />
   );
 }
 
-/**
- * Reading the district out of the URL, and writing a new one back.
- *
- * The one rule about what selecting a district *means*, in one place, because
- * R23 gave it a second caller. Exported so a future opener — a "near you"
- * suggestion, say — inherits the rule rather than restating it.
- *
- * ## Choosing a district drops the towns
- *
- * `?district=ranipet&city=katpadi` is an empty page: Katpadi is in Vellore.
- * Rather than let a buyer navigate into that and wonder what they did, changing
- * the district clears `city` — the chips underneath are about to be a different
- * set of towns anyway. The page number goes with them, for the same reason.
- */
 export function useDistrictSelection(locations: PublicLocations): {
   chosen: DistrictChip | null;
   select: (slug: string | null) => void;
@@ -137,17 +50,9 @@ export function useDistrictSelection(locations: PublicLocations): {
     const next = new URLSearchParams(searchParams.toString());
     if (slug === null) next.delete('district');
     else next.set('district', slug);
-    // The towns belonged to the district being left, and the page number to a
-    // result set that no longer exists.
     next.delete('city');
     next.delete('page');
 
-    /*
-     * A district filters dealerships, so it goes to the directory — from
-     * anywhere that is not already showing one. Choosing a place from the home
-     * page is a person saying where they are, and the useful answer to that is
-     * the dealerships there, not the same home page with a query string on it.
-     */
     const target = pathname.startsWith('/dealers') ? pathname : '/dealers';
     const query = next.toString();
     router.push(query ? `${target}?${query}` : target);
@@ -156,13 +61,6 @@ export function useDistrictSelection(locations: PublicLocations): {
   return { chosen, select };
 }
 
-/**
- * The dialog itself.
- *
- * Mounted only while open, so its search box and its state filter start empty
- * every time rather than remembering a search somebody abandoned three pages
- * ago. That is also what keeps the work below off every render of the header.
- */
 function LocationDialog({
   open,
   onOpenChange,
@@ -184,17 +82,6 @@ function LocationDialog({
   const groups = useMemo(() => groupByState(locations.districts), [locations.districts]);
   const query = search.trim().toLowerCase();
 
-  /**
-   * What the body shows: either the state groups, or — while something is
-   * typed — one flat list of matches.
-   *
-   * The flat list is the reason search is a separate mode rather than a filter
-   * over the groups. A query that matches four districts across four states
-   * would otherwise be four headings with one row under each, and the answer to
-   * "which state is Vellore in" would be a heading a reader has to look up to.
-   * In the flat list every row carries its own state, so no result is ambiguous
-   * on its own (**R22**).
-   */
   const matches = useMemo(
     () =>
       query === ''
@@ -217,9 +104,6 @@ function LocationDialog({
       trigger={trigger}
       title="Select location"
       closeLabel="Close location picker"
-      /* §2.14's 440px is the width of a confirmation. This is a grid of 38
-         districts, so it takes the reference design's 880 and the same
-         `min(…, 100%)` shape, which is what keeps it inside a 360px phone. */
       className="w-[min(880px,100%)]"
       contentClassName="px-[18px] py-[16px] space-y-[18px]"
       header={
@@ -236,10 +120,6 @@ function LocationDialog({
               id="location-search"
               type="search"
               autoComplete="off"
-              /* It says what it searches. The reference's placeholder offers
-                 taluk and pincode; the payload is districts and the states they
-                 are in, and a placeholder promising a field the data does not
-                 have is a bug report waiting to be filed. */
               placeholder="Search district or state"
               value={search}
               onChange={(event) => {
@@ -263,8 +143,6 @@ function LocationDialog({
               'Showing dealerships in every district'
             )}
           </p>
-          {/* The way back, and it carries its own count rather than being an
-              escape hatch with a blank beside it. */}
           <button
             type="button"
             className="btn btn-secondary"
@@ -278,13 +156,6 @@ function LocationDialog({
         </>
       }
     >
-      {/*
-        The state row is navigation, never a selection: pressing `Tamil Nadu`
-        narrows what is on screen and changes nobody's location. It appears only
-        when there is more than one state to move between — on a platform
-        trading in one state it would be a control with a single meaningful
-        option, which is a control that only takes up room.
-      */}
       {!searching && groups.length > 1 ? (
         <div
           className="flex flex-wrap items-center gap-[7px]"
@@ -331,8 +202,6 @@ function LocationDialog({
                 <DistrictOption
                   key={district.slug}
                   district={district}
-                  /* Every result names its state, so no row is ambiguous on its
-                     own — the whole reason search is a flat list. */
                   showState
                   selected={district.slug === chosen?.slug}
                   onSelect={onSelect}
@@ -370,21 +239,6 @@ function LocationDialog({
   );
 }
 
-/**
- * A state, as a heading and nothing else.
- *
- * Deliberately not a `<button>`, not focusable, with no hover, no pressed
- * styling and no cursor change: a state is not a place this product can be
- * filtered to, and anything that looks pressable here would be an invitation to
- * a dead end. That is the one rule this section has, so it is worth stating
- * where somebody might otherwise "improve" it.
- *
- * The plate carries the RTO code because that is what the code *is* — `TN 09 BX
- * 4412` starts with the same two letters — which stretches §4.5's enumeration
- * of four plate uses by one, and does so on the one motif in the system that
- * means "a registration authority said this". A state the code map does not
- * recognise renders without one; see `lib/state-codes.ts`.
- */
 function StateHeading({ group }: { group: StateGroup }) {
   const code = stateCode(group.state);
   const districts = group.districts.length;
@@ -409,11 +263,6 @@ function StateHeading({ group }: { group: StateGroup }) {
   );
 }
 
-/**
- * The grid the districts sit in. One column on a phone, four on a desktop —
- * `auto-fill` rather than fixed counts, so a state with three districts does
- * not leave a gap the width of a fourth.
- */
 function DistrictGrid({ children }: { children: ReactNode }) {
   return (
     <div className="grid grid-cols-1 gap-[8px] sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
@@ -422,20 +271,6 @@ function DistrictGrid({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * A district — the only selectable thing in the dialog.
- *
- * A real `<button>`, so Tab reaches it and Enter and Space choose it (§2.1:
- * never a `<div>` with an `onClick`). `min-h-11` is 44px, the mobile touch
- * minimum (§4.15), which the two-line body clears on its own everywhere else.
- *
- * Selection is announced three ways over, because colour alone is not a status
- * (§4.15): `aria-pressed` for a screen reader, a ✓ for an eye, and the cobalt
- * border and `accent-100` fill for a glance. Remove the tick and the control
- * still says which one it is.
- *
- * No shadow — §4.1 allows the dialog one and nothing inside it.
- */
 function DistrictOption({
   district,
   selected,
@@ -490,7 +325,6 @@ function DistrictOption({
   );
 }
 
-/** A state filter. Navigation, not a selection — see the call site. */
 function FilterChip({
   pressed,
   onClick,
@@ -516,26 +350,11 @@ function FilterChip({
 }
 
 interface StateGroup {
-  /** Stable across renders and safe in an `id`; the state name is neither. */
   key: string;
   state: string | null;
   districts: DistrictChip[];
 }
 
-/**
- * The districts, grouped under the state each one is in.
- *
- * The pairing comes off the payload — `DistrictChip.state`, which the API takes
- * from the dealership's own address (**R22**). Nothing here infers a state from
- * a district's name, and there is nothing it could infer one from: D6 removed
- * the table that would have held the pair.
- *
- * Order is the API's, twice over. Districts arrive busiest first and stay that
- * way; states are ordered by the dealerships in them, then by name, so two
- * states of the same size cannot swap places between requests. The districts
- * with no state recorded sort last whatever their size — it is a heading that
- * explains an absence, and an absence does not lead.
- */
 function groupByState(districts: readonly DistrictChip[]): StateGroup[] {
   const groups = new Map<string, StateGroup>();
 

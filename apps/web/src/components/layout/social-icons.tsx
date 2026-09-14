@@ -1,19 +1,6 @@
 import type { SocialLink } from '@dealers-drive/contracts';
 import type { ReactElement } from 'react';
 
-/**
- * The six social marks, as inline SVG (**R44**).
- *
- * **Inline rather than a library**, because the alternative is a dependency for
- * six paths — and no new dependency is added to this repository that the
- * baseline did not already have. They are drawn at `currentColor` on a
- * `0 0 24 24` box, so the footer's hover colour is the only thing that decides
- * how they look and there is no second palette to keep in step.
- *
- * Every mark is `aria-hidden`: the accessible name lives on the anchor that
- * wraps it, which is where a screen reader will look for it, and an icon that
- * announces itself *as well as* its link says everything twice.
- */
 const MARKS: Record<SocialLink['network'], ReactElement> = {
   instagram: (
     <>
@@ -48,13 +35,6 @@ const MARKS: Record<SocialLink['network'], ReactElement> = {
   ),
 };
 
-/**
- * One mark, 16×16, inheriting the anchor's colour.
- *
- * `strokeWidth` is 1.6 rather than 1 because these sit at 16px beside 12–13px
- * text, and a hairline stroke at that size disappears against the footer's
- * ground on a non-retina display.
- */
 export function SocialIcon({ network }: { network: SocialLink['network'] }) {
   return (
     <svg

@@ -9,28 +9,6 @@ import { LocationSelector } from '@/components/layout/location-selector';
 import { Plate } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
-/**
- * DESIGN-SPEC §3.1 — sticky, 64px, white on a hairline.
- *
- * A client component for one reason: `usePathname`, which is what marks the
- * current section. Everything else it renders is a link, and a link needs no
- * JavaScript — so if the pathname ever stops being read here, the `'use
- * client'` should go with it (invariant 8).
- *
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * One piece of the baseline's header is still held back: **the saved-cars
- * count** is **F087**. `Saved cars` is a plain link here; the badge needs
- * `SavedCarsProvider`, which reads `localStorage`.
- *
- * The location button is here, and it is **districts** rather than the
- * baseline's cities — see `LocationSelector` for why that is the better
- * question at this level, and not merely the one D6 left available.
- *
- * The nav points at `/cars` (**F077**), `/dealers` (**F085**) and `/saved`
- * (**F087**). Those routes land after this one — which is the cost of bringing
- * the shell across before the rooms it frames, and the order Tier 12 chose.
- * ────────────────────────────────────────────────────────────────────────────
- */
 export function CustomerHeader({ locations }: { locations: PublicLocations }) {
   const pathname = usePathname();
 
@@ -55,29 +33,9 @@ export function CustomerHeader({ locations }: { locations: PublicLocations }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          {/*
-            The selector is the only part of the header that reads the query
-            string, and `useSearchParams` opts a route out of static
-            prerendering unless it sits behind a boundary. Keeping the boundary
-            this tight means the rest of the header — logo, nav, the dealer
-            door — still renders on the server, and the button arrives with the same
-            markup a moment later.
-          */}
           <Suspense fallback={<LocationChipFallback />}>
             <LocationSelector locations={locations} />
           </Suspense>
-          {/*
-            One door, and it is a `/dealer` link (**R35**). The console already
-            decides between "sign in" and "finish onboarding" from the session,
-            so the header never had to guess which a visitor needed — but two
-            buttons pointing at that one door asked the visitor to guess
-            instead, and either answer took them to the same screen.
-
-            It carries `btn-primary` because it is now the only action in the
-            cluster, and it is visible at every width because it is the only
-            way in: the old secondary button was `hidden sm:inline-flex`, which
-            was affordable while a second button stood beside it and is not now.
-          */}
           <Link href="/dealer" className="btn btn-primary">
             <span className="hidden lg:inline">Dealer login</span>
             <span className="lg:hidden">Login</span>
@@ -88,11 +46,6 @@ export function CustomerHeader({ locations }: { locations: PublicLocations }) {
   );
 }
 
-/**
- * The button's own footprint, so the header does not reflow when the real one
- * arrives. It reads "Select district" because that is what the button says for
- * every visitor who has not chosen one (**R23**).
- */
 function LocationChipFallback() {
   return (
     <span className="btn btn-secondary flex items-center gap-[7px]" aria-hidden="true">
@@ -102,11 +55,6 @@ function LocationChipFallback() {
   );
 }
 
-/**
- * `aria-current="page"` as well as the colour, because status is never carried
- * by colour alone (DESIGN-SPEC §4.15) — a screen reader announces the current
- * section, and so does a monochrome display.
- */
 export function HeaderLink({
   href,
   active,

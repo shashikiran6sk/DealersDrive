@@ -9,88 +9,23 @@ import { StatusTag } from '@/components/ui/primitives';
 import { checkPhoneAvailabilityAction, verifyPhoneAction } from '@/features/auth/phone-actions';
 import { loadMsg91Widget, retryMsg91Otp, sendMsg91Otp, verifyMsg91Otp } from '@/lib/msg91-widget';
 
-/**
- * DESIGN-SPEC §3.10 — step 1's mobile check, in its four states (**R39**).
- *
- * ── What this component decides, and what it does not ───────────────────────
- * It runs MSG91's widget in the browser: `sendOtp` puts a code on the dealer's
- * handset and `verifyOtp` hands back a signed access token. It then posts that
- * token to the API and **believes the API's answer and nothing else**. A page
- * that could decide for itself that a number was verified is a page that can be
- * told to; the only thing that can settle the question is a call carrying
- * `MSG91_AUTH_KEY`, and that key is never in a browser.
- *
- * So `verified` is a prop, not state. It is the wizard's reading of the
- * *session* — "is the number currently in the box the one this account
- * proved?" — which means editing the box drops the panel out of its success
- * state for free, with no reconciliation to get wrong, and a reload shows the
- * truth rather than what this component last remembered.
- *
- * ── The four states ─────────────────────────────────────────────────────────
- *   idle      the number is being typed; the step's forward action is Send OTP
- *   code      a code is out; six boxes, a resend countdown, verify or cancel
- *   failed    the same panel in `err`, with what is left of the local attempts
- *   verified  the number is settled, and the forward action is Continue
- *
- * The failure state's attempt count is a **guard rail, not the limit**. The
- * real limits are the API's — ten presentations in ten minutes — and MSG91's
- * own per-number sending cap. Three wrong codes almost always means the dealer
- * is reading an older SMS, so this stops and asks for a fresh one rather than
- * letting them spend the server's allowance proving it.
- *
- * ── Why the step's forward button lives here ────────────────────────────────
- * The design puts Send OTP, Verify & continue and Continue to business details
- * in three places across three states of one step. A footer owned by the wizard
- * would have to mirror this component's stage to know which to draw, and two
- * copies of one state machine is exactly the bug that produces a dead Continue
- * button. Step 1's action bar is therefore part of this panel, and the wizard
- * draws its own only from step 2 on.
- */
 export type PhoneStage = 'idle' | 'code' | 'failed';
 
-/** How long before a new code may be asked for. The design's countdown runs from here. */
 const RESEND_SECONDS = 30;
 
-/** Wrong codes accepted before a fresh one is required. See the note above. */
 const LOCAL_ATTEMPTS = 3;
 
 const WRONG_CODE = 'That code is not right. Check the SMS, or ask for a new one.';
 
 export interface PhoneVerificationProps {
-  /** `GET /v1/auth/phone/widget`, or null when the API could not be reached. */
   widget: PhoneOtpWidget | null;
-  /** The ten digits currently in the phone box. Owned by the wizard. */
   phone: string;
-  /** Shown on the success panel — "…has been linked to R. Manikandan". */
   fullName: string;
-  /** The session's answer: is `phone` the number this account proved? */
   verified: boolean;
-  /** Called once the API has recorded the number, with it in E.164. */
   onVerified: (phone: string) => void;
-  /** The step's forward move, from the success panel. */
   onContinue: () => void;
-  /**
-   * The wizard's own check on the fields above — a name, a well-formed number
-   * — run before a message is sent. Returning false stops the send: an SMS
-   * costs money, and a dealer who has mistyped their number would be paying for
-   * it to arrive somewhere else.
-   */
   onBeforeSend: (form: HTMLFormElement | null) => boolean;
-  /**
-   * A refusal about the number itself, reported so the step can mark the box.
-   *
-   * "That mobile number is already registered to another dealership" is about
-   * the value in the input, not about this panel — so it belongs under the
-   * input, with `aria-invalid` on it, like every other field refusal in this
-   * form. The panel shows it too, because the panel is where the press
-   * happened.
-   */
   onRefused?: (message: string) => void;
-  /**
-   * Where the panel opens. `idle` in the product, always — this exists so the
-   * sandbox can render the states that are otherwise only reachable by sending
-   * a real message.
-   */
   initialStage?: PhoneStage;
 }
 
@@ -114,25 +49,12 @@ export function PhoneVerification({
   const [attemptsLeft, setAttemptsLeft] = useState(
     initialStage === 'failed' ? LOCAL_ATTEMPTS - 1 : LOCAL_ATTEMPTS,
   );
-  /**
-   * When a new code may be asked for.
-   *
-   * Seeded when the panel *opens* on a code rather than arriving at one, which
-   * only the sandbox does: a story showing the code panel without its countdown
-   * would be showing a state the product never renders.
-   */
   const [resendAt, setResendAt] = useState(() =>
     initialStage === 'idle' ? 0 : Date.now() + RESEND_SECONDS * 1000,
   );
   const [remaining, setRemaining] = useState(0);
   const [pending, startTransition] = useTransition();
 
-  /**
-   * Guards the window between a click and the render that disables the button.
-   *
-   * `pending` arrives a paint later, and a double-click inside that paint is
-   * two SMS on a provider we cannot rate-limit from here.
-   */
   const busy = useRef(false);
 
   useEffect(() => {
@@ -149,14 +71,6 @@ export function PhoneVerification({
   const enabled = widget?.enabled ?? false;
   const display = formatPhone(phone);
 
-  /**
-   * Put a code on the handset.
-   *
-   * Under the `fake` driver nothing is sent and no script is loaded — the panel
-   * opens and says which digits it will accept. That is not a stub of this
-   * flow: every refusal below, the server action, the API call and the binding
-   * check underneath all run unchanged. Only the provider is replaced.
-   */
   async function send(form: HTMLFormElement | null, resend: boolean): Promise<void> {
     if (busy.current || !enabled || !widget) return;
     if (!resend && !onBeforeSend(form)) return;
@@ -165,31 +79,9 @@ export function PhoneVerification({
     busy.current = true;
     setFailure(null);
     try {
-      /**
-       * Three questions, in this order, and only the third costs anything.
-       *
-       * `onBeforeSend` above asked whether it is a number. This asks whether it
-       * is *free* — before the widget sends, because the widget sends from the
-       * browser and the API cannot refuse a message already on its way. It used
-       * to be answered by the verification, which meant a dealer who typed a
-       * number another dealership holds paid for an SMS, read the code off
-       * their own handset, and only then was told they could not have it.
-       *
-       * Not repeated on a resend: the number has not changed since the check
-       * that let the first code out.
-       */
       if (!resend) {
         const available = await checkPhoneAvailabilityAction(phone);
         if (available.error) {
-          /*
-             One message, not two.
- 
-             This is a refusal about the value in the input, so it belongs under
-             the input — which is what `onRefused` puts it there for. Setting
-             `failure` as well printed the same sentence twice, once under the
-             box and once in this panel, three lines apart. The fallback is for
-             a caller that owns no field to mark, which is the sandbox.
-           */
           if (onRefused) onRefused(available.error);
           else setFailure(available.error);
           setStage('idle');
@@ -203,7 +95,6 @@ export function PhoneVerification({
           tokenAuth: widget.tokenAuth ?? '',
           captchaRenderId: captchaId,
         });
-        // MSG91 wants `919840012345` — country code included, no `+`.
         if (resend) await retryMsg91Otp(identifierOf(phone));
         else await sendMsg91Otp(identifierOf(phone));
       }
@@ -213,16 +104,6 @@ export function PhoneVerification({
       setResendAt(Date.now() + RESEND_SECONDS * 1000);
       setStage('code');
     } catch (error) {
-      /*
-       * The reason, when there is one worth showing.
-       *
-       * This used to be a bare `catch {}` under one fixed sentence, which is
-       * the wrong trade for a provider integration: "check it and try again"
-       * is useless advice when the actual problem is that the script is
-       * blocked or the domain is not allow-listed, and the person who can fix
-       * that is the one reading this screen. The full error object goes to the
-       * console either way — see `lib/msg91-widget.ts`.
-       */
       setFailure(
         error instanceof Error && error.message.startsWith('The verification service')
           ? error.message
@@ -234,7 +115,6 @@ export function PhoneVerification({
     }
   }
 
-  /** Hand the token to the API, which is the only party that can judge it. */
   async function verify(entered: string): Promise<void> {
     if (busy.current || entered.length < 6 || !widget) return;
     busy.current = true;
@@ -244,19 +124,7 @@ export function PhoneVerification({
       const accessToken =
         widget.driver === 'msg91'
           ? await verifyMsg91Otp(entered)
-          : /*
-             * The documented development shape — see
-             * `platform/phone-otp/fake.adapter.ts`. It names the number because
-             * there is no provider here to name it, and the server still checks
-             * the two against each other rather than taking the claim on trust.
-             */
-            /*
-             * The trailing nonce is what the server's replay guard needs: it
-             * remembers a token for fifteen minutes, and without one a second
-             * attempt at the same number in one sitting would be refused as a
-             * reuse rather than judged on the code.
-             */
-            `dev-otp:${identifierOf(phone)}:${entered}:${String(Date.now())}`;
+          : `dev-otp:${identifierOf(phone)}:${entered}:${String(Date.now())}`;
 
       const result = await verifyPhoneAction(phone, accessToken);
 
@@ -269,10 +137,6 @@ export function PhoneVerification({
       setCode('');
       onVerified(result.phone ?? phone);
     } catch (error) {
-      // The widget refused the code itself and never minted a token, so the API
-      // was not reached. A wrong code is the overwhelmingly likely reason and
-      // reads as one; anything the widget itself reports is shown instead,
-      // because that is a problem the dealer cannot solve by retyping.
       refuse(
         error instanceof Error && error.message.startsWith('The verification service')
           ? error.message
@@ -295,7 +159,6 @@ export function PhoneVerification({
     setCode('');
   }
 
-  /* ── unavailable ────────────────────────────────────────────────────────── */
   if (!enabled) {
     return (
       <section
@@ -311,7 +174,6 @@ export function PhoneVerification({
     );
   }
 
-  /* ── verified ───────────────────────────────────────────────────────────── */
   if (verified) {
     return (
       <section
@@ -339,7 +201,6 @@ export function PhoneVerification({
     );
   }
 
-  /* ── idle ───────────────────────────────────────────────────────────────── */
   if (stage === 'idle') {
     return (
       <>
@@ -367,7 +228,6 @@ export function PhoneVerification({
     );
   }
 
-  /* ── code · failed ──────────────────────────────────────────────────────── */
   const failed = stage === 'failed';
   const exhausted = attemptsLeft <= 0;
 
@@ -378,12 +238,6 @@ export function PhoneVerification({
           ? 'border border-[color-mix(in_srgb,#b3261e_30%,transparent)] bg-(--color-err-bg) px-[18px] py-[16px]'
           : 'border border-(--color-accent) bg-(--color-accent-100) px-[18px] py-[16px]'
       }
-      /*
-       * Enter inside these boxes submits the code, and — more to the point —
-       * must not submit the wizard's form. Steps 1 and 2 share one `<form>`
-       * whose submit creates the dealership, and implicit submission from a
-       * field on step 1 would post a half-filled step 2.
-       */
       onKeyDown={(event) => {
         if (event.key !== 'Enter') return;
         event.preventDefault();
@@ -441,9 +295,6 @@ export function PhoneVerification({
           value={code}
           onChange={(next) => {
             setCode(next);
-            // Typing over a rejected code returns the panel to its ordinary
-            // state; leaving it red while the dealer corrects it reads as if
-            // the new digits were wrong too.
             if (failed && next.length < 6) setStage('code');
           }}
           invalid={failed}
@@ -495,20 +346,11 @@ export function PhoneVerification({
   );
 }
 
-/** `9840012345` → `919840012345`, which is the identifier shape MSG91 uses. */
 function identifierOf(phone: string): string {
   const digits = phone.replace(/\D/g, '');
   return digits.startsWith('91') && digits.length > 10 ? digits : `91${digits}`;
 }
 
-/**
- * Where MSG91 renders its captcha when it decides one is needed.
- *
- * The element has to exist *before* `initSendOTP` runs — `captchaRenderId` is
- * looked up by id — so it is rendered unconditionally rather than in response
- * to a challenge that has already been missed. `empty:hidden` keeps it out of
- * the layout until the widget puts something in it.
- */
 function Captcha({ id }: { id: string }) {
   return <div id={id} className="mb-[12px] empty:hidden" />;
 }

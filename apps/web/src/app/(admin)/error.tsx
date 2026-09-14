@@ -5,12 +5,6 @@ import { useEffect } from 'react';
 
 import { ErrorState } from '@/components/ui/primitives';
 
-/**
- * The admin boundary. Same contract as the dealer console — a neutral message
- * plus the `digest` to correlate with the server log — because an operator
- * reading a Prisma stack in the moderation queue is still an operator who
- * cannot do anything with it. The stack is in the log, addressed by traceId.
- */
 export default function AdminError({
   error,
   reset,

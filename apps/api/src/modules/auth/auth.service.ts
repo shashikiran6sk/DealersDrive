@@ -37,48 +37,24 @@ import { assertPhoneVerified } from './verified-phone.js';
 import { permissionsForRole, type DealerPrincipal, type PendingPrincipal } from './session.port.js';
 import type { SessionService } from './session.service.js';
 
-/**
- * Sign-in, sign-up and sign-out — the whole of Part B.
- *
- * Three claims this file has to keep true:
- *
- *  1. **Identity is established here, never accepted.** No method takes an email
- *     as an argument and returns a session. `completeGoogle` takes an
- *     authorization code and a sealed transaction cookie, and the only email it
- *     will ever act on is the one Google put in a token it signed.
- *  2. **A dealership is created by onboarding, not by signing in.** A verified
- *     Google account with no `DealerMember` row is a `PendingPrincipal`: a real
- *     session that can reach exactly one endpoint.
- *  3. **Admins are a separate world.** Same provider now — an admin signs in
- *     with Google like everybody else — but a different session scope, a
- *     different lifetime, and no path between the two. What separates them is
- *     `ADMIN_ALLOWLIST`: a verified address that is not on it gets a dealer
- *     session and a closed door, never an admin one.
- */
 export interface AuthDeps {
   prisma: PrismaClient;
   sessions: SessionService;
   oauth: OAuthProvider;
   dealers: DealersService;
   audit: AuditService;
-  /** Where the new yard is, out of the link the dealer pastes on step 2. */
   maps: MapsPort;
 }
 
 export interface CallbackResult {
   token: string;
   expiresAt: Date;
-  /** Which console the session is for — it decides where a failure sends the browser. */
   audience: OAuthAudience;
   next: AuthSession['next'];
   returnTo: string;
 }
 
 export function createAuthService({ prisma, sessions, oauth, dealers, audit, maps }: AuthDeps) {
-  /**
-   * The Google account on a session — for the onboarding screen, which shows
-   * the verified address rather than asking for it again.
-   */
   async function identityFor(userId: string): Promise<AuthSession['identity']> {
     const identity = await prisma.oAuthIdentity.findFirst({
       where: { userId, provider: 'GOOGLE' },
@@ -95,10 +71,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     };
   }
 
-  /**
-   * B4. One shape for both states — with a dealership and without one — so a
-   * client has one thing to read and one field to branch on.
-   */
   async function me(principal: DealerPrincipal | PendingPrincipal): Promise<AuthSession> {
     if (principal.kind === 'DEALER') {
       const session = await dealers.session(principal);
@@ -141,12 +113,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       };
     },
 
-    /**
-     * Step one: mint the transaction, hand back where to send the browser.
-     *
-     * `state`, `nonce` and the PKCE verifier are generated here and sealed into
-     * a cookie the caller sets. Nothing about this request influences them.
-     */
     startGoogle(
       returnTo: string | undefined,
       audience: OAuthAudience = 'DEALER',
@@ -156,8 +122,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       maxAgeSeconds: number;
     } {
       if (!oauth.isConfigured()) {
-        // The one error in this module written for a developer rather than a
-        // dealer: it names the variables and the redirect URI to register.
         throw new ConfigurationError(
           'Google sign-in is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in ' +
             `.env, and register ${env.GOOGLE_CALLBACK_URL} as an authorized redirect URI on the ` +
@@ -184,14 +148,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       };
     },
 
-    /**
-     * Step two: verify the round trip, find or create the person, issue a
-     * session.
-     *
-     * The state check comes first and compares what Google echoed back against
-     * what this browser was given. A callback with no cookie, a stale cookie or
-     * somebody else's state is refused before the code is worth anything.
-     */
     async completeGoogle(input: {
       code: string;
       state: string;
@@ -217,9 +173,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
       logger.info({ event: 'auth.oauth.verified', provider: 'GOOGLE' }, 'oauth identity verified');
 
-      // The audience came out of the sealed cookie this browser was given at
-      // `/start`, never off the callback URL — so a dealer sign-in cannot be
-      // turned into an admin one by editing a query parameter on the way back.
       if (transaction.audience === 'ADMIN') {
         return await completeAdminGoogle(claims, transaction, input);
       }
@@ -240,10 +193,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           });
         }
 
-        // The dealer seat (**R41**). Closed by a dealership suspension, and
-        // closed here rather than at the account, which is what leaves the same
-        // person's admin sign-in — a different start URL, a different scope and
-        // a different seat — working.
         if (isSeatSuspended(existing.user.roles, 'DEALER')) {
           throw new ForbiddenError('This dealership has been suspended. Contact support.', {
             code: 'ACCOUNT_SUSPENDED',
@@ -254,7 +203,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         await prisma.oAuthIdentity.update({
           where: { id: existing.id },
           data: {
-            // Refreshed, never looked up by: the account is the `sub`.
             email: claims.email,
             emailVerified: claims.emailVerified,
             displayName: claims.name ?? existing.displayName,
@@ -273,18 +221,12 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         orderBy: { id: 'asc' },
       });
 
-      // The seat check above handles suspensions performed by the current admin
-      // workflow. This dealer-status guard also blocks legacy or manually
-      // suspended rows whose member seat was never closed.
       if (membership?.dealer.status === 'SUSPENDED') {
         throw new ForbiddenError('This dealership has been suspended. Contact support.', {
           code: 'ACCOUNT_SUSPENDED',
         });
       }
 
-      // Everyone who signs in as a dealer holds a dealer seat. The upsert never
-      // reopens a closed one — the refusal above has already left, so reaching
-      // this line means the seat is open or has never existed.
       await ensureSeat(prisma, { userId, role: 'DEALER' });
 
       const session = await sessions.issue({
@@ -316,35 +258,11 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       };
     },
 
-    /**
-     * Onboarding — one transaction that turns a verified person into a tenant:
-     * the user's own details, the dealership in DRAFT, the OWNER membership and
-     * the three KYC rows the review screen expects.
-     *
-     * Deliberately refused for anyone who already has a dealership. A second
-     * call must not be able to create a second tenant under one session.
-     */
     async onboard(principal: PendingPrincipal, input: OnboardingInput): Promise<AuthSession> {
-      // Case and spacing settled once, on the way in. Everything downstream —
-      // the uniqueness read below, the index behind it, the admin console's
-      // city filter — then compares the same string rather than five spellings
-      // of one town.
       const city = normaliseLocality(input.city);
       const district = normaliseLocality(input.district);
       const state = normaliseLocality(input.state);
 
-      /**
-       * One registered name per city.
-       *
-       * The unique index on `(legalName, city)` is the real guarantee — this
-       * read is what turns it into a message against the two fields the dealer
-       * just typed, and it compares case-insensitively because "Sri Lakshmi
-       * Motors" and "SRI LAKSHMI MOTORS" in one town are the same business
-       * applying twice.
-       *
-       * Scoped to the city rather than global, because the same name in
-       * another town is a different family's business, not a collision.
-       */
       const nameOwner = await prisma.dealer.findFirst({
         where: {
           legalName: { equals: input.legalName, mode: 'insensitive' },
@@ -368,30 +286,9 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         );
       }
 
-      /**
-       * The number has to have been proved before it can be built into a
-       * dealership (**R39**).
-       *
-       * This used to be a uniqueness lookup: any number nobody else held was
-       * accepted, and onboarding then wrote it onto the user row. Both halves
-       * moved to `POST /v1/auth/phone/verify` — see `verified-phone.ts` for why
-       * `users.phone` now has exactly one writer — and what is left here is the
-       * assertion that the number on this request is the one the session
-       * already proved.
-       *
-       * The uniqueness refusal moved with it, which is also where it belongs:
-       * the collision is now reported on the step that owns the field, at the
-       * moment the claim is made, instead of two steps later when the dealer
-       * has finished typing their address.
-       */
       const phone = toE164(input.phone);
       await assertPhoneVerified(prisma, principal.userId, phone, 'body.phone');
 
-      // The yard's pin and the place it names, out of the link the dealer just
-      // pasted. Best-effort and bounded, and read *before* the transaction
-      // opens: an interactive transaction's budget is wall-clock, and a request
-      // to Google is not something to spend it on. See
-      // `platform/maps/maps-link.ts`.
       const place = await maps.placeFor(input.mapsUrl);
 
       const created = await withTransaction(prisma, async (tx) => {
@@ -405,12 +302,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           );
         }
 
-        /*
-         * `fullName` only. `users.phone` was written here and is not any more:
-         * it already holds this number, because `assertPhoneVerified` above
-         * refused the request otherwise, and a second writer is exactly what
-         * `verified-phone.ts` exists to prevent.
-         */
         await tx.user.update({
           where: { id: principal.userId },
           data: { fullName: input.fullName },
@@ -418,44 +309,23 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
         const dealer = await tx.dealer.create({
           data: {
-            // Name *and* place. The slug is the portfolio's URL and the name of
-            // the dealership's folder in object storage, and both are read by
-            // people — see `dealerSlug` in the contracts package.
             slug: await uniqueSlug({ legalName: input.legalName, city, district, state }),
-            // One name, asked for once. `brandName` is the display mirror —
-            // written here, and only ever by the server (`UpdateDealerInput`
-            // does not carry it).
             brandName: input.legalName,
             legalName: input.legalName,
-            // DRAFT, always. Becoming ACTIVE is the admin's decision, reached
-            // through `POST /v1/dealer/submit` and the moderation queue — never
-            // by a field on this request (CLAUDE.md rule 5).
             status: 'DRAFT',
             city,
             district,
             state,
             addressLine: input.addressLine,
             pincode: input.pincode,
-            // Stored exactly as pasted. The host was checked by the schema;
-            // what is inside the link is Google's business, and rewriting it
-            // would break the short links the Share sheet produces.
             mapsUrl: input.mapsUrl,
-            // Read out of that link, not geocoded from the address above. Null
-            // when it could not be read, which is a portfolio without a map
-            // rather than a portfolio with the wrong one.
             lat: place.coordinates?.lat ?? null,
             lng: place.coordinates?.lng ?? null,
             mapsPlaceId: place.placeId,
             contactPhone: phone,
             contactEmail: principal.email,
             landline: input.landline ?? null,
-            // Both required by the schema (**R26**), so neither is ever ''
-            // and neither is ever absent. The columns stay nullable / empty-able
-            // for the rows that predate the question — `completeness` is what
-            // names those.
             tagline: input.tagline,
-            // Not de-duplicated on write. Repeats are merged on read (R18),
-            // which is the single place that rule lives.
             specialities: input.specialities,
           },
         });
@@ -464,10 +334,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           data: { dealerId: dealer.id, userId: principal.userId, role: 'OWNER', permissions: [] },
         });
 
-        // One statement, not three. Every statement inside an interactive
-        // transaction is a round-trip, and the transaction budget is wall-clock:
-        // three sequential creates spend three of them on rows that have no
-        // dependency on each other.
         await tx.dealerDocument.createMany({
           data: (['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'] as const).map((type) => ({
             dealerId: dealer.id,
@@ -494,9 +360,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         'dealership created',
       );
 
-      // The principal the *next* request will resolve to, built here so the
-      // response body is the same shape `GET /v1/auth/me` would return — right
-      // down to the permissions the new OWNER seat carries.
       return me({
         kind: 'DEALER',
         userId: principal.userId,
@@ -508,25 +371,12 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       });
     },
 
-    /**
-     * `userId` is for the log line only — the token decides which row is
-     * revoked, so a caller cannot sign anybody else out by naming them.
-     */
     async logout(token: string | undefined, userId?: string): Promise<void> {
       await sessions.revoke(token);
       logger.info({ event: 'auth.session.revoked', userId: userId ?? null }, 'session revoked');
     },
   };
 
-  /**
-   * A first sign-in.
-   *
-   * The refusal in the middle is the account-linking policy, written out: an
-   * email that already belongs to an account is *not* enough to take it over.
-   * Google verifying `owner@example.com` today says nothing about who held that
-   * address when the dealership was created, and silently merging on a matching
-   * string is how an expired domain becomes somebody else's inventory.
-   */
   async function createIdentity(claims: {
     subject: string;
     email: string;
@@ -554,8 +404,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       const user = await tx.user.create({
         data: {
           email: claims.email,
-          // Google is the verifier. There is no separate email round trip, and
-          // no OTP: the identity token *is* the proof.
           emailVerifiedAt: new Date(),
           fullName: claims.name ?? null,
           lastLoginAt: new Date(),
@@ -579,26 +427,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     });
   }
 
-  /**
-   * B7 — the admin console's sign-in, which is now the same round trip as the
-   * dealer's with one extra question asked of it.
-   *
-   * The question is the whole authorization model: **is this verified address
-   * on `ADMIN_ALLOWLIST`?** Note what it is asked about — `claims.email`, out of
-   * a token Google signed seconds ago — and not about anything a client sent, a
-   * column on a row, or the address a session once had. A refusal here is a
-   * refusal to *issue*; `resolveAdmin` asks the same question again on every
-   * subsequent request, so taking a name off the list closes a console that is
-   * already open rather than waiting twelve hours for it to expire.
-   *
-   * The account-linking rule that `createIdentity` enforces is deliberately
-   * relaxed for exactly these addresses. There, an existing user row with no
-   * linked identity is a refusal, because a matching email string is not proof
-   * that the same person still holds it. Here the platform team wrote the
-   * address into its own deployment configuration, which is a stronger claim
-   * than the email match — and without the relaxation the seeded admin row and
-   * the Google identity could never be joined at all.
-   */
   async function completeAdminGoogle(
     claims: OAuthClaims,
     transaction: OAuthTransaction,
@@ -606,15 +434,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
   ): Promise<CallbackResult> {
     const email = claims.email.trim().toLowerCase();
 
-    /**
-     * The second way in (**R42**).
-     *
-     * A grant is a `user_roles` row with `grantedBy` set, made by a SUPER_ADMIN
-     * on the settings screen — usually for somebody who has never signed in, so
-     * it is looked up by address here rather than by Google's subject. The
-     * allow-list remains the first answer and is still checked on every request
-     * afterwards.
-     */
     const granted = await prisma.user.findFirst({
       where: {
         email,
@@ -653,9 +472,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       });
     }
 
-    // The operations seat, which a dealership suspension does not touch
-    // (**R41**). Nothing closes this one yet; the check is here so that when
-    // something does, it is refused at the door rather than one screen in.
     if (identity && isSeatSuspended(identity.user.roles, 'ADMIN')) {
       throw new ForbiddenError('Your admin access has been withdrawn.', {
         code: 'ADMIN_ACCESS_REVOKED',
@@ -665,9 +481,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     const now = new Date();
 
     const admin = await withTransaction(prisma, async (tx) => {
-      // By `sub` first, by address second. The subject is what does not move
-      // when somebody renames their Google account; the address is only how a
-      // row seeded before this flow existed is found the first time.
       const user =
         identity?.user ??
         (await tx.user.findUnique({ where: { email } })) ??
@@ -679,9 +492,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         where: { id: user.id },
         data: {
           isPlatformAdmin: true,
-          // Only ever *granted*, never downgraded: an admin the platform team
-          // has narrowed to MODERATOR by hand must not be widened back to
-          // SUPER_ADMIN by the act of signing in.
           adminRole: user.adminRole ?? 'SUPER_ADMIN',
           emailVerifiedAt: user.emailVerifiedAt ?? now,
           fullName: user.fullName ?? claims.name ?? null,
@@ -745,16 +555,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     };
   }
 
-  /**
-   * `Sri Lakshmi Motors` in Katpadi →
-   * `sri-lakshmi-motors-katpadi-vellore-tamil-nadu`, `-2` if that is taken.
-   *
-   * With the place in it a collision is rare — it now takes two dealerships of
-   * the same registered name in the same town, which the `(legalName, city)`
-   * unique index has already refused by the time this runs. The suffix stays
-   * for the case that index cannot see: a dealership that was renamed, or one
-   * whose town was corrected, leaving its old slug behind.
-   */
   async function uniqueSlug(parts: {
     legalName: string;
     city?: string | null;

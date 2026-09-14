@@ -3,7 +3,6 @@ import { CONTRACTS_VERSION } from '@dealers-drive/contracts';
 import type { JsonSchema } from '../../docs/schemas.js';
 import type { ModuleDocs } from '../../docs/spec.js';
 
-/** Shared by the 200 and the 503 — the same body, a different verdict. */
 const READINESS: JsonSchema = {
   type: 'object',
   required: ['status', 'contracts', 'appEnv', 'version', 'checks', 'uptimeSeconds'],
@@ -27,10 +26,6 @@ const READINESS: JsonSchema = {
   },
 };
 
-/**
- * E2 · E3. Deliberately outside `/v1`: infrastructure probes these, not clients,
- * so they must not move when the API version does.
- */
 export const healthDocs: ModuleDocs = {
   tag: 'Health',
   description:

@@ -71,6 +71,7 @@ Everything about _what_ to build and _in what order_ lives in `docs/project/`:
 | [`docs/project/component-map.md`](docs/project/component-map.md)         | All 65 UI components — props, states, consumers, coupling, sandbox priority                                                                                              |
 | [`docs/project/component-sandbox.md`](docs/project/component-sandbox.md) | How the component sandbox is built and how it gates UI work                                                                                                              |
 | [`docs/project/git-strategy.md`](docs/project/git-strategy.md)           | Branching, the init commit, risk register, the verification gate                                                                                                         |
+| [`docs/code/README.md`](docs/code/README.md)                             | **Why the code is the way it is.** Every note that was once a comment in `apps/*/src`, on a page mirroring the source path. Walk down from the index.                    |
 
 `docs/screens/` and `docs/Dealers-Drive-UI/` are the original visual references.
 
@@ -293,6 +294,62 @@ The second matters as much as the first: a reference listing an endpoint that
 as a failed boot, not a wrong page.
 
 ---
+
+---
+
+# 4b. Routes, and the absence of comments
+
+## An API route lives in its own file
+
+`<module>.routes.ts` keeps its export and becomes the list:
+
+```
+modules/admin/
+  admin.routes.ts          createAdminRouter — the ROUTES array, in order
+  routes/
+    route.ts               the module's RouteRegistrar alias
+    handle.ts              a wrapper the module's routes share
+    get-dealers.ts         one file, one route
+    patch-dealer.ts
+    post-dealer-approve.ts
+```
+
+The file is named for the verb and the path it answers, and it exports one
+registrar: `(router, deps) => { router.post('/dealers/:id/approve', …); }`.
+
+**The array in `<module>.routes.ts` is the registration order**, and order is
+load-bearing — Express matches in it — so a new route goes in the position it
+would have been mounted, not at the end.
+
+A helper two routes share (`handle`, a rate-limit shape, a local Zod schema)
+goes in its own file beside them, never back into the aggregator. Adding a route
+is: one new file, one import, one line in the array, and its `OperationSpec` in
+the module's `*.docs.ts` (§4a).
+
+## `src` carries no prose
+
+**There are no comments in `apps/*/src`.** Not a docblock, not a one-liner, not
+a `//` at the end of a line. What a file does is the code; **why** it does it is
+a page under [`docs/code`](docs/code/README.md), addressed by the source path it
+came from.
+
+`dealers-drive/no-comments` is an ESLint error on `src/**` in the three apps, so
+this is not a convention somebody has to remember. `packages/contracts` is
+deliberately outside it: it is a specification, and it reads as one.
+
+**The one exception is a toolchain directive** — `eslint-disable`,
+`@ts-expect-error`, `prettier-ignore`, a coverage pragma. Those are not prose:
+they are read by the build, and deleting one changes what it does. Inside JSX a
+directive still needs its `{/* … */}` container; the container is part of the
+directive.
+
+**When you would have written a comment, write the page instead.** Find the file
+under `docs/code` that mirrors the source folder, add a `###` heading naming the
+declaration, and put the reasoning under it. Then look again at the code: half of
+what wants a comment wants a named constant or a smaller function.
+
+A refactor that removes a comment has to put it somewhere. A feature that adds a
+reason has to put it on the page.
 
 # 5. The one place you must NOT copy the legacy code
 

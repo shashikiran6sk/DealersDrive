@@ -4,34 +4,12 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 import type { StatusTone } from '@dealers-drive/contracts';
 
-/**
- * The primitives. Nothing in this file knows what a vehicle is — anything that
- * imports a domain type belongs in `components/vehicle/` instead, which is what
- * keeps `ui/` promotable to `packages/ui` later (ARCHITECTURE §16.4).
- *
- * ── Reconstruction note ─────────────────────────────────────────────────────
- * This file holds 14 primitives in the baseline and is built up across four
- * PRs, each adding the components it owns together with their CSS layer:
- *   F009  Plate
- *   F010  StatusTag, Tag, Banner
- *   F011  Blueprint, Corners, StatCard, ImageSlot, Avatar, LogoTile
- *   F012  EmptyState, ErrorState, SkeletonLines, Stepper  ← this PR
- */
-/**
- * The registration plate — the signature element, in exactly four places:
- * the logo, a vehicle card's year badge, the verified-dealer chip, and the
- * PRIMARY photo marker (DESIGN-SPEC §4.5). It is never interactive.
- */
 const plate = cva('dd-plate', {
   variants: {
     size: {
-      /** Year badge — the default. */
       year: '',
-      /** Logo, in headers and sidebars. */
       logo: 'text-[12px] font-semibold py-[3px] pr-[9px]',
-      /** Verified-dealer chip. */
       chip: 'text-[10px]',
-      /** PRIMARY marker on the wizard's first photo tile. */
       marker: 'text-[9px]',
     },
   },
@@ -59,7 +37,6 @@ const TONE_CLASS: Record<StatusTone, string> = {
   accent: 'tag-accent',
 };
 
-/** Status is never conveyed by colour alone — the label always carries it (§4.15). */
 export function StatusTag({
   tone,
   children,
@@ -94,7 +71,6 @@ export function Tag({
   );
 }
 
-/** DESIGN-SPEC §2.15 — cleared on navigation, never auto-dismissed. */
 export function Banner({
   tone,
   title,
@@ -123,14 +99,6 @@ export function Banner({
   );
 }
 
-/**
- * The blueprint frame. All four registration marks, always — a `.blueprint`
- * missing a corner is the one thing DESIGN-SPEC §4.4 calls out by name.
- *
- * Reserved for: the hero search block, hero and gallery figures, body-type
- * tiles, stat and balance cards, the price block, review-summary panels, the
- * under-review panel, and empty states. Not for plain content cards.
- */
 export function Blueprint({
   className,
   children,
@@ -145,11 +113,6 @@ export function Blueprint({
   );
 }
 
-/**
- * The four registration marks on their own, for the places where the blueprint
- * frame has to be an element `Blueprint` cannot render — the gallery's main
- * image is a `<button>`. Anything carrying `.blueprint` must carry these.
- */
 export function Corners() {
   return (
     <>
@@ -161,10 +124,6 @@ export function Corners() {
   );
 }
 
-/**
- * Square avatars. `border-radius: 50%` appears nowhere in this product
- * (DESIGN-SPEC §4.3) — the monogram sits in a cobalt-tinted square.
- */
 export function Avatar({
   initials,
   size = 20,
@@ -188,7 +147,6 @@ export function Avatar({
   );
 }
 
-/** The larger logo tile variant, on a lighter tint with a hairline. */
 export function LogoTile({
   initials,
   size = 42,
@@ -212,7 +170,6 @@ export function LogoTile({
   );
 }
 
-/** DESIGN-SPEC §2.12 — blueprint, eyebrow, tabular stat, delta line. */
 export function StatCard({
   label,
   value,
@@ -244,7 +201,6 @@ export function StatCard({
   );
 }
 
-/** A placeholder panel naming the shot, exactly as the prototype renders one. */
 export function ImageSlot({ label, className }: { label: string; className?: string }) {
   return (
     <div className={cn('image-slot', className)} role="img" aria-label={label}>
@@ -253,10 +209,6 @@ export function ImageSlot({ label, className }: { label: string; className?: str
   );
 }
 
-/**
- * DESIGN-SPEC §2.20 — every list has one: a blueprint shell, one sentence
- * naming what is missing, and one primary recovery action.
- */
 export function EmptyState({
   title,
   message,
@@ -295,7 +247,6 @@ export function ErrorState({
   );
 }
 
-/** Static bars at the widths DESIGN-SPEC §2.20 specifies. No shimmer. */
 export function SkeletonLines({ className }: { className?: string }) {
   return (
     <div className={cn('flex flex-col gap-[6px]', className)}>
@@ -306,7 +257,6 @@ export function SkeletonLines({ className }: { className?: string }) {
   );
 }
 
-/** DESIGN-SPEC §2.16 — onboarding and the add-vehicle wizard share it. */
 export function Stepper({
   steps,
   current,

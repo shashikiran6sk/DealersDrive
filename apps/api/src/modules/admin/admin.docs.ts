@@ -1,17 +1,5 @@
 import type { ModuleDocs } from '../../docs/spec.js';
 
-/**
- * D1–D15. The platform's own console.
- *
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline documents 20 operations. This file grows with the router beside
- * it — an operation lands in the same PR that mounts its route, which is what
- * `tests/unit/docs/openapi.test.ts` checks in both directions. F049 brought the
- * first — the metrics the console shell reads — F044 the two KYC review paths,
- * and **F045 the six dealer paths**. `grantDealerCredits` is not among them: it
- * moves credits, so it lands with the ledger.
- * ────────────────────────────────────────────────────────────────────────────
- */
 export const adminDocs: ModuleDocs = {
   tag: 'Admin',
   description:

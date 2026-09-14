@@ -2,6 +2,8 @@ import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
 
+import dealersDrive from './rules/no-comments.js';
+
 /**
  * Shared flat-config base. Type-aware linting is on, so every linted file must
  * be covered by the app's tsconfig.json.
@@ -30,6 +32,7 @@ export function baseConfig({ tsconfigRootDir }) {
           tsconfigRootDir,
         },
       },
+      plugins: { 'dealers-drive': dealersDrive },
       rules: {
         '@typescript-eslint/consistent-type-imports': [
           'error',

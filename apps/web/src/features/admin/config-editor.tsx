@@ -9,27 +9,6 @@ import { Input, Select, Textarea } from '@/components/ui/input';
 import { Banner, Tag } from '@/components/ui/primitives';
 import { updateConfigAction } from '@/features/admin/config-actions';
 
-/**
- * D14 — one row, one value, one save.
- *
- * ## The row has two shapes, and the second one is the honest half
- *
- * A `platform_config` row is a number in a table until something reads it. The
- * table is complete — every key the product will ever need is already in
- * `CONFIG_DEFAULTS` — but most of the code that consults them has not been
- * reconstructed yet: `listing.durationDays` waits on F064, the reveal caps on
- * F090, the RC lookup knobs on F057.
- *
- * So the row renders a control when the API says something reads the key, and a
- * **placeholder** when nothing does. A placeholder is deliberately not an
- * editable field that quietly does nothing: an operator who sets "minimum
- * photos" to 8 and watches it save has been told the platform now requires
- * eight photos, and nothing on this screen would ever contradict them.
- *
- * `readBy` comes from the API rather than from a list in this file, because the
- * question it answers — *does any running code consult this key* — is a fact
- * about the server.
- */
 export function ConfigRow({ entry }: { entry: ConfigEntry }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -112,13 +91,6 @@ export function ConfigRow({ entry }: { entry: ConfigEntry }) {
   );
 }
 
-/**
- * A key nothing reads yet.
- *
- * The value is shown, because "what will this be when the feature lands" is a
- * real question, and the control is not, because changing it would change
- * nothing and say otherwise.
- */
 function PlaceholderRow({ entry }: { entry: ConfigEntry }) {
   return (
     <div className="flex flex-wrap items-center gap-3 border-b border-(--color-divider) px-4 py-3 last:border-b-0">
@@ -140,7 +112,6 @@ function toInput(entry: ConfigEntry): string {
   return String(entry.value);
 }
 
-/** The stored value as one line — a list becomes "3 entries" rather than a wall. */
 function displayValue(entry: ConfigEntry): string {
   if (Array.isArray(entry.value)) {
     return entry.value.length === 1 ? '1 entry' : `${String(entry.value.length)} entries`;

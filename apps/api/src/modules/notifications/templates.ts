@@ -1,28 +1,5 @@
 import { env } from '../../config/env.js';
 
-/**
- * Transactional messages, as data (**R40**).
- *
- * ── Why they are functions and not files ────────────────────────────────────
- * These short transactional emails do not need a templating engine, a build step
- * or a directory of `.mjml`. They need to be readable next to the rule that
- * sends them, diffable in a pull request, and impossible to render with an
- * `undefined` in the middle of a sentence — which a typed function gives and a
- * string file does not.
- *
- * ── Both bodies, always ─────────────────────────────────────────────────────
- * Every message carries `text` as well as `html`. Not for taste: a message with
- * no plain-text part scores worse with every spam filter that looks, and the
- * console driver prints the text body — so the part a developer reads while
- * checking a template is the part a filter reads while deciding whether the
- * dealer sees it at all.
- *
- * ── The HTML is deliberately plain ──────────────────────────────────────────
- * Tables, inline styles and a 600px column, because that is what mail clients
- * render. No external stylesheet, no web font, no image: Outlook strips the
- * first two and a third of readers block the third. What survives everywhere is
- * a paragraph, a heading and a link that looks like a button.
- */
 export type TemplateName =
   | 'dealer.application.received'
   | 'admin.application.received'
@@ -43,13 +20,10 @@ export interface RenderedEmail {
   text: string;
 }
 
-/** Everything a template may read. Ids are resolved by the worker, never here. */
 export interface TemplateContext {
   dealerName: string;
   contactName: string | null;
-  /** The moderator's own sentence, verbatim. Never paraphrased. */
   reason?: string | null;
-  /** What the dealer proposed, for the two profile-change messages. */
   tagline?: string | null;
   specialities?: string[];
   dealerSlug?: string | null;
@@ -119,12 +93,6 @@ export function render(template: TemplateName, context: TemplateContext): Render
         action: { label: 'Go to your console', url: CONSOLE },
       });
 
-    /*
-     * A rejection is the message that most needs to be honest and the least
-     * likely to be read twice, so the moderator's reason is the second thing on
-     * the page — above the button and below the sentence that says what
-     * happened.
-     */
     case 'dealer.application.rejected':
       return compose({
         subject: `About your Dealers-Drive application — ${context.dealerName}`,
@@ -222,7 +190,6 @@ function publicPage(context: TemplateContext): string {
   return context.dealerSlug ? `${env.WEB_BASE_URL}/dealers/${context.dealerSlug}` : CONSOLE;
 }
 
-/** The tagline and the services, as one readable block. */
 function proposalOf(context: TemplateContext): string | null {
   const lines: string[] = [];
   if (context.tagline) lines.push(context.tagline);
@@ -237,22 +204,11 @@ interface Composition {
   heading: string;
   greeting?: string | null;
   paragraphs: string[];
-  /** A moderator's sentence, or a dealer's proposal. Rendered as a quoted block. */
   quote?: string | null;
   paragraphsAfter?: string[];
   action?: { label: string; url: string };
 }
 
-/**
- * One shape for every template, so a new message cannot arrive with a different
- * footer, a different width or a missing plain-text body.
- *
- * `escape` runs over every interpolated value without exception. None of them
- * is attacker-controlled *today* — they are dealership names and moderator
- * notes — but a dealership name is typed by a dealer, and "no user input
- * reaches this template" is a property that stops being true the first time
- * somebody adds a field.
- */
 function compose(parts: Composition): RenderedEmail {
   const before = parts.paragraphs;
   const after = parts.paragraphsAfter ?? [];
@@ -291,7 +247,6 @@ function paragraph(value: string): string {
   return `<p style="margin:0 0 14px;font-size:15px;line-height:1.55;color:#2b3038;">${escape(value)}</p>`;
 }
 
-/** A moderator's own words, set apart so they are not mistaken for ours. */
 function quote(value: string): string {
   return (
     `<blockquote style="margin:0 0 16px;padding:12px 14px;border-left:3px solid #2f55dd;` +
@@ -300,11 +255,6 @@ function quote(value: string): string {
   );
 }
 
-/**
- * A table, not an `<a class="btn">`. Outlook renders the anchor as unstyled
- * text; a single-cell table with a background is the shape that survives every
- * client, and it is why transactional email still looks like 2005 HTML.
- */
 function button(label: string, url: string): string {
   return (
     `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px 0 4px;">` +
@@ -339,7 +289,6 @@ function shell(title: string, body: string): string {
   ].join('\n');
 }
 
-/** Two spaces, so a quoted note is visibly not the sentence around it. */
 function indent(value: string): string {
   return value
     .split('\n')

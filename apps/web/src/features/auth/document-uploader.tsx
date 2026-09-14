@@ -12,25 +12,6 @@ import { useRef, useState } from 'react';
 import { StatusTag } from '@/components/ui/primitives';
 import type { StatusTone } from '@dealers-drive/contracts';
 
-/**
- * DESIGN-SPEC §3.10 step 3 — one KYC document row.
- *
- * presign → PUT straight to storage → commit, the same three-step contract the
- * vehicle photos use (ARCHITECTURE §12.1). The file never passes through the
- * Next server: only the signing and commit calls are proxied, because those
- * need the session.
- *
- * KYC documents are private. There is no public delivery route for them at all
- * — an admin reads one through a short-lived signed URL, and every issue of one
- * is audit-logged (§26.6).
- *
- * **Replace and Remove are two verbs, not one.** Replace is presign → PUT →
- * commit and the API deletes the displaced object as part of it. Remove is the
- * dealer deciding a document should not be there at all — the wrong scan, the
- * wrong dealership's PAN card — and the row goes back to `REQUIRED` with the
- * bytes gone. Without the second, the only way to correct a mistake is to
- * upload something else over the top of it, which is not the same thing.
- */
 const TONE: Record<DealerDocumentDto['status'], StatusTone> = {
   REQUIRED: 'neutral',
   UPLOADING: 'neutral',
@@ -39,11 +20,6 @@ const TONE: Record<DealerDocumentDto['status'], StatusTone> = {
   REJECTED: 'err',
 };
 
-/**
- * A tag is a state, not a sentence. The API's `statusLabel` is written for the
- * row's sub-line ("Required — PDF or JPG, max 5 MB"); repeating it inside the
- * tag says the same thing twice and pushes the row over its width.
- */
 const TAG: Record<DealerDocumentDto['status'], string> = {
   REQUIRED: 'Required',
   UPLOADING: 'Uploading',
@@ -58,7 +34,6 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
   const [busy, setBusy] = useState<'upload' | 'delete' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  /** Anything but `REQUIRED` means bytes exist, and bytes can be taken back. */
   const uploaded = document.status !== 'REQUIRED';
 
   async function upload(file: File): Promise<void> {
@@ -164,11 +139,6 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
         {busy === 'upload' ? 'Uploading…' : uploaded ? 'Replace' : 'Upload'}
       </button>
 
-      {/*
-        Only when there is something to delete. A `Delete` next to an empty row
-        is a control that cannot do anything, and a disabled one is worse — it
-        implies the row is in a state the dealer could get out of.
-      */}
       {uploaded ? (
         <button
           type="button"

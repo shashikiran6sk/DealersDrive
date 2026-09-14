@@ -11,13 +11,6 @@ export interface MailDeliverabilityIssue {
   linkHost: string | null;
 }
 
-/**
- * Safe, configuration-only checks that can run at process startup.
- *
- * They deliberately do not make a network request or claim to measure inbox
- * placement. Their job is to catch the two concrete mistakes visible in the
- * incident email before another real message is sent with them.
- */
 export function mailDeliverabilityIssues(
   config: MailDeliverabilityConfig,
 ): MailDeliverabilityIssue[] {

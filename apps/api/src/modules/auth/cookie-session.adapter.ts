@@ -14,22 +14,6 @@ import {
   type SessionResolver,
 } from './session.port.js';
 
-/**
- * The production session resolver: cookie → `sessions` row → principal.
- *
- * Two properties are worth naming, because the rest of the security model rests
- * on them.
- *
- * **The principal is rebuilt from the database on every request.** Nothing is
- * cached in the token. Suspending a dealership, changing a member's role or
- * revoking a session takes effect on the very next call, with no window in
- * which a stale claim is still honoured.
- *
- * **The request is read for exactly one thing — the cookie.** There is no
- * header, body field or query parameter that can influence who the caller is,
- * which is the property that keeps tenant isolation intact no matter what a
- * route handler does afterwards.
- */
 export function createCookieSessionResolver(
   prisma: PrismaClient,
   sessions: SessionService,
@@ -38,9 +22,6 @@ export function createCookieSessionResolver(
     const session = await sessions.resolve(readSessionToken(req), 'DEALER');
     if (!session || session.user.status !== 'ACTIVE') return null;
 
-    // The dealer seat, and only the dealer seat (**R41**). An admin session
-    // held by the same person is resolved by `resolveAdmin` below, against its
-    // own seat, and is unaffected by whatever happened to this one.
     if (isSeatSuspended(session.user.roles, 'DEALER')) return null;
 
     const membership = await prisma.dealerMember.findFirst({
@@ -61,9 +42,6 @@ export function createCookieSessionResolver(
       };
     }
 
-    // Account status is the primary block, and this dealer-status check is the
-    // backstop if a legacy or manually changed row was suspended before its
-    // member account was updated.
     if (membership.dealer.status === 'SUSPENDED') return null;
 
     return {
@@ -85,22 +63,6 @@ export function createCookieSessionResolver(
       return principal?.kind === 'DEALER' ? principal : null;
     },
 
-    /**
-     * A separate scope, not a separate check: an admin session is a different
-     * row with `scope = 'ADMIN'`, so a dealer's cookie cannot reach an admin
-     * route even if that same human is also a platform admin.
-     *
-     * The ADMIN seat is asked about here and nowhere else, for the same reason
-     * (**R41**): a dealership suspension closes a DEALER seat, and this line is
-     * the one that has to keep reading ACTIVE afterwards for a person who holds
-     * both.
-     *
-     * The allow-list is asked again here, on every request, and not only when
-     * the session was issued. That is what makes removing an address from
-     * `ADMIN_ALLOWLIST` a revocation rather than a note for next time: a
-     * console already open stops answering on the next click, twelve hours
-     * before the session would have expired on its own.
-     */
     async resolveAdmin(req): Promise<AdminPrincipal | null> {
       const session = await sessions.resolve(readSessionToken(req), 'ADMIN');
       const user = session?.user;
@@ -108,12 +70,6 @@ export function createCookieSessionResolver(
       if (!user?.isPlatformAdmin || !user.adminRole || user.status !== 'ACTIVE') return null;
       if (isSeatSuspended(user.roles, 'ADMIN')) return null;
 
-      // Two ways in, and no third (**R42**). The allow-list is the
-      // deployment's answer; a *granted* seat is one a SUPER_ADMIN handed over
-      // on the settings screen, and `grantedBy` is what tells it from the seat
-      // every admin sign-in leaves behind. Reading mere existence as permission
-      // would make the allow-list vacuous — an address taken off it would keep
-      // working forever on the strength of its own last visit.
       if (!isAllowlistedAdmin(user.email) && !hasGrantedSeat(user.roles, 'ADMIN')) return null;
 
       return {

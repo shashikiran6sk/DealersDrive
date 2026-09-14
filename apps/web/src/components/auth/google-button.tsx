@@ -1,18 +1,5 @@
 import { cn } from '@/lib/cn';
 
-/**
- * "Continue with Google".
- *
- * An `<a>`, not a button: the whole point of the authorization code flow is
- * that the browser *navigates* to Google, and a fetch could not carry the
- * redirect. It is styled as `btn-secondary` with the Google mark on the left —
- * Google's identity guidelines ask for their wordmark and colours on a neutral
- * surface, which is also what the design system's secondary button is.
- *
- * `disabled` renders the same control inert, for a deployment with no Google
- * credentials configured: a button that looks alive and fails on click is worse
- * than one that says why it cannot work.
- */
 export function GoogleSignInButton({
   href,
   label = 'Continue with Google',
@@ -39,14 +26,12 @@ export function GoogleSignInButton({
       {content}
     </span>
   ) : (
-    // A full page navigation, so `next/link`'s client router is not involved.
     <a className={className} href={href} rel="nofollow">
       {content}
     </a>
   );
 }
 
-/** The four-colour mark, at the 18px Google specifies for a 44px control. */
 function GoogleMark() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">

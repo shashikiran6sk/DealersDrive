@@ -4,18 +4,6 @@ import type { ReactNode } from 'react';
 import { Plate } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
-/**
- * DESIGN-SPEC §3.9 — the shell every authentication screen sits in.
- *
- * A centred 560px column on white, with the brand row above it: logo plate,
- * wordmark, and a ghost link back to the marketplace on the right. Sign-in,
- * onboarding and the admin console all use it, which is what keeps the three
- * screens recognisably one product rather than three forms.
- *
- * Deliberately not a route layout: `/dealer/login` and `/dealer/onboarding` are
- * pages, but `/admin/login` lives under a different segment, and a shared
- * component crosses that boundary where a layout cannot.
- */
 export function AuthShell({
   eyebrow = 'Dealers-Drive for dealers',
   children,
@@ -40,7 +28,6 @@ export function AuthShell({
   );
 }
 
-/** `h1-page` plus the 15px 65% line that follows it on every auth screen. */
 export function AuthHeading({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="mb-[26px]">

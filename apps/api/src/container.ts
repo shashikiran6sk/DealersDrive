@@ -46,97 +46,46 @@ import { ensureBucket } from './platform/storage/s3.adapter.js';
 import type { StoragePort } from './platform/storage/storage.port.js';
 import { logger } from './platform/telemetry/logger.js';
 
-/**
- * The composition root — this replaces DI (ARCHITECTURE §5.3).
- *
- * Every dependency is constructed here, by hand, in dependency order, and
- * passed down as plain arguments. Explicit, greppable, and trivially testable:
- * pass fakes in, get a module out. Every provider seam is visible in one place,
- * and each is chosen by configuration rather than by code:
- *
- *   sessions  — `CookieSessionResolver`, or the dev identity under AUTH_MODE=dev
- *   oauth     — Google; a fake is injected by the sign-in tests
- *   storage   — local disk · MinIO · R2, by STORAGE_DRIVER
- *   cache     — process memory · Postgres, by CACHE_DRIVER
- *   sms       — console · MSG91, by SMS_DRIVER
- *   phone otp — fixed dev code · the MSG91 widget, by PHONE_OTP_DRIVER
- *   payments  — `createDevelopmentPaymentProvider` today, Razorpay later
- *   rc        — deterministic mock · Attestr, by RC_LOOKUP_DRIVER
- *
- * None of those choices reaches a module: they are all made here.
- *
- * ── Reconstruction note ───────────────────────────────────────────────────
- * F002 lands the shape and nothing else. Every field above arrives with the
- * feature that owns it — `prisma` at F005, `cache` at F028, `storage` at F032,
- * `guards` at F016, and so on — so this file is edited by nearly every API
- * feature that follows. That is expected and is why the risk register calls it
- * out; rebase rather than merge while a branch against it is open.
- */
 export interface Container {
   readonly env: Env;
   readonly prisma: PrismaClient;
-  /** Cross-instance shared state: rate-limit windows and the config version. */
   readonly cache: CachePort;
-  /** Built here, like the guards, so no router reaches for a global counter. */
   readonly rateLimit: RateLimiter;
-  /** Runtime-editable settings and `feature.*` flags, version-polled. */
   readonly config: PlatformConfigService;
-  /** pg-boss, or the inline queue when `JOBS_ENABLED=false`. */
   readonly queue: Queue;
   readonly bus: EventBus;
   readonly outbox: OutboxPublisher;
-  /** Local disk, MinIO or R2 — chosen by `STORAGE_DRIVER`, never by a module. */
   readonly storage: StoragePort;
   readonly maps: MapsPort;
-  /** Console or Resend, by `MAIL_DRIVER` (**R40**). Held by the worker, never by a route. */
   readonly mailer: MailerPort;
-  /** Who gets told what. Subscribes to the bus and owns the email job handler. */
   readonly notifications: NotificationsService;
-  /** Reads the principal off a request. Cookie-backed, or the dev identity. */
   readonly sessions: SessionResolver;
-  /** Issues, resolves and revokes the rows behind those cookies. */
   readonly sessionStore: SessionService;
-  /** Google, or the fake the sign-in tests inject. */
   readonly oauth: OAuthProvider;
-  /** The guard chain. `auth` below is the module that issues the sessions. */
   readonly guards: ReturnType<typeof createAuthMiddleware>;
   readonly auth: AuthService;
-  /** Whose handset an OTP access token proves. Fake or MSG91, by `PHONE_OTP_DRIVER`. */
   readonly phoneOtp: PhoneOtpPort;
-  /** B8 — the only writer of `users.phone` (**R39**). */
   readonly phone: PhoneService;
   readonly dealers: DealersService;
-  /** The buyer-facing view of a dealership: the directory and one portfolio. */
   readonly dealersPublic: DealersPublicService;
-  /** The cross-tenant console. Every write it makes names the admin who made it. */
   readonly admin: AdminService;
   readonly publicConfig: ConfigService;
   readonly media: MediaService;
 }
 
 export interface ContainerOverrides {
-  /** Widens as the seams arrive: sessions at F015, oauth at F018, cache at F028. */
   readonly env?: Env;
   readonly prisma?: PrismaClient;
-  /** The integration suite pins this to memory so windows reset with the process. */
   readonly cache?: CachePort;
   readonly queue?: Queue;
   readonly storage?: StoragePort;
   readonly maps?: MapsPort;
-  /** The seam the notification tests use — a mailer that records instead of sending. */
   readonly mailer?: MailerPort;
-  /** `harness.ts` swaps the whole resolver out; `auth-harness.ts` does not. */
   readonly sessions?: SessionResolver;
-  /** The seam `auth-harness.ts` uses: everything above it runs unmodified. */
   readonly oauth?: OAuthProvider;
-  /** The MSG91 seam (**R39**) — a fake verdict, with no network and no widget. */
   readonly phoneOtp?: PhoneOtpPort;
 }
 
-/**
- * The `async` is the contract, not an accident: the handler registration this
- * awaits arrives with the features that own each handler.
- */
 // eslint-disable-next-line @typescript-eslint/require-await -- see above
 export async function buildContainer(overrides: ContainerOverrides = {}): Promise<Container> {
   installBigIntJson();
@@ -160,13 +109,6 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const audit = createAuditService(prisma);
   const dealersRepo = createDealersRepository(prisma);
   const dealers = createDealersService({ prisma, repo: dealersRepo, storage, maps, audit });
-  /*
-   * `noInventoryYet` is the car-count source until **F076**. The baseline read
-   * `search.dealerStats()`, which groups `listing_search` — the read model F064
-   * creates. Nothing creates a listing yet, so every dealership genuinely has
-   * none, and the directory already renders that case with an em dash. F076
-   * replaces this argument and nothing else.
-   */
   const dealersPublic = createDealersPublicService({ repo: dealersRepo, stats: noInventoryYet });
   const auth = createAuthService({
     prisma,
@@ -181,11 +123,6 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage, queue });
-  /*
-   * Built here, subscribed in `startBackground` (**R40**). Constructing it is
-   * free; *subscribing* it is what decides which process turns an outbox row
-   * into an email, and that is a deployment question rather than a wiring one.
-   */
   const notifications = createNotificationsService({ prisma, queue, mailer });
 
   return {
@@ -216,12 +153,6 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   };
 }
 
-/**
- * `AUTH_MODE=dev` is a documented escape hatch for a developer who has not
- * registered a Google OAuth client yet, and it is loud on purpose: it replaces
- * identity verification with a server-configured identity. `env.ts` refuses it
- * in production, so this branch cannot be reached there.
- */
 function createResolver(prisma: PrismaClient, sessionStore: SessionService): SessionResolver {
   if (env.AUTH_MODE === 'dev') {
     logger.warn(
@@ -233,41 +164,16 @@ function createResolver(prisma: PrismaClient, sessionStore: SessionService): Ses
   return createCookieSessionResolver(prisma, sessionStore);
 }
 
-/**
- * Starts the background machinery. Not called by tests, which drain inline.
- *
- * ── One image, two process types (R40) ──────────────────────────────────────
- * `WORKER_INLINE=true` — the default, and what `pnpm dev` and a one-box
- * deployment use — runs the outbox publisher and the job handlers in the HTTP
- * process, so the whole product is one command.
- *
- * `WORKER_INLINE=false` makes this a **pure API**: it still writes outbox rows
- * inside its transactions, and it neither drains them nor holds a mailer. A
- * separate `src/worker.ts` process does that, and `startWorker` below is what
- * it calls. That split is the point of this revision — the API's tail latency
- * stops depending on whether Resend is having a good afternoon, and it can be
- * scaled to N tasks without N copies of every scheduled job firing.
- */
 export async function startBackground(container: Container): Promise<void> {
-  // A fresh MinIO volume has no bucket, and the first photo upload should not be
-  // the thing that discovers that.
   if (env.STORAGE_DRIVER !== 'local') {
     await ensureBucket();
     logger.info({ bucket: env.S3_BUCKET, endpoint: env.S3_ENDPOINT }, 'object storage ready');
   }
 
-  // `registerSchedules` arrives with the handlers — see the note on
-  // `handlers.ts` in the F031 feature-map entry.
   if (!env.JOBS_ENABLED) return;
 
   await container.queue.start();
 
-  /*
-   * The API only drains the outbox and works the queue when it is *also* the
-   * worker. Under `WORKER_INLINE=false` it has written its rows and its job is
-   * done — anything else would be two processes racing for the same jobs, which
-   * `FOR UPDATE SKIP LOCKED` makes safe and duplicated effort makes pointless.
-   */
   if (!env.WORKER_INLINE) {
     logger.info('WORKER_INLINE=false — jobs and the outbox belong to the worker process');
     return;
@@ -276,14 +182,6 @@ export async function startBackground(container: Container): Promise<void> {
   await startWorker(container);
 }
 
-/**
- * The background half, wherever it runs (**R40**).
- *
- * Called by `startBackground` when `WORKER_INLINE=true`, and by `worker.ts`
- * when it is false. One function, so the two deployments cannot drift into
- * running different handlers — a worker that subscribed to five of the six
- * events would be a bug nobody notices until a dealer is not told something.
- */
 export async function startWorker(container: Container): Promise<void> {
   container.notifications.subscribe(container.bus);
   await container.notifications.work();
@@ -295,7 +193,6 @@ export async function startWorker(container: Container): Promise<void> {
   );
 }
 
-/** Releases everything the container holds open. Called on SIGTERM. */
 export async function closeContainer(container: Container): Promise<void> {
   container.outbox.stop();
   try {

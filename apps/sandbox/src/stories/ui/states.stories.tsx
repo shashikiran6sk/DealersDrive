@@ -3,11 +3,6 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, SkeletonLines, Stepper } from '@/components/ui/primitives';
 
-/**
- * The four state primitives — DESIGN-SPEC §2.16 and §2.20. These are the
- * screens people see when something is missing, broken or still loading, which
- * is exactly when a rough edge costs the most.
- */
 const meta = {
   title: 'Primitives/States',
   component: EmptyState,
@@ -32,10 +27,6 @@ export const EmptyWithAction: Story = {
   ),
 };
 
-/**
- * The message is clamped to `max-w-[46ch]`. This is the story that shows where
- * that clamp lands — long copy should wrap inside it, never run the full width.
- */
 export const EmptyLongMessage: Story = {
   args: {
     title: 'Nothing matches those filters',
@@ -61,7 +52,6 @@ export const ErrorWithRetry: Story = {
   ),
 };
 
-/** Static bars, no shimmer (§1.7). Motion during loading is noise. */
 export const Skeleton: Story = {
   args: { title: '', message: '' },
   render: () => (
@@ -71,7 +61,6 @@ export const Skeleton: Story = {
   ),
 };
 
-/** Every position, walked through. */
 export const StepperPositions: Story = {
   args: { title: '', message: '' },
   render: () => {
@@ -89,19 +78,6 @@ export const StepperPositions: Story = {
   },
 };
 
-/**
- * ⚠️ **A known defect, rendered on purpose.**
- *
- * `Stepper` fills a bar when `index <= current`, with no upper bound. An
- * out-of-range `current` therefore fills *every* bar and the control silently
- * claims the flow is complete — the same picture as a genuinely finished
- * wizard. A step count that shrinks, or an off-by-one at the last step, lands
- * here.
- *
- * This is not fixed as part of the reconstruction: changing behaviour under
- * cover of a port is what the whole exercise is meant to avoid. It is rendered
- * so the decision is visible and can be taken on its own.
- */
 export const StepperOutOfRange: Story = {
   args: { title: '', message: '' },
   render: () => {

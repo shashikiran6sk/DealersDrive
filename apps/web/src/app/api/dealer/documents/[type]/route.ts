@@ -3,15 +3,6 @@ import { NextResponse } from 'next/server';
 
 import { ApiError, apiSend } from '@/lib/api';
 
-/**
- * BFF for C5 delete — the half of "replace" that removes what was there.
- *
- * A dealer who uploaded the wrong scan of their PAN card needs a way to take it
- * back, and "upload a different one over the top" is not that: it leaves the
- * first file in storage. The API deletes both the row's contents and the
- * object; this proxies it so the session, not a client-supplied id, decides
- * whose document is being removed (Rule 1).
- */
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ type: string }> },

@@ -10,8 +10,6 @@ export const getReady: HealthRoute = (router, container) => {
   router.get('/ready', (_req, res, next) => {
     void (async () => {
       try {
-        // Draining is answered before anything is probed. The dependencies are
-        // very likely still fine; that is not the question being asked.
         if (isDraining()) {
           res.status(503).json({
             status: 'draining',
@@ -28,9 +26,6 @@ export const getReady: HealthRoute = (router, container) => {
 
         const [database, cache] = await Promise.all([
           probe(() => container.prisma.$queryRaw`SELECT 1`),
-          // The rate limiter reads through this on every public request, so a
-          // cache that is down is a real degradation even though the limiter
-          // itself fails open.
           probe(() => container.cache.ping()),
         ]);
         checks.database = database;
@@ -41,9 +36,6 @@ export const getReady: HealthRoute = (router, container) => {
           status: healthy ? 'ok' : 'degraded',
           contracts: CONTRACTS_VERSION,
           appEnv: env.APP_ENV,
-          // The deployed commit. A deploy pipeline has no other way to tell
-          // "the new image is serving" from "the old one is still serving and
-          // answering exactly as well" — both are 200s (§20.3).
           version: env.GIT_SHA,
           checks,
           drivers: { cache: container.cache.driver, storage: env.STORAGE_DRIVER },

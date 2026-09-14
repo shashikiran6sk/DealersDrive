@@ -1,12 +1,5 @@
 import type { ReactNode } from 'react';
 
-/**
- * DESIGN-SPEC §2.3 — label above, control, then an 11px `--err` message with
- * `margin-top:4px`.
- *
- * The error id is derived from the control id so callers can wire
- * `aria-describedby` to it without inventing a second convention.
- */
 export function Field({
   id,
   label,
@@ -42,7 +35,6 @@ export function errorId(id: string): string {
   return `${id}-error`;
 }
 
-/** The three attributes an errored control needs, or nothing at all. */
 export function invalidProps(
   id: string,
   error: string | undefined,

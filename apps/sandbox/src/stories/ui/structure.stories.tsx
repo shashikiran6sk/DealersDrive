@@ -2,10 +2,6 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { Avatar, Blueprint, ImageSlot, LogoTile, StatCard } from '@/components/ui/primitives';
 
-/**
- * The structural primitives — the frame, the identity tiles, the stat card and
- * the image placeholder.
- */
 const meta = {
   title: 'Primitives/Structure',
   component: Blueprint,
@@ -15,15 +11,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/**
- * **All four registration marks, always.** A `.blueprint` missing a corner is
- * the one defect DESIGN-SPEC §4.4 calls out by name, so this story exists
- * specifically to make a missing corner visible.
- *
- * Reserved for: the hero search block, hero and gallery figures, body-type
- * tiles, stat and balance cards, the price block, review-summary panels, the
- * under-review panel, and empty states. Not for plain content cards.
- */
 export const BlueprintFrame: Story = {
   render: () => (
     <Blueprint className="p-6">
@@ -32,7 +19,6 @@ export const BlueprintFrame: Story = {
   ),
 };
 
-/** It can render as a section or article without losing its marks. */
 export const BlueprintAsSection: Story = {
   render: () => (
     <Blueprint as="section" className="p-6">
@@ -41,12 +27,6 @@ export const BlueprintAsSection: Story = {
   ),
 };
 
-/**
- * `Avatar` and `LogoTile` at the sizes the product actually uses — 20 and 22
- * for avatars, 42 and 44 for logo tiles — with one, two and three letters.
- * Three letters at 20px is where the initials overflow if the font scaling
- * is wrong.
- */
 export const IdentityTiles: Story = {
   render: () => (
     <div style={{ display: 'grid', gap: 20 }}>
@@ -68,7 +48,6 @@ export const IdentityTiles: Story = {
   ),
 };
 
-/** Every delta tone, plus the long-value case that breaks the layout. */
 export const Stats: Story = {
   render: () => (
     <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(4, 1fr)' }}>
@@ -80,7 +59,6 @@ export const Stats: Story = {
   ),
 };
 
-/** A value long enough to test the clamp. */
 export const StatLongValue: Story = {
   render: () => (
     <div style={{ maxWidth: 220 }}>
@@ -94,10 +72,6 @@ export const StatLongValue: Story = {
   ),
 };
 
-/**
- * The fallback when a vehicle has no photograph at all. It fills its container,
- * so it is shown here at two aspect ratios.
- */
 export const ImagePlaceholder: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: 16 }}>

@@ -1,22 +1,9 @@
-/**
- * A stand-in for `@/features/dealer/profile-actions`.
- *
- * The same coupling as `auth-actions.ts` and `admin-actions.ts` (**C-4** in
- * `component-map.md`): `DealerProfileForm` calls a Server Action, which needs a
- * Next server, and the sandbox renders with the network off.
- * `.storybook/main.ts` aliases the real module to this one.
- *
- * The stub is deliberately *slow and observable* rather than instant. The
- * pending state of the save button is one of the states the story has to show,
- * and an action that resolved immediately would make it impossible to see.
- */
 export interface ProfileFormState {
   status: 'idle' | 'saved' | 'error';
   fieldErrors: Record<string, string>;
   message?: string;
 }
 
-/** What the sandbox's action does next. Set by a story before it renders. */
 export const dealerProfileStub: {
   delayMs: number;
   result: ProfileFormState;
@@ -41,13 +28,6 @@ export async function saveDealerProfileAction(
   return dealerProfileStub.result;
 }
 
-/**
- * R34's Cancel. Resolves to `null` on success, or to a message.
- *
- * `withdrawResult` is separate from `result` above because the two actions fail
- * for different reasons and a story usually wants one of them to work while the
- * other does not.
- */
 export const withdrawStub: { delayMs: number; result: string | null; calls: number } = {
   delayMs: 700,
   result: null,

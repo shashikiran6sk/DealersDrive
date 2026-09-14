@@ -10,14 +10,6 @@ import { postMediaPresign } from './routes/post-media-presign.js';
 import { putUploads } from './routes/put-uploads.js';
 import type { MediaRoute, StorageRoute } from './routes/route.js';
 
-/**
- * C14 — dealer-scoped media.
- *
- * Every route is `requirePermission`-guarded and takes its `dealerId` from the
- * session, never from the path: `/media/:id` is looked up as
- * `{ id, dealerId }`, so another tenant's upload reads as absent rather than
- * as forbidden.
- */
 const MEDIA_ROUTES: MediaRoute[] = [postMediaPresign, postMediaCommit, getMedia, deleteMedia];
 
 export function createMediaRouter(service: MediaService): Router {
@@ -26,14 +18,6 @@ export function createMediaRouter(service: MediaService): Router {
   return router;
 }
 
-/**
- * The endpoints that stand in for R2 locally.
- *
- * `PUT /uploads` terminates the presigned upload: it verifies the HMAC, the
- * expiry, the declared content-type and the declared content-length before a
- * byte is written — the same conditions an S3 presigned PUT enforces. It is
- * mounted outside `/v1` because it is storage, not API surface.
- */
 const STORAGE_ROUTES: StorageRoute[] = [putUploads, getMediaImage];
 
 export function createStorageRouter(storage: StoragePort, service: MediaService): Router {

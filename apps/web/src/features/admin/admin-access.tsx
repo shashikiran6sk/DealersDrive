@@ -11,32 +11,6 @@ import { Banner, Tag } from '@/components/ui/primitives';
 import { Table } from '@/components/ui/table';
 import { grantAdminAccessAction, revokeAdminAccessAction } from '@/features/admin/access-actions';
 
-/**
- * Who may open this console (**R42**).
- *
- * ## What it is doing, and what it is not
- *
- * Until now the answer was `ADMIN_ALLOWLIST` alone: a comma-separated list in
- * the environment, which meant adding a colleague was a deploy. That bought a
- * real property — no bug in an admin screen could promote anybody, because the
- * row was not what was consulted — and it cost a deploy for a thing that
- * happens when somebody joins.
- *
- * A **grant** is the second answer. It is a row, made deliberately by a
- * SUPER_ADMIN, recorded with who made it and audited. The allow-list is still
- * the first answer and still cannot be edited from here, which is why those
- * rows show `Allow-listed` and no Withdraw button: taking somebody off the list
- * is still a change to the deployment, and a button that appeared to do it and
- * did not would be worse than no button.
- *
- * ## Two things this screen refuses
- *
- * **Your own seat.** Withdrawing it would lock the person doing it out of the
- * screen they are standing on, and there may be no one else to let them back in.
- *
- * **An allow-listed address.** See above — the environment wins, and the row
- * says so rather than offering a control that cannot keep its promise.
- */
 export function AdminAccessPanel({
   entries,
   currentUserId,
@@ -68,9 +42,6 @@ export function AdminAccessPanel({
   }
 
   function revoke(entry: AdminAccessEntry) {
-    // `canRevoke` is false for every row without a userId — an allow-listed
-    // address nobody has signed in with has no account to withdraw — so this
-    // narrowing never refuses a control the operator can actually see.
     if (entry.userId === null) return;
     setError(null);
     setGranted(null);

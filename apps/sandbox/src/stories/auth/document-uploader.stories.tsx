@@ -3,31 +3,6 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { DocumentUploader } from '@/features/auth/document-uploader';
 
-/**
- * DESIGN-SPEC §3.10 step 3 — one KYC document row (C041).
- *
- * **P0 in `component-sandbox.md`, and this is why**: the row has seven states,
- * five of them decided by the API and two by the browser, and until now none of
- * them could be seen without a real S3 bucket and a real rejection from a real
- * moderator. Every state below is a prop.
- *
- * The upload itself is presign → PUT straight to storage → commit. The file
- * never passes through the Next server; only the signing and commit calls are
- * proxied, because those need the session. There is no network here, so the
- * *uploading* and *failed* states are the two that stay out of reach — pressing
- * Upload in the sandbox opens a file picker and then fails at `fetch`, which is
- * honest rather than useful.
- *
- * **Delete appears on any row with a file behind it**, and Replace is a delete
- * and an upload rather than a second object left in the bucket. The stored
- * object's key ends in the row's id, so both paths have to know which id they
- * are displacing before they overwrite it — the delete-the-prefix shortcut the
- * baseline used removed nothing at all.
- *
- * KYC documents are private. There is no public delivery route for them at all
- * — an admin reads one through a short-lived signed URL, and every issue of one
- * is audit-logged (§26.6). That is why no story here shows a thumbnail.
- */
 function document(overrides: Partial<DealerDocumentDto> = {}): DealerDocumentDto {
   return {
     id: null,
@@ -63,14 +38,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
 
-/**
- * Nothing uploaded. The sub-line carries the rules rather than the tag — a tag
- * is a state, not a sentence, and "Required — PDF or JPG, max 5 MB" would push
- * the row over its width.
- */
 export const Required: Story = { args: { document: document() } };
 
-/** Uploaded, waiting on a moderator. The action becomes Replace, not Upload. */
 export const InReview: Story = {
   args: {
     document: document({
@@ -83,7 +52,6 @@ export const InReview: Story = {
   },
 };
 
-/** Verified. The type prefix in the tile is replaced by a tick. */
 export const Verified: Story = {
   args: {
     document: document({
@@ -96,13 +64,6 @@ export const Verified: Story = {
   },
 };
 
-/**
- * Rejected, with the reason in place of the file name.
- *
- * This is the state that justifies the whole row rendering its own sub-line: a
- * dealer who reads `REJECTED` learns nothing, and a dealer who reads "Too
- * blurry to read" knows exactly what to send next.
- */
 export const Rejected: Story = {
   args: {
     document: document({
@@ -116,7 +77,6 @@ export const Rejected: Story = {
   },
 };
 
-/** A presign was issued and the PUT has not been confirmed yet. */
 export const Uploading: Story = {
   args: {
     document: document({
@@ -129,14 +89,6 @@ export const Uploading: Story = {
   },
 };
 
-/**
- * Uploaded, seen for the Delete button rather than for the tag.
- *
- * A row with a file behind it offers to remove it outright, not only to swap
- * it. A dealer who uploaded their PAN into the address-proof slot had no way
- * to undo that: Replace needs a file to replace it *with*, and there was
- * nothing else to send.
- */
 export const UploadedAndRemovable: Story = {
   args: {
     document: document({
@@ -149,11 +101,6 @@ export const UploadedAndRemovable: Story = {
   },
 };
 
-/**
- * The whole checklist, which is how a dealer actually meets it — and the only
- * way to see that a long rejection reason truncates rather than reflows the
- * row.
- */
 export const TheChecklist: Story = {
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
