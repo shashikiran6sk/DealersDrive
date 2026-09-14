@@ -142,7 +142,18 @@ describe('PhoneVerification', () => {
     await sendAndEnter(user, '111111');
 
     expect(await screen.findByText(/That code could not be verified/)).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
+    /*
+     * `findByText`, not `getByText`. The refusal and the attempts counter are
+     * two separate renders — the count is set inside the `startTransition` that
+     * wraps the action — so the message can be on screen while the count is
+     * still the old one. Asserting it synchronously passes on an idle machine
+     * and fails on a loaded CI runner, which is exactly what it did.
+     *
+     * The test below already knew this ("the count between presses is the
+     * synchronisation point, not decoration"); this one was reading the same
+     * value the unsafe way.
+     */
+    expect(await screen.findByText('2')).toBeInTheDocument();
     expect(props.onVerified).not.toHaveBeenCalled();
   });
 
