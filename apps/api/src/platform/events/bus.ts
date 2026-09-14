@@ -144,6 +144,7 @@ export async function enqueueOutbox(tx: Tx, write: OutboxWrite): Promise<void> {
       // interface does not have even when every field in it is serialisable.
       // The cast is the assertion that this event is JSON — it is, by
       // construction — and not a widening of the type.
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a domain event is stored in a Json column
       payload: event as unknown as Prisma.InputJsonObject,
     },
   });

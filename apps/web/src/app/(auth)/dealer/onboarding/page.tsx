@@ -10,7 +10,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import { AuthShell } from '@/components/auth/auth-shell';
-import { OnboardingWizard } from '@/features/auth/onboarding-wizard';
+import { OnboardingWizard, type OnboardingStep } from '@/features/auth/onboarding-wizard';
 import { ApiError, apiGet } from '@/lib/api';
 
 /**
@@ -107,13 +107,13 @@ export default async function OnboardingPage({
    */
   const floor = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : 0;
   const step = Number.isFinite(requested)
-    ? Math.min(3, Math.max(floor, requested))
+    ? stepOf(Math.min(3, Math.max(floor, requested)))
     : landingStep(session, dealer, completeness);
 
   return (
     <AuthShell>
       <OnboardingWizard
-        step={step as 0 | 1 | 2 | 3}
+        step={step}
         session={session}
         documents={documents?.data ?? []}
         dealer={dealer}
@@ -153,11 +153,24 @@ export default async function OnboardingPage({
  * keeps one answer to "what is outstanding": the same one `POST
  * /v1/dealer/submit` refuses on.
  */
+/**
+ * The clamp above yields a number the compiler cannot follow back to the four
+ * steps. Anything that is not one of them — a fractional `?step=`, which the
+ * product never links to — opens at the first, which is where an unreadable
+ * request should land.
+ */
+function stepOf(value: number): OnboardingStep {
+  if (value === 1) return 1;
+  if (value === 2) return 2;
+  if (value === 3) return 3;
+  return 0;
+}
+
 function landingStep(
   session: AuthSession,
   dealer: DealerProfile | null,
   completeness: CompletenessResponse | null,
-): 0 | 1 | 2 | 3 {
+): OnboardingStep {
   if (session.dealer?.status === 'PENDING_APPROVAL') return 3;
   if (!session.dealer) return 0;
 

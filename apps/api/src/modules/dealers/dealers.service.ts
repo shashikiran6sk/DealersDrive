@@ -164,6 +164,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         }),
       },
       specialities: dealer.specialities,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
       workingHours: dealer.workingHours as Record<string, string | null> | null,
       establishedYear: dealer.establishedYear,
       logoMediaId: dealer.logoMediaId,

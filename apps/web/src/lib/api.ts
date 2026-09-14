@@ -125,6 +125,7 @@ async function request<T>(
 
   const response = await fetch(url, init);
 
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a 204 has no body to parse
   if (response.status === 204) return undefined as T;
 
   const text = await response.text();
@@ -132,6 +133,7 @@ async function request<T>(
 
   if (!response.ok) {
     throw new ApiError(
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the error body is untyped off the wire
       (payload as ProblemDetails | null) ?? {
         type: 'about:blank',
         title: 'Request failed',
@@ -141,6 +143,7 @@ async function request<T>(
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- see the docblock: `T` is a promise the compiler cannot keep, and `apiGetParsed` is the checked alternative
   return payload as T;
 }
 

@@ -5,6 +5,7 @@ import type { DomainEvent, EventBus } from '../../platform/events/bus.js';
 import type { Queue } from '../../platform/jobs/queue.js';
 import type { MailerPort } from '../../platform/mail/mail.port.js';
 import { PermanentMailError } from '../../platform/mail/resend.adapter.js';
+import { errorCode, isRecord } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import { render, type TemplateContext, type TemplateName } from './templates.js';
 
@@ -116,7 +117,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
       // A returned application gets explicit resubmission wording so neither
       // audience mistakes it for the first submission arriving again.
       bus.on('DealerApplied', async (event) => {
-        const resubmitted = (event.payload as { resubmitted?: unknown }).resubmitted === true;
+        const resubmitted = recordOf(event.payload)?.resubmitted === true;
         await enqueue(
           base(
             event,
@@ -171,7 +172,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
 
       // 5 — a dealership proposes new public words: tell the moderators.
       bus.on('DealerProfileChangeSubmitted', async (event) => {
-        const payload = event.payload as { profileChangeId?: unknown };
+        const payload = recordOf(event.payload) ?? {};
         await enqueue({
           ...base(event, 'admin.profile-change.submitted', 'admin'),
           // The proposal, not the live page — see `profileChangeId` above.
@@ -185,7 +186,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
       // R34 chose one event for "this dealership's public words were decided
       // on"; `payload.published` is which way.
       bus.on('DealerProfileChangeDecided', async (event) => {
-        const published = (event.payload as { published?: boolean }).published === true;
+        const published = recordOf(event.payload)?.published === true;
         await enqueue({
           ...base(
             event,
@@ -200,6 +201,7 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
     /** Registers the worker. Called by whichever process runs the handlers. */
     async work(): Promise<void> {
       await queue.work('notification.email', async (data) => {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- pg-boss hands job data back untyped
         await handleEmailJob(data as unknown as EmailJob);
       });
     },
@@ -479,14 +481,12 @@ function base(event: DomainEvent, template: TemplateName, audience: 'dealer' | '
 
 /** The moderator's own sentence, when the event carries one. */
 function reasonOf(event: DomainEvent): string | null {
-  const payload = event.payload as { reason?: unknown };
-  return typeof payload.reason === 'string' ? payload.reason : null;
+  const reason = recordOf(event.payload)?.reason;
+  return typeof reason === 'string' ? reason : null;
 }
 
 function recordOf(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
+  return isRecord(value) && !Array.isArray(value) ? value : null;
 }
 
 function stringOf(value: unknown): string | null {
@@ -495,5 +495,5 @@ function stringOf(value: unknown): string | null {
 
 /** Prisma's P2002. Duck-typed, so a test can throw one without the client. */
 function isUniqueViolation(error: unknown): boolean {
-  return (error as { code?: string } | null)?.code === 'P2002';
+  return errorCode(error) === 'P2002';
 }

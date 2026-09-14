@@ -3,6 +3,7 @@ import type { LokiOptions } from 'pino-loki';
 
 import { env } from '../../config/env.js';
 import { getContext } from '../../middleware/request-context.js';
+import { isRecord } from '../errors.js';
 
 /**
  * Structured JSON logs, one line per event.
@@ -40,7 +41,7 @@ export const LOGGER_OPTIONS: LoggerOptions = {
      * never the uncontrolled message text.
      */
     err(value: unknown) {
-      const error = value as { name?: unknown; code?: unknown; stack?: unknown } | null;
+      const error = isRecord(value) ? value : null;
       const code = typeof error?.code === 'string' ? error.code : undefined;
       const stack =
         typeof error?.stack === 'string' ? error.stack.split('\n').slice(1).join('\n') : undefined;
@@ -121,6 +122,7 @@ function destination() {
           propsToLabels: ['method', 'route', 'status_code'],
           // LOGGER_OPTIONS intentionally renders levels as readable strings;
           // pino-loki's defaults expect Pino's numeric levels.
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- pino-loki types levelMap more narrowly than it accepts
           levelMap: {
             trace: 'debug',
             debug: 'debug',

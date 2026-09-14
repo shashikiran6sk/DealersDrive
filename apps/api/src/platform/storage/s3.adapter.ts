@@ -9,6 +9,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { env } from '../../config/env.js';
 import type { PresignedUpload, StoragePort, StoredObject } from './storage.port.js';
+import { awsStatusCode, errorString } from '../errors.js';
 
 /**
  * One adapter, two deployments: MinIO on a laptop, Cloudflare R2 in production.
@@ -160,7 +161,6 @@ export async function ensureBucket(client: S3Client = createS3Client()): Promise
 
 /** S3, MinIO and R2 all answer 404 here; only the error name varies. */
 function isNotFound(error: unknown): boolean {
-  const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
-  const name = (error as { name?: string }).name;
-  return status === 404 || name === 'NotFound' || name === 'NoSuchKey';
+  const name = errorString(error, 'name');
+  return awsStatusCode(error) === 404 || name === 'NotFound' || name === 'NoSuchKey';
 }

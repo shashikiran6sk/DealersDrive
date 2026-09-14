@@ -121,12 +121,12 @@ export type AdminPermission = keyof typeof ADMIN_PERMISSIONS;
 
 export function permissionsForRole(role: DealerRole): string[] {
   return Object.entries(PERMISSIONS)
-    .filter(([, roles]) => (roles as readonly string[]).includes(role))
+    .filter(([, roles]) => roles.some((candidate) => candidate === role))
     .map(([permission]) => permission);
 }
 
 export function permissionsForAdminRole(role: AdminRole): string[] {
   return Object.entries(ADMIN_PERMISSIONS)
-    .filter(([, roles]) => (roles as readonly string[]).includes(role))
+    .filter(([, roles]) => roles.some((candidate) => candidate === role))
     .map(([permission]) => permission);
 }

@@ -151,6 +151,7 @@ export function createDealersRepository(prisma: PrismaClient) {
     ) {
       return prisma.dealerDocument.upsert({
         where: { dealerId_type: { dealerId, type } },
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
         create: { ...(data as Prisma.DealerDocumentUncheckedCreateInput), dealerId, type },
         update: data,
       });

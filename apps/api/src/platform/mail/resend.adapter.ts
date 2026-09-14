@@ -95,6 +95,7 @@ export function createResendMailer(fetchImpl: typeof fetch = fetch): MailerPort 
         );
       }
 
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the provider's response body is untyped
       const body = (await response.json().catch(() => ({}))) as { id?: string };
       return { providerMessageId: body.id ?? null };
     },

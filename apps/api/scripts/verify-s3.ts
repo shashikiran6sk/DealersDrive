@@ -101,6 +101,7 @@ function describe(error: unknown): string {
     return `${error.name}${error.message ? `: ${error.message}` : ''}\n  ${[...new Set(inner)].join('\n  ')}`;
   }
 
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the AWS SDK rejects with an untyped object
   const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
   const parts = [
     [error.name, error.message].filter(Boolean).join(': ') || 'unknown error',

@@ -36,7 +36,9 @@ export function createAuditService(prisma: PrismaClient): AuditService {
       action: entry.action,
       entityType: entry.entityType,
       entityId: entry.entityId,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma's InputJsonValue does not accept its own JsonNull
       before: (entry.before ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma's InputJsonValue does not accept its own JsonNull
       after: (entry.after ?? Prisma.JsonNull) as Prisma.InputJsonValue,
       ip: context?.ip ?? null,
       traceId: context?.traceId ?? null,

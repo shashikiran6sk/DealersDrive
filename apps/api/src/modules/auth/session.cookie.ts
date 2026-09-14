@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
 import { env } from '../../config/env.js';
+import { isRecord } from '../../platform/errors.js';
 import { OAUTH_COOKIE } from './oauth-transaction.js';
 
 /**
@@ -26,7 +27,7 @@ export function readOAuthCookie(req: Request): string | undefined {
  * without an assertion, because a repeated cookie header arrives as an array.
  */
 function cookieOf(req: Request, name: string): string | undefined {
-  const value: unknown = (req.cookies as Record<string, unknown> | undefined)?.[name];
+  const value: unknown = isRecord(req.cookies) ? req.cookies[name] : undefined;
   return typeof value === 'string' ? value : undefined;
 }
 

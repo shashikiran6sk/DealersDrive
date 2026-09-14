@@ -9,7 +9,7 @@ import { env } from '../../config/env.js';
 import { signedInPrincipal } from '../../middleware/auth.js';
 import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { validate, validated } from '../../middleware/validate.js';
-import { ForbiddenError } from '../../platform/errors.js';
+import { errorCode, ForbiddenError } from '../../platform/errors.js';
 import { recordOAuthAttempt, type OAuthReason } from '../../platform/telemetry/metrics.js';
 import type { AuthService } from './auth.service.js';
 import type { PhoneService } from './phone.service.js';
@@ -127,7 +127,7 @@ export function createPublicAuthRouter(service: AuthService): Router {
       } catch (error) {
         // A failed sign-in is a screen, not a JSON body — but a bug is still a
         // bug, so anything unexpected goes to the error handler.
-        const code = (error as { code?: string }).code;
+        const code = errorCode(error);
         if (code === 'OAUTH_STATE_INVALID' || code === 'OAUTH_EXCHANGE_FAILED') {
           back('sign_in_failed');
           return;

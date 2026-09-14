@@ -201,3 +201,45 @@ export function titleFromCode(code: string): string {
   const words = code.toLowerCase().replaceAll('_', ' ');
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
+
+/**
+ * Reading a property off a value that is `unknown` by construction — a caught
+ * error, a library's rejection.
+ *
+ * Duck-typed rather than `instanceof`, deliberately: the Prisma client's error
+ * classes are not stable across versions, an AWS SDK rejection is a plain object
+ * with `$metadata` on it, and a test throwing `{ code: 'P2002' }` should take the
+ * same path as the real thing. A type guard rather than an assertion, so the
+ * check that narrows is the check that runs.
+ */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+/** A string property of a caught error, or undefined. */
+export function errorString(error: unknown, key: string): string | undefined {
+  if (!isRecord(error)) return undefined;
+  const value = error[key];
+  return typeof value === 'string' ? value : undefined;
+}
+
+/** A numeric property of a caught error, or undefined. */
+export function errorNumber(error: unknown, key: string): number | undefined {
+  if (!isRecord(error)) return undefined;
+  const value = error[key];
+  return typeof value === 'number' ? value : undefined;
+}
+
+/** The provider's error code — Prisma's `P2002`, an SDK's `NoSuchKey`. */
+export function errorCode(error: unknown): string | undefined {
+  return errorString(error, 'code');
+}
+
+/** The HTTP status an AWS SDK rejection carries on `$metadata`. */
+export function awsStatusCode(error: unknown): number | undefined {
+  if (!isRecord(error)) return undefined;
+  const metadata = error.$metadata;
+  if (!isRecord(metadata)) return undefined;
+  const status = metadata.httpStatusCode;
+  return typeof status === 'number' ? status : undefined;
+}

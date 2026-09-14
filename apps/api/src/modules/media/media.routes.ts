@@ -141,6 +141,7 @@ export function createStorageRouter(storage: StoragePort, service: MediaService)
       void (async () => {
         try {
           const query = validated<z.infer<typeof UploadQuery>>(req, 'query');
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- express.raw() leaves req.body untyped
           const body = req.body as Buffer;
 
           const valid = verifySignature(

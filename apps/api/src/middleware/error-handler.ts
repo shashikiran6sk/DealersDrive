@@ -9,6 +9,8 @@ import {
   RateLimitError,
   type FieldError,
   titleFromCode,
+  errorNumber,
+  errorString,
 } from '../platform/errors.js';
 import { logger } from '../platform/telemetry/logger.js';
 import { normalizedHttpRoute } from '../platform/telemetry/http-route.js';
@@ -82,10 +84,8 @@ interface BodyParserError extends Error {
 function isBodyParserError(error: unknown): error is BodyParserError {
   return (
     error instanceof Error &&
-    'type' in error &&
-    typeof (error as { type: unknown }).type === 'string' &&
-    'status' in error &&
-    typeof (error as { status: unknown }).status === 'number'
+    errorString(error, 'type') !== undefined &&
+    errorNumber(error, 'status') !== undefined
   );
 }
 

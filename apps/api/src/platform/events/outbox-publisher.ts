@@ -35,6 +35,7 @@ export function createOutboxPublisher(prisma: PrismaClient, bus: EventBus): Outb
         FOR UPDATE SKIP LOCKED`;
 
     for (const row of rows) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the outbox row holds the event as Json
       const event = row.payload as DomainEvent;
       try {
         await bus.publish(event);

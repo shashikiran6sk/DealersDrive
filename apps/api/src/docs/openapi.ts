@@ -107,7 +107,9 @@ function parametersFrom(
   location: 'path' | 'query',
   only?: string[],
 ): Parameter[] {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- JSON Schema is untyped by construction
   const properties = (schema.properties ?? {}) as Record<string, JsonSchema>;
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- JSON Schema is untyped by construction
   const required = new Set((schema.required as string[] | undefined) ?? []);
 
   return Object.entries(properties)

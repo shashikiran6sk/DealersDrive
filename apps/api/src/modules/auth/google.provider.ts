@@ -83,6 +83,7 @@ export function createGoogleOAuthProvider(fetchImpl: typeof fetch = fetch): OAut
         }).toString(),
       });
 
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
       const payload = (await response.json().catch(() => null)) as TokenResponse | null;
 
       if (!response.ok || !payload?.id_token) {
@@ -123,6 +124,7 @@ function decodeIdToken(idToken: string): IdTokenClaims {
   }
 
   try {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
     return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as IdTokenClaims;
   } catch (cause) {
     throw new UnauthorizedError('Google returned an identity token this API cannot read.', {
@@ -159,7 +161,9 @@ function claimsFrom(
   }
 
   return {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
     subject: claims.sub as string,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the ID token is JSON off the wire, checked field by field below
     email: (claims.email as string).toLowerCase(),
     emailVerified: true,
     ...(claims.name === undefined ? {} : { name: claims.name }),

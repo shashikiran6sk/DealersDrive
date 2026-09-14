@@ -10,6 +10,7 @@ import {
 import { env } from '../../config/env.js';
 import { getContext, getTraceId } from '../../middleware/request-context.js';
 import { logger } from './logger.js';
+import { errorCode } from '../errors.js';
 
 const HTTP_LABELS = ['method', 'route', 'status_code'] as const;
 const DB_LABELS = ['model', 'operation', 'outcome'] as const;
@@ -141,6 +142,7 @@ export function recordHttpRequest(observation: HttpObservation): void {
     value: observation.durationSeconds,
     // The upstream declaration incorrectly constrains exemplar keys to metric
     // label keys; OpenMetrics permits an independent trace_id label set.
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- prom-client types exemplarLabels as never
     exemplarLabels: exemplarLabels as never,
   });
   httpRequestExtrema.observe(
@@ -150,6 +152,7 @@ export function recordHttpRequest(observation: HttpObservation): void {
   requestDbDuration.observe({
     labels,
     value: observation.dbDurationSeconds,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- prom-client types exemplarLabels as never
     exemplarLabels: exemplarLabels as never,
   });
   requestDbOperations.observe(
@@ -202,6 +205,7 @@ function observeDbOperation(
   dbOperationDuration.observe({
     labels,
     value: durationSeconds,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- prom-client types exemplarLabels as never
     exemplarLabels: (traceId ? { trace_id: traceId } : undefined) as never,
   });
 
@@ -228,8 +232,8 @@ function observeDbOperation(
 }
 
 function prismaErrorCode(error: unknown): string {
-  const code = (error as { code?: unknown } | null)?.code;
-  return typeof code === 'string' && /^P\d{4}$/.test(code) ? code : 'unknown';
+  const code = errorCode(error);
+  return code !== undefined && /^P\d{4}$/.test(code) ? code : 'unknown';
 }
 
 export type OAuthOutcome = 'success' | 'failure' | 'error';

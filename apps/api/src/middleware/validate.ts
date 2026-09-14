@@ -98,5 +98,6 @@ export function validated<T>(req: Request, source: ValidationSource): T {
       `No validated "${source}" on this request. Add validate({ ${source}: Schema }) to the route.`,
     );
   }
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the parse boundary: this is where an unknown body becomes T
   return value as T;
 }

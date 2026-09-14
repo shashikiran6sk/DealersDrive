@@ -19,6 +19,7 @@ export function serverConfig(): ServerConfig {
   return {
     apiBaseUrl: process.env.API_BASE_URL ?? 'http://localhost:4000',
     webBaseUrl: process.env.WEB_BASE_URL ?? 'http://localhost:3000',
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the environment is untyped; a deployment sets this or it defaults
     appEnv: (process.env.APP_ENV as ServerConfig['appEnv']) ?? 'local',
   };
 }

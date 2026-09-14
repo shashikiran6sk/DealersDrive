@@ -334,6 +334,7 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
         .filter(Boolean)
         .join(', ');
 
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
       const hours = dealer.workingHours as { mon_sat?: string; sun?: string | null } | null;
 
       return {

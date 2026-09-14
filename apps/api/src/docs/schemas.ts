@@ -89,6 +89,7 @@ interface Catalogued {
 
 /** Every Zod schema the contracts package exports, with its export name. */
 function catalogue(): Catalogued[] {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Zod's internal shape is not part of its public types
   return Object.entries(contracts as Record<string, unknown>)
     .filter((entry): entry is [string, ZodSchema] => isZodSchema(entry[1]))
     .map(([name, schema]) => ({ name, schema }));
@@ -100,6 +101,7 @@ function isZodSchema(value: unknown): value is ZodSchema {
 
 /** The Zod internals needed to tell an object/enum apart from a bare string. */
 function typeOf(schema: ZodSchema): string {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Zod's internal shape is not part of its public types
   return (schema as unknown as { _zod: { def: { type: string } } })._zod.def.type;
 }
 
@@ -131,6 +133,7 @@ function clean(node: unknown): unknown {
   if (Array.isArray(node)) return node.map(clean);
   if (typeof node !== 'object' || node === null) return node;
 
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Zod's internal shape is not part of its public types
   const source = node as JsonSchema;
   const out: JsonSchema = {};
 
@@ -184,6 +187,7 @@ export function buildSchemaCatalogue(): SchemaCatalogue {
     });
 
     for (const [name, schema] of Object.entries(converted.schemas)) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Zod's internal shape is not part of its public types
       schemas[name] = clean(schema) as JsonSchema;
     }
   }

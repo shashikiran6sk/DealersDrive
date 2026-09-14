@@ -191,6 +191,7 @@ export function createMediaService({ prisma, storage, queue }: MediaDeps) {
       const media = await prisma.media.findUnique({ where: { id: mediaId } });
       if (!media || media.status !== 'READY') return null;
 
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
       const variants = media.variants as Record<string, string>;
       const key =
         variants[String(width)] ??

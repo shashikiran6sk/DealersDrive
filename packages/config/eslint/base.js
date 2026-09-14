@@ -44,11 +44,39 @@ export function baseConfig({ tsconfigRootDir }) {
           },
         ],
         '@typescript-eslint/no-floating-promises': 'error',
+        /*
+         * `any` switches type checking off for everything it touches, and it
+         * spreads: one `any` argument makes the whole call expression `any`.
+         * `unknown` plus a narrowing check is the answer wherever a value really
+         * is unknown, and the codebase has no `any` left to grandfather in.
+         */
+        '@typescript-eslint/no-explicit-any': 'error',
+        /*
+         * A type assertion tells the compiler to stop asking. Where a value
+         * genuinely arrives untyped — a JSON body, an environment variable — the
+         * answer is a parse or a type guard, both of which can be wrong at
+         * runtime in a way that surfaces. The two remaining boundaries carry a
+         * scoped disable naming why.
+         */
+        '@typescript-eslint/consistent-type-assertions': [
+          'error',
+          { assertionStyle: 'never' },
+        ],
         '@typescript-eslint/no-misused-promises': 'error',
         '@typescript-eslint/switch-exhaustiveness-check': 'error',
         'no-console': ['error', { allow: ['warn', 'error'] }],
         eqeqeq: ['error', 'always', { null: 'ignore' }],
       },
+    },
+    /*
+     * Tests construct partial fixtures and stub globals, which is the one place
+     * an assertion is the right tool: the value is being *made* to stand in for
+     * a contract type rather than arriving from outside and being trusted. The
+     * `any` ban still applies here.
+     */
+    {
+      files: ['**/tests/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.stories.{ts,tsx}'],
+      rules: { '@typescript-eslint/consistent-type-assertions': 'off' },
     },
     // Config files are linted without type information.
     {

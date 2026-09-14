@@ -46,7 +46,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C001',
     name: 'Button',
-    source: 'apps/web/src/components/ui/button.tsx',
+    source: 'apps/web/src/components/ui/button/button.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'Every action in the product. 5 variants x 5 sizes, block, loading.',
@@ -60,7 +60,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C002',
     name: 'ButtonLink',
-    source: 'apps/web/src/components/ui/button.tsx',
+    source: 'apps/web/src/components/ui/button/button-link.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'A Button that navigates — an anchor, so middle-click still works.',
@@ -74,7 +74,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C003',
     name: 'Plate',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/plate.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'The registration plate. The signature element, in exactly four places.',
@@ -88,7 +88,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C004',
     name: 'StatusTag',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/status-tag.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'A status badge. Never colour alone — the label always carries the meaning.',
@@ -102,7 +102,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C005',
     name: 'Tag',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/tag.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'The non-status sibling of StatusTag. Three variants, no semantics.',
@@ -116,7 +116,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C006',
     name: 'Banner',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/banner.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'Inline page-level message. The most-imported component in the product.',
@@ -130,7 +130,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C007',
     name: 'Blueprint',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/blueprint.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'The framed panel. All four registration marks, always (DESIGN-SPEC 4.4).',
@@ -144,7 +144,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C008',
     name: 'Avatar',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/avatar.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'Initials tile for a person. Decorative — aria-hidden.',
@@ -158,7 +158,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C009',
     name: 'LogoTile',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/logo-tile.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'Initials tile for a dealership. The bordered sibling of Avatar.',
@@ -172,7 +172,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C010',
     name: 'StatCard',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/stat-card.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'A labelled number with an optional toned delta.',
@@ -186,7 +186,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C011',
     name: 'ImageSlot',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/image-slot.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'Placeholder panel naming the shot, when a vehicle has no photo.',
@@ -200,7 +200,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C012',
     name: 'EmptyState',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/empty-state.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose:
@@ -215,7 +215,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C013',
     name: 'ErrorState',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/error-state.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'Something-broke panel, with an optional retry.',
@@ -229,7 +229,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C014',
     name: 'SkeletonLines',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/skeleton-lines.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'Loading placeholder. Static bars, no shimmer — motion during loading is noise.',
@@ -243,7 +243,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C015',
     name: 'Stepper',
-    source: 'apps/web/src/components/ui/primitives.tsx',
+    source: 'apps/web/src/components/ui/primitives/stepper.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'Wizard progress bars. ⚠️ An out-of-range `current` fills every bar.',
@@ -257,7 +257,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C016',
     name: 'Field',
-    source: 'apps/web/src/components/forms/field.tsx',
+    source: 'apps/web/src/components/forms/field/field.tsx',
     category: 'Forms',
     ownership: 'Shared',
     purpose: 'Label + control + error. The accessibility contract every form inherits.',
@@ -271,7 +271,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C017',
     name: 'Input',
-    source: 'apps/web/src/components/ui/input.tsx',
+    source: 'apps/web/src/components/ui/input/input.tsx',
     category: 'Forms',
     ownership: 'Primitive',
     purpose: 'The .input class as a component. NEW at F013 — see finding D-B.',
@@ -285,7 +285,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C018',
     name: 'Textarea',
-    source: 'apps/web/src/components/ui/input.tsx',
+    source: 'apps/web/src/components/ui/input/textarea.tsx',
     category: 'Forms',
     ownership: 'Primitive',
     purpose: 'textarea.input — its own stylesheet rule, so its own component.',
@@ -299,7 +299,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C019',
     name: 'Select',
-    source: 'apps/web/src/components/ui/input.tsx',
+    source: 'apps/web/src/components/ui/input/select.tsx',
     category: 'Forms',
     ownership: 'Primitive',
     purpose: 'select.input, with the custom chevron. Not a Combobox — no filtering.',
@@ -313,7 +313,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C020',
     name: 'CustomerHeader',
-    source: 'apps/web/src/components/layout/customer-header.tsx',
+    source: 'apps/web/src/components/layout/customer-header/customer-header.tsx',
     category: 'Layout',
     ownership: 'Shared',
     purpose: 'The buyer chrome — sticky 64px, wordmark, section nav, the two dealer doors.',
@@ -343,7 +343,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C021',
     name: 'CustomerFooter',
-    source: 'apps/web/src/components/layout/customer-footer.tsx',
+    source: 'apps/web/src/components/layout/customer-footer/customer-footer.tsx',
     category: 'Layout',
     ownership: 'Shared',
     purpose:
@@ -366,7 +366,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C021c',
     name: 'SocialIcon',
-    source: 'apps/web/src/components/layout/social-icons.tsx',
+    source: 'apps/web/src/components/layout/social-icons/index.ts',
     category: 'Layout',
     ownership: 'Feature-specific',
     purpose:
@@ -382,7 +382,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C021b',
     name: 'HeaderLink',
-    source: 'apps/web/src/components/layout/customer-header.tsx',
+    source: 'apps/web/src/components/layout/customer-header/header-link.tsx',
     category: 'Layout',
     ownership: 'Feature-specific',
     purpose: 'One nav item, marked current in colour and in aria-current together.',
@@ -396,7 +396,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C022',
     name: 'AuthShell',
-    source: 'apps/web/src/components/auth/auth-shell.tsx',
+    source: 'apps/web/src/components/auth/auth-shell/auth-shell.tsx',
     category: 'Layout',
     ownership: 'Shared',
     purpose: 'The centred 560px column every sign-in and onboarding screen sits in.',
@@ -410,7 +410,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C023',
     name: 'AuthHeading',
-    source: 'apps/web/src/components/auth/auth-shell.tsx',
+    source: 'apps/web/src/components/auth/auth-shell/auth-heading.tsx',
     category: 'Layout',
     ownership: 'Shared',
     purpose: 'The 34px page title and the 15px line under it, on every auth screen.',
@@ -424,7 +424,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C024',
     name: 'AdminNav',
-    source: 'apps/web/src/components/admin/admin-nav.tsx',
+    source: 'apps/web/src/components/admin/admin-nav/admin-nav.tsx',
     category: 'Admin',
     ownership: 'Shared',
     /**
@@ -454,7 +454,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C025',
     name: 'ConsoleNav',
-    source: 'apps/web/src/components/dealer/console-nav.tsx',
+    source: 'apps/web/src/components/dealer/console-nav/console-nav.tsx',
     category: 'Console',
     ownership: 'Shared',
     /**
@@ -480,7 +480,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C026',
     name: 'ConsoleTabBar',
-    source: 'apps/web/src/components/dealer/console-nav.tsx',
+    source: 'apps/web/src/components/dealer/console-nav/console-tab-bar.tsx',
     category: 'Console',
     ownership: 'Shared',
     /**
@@ -506,7 +506,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C077',
     name: 'ViewsChart',
-    source: 'apps/web/src/components/dealer/dashboard-panels.tsx',
+    source: 'apps/web/src/components/dealer/dashboard-panels/index.ts',
     category: 'Console',
     ownership: 'Shared',
     /**
@@ -527,7 +527,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C078',
     name: 'RecentEnquiries',
-    source: 'apps/web/src/components/dealer/dashboard-panels.tsx',
+    source: 'apps/web/src/components/dealer/dashboard-panels/index.ts',
     category: 'Console',
     ownership: 'Shared',
     purpose:
@@ -548,7 +548,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C031',
     name: 'DirectoryFilters',
-    source: 'apps/web/src/components/dealers/directory-filters.tsx',
+    source: 'apps/web/src/components/dealers/directory-filters/directory-filters.tsx',
     category: 'Dealer',
     ownership: 'Feature-specific',
     purpose:
@@ -580,7 +580,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C038',
     name: 'DirectoryCard',
-    source: 'apps/web/src/components/dealers/dealer-card.tsx',
+    source: 'apps/web/src/components/dealers/dealer-card/dealer-card.tsx',
     category: 'Dealer',
     ownership: 'Shared',
     purpose: 'One dealership in the directory grid. The whole card is one link.',
@@ -622,7 +622,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C039',
     name: 'GoogleSignInButton',
-    source: 'apps/web/src/components/auth/google-button.tsx',
+    source: 'apps/web/src/components/auth/google-button/google-button.tsx',
     category: 'Layout',
     ownership: 'Shared',
     purpose: 'Continue with Google — an anchor, because OAuth needs a real navigation.',
@@ -642,7 +642,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C040',
     name: 'OnboardingWizard',
-    source: 'apps/web/src/features/auth/onboarding-wizard.tsx',
+    source: 'apps/web/src/features/auth/onboarding-wizard/onboarding-wizard.tsx',
     category: 'Forms',
     ownership: 'Feature-specific',
     purpose: 'Dealer onboarding end to end: the four-step frame and all four step bodies.',
@@ -680,7 +680,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C041',
     name: 'DocumentUploader',
-    source: 'apps/web/src/features/auth/document-uploader.tsx',
+    source: 'apps/web/src/features/auth/document-uploader/document-uploader.tsx',
     category: 'Forms',
     ownership: 'Feature-specific',
     purpose: 'One KYC document row: its state, and the presign/PUT/commit upload behind it.',
@@ -701,7 +701,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C041b',
     name: 'YardPhotoUploader',
-    source: 'apps/web/src/features/auth/yard-photo-uploader.tsx',
+    source: 'apps/web/src/features/auth/yard-photo-uploader/yard-photo-uploader.tsx',
     category: 'Forms',
     ownership: 'Feature-specific',
     purpose: 'The dealership hero image: presign/PUT/commit, a preview, replace and delete.',
@@ -723,7 +723,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C043',
     name: 'SignOutButton',
-    source: 'apps/web/src/features/auth/sign-out.tsx',
+    source: 'apps/web/src/features/auth/sign-out/sign-out.tsx',
     category: 'Layout',
     ownership: 'Feature-specific',
     purpose: 'Ends the session — a POST form, never a link.',
@@ -737,7 +737,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C044',
     name: 'DealerProfileForm',
-    source: 'apps/web/src/features/dealer/profile-form.tsx',
+    source: 'apps/web/src/features/dealer/profile-form/profile-form.tsx',
     category: 'Console',
     ownership: 'Feature-specific',
     purpose: "The dealership's own record after onboarding — C1/C2, one PATCH.",
@@ -769,7 +769,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C062',
     name: 'DealerAdminActions',
-    source: 'apps/web/src/features/admin/dealer-actions.tsx',
+    source: 'apps/web/src/features/admin/dealer-actions/dealer-actions.tsx',
     category: 'Admin',
     ownership: 'Feature-specific',
     purpose:
@@ -799,7 +799,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C062c',
     name: 'DealerProfileEditor',
-    source: 'apps/web/src/features/admin/dealer-profile-editor.tsx',
+    source: 'apps/web/src/features/admin/dealer-profile-editor/dealer-profile-editor.tsx',
     category: 'Admin',
     ownership: 'Feature-specific',
     purpose:
@@ -821,7 +821,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C062d',
     name: 'ProfileChangeReview',
-    source: 'apps/web/src/features/admin/profile-change-review.tsx',
+    source: 'apps/web/src/features/admin/profile-change-review/profile-change-review.tsx',
     category: 'Admin',
     ownership: 'Feature-specific',
     /**
@@ -854,7 +854,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C062b',
     name: 'DocumentReview',
-    source: 'apps/web/src/features/admin/document-review.tsx',
+    source: 'apps/web/src/features/admin/document-review/document-review.tsx',
     category: 'Admin',
     ownership: 'Feature-specific',
     purpose: 'The KYC checklist with a verdict on each row — verify, or reject with a reason.',
@@ -875,7 +875,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C064',
     name: 'ConfigRow',
-    source: 'apps/web/src/features/admin/config-editor.tsx',
+    source: 'apps/web/src/features/admin/config-editor/index.ts',
     category: 'Admin',
     ownership: 'Feature-specific',
     /**
@@ -911,7 +911,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C064b',
     name: 'AdminAccessPanel',
-    source: 'apps/web/src/features/admin/admin-access.tsx',
+    source: 'apps/web/src/features/admin/admin-access/admin-access.tsx',
     category: 'Admin',
     ownership: 'Feature-specific',
     /**
@@ -944,7 +944,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C066',
     name: 'Table',
-    source: 'apps/web/src/components/ui/table.tsx',
+    source: 'apps/web/src/components/ui/table/table.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose:
@@ -959,7 +959,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C067',
     name: 'NumericCell',
-    source: 'apps/web/src/components/ui/table.tsx',
+    source: 'apps/web/src/components/ui/table/numeric-cell.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'A td with tabular-nums, so digits line up down a column (§4.2).',
@@ -973,7 +973,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C068',
     name: 'LocationCard',
-    source: 'apps/web/src/components/dealers/location-card.tsx',
+    source: 'apps/web/src/components/dealers/location-card/location-card.tsx',
     category: 'Dealer',
     ownership: 'Feature-specific',
     purpose: "The portfolio's map of the yard, and the button that opens it in Google Maps.",
@@ -1002,7 +1002,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C069',
     name: 'LocationSelector',
-    source: 'apps/web/src/components/layout/location-selector.tsx',
+    source: 'apps/web/src/components/layout/location-selector/location-selector.tsx',
     category: 'Layout',
     ownership: 'Feature-specific',
     purpose:
@@ -1038,7 +1038,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C071',
     name: 'DistrictPicker',
-    source: 'apps/web/src/components/layout/district-picker.tsx',
+    source: 'apps/web/src/components/layout/district-picker/district-picker.tsx',
     category: 'Layout',
     ownership: 'Shared',
     purpose:
@@ -1071,7 +1071,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C070',
     name: 'Dialog',
-    source: 'apps/web/src/components/ui/dialog.tsx',
+    source: 'apps/web/src/components/ui/dialog/dialog.tsx',
     category: 'Primitives',
     ownership: 'Primitive',
     purpose: 'DESIGN-SPEC §2.14. NEW at R22 — finding D-C: the .dialog CSS had zero consumers.',
@@ -1107,7 +1107,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C072',
     name: 'ServiceInput',
-    source: 'apps/web/src/components/ui/service-input.tsx',
+    source: 'apps/web/src/components/ui/service-input/service-input.tsx',
     category: 'Forms',
     ownership: 'Shared',
     purpose:
@@ -1152,7 +1152,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C073',
     name: 'AutocompletePanel',
-    source: 'apps/web/src/components/ui/autocomplete.tsx',
+    source: 'apps/web/src/components/ui/autocomplete/index.ts',
     category: 'Search',
     ownership: 'Shared',
     purpose:
@@ -1187,7 +1187,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C074',
     name: 'DealerSearchBox',
-    source: 'apps/web/src/components/dealers/dealer-search-box.tsx',
+    source: 'apps/web/src/components/dealers/dealer-search-box/dealer-search-box.tsx',
     category: 'Search',
     ownership: 'Feature-specific',
     purpose:
@@ -1220,7 +1220,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C075',
     name: 'OtpInput',
-    source: 'apps/web/src/components/ui/otp-input.tsx',
+    source: 'apps/web/src/components/ui/otp-input/otp-input.tsx',
     category: 'Forms',
     ownership: 'Shared',
     purpose:
@@ -1255,7 +1255,7 @@ export const registry: RegistryEntry[] = [
   {
     id: 'C040b',
     name: 'PhoneVerification',
-    source: 'apps/web/src/features/auth/phone-verification.tsx',
+    source: 'apps/web/src/features/auth/phone-verification/phone-verification.tsx',
     category: 'Forms',
     ownership: 'Feature-specific',
     purpose:

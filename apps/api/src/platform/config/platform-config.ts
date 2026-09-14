@@ -287,7 +287,9 @@ export function createPlatformConfig(
       byKey.set(row.key, {
         key: row.key,
         label: row.label ?? defaults?.label ?? row.key,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a config row is a Json column; the type is the row next to it
         type: (row.valueType as ConfigDefinition['type']) ?? defaults?.type ?? 'string',
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a config row is a Json column; the type is the row next to it
         value: row.value as ConfigDefinition['value'],
       });
     }
@@ -349,11 +351,13 @@ export function createPlatformConfig(
         where: { key },
         create: {
           key,
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a config row is a Json column; the type is the row next to it
           value: value as object,
           label: existing.label,
           valueType: existing.type,
           updatedBy,
         },
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a config row is a Json column; the type is the row next to it
         update: { value: value as object, updatedBy },
       });
       entries = undefined;
@@ -365,6 +369,7 @@ export function createPlatformConfig(
       } catch {
         loadedVersion = 0;
       }
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a config row is a Json column; the type is the row next to it
       return { ...existing, value: value as ConfigDefinition['value'] };
     },
     async invalidate() {

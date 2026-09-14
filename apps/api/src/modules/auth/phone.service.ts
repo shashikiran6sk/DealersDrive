@@ -12,7 +12,12 @@ import {
 
 import { env } from '../../config/env.js';
 import type { CachePort } from '../../platform/cache/cache.port.js';
-import { ConflictError, DomainError, UpstreamUnavailableError } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  errorCode,
+  UpstreamUnavailableError,
+} from '../../platform/errors.js';
 import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 
@@ -211,7 +216,7 @@ export function createPhoneService({ prisma, otp, cache }: PhoneServiceDeps) {
           data: { phone, phoneVerifiedAt: verifiedAt },
         });
       } catch (error) {
-        if ((error as { code?: string }).code === 'P2002') throw alreadyRegistered();
+        if (errorCode(error) === 'P2002') throw alreadyRegistered();
         throw error;
       }
 

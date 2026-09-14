@@ -33,22 +33,32 @@ interface Msg91Configuration {
 
 type Msg91Callback = (data: unknown) => void;
 
-interface Msg91Window extends Window {
-  initSendOTP?: (configuration: Msg91Configuration) => void;
-  sendOtp?: (identifier: string, success?: Msg91Callback, failure?: Msg91Callback) => void;
-  retryOtp?: (
-    channel: string | null,
-    success?: Msg91Callback,
-    failure?: Msg91Callback,
-    reqId?: string,
-  ) => void;
-  verifyOtp?: (
-    otp: string,
-    success?: Msg91Callback,
-    failure?: Msg91Callback,
-    reqId?: string,
-  ) => void;
+declare global {
+  /**
+   * What the widget script puts on `window` once `initSendOTP` has run.
+   * Declared on `Window` rather than asserted at each use: the members are
+   * optional, so `typeof target.sendOtp !== 'function'` is still the check that
+   * decides whether the widget is usable.
+   */
+  interface Window {
+    initSendOTP?: (configuration: Msg91Configuration) => void;
+    sendOtp?: (identifier: string, success?: Msg91Callback, failure?: Msg91Callback) => void;
+    retryOtp?: (
+      channel: string | null,
+      success?: Msg91Callback,
+      failure?: Msg91Callback,
+      reqId?: string,
+    ) => void;
+    verifyOtp?: (
+      otp: string,
+      success?: Msg91Callback,
+      failure?: Msg91Callback,
+      reqId?: string,
+    ) => void;
+  }
 }
+
+type Msg91Window = Window;
 
 const SCRIPT_SRC = 'https://verify.msg91.com/otp-provider.js';
 const SCRIPT_ID = 'msg91-otp-provider';
@@ -90,7 +100,7 @@ export function loadMsg91Widget(config: {
   captchaRenderId?: string;
 }): Promise<void> {
   loading ??= new Promise<Msg91Window>((resolve, reject) => {
-    const target = window as Msg91Window;
+    const target = window;
 
     const initialise = (): void => {
       if (!target.initSendOTP) {
@@ -305,7 +315,7 @@ function call<T>(
   run: (target: Msg91Window, resolve: (value: T) => void, reject: (error: unknown) => void) => void,
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    const target = window as Msg91Window;
+    const target = window;
 
     if (typeof target.initSendOTP !== 'function') {
       reject(new Error('The verification service is not loaded.'));
@@ -363,13 +373,19 @@ function call<T>(
   });
 }
 
+const TOKEN_KEYS = ['message', 'accessToken', 'access-token', 'token', 'jwt'];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 function accessTokenOf(data: unknown): string | null {
   if (typeof data === 'string') return data.trim() || null;
-  if (typeof data !== 'object' || data === null) return null;
 
-  const record = data as Record<string, unknown>;
-  for (const key of ['message', 'accessToken', 'access-token', 'token', 'jwt']) {
-    const value = record[key];
+  if (!isRecord(data)) return null;
+
+  for (const key of TOKEN_KEYS) {
+    const value = data[key];
     if (typeof value === 'string' && value.trim()) return value.trim();
   }
   return null;

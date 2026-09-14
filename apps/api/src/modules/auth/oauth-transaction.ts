@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 import { env } from '../../config/env.js';
+import { isRecord } from '../../platform/errors.js';
 
 /**
  * The half of the OAuth round trip that has to survive a redirect to Google
@@ -87,24 +88,28 @@ export function openTransaction(sealed: string | undefined): OAuthTransaction | 
     return null;
   }
 
-  const transaction = parsed as Partial<OAuthTransaction>;
+  if (!isRecord(parsed)) return null;
+  const { state, nonce, codeVerifier, returnTo, issuedAt, audience } = parsed;
+
   if (
-    typeof transaction.state !== 'string' ||
-    typeof transaction.nonce !== 'string' ||
-    typeof transaction.codeVerifier !== 'string' ||
-    typeof transaction.returnTo !== 'string' ||
-    typeof transaction.issuedAt !== 'number' ||
+    typeof state !== 'string' ||
+    typeof nonce !== 'string' ||
+    typeof codeVerifier !== 'string' ||
+    typeof returnTo !== 'string' ||
+    typeof issuedAt !== 'number' ||
     // Unrecognised is not "assume admin" and not "assume dealer": it is a
     // cookie this build did not mint, and the callback has nothing to do with
     // it. Refusing here costs a person one click on a sign-in page.
-    (transaction.audience !== 'DEALER' && transaction.audience !== 'ADMIN')
+    (audience !== 'DEALER' && audience !== 'ADMIN')
   ) {
     return null;
   }
 
-  if (Date.now() - transaction.issuedAt > OAUTH_TRANSACTION_TTL_SECONDS * 1000) return null;
+  if (Date.now() - issuedAt > OAUTH_TRANSACTION_TTL_SECONDS * 1000) return null;
 
-  return transaction as OAuthTransaction;
+  // Rebuilt from the checked fields rather than handed back whole: the six that
+  // were validated are the six the transaction is.
+  return { state, nonce, codeVerifier, returnTo, issuedAt, audience };
 }
 
 /**

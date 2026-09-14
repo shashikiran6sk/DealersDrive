@@ -52,6 +52,7 @@ export function createPrisma(): PrismaClient {
    * rest of this application accepts PrismaClient as its stable port, so the
    * cast keeps instrumentation from leaking through every service signature.
    */
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the extended client re-types the delegates
   return client.$extends({
     name: 'dealers-drive-observability',
     query: {
@@ -70,9 +71,14 @@ export function createPrisma(): PrismaClient {
  * This exists only so an accidental serialisation throws a clear error path
  * instead of "Do not know how to serialize a BigInt" from deep inside Express.
  */
+declare global {
+  interface BigInt {
+    toJSON(): number;
+  }
+}
+
 export function installBigIntJson(): void {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-  (BigInt.prototype as any).toJSON = function toJSON(this: bigint): number {
+  BigInt.prototype.toJSON = function toJSON(this: bigint): number {
     return Number(this);
   };
 }
