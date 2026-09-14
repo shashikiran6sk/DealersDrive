@@ -96,6 +96,10 @@ x-api-env: &api-env
   # so Mailpit below receives nothing and `MAIL_DRIVER=smtp` is refused at boot.
   MAIL_DRIVER: console
   SMS_DRIVER: console
+  # R39. No widget script, no SMS, no MSG91 account needed: onboarding's step 1
+  # accepts `123456`. Everything above the provider — the binding check, the
+  # replay guard, the refusals — is the production path.
+  PHONE_OTP_DRIVER: fake
 
   JOBS_ENABLED: 'true'
   # One box, one process: the API drains its own outbox and works its own jobs.

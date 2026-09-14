@@ -34,6 +34,16 @@ export interface PendingPrincipal {
   email: string | null;
   fullName: string | null;
   phone: string | null;
+  /**
+   * Whether `phone` was proved rather than typed (**R39**).
+   *
+   * Carried on the principal because it decides what `POST /v1/auth/onboarding`
+   * may do, and a guard that has to go back to the database for it is a guard
+   * somebody will forget. `users.phone` is written only by a completed OTP
+   * round trip now, so in practice a non-null `phone` implies this — the flag
+   * is here so nothing has to rely on that implication holding forever.
+   */
+  phoneVerified: boolean;
   /** Always empty. Present so `requirePermission` reads one shape, not two. */
   permissions: readonly string[];
 }

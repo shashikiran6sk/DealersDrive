@@ -4,7 +4,7 @@ import type {
   DealerDocumentDto,
   YardPhotoDto,
 } from '@dealers-drive/contracts';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -12,6 +12,31 @@ import { navigationState } from '../../../setup';
 
 import type * as ApiModule from '@/lib/api';
 import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-wizard';
+
+/**
+ * The MSG91 seam, at its `fake` setting (**R39**).
+ *
+ * No widget script is loaded on this driver and none is loaded here, which is
+ * the point: what the wizard does with a proved number, and what it refuses to
+ * do without one, are the same on both drivers.
+ */
+vi.mock('@/features/auth/phone-actions', () => ({
+  checkPhoneAvailabilityAction: vi.fn(() => Promise.resolve({})),
+  verifyPhoneAction: vi.fn((phone: string) => Promise.resolve({ verified: true, phone })),
+}));
+
+const FAKE_WIDGET = {
+  enabled: true,
+  driver: 'fake',
+  widgetId: null,
+  tokenAuth: null,
+  devCode: '123456',
+  reason: null,
+} as const;
+
+/** CI runs every workspace concurrently; leave React transitions room to settle under load. */
+const TRANSITION_TIMEOUT = 5_000;
+const OTP_FLOW_TIMEOUT = 15_000;
 
 /**
  * ── Reconstruction slice ────────────────────────────────────────────────────
@@ -112,6 +137,13 @@ function session(
       // nearly every test below walks through it.
       phone: '9840012345',
       phoneDisplay: '98400 12345',
+      /*
+       * Proved, by default (**R39**). Nearly every test below walks *through*
+       * step 1 to reach something else, and the OTP round trip is the subject
+       * of exactly two of them — so the fixture is the state a returning
+       * dealer is in, and the tests that care start from an unproved number.
+       */
+      phoneVerified: true,
       email: 'karthik@srilakshmimotors.in',
       emailVerified: true,
       ...overrides.user,
@@ -160,6 +192,65 @@ function dealerProfile(overrides: Record<string, unknown> = {}) {
   } as never;
 }
 
+/**
+ * Leaves the Account step the way a dealer does (**R39**).
+ *
+ * There is no "Continue" on step 1 any more, and that is the feature: the
+ * forward action is *Send OTP* until the number has been proved, and *Continue
+ * to business details* once it has. Every test that only wants to be on step 2
+ * goes through here, so the shape of the round trip lives in one place rather
+ * than in fifteen.
+ */
+async function leaveAccount(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const settled = screen.queryByRole('button', { name: 'Continue to business details' });
+  if (settled) {
+    await user.click(settled);
+    return;
+  }
+
+  await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+
+  /*
+   * The press settles inside a transition, and it has two outcomes: the panel
+   * opens, or the step's own validation refuses a name or a number. Reading
+   * the DOM on the next tick cannot tell "refused" from "not rendered yet" —
+   * which is a test that passes on a fast machine and fails on a loaded one.
+   * So wait for whichever landed, then branch on it.
+   */
+  await waitFor(
+    () => {
+      const opened = screen.queryAllByLabelText(/^Digit /).length > 0;
+      const refused = [/^Full name/, /^Phone/].some(
+        (label) => screen.queryByLabelText(label)?.getAttribute('aria-invalid') === 'true',
+      );
+      expect(opened || refused).toBe(true);
+    },
+    { timeout: TRANSITION_TIMEOUT },
+  );
+
+  const boxes = screen.queryAllByLabelText(/^Digit /);
+  if (boxes.length === 0) return;
+
+  /*
+   * Paste is the widget's SMS-autofill path and commits the complete code in
+   * one render. Typing six keys through six controlled inputs could outrun
+   * React under CI load and leave the submit button disabled when it was
+   * clicked; user-event does not reject a click on a disabled button.
+   */
+  await user.click(boxes[0]!);
+  await user.paste('123456');
+  const verify = screen.getByRole('button', { name: 'Verify & continue' });
+  await waitFor(() => expect(verify).toBeEnabled(), { timeout: TRANSITION_TIMEOUT });
+  await user.click(verify);
+  await user.click(
+    await screen.findByRole(
+      'button',
+      { name: 'Continue to business details' },
+      { timeout: TRANSITION_TIMEOUT },
+    ),
+  );
+}
+
 /** Which step labels the Stepper has filled — `index <= current`, C015. */
 function filledSteps(): string[] {
   return within(screen.getByRole('list'))
@@ -178,6 +269,7 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -202,6 +294,7 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
     expect(filledSteps()).toEqual([...expected]);
@@ -222,10 +315,11 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     expect(filledSteps()).toEqual(['Account', 'Business']);
     expect(navigationState.pushed).toEqual([]);
@@ -241,6 +335,7 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -267,6 +362,7 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -290,38 +386,46 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     expect(filledSteps()).toEqual(['Account']);
     expect(screen.getByText('Tell us your name.')).toBeInTheDocument();
     expect(screen.getByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
+    // And no message was sent for a number the dealer has not finished typing.
+    expect(screen.queryAllByLabelText(/^Digit /)).toHaveLength(0);
   });
 
-  it('advances once the required fields are filled', async () => {
-    const user = userEvent.setup();
-    render(
-      <OnboardingWizard
-        step={0}
-        session={session({ user: { phone: '' }, identity: { name: null } })}
-        documents={[]}
-        dealer={null}
-        completeness={null}
-        yardPhoto={null}
-      />,
-    );
+  it(
+    'advances once the required fields are filled',
+    async () => {
+      const user = userEvent.setup();
+      render(
+        <OnboardingWizard
+          step={0}
+          session={session({ user: { phone: '' }, identity: { name: null } })}
+          documents={[]}
+          dealer={null}
+          completeness={null}
+          yardPhoto={null}
+          phoneWidget={FAKE_WIDGET}
+        />,
+      );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(filledSteps()).toEqual(['Account']);
+      await leaveAccount(user);
+      expect(filledSteps()).toEqual(['Account']);
 
-    await user.type(screen.getByLabelText('Full name'), 'Karthik Raman');
-    await user.type(screen.getByLabelText(/^Phone/), '9840012345');
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+      await user.type(screen.getByLabelText('Full name'), 'Karthik Raman');
+      await user.type(screen.getByLabelText(/^Phone/), '9840012345');
+      await leaveAccount(user);
 
-    expect(filledSteps()).toEqual(['Account', 'Business']);
-  });
+      expect(filledSteps()).toEqual(['Account', 'Business']);
+    },
+    OTP_FLOW_TIMEOUT,
+  );
 
   /** A malformed number is refused as firmly as a missing one. */
   it('refuses a phone number that is not an Indian mobile', async () => {
@@ -334,10 +438,11 @@ describe('OnboardingWizard — the frame', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     expect(filledSteps()).toEqual(['Account']);
     expect(screen.getByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
@@ -484,6 +589,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -502,6 +608,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -518,6 +625,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -535,6 +643,7 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -543,15 +652,12 @@ describe('OnboardingWizard — the Account step', () => {
   });
 
   /**
-   * The number is editable, and stays editable on the way back from step 2.
-   *
-   * It was read-only once a dealership existed, on the reasoning that it is the
-   * login identity — which stopped being true when dealers moved to Google
-   * sign-in. What the read-only box actually produced was a dead end: a dealer
-   * whose number was refused as already registered arrived back on this step
-   * and could not change the one field they had been sent here to change.
+   * A proved number is settled (**R39**), and stays settled on the way back
+   * from step 2 — which is where it used to come undone: the box looked exactly
+   * as editable as it had before the code was sent, so typing over it silently
+   * discarded a verification.
    */
-  it('lets the phone number be edited once the dealership exists', async () => {
+  it('will not let a proved number be typed over', async () => {
     const user = userEvent.setup();
     render(
       <OnboardingWizard
@@ -561,13 +667,89 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={dealerProfile()}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+      />,
+    );
+
+    const phone = screen.getByLabelText(/^Phone/);
+    expect(phone).toHaveAttribute('readonly');
+
+    await user.type(phone, '9876543210');
+    expect(phone).toHaveValue('9840012345');
+  });
+
+  /**
+   * `readOnly`, not `disabled`, and the difference is the whole reason the
+   * wizard still works: a disabled input is not submitted, so the number would
+   * be missing from the FormData that creates the dealership.
+   */
+  it('still carries the proved number in the form', () => {
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+      />,
+    );
+
+    const phone = screen.getByLabelText(/^Phone/);
+    expect(phone).not.toBeDisabled();
+    expect(phone).toHaveAttribute('name', 'phone');
+    expect(phone.closest('form')).not.toBeNull();
+  });
+
+  /**
+   * The case that was reported: step 2 and back again.
+   *
+   * The panel stays mounted across a local move, so the fact it renders from
+   * has to survive one — and the box has to still be read-only when the dealer
+   * returns to look at it.
+   */
+  it('keeps a proved number settled after a trip to Business and back', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session()}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+      />,
+    );
+
+    await leaveAccount(user);
+    expect(filledSteps()).toEqual(['Account', 'Business']);
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+
+    expect(filledSteps()).toEqual(['Account']);
+    expect(screen.getByLabelText(/^Phone/)).toHaveAttribute('readonly');
+  });
+
+  /** Until it is proved, it is an ordinary field. */
+  it('lets an unproved number be edited', async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ user: { phone: '', phoneVerified: false } })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
     const phone = screen.getByLabelText(/^Phone/);
     expect(phone).not.toHaveAttribute('readonly');
 
-    await user.clear(phone);
     await user.type(phone, '9876543210');
     expect(phone).toHaveValue('9876543210');
   });
@@ -577,26 +759,31 @@ describe('OnboardingWizard — the Account step', () => {
    * before, and the copy that lived here disagreed with the placeholder in the
    * box beside it about whether `98400 12345` is a phone number.
    */
-  it('accepts a number spaced the way the placeholder shows it', async () => {
-    const user = userEvent.setup();
-    render(
-      <OnboardingWizard
-        step={0}
-        session={session({ user: { phone: '' } })}
-        documents={[]}
-        dealer={null}
-        completeness={null}
-        yardPhoto={null}
-      />,
-    );
+  it(
+    'accepts a number spaced the way the placeholder shows it',
+    async () => {
+      const user = userEvent.setup();
+      render(
+        <OnboardingWizard
+          step={0}
+          session={session({ user: { phone: '' } })}
+          documents={[]}
+          dealer={null}
+          completeness={null}
+          yardPhoto={null}
+          phoneWidget={FAKE_WIDGET}
+        />,
+      );
 
-    await user.type(screen.getByLabelText('Full name'), 'R. Manikandan');
-    await user.type(screen.getByLabelText(/^Phone/), '98400 12345');
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+      await user.type(screen.getByLabelText('Full name'), 'R. Manikandan');
+      await user.type(screen.getByLabelText(/^Phone/), '98400 12345');
+      await leaveAccount(user);
 
-    // It moved: the step-1 gate did not reject a number typed with a space.
-    expect(filledSteps()).toEqual(['Account', 'Business']);
-  });
+      // It moved: the step-1 gate did not reject a number typed with a space.
+      expect(filledSteps()).toEqual(['Account', 'Business']);
+    },
+    OTP_FLOW_TIMEOUT,
+  );
 
   /**
    * The step stays mounted when the wizard moves to Business — it is one form
@@ -613,10 +800,11 @@ describe('OnboardingWizard — the Account step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
 
     const fullName = screen.getByLabelText('Full name');
     expect(fullName).toBeInTheDocument();
@@ -647,9 +835,10 @@ describe('OnboardingWizard — the Business step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await leaveAccount(user);
     return user;
   }
 
@@ -729,6 +918,7 @@ describe('OnboardingWizard — the Business step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -879,6 +1069,7 @@ describe('OnboardingWizard — the Business step', () => {
         dealer={null}
         completeness={null}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -918,9 +1109,23 @@ describe('OnboardingWizard — the Documents step', () => {
           dealer: { id: 'd1', slug: 'a', brandName: 'A', status: 'DRAFT' } as never,
         })}
         documents={documents}
-        dealer={{ specialities: [], ...dealer } as never}
+        /*
+         * `contact` is here now because step 1 reads it on every render, not
+         * only when it is the visible step (**R39**): the number it holds is
+         * what the verification panel compares the session's verified one
+         * against, so it is initialised with the component rather than with
+         * the fieldset.
+         */
+        dealer={
+          {
+            specialities: [],
+            contact: { fullName: 'R. Manikandan', phone: '9840012345', landline: null },
+            ...dealer,
+          } as never
+        }
         completeness={blockers}
         yardPhoto={photo}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
   }
@@ -1067,9 +1272,11 @@ describe('OnboardingWizard — the outstanding-items list', () => {
         dealer={null}
         completeness={blockers}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
+    // Opened on Business, so this is the submit itself rather than a local move.
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     return user;
   }
@@ -1152,6 +1359,7 @@ describe('OnboardingWizard — the outstanding-items list', () => {
         dealer={null}
         completeness={completeness({ business: ['gstin'] })}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
 
@@ -1189,6 +1397,7 @@ describe('OnboardingWizard — the Review step', () => {
         dealer={null}
         completeness={blockers}
         yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
       />,
     );
   }

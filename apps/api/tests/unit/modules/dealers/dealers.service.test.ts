@@ -140,10 +140,14 @@ interface Options {
   pendingListingCount?: number;
   /** What `findConflicting` reports — a name, GSTIN or PAN already taken. */
   conflicting?: { legalName: boolean; gstin: boolean; pan: boolean };
-  /** Who already holds the number a phone patch asks for, if anybody. */
-  phoneHolder?: { id: string } | null;
   /** One row, or several to be looked up by id — a replacement needs two. */
   media?: Record<string, unknown> | Record<string, unknown>[] | null;
+  /**
+   * The number on the owner's user row, proved (**R39**). Omitted is
+   * `+919876543210` — the number the phone cases below patch to — and `null`
+   * is an owner who has proved nothing.
+   */
+  verifiedPhone?: string | null;
   /** What the dealer's Maps link resolves to. Omitted means "it did not". */
   geo?: { lat: number; lng: number } | null;
   placeId?: string | null;
@@ -226,12 +230,26 @@ function setup(options: Options = {}) {
   };
 
   const prisma = {
-    // The uniqueness read in front of a phone change. `phoneHolder` is who
-    // already has the number: undefined for nobody, a row for somebody.
+    /*
+     * The verified-number read in front of a phone change (**R39**).
+     *
+     * It used to be a *uniqueness* read — "does anybody else hold this
+     * number" — and a number nobody held was accepted on the strength of
+     * having been typed. `users.phone` has one writer now, and what a profile
+     * edit does instead is assert that the column already holds the number it
+     * was handed. `verifiedPhone` is what this owner proved; null is somebody
+     * who has proved nothing.
+     */
     user: {
-      findUnique: (args: { where: { phone: string } }) => {
-        phoneLookups.push(args.where.phone);
-        return Promise.resolve(options.phoneHolder ?? null);
+      findUnique: (args: { where: { id?: string; phone?: string } }) => {
+        phoneLookups.push(args.where.phone ?? args.where.id ?? '');
+        return Promise.resolve(
+          options.verifiedPhone === undefined
+            ? { phone: '+919876543210', phoneVerifiedAt: new Date() }
+            : options.verifiedPhone === null
+              ? { phone: null, phoneVerifiedAt: null }
+              : { phone: options.verifiedPhone, phoneVerifiedAt: new Date() },
+        );
       },
     },
     $transaction: <T>(work: (handle: typeof tx) => Promise<T>) => work(tx),
@@ -670,53 +688,74 @@ describe('update', () => {
   });
 
   /**
-   * The number is patchable now — it stopped being a credential when dealers
-   * moved to Google sign-in, and the step that asks for it is reached again by
-   * pressing Back.
+   * The number is patchable — it stopped being a credential when dealers moved
+   * to Google sign-in, and the step that asks for it is reached again by
+   * pressing Back. What changed in **R39** is what "patching" it means.
    *
-   * Two columns, one answer: `users.phone` is who the dealer is to us,
-   * `dealers.contactPhone` is what a buyer is shown. Onboarding writes both, so
-   * an edit has to as well — a stale mirror publishes the old number.
+   * `users.phone` is written by `POST /v1/auth/phone/verify` and by nothing
+   * else. `dealers.contactPhone` is the display mirror a buyer is shown, and
+   * *that* is what this write updates — so a dealer who has proved a new
+   * number sees it published, and a dealer who has not cannot publish one.
    */
-  it('writes a new phone number to both the user row and the dealership row', async () => {
+  it('mirrors the proved number onto the dealership row', async () => {
     const h = setup();
 
     await h.service.update('dealer-1', { contact: { phone: '98765 43210' } });
 
-    expect(h.userUpdates[0]).toMatchObject({
-      where: { id: 'user-1' },
-      data: { phone: '+919876543210' },
-    });
     expect(h.updates[0]?.data).toMatchObject({ contactPhone: '+919876543210' });
   });
 
-  it('normalises before it checks, so one number cannot be asked about two ways', async () => {
+  it('does not write the number back onto the user row', async () => {
     const h = setup();
 
-    await h.service.update('dealer-1', { contact: { phone: '+91 98765-43210' } });
+    await h.service.update('dealer-1', { contact: { fullName: 'Ramesh K', phone: '9876543210' } });
 
-    // The unique index is over the stored string; the read in front of it has
-    // to ask about the same string the write will store.
-    expect(h.phoneLookups).toEqual(['+919876543210']);
+    // One writer, and this is not it. The assertion above has already
+    // established that `users.phone` holds this number.
+    expect(h.userUpdates[0]).toMatchObject({
+      where: { id: 'user-1' },
+      data: { fullName: 'Ramesh K' },
+    });
+    expect(JSON.stringify(h.userUpdates)).not.toContain('phone');
   });
 
-  it('refuses a number another user already holds, naming the field', async () => {
-    const h = setup({ phoneHolder: { id: 'someone-else' } });
+  it('normalises before it checks, so one number cannot be asked about two ways', async () => {
+    const h = setup({ verifiedPhone: '+919876543210' });
+
+    // `+91 98765-43210` and `9876543210` are the same number; the assertion
+    // compares stored strings, so it has to compare the normalised one.
+    await expect(
+      h.service.update('dealer-1', { contact: { phone: '+91 98765-43210' } }),
+    ).resolves.toBeDefined();
+  });
+
+  /**
+   * The refusal that replaces the uniqueness check. A number another
+   * dealership holds can never be this owner's *verified* number, so the
+   * collision is answered where the claim is made — on step 1, by
+   * `POST /v1/auth/phone/verify` — and everything downstream refuses with the
+   * one rule it has.
+   */
+  it('refuses a number this account has not proved, naming the field', async () => {
+    const h = setup({ verifiedPhone: '+919840012345' });
 
     await expect(
       h.service.update('dealer-1', { contact: { phone: '9876543210' } }),
-    ).rejects.toMatchObject({ code: 'PHONE_ALREADY_REGISTERED' });
+    ).rejects.toMatchObject({
+      code: 'PHONE_NOT_VERIFIED',
+      errors: [expect.objectContaining({ field: 'body.contact.phone' })],
+    });
 
     expect(h.updates).toEqual([]);
     expect(h.userUpdates).toEqual([]);
   });
 
-  it('lets the owner re-save the number they already hold', async () => {
-    const h = setup({ phoneHolder: { id: 'user-1' } });
+  it('refuses a number recorded without a verification behind it', async () => {
+    const h = setup({ verifiedPhone: null });
 
-    await h.service.update('dealer-1', { contact: { phone: '9876543210' } });
-
-    expect(h.updates[0]?.data).toMatchObject({ contactPhone: '+919876543210' });
+    await expect(
+      h.service.update('dealer-1', { contact: { phone: '9876543210' } }),
+    ).rejects.toMatchObject({ code: 'PHONE_NOT_VERIFIED' });
   });
 
   it('touches no user row when the dealership has no owner', async () => {

@@ -3,11 +3,13 @@ import type {
   CompletenessResponse,
   DealerDocumentDto,
   DealerProfile,
+  PhoneOtpWidget,
   YardPhotoDto,
 } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { authActionStub } from '../../mocks/auth-actions';
+import { phoneActionStub } from '../../mocks/phone-actions';
 
 import { AuthShell } from '@/components/auth/auth-shell';
 import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-wizard';
@@ -87,6 +89,23 @@ function completeness(missing: Record<string, string[]> = {}): CompletenessRespo
 }
 
 /**
+ * `GET /v1/auth/phone/widget` at its local setting (**R39**).
+ *
+ * No widget script is loaded on the `fake` driver and no message is sent —
+ * step 1's panel opens and says which digits it will accept. Everything above
+ * the provider, including the refusals, is the production path. `PhoneVerification`
+ * has its own stories for the four states.
+ */
+const FAKE_PHONE_WIDGET: PhoneOtpWidget = {
+  enabled: true,
+  driver: 'fake',
+  widgetId: null,
+  tokenAuth: null,
+  devCode: '123456',
+  reason: null,
+};
+
+/**
  * A signed-in Google account. `dealer` is null for steps 1 and 2 — no
  * dealership exists yet — and set for steps 3 and 4, where its `status` is what
  * decides whether the Review step offers a submit or an under-review panel.
@@ -102,6 +121,12 @@ function session(
       fullName: null,
       phone: '',
       phoneDisplay: '',
+      /*
+       * Unproved by default (**R39**). Step 1's forward action is *Send OTP*
+       * until the number on the session is the one in the box, which is the
+       * state a new account is always in.
+       */
+      phoneVerified: false,
       email: 'karthik@srilakshmimotors.in',
       emailVerified: true,
       ...overrides,
@@ -149,6 +174,12 @@ const meta = {
       description: 'GET /v1/dealer/completeness. Read by the error banner and step 3s Continue.',
     },
     yardPhoto: { control: false, description: 'GET /v1/dealer/yard-photo. Step 3 only.' },
+    phoneWidget: {
+      control: false,
+      description:
+        'GET /v1/auth/phone/widget (**R39**). The MSG91 credentials, read on the server so a ' +
+        'rotation is a restart rather than a rebuild. `fake` here: no script, no SMS.',
+    },
   },
   args: {
     step: 0,
@@ -157,8 +188,11 @@ const meta = {
     dealer: null,
     completeness: null,
     yardPhoto: NO_YARD_PHOTO,
+    phoneWidget: FAKE_PHONE_WIDGET,
   },
   beforeEach: () => {
+    phoneActionStub.result = { verified: true };
+    phoneActionStub.calls.length = 0;
     authActionStub.result = {};
     authActionStub.delayMs = 900;
     authActionStub.calls.length = 0;
@@ -190,6 +224,29 @@ export const AccountPrefilled: Story = {
   args: {
     step: 0,
     session: session({ fullName: 'K. Raman', phone: '9840012345' }),
+  },
+};
+
+/**
+ * Step 1 with the number already proved (**R39**) — a dealer pressing Back
+ * from the Business step, or returning to a draft.
+ *
+ * The forward action is *Continue to business details* rather than *Send OTP*,
+ * because `phoneVerified` on the session says the number in the box is the one
+ * this account confirmed. **Edit the number and watch it revert**: verification
+ * is a fact about a value, not a flag the page can hold on to after the value
+ * has changed — which is the whole reason `verified` is derived from the
+ * session rather than remembered by the panel.
+ */
+export const AccountVerified: Story = {
+  args: {
+    step: 0,
+    session: session({
+      fullName: 'K. Raman',
+      phone: '9840012345',
+      phoneDisplay: '+91 98400 12345',
+      phoneVerified: true,
+    }),
   },
 };
 
@@ -433,22 +490,27 @@ export const BusinessSubmitting: Story = {
  * **The walk-back.** Press Continue on Business and watch the wizard return to
  * Account.
  *
- * A duplicate phone number is answered against `body.phone`, and `phone` is
- * typed on step 1 — so the message used to be rendered against a fieldset the
- * dealer could not see, leaving them on Business reading "already registered"
- * with nothing highlighted. The step now follows the error to the field it
- * belongs to, in the same render, so there is no flicker to catch.
+ * A refusal that names `body.phone` is about a field typed on step 1, so the
+ * message used to be rendered against a fieldset the dealer could not see —
+ * leaving them on Business reading a sentence about a box that was not on the
+ * screen. The step follows the error to the field it belongs to, in the same
+ * render, so there is no flicker to catch.
  *
- * A refusal about a step 2 field — a registered name already taken in this city
- * — deliberately does *not* move: see `BusinessNameTaken`.
+ * **R39 changed which refusal gets here.** `PHONE_ALREADY_REGISTERED` is now
+ * answered by `POST /v1/auth/phone/verify` — at the moment the dealer asks for
+ * a code, against the box in front of them — so the walk-back is exercised by
+ * `PHONE_NOT_VERIFIED`, which is what the create answers for a number that was
+ * typed rather than proved. The mechanism is the same and is what this story is
+ * for; a refusal about a step 2 field deliberately does *not* move, see
+ * `BusinessNameTaken`.
  */
-export const PhoneAlreadyRegistered: Story = {
+export const PhoneNotVerified: Story = {
   args: { step: 1 },
   beforeEach: () => {
     authActionStub.delayMs = 400;
     authActionStub.result = {
-      message: 'That mobile number is already registered to another dealership.',
-      errors: { phone: 'Already registered.' },
+      message: 'Verify this mobile number before continuing — we send a one-time code to it.',
+      errors: { phone: 'Verify this number first.' },
     };
   },
 };
@@ -584,6 +646,7 @@ export const EveryStep: Story = {
             dealer={args.dealer}
             completeness={args.completeness}
             yardPhoto={args.yardPhoto}
+            phoneWidget={args.phoneWidget}
           />
         </div>
       ))}

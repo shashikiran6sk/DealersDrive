@@ -34,7 +34,7 @@ import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
-import type { DealerPrincipal } from '../auth/auth.facade.js';
+import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 
@@ -347,6 +347,13 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           fullName: owner?.user.fullName ?? null,
           phone,
           phoneDisplay: formatPhone(phone),
+          /*
+           * The *owner's* verified flag, not the dealership's contact row
+           * (**R39**). `dealers.contactPhone` is the display mirror and is
+           * written from the verified number; if the two have drifted the
+           * honest answer is that this number was not proved.
+           */
+          phoneVerified: owner?.user.phoneVerifiedAt != null && owner.user.phone === phone,
           email: owner?.user.email ?? null,
           emailVerified: owner?.user.emailVerifiedAt !== null,
         },
@@ -699,25 +706,22 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           ? undefined
           : await maps.placeFor(mapsUrl);
 
+      /**
+       * A changed contact number is a new claim, and claims are proved
+       * elsewhere (**R39**).
+       *
+       * This was a uniqueness lookup, and a number nobody else held was
+       * accepted on the strength of having been typed. It is now the same
+       * assertion onboarding makes: the number must already be the one on this
+       * owner's user row, verified — which means the dealer went back to step
+       * 1, asked for a code and entered it. `PHONE_ALREADY_REGISTERED` is
+       * raised there instead, at the moment of the claim.
+       *
+       * Named as the client sent it, so the form can mark the box the dealer
+       * typed into. `apps/web` maps the leaf to `phone`.
+       */
       if (phone !== undefined && owner) {
-        const holder = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
-        if (holder && holder.id !== owner.userId) {
-          throw new ConflictError(
-            'PHONE_ALREADY_REGISTERED',
-            'That mobile number is already registered to another dealership.',
-            {
-              errors: [
-                {
-                  // Named as the client sent it, so the form can mark the box
-                  // the dealer typed into. `apps/web` maps the leaf to `phone`.
-                  field: 'body.contact.phone',
-                  code: 'PHONE_ALREADY_REGISTERED',
-                  message: 'Already registered.',
-                },
-              ],
-            },
-          );
-        }
+        await assertPhoneVerified(prisma, owner.userId, phone, 'body.contact.phone');
       }
 
       /**
@@ -737,12 +741,17 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
       const updated = await withTransaction(prisma, async (tx) => {
         if (input.contact && owner) {
+          /*
+           * No `phone` here any more (**R39**). The assertion above has already
+           * established that `users.phone` holds this number; writing it a
+           * second time would make this a second writer of a column with
+           * exactly one — see `auth/verified-phone.ts`.
+           */
           await tx.user.update({
             where: { id: owner.userId },
             data: {
               ...(input.contact.fullName === undefined ? {} : { fullName: input.contact.fullName }),
               ...(input.contact.email === undefined ? {} : { email: input.contact.email }),
-              ...(phone === undefined ? {} : { phone }),
             },
           });
         }

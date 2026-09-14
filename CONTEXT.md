@@ -818,23 +818,101 @@ Three things about the queue that are easy to get wrong later:
   same 422. It is marked `FAILED` with the provider's sentence, which is usually
   the instruction.
 
-## 7l. The integration suite has a flaky test, and it is not new
+## 7l. The integration suite was flaky, and the cause was not the product (R39)
 
-The API integration tests fail intermittently — measured at **1 run in 12** on
-`main` at `087c839` — always somewhere in the OAuth sign-in round trip
+The API integration tests used to fail intermittently — measured at **1 run in
+12** on `main` at `087c839` — always somewhere in the OAuth sign-in round trip
 (`GET /v1/auth/google/start` answering 200 instead of 302, a session 401 a
 moment later, a 200 whose body is not the shape the route returns), and never
 the same test twice. It reproduces with `--no-file-parallelism`, so it is not
 the two integration files contending for the database.
 
-It is worth knowing two things about it. First, **it is not yours**: a red run
-whose failure is in a sign-in helper you did not touch is almost certainly this.
-Re-run before investigating. Second, **it gets likelier as the suite grows** —
-R40's nine new integration cases took the observed rate to 3 in 12 — so it will
-have to be found rather than tolerated.
+It got likelier as the suite grew — R40's nine new integration cases took the
+observed rate to 3 in 12 — which is what made it worth finding rather than
+tolerating.
 
-Nobody has diagnosed it yet. Start with `tests/auth-harness.ts:roundTrip` and
-print the body on the failing assertion.
+**R39 found it, by printing the body.** A failing
+`GET /v1/auth/google/start` answered:
+
+```json
+{ "type": "error", "error": { "type": "authentication_error", ... } }
+```
+
+with `connection: close` and no `x-trace-id`. **That is not our app.** Every
+error this API produces is RFC 9457 — `{ type, title, status, code, traceId }`
+— so the socket was answered by something else on the machine.
+
+The mechanism is supertest's. `request(app)` calls `app.listen(0)` when the app
+is not already listening and closes the server when the request ends, so the
+suite performs one listen/close **per request** and hands the port back to the
+operating system each time. A long-lived local service that reconnects on a
+loop can bind a port the suite has just released, and the next request dials
+what it believes is its own server. That is why it scales with request count —
+R40's nine cases took it to 3 in 12, and R39's ~180 extra requests kept it
+there — why it is never the same test twice, and why it is a _foreign_ response
+rather than a wrong one.
+
+It is therefore **an artifact of running the suite on a workstation that has
+other servers on it**, not a bug in the product or in the tests. CI is a clean
+container and has not shown it.
+
+**Fixed in R39 by listening once.** `createAuthHarness` now holds one
+`app.listen(0)` for the file's whole run and hands agents the `Server` rather
+than the `Express` app, so there is no port to hand back between requests. Eight
+consecutive clean runs of the integration project against a suite that had been
+failing about one run in five with R39's extra requests in it.
+
+The diagnostic habit is worth keeping even so: **print the body before
+investigating a red integration run.** A response that is not RFC 9457 did not
+come from this API, and nothing in the diff caused it.
+
+## 7m. One writer, or the column stops meaning anything (R39)
+
+`users.phone` is written by `POST /v1/auth/phone/verify` and by nothing else.
+Not "should be" — the two other write paths that used to set it now _assert_
+against it (`assertPhoneVerified`, exported through `auth.facade.ts`) and refuse
+when it does not already hold the number they were handed.
+
+This is the same shape as rule 5, and it is worth knowing why it is worth the
+awkwardness. The column holds **a number somebody proved they hold**. A number
+somebody typed is a different fact. The moment both can land in the same column,
+there is no way to tell them apart afterwards — and the thing that reads it is
+the public portfolio, where the difference is whether a buyer's call reaches the
+dealership or a stranger.
+
+The alternative design — a `verified` boolean that every writer is expected to
+set honestly — fails the same way an `addCredits()` helper would: it works
+until the sixth call site, and the sixth call site is written by somebody who
+did not read this file.
+
+**If you are adding a write path that stores a dealer's contact number, you are
+adding an `assertPhoneVerified` call, not a `phone:` key.**
+
+The corollary is where refusals live. `PHONE_ALREADY_REGISTERED` used to be
+answered by onboarding and by the profile PATCH; it is answered by the verify
+endpoint now, because a number another account holds can never _become_ this
+account's verified number. Moving the write moved the error to the moment of
+the claim — which happens to be the moment the dealer is looking at the box.
+
+## 7n. A client-side OTP widget moves a spend control out of your hands (R39)
+
+MSG91's OTP widget runs in the browser: it sends the SMS and collects the code,
+and the API only ever sees a signed token afterwards. That is what makes the
+integration small, and it has one consequence worth stating plainly rather than
+discovering later — **the API cannot rate-limit the sending.** Rule 10 is about
+counting things across requests; this is a thing that never becomes a request.
+
+What is left is who may _start_ one. `GET /v1/auth/phone/widget` is behind
+`requireSignedIn` and deliberately **not** on `GET /v1/config/public`, which is
+anonymous and `Cache-Control: public`. That bounds the spend by the set of
+people who have completed a Google sign-in instead of by the internet. It does
+not bound how many messages one of them can provoke; MSG91's own per-identifier
+limits are the only thing that does.
+
+The browser-side cooldown and the three-attempt cap are courtesies on top of
+that, not controls — they are in a page anybody can edit. If the provider's
+limits prove too loose, the answer is an API-side send endpoint, which is a
+different integration rather than a tightening of this one.
 
 ## 8. Local development
 

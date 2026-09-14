@@ -34,6 +34,10 @@ locals {
     # send email as the verified domain, so it lives in Parameter Store and
     # never in a task definition.
     "RESEND_API_KEY",
+    # R39. The key that verifies an OTP access token with MSG91, and the one
+    # that can spend the account's balance. It never reaches a browser: the two
+    # widget values that do are served from GET /v1/auth/phone/widget.
+    "MSG91_AUTH_KEY",
   ]
 
   # The migrator needs the database and nothing else. Giving it the OAuth

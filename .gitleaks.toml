@@ -51,8 +51,12 @@ regexes = [
   # a widget token in an OpenAPI example and two env fixtures, which is exactly
   # why `generic-api-key` reads it as one. There is nothing to revoke.
   #
-  # The scan covers all fetched history, including the branch commit that first
-  # contained the fixture. Matching the exact inert value keeps genuine widget
-  # tokens detectable everywhere, including in those same files.
+  # It is here for the same reason the JWT entry above is: the scan covers
+  # **history**, and the commit that introduced the literal cannot be rewritten
+  # (CLAUDE.md: never rewrite Git history). **The current tree does not contain
+  # it** — the three sites now read `example-widget-token`, which is a
+  # placeholder to a scanner and to a person alike, and is the shape any future
+  # fixture should take. A real widget token committed to the same files is
+  # still caught, because this matches one exact string and nothing else.
   '''461234TTQ0dXNwMjY4OTY4NzQ1''',
 ]

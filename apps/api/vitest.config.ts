@@ -59,6 +59,28 @@ const ENV = {
   // would fail there specifically.
   METRICS_ENABLED: 'true',
   METRICS_SCRAPE_TOKEN: 'test-metrics-scrape-token-0123456789abcdef',
+  /*
+   * Pinned for the same reason `DOCS_ENABLED` is, and discovered the same way
+   * — by a developer's own `.env` changing the answer (**R39**).
+   *
+   * dotenv fills in any variable the runner has not set, so a machine
+   * configured for real SMS silently ran the whole suite against the `msg91`
+   * driver: every fixture that proves a number would have gone to MSG91, and
+   * 112 tests failed at the first one that could not. A suite whose behaviour
+   * depends on a file that is not in the repository is not a suite.
+   */
+  PHONE_OTP_DRIVER: 'fake',
+  PHONE_OTP_DEV_CODE: '123456',
+  /*
+   * Blank, which `env.ts`'s `optional()` reads as unset — and unset is a state
+   * the suite asserts on: `phone.service.test.ts` proves that a deployment
+   * without these answers `enabled: false` with a sentence naming them, rather
+   * than throwing. Inherited from a configured `.env`, that case cannot arise
+   * and the test fails for a reason that has nothing to do with the code. The
+   * case that needs them present stubs them itself.
+   */
+  MSG91_WIDGET_ID: '',
+  MSG91_WIDGET_TOKEN: '',
 };
 
 /**

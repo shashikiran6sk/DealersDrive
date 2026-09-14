@@ -339,6 +339,11 @@ describe('unknown throwables', () => {
     vi.stubEnv('MAIL_DRIVER', 'resend');
     vi.stubEnv('RESEND_API_KEY', 're_a_real_production_key');
     vi.stubEnv('MAIL_FROM', 'Dealers-Drive <updates@dealers-drive.com>');
+    // R39 — production refuses PHONE_OTP_DRIVER=fake, which accepts a fixed code.
+    vi.stubEnv('PHONE_OTP_DRIVER', 'msg91');
+    vi.stubEnv('MSG91_AUTH_KEY', 'a-real-msg91-auth-key');
+    vi.stubEnv('MSG91_WIDGET_ID', 'example-widget-id');
+    vi.stubEnv('MSG91_WIDGET_TOKEN', 'example-widget-token');
 
     try {
       const { errorHandler: productionHandler } =

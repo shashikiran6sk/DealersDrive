@@ -1,7 +1,10 @@
+import type { Server } from 'node:http';
+
 import type { Express } from 'express';
 import type { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 
+import { env } from '../src/config/env.js';
 import { buildContainer } from '../src/container.js';
 import type {
   AuthorizationRequest,
@@ -82,11 +85,35 @@ export function createFakeGoogle(claims?: Partial<OAuthClaims>): FakeGoogle {
 
 export interface AuthHarness {
   app: Express;
+  /**
+   * The listening server every agent dials (**R39**).
+   *
+   * Held open for the file's whole run on purpose. `request(app)` calls
+   * `app.listen(0)` when the app is not already listening and closes it again
+   * when the request ends, which means one listen/close **per request** and a
+   * port handed back to the operating system each time. On a workstation with
+   * other long-lived servers on it, one of them can take a port the suite has
+   * just released — and the next request then dials somebody else's process and
+   * gets an answer that is not this API's at all. That is the intermittent
+   * integration failure `CONTEXT.md` §7l describes; listening once removes the
+   * churn it needs.
+   */
+  server: Server;
   prisma: PrismaClient;
   google: FakeGoogle;
   agent(): request.Agent;
   /** Drives start → Google → callback on one agent, returning the final redirect. */
   signIn(agent: request.Agent, returnTo?: string): Promise<{ status: number; location: string }>;
+  /**
+   * Proves a mobile number the way step 1 does (**R39**).
+   *
+   * `POST /v1/auth/onboarding` refuses a number this session has not verified,
+   * so nearly every fixture below has to walk through this first. It is the
+   * real endpoint on the real `fake` driver — no row is written by hand —
+   * which means the gate is exercised by every test that passes through it
+   * rather than only by the two that are about it.
+   */
+  proveNumber(agent: request.Agent, phone: string): Promise<void>;
   /**
    * The same round trip entered from the admin console's button.
    *
@@ -133,6 +160,9 @@ export interface RecordingMailer extends MailerPort {
   readonly sent: MailMessage[];
 }
 
+/** Makes each development token unique — see `proveNumber`. */
+let proofs = 0;
+
 export async function createAuthHarness(
   google = createFakeGoogle(),
   mailer: RecordingMailer = createRecordingMailer(),
@@ -147,6 +177,8 @@ export async function createAuthHarness(
    */
   const container = await buildContainer({ oauth: google, maps: noMapsLookup, mailer });
   const app = createApp(container);
+  // One listener for the whole file — see `AuthHarness.server`.
+  const server = app.listen(0);
 
   /*
    * **R40.** The suite is its own worker.
@@ -165,16 +197,43 @@ export async function createAuthHarness(
 
   return {
     app,
+    server,
     prisma: container.prisma,
     google,
     mailer,
     drainEmails: () => container.outbox.drain(),
-    agent: () => request.agent(app),
+    agent: () => request.agent(server),
 
     signIn: (agent, returnTo) => roundTrip(agent, '/v1/auth/google/start', returnTo),
+
+    async proveNumber(agent, phone) {
+      const digits = phone.replace(/\D/g, '').slice(-10);
+      proofs += 1;
+      await agent
+        .post('/v1/auth/phone/verify')
+        /*
+         * The documented development token shape — see
+         * `src/platform/phone-otp/fake.adapter.ts`. The trailing counter makes
+         * each one unique: the service remembers a token for fifteen minutes
+         * so it cannot be replayed, and a suite that sent the same string
+         * twice would be refused for that reason rather than for anything it
+         * was trying to assert.
+         */
+        .send({
+          phone,
+          accessToken: `dev-otp:91${digits}:${env.PHONE_OTP_DEV_CODE}:${String(proofs)}`,
+        })
+        .expect(200);
+    },
+
     signInAdmin: (agent, returnTo) => roundTrip(agent, '/v1/auth/admin/google/start', returnTo),
 
     async close() {
+      await new Promise<void>((resolve) =>
+        server.close(() => {
+          resolve();
+        }),
+      );
       await container.prisma.$disconnect();
     },
   };
