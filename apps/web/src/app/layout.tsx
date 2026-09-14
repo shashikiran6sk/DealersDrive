@@ -5,12 +5,6 @@ import type { ReactNode } from 'react';
 import { serverConfig } from '@/lib/config';
 import '@/styles/globals.css';
 
-/**
- * Inter is self-hosted through `next/font`; Cabinet Grotesk comes from
- * Fontshare with Inter as its declared fallback (DESIGN-SPEC §1.3), so the
- * app degrades to the specified fallback rather than to a system serif when
- * that request fails.
- */
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
@@ -34,8 +28,6 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  // Read at runtime, in a server component, and passed down — never inlined
-  // into the bundle as a NEXT_PUBLIC_* variable (ARCHITECTURE §15.3).
   const config = serverConfig();
 
   return (

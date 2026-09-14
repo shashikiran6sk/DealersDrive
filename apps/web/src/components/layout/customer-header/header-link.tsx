@@ -5,10 +5,6 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
-/**
- * `aria-current="page"` as well as the colour, because status is never carried
- * by colour alone (DESIGN-SPEC §4.15).
- */
 export function HeaderLink({
   href,
   active,

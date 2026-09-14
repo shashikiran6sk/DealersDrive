@@ -1,4 +1,3 @@
-/** Below this a reason is not a reason, and the dealer has nothing to act on. */
 export const MIN_REFUSAL_REASON = 6;
 
 export const EMPTY_VALUE = '—';

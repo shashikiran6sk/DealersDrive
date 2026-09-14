@@ -1,15 +1,3 @@
-/**
- * The searchable component index — this is what "search the sandbox first"
- * actually means.
- *
- * Discovery failure is the problem this repository has, measurably: `<Button>`
- * is used 29 times against 88 raw `className="btn …"` sites, a 75 % bypass
- * rate, and `.table` was hand-rolled in five separate pages. Nobody set out to
- * duplicate anything — they could not find what already existed.
- *
- * So every entry carries `aliases`. `dealer-card.tsx` exports `DirectoryCard`,
- * and somebody looking for "DealerCard" must still find it (finding D-6).
- */
 export type Category =
   'Primitives' | 'Forms' | 'Vehicle' | 'Dealer' | 'Search' | 'Console' | 'Admin' | 'Layout';
 
@@ -17,31 +5,20 @@ export type Ownership =
   'Primitive' | 'Shared' | 'Feature-shared' | 'Feature-specific' | 'Page-specific';
 
 export interface RegistryEntry {
-  /** The component-map id, e.g. 'C032'. */
   id: string;
   name: string;
-  /** Repository-relative path to the real component. */
   source: string;
   category: Category;
   ownership: Ownership;
-  /** One line. What it is for, not what it looks like. */
   purpose: string;
-  /** Every name someone might plausibly search for. The D-6 fix. */
   aliases: string[];
-  /** F-numbers that render it. */
   features: string[];
   props: string[];
   states: string[];
   reusable: boolean;
-  /** Storybook id, for deep links. */
   storyId: string;
 }
 
-/**
- * Populated one component at a time, by the feature that brings the component
- * across. An entry without a story, or a story without an entry, is a gap —
- * see `docs/project/component-sandbox.md` §5.
- */
 export const registry: RegistryEntry[] = [
   {
     id: 'C001',
@@ -427,11 +404,6 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/components/admin/admin-nav/admin-nav.tsx',
     category: 'Admin',
     ownership: 'Shared',
-    /**
-     * It reads `usePathname()` (coupling C-3), so the pathname is the control
-     * — one story per route rather than a knob. `items` defaults to the landed
-     * set so the shell needs no knowledge of the slice (**F048**).
-     */
     purpose:
       'The admin sidebar nav. Reads the pathname; renders only the routes that exist unless ' +
       'handed a list.',
@@ -457,10 +429,6 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/components/dealer/console-nav/console-nav.tsx',
     category: 'Console',
     ownership: 'Shared',
-    /**
-     * Items in, pathname read (coupling C-3). So `items` is a control and the
-     * pathname is a parameter — one story per route rather than a knob.
-     */
     purpose: 'The dealer console sidebar nav. Takes its items; reads the pathname for current.',
     aliases: ['DealerNav', 'DealerSidebar', 'ConsoleSidebar', 'DEALER_NAV', 'console-nav'],
     features: ['F047', 'R31'],
@@ -483,10 +451,6 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/components/dealer/console-nav/console-tab-bar.tsx',
     category: 'Console',
     ownership: 'Shared',
-    /**
-     * `md:hidden`, so it is invisible at a desktop viewport — the 375 and 768
-     * viewport controls are the only way to see it at all.
-     */
     purpose:
       'The 56px bottom tab bar below 768. Five of the six nav items once they all exist; ' +
       'while it is under-full it also carries the items without a `short`, because the ' +
@@ -509,11 +473,6 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/components/dealer/dashboard-panels/index.ts',
     category: 'Console',
     ownership: 'Shared',
-    /**
-     * Search here before hand-rolling another bar chart. It is the only one in
-     * the product, and `.table` being hand-rolled five separate times in the
-     * baseline is what this registry exists to prevent.
-     */
     purpose:
       'The seven-day bar chart on the dealer dashboard. Heights are heightPct from the API, ' +
       'never a ratio computed on screen, so it cannot disagree with the total beside it.',
@@ -584,12 +543,6 @@ export const registry: RegistryEntry[] = [
     category: 'Dealer',
     ownership: 'Shared',
     purpose: 'One dealership in the directory grid. The whole card is one link.',
-    /*
-     * Finding **D-6**, and the reason this field exists. The file is
-     * `dealer-card.tsx`, the export is `DirectoryCard`, and `DealerCard` is a
-     * contracts DTO — so a search for the obvious name has to land here rather
-     * than returning a type and inviting a second card.
-     */
     aliases: [
       'DealerCard',
       'dealer-card',
@@ -656,11 +609,6 @@ export const registry: RegistryEntry[] = [
       'onboarding-wizard',
     ],
     features: ['F037', 'F038', 'F039', 'F041', 'F042', 'F043'],
-    /**
-     * `cities` is gone rather than pending: the `cities` table went with it,
-     * and step 2 types its city. `yardPhoto` takes its place in the list —
-     * step 3 renders the hero photograph alongside the KYC checklist.
-     */
     props: ['step', 'session', 'documents', 'dealer', 'completeness', 'yardPhoto'],
     states: [
       'Account',
@@ -824,10 +772,6 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/features/admin/profile-change-review/profile-change-review.tsx',
     category: 'Admin',
     ownership: 'Feature-specific',
-    /**
-     * The gate on the only free text a dealer writes that a buyer reads.
-     * Renders only when something is waiting — `profileChange` is PENDING-only.
-     */
     purpose: "A dealer's proposed tagline and services, old beside new, with publish and refuse.",
     aliases: [
       'ProfileEditReview',
@@ -878,11 +822,6 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/features/admin/config-editor/index.ts',
     category: 'Admin',
     ownership: 'Feature-specific',
-    /**
-     * Two shapes, not one. A key something reads gets a control typed to match
-     * it; a key nothing reads yet gets its value and a tag, because an editable
-     * control that changes no behaviour tells an operator otherwise.
-     */
     purpose:
       'One platform setting — the declared type picks the control, and `readBy` decides whether there is one.',
     aliases: [
@@ -914,11 +853,6 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/features/admin/admin-access/admin-access.tsx',
     category: 'Admin',
     ownership: 'Feature-specific',
-    /**
-     * The one screen that hands out a cross-tenant seat. Its two refusals —
-     * your own row, and an allow-listed address — are states worth looking at,
-     * because both are places an operator could otherwise lock somebody out.
-     */
     purpose: 'Who may open the admin console: grant access by email, withdraw a grant.',
     aliases: [
       'AdminAccess',
@@ -988,13 +922,6 @@ export const registry: RegistryEntry[] = [
     ],
     features: ['F086'],
     props: ['address', 'brandName'],
-    /*
-     * Five. The first two are the map Google returns — the place card, with the
-     * yard's name, rating and directions in the frame, against the bare pin a
-     * link that named no place gets. The middle two are the point of the
-     * component: the map and the button are independent, because a share link
-     * carries neither until it is followed and following it is best-effort.
-     */
     states: ['place card', 'pin only', 'directions only', 'map only', 'neither'],
     reusable: false,
     storyId: 'dealers-locationcard',
@@ -1297,7 +1224,6 @@ export const registry: RegistryEntry[] = [
   },
 ];
 
-/** Case-insensitive search across name, aliases, purpose and category. */
 export function findComponent(query: string): RegistryEntry[] {
   const needle = query.trim().toLowerCase();
   if (needle === '') return registry;

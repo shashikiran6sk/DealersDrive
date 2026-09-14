@@ -13,7 +13,6 @@ export interface StatePanelProps {
   role?: 'alert';
 }
 
-/** The shell `EmptyState` and `ErrorState` share — blueprint, title, one sentence, one action. */
 export function StatePanel({
   title,
   message,

@@ -22,11 +22,6 @@ export const TONE: Record<DealerDocumentDto['status'], StatusTone> = {
   REJECTED: 'err',
 };
 
-/**
- * A tag is a state, not a sentence. The API's `statusLabel` is written for the
- * row's sub-line ("Required — PDF or JPG, max 5 MB"); repeating it inside the tag
- * says the same thing twice and pushes the row over its width.
- */
 export const TAG: Record<DealerDocumentDto['status'], string> = {
   REQUIRED: 'Required',
   UPLOADING: 'Uploading',

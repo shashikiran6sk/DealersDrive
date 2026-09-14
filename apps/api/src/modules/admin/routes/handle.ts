@@ -2,10 +2,6 @@ import type { Request } from 'express';
 
 import type { RouteHandler } from '../../../http/route.js';
 
-/**
- * `Cache-Control: no-store` on everything this router answers: a moderator
- * acting on a stale queue approves a listing somebody else already rejected.
- */
 export function handle<T>(work: (req: Request) => Promise<T>, status = 200): RouteHandler {
   return (req, res, next) => {
     void (async () => {

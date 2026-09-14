@@ -4,7 +4,6 @@ import { getContext } from './request-context.js';
 import { normalizedHttpRoute } from '../platform/telemetry/http-route.js';
 import { recordHttpRequest } from '../platform/telemetry/metrics.js';
 
-/** The scrape itself must not recursively alter the metrics it is reading. */
 const EXCLUDED_PATHS = new Set(['/internal/metrics']);
 
 export const requestMetrics: RequestHandler = (req, res, next) => {

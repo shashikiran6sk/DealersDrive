@@ -19,28 +19,6 @@ import {
 } from './profile-change-review.constants';
 import { ReviewRow } from './review-row';
 
-/**
- * D3b — the review card for a dealer's proposed tagline and service list
- * (**R34**).
- *
- * These two fields are the only free text a dealer writes that a buyer reads;
- * everything else on their profile screen has been read-only since R27. That
- * leaves exactly one route by which a phone number can reach a public page
- * without passing `POST /v1/vehicles/:id/reveal-contact` — the one endpoint
- * allowed to hand one out — and this card is where it gets caught. A moderator
- * is not asking "is this a nice tagline" but whether it contains a number, a
- * URL, a rival's name, or a claim the platform would be repeating.
- *
- * **Old beside new, always**, because the question is "is this *change*
- * acceptable" and the two differ whenever the edit is a small correction to a
- * line already approved. A reviewer holding the old value in their head is one
- * who approves a number appended to a sentence they half-remember.
- *
- * **The refusal needs a sentence**, which the dealer reads verbatim and is the
- * only account they get of why their line did not appear. Neither decision is
- * behind a confirm step: both are reversible in the way that matters, which is a
- * different category from `Reject dealership`.
- */
 export function ProfileChangeReview({ change }: { change: AdminProfileChange }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -56,8 +34,6 @@ export function ProfileChangeReview({ change }: { change: AdminProfileChange }) 
         setMessage(result.message ?? PROFILE_CHANGE_TEXT.decisionFailed);
         return;
       }
-      // The card disappears on the next render: `profileChange` is PENDING-only,
-      // so a decided edit is simply no longer there.
       router.refresh();
     });
   }

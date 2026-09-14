@@ -1,4 +1,3 @@
-/** The four-colour mark, at the 18px Google specifies for a 44px control. */
 export function GoogleMark() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">

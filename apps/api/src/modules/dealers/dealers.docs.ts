@@ -1,18 +1,6 @@
 import type { ModuleDocs } from '../../docs/spec.js';
 import { DOC_TAGS } from '../../docs/tags.js';
 
-/**
- * C1–C5 and C18. The dealership's own record and its console.
- *
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline module documents nine operations. This file grows with the
- * router beside it — an operation lands in the same PR that mounts its route,
- * which is what `tests/unit/docs/openapi.test.ts` checks in both directions.
- * F040 brought the checklist, F041 five more, F043 the completeness read,
- * **F042 the submit** and **F048 `getDealerDashboard`**, which is the last of
- * them. Every operation the baseline documents here is now present.
- * ────────────────────────────────────────────────────────────────────────────
- */
 export const dealersDocs: ModuleDocs = {
   tag: DOC_TAGS.dealerAccount,
   description:

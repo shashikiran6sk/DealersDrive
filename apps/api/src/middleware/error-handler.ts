@@ -19,18 +19,6 @@ import { MALFORMED_REQUEST } from '../platform/messages.js';
 
 const PROBLEM_CONTENT_TYPE = 'application/problem+json';
 
-/**
- * RFC 9457 Problem Details — the one and only error shape this API emits.
- *
- * {
- *   "type": "https://dealersdrive.com/errors/not-found",
- *   "title": "Not found",
- *   "status": 404,
- *   "code": "NOT_FOUND",
- *   "traceId": "a1b2c3d4",
- *   "detail": "The requested resource does not exist."
- * }
- */
 export interface ProblemDetails {
   type: string;
   title: string;
@@ -39,22 +27,13 @@ export interface ProblemDetails {
   traceId: string;
   detail?: string;
   errors?: FieldError[];
-  /** Spec-mandated extras such as `creditBalance` on INSUFFICIENT_CREDITS. */
   [key: string]: unknown;
 }
 
-/** Zod's `invalid_type` becomes `INVALID_TYPE` — machine-readable per field. */
 function fieldErrorsFromZod(error: ZodError): FieldError[] {
   return error.issues.flatMap((issue) => {
     const base = issue.path.map((segment) => String(segment));
 
-    /**
-     * An unrecognized key carries its own name in `keys`, not in `path` — the
-     * path points at the *object* that had the surplus field. Naming the object
-     * would defeat the point of `.strict()`: the reason an unknown parameter is
-     * a 400 rather than a silent ignore is so the caller can find their typo
-     * (ARCHITECTURE §9.2). One error per stray key, each naming the key.
-     */
     if (issue.code === 'unrecognized_keys') {
       return issue.keys.map((key) => ({
         field: [...base, key].join('.') || key,
@@ -73,10 +52,6 @@ function fieldErrorsFromZod(error: ZodError): FieldError[] {
   });
 }
 
-/**
- * Errors thrown by express.json()/urlencoded() before any route runs. They are
- * client mistakes, not bugs, so they must not fall through to a 500.
- */
 interface BodyParserError extends Error {
   type: string;
   status: number;
@@ -128,7 +103,6 @@ function build(
 }
 
 function toProblem(error: unknown, traceId: string): ProblemDetails {
-  // ZodError -> 400 VALIDATION_FAILED, with per-field errors.
   if (error instanceof ZodError) {
     return build(
       400,
@@ -140,8 +114,6 @@ function toProblem(error: unknown, traceId: string): ProblemDetails {
     );
   }
 
-  // NotFoundError -> 404, ForbiddenError -> 403, UnauthorizedError -> 401,
-  // DomainError -> 422 with its own code. Each error carries its own mapping.
   if (error instanceof AppError) {
     return {
       ...build(error.status, error.code, traceId, error.detail, error.errors, error.title),
@@ -157,7 +129,6 @@ function toProblem(error: unknown, traceId: string): ProblemDetails {
     return build(400, 'MALFORMED_BODY', traceId, 'The request body could not be read.');
   }
 
-  // Anything else is a bug. Never leak its message in production.
   return build(
     500,
     'INTERNAL',
@@ -172,17 +143,12 @@ function toProblem(error: unknown, traceId: string): ProblemDetails {
   );
 }
 
-/**
- * The last middleware in the chain. Express 5 forwards rejected promises here
- * automatically, so `async` handlers need no try/catch wrapper.
- */
 export function errorHandler(
   error: unknown,
   req: Request,
   res: Response,
   next: NextFunction,
 ): void {
-  // Streaming already started — the only correct move is to destroy the socket.
   if (res.headersSent) {
     next(error);
     return;
@@ -201,7 +167,6 @@ export function errorHandler(
   };
 
   if (problem.status >= 500) {
-    // TODO(Day 2): Sentry.captureException(error, { tags: { traceId } });
     logger.error({ ...logBindings, err: error }, 'request failed');
   } else {
     logger.warn(logBindings, 'request rejected');

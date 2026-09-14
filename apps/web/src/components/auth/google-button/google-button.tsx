@@ -9,13 +9,6 @@ export interface GoogleSignInButtonProps {
   disabled?: boolean;
 }
 
-/**
- * "Continue with Google". An `<a>`, not a button: the authorization code flow
- * needs the browser to *navigate* to Google, and a fetch could not carry the
- * redirect. `disabled` renders the same control inert for a deployment with no
- * Google credentials — a button that looks alive and fails on click is worse
- * than one that says why it cannot work.
- */
 export function GoogleSignInButton({
   href,
   label = GOOGLE_SIGN_IN_LABEL,
@@ -38,7 +31,6 @@ export function GoogleSignInButton({
       {content}
     </span>
   ) : (
-    // A full page navigation, so `next/link`'s client router is not involved.
     <a className={className} href={href} rel="nofollow">
       {content}
     </a>

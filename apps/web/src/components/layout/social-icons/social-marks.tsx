@@ -1,13 +1,6 @@
 import type { SocialLink } from '@dealers-drive/contracts';
 import type { ReactElement } from 'react';
 
-/**
- * The six social marks, as inline SVG (**R44**). Inline rather than a library
- * because the alternative is a dependency for six paths, and no new dependency
- * is added that the baseline did not already have. They are drawn at
- * `currentColor` on a `0 0 24 24` box, so the footer's hover colour is the only
- * thing deciding how they look.
- */
 export const SOCIAL_MARKS: Record<SocialLink['network'], ReactElement> = {
   instagram: (
     <>

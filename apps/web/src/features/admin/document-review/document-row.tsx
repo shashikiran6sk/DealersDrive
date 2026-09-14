@@ -24,13 +24,6 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
   const [reason, setReason] = useState('');
   const [rejecting, setRejecting] = useState(false);
 
-  /*
-   * Only a document that has actually been uploaded can be decided on: a
-   * REQUIRED row has no file behind it, and a decided one is re-decided by the
-   * dealer re-uploading rather than by a moderator changing their mind in place.
-   * A REJECTED row is genuinely empty — the file was deleted when it was
-   * rejected — which is why it reads the same as REQUIRED.
-   */
   const decidable = document.status === 'UPLOADED';
 
   function run(work: () => Promise<ActionResult>) {
@@ -52,8 +45,6 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
       <div className="flex items-center gap-3">
         <span className="min-w-0 flex-1 truncate">{document.label}</span>
 
-        {/* `viewUrl` is short-lived and audit-logged — the only way a KYC
-            document is ever read (D5). */}
         {document.viewUrl ? (
           <a
             href={document.viewUrl}
@@ -111,7 +102,6 @@ export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps)
           >
             {DOCUMENT_REVIEW_TEXT.askForNewFile}
           </Button>
-          {/* The consequence, stated before the button is pressed. */}
           <p className="w-full text-[12px] ink-muted">
             {DOCUMENT_REVIEW_TEXT.rejectConsequence(document.label)}
           </p>

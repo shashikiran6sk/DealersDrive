@@ -5,15 +5,6 @@ import { dirname, join, resolve, sep } from 'node:path';
 import { env } from '../../config/env.js';
 import type { PresignedUpload, StoragePort, StoredObject } from './storage.port.js';
 
-/**
- * R2 stood in with the local filesystem.
- *
- * The point is that the *contract* is identical: the client receives a signed
- * URL with an expiry and content conditions, PUTs the bytes there without the
- * API in the path, and then commits. Only the host that terminates the PUT
- * changes when `STORAGE_DRIVER=r2` — which is the whole reason `StoragePort`
- * exists (ARCHITECTURE §12.1).
- */
 export interface LocalStorageSignature {
   key: string;
   contentType: string;
@@ -25,8 +16,6 @@ const ROOT = resolve(process.cwd(), env.STORAGE_LOCAL_DIR);
 
 export function createLocalStorage(): StoragePort {
   return {
-    // Not `async`: signing against local disk is arithmetic. The port is
-    // promise-returning because signing against S3 is not.
     presignPut({
       key,
       contentType,
@@ -107,11 +96,6 @@ export function verifySignature(input: LocalStorageSignature, candidate: string)
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
-/**
- * `..` in a storage key would escape the root. Keys are always generated
- * server-side, but the one function that turns a key into a filesystem path is
- * the wrong place to assume that.
- */
 export function pathFor(key: string): string {
   const target = resolve(ROOT, key);
   if (target !== ROOT && !target.startsWith(ROOT + sep)) {

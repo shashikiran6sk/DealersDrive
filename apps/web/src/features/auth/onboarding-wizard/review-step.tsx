@@ -25,7 +25,6 @@ export function ReviewStep({ session, completeness }: ReviewStepProps) {
     <div className="flex flex-col gap-[18px]">
       {state.message ? (
         <Banner tone="err" title={state.message}>
-          {/* The API refuses an incomplete dealership; this says which part. */}
           {outstandingLabels(completeness).length > 0 ? (
             <ul className="mt-[4px] list-disc pl-[18px]">
               {outstandingLabels(completeness).map((label) => (

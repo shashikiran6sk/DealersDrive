@@ -8,15 +8,6 @@ export interface ComparisonProps<T> {
   render: (value: T) => ReactNode;
 }
 
-/**
- * Now, and what it would become.
- *
- * `proposed === null` is the case worth the branch: it means *this request does
- * not touch this field*, and it has to read as **unchanged** rather than as
- * cleared. Rendering an empty row would tell the moderator the dealer wants
- * their services removed, and approving that reading would be approving
- * something nobody asked for.
- */
 export function Comparison<T>({ live, proposed, render }: ComparisonProps<T>) {
   if (proposed === null) {
     return (

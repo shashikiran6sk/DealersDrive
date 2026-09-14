@@ -18,7 +18,6 @@ export interface BannerProps {
   className?: string;
 }
 
-/** DESIGN-SPEC §2.15 — cleared on navigation, never auto-dismissed. */
 export function Banner({ tone, title, children, action, className }: BannerProps) {
   return (
     <div

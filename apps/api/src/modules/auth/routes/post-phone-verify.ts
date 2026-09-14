@@ -6,14 +6,6 @@ import { validate, validated } from '../../../middleware/validate.js';
 import type { SessionAuthRoute } from './route.js';
 import { phoneOtpLimit } from './phone-otp-limit.js';
 
-/**
- * B8c — the widget's access token, checked with MSG91 and recorded.
- *
- * The tighter of the two limits, because this is the one that writes. Ten
- * presentations in ten minutes covers a dealer who mistypes a code twice and
- * asks for a fresh one; it does not cover walking a stolen token through a
- * list of numbers.
- */
 export const postPhoneVerify: SessionAuthRoute = (router, { phone, rateLimit }) => {
   router.post(
     '/phone/verify',

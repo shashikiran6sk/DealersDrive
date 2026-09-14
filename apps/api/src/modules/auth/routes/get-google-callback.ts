@@ -9,9 +9,6 @@ import type { PublicAuthRoute } from './route.js';
 export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
   router.get('/google/callback', (req, res, next) => {
     void (async () => {
-      // Resolved before the try, because a failure has to know which sign-in
-      // screen to send the browser back to — and the audience is in the cookie,
-      // not in anything the callback carries.
       let signInPath = '/dealer/login';
       let audience: OAuthAudience = 'DEALER';
       const back = (code: OAuthReason) => {
@@ -23,11 +20,8 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
         const transaction = openTransaction(readOAuthCookie(req));
         audience = transaction?.audience ?? 'DEALER';
         if (audience === 'ADMIN') signInPath = '/admin/login';
-        // Single-use, whatever happens next: the state and verifier inside are
-        // spent the moment Google sends the browser back.
         clearOAuthCookie(res);
 
-        // Google's own refusal — a closed account chooser, a denied consent.
         if (typeof req.query.error === 'string') {
           back('google_declined');
           return;
@@ -52,8 +46,6 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
         recordOAuthAttempt(result.audience, 'success', 'completed');
         res.redirect(302, `${env.WEB_BASE_URL}${result.returnTo}`);
       } catch (error) {
-        // A failed sign-in is a screen, not a JSON body — but a bug is still a
-        // bug, so anything unexpected goes to the error handler.
         const code = errorCode(error);
         if (code === 'OAUTH_STATE_INVALID' || code === 'OAUTH_EXCHANGE_FAILED') {
           back('sign_in_failed');
@@ -71,10 +63,6 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
           back('account_suspended');
           return;
         }
-        // Both refusals of an operations seat land on the same screen: one is
-        // "you were never on the list", the other "your seat was closed"
-        // (**R41**), and neither is worth telling an unauthenticated caller
-        // apart from the other.
         if (code === 'ADMIN_NOT_ALLOWLISTED' || code === 'ADMIN_ACCESS_REVOKED') {
           back('not_authorised');
           return;

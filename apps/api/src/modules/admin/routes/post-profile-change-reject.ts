@@ -10,11 +10,6 @@ import { validate, validated } from '../../../middleware/validate.js';
 
 import { handle, type AdminRoute } from './route.js';
 
-/**
- * `ReasonInput`, shared with the dealer and document rejections, and not a
- * coincidence: all three are refusals a person reads verbatim, and all three are
- * worse than useless without a sentence.
- */
 export const postProfileChangeReject: AdminRoute = (router, service) => {
   router.post(
     '/profile-changes/:id/reject',

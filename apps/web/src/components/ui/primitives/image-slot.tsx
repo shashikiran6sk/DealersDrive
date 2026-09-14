@@ -5,7 +5,6 @@ export interface ImageSlotProps {
   className?: string;
 }
 
-/** A placeholder panel naming the shot, exactly as the prototype renders one. */
 export function ImageSlot({ label, className }: ImageSlotProps) {
   return (
     <div className={cn('image-slot', className)} role="img" aria-label={label}>

@@ -22,24 +22,6 @@ import { postProfileChangeReject } from './routes/post-profile-change-reject.js'
 import { putConfigKey } from './routes/put-config-key.js';
 import type { AdminRoute } from './routes/route.js';
 
-/**
- * D1–D15. Every write in this router is audit-logged with the admin identity.
- *
- * This router deliberately carries **no** `requirePermission` middleware, and
- * that is worth being explicit about rather than reading as an omission. An
- * admin action's permission is checked inside `admin.service.ts`, in the same
- * function that performs it. Putting the check there rather than here means it
- * cannot be bypassed by a second caller reaching the service another way, and it
- * keeps the permission next to the audit row it justifies.
- *
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline declares 20 routes. F049 mounted the first, which is also the one
- * the console shell reads on every page, and F044 the two KYC review paths.
- * **F045 brings the six dealer paths** — bar `POST /dealers/:id/credits/grant`,
- * which moves credits and so waits for the ledger at F050/F054. The listing
- * queue, payments, configuration and the audit log belong to later tiers.
- * ────────────────────────────────────────────────────────────────────────────
- */
 const ROUTES: AdminRoute[] = [
   getMetricsOverview,
   getDealers,

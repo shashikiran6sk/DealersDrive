@@ -2,21 +2,6 @@ import type { PrismaClient } from '@prisma/client';
 
 import { retryAfterSeconds, type CachePort, type CounterResult } from './cache.port.js';
 
-/**
- * `CachePort` on the database the API already has.
- *
- * Chosen over Redis deliberately (§18). Redis would be a second datastore to
- * provision, secure, monitor and pay for, in a VPC that currently contains one
- * — and the thing being stored is a counter that may be lost without
- * consequence beyond a window resetting early. Postgres is already there,
- * already backed up, already on the readiness check, and already the thing the
- * request cannot proceed without.
- *
- * The cost is one small write per rate-limited request. At the current public
- * limit (120/min/IP) that is nothing next to the query the request is about to
- * run anyway. When it stops being nothing, `createRedisCache()` implements the
- * same port and `factory.ts` gains a branch.
- */
 interface CounterRow {
   count: number;
   reset_at: Date;
@@ -30,16 +15,6 @@ export function createPostgresCache(prisma: PrismaClient): CachePort {
   return {
     driver: 'postgres',
 
-    /**
-     * One statement, so it is atomic without a transaction or a row lock.
-     *
-     * The two CASE expressions are what make the window roll over correctly
-     * under concurrency: whichever request wins the conflict evaluates
-     * `reset_at <= now()` against the row as it exists at that instant, so a
-     * stale window is reset to 1 exactly once and every other concurrent
-     * request increments the fresh one. A read-then-write in application code
-     * cannot make that promise.
-     */
     async increment(key, windowSeconds): Promise<CounterResult> {
       const rows = await prisma.$queryRaw<CounterRow[]>`
         INSERT INTO cache_counter (key, count, reset_at)
@@ -58,9 +33,6 @@ export function createPostgresCache(prisma: PrismaClient): CachePort {
 
       const row = rows[0];
       if (!row) {
-        // RETURNING on an upsert always yields a row; if it ever does not, the
-        // safe reading is "we could not count this", and a limiter that cannot
-        // count must not be the thing that denies a legitimate request.
         const resetAt = Date.now() + windowSeconds * 1000;
         return { count: 1, resetAt, retryAfterSeconds: windowSeconds };
       }
@@ -114,7 +86,6 @@ export function createPostgresCache(prisma: PrismaClient): CachePort {
     },
 
     close(): Promise<void> {
-      // The Prisma client is owned by the container, which disconnects it.
       return Promise.resolve();
     },
   };

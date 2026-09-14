@@ -5,11 +5,6 @@ import { Tag } from '@/components/ui/primitives';
 import { CONFIG_EDITOR_TEXT } from './config-editor.constants';
 import { displayValue } from './utils';
 
-/**
- * A key nothing reads yet. The value is shown, because "what will this be when
- * the feature lands" is a real question, and the control is not, because
- * changing it would change nothing and say otherwise.
- */
 export function PlaceholderRow({ entry }: { entry: ConfigEntry }) {
   return (
     <div className="flex flex-wrap items-center gap-3 border-b border-(--color-divider) px-4 py-3 last:border-b-0">

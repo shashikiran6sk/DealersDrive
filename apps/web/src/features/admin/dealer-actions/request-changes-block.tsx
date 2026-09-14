@@ -16,11 +16,6 @@ export interface RequestChangesBlockProps extends ActionBlockProps {
   onReasonChange: (value: string) => void;
 }
 
-/**
- * The reversible refusal, immediately under approve — those two are the
- * decisions a moderator actually makes on this screen. Nothing is deleted: the
- * dealer gets their own form back, filled in, with this sentence at the top.
- */
 export function RequestChangesBlock({
   dealer,
   pending,

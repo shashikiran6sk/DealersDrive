@@ -17,7 +17,6 @@ export interface StatusTagProps {
   className?: string;
 }
 
-/** Status is never conveyed by colour alone — the label always carries it (§4.15). */
 export function StatusTag({ tone, children, className }: StatusTagProps) {
   return <span className={cn('tag', TONE_CLASS[tone], className)}>{children}</span>;
 }

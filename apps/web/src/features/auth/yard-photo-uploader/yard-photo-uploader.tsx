@@ -9,19 +9,6 @@ import { failureMessage, fileRejection, postJson, presign, putToStorage } from '
 
 import { YARD_PHOTO_PATH, YARD_PHOTO_RULE, YARD_PHOTO_TEXT } from './yard-photo-uploader.constants';
 
-/**
- * The yard photograph — the hero of the dealership's public portfolio.
- *
- * Same presign → PUT → commit pipeline as the KYC documents beside it, and a
- * deliberately different presentation: a document row is a checklist tick, this
- * is the image a buyer sees first, so the dealer is shown it at a size where
- * they can tell whether it is any good.
- *
- * The instruction text is doing real work. A dealer asked for "a photo" sends a
- * phone snap of a car; a dealer told what the image is *for* sends the shot of
- * the entrance they already have. The cost of the second sentence is one line;
- * the cost of not having it is a moderator rejecting the application.
- */
 export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
@@ -91,11 +78,6 @@ export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
 
       {photo.url ? (
         <figure className="m-0">
-          {/*
-            A plain <img>, not next/image. The source is a short-lived signed URL
-            against object storage — it changes on every render and the optimiser
-            has nothing stable to cache.
-          */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photo.url}

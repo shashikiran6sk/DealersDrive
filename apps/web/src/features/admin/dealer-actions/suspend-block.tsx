@@ -16,12 +16,6 @@ export interface SuspendBlockProps extends ActionBlockProps {
   onReasonChange: (value: string) => void;
 }
 
-/**
- * Suspending pulls every one of this dealer's listings out of the catalogue at
- * once, so the count is stated before the button is pressed (rule 6) — and the
- * button stays disabled until there is a reason of substance behind it, because
- * the dealer reads that reason verbatim.
- */
 export function SuspendBlock({ dealer, pending, run, reason, onReasonChange }: SuspendBlockProps) {
   return (
     <div className="flex flex-wrap items-end gap-3 border-t border-(--color-divider) pt-3">

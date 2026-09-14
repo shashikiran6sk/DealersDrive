@@ -5,7 +5,6 @@ import { Spinner } from './spinner';
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   ButtonVariants & {
-    /** Keeps width, swaps the label for a spinner, sets aria-busy (§2.1). */
     loading?: boolean;
   };
 

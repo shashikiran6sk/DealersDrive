@@ -8,11 +8,6 @@ import type { NavItem } from '@/types';
 
 import { DEALER_NAV_LABEL, DEALER_ROOT_HREF } from './console-nav.constants';
 
-/**
- * DESIGN-SPEC §3.11 — the console nav. A client component for one reason:
- * `aria-current` has to follow the route. Everything else in the shell stays
- * server-rendered.
- */
 export function ConsoleNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 

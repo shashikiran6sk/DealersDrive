@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
-/** A state filter. Navigation, not a selection — see the call site. */
 export function FilterChip({
   pressed,
   onClick,

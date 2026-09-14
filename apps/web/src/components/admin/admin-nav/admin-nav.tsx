@@ -9,15 +9,6 @@ import { isCurrentPath } from '@/lib/nav';
 import { ADMIN_NAV_LABEL, ADMIN_ROOT_HREF, LANDED_ADMIN_NAV } from './admin-nav.constants';
 import type { AdminNavItem } from './admin-nav.types';
 
-/**
- * DESIGN-SPEC §3.17 — the admin nav, on the cobalt-900 field. The console's own
- * `.dd-nav-item` colours are tuned for the white dealer sidebar, so the admin
- * variant is styled here rather than by overriding a shared class in six places.
- *
- * `items` defaults to the landed set, so the shell renders the honest nav
- * without knowing about the reconstruction slice, and the sandbox can still be
- * handed `ADMIN_NAV` to draw the console as it will be.
- */
 export function AdminNav({ items = LANDED_ADMIN_NAV }: { items?: AdminNavItem[] }) {
   const pathname = usePathname();
 

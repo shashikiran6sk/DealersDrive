@@ -14,29 +14,6 @@ import { buildSchemaCatalogue, type JsonSchema, type SchemaCatalogue } from './s
 import type { Audience, ModuleDocs, OperationSpec, ResponseSpec } from './spec.js';
 import { TAG_ORDER } from './tags.js';
 
-/**
- * Assembles the OpenAPI document.
- *
- * Every module contributes its own `*.docs.ts` beside its routes, and this file
- * turns them into one document. What it does *not* do is let each module restate
- * shared truths: the security requirement comes from the mount point, the
- * parameter list is expanded from the same Zod schema `validate()` parses with,
- * and the error bodies come from `docs/errors.ts`. There is one place to change
- * each of those.
- */
-
-/*
- * ── Reconstruction slice ──────────────────────────────────────────────────
- * Six modules, not eleven. `searchDocs`, `enquiriesDocs`, `vehiclesDocs` and
- * `billingDocs` describe routes that have not landed yet, and `catalogDocs`
- * never lands at all (decision D1) — the one surviving operation moved to
- * `configDocs`. `locationsDocs` described `GET /v1/cities`, which went with
- * the `cities` table: a dealership's city is text it typed, so there is no
- * list to serve.
- *
- * **Each feature adds its own line here**, in the same PR as its routes. See
- * the API-documentation rule in CLAUDE.md §4.
- */
 const MODULES: ModuleDocs[] = [
   authDocs,
   configDocs,
@@ -49,15 +26,8 @@ const MODULES: ModuleDocs[] = [
   metricsDocs,
 ];
 
-/** Tag order in the UI: buyer-facing, then dealer, then admin, then plumbing. */
-
-/** The marker `media.docs.ts` uses for the one endpoint that takes raw bytes. */
 const RAW_BINARY = '__raw_binary__';
 
-/**
- * The security scheme names. Both describe the *same* seam — the session
- * resolver — from the two mount points that use it.
- */
 const DEALER_SECURITY = 'dealerSession';
 const ADMIN_SECURITY = 'adminSession';
 
@@ -70,12 +40,6 @@ interface Parameter {
   example?: unknown;
 }
 
-/**
- * `/v1/dealer/vehicles/:id` → `/v1/dealer/vehicles/{id}`.
- *
- * The media route ends in `:width.webp`, a literal suffix on the parameter, so
- * the parameter name has to stop at the dot: `{width}.webp`.
- */
 function toOpenApiPath(expressPath: string): string {
   return expressPath.replace(/:([A-Za-z0-9_]+)/g, '{$1}');
 }
@@ -84,14 +48,6 @@ function pathParamNames(expressPath: string): string[] {
   return [...expressPath.matchAll(/:([A-Za-z0-9_]+)/g)].map((match) => match[1] ?? '');
 }
 
-/**
- * Splits an object schema into OpenAPI parameters.
- *
- * The schema is the one the route actually validates with, so the required
- * flags, the patterns, the enums and the defaults are the real ones. A field
- * with a `default` is optional on the wire — that is exactly what `io: 'input'`
- * encodes, and why the parameters come from the input conversion.
- */
 function parametersFrom(
   schema: JsonSchema,
   location: 'path' | 'query',
@@ -109,7 +65,6 @@ function parametersFrom(
       return {
         name,
         in: location,
-        // A path parameter is required by definition, whatever the schema says.
         required: location === 'path' ? true : required.has(name),
         ...(typeof description === 'string' ? { description } : {}),
         schema: rest,
@@ -117,7 +72,6 @@ function parametersFrom(
     });
 }
 
-/** Header parameters every request may carry. Documented once, applied widely. */
 const TRACE_HEADER: Parameter = {
   name: 'X-Request-Id',
   in: 'header',
@@ -135,15 +89,6 @@ function securityFor(audience: Audience): { name: string; scheme: string } | nul
   return null;
 }
 
-/**
- * The statuses an operation can return, beyond the ones it declares.
- *
- * Derived rather than listed per operation, because the answer follows from the
- * guard chain: anything behind `requireDealer` can 401, anything with a
- * permission can 403, anything that validates input can 400, and everything can
- * 500. An operation's `errors` array only has to name the ones that are specific
- * to it — 404, 409, 422, 429.
- */
 function errorStatusesFor(operation: OperationSpec): number[] {
   const statuses = new Set<number>(operation.errors ?? []);
 
@@ -210,9 +155,6 @@ function buildOperation(
     const schema = catalogue.resolved(operation.params);
     parameters.push(...parametersFrom(schema, 'path', declaredPathParams));
 
-    // A params schema whose fields do not match the route's `:placeholders`
-    // means one of the two moved. Better to fail the build than to publish a
-    // reference that documents a parameter the route does not read.
     const documented = new Set(parameters.map((parameter) => parameter.name));
     const missing = declaredPathParams.filter((name) => !documented.has(name));
     if (missing.length > 0) {
@@ -222,8 +164,6 @@ function buildOperation(
       );
     }
   } else if (declaredPathParams.length > 0) {
-    // The media delivery route: its params are validated by a local schema, so
-    // they are described here rather than pulled from contracts.
     parameters.push(
       ...declaredPathParams.map<Parameter>((name) => ({
         name,
@@ -260,8 +200,6 @@ function buildOperation(
   for (const status of errorStatusesFor(operation)) {
     const name = ERROR_RESPONSE_BY_STATUS[status];
     if (!name) throw new Error(`docs: no shared response for status ${status}.`);
-    // A declared success at this status wins — nothing declares one, but a
-    // silent overwrite would be the wrong failure mode if something ever did.
     responses[String(status)] ??= { $ref: `#/components/responses/${name}` };
   }
 
@@ -296,8 +234,6 @@ function buildOperation(
     parameters,
     ...(requestBody ? { requestBody } : {}),
     responses,
-    // An empty array means "explicitly public", which is what a public endpoint
-    // in an API with a global security requirement has to say.
     security: security ? [{ [security.scheme]: [] }] : [],
   };
 }
@@ -427,7 +363,6 @@ and billing are still to come, and with them the rest of the admin surface.
 `.trim();
 
 export interface OpenApiOptions {
-  /** Absolute base URL of this API. Defaults to `API_BASE_URL`. */
   serverUrl?: string;
 }
 

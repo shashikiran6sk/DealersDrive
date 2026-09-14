@@ -14,18 +14,6 @@ export interface DistrictOptionProps {
   onSelect: (slug: string) => void;
 }
 
-/**
- * A district — the only selectable thing in the dialog.
- *
- * A real `<button>`, so Tab reaches it and Enter and Space choose it (§2.1:
- * never a `<div>` with an `onClick`). `min-h-11` is 44px, the mobile touch
- * minimum (§4.15).
- *
- * Selection is announced three ways over, because colour alone is not a status
- * (§4.15): `aria-pressed` for a screen reader, a ✓ for an eye, and the cobalt
- * border and `accent-100` fill for a glance. No shadow — §4.1 allows the dialog
- * one and nothing inside it.
- */
 export function DistrictOption({
   district,
   selected,

@@ -3,15 +3,6 @@ import { PgBoss } from 'pg-boss';
 import { env } from '../../config/env.js';
 import { logger } from '../telemetry/logger.js';
 
-/**
- * pg-boss on the database we already run: real queue semantics — retries,
- * backoff, scheduling, dead-lettering, priorities — with zero new
- * infrastructure and transactional enqueue (ARCHITECTURE §19.1).
- *
- * `JOBS_ENABLED=false` swaps in a queue that runs handlers inline. The
- * integration suite uses it so a test never waits on a poller, and so the
- * suite needs no background schema.
- */
 export interface Queue {
   send(
     name: JobName,
@@ -34,16 +25,6 @@ export const JOB_NAMES = [
   'notification.listing-reviewed',
   'notification.dealer-reviewed',
   'notification.invoice',
-  /**
-   * **R40.** One name for every email, and the payload says which.
-   *
-   * The alternative — a queue per template — was considered and is worse in
-   * both directions: eight queues to create, poll, monitor and drain, and a
-   * ninth the day somebody adds a message. What a queue name is *for* is
-   * separating work with different shapes: a different concurrency, a
-   * different retry budget, a different priority. Eight transactional emails
-   * have none of that; they are one kind of work with eight bodies.
-   */
   'notification.email',
   'listings.expire-sweep',
   'counters.reconcile',
@@ -53,7 +34,6 @@ export const JOB_NAMES = [
 
 export type JobName = (typeof JOB_NAMES)[number];
 
-/** Highest priority is the lead notification. It is the product (§14.5). */
 const PRIORITIES: Partial<Record<JobName, number>> = {
   'notification.enquiry-to-dealer': 100,
   'media.process': 50,
@@ -61,16 +41,6 @@ const PRIORITIES: Partial<Record<JobName, number>> = {
   'search.remove-listing': 50,
 };
 
-/**
- * How hard a job tries before it is somebody's problem (**R40**).
- *
- * Five attempts with exponential backoff is roughly twenty minutes of trying,
- * which covers the failure this is actually for: a provider having a bad
- * minute. Beyond that the fault is not transient — an unverified domain, a
- * revoked key — and a sixth attempt is twenty more minutes of pretending
- * otherwise. `notification_deliveries` carries the `FAILED` row and the
- * provider's own sentence for what happens next.
- */
 const RETRY: Partial<Record<JobName, { retryLimit: number; retryDelay: number }>> = {
   'notification.email': { retryLimit: 5, retryDelay: 30 },
 };
@@ -85,7 +55,6 @@ export function createQueue(): Queue {
 
   boss.on('error', (error: unknown) => logger.error({ err: error }, 'pg-boss error'));
 
-  /** Handlers registered before `start()`; pg-boss v12 needs the queue to exist. */
   const pending: { name: JobName; handler: (data: Record<string, unknown>) => Promise<void> }[] =
     [];
   let started = false;
@@ -138,11 +107,6 @@ export function createQueue(): Queue {
   };
 }
 
-/**
- * Runs every handler synchronously at send time. Deliberately not "fire and
- * forget": a test that submits a listing must be able to assert on what the
- * subscriber wrote, on the next line, without a sleep.
- */
 export function createInlineQueue(): Queue {
   const handlers = new Map<JobName, (data: Record<string, unknown>) => Promise<void>>();
 

@@ -4,15 +4,6 @@ import { Avatar } from '@/components/ui/primitives';
 
 import { RECENT_ENQUIRIES_SHOWN, RECENT_ENQUIRIES_TEXT } from './dashboard-panels.constants';
 
-/**
- * The newest four leads, each with a one-tap `tel:`. The empty state is not a
- * placeholder — it is the state every new dealership sees, and until `Enquiry`
- * lands at **F088** it is also the only state the API can produce.
- *
- * The baseline's heading row carries an `All enquiries →` ghost button onto
- * `/dealer/enquiries`, which arrives with **F065**. It is held back rather than
- * pointed at a 404, and both return together.
- */
 export function RecentEnquiries({
   enquiries,
 }: {

@@ -26,10 +26,6 @@ export interface PhoneCodePanelProps {
   onReset: () => void;
 }
 
-/**
- * A code is out: six boxes, a resend countdown, verify or cancel — and the same
- * panel in `err` once a code has been refused.
- */
 export function PhoneCodePanel({
   captchaId,
   widget,
@@ -54,12 +50,6 @@ export function PhoneCodePanel({
           ? 'border border-[color-mix(in_srgb,#b3261e_30%,transparent)] bg-(--color-err-bg) px-[18px] py-[16px]'
           : 'border border-(--color-accent) bg-(--color-accent-100) px-[18px] py-[16px]'
       }
-      /*
-       * Enter inside these boxes submits the code, and — more to the point — must
-       * not submit the wizard's form. Steps 1 and 2 share one `<form>` whose
-       * submit creates the dealership, and implicit submission from a field on
-       * step 1 would post a half-filled step 2.
-       */
       onKeyDown={(event) => {
         if (event.key !== 'Enter') return;
         event.preventDefault();

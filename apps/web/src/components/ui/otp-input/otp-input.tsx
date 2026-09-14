@@ -8,19 +8,6 @@ import { OTP_LENGTH, OTP_TEXT } from './otp-input.constants';
 import type { OtpInputProps } from './otp-input.types';
 import { clampIndex, digitsOnly } from './utils';
 
-/**
- * DESIGN-SPEC §2.3 — one box per digit, 52×58, 22px tabular (**R39**).
- *
- * The behaviour people notice only when it is missing: typing moves forward,
- * Backspace on an empty box moves back and clears the one it lands on, and
- * pasting six digits into *any* box fills all six — which is what the "copy
- * code" affordance on iOS and Android actually produces. `one-time-code` goes on
- * the first box only, and the paste handler turns that autofill into six digits;
- * six separate inputs would otherwise forfeit it.
- *
- * The value is owned by the caller. This renders `value`, split — there is no
- * second copy of the code living in six pieces of DOM state.
- */
 export function OtpInput({
   id,
   value,
@@ -49,7 +36,6 @@ export function OtpInput({
     const digits = digitsOnly(typed);
     if (digits.length === 0) return;
 
-    // More than one digit in one box means an autofill or a paste landed here.
     const next = (value.slice(0, index) + digits + value.slice(index + digits.length)).slice(
       0,
       length,
@@ -61,8 +47,6 @@ export function OtpInput({
   function handleKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>): void {
     if (event.key === 'Backspace') {
       event.preventDefault();
-      // On a filled box, clear it. On an empty one, step back and clear that —
-      // which is what a person who has just noticed the wrong digit expects.
       const target = value[index] ? index : index - 1;
       if (target < 0) return;
       commit(value.slice(0, target) + value.slice(target + 1), target);
@@ -104,8 +88,6 @@ export function OtpInput({
           )}
           type="text"
           inputMode="numeric"
-          // Only the first box carries it: a phone offering the code fills the
-          // field it is on, and `handleInput` spreads the six digits from there.
           autoComplete={index === 0 ? 'one-time-code' : 'off'}
           maxLength={length}
           value={value[index] ?? ''}

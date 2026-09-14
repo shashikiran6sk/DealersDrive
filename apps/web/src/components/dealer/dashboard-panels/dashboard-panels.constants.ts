@@ -1,4 +1,3 @@
-/** The newest four leads is what §3.12 draws. */
 export const RECENT_ENQUIRIES_SHOWN = 4;
 
 export const RECENT_ENQUIRIES_TEXT = {

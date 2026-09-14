@@ -2,29 +2,6 @@ import { PROBLEM_TYPE_BASE } from '../platform/errors.js';
 import type { JsonSchema } from './schemas.js';
 import { MALFORMED_REQUEST } from '../platform/messages.js';
 
-/**
- * The error half of the contract, written once.
- *
- * Every failure this API can produce is an RFC 9457 problem document with
- * `application/problem+json` — there is no second error shape (§23), so there is
- * no reason for 73 operations to describe one each. These become
- * `components.responses`, and each operation lists the statuses it can actually
- * return.
- *
- * The status → code mapping is not invented here; it is what the error classes
- * in `platform/errors.ts` declare:
- *
- *   ZodError           → 400 VALIDATION_FAILED   (with `errors[]` per field)
- *   body-parser        → 400 MALFORMED_BODY / 413 / 415
- *   UnauthorizedError  → 401 NOT_AUTHENTICATED
- *   ForbiddenError     → 403 FORBIDDEN | DEALER_NOT_ACTIVE
- *   NotFoundError      → 404 NOT_FOUND
- *   ConflictError      → 409 <code>
- *   DomainError        → 422 <code>
- *   RateLimitError     → 429 RATE_LIMITED        (+ Retry-After)
- *   anything else      → 500 INTERNAL
- */
-
 const PROBLEM_REF: JsonSchema = { $ref: '#/components/schemas/ProblemDetails' };
 
 function problem(status: number, code: string, detail: string, extra?: JsonSchema): JsonSchema {
@@ -63,9 +40,6 @@ function response(
   };
 }
 
-/**
- * Keyed by the name an operation references: `$ref: '#/components/responses/…'`.
- */
 export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
   BadRequest: response(
     'The request did not match the schema. Every input schema is `.strict()`, so an ' +
@@ -234,7 +208,6 @@ export const ERROR_RESPONSES: Record<string, ProblemResponse> = {
   ),
 };
 
-/** Status → the `components.responses` key that documents it. */
 export const ERROR_RESPONSE_BY_STATUS: Record<number, string> = {
   400: 'BadRequest',
   401: 'Unauthorized',

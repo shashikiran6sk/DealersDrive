@@ -15,7 +15,6 @@ export interface AccountStepProps {
   onFullNameChange: (value: string) => void;
   phone: string;
   onPhoneChange: (value: string) => void;
-  /** Whether the number in the box is the one this account proved (**R39**). */
   phoneVerified: boolean;
 }
 
@@ -38,11 +37,6 @@ export function AccountStep({
       </h1>
       <p className="mb-[20px] mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.accountIntro}</p>
 
-      {/*
-        The verified identity, shown rather than asked for. Google has already
-        proved this address belongs to whoever is at the keyboard, and an
-        editable email field would be a way to claim one it never verified.
-      */}
       <div className="mb-[16px] flex items-center gap-[10px] border border-(--color-divider) bg-(--color-accent-100) px-[13px] py-[10px]">
         <div className="min-w-0">
           <div className="text-[11px] uppercase tracking-[0.1em] text-(--color-accent-800)">
@@ -94,15 +88,6 @@ export function AccountStep({
             }}
             required
             aria-required="true"
-            /**
-             * Settled once it has been proved: a verified number is a fact about
-             * a handset somebody answered, and typing over it would throw that
-             * away — which is what used to happen on the way back from step 2.
-             *
-             * `readOnly` rather than `disabled`, and the difference is
-             * load-bearing: a disabled input is **not submitted**, so the number
-             * would vanish from the FormData that creates the dealership.
-             */
             readOnly={phoneVerified}
             aria-readonly={phoneVerified || undefined}
             {...invalidProps('phone', errors.phone)}

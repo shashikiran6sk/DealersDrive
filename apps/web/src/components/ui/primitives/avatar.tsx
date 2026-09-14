@@ -6,10 +6,6 @@ export interface AvatarProps {
   className?: string;
 }
 
-/**
- * Square avatars. `border-radius: 50%` appears nowhere in this product
- * (DESIGN-SPEC §4.3) — the monogram sits in a cobalt-tinted square.
- */
 export function Avatar({ initials, size = 20, className }: AvatarProps) {
   return (
     <span

@@ -4,11 +4,6 @@ export interface DirectoryQuery {
   q?: string;
 }
 
-/**
- * The directory URL for a set of filters. Towns are sorted, so picking the same
- * two in either order produces the same URL — one cache entry and one link,
- * rather than two of each.
- */
 export function directoryHref({ district, city, q }: DirectoryQuery): string {
   const params = new URLSearchParams();
   if (district) params.set('district', district);

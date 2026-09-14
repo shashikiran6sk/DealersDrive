@@ -13,19 +13,6 @@ import { BOOLEAN_VALUE, CONFIG_EDITOR_TEXT } from './config-editor.constants';
 import { PlaceholderRow } from './placeholder-row';
 import { toInput } from './utils';
 
-/**
- * D14 — one row, one value, one save.
- *
- * The row renders a control when the API says something reads the key, and a
- * **placeholder** when nothing does. A placeholder is deliberately not an
- * editable field that quietly does nothing: an operator who sets "minimum
- * photos" to 8 and watches it save has been told the platform now requires eight
- * photos, and nothing on this screen would ever contradict them.
- *
- * `readBy` comes from the API rather than a list in this file, because the
- * question it answers — *does any running code consult this key* — is a fact
- * about the server.
- */
 export function ConfigRow({ entry }: { entry: ConfigEntry }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();

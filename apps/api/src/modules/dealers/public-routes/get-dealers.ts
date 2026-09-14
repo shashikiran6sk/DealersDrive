@@ -14,7 +14,6 @@ export const getDealers: PublicDealersRoute = (router, { service, publicReads })
       void (async () => {
         try {
           const query = validated<DealerDirectoryQueryType>(req, 'query');
-          // A directory changes at the pace of onboarding, not of trading.
           res.set('Cache-Control', 'public, max-age=300');
           res.json(await service.directory(query));
         } catch (error) {

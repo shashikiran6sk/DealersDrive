@@ -3,10 +3,6 @@ import { StatusTone } from '@dealers-drive/contracts';
 
 import { Banner, StatusTag, Tag } from '@/components/ui/primitives';
 
-/**
- * Status is never conveyed by colour alone — the label always carries it
- * (DESIGN-SPEC §4.15). Every scenario below is readable in greyscale.
- */
 const meta = {
   title: 'Primitives/StatusTag',
   component: StatusTag,
@@ -23,11 +19,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
 
-/**
- * Generated from the contracts enum rather than a hand-written list, so adding
- * a `StatusTone` makes a new swatch appear here automatically — and a tone with
- * no CSS class shows up as an unstyled tag rather than passing unnoticed.
- */
 export const EveryTone: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -40,7 +31,6 @@ export const EveryTone: Story = {
   ),
 };
 
-/** `Tag` is the non-status sibling: three variants, no semantic meaning. */
 export const TagVariants: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -51,12 +41,6 @@ export const TagVariants: Story = {
   ),
 };
 
-/**
- * ⚠️ `Banner.tone` and `StatusTone` are two different unions — Banner takes
- * only ok/warn/err. That divergence is finding D-G in component-map.md and is
- * deliberately **not** merged here; the two are rendered together so the
- * difference is visible rather than surprising.
- */
 export const BannerTones: Story = {
   render: () => (
     <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
@@ -73,7 +57,6 @@ export const BannerTones: Story = {
   ),
 };
 
-/** All four shapes: with and without a title, with and without children. */
 export const BannerShapes: Story = {
   render: () => (
     <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
@@ -89,7 +72,6 @@ export const BannerShapes: Story = {
   ),
 };
 
-/** Long copy must wrap rather than push the action off the edge. */
 export const BannerLongText: Story = {
   render: () => (
     <div style={{ maxWidth: 560 }}>

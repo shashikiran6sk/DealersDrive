@@ -10,27 +10,14 @@ import { SearchIcon } from './search-icon';
 
 export interface AutocompletePanelProps<T> {
   autocomplete: UseAutocomplete<T>;
-  /** The visually-hidden `<label>`. Never a placeholder standing in for one. */
   label: string;
   placeholder: string;
-  /** The uppercase heading over the rows — "Dealerships in Vellore district". */
   groupLabel: string;
-  /** What to say when the search matched nothing. Gets the search back. */
   emptyMessage: (search: string) => string;
   className?: string;
   children: (autocomplete: UseAutocomplete<T>) => ReactNode;
 }
 
-/**
- * The shell every typeahead draws: the bordered input row, and the panel under
- * it (DESIGN-SPEC §3.5).
- *
- * It renders the four states a remote list actually has — loading, error,
- * nothing found, and rows — because each is a different sentence and collapsing
- * any two of them lies to somebody. The rows themselves are the caller's, so a
- * dealer row and a vehicle row can look entirely different while the panel, the
- * states and the keyboard stay one implementation.
- */
 export function AutocompletePanel<T>({
   autocomplete,
   label,
@@ -43,11 +30,6 @@ export function AutocompletePanel<T>({
   const shell = useRef<HTMLDivElement>(null);
   const { open, status, items, countLabel, close } = autocomplete;
 
-  /*
-   * A click anywhere else closes the panel. `pointerdown` rather than `click` so
-   * the panel is gone before the thing underneath reacts, and on the document
-   * rather than via a blur handler because focus never leaves the input.
-   */
   useEffect(() => {
     if (!open) return;
     function onPointerDown(event: PointerEvent) {
@@ -79,8 +61,6 @@ export function AutocompletePanel<T>({
         {autocomplete.value.length > 0 ? (
           <button
             type="button"
-            // A convenience for a pointer; Escape plus select-all is the
-            // keyboard's way to the same place.
             onClick={autocomplete.clear}
             className="flex h-[24px] w-[24px] shrink-0 cursor-pointer items-center justify-center rounded-[2px] text-[12px] ink-subtle hover:bg-(--color-surface) hover:ink-body"
             aria-label={AUTOCOMPLETE_TEXT.clearLabel}
@@ -113,11 +93,6 @@ export function AutocompletePanel<T>({
               </ul>
             </>
           ) : (
-            /*
-              One row, saying which of the three non-list states this is. It still
-              carries the listbox role: a screen reader that was told the box
-              controls a list should not find that the list has vanished.
-            */
             <div {...autocomplete.listProps} className="px-[12px] py-[14px] text-[13px]">
               {status === 'loading' ? (
                 <span className="ink-subtle">{AUTOCOMPLETE_TEXT.loading}</span>

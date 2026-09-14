@@ -20,7 +20,6 @@ export interface StatCardProps {
   className?: string;
 }
 
-/** DESIGN-SPEC §2.12 — blueprint, eyebrow, tabular stat, delta line. */
 export function StatCard({ label, value, delta, deltaTone = 'neutral', className }: StatCardProps) {
   return (
     <Blueprint className={cn('bg-white p-4', className)}>

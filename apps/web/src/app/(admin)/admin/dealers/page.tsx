@@ -11,14 +11,6 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Dealers' };
 
-/**
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline types `searchParams` as `SearchParamsInput` from `lib/url.ts`.
- * That file is the search-state-in-the-URL policy and belongs to **F077**; the
- * type itself is the literal below, so it is inlined here rather than dragging
- * `FACET_ORDER` and `buildSearchUrl` forward for one alias.
- * ────────────────────────────────────────────────────────────────────────────
- */
 type SearchParamsInput = Record<string, string | string[] | undefined>;
 
 const STATUS_TABS = [
@@ -29,7 +21,6 @@ const STATUS_TABS = [
   { value: 'REJECTED', label: 'Rejected' },
 ] as const;
 
-/** DESIGN-SPEC §3.17, plus the district and state the location filter works in. */
 const COLUMNS: TableColumn[] = [
   { key: 'dealer', label: 'Dealer' },
   { key: 'city', label: 'City' },
@@ -43,7 +34,6 @@ const COLUMNS: TableColumn[] = [
   { key: 'actions', label: 'Actions', align: 'right' },
 ];
 
-/** A single-valued search parameter, or nothing. */
 function one(params: SearchParamsInput, key: string): string | undefined {
   const value = params[key];
   return typeof value === 'string' && value !== '' ? value : undefined;
@@ -59,13 +49,6 @@ export default async function AdminDealersPage({
   const state = one(params, 'state');
   const district = one(params, 'district');
   const city = one(params, 'city');
-  /*
-   * R34 — the dealerships waiting on a decision about their own words.
-   *
-   * `'true'` or absent, matching `AdminDealerQuery.pendingEdits`: a querystring
-   * has no booleans, and `?pendingEdits=false` reading as *true* is the shape
-   * of bug that survives review because the URL reads correctly.
-   */
   const pendingEdits = one(params, 'pendingEdits') === 'true' ? 'true' : undefined;
 
   const dealers = await apiGet<AdminDealersResponse>(
@@ -73,12 +56,6 @@ export default async function AdminDealersPage({
     { revalidate: false },
   );
 
-  /**
-   * The status tabs have to carry the location filter with them, and the
-   * location form has to carry the status tab. Otherwise every click on either
-   * one silently discards the other, and an operator who has narrowed to a
-   * district loses it the moment they look at the pending tab.
-   */
   const tabHref = (value?: string) =>
     `/admin/dealers${qs({ status: value, state, district, city, pendingEdits })}`;
 
@@ -86,10 +63,6 @@ export default async function AdminDealersPage({
     <div className="flex flex-col gap-4 p-5">
       <h1 className="text-[26px]">Dealers</h1>
 
-      {/*
-        The counts come back with the page, so the tabs cost no second request —
-        and cannot disagree with the list they filter.
-      */}
       <div className="seg self-start">
         {STATUS_TABS.map((tab) => (
           <Link
@@ -108,21 +81,8 @@ export default async function AdminDealersPage({
         ))}
       </div>
 
-      {/*
-        Where, in three fields, narrowing from the outside in.
-
-        A plain GET `<form>`: the filter belongs in the URL, so a moderator can
-        send "every pending dealer in Vellore district" to a colleague as a
-        link, and the page stays a server component with no client JavaScript at
-        all. The options come from the response's own `facets`, so the filter
-        can only ever offer a place some dealership is actually in — and they
-        are not narrowed by the current selection, which is what stops a state
-        choice from emptying the district list and stranding the operator.
-      */}
       <form method="get" action="/admin/dealers" className="flex flex-wrap items-end gap-[10px]">
-        {/* The tab, carried through the submit rather than reset by it. */}
         {status ? <input type="hidden" name="status" value={status} /> : null}
-        {/* And the R34 filter, for the same reason. */}
         {pendingEdits ? <input type="hidden" name="pendingEdits" value="true" /> : null}
 
         <LocationFilter name="state" label="State" value={state} options={dealers.facets.states} />
@@ -138,11 +98,6 @@ export default async function AdminDealersPage({
           Filter
         </button>
 
-        {/*
-          Clear drops the three location fields and keeps the status tab —
-          `tabHref` is the wrong helper here, because its whole job is to carry
-          the location through.
-        */}
         {state || district || city ? (
           <Link
             href={`/admin/dealers${qs({ status, pendingEdits })}`}
@@ -152,15 +107,6 @@ export default async function AdminDealersPage({
           </Link>
         ) : null}
 
-        {/*
-          R34 — the one filter that is a piece of work rather than a place.
-
-          A toggle rather than a fourth select, and pushed to the end of the
-          row: it answers a different question from the three beside it. Those
-          narrow *where*; this one asks *what is waiting for me*. It keeps the
-          location filters when it is turned on, because "pending edits in
-          Vellore district" is a real thing to want.
-        */}
         <Link
           href={`/admin/dealers${qs({
             status,
@@ -190,12 +136,6 @@ export default async function AdminDealersPage({
                 <div className="text-[11px] ink-subtle">
                   {dealer.documentsVerified ? 'Documents verified' : 'Documents pending'}
                 </div>
-                {/*
-                  R34. Under the name rather than in a column of its own: it is
-                  true of very few rows at any moment, and a column that is
-                  empty on forty-nine rows out of fifty costs every row width to
-                  say nothing.
-                */}
                 {dealer.hasPendingProfileEdit ? (
                   <div className="mt-[3px] text-[11px] font-semibold text-(--color-warn)">
                     Profile edit waiting
@@ -225,15 +165,6 @@ export default async function AdminDealersPage({
   );
 }
 
-/**
- * One `<select>` of places, plus its label.
- *
- * It is a function in this file rather than a component in `components/ui`
- * because it is three lines of markup with no state, no variants and exactly
- * one consumer — the sandbox exists to stop the *fifth* hand-rolled copy of
- * something, not to receive the first. `select.input` is the shared style; a
- * new one would have been the actual duplication.
- */
 function LocationFilter({
   name,
   label,

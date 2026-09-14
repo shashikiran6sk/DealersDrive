@@ -6,7 +6,6 @@ export interface StepperProps {
   className?: string;
 }
 
-/** DESIGN-SPEC §2.16 — onboarding and the add-vehicle wizard share it. */
 export function Stepper({ steps, current, className }: StepperProps) {
   return (
     <ol className={cn('flex gap-[6px]', className)}>

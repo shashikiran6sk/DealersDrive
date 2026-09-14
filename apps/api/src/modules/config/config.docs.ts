@@ -1,14 +1,6 @@
 import type { ModuleDocs } from '../../docs/spec.js';
 import { DOC_TAGS } from '../../docs/tags.js';
 
-/**
- * A14. The client-safe slice of `platform_config`.
- *
- * ── D1 ────────────────────────────────────────────────────────────────────
- * Also lifted out of the removed `catalog.docs.ts`. It was never catalogue
- * data in the first place — it shared that tag only because both responses
- * were public reference data fetched by the same shell.
- */
 export const configDocs: ModuleDocs = {
   tag: DOC_TAGS.config,
   description:

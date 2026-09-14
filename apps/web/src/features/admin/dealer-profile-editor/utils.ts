@@ -25,13 +25,6 @@ export function initialValues(dealer: AdminDealerDetail): Values {
   };
 }
 
-/**
- * The dotted paths that changed, folded back into the nested shape the schema
- * wants. An unchanged field is absent rather than sent as itself: sending the
- * whole form would re-write `legalName` and `city` with the same values on every
- * save, and the duplicate-name check would then have to be told to ignore a
- * collision with the row being edited on a field nobody touched.
- */
 export function patchOf(values: Values, initial: Values): Record<string, unknown> {
   const patch: Record<string, unknown> = {};
   const groups = new Map<string, Record<string, unknown>>();
@@ -41,7 +34,6 @@ export function patchOf(values: Values, initial: Values): Record<string, unknown
     if (next === initial[field.key].trim()) continue;
 
     const [head, leaf] = field.path.split('.');
-    // `split` on a non-empty string always yields a first segment.
     if (head === undefined) continue;
 
     if (leaf === undefined) {
@@ -58,14 +50,6 @@ export function patchOf(values: Values, initial: Values): Record<string, unknown
   return patch;
 }
 
-/**
- * `body.address.city` → the `address.city` row. Also matches a bare leaf.
- *
- * And an index beneath the path (**R32**): a refusal about one entry in a list
- * arrives as `body.specialities.3`, which none of the four exact lookups match.
- * Without the last clause the box a moderator has to fix is the one box with no
- * message on it.
- */
 export function errorFor(errors: Record<string, string>, path: string): string | undefined {
   const leaf = path.split('.').pop() ?? path;
   const exact = errors[path] ?? errors[`body.${path}`] ?? errors[leaf] ?? errors[`body.${leaf}`];

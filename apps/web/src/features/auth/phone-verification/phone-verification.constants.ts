@@ -1,12 +1,5 @@
-/** How long before a new code may be asked for. The design's countdown runs from here. */
 export const RESEND_SECONDS = 30;
 
-/**
- * Wrong codes accepted before a fresh one is required. A **guard rail, not the
- * limit** — the real limits are the API's ten presentations in ten minutes and
- * MSG91's own per-number cap. Three wrong codes almost always means the dealer
- * is reading an older SMS.
- */
 export const LOCAL_ATTEMPTS = 3;
 
 export const OTP_DIGITS = 6;

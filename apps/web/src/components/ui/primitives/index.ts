@@ -1,8 +1,3 @@
-/**
- * The primitives. Nothing here knows what a vehicle is — anything that imports
- * a domain type belongs in `components/vehicle/` instead, which is what keeps
- * `ui/` promotable to `packages/ui` later (ARCHITECTURE §16.4).
- */
 export { Avatar, type AvatarProps } from './avatar';
 export { Banner, type BannerProps, type BannerTone } from './banner';
 export { Blueprint, type BlueprintElement, type BlueprintProps } from './blueprint';

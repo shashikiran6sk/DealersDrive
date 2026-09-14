@@ -14,23 +14,6 @@ import { DEALER_EDITOR_TEXT } from './dealer-profile-editor.constants';
 import type { FieldKey, Values } from './dealer-profile-editor.types';
 import { initialValues, patchOf } from './utils';
 
-/**
- * D3 — the dealership's own answers, editable from the review screen.
- *
- * The screen showed them as a definition list, which is right for the ninety
- * percent of reviews that end in a decision and wrong for the ten that end in a
- * correction: a moderator holding the GST certificate can see that the dealer
- * typed one digit of the GSTIN wrong, and the alternative to fixing it here is a
- * round trip that costs a working day per character.
- *
- * **It reads before it writes**, because a review screen full of live inputs
- * invites edits that were meant to be readings. Cancel restores what the API last
- * said. **Only what changed is sent** — see `patchOf`.
- *
- * The API is the authority on all of it: every field goes through the same
- * `dealers.update` the dealer's own `PATCH /v1/dealer` does, and a refusal comes
- * back naming the field.
- */
 export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -40,13 +23,6 @@ export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
   const [message, setMessage] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  /*
-   * What the API last said, as the baseline the diff is taken against. Re-derived
-   * during render when the prop changes rather than in an effect, because
-   * `router.refresh()` after a save delivers the new dealership as a render:
-   * reconciling in an effect would leave one paint in which the form still holds
-   * the values the *previous* save was diffed from.
-   */
   const [source, setSource] = useState(dealer);
   if (source !== dealer) {
     setSource(dealer);
@@ -78,8 +54,6 @@ export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
       }
       setSaved(true);
       setEditing(false);
-      // The server re-reads the dealership; `source` above picks the new values
-      // up on the render that follows.
       router.refresh();
     });
   }

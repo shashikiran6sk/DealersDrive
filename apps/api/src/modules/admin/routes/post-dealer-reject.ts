@@ -10,13 +10,6 @@ import { validate, validated } from '../../../middleware/validate.js';
 
 import { handle, type AdminRoute } from './route.js';
 
-/**
- * The two refusals, and they are different verbs on purpose. `reject` destroys
- * the application — storage, documents, membership and the dealership row.
- * `request-changes` keeps every byte of it and hands it back to the dealer to
- * correct. Both take the same body, because the dealer reads the reason verbatim
- * either way; only one of them is reversible.
- */
 export const postDealerReject: AdminRoute = (router, service) => {
   router.post(
     '/dealers/:id/reject',

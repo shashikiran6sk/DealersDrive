@@ -1,16 +1,5 @@
 import type { DashboardResponse } from '@dealers-drive/contracts';
 
-/**
- * Seven bars and a total (DESIGN-SPEC §3.12).
- *
- * **The heights are `heightPct` from the API, not a ratio computed here** —
- * that is the only way the chart cannot disagree with the numbers beside it
- * (rule 6, §4.11). The service scales them against the week's own maximum, with
- * a floor of 1 so a quiet week renders flat rather than `NaN%`.
- *
- * Each bar carries its own `aria-label`, because a chart is the one place where
- * the information is entirely in the geometry.
- */
 export function ViewsChart({ chart }: { chart: DashboardResponse['viewsChart'] }) {
   return (
     <section className="card gap-3 p-[14px]">

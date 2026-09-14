@@ -6,11 +6,6 @@ import { z } from 'zod';
 
 import { mailboxAddress } from '../platform/mail/deliverability.js';
 
-/**
- * Loads .env from the app directory first, then the repo root. dotenv never
- * overwrites a variable that is already set, so real environment variables
- * (Render, GitHub Actions, docker run -e) always win over files.
- */
 dotenv.config({
   path: [resolve(process.cwd(), '.env'), resolve(process.cwd(), '../../.env')],
   quiet: true,
@@ -18,60 +13,27 @@ dotenv.config({
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-/**
- * A required string that falls back to a local-dev value outside production.
- * In production the fallback is dropped, so a missing variable fails at boot
- * instead of silently pointing the live API at localhost.
- */
 const required = (localDefault: string) =>
   isProduction ? z.string().min(1) : z.string().min(1).default(localDefault);
 
-/**
- * An optional variable that may be present but blank.
- *
- * `.env.example` lists every production credential with an empty value, so a
- * developer can see what exists without hunting through documentation. dotenv
- * reads `GOOGLE_CLIENT_ID=` as the empty string, not as absent — and `""` is a
- * value, so a plain `.optional()` would fail `.min(1)` on a variable nobody
- * set. Blank means unset, everywhere.
- */
 const optional = <T extends z.ZodTypeAny>(schema: T) =>
   z.preprocess((value) => (value === '' ? undefined : value), schema.optional());
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_ENV: z.enum(['local', 'preview', 'dev', 'production']).default('local'),
-  /**
-   * The commit this artifact was built from, injected as a Docker build
-   * argument and surfaced by `/health/ready`.
-   *
-   * It is the answer to "what is actually running right now", and the
-   * production promotion refuses to run until the SHA it was asked for is the
-   * SHA dev reports (§20.3). `unknown` is the honest local value: a `pnpm dev`
-   * process was not built from anything.
-   */
   GIT_SHA: z.string().min(1).default('unknown'),
   PORT: z.coerce.number().int().positive().max(65535).default(4000),
   HOST: z.string().min(1).default('0.0.0.0'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
-  /**
-   * Prometheus/OpenMetrics exposition for Grafana Cloud's managed Metrics
-   * Endpoint scraper. The endpoint is bearer-authenticated and deliberately
-   * outside the public API namespace.
-   */
   METRICS_ENABLED: z
     .enum(['true', 'false'])
     .default('false')
     .transform((value) => value === 'true'),
   METRICS_SCRAPE_TOKEN: optional(z.string().min(32)),
-  /** A query at or above this duration is counted and logged as slow. */
   DB_SLOW_OPERATION_MS: z.coerce.number().int().positive().default(500),
 
-  /**
-   * Optional direct Loki transport. It runs in Pino's worker thread, batches
-   * writes, keeps stdout as a fallback, and is enabled explicitly per runtime.
-   */
   GRAFANA_CLOUD_LOGS_ENABLED: z
     .enum(['true', 'false'])
     .default('false')
@@ -80,130 +42,30 @@ const envSchema = z.object({
   GRAFANA_CLOUD_LOKI_USER: optional(z.string().min(1)),
   GRAFANA_CLOUD_LOKI_TOKEN: optional(z.string().min(1)),
 
-  /** Comma-separated browser origins allowed to call this API with credentials. */
   WEB_ORIGIN: required('http://localhost:3000'),
-  /** Absolute base of the public site — used for canonical URLs and SEO. */
   WEB_BASE_URL: required('http://localhost:3000'),
-  /** Absolute base of this API — used to build presign and media URLs. */
   API_BASE_URL: required('http://localhost:4000'),
 
   DATABASE_URL: required('postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'),
 
-  /**
-   * The wall-clock budget for one interactive transaction, and how long a
-   * transaction may wait for a connection before it starts.
-   *
-   * Prisma's defaults are 5s and 2s, which assume the database is a network
-   * hop away. Against a managed Postgres in another region a round-trip costs
-   * ~500ms, and a settlement — `settleCapturedPayment` is the longest at eight
-   * sequential statements — takes ~7s. Under the default it dies with P2028
-   * partway through and rolls back, which loses a credit purchase *silently*:
-   * the order stays PENDING, no ledger row is written, and the dealer's cached
-   * balance is the only thing that ever suggested the credits existed.
-   *
-   * Raising the budget is the fix for the environment, not a licence to add
-   * statements — every one of them is still a round-trip inside a row lock.
-   */
   DB_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
   DB_TRANSACTION_MAX_WAIT_MS: z.coerce.number().int().positive().default(10_000),
 
-  /**
-   * Which `SessionResolver` the container builds.
-   *
-   *   cookie — the real thing: `dd_session` → `sessions` row → principal
-   *   dev    — the server-configured identity below, for a developer who has
-   *            no Google credentials yet. Refused in production, and it logs a
-   *            warning on every boot so it can never be mistaken for the norm.
-   */
   AUTH_MODE: z.enum(['cookie', 'dev']).default('cookie'),
 
-  /**
-   * Local development identity (CLAUDE.md §5, §17), used only when
-   * `AUTH_MODE=dev`. Production auth replaces the resolver, not these values —
-   * nothing downstream of `resolvePrincipal` knows the difference, and no route
-   * ever reads an identity from a client.
-   */
-  DEV_DEALER_SLUG: z
-    .string()
-    .min(1)
-    // The dealership `prisma/seed/data.ts` writes. Its slug is derived there
-    // rather than typed, so this literal is the copy — and
-    // `tests/unit/config/env.test.ts` fails if the two ever disagree.
-    .default('sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu'),
+  DEV_DEALER_SLUG: z.string().min(1).default('sri-lakshmi-automobiles-pvt-ltd-vellore-tamil-nadu'),
 
-  /**
-   * Who may hold an admin session, by verified Google address.
-   *
-   * This was the **entire** admin authorization model until **R42**, and it is
-   * still the first half: a list of addresses in the environment rather than a
-   * flag on a row. Two consequences worth being explicit about:
-   *
-   *  - An address here cannot be added or removed from the console. That is the
-   *    cost, and it buys the property that no bug in an admin screen — no mass
-   *    update, no seed run against the wrong database, no unguarded
-   *    `isPlatformAdmin` write — can promote anybody on this list, because the
-   *    list is not in the database.
-   *  - Removing an address takes effect on the next request. The allow-list is
-   *    checked when the session is issued *and* when it is resolved, so
-   *    deleting a name here revokes a console that is already open.
-   *
-   * **The second half, since R42.** A SUPER_ADMIN can grant admin access from
-   * the settings screen, which writes a `user_roles` row with `grantedBy` set.
-   * `grantedBy` is the whole distinction: every admin sign-in leaves an ADMIN
-   * seat behind, so a seat's *existence* means only "has signed in once" —
-   * reading that as permission would make this list vacuous. A grant is
-   * withdrawn the same way it was made, and it never touches this variable.
-   *
-   * Comma-separated, compared case-insensitively. Empty means no one may sign
-   * in to the admin console at all, which is the right failure: a
-   * misconfiguration should close the door, not open it.
-   *
-   * The **first** entry is also the account the seed creates and the identity
-   * `AUTH_MODE=dev` resolves to — there is one answer to "who is the admin
-   * here", and it is this variable. A separate `DEV_ADMIN_EMAIL` used to exist
-   * and could disagree with this list, which meant a local database seeded with
-   * an admin nobody was allowed to sign in as.
-   */
   ADMIN_ALLOWLIST: z.string().default('shashikiran6.sk@gmail.com'),
 
-  /**
-   * Dealer sign-in — Google OAuth 2.0 / OpenID Connect (authorization code +
-   * PKCE + nonce). No default: a fabricated client id would turn a
-   * configuration mistake into a broken redirect at Google rather than a clear
-   * error at boot. `assertGoogleConfigured()` is what routes call.
-   */
   GOOGLE_CLIENT_ID: optional(z.string().min(1)),
   GOOGLE_CLIENT_SECRET: optional(z.string().min(1)),
   GOOGLE_CALLBACK_URL: z.string().url().default('http://localhost:4000/v1/auth/google/callback'),
 
-  /**
-   * Signs the short-lived OAuth transaction cookie (state · nonce · PKCE
-   * verifier) and nothing else. Session tokens are random, not signed.
-   */
   SESSION_SECRET: z.string().min(16).default('dealers-drive-local-session-secret'),
-  /**
-   * Empty in every environment, and that is the design (docs/DEPLOYMENT.md §F4).
-   *
-   * Each environment serves the web app and the API on a single origin, so the
-   * cookie is already shared where it needs to be. A parent-domain cookie
-   * would also be sent to every *other* environment on that domain — a dev
-   * session presented to production. Host-only is what makes that impossible.
-   */
   SESSION_COOKIE_DOMAIN: optional(z.string().min(1)),
 
-  /** `development` settles instantly; `razorpay` is the production adapter. */
   PAYMENT_PROVIDER: z.enum(['development', 'razorpay']).default('development'),
 
-  /**
-   * One `StoragePort`, three ways to terminate a PUT:
-   *
-   *   local  — the filesystem. No container needed; what the test suite uses.
-   *   minio  — S3-compatible, on localhost:9000. What `docker compose` gives you.
-   *   r2     — S3-compatible, at Cloudflare. Production.
-   *
-   * `minio` and `r2` are the *same adapter*: only S3_ENDPOINT and the keys
-   * differ, which is the whole claim this seam has to keep true (§12.1).
-   */
   STORAGE_DRIVER: z.enum(['local', 'minio', 'r2']).default('local'),
   STORAGE_LOCAL_DIR: z.string().min(1).default('.storage'),
 
@@ -212,129 +74,40 @@ const envSchema = z.object({
   S3_BUCKET: z.string().min(1).default('dealers-drive'),
   S3_ACCESS_KEY_ID: optional(z.string().min(1)),
   S3_SECRET_ACCESS_KEY: optional(z.string().min(1)),
-  /**
-   * MinIO needs path-style addressing (`endpoint/bucket/key`); R2 accepts it
-   * too, so it is on by default and only worth turning off for a bucket served
-   * from a virtual-hosted domain.
-   */
   S3_FORCE_PATH_STYLE: z
     .enum(['true', 'false'])
     .default('true')
     .transform((value) => value === 'true'),
-  /** Signs local presigned upload URLs. Any secret works locally. */
   UPLOAD_SIGNING_SECRET: z.string().min(8).default('dealers-drive-local-upload-secret'),
   MEDIA_BASE_URL: required('http://localhost:4000/media'),
 
-  /**
-   * Where transactional emails go (**R40**).
-   *
-   *   console  — prints the recipient, the subject and the plain-text body.
-   *              The default, what `pnpm dev` and the whole test suite use, and
-   *              refused in production.
-   *   resend   — the real provider, over its HTTP API. Needs RESEND_API_KEY.
-   *   smtp     — **not implemented.** In the enum because the baseline had it
-   *              there, with no adapter behind it then either. The guard below
-   *              refuses it at boot rather than letting a deployment discover
-   *              at the first approval that nothing sends.
-   */
   MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
   RESEND_API_KEY: optional(z.string().min(1)),
-  /** `console` locally, `msg91` in production. Transactional SMS, not the OTP. */
   SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
-  /**
-   * One key, two uses — transactional SMS (`SMS_DRIVER`) and the OTP widget's
-   * server-side check (`PHONE_OTP_DRIVER`). It is the same MSG91 account, so a
-   * second variable holding the same secret would be a second thing to rotate.
-   */
   MSG91_AUTH_KEY: optional(z.string().min(1)),
   MSG91_SENDER_ID: optional(z.string().min(1)),
 
-  /**
-   * Who proves a dealer's mobile number (**R39**).
-   *
-   *   fake   — no SMS, no widget script, no network. Accepts the development
-   *            token shape described in `platform/phone-otp/fake.adapter.ts`,
-   *            whose code is `PHONE_OTP_DEV_CODE`. The default, and what the
-   *            test suite uses: onboarding works end to end on it.
-   *   msg91  — the real thing. The widget runs in the dealer's browser and
-   *            sends the SMS; this process only asks MSG91 whose handset the
-   *            resulting token proves.
-   *
-   * Refused in production below, exactly as `CACHE_DRIVER=memory` and
-   * `STORAGE_DRIVER=local` are — a development bypass of an ownership check is
-   * not something a deployment should be able to reach by leaving a variable
-   * unset.
-   */
   PHONE_OTP_DRIVER: z.enum(['fake', 'msg91']).default('fake'),
-  /**
-   * `widgetId` and `tokenAuth` from the MSG91 widget configuration.
-   *
-   * Both reach the browser — the widget cannot initialise without them — but
-   * they are served from `GET /v1/auth/phone/widget` rather than inlined as
-   * `NEXT_PUBLIC_*` (rule 9), so rotating one is a restart rather than a
-   * rebuild of the web image.
-   */
   MSG91_WIDGET_ID: optional(z.string().min(1)),
   MSG91_WIDGET_TOKEN: optional(z.string().min(1)),
-  /**
-   * How long the server waits for MSG91 to say whose token this is.
-   *
-   * Four seconds, matching `RC_LOOKUP_TIMEOUT_MS` and for the same reason: a
-   * dealer is watching a spinner and "try again" is one press away, so failing
-   * fast beats succeeding slowly.
-   */
   PHONE_OTP_TIMEOUT_MS: z.coerce.number().int().positive().default(4000),
-  /** The six digits the `fake` driver accepts. Never reachable in production. */
   PHONE_OTP_DEV_CODE: z
     .string()
     .regex(/^\d{4,8}$/)
     .default('123456'),
   MAIL_FROM: z.string().min(1).default('Dealers-Drive <updates@dealers-drive.com>'),
 
-  /**
-   * Where registration lookups come from (ARCHITECTURE §6.3).
-   *
-   *   mock    — deterministic and free. The default, and what the test suite
-   *             uses. Intake works end to end on it; it is not a stub.
-   *   attestr — the real provider. Costs money per call, so this is never the
-   *             default and the guard below refuses it without a token.
-   */
   RC_LOOKUP_DRIVER: z.enum(['mock', 'attestr']).default('mock'),
   ATTESTR_BASE_URL: optional(z.string().url()),
-  /** Basic-auth token. Without it, every lookup 503s and dealers fall back to typing. */
   ATTESTR_AUTH_TOKEN: optional(z.string().min(1)),
-  /**
-   * How long a dealer waits before we give up and offer the manual form.
-   *
-   * Four seconds, not thirty: this is on the critical path of adding a car and
-   * the fallback is one click away, so failing fast beats succeeding slowly.
-   */
   RC_LOOKUP_TIMEOUT_MS: z.coerce.number().int().positive().default(4000),
-  /**
-   * Keys the HMAC that `rc_lookups.regHash` stores instead of the plate.
-   *
-   * Not secrecy from ourselves — real listings hold the plate in
-   * `vehicles.regNumberMasked`. It stops the lookup cache becoming a
-   * standalone, queryable register of every plate anyone ever asked about,
-   * including the ones that never became a listing. Rotating it costs one
-   * cache generation and nothing else.
-   */
   RC_PLATE_HASH_SECRET: z.string().min(8).default('dealers-drive-local-plate-secret'),
 
-  /**
-   * Accepted and validated so production configuration is complete, but no SDK
-   * is installed — see README "Remaining production setup". An unset DSN is the
-   * normal local state and must never be an error.
-   */
   SENTRY_DSN: optional(z.string().url()),
 
   SUPPORT_EMAIL: z.string().min(1).default('support@dealers-drive.com'),
   SUPPORT_PHONE: z.string().min(1).default('+914162248890'),
 
-  /**
-   * One image, two process types. `WORKER_INLINE=true` runs the handlers in
-   * the HTTP process so `pnpm dev` stays a single command (§19.1).
-   */
   WORKER_INLINE: z
     .enum(['true', 'false'])
     .default('true')
@@ -343,7 +116,6 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((value) => value === 'true'),
-  /** Turns pg-boss off entirely — used by the integration suite. */
   JOBS_ENABLED: z
     .enum(['true', 'false'])
     .default('true')
@@ -354,45 +126,10 @@ const envSchema = z.object({
     .default('true')
     .transform((value) => value === 'true'),
 
-  /**
-   * Where shared, cross-instance state lives — rate-limit windows and the
-   * config-cache version (`platform/cache`, §18).
-   *
-   *   memory    — a `Map` in this process. Right for `pnpm dev`, right for the
-   *               test suite, right for exactly one running task.
-   *   postgres  — the database the API already has. The production default,
-   *               and no new infrastructure.
-   *
-   * `memory` is refused in production below, and that refusal is the point of
-   * this variable existing at all: a process-local counter behind N tasks
-   * permits N times the limit written next to it, and reports nothing.
-   */
   CACHE_DRIVER: z.enum(['memory', 'postgres']).default(isProduction ? 'postgres' : 'memory'),
 
-  /**
-   * How often a task re-reads the shared config version to decide whether its
-   * in-process `PlatformConfig` cache is stale.
-   *
-   * This is the ceiling on "how long until an admin's change is live
-   * everywhere". Ten seconds costs one trivial indexed read per task per ten
-   * seconds; the five-minute cache TTL it short-circuits used to be the only
-   * answer (§30).
-   */
   CONFIG_VERSION_POLL_MS: z.coerce.number().int().positive().default(10_000),
 
-  /**
-   * Shutdown, in two phases (§20.10).
-   *
-   * DRAIN_MS is the pause *before* the server stops accepting connections:
-   * `/health/ready` starts answering 503 immediately on SIGTERM, and the load
-   * balancer needs a moment to notice and stop sending new requests. Closing
-   * the listener first is what produces the connection resets that look like a
-   * deploy causing errors. It should exceed the target group's health-check
-   * interval x unhealthy-threshold.
-   *
-   * TIMEOUT_MS is the total budget after that, after which the process exits
-   * anyway rather than hanging a deployment.
-   */
   SHUTDOWN_DRAIN_MS: z.coerce
     .number()
     .int()
@@ -400,34 +137,16 @@ const envSchema = z.object({
     .default(isProduction ? 5_000 : 0),
   SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
 
-  /**
-   * Serves the OpenAPI reference at `/api/docs`.
-   *
-   * On outside production, off inside it: the document lists every endpoint,
-   * every permission and every error code, which is a useful map for a
-   * developer and an equally useful one for anybody probing the live API.
-   * Turning it on in production is a deliberate `DOCS_ENABLED=true`, not a
-   * default. Also off under test — building it 7 times to serve it 0 is waste.
-   */
   DOCS_ENABLED: z
     .enum(['true', 'false'])
     .default(isProduction || process.env.NODE_ENV === 'test' ? 'false' : 'true')
     .transform((value) => value === 'true'),
 });
 
-/** The local defaults that are fine on a laptop and must never reach production. */
 const LOCAL_SESSION_SECRET = 'dealers-drive-local-session-secret';
 const LOCAL_UPLOAD_SECRET = 'dealers-drive-local-upload-secret';
 const LOCAL_PLATE_SECRET = 'dealers-drive-local-plate-secret';
 
-/**
- * Cross-field rules — "this variable is required *because* of that one".
- *
- * They exist so a production deployment fails at boot rather than at the first
- * dealer who tries to sign in. Nothing here silently falls back to a local
- * provider: choosing R2 without keys is a configuration error, not a reason to
- * start writing to the container's filesystem.
- */
 const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
   const require = (path: string, message: string) => {
     ctx.addIssue({ code: 'custom', path: [path], message });
@@ -448,12 +167,6 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
   }
 
-  /*
-   * R40. `console` prints and sends nothing, which in production means a dealer
-   * is verified and never told — and the failure is silent, because the log
-   * line says the email was "sent". Loud at boot is the only acceptable place
-   * for that to be discovered.
-   */
   if (production && value.MAIL_DRIVER === 'console') {
     require('MAIL_DRIVER', 'must be `resend` in production — `console` sends nothing.');
   }
@@ -495,12 +208,6 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     if (!value.MSG91_SENDER_ID) require('MSG91_SENDER_ID', 'is required when SMS_DRIVER=msg91.');
   }
 
-  /*
-   * Checked outside production too, like the Attestr token below and for the
-   * same reason: a preview environment pointed at the MSG91 widget with no
-   * credentials would refuse every verification silently, and nobody would
-   * know until a dealer could not finish signing up.
-   */
   if (value.PHONE_OTP_DRIVER === 'msg91') {
     if (!value.MSG91_AUTH_KEY) {
       require('MSG91_AUTH_KEY', 'is required when PHONE_OTP_DRIVER=msg91.');
@@ -513,9 +220,6 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
   }
 
-  // Checked outside production too: pointing a preview environment at Attestr
-  // with no token would spend nothing and fail every lookup silently, which is
-  // a worse outcome than refusing to boot.
   if (value.RC_LOOKUP_DRIVER === 'attestr' && !value.ATTESTR_AUTH_TOKEN) {
     require('ATTESTR_AUTH_TOKEN', 'is required when RC_LOOKUP_DRIVER=attestr.');
   }
@@ -577,7 +281,6 @@ export type Env = z.infer<typeof envSchema> & {
   readonly isDevelopment: boolean;
   readonly isTest: boolean;
   readonly webOrigins: string[];
-  /** `ADMIN_ALLOWLIST`, split and lower-cased. Half the admin authorization model — see R42 for the other. */
   readonly adminAllowlist: string[];
 };
 
@@ -589,7 +292,6 @@ function loadEnv(): Env {
       .map((issue) => `  - ${issue.path.join('.') || '(root)'}: ${issue.message}`)
       .join('\n');
 
-    // The logger depends on env, so this one message cannot go through pino.
     console.error(`\nInvalid environment configuration:\n${details}\n`);
     console.error('Copy .env.example to .env at the repo root and fill in the missing values.\n');
     process.exit(1);
@@ -605,25 +307,14 @@ function loadEnv(): Env {
     webOrigins: value.WEB_ORIGIN.split(',')
       .map((origin) => origin.trim())
       .filter(Boolean),
-    /** `ADMIN_ALLOWLIST`, split and lower-cased once so every comparison matches. */
     adminAllowlist: value.ADMIN_ALLOWLIST.split(',')
       .map((email) => email.trim().toLowerCase())
       .filter(Boolean),
   });
 }
 
-/** Validated, frozen, import-anywhere. Reading process.env elsewhere is a bug. */
 export const env: Env = loadEnv();
 
-/**
- * Google OAuth credentials, or a developer-facing explanation of what to set.
- *
- * Called by the two routes that need them rather than at boot, so a developer
- * who has not registered an OAuth client yet still gets a working API, a
- * working marketplace and a working admin console — and a precise error the
- * moment they press "Continue with Google". Production never reaches the throw:
- * `checkedEnvSchema` has already refused to start (§29).
- */
 export function googleCredentials(): {
   clientId: string;
   clientSecret: string;

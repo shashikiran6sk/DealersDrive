@@ -6,19 +6,6 @@ import { DISTRICT_PICKER_TEXT } from './district-picker.constants';
 import type { StateGroup } from './district-picker.types';
 import { dealersIn } from './utils';
 
-/**
- * A state, as a heading and nothing else.
- *
- * Deliberately not a `<button>`, not focusable, with no hover, no pressed
- * styling and no cursor change: a state is not a place this product can be
- * filtered to, and anything that looks pressable here would be an invitation to
- * a dead end.
- *
- * The plate carries the RTO code because that is what the code *is* — `TN 09 BX
- * 4412` starts with the same two letters — which stretches §4.5's enumeration of
- * four plate uses by one, on the one motif in the system that means "a
- * registration authority said this".
- */
 export function StateHeading({ group }: { group: StateGroup }) {
   const code = stateCode(group.state);
 

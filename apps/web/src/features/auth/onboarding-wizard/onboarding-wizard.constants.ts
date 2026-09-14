@@ -1,13 +1,5 @@
 export const ONBOARDING_STEPS = ['Account', 'Business', 'Documents', 'Review'] as const;
 
-/**
- * The fields that live on step 1.
- *
- * One list, used for both halves of the same rule: what the browser validates
- * before it will move off the Account step, and what the wizard walks *back* to
- * that step for when the API refuses one of them. Two lists would drift, and the
- * drift would be a dealer stuck on step 2 with an invisible error.
- */
 export const ACCOUNT_FIELDS = new Set(['fullName', 'phone']);
 
 export const ONBOARDING_PATH = {
@@ -17,15 +9,9 @@ export const ONBOARDING_PATH = {
   dashboard: '/dealer',
 } as const;
 
-/** A required box with no minimum is satisfied by `-`. */
 export const TAGLINE_MIN = 10;
 export const TAGLINE_MAX = 200;
 
-/**
- * What C3 says is still missing, in words a dealer can act on. The API answers
- * with field keys — `gstin`, `GST_CERTIFICATE` — which are precise and not
- * something to put in front of somebody at the end of a sign-up form.
- */
 export const MISSING_LABELS: Record<string, string> = {
   gstin: 'GSTIN',
   pan: 'PAN',

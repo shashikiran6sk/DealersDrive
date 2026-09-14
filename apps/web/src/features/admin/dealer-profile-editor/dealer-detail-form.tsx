@@ -13,7 +13,6 @@ export interface DealerDetailFormProps {
   onChange: (key: FieldKey, value: string) => void;
 }
 
-/** The writable view — only rendered once *Edit* has been pressed. */
 export function DealerDetailForm({ values, errors, onChange }: DealerDetailFormProps) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">

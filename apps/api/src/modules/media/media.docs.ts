@@ -1,14 +1,6 @@
 import type { ModuleDocs } from '../../docs/spec.js';
 import { DOC_TAGS } from '../../docs/tags.js';
 
-/**
- * C14, plus the two storage routes that stand in for R2 locally.
- *
- * The upload contract is presign → PUT → commit, and it is that shape for one
- * reason: photo bytes never pass through this API. A dealer uploading twelve
- * 4 MB photos would otherwise occupy a request worker for the duration of each,
- * and image processing would compete with request handling for CPU.
- */
 export const mediaDocs: ModuleDocs = {
   tag: DOC_TAGS.media,
   description:
@@ -138,24 +130,9 @@ export const mediaDocs: ModuleDocs = {
       responses: [{ status: 204, description: 'Deleted.' }],
       errors: [400, 401, 403, 404],
     },
-    /*
-     * ── Reconstruction slice ──────────────────────────────────────────────
-     * `PUT /v1/dealer/vehicles/:id/media/order` — `reorderVehicleMedia` — is
-     * **F035**. It needs `VehicleMedia` and `ReorderMediaInput`, neither of
-     * which exists yet, and `buildSchemaCatalogue()` would throw on the
-     * missing input schema. It returns with that feature, alongside
-     * `service.reorder()` and the route itself in `media.routes.ts`.
-     */
   ],
 };
 
-/**
- * The two routes that stand in for Cloudflare R2 in local development.
- *
- * Mounted outside `/v1` on purpose: they are storage, not API surface. In
- * production these are R2 and the Cloudflare Images origin, and no client code
- * changes — the presign response already points wherever the bytes should go.
- */
 export const storageDocs: ModuleDocs = {
   tag: DOC_TAGS.storage,
   description:

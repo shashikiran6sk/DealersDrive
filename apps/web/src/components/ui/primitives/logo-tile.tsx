@@ -6,7 +6,6 @@ export interface LogoTileProps {
   className?: string;
 }
 
-/** The larger logo tile variant, on a lighter tint with a hairline. */
 export function LogoTile({ initials, size = 42, className }: LogoTileProps) {
   return (
     <span

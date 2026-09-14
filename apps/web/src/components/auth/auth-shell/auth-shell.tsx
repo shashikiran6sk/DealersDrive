@@ -12,14 +12,6 @@ export interface AuthShellProps {
   className?: string;
 }
 
-/**
- * DESIGN-SPEC §3.9 — the shell every authentication screen sits in. A centred
- * 560px column on white with the brand row above it, shared by sign-in,
- * onboarding and the admin console.
- *
- * Deliberately not a route layout: `/admin/login` lives under a different
- * segment, and a shared component crosses that boundary where a layout cannot.
- */
 export function AuthShell({
   eyebrow = AUTH_SHELL_TEXT.defaultEyebrow,
   children,

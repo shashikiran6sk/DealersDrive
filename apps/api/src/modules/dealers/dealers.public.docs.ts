@@ -1,23 +1,6 @@
 import type { ModuleDocs } from '../../docs/spec.js';
 import { DOC_TAGS } from '../../docs/tags.js';
 
-/**
- * A8–A9. The dealer directory, and one dealership's public page.
- *
- * A separate module from `dealers.docs.ts` because it is a separate *audience*.
- * The tag a reader browses is "who is this for", not "which file is it in", and
- * these two operations answer to nobody: no session, no principal, no dealer's
- * own record. Folding them into `Dealer account` would put an unauthenticated
- * directory under a heading whose whole description is about the acting
- * dealership.
- *
- * ── Reconstruction slice ────────────────────────────────────────────────────
- * The baseline documented these under the search module's tag, because that is
- * where the routes were mounted. The search module arrives at **F076**, and its
- * operations are the vehicle ones; these two stay here, beside the service that
- * answers them.
- * ────────────────────────────────────────────────────────────────────────────
- */
 export const dealersPublicDocs: ModuleDocs = {
   tag: DOC_TAGS.dealersPublic,
   description:

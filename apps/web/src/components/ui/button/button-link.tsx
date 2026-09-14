@@ -6,7 +6,6 @@ import { buttonClass, type ButtonVariants } from './button.variants';
 export type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> &
   ButtonVariants & { href: string; children: ReactNode };
 
-/** An anchor styled as a button — for navigation, where a `<button>` would be wrong. */
 export function ButtonLink({
   className,
   variant,

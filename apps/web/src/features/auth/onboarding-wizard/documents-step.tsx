@@ -37,14 +37,6 @@ export function DocumentsStep({
   const [state, submit, pending] = useActionState<ActionState, FormData>(saveBusinessIdsAction, {});
   const values = state.values ?? {};
 
-  /**
-   * What this step is still missing, in the server's own words.
-   *
-   * Derived from `completeness` rather than counted here, because the same
-   * answer is what `POST /v1/dealer/submit` refuses on. Counting `REQUIRED`
-   * rows in the browser would be a second derivation of the same question, and
-   * the two would eventually disagree about whether a dealership is ready.
-   */
   const outstanding = stepOutstanding(completeness, 'documents').concat(
     stepOutstanding(completeness, 'business'),
   );
@@ -61,7 +53,6 @@ export function DocumentsStep({
       {state.message ? <Banner tone="err">{state.message}</Banner> : null}
       {state.saved ? <Banner tone="ok">{ONBOARDING_TEXT.saved}</Banner> : null}
 
-      {/* GSTIN and PAN in mono, as the review screen renders them (§3.10). */}
       <form action={submit} className="flex flex-col gap-[14px]" noValidate>
         <div className="grid gap-[14px] sm:grid-cols-2">
           <Field id="gstin" label="GSTIN" error={state.errors?.gstin}>
@@ -106,13 +97,6 @@ export function DocumentsStep({
 
       {yardPhoto ? <YardPhotoUploader photo={yardPhoto} /> : null}
 
-      {/*
-        No "Skip for now". It was there because nothing downstream depended on
-        this step being finished — and nothing did, right up until the review step
-        refused to submit and listed everything that had been skipped. Saying so
-        here, next to the fields it names, is that information three screens
-        earlier.
-      */}
       {outstanding.length > 0 ? (
         <Banner tone="warn" title={ONBOARDING_TEXT.stillNeeded}>
           <ul className="mt-[4px] list-disc pl-[18px]">

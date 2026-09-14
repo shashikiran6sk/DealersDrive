@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-/** `h1-page` plus the 15px 65% line that follows it on every auth screen. */
 export function AuthHeading({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="mb-[26px]">

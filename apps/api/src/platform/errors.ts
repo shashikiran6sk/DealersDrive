@@ -1,15 +1,5 @@
-/**
- * The error vocabulary of the whole API.
- *
- * Services throw these; the error handler is the only thing that turns them
- * into HTTP. A service that builds a response, sets a status code, or touches
- * `res` is doing the error handler's job.
- */
-
-/** Base for the RFC 9457 `type` URI. Each code gets a stable, documentable URL. */
 export const PROBLEM_TYPE_BASE = 'https://dealers-drive.com/errors';
 
-/** One invalid field. Mirrors the `errors[]` array in API-SPEC §0.2. */
 export interface FieldError {
   field: string;
   code: string;
@@ -19,15 +9,12 @@ export interface FieldError {
 export interface AppErrorOptions {
   cause?: unknown;
   errors?: FieldError[];
-  /** Extra top-level keys the spec puts in a specific problem body. */
   extra?: Record<string, unknown>;
 }
 
 export abstract class AppError extends Error {
   abstract readonly status: number;
-  /** The machine-readable contract. The frontend switches on this, never on `detail`. */
   abstract readonly code: string;
-  /** Short, human, stable across occurrences of the same code. */
   abstract readonly title: string;
 
   readonly errors?: FieldError[];
@@ -45,16 +32,11 @@ export abstract class AppError extends Error {
     Error.captureStackTrace(this, new.target);
   }
 
-  /** RFC 9457 calls it `detail`; Error calls it `message`. Same string. */
   get detail(): string {
     return this.message;
   }
 }
 
-/**
- * 404 — the resource does not exist, or the caller may not know that it does.
- * Cross-tenant access answers 404, never 403, so existence is not leaked (§7).
- */
 export class NotFoundError extends AppError {
   readonly status = 404;
   readonly code: string;
@@ -69,7 +51,6 @@ export class NotFoundError extends AppError {
   }
 }
 
-/** 401 — no valid session. */
 export class UnauthorizedError extends AppError {
   readonly status = 401;
   readonly code: string;
@@ -84,7 +65,6 @@ export class UnauthorizedError extends AppError {
   }
 }
 
-/** 403 — authenticated, but not allowed. */
 export class ForbiddenError extends AppError {
   readonly status = 403;
   readonly code: string;
@@ -99,11 +79,6 @@ export class ForbiddenError extends AppError {
   }
 }
 
-/**
- * 409 — the request collides with the current state. Two moderators opening
- * the same card is expected; the second one gets a clear error rather than a
- * double approval.
- */
 export class ConflictError extends AppError {
   readonly status = 409;
   readonly code: string;
@@ -116,12 +91,6 @@ export class ConflictError extends AppError {
   }
 }
 
-/**
- * 422 — the request was well-formed and the caller was allowed, but a business
- * rule said no. The code travels with the error:
- *
- *   throw new DomainError('INSUFFICIENT_CREDITS', 'Publishing needs 1 credit; your balance is 0.');
- */
 export class DomainError extends AppError {
   readonly status = 422;
   readonly code: string;
@@ -134,14 +103,6 @@ export class DomainError extends AppError {
   }
 }
 
-/**
- * 503 — the API is configured such that it cannot perform this operation.
- *
- * Not the caller's fault and not a business rule: a credential is missing. The
- * detail is written for the developer who has to fix it and names the variable,
- * because the alternative — a generic 500 — sends them to the logs to learn
- * something the response could have told them (§29).
- */
 export class ConfigurationError extends AppError {
   readonly status = 503;
   readonly code: string;
@@ -153,15 +114,6 @@ export class ConfigurationError extends AppError {
   }
 }
 
-/**
- * 503 — a dependency we do not control is not answering.
- *
- * Distinct from `ConfigurationError`, which is also 503: that one means *we*
- * are set up wrong and a developer must fix it. This one means someone else's
- * service is down and the right response is to try later or take another path.
- * Conflating them sends an operator hunting for a missing credential during a
- * vendor outage.
- */
 export class UpstreamUnavailableError extends AppError {
   readonly status = 503;
   readonly code: string;
@@ -173,7 +125,6 @@ export class UpstreamUnavailableError extends AppError {
   }
 }
 
-/** 429 — over a limit. Always accompanied by `Retry-After`. */
 export class RateLimitError extends AppError {
   readonly status = 429;
   readonly code: string;
@@ -191,51 +142,35 @@ export class RateLimitError extends AppError {
   }
 }
 
-/** `NOT_FOUND` -> `https://dealers-drive.com/errors/not-found` */
 export function problemTypeFromCode(code: string): string {
   return `${PROBLEM_TYPE_BASE}/${code.toLowerCase().replaceAll('_', '-')}`;
 }
 
-/** `INSUFFICIENT_CREDITS` -> `Insufficient credits` */
 export function titleFromCode(code: string): string {
   const words = code.toLowerCase().replaceAll('_', ' ');
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-/**
- * Reading a property off a value that is `unknown` by construction — a caught
- * error, a library's rejection.
- *
- * Duck-typed rather than `instanceof`, deliberately: the Prisma client's error
- * classes are not stable across versions, an AWS SDK rejection is a plain object
- * with `$metadata` on it, and a test throwing `{ code: 'P2002' }` should take the
- * same path as the real thing. A type guard rather than an assertion, so the
- * check that narrows is the check that runs.
- */
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-/** A string property of a caught error, or undefined. */
 export function errorString(error: unknown, key: string): string | undefined {
   if (!isRecord(error)) return undefined;
   const value = error[key];
   return typeof value === 'string' ? value : undefined;
 }
 
-/** A numeric property of a caught error, or undefined. */
 export function errorNumber(error: unknown, key: string): number | undefined {
   if (!isRecord(error)) return undefined;
   const value = error[key];
   return typeof value === 'number' ? value : undefined;
 }
 
-/** The provider's error code — Prisma's `P2002`, an SDK's `NoSuchKey`. */
 export function errorCode(error: unknown): string | undefined {
   return errorString(error, 'code');
 }
 
-/** The HTTP status an AWS SDK rejection carries on `$metadata`. */
 export function awsStatusCode(error: unknown): number | undefined {
   if (!isRecord(error)) return undefined;
   const metadata = error.$metadata;

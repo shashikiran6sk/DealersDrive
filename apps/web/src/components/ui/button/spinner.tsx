@@ -1,4 +1,3 @@
-/** The in-button busy indicator — keeps the button's width, swaps its label. */
 export function Spinner() {
   return (
     <svg

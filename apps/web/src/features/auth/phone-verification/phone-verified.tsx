@@ -11,7 +11,6 @@ export interface PhoneVerifiedProps {
   onContinue: () => void;
 }
 
-/** The number is settled, and the step's forward action is Continue. */
 export function PhoneVerified({ display, fullName, onContinue }: PhoneVerifiedProps) {
   return (
     <section

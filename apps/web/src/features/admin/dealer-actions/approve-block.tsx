@@ -78,8 +78,6 @@ export function ApproveBlock({
       >
         {DEALER_ACTIONS_TEXT.approve}
       </Button>
-      {/* A disabled button with no explanation is indistinguishable from a
-          broken one. This is the missing condition, stated. */}
       <p className="w-full text-[12px] ink-muted">
         {dealer.actions.canApprove
           ? DEALER_ACTIONS_TEXT.approveReady

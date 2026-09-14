@@ -9,32 +9,6 @@ import { withdrawProfileChangeAction } from '@/features/dealer/profile-actions';
 
 import { PROFILE_FORM_TEXT } from './profile-form.constants';
 
-/**
- * What is waiting for review, or why the last edit was refused (**R34**).
- *
- * Without it the honest state of the product is invisible: the dealer presses
- * Save, the tagline box shows the line they typed, and their public page shows
- * the old one. A dealer who cannot see their change concludes the save failed,
- * does it again, then emails support. So the panel says three things in the
- * order a dealer wants them — the edit was received, what it will look like, and
- * what buyers are seeing meanwhile.
- *
- * **Both values, side by side**, because the boxes below show what the dealer
- * *typed*, and "what my page says right now" would otherwise be the one thing
- * this screen cannot tell them.
- *
- * **A refusal is the only thing here a dealer must read.** `decisionReason` is a
- * sentence a person wrote about this dealership, so it gets the `err` banner and
- * is set apart from the surrounding copy: two equal-looking paragraphs, only one
- * of which is actionable, is how the actionable one gets skimmed past.
- *
- * **Cancel is the only control, and the only way out**, since the boxes below are
- * shut while this is showing. A plain button with no confirm step: nothing is
- * destroyed by it, and a confirm dialog on an action that loses nothing is how
- * people learn to click through the ones that do.
- *
- * Nothing renders for an APPROVED change — the API sends `null` for one.
- */
 export function ReviewPanel({ change }: { change: DealerProfileChange | null }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);

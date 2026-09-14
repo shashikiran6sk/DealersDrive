@@ -21,17 +21,6 @@ export interface RejectBlockProps extends ActionBlockProps {
   onConfirmChange: (value: string) => void;
 }
 
-/**
- * Reject — and it is a delete, so it is shaped like one.
- *
- * Behind a disclosure rather than beside "Request changes", because the two
- * words read as neighbours and the outcomes are not: one asks for a clearer
- * photograph, the other removes a business's entire application from the
- * platform. What it destroys is spelt out before the control appears, and the
- * dealership's own name has to be typed — the standard confirmation for an
- * irreversible delete, warranted here because the thing being destroyed is
- * somebody else's.
- */
 export function RejectBlock({
   dealer,
   pending,
@@ -107,7 +96,6 @@ export function RejectBlock({
             run(
               () => rejectDealerAction(dealer.id, { reason: reason.trim() }, dealer.slug),
               DEALER_ACTIONS_TEXT.rejected,
-              // The dealership is gone; this page is a 404 now.
               DEALERS_LIST_PATH,
             )
           }

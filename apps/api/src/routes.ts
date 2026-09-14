@@ -12,60 +12,25 @@ import { createHealthRouter } from './modules/health/health.routes.js';
 import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
 import { createMetricsRouter } from './platform/telemetry/metrics.routes.js';
 
-/**
- * Every module router is mounted here and nowhere else — one file to read to
- * know the entire surface area of the API.
- *
- * The mount points carry different guard chains, and that is the whole
- * authorization model at a glance:
- *
- *   /v1/…          public, IP rate-limited, no principal
- *   /v1/auth/…     mixed, and the only mount where that is true — sign-in has
- *                  to be reachable without a session, and `/me` must not be
- *   /v1/dealer/…   requireDealer  — dealerId enters the request context here
- *   /v1/admin/…    requireAdmin
- *
- * Health lives outside /v1: infrastructure probes it, not clients, so it must
- * never move when the API version does. So does `/uploads`, which is storage
- * standing in for R2 rather than API surface, and `/api/docs`, which documents
- * every version rather than belonging to one.
- *
- * ── Reconstruction note ───────────────────────────────────────────────────
- * Health is mounted as of F006, auth and the two guarded chains as of
- * F016/F018, `/uploads` plus the first router under `/v1/dealer` as of F033,
- * the docs router as of F098, the dealers router as of F040, the public dealer
- * directory as of F085 and the admin router as of F049.
- */
 export function createRoutes(container: Container): Router {
   const router = Router();
 
   if (env.METRICS_ENABLED) {
-    // The cross-field env validation guarantees this whenever metrics are on.
     router.use(createMetricsRouter(env.METRICS_SCRAPE_TOKEN!));
   }
 
   router.use('/health', createHealthRouter(container));
   router.use(createStorageRouter(container.storage, container.media));
 
-  // The OpenAPI reference. Outside /v1 for the same reason /health is: it is not
-  // versioned API surface. Off in production by default (`DOCS_ENABLED`), and
-  // skipped under test so the suite does not pay to build it 7 times.
   if (env.DOCS_ENABLED) {
     router.use('/api/docs', createDocsRouter());
   }
 
   const v1 = Router();
 
-  // ── public ────────────────────────────────────────────────────────────
   v1.use(createConfigRouter(container.publicConfig));
   v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
 
-  // ── auth ──────────────────────────────────────────────────────────────
-  // Two routers on one prefix, in this order. The first answers the paths that
-  // must work without a session — sign-in cannot require being signed in — and
-  // falls through for everything else; the second guards what is left. Order is
-  // the security boundary here: swapping these two lines would leave
-  // `/onboarding` open.
   v1.use('/auth', createPublicAuthRouter(container.auth));
   v1.use(
     '/auth',
@@ -73,14 +38,12 @@ export function createRoutes(container: Container): Router {
     createSessionAuthRouter(container.auth, container.phone, container.rateLimit),
   );
 
-  // ── dealer ────────────────────────────────────────────────────────────
   const dealer = Router();
   dealer.use(container.guards.requireDealer);
   dealer.use(createDealersRouter(container.dealers));
   dealer.use(createMediaRouter(container.media));
   v1.use('/dealer', dealer);
 
-  // ── admin ─────────────────────────────────────────────────────────────
   const admin = Router();
   admin.use(container.guards.requireAdmin);
   admin.use(createAdminRouter(container.admin));

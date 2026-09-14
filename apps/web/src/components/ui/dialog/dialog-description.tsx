@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
-/** The supporting line, and the dialog's `aria-describedby`. */
 export function DialogDescription({
   children,
   className,

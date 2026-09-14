@@ -1,6 +1,5 @@
 import { PHONE_TEXT } from './phone-verification.constants';
 
-/** The provider could not be reached, or the deployment has it switched off. */
 export function PhoneUnavailable({ reason }: { reason?: string }) {
   return (
     <section

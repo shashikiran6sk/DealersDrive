@@ -16,7 +16,6 @@ export interface DealerSuggestionRowProps {
   optionProps: UseAutocomplete<DealerSuggestion>['optionProps'];
 }
 
-/** One row of the dropdown: monogram, name, the place, and what Enter will do. */
 export function DealerSuggestionRow({
   item,
   index,
@@ -49,11 +48,6 @@ export function DealerSuggestionRow({
               isHighlighted && 'font-semibold text-(--color-accent-800)',
             )}
           >
-            {/*
-              Marked only when the name is *why* this row is here: a dealership
-              offered because its town matched has none of the typed characters
-              in its name, and underlining nothing is the honest rendering.
-            */}
             {item.matchedOn === 'brandName' ? (
               <HighlightedText text={item.brandName} match={search} />
             ) : (
@@ -72,12 +66,6 @@ export function DealerSuggestionRow({
 
       <span className="flex shrink-0 items-center gap-[8px]">
         <span className="tag tag-ok text-[10.5px]">{DEALER_SEARCH_TEXT.verified}</span>
-        {/*
-          Hidden rather than absent on the other rows: rendering it only on the
-          highlighted row takes ~70px from that row alone, so the meta line
-          truncates on whichever row the buyer is on and the list appears to
-          reflow under the arrow keys.
-        */}
         <span
           aria-hidden={!isHighlighted}
           className={cn(

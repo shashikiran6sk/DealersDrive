@@ -47,7 +47,6 @@ const httpRequestDuration = new Histogram({
   name: 'dealers_drive_http_request_duration_seconds',
   help: 'End-to-end HTTP request duration in seconds.',
   labelNames: HTTP_LABELS,
-  // Covers cache hits through deliberately slow provider/database failures.
   buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 20],
   enableExemplars: true,
   registers: [metricsRegistry],
@@ -140,8 +139,6 @@ export function recordHttpRequest(observation: HttpObservation): void {
   httpRequestDuration.observe({
     labels,
     value: observation.durationSeconds,
-    // The upstream declaration incorrectly constrains exemplar keys to metric
-    // label keys; OpenMetrics permits an independent trace_id label set.
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- prom-client types exemplarLabels as never
     exemplarLabels: exemplarLabels as never,
   });
@@ -256,7 +253,6 @@ export function recordOAuthAttempt(
   oauthAttempts.inc({ audience: audience.toLowerCase(), outcome, reason });
 }
 
-/** Test-only reset seam. Production counters are never reset. */
 export function resetApplicationMetrics(): void {
   for (const metric of [
     httpRequests,
