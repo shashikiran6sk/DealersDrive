@@ -66,6 +66,10 @@ const nextConfig: NextConfig = {
         source: '/v1/auth/google/:path*',
         destination: `${apiOrigin}/v1/auth/google/:path*`,
       },
+      {
+        source: '/v1/auth/admin/google/:path*',
+        destination: `${apiOrigin}/v1/auth/admin/google/:path*`,
+      },
     ];
   },
 };
