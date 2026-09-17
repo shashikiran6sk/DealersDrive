@@ -19,7 +19,6 @@ const server = app.listen(env.PORT, env.HOST, () => {
       host: env.HOST,
       nodeEnv: env.NODE_ENV,
       appEnv: env.APP_ENV,
-      payments: env.PAYMENT_PROVIDER,
       storage: env.STORAGE_DRIVER,
       devDealer: env.DEV_DEALER_SLUG,
     },

@@ -7,8 +7,8 @@
 #   * every port is published on 127.0.0.1 only, so Postgres and MinIO are
 #     unreachable from the internet no matter what the security group says
 #   * credentials come from .env instead of being hardcoded to `dealersdrive`
-#   * no Mailpit — mail is the console driver in the demo, and an open web
-#     inbox on a public box is a liability with no upside
+#   * no Mailpit — production mail goes through Resend, so an open web inbox on
+#     a public box would be a liability with no upside
 # ---------------------------------------------------------------------------
 name: dealers-drive
 

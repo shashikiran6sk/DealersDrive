@@ -165,10 +165,6 @@ cookie is already shared where it needs to be. A parent-domain cookie
 would also be sent to every _other_ environment on that domain — a dev
 session presented to production. Host-only is what makes that impossible.
 
-### `PAYMENT_PROVIDER: z.enum(['development', 'razorpay']).default('development')`
-
-`development` settles instantly; `razorpay` is the production adapter.
-
 ### `STORAGE_DRIVER: z.enum(['local', 'minio', 'r2']).default('local')`
 
 One `StoragePort`, three ways to terminate a PUT:
@@ -203,15 +199,10 @@ there, with no adapter behind it then either. The guard below
 refuses it at boot rather than letting a deployment discover
 at the first approval that nothing sends.
 
-### `SMS_DRIVER: z.enum(['console', 'msg91']).default('console')`
-
-`console` locally, `msg91` in production. Transactional SMS, not the OTP.
-
 ### `MSG91_AUTH_KEY: optional(z.string().min(1))`
 
-One key, two uses — transactional SMS (`SMS_DRIVER`) and the OTP widget's
-server-side check (`PHONE_OTP_DRIVER`). It is the same MSG91 account, so a
-second variable holding the same secret would be a second thing to rotate.
+Server-side credential used to verify the access token returned by the MSG91
+OTP widget. It never reaches the browser.
 
 ### `PHONE_OTP_DRIVER: z.enum(['fake', 'msg91']).default('fake')`
 
@@ -243,49 +234,12 @@ rebuild of the web image.
 
 How long the server waits for MSG91 to say whose token this is.
 
-Four seconds, matching `RC_LOOKUP_TIMEOUT_MS` and for the same reason: a
-dealer is watching a spinner and "try again" is one press away, so failing
-fast beats succeeding slowly.
+Four seconds because a dealer is watching a spinner and "try again" is one
+press away, so failing fast beats succeeding slowly.
 
 ### `PHONE_OTP_DEV_CODE: z`
 
 The six digits the `fake` driver accepts. Never reachable in production.
-
-### `RC_LOOKUP_DRIVER: z.enum(['mock', 'attestr']).default('mock')`
-
-Where registration lookups come from (ARCHITECTURE §6.3).
-
-mock — deterministic and free. The default, and what the test suite
-uses. Intake works end to end on it; it is not a stub.
-attestr — the real provider. Costs money per call, so this is never the
-default and the guard below refuses it without a token.
-
-### `ATTESTR_AUTH_TOKEN: optional(z.string().min(1))`
-
-Basic-auth token. Without it, every lookup 503s and dealers fall back to typing.
-
-### `RC_LOOKUP_TIMEOUT_MS: z.coerce.number().int().positive().default(4000)`
-
-How long a dealer waits before we give up and offer the manual form.
-
-Four seconds, not thirty: this is on the critical path of adding a car and
-the fallback is one click away, so failing fast beats succeeding slowly.
-
-### `RC_PLATE_HASH_SECRET: z.string().min(8).default('dealers-drive-local-plate-secret')`
-
-Keys the HMAC that `rc_lookups.regHash` stores instead of the plate.
-
-Not secrecy from ourselves — real listings hold the plate in
-`vehicles.regNumberMasked`. It stops the lookup cache becoming a
-standalone, queryable register of every plate anyone ever asked about,
-including the ones that never became a listing. Rotating it costs one
-cache generation and nothing else.
-
-### `SENTRY_DSN: optional(z.string().url())`
-
-Accepted and validated so production configuration is complete, but no SDK
-is installed — see README "Remaining production setup". An unset DSN is the
-normal local state and must never be an error.
 
 ### `WORKER_INLINE: z`
 
@@ -366,22 +320,9 @@ for that to be discovered.
 
 ### `if (value.PHONE_OTP_DRIVER === 'msg91')`
 
-Checked outside production too, like the Attestr token below and for the
-same reason: a preview environment pointed at the MSG91 widget with no
+Checked outside production too: a preview environment pointed at the MSG91 widget with no
 credentials would refuse every verification silently, and nobody would
 know until a dealer could not finish signing up.
-
-### `if (value.RC_LOOKUP_DRIVER === 'attestr' && !value.ATTESTR_AUTH_TOKEN)`
-
-Checked outside production too: pointing a preview environment at Attestr
-
-### `if (value.RC_LOOKUP_DRIVER === 'attestr' && !value.ATTESTR_AUTH_TOKEN)`
-
-with no token would spend nothing and fail every lookup silently, which is
-
-### `if (value.RC_LOOKUP_DRIVER === 'attestr' && !value.ATTESTR_AUTH_TOKEN)`
-
-a worse outcome than refusing to boot.
 
 ### `readonly adminAllowlist: string[]`
 

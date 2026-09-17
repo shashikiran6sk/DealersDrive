@@ -230,8 +230,7 @@ rotation is turned on.
 put() { aws ssm put-parameter --name "$1" --value "$2" --type SecureString --overwrite; }
 
 for env in dev production; do
-  put "/dealers-drive/$env/SESSION_SECRET"       "$(openssl rand -hex 32)"
-  put "/dealers-drive/$env/UPLOAD_SIGNING_SECRET" "$(openssl rand -hex 32)"
+  put "/dealers-drive/$env/SESSION_SECRET" "$(openssl rand -hex 32)"
 done
 # DATABASE_URL, the Google client, the R2 keys and DEV_ADMIN_PASSWORD are
 # pasted in the same way, per environment. Never the same value twice.

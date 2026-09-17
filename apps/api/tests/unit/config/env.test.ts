@@ -37,8 +37,6 @@ const PRODUCTION_REQUIRED = {
   S3_ACCESS_KEY_ID: 'r2-key',
   S3_SECRET_ACCESS_KEY: 'r2-secret',
   SESSION_SECRET: 'a-real-production-session-secret',
-  UPLOAD_SIGNING_SECRET: 'a-real-production-upload-secret',
-  RC_PLATE_HASH_SECRET: 'a-real-production-plate-secret',
   /*
    * R40. `console` prints and sends nothing, so production refuses it — a
    * production fixture that omitted these two could not boot. The refusal has
@@ -90,24 +88,16 @@ const SCHEMA_KEYS = [
   'API_BASE_URL',
   'DATABASE_URL',
   'DEV_DEALER_SLUG',
-  'PAYMENT_PROVIDER',
   'STORAGE_DRIVER',
   'STORAGE_LOCAL_DIR',
   'UPLOAD_SIGNING_SECRET',
-  'RC_LOOKUP_DRIVER',
-  'ATTESTR_BASE_URL',
-  'ATTESTR_AUTH_TOKEN',
-  'RC_LOOKUP_TIMEOUT_MS',
-  'RC_PLATE_HASH_SECRET',
   'MEDIA_BASE_URL',
   'MAIL_DRIVER',
   'RESEND_API_KEY',
-  'SMS_DRIVER',
   'MAIL_FROM',
   'SUPPORT_EMAIL',
   'SUPPORT_PHONE',
   'WORKER_INLINE',
-  'WORKER',
   'JOBS_ENABLED',
   'RATE_LIMIT_ENABLED',
   'DOCS_ENABLED',
@@ -125,13 +115,11 @@ const SCHEMA_KEYS = [
   'S3_SECRET_ACCESS_KEY',
   'S3_FORCE_PATH_STYLE',
   'MSG91_AUTH_KEY',
-  'MSG91_SENDER_ID',
   'PHONE_OTP_DRIVER',
   'PHONE_OTP_DEV_CODE',
   'PHONE_OTP_TIMEOUT_MS',
   'MSG91_WIDGET_ID',
   'MSG91_WIDGET_TOKEN',
-  'SENTRY_DSN',
 ];
 
 const saved = new Map<string, string | undefined>();
@@ -222,20 +210,17 @@ describe('defaults outside production', () => {
     expect(loaded.adminAllowlist).toEqual(['shashikiran6.sk@gmail.com']);
   });
 
-  it('defaults to the development payment provider and local storage', async () => {
+  it('defaults to local storage and console mail', async () => {
     const loaded = await loadEnv({ NODE_ENV: 'development' });
 
-    expect(loaded.PAYMENT_PROVIDER).toBe('development');
     expect(loaded.STORAGE_DRIVER).toBe('local');
     expect(loaded.MAIL_DRIVER).toBe('console');
-    expect(loaded.SMS_DRIVER).toBe('console');
   });
 
   it('runs the worker inline, so `pnpm dev` stays one command', async () => {
     const loaded = await loadEnv({ NODE_ENV: 'development' });
 
     expect(loaded.WORKER_INLINE).toBe(true);
-    expect(loaded.WORKER).toBe(false);
   });
 
   it('serves the docs in development', async () => {
@@ -265,6 +250,13 @@ describe('production', () => {
 
     expect(loaded.DATABASE_URL).toBe('postgresql://u:p@db:5432/d');
     expect(loaded.isProduction).toBe(true);
+  });
+
+  it('does not require the local upload-signing secret for durable production storage', async () => {
+    const loaded = await loadEnv({ NODE_ENV: 'production', ...PRODUCTION_REQUIRED });
+
+    expect(loaded.STORAGE_DRIVER).toBe('r2');
+    expect(loaded.UPLOAD_SIGNING_SECRET).toBe('dealers-drive-local-upload-secret');
   });
 
   /**
@@ -405,10 +397,8 @@ describe('validation', () => {
     ['NODE_ENV', 'staging'],
     ['APP_ENV', 'uat'],
     ['LOG_LEVEL', 'verbose'],
-    ['PAYMENT_PROVIDER', 'stripe'],
     ['STORAGE_DRIVER', 's3'],
     ['MAIL_DRIVER', 'sendgrid'],
-    ['SMS_DRIVER', 'twilio'],
   ])('refuses a %s outside its enum', async (key, value) => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
@@ -466,7 +456,6 @@ describe('validation', () => {
 
     try {
       await expect(loadEnv({ NODE_ENV: 'development', JOBS_ENABLED: '1' })).rejects.toThrow();
-      await expect(loadEnv({ NODE_ENV: 'development', WORKER: 'yes' })).rejects.toThrow();
     } finally {
       exit.mockRestore();
       error.mockRestore();
@@ -526,18 +515,11 @@ describe('configurations that must not boot', () => {
     expect(message).toContain('S3_SECRET_ACCESS_KEY');
   });
 
-  it('refuses MSG91 without an auth key and sender id', async () => {
-    const message = await refuses({ SMS_DRIVER: 'msg91' });
-
-    expect(message).toContain('MSG91_AUTH_KEY');
-    expect(message).toContain('MSG91_SENDER_ID');
-  });
-
   /**
    * R39. The widget cannot initialise without its two values, and the
    * server-side check cannot be made without the auth key. Refused outside
-   * production too, like the Attestr token — a preview environment pointed at
-   * MSG91 with no credentials would fail every verification silently, and
+   * production too: a preview environment pointed at MSG91 with no credentials
+   * would fail every verification silently, and
    * nobody would know until a dealer could not finish signing up.
    */
   it('refuses the MSG91 OTP widget without its credentials', async () => {
@@ -583,15 +565,9 @@ describe('configurations that must not boot', () => {
       NODE_ENV: 'production',
       ...PRODUCTION_REQUIRED,
       SESSION_SECRET: 'dealers-drive-local-session-secret',
-      UPLOAD_SIGNING_SECRET: 'dealers-drive-local-upload-secret',
-      RC_PLATE_HASH_SECRET: 'dealers-drive-local-plate-secret',
     });
 
     expect(message).toContain('SESSION_SECRET');
-    expect(message).toContain('UPLOAD_SIGNING_SECRET');
-    // Shipping this default would make every cached plate hash reproducible
-    // by anyone who has read the repository.
-    expect(message).toContain('RC_PLATE_HASH_SECRET');
   });
 
   /** The sign-in bypass is a development affordance and nothing else. */
@@ -638,13 +614,11 @@ describe('blank means unset', () => {
     const loaded = await loadEnv({
       GOOGLE_CLIENT_ID: '',
       GOOGLE_CLIENT_SECRET: '',
-      SENTRY_DSN: '',
       SESSION_COOKIE_DOMAIN: '',
       MSG91_AUTH_KEY: '',
     });
 
     expect(loaded.GOOGLE_CLIENT_ID).toBeUndefined();
-    expect(loaded.SENTRY_DSN).toBeUndefined();
     expect(loaded.SESSION_COOKIE_DOMAIN).toBeUndefined();
   });
 });

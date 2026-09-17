@@ -25,7 +25,6 @@ locals {
   api_secret_names = [
     "DATABASE_URL",
     "SESSION_SECRET",
-    "UPLOAD_SIGNING_SECRET",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
     "S3_ACCESS_KEY_ID",

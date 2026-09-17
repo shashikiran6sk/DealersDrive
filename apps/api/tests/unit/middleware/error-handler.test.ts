@@ -333,8 +333,6 @@ describe('unknown throwables', () => {
     vi.stubEnv('S3_ACCESS_KEY_ID', 'r2-key');
     vi.stubEnv('S3_SECRET_ACCESS_KEY', 'r2-secret');
     vi.stubEnv('SESSION_SECRET', 'a-real-production-session-secret');
-    vi.stubEnv('UPLOAD_SIGNING_SECRET', 'a-real-production-upload-secret');
-    vi.stubEnv('RC_PLATE_HASH_SECRET', 'a-real-production-plate-secret');
     // R40 — production refuses MAIL_DRIVER=console, which sends nothing.
     vi.stubEnv('MAIL_DRIVER', 'resend');
     vi.stubEnv('RESEND_API_KEY', 're_a_real_production_key');
