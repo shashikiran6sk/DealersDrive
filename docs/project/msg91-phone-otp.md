@@ -33,14 +33,14 @@ Two facts fall out of that picture and both are load-bearing:
 
 ## Configuration
 
-| Variable               | Where           | What                                                             |
-| ---------------------- | --------------- | ---------------------------------------------------------------- |
-| `PHONE_OTP_DRIVER`     | API             | `fake` locally and in tests, `msg91` in production               |
-| `MSG91_AUTH_KEY`       | API, **secret** | Shared with `SMS_DRIVER`. Server-only — it can spend the balance |
-| `MSG91_WIDGET_ID`      | API → browser   | `configuration.widgetId`                                         |
-| `MSG91_WIDGET_TOKEN`   | API → browser   | `configuration.tokenAuth`                                        |
-| `PHONE_OTP_DEV_CODE`   | API             | The code the `fake` driver accepts. Default `123456`             |
-| `PHONE_OTP_TIMEOUT_MS` | API             | How long to wait for MSG91. Default 4000                         |
+| Variable               | Where           | What                                                   |
+| ---------------------- | --------------- | ------------------------------------------------------ |
+| `PHONE_OTP_DRIVER`     | API             | `fake` locally and in tests, `msg91` in production     |
+| `MSG91_AUTH_KEY`       | API, **secret** | Server-only credential used to verify the widget token |
+| `MSG91_WIDGET_ID`      | API → browser   | `configuration.widgetId`                               |
+| `MSG91_WIDGET_TOKEN`   | API → browser   | `configuration.tokenAuth`                              |
+| `PHONE_OTP_DEV_CODE`   | API             | The code the `fake` driver accepts. Default `123456`   |
+| `PHONE_OTP_TIMEOUT_MS` | API             | How long to wait for MSG91. Default 4000               |
 
 `env.ts` refuses to boot when `PHONE_OTP_DRIVER=msg91` and any of the three
 credentials is missing — in **every** environment, not just production, because

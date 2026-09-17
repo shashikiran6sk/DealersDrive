@@ -89,13 +89,11 @@ x-api-env: &api-env
   S3_FORCE_PATH_STYLE: 'true'
   UPLOAD_SIGNING_SECRET: dealers-drive-local-upload-secret
 
-  PAYMENT_PROVIDER: development
   # `console` prints the recipient, the subject and the plain-text body to the
   # log — which is what a developer checking a template actually wants to read.
   # `resend` is the production driver (**R40**); there is still no SMTP adapter,
   # so Mailpit below receives nothing and `MAIL_DRIVER=smtp` is refused at boot.
   MAIL_DRIVER: console
-  SMS_DRIVER: console
   # R39. No widget script, no SMS, no MSG91 account needed: onboarding's step 1
   # accepts `123456`. Everything above the provider — the binding check, the
   # replay guard, the refusals — is the production path.

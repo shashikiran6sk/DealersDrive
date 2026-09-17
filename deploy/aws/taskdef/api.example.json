@@ -51,9 +51,7 @@
         { "name": "S3_REGION", "value": "auto" },
         { "name": "S3_BUCKET", "value": "dd-media-dev" },
         { "name": "S3_FORCE_PATH_STYLE", "value": "true" },
-        { "name": "PAYMENT_PROVIDER", "value": "development" },
         { "name": "MAIL_DRIVER", "value": "console" },
-        { "name": "SMS_DRIVER", "value": "console" },
         { "name": "JOBS_ENABLED", "value": "true" },
         { "name": "WORKER_INLINE", "value": "true" },
         { "name": "RATE_LIMIT_ENABLED", "value": "true" },
@@ -72,10 +70,6 @@
         {
           "name": "SESSION_SECRET",
           "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/SESSION_SECRET"
-        },
-        {
-          "name": "UPLOAD_SIGNING_SECRET",
-          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/UPLOAD_SIGNING_SECRET"
         },
         {
           "name": "GOOGLE_CLIENT_ID",

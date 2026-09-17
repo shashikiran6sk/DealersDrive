@@ -64,8 +64,6 @@ const envSchema = z.object({
   SESSION_SECRET: z.string().min(16).default('dealers-drive-local-session-secret'),
   SESSION_COOKIE_DOMAIN: optional(z.string().min(1)),
 
-  PAYMENT_PROVIDER: z.enum(['development', 'razorpay']).default('development'),
-
   STORAGE_DRIVER: z.enum(['local', 'minio', 'r2']).default('local'),
   STORAGE_LOCAL_DIR: z.string().min(1).default('.storage'),
 
@@ -83,9 +81,7 @@ const envSchema = z.object({
 
   MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
   RESEND_API_KEY: optional(z.string().min(1)),
-  SMS_DRIVER: z.enum(['console', 'msg91']).default('console'),
   MSG91_AUTH_KEY: optional(z.string().min(1)),
-  MSG91_SENDER_ID: optional(z.string().min(1)),
 
   PHONE_OTP_DRIVER: z.enum(['fake', 'msg91']).default('fake'),
   MSG91_WIDGET_ID: optional(z.string().min(1)),
@@ -97,24 +93,12 @@ const envSchema = z.object({
     .default('123456'),
   MAIL_FROM: z.string().min(1).default('Dealers-Drive <updates@dealers-drive.com>'),
 
-  RC_LOOKUP_DRIVER: z.enum(['mock', 'attestr']).default('mock'),
-  ATTESTR_BASE_URL: optional(z.string().url()),
-  ATTESTR_AUTH_TOKEN: optional(z.string().min(1)),
-  RC_LOOKUP_TIMEOUT_MS: z.coerce.number().int().positive().default(4000),
-  RC_PLATE_HASH_SECRET: z.string().min(8).default('dealers-drive-local-plate-secret'),
-
-  SENTRY_DSN: optional(z.string().url()),
-
   SUPPORT_EMAIL: z.string().min(1).default('support@dealers-drive.com'),
   SUPPORT_PHONE: z.string().min(1).default('+914162248890'),
 
   WORKER_INLINE: z
     .enum(['true', 'false'])
     .default('true')
-    .transform((value) => value === 'true'),
-  WORKER: z
-    .enum(['true', 'false'])
-    .default('false')
     .transform((value) => value === 'true'),
   JOBS_ENABLED: z
     .enum(['true', 'false'])
@@ -144,8 +128,6 @@ const envSchema = z.object({
 });
 
 const LOCAL_SESSION_SECRET = 'dealers-drive-local-session-secret';
-const LOCAL_UPLOAD_SECRET = 'dealers-drive-local-upload-secret';
-const LOCAL_PLATE_SECRET = 'dealers-drive-local-plate-secret';
 
 const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
   const require = (path: string, message: string) => {
@@ -203,11 +185,6 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
   }
 
-  if (value.SMS_DRIVER === 'msg91') {
-    if (!value.MSG91_AUTH_KEY) require('MSG91_AUTH_KEY', 'is required when SMS_DRIVER=msg91.');
-    if (!value.MSG91_SENDER_ID) require('MSG91_SENDER_ID', 'is required when SMS_DRIVER=msg91.');
-  }
-
   if (value.PHONE_OTP_DRIVER === 'msg91') {
     if (!value.MSG91_AUTH_KEY) {
       require('MSG91_AUTH_KEY', 'is required when PHONE_OTP_DRIVER=msg91.');
@@ -218,10 +195,6 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     if (!value.MSG91_WIDGET_TOKEN) {
       require('MSG91_WIDGET_TOKEN', 'is required when PHONE_OTP_DRIVER=msg91.');
     }
-  }
-
-  if (value.RC_LOOKUP_DRIVER === 'attestr' && !value.ATTESTR_AUTH_TOKEN) {
-    require('ATTESTR_AUTH_TOKEN', 'is required when RC_LOOKUP_DRIVER=attestr.');
   }
 
   if (value.METRICS_ENABLED && !value.METRICS_SCRAPE_TOKEN) {
@@ -265,14 +238,6 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
 
   if (value.SESSION_SECRET === LOCAL_SESSION_SECRET) {
     require('SESSION_SECRET', 'is still the local development default.');
-  }
-
-  if (value.UPLOAD_SIGNING_SECRET === LOCAL_UPLOAD_SECRET) {
-    require('UPLOAD_SIGNING_SECRET', 'is still the local development default.');
-  }
-
-  if (value.RC_PLATE_HASH_SECRET === LOCAL_PLATE_SECRET) {
-    require('RC_PLATE_HASH_SECRET', 'is still the local development default.');
   }
 });
 

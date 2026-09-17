@@ -94,11 +94,9 @@ locals {
     # OOM-killer does. See the api_node_heap_mb variable.
     { name = "NODE_OPTIONS", value = "--max-old-space-size=${var.api_node_heap_mb}" },
 
-    { name = "PAYMENT_PROVIDER", value = "development" },
     # R40. `env.ts` refuses `console` in production, so a deployment without a
     # Resend key fails at boot rather than silently telling nobody anything.
     { name = "MAIL_DRIVER", value = var.mail_driver },
-    { name = "SMS_DRIVER", value = "console" },
     # R39. `env.ts` refuses `fake` in production, so a deployment without the
     # widget credentials fails at boot rather than accepting a fixed code. The
     # two values below reach the browser through GET /v1/auth/phone/widget;

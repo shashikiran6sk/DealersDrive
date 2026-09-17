@@ -92,7 +92,7 @@ rule set matching the table above. Safe to re-run.
 cd ~/dealers-drive
 cp deploy/env.production.example .env
 sed -i 's/__DOMAIN__/your-domain.com/g' .env
-openssl rand -hex 32        # run three times, for the three CHANGE_ME secrets
+openssl rand -hex 32        # SESSION_SECRET
 nano .env
 ```
 
@@ -100,9 +100,10 @@ Fill in, at minimum:
 
 - `POSTGRES_PASSWORD` **and** the same string inside `DATABASE_URL`
 - `S3_SECRET_ACCESS_KEY` — MinIO's root password
-- `SESSION_SECRET`, `UPLOAD_SIGNING_SECRET` — 32 random bytes each
+- `SESSION_SECRET` — 32 random bytes
 - `ADMIN_ALLOWLIST` — the Google address that gets the admin console
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — step 8
+- `RESEND_API_KEY` and the three MSG91 values used by email and phone verification
 
 `apps/api/src/config/env.ts` validates all of this at boot and **refuses to
 start** in production if a local development default survives, if `AUTH_MODE`
@@ -256,20 +257,12 @@ uploads, the full image pipeline.
 
 - **Postgres and MinIO are containers on this box.** One instance, one disk, no
   replicas. Take backups; `docker compose down -v` erases everything.
-- **Mail and SMS print to the log** (`MAIL_DRIVER=console`, `SMS_DRIVER=console`).
-  Nothing is sent. Dealer sign-in does not depend on either — Google verifies
-  the address. Switching to `MAIL_DRIVER=resend` with a key is the only change
-  needed to send the six notifications for real (**R40**); the queue, the worker
-  and the idempotency are the same either way.
-- **Payments settle instantly** (`PAYMENT_PROVIDER=development`). No money moves.
+- **Email is sent through Resend.** The queue, worker and idempotency are the
+  same as in development; production refuses the console-only mail driver.
 - **One process runs both HTTP and background jobs** (`WORKER_INLINE=true`).
   Fine for one box. The separate entrypoint that scaling out needs now exists —
   `node dist/worker.js` (**R40**) — and `docker compose --profile worker up
 worker` runs it here; set `WORKER_INLINE=false` on the API at the same time,
   or the two race for the same outbox rows.
-- **No Sentry.** The DSN validates but no SDK is installed.
-
-Moving to real production is a configuration change, not a rewrite:
-`STORAGE_DRIVER=r2` with Cloudflare keys, `DATABASE_URL` to RDS,
-`SMS_DRIVER=msg91` once DLT registration clears — the adapters are written and
-tested behind the same ports.
+  Moving to real production is a configuration change, not a rewrite:
+  `STORAGE_DRIVER=r2` with Cloudflare keys and `DATABASE_URL` pointing to RDS.

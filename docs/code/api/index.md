@@ -20,10 +20,7 @@ sessions — `CookieSessionResolver`, or the dev identity under AUTH_MODE=dev
 oauth — Google; a fake is injected by the sign-in tests
 storage — local disk · MinIO · R2, by STORAGE_DRIVER
 cache — process memory · Postgres, by CACHE_DRIVER
-sms — console · MSG91, by SMS_DRIVER
 phone otp — fixed dev code · the MSG91 widget, by PHONE_OTP_DRIVER
-payments — `createDevelopmentPaymentProvider` today, Razorpay later
-rc — deterministic mock · Attestr, by RC_LOOKUP_DRIVER
 
 None of those choices reaches a module: they are all made here.
 

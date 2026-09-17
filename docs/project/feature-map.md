@@ -1745,7 +1745,7 @@ The real provider, plus `rc-aliases.ts` and `rc-match.ts`.
 
 - **Status** implemented, **rc-match changes under D1** · **Confidence** HIGH · **Depends on** F057
 - **Backend** `src/platform/rc/{attestr.adapter,rc-aliases,rc-match}.ts`
-- **External** **Attestr** — `ATTESTR_BASE_URL`, `ATTESTR_AUTH_TOKEN`, `RC_LOOKUP_TIMEOUT_MS`; **billed per call**
+- **External** **Attestr**; **billed per call**
 - **Tests** `tests/unit/platform/rc/{attestr.adapter,rc-match}.test.ts` — a fixture table of real maker strings
 - **Components** none · **Sandbox** none
 - **D1 change.** `rc-match.ts` stops resolving to catalogue ids and instead emits normalised strings. `rc-aliases.ts` is **kept unchanged** — it is a committed constant, not a table, and it is the only thing that gets from `GENERAL MOTORS INDIA PVT LTD` to _Chevrolet_.
@@ -2233,7 +2233,7 @@ The dealer side: status tabs, counts, and per-enquiry status changes.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F088, F031
 - **Backend** `src/platform/notify/{notify.port,msg91.adapter}.ts`
-- **External** **MSG91** — `SMS_DRIVER`
+- **External** **MSG91**
 - **Tests** `tests/unit/platform/notify/*.test.ts` (2)
 - **Components** none · **Sandbox** none
 
@@ -4734,7 +4734,7 @@ accepting any valid token for any number.
   `POST /v1/auth/phone/verify`
 - **Config** `PHONE_OTP_DRIVER` (`fake` · `msg91`), `MSG91_WIDGET_ID`,
   `MSG91_WIDGET_TOKEN`, `PHONE_OTP_DEV_CODE`, `PHONE_OTP_TIMEOUT_MS`;
-  `MSG91_AUTH_KEY` is shared with `SMS_DRIVER` and is server-only
+  `MSG91_AUTH_KEY` is server-only
 - **Frontend** `components/ui/otp-input.tsx`,
   `features/auth/{phone-verification.tsx,phone-actions.ts,onboarding-wizard.tsx}`,
   `lib/msg91-widget.ts`, `app/(auth)/dealer/onboarding/page.tsx`
