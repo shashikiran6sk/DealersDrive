@@ -37,10 +37,13 @@ Prisma 6 · Zod 4 · Tailwind v4 · Node 24 · TypeScript 5.9
 
 ```bash
 pnpm install
-cp .env.example .env
+cp .env.example.local .env
 pnpm infra:up                 # Postgres, MinIO, Mailpit
 pnpm typecheck && pnpm test && pnpm build
 ```
+
+Use `.env.example.dev` and `.env.example.production` as the corresponding
+deployment templates.
 
 ## Progress
 
