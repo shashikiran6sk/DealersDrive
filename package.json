@@ -30,9 +30,9 @@
     "observability:dashboards:publish": "node scripts/publish-grafana-dashboards.mjs"
   },
   "devDependencies": {
-    "prettier": "^3.9.6",
-    "turbo": "^2.10.12",
+    "prettier": "^3.9.8",
+    "turbo": "^2.10.13",
     "typescript": "^5.9.3",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.1"
   }
 }
