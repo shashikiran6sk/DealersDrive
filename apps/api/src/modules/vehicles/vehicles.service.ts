@@ -2,6 +2,7 @@ import {
   isListingDeletable,
   isListingEditable,
   parseRegistration,
+  vehicleIssues,
   type CreateVehicleInput,
   type DealerVehicle,
   type UpdateVehicleInput,
@@ -13,11 +14,18 @@ import type { PrismaClient } from '@prisma/client';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import type { Tx } from '../../platform/db/prisma.js';
-import { ConflictError, NotFoundError, errorCode } from '../../platform/errors.js';
-import { createDraftListing, lockListingForVehicle } from '../listings/listings.facade.js';
-import { toDealerVehicle } from './vehicles.mapper.js';
+import { ConflictError, DomainError, NotFoundError, errorCode } from '../../platform/errors.js';
+import {
+  assertTransition,
+  createDraftListing,
+  lockListingForVehicle,
+  transition,
+} from '../listings/listings.facade.js';
+import { completenessOf, toDealerVehicle } from './vehicles.mapper.js';
 import {
   DUPLICATE_REGISTRATION,
+  REGISTRATION_ALREADY_LISTED,
+  VEHICLE_INCOMPLETE,
   VEHICLE_NOT_DELETABLE,
   VEHICLE_NOT_EDITABLE,
   VEHICLE_NOT_FOUND,
@@ -44,6 +52,18 @@ function duplicate(): ConflictError {
         field: 'body.registrationNumber',
         code: 'DUPLICATE_REGISTRATION',
         message: DUPLICATE_REGISTRATION,
+      },
+    ],
+  });
+}
+
+function alreadyListed(): ConflictError {
+  return new ConflictError('DUPLICATE_REGISTRATION', REGISTRATION_ALREADY_LISTED, {
+    errors: [
+      {
+        field: 'registrationNumber',
+        code: 'DUPLICATE_REGISTRATION',
+        message: REGISTRATION_ALREADY_LISTED,
       },
     ],
   });
@@ -224,6 +244,47 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           before: { registrationNumber: current.registrationNumber },
         });
       });
+    },
+
+    async submit(actor: VehicleActor, vehicleId: string): Promise<DealerVehicle> {
+      await requireOwned(actor.dealerId, vehicleId);
+
+      try {
+        const submitted = await withTransaction(prisma, async (tx) => {
+          const listing = await lockListingForVehicle(tx, vehicleId);
+          const vehicle = await repo.findOwned(actor.dealerId, vehicleId, tx);
+          if (!listing || !vehicle) throw notFound();
+
+          const event = listing.status === 'CHANGES_REQUESTED' ? 'resubmit' : 'submit';
+          assertTransition(listing.status, event, 'DEALER');
+
+          const issues = vehicleIssues(completenessOf(vehicle));
+          if (issues.length > 0) {
+            throw new DomainError('VEHICLE_INCOMPLETE', VEHICLE_INCOMPLETE, {
+              errors: issues.map((issue) => ({
+                field: issue.field,
+                code: 'REQUIRED',
+                message: issue.message,
+              })),
+            });
+          }
+
+          const claimedAt = vehicle.claimedAt ?? new Date();
+          if (!vehicle.claimedAt) {
+            await repo.updateOwned(actor.dealerId, vehicleId, { claimedAt }, tx);
+          }
+
+          const moved = await transition(tx, audit, listing, event, {
+            type: 'DEALER',
+            id: actor.userId,
+          });
+          return { ...vehicle, claimedAt, listing: moved };
+        });
+        return toDealerVehicle(submitted);
+      } catch (error) {
+        if (errorCode(error) === 'P2002') throw alreadyListed();
+        throw error;
+      }
     },
 
     async suggestions(query: VehicleSuggestQuery): Promise<VehicleSuggestions> {

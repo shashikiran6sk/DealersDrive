@@ -116,7 +116,7 @@ revision · `[⛔]` withdrawn
 ## Tier 10 — Listing lifecycle
 
 - [x] F064 — Listing model & state machine · **states revised, R47** · one `transition()`, race-safe, audited
-- [ ] F065 — Listing submission & resubmission · **no credit hold, R47**
+- [x] F065 — Listing submission & resubmission · **no credit hold, R47** · plate claimed across dealerships on submit
 - [ ] F066 — Dealer inventory list
 - [ ] F067 — Mark sold, remove & renew
 - [⏸] F068 — Vehicle history report · **deferred by R46**

@@ -1269,7 +1269,7 @@ export const registry: RegistryEntry[] = [
       'DetailsStep',
     ],
     features: ['F060', 'F061', 'F063'],
-    props: ['step', 'vehicle', 'saved', 'cancelHref'],
+    props: ['step', 'vehicle', 'saved', 'submitted', 'cancelHref'],
     states: [
       'new registration',
       'basics empty',
@@ -1281,6 +1281,7 @@ export const registry: RegistryEntry[] = [
       'review incomplete',
       'under review (read-only)',
       'changes requested (reason shown)',
+      'submitted',
     ],
     reusable: false,
     storyId: 'vehicle-vehiclewizard',

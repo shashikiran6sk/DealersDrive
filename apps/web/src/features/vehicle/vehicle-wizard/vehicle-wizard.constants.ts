@@ -59,6 +59,7 @@ export const VEHICLE_WIZARD_TEXT = {
   continue: 'Continue',
   cancel: 'Cancel',
   done: 'Back to dashboard',
+  saveAndExit: 'Finish later',
   draftSaved: 'Draft saved. You can come back to it at any time.',
   unavailable: 'We could not save that just now. Try again in a moment.',
   notSaved: 'That could not be saved.',
@@ -83,6 +84,14 @@ export const VEHICLE_WIZARD_TEXT = {
   reviewNoPhotos:
     'You do not upload photographs. After you submit, Dealers-Drive arranges a shoot and adds the finished pictures itself.',
   fix: 'Fix',
+  submit: 'Submit for review',
+  resubmit: 'Resubmit for review',
+  notSubmitted: 'That vehicle could not be submitted.',
+  submitBlocked: 'Fill in the missing details to submit.',
+  submittedTag: 'Pending review',
+  submittedTitle: 'Submitted for review',
+  submittedBody:
+    'Our team will check the details and arrange a photo shoot at your yard. We will let you know if anything needs changing before the car goes live.',
   lockedTitle: 'This vehicle cannot be edited right now',
   lockedBody: {
     PENDING_REVIEW:

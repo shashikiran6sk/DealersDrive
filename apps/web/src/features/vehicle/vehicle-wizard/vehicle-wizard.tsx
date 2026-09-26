@@ -12,6 +12,8 @@ import { DetailsStep } from './details-step';
 import { PricingStep } from './pricing-step';
 import { RegistrationStep } from './registration-step';
 import { ReviewStep } from './review-step';
+import { SubmitRow } from './submit-row';
+import { SubmittedPanel } from './submitted-panel';
 import {
   STEP_HEADINGS,
   STEP_LABELS,
@@ -20,7 +22,6 @@ import {
 } from './vehicle-wizard.constants';
 import type { WizardState, WizardStep } from './vehicle-wizard.types';
 import { WizardFooter } from './wizard-footer';
-import { editPath } from './utils';
 
 const EMPTY: WizardState = {};
 
@@ -28,6 +29,7 @@ export interface VehicleWizardProps {
   step: WizardStep;
   vehicle: DealerVehicle | null;
   saved?: boolean;
+  submitted?: boolean;
   cancelHref?: string;
 }
 
@@ -41,6 +43,7 @@ export function VehicleWizard({
   step,
   vehicle,
   saved = false,
+  submitted = false,
   cancelHref = '/dealer',
 }: VehicleWizardProps) {
   const [state, formAction] = useActionState(
@@ -52,6 +55,10 @@ export function VehicleWizard({
   const locked = vehicle !== null && !vehicle.listing.canEdit;
   const current = WIZARD_STEPS.indexOf(locked ? 'review' : step);
   const listing = vehicle?.listing;
+
+  if (submitted && listing?.status === 'PENDING_REVIEW') {
+    return <SubmittedPanel doneHref={cancelHref} />;
+  }
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -92,14 +99,7 @@ export function VehicleWizard({
         ) : step === 'review' && vehicle ? (
           <>
             <ReviewStep vehicle={vehicle} />
-            <div className="flex flex-wrap gap-[9px] border-t border-(--color-divider) pt-[16px]">
-              <ButtonLink href={editPath(vehicle.id, 'pricing')} variant="secondary">
-                {VEHICLE_WIZARD_TEXT.back}
-              </ButtonLink>
-              <ButtonLink href={cancelHref} variant="secondary" className="ml-auto">
-                {VEHICLE_WIZARD_TEXT.done}
-              </ButtonLink>
-            </div>
+            <SubmitRow vehicle={vehicle} cancelHref={cancelHref} />
           </>
         ) : (
           <form action={formAction} className="flex flex-col gap-[16px]" noValidate>

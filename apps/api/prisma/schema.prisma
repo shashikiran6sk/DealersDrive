@@ -491,6 +491,10 @@ model Vehicle {
   /// removed or rejected (R47). NULL while it holds it, which is every state a
   /// dealer can still act on.
   releasedAt DateTime?
+  /// When this vehicle first entered review, which is when its registration
+  /// stopped being the dealership's private note and became a claim on the
+  /// marketplace (F065). See the second partial unique index below.
+  claimedAt  DateTime?
 
   /// The dealer member who created the row. `dealerId` says whose car; this
   /// says whose hands.
@@ -510,7 +514,12 @@ model Vehicle {
   ///     UNIQUE (dealerId, registrationNumber) WHERE releasedAt IS NULL
   ///
   /// A dealership holds a registration once. See
-  /// `migrations/20260926190000_vehicle_registration_held`.
+  /// `migrations/20260926190000_vehicle_registration_held`. And a second one:
+  ///
+  ///     UNIQUE (registrationNumber) WHERE releasedAt IS NULL AND claimedAt IS NOT NULL
+  ///
+  /// Across the marketplace, one car is in review or live once. See
+  /// `migrations/20260926210000_vehicle_registration_claimed`.
   @@index([registrationNumber])
   @@map("vehicles")
 }
