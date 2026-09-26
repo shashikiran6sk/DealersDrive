@@ -1,5 +1,5 @@
 import { initialsOf, slugify } from '@dealers-drive/contracts';
-import type { Prisma, PrismaClient } from '@prisma/client';
+import type { ListingStatus, Prisma, PrismaClient } from '@prisma/client';
 
 import type { Tx } from '../../platform/db/prisma.js';
 
@@ -224,18 +224,29 @@ export function createDealersRepository(prisma: PrismaClient) {
       return [];
     },
 
-    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F064
+    // eslint-disable-next-line @typescript-eslint/require-await -- nothing expires a listing yet (R47)
     async expiringListingCount(_dealerId: string, _horizon: Date): Promise<number> {
       return 0;
     },
 
-    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F050/F064
+    async listingCounts(dealerId: string): Promise<Partial<Record<ListingStatus, number>>> {
+      const grouped = await prisma.listing.groupBy({
+        by: ['status'],
+        where: { dealerId },
+        _count: { _all: true },
+      });
+      return Object.fromEntries(grouped.map((row) => [row.status, row._count._all]));
+    },
+
     async weeklyActivity(
-      _dealerId: string,
-      _weekStart: Date,
+      dealerId: string,
+      weekStart: Date,
       _monthStart: Date,
     ): Promise<{ creditsUsedThisMonth: number; listingsAddedThisWeek: number }> {
-      return { creditsUsedThisMonth: 0, listingsAddedThisWeek: 0 };
+      const listingsAddedThisWeek = await prisma.listing.count({
+        where: { dealerId, publishedAt: { gte: weekStart } },
+      });
+      return { creditsUsedThisMonth: 0, listingsAddedThisWeek };
     },
   };
 }

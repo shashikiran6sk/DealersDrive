@@ -2,7 +2,10 @@ import type { DashboardResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { ADD_VEHICLE_HREF, ADD_VEHICLE_LABEL } from '@/components/dealer/console-nav';
 import { RecentEnquiries, ViewsChart } from '@/components/dealer/dashboard-panels';
+import { ListingStats } from '@/components/dealer/listing-stats';
+import { ButtonLink } from '@/components/ui/button';
 import { Banner, StatCard } from '@/components/ui/primitives';
 import { apiGet } from '@/lib/api';
 
@@ -15,9 +18,14 @@ export default async function DealerDashboardPage() {
 
   return (
     <div className="flex flex-col gap-[18px] p-[22px]">
-      <div>
-        <h1 className="text-[26px]">{dashboard.greeting}</h1>
-        <p className="mt-1 text-[13px] ink-muted">{dashboard.subline}</p>
+      <div className="flex flex-wrap items-end justify-between gap-[12px]">
+        <div>
+          <h1 className="text-[26px]">{dashboard.greeting}</h1>
+          <p className="mt-1 text-[13px] ink-muted">{dashboard.subline}</p>
+        </div>
+        <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" size="md">
+          + {ADD_VEHICLE_LABEL}
+        </ButtonLink>
       </div>
 
       {dashboard.alerts.map((alert) => (
@@ -33,6 +41,8 @@ export default async function DealerDashboardPage() {
           {alert.message}
         </Banner>
       ))}
+
+      <ListingStats stats={dashboard.listingStats} />
 
       <div className="grid gap-[14px] [grid-template-columns:repeat(auto-fit,minmax(178px,1fr))]">
         {dashboard.stats.map((stat) => (

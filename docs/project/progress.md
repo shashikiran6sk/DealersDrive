@@ -117,7 +117,7 @@ revision · `[⛔]` withdrawn
 
 - [x] F064 — Listing model & state machine · **states revised, R47** · one `transition()`, race-safe, audited
 - [x] F065 — Listing submission & resubmission · **no credit hold, R47** · plate claimed across dealerships on submit
-- [ ] F066 — Dealer inventory list
+- [x] F066 — Dealer inventory list · status tabs with counts, plate/make/model search; the dashboard counts the same listings
 - [ ] F067 — Mark sold, remove & renew
 - [⏸] F068 — Vehicle history report · **deferred by R46**
 

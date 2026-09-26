@@ -73,6 +73,8 @@ function setup(
     listForDealer: vi.fn(),
     existingSpelling: vi.fn(async () => null),
     suggestions: vi.fn(async () => ['Creta']),
+    inventory: vi.fn(async () => [row()]),
+    statusCounts: vi.fn(async () => [{ status: 'DRAFT' as const, count: 1 }]),
     ...repoOverrides,
   };
   const audit = { record: vi.fn(async () => undefined), recordDetached: vi.fn() };

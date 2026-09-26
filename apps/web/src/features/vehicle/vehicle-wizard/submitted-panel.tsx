@@ -10,7 +10,7 @@ export function SubmittedPanel({ doneHref }: { doneHref: string }) {
       <h2 className="text-[29px] leading-[1.1]">{VEHICLE_WIZARD_TEXT.submittedTitle}</h2>
       <p className="max-w-[62ch] text-[14px] ink-body">{VEHICLE_WIZARD_TEXT.submittedBody}</p>
       <ButtonLink href={doneHref} variant="primary">
-        {VEHICLE_WIZARD_TEXT.done}
+        {VEHICLE_WIZARD_TEXT.viewInventory}
       </ButtonLink>
     </Blueprint>
   );

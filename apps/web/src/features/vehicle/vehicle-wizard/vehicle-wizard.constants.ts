@@ -60,6 +60,7 @@ export const VEHICLE_WIZARD_TEXT = {
   cancel: 'Cancel',
   done: 'Back to dashboard',
   saveAndExit: 'Finish later',
+  viewInventory: 'View inventory',
   draftSaved: 'Draft saved. You can come back to it at any time.',
   unavailable: 'We could not save that just now. Try again in a moment.',
   notSaved: 'That could not be saved.',

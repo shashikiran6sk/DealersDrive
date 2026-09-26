@@ -1286,6 +1286,36 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'vehicle-vehiclewizard',
   },
+  {
+    id: 'C066',
+    name: 'InventoryView',
+    source: 'apps/web/src/features/dealer/inventory/inventory-view.tsx',
+    category: 'Console',
+    ownership: 'Feature-specific',
+    purpose:
+      'The dealer inventory (F066): status tabs with counts, plate/make/model search, a table on desktop and cards on mobile, empty states, Show more.',
+    aliases: ['InventoryTable', 'VehicleList', 'StockList', 'InventoryCard', 'InventoryRow'],
+    features: ['F066'],
+    props: ['inventory', 'status', 'q'],
+    states: ['every status', 'filtered to changes', 'empty', 'nothing matches', 'mobile'],
+    reusable: false,
+    storyId: 'dealer-inventoryview',
+  },
+  {
+    id: 'C066b',
+    name: 'ListingStats',
+    source: 'apps/web/src/components/dealer/listing-stats/listing-stats.tsx',
+    category: 'Console',
+    ownership: 'Feature-shared',
+    purpose:
+      'Four StatCards — Active, Pending review, Changes requested, Sold — each a link to the inventory filtered to it. Counts come from the API.',
+    aliases: ['DashboardStats', 'VehicleCounts', 'StatusCounts'],
+    features: ['F048', 'F066'],
+    props: ['stats'],
+    states: ['populated', 'new dealership'],
+    reusable: true,
+    storyId: 'dealer-listingstats',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

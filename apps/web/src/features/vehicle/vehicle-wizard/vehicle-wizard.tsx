@@ -25,6 +25,8 @@ import { WizardFooter } from './wizard-footer';
 
 const EMPTY: WizardState = {};
 
+const INVENTORY_HREF = '/dealer/inventory';
+
 export interface VehicleWizardProps {
   step: WizardStep;
   vehicle: DealerVehicle | null;
@@ -57,7 +59,7 @@ export function VehicleWizard({
   const listing = vehicle?.listing;
 
   if (submitted && listing?.status === 'PENDING_REVIEW') {
-    return <SubmittedPanel doneHref={cancelHref} />;
+    return <SubmittedPanel doneHref={INVENTORY_HREF} />;
   }
 
   return (

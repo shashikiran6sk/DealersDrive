@@ -167,6 +167,7 @@ interface Options {
   recent?: RecentEnquiryRow[];
   expiringSoon?: number;
   activity?: { creditsUsedThisMonth: number; listingsAddedThisWeek: number };
+  listingCounts?: Record<string, number>;
 }
 
 function setup(options: Options = {}) {
@@ -235,6 +236,7 @@ function setup(options: Options = {}) {
     enquiryCounts: () => Promise.resolve(options.enquiryCounts ?? { thisWeek: 0, previousWeek: 0 }),
     recentEnquiries: () => Promise.resolve(options.recent ?? []),
     expiringListingCount: () => Promise.resolve(options.expiringSoon ?? 0),
+    listingCounts: () => Promise.resolve(options.listingCounts ?? {}),
     weeklyActivity: () =>
       Promise.resolve(options.activity ?? { creditsUsedThisMonth: 0, listingsAddedThisWeek: 0 }),
   } as unknown as DealersRepository;
@@ -2115,8 +2117,10 @@ describe('dashboard', () => {
    * ── Reconstruction slice ──────────────────────────────────────────────────
    * What today's sliced repository actually answers, asserted so the zeros are
    * a recorded state rather than an accident. When `ListingViewDaily`,
-   * `Enquiry`, `Listing` and `CreditTransaction` land, **this case is the one
-   * that should fail** — which is exactly what is wanted of it.
+   * `Enquiry` and `CreditTransaction` land, **this case is the one that should
+   * fail** — which is exactly what is wanted of it. `Listing` landed at F064,
+   * and the active count moved from the `dealers.activeListings` mirror to a
+   * count of `listings` (DESIGN-SPEC §4.11: counts are derived, never stored).
    * ──────────────────────────────────────────────────────────────────────────
    */
   it('answers with an empty week while the models behind it do not exist', async () => {
@@ -2125,7 +2129,64 @@ describe('dashboard', () => {
     expect(dashboard.viewsChart.series.map((point) => point.views)).toEqual([0, 0, 0, 0, 0, 0, 0]);
     expect(dashboard.recentEnquiries).toEqual([]);
     expect(dashboard.alerts).toEqual([]);
-    // Real, and read off the dealership row rather than counted.
-    expect(dashboard.stats.find((stat) => stat.key === 'activeListings')?.value).toBe(7);
+    // Counted from listings, not read off the dealership row's mirror column.
+    expect(dashboard.stats.find((stat) => stat.key === 'activeListings')?.value).toBe(0);
+  });
+});
+
+describe('dashboard listing stats (F066)', () => {
+  it('counts the four statuses a dealer acts on, each linking to its inventory tab', async () => {
+    const h = setup({ listingCounts: { ACTIVE: 3, PENDING_REVIEW: 2, SOLD: 1, DRAFT: 4 } });
+    const dashboard = await h.service.dashboard('dealer-1');
+
+    expect(dashboard.listingStats).toEqual([
+      {
+        key: 'ACTIVE',
+        label: 'Active listings',
+        value: 3,
+        href: '/dealer/inventory?status=ACTIVE',
+        tone: 'ok',
+      },
+      {
+        key: 'PENDING_REVIEW',
+        label: 'Pending review',
+        value: 2,
+        href: '/dealer/inventory?status=PENDING_REVIEW',
+        tone: 'warn',
+      },
+      {
+        key: 'CHANGES_REQUESTED',
+        label: 'Changes requested',
+        value: 0,
+        href: '/dealer/inventory?status=CHANGES_REQUESTED',
+        tone: 'warn',
+      },
+      {
+        key: 'SOLD',
+        label: 'Sold',
+        value: 1,
+        href: '/dealer/inventory?status=SOLD',
+        tone: 'accent',
+      },
+    ]);
+    expect(dashboard.stats.find((stat) => stat.key === 'activeListings')?.value).toBe(3);
+  });
+
+  it('raises an alert when a moderator has asked for changes', async () => {
+    const one = await setup({ listingCounts: { CHANGES_REQUESTED: 1 } }).service.dashboard('d');
+    const two = await setup({ listingCounts: { CHANGES_REQUESTED: 2 } }).service.dashboard('d');
+
+    expect(one.alerts[0]).toEqual({
+      type: 'CHANGES_REQUESTED',
+      count: 1,
+      message: '1 vehicle needs changes before it goes live.',
+      href: '/dealer/inventory?status=CHANGES_REQUESTED',
+    });
+    expect(two.alerts[0]?.message).toBe('2 vehicles need changes before they go live.');
+  });
+
+  it('raises no alert when nothing is waiting on the dealer', async () => {
+    const dashboard = await setup({ listingCounts: { ACTIVE: 5 } }).service.dashboard('d');
+    expect(dashboard.alerts).toEqual([]);
   });
 });

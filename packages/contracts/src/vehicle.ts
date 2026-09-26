@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
-import { formatKm } from './common.js';
+import { CursorPage, formatKm } from './common.js';
 import {
   BodyType,
   FUEL_LABELS,
   FuelType,
   InsuranceType,
+  ListingStatus,
+  StatusTone,
   PriceNegotiability,
   TRANSMISSION_LABELS,
   Transmission,
@@ -352,3 +354,48 @@ export const DealerVehicle = z.object({
   updatedAt: z.string(),
 });
 export type DealerVehicle = z.infer<typeof DealerVehicle>;
+
+// ─────────── dealer inventory (F066) ───────────────────────────────────────
+
+/**
+ * The inventory filter. `status` is a listing status; omitting it is "All".
+ * `q` matches the registration number (separators ignored) or the make/model.
+ */
+export const DealerInventoryQuery = z
+  .object({
+    status: ListingStatus.optional(),
+    q: z.string().trim().min(1).max(60).optional(),
+    cursor: z.string().max(500).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .strict();
+export type DealerInventoryQuery = z.infer<typeof DealerInventoryQuery>;
+
+/** One inventory row: identity, price and where the listing stands. */
+export const DealerInventoryRow = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  registrationDisplay: z.string(),
+  summary: z.string(),
+  priceLabel: z.string().nullable(),
+  status: ListingStatus,
+  statusLabel: z.string(),
+  statusTone: StatusTone,
+  reason: z.string().nullable(),
+  complete: z.boolean(),
+  updatedAt: z.string(),
+  updatedLabel: z.string(),
+});
+export type DealerInventoryRow = z.infer<typeof DealerInventoryRow>;
+
+/**
+ * A page of the inventory, with the count of every status so the filter tabs
+ * need no second request. `counts.ALL` is the whole inventory; the counts
+ * ignore `q` and `status`, so switching tab never empties the tab bar.
+ */
+export const DealerInventoryResponse = z.object({
+  data: z.array(DealerInventoryRow),
+  page: CursorPage,
+  counts: z.record(z.string(), z.number().int()),
+});
+export type DealerInventoryResponse = z.infer<typeof DealerInventoryResponse>;

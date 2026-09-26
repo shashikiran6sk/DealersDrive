@@ -5,6 +5,7 @@ import {
   formatDate,
   formatPhone,
   initialsOf,
+  listingStatusTone,
   normaliseLocality,
   PROFILE_CHANGE_STATUS_LABELS,
   timeAgo,
@@ -64,6 +65,13 @@ function sameServices(a: readonly string[], b: readonly string[]): boolean {
   const held = new Set(b);
   return a.every((value) => held.has(value));
 }
+
+const DASHBOARD_LISTING_STATS = [
+  { status: 'ACTIVE', label: 'Active listings' },
+  { status: 'PENDING_REVIEW', label: 'Pending review' },
+  { status: 'CHANGES_REQUESTED', label: 'Changes requested' },
+  { status: 'SOLD', label: 'Sold' },
+] as const;
 
 export function createDealersService({ prisma, repo, storage, maps, audit }: DealersDeps) {
   function toProfile(dealer: DealerWithRelations): DealerProfile {
@@ -748,15 +756,25 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
       const weekStart = startOfDayUtc(new Date(Date.now() - 6 * 86_400_000));
 
-      const [rollups, previousTotalOrNull, enquiryCounts, recent, expiringSoon, activity] =
-        await Promise.all([
-          repo.viewRollups(dealerId, weekStart),
-          repo.previousWeekViews(dealerId, weekStart),
-          repo.enquiryCounts(dealerId, weekStart),
-          repo.recentEnquiries(dealerId, 4),
-          repo.expiringListingCount(dealerId, new Date(Date.now() + 7 * 86_400_000)),
-          repo.weeklyActivity(dealerId, weekStart, startOfMonthUtc()),
-        ]);
+      const [
+        rollups,
+        previousTotalOrNull,
+        enquiryCounts,
+        recent,
+        expiringSoon,
+        activity,
+        listings,
+      ] = await Promise.all([
+        repo.viewRollups(dealerId, weekStart),
+        repo.previousWeekViews(dealerId, weekStart),
+        repo.enquiryCounts(dealerId, weekStart),
+        repo.recentEnquiries(dealerId, 4),
+        repo.expiringListingCount(dealerId, new Date(Date.now() + 7 * 86_400_000)),
+        repo.weeklyActivity(dealerId, weekStart, startOfMonthUtc()),
+        repo.listingCounts(dealerId),
+      ]);
+      const activeListings = listings.ACTIVE ?? 0;
+      const changesRequested = listings.CHANGES_REQUESTED ?? 0;
 
       const byDay = new Map(
         rollups.map((row) => [row.day.toISOString().slice(0, 10), row.views ?? 0]),
@@ -794,8 +812,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           {
             key: 'activeListings',
             label: 'Active listings',
-            value: dealer.activeListings,
-            valueLabel: String(dealer.activeListings),
+            value: activeListings,
+            valueLabel: String(activeListings),
             delta:
               activity.listingsAddedThisWeek > 0
                 ? `+${String(activity.listingsAddedThisWeek)} this week`
@@ -861,8 +879,27 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         })),
         creditBalance: dealer.creditBalance,
         creditsHeld: dealer.creditsHeld,
-        alerts:
-          expiringSoon > 0
+        listingStats: DASHBOARD_LISTING_STATS.map((stat) => ({
+          key: stat.status,
+          label: stat.label,
+          value: listings[stat.status] ?? 0,
+          href: `/dealer/inventory?status=${stat.status}`,
+          tone: listingStatusTone(stat.status),
+        })),
+        alerts: [
+          ...(changesRequested > 0
+            ? [
+                {
+                  type: 'CHANGES_REQUESTED',
+                  count: changesRequested,
+                  message: `${String(changesRequested)} vehicle${
+                    changesRequested === 1 ? ' needs' : 's need'
+                  } changes before ${changesRequested === 1 ? 'it goes' : 'they go'} live.`,
+                  href: '/dealer/inventory?status=CHANGES_REQUESTED',
+                },
+              ]
+            : []),
+          ...(expiringSoon > 0
             ? [
                 {
                   type: 'EXPIRING_SOON',
@@ -873,7 +910,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
                   href: '/dealer/inventory?status=ACTIVE',
                 },
               ]
-            : [],
+            : []),
+        ],
       };
     },
   };

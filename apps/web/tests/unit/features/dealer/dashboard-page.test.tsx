@@ -64,6 +64,36 @@ function dashboard(overrides: Partial<DashboardResponse> = {}): DashboardRespons
         deltaTone: 'ok',
       },
     ],
+    listingStats: [
+      {
+        key: 'ACTIVE',
+        label: 'Active listings',
+        value: 4,
+        href: '/dealer/inventory?status=ACTIVE',
+        tone: 'ok',
+      },
+      {
+        key: 'PENDING_REVIEW',
+        label: 'Pending review',
+        value: 2,
+        href: '/dealer/inventory?status=PENDING_REVIEW',
+        tone: 'warn',
+      },
+      {
+        key: 'CHANGES_REQUESTED',
+        label: 'Changes requested',
+        value: 1,
+        href: '/dealer/inventory?status=CHANGES_REQUESTED',
+        tone: 'warn',
+      },
+      {
+        key: 'SOLD',
+        label: 'Sold',
+        value: 9,
+        href: '/dealer/inventory?status=SOLD',
+        tone: 'accent',
+      },
+    ],
     viewsChart: {
       title: 'Views this week',
       totalLabel: '1,500 total',
@@ -252,5 +282,26 @@ describe('recent enquiries', () => {
     const panel = screen.getByRole('heading', { name: 'Recent enquiries' }).closest('section');
     expect(panel).not.toBeNull();
     expect(within(panel as HTMLElement).queryByRole('link')).toBeNull();
+  });
+});
+
+describe('the vehicle counts (F066)', () => {
+  it('shows the four listing states, each linking to its inventory tab, and the Add vehicle CTA', async () => {
+    apiGet.mockResolvedValue(dashboard());
+    render(await DealerDashboardPage());
+
+    const nav = screen.getByRole('navigation', { name: /vehicles by status/i });
+    const links = within(nav).getAllByRole('link');
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/dealer/inventory?status=ACTIVE',
+      '/dealer/inventory?status=PENDING_REVIEW',
+      '/dealer/inventory?status=CHANGES_REQUESTED',
+      '/dealer/inventory?status=SOLD',
+    ]);
+    expect(within(nav).getByText('Changes requested')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '+ Add vehicle' })).toHaveAttribute(
+      'href',
+      '/dealer/vehicles/new',
+    );
   });
 });

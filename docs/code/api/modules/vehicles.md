@@ -128,3 +128,15 @@ dealership has it.
 
 The route also carries `requireDealerActive`: a dealership that has not been
 approved can prepare drafts but not submit them.
+
+### `async inventory(dealerId, query)`
+
+The dealer's inventory (**F066**): newest first, filtered by listing status and
+by a search that matches the plate with separators stripped (`ka-01-ab` finds
+`KA01AB1234`) or the make or model case-insensitively. Cursor-paginated on
+`createdAt`, as the admin lists are.
+
+`counts` is a `groupBy` over the dealership's listings, deliberately unaffected
+by the filter and the search: the tabs show how many vehicles are in each state,
+not how many match what was typed, and switching tab never empties the tab bar.
+`ALL` is their sum.
