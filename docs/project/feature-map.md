@@ -1804,6 +1804,14 @@ Make, model, variant, year, fuel, transmission, body type — prefilled from the
 - **Tests** `tests/unit/features/vehicle/basics-fields.test.ts` ✅ (validation)
 - **Components — New (feature-specific)** `BasicsFields`, `BasicsStep` · **Reused** `Field`, `Input`, `Button`, `Banner`
 - **Sandbox** empty / prefilled from RC / partially prefilled / all-errors / disabled
+- ⚠️ **Entry corrected on landing (R46).** Always manual. `BasicsStep` lives in
+  `features/vehicle/vehicle-wizard/basics-step.tsx` and takes `vehicle`,
+  `errors`, `values` — no `BasicsFields` split and no RC prefill. Both decisions
+  below were taken: make/model are normalised on write (whitespace in contracts,
+  stored spelling adopted in `vehicles.service.ts`), and `Combobox` is replaced
+  by `SuggestInput` (`components/forms/suggest-input/`), a native datalist over
+  `GET /v1/dealer/vehicles/suggestions`. `manufacturingYear` and
+  `registrationYear` replace `year`.
 - ⚠️ **This is where D1's risk lands.** Without a catalogue, make/model are free text, and `RcSpecs.makerModel` is documented as _"model and trim run together, inconsistently."_ Two things must be decided in this PR:
   1. **Write-time normalisation** — `rc-match`'s normaliser must run on manual input too, or facets (F076) fragment into `Maruti` / `Maruti Suzuki` / `MARUTI SUZUKI INDIA LTD`.
   2. **Whether `Combobox` survives.** Its stated reason to exist was the 344-model list. The strongest remaining case for it is a _suggest-existing-values_ control that offers make/model strings already in the database, which is also the cheapest guard against fragmentation. Recommended.
@@ -1817,6 +1825,11 @@ KMs, owners, colour, RTO, insurance, location, seats, airbags, features. Eight r
 - **D1 change** `colorId: Uuid` → `color: string`; `rtoCode` unaffected (already derived from the plate)
 - **D6 change** the vehicle's location is text like the dealership's, not a city id. There is no picker to reuse; the suggest-existing-values control D1 asks for at F060 serves this field too
 - **Tests** `tests/unit/features/vehicle/details-fields.test.ts` ✅
+- ⚠️ **Entry corrected on landing (R46).** `details-step.tsx` in the wizard
+  folder: kilometres, owners, colour, insurance type and validity date. No RTO
+  field (derived from the plate), and no vehicle location, seats, airbags or
+  features in this phase — a car is listed at its dealership, whose locality
+  the public card shows.
 - **Components — New (feature-specific)** `DetailsFields` · **Reused** `Field`, `Input`
 - **Sandbox** empty / RC-prefilled / all-errors / disabled
 
@@ -1853,6 +1866,11 @@ The frame that sequences F059 → F060 → F061 → F062 → review, gated by th
   file under `modules/vehicles/routes/`; `vehicles.mapper.ts` owns the dealer
   DTO. Tests: `tests/unit/modules/vehicles/*.test.ts` and the integration suite
   `apps/api/tests/vehicle-api.test.ts`, which is the tenant-isolation proof.
+- **Wizard, as landed.** `app/(dealer)/dealer/vehicles/new/page.tsx` and
+  `app/(dealer)/dealer/vehicles/[id]/edit/page.tsx`; `features/vehicle/actions.ts`
+  and `features/vehicle/vehicle-wizard/` (one file per step, `review-step`,
+  `wizard-footer`). The step is a `?step=` query parameter, never client state.
+  Tests: `apps/web/tests/unit/features/vehicle/*.test.ts(x)`.
 
 ---
 

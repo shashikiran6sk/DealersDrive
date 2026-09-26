@@ -108,10 +108,10 @@ revision · `[⛔]` withdrawn
 - [⏸] F057 — RC lookup port, mock adapter & caching · **deferred by R46**
 - [⏸] F058 — Attestr RC adapter · **deferred by R46**
 - [⏸] F059 — RC lookup UI & registration step · **deferred by R46**
-- [ ] F060 — Vehicle basics — RC-prefilled or manual ⚠️ · **manual only, R46**
-- [ ] F061 — Vehicle details
+- [x] F060 — Vehicle basics — RC-prefilled or manual ⚠️ · **manual only, R46** · suggest-existing make/model
+- [x] F061 — Vehicle details · manual, no vehicle location (the dealership's is used)
 - [⛔] F062 — Vehicle photo upload UI · **withdrawn by R45** — dealers never upload listing photos
-- [ ] F063 — Vehicle wizard shell & step routing · **no Photos step, R45** · dealer vehicle API landed; the wizard UI is next
+- [x] F063 — Vehicle wizard shell & step routing · **no Photos step, R45** · API [#148](https://github.com/shashikiran6sk/DealersDrive/pull/148) + wizard; submit lands with F065
 
 ## Tier 10 — Listing lifecycle
 

@@ -1,5 +1,7 @@
 export { ConsoleNav } from './console-nav';
 export {
+  ADD_VEHICLE_HREF,
+  ADD_VEHICLE_LABEL,
   DEALER_NAV,
   DEALER_NAV_LABEL,
   DEALER_ROOT_HREF,

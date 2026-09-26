@@ -3,21 +3,19 @@ import type { NavItem } from '@/types';
 export const DEALER_ROOT_HREF = '/dealer';
 export const DEALER_NAV_LABEL = 'Dealer console';
 
+export const ADD_VEHICLE_HREF = '/dealer/vehicles/new';
+export const ADD_VEHICLE_LABEL = 'Add vehicle';
+
 export const DEALER_NAV: NavItem[] = [
   { href: '/dealer', label: 'Dashboard', short: 'Home' },
   { href: '/dealer/inventory', label: 'Inventory', short: 'Stock' },
-  { href: '/dealer/vehicles/new', label: 'Add vehicle', short: 'Add' },
+  { href: ADD_VEHICLE_HREF, label: ADD_VEHICLE_LABEL, short: 'Add' },
   { href: '/dealer/enquiries', label: 'Enquiries', short: 'Leads' },
   { href: '/dealer/billing', label: 'Billing', short: 'Billing' },
   { href: '/dealer/profile', label: 'Dealer profile' },
 ];
 
-const NOT_YET_BUILT = new Set([
-  '/dealer/inventory',
-  '/dealer/vehicles/new',
-  '/dealer/enquiries',
-  '/dealer/billing',
-]);
+const NOT_YET_BUILT = new Set(['/dealer/inventory', '/dealer/enquiries', '/dealer/billing']);
 
 export const LANDED_NAV: NavItem[] = DEALER_NAV.filter((item) => !NOT_YET_BUILT.has(item.href));
 
