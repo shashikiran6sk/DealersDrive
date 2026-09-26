@@ -359,7 +359,8 @@ describe('signedReadUrl', () => {
   it('signs a private read with an expiry', async () => {
     const url = new URL(await createLocalStorage().signedReadUrl('dealers/1/kyc/gst.pdf', 120));
 
-    expect(url.pathname).toBe('/private/dealers/1/kyc/gst.pdf');
+    expect(url.pathname).toBe('/private');
+    expect(url.searchParams.get('key')).toBe('dealers/1/kyc/gst.pdf');
     expect(Number(url.searchParams.get('expiresAt'))).toBeGreaterThan(Date.now());
     expect(url.searchParams.get('signature')).toMatch(/^[0-9a-f]{64}$/);
   });

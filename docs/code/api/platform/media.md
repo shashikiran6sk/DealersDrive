@@ -5,6 +5,16 @@ Parent: [api](../../README.md)
 The notes below belonged to the files named under each heading. Each heading is the
 declaration the note sat above.
 
+## `apps/api/src/platform/media/sniff.ts`
+
+### `export function sniffImageType(body: Buffer): SniffedImageType | null`
+
+What a file is, read from its first bytes rather than from its name or the
+`Content-Type` it was uploaded with — both are whatever the client said. Only
+the three types the product accepts are recognised; anything else, including
+an SVG (which is script) or a GIF, is `null`. The vehicle-image commit refuses
+a file whose sniffed type differs from its declared one.
+
 ## `apps/api/src/platform/media/urls.ts`
 
 ### `export const DERIVATIVE_WIDTHS = [320, 640, 1024, 1600] as const`

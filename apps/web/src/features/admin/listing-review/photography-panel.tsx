@@ -8,6 +8,7 @@ import { Field } from '@/components/forms/field';
 import { Select, Textarea } from '@/components/ui/input';
 import { StatusTag } from '@/components/ui/primitives';
 import { setPhotographyAction } from '@/features/admin/listing-actions';
+import { ListingImages } from '@/features/admin/listing-images';
 
 import { LISTING_REVIEW_TEXT } from './listing-review.constants';
 
@@ -22,7 +23,6 @@ export function PhotographyPanel({ detail }: { detail: AdminListingDetail }) {
         </h2>
         <StatusTag tone={photography.tone}>{photography.label}</StatusTag>
       </div>
-      <p className="text-[13px] ink-muted">{LISTING_REVIEW_TEXT.photographyPending}</p>
       {photography.note && !photography.canUpdate ? (
         <p className="text-[12px] ink-body">{photography.note}</p>
       ) : null}
@@ -60,6 +60,8 @@ export function PhotographyPanel({ detail }: { detail: AdminListingDetail }) {
           </button>
         </form>
       ) : null}
+
+      <ListingImages listingId={listing.id} images={detail.images} />
     </section>
   );
 }

@@ -1708,6 +1708,18 @@ Reordering, and the rule that position 0 is the primary photo — marked with a 
 - **DB** `VehicleMedia`
 - **Components — Reused** `Plate` (`size="marker"` — one of the four sanctioned plate placements)
 - **Sandbox** `Plate` marker variant in context
+- ⚠️ **Entry corrected on landing (R45).** Lands in two parts, admin-only, in
+  a new `modules/vehicle-images/` rather than in `media`. First the upload:
+  `vehicle_media` (position, `isPrimary`, `source ADMIN_UPLOAD`, `addedBy`;
+  positions unique per vehicle by a deferrable constraint, one primary by a
+  partial unique index), `POST /v1/admin/listings/:id/images/presign`,
+  `POST …/images/:mediaId/commit` (length and magic-byte verification) and
+  `DELETE …/images/:mediaId` (renumbers, promotes the next primary), with the
+  web `features/admin/listing-images/` (C035) on the review screen. Then the
+  reorder and set-primary routes. It does not depend on F034 (deferred by R45:
+  images are served as uploaded). The dealer `/v1/dealer/media/*` routes of
+  F033 are **withdrawn** with it, and `GET /media/by-media/…` serves a vehicle
+  image only while its listing is `ACTIVE`.
 
 ### F055 — Vehicle data model
 

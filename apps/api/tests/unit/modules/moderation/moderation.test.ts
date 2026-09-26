@@ -45,6 +45,7 @@ function queueRow(overrides: Partial<QueueRow> = {}): QueueRow {
       kilometersDriven: 22_400,
       pricePaise: 145_000_000n,
       photography: null,
+      _count: { images: 3 },
     },
     dealer: {
       id: 'dealer-1',
@@ -68,6 +69,7 @@ describe('the admin listing row', () => {
       location: 'Vellore',
       waitingLabel: '3 hours ago',
       resubmission: false,
+      imageCount: 3,
     });
   });
 
@@ -157,6 +159,7 @@ describe('the service', () => {
       repo: { ...repo, detail: vi.fn(), history: vi.fn() },
       prisma: {} as never,
       audit: { record: vi.fn(), recordDetached: vi.fn() },
+      images: { images: vi.fn() },
     });
     const response = await service.listings({ limit: 1 });
 

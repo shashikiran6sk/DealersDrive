@@ -26,6 +26,10 @@ import {
   createModerationService,
   type ModerationService,
 } from './modules/moderation/moderation.service.js';
+import {
+  createVehicleImagesService,
+  type VehicleImagesService,
+} from './modules/vehicle-images/vehicle-images.service.js';
 import { createVehiclesRepository } from './modules/vehicles/vehicles.repository.js';
 import {
   createVehiclesService,
@@ -83,6 +87,7 @@ export interface Container {
   readonly media: MediaService;
   readonly vehicles: VehiclesService;
   readonly moderation: ModerationService;
+  readonly vehicleImages: VehicleImagesService;
 }
 
 export interface ContainerOverrides {
@@ -134,17 +139,19 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const phone = createPhoneService({ prisma, otp: phoneOtp, cache });
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
-  const media = createMediaService({ prisma, storage, queue });
+  const media = createMediaService({ prisma, storage });
   const notifications = createNotificationsService({ prisma, queue, mailer });
   const vehicles = createVehiclesService({
     prisma,
     repo: createVehiclesRepository(prisma),
     audit,
   });
+  const vehicleImages = createVehicleImagesService({ prisma, storage, audit, config });
   const moderation = createModerationService({
     prisma,
     repo: createModerationRepository(prisma),
     audit,
+    images: vehicleImages,
   });
 
   return {
@@ -174,6 +181,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     media,
     vehicles,
     moderation,
+    vehicleImages,
   };
 }
 

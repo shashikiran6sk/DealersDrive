@@ -25,8 +25,9 @@ import {
  */
 
 /**
- * Shared by the two presign paths — C14 media (**F033**) and the KYC document
- * upload (**F041**) — which is why both id fields are optional. One schema
+ * Shared by every presign path — the admin vehicle-image upload (**R45**), the
+ * yard photograph and the KYC document upload (**F041**) — which is why both
+ * id fields are optional. One schema
  * rather than two, so the response shape a client parses cannot drift between
  * them.
  */
@@ -525,51 +526,16 @@ export const YardPhotoDto = z.object({
 });
 export type YardPhotoDto = z.infer<typeof YardPhotoDto>;
 
-export const VehicleMediaDto = z.object({
-  mediaId: Uuid,
-  position: z.number().int(),
-  isPrimary: z.boolean(),
-  status: MediaStatus,
-  url: z.string().nullable(),
-  blurhash: z.string().nullable(),
-  width: z.number().int().nullable(),
-  height: z.number().int().nullable(),
-  fileName: z.string().nullable(),
-  warnings: z.array(z.string()),
-  uploadedByAdmin: z.boolean(),
-});
-export type VehicleMediaDto = z.infer<typeof VehicleMediaDto>;
-
 // ─────────── C14 media ─────────────────────────────────────────────────────
+/**
+ * What an image upload may be, wherever it is uploaded. The dealer's C14
+ * vehicle-media shapes (`MediaPresignInput`, `MediaCommitInput`,
+ * `MediaCommitResponse`, `VehicleMediaDto`) were withdrawn by **R45** with the
+ * routes that used them: a dealer never writes vehicle media. The admin upload
+ * is `VehicleImagePresignInput` in `moderation.ts`.
+ */
 export const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
-
-export const MediaPresignInput = z
-  .object({
-    ownerType: z.enum(['VEHICLE', 'DEALER_LOGO', 'DEALER_COVER']),
-    ownerId: Uuid,
-    fileName: z.string().trim().min(1).max(160),
-    mimeType: z.enum(IMAGE_MIME_TYPES),
-    bytes: z.number().int().min(1).max(IMAGE_MAX_BYTES),
-    width: z.number().int().min(1).max(20000).optional(),
-    height: z.number().int().min(1).max(20000).optional(),
-  })
-  .strict();
-export type MediaPresignInput = z.infer<typeof MediaPresignInput>;
-
-export const MediaCommitInput = z
-  .object({ position: z.number().int().min(0).max(40).optional() })
-  .strict();
-export type MediaCommitInput = z.infer<typeof MediaCommitInput>;
-
-export const MediaCommitResponse = z.object({
-  mediaId: Uuid,
-  status: MediaStatus,
-  position: z.number().int(),
-  poll: z.string(),
-  estimatedSeconds: z.number().int(),
-});
-export type MediaCommitResponse = z.infer<typeof MediaCommitResponse>;
 
 // ─────────── C18 dashboard ─────────────────────────────────────────────────
 /**

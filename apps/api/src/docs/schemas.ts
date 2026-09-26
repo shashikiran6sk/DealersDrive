@@ -17,8 +17,6 @@ const INPUT_SCHEMA_NAMES = [
   'DealerDirectoryQuery',
   'DealerSuggestQuery',
   'OnboardingInput',
-  'MediaPresignInput',
-  'MediaCommitInput',
   'DocumentPresignInput',
   'DocumentCommitInput',
   'YardPhotoPresignInput',
@@ -41,6 +39,8 @@ const INPUT_SCHEMA_NAMES = [
   'ListingCheckParam',
   'SetListingCheckInput',
   'SetPhotographyInput',
+  'VehicleImagePresignInput',
+  'ListingImageParam',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

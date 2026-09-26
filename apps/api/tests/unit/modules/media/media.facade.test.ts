@@ -8,8 +8,9 @@ import * as media from '../../../../src/modules/media/media.facade.js';
 /**
  * §5.5 rule 3 for photos.
  *
- * A vehicle DTO has to render a photo's status, so `toMediaStatus` — the map
- * from a stored status onto the one a dealer is shown — crosses the boundary.
+ * The yard photograph has to render an upload's status, so `toMediaStatus` —
+ * the map from a stored status onto the one a dealer is shown — crosses the
+ * boundary.
  * The processing pipeline behind it does not: nothing outside this module
  * should be able to start, retry or inspect a derivative job.
  */

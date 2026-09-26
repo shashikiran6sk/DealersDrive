@@ -1287,7 +1287,7 @@ export const registry: RegistryEntry[] = [
     storyId: 'vehicle-vehiclewizard',
   },
   {
-    id: 'C066',
+    id: 'C052b',
     name: 'InventoryView',
     source: 'apps/web/src/features/dealer/inventory/inventory-view.tsx',
     category: 'Console',
@@ -1317,7 +1317,7 @@ export const registry: RegistryEntry[] = [
     storyId: 'dealer-listingstats',
   },
   {
-    id: 'C069',
+    id: 'C061b',
     name: 'ModerationQueue',
     source: 'apps/web/src/features/admin/moderation-queue/moderation-queue.tsx',
     category: 'Admin',
@@ -1332,7 +1332,29 @@ export const registry: RegistryEntry[] = [
     storyId: 'admin-moderationqueue',
   },
   {
-    id: 'C070',
+    id: 'C063b',
+    name: 'ListingImages',
+    source: 'apps/web/src/features/admin/listing-images/listing-images.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    purpose:
+      'Admin upload of the processed StudioCar images for a listing (R45, F035 as reinterpreted): presign → PUT → commit per file, the gallery in order with the primary marked, removal, and the minimum and maximum counts. Dealers never see it.',
+    aliases: [
+      'ImageUploader',
+      'PhotoUploader',
+      'VehicleGallery',
+      'MediaManager',
+      'StudioCarUpload',
+      'ImageTile',
+    ],
+    features: ['R45', 'F035', 'F070'],
+    props: ['listingId', 'images'],
+    states: ['none yet', 'below minimum', 'ready to approve', 'full (20)', 'read-only'],
+    reusable: false,
+    storyId: 'admin-listingimages',
+  },
+  {
+    id: 'C060b',
     name: 'ListingReview',
     source: 'apps/web/src/features/admin/listing-review/listing-review.tsx',
     category: 'Admin',
