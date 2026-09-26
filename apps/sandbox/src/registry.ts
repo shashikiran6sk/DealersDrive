@@ -288,6 +288,21 @@ export const registry: RegistryEntry[] = [
     storyId: 'forms-field--every-control',
   },
   {
+    id: 'C019b',
+    name: 'PlateInput',
+    source: 'apps/web/src/components/forms/plate-input/plate-input.tsx',
+    category: 'Forms',
+    ownership: 'Shared',
+    purpose:
+      'The registration-number field. Reads any separator style, rewrites to KA 01 AB 1234 on blur, and names what is wrong with a plate it cannot read. Same parser as the API.',
+    aliases: ['RegistrationInput', 'NumberPlateInput', 'PlateField', 'RcNumber'],
+    features: ['F056'],
+    props: ['id', 'name', 'label', 'defaultValue', 'error', 'hint', 'disabled', 'autoFocus'],
+    states: ['empty', 'stored value', 'Bharat series', 'server refusal', 'disabled', 'autofocus'],
+    reusable: true,
+    storyId: 'forms-plateinput',
+  },
+  {
     id: 'C020',
     name: 'CustomerHeader',
     source: 'apps/web/src/components/layout/customer-header/customer-header.tsx',

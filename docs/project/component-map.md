@@ -263,19 +263,19 @@ one short-label and one long-label scenario.
 
 ### C019 — `PlateInput`
 
-|                      |                                                                                                               |
-| -------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Location**         | `apps/web/src/components/forms/plate-input.tsx:26`                                                            |
-| **Purpose**          | The number-plate field. Accepts `TN 09 BX 1234`, `TN-09-BX-1234` and `tn09bx1234`; normalises on the way out. |
-| **Props**            | `value: string`, `onChange: (next: string) => void`, `error?: string \| undefined`, `disabled?`, `autoFocus?` |
-| **Defaults**         | `disabled=false`, `autoFocus=false`                                                                           |
-| **Also exports**     | `validatePlate(raw)`, `normalisePlate(raw)`                                                                   |
-| **Dependencies**     | `Field`, `REGISTRATION_NUMBER` from contracts                                                                 |
-| **Consumers**        | 1 (`RegistrationStep`)                                                                                        |
-| **Tests**            | ✅ `apps/web/tests/unit/features/vehicle/plate-input.test.ts` (logic only, not render)                        |
-| **Ownership**        | Shared                                                                                                        |
-| **Sandbox priority** | P1                                                                                                            |
-| **Confidence**       | HIGH                                                                                                          |
+|                      |                                                                                                                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Location**         | `apps/web/src/components/forms/plate-input/plate-input.tsx` — landed at F056; uncontrolled, `id`/`name`/`defaultValue` rather than `value`/`onChange`, for server-action forms |
+| **Purpose**          | The number-plate field. Accepts `TN 09 BX 1234`, `TN-09-BX-1234` and `tn09bx1234`; normalises on the way out.                                                                  |
+| **Props**            | `value: string`, `onChange: (next: string) => void`, `error?: string \| undefined`, `disabled?`, `autoFocus?`                                                                  |
+| **Defaults**         | `disabled=false`, `autoFocus=false`                                                                                                                                            |
+| **Also exports**     | `validatePlate(raw)`, `normalisePlate(raw)`                                                                                                                                    |
+| **Dependencies**     | `Field`, `REGISTRATION_NUMBER` from contracts                                                                                                                                  |
+| **Consumers**        | 1 (`RegistrationStep`)                                                                                                                                                         |
+| **Tests**            | ✅ `apps/web/tests/unit/features/vehicle/plate-input.test.ts` (logic only, not render)                                                                                         |
+| **Ownership**        | Shared                                                                                                                                                                         |
+| **Sandbox priority** | P1                                                                                                                                                                             |
+| **Confidence**       | HIGH                                                                                                                                                                           |
 
 > ✅ **This is the model component.** Pure props, no context, validation
 > exported and tested separately, a comment explaining _why_ it is a component

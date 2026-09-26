@@ -42,3 +42,18 @@ asked; spelling, abbreviation and synonyms are deliberately left alone.
 What the wizard offers while a dealer types a make or model: values already in
 use, never a closed list. It is the cheapest guard against fragmentation that
 does not also refuse a genuinely new model.
+
+### `async heldRegistration(dealerId, registrationNumber, exceptVehicleId?)`
+
+The read in front of the partial unique index
+`vehicles_dealerId_registrationNumber_held_key` (**F056**): a dealership holds a
+registration number once, while `releasedAt` is NULL. The read exists so the
+service can answer with a sentence naming the plate; the index is what holds
+when two saves of the same plate race. `exceptVehicleId` leaves out the row
+being edited, so saving a draft without changing its plate is not a collision
+with itself.
+
+Another dealership may hold the same number. Cross-dealer uniqueness applies
+from submission (**F065**), when a car enters the review queue — a draft is a
+dealership's private notes, and letting one dealer's abandoned draft lock a
+plate out for everybody would be a squatting problem the index created.

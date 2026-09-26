@@ -392,6 +392,19 @@
   .input[aria-invalid='true'] {
     border-color: var(--color-err);
   }
+  .dd-plate-input {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--color-bg);
+    border-color: var(--color-ink);
+    border-left: 5px solid var(--color-accent);
+    border-radius: 0;
+  }
+  .dd-plate-input::placeholder {
+    letter-spacing: 0.08em;
+  }
   textarea.input {
     min-height: 90px;
     resize: vertical;
