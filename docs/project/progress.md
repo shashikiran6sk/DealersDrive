@@ -103,7 +103,7 @@ revision · `[⛔]` withdrawn
 
 - [⏸] F034 — Image derivative pipeline · ⚠️ moved from Tier 5, D4 · **deferred by R45** — StudioCar produces the finished image
 - [ ] F035 — Media ordering & primary photo · ⚠️ moved from Tier 5, D4 · **reinterpreted by R45** — admin-only
-- [ ] F055 — Vehicle data model
+- [x] F055 — Vehicle data model · manual entry, no image columns (R45/R46)
 - [ ] F056 — Plate input & normalisation
 - [⏸] F057 — RC lookup port, mock adapter & caching · **deferred by R46**
 - [⏸] F058 — Attestr RC adapter · **deferred by R46**

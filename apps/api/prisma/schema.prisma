@@ -249,7 +249,7 @@ model Dealer {
   documents     DealerDocument[]
   profileEdits  DealerProfileChange[]
   notifications NotificationDelivery[]
-  // vehicles    Vehicle[]              ← returns with F055
+  vehicles      Vehicle[]
   // listings    Listing[]              ← returns with F064
   // enquiries   Enquiry[]              ← returns with F088
   // ledger      CreditTransaction[]    ← returns with F050
@@ -443,6 +443,96 @@ enum ProfileChangeStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+// ─────────── VEHICLES (F055, as revised by R45/R46) ──────────────────────
+/// A car a dealership has entered, typed by the dealer field by field (R46).
+///
+/// Every descriptive column is nullable because a draft is saved step by step:
+/// the wizard persists what the dealer has typed so far, and the question "is
+/// this complete enough to submit" is answered by `vehicleCompleteness` in
+/// contracts, once, for both apps. Only the registration number is required —
+/// it is the first thing the dealer enters and the thing the draft is created
+/// from.
+///
+/// There is no image here and no image id. Listing photographs belong to
+/// Dealers-Drive (R45) and arrive with the admin media model.
+model Vehicle {
+  id       String @id @default(uuid()) @db.Uuid
+  dealerId String @db.Uuid
+
+  /// Canonical form, upper-case and unseparated: `KA01AB1234`, `22BH1234AA`.
+  /// Formatted for display on the way out, never stored formatted.
+  registrationNumber String
+  /// The RTO the registration was issued by, derived from the number on write.
+  rtoCode            String?
+
+  make              String?
+  model             String?
+  variant           String?
+  manufacturingYear Int?
+  registrationYear  Int?
+  fuelType          FuelType?
+  transmission      Transmission?
+  bodyType          BodyType?
+
+  kilometersDriven    Int?
+  ownerCount          Int?
+  color               String?
+  insuranceType       InsuranceType?
+  insuranceValidUntil DateTime?      @db.Date
+
+  /// Money is BigInt paise (rule 3). `64500000` is ₹6,45,000.
+  pricePaise    BigInt?
+  negotiability PriceNegotiability?
+  description   String?
+
+  /// The dealer member who created the row. `dealerId` says whose car; this
+  /// says whose hands.
+  createdBy String?  @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  /// A dealership's own vehicles, newest first — the inventory read.
+  @@index([dealerId, createdAt])
+  /// "Which cars carry this registration" — the duplicate check.
+  @@index([registrationNumber])
+  @@map("vehicles")
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  CNG
+  ELECTRIC
+  HYBRID
+  LPG
+}
+
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+}
+
+enum BodyType {
+  HATCHBACK
+  SEDAN
+  SUV
+  MUV
+  LUXURY
+}
+
+enum InsuranceType {
+  COMPREHENSIVE
+  THIRD_PARTY
+  NONE
+}
+
+enum PriceNegotiability {
+  SLIGHTLY
+  FIXED
 }
 
 model PlatformConfig {
