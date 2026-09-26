@@ -1,16 +1,33 @@
 import {
+  BODY_TYPE_LABELS,
+  DEALER_STATUS_LABELS,
+  DEALER_STATUS_TONES,
+  FUEL_LABELS,
+  INSURANCE_LABELS,
+  LISTING_CHECK_LABELS,
+  ListingCheckKey,
+  NEGOTIABILITY_LABELS,
+  TRANSMISSION_LABELS,
+  VEHICLE_FIELD_LABELS,
   formatDate,
+  formatKm,
+  formatPhone,
   formatRegistration,
   formatRupees,
   listingStatusLabel,
   listingStatusTone,
+  ownerLabel,
   timeAgo,
+  vehicleIssues,
   vehicleSummary,
   vehicleTitle,
+  type AdminListingDetail,
   type AdminListingRow,
 } from '@dealers-drive/contracts';
 
-import type { QueueRow } from './moderation.repository.js';
+import { completenessOf } from '../vehicles/vehicles.facade.js';
+import { ACTOR_LABELS, HISTORY_LABELS, SECTION_TITLES } from './moderation.messages.js';
+import type { DetailRow, HistoryRow, QueueRow } from './moderation.repository.js';
 
 export function locationOf(dealer: {
   city: string | null;
@@ -42,5 +59,140 @@ export function toAdminListingRow(row: QueueRow, now: Date = new Date()): AdminL
     submittedLabel: submitted ? formatDate(submitted) : null,
     waitingLabel: submitted && row.status === 'PENDING_REVIEW' ? timeAgo(submitted, now) : null,
     resubmission: row.submissionCount > 1,
+  };
+}
+
+function row(
+  label: string,
+  value: string | number | null | undefined,
+): { label: string; value: string | null } {
+  return {
+    label,
+    value: value === null || value === undefined || value === '' ? null : String(value),
+  };
+}
+
+export function sectionsOf(vehicle: DetailRow['vehicle']): AdminListingDetail['sections'] {
+  return [
+    {
+      key: 'registration',
+      title: SECTION_TITLES.registration,
+      rows: [
+        row(
+          VEHICLE_FIELD_LABELS.registrationNumber,
+          formatRegistration(vehicle.registrationNumber),
+        ),
+        row('RTO', vehicle.rtoCode),
+        row(VEHICLE_FIELD_LABELS.registrationYear, vehicle.registrationYear),
+      ],
+    },
+    {
+      key: 'basics',
+      title: SECTION_TITLES.basics,
+      rows: [
+        row(VEHICLE_FIELD_LABELS.make, vehicle.make),
+        row(VEHICLE_FIELD_LABELS.model, vehicle.model),
+        row(VEHICLE_FIELD_LABELS.variant, vehicle.variant),
+        row(VEHICLE_FIELD_LABELS.manufacturingYear, vehicle.manufacturingYear),
+        row(VEHICLE_FIELD_LABELS.fuelType, vehicle.fuelType && FUEL_LABELS[vehicle.fuelType]),
+        row(
+          VEHICLE_FIELD_LABELS.transmission,
+          vehicle.transmission && TRANSMISSION_LABELS[vehicle.transmission],
+        ),
+        row(VEHICLE_FIELD_LABELS.bodyType, vehicle.bodyType && BODY_TYPE_LABELS[vehicle.bodyType]),
+      ],
+    },
+    {
+      key: 'details',
+      title: SECTION_TITLES.details,
+      rows: [
+        row(
+          VEHICLE_FIELD_LABELS.kilometersDriven,
+          vehicle.kilometersDriven === null ? null : formatKm(vehicle.kilometersDriven),
+        ),
+        row(VEHICLE_FIELD_LABELS.ownerCount, vehicle.ownerCount && ownerLabel(vehicle.ownerCount)),
+        row(VEHICLE_FIELD_LABELS.color, vehicle.color),
+        row(
+          VEHICLE_FIELD_LABELS.insuranceType,
+          vehicle.insuranceType && INSURANCE_LABELS[vehicle.insuranceType],
+        ),
+        row(
+          VEHICLE_FIELD_LABELS.insuranceValidUntil,
+          vehicle.insuranceValidUntil && formatDate(vehicle.insuranceValidUntil),
+        ),
+      ],
+    },
+    {
+      key: 'pricing',
+      title: SECTION_TITLES.pricing,
+      rows: [
+        row(
+          VEHICLE_FIELD_LABELS.pricePaise,
+          vehicle.pricePaise === null ? null : formatRupees(vehicle.pricePaise),
+        ),
+        row('Negotiable', vehicle.negotiability && NEGOTIABILITY_LABELS[vehicle.negotiability]),
+      ],
+    },
+  ];
+}
+
+function reasonOf(after: unknown): string | null {
+  if (typeof after !== 'object' || after === null || !('reason' in after)) return null;
+  return typeof after.reason === 'string' ? after.reason : null;
+}
+
+export function historyOf(rows: HistoryRow[]): AdminListingDetail['history'] {
+  return rows.map((entry) => ({
+    action: entry.action,
+    label: HISTORY_LABELS[entry.action] ?? entry.action,
+    actor: ACTOR_LABELS[entry.actorType] ?? entry.actorType,
+    reason: reasonOf(entry.after),
+    at: entry.createdAt.toISOString(),
+    atLabel: formatDate(entry.createdAt),
+  }));
+}
+
+export function toAdminListingDetail(
+  listing: DetailRow,
+  history: HistoryRow[],
+  now: Date = new Date(),
+): AdminListingDetail {
+  const reviewing = listing.status === 'PENDING_REVIEW';
+  const checked = new Map(listing.checks.map((check) => [check.key, check.checkedAt]));
+
+  return {
+    listing: {
+      ...toAdminListingRow(listing, now),
+      reason: listing.decisionReason,
+      submissionCount: listing.submissionCount,
+      publishedAt: listing.publishedAt?.toISOString() ?? null,
+    },
+    dealer: {
+      id: listing.dealer.id,
+      name: listing.dealer.brandName,
+      slug: listing.dealer.slug,
+      status: listing.dealer.status,
+      statusLabel: DEALER_STATUS_LABELS[listing.dealer.status],
+      statusTone: DEALER_STATUS_TONES[listing.dealer.status],
+      location: locationOf(listing.dealer),
+      phoneDisplay: listing.dealer.contactPhone ? formatPhone(listing.dealer.contactPhone) : null,
+    },
+    sections: sectionsOf(listing.vehicle),
+    description: listing.vehicle.description,
+    issues: vehicleIssues(completenessOf(listing.vehicle)),
+    checks: ListingCheckKey.options.map((key) => ({
+      key,
+      label: LISTING_CHECK_LABELS[key].label,
+      hint: LISTING_CHECK_LABELS[key].hint,
+      checked: checked.has(key),
+      checkedAt: checked.get(key)?.toISOString() ?? null,
+    })),
+    history: historyOf(history),
+    actions: {
+      canVerify: reviewing,
+      canRequestChanges: reviewing,
+      canReject: reviewing,
+      canApprove: false,
+    },
   };
 }

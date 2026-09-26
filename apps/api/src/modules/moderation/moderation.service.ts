@@ -1,15 +1,90 @@
-import type { AdminListingQuery, AdminListingsResponse } from '@dealers-drive/contracts';
+import type {
+  AdminListingDetail,
+  AdminListingQuery,
+  AdminListingsResponse,
+  ListingCheckKey,
+} from '@dealers-drive/contracts';
+import type { PrismaClient } from '@prisma/client';
 
+import type { AuditService } from '../../platform/audit/audit.service.js';
+import { withTransaction } from '../../platform/db/tenant-tx.js';
+import { ConflictError, NotFoundError } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
-import { toAdminListingRow } from './moderation.mapper.js';
+import type { AdminPrincipal } from '../auth/auth.facade.js';
+import {
+  LISTING_NOT_FOUND,
+  TRANSITION_REFUSALS,
+  lockListing,
+} from '../listings/listings.facade.js';
+import { toAdminListingDetail, toAdminListingRow } from './moderation.mapper.js';
+import { HISTORY_LABELS } from './moderation.messages.js';
 import { sortKeyOf, type ModerationRepository } from './moderation.repository.js';
 
 export interface ModerationDeps {
+  prisma: PrismaClient;
   repo: ModerationRepository;
+  audit: AuditService;
 }
 
-export function createModerationService({ repo }: ModerationDeps) {
+function notFound(): NotFoundError {
+  return new NotFoundError(LISTING_NOT_FOUND, { code: 'LISTING_NOT_FOUND' });
+}
+
+export function createModerationService({ prisma, repo, audit }: ModerationDeps) {
+  async function detail(listingId: string): Promise<AdminListingDetail> {
+    const listing = await repo.detail(listingId);
+    if (!listing) throw notFound();
+    const history = await repo.history(listingId, Object.keys(HISTORY_LABELS));
+    return toAdminListingDetail(listing, history);
+  }
+
   return {
+    detail,
+
+    async setCheck(
+      admin: AdminPrincipal,
+      listingId: string,
+      key: ListingCheckKey,
+      checked: boolean,
+    ): Promise<AdminListingDetail> {
+      await withTransaction(prisma, async (tx) => {
+        const listing = await lockListing(tx, listingId);
+        if (!listing) throw notFound();
+        if (listing.status !== 'PENDING_REVIEW') {
+          const refusal = TRANSITION_REFUSALS.requestChanges;
+          throw new ConflictError(
+            refusal.code,
+            'Only a listing waiting for review can be verified.',
+            {
+              extra: { listingStatus: listing.status },
+            },
+          );
+        }
+
+        if (checked) {
+          await tx.listingCheck.upsert({
+            where: { listingId_key: { listingId, key } },
+            create: { listingId, key, checkedBy: admin.userId },
+            update: {},
+          });
+        } else {
+          await tx.listingCheck.deleteMany({ where: { listingId, key } });
+        }
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId: listing.dealerId,
+          action: 'listing.check_set',
+          entityType: 'Listing',
+          entityId: listingId,
+          after: { key, checked },
+        });
+      });
+
+      return detail(listingId);
+    },
+
     async listings(query: AdminListingQuery): Promise<AdminListingsResponse> {
       const status = query.status ?? 'PENDING_REVIEW';
       const [rows, counts] = await Promise.all([

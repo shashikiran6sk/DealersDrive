@@ -1331,6 +1331,21 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'admin-moderationqueue',
   },
+  {
+    id: 'C070',
+    name: 'ListingReview',
+    source: 'apps/web/src/features/admin/listing-review/listing-review.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    purpose:
+      'The admin review screen (F070): dealer, the dealer-entered data by section, the verification checklist, the decision history, and the photography panel.',
+    aliases: ['ReviewListing', 'ModerationStrip', 'ReviewActions', 'Checklist', 'CheckRow'],
+    features: ['F070'],
+    props: ['detail'],
+    states: ['pending review', 'resubmission (checks cleared)', 'read-only'],
+    reusable: false,
+    storyId: 'admin-listingreview',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

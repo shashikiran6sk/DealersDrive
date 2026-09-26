@@ -140,7 +140,11 @@ describe('the service', () => {
       queue: vi.fn(async () => [queueRow(), queueRow({ id: 'listing-2' })]),
       statusCounts: vi.fn(async () => [{ status: 'PENDING_REVIEW' as const, count: 2 }]),
     };
-    const service = createModerationService({ repo });
+    const service = createModerationService({
+      repo: { ...repo, detail: vi.fn(), history: vi.fn() },
+      prisma: {} as never,
+      audit: { record: vi.fn(), recordDetached: vi.fn() },
+    });
     const response = await service.listings({ limit: 1 });
 
     expect(repo.queue).toHaveBeenCalledWith({ status: 'PENDING_REVIEW', take: 2 });
@@ -157,11 +161,28 @@ describe('the service', () => {
 describe('the router', () => {
   const router = createModerationRouter({} as never);
 
-  it('declares the queue and guards it with the moderation permission', () => {
-    expect(signaturesOf(router)).toEqual(['GET /listings']);
-    expect(permissionsOn(routeFor(router, 'GET /listings') as never)).toEqual([
-      'admin:listing:moderate',
+  it('declares the queue, the review and the checklist', () => {
+    expect(signaturesOf(router)).toEqual([
+      'GET /listings',
+      'GET /listings/:id',
+      'PUT /listings/:id/checks/:key',
     ]);
+  });
+
+  it.each(['GET /listings', 'GET /listings/:id', 'PUT /listings/:id/checks/:key'])(
+    'guards %s with the moderation permission',
+    (signature) => {
+      expect(permissionsOn(routeFor(router, signature) as never)).toEqual([
+        'admin:listing:moderate',
+      ]);
+    },
+  );
+
+  it('parses what each route reads', () => {
     expect(validatedSources(routeFor(router, 'GET /listings') as never)).toContain('query');
+    expect(validatedSources(routeFor(router, 'GET /listings/:id') as never)).toContain('params');
+    expect(validatedSources(routeFor(router, 'PUT /listings/:id/checks/:key') as never)).toEqual(
+      expect.arrayContaining(['params', 'body']),
+    );
   });
 });

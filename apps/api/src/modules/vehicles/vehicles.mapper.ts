@@ -15,7 +15,7 @@ import {
   type DealerVehicle,
   type VehicleCompletenessInput,
 } from '@dealers-drive/contracts';
-import type { Listing } from '@prisma/client';
+import type { Listing, Vehicle } from '@prisma/client';
 
 import type { VehicleRow } from './vehicles.repository.js';
 
@@ -23,7 +23,7 @@ export function isoDate(value: Date | null): string | null {
   return value ? value.toISOString().slice(0, 10) : null;
 }
 
-export function completenessOf(row: VehicleRow): VehicleCompletenessInput {
+export function completenessOf(row: Vehicle): VehicleCompletenessInput {
   return {
     registrationNumber: row.registrationNumber,
     make: row.make,

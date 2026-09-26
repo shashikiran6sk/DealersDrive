@@ -1,0 +1,23 @@
+export const LISTING_REVIEW_TEXT = {
+  back: '← Back to listings',
+  dealer: 'Dealer',
+  openDealer: 'Open dealership',
+  description: 'Description',
+  noDescription: 'No description.',
+  notEntered: 'Not entered',
+  incompleteTitle: 'Incomplete',
+  checklist: 'Verification',
+  checklistHint: 'Tick each item once you have checked it against the car and its RC.',
+  check: 'Mark checked',
+  uncheck: 'Undo',
+  checkedOn: (date: string) => `Checked ${date}`,
+  photography: 'Photography and images',
+  photographyPending:
+    'Dealers-Drive photographs the car after submission and the processed images are added here. None have been added yet.',
+  moderation: 'Moderation',
+  history: 'History',
+  noHistory: 'Nothing has happened to this listing yet.',
+  resubmitted: (count: number) => `Submission ${count}`,
+  reason: 'Reason:',
+  waiting: (label: string) => `Waiting ${label}`,
+} as const;

@@ -34,5 +34,45 @@ export const moderationDocs: ModuleDocs = {
       ],
       errors: [400, 401, 403, 409],
     },
+    {
+      method: 'get',
+      path: '/v1/admin/listings/:id',
+      operationId: 'getAdminListing',
+      tag: DOC_TAGS.moderation,
+      summary: 'One listing, for review',
+      description:
+        'Everything a moderator verifies on one screen (**F070**): the dealership, the ' +
+        'dealer-entered data in sections (registration, basics, details, pricing), anything ' +
+        'still incomplete, the verification checklist, the listing\u2019s decision history ' +
+        'from the audit log, and an `actions` block saying which decisions the current state ' +
+        'allows. `id` is the listing id.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      responses: [{ status: 200, description: 'The listing.', schema: 'AdminListingDetail' }],
+      errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'put',
+      path: '/v1/admin/listings/:id/checks/:key',
+      operationId: 'setAdminListingCheck',
+      tag: DOC_TAGS.moderation,
+      summary: 'Tick or untick one verification check',
+      description:
+        'Records that a moderator verified one thing about the listing — the registration, ' +
+        'make and model, variant, year, odometer, ownership or pricing. Idempotent: checking ' +
+        'twice is one row, unchecking deletes it.\n\n' +
+        'Only while the listing is `PENDING_REVIEW` (`409 LISTING_NOT_REVIEWABLE` otherwise). ' +
+        'Every change is audit-logged. The checklist is cleared when the dealer resubmits, ' +
+        'and approval requires every key to be checked.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'ListingCheckParam',
+      requestBody: { schema: 'SetListingCheckInput', example: { checked: true } },
+      responses: [
+        { status: 200, description: 'The listing, as now checked.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
   ],
 };

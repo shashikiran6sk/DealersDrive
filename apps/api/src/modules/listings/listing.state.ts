@@ -168,6 +168,10 @@ export async function transition(
   });
   if (moved.count === 0) throw new ConflictError('LISTING_STATE_CHANGED', LISTING_STATE_CHANGED);
 
+  if (to === 'PENDING_REVIEW') {
+    await tx.listingCheck.deleteMany({ where: { listingId: listing.id } });
+  }
+
   if (RELEASING_STATUSES.includes(to)) {
     await tx.vehicle.update({ where: { id: listing.vehicleId }, data: { releasedAt: now } });
   }

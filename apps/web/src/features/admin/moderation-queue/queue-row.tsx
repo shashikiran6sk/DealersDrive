@@ -36,6 +36,11 @@ export function QueueRow({ row }: { row: AdminListingRow }) {
           ) : null}
         </div>
       </td>
+      <td className="text-right">
+        <Link href={`/admin/listings/${row.id}`} className="btn btn-secondary text-[12px]">
+          {MODERATION_TEXT.review}
+        </Link>
+      </td>
     </tr>
   );
 }

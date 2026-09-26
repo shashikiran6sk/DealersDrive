@@ -16,6 +16,7 @@ const COLUMNS: TableColumn[] = [
   { key: 'location', label: 'Location' },
   { key: 'submitted', label: 'Submitted' },
   { key: 'status', label: 'Status' },
+  { key: 'actions', label: 'Actions', align: 'right' },
 ];
 
 function href(params: { status?: string; q?: string; cursor?: string }): string {

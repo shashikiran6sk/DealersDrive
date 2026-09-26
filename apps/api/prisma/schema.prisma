@@ -558,8 +558,9 @@ model Listing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  dealer  Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  vehicle Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealer  Dealer         @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  checks  ListingCheck[]
 
   /// A dealership's inventory filtered by status, most recently touched first.
   @@index([dealerId, status, updatedAt])
@@ -568,6 +569,36 @@ model Listing {
   /// Public reads: ACTIVE, newest first.
   @@index([status, publishedAt])
   @@map("listings")
+}
+
+/// One thing a moderator has verified about a listing (**F070**).
+///
+/// A row means "checked": unchecking deletes it, so there is no false state to
+/// misread. The set is cleared when the dealer resubmits, because a check made
+/// against the old data says nothing about the new. Approval (F070/R47)
+/// requires every key in `LISTING_CHECK_KEYS` to have a row.
+model ListingCheck {
+  id        String          @id @default(uuid()) @db.Uuid
+  listingId String          @db.Uuid
+  key       ListingCheckKey
+  checkedBy String          @db.Uuid
+  checkedAt DateTime        @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  /// A key is checked once per listing; a second click is a no-op, not a row.
+  @@unique([listingId, key])
+  @@map("listing_checks")
+}
+
+enum ListingCheckKey {
+  REGISTRATION
+  MAKE_MODEL
+  VARIANT
+  YEAR
+  ODOMETER
+  OWNERSHIP
+  PRICING
 }
 
 enum ListingStatus {

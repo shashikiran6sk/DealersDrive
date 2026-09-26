@@ -57,6 +57,10 @@ const config: StorybookConfig = {
         replacement: new URL('../src/mocks/dealer-actions.ts', import.meta.url).pathname,
       },
       {
+        find: '@/features/admin/listing-actions',
+        replacement: new URL('../src/mocks/listing-actions.ts', import.meta.url).pathname,
+      },
+      {
         find: '@/features/vehicle/actions',
         replacement: new URL('../src/mocks/vehicle-actions.ts', import.meta.url).pathname,
       },
