@@ -10,6 +10,7 @@ import { createPublicDealersRouter } from './modules/dealers/dealers.public.rout
 import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
+import { createVehiclesRouter } from './modules/vehicles/vehicles.routes.js';
 import { createMetricsRouter } from './platform/telemetry/metrics.routes.js';
 
 export function createRoutes(container: Container): Router {
@@ -41,6 +42,7 @@ export function createRoutes(container: Container): Router {
   const dealer = Router();
   dealer.use(container.guards.requireDealer);
   dealer.use(createDealersRouter(container.dealers));
+  dealer.use(createVehiclesRouter(container.vehicles));
   dealer.use(createMediaRouter(container.media));
   v1.use('/dealer', dealer);
 

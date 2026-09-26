@@ -111,7 +111,7 @@ revision · `[⛔]` withdrawn
 - [ ] F060 — Vehicle basics — RC-prefilled or manual ⚠️ · **manual only, R46**
 - [ ] F061 — Vehicle details
 - [⛔] F062 — Vehicle photo upload UI · **withdrawn by R45** — dealers never upload listing photos
-- [ ] F063 — Vehicle wizard shell & step routing · **no Photos step, R45**
+- [ ] F063 — Vehicle wizard shell & step routing · **no Photos step, R45** · dealer vehicle API landed; the wizard UI is next
 
 ## Tier 10 — Listing lifecycle
 

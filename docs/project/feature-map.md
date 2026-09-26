@@ -1845,6 +1845,14 @@ The frame that sequences F059 → F060 → F061 → F062 → review, gated by th
 - **Components — New (feature-specific)** `VehicleWizard` · **Reused** `Stepper`, `Button`, `Banner`, `Field`
 - **Sandbox** one scenario per step × complete / blocked
 - ⚠️ **MEDIUM** — `vehicles.routes.ts` is also written by F065, F067. F063 introduces it; they amend.
+- ⚠️ **Entry corrected on landing (R45/R46).** The API landed first, on its
+  own: `POST /v1/dealer/vehicles` creates a draft from `CreateVehicleInput`
+  (the plate only); `GET|PATCH|DELETE /v1/dealer/vehicles/:id`;
+  `GET /v1/dealer/vehicles/suggestions` is the suggest-existing control F060
+  asks for. `GET /v1/dealer/vehicles` (the list) is **F066**'s. One route per
+  file under `modules/vehicles/routes/`; `vehicles.mapper.ts` owns the dealer
+  DTO. Tests: `tests/unit/modules/vehicles/*.test.ts` and the integration suite
+  `apps/api/tests/vehicle-api.test.ts`, which is the tenant-isolation proof.
 
 ---
 

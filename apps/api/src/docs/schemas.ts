@@ -33,6 +33,9 @@ const INPUT_SCHEMA_NAMES = [
   'GrantAdminAccessInput',
   'PhoneAvailabilityInput',
   'VerifyPhoneInput',
+  'CreateVehicleInput',
+  'UpdateVehicleInput',
+  'VehicleSuggestQuery',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

@@ -1,6 +1,16 @@
 import { z } from 'zod';
 
-import { BodyType, FuelType, InsuranceType, PriceNegotiability, Transmission } from './enums.js';
+import { formatKm } from './common.js';
+import {
+  BodyType,
+  FUEL_LABELS,
+  FuelType,
+  InsuranceType,
+  PriceNegotiability,
+  TRANSMISSION_LABELS,
+  Transmission,
+} from './enums.js';
+import { RegistrationNumber } from './registration.js';
 
 /**
  * The vehicle a dealership enters by hand (**F055**, as revised by **R45** and
@@ -220,3 +230,123 @@ export function vehicleTitle(vehicle: {
     .filter((part) => part !== null && part !== '')
     .join(' ');
 }
+
+/**
+ * `Petrol · Automatic · 22,400 km` — the meta line under a vehicle's title, in
+ * the order DESIGN-SPEC §2.8 gives it. Parts not yet entered are skipped.
+ */
+export function vehicleSummary(vehicle: {
+  fuelType: FuelType | null;
+  transmission: Transmission | null;
+  kilometersDriven: number | null;
+}): string {
+  return [
+    vehicle.fuelType ? FUEL_LABELS[vehicle.fuelType] : null,
+    vehicle.transmission ? TRANSMISSION_LABELS[vehicle.transmission] : null,
+    vehicle.kilometersDriven === null ? null : formatKm(vehicle.kilometersDriven),
+  ]
+    .filter((part): part is string => part !== null)
+    .join(' · ');
+}
+
+// ─────────── dealer API (F063) ─────────────────────────────────────────────
+
+/**
+ * A draft starts from its registration number and nothing else — the first
+ * wizard step. Everything after it is a `PATCH`.
+ */
+export const CreateVehicleInput = z.object({ registrationNumber: RegistrationNumber }).strict();
+export type CreateVehicleInput = z.infer<typeof CreateVehicleInput>;
+
+/**
+ * One wizard step's worth of fields, or any subset of them.
+ *
+ * Every field may be omitted (left as it is) and every optional one may be
+ * `null` (cleared). `.strict()` is the defence this schema exists for: a dealer
+ * posting `status`, `dealerId`, `mediaId`, `imageUrl`, `storageKey`,
+ * `publishedAt` or `verified` gets a 400 that names the field (rules 1, 2, 5;
+ * R45) — those values are the server's.
+ */
+export const UpdateVehicleInput = z
+  .object({
+    registrationNumber: RegistrationNumber.optional(),
+    make: VehicleFieldSchemas.make.nullable().optional(),
+    model: VehicleFieldSchemas.model.nullable().optional(),
+    variant: VehicleFieldSchemas.variant.nullable().optional(),
+    manufacturingYear: VehicleFieldSchemas.manufacturingYear.nullable().optional(),
+    registrationYear: VehicleFieldSchemas.registrationYear.nullable().optional(),
+    fuelType: VehicleFieldSchemas.fuelType.nullable().optional(),
+    transmission: VehicleFieldSchemas.transmission.nullable().optional(),
+    bodyType: VehicleFieldSchemas.bodyType.nullable().optional(),
+    kilometersDriven: VehicleFieldSchemas.kilometersDriven.nullable().optional(),
+    ownerCount: VehicleFieldSchemas.ownerCount.nullable().optional(),
+    color: VehicleFieldSchemas.color.nullable().optional(),
+    insuranceType: VehicleFieldSchemas.insuranceType.nullable().optional(),
+    insuranceValidUntil: VehicleFieldSchemas.insuranceValidUntil.nullable().optional(),
+    pricePaise: VehicleFieldSchemas.pricePaise.nullable().optional(),
+    negotiability: VehicleFieldSchemas.negotiability.nullable().optional(),
+    description: VehicleFieldSchemas.description.nullable().optional(),
+  })
+  .strict();
+export type UpdateVehicleInput = z.infer<typeof UpdateVehicleInput>;
+
+export const VehicleSuggestField = z.enum(['make', 'model']);
+export type VehicleSuggestField = z.infer<typeof VehicleSuggestField>;
+
+/** "What have other dealers called this?" — the suggest-existing guard rail (D1, R46). */
+export const VehicleSuggestQuery = z
+  .object({
+    field: VehicleSuggestField,
+    q: z.string().trim().min(1).max(VEHICLE_LIMITS.textMax),
+  })
+  .strict();
+export type VehicleSuggestQuery = z.infer<typeof VehicleSuggestQuery>;
+
+export const VehicleSuggestions = z.object({
+  field: VehicleSuggestField,
+  values: z.array(z.string()),
+});
+export type VehicleSuggestions = z.infer<typeof VehicleSuggestions>;
+
+export const VehicleIssueDto = z.object({ field: z.string(), message: z.string() });
+
+/**
+ * A vehicle as its own dealership sees it.
+ *
+ * Three DTOs describe a vehicle and they are deliberately separate: this one,
+ * the moderator's (which adds review context) and the buyer's (which removes
+ * everything that is not for sale). None of them is the Prisma row.
+ *
+ * `issues` is `vehicleIssues()` evaluated by the API, so the console renders
+ * what is missing rather than re-deriving it.
+ */
+export const DealerVehicle = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  registrationNumber: z.string(),
+  registrationDisplay: z.string(),
+  rtoCode: z.string().nullable(),
+  make: z.string().nullable(),
+  model: z.string().nullable(),
+  variant: z.string().nullable(),
+  manufacturingYear: z.number().int().nullable(),
+  registrationYear: z.number().int().nullable(),
+  fuelType: FuelType.nullable(),
+  transmission: Transmission.nullable(),
+  bodyType: BodyType.nullable(),
+  kilometersDriven: z.number().int().nullable(),
+  ownerCount: z.number().int().nullable(),
+  color: z.string().nullable(),
+  insuranceType: InsuranceType.nullable(),
+  insuranceValidUntil: z.string().nullable(),
+  pricePaise: z.number().int().nullable(),
+  priceLabel: z.string().nullable(),
+  negotiability: PriceNegotiability.nullable(),
+  description: z.string().nullable(),
+  summary: z.string(),
+  issues: z.array(VehicleIssueDto),
+  complete: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type DealerVehicle = z.infer<typeof DealerVehicle>;
