@@ -59,7 +59,22 @@ function renderPanel(overrides: Partial<Parameters<typeof PhoneVerification>[0]>
  */
 async function sendAndEnter(user: ReturnType<typeof userEvent.setup>, code: string) {
   await user.click(screen.getByRole('button', { name: 'Send OTP' }));
-  await user.type((await screen.findAllByLabelText(/^Digit /))[0]!, code);
+  const first = (await screen.findAllByLabelText(/^Digit /))[0]!;
+  /*
+   * The boxes render before the send's transition has settled, and they are
+   * `disabled` while it is pending. On a loaded runner `user.type` could land in
+   * that window, type into a disabled box, leave the code empty — and the
+   * Verify press that follows would do nothing, so the refusal never appeared.
+   * Waiting for the box to be enabled is waiting for the same render a dealer
+   * waits for.
+   */
+  await waitFor(() => {
+    expect(first).toBeEnabled();
+  });
+  await user.type(first, code);
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Verify & continue' })).toBeEnabled();
+  });
   await user.click(screen.getByRole('button', { name: 'Verify & continue' }));
 }
 
