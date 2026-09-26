@@ -272,5 +272,9 @@ describe('submitting (F065)', () => {
     expect(screen.getByRole('heading', { name: 'Submitted for review' })).toBeInTheDocument();
     expect(screen.getByText(/arrange a photo shoot/i)).toBeInTheDocument();
     expect(screen.getByText('Pending review')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'View inventory' })).toHaveAttribute(
+      'href',
+      '/dealer/inventory',
+    );
   });
 });

@@ -1,4 +1,5 @@
 import {
+  formatDate,
   formatRegistration,
   isListingDeletable,
   isListingEditable,
@@ -9,6 +10,7 @@ import {
   vehicleIssues,
   vehicleSummary,
   vehicleTitle,
+  type DealerInventoryRow,
   type DealerListing,
   type DealerVehicle,
   type VehicleCompletenessInput,
@@ -92,5 +94,23 @@ export function toDealerVehicle(row: VehicleRow): DealerVehicle {
     listing: toDealerListing(row.listing, issues.length === 0),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export function toInventoryRow(row: VehicleRow): DealerInventoryRow {
+  const vehicle = toDealerVehicle(row);
+  return {
+    id: vehicle.id,
+    title: vehicle.title,
+    registrationDisplay: vehicle.registrationDisplay,
+    summary: vehicle.summary,
+    priceLabel: vehicle.priceLabel,
+    status: vehicle.listing.status,
+    statusLabel: vehicle.listing.statusLabel,
+    statusTone: vehicle.listing.statusTone,
+    reason: vehicle.listing.reason,
+    complete: vehicle.complete,
+    updatedAt: row.updatedAt.toISOString(),
+    updatedLabel: formatDate(row.updatedAt),
   };
 }

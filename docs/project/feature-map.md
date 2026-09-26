@@ -1931,6 +1931,15 @@ The dealer's vehicle table with status, price, views and enquiries per row.
 - **API** `GET /v1/dealer/vehicles`
 - **Components — Reused** `Table`, `StatusTag`, `EmptyState`, `Button`
 - **Sandbox** inventory table — empty / one row / many / every status represented
+- ⚠️ **Entry corrected on landing (R47).** `GET /v1/dealer/vehicles` takes
+  `DealerInventoryQuery` (`status`, `q`, cursor) and answers
+  `DealerInventoryResponse` with `counts` per status plus `ALL`. No views,
+  enquiries or expiry columns yet (their features are deferred). Web:
+  `features/dealer/inventory/` (a table on desktop, cards on mobile) and
+  `app/(dealer)/dealer/inventory/page.tsx`. The dashboard (F048) gains
+  `listingStats` — Active, Pending review, Changes requested, Sold — from the
+  same listings, a _Changes requested_ alert and the `+ Add vehicle` CTA.
+  Tests: `apps/api/tests/dealer-inventory.test.ts`.
 
 ### F067 — Mark sold, remove & renew
 

@@ -1,4 +1,4 @@
-import type { Listing, Prisma, PrismaClient, Vehicle } from '@prisma/client';
+import type { Listing, ListingStatus, Prisma, PrismaClient, Vehicle } from '@prisma/client';
 
 import type { Tx } from '../../platform/db/prisma.js';
 
@@ -19,6 +19,24 @@ export interface VehicleCreate {
 }
 
 export type SpelledField = 'make' | 'model';
+
+export interface InventoryFilter {
+  status?: ListingStatus;
+  q?: string;
+  before?: Date;
+  take: number;
+}
+
+function searchOf(q: string): Prisma.VehicleWhereInput {
+  const plate = q.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return {
+    OR: [
+      ...(plate ? [{ registrationNumber: { contains: plate } }] : []),
+      { make: { contains: q, mode: 'insensitive' } },
+      { model: { contains: q, mode: 'insensitive' } },
+    ],
+  };
+}
 
 export function createVehiclesRepository(prisma: PrismaClient) {
   return {
@@ -79,6 +97,29 @@ export function createVehiclesRepository(prisma: PrismaClient) {
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         include: withListing,
       });
+    },
+
+    async inventory(dealerId: string, filter: InventoryFilter): Promise<VehicleRow[]> {
+      return prisma.vehicle.findMany({
+        where: {
+          dealerId,
+          ...(filter.status ? { listing: { is: { status: filter.status } } } : {}),
+          ...(filter.q ? searchOf(filter.q) : {}),
+          ...(filter.before ? { createdAt: { lt: filter.before } } : {}),
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: filter.take,
+        include: withListing,
+      });
+    },
+
+    async statusCounts(dealerId: string): Promise<{ status: ListingStatus; count: number }[]> {
+      const grouped = await prisma.listing.groupBy({
+        by: ['status'],
+        where: { dealerId },
+        _count: { _all: true },
+      });
+      return grouped.map((row) => ({ status: row.status, count: row._count._all }));
     },
 
     async existingSpelling(field: SpelledField, value: string): Promise<string | null> {

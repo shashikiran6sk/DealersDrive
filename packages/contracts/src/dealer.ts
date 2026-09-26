@@ -624,6 +624,20 @@ export const DashboardResponse = z.object({
       timeAgoLabel: z.string(),
     }),
   ),
+  /**
+   * The dealership's vehicles by listing status (**F066**): Active, Pending
+   * review, Changes requested and Sold, each linking to the inventory filtered
+   * to it. Counted by the API from `listings`, never stored (rule 6, §4.11).
+   */
+  listingStats: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      value: z.number().int(),
+      href: z.string(),
+      tone: StatusTone,
+    }),
+  ),
   creditBalance: z.number().int(),
   creditsHeld: z.number().int(),
   alerts: z.array(

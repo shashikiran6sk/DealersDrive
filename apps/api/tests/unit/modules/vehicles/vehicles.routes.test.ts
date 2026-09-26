@@ -14,6 +14,7 @@ const router = createVehiclesRouter({} as never);
 describe('the surface', () => {
   it('declares the dealer vehicle endpoints', () => {
     expect(signaturesOf(router)).toEqual([
+      'GET /vehicles',
       'POST /vehicles',
       'GET /vehicles/suggestions',
       'GET /vehicles/:id',
@@ -33,6 +34,7 @@ describe('the surface', () => {
 
 describe('permissions', () => {
   it.each([
+    ['GET /vehicles', 'vehicle:read'],
     ['POST /vehicles', 'vehicle:write'],
     ['GET /vehicles/suggestions', 'vehicle:read'],
     ['GET /vehicles/:id', 'vehicle:read'],
@@ -55,6 +57,10 @@ describe('validation', () => {
 
   it.each(['POST /vehicles', 'PATCH /vehicles/:id'])('parses the body of %s', (signature) => {
     expect(validatedSources(routeFor(router, signature) as never)).toContain('body');
+  });
+
+  it('parses the inventory query', () => {
+    expect(validatedSources(routeFor(router, 'GET /vehicles') as never)).toContain('query');
   });
 
   it('parses the suggestion query', () => {

@@ -4,6 +4,8 @@ import {
   parseRegistration,
   vehicleIssues,
   type CreateVehicleInput,
+  type DealerInventoryQuery,
+  type DealerInventoryResponse,
   type DealerVehicle,
   type UpdateVehicleInput,
   type VehicleSuggestQuery,
@@ -21,7 +23,8 @@ import {
   lockListingForVehicle,
   transition,
 } from '../listings/listings.facade.js';
-import { completenessOf, toDealerVehicle } from './vehicles.mapper.js';
+import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import { completenessOf, toDealerVehicle, toInventoryRow } from './vehicles.mapper.js';
 import {
   DUPLICATE_REGISTRATION,
   REGISTRATION_ALREADY_LISTED,
@@ -169,6 +172,34 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         if (errorCode(error) === 'P2002') throw duplicate();
         throw error;
       }
+    },
+
+    async inventory(
+      dealerId: string,
+      query: DealerInventoryQuery,
+    ): Promise<DealerInventoryResponse> {
+      const [rows, counts] = await Promise.all([
+        repo.inventory(dealerId, {
+          ...(query.status ? { status: query.status } : {}),
+          ...(query.q ? { q: query.q } : {}),
+          ...(query.cursor ? { before: decodeCursor(query.cursor) } : {}),
+          take: query.limit + 1,
+        }),
+        repo.statusCounts(dealerId),
+      ]);
+
+      const hasMore = rows.length > query.limit;
+      const page = hasMore ? rows.slice(0, query.limit) : rows;
+      const last = page[page.length - 1];
+
+      return {
+        data: page.map(toInventoryRow),
+        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+        counts: {
+          ALL: counts.reduce((sum, row) => sum + row.count, 0),
+          ...Object.fromEntries(counts.map((row) => [row.status, row.count])),
+        },
+      };
     },
 
     async get(dealerId: string, vehicleId: string): Promise<DealerVehicle> {

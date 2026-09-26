@@ -17,6 +17,26 @@ export const vehiclesDocs: ModuleDocs = {
     'Every response here is `Cache-Control: no-store`.',
   operations: [
     {
+      method: 'get',
+      path: '/v1/dealer/vehicles',
+      operationId: 'listDealerVehicles',
+      tag: DOC_TAGS.vehicles,
+      summary: 'Your inventory',
+      description:
+        'Every vehicle the dealership has entered, newest first, with its listing status ' +
+        '(**F066**). `status` filters to one listing status; `q` matches the registration ' +
+        'number (separators ignored) or the make or model. Cursor-paginated.\n\n' +
+        '`counts` gives the number of vehicles in each status plus `ALL`, unaffected by the ' +
+        'filter, so the tabs need no second request and switching tab never empties them.',
+      audience: 'dealer',
+      permission: 'vehicle:read',
+      query: 'DealerInventoryQuery',
+      responses: [
+        { status: 200, description: 'A page of the inventory.', schema: 'DealerInventoryResponse' },
+      ],
+      errors: [400, 401, 403, 409],
+    },
+    {
       method: 'post',
       path: '/v1/dealer/vehicles',
       operationId: 'createVehicle',
