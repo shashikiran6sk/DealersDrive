@@ -43,6 +43,7 @@ const INPUT_SCHEMA_NAMES = [
   'ListingImageParam',
   'ReorderImagesInput',
   'PublicVehicleQuery',
+  'VehicleSlugParam',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

@@ -18,6 +18,20 @@ export const cardInclude = {
 
 export type CardRow = Prisma.ListingGetPayload<{ include: typeof cardInclude }>;
 
+export const detailInclude = {
+  vehicle: {
+    include: {
+      images: {
+        select: { mediaId: true, position: true, isPrimary: true },
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      },
+    },
+  },
+  dealer: { select: { brandName: true, slug: true, city: true, district: true } },
+} satisfies Prisma.ListingInclude;
+
+export type DetailRow = Prisma.ListingGetPayload<{ include: typeof detailInclude }>;
+
 export function createSearchRepository(prisma: PrismaClient) {
   return {
     cards(skip: number, take: number): Promise<CardRow[]> {
@@ -27,6 +41,13 @@ export function createSearchRepository(prisma: PrismaClient) {
         orderBy: [{ publishedAt: 'desc' }, { id: 'desc' }],
         skip,
         take,
+      });
+    },
+
+    detail(slug: string): Promise<DetailRow | null> {
+      return prisma.listing.findFirst({
+        where: { ...PUBLIC_LISTING_WHERE, slug },
+        include: detailInclude,
       });
     },
 

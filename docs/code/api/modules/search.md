@@ -58,3 +58,21 @@ number is what a link can carry.
 A minute, not the directory's five: an approval should appear on the
 marketplace promptly. The web app additionally revalidates its `vehicles` tag
 when a moderator approves.
+
+### `async vehicle(slug)` — and `toPublicVehicleDetail`
+
+One car's public page (**F082** as scoped by **R45**). The query is the same
+`PUBLIC_LISTING_WHERE` plus the slug, so the page exists exactly when the card
+does. Anything else — a listing in review, sent back, rejected, sold, removed,
+one of a suspended dealership, a slug that never existed, or a listing or
+vehicle **id** — is the same `404 VEHICLE_NOT_FOUND` with the same sentence: the
+response says nothing about whether a car exists behind it.
+
+The gallery is every attached image in the admin's order, with `primaryIndex`
+naming the one to open on; order and primary are separate decisions (F035), and
+the page honours both. Images are the public media route at 1024 px wide.
+
+The registration is shown only as its RTO ("TN 23"). The full number identifies
+an owner, not a car, and nothing about deciding to enquire needs it. As on the
+card, there is no phone number: rule 7 keeps it behind the rate-limited reveal
+route, which is not built, so the page carries none.

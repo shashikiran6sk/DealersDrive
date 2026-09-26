@@ -514,3 +514,48 @@ export const PublicVehiclesResponse = z.object({
   page: OffsetPage,
 });
 export type PublicVehiclesResponse = z.infer<typeof PublicVehiclesResponse>;
+
+/** A listing's public address, as `/car/{slug}` carries it back in (**F082**). */
+export const VehicleSlugParam = z
+  .object({
+    slug: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .min(1)
+      .max(160),
+  })
+  .strict();
+export type VehicleSlugParam = z.infer<typeof VehicleSlugParam>;
+
+/**
+ * One vehicle's public page (**F082** as scoped by **R45**).
+ *
+ * Only an ACTIVE listing of an ACTIVE dealership has one; anything else is a
+ * 404. The registration appears only as its RTO — the full number identifies
+ * the owner, not the car, and a buyer does not need it to decide to enquire.
+ * Like the card, it carries no internal id, moderation field, storage key or
+ * phone number.
+ */
+export const PublicVehicleDetail = z.object({
+  slug: z.string(),
+  title: z.string(),
+  year: z.number().int().nullable(),
+  priceLabel: z.string().nullable(),
+  negotiabilityLabel: z.string().nullable(),
+  summary: z.string(),
+  description: z.string().nullable(),
+  specs: z.array(z.object({ label: z.string(), value: z.string() })),
+  /** In the admin's gallery order. */
+  images: z.array(PublicVehicleImage),
+  /** Index of the primary image in `images`, the one shown first; 0 when empty. */
+  primaryIndex: z.number().int(),
+  publishedLabel: z.string().nullable(),
+  dealer: z.object({
+    name: z.string(),
+    slug: z.string(),
+    initials: z.string(),
+    isVerified: z.boolean(),
+    location: z.string().nullable(),
+  }),
+});
+export type PublicVehicleDetail = z.infer<typeof PublicVehicleDetail>;

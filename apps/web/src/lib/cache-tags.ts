@@ -6,6 +6,10 @@ export const CONFIG_TAG = 'public-config';
 
 export const VEHICLES_TAG = 'vehicles';
 
+export function vehicleTag(slug: string): string {
+  return `vehicle:${slug}`;
+}
+
 export function dealerTag(slug: string): string {
   return `dealer:${slug}`;
 }

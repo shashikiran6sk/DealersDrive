@@ -139,7 +139,7 @@ revision · `[⛔]` withdrawn
 - [ ] F079 — Mobile filter sheet
 - [ ] F080 — Search toolbar & sort
 - [ ] F081 — Homepage & hero search
-- [ ] F082 — Vehicle detail page
+- [x] F082 — Vehicle detail page · `/car/[slug]`, ACTIVE only, 404 otherwise; gallery without lightbox (F083), no enquiry, report or save (deferred)
 - [ ] F083 — Vehicle gallery & lightbox
 - [ ] F084 — Similar vehicles
 - [~] F085 — Dealer directory
@@ -214,9 +214,9 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R42 — An admin can grant admin access, by email · revises F019/F072 · lands with F072
 - [ ] R43 — The directory search recommends, and the old input is gone · revises F085 · lands the typeahead F077 reuses
 - [x] R44 — A footer worth having, and the social links live in configuration · revises F073 · adds six `social.*` config keys · [#133](https://github.com/shashikiran6sk/DealersDrive/pull/133)
-- [~] R45 — Dealers-Drive photographs the car; the dealer never uploads a photo · revises F035/F062/F063/F069/F070 · defers F034 · decision recorded, delivered across the vehicle series
-- [~] R46 — Vehicle details are entered by hand; RC lookup is deferred · revises F056/F060/F061/F063 · defers F057/F058/F059/F068
-- [~] R47 — The listing lifecycle, before billing exists · revises F064/F065/F067/F069/F070 · defers F050–F054
+- [x] R45 — Dealers-Drive photographs the car; the dealer never uploads a photo · revises F035/F062/F063/F069/F070 · defers F034 · photography status, admin upload, order and primary, guarded approval, public images only while ACTIVE
+- [x] R46 — Vehicle details are entered by hand; RC lookup is deferred · revises F056/F060/F061/F063 · defers F057/F058/F059/F068
+- [~] R47 — The listing lifecycle, before billing exists · revises F064/F065/F067/F069/F070 · defers F050–F054 · submit, review, request changes, reject and approve landed; mark sold and remove (F067) follow
 
 ---
 

@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { toVehicleCard } from '../../../../src/modules/search/search.mapper.js';
-import type { CardRow } from '../../../../src/modules/search/search.repository.js';
+import {
+  specsOf,
+  toPublicVehicleDetail,
+  toVehicleCard,
+} from '../../../../src/modules/search/search.mapper.js';
+import type { CardRow, DetailRow } from '../../../../src/modules/search/search.repository.js';
 import { PUBLIC_LISTING_WHERE } from '../../../../src/modules/search/search.repository.js';
 import { createSearchRouter } from '../../../../src/modules/search/search.routes.js';
 import { createSearchService } from '../../../../src/modules/search/search.service.js';
@@ -75,7 +79,11 @@ describe('who is public', () => {
 
 describe('the service', () => {
   it('pages by offset and reports the total', async () => {
-    const repo = { cards: vi.fn(async () => [row()]), count: vi.fn(async () => 49) };
+    const repo = {
+      cards: vi.fn(async () => [row()]),
+      count: vi.fn(async () => 49),
+      detail: vi.fn(),
+    };
     const response = await createSearchService({ repo }).vehicles({ page: 3, limit: 24 });
 
     expect(repo.cards).toHaveBeenCalledWith(48, 24);
@@ -84,7 +92,7 @@ describe('the service', () => {
   });
 
   it('reports one page when there is nothing at all', async () => {
-    const repo = { cards: vi.fn(async () => []), count: vi.fn(async () => 0) };
+    const repo = { cards: vi.fn(async () => []), count: vi.fn(async () => 0), detail: vi.fn() };
     const response = await createSearchService({ repo }).vehicles({ page: 1, limit: 24 });
     expect(response.page.totalPages).toBe(1);
   });
@@ -93,14 +101,114 @@ describe('the service', () => {
 describe('the router', () => {
   const router = createSearchRouter({} as never, () => (_req, _res, next) => next());
 
-  it('declares the public list and nothing else', () => {
-    expect(signaturesOf(router)).toEqual(['GET /vehicles']);
+  it('declares the public list and the vehicle page, in that order', () => {
+    expect(signaturesOf(router)).toEqual(['GET /vehicles', 'GET /vehicles/:slug']);
   });
 
   it('asks for no permission and parses its query', () => {
     for (const route of routesOf(router)) {
       expect(permissionsOn(route)).toEqual([]);
-      expect(validatedSources(route)).toContain('query');
+      expect(validatedSources(route).length).toBeGreaterThan(0);
     }
+  });
+});
+
+function detailRow(overrides: Partial<DetailRow['vehicle']> = {}): DetailRow {
+  return {
+    id: 'listing-1',
+    slug: '2023-hyundai-creta-sx-o-vellore-0a1b2c3d',
+    status: 'ACTIVE',
+    publishedAt: new Date('2026-09-26T10:00:00.000Z'),
+    vehicle: {
+      id: 'vehicle-1',
+      registrationNumber: 'TN23AB1234',
+      rtoCode: 'TN23',
+      make: 'Hyundai',
+      model: 'Creta',
+      variant: 'SX(O)',
+      manufacturingYear: 2023,
+      registrationYear: 2023,
+      fuelType: 'PETROL',
+      transmission: 'AUTOMATIC',
+      bodyType: 'SUV',
+      kilometersDriven: 22_400,
+      ownerCount: 1,
+      color: 'Polar White',
+      insuranceType: 'COMPREHENSIVE',
+      insuranceValidUntil: new Date('2027-03-31T00:00:00.000Z'),
+      pricePaise: 145_000_000n,
+      negotiability: 'FIXED',
+      description: 'Single owner.',
+      images: [
+        { mediaId: 'm-a', position: 0, isPrimary: false },
+        { mediaId: 'm-b', position: 1, isPrimary: true },
+      ],
+      ...overrides,
+    },
+    dealer: {
+      brandName: 'Sri Lakshmi Motors',
+      slug: 'sri',
+      city: 'Katpadi',
+      district: 'Vellore',
+    },
+  } as unknown as DetailRow;
+}
+
+describe('toPublicVehicleDetail', () => {
+  it('keeps the gallery order and points at the primary', () => {
+    const detail = toPublicVehicleDetail(detailRow());
+    expect(detail.images.map((image) => image.url)).toEqual([
+      expect.stringMatching(/\/by-media\/m-a\/1024\.webp$/),
+      expect.stringMatching(/\/by-media\/m-b\/1024\.webp$/),
+    ]);
+    expect(detail.images[1]?.alt).toBe('2023 Hyundai Creta SX(O), photograph 2 of 2');
+    expect(detail.primaryIndex).toBe(1);
+  });
+
+  it('shows the registration only as its RTO', () => {
+    const detail = toPublicVehicleDetail(detailRow());
+    expect(detail.specs).toContainEqual({ label: 'Registered at', value: 'TN 23' });
+    expect(JSON.stringify(detail)).not.toContain('TN23AB1234');
+    expect(JSON.stringify(detail)).not.toContain('AB 1234');
+  });
+
+  it('names the dealership and where it is, once each', () => {
+    expect(toPublicVehicleDetail(detailRow()).dealer).toEqual({
+      name: 'Sri Lakshmi Motors',
+      slug: 'sri',
+      initials: 'SL',
+      isVerified: true,
+      location: 'Katpadi, Vellore',
+    });
+  });
+
+  it('copes with a gallery that is empty and a listing that has no date', () => {
+    const row = detailRow({ images: [] });
+    const detail = toPublicVehicleDetail({ ...row, publishedAt: null });
+    expect(detail.images).toEqual([]);
+    expect(detail.primaryIndex).toBe(0);
+    expect(detail.publishedLabel).toBeNull();
+  });
+});
+
+describe('specsOf', () => {
+  it('lists what is known, formatted, and leaves out what is not', () => {
+    const specs = specsOf(detailRow({ variant: null, rtoCode: null, color: '' }).vehicle);
+    const labels = specs.map((entry) => entry.label);
+    expect(labels).not.toContain('Variant');
+    expect(labels).not.toContain('Registered at');
+    expect(labels).not.toContain('Colour');
+    expect(specs).toContainEqual({ label: 'Kilometres driven', value: '22,400 km' });
+    expect(specs).toContainEqual({ label: 'Fuel', value: 'Petrol' });
+  });
+});
+
+describe('the vehicle page', () => {
+  it('answers a slug that is not public with a 404', async () => {
+    const repo = { cards: vi.fn(), count: vi.fn(), detail: vi.fn(async () => null) };
+    await expect(createSearchService({ repo }).vehicle('gone')).rejects.toMatchObject({
+      status: 404,
+      code: 'VEHICLE_NOT_FOUND',
+    });
   });
 });
