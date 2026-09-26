@@ -13,3 +13,19 @@ export async function setListingCheckAction(formData: FormData): Promise<void> {
   listingActionsStub.calls.push(values);
   await new Promise((resolve) => setTimeout(resolve, 300));
 }
+
+export async function requestListingChangesAction(
+  _listingId: string,
+  _reason: string,
+): Promise<ListingActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  return { ok: true };
+}
+
+export async function rejectListingAction(
+  _listingId: string,
+  _reason: string,
+): Promise<ListingActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  return { ok: false, message: 'This listing changed while you were looking at it.' };
+}

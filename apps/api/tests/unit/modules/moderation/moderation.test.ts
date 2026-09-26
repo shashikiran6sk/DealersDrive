@@ -166,15 +166,27 @@ describe('the router', () => {
       'GET /listings',
       'GET /listings/:id',
       'PUT /listings/:id/checks/:key',
+      'POST /listings/:id/request-changes',
+      'POST /listings/:id/reject',
     ]);
   });
 
-  it.each(['GET /listings', 'GET /listings/:id', 'PUT /listings/:id/checks/:key'])(
-    'guards %s with the moderation permission',
+  it.each([
+    'GET /listings',
+    'GET /listings/:id',
+    'PUT /listings/:id/checks/:key',
+    'POST /listings/:id/request-changes',
+    'POST /listings/:id/reject',
+  ])('guards %s with the moderation permission', (signature) => {
+    expect(permissionsOn(routeFor(router, signature) as never)).toEqual(['admin:listing:moderate']);
+  });
+
+  it.each(['POST /listings/:id/request-changes', 'POST /listings/:id/reject'])(
+    'parses the id and the reason on %s',
     (signature) => {
-      expect(permissionsOn(routeFor(router, signature) as never)).toEqual([
-        'admin:listing:moderate',
-      ]);
+      expect(validatedSources(routeFor(router, signature) as never)).toEqual(
+        expect.arrayContaining(['params', 'body']),
+      );
     },
   );
 

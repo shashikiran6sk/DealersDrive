@@ -60,3 +60,21 @@ PENDING_REVIEW, under the listing's row lock, with an audit row per change.
 the rows when the target is PENDING_REVIEW). A check made against the data the
 dealer has since changed says nothing about the new data, and a checklist that
 survived a resubmission would let a moderator approve a price they never saw.
+
+### `async requestChanges(admin, listingId, reason)` · `async reject(admin, listingId, reason)`
+
+The two decisions that are not approval (**F070**), both through `transition()`
+under the listing's row lock, so two moderators deciding at once get one
+success and one `409 LISTING_STATE_CHANGED`, and one audit row.
+
+A request for changes sends the listing back with the moderator's words, which
+the dealer sees verbatim on the vehicle and in the inventory; the vehicle is
+editable again and a resubmission rejoins the back of the queue with its
+checklist cleared. A rejection is final — REJECTED has no way out — but the
+vehicle is **kept**, with its reason, as history. Its registration is released,
+so the car can be entered again if it should be. Both need a reason of 6–500
+characters (`ReasonInput`, shared with the dealer decisions).
+
+The dealer is not emailed about either yet. The notification subscribers exist
+for dealership decisions (R40); listing decisions will join them in their own
+change rather than widen this one.

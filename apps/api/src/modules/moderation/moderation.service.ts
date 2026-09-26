@@ -15,6 +15,7 @@ import {
   LISTING_NOT_FOUND,
   TRANSITION_REFUSALS,
   lockListing,
+  transition,
 } from '../listings/listings.facade.js';
 import { toAdminListingDetail, toAdminListingRow } from './moderation.mapper.js';
 import { HISTORY_LABELS } from './moderation.messages.js';
@@ -38,8 +39,30 @@ export function createModerationService({ prisma, repo, audit }: ModerationDeps)
     return toAdminListingDetail(listing, history);
   }
 
+  async function decide(
+    admin: AdminPrincipal,
+    listingId: string,
+    event: 'requestChanges' | 'reject',
+    reason: string,
+  ): Promise<AdminListingDetail> {
+    await withTransaction(prisma, async (tx) => {
+      const listing = await lockListing(tx, listingId);
+      if (!listing) throw notFound();
+      await transition(tx, audit, listing, event, { type: 'ADMIN', id: admin.userId }, { reason });
+    });
+    return detail(listingId);
+  }
+
   return {
     detail,
+
+    async requestChanges(admin: AdminPrincipal, listingId: string, reason: string) {
+      return decide(admin, listingId, 'requestChanges', reason);
+    },
+
+    async reject(admin: AdminPrincipal, listingId: string, reason: string) {
+      return decide(admin, listingId, 'reject', reason);
+    },
 
     async setCheck(
       admin: AdminPrincipal,
