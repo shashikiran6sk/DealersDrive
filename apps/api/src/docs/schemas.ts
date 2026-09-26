@@ -41,6 +41,7 @@ const INPUT_SCHEMA_NAMES = [
   'SetPhotographyInput',
   'VehicleImagePresignInput',
   'ListingImageParam',
+  'ReorderImagesInput',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

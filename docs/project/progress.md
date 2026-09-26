@@ -102,7 +102,7 @@ revision · `[⛔]` withdrawn
 ## Tier 9 — Vehicle intake
 
 - [⏸] F034 — Image derivative pipeline · ⚠️ moved from Tier 5, D4 · **deferred by R45** — StudioCar produces the finished image
-- [ ] F035 — Media ordering & primary photo · ⚠️ moved from Tier 5, D4 · **reinterpreted by R45** — admin-only · admin upload and removal landed; ordering and primary follow
+- [x] F035 — Media ordering & primary photo · ⚠️ moved from Tier 5, D4 · **reinterpreted by R45** — admin-only upload, removal, ordering and primary on the review screen
 - [x] F055 — Vehicle data model · manual entry, no image columns (R45/R46)
 - [x] F056 — Plate input & normalisation · state, BH and legacy series; one registration per dealership
 - [⏸] F057 — RC lookup port, mock adapter & caching · **deferred by R46**
@@ -124,7 +124,7 @@ revision · `[⛔]` withdrawn
 ## Tier 11 — Moderation
 
 - [x] F069 — Moderation queue · **revised by R45** · oldest first, no one-click approve; the operations overview counts it
-- [ ] F070 — Listing review & decisions · **revised by R45** — admin uploads and orders the images here · review screen, checklist, request changes, reject, photography status and image upload landed; ordering and approval follow
+- [ ] F070 — Listing review & decisions · **revised by R45** — admin uploads and orders the images here · review screen, checklist, request changes, reject, photography status and images landed; approval follows
 - [ ] F071 — Listing takedown
 - [x] F072 — Admin platform config editor · ⚠️ pulled forward, ahead of Tier 11 — the settings screen the console's nav already links at · [#128](https://github.com/shashikiran6sk/DealersDrive/pull/128)
 

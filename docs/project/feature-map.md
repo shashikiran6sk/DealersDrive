@@ -1715,8 +1715,12 @@ Reordering, and the rule that position 0 is the primary photo — marked with a 
   partial unique index), `POST /v1/admin/listings/:id/images/presign`,
   `POST …/images/:mediaId/commit` (length and magic-byte verification) and
   `DELETE …/images/:mediaId` (renumbers, promotes the next primary), with the
-  web `features/admin/listing-images/` (C035) on the review screen. Then the
-  reorder and set-primary routes. It does not depend on F034 (deferred by R45:
+  web `features/admin/listing-images/` (C063b) on the review screen. Then
+  `PUT /v1/admin/listings/:id/images/order` (`ReorderImagesInput`: the whole
+  order, a permutation of what is attached, else `422 IMAGE_ORDER_MISMATCH`)
+  and `PUT …/images/:mediaId/primary`; order and primary are independent, and
+  the web tiles get ← / → and _Make primary_ buttons. No `Plate` marker: the
+  admin gallery shows the primary as a status tag. It does not depend on F034 (deferred by R45:
   images are served as uploaded). The dealer `/v1/dealer/media/*` routes of
   F033 are **withdrawn** with it, and `GET /media/by-media/…` serves a vehicle
   image only while its listing is `ACTIVE`.

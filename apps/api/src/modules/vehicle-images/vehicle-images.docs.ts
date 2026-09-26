@@ -109,6 +109,60 @@ export const vehicleImagesDocs: ModuleDocs = {
       errors: [400, 401, 403, 404, 409, 422],
     },
     {
+      method: 'put',
+      path: '/v1/admin/listings/:id/images/order',
+      operationId: 'reorderListingImages',
+      tag: DOC_TAGS.media,
+      summary: 'Put the vehicle images in order',
+      description:
+        'Sets the gallery order (**F035** as reinterpreted by **R45**). `mediaIds` is every ' +
+        'image on the vehicle, exactly once, first to last; a list that adds, omits or ' +
+        'repeats an image is `422 IMAGE_ORDER_MISMATCH` and nothing moves. Positions are ' +
+        'rewritten `0…n-1` in one transaction. The primary image is unaffected — it is chosen ' +
+        'separately. Audited as `vehicle.images_reordered`.',
+      audience: 'admin',
+      permission: 'admin:media:upload',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'ReorderImagesInput',
+        description: 'Every attached image, in the order the gallery should show them.',
+        example: { mediaIds: [MEDIA_ID] },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle\u2019s images, in the new order.',
+          schema: 'AdminVehicleImages',
+          example: IMAGES_EXAMPLE,
+        },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'put',
+      path: '/v1/admin/listings/:id/images/:mediaId/primary',
+      operationId: 'setListingPrimaryImage',
+      tag: DOC_TAGS.media,
+      summary: 'Choose the primary image',
+      description:
+        'Makes one image the primary — the one a buyer sees on the vehicle card. The previous ' +
+        'primary is cleared in the same transaction; a partial unique index means a vehicle ' +
+        'can never have two. Choosing the image that is already primary changes nothing and ' +
+        'writes no audit row; otherwise audited as `vehicle.image_primary_set`.',
+      audience: 'admin',
+      permission: 'admin:media:upload',
+      params: 'ListingImageParam',
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle\u2019s images, with the new primary.',
+          schema: 'AdminVehicleImages',
+          example: IMAGES_EXAMPLE,
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
       method: 'delete',
       path: '/v1/admin/listings/:id/images/:mediaId',
       operationId: 'deleteListingImage',

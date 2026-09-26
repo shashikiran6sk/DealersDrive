@@ -25,7 +25,11 @@ listing is, so the review screen cannot use the public media route.
 
 ### `export function ImageTile(...)`
 
-Removal is a plain `<form action={removeListingImageAction}>`, like a
-checklist tick. The primary badge and the position come from the API, which
+Removal, _Make primary_ and the ← / → moves are plain `<form>` server actions,
+like a checklist tick — no drag and drop, so every control is a button with a
+name a screen reader can announce ("Move image 3 earlier"). A move posts the
+**whole** new order, computed by `moved()` from the order the page rendered;
+the API refuses it if the gallery changed underneath, rather than applying a
+stale move to a different set of images. The primary badge and the position come from the API, which
 promotes the next image when the primary is removed — the tile never decides
 which image is primary.

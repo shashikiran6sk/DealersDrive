@@ -4,6 +4,7 @@ import {
   VEHICLE_IMAGE_MAX,
   type AdminVehicleImages,
   type PresignResponse,
+  type ReorderImagesInput,
   type VehicleImagePresignInput,
 } from '@dealers-drive/contracts';
 import type { Listing, ListingStatus, PrismaClient } from '@prisma/client';
@@ -27,6 +28,7 @@ import {
   IMAGE_NOT_FOUND,
   IMAGES_CLOSED,
   IMAGES_FULL,
+  ORDER_MISMATCH,
   UPLOAD_MISMATCH,
   UPLOAD_NOT_IMAGE,
 } from './vehicle-images.messages.js';
@@ -278,6 +280,73 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
       });
 
       await storage.delete(storageKey);
+      return images(vehicleId, status);
+    },
+
+    async reorder(
+      admin: AdminPrincipal,
+      listingId: string,
+      input: ReorderImagesInput,
+    ): Promise<AdminVehicleImages> {
+      const { vehicleId, status } = await withTransaction(prisma, async (tx) => {
+        const listing = await lockedOpen(tx, listingId);
+        const rows = await imagesOf(tx, listing.vehicleId);
+        const byMedia = new Map(rows.map((row) => [row.mediaId, row]));
+        const ordered = input.mediaIds.map((mediaId) => byMedia.get(mediaId));
+        if (rows.length !== ordered.length || ordered.some((row) => row === undefined)) {
+          throw new DomainError('IMAGE_ORDER_MISMATCH', ORDER_MISMATCH);
+        }
+
+        await renumber(
+          tx,
+          ordered.flatMap((row) => (row ? [row.id] : [])),
+        );
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId: listing.dealerId,
+          action: 'vehicle.images_reordered',
+          entityType: 'Vehicle',
+          entityId: listing.vehicleId,
+          before: { mediaIds: rows.map((row) => row.mediaId) },
+          after: { listingId, mediaIds: input.mediaIds },
+        });
+        return { vehicleId: listing.vehicleId, status: listing.status };
+      });
+      return images(vehicleId, status);
+    },
+
+    async setPrimary(
+      admin: AdminPrincipal,
+      listingId: string,
+      mediaId: string,
+    ): Promise<AdminVehicleImages> {
+      const { vehicleId, status } = await withTransaction(prisma, async (tx) => {
+        const listing = await lockedOpen(tx, listingId);
+        const rows = await imagesOf(tx, listing.vehicleId);
+        const target = rows.find((row) => row.mediaId === mediaId);
+        if (!target) throw new NotFoundError(IMAGE_NOT_FOUND, { code: 'IMAGE_NOT_FOUND' });
+
+        const previous = rows.find((row) => row.isPrimary);
+        if (previous?.id !== target.id) {
+          await tx.vehicleMedia.updateMany({
+            where: { vehicleId: listing.vehicleId, isPrimary: true },
+            data: { isPrimary: false },
+          });
+          await tx.vehicleMedia.update({ where: { id: target.id }, data: { isPrimary: true } });
+          await audit.record(tx, {
+            actorType: 'ADMIN',
+            actorId: admin.userId,
+            dealerId: listing.dealerId,
+            action: 'vehicle.image_primary_set',
+            entityType: 'Vehicle',
+            entityId: listing.vehicleId,
+            before: { mediaId: previous?.mediaId ?? null },
+            after: { listingId, mediaId },
+          });
+        }
+        return { vehicleId: listing.vehicleId, status: listing.status };
+      });
       return images(vehicleId, status);
     },
   };

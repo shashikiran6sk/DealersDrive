@@ -8,7 +8,7 @@ import { Banner } from '@/components/ui/primitives';
 import { ImageTile } from './image-tile';
 import { LISTING_IMAGES_TEXT } from './listing-images.constants';
 import type { ListingImagesProps, UploadProgress } from './listing-images.types';
-import { uploadOne } from './utils';
+import { moved, uploadOne } from './utils';
 
 export function ListingImages({ listingId, images }: ListingImagesProps) {
   const input = useRef<HTMLInputElement>(null);
@@ -16,6 +16,7 @@ export function ListingImages({ listingId, images }: ListingImagesProps) {
   const [errors, setErrors] = useState<string[]>([]);
 
   const count = images.items.length;
+  const order = images.items.map((image) => image.mediaId);
   const room = Math.max(images.max - count, 0);
   const missing = Math.max(images.min - count, 0);
 
@@ -62,12 +63,14 @@ export function ListingImages({ listingId, images }: ListingImagesProps) {
         <p className="text-[13px] ink-muted">{LISTING_IMAGES_TEXT.empty}</p>
       ) : (
         <ol className="grid gap-[8px] [grid-template-columns:repeat(auto-fill,minmax(120px,1fr))]">
-          {images.items.map((image) => (
+          {images.items.map((image, index) => (
             <ImageTile
               key={image.mediaId}
               listingId={listingId}
               image={image}
               editable={images.canEdit && progress === null}
+              earlier={moved(order, index, -1)}
+              later={moved(order, index, 1)}
             />
           ))}
         </ol>
