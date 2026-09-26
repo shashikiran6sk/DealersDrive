@@ -6,6 +6,8 @@ import {
   INSURANCE_LABELS,
   LISTING_CHECK_LABELS,
   ListingCheckKey,
+  PHOTOGRAPHY_STATUS_LABELS,
+  PHOTOGRAPHY_STATUS_TONES,
   NEGOTIABILITY_LABELS,
   TRANSMISSION_LABELS,
   VEHICLE_FIELD_LABELS,
@@ -23,6 +25,8 @@ import {
   vehicleTitle,
   type AdminListingDetail,
   type AdminListingRow,
+  type PhotographyDto,
+  type PhotographyStatus,
 } from '@dealers-drive/contracts';
 
 import { completenessOf } from '../vehicles/vehicles.facade.js';
@@ -38,6 +42,17 @@ export function locationOf(dealer: {
   );
   return parts.length > 0 ? parts.join(', ') : null;
 }
+
+export function photographyOf(record: { status: PhotographyStatus } | null): PhotographyDto {
+  const status = record?.status ?? 'NOT_STARTED';
+  return {
+    status,
+    label: PHOTOGRAPHY_STATUS_LABELS[status],
+    tone: PHOTOGRAPHY_STATUS_TONES[status],
+  };
+}
+
+export const PHOTOGRAPHY_OPEN_STATUSES = ['PENDING_REVIEW', 'CHANGES_REQUESTED'] as const;
 
 export function toAdminListingRow(row: QueueRow, now: Date = new Date()): AdminListingRow {
   const vehicle = row.vehicle;
@@ -59,6 +74,7 @@ export function toAdminListingRow(row: QueueRow, now: Date = new Date()): AdminL
     submittedLabel: submitted ? formatDate(submitted) : null,
     waitingLabel: submitted && row.status === 'PENDING_REVIEW' ? timeAgo(submitted, now) : null,
     resubmission: row.submissionCount > 1,
+    photography: photographyOf(vehicle.photography),
   };
 }
 
@@ -180,6 +196,12 @@ export function toAdminListingDetail(
     sections: sectionsOf(listing.vehicle),
     description: listing.vehicle.description,
     issues: vehicleIssues(completenessOf(listing.vehicle)),
+    photography: {
+      ...photographyOf(listing.vehicle.photography),
+      note: listing.vehicle.photography?.note ?? null,
+      updatedAt: listing.vehicle.photography?.updatedAt.toISOString() ?? null,
+      canUpdate: PHOTOGRAPHY_OPEN_STATUSES.some((status) => status === listing.status),
+    },
     checks: ListingCheckKey.options.map((key) => ({
       key,
       label: LISTING_CHECK_LABELS[key].label,

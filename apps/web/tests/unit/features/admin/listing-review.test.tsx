@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import AdminListingPage from '@/app/(admin)/admin/listings/[id]/page';
-import { setListingCheckAction } from '@/features/admin/listing-actions';
+import { setListingCheckAction, setPhotographyAction } from '@/features/admin/listing-actions';
 import { ListingReview } from '@/features/admin/listing-review';
 import type * as ApiModule from '@/lib/api';
 
@@ -45,6 +45,7 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
       submittedLabel: '26 Sep 2026',
       waitingLabel: '3 hours ago',
       resubmission: true,
+      photography: { status: 'NOT_STARTED', label: 'Not photographed', tone: 'neutral' },
       reason: null,
       submissionCount: 2,
       publishedAt: null,
@@ -71,6 +72,14 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
     ],
     description: 'Single owner.',
     issues: [],
+    photography: {
+      status: 'SCHEDULED',
+      label: 'Shoot scheduled',
+      tone: 'warn',
+      note: 'Tuesday 11am at the yard',
+      updatedAt: '2026-09-26T09:30:00.000Z',
+      canUpdate: true,
+    },
     checks: [
       {
         key: 'REGISTRATION',
@@ -128,6 +137,27 @@ describe('the review screen', () => {
   it('says photographs have not been added yet (R45)', () => {
     render(<ListingReview detail={reviewDetail()} />);
     expect(screen.getByText(/processed images are added here/)).toBeInTheDocument();
+  });
+
+  it('shows the photography status and lets a moderator change it, with the internal note', () => {
+    render(<ListingReview detail={reviewDetail()} />);
+    const panel = within(screen.getByRole('region', { name: 'Photography and images' }));
+    expect(panel.getByText('Shoot scheduled', { selector: 'span' })).toBeInTheDocument();
+    expect(panel.getByLabelText('Photography')).toHaveValue('SCHEDULED');
+    expect(panel.getByLabelText(/Internal note/)).toHaveValue('Tuesday 11am at the yard');
+    expect(panel.getByRole('button', { name: 'Save photography status' })).toBeInTheDocument();
+  });
+
+  it('shows photography read-only once the listing is out of review', () => {
+    const detail = reviewDetail();
+    render(
+      <ListingReview
+        detail={{ ...detail, photography: { ...detail.photography, canUpdate: false } }}
+      />,
+    );
+    const panel = within(screen.getByRole('region', { name: 'Photography and images' }));
+    expect(panel.queryByLabelText('Photography')).not.toBeInTheDocument();
+    expect(panel.getByText('Tuesday 11am at the yard')).toBeInTheDocument();
   });
 
   it('offers to tick what is unticked and undo what is ticked, and counts them', () => {
@@ -232,5 +262,54 @@ describe('setListingCheckAction', () => {
     await expect(
       setListingCheckAction(form({ listingId: ID, key: 'YEAR', checked: 'true' })),
     ).rejects.toThrow(/unavailable/);
+  });
+});
+
+describe('setPhotographyAction', () => {
+  function form(fields: Record<string, string>): FormData {
+    const data = new FormData();
+    for (const [key, value] of Object.entries(fields)) data.set(key, value);
+    return data;
+  }
+
+  it('puts the status with a trimmed note and refreshes the review screen', async () => {
+    apiSend.mockResolvedValue({});
+    await setPhotographyAction(
+      form({ listingId: ID, status: 'READY', note: '  shot on Tuesday ' }),
+    );
+
+    expect(apiSend).toHaveBeenCalledWith('PUT', `/v1/admin/listings/${ID}/photography`, {
+      status: 'READY',
+      note: 'shot on Tuesday',
+    });
+    expect(revalidations.paths).toContain(`/admin/listings/${ID}`);
+  });
+
+  it('clears the note when it is left empty', async () => {
+    apiSend.mockResolvedValue({});
+    await setPhotographyAction(form({ listingId: ID, status: 'SCHEDULED', note: '   ' }));
+    expect(apiSend).toHaveBeenCalledWith('PUT', `/v1/admin/listings/${ID}/photography`, {
+      status: 'SCHEDULED',
+      note: null,
+    });
+  });
+
+  it('ignores a form naming an unknown status', async () => {
+    await setPhotographyAction(form({ listingId: ID, status: 'UPLOADED' }));
+    expect(apiSend).not.toHaveBeenCalled();
+  });
+
+  it('refreshes after a refusal, and fails loudly if the API is unreachable', async () => {
+    const { ApiError } = await import('@/lib/api');
+    apiSend.mockRejectedValueOnce(
+      new ApiError({ type: 'x', title: 'Conflict', status: 409, code: 'PHOTOGRAPHY_CLOSED' }),
+    );
+    await setPhotographyAction(form({ listingId: ID, status: 'READY' }));
+    expect(revalidations.paths).toContain(`/admin/listings/${ID}`);
+
+    apiSend.mockRejectedValueOnce(new Error('down'));
+    await expect(setPhotographyAction(form({ listingId: ID, status: 'READY' }))).rejects.toThrow(
+      /unavailable/,
+    );
   });
 });

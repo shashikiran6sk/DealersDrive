@@ -3,6 +3,7 @@ import type {
   AdminListingQuery,
   AdminListingsResponse,
   ListingCheckKey,
+  SetPhotographyInput,
 } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
@@ -17,7 +18,12 @@ import {
   lockListing,
   transition,
 } from '../listings/listings.facade.js';
-import { toAdminListingDetail, toAdminListingRow } from './moderation.mapper.js';
+import {
+  PHOTOGRAPHY_OPEN_STATUSES,
+  toAdminListingDetail,
+  toAdminListingRow,
+} from './moderation.mapper.js';
+import { PHOTOGRAPHY_CLOSED } from './moderation.messages.js';
 import { HISTORY_LABELS } from './moderation.messages.js';
 import { sortKeyOf, type ModerationRepository } from './moderation.repository.js';
 
@@ -55,6 +61,53 @@ export function createModerationService({ prisma, repo, audit }: ModerationDeps)
 
   return {
     detail,
+
+    async setPhotography(
+      admin: AdminPrincipal,
+      listingId: string,
+      input: SetPhotographyInput,
+    ): Promise<AdminListingDetail> {
+      await withTransaction(prisma, async (tx) => {
+        const listing = await lockListing(tx, listingId);
+        if (!listing) throw notFound();
+        if (!PHOTOGRAPHY_OPEN_STATUSES.some((status) => status === listing.status)) {
+          throw new ConflictError('PHOTOGRAPHY_CLOSED', PHOTOGRAPHY_CLOSED, {
+            extra: { listingStatus: listing.status },
+          });
+        }
+
+        const note = input.note === undefined ? undefined : input.note || null;
+        const before = await tx.vehiclePhotography.findUnique({
+          where: { vehicleId: listing.vehicleId },
+        });
+        await tx.vehiclePhotography.upsert({
+          where: { vehicleId: listing.vehicleId },
+          create: {
+            vehicleId: listing.vehicleId,
+            status: input.status,
+            note: note ?? null,
+            updatedBy: admin.userId,
+          },
+          update: {
+            status: input.status,
+            ...(note === undefined ? {} : { note }),
+            updatedBy: admin.userId,
+          },
+        });
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId: listing.dealerId,
+          action: 'vehicle.photography_set',
+          entityType: 'Vehicle',
+          entityId: listing.vehicleId,
+          before: { status: before?.status ?? 'NOT_STARTED' },
+          after: { status: input.status, listingId },
+        });
+      });
+      return detail(listingId);
+    },
 
     async requestChanges(admin: AdminPrincipal, listingId: string, reason: string) {
       return decide(admin, listingId, 'requestChanges', reason);

@@ -19,6 +19,7 @@ const ROW: AdminListingsResponse['data'][number] = {
   submittedLabel: '26 Sep 2026',
   waitingLabel: '3 hours ago',
   resubmission: false,
+  photography: { status: 'NOT_STARTED', label: 'Not photographed', tone: 'neutral' },
 };
 
 const QUEUE: AdminListingsResponse = {
@@ -34,6 +35,7 @@ const QUEUE: AdminListingsResponse = {
       location: 'Chennai',
       waitingLabel: '2 days ago',
       resubmission: true,
+      photography: { status: 'READY', label: 'Images ready', tone: 'ok' },
     },
   ],
   page: { nextCursor: 'next', hasMore: true },

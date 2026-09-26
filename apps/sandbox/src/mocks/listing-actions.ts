@@ -14,6 +14,15 @@ export async function setListingCheckAction(formData: FormData): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 300));
 }
 
+export async function setPhotographyAction(formData: FormData): Promise<void> {
+  const values: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === 'string') values[key] = value;
+  }
+  listingActionsStub.calls.push(values);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+}
+
 export async function requestListingChangesAction(
   _listingId: string,
   _reason: string,

@@ -31,6 +31,7 @@ export function QueueRow({ row }: { row: AdminListingRow }) {
       <td>
         <div className="flex flex-wrap items-center gap-[6px]">
           <StatusTag tone={row.statusTone}>{row.statusLabel}</StatusTag>
+          <StatusTag tone={row.photography.tone}>{row.photography.label}</StatusTag>
           {row.resubmission ? (
             <StatusTag tone="neutral">{MODERATION_TEXT.resubmitted}</StatusTag>
           ) : null}

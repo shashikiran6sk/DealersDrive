@@ -40,6 +40,7 @@ const INPUT_SCHEMA_NAMES = [
   'AdminListingQuery',
   'ListingCheckParam',
   'SetListingCheckInput',
+  'SetPhotographyInput',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

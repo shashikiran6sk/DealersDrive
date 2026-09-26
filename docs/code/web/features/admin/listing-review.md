@@ -32,3 +32,13 @@ six characters (the same floor `ReasonInput` enforces on the server), a pending
 state that disables both buttons, and the API's refusal shown inside the dialog
 rather than closing it — a moderator who lost a race with a colleague needs to
 read why before the screen changes under them.
+
+## `apps/web/src/features/admin/listing-review/photography-panel.tsx`
+
+### `export function PhotographyPanel({ detail }: { detail: AdminListingDetail })`
+
+A plain `<form action={setPhotographyAction}>` — a select and a note, no client
+state — because the save is a single PUT and the page re-renders from the API
+afterwards. `canUpdate` comes from the server, so the form disappears exactly
+when the API would answer `409 PHOTOGRAPHY_CLOSED`. The note is labelled as
+internal because it is: the dealer never sees it.

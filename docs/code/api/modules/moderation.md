@@ -78,3 +78,29 @@ characters (`ReasonInput`, shared with the dealer decisions).
 The dealer is not emailed about either yet. The notification subscribers exist
 for dealership decisions (R40); listing decisions will join them in their own
 change rather than widen this one.
+
+### `async setPhotography(admin, listingId, input)`
+
+Where Dealers-Drive's own photography of the car has got to (**R45**):
+`NOT_STARTED → SCHEDULED → PHOTOGRAPHED → PROCESSING → READY`. It is a note the
+operations team keeps for itself, not a workflow the code enforces — any status
+may follow any other, because a reshoot sends a car back to `SCHEDULED` and a
+car photographed on the first visit skips straight to `PHOTOGRAPHED`.
+`PROCESSING` means "in StudioCar", entered by a person; nothing here calls
+StudioCar, and there is no batch id to fabricate.
+
+It lives in its own table, `vehicle_photography`, one row per vehicle, created
+on first write — a vehicle with no row reads as `NOT_STARTED`. It is keyed on
+the vehicle rather than the listing because the photographs belong to the car:
+a listing resubmitted after changes still has the same car, already shot.
+
+It may be set only while the listing is in review (`PENDING_REVIEW` or
+`CHANGES_REQUESTED`) — `409 PHOTOGRAPHY_CLOSED` otherwise — so a live or
+decided listing's history is not rewritten. The row is locked by the listing
+lock like every other moderation write, and each change writes a
+`vehicle.photography_set` audit row against the **Vehicle**, carrying the old
+and new status. The note is internal: it is in the admin detail and nowhere
+else, and no dealer or public DTO carries this table at all.
+
+The status is a readiness signal for people. Approval (F070) is guarded by the
+images actually attached, never by this label.
