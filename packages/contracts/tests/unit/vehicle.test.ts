@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  CreateVehicleInput,
   REQUIRED_VEHICLE_FIELDS,
+  UpdateVehicleInput,
+  VehicleSuggestQuery,
   VEHICLE_FIELD_LABELS,
   VEHICLE_LIMITS,
   VehicleFieldSchemas,
@@ -9,6 +12,7 @@ import {
   maxVehicleYear,
   normaliseVehicleText,
   vehicleIssues,
+  vehicleSummary,
   vehicleTitle,
   type VehicleCompletenessInput,
 } from '../../src/vehicle.js';
@@ -153,5 +157,48 @@ describe('vehicleTitle', () => {
     expect(vehicleTitle({ manufacturingYear: null, make: 'Tata', model: null, variant: '' })).toBe(
       'Tata',
     );
+  });
+});
+
+describe('vehicleSummary', () => {
+  it('reads fuel, gearbox and odometer in that order', () => {
+    expect(
+      vehicleSummary({ fuelType: 'PETROL', transmission: 'AUTOMATIC', kilometersDriven: 22_400 }),
+    ).toBe('Petrol · Automatic · 22,400 km');
+  });
+
+  it('skips what is missing, and keeps a zero odometer', () => {
+    expect(vehicleSummary({ fuelType: null, transmission: 'MANUAL', kilometersDriven: 0 })).toBe(
+      'Manual · 0 km',
+    );
+    expect(vehicleSummary({ fuelType: null, transmission: null, kilometersDriven: null })).toBe('');
+  });
+});
+
+describe('the dealer inputs', () => {
+  it('creates a draft from a registration number, canonicalised', () => {
+    expect(CreateVehicleInput.parse({ registrationNumber: 'ka-01-ab-1234' })).toEqual({
+      registrationNumber: 'KA01AB1234',
+    });
+  });
+
+  it.each(['status', 'dealerId', 'mediaId', 'imageUrl', 'storageKey', 'publishedAt', 'verified'])(
+    'refuses a client-supplied %s by name',
+    (field) => {
+      const result = UpdateVehicleInput.safeParse({ make: 'Tata', [field]: 'x' });
+      expect(result.success).toBe(false);
+      expect(JSON.stringify(result.error?.issues)).toContain(field);
+    },
+  );
+
+  it('lets a field be cleared with null and left alone by omission', () => {
+    expect(UpdateVehicleInput.parse({ variant: null })).toEqual({ variant: null });
+    expect(UpdateVehicleInput.parse({})).toEqual({});
+  });
+
+  it('asks only for make or model suggestions', () => {
+    expect(VehicleSuggestQuery.safeParse({ field: 'make', q: 'Mar' }).success).toBe(true);
+    expect(VehicleSuggestQuery.safeParse({ field: 'color', q: 'Red' }).success).toBe(false);
+    expect(VehicleSuggestQuery.safeParse({ field: 'make', q: '  ' }).success).toBe(false);
   });
 });

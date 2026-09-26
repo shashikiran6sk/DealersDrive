@@ -21,6 +21,11 @@ import {
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
 import { createMediaService, type MediaService } from './modules/media/media.service.js';
 import { createDealersService, type DealersService } from './modules/dealers/dealers.service.js';
+import { createVehiclesRepository } from './modules/vehicles/vehicles.repository.js';
+import {
+  createVehiclesService,
+  type VehiclesService,
+} from './modules/vehicles/vehicles.service.js';
 import { createAuditService } from './platform/audit/audit.service.js';
 import {
   createPlatformConfig,
@@ -71,6 +76,7 @@ export interface Container {
   readonly admin: AdminService;
   readonly publicConfig: ConfigService;
   readonly media: MediaService;
+  readonly vehicles: VehiclesService;
 }
 
 export interface ContainerOverrides {
@@ -124,6 +130,11 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage, queue });
   const notifications = createNotificationsService({ prisma, queue, mailer });
+  const vehicles = createVehiclesService({
+    prisma,
+    repo: createVehiclesRepository(prisma),
+    audit,
+  });
 
   return {
     env: overrides.env ?? env,
@@ -150,6 +161,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     admin,
     publicConfig,
     media,
+    vehicles,
   };
 }
 
