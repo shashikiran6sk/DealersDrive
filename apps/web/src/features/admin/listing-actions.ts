@@ -14,6 +14,7 @@ import {
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
+import { revalidatePublicVehicles } from '@/lib/cache-tags';
 
 export interface ListingActionResult {
   ok: boolean;
@@ -93,6 +94,7 @@ export async function approveListingAction(listingId: string): Promise<ListingAc
   }
   revalidatePath(reviewPath(listingId));
   revalidatePath('/admin/listings');
+  revalidatePublicVehicles();
   return { ok: true };
 }
 

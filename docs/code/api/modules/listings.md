@@ -67,3 +67,14 @@ checking that the listing is still editable and writing the vehicle, and a
 submission takes it before checking completeness — so an edit and a submission
 of the same vehicle serialise on one row instead of interleaving, and a
 moderator can never approve data that changed after it was submitted.
+
+## `apps/api/src/modules/listings/listing-slug.ts`
+
+### `export function listingSlug(vehicle, town)`
+
+The public address of a listing, minted once at its first approval (F075,
+F082): year, make, model, variant and the dealership's town, slugified, plus
+eight random hex characters. Readable enough to be a good URL, and the suffix
+means two identical cars in one town never collide and nothing about the row
+can be guessed from it. It is the only identifier a buyer is given; a
+re-approval keeps the slug, so a shared link keeps working.

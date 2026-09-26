@@ -9,6 +9,7 @@ import { dealersPublicDocs } from '../modules/dealers/dealers.public.docs.js';
 import { healthDocs } from '../modules/health/health.docs.js';
 import { storageDocs } from '../modules/media/media.docs.js';
 import { moderationDocs } from '../modules/moderation/moderation.docs.js';
+import { searchDocs } from '../modules/search/search.docs.js';
 import { vehicleImagesDocs } from '../modules/vehicle-images/vehicle-images.docs.js';
 import { vehiclesDocs } from '../modules/vehicles/vehicles.docs.js';
 import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
@@ -21,6 +22,7 @@ const MODULES: ModuleDocs[] = [
   authDocs,
   configDocs,
   dealersPublicDocs,
+  searchDocs,
   dealersDocs,
   vehiclesDocs,
   adminDocs,

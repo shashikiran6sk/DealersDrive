@@ -30,6 +30,8 @@ import {
   createVehicleImagesService,
   type VehicleImagesService,
 } from './modules/vehicle-images/vehicle-images.service.js';
+import { createSearchRepository } from './modules/search/search.repository.js';
+import { createSearchService, type SearchService } from './modules/search/search.service.js';
 import { createVehiclesRepository } from './modules/vehicles/vehicles.repository.js';
 import {
   createVehiclesService,
@@ -88,6 +90,7 @@ export interface Container {
   readonly vehicles: VehiclesService;
   readonly moderation: ModerationService;
   readonly vehicleImages: VehicleImagesService;
+  readonly search: SearchService;
 }
 
 export interface ContainerOverrides {
@@ -182,6 +185,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     vehicles,
     moderation,
     vehicleImages,
+    search: createSearchService({ repo: createSearchRepository(prisma) }),
   };
 }
 

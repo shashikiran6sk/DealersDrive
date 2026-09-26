@@ -113,7 +113,8 @@ admin may approve from here (`409 LISTING_NOT_APPROVABLE` otherwise, before
 any other work), then reads the approval state fresh inside the same
 transaction and refuses with `409 LISTING_NOT_READY` and a `blockers` array
 if anything is unmet. Only then does `transition()` move the listing to
-ACTIVE and stamp `publishedAt`.
+ACTIVE and stamp `publishedAt`, and a listing approved for the first time is
+given its public slug in the same transaction.
 
 Reading inside the lock is the point: every image write and every check
 write takes the same lock, so an approval can never publish a gallery that

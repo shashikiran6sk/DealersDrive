@@ -11,6 +11,7 @@ import { BLOCKER_MESSAGES } from './moderation.messages.js';
 
 export interface ApprovalState {
   dealerStatus: DealerStatus;
+  dealerCity: string | null;
   vehicle: Vehicle;
   checkedKeys: readonly string[];
   imageCount: number;

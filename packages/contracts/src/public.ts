@@ -463,3 +463,54 @@ export const DealerSuggestResponse = z.object({
   countLabel: z.string(),
 });
 export type DealerSuggestResponse = z.infer<typeof DealerSuggestResponse>;
+
+// ─────────── Public vehicles (F075, F077 as scoped by R45) ─────────────────
+/**
+ * The marketplace listing's query. Newest first, a page at a time — search,
+ * filters and facets are **F076** and deferred. `.strict()`, so a filter a
+ * client assumes exists is a 400 that names it rather than a silent no-op.
+ */
+export const PublicVehicleQuery = z
+  .object({
+    page: z.coerce.number().int().min(1).max(1000).default(1),
+    limit: z.coerce.number().int().min(1).max(48).default(24),
+  })
+  .strict();
+export type PublicVehicleQuery = z.infer<typeof PublicVehicleQuery>;
+
+export const PublicVehicleImage = z.object({
+  /** A public media URL at the card width; never a storage key or bucket. */
+  url: z.string(),
+  alt: z.string(),
+});
+export type PublicVehicleImage = z.infer<typeof PublicVehicleImage>;
+
+/**
+ * One vehicle on the marketplace, as a buyer's card shows it (**F075**).
+ *
+ * Only an ACTIVE listing of an ACTIVE dealership ever becomes one. It carries
+ * the public `slug` and nothing internal: no listing, vehicle or dealer id, no
+ * registration number, no moderation or audit field, no phone number.
+ */
+export const VehicleCardDto = z.object({
+  slug: z.string(),
+  title: z.string(),
+  year: z.number().int().nullable(),
+  priceLabel: z.string().nullable(),
+  metaLabel: z.string(),
+  image: PublicVehicleImage.nullable(),
+  imageCount: z.number().int(),
+  dealer: z.object({
+    name: z.string(),
+    slug: z.string(),
+    initials: z.string(),
+    isVerified: z.boolean(),
+  }),
+});
+export type VehicleCardDto = z.infer<typeof VehicleCardDto>;
+
+export const PublicVehiclesResponse = z.object({
+  data: z.array(VehicleCardDto),
+  page: OffsetPage,
+});
+export type PublicVehiclesResponse = z.infer<typeof PublicVehiclesResponse>;

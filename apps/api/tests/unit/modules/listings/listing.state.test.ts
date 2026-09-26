@@ -113,6 +113,7 @@ function listing(status: ListingStatus, overrides: Partial<Listing> = {}): Listi
     vehicleId: 'vehicle-1',
     dealerId: 'dealer-1',
     status,
+    slug: null,
     submittedAt: null,
     lastSubmittedAt: null,
     submissionCount: 0,

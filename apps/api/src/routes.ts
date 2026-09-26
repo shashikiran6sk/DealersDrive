@@ -11,6 +11,7 @@ import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { createStorageRouter } from './modules/media/media.routes.js';
 import { createModerationRouter } from './modules/moderation/moderation.routes.js';
+import { createSearchRouter } from './modules/search/search.routes.js';
 import { createVehicleImagesRouter } from './modules/vehicle-images/vehicle-images.routes.js';
 import { createVehiclesRouter } from './modules/vehicles/vehicles.routes.js';
 import { createMetricsRouter } from './platform/telemetry/metrics.routes.js';
@@ -33,6 +34,7 @@ export function createRoutes(container: Container): Router {
 
   v1.use(createConfigRouter(container.publicConfig));
   v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
+  v1.use(createSearchRouter(container.search, container.rateLimit));
 
   v1.use('/auth', createPublicAuthRouter(container.auth));
   v1.use(

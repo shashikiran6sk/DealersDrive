@@ -28,6 +28,7 @@ const COMPLETE = {
 function state(overrides: Partial<ApprovalState> = {}): ApprovalState {
   return {
     dealerStatus: 'ACTIVE',
+    dealerCity: 'Vellore',
     vehicle: COMPLETE,
     checkedKeys: [
       'REGISTRATION',
