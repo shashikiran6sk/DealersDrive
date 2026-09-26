@@ -8,6 +8,7 @@ import { dealersDocs } from '../modules/dealers/dealers.docs.js';
 import { dealersPublicDocs } from '../modules/dealers/dealers.public.docs.js';
 import { healthDocs } from '../modules/health/health.docs.js';
 import { mediaDocs, storageDocs } from '../modules/media/media.docs.js';
+import { moderationDocs } from '../modules/moderation/moderation.docs.js';
 import { vehiclesDocs } from '../modules/vehicles/vehicles.docs.js';
 import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
@@ -22,6 +23,7 @@ const MODULES: ModuleDocs[] = [
   dealersDocs,
   vehiclesDocs,
   adminDocs,
+  moderationDocs,
   mediaDocs,
   healthDocs,
   storageDocs,

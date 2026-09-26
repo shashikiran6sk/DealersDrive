@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { AdminOverview } from '@dealers-drive/contracts';
 
@@ -31,6 +31,8 @@ import type { AdminPrincipal } from '../../../../src/modules/auth/auth.facade.js
  * ────────────────────────────────────────────────────────────────────────────
  */
 interface Options {
+  listingCounts?: Record<string, number>;
+  oldestSubmission?: Date;
   dealers?: number;
   pending?: number;
   gstPercent?: number;
@@ -234,6 +236,14 @@ function setup(options: Options = {}) {
     media: {
       findMany: () => Promise.resolve(options.media ?? []),
     },
+    listing: {
+      count: (args: { where: { status: string } }) =>
+        Promise.resolve(options.listingCounts?.[args.where.status] ?? 0),
+      findFirst: () =>
+        Promise.resolve(
+          options.oldestSubmission ? { lastSubmittedAt: options.oldestSubmission } : null,
+        ),
+    },
     user: {
       findMany: (args: { where?: { id?: { in?: string[] } } }) =>
         Promise.resolve(
@@ -426,6 +436,34 @@ describe('overview', () => {
     expect(overview.moderationQueue.pendingCount).toBe(0);
     expect(overview.moderationQueue.message).toMatch(/No listings are waiting/);
     expect(overview.headerBadge).toMatchObject({ count: 0, tone: 'neutral' });
+  });
+
+  it('counts the review queue and the live listings from listings (F069)', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-26T12:00:00.000Z'));
+    const h = setup({
+      listingCounts: { PENDING_REVIEW: 3, ACTIVE: 11 },
+      oldestSubmission: new Date('2026-09-26T09:00:00.000Z'),
+    });
+
+    const overview = await h.service.overview(admin);
+    vi.useRealTimers();
+
+    expect(overview.moderationQueue).toMatchObject({
+      pendingCount: 3,
+      message: '3 listings are waiting for review.',
+      oldestWaitingLabel: '3 hours ago',
+    });
+    expect(overview.headerBadge).toMatchObject({ count: 3, tone: 'warn' });
+    expect(statFor(overview, 'activeListings')).toMatchObject({
+      value: 11,
+      href: '/admin/listings?status=ACTIVE',
+    });
+  });
+
+  it('says one listing is waiting, in the singular', async () => {
+    const overview = await setup({ listingCounts: { PENDING_REVIEW: 1 } }).service.overview(admin);
+    expect(overview.moderationQueue.message).toBe('1 listing is waiting for review.');
   });
 
   it('answers with every tile the console renders', async () => {

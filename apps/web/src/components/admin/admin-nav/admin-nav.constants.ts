@@ -8,7 +8,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: '/admin/config', label: 'Configuration' },
 ];
 
-const NOT_YET_BUILT = new Set(['/admin/listings', '/admin/payments']);
+const NOT_YET_BUILT = new Set(['/admin/payments']);
 
 export const LANDED_ADMIN_NAV: AdminNavItem[] = ADMIN_NAV.filter(
   (item) => !NOT_YET_BUILT.has(item.href),

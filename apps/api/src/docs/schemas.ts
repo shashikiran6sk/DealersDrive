@@ -37,6 +37,7 @@ const INPUT_SCHEMA_NAMES = [
   'UpdateVehicleInput',
   'VehicleSuggestQuery',
   'DealerInventoryQuery',
+  'AdminListingQuery',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

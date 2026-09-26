@@ -158,14 +158,19 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
   return {
     async overview(admin: AdminPrincipal): Promise<AdminOverview> {
-      const [totalDealers, pendingDealers] = await Promise.all([
+      const [totalDealers, pendingDealers, pending, activeListings, oldest] = await Promise.all([
         prisma.dealer.count(),
         prisma.dealer.count({ where: { status: 'PENDING_APPROVAL' } }),
+        prisma.listing.count({ where: { status: 'PENDING_REVIEW' } }),
+        prisma.listing.count({ where: { status: 'ACTIVE' } }),
+        prisma.listing.findFirst({
+          where: { status: 'PENDING_REVIEW' },
+          orderBy: { lastSubmittedAt: 'asc' },
+          select: { lastSubmittedAt: true },
+        }),
       ]);
 
-      const activeListings = 0;
       const newEnquiries = 0;
-      const pending = 0;
       const gross = 0;
 
       const gstPercent = await config.number('billing.gstPercent');
@@ -191,6 +196,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             label: 'Active listings',
             value: activeListings,
             valueLabel: String(activeListings),
+            href: '/admin/listings?status=ACTIVE',
           },
           {
             key: 'payments30d',
@@ -208,8 +214,11 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         ],
         moderationQueue: {
           pendingCount: pending,
-          oldestWaitingLabel: '—',
-          message: 'No listings are waiting for review.',
+          oldestWaitingLabel: oldest?.lastSubmittedAt ? timeAgo(oldest.lastSubmittedAt) : '—',
+          message:
+            pending === 0
+              ? 'No listings are waiting for review.'
+              : `${String(pending)} listing${pending === 1 ? ' is' : 's are'} waiting for review.`,
           href: '/admin/listings',
         },
         headerBadge: {

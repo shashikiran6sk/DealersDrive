@@ -10,6 +10,7 @@ import { createPublicDealersRouter } from './modules/dealers/dealers.public.rout
 import { createDealersRouter } from './modules/dealers/dealers.routes.js';
 import { createHealthRouter } from './modules/health/health.routes.js';
 import { createMediaRouter, createStorageRouter } from './modules/media/media.routes.js';
+import { createModerationRouter } from './modules/moderation/moderation.routes.js';
 import { createVehiclesRouter } from './modules/vehicles/vehicles.routes.js';
 import { createMetricsRouter } from './platform/telemetry/metrics.routes.js';
 
@@ -49,6 +50,7 @@ export function createRoutes(container: Container): Router {
   const admin = Router();
   admin.use(container.guards.requireAdmin);
   admin.use(createAdminRouter(container.admin));
+  admin.use(createModerationRouter(container.moderation));
   v1.use('/admin', admin);
 
   router.use('/v1', v1);

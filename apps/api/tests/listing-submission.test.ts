@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-harness.js';
-import { marketplaceFixtures, type Dealership } from './marketplace-fixtures.js';
+import { COMPLETE_VEHICLE, marketplaceFixtures, type Dealership } from './marketplace-fixtures.js';
 
 /**
  * Submission and resubmission (**F065**, as revised by **R47**), end to end.
@@ -16,25 +16,6 @@ function nextPlate(): string {
   plate += 1;
   return `TN 10 SB ${String(plate)}`;
 }
-
-export const COMPLETE_VEHICLE = {
-  make: 'Hyundai',
-  model: 'Creta',
-  variant: 'SX(O)',
-  manufacturingYear: 2023,
-  registrationYear: 2023,
-  fuelType: 'PETROL',
-  transmission: 'AUTOMATIC',
-  bodyType: 'SUV',
-  kilometersDriven: 22_400,
-  ownerCount: 1,
-  color: 'Polar White',
-  insuranceType: 'COMPREHENSIVE',
-  insuranceValidUntil: '2027-03-31',
-  pricePaise: 145_000_000,
-  negotiability: 'FIXED',
-  description: 'Single owner.',
-};
 
 beforeAll(async () => {
   h = await createAuthHarness(createFakeGoogle());

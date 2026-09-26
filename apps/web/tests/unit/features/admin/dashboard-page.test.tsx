@@ -83,10 +83,10 @@ describe('the overview screen', () => {
   it('links only the boxes the API gave an href', async () => {
     await renderPage();
 
-    const links = screen.getAllByRole('link');
+    const tiles = screen.getAllByRole('link').filter((link) => link.closest('section') === null);
 
-    expect(links).toHaveLength(1);
-    expect(links[0]).toHaveAttribute('href', '/admin/dealers?status=PENDING_APPROVAL');
+    expect(tiles).toHaveLength(1);
+    expect(tiles[0]).toHaveAttribute('href', '/admin/dealers?status=PENDING_APPROVAL');
   });
 
   it('links a box the moment the API starts sending an href for it', async () => {
@@ -118,20 +118,15 @@ describe('the moderation panel', () => {
     expect(screen.getByText('No listings are waiting for review.')).toBeInTheDocument();
   });
 
-  /**
-   * ── Reconstruction slice ──────────────────────────────────────────────────
-   * The baseline's `Open queue →` ghost sits in this heading row, onto
-   * `moderationQueue.href` — `/admin/listings`, which is **F069**. Held back
-   * rather than pointed at a 404; this case is what should fail when F069
-   * restores it.
-   * ──────────────────────────────────────────────────────────────────────────
-   */
-  it('offers no way into a queue screen that does not exist', async () => {
+  /** **F069.** The queue screen exists now, so the panel links to it. */
+  it('opens the queue screen from the panel', async () => {
     await renderPage();
 
     const panel = screen.getByRole('heading', { name: 'Moderation queue' }).closest('section');
     expect(panel).not.toBeNull();
-    expect(within(panel as HTMLElement).queryByRole('link')).toBeNull();
+    expect(
+      within(panel as HTMLElement).getByRole('link', { name: 'Open queue →' }),
+    ).toHaveAttribute('href', '/admin/listings');
   });
 });
 
@@ -151,14 +146,15 @@ describe('the moderation panel', () => {
 describe('the admin nav', () => {
   it('offers only routes that exist', () => {
     expect(LANDED_ADMIN_NAV.every((item) => ADMIN_NAV.includes(item))).toBe(true);
-    expect(LANDED_ADMIN_NAV.map((item) => item.href)).not.toContain('/admin/listings');
+    expect(LANDED_ADMIN_NAV.map((item) => item.href)).toContain('/admin/listings');
     expect(LANDED_ADMIN_NAV.map((item) => item.href)).not.toContain('/admin/payments');
   });
 
   /** **F048.** The first item finally points at a page. */
-  it('offers the dashboard, the dealers list and the settings screen', () => {
+  it('offers the dashboard, the listings queue, the dealers list and the settings screen', () => {
     expect(LANDED_ADMIN_NAV.map((item) => item.href)).toEqual([
       '/admin',
+      '/admin/listings',
       '/admin/dealers',
       '/admin/config',
     ]);
