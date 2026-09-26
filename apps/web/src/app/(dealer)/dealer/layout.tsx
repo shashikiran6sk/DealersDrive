@@ -4,7 +4,14 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-import { ConsoleNav, ConsoleTabBar, LANDED_NAV } from '@/components/dealer/console-nav';
+import {
+  ADD_VEHICLE_HREF,
+  ADD_VEHICLE_LABEL,
+  ConsoleNav,
+  ConsoleTabBar,
+  LANDED_NAV,
+} from '@/components/dealer/console-nav';
+import { ButtonLink } from '@/components/ui/button';
 import { Blueprint, Plate, StatusTag } from '@/components/ui/primitives';
 import { SignOutButton } from '@/features/auth/sign-out';
 import { apiGet } from '@/lib/api';
@@ -59,6 +66,9 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           <span className="ml-auto whitespace-nowrap text-[12px] ink-muted tnum">
             {dealer.creditBalance} credits
           </span>
+          <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="max-md:hidden">
+            {ADD_VEHICLE_LABEL}
+          </ButtonLink>
           <SignOutButton />
         </header>
 
