@@ -1,3 +1,5 @@
+export const MIN_REASON = 6;
+
 export const LISTING_REVIEW_TEXT = {
   back: '← Back to listings',
   dealer: 'Dealer',
@@ -15,6 +17,21 @@ export const LISTING_REVIEW_TEXT = {
   photographyPending:
     'Dealers-Drive photographs the car after submission and the processed images are added here. None have been added yet.',
   moderation: 'Moderation',
+  requestChanges: 'Request changes',
+  requestChangesTitle: 'Send this listing back to the dealer',
+  requestChangesBody:
+    'The dealer sees your words exactly as you write them, can edit the vehicle, and resubmits it to the back of the queue.',
+  requestChangesConfirm: 'Send back',
+  reject: 'Reject',
+  rejectTitle: 'Reject this listing',
+  rejectBody:
+    'Rejection is final. The vehicle is kept as history and the dealer sees your reason; they cannot resubmit it.',
+  rejectConfirm: 'Reject listing',
+  reasonLabel: 'Reason for the dealer',
+  reasonHint: 'at least 6 characters',
+  cancel: 'Cancel',
+  decisionNote:
+    'Approval becomes available once the photographs are uploaded, ordered and the checklist is complete.',
   history: 'History',
   noHistory: 'Nothing has happened to this listing yet.',
   resubmitted: (count: number) => `Submission ${count}`,

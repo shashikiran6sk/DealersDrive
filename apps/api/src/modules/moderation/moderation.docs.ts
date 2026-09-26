@@ -74,5 +74,54 @@ export const moderationDocs: ModuleDocs = {
       ],
       errors: [400, 401, 403, 404, 409],
     },
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/request-changes',
+      operationId: 'requestListingChanges',
+      tag: DOC_TAGS.moderation,
+      summary: 'Send a listing back to the dealer',
+      description:
+        'PENDING_REVIEW \u2192 CHANGES_REQUESTED. The reason (6\u2013500 characters) is shown to ' +
+        'the dealer verbatim, on the vehicle and in their inventory, and the vehicle becomes ' +
+        'editable again. When they resubmit it rejoins the back of the queue with its checklist ' +
+        'cleared.\n\n' +
+        'Race-safe: two moderators deciding at once get one success and one ' +
+        '`409 LISTING_STATE_CHANGED`. Audit-logged with the reason.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'ReasonInput',
+        example: { reason: 'The odometer reads 32,400 km, not 22,400 km. Please correct it.' },
+      },
+      responses: [
+        { status: 200, description: 'The listing, sent back.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/reject',
+      operationId: 'rejectListing',
+      tag: DOC_TAGS.moderation,
+      summary: 'Reject a listing',
+      description:
+        'PENDING_REVIEW \u2192 REJECTED, which is final: there is no way out of REJECTED. The ' +
+        'vehicle is **kept**, with the reason, as history — nothing is deleted — and its ' +
+        'registration is released, so the car can be entered again if it should be.\n\n' +
+        'The reason (6\u2013500 characters) is shown to the dealer verbatim. Race-safe and ' +
+        'audit-logged, as above.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'ReasonInput',
+        example: { reason: 'This car is already listed by another dealership.' },
+      },
+      responses: [
+        { status: 200, description: 'The listing, rejected.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
   ],
 };

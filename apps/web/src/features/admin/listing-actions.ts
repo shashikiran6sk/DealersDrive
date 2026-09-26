@@ -1,6 +1,6 @@
 'use server';
 
-import { ListingCheckKey, type AdminListingDetail } from '@dealers-drive/contracts';
+import { ListingCheckKey, ReasonInput, type AdminListingDetail } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
@@ -31,4 +31,45 @@ export async function setListingCheckAction(formData: FormData): Promise<void> {
     if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
   }
   revalidatePath(reviewPath(listingId));
+}
+
+async function decide(
+  listingId: string,
+  decision: 'request-changes' | 'reject',
+  reason: string,
+): Promise<ListingActionResult> {
+  const parsed = ReasonInput.safeParse({ reason });
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? 'Give a reason.' };
+  }
+
+  try {
+    await apiSend<AdminListingDetail>(
+      'POST',
+      `/v1/admin/listings/${encodeURIComponent(listingId)}/${decision}`,
+      parsed.data,
+    );
+  } catch (error) {
+    if (error instanceof ApiError)
+      return { ok: false, message: error.userMessage(error.problem.title) };
+    return { ok: false, message: UNAVAILABLE };
+  }
+
+  revalidatePath(reviewPath(listingId));
+  revalidatePath('/admin/listings');
+  return { ok: true };
+}
+
+export async function requestListingChangesAction(
+  listingId: string,
+  reason: string,
+): Promise<ListingActionResult> {
+  return decide(listingId, 'request-changes', reason);
+}
+
+export async function rejectListingAction(
+  listingId: string,
+  reason: string,
+): Promise<ListingActionResult> {
+  return decide(listingId, 'reject', reason);
 }

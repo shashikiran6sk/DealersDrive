@@ -144,6 +144,14 @@ describe('the review screen', () => {
     ).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('offers Request changes and Reject while the listing is in review, and no approve yet', () => {
+    render(<ListingReview detail={reviewDetail()} />);
+    const panel = within(screen.getByRole('region', { name: 'Moderation' }));
+    expect(panel.getByRole('button', { name: 'Request changes' })).toBeInTheDocument();
+    expect(panel.getByRole('button', { name: 'Reject' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /approve/i })).not.toBeInTheDocument();
+  });
+
   it('shows the checklist read-only once the listing is out of review', () => {
     render(
       <ListingReview
@@ -158,6 +166,7 @@ describe('the review screen', () => {
       />,
     );
     expect(screen.queryByRole('button', { name: /Mark checked|Undo/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Moderation' })).not.toBeInTheDocument();
   });
 
   it('lists what is still missing', () => {
