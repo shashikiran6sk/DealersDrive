@@ -19,6 +19,7 @@ describe('the surface', () => {
       'GET /vehicles/:id',
       'PATCH /vehicles/:id',
       'DELETE /vehicles/:id',
+      'POST /vehicles/:id/submit',
     ]);
   });
 
@@ -37,6 +38,7 @@ describe('permissions', () => {
     ['GET /vehicles/:id', 'vehicle:read'],
     ['PATCH /vehicles/:id', 'vehicle:write'],
     ['DELETE /vehicles/:id', 'vehicle:delete'],
+    ['POST /vehicles/:id/submit', 'listing:submit'],
   ])('guards %s with %s', (signature, permission) => {
     expect(permissionsOn(routeFor(router, signature) as never)).toEqual([permission]);
   });

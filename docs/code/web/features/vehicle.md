@@ -67,8 +67,11 @@ step that holds it (`stepOfField`). The page says in words that the dealer does
 not upload photographs — the step a dealer used to reach at this point is gone,
 and silence about it reads like a bug.
 
-Submission is not on this screen yet. It lands with the listing lifecycle
-(**F064**/**F065**), which is what gives "submit" somewhere to go.
+The footer is `submit-row.tsx`: _Submit for review_ (or _Resubmit for review_
+after a request for changes) is disabled, with a line saying why, until the API
+reports the vehicle complete (`listing.canSubmit`). It is a separate form from
+the step forms, posting to `submitVehicleAction`, which sends no body — what is
+submitted is what is stored.
 
 ## `apps/web/src/features/vehicle/vehicle-wizard/wizard-footer.tsx`
 
@@ -78,3 +81,13 @@ Submission is not on this screen yet. It lands with the listing lifecycle
 click cannot send two PATCHes, and the primary shows the spinner. DESIGN-SPEC
 §3.14's footer: Back, then Save draft pushed right, then the primary; stacked
 full-width on a phone.
+
+## `apps/web/src/features/vehicle/vehicle-wizard/submitted-panel.tsx`
+
+### `export function SubmittedPanel({ doneHref }: { doneHref: string })`
+
+DESIGN-SPEC §3.14's _Submitted_ screen: a blueprint card with the `Pending
+review` tag and what happens next — the team checks the details and arranges a
+photo shoot. It is reached through `?submitted=1` on the same edit URL and only
+renders while the listing really is PENDING_REVIEW, so a stale or hand-typed
+link shows the vehicle as it is instead.

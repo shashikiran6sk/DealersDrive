@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createVehicleAction,
   saveVehicleStepAction,
+  submitVehicleAction,
 } from '../../../../src/features/vehicle/actions.js';
 
 const ORIGINAL_FETCH = globalThis.fetch;
@@ -227,5 +228,48 @@ describe('saveVehicleStepAction', () => {
     });
     const state = await saveVehicleStepAction({}, form({ ...basics, intent: 'continue' }));
     expect(state.message).toBe('That vehicle does not exist.');
+  });
+});
+
+describe('submitVehicleAction', () => {
+  it('submits with no body and opens the confirmation', async () => {
+    globalThis.fetch = respond(200, vehicle());
+    await expect(submitVehicleAction({}, form({ vehicleId: ID }))).rejects.toThrow(
+      `NEXT_REDIRECT:/dealer/vehicles/${ID}/edit?step=review&submitted=1`,
+    );
+    expect(calls[0]?.url).toContain(`/v1/dealer/vehicles/${ID}/submit`);
+    expect(calls[0]?.init.method).toBe('POST');
+  });
+
+  it('shows the API’s sentence when the vehicle is incomplete', async () => {
+    globalThis.fetch = respond(422, {
+      status: 422,
+      code: 'VEHICLE_INCOMPLETE',
+      title: 'Vehicle incomplete',
+      detail: 'A few details are still missing.',
+      errors: [{ field: 'pricePaise', code: 'REQUIRED', message: 'Price is required.' }],
+    });
+    const state = await submitVehicleAction({}, form({ vehicleId: ID }));
+    expect(state.message).toBe('A few details are still missing.');
+    expect(state.errors).toEqual({ priceRupees: 'Price is required.' });
+  });
+
+  it('says so when another dealership already has the car in review', async () => {
+    globalThis.fetch = respond(409, {
+      status: 409,
+      code: 'DUPLICATE_REGISTRATION',
+      title: 'Duplicate registration',
+      detail: 'This registration number is already with Dealers-Drive for another listing.',
+    });
+    const state = await submitVehicleAction({}, form({ vehicleId: ID }));
+    expect(state.message).toMatch(/already with Dealers-Drive/);
+  });
+
+  it('refuses a form that names no vehicle, and survives an unreachable API', async () => {
+    expect((await submitVehicleAction({}, form({}))).message).toBeTruthy();
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error('down')));
+    expect((await submitVehicleAction({}, form({ vehicleId: ID }))).message).toMatch(
+      /could not save/i,
+    );
   });
 });

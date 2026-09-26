@@ -148,3 +148,22 @@ export const ChangesRequested: Story = {
     },
   },
 };
+
+export const Submitted: Story = {
+  args: {
+    step: 'review',
+    submitted: true,
+    vehicle: {
+      ...COMPLETE,
+      listing: {
+        ...COMPLETE.listing,
+        status: 'PENDING_REVIEW',
+        statusLabel: 'Pending review',
+        statusTone: 'warn',
+        canEdit: false,
+        canSubmit: false,
+        canDelete: false,
+      },
+    },
+  },
+};

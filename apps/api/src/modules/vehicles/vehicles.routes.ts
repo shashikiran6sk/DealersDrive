@@ -5,6 +5,7 @@ import { getVehicle } from './routes/get-vehicle.js';
 import { getVehicleSuggestions } from './routes/get-vehicle-suggestions.js';
 import { patchVehicle } from './routes/patch-vehicle.js';
 import { postVehicle } from './routes/post-vehicle.js';
+import { postVehicleSubmit } from './routes/post-vehicle-submit.js';
 import type { VehiclesRoute } from './routes/route.js';
 import type { VehiclesService } from './vehicles.service.js';
 
@@ -14,6 +15,7 @@ const ROUTES: VehiclesRoute[] = [
   getVehicle,
   patchVehicle,
   deleteVehicle,
+  postVehicleSubmit,
 ];
 
 export function createVehiclesRouter(service: VehiclesService): Router {

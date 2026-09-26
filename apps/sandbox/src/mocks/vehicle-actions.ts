@@ -37,3 +37,10 @@ export async function saveVehicleStepAction(
 ): Promise<WizardState> {
   return record(formData);
 }
+
+export async function submitVehicleAction(
+  _previous: WizardState,
+  formData: FormData,
+): Promise<WizardState> {
+  return record(formData);
+}

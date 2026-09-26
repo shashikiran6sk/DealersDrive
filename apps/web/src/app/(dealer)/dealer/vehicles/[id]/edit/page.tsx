@@ -18,7 +18,7 @@ export default async function EditVehiclePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ step?: string; saved?: string }>;
+  searchParams: Promise<{ step?: string; saved?: string; submitted?: string }>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
 
@@ -43,7 +43,12 @@ export default async function EditVehiclePage({
           {vehicle.summary ? <span className="tnum"> · {vehicle.summary}</span> : null}
         </p>
       </div>
-      <VehicleWizard step={step} vehicle={vehicle} saved={query.saved === '1'} />
+      <VehicleWizard
+        step={step}
+        vehicle={vehicle}
+        saved={query.saved === '1'}
+        submitted={query.submitted === '1'}
+      />
     </div>
   );
 }

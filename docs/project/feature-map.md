@@ -1912,6 +1912,15 @@ listings.repository,listings.facade,listings.messages}.ts`. `Listing` is one
 - **DB** `Listing.status` → `PENDING_REVIEW`; `CreditTransaction`
 - **Components — Reused** `Button`, `Banner`, `StatusTag`
 - **Sandbox** submit CTA — ready / blocked / insufficient credits / submitting
+- ⚠️ **Entry corrected on landing (R47).** `POST /v1/dealer/vehicles/:id/submit`
+  (`routes/post-vehicle-submit.ts`, `listing:submit` + `requireDealerActive`)
+  handles both submit and resubmit, chosen from the listing's state. No credit
+  movement. Completeness is `vehicleIssues()` under a `FOR UPDATE` lock
+  (`422 VEHICLE_INCOMPLETE`, one error per field). Submitting sets
+  `vehicles.claimedAt`, and a second partial unique index makes a plate unique
+  across dealerships among claimed, unreleased vehicles
+  (`409 DUPLICATE_REGISTRATION`). Web: `submit-row.tsx`, `submitted-panel.tsx`.
+  Tests: `apps/api/tests/listing-submission.test.ts`.
 
 ### F066 — Dealer inventory list
 

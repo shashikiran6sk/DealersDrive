@@ -155,3 +155,28 @@ export async function saveVehicleStepAction(
 
   redirect(editPath(saved.id, stepAfter(step)));
 }
+
+export async function submitVehicleAction(
+  _previous: WizardState,
+  formData: FormData,
+): Promise<WizardState> {
+  const vehicleId = text(formData, 'vehicleId');
+  if (!vehicleId) return { message: VEHICLE_WIZARD_TEXT.notSaved };
+
+  try {
+    await apiSend<DealerVehicle>(
+      'POST',
+      `/v1/dealer/vehicles/${encodeURIComponent(vehicleId)}/submit`,
+    );
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        message: error.userMessage(VEHICLE_WIZARD_TEXT.notSubmitted),
+        errors: apiErrors(error),
+      };
+    }
+    return { message: VEHICLE_WIZARD_TEXT.unavailable };
+  }
+
+  redirect(editPath(vehicleId, 'review', '&submitted=1'));
+}

@@ -102,3 +102,29 @@ because an inventory row reading "" is worse than one reading `KA 01 AB 1234`.
 
 The dealer and the person, both from the session. Nothing about who is acting
 is read from a body, a query or a path (rule 1).
+
+### `async submit(actor, vehicleId)`
+
+The dealer's two moves into review (**F065**): `submit` from DRAFT and
+`resubmit` from CHANGES_REQUESTED, chosen from the listing's own state so the
+console needs one button. Everything happens under the `FOR UPDATE` lock on the
+listing, in this order:
+
+1. the transition is checked first, so a second submit is a `409` about the
+   state rather than a `422` about completeness;
+2. completeness is judged on the vehicle **as re-read under the lock**, with the
+   same `vehicleIssues()` the wizard uses — a submission can never carry data
+   the check did not see, and an edit that raced it waits and is then refused;
+3. the registration is **claimed** (`claimedAt`, set once and never cleared);
+4. `transition()` moves the listing and writes `listing.submitted` or
+   `listing.resubmitted`.
+
+**Claiming is what makes the plate unique across dealerships**, through a second
+partial unique index: `(registrationNumber) WHERE releasedAt IS NULL AND claimedAt
+IS NOT NULL`. A draft is private, so two dealerships may both have typed the
+same plate; only one may ask Dealers-Drive to photograph and publish it. The
+loser gets `409 DUPLICATE_REGISTRATION` with a sentence that does not say which
+dealership has it.
+
+The route also carries `requireDealerActive`: a dealership that has not been
+approved can prepare drafts but not submit them.

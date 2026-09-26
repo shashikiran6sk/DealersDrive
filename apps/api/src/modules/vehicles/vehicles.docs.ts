@@ -120,5 +120,38 @@ export const vehiclesDocs: ModuleDocs = {
       responses: [{ status: 204, description: 'Deleted.' }],
       errors: [400, 401, 403, 404],
     },
+    {
+      method: 'post',
+      path: '/v1/dealer/vehicles/:id/submit',
+      operationId: 'submitDealerVehicle',
+      tag: DOC_TAGS.vehicles,
+      summary: 'Submit a vehicle for review',
+      description:
+        'Moves the listing from `DRAFT` (or `CHANGES_REQUESTED`, as a resubmission) to ' +
+        '`PENDING_REVIEW` (**F065**, **R47**). No body: the vehicle is submitted as it is ' +
+        'stored.\n\n' +
+        '**Complete or refused.** The same `vehicleIssues()` the wizard shows decides it; ' +
+        'anything missing is a `422 VEHICLE_INCOMPLETE` with one entry per field in `errors`.\n\n' +
+        '**Race-safe.** The listing row is locked for the length of the check, so an edit ' +
+        'arriving at the same moment waits and is then refused as not editable, and a second ' +
+        'submit of the same vehicle is a `409` rather than a second count.\n\n' +
+        '**One car on the marketplace once.** Submitting claims the registration across every ' +
+        'dealership; if another dealership already has the same car in review or on sale this is ' +
+        'a `409 DUPLICATE_REGISTRATION` that does not say which.\n\n' +
+        'The dealership must be ACTIVE (`403 DEALER_NOT_ACTIVE`). After submission Dealers-Drive ' +
+        'photographs the car (**R45**); no image is ever supplied here.',
+      audience: 'dealer',
+      permission: 'listing:submit',
+      requiresActiveDealer: true,
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle, with its listing now `PENDING_REVIEW`.',
+          schema: 'DealerVehicle',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
   ],
 };

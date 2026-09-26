@@ -218,3 +218,59 @@ describe('what the listing allows (F064)', () => {
     expect(screen.getByText('Duplicate of another listing.')).toBeInTheDocument();
   });
 });
+
+describe('submitting (F065)', () => {
+  it('offers Submit for review on a complete draft', () => {
+    render(<VehicleWizard step="review" vehicle={vehicle()} />);
+    expect(screen.getByRole('button', { name: 'Submit for review' })).toBeEnabled();
+    expect(screen.getByRole('link', { name: 'Finish later' })).toHaveAttribute('href', '/dealer');
+  });
+
+  it('disables it, and says why, until the vehicle is complete', () => {
+    render(
+      <VehicleWizard
+        step="review"
+        vehicle={vehicle({
+          complete: false,
+          issues: [{ field: 'color', message: 'Colour is required.' }],
+          listing: { ...vehicle().listing, canSubmit: false },
+        })}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Submit for review' })).toBeDisabled();
+    expect(screen.getByText(/fill in the missing details/i)).toBeInTheDocument();
+  });
+
+  it('calls it a resubmission when changes were requested', () => {
+    render(
+      <VehicleWizard
+        step="review"
+        vehicle={vehicle({
+          listing: { ...vehicle().listing, status: 'CHANGES_REQUESTED', canDelete: false },
+        })}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Resubmit for review' })).toBeEnabled();
+  });
+
+  it('confirms a submission, and says who takes the photographs', () => {
+    render(
+      <VehicleWizard
+        step="review"
+        submitted
+        vehicle={vehicle({
+          listing: {
+            ...vehicle().listing,
+            status: 'PENDING_REVIEW',
+            canEdit: false,
+            canSubmit: false,
+            canDelete: false,
+          },
+        })}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Submitted for review' })).toBeInTheDocument();
+    expect(screen.getByText(/arrange a photo shoot/i)).toBeInTheDocument();
+    expect(screen.getByText('Pending review')).toBeInTheDocument();
+  });
+});
