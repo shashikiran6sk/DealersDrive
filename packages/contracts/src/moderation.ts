@@ -10,6 +10,51 @@ import { ListingStatus, StatusTone } from './enums.js';
  * buyer's: a moderator sees which dealership, where, since when, and — once
  * the admin media model lands — whether the car has been photographed.
  */
+/**
+ * Where Dealers-Drive's own photography of a car has got to (**R45**), set by
+ * the operations team. There is no StudioCar integration behind it. Mirrors the
+ * Prisma enum of the same name.
+ */
+export const PhotographyStatus = z.enum([
+  'NOT_STARTED',
+  'SCHEDULED',
+  'PHOTOGRAPHED',
+  'PROCESSING',
+  'READY',
+]);
+export type PhotographyStatus = z.infer<typeof PhotographyStatus>;
+
+export const PHOTOGRAPHY_STATUS_LABELS: Record<PhotographyStatus, string> = {
+  NOT_STARTED: 'Not photographed',
+  SCHEDULED: 'Shoot scheduled',
+  PHOTOGRAPHED: 'Photographed',
+  PROCESSING: 'Processing in StudioCar',
+  READY: 'Images ready',
+};
+
+export const PHOTOGRAPHY_STATUS_TONES: Record<PhotographyStatus, StatusTone> = {
+  NOT_STARTED: 'neutral',
+  SCHEDULED: 'warn',
+  PHOTOGRAPHED: 'warn',
+  PROCESSING: 'warn',
+  READY: 'ok',
+};
+
+export const PhotographyDto = z.object({
+  status: PhotographyStatus,
+  label: z.string(),
+  tone: StatusTone,
+});
+export type PhotographyDto = z.infer<typeof PhotographyDto>;
+
+export const SetPhotographyInput = z
+  .object({
+    status: PhotographyStatus,
+    note: z.string().trim().max(500).nullable().optional(),
+  })
+  .strict();
+export type SetPhotographyInput = z.infer<typeof SetPhotographyInput>;
+
 export const AdminListingQuery = z
   .object({
     status: ListingStatus.optional(),
@@ -36,6 +81,7 @@ export const AdminListingRow = z.object({
   submittedLabel: z.string().nullable(),
   waitingLabel: z.string().nullable(),
   resubmission: z.boolean(),
+  photography: PhotographyDto,
 });
 export type AdminListingRow = z.infer<typeof AdminListingRow>;
 
@@ -129,6 +175,11 @@ export const AdminListingDetail = z.object({
   sections: z.array(z.object({ key: z.string(), title: z.string(), rows: z.array(Row) })),
   description: z.string().nullable(),
   issues: z.array(z.object({ field: z.string(), message: z.string() })),
+  photography: PhotographyDto.extend({
+    note: z.string().nullable(),
+    updatedAt: z.string().nullable(),
+    canUpdate: z.boolean(),
+  }),
   checks: z.array(
     z.object({
       key: ListingCheckKey,

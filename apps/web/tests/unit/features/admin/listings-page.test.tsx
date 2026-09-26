@@ -36,6 +36,7 @@ function listings(overrides: Partial<AdminListingsResponse> = {}): AdminListings
         submittedLabel: '26 Sep 2026',
         waitingLabel: '3 hours ago',
         resubmission: true,
+        photography: { status: 'NOT_STARTED', label: 'Not photographed', tone: 'neutral' },
       },
     ],
     page: { nextCursor: null, hasMore: false },
@@ -94,6 +95,7 @@ describe('/admin/listings', () => {
     expect(table.getByText('Katpadi, Vellore')).toBeInTheDocument();
     expect(table.getByText('3 hours ago')).toBeInTheDocument();
     expect(table.getByText('Resubmitted')).toBeInTheDocument();
+    expect(table.getByText('Not photographed')).toBeInTheDocument();
   });
 
   it('offers no one-click approve (R45)', async () => {

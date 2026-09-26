@@ -1,14 +1,14 @@
 import type { ListingStatus, Prisma, PrismaClient } from '@prisma/client';
 
 export const queueInclude = {
-  vehicle: true,
+  vehicle: { include: { photography: true } },
   dealer: { select: { id: true, brandName: true, slug: true, city: true, district: true } },
 } satisfies Prisma.ListingInclude;
 
 export type QueueRow = Prisma.ListingGetPayload<{ include: typeof queueInclude }>;
 
 export const detailInclude = {
-  vehicle: true,
+  vehicle: { include: { photography: true } },
   dealer: {
     select: {
       id: true,

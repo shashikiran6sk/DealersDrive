@@ -6,12 +6,14 @@ import { getListings } from './routes/get-listings.js';
 import { postListingReject } from './routes/post-listing-reject.js';
 import { postListingRequestChanges } from './routes/post-listing-request-changes.js';
 import { putListingCheck } from './routes/put-listing-check.js';
+import { putListingPhotography } from './routes/put-listing-photography.js';
 import type { ModerationRoute } from './routes/route.js';
 
 const ROUTES: ModerationRoute[] = [
   getListings,
   getListing,
   putListingCheck,
+  putListingPhotography,
   postListingRequestChanges,
   postListingReject,
 ];

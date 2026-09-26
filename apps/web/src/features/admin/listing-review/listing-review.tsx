@@ -5,6 +5,7 @@ import { Banner, StatusTag } from '@/components/ui/primitives';
 
 import { CheckRow } from './check-row';
 import { DecisionPanel } from './decision-panel';
+import { PhotographyPanel } from './photography-panel';
 import { LISTING_REVIEW_TEXT } from './listing-review.constants';
 import { ReviewSection } from './review-section';
 
@@ -94,12 +95,7 @@ export function ListingReview({ detail }: { detail: AdminListingDetail }) {
         <div className="flex min-w-0 flex-col gap-5">
           <DecisionPanel detail={detail} />
 
-          <section aria-labelledby="photography-heading" className="card gap-[8px] bg-white p-4">
-            <h2 id="photography-heading" className="text-[16px]">
-              {LISTING_REVIEW_TEXT.photography}
-            </h2>
-            <p className="text-[13px] ink-muted">{LISTING_REVIEW_TEXT.photographyPending}</p>
-          </section>
+          <PhotographyPanel detail={detail} />
 
           <section aria-labelledby="checklist-heading" className="card gap-[4px] bg-white p-4">
             <div className="flex items-baseline justify-between gap-2">

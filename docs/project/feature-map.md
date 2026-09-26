@@ -2021,6 +2021,9 @@ The full review screen: photos, specs, report, and the approve / reject / reques
   on resubmission); then request changes and reject; then the images; then the
   guarded approve. No `ReportPanel` (F068 is deferred by R46). Web:
   `features/admin/listing-review/`, `app/(admin)/admin/listings/[id]/page.tsx`.
+  Photography status (R45) — `vehicle_photography`, set by
+  `PUT /v1/admin/listings/:id/photography` while in review — lands between the
+  decisions and the images, and shows in the queue row as well.
 
 ### F071 — Listing takedown
 

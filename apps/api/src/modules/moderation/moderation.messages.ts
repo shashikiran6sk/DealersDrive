@@ -20,3 +20,6 @@ export const SECTION_TITLES = {
   details: 'Vehicle details',
   pricing: 'Pricing',
 } as const;
+
+export const PHOTOGRAPHY_CLOSED =
+  'Photography can only be updated while the listing is with the review team.';

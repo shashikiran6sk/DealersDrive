@@ -40,6 +40,7 @@ const DETAIL: AdminListingDetail = {
     submittedLabel: '26 Sep 2026',
     waitingLabel: '3 hours ago',
     resubmission: false,
+    photography: { status: 'NOT_STARTED', label: 'Not photographed', tone: 'neutral' },
     reason: null,
     submissionCount: 1,
     publishedAt: null,
@@ -99,6 +100,14 @@ const DETAIL: AdminListingDetail = {
   ],
   description: 'Single owner, full service history at the authorised workshop.',
   issues: [],
+  photography: {
+    status: 'SCHEDULED',
+    label: 'Shoot scheduled',
+    tone: 'warn',
+    note: 'Tuesday 11am at the yard',
+    updatedAt: '2026-09-26T09:30:00.000Z',
+    canUpdate: true,
+  },
   checks: CHECKS,
   history: [
     {

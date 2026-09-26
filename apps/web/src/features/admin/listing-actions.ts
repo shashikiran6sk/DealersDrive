@@ -1,6 +1,11 @@
 'use server';
 
-import { ListingCheckKey, ReasonInput, type AdminListingDetail } from '@dealers-drive/contracts';
+import {
+  ListingCheckKey,
+  ReasonInput,
+  SetPhotographyInput,
+  type AdminListingDetail,
+} from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
@@ -72,4 +77,25 @@ export async function rejectListingAction(
   reason: string,
 ): Promise<ListingActionResult> {
   return decide(listingId, 'reject', reason);
+}
+
+export async function setPhotographyAction(formData: FormData): Promise<void> {
+  const listingId = formData.get('listingId');
+  const note = formData.get('note');
+  const parsed = SetPhotographyInput.safeParse({
+    status: formData.get('status'),
+    note: typeof note === 'string' ? note.trim() || null : undefined,
+  });
+  if (typeof listingId !== 'string' || !parsed.success) return;
+
+  try {
+    await apiSend<AdminListingDetail>(
+      'PUT',
+      `/v1/admin/listings/${encodeURIComponent(listingId)}/photography`,
+      parsed.data,
+    );
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
+  }
+  revalidatePath(reviewPath(listingId));
 }

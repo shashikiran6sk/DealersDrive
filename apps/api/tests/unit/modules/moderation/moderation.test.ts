@@ -44,6 +44,7 @@ function queueRow(overrides: Partial<QueueRow> = {}): QueueRow {
       transmission: 'AUTOMATIC',
       kilometersDriven: 22_400,
       pricePaise: 145_000_000n,
+      photography: null,
     },
     dealer: {
       id: 'dealer-1',
@@ -72,6 +73,18 @@ describe('the admin listing row', () => {
 
   it('says nothing about waiting once a listing is out of the queue', () => {
     expect(toAdminListingRow(queueRow({ status: 'ACTIVE' })).waitingLabel).toBeNull();
+  });
+
+  it('reports photography as not started until the team records otherwise', () => {
+    expect(toAdminListingRow(queueRow()).photography).toEqual({
+      status: 'NOT_STARTED',
+      label: 'Not photographed',
+      tone: 'neutral',
+    });
+    const ready = queueRow({
+      vehicle: { ...queueRow().vehicle, photography: { status: 'READY' } },
+    } as never);
+    expect(toAdminListingRow(ready).photography).toMatchObject({ status: 'READY', tone: 'ok' });
   });
 
   it('marks a second submission as a resubmission', () => {
@@ -166,6 +179,7 @@ describe('the router', () => {
       'GET /listings',
       'GET /listings/:id',
       'PUT /listings/:id/checks/:key',
+      'PUT /listings/:id/photography',
       'POST /listings/:id/request-changes',
       'POST /listings/:id/reject',
     ]);
@@ -175,6 +189,7 @@ describe('the router', () => {
     'GET /listings',
     'GET /listings/:id',
     'PUT /listings/:id/checks/:key',
+    'PUT /listings/:id/photography',
     'POST /listings/:id/request-changes',
     'POST /listings/:id/reject',
   ])('guards %s with the moderation permission', (signature) => {

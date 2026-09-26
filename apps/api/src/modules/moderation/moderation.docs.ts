@@ -75,6 +75,30 @@ export const moderationDocs: ModuleDocs = {
       errors: [400, 401, 403, 404, 409],
     },
     {
+      method: 'put',
+      path: '/v1/admin/listings/:id/photography',
+      operationId: 'setListingPhotography',
+      tag: DOC_TAGS.moderation,
+      summary: 'Record where the photography has got to',
+      description:
+        'The operations team\u2019s note of Dealers-Drive\u2019s own shoot (**R45**): not ' +
+        'started, scheduled, photographed, processing in StudioCar, or images ready, with an ' +
+        'optional internal note. Set by hand \u2014 there is **no StudioCar integration** ' +
+        'behind it.\n\n' +
+        'While the listing is PENDING_REVIEW or CHANGES_REQUESTED (`409 PHOTOGRAPHY_CLOSED` ' +
+        'otherwise). Audit-logged. The note is internal and never reaches a dealer or a buyer. ' +
+        'Approval does not read this status; it checks the uploaded images themselves.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'SetPhotographyInput',
+        example: { status: 'SCHEDULED', note: 'Shoot booked for Tuesday 10am at the yard.' },
+      },
+      responses: [{ status: 200, description: 'The listing.', schema: 'AdminListingDetail' }],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
       method: 'post',
       path: '/v1/admin/listings/:id/request-changes',
       operationId: 'requestListingChanges',

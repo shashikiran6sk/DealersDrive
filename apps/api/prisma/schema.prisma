@@ -502,8 +502,9 @@ model Vehicle {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  dealer  Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  listing Listing?
+  dealer      Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  listing     Listing?
+  photography VehiclePhotography?
 
   /// A dealership's own vehicles, newest first — the inventory read.
   @@index([dealerId, createdAt])
@@ -569,6 +570,46 @@ model Listing {
   /// Public reads: ACTIVE, newest first.
   @@index([status, publishedAt])
   @@map("listings")
+}
+
+/// Where Dealers-Drive's own photography of a vehicle has got to (**R45**).
+///
+/// Dealers-Drive photographs every car after it is submitted, processes the
+/// pictures in StudioCar (a separate product), and an admin uploads the
+/// finished files. This row is the operations team's note of that progress,
+/// set by hand: there is **no StudioCar integration** behind it, and no
+/// batch id is invented to look like one. When an import is built, a
+/// `studioCarBatchId` and an external reference can be added here as nullable
+/// columns without changing anything that reads `status`.
+///
+/// Absent means NOT_STARTED; the row is created the first time an admin moves
+/// it. Approval does not read this status — it checks the uploaded images
+/// themselves — so a status set wrongly can mislead a person but never publish
+/// a car without photographs.
+model VehiclePhotography {
+  id        String            @id @default(uuid()) @db.Uuid
+  vehicleId String            @unique @db.Uuid
+  status    PhotographyStatus @default(NOT_STARTED)
+  /// Internal only: where the shoot is booked, what was wrong with a batch.
+  /// Never in a dealer or public response.
+  note      String?
+  updatedBy String?           @db.Uuid
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  /// The queue's readiness filter.
+  @@index([status])
+  @@map("vehicle_photography")
+}
+
+enum PhotographyStatus {
+  NOT_STARTED
+  SCHEDULED
+  PHOTOGRAPHED
+  PROCESSING
+  READY
 }
 
 /// One thing a moderator has verified about a listing (**F070**).

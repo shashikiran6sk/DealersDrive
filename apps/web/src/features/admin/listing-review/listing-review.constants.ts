@@ -14,6 +14,10 @@ export const LISTING_REVIEW_TEXT = {
   uncheck: 'Undo',
   checkedOn: (date: string) => `Checked ${date}`,
   photography: 'Photography and images',
+  photographyStatus: 'Photography',
+  photographyNote: 'Internal note',
+  photographyNoteHint: 'never shown to the dealer',
+  photographySave: 'Save photography status',
   photographyPending:
     'Dealers-Drive photographs the car after submission and the processed images are added here. None have been added yet.',
   moderation: 'Moderation',
