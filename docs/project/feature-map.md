@@ -1986,6 +1986,16 @@ The admin's pending-listing queue with a one-click approve. The one place DESIGN
 - **API** `GET /v1/admin/listings`
 - **Components — New (feature-specific)** `QueueApproveButton` · **Reused** `Table`, `StatusTag`, `Button`, `EmptyState`
 - **Sandbox** `QueueApproveButton` — idle / pending / error; queue table — empty / many
+- ⚠️ **Entry corrected on landing (R45).** No `QueueApproveButton`: approval
+  needs uploaded, ordered images and a primary, so it lives on the review
+  screen (F070). `GET /v1/admin/listings` is in a module of its own,
+  `modules/moderation/`, mounted beside `admin.routes.ts` rather than growing
+  that file, and takes `AdminListingQuery` (`status`, default PENDING_REVIEW;
+  `q`; cursor). The review queue is oldest `lastSubmittedAt` first. The
+  operations overview (`GET /v1/admin/metrics/overview`) now counts the queue,
+  the oldest wait and the active listings, and its panel links here. Web:
+  `features/admin/moderation-queue/`, `app/(admin)/admin/listings/page.tsx`;
+  _Listings_ enters `AdminNav`. Tests: `apps/api/tests/moderation-queue.test.ts`.
 
 ### F070 — Listing review & decisions
 

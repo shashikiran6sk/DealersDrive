@@ -47,8 +47,16 @@ export default async function AdminDashboardPage() {
       <section className="border border-(--color-divider) bg-white p-4">
         <div className="flex items-baseline gap-3">
           <h2 className="text-[19px]">Moderation queue</h2>
+          <Link href={overview.moderationQueue.href} className="btn btn-ghost ml-auto text-[12px]">
+            Open queue →
+          </Link>
         </div>
-        <p className="mt-2 text-[13px] ink-muted tnum">{overview.moderationQueue.message}</p>
+        <p className="mt-2 text-[13px] ink-muted tnum">
+          {overview.moderationQueue.message}
+          {overview.moderationQueue.pendingCount > 0
+            ? ` The oldest was submitted ${overview.moderationQueue.oldestWaitingLabel}.`
+            : ''}
+        </p>
       </section>
     </div>
   );

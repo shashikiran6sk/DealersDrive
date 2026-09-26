@@ -1316,6 +1316,21 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'dealer-listingstats',
   },
+  {
+    id: 'C069',
+    name: 'ModerationQueue',
+    source: 'apps/web/src/features/admin/moderation-queue/moderation-queue.tsx',
+    category: 'Admin',
+    ownership: 'Feature-specific',
+    purpose:
+      'The admin listing queue (F069): status tabs with counts, search, and a table of vehicle / dealer / price / location / submitted / status. No one-click approve (R45).',
+    aliases: ['ListingQueue', 'ReviewQueue', 'AdminListings', 'QueueRow'],
+    features: ['F069'],
+    props: ['listings', 'q'],
+    states: ['waiting', 'queue clear', 'nothing matches'],
+    reusable: false,
+    storyId: 'admin-moderationqueue',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

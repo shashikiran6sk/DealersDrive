@@ -18,6 +18,26 @@ export interface Dealership {
   slug: string;
 }
 
+/** Every field `vehicleIssues()` asks for, so a vehicle can be submitted. */
+export const COMPLETE_VEHICLE = {
+  make: 'Hyundai',
+  model: 'Creta',
+  variant: 'SX(O)',
+  manufacturingYear: 2023,
+  registrationYear: 2023,
+  fuelType: 'PETROL',
+  transmission: 'AUTOMATIC',
+  bodyType: 'SUV',
+  kilometersDriven: 22_400,
+  ownerCount: 1,
+  color: 'Polar White',
+  insuranceType: 'COMPREHENSIVE',
+  insuranceValidUntil: '2027-03-31',
+  pricePaise: 145_000_000,
+  negotiability: 'FIXED',
+  description: 'Single owner.',
+};
+
 let sequence = 0;
 
 function next(): number {

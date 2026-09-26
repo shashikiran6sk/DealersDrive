@@ -123,7 +123,7 @@ revision · `[⛔]` withdrawn
 
 ## Tier 11 — Moderation
 
-- [ ] F069 — Moderation queue · **revised by R45**
+- [x] F069 — Moderation queue · **revised by R45** · oldest first, no one-click approve; the operations overview counts it
 - [ ] F070 — Listing review & decisions · **revised by R45** — admin uploads and orders the images here
 - [ ] F071 — Listing takedown
 - [x] F072 — Admin platform config editor · ⚠️ pulled forward, ahead of Tier 11 — the settings screen the console's nav already links at · [#128](https://github.com/shashikiran6sk/DealersDrive/pull/128)
