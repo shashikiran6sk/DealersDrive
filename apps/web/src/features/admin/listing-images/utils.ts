@@ -8,6 +8,16 @@ import { failureMessage, fileRejection, putToStorage } from '@/lib/upload';
 
 import { IMAGE_RULE, LISTING_IMAGES_TEXT } from './listing-images.constants';
 
+export function moved(order: string[], index: number, delta: -1 | 1): string[] | null {
+  const target = index + delta;
+  if (target < 0 || target >= order.length) return null;
+  const next = [...order];
+  const [item] = next.splice(index, 1);
+  if (item === undefined) return null;
+  next.splice(target, 0, item);
+  return next;
+}
+
 export async function uploadOne(listingId: string, file: File): Promise<string | null> {
   const rejection = fileRejection(file, IMAGE_RULE);
   if (rejection) return LISTING_IMAGES_TEXT.fileRefused(file.name, rejection);

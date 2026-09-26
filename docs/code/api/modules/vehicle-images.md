@@ -60,6 +60,28 @@ Deletes the attachment, marks the media `ORPHAN`, renumbers what is left to
 one transaction under the listing lock. The object is deleted after commit: a
 rollback never leaves a row pointing at a deleted file.
 
+### `async reorder(admin, listingId, input)`
+
+The admin sends the **whole** order — every attached media id once, first to
+last — rather than "move this one to position 3". A whole order is idempotent
+and says exactly what the admin saw: two moderators reordering the same
+gallery at once each get the order they asked for, one after the other under
+the listing lock, and the gallery ends in whichever came second rather than in
+a blend of both moves. A list that omits, adds or repeats an image is
+`422 IMAGE_ORDER_MISMATCH` and nothing moves (a repeat is caught earlier, by
+the contract's `refine`, as a 400).
+
+Order and primary are separate decisions. The primary is the image a buyer
+sees on the card; the order is the gallery. Reordering never moves the primary
+badge, and choosing a primary never reorders.
+
+### `async setPrimary(admin, listingId, mediaId)`
+
+Clears the old primary before setting the new one — the partial unique index
+`vehicle_media_one_primary` is checked per statement, not deferred, so the
+other order would fail. Choosing the image that is already primary is a no-op
+with no audit row, so a double-click does not write history twice.
+
 ### `export const IMAGE_OPEN_STATUSES`
 
 `PENDING_REVIEW` and `CHANGES_REQUESTED`, the same window as the photography

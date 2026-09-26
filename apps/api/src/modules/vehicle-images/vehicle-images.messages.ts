@@ -10,3 +10,6 @@ export const UPLOAD_MISMATCH = 'The uploaded file does not match what was declar
 
 export const UPLOAD_NOT_IMAGE =
   'That file is not a JPEG, PNG or WebP image, whatever its name or type says.';
+
+export const ORDER_MISMATCH =
+  'The order must list every image on this vehicle exactly once, and nothing else.';

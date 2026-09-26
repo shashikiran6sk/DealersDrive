@@ -188,6 +188,24 @@ export const ListingImageParam = z
 export type ListingImageParam = z.infer<typeof ListingImageParam>;
 
 /**
+ * The gallery order an admin wants (**F035** as reinterpreted by **R45**):
+ * every attached image's media id, exactly once, first to last. Anything
+ * other than a permutation of what is attached is refused by the API.
+ */
+export const ReorderImagesInput = z
+  .object({
+    mediaIds: z
+      .array(z.string().uuid())
+      .min(1)
+      .max(VEHICLE_IMAGE_MAX)
+      .refine((ids) => new Set(ids).size === ids.length, {
+        message: 'Each image may appear only once.',
+      }),
+  })
+  .strict();
+export type ReorderImagesInput = z.infer<typeof ReorderImagesInput>;
+
+/**
  * One image as a moderator sees it. `url` is a short-lived signed read URL —
  * the image is not public until the listing is.
  */

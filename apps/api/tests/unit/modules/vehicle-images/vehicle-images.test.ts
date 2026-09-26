@@ -11,6 +11,8 @@ describe('the router', () => {
     expect(signaturesOf(router)).toEqual([
       'POST /listings/:id/images/presign',
       'POST /listings/:id/images/:mediaId/commit',
+      'PUT /listings/:id/images/order',
+      'PUT /listings/:id/images/:mediaId/primary',
       'DELETE /listings/:id/images/:mediaId',
     ]);
   });
@@ -21,12 +23,13 @@ describe('the router', () => {
     }
   });
 
-  it('parses the params on every route, and the body at presign', () => {
+  it('parses the params on every route, and the body at presign and reorder', () => {
     for (const route of routesOf(router)) {
       expect(validatedSources(route), `${route.method} ${route.path}`).toContain('params');
     }
-    const [presign] = routesOf(router);
+    const [presign, , order] = routesOf(router);
     expect(validatedSources(presign!)).toContain('body');
+    expect(validatedSources(order!)).toContain('body');
   });
 });
 

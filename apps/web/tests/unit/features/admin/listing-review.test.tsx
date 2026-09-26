@@ -7,8 +7,10 @@ import {
   commitListingImageAction,
   presignListingImageAction,
   removeListingImageAction,
+  reorderListingImagesAction,
   setListingCheckAction,
   setPhotographyAction,
+  setPrimaryImageAction,
 } from '@/features/admin/listing-actions';
 import { ListingReview } from '@/features/admin/listing-review';
 import type * as ApiModule from '@/lib/api';
@@ -436,6 +438,52 @@ describe('the image actions', () => {
       new ApiError({ type: 'x', title: 'Conflict', status: 409, code: 'IMAGES_CLOSED' }),
     );
     await removeListingImageAction(form);
+  });
+
+  it('sends a new order and refreshes, and ignores a malformed one', async () => {
+    const OTHER = '55555555-5555-4555-8555-555555555555';
+    const form = new FormData();
+    form.set('listingId', ID);
+    form.set('order', `${OTHER},${MEDIA}`);
+    apiSend.mockResolvedValueOnce({});
+    await reorderListingImagesAction(form);
+    expect(apiSend).toHaveBeenCalledWith('PUT', `/v1/admin/listings/${ID}/images/order`, {
+      mediaIds: [OTHER, MEDIA],
+    });
+    expect(revalidations.paths).toContain(`/admin/listings/${ID}`);
+
+    form.set('order', `${MEDIA},${MEDIA}`);
+    await reorderListingImagesAction(form);
+    form.set('listingId', 'not-a-uuid');
+    form.set('order', MEDIA);
+    await reorderListingImagesAction(form);
+    expect(apiSend).toHaveBeenCalledTimes(1);
+
+    form.set('listingId', ID);
+    apiSend.mockRejectedValueOnce(new Error('down'));
+    await expect(reorderListingImagesAction(form)).rejects.toThrow(/unavailable/);
+  });
+
+  it('chooses the primary image and refreshes', async () => {
+    const form = new FormData();
+    form.set('listingId', ID);
+    form.set('mediaId', MEDIA);
+    apiSend.mockResolvedValueOnce({});
+    await setPrimaryImageAction(form);
+    expect(apiSend).toHaveBeenCalledWith('PUT', `/v1/admin/listings/${ID}/images/${MEDIA}/primary`);
+    expect(revalidations.paths).toContain(`/admin/listings/${ID}`);
+
+    const { ApiError } = await import('@/lib/api');
+    apiSend.mockRejectedValueOnce(
+      new ApiError({ type: 'x', title: 'Conflict', status: 409, code: 'IMAGES_CLOSED' }),
+    );
+    await setPrimaryImageAction(form);
+
+    apiSend.mockRejectedValueOnce(new Error('down'));
+    await expect(setPrimaryImageAction(form)).rejects.toThrow(/unavailable/);
+
+    await setPrimaryImageAction(new FormData());
+    expect(apiSend).toHaveBeenCalledTimes(3);
   });
 
   it('ignores a removal form without valid ids', async () => {

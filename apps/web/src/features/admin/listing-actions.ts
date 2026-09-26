@@ -4,6 +4,7 @@ import {
   ListingCheckKey,
   ListingImageParam,
   ReasonInput,
+  ReorderImagesInput,
   SetPhotographyInput,
   VehicleImagePresignInput,
   type AdminListingDetail,
@@ -171,4 +172,43 @@ export async function removeListingImageAction(formData: FormData): Promise<void
   }
   revalidatePath(reviewPath(params.data.id));
   revalidatePath('/admin/listings');
+}
+
+export async function reorderListingImagesAction(formData: FormData): Promise<void> {
+  const listingId = formData.get('listingId');
+  const order = formData.get('order');
+  const parsed = ReorderImagesInput.safeParse({
+    mediaIds: typeof order === 'string' ? order.split(',') : [],
+  });
+  const params = ListingImageParam.shape.id.safeParse(listingId);
+  if (!params.success || !parsed.success) return;
+
+  try {
+    await apiSend<AdminVehicleImages>(
+      'PUT',
+      `/v1/admin/listings/${params.data}/images/order`,
+      parsed.data,
+    );
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
+  }
+  revalidatePath(reviewPath(params.data));
+}
+
+export async function setPrimaryImageAction(formData: FormData): Promise<void> {
+  const params = ListingImageParam.safeParse({
+    id: formData.get('listingId'),
+    mediaId: formData.get('mediaId'),
+  });
+  if (!params.success) return;
+
+  try {
+    await apiSend<AdminVehicleImages>(
+      'PUT',
+      `/v1/admin/listings/${params.data.id}/images/${params.data.mediaId}/primary`,
+    );
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
+  }
+  revalidatePath(reviewPath(params.data.id));
 }

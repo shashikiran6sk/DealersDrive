@@ -32,5 +32,11 @@ export const LISTING_IMAGES_TEXT = {
   alt: (position: number, primary: boolean) =>
     primary ? `Image ${position + 1}, the primary image` : `Image ${position + 1}`,
   remove: 'Remove',
+  makePrimary: 'Make primary',
+  makePrimaryLabel: (position: number) => `Make image ${position + 1} the primary image`,
+  moveEarlier: '←',
+  moveEarlierLabel: (position: number) => `Move image ${position + 1} earlier`,
+  moveLater: '→',
+  moveLaterLabel: (position: number) => `Move image ${position + 1} later`,
   removeLabel: (position: number) => `Remove image ${position + 1}`,
 } as const;

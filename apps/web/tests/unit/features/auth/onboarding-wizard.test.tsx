@@ -236,8 +236,15 @@ async function leaveAccount(user: ReturnType<typeof userEvent.setup>): Promise<v
    * one render. Typing six keys through six controlled inputs could outrun
    * React under CI load and leave the submit button disabled when it was
    * clicked; user-event does not reject a click on a disabled button.
+   *
+   * The boxes render while the send is still pending, and they are disabled
+   * until it settles. A paste into a disabled box is dropped without an error,
+   * so under load the code never lands and Verify never enables — wait for the
+   * boxes first.
    */
-  await user.click(boxes[0]!);
+  const first = boxes[0]!;
+  await waitFor(() => expect(first).toBeEnabled(), { timeout: TRANSITION_TIMEOUT });
+  await user.click(first);
   await user.paste('123456');
   const verify = screen.getByRole('button', { name: 'Verify & continue' });
   await waitFor(() => expect(verify).toBeEnabled(), { timeout: TRANSITION_TIMEOUT });
