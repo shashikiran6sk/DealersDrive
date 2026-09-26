@@ -25,6 +25,7 @@ import {
   vehicleTitle,
   type AdminListingDetail,
   type AdminListingRow,
+  type AdminVehicleImages,
   type PhotographyDto,
   type PhotographyStatus,
 } from '@dealers-drive/contracts';
@@ -75,6 +76,7 @@ export function toAdminListingRow(row: QueueRow, now: Date = new Date()): AdminL
     waitingLabel: submitted && row.status === 'PENDING_REVIEW' ? timeAgo(submitted, now) : null,
     resubmission: row.submissionCount > 1,
     photography: photographyOf(vehicle.photography),
+    imageCount: vehicle._count.images,
   };
 }
 
@@ -171,6 +173,7 @@ export function historyOf(rows: HistoryRow[]): AdminListingDetail['history'] {
 export function toAdminListingDetail(
   listing: DetailRow,
   history: HistoryRow[],
+  images: AdminVehicleImages,
   now: Date = new Date(),
 ): AdminListingDetail {
   const reviewing = listing.status === 'PENDING_REVIEW';
@@ -202,6 +205,7 @@ export function toAdminListingDetail(
       updatedAt: listing.vehicle.photography?.updatedAt.toISOString() ?? null,
       canUpdate: PHOTOGRAPHY_OPEN_STATUSES.some((status) => status === listing.status),
     },
+    images,
     checks: ListingCheckKey.options.map((key) => ({
       key,
       label: LISTING_CHECK_LABELS[key].label,

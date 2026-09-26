@@ -95,7 +95,8 @@ layout can change without invalidating a single cached page.
 
 ### `signedReadUrl(key, expiresInSeconds)`
 
-The only way a KYC document is ever served. Minutes, not hours.
+The only way a KYC document is ever served, and how a moderator previews a
+vehicle image before its listing is public. Minutes, not hours.
 
 ### `accessKeyId: env.S3_ACCESS_KEY_ID ?? ''`
 

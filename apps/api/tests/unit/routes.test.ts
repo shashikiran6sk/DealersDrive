@@ -154,7 +154,6 @@ describe('the dealer boundary', () => {
     'GET /v1/dealer/documents',
     'GET /v1/dealer/enquiries',
     'GET /v1/dealer/billing/summary',
-    'POST /v1/dealer/media/presign',
   ])('runs requireDealer for %s', async (signature) => {
     const [method, url] = signature.split(' ') as [string, string];
 
@@ -194,6 +193,17 @@ describe('the dealer boundary', () => {
     expect(result.adminGuard).toBe(false);
   });
 
+  /** R45: a dealer never writes vehicle media, so there is no route to reach. */
+  it.each([
+    'POST /v1/dealer/media/presign',
+    'POST /v1/dealer/media/00000000-0000-4000-8000-000000000000/commit',
+    'DELETE /v1/dealer/media/00000000-0000-4000-8000-000000000000',
+  ])('mounts no dealer vehicle-media route at %s', async (signature) => {
+    const [method, url] = signature.split(' ') as [string, string];
+
+    expect((await dispatch(method, url)).reached).toBe(false);
+  });
+
   it('never runs the admin guard on a dealer path', async () => {
     expect((await dispatch('GET', '/v1/dealer/vehicles')).adminGuard).toBe(false);
   });
@@ -201,17 +211,17 @@ describe('the dealer boundary', () => {
   /** One guard, not one per module — the mount point owns the boundary. */
   it('reaches the handler once the guard has run', async () => {
     expect(
-      (await dispatch('GET', '/v1/dealer/media/00000000-0000-4000-8000-000000000000')).reached,
+      (await dispatch('GET', '/v1/dealer/vehicles/00000000-0000-4000-8000-000000000000')).reached,
     ).toBe(true);
   });
 
   /**
-   * Two routers now sit under `/v1/dealer`, and the second is reached only
+   * Two routers sit under `/v1/dealer`, and the second is reached only
    * because the first falls through rather than answering. That is the case
    * that breaks when a router is mounted at a prefix instead of at the root of
    * the chain.
    */
-  it('reaches the dealers router as well as the media one', async () => {
+  it('reaches the dealers router as well as the vehicles one', async () => {
     expect((await dispatch('GET', '/v1/dealer/documents')).reached).toBe(true);
   });
 });
@@ -224,6 +234,8 @@ describe('the admin boundary', () => {
     'GET /v1/admin/payments',
     'GET /v1/admin/config',
     'GET /v1/admin/audit-logs',
+    'POST /v1/admin/listings/00000000-0000-4000-8000-000000000000/images/presign',
+    'DELETE /v1/admin/listings/00000000-0000-4000-8000-000000000000/images/00000000-0000-4000-8000-000000000001',
   ])('runs requireAdmin for %s', async (signature) => {
     const [method, url] = signature.split(' ') as [string, string];
 

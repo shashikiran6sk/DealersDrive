@@ -13,3 +13,11 @@ export const UploadQuery = z
 export const MediaPath = z
   .object({ mediaId: z.string().uuid(), width: z.coerce.number().int().min(1).max(4000) })
   .strict();
+
+export const PrivateReadQuery = z
+  .object({
+    key: z.string().min(1).max(300),
+    expiresAt: z.coerce.number().int(),
+    signature: z.string().min(16).max(256),
+  })
+  .strict();

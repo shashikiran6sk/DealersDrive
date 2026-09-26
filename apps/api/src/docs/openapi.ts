@@ -7,8 +7,9 @@ import { configDocs } from '../modules/config/config.docs.js';
 import { dealersDocs } from '../modules/dealers/dealers.docs.js';
 import { dealersPublicDocs } from '../modules/dealers/dealers.public.docs.js';
 import { healthDocs } from '../modules/health/health.docs.js';
-import { mediaDocs, storageDocs } from '../modules/media/media.docs.js';
+import { storageDocs } from '../modules/media/media.docs.js';
 import { moderationDocs } from '../modules/moderation/moderation.docs.js';
+import { vehicleImagesDocs } from '../modules/vehicle-images/vehicle-images.docs.js';
 import { vehiclesDocs } from '../modules/vehicles/vehicles.docs.js';
 import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
@@ -24,7 +25,7 @@ const MODULES: ModuleDocs[] = [
   vehiclesDocs,
   adminDocs,
   moderationDocs,
-  mediaDocs,
+  vehicleImagesDocs,
   healthDocs,
   storageDocs,
   metricsDocs,
@@ -361,7 +362,7 @@ never the case that an endpoint exists and is missing from this page, because a 
 adds a route adds its documentation in the same pull request.
 
 Currently documented: authentication and sessions, cities, public platform configuration, the
-media presign/commit pipeline, the health probes, the local storage stand-ins, and the admin
+admin vehicle-image upload, the health probes, the local storage stand-ins, and the admin
 console's metrics, KYC review and dealer status machine. Vehicles, listings, search, enquiries
 and billing are still to come, and with them the rest of the admin surface.
 `.trim();

@@ -20,6 +20,7 @@ const ROW: AdminListingsResponse['data'][number] = {
   waitingLabel: '3 hours ago',
   resubmission: false,
   photography: { status: 'NOT_STARTED', label: 'Not photographed', tone: 'neutral' },
+  imageCount: 0,
 };
 
 const QUEUE: AdminListingsResponse = {
@@ -36,6 +37,7 @@ const QUEUE: AdminListingsResponse = {
       waitingLabel: '2 days ago',
       resubmission: true,
       photography: { status: 'READY', label: 'Images ready', tone: 'ok' },
+      imageCount: 8,
     },
   ],
   page: { nextCursor: 'next', hasMore: true },

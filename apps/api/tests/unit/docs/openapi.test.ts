@@ -203,6 +203,6 @@ describe('the document itself', () => {
 
     expect(document.components.schemas).toHaveProperty('AuthSession');
     expect(document.components.schemas).toHaveProperty('ProblemDetails');
-    expect(document.components.schemas).toHaveProperty('MediaPresignInput');
+    expect(document.components.schemas).toHaveProperty('VehicleImagePresignInput');
   });
 });

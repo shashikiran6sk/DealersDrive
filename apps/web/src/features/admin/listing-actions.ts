@@ -2,9 +2,13 @@
 
 import {
   ListingCheckKey,
+  ListingImageParam,
   ReasonInput,
   SetPhotographyInput,
+  VehicleImagePresignInput,
   type AdminListingDetail,
+  type AdminVehicleImages,
+  type PresignResponse,
 } from '@dealers-drive/contracts';
 import { revalidatePath } from 'next/cache';
 
@@ -15,7 +19,12 @@ export interface ListingActionResult {
   message?: string;
 }
 
+export type ImagePresignResult =
+  { ok: true; upload: PresignResponse } | { ok: false; message: string };
+
 const UNAVAILABLE = 'The API is unavailable. Try again shortly.';
+
+const IMAGE_REFUSED = 'Only JPEG, PNG or WebP images up to 10 MB can be uploaded.';
 
 function reviewPath(listingId: string): string {
   return `/admin/listings/${listingId}`;
@@ -98,4 +107,68 @@ export async function setPhotographyAction(formData: FormData): Promise<void> {
     if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
   }
   revalidatePath(reviewPath(listingId));
+}
+
+function failure(error: unknown): { ok: false; message: string } {
+  if (error instanceof ApiError)
+    return { ok: false, message: error.userMessage(error.problem.title) };
+  return { ok: false, message: UNAVAILABLE };
+}
+
+export async function presignListingImageAction(
+  listingId: string,
+  file: { fileName: string; mimeType: string; bytes: number },
+): Promise<ImagePresignResult> {
+  const parsed = VehicleImagePresignInput.safeParse(file);
+  if (!parsed.success) return { ok: false, message: IMAGE_REFUSED };
+
+  try {
+    const upload = await apiSend<PresignResponse>(
+      'POST',
+      `/v1/admin/listings/${encodeURIComponent(listingId)}/images/presign`,
+      parsed.data,
+    );
+    return { ok: true, upload };
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+export async function commitListingImageAction(
+  listingId: string,
+  mediaId: string,
+): Promise<ListingActionResult> {
+  const params = ListingImageParam.safeParse({ id: listingId, mediaId });
+  if (!params.success) return { ok: false, message: IMAGE_REFUSED };
+
+  try {
+    await apiSend<AdminVehicleImages>(
+      'POST',
+      `/v1/admin/listings/${params.data.id}/images/${params.data.mediaId}/commit`,
+    );
+  } catch (error) {
+    return failure(error);
+  }
+  revalidatePath(reviewPath(params.data.id));
+  revalidatePath('/admin/listings');
+  return { ok: true };
+}
+
+export async function removeListingImageAction(formData: FormData): Promise<void> {
+  const params = ListingImageParam.safeParse({
+    id: formData.get('listingId'),
+    mediaId: formData.get('mediaId'),
+  });
+  if (!params.success) return;
+
+  try {
+    await apiSend<AdminVehicleImages>(
+      'DELETE',
+      `/v1/admin/listings/${params.data.id}/images/${params.data.mediaId}`,
+    );
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
+  }
+  revalidatePath(reviewPath(params.data.id));
+  revalidatePath('/admin/listings');
 }

@@ -361,10 +361,10 @@ model DealerProfileChange {
   specialities String[]
 
   /// Who typed it. `dealerId` says whose profile; this says whose hands.
-  submittedBy String?   @db.Uuid
-  createdAt   DateTime  @default(now())
-  reviewedBy  String?   @db.Uuid
-  reviewedAt  DateTime?
+  submittedBy    String?   @db.Uuid
+  createdAt      DateTime  @default(now())
+  reviewedBy     String?   @db.Uuid
+  reviewedAt     DateTime?
   /// Why a moderator refused, shown to the dealer verbatim. NULL on approval:
   /// there is nothing to explain about a yes.
   decisionReason String?
@@ -505,6 +505,7 @@ model Vehicle {
   dealer      Dealer              @relation(fields: [dealerId], references: [id], onDelete: Cascade)
   listing     Listing?
   photography VehiclePhotography?
+  images      VehicleMedia[]
 
   /// A dealership's own vehicles, newest first — the inventory read.
   @@index([dealerId, createdAt])
@@ -602,6 +603,34 @@ model VehiclePhotography {
   /// The queue's readiness filter.
   @@index([status])
   @@map("vehicle_photography")
+}
+
+/// Where a vehicle image came from (**R45**). Today only an admin uploads one;
+/// a later StudioCar import is a second value, not a redesign.
+enum VehicleMediaSource {
+  ADMIN_UPLOAD
+}
+
+/// A processed photograph attached to a vehicle, in gallery order (**R45**,
+/// F035 as reinterpreted). Written only through `/v1/admin`.
+model VehicleMedia {
+  id        String             @id @default(uuid()) @db.Uuid
+  vehicleId String             @db.Uuid
+  mediaId   String             @unique @db.Uuid
+  /// 0-based, contiguous. Unique per vehicle by a deferrable constraint, so a
+  /// reorder can pass through a duplicate inside its transaction.
+  position  Int
+  /// At most one per vehicle, by a partial unique index.
+  isPrimary Boolean            @default(false)
+  source    VehicleMediaSource @default(ADMIN_UPLOAD)
+  addedBy   String             @db.Uuid
+  createdAt DateTime           @default(now())
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  media   Media   @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId, position])
+  @@map("vehicle_media")
 }
 
 enum PhotographyStatus {
@@ -717,7 +746,7 @@ model Media {
   status          MediaStatus @default(PENDING)
   createdAt       DateTime    @default(now())
 
-  // vehicles VehicleMedia[]   ← returns with F035, which adds VehicleMedia
+  attachment VehicleMedia?
 
   @@index([status, createdAt])
   @@map("media")
@@ -825,7 +854,7 @@ model NotificationDelivery {
   /// Resend's own message id, for a support question the provider has to answer.
   providerMessageId String?
   /// The last failure, trimmed. Never a stack trace and never the body.
-  lastError String?
+  lastError         String?
 
   dealerId String? @db.Uuid
   dealer   Dealer? @relation(fields: [dealerId], references: [id], onDelete: SetNull)

@@ -37,6 +37,7 @@ function listings(overrides: Partial<AdminListingsResponse> = {}): AdminListings
         waitingLabel: '3 hours ago',
         resubmission: true,
         photography: { status: 'NOT_STARTED', label: 'Not photographed', tone: 'neutral' },
+        imageCount: 0,
       },
     ],
     page: { nextCursor: null, hasMore: false },

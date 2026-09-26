@@ -18,8 +18,6 @@ export const LISTING_REVIEW_TEXT = {
   photographyNote: 'Internal note',
   photographyNoteHint: 'never shown to the dealer',
   photographySave: 'Save photography status',
-  photographyPending:
-    'Dealers-Drive photographs the car after submission and the processed images are added here. None have been added yet.',
   moderation: 'Moderation',
   requestChanges: 'Request changes',
   requestChangesTitle: 'Send this listing back to the dealer',

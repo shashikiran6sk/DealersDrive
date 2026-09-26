@@ -52,7 +52,7 @@ afterAll(async () => {
 
 describe('the review queue', () => {
   it('lists what is waiting, oldest submission first, with who, where and since when', async () => {
-    const { body } = await admin.get('/v1/admin/listings').expect(200);
+    const { body } = await admin.get('/v1/admin/listings?q=MH12QU').expect(200);
     const mine = body.data.filter((row: { vehicleId: string }) =>
       submitted.includes(row.vehicleId),
     );
@@ -76,7 +76,7 @@ describe('the review queue', () => {
   });
 
   it('never shows a draft to a moderator', async () => {
-    const { body } = await admin.get('/v1/admin/listings').expect(200);
+    const { body } = await admin.get('/v1/admin/listings?q=MH12QU').expect(200);
     expect(
       body.data.some(
         (row: { registrationDisplay: string }) => row.registrationDisplay === 'MH 12 QU 0004',

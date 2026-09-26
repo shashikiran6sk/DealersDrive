@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { CursorPage } from './common.js';
+import { IMAGE_MAX_BYTES, IMAGE_MIME_TYPES } from './dealer.js';
 import { ListingStatus, StatusTone } from './enums.js';
 
 /**
@@ -82,6 +83,8 @@ export const AdminListingRow = z.object({
   waitingLabel: z.string().nullable(),
   resubmission: z.boolean(),
   photography: PhotographyDto,
+  /** Images attached to the vehicle (**R45**), so the queue shows readiness. */
+  imageCount: z.number().int(),
 });
 export type AdminListingRow = z.infer<typeof AdminListingRow>;
 
@@ -156,6 +159,60 @@ const Row = z.object({ label: z.string(), value: z.string().nullable() });
  * which decisions the current state allows — so the console renders the state
  * machine rather than re-deriving it.
  */
+/**
+ * The most images one vehicle may carry (**R45**) — StudioCar's batch size.
+ * A ceiling, not a requirement: the minimum is the platform config key
+ * `listing.minPhotos`, handed to the console in `AdminListingDetail.images`.
+ */
+export const VEHICLE_IMAGE_MAX = 20;
+
+/**
+ * An admin's request to upload one processed image to a listing's vehicle
+ * (**R45**). The client names the file, never the path: the storage key is
+ * derived by the server from the vehicle id and a server-generated media id.
+ */
+export const VehicleImagePresignInput = z
+  .object({
+    fileName: z.string().trim().min(1).max(160),
+    mimeType: z.enum(IMAGE_MIME_TYPES),
+    bytes: z.number().int().min(1).max(IMAGE_MAX_BYTES),
+    width: z.number().int().min(1).max(20000).optional(),
+    height: z.number().int().min(1).max(20000).optional(),
+  })
+  .strict();
+export type VehicleImagePresignInput = z.infer<typeof VehicleImagePresignInput>;
+
+export const ListingImageParam = z
+  .object({ id: z.string().uuid(), mediaId: z.string().uuid() })
+  .strict();
+export type ListingImageParam = z.infer<typeof ListingImageParam>;
+
+/**
+ * One image as a moderator sees it. `url` is a short-lived signed read URL —
+ * the image is not public until the listing is.
+ */
+export const AdminVehicleImage = z.object({
+  mediaId: z.string().uuid(),
+  position: z.number().int(),
+  isPrimary: z.boolean(),
+  url: z.string(),
+  fileName: z.string().nullable(),
+  mimeType: z.string(),
+  bytes: z.number().int(),
+  width: z.number().int().nullable(),
+  height: z.number().int().nullable(),
+  uploadedAt: z.string(),
+});
+export type AdminVehicleImage = z.infer<typeof AdminVehicleImage>;
+
+export const AdminVehicleImages = z.object({
+  items: z.array(AdminVehicleImage),
+  min: z.number().int(),
+  max: z.number().int(),
+  canEdit: z.boolean(),
+});
+export type AdminVehicleImages = z.infer<typeof AdminVehicleImages>;
+
 export const AdminListingDetail = z.object({
   listing: AdminListingRow.extend({
     reason: z.string().nullable(),
@@ -180,6 +237,7 @@ export const AdminListingDetail = z.object({
     updatedAt: z.string().nullable(),
     canUpdate: z.boolean(),
   }),
+  images: AdminVehicleImages,
   checks: z.array(
     z.object({
       key: ListingCheckKey,

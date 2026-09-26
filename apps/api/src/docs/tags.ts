@@ -6,7 +6,7 @@ export const DOC_TAGS = {
   vehicles: 'Vehicles (dealer)',
   admin: 'Admin',
   moderation: 'Moderation',
-  media: 'Media',
+  media: 'Vehicle images',
   health: 'Health',
   storage: 'Storage (local only)',
   metrics: 'Metrics',

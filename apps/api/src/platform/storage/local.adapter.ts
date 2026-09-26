@@ -77,8 +77,8 @@ export function createLocalStorage(): StoragePort {
     signedReadUrl(key, expiresInSeconds) {
       const expiresAt = Date.now() + expiresInSeconds * 1000;
       const signature = sign({ key, contentType: 'read', contentLength: 0, expiresAt });
-      const params = new URLSearchParams({ expiresAt: String(expiresAt), signature });
-      return Promise.resolve(`${env.API_BASE_URL}/private/${key}?${params.toString()}`);
+      const params = new URLSearchParams({ key, expiresAt: String(expiresAt), signature });
+      return Promise.resolve(`${env.API_BASE_URL}/private?${params.toString()}`);
     },
   };
 }

@@ -1,5 +1,7 @@
 import type { ListingStatus } from '@dealers-drive/contracts';
 
+import { countLabel } from '@/lib/plural';
+
 export const MODERATION_PATH = '/admin/listings';
 
 export const MODERATION_TABS: { value: ListingStatus; label: string }[] = [
@@ -22,6 +24,7 @@ export const MODERATION_TEXT = {
   clear: 'Clear',
   caption: 'Listings in this status',
   resubmitted: 'Resubmitted',
+  images: (count: number) => countLabel(count, 'image'),
   review: 'Review',
   noPrice: 'No price',
   queueClearTitle: 'Queue clear',

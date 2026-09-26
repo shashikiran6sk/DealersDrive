@@ -3,7 +3,13 @@ import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import AdminListingPage from '@/app/(admin)/admin/listings/[id]/page';
-import { setListingCheckAction, setPhotographyAction } from '@/features/admin/listing-actions';
+import {
+  commitListingImageAction,
+  presignListingImageAction,
+  removeListingImageAction,
+  setListingCheckAction,
+  setPhotographyAction,
+} from '@/features/admin/listing-actions';
 import { ListingReview } from '@/features/admin/listing-review';
 import type * as ApiModule from '@/lib/api';
 
@@ -46,6 +52,7 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
       waitingLabel: '3 hours ago',
       resubmission: true,
       photography: { status: 'NOT_STARTED', label: 'Not photographed', tone: 'neutral' },
+      imageCount: 0,
       reason: null,
       submissionCount: 2,
       publishedAt: null,
@@ -79,6 +86,37 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
       note: 'Tuesday 11am at the yard',
       updatedAt: '2026-09-26T09:30:00.000Z',
       canUpdate: true,
+    },
+    images: {
+      items: [
+        {
+          mediaId: '44444444-4444-4444-8444-444444444444',
+          position: 0,
+          isPrimary: true,
+          url: 'https://placehold.co/1200x900/1f2937/e5e7eb.png?text=Front',
+          fileName: 'creta-front.jpg',
+          mimeType: 'image/jpeg',
+          bytes: 1_284_512,
+          width: 2400,
+          height: 1800,
+          uploadedAt: '2026-09-26T10:00:00.000Z',
+        },
+        {
+          mediaId: '55555555-5555-4555-8555-555555555555',
+          position: 1,
+          isPrimary: false,
+          url: 'https://placehold.co/1200x900/374151/e5e7eb.png?text=Rear',
+          fileName: 'creta-rear.jpg',
+          mimeType: 'image/jpeg',
+          bytes: 1_104_220,
+          width: 2400,
+          height: 1800,
+          uploadedAt: '2026-09-26T10:01:00.000Z',
+        },
+      ],
+      min: 6,
+      max: 20,
+      canEdit: true,
     },
     checks: [
       {
@@ -134,9 +172,11 @@ describe('the review screen', () => {
     expect(screen.getByText(/Wrong variant/)).toBeInTheDocument();
   });
 
-  it('says photographs have not been added yet (R45)', () => {
+  it('shows the uploaded images inside the photography panel (R45)', () => {
     render(<ListingReview detail={reviewDetail()} />);
-    expect(screen.getByText(/processed images are added here/)).toBeInTheDocument();
+    const panel = within(screen.getByRole('region', { name: 'Photography and images' }));
+    expect(panel.getByAltText('Image 1, the primary image')).toBeInTheDocument();
+    expect(panel.getByText('2 uploaded · 6 needed to approve · 20 at most')).toBeInTheDocument();
   });
 
   it('shows the photography status and lets a moderator change it, with the internal note', () => {
@@ -311,5 +351,95 @@ describe('setPhotographyAction', () => {
     await expect(setPhotographyAction(form({ listingId: ID, status: 'READY' }))).rejects.toThrow(
       /unavailable/,
     );
+  });
+});
+
+describe('the image actions', () => {
+  const MEDIA = '44444444-4444-4444-8444-444444444444';
+
+  it('presigns a valid file and hands back the signed upload', async () => {
+    apiSend.mockResolvedValue({ mediaId: MEDIA, uploadUrl: 'u', method: 'PUT', headers: {} });
+    const result = await presignListingImageAction(ID, {
+      fileName: 'front.jpg',
+      mimeType: 'image/jpeg',
+      bytes: 100,
+    });
+
+    expect(result).toMatchObject({ ok: true, upload: { mediaId: MEDIA } });
+    expect(apiSend).toHaveBeenCalledWith('POST', `/v1/admin/listings/${ID}/images/presign`, {
+      fileName: 'front.jpg',
+      mimeType: 'image/jpeg',
+      bytes: 100,
+    });
+  });
+
+  it('refuses a file the contract refuses, without asking the API', async () => {
+    const result = await presignListingImageAction(ID, {
+      fileName: 'x.gif',
+      mimeType: 'image/gif',
+      bytes: 100,
+    });
+    expect(result.ok).toBe(false);
+    expect(apiSend).not.toHaveBeenCalled();
+  });
+
+  it('passes on what the API said, or that it could not be reached', async () => {
+    const { ApiError } = await import('@/lib/api');
+    apiSend.mockRejectedValueOnce(
+      new ApiError({
+        type: 'x',
+        title: 'Conflict',
+        status: 409,
+        code: 'VEHICLE_IMAGES_FULL',
+        detail: 'A vehicle can carry at most 20 images.',
+      }),
+    );
+    const full = await presignListingImageAction(ID, {
+      fileName: 'a.jpg',
+      mimeType: 'image/jpeg',
+      bytes: 1,
+    });
+    expect(full).toEqual({ ok: false, message: 'A vehicle can carry at most 20 images.' });
+
+    apiSend.mockRejectedValueOnce(new Error('down'));
+    const down = await commitListingImageAction(ID, MEDIA);
+    expect(down.ok).toBe(false);
+    expect(down.message).toMatch(/unavailable/);
+  });
+
+  it('commits an upload by its ids and refuses ids that are not uuids', async () => {
+    apiSend.mockResolvedValue({});
+    expect(await commitListingImageAction(ID, MEDIA)).toEqual({ ok: true });
+    expect(revalidations.paths).toEqual(
+      expect.arrayContaining([`/admin/listings/${ID}`, '/admin/listings']),
+    );
+    expect(apiSend).toHaveBeenCalledWith('POST', `/v1/admin/listings/${ID}/images/${MEDIA}/commit`);
+
+    expect((await commitListingImageAction(ID, '../../dealer')).ok).toBe(false);
+    expect(apiSend).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes an image and refreshes, and fails loudly if the API is unreachable', async () => {
+    const form = new FormData();
+    form.set('listingId', ID);
+    form.set('mediaId', MEDIA);
+    apiSend.mockResolvedValueOnce({});
+    await removeListingImageAction(form);
+    expect(apiSend).toHaveBeenCalledWith('DELETE', `/v1/admin/listings/${ID}/images/${MEDIA}`);
+    expect(revalidations.paths).toContain(`/admin/listings/${ID}`);
+
+    apiSend.mockRejectedValueOnce(new Error('down'));
+    await expect(removeListingImageAction(form)).rejects.toThrow(/unavailable/);
+
+    const { ApiError } = await import('@/lib/api');
+    apiSend.mockRejectedValueOnce(
+      new ApiError({ type: 'x', title: 'Conflict', status: 409, code: 'IMAGES_CLOSED' }),
+    );
+    await removeListingImageAction(form);
+  });
+
+  it('ignores a removal form without valid ids', async () => {
+    await removeListingImageAction(new FormData());
+    expect(apiSend).not.toHaveBeenCalled();
   });
 });

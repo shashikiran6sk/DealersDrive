@@ -12,6 +12,7 @@ import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { ConflictError, NotFoundError } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
+import type { VehicleImagesService } from '../vehicle-images/vehicle-images.facade.js';
 import {
   LISTING_NOT_FOUND,
   TRANSITION_REFUSALS,
@@ -31,18 +32,22 @@ export interface ModerationDeps {
   prisma: PrismaClient;
   repo: ModerationRepository;
   audit: AuditService;
+  images: Pick<VehicleImagesService, 'images'>;
 }
 
 function notFound(): NotFoundError {
   return new NotFoundError(LISTING_NOT_FOUND, { code: 'LISTING_NOT_FOUND' });
 }
 
-export function createModerationService({ prisma, repo, audit }: ModerationDeps) {
+export function createModerationService({ prisma, repo, audit, images }: ModerationDeps) {
   async function detail(listingId: string): Promise<AdminListingDetail> {
     const listing = await repo.detail(listingId);
     if (!listing) throw notFound();
-    const history = await repo.history(listingId, Object.keys(HISTORY_LABELS));
-    return toAdminListingDetail(listing, history);
+    const [history, gallery] = await Promise.all([
+      repo.history(listingId, Object.keys(HISTORY_LABELS)),
+      images.images(listing.vehicleId, listing.status),
+    ]);
+    return toAdminListingDetail(listing, history, gallery);
   }
 
   async function decide(
