@@ -250,7 +250,7 @@ model Dealer {
   profileEdits  DealerProfileChange[]
   notifications NotificationDelivery[]
   vehicles      Vehicle[]
-  // listings    Listing[]              ← returns with F064
+  listings      Listing[]
   // enquiries   Enquiry[]              ← returns with F088
   // ledger      CreditTransaction[]    ← returns with F050
   // orders      Order[]                ← returns with F051
@@ -498,7 +498,8 @@ model Vehicle {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  dealer  Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  listing Listing?
 
   /// A dealership's own vehicles, newest first — the inventory read.
   @@index([dealerId, createdAt])
@@ -512,6 +513,62 @@ model Vehicle {
   /// `migrations/20260926190000_vehicle_registration_held`.
   @@index([registrationNumber])
   @@map("vehicles")
+}
+
+/// Where a vehicle is in its life on the marketplace (**F064**, as revised by
+/// **R47**). One per vehicle, created with it as DRAFT.
+///
+/// **`status` is written in exactly one place**: `transition()` in
+/// `modules/listings/listing.state.ts`. No route, no service and no schema a
+/// dealer or an admin can post writes it. `transition()` checks the source
+/// state and the actor, writes the new state with the old one in the `WHERE`
+/// (so two racing decisions cannot both win), and writes the audit row in the
+/// same transaction.
+model Listing {
+  id        String        @id @default(uuid()) @db.Uuid
+  vehicleId String        @unique @db.Uuid
+  dealerId  String        @db.Uuid
+  status    ListingStatus @default(DRAFT)
+
+  /// The first submission. `lastSubmittedAt` moves on every resubmission and
+  /// orders the moderation queue; this one does not.
+  submittedAt     DateTime?
+  lastSubmittedAt DateTime?
+  submissionCount Int       @default(0)
+  /// When the listing first went live. It is what the public sort uses.
+  publishedAt     DateTime?
+  soldAt          DateTime?
+  removedAt       DateTime?
+
+  /// The moderator's last decision, and the words the dealer is shown. A
+  /// request for changes or a rejection always carries one; an approval clears it.
+  decisionReason String?
+  decidedBy      String?   @db.Uuid
+  decidedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealer  Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  /// A dealership's inventory filtered by status, most recently touched first.
+  @@index([dealerId, status, updatedAt])
+  /// The moderation queue, oldest submission first.
+  @@index([status, lastSubmittedAt])
+  /// Public reads: ACTIVE, newest first.
+  @@index([status, publishedAt])
+  @@map("listings")
+}
+
+enum ListingStatus {
+  DRAFT
+  PENDING_REVIEW
+  CHANGES_REQUESTED
+  ACTIVE
+  REJECTED
+  SOLD
+  REMOVED
 }
 
 enum FuelType {

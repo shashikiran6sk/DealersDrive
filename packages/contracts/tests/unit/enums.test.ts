@@ -108,8 +108,9 @@ describe('listing status and its display form', () => {
     expect(enums.DisplayStatus.options.length).toBeGreaterThan(3);
   });
 
+  /** R47: an approval makes a listing ACTIVE; there is no separate APPROVED. */
   it('includes the three moderation outcomes', () => {
-    for (const status of ['APPROVED', 'REJECTED', 'CHANGES_REQUESTED']) {
+    for (const status of ['ACTIVE', 'REJECTED', 'CHANGES_REQUESTED']) {
       expect(enums.ListingStatus.options, status).toContain(status);
     }
   });

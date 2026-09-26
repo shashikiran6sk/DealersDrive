@@ -83,6 +83,17 @@ export const VEHICLE_WIZARD_TEXT = {
   reviewNoPhotos:
     'You do not upload photographs. After you submit, Dealers-Drive arranges a shoot and adds the finished pictures itself.',
   fix: 'Fix',
+  lockedTitle: 'This vehicle cannot be edited right now',
+  lockedBody: {
+    PENDING_REVIEW:
+      'It is with our team for review. We will arrange the photographs and let you know if anything needs changing.',
+    ACTIVE: 'It is live on the marketplace.',
+    REJECTED: 'It was not approved for the marketplace.',
+    SOLD: 'It has been marked sold.',
+    REMOVED: 'It has been taken off the marketplace.',
+  },
+  changesRequestedTitle: 'Our team asked for changes',
+  rejectedTitle: 'Not approved',
   edit: 'Edit',
   notEntered: 'Not entered',
 } as const;

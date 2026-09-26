@@ -1,12 +1,19 @@
 import {
   formatRegistration,
+  isListingDeletable,
+  isListingEditable,
+  isListingSubmittable,
+  listingStatusLabel,
+  listingStatusTone,
   formatRupees,
   vehicleIssues,
   vehicleSummary,
   vehicleTitle,
+  type DealerListing,
   type DealerVehicle,
   type VehicleCompletenessInput,
 } from '@dealers-drive/contracts';
+import type { Listing } from '@prisma/client';
 
 import type { VehicleRow } from './vehicles.repository.js';
 
@@ -33,7 +40,26 @@ export function completenessOf(row: VehicleRow): VehicleCompletenessInput {
   };
 }
 
+export function toDealerListing(listing: Listing, complete: boolean): DealerListing {
+  return {
+    id: listing.id,
+    status: listing.status,
+    statusLabel: listingStatusLabel(listing.status),
+    statusTone: listingStatusTone(listing.status),
+    reason:
+      listing.status === 'CHANGES_REQUESTED' || listing.status === 'REJECTED'
+        ? listing.decisionReason
+        : null,
+    submittedAt: listing.lastSubmittedAt?.toISOString() ?? null,
+    publishedAt: listing.publishedAt?.toISOString() ?? null,
+    canEdit: isListingEditable(listing.status),
+    canSubmit: complete && isListingSubmittable(listing.status),
+    canDelete: isListingDeletable(listing.status),
+  };
+}
+
 export function toDealerVehicle(row: VehicleRow): DealerVehicle {
+  if (!row.listing) throw new Error(`Vehicle ${row.id} has no listing.`);
   const issues = vehicleIssues(completenessOf(row));
   const pricePaise = row.pricePaise === null ? null : Number(row.pricePaise);
 
@@ -63,6 +89,7 @@ export function toDealerVehicle(row: VehicleRow): DealerVehicle {
     summary: vehicleSummary(row),
     issues,
     complete: issues.length === 0,
+    listing: toDealerListing(row.listing, issues.length === 0),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

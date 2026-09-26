@@ -92,10 +92,16 @@ function sections(vehicle: DealerVehicle): { step: WizardStep; rows: Row[] }[] {
   ];
 }
 
-export function ReviewStep({ vehicle }: { vehicle: DealerVehicle }) {
+export function ReviewStep({
+  vehicle,
+  readOnly = false,
+}: {
+  vehicle: DealerVehicle;
+  readOnly?: boolean;
+}) {
   return (
     <div className="flex flex-col gap-[16px]">
-      {vehicle.complete ? (
+      {readOnly ? null : vehicle.complete ? (
         <Banner tone="ok">{VEHICLE_WIZARD_TEXT.reviewComplete}</Banner>
       ) : (
         <Banner tone="warn" title={VEHICLE_WIZARD_TEXT.reviewIncomplete}>
@@ -129,9 +135,11 @@ export function ReviewStep({ vehicle }: { vehicle: DealerVehicle }) {
         <section key={section.step} className="flex flex-col">
           <div className="flex items-center justify-between border-b border-(--color-divider) pb-[6px]">
             <h4 className="text-[14px] font-semibold">{STEP_LABELS[section.step]}</h4>
-            <Link className="btn btn-ghost text-[12px]" href={editPath(vehicle.id, section.step)}>
-              {VEHICLE_WIZARD_TEXT.edit}
-            </Link>
+            {readOnly ? null : (
+              <Link className="btn btn-ghost text-[12px]" href={editPath(vehicle.id, section.step)}>
+                {VEHICLE_WIZARD_TEXT.edit}
+              </Link>
+            )}
           </div>
           <dl className="grid [grid-template-columns:minmax(140px,220px)_1fr]">
             {section.rows.map((row) => (

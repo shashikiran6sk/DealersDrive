@@ -25,12 +25,18 @@ export type PriceNegotiability = z.infer<typeof PriceNegotiability>;
 export const VehicleStatus = z.enum(['DRAFT', 'READY', 'SOLD', 'ARCHIVED']);
 export type VehicleStatus = z.infer<typeof VehicleStatus>;
 
+/**
+ * The moderation state machine's own vocabulary (**F064**, as revised by
+ * **R47**): a listing is born DRAFT with its vehicle, and only ACTIVE is
+ * public. There is no APPROVED (it is spelled ACTIVE) and no EXPIRED until
+ * something expires a listing. Mirrors the Prisma enum of the same name.
+ */
 export const ListingStatus = z.enum([
+  'DRAFT',
   'PENDING_REVIEW',
   'CHANGES_REQUESTED',
-  'APPROVED',
+  'ACTIVE',
   'REJECTED',
-  'EXPIRED',
   'SOLD',
   'REMOVED',
 ]);
@@ -48,7 +54,6 @@ export const DisplayStatus = z.enum([
   'CHANGES_REQUESTED',
   'ACTIVE',
   'REJECTED',
-  'EXPIRED',
   'SOLD',
   'REMOVED',
 ]);
@@ -177,7 +182,6 @@ export const DISPLAY_STATUS_LABELS: Record<DisplayStatus, string> = {
   CHANGES_REQUESTED: 'Changes requested',
   ACTIVE: 'Active',
   REJECTED: 'Rejected',
-  EXPIRED: 'Expired',
   SOLD: 'Sold',
   REMOVED: 'Removed',
 };
@@ -188,7 +192,6 @@ export const DISPLAY_STATUS_TONES: Record<DisplayStatus, StatusTone> = {
   CHANGES_REQUESTED: 'warn',
   ACTIVE: 'ok',
   REJECTED: 'err',
-  EXPIRED: 'neutral',
   SOLD: 'accent',
   REMOVED: 'neutral',
 };

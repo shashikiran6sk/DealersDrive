@@ -1889,6 +1889,18 @@ The frame that sequences F059 → F060 → F061 → F062 → review, gated by th
 - **Components — Reused** `StatusTag` — the only correct way to render a listing status
 - **Sandbox** `StatusTag` — one scenario per `ListingStatus`/`DisplayStatus`, generated from the enum
 - The best-guarded code in the repository. Treat its invariants as untouchable during reconstruction.
+- ⚠️ **Entry corrected on landing (R47).** `modules/listings/{listing.state,
+listings.repository,listings.facade,listings.messages}.ts`. `Listing` is one
+  per vehicle (`vehicleId` unique), born DRAFT in the transaction that creates
+  the vehicle, with `submittedAt`/`lastSubmittedAt`/`submissionCount`,
+  `publishedAt`, `soldAt`, `removedAt` and the moderator's
+  `decisionReason`/`decidedBy`/`decidedAt`. `transition()` takes the expected
+  status in its `WHERE` (race-safe), writes the audit row in the same
+  transaction and releases the registration on REJECTED/SOLD/REMOVED. Editing a
+  vehicle is allowed only in DRAFT and CHANGES_REQUESTED, under a
+  `FOR UPDATE` lock on the listing (`409 VEHICLE_NOT_EDITABLE`); deleting only in
+  DRAFT. Tests: `tests/unit/modules/listings/listing.state.test.ts` (the full
+  7 × 7 × 2 table) and `apps/api/tests/listing-lifecycle.test.ts` (the race).
 
 ### F065 — Listing submission & resubmission
 

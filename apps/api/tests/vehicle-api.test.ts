@@ -305,3 +305,71 @@ describe('discarding a draft', () => {
     expect(audit?.before).toEqual({ registrationNumber });
   });
 });
+
+describe('the listing decides what a dealer may still change (F064)', () => {
+  it('creates every vehicle with a DRAFT listing the dealer can edit and delete', async () => {
+    const created = await a.agent
+      .post('/v1/dealer/vehicles')
+      .send({ registrationNumber: nextPlate() })
+      .expect(201);
+
+    expect(created.body.listing).toMatchObject({
+      status: 'DRAFT',
+      statusLabel: 'Draft',
+      statusTone: 'neutral',
+      canEdit: true,
+      canSubmit: false,
+      canDelete: true,
+      reason: null,
+    });
+  });
+
+  it('refuses an edit and a delete while the car is with the review team', async () => {
+    const { id } = await draft();
+    await h.prisma.listing.update({ where: { vehicleId: id }, data: { status: 'PENDING_REVIEW' } });
+
+    const edit = await a.agent
+      .patch(`/v1/dealer/vehicles/${id}`)
+      .send({ make: 'Tata' })
+      .expect(409);
+    expect(edit.body.code).toBe('VEHICLE_NOT_EDITABLE');
+    expect(edit.body.listingStatus).toBe('PENDING_REVIEW');
+    const remove = await a.agent.delete(`/v1/dealer/vehicles/${id}`).expect(409);
+    expect(remove.body.code).toBe('VEHICLE_NOT_DELETABLE');
+
+    const read = await a.agent.get(`/v1/dealer/vehicles/${id}`).expect(200);
+    expect(read.body.listing).toMatchObject({
+      status: 'PENDING_REVIEW',
+      statusLabel: 'Pending review',
+      canEdit: false,
+      canDelete: false,
+    });
+  });
+
+  it('opens editing again when changes are requested, and shows the reason', async () => {
+    const { id } = await draft();
+    await h.prisma.listing.update({
+      where: { vehicleId: id },
+      data: { status: 'CHANGES_REQUESTED', decisionReason: 'The variant is wrong.' },
+    });
+
+    await a.agent.patch(`/v1/dealer/vehicles/${id}`).send({ variant: 'SX' }).expect(200);
+    const read = await a.agent.get(`/v1/dealer/vehicles/${id}`).expect(200);
+    expect(read.body.listing).toMatchObject({
+      status: 'CHANGES_REQUESTED',
+      reason: 'The variant is wrong.',
+      canEdit: true,
+      canDelete: false,
+    });
+  });
+
+  it.each(['listing', 'status'])('will not let a dealer post a %s block', async (field) => {
+    const { id } = await draft();
+    await a.agent
+      .patch(`/v1/dealer/vehicles/${id}`)
+      .send({ [field]: { status: 'ACTIVE' } })
+      .expect(400);
+    const read = await a.agent.get(`/v1/dealer/vehicles/${id}`).expect(200);
+    expect(read.body.listing.status).toBe('DRAFT');
+  });
+});
