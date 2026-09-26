@@ -384,6 +384,7 @@ describe('approveListingAction', () => {
     expect(revalidations.paths).toEqual(
       expect.arrayContaining([`/admin/listings/${ID}`, '/admin/listings']),
     );
+    expect(revalidations.tags).toContain('vehicles');
   });
 
   it('passes on why the API refused', async () => {

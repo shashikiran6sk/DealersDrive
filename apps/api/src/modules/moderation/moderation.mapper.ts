@@ -182,6 +182,7 @@ export function toAdminListingDetail(
   const blockers = reviewing
     ? approvalBlockers({
         dealerStatus: listing.dealer.status,
+        dealerCity: listing.dealer.city,
         vehicle: listing.vehicle,
         checkedKeys: listing.checks.map((check) => check.key),
         imageCount: images.items.length,

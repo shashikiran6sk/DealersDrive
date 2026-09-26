@@ -2131,6 +2131,17 @@ DESIGN-SPEC §2.8, and the product's most important component: 4:3 image, year p
 - **Components — New (Shared)** all three · **Reused** `Avatar`, `ImageSlot`, `Plate`, `Tag`
 - **Sandbox** **P0, the highest-value entry in the sandbox.** 3 variants × sold × saved × image × verified ≈ 48 states, none currently reachable by any test or tool.
 - ⚠️ `variant="list"` delegates to a private `VehicleRow` that re-implements the image block, plate, sold overlay and dealer strip (finding D-E). Two scenarios make that divergence visible; do not refactor during reconstruction.
+- ⚠️ **Entry corrected on landing (R45).** Grid variant only, in
+  `components/vehicle/vehicle-card/` (`VehicleCard`, `VehicleImage`,
+  `DealerStrip`, `VehicleCardSkeleton`), with no save button (F087 deferred) and
+  no sold state (only ACTIVE listings are public). It landed with the public list
+  it renders: `modules/search/` (`search.routes`, `search.service`,
+  `search.repository`, `search.mapper`, `search.docs`), `GET /v1/vehicles`
+  (`PublicVehicleQuery`, `PublicVehiclesResponse`, `VehicleCardDto`) — ACTIVE
+  listings of ACTIVE dealers only, newest first, offset-paged, no facets — and
+  `listings.slug`, minted at first approval, which is the only public
+  identifier. Depends on F070 and F035, not F034. `/cars` renders the grid
+  (F077's page, without filters).
 
 ### F076 — Search API & facets ⚠️
 

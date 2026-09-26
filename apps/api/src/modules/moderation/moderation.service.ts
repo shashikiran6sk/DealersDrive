@@ -17,6 +17,7 @@ import {
   LISTING_NOT_FOUND,
   TRANSITION_REFUSALS,
   assertTransition,
+  listingSlug,
   lockListing,
   transition,
 } from '../listings/listings.facade.js';
@@ -123,12 +124,19 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
         if (!listing) throw notFound();
         assertTransition(listing.status, 'approve', 'ADMIN');
 
-        const blockers = approvalBlockers(await approvalStateOf(tx, listing, minImages));
+        const state = await approvalStateOf(tx, listing, minImages);
+        const blockers = approvalBlockers(state);
         if (blockers.length > 0) {
           throw new ConflictError('LISTING_NOT_READY', APPROVAL_BLOCKED, { extra: { blockers } });
         }
 
         await transition(tx, audit, listing, 'approve', { type: 'ADMIN', id: admin.userId });
+        if (!listing.slug) {
+          await tx.listing.update({
+            where: { id: listing.id },
+            data: { slug: listingSlug(state.vehicle, state.dealerCity) },
+          });
+        }
       });
       return detail(listingId);
     },

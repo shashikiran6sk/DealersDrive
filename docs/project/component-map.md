@@ -673,6 +673,18 @@ progress indicator. The directory card's chip row is not a list either.
 At least **3 variants × 2 sold × 2 saved × 2 image × 2 verified = 48 states**,
 none of which any test or tool can currently exercise.
 
+> ⚠️ **As landed (F075, scoped by R45).** `components/vehicle/vehicle-card/`
+> — `VehicleCard`, `VehicleImage`, `DealerStrip`, `VehicleCardSkeleton`, one
+> file each. Props are `vehicle: VehicleCardDto`, `priority?`, `className?`:
+> the **grid** variant only, and **no save button and no sold state**. Saved
+> cars (F087) are deferred, and a sold car is not public at all in this phase
+> — only ACTIVE listings reach a buyer — so neither state is reachable yet.
+> There is therefore no `useSavedCars` coupling (C-1). `VehicleImage` takes the
+> DTO's `image: { url, alt } | null` and a `priority` flag rather than `sizes`:
+> F034 is deferred, so there is one rendition per image and no srcset to size.
+> Tested in `tests/unit/components/vehicle/vehicle-card.test.tsx`; sandbox
+> `Vehicle/VehicleCard`.
+
 ### C033 — `VehicleImage` · C034 — `VehicleCardSkeleton`
 
 Same file, `:196` and `:243`. `VehicleImage` takes

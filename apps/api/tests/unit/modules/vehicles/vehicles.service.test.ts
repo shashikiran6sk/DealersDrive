@@ -13,6 +13,7 @@ function listing(status: ListingStatus = 'DRAFT'): Listing {
     vehicleId: ID,
     dealerId: ACTOR.dealerId,
     status,
+    slug: null,
     submittedAt: null,
     lastSubmittedAt: null,
     submissionCount: 0,

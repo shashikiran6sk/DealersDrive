@@ -50,7 +50,7 @@ const JOURNEY = [
   {
     number: '02',
     title: 'Discover the right car',
-    body: 'Vehicle search and comparison are coming soon, with the details buyers need to make a shortlist.',
+    body: 'Browse cars Dealers-Drive has photographed and reviewed. Search and comparison are coming soon.',
   },
   {
     number: '03',
@@ -81,12 +81,13 @@ export default function HomePage() {
                 Explore verified dealers
               </Link>
               <Link href="/cars" className="btn btn-secondary px-5 py-[10px]">
-                Vehicle marketplace — coming soon
+                Browse used cars
               </Link>
             </div>
 
             <p className="mt-4 text-[12px] ink-subtle">
-              The dealer directory is live. Car browsing and saving are the next features arriving.
+              The dealer directory and the car marketplace are live. Search, saving and enquiries
+              are the next features arriving.
             </p>
           </div>
 
@@ -166,8 +167,8 @@ export default function HomePage() {
               <div className="text-[11px] uppercase tracking-[0.12em] ink-subtle">For buyers</div>
               <h3 className="mt-4 text-[22px]">Know who you are buying from</h3>
               <p className="mt-3 text-[13px] leading-[1.65] ink-secondary">
-                Start with verified dealer profiles today. Searchable inventory, saved cars and
-                direct vehicle enquiries are coming soon.
+                Start with verified dealer profiles and cars reviewed before they go live. Search,
+                saved cars and direct vehicle enquiries are coming soon.
               </p>
               <Link href="/dealers" className="btn btn-ghost mt-6">
                 Browse the dealer directory →

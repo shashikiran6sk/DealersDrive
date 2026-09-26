@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import CarsPage from '@/app/(public)/cars/page';
 import HomePage from '@/app/(public)/page';
 import SavedCarsPage from '@/app/(public)/saved/page';
 
@@ -12,8 +11,17 @@ describe('the public home page', () => {
     expect(
       screen.getByRole('heading', { name: /a clearer way to find your next car/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/the dealer directory is live/i)).toBeInTheDocument();
-    expect(screen.getByText(/car browsing and saving are the next features/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/the dealer directory and the car marketplace are live/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/search, saving and enquiries are the next features/i),
+    ).toBeInTheDocument();
+  });
+
+  it('sends buyers to the car marketplace', () => {
+    render(<HomePage />);
+    expect(screen.getByRole('link', { name: 'Browse used cars' })).toHaveAttribute('href', '/cars');
   });
 
   it('sends buyers to the live dealer directory', () => {
@@ -28,17 +36,17 @@ describe('the public home page', () => {
 });
 
 describe('unfinished buyer features', () => {
-  it.each([
-    [CarsPage, /a better way to find your next car is coming soon/i],
-    [SavedCarsPage, /save the cars you love — coming soon/i],
-  ])('renders a useful coming-soon page', (Page, heading) => {
-    render(<Page />);
+  it.each([[SavedCarsPage, /save the cars you love — coming soon/i]])(
+    'renders a useful coming-soon page',
+    (Page, heading) => {
+      render(<Page />);
 
-    expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /explore verified dealers/i })).toHaveAttribute(
-      'href',
-      '/dealers',
-    );
-    expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/');
-  });
+      expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /explore verified dealers/i })).toHaveAttribute(
+        'href',
+        '/dealers',
+      );
+      expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/');
+    },
+  );
 });

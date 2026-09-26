@@ -132,9 +132,9 @@ revision · `[⛔]` withdrawn
 
 - [x] F073 — Public shell — header & footer · [#69](https://github.com/shashikiran6sk/DealersDrive/pull/69)
 - [ ] F074 — City selector
-- [ ] F075 — Vehicle card
+- [x] F075 — Vehicle card · grid variant, no save or sold state yet (R45, F087 deferred) · with `GET /v1/vehicles`
 - [ ] F076 — Search API & facets ⚠️
-- [ ] F077 — Search results page
+- [~] F077 — Search results page · `/cars` lists approved cars newest first, paged; filters, sort and search follow F076
 - [ ] F078 — Filter panel
 - [ ] F079 — Mobile filter sheet
 - [ ] F080 — Search toolbar & sort

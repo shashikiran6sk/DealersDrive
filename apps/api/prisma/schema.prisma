@@ -548,6 +548,9 @@ model Listing {
   submissionCount Int       @default(0)
   /// When the listing first went live. It is what the public sort uses.
   publishedAt     DateTime?
+  /// The public address of the listing (**F075**, **F082**): minted once, at
+  /// the first approval, and never reused. The only identifier a buyer sees.
+  slug            String?   @unique
   soldAt          DateTime?
   removedAt       DateTime?
 

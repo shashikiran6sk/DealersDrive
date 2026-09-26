@@ -109,7 +109,7 @@ export async function approvalStateOf(
 ): Promise<ApprovalState> {
   const dealer = await tx.dealer.findUniqueOrThrow({
     where: { id: listing.dealerId },
-    select: { status: true },
+    select: { status: true, city: true },
   });
   const vehicle = await tx.vehicle.findUniqueOrThrow({ where: { id: listing.vehicleId } });
   const checks = await tx.listingCheck.findMany({
@@ -123,6 +123,7 @@ export async function approvalStateOf(
 
   return {
     dealerStatus: dealer.status,
+    dealerCity: dealer.city,
     vehicle,
     checkedKeys: checks.map((check) => check.key),
     imageCount,
