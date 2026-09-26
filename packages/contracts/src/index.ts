@@ -21,6 +21,7 @@ export * from './enums.js';
 export * from './auth.js';
 export * from './public.js';
 export * from './dealer.js';
+export * from './vehicle.js';
 export * from './admin.js';
 
 /** Bumped when a breaking change ships; surfaced in the API's /health/ready. */

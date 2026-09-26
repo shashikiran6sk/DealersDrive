@@ -1719,6 +1719,17 @@ The `Vehicle` aggregate. **Post-D1:** `make`, `model`, `variant` are normalised 
 - **Removed under D1** `makeId`, `modelId`, `variantId`, `colorId` FKs → `make`, `model`, `variant`, `color` strings
 - **Tests** `tests/unit/modules/vehicles/vehicles.repository.test.ts`
 - **Components** none · **Sandbox** none
+- ⚠️ **Entry corrected on landing (R45/R46).** The table is `vehicles` with the
+  descriptive columns nullable, because a draft is saved one wizard step at a
+  time; "complete enough to submit" is `vehicleIssues()` in
+  `packages/contracts/src/vehicle.ts`, shared by the wizard and the API. It
+  carries `registrationNumber` (canonical, unseparated), `rtoCode`,
+  `manufacturingYear` and `registrationYear` (the baseline had one `year`),
+  `ownerCount`, `kilometersDriven`, `insuranceValidUntil` and `pricePaise`
+  (BigInt). No `VehicleStatus` — the lifecycle is `Listing`'s (F064, R47) — and
+  no image column (R45). Ranges are CHECK constraints as well as Zod limits.
+  `vehicles.facade.ts` arrives with its first cross-module reader.
+  Integration: `apps/api/tests/vehicles.test.ts`.
 
 ### F056 — Plate input & normalisation
 
