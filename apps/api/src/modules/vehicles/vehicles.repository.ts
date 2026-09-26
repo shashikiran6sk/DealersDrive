@@ -56,6 +56,21 @@ export function createVehiclesRepository(prisma: PrismaClient) {
       return result.count > 0;
     },
 
+    async heldRegistration(
+      dealerId: string,
+      registrationNumber: string,
+      exceptVehicleId?: string,
+    ): Promise<VehicleRow | null> {
+      return prisma.vehicle.findFirst({
+        where: {
+          dealerId,
+          registrationNumber,
+          releasedAt: null,
+          ...(exceptVehicleId ? { id: { not: exceptVehicleId } } : {}),
+        },
+      });
+    },
+
     async listForDealer(dealerId: string): Promise<VehicleRow[]> {
       return prisma.vehicle.findMany({
         where: { dealerId },

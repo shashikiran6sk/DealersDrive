@@ -1742,6 +1742,17 @@ The number-plate field and the shared normaliser. `TN 09 BX 1234`, `TN-09-BX-123
 - **Components — New (Shared)** `PlateInput`
 - **Sandbox** empty / valid / invalid / disabled / autofocus / all three separator styles
 - ✅ **The model component.** Pure props, no context, validation exported and tested separately, schema shared with the API. Use it as the sandbox's worked example.
+- ⚠️ **Entry corrected on landing (R46).** The parser is
+  `packages/contracts/src/registration.ts` — `parseRegistration`,
+  `normaliseRegistration`, `formatRegistration` and the `RegistrationNumber`
+  schema (not `REGISTRATION_NUMBER`). It reads letter/digit runs rather than
+  one regex: state series with 0–3 series letters (`DL 3C AB` joined to
+  `CAB`), Bharat series, and legacy three-letter plates; it pads the RTO to two
+  digits and the plate number to four, so one car has one canonical form. The
+  component is `components/forms/plate-input/`, uncontrolled for server-action
+  forms, with its test at `apps/web/tests/unit/components/forms/plate-input.test.tsx`.
+  **Duplicate protection:** `vehicles.releasedAt` and the partial unique index
+  `(dealerId, registrationNumber) WHERE releasedAt IS NULL`.
 
 ### F057 — RC lookup port, mock adapter & caching
 

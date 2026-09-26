@@ -5,3 +5,4 @@ Parent: [web/components](../README.md)
 ## Pages
 
 - [field](field.md)
+- [plate-input](plate-input.md)

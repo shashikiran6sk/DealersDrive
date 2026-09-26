@@ -155,3 +155,28 @@ describe('spelling', () => {
     });
   });
 });
+
+describe('heldRegistration', () => {
+  it('looks only at vehicles that still hold their number, in one dealership', async () => {
+    const { prisma, calls } = fakePrisma();
+    await createVehiclesRepository(prisma).heldRegistration(DEALER, 'KA01AB1234');
+
+    expect(calls[0]?.args).toEqual({
+      where: { dealerId: DEALER, registrationNumber: 'KA01AB1234', releasedAt: null },
+    });
+  });
+
+  it('can leave the vehicle being edited out of the question', async () => {
+    const { prisma, calls } = fakePrisma();
+    await createVehiclesRepository(prisma).heldRegistration(DEALER, 'KA01AB1234', VEHICLE);
+
+    expect(calls[0]?.args).toEqual({
+      where: {
+        dealerId: DEALER,
+        registrationNumber: 'KA01AB1234',
+        releasedAt: null,
+        id: { not: VEHICLE },
+      },
+    });
+  });
+});

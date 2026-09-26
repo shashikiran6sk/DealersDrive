@@ -487,6 +487,11 @@ model Vehicle {
   negotiability PriceNegotiability?
   description   String?
 
+  /// When this vehicle stopped holding its registration number — it was sold,
+  /// removed or rejected (R47). NULL while it holds it, which is every state a
+  /// dealer can still act on.
+  releasedAt DateTime?
+
   /// The dealer member who created the row. `dealerId` says whose car; this
   /// says whose hands.
   createdBy String?  @db.Uuid
@@ -498,6 +503,13 @@ model Vehicle {
   /// A dealership's own vehicles, newest first — the inventory read.
   @@index([dealerId, createdAt])
   /// "Which cars carry this registration" — the duplicate check.
+  ///
+  /// ⚠️ There is also a **partial unique index** Prisma cannot express:
+  ///
+  ///     UNIQUE (dealerId, registrationNumber) WHERE releasedAt IS NULL
+  ///
+  /// A dealership holds a registration once. See
+  /// `migrations/20260926190000_vehicle_registration_held`.
   @@index([registrationNumber])
   @@map("vehicles")
 }

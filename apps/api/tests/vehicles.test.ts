@@ -73,11 +73,11 @@ describe('the vehicles table', () => {
     ['a zero price', { pricePaise: 0n }],
     ['a year before 1950', { manufacturingYear: 1900 }],
     ['a registration year before 1950', { registrationYear: 1900 }],
-  ])('refuses %s at the database', async (_label, data) => {
+  ])('refuses %s at the database', async (label, data) => {
     const repo = createVehiclesRepository(prisma);
     const vehicle = await repo.create({
       dealerId,
-      registrationNumber: 'MH12DE1433',
+      registrationNumber: `MH12DE${String(1000 + label.length)}`,
       rtoCode: 'MH12',
       createdBy: null,
     });
@@ -128,5 +128,47 @@ describe('the vehicles table', () => {
 
     await expect(repo.existingSpelling('make', 'MARUTI SUZUKI')).resolves.toBe('Maruti Suzuki');
     await expect(repo.suggestions('model', 'swift', 5)).resolves.toContain('Swift Dzire');
+  });
+});
+
+describe('one registration per dealership (F056)', () => {
+  it('refuses a second vehicle holding the same number, at the database', async () => {
+    const repo = createVehiclesRepository(prisma);
+    const input = { dealerId, registrationNumber: 'GJ05KL7777', rtoCode: 'GJ05', createdBy: null };
+    await repo.create(input);
+
+    await expect(repo.create(input)).rejects.toMatchObject({ code: 'P2002' });
+    await expect(repo.heldRegistration(dealerId, 'GJ05KL7777')).resolves.toMatchObject({
+      registrationNumber: 'GJ05KL7777',
+    });
+  });
+
+  it('lets another dealership enter the same number', async () => {
+    const repo = createVehiclesRepository(prisma);
+    await repo.create({
+      dealerId,
+      registrationNumber: 'GJ05KL8888',
+      rtoCode: 'GJ05',
+      createdBy: null,
+    });
+
+    await expect(
+      repo.create({
+        dealerId: otherDealerId,
+        registrationNumber: 'GJ05KL8888',
+        rtoCode: 'GJ05',
+        createdBy: null,
+      }),
+    ).resolves.toMatchObject({ dealerId: otherDealerId });
+  });
+
+  it('lets a released number be entered again', async () => {
+    const repo = createVehiclesRepository(prisma);
+    const input = { dealerId, registrationNumber: 'GJ05KL9999', rtoCode: 'GJ05', createdBy: null };
+    const first = await repo.create(input);
+    await repo.updateOwned(dealerId, first.id, { releasedAt: new Date() });
+
+    await expect(repo.create(input)).resolves.toMatchObject({ registrationNumber: 'GJ05KL9999' });
+    await expect(repo.heldRegistration(dealerId, 'GJ05KL9999', first.id)).resolves.not.toBeNull();
   });
 });
