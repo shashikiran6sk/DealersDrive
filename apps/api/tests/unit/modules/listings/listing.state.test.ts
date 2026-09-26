@@ -132,12 +132,14 @@ function fakeTx(count = 1) {
   const updateMany = vi.fn(async (_args: unknown) => ({ count }));
   const vehicleUpdate = vi.fn(async () => ({}));
   const findUniqueOrThrow = vi.fn(async () => listing('ACTIVE'));
+  const clearChecks = vi.fn(async () => ({ count: 0 }));
   const tx = {
     listing: { updateMany, findUniqueOrThrow },
     vehicle: { update: vehicleUpdate },
+    listingCheck: { deleteMany: clearChecks },
   } as unknown as Tx;
   const audit = { record: vi.fn(async () => undefined), recordDetached: vi.fn() };
-  return { tx, audit, updateMany, vehicleUpdate };
+  return { tx, audit, updateMany, vehicleUpdate, clearChecks };
 }
 
 const NOW = new Date('2026-09-26T10:00:00Z');
@@ -274,5 +276,19 @@ describe('transition', () => {
     const { tx, audit, vehicleUpdate } = fakeTx();
     await transition(tx, audit, listing('DRAFT'), 'submit', DEALER);
     expect(vehicleUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe('the checklist and resubmission (F070)', () => {
+  it('clears the checklist whenever a listing enters review, so old checks never carry over', async () => {
+    const { tx, audit, clearChecks } = fakeTx();
+    await transition(tx, audit, listing('CHANGES_REQUESTED'), 'resubmit', DEALER);
+    expect(clearChecks).toHaveBeenCalledWith({ where: { listingId: 'listing-1' } });
+  });
+
+  it('keeps the checklist on a decision', async () => {
+    const { tx, audit, clearChecks } = fakeTx();
+    await transition(tx, audit, listing('PENDING_REVIEW'), 'approve', ADMIN);
+    expect(clearChecks).not.toHaveBeenCalled();
   });
 });

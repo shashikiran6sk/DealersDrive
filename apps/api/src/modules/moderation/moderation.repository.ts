@@ -7,6 +7,31 @@ export const queueInclude = {
 
 export type QueueRow = Prisma.ListingGetPayload<{ include: typeof queueInclude }>;
 
+export const detailInclude = {
+  vehicle: true,
+  dealer: {
+    select: {
+      id: true,
+      brandName: true,
+      slug: true,
+      city: true,
+      district: true,
+      status: true,
+      contactPhone: true,
+    },
+  },
+  checks: true,
+} satisfies Prisma.ListingInclude;
+
+export type DetailRow = Prisma.ListingGetPayload<{ include: typeof detailInclude }>;
+
+export interface HistoryRow {
+  action: string;
+  actorType: string;
+  after: Prisma.JsonValue;
+  createdAt: Date;
+}
+
 export interface QueueFilter {
   status: ListingStatus;
   q?: string;
@@ -50,6 +75,18 @@ export function createModerationRepository(prisma: PrismaClient) {
         orderBy: [{ [key]: oldestFirst ? 'asc' : 'desc' }, { id: 'asc' }],
         take: filter.take,
         include: queueInclude,
+      });
+    },
+
+    async detail(listingId: string): Promise<DetailRow | null> {
+      return prisma.listing.findUnique({ where: { id: listingId }, include: detailInclude });
+    },
+
+    async history(listingId: string, actions: readonly string[]): Promise<HistoryRow[]> {
+      return prisma.auditLog.findMany({
+        where: { entityType: 'Listing', entityId: listingId, action: { in: [...actions] } },
+        orderBy: { id: 'asc' },
+        select: { action: true, actorType: true, after: true, createdAt: true },
       });
     },
 

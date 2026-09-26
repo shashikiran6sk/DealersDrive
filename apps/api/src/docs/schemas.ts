@@ -38,6 +38,8 @@ const INPUT_SCHEMA_NAMES = [
   'VehicleSuggestQuery',
   'DealerInventoryQuery',
   'AdminListingQuery',
+  'ListingCheckParam',
+  'SetListingCheckInput',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

@@ -36,3 +36,27 @@ which is what tells a moderator to look at what changed rather than start again.
 There is deliberately no approve action on the queue (**R45**): a listing
 cannot be approved until its photographs are uploaded and ordered, and that
 happens on the review screen.
+
+## `apps/api/src/modules/moderation/moderation.service.ts`
+
+### `async detail(listingId)`
+
+The whole review screen in one response (**F070**): the dealer-entered data in
+the sections a moderator verifies it in, what is still incomplete (the same
+`vehicleIssues()` the wizard uses), the checklist, the decision history read
+from the audit log, and `actions` — which decisions the current state allows —
+so the console renders the state machine rather than re-deriving it. The
+dealership's contact number is shown here, formatted, because a moderator rings
+dealers; it is never in a public response (rule 7).
+
+### `async setCheck(admin, listingId, key, checked)`
+
+The verification checklist, one row per thing checked (`listing_checks`).
+Unchecking deletes the row, so there is no `false` to misread, and checking
+twice is an upsert rather than a second row. Only while the listing is
+PENDING_REVIEW, under the listing's row lock, with an audit row per change.
+
+**The checklist is cleared on every move into review** (`transition()` deletes
+the rows when the target is PENDING_REVIEW). A check made against the data the
+dealer has since changed says nothing about the new data, and a checklist that
+survived a resubmission would let a moderator approve a price they never saw.

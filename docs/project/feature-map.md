@@ -2013,6 +2013,14 @@ The full review screen: photos, specs, report, and the approve / reject / reques
 - **Components — New (feature-specific)** `ReviewActions`, `ModerationStrip` · **Reused** `ReportPanel`, `StatusTag`, `Button`, `Banner`, `Field`
 - **Sandbox** `ReviewActions` — per listing status × pending × error × each dialog open; `ModerationStrip` — 0 / 1 / 12 photos
 - ⚠️ **Do not split further.** The three decisions share one route file, one service method shape and one dialog component; separate PRs would fight over the same lines for no reviewer benefit.
+- ⚠️ **Entry corrected on landing (R45/R47).** Split after all, because R45
+  put three new things on this screen — the verification checklist, the
+  StudioCar image upload and ordering — and approval now depends on them. It
+  lands in order: `GET /v1/admin/listings/:id` (`AdminListingDetail`) with the
+  checklist `PUT /v1/admin/listings/:id/checks/:key` (`listing_checks`, cleared
+  on resubmission); then request changes and reject; then the images; then the
+  guarded approve. No `ReportPanel` (F068 is deferred by R46). Web:
+  `features/admin/listing-review/`, `app/(admin)/admin/listings/[id]/page.tsx`.
 
 ### F071 — Listing takedown
 

@@ -22,6 +22,7 @@ export const MODERATION_TEXT = {
   clear: 'Clear',
   caption: 'Listings in this status',
   resubmitted: 'Resubmitted',
+  review: 'Review',
   noPrice: 'No price',
   queueClearTitle: 'Queue clear',
   queueClearMessage: 'Nothing is waiting for review.',

@@ -141,7 +141,11 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     repo: createVehiclesRepository(prisma),
     audit,
   });
-  const moderation = createModerationService({ repo: createModerationRepository(prisma) });
+  const moderation = createModerationService({
+    prisma,
+    repo: createModerationRepository(prisma),
+    audit,
+  });
 
   return {
     env: overrides.env ?? env,

@@ -52,3 +52,107 @@ export const AdminListingsResponse = z.object({
   counts: z.record(z.string(), z.number().int()),
 });
 export type AdminListingsResponse = z.infer<typeof AdminListingsResponse>;
+
+// ─────────── review (F070) ─────────────────────────────────────────────────
+
+/**
+ * What a moderator verifies before a listing can go live. Mirrors the Prisma
+ * enum of the same name. Every key must be checked for approval; the set is
+ * cleared when the dealer resubmits.
+ */
+export const ListingCheckKey = z.enum([
+  'REGISTRATION',
+  'MAKE_MODEL',
+  'VARIANT',
+  'YEAR',
+  'ODOMETER',
+  'OWNERSHIP',
+  'PRICING',
+]);
+export type ListingCheckKey = z.infer<typeof ListingCheckKey>;
+
+export const LISTING_CHECK_LABELS: Record<ListingCheckKey, { label: string; hint: string }> = {
+  REGISTRATION: {
+    label: 'Registration checked',
+    hint: 'The plate on the car matches the number entered and the RC.',
+  },
+  MAKE_MODEL: { label: 'Make and model checked', hint: 'The car is the make and model entered.' },
+  VARIANT: {
+    label: 'Variant checked',
+    hint: 'The trim on the car matches, or none was entered and none is claimed.',
+  },
+  YEAR: {
+    label: 'Year checked',
+    hint: 'Manufacturing and registration years match the RC.',
+  },
+  ODOMETER: {
+    label: 'Odometer checked',
+    hint: 'The reading on the dashboard matches the kilometres entered.',
+  },
+  OWNERSHIP: { label: 'Ownership checked', hint: 'The number of owners matches the RC.' },
+  PRICING: {
+    label: 'Pricing checked',
+    hint: 'The price is plausible for this car, with no phone number or contact in the text.',
+  },
+};
+
+export const ListingCheckParam = z.object({ id: z.string().uuid(), key: ListingCheckKey }).strict();
+export type ListingCheckParam = z.infer<typeof ListingCheckParam>;
+
+export const SetListingCheckInput = z.object({ checked: z.boolean() }).strict();
+export type SetListingCheckInput = z.infer<typeof SetListingCheckInput>;
+
+const Row = z.object({ label: z.string(), value: z.string().nullable() });
+
+/**
+ * The full review screen in one response: the dealer-entered data in the
+ * sections a moderator verifies it in, the checklist, the listing's history and
+ * which decisions the current state allows — so the console renders the state
+ * machine rather than re-deriving it.
+ */
+export const AdminListingDetail = z.object({
+  listing: AdminListingRow.extend({
+    reason: z.string().nullable(),
+    submissionCount: z.number().int(),
+    publishedAt: z.string().nullable(),
+  }),
+  dealer: z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    slug: z.string(),
+    status: z.string(),
+    statusLabel: z.string(),
+    statusTone: StatusTone,
+    location: z.string().nullable(),
+    phoneDisplay: z.string().nullable(),
+  }),
+  sections: z.array(z.object({ key: z.string(), title: z.string(), rows: z.array(Row) })),
+  description: z.string().nullable(),
+  issues: z.array(z.object({ field: z.string(), message: z.string() })),
+  checks: z.array(
+    z.object({
+      key: ListingCheckKey,
+      label: z.string(),
+      hint: z.string(),
+      checked: z.boolean(),
+      checkedAt: z.string().nullable(),
+    }),
+  ),
+  history: z.array(
+    z.object({
+      action: z.string(),
+      label: z.string(),
+      actor: z.string(),
+      reason: z.string().nullable(),
+      at: z.string(),
+      atLabel: z.string(),
+    }),
+  ),
+  actions: z.object({
+    canVerify: z.boolean(),
+    canRequestChanges: z.boolean(),
+    canReject: z.boolean(),
+    canApprove: z.boolean(),
+  }),
+});
+export type AdminListingDetail = z.infer<typeof AdminListingDetail>;
