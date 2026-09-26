@@ -9,7 +9,8 @@ paragraph in three documents.
 file is one line and resolves in seconds; a conflict on a prose paragraph does
 not.
 
-Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
+Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main` · `[⏸]` deferred by a
+revision · `[⛔]` withdrawn
 
 > Note the `Status: implemented` field on every entry in `feature-map.md` means
 > _"exists in the baseline"_, which is true of all 97. It is not a
@@ -83,11 +84,14 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 ## Tier 7 — Consoles
 
 - [x] F046 — Dealer profile management · [#68](https://github.com/shashikiran6sk/DealersDrive/pull/68)
-- [~] F047 — Dealer console shell & navigation · pulled forward as R31 · [#104](https://github.com/shashikiran6sk/DealersDrive/pull/104)
-- [~] F048 — Dealer dashboard · also lands `/admin` and makes `AdminNav` honest
+- [x] F047 — Dealer console shell & navigation · pulled forward as R31 · [#104](https://github.com/shashikiran6sk/DealersDrive/pull/104)
+- [x] F048 — Dealer dashboard · also lands `/admin` and makes `AdminNav` honest · [#134](https://github.com/shashikiran6sk/DealersDrive/pull/134) · listing counts wait on F064
 - [x] F049 — Admin console shell & navigation · ⚠️ pulled forward, ahead of Tier 7 — F044 depends on it · [#60](https://github.com/shashikiran6sk/DealersDrive/pull/60)
 
 ## Tier 8 — Billing & credits
+
+> Deferred behind the marketplace core by **R47**. The listing lifecycle lands
+> without a ledger; the credit movements attach to its transitions later.
 
 - [ ] F050 — Credit ledger & balance
 - [ ] F051 — Credit packs & purchase orders
@@ -97,32 +101,32 @@ Legend — `[ ]` not started · `[~]` PR open · `[x]` merged to `main`
 
 ## Tier 9 — Vehicle intake
 
-- [ ] F034 — Image derivative pipeline · ⚠️ moved from Tier 5, D4
-- [ ] F035 — Media ordering & primary photo · ⚠️ moved from Tier 5, D4
+- [⏸] F034 — Image derivative pipeline · ⚠️ moved from Tier 5, D4 · **deferred by R45** — StudioCar produces the finished image
+- [ ] F035 — Media ordering & primary photo · ⚠️ moved from Tier 5, D4 · **reinterpreted by R45** — admin-only
 - [ ] F055 — Vehicle data model
 - [ ] F056 — Plate input & normalisation
-- [ ] F057 — RC lookup port, mock adapter & caching
-- [ ] F058 — Attestr RC adapter
-- [ ] F059 — RC lookup UI & registration step
-- [ ] F060 — Vehicle basics — RC-prefilled or manual ⚠️
+- [⏸] F057 — RC lookup port, mock adapter & caching · **deferred by R46**
+- [⏸] F058 — Attestr RC adapter · **deferred by R46**
+- [⏸] F059 — RC lookup UI & registration step · **deferred by R46**
+- [ ] F060 — Vehicle basics — RC-prefilled or manual ⚠️ · **manual only, R46**
 - [ ] F061 — Vehicle details
-- [ ] F062 — Vehicle photo upload UI
-- [ ] F063 — Vehicle wizard shell & step routing
+- [⛔] F062 — Vehicle photo upload UI · **withdrawn by R45** — dealers never upload listing photos
+- [ ] F063 — Vehicle wizard shell & step routing · **no Photos step, R45**
 
 ## Tier 10 — Listing lifecycle
 
-- [ ] F064 — Listing model & state machine
-- [ ] F065 — Listing submission & resubmission
+- [ ] F064 — Listing model & state machine · **states revised, R47**
+- [ ] F065 — Listing submission & resubmission · **no credit hold, R47**
 - [ ] F066 — Dealer inventory list
 - [ ] F067 — Mark sold, remove & renew
-- [ ] F068 — Vehicle history report
+- [⏸] F068 — Vehicle history report · **deferred by R46**
 
 ## Tier 11 — Moderation
 
-- [ ] F069 — Moderation queue
-- [ ] F070 — Listing review & decisions
+- [ ] F069 — Moderation queue · **revised by R45**
+- [ ] F070 — Listing review & decisions · **revised by R45** — admin uploads and orders the images here
 - [ ] F071 — Listing takedown
-- [~] F072 — Admin platform config editor · ⚠️ pulled forward, ahead of Tier 11 — the settings screen the console's nav already links at
+- [x] F072 — Admin platform config editor · ⚠️ pulled forward, ahead of Tier 11 — the settings screen the console's nav already links at · [#128](https://github.com/shashikiran6sk/DealersDrive/pull/128)
 
 ## Tier 12 — Public marketplace
 
@@ -210,6 +214,9 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R42 — An admin can grant admin access, by email · revises F019/F072 · lands with F072
 - [ ] R43 — The directory search recommends, and the old input is gone · revises F085 · lands the typeahead F077 reuses
 - [x] R44 — A footer worth having, and the social links live in configuration · revises F073 · adds six `social.*` config keys · [#133](https://github.com/shashikiran6sk/DealersDrive/pull/133)
+- [~] R45 — Dealers-Drive photographs the car; the dealer never uploads a photo · revises F035/F062/F063/F069/F070 · defers F034 · decision recorded, delivered across the vehicle series
+- [~] R46 — Vehicle details are entered by hand; RC lookup is deferred · revises F056/F060/F061/F063 · defers F057/F058/F059/F068
+- [~] R47 — The listing lifecycle, before billing exists · revises F064/F065/F067/F069/F070 · defers F050–F054
 
 ---
 

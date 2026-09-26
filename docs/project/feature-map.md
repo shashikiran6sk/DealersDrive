@@ -1677,6 +1677,8 @@ immediately ahead of the first feature that produces a vehicle photo.
 
 ### F034 — Image derivative pipeline
 
+⏸ **Deferred by R45.** StudioCar produces the finished image; Dealers-Drive stores and serves it unchanged. The entry below describes the baseline.
+
 ⚠️ **Moved here from Tier 5 by decision D4.** It sat immediately after F033;
 nothing in Tier 6 or Tier 7 depends on it, and a KYC document is never resized.
 It lands with the vehicle galleries it exists to serve. The F-number is
@@ -1691,6 +1693,8 @@ unchanged.
 - **Components** none · **Sandbox** the fixture images under `apps/sandbox/public/mock/` come from this pipeline's output shape
 
 ### F035 — Media ordering & primary photo
+
+⚠️ **Reinterpreted by R45** — admin image ordering and primary selection, mounted under `/v1/admin`, on the moderation screen. The dealer path below is not built.
 
 ⚠️ **Moved here from Tier 5 by decision D4**, with F034. A KYC document set has
 no order and no primary; a vehicle photo set has both. The F-number is
@@ -1730,6 +1734,8 @@ The number-plate field and the shared normaliser. `TN 09 BX 1234`, `TN-09-BX-123
 
 ### F057 — RC lookup port, mock adapter & caching
 
+⏸ **Deferred by R46.** No external RC lookup is part of the initial listing workflow.
+
 The port, the mock adapter, plate hashing, and the two-tier cache. The port is also **the privacy boundary**: owner name, address, phone, chassis and engine numbers are dropped by adapters _before_ the domain object is constructed, so personal data never enters the system.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F028, F050
@@ -1740,6 +1746,8 @@ The port, the mock adapter, plate hashing, and the two-tier cache. The port is a
 - `RcSpecs` (immutable, 30-day cache) and `RcRecords` (mutable claims, 24-hour cache) are separate types so the cache physically cannot hold a challan for a month.
 
 ### F058 — Attestr RC adapter
+
+⏸ **Deferred by R46.**
 
 The real provider, plus `rc-aliases.ts` and `rc-match.ts`.
 
@@ -1752,6 +1760,8 @@ The real provider, plus `rc-aliases.ts` and `rc-match.ts`.
 
 ### F059 — RC lookup UI & registration step
 
+⏸ **Deferred by R46.** The Registration step lands with F063 as a plate field and nothing else.
+
 Type a plate, see what came back, and continue — or fall through to manual entry when the lookup fails.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F056, F057
@@ -1761,6 +1771,8 @@ Type a plate, see what came back, and continue — or fall through to manual ent
 - **Sandbox** `RegistrationStep` — idle / looking up / found / not found / provider unavailable / rate limited / manual fallback. `RcSummary` — full match / partial / cached / advisories present. **P0.**
 
 ### F060 — Vehicle basics — RC-prefilled or manual ⚠️
+
+⚠️ **Revised by R46** — always manual; there is no RC prefill.
 
 Make, model, variant, year, fuel, transmission, body type — prefilled from the RC where available, typed where not.
 
@@ -1788,6 +1800,8 @@ KMs, owners, colour, RTO, insurance, location, seats, airbags, features. Eight r
 
 ### F062 — Vehicle photo upload UI
 
+⛔ **Withdrawn by R45.** Dealers never upload listing photographs; admins upload the processed StudioCar images (F035 as reinterpreted, F070).
+
 Drag, drop, reorder, delete, and the minimum-photo gate.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F033, F034, F035, F029
@@ -1796,6 +1810,8 @@ Drag, drop, reorder, delete, and the minimum-photo gate.
 - **Sandbox** empty / below minimum / at minimum / uploading / upload error / reordering / primary marker / delete confirm. **P0 — the highest-state component in the dealer console and currently untested.** Scenarios synthesise `File` objects from data URIs; no storage needed.
 
 ### F063 — Vehicle wizard shell & step routing
+
+⚠️ **Revised by R45/R46** — Registration → Basics → Details → Pricing → Review. No Photos step, no lookup.
 
 The frame that sequences F059 → F060 → F061 → F062 → review, gated by the API's completeness answer so the front end can never be more permissive than the back end.
 
@@ -1814,6 +1830,8 @@ The frame that sequences F059 → F060 → F061 → F062 → review, gated by th
 
 ### F064 — Listing model & state machine
 
+⚠️ **Revised by R47** — the states are `DRAFT · PENDING_REVIEW · CHANGES_REQUESTED · ACTIVE · REJECTED · SOLD · REMOVED`, with no credit movement.
+
 `Listing.status` is never assigned. Every change goes through `transition()`, which validates the source state **and** the actor's authority. `status` appears in no dealer-writable DTO and every input schema is `.strict()`, so a dealer posting `{"status":"APPROVED"}` gets a 400.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F055
@@ -1825,6 +1843,8 @@ The frame that sequences F059 → F060 → F061 → F062 → review, gated by th
 - The best-guarded code in the repository. Treat its invariants as untouchable during reconstruction.
 
 ### F065 — Listing submission & resubmission
+
+⚠️ **Revised by R47** — no credit is held; F050 is not a dependency.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F064, F063, F050
 - **Backend** `modules/vehicles/vehicles.routes.ts` — submit path
@@ -1857,6 +1877,8 @@ The per-row actions and their confirmation dialogs.
 
 ### F068 — Vehicle history report
 
+⏸ **Deferred by R46** with the RC provider it reads.
+
 The government-records check: RC status, blacklist, challans, insurance and fitness validity — published under a disclaimer, with `UNKNOWN` never collapsed into `CLEAR`.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F058, F050
@@ -1876,6 +1898,8 @@ The government-records check: RC status, blacklist, challans, insurance and fitn
 
 ### F069 — Moderation queue
 
+⚠️ **Revised by R45** — no one-click approve; the queue shows image readiness.
+
 The admin's pending-listing queue with a one-click approve. The one place DESIGN-SPEC §4.7 allows a primary button inside a table row, because approving is the queue's whole purpose.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F064, F049
@@ -1886,6 +1910,8 @@ The admin's pending-listing queue with a one-click approve. The one place DESIGN
 - **Sandbox** `QueueApproveButton` — idle / pending / error; queue table — empty / many
 
 ### F070 — Listing review & decisions
+
+⚠️ **Revised by R45/R47** — the admin uploads, orders and chooses the primary image here, and approval is guarded.
 
 The full review screen: photos, specs, report, and the approve / reject / request-changes decision with a reason.
 
@@ -4846,3 +4872,139 @@ marketplace handling enquiries needs a privacy policy and terms of use, and
 neither exists anywhere in the reconstruction or in the baseline. It wants its
 own feature and its own copy review, not a link added here to a page nobody
 wrote.
+
+## R45 — Dealers-Drive photographs the car; the dealer never uploads a photo
+
+**Revises F035, F062, F063, F069, F070** · withdraws F062 as specified ·
+defers F034
+
+The baseline's add-vehicle wizard ended in a Photos step: the dealer dragged
+their own pictures in, reordered them and picked a primary, and the listing went
+to review carrying whatever the dealer's phone had produced. **That model is
+withdrawn.** Dealers-Drive now photographs every vehicle itself. The pictures
+are taken by Dealers-Drive staff, processed in **StudioCar** (a separate
+product, up to 20 images a batch), and the finished files are uploaded into
+Dealers-Drive by an admin, who orders them, chooses the primary and only then
+approves the listing.
+
+```
+Dealer enters vehicle data → Dealer submits → Admin moderation queue
+  → Dealers-Drive photographs the car → StudioCar processes the images
+  → Admin uploads the processed files → Admin orders them / sets the primary
+  → Admin verifies the details → Admin approves → Public vehicle page
+```
+
+What each feature becomes:
+
+| Feature  | Was                                      | Is now                                                                                                              |
+| -------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **F034** | `sharp` derivatives + blurhash           | **Deferred.** StudioCar produces the finished image; Dealers-Drive stores and serves it and processes nothing.      |
+| **F035** | Dealer reorders their own photos         | **Admin** image ordering and primary selection, on the moderation screen.                                           |
+| **F062** | Dealer photo upload UI (`PhotoUploader`) | **Withdrawn.** There is no dealer-facing photo upload anywhere in the product.                                      |
+| **F063** | Wizard: RC → basics → details → photos   | Data-only wizard: Registration → Basics → Details → Pricing → Review. **No Photos step.**                           |
+| **F069** | Queue with a one-click approve           | Queue shows photography/image readiness; approval is never one click, because a listing with no images cannot pass. |
+| **F070** | Review photos the dealer supplied        | Review the dealer's data, upload the processed images, order them, choose the primary, then decide.                 |
+
+### The rules this revision fixes in place
+
+- **A dealer can never write listing media.** Not through a hidden button, and
+  not through the API: the vehicle-media upload, ordering and primary routes are
+  mounted under `/v1/admin` and require `admin:media:upload`. No dealer-writable
+  schema accepts an image URL, a media id, a storage key, a moderation status,
+  a verification flag or a publication state — `.strict()` makes each of those a
+  400 that names the field (rule 2).
+- **Storage keys are the server's.** A vehicle image lives at a key derived from
+  the vehicle id and a server-generated media id. The client never names a path,
+  and commit verifies the object's size and its image signature before the row
+  is attached — a file that is not a JPEG, PNG or WebP is refused whatever the
+  declared `Content-Type` said.
+- **One primary, always on the same vehicle.** Position is an explicit integer,
+  order is deterministic, at most one image is primary (a partial unique index,
+  not a UI convention), and removing the primary promotes the next image in the
+  same transaction.
+- **Approval checks the photographs.** The minimum image count is the platform
+  config key the baseline already carries, `listing.minPhotos` (default 6), read
+  by the API and handed to the console in the review payload — it is not a
+  number repeated in two apps. StudioCar's 20-image batch is the _maximum_ a
+  vehicle accepts, one constant in `packages/contracts`, not a requirement.
+
+### Designed for StudioCar, without integrating it
+
+Each vehicle image records its `source`, and the only value today is
+`ADMIN_UPLOAD`. A later `STUDIOCAR_IMPORT` — with a batch or external reference
+beside it — is an additional enum value and two nullable columns, not a
+redesign. **Nothing in this revision calls StudioCar**: no API client, no
+webhook, no shared bucket, no shared database, no fabricated batch ids. The
+manual upload is the whole integration until a feature replaces it.
+
+### Why the dealer does not upload even as a fallback
+
+Because a fallback becomes the path. The value Dealers-Drive sells is that every
+car on it is photographed the same way, by the same people, on the same floor;
+one dealer-supplied phone photo on the marketplace grid is the end of that. A
+dealer who wants a car listed sooner is a scheduling problem, and it is solved
+by the photography queue, not by an upload box.
+
+## R46 — Vehicle details are entered by hand; RC lookup is deferred
+
+**Revises F056, F060, F061, F063** · defers **F057, F058, F059, F068**
+
+The baseline filled the wizard from a paid VAHAN lookup (Attestr) and fell back
+to manual entry when it failed. **The lookup is out of the initial listing
+workflow.** The dealer types the registration number and every vehicle detail;
+nothing in the flow calls an external registration, RC or vehicle-metadata
+service, and nothing scrapes one.
+
+- **F056 survives in full** and matters more than it did: the plate normaliser
+  is now the only thing standing between `KA-01-AB-1234`, `ka01ab1234` and
+  `KA 01 AB 1234` becoming three cars. It accepts the state series, the `BH`
+  series and legacy three-letter series, stores one canonical form, and formats
+  it for display on the way out. Registration numbers are unique among the
+  vehicles that hold them — see the vehicle schema for the exact rule.
+- **F057 / F058 / F059 are deferred, not deleted.** The port, the mock adapter,
+  the Attestr adapter and the lookup UI can return behind the same wizard later;
+  the Registration step is shaped so a "Look up" button can sit beside the plate
+  field without moving anything else.
+- **F068 (vehicle history report) is deferred with them** — it is the same
+  provider and the same bill.
+- **F060's warning still holds**, and now applies to every vehicle rather than
+  to the fallback: make and model are free text, so they are normalised on
+  write (case and whitespace), and the wizard offers the values already in use
+  as suggestions rather than a closed list.
+
+`rc-aliases.ts` (D1) is not brought across in this revision. It maps VAHAN maker
+strings, and nothing produces one until the lookup returns.
+
+## R47 — The listing lifecycle, before billing exists
+
+**Revises F064, F065, F067, F069, F070** · billing (**F050–F054**) deferred
+
+The baseline's lifecycle was entangled with credits: submitting held one,
+approving consumed it, rejecting released it. Billing is deferred behind the
+marketplace core, so the lifecycle lands **without a ledger**, and its states are
+the ones the product now names:
+
+```
+DRAFT ──submit──▶ PENDING_REVIEW ──approve──▶ ACTIVE ──mark sold──▶ SOLD
+                    │    ▲    │                  │
+       request      │    │    └──reject──▶ REJECTED
+       changes      ▼    │ resubmit              └──remove──▶ REMOVED
+               CHANGES_REQUESTED
+```
+
+- `ListingStatus` becomes `DRAFT · PENDING_REVIEW · CHANGES_REQUESTED · ACTIVE ·
+REJECTED · SOLD · REMOVED`. `APPROVED` is spelled `ACTIVE`, and `EXPIRED` is
+  not a state until something expires a listing.
+- **Only `ACTIVE` is public** (DESIGN-SPEC §4.9). Rule 6's read-model split —
+  sold cars shown greyed — returns with search (**F076**); until then a sold car
+  is simply not on the marketplace, which is the conservative reading.
+- Every change goes through one `transition()` that checks the source state
+  and the actor, runs inside the transaction that writes the audit row, and is
+  guarded by the row's own status in the `UPDATE` — so two moderators, or a
+  moderator and a resubmitting dealer, cannot both win.
+- Approval is a domain operation with its own guards (dealer ACTIVE, data
+  complete, images present, a primary chosen) and sets `publishedAt`. There is no
+  route that writes `status`.
+- When billing returns, the hold/consume/release movements attach to the
+  `submit`, `approve` and `reject` transitions — which is exactly where the
+  baseline had them — without changing a state.
