@@ -2222,6 +2222,15 @@ DESIGN-SPEC §3.2 — the blueprint search block, body-type tiles and featured r
 - **Components — New (Shared)** `VdpCtaStack` · **Reused** `Blueprint`, `Banner`, `Button`, `ReportSummary`, `EnquiryForm`
 - **Sandbox** `VdpCtaStack` — default / saved / sold
 - ⚠️ `vdp-cta.tsx` is the **only** file under `components/` importing a server action (finding D-5). Its sandbox scenario needs a module stub; do not "fix" the coupling during reconstruction.
+- ⚠️ **Entry corrected on landing (R45).** Scoped to what the listing flow
+  needs: `GET /v1/vehicles/:slug` (`VehicleSlugParam`, `PublicVehicleDetail`)
+  in `modules/search/`, **404 for anything but an ACTIVE listing of an ACTIVE
+  dealership**, the registration shown only as its RTO, no phone; and
+  `app/(public)/car/[slug]/page.tsx` with `VehicleGallery` (C035, thumbnails,
+  no lightbox — F083), `PriceBlock`, `SpecList` and `VdpDealerCard` in
+  `components/vehicle/`. No `VdpCtaStack`, no report, no saved-cars or enquiry:
+  F068, F087, F089 and the reveal route are deferred, so the dependencies on
+  them are dropped. Depends on F075 (the slug).
 
 ### F083 — Vehicle gallery & lightbox
 

@@ -8,5 +8,6 @@ Parent: [web/app](../README.md)
 
 ## Pages
 
+- [car](car.md)
 - [cars](cars.md)
 - [dealers](dealers.md)

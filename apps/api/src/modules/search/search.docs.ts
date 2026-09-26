@@ -56,5 +56,54 @@ export const searchDocs: ModuleDocs = {
       ],
       errors: [400, 429],
     },
+    {
+      method: 'get',
+      path: '/v1/vehicles/:slug',
+      operationId: 'getPublicVehicle',
+      tag: DOC_TAGS.vehiclesPublic,
+      summary: 'One vehicle\u2019s public page',
+      description:
+        'The vehicle detail page (**F082** as scoped by **R45**): title, price, the ' +
+        'specifications, the dealer\u2019s description, every image in the admin\u2019s ' +
+        'gallery order with `primaryIndex` naming the one to show first, and the dealership.\n\n' +
+        '**A listing that is not `ACTIVE`, or whose dealership is not, is `404 ' +
+        'VEHICLE_NOT_FOUND`** — the same answer as a slug that never existed, so the response ' +
+        'says nothing about a car in review, rejected, sold or removed. The registration ' +
+        'appears only as its RTO; no id, moderation field, storage key or phone number is ' +
+        'returned (a dealer\u2019s number is only ever revealed by the rate-limited reveal ' +
+        'route, which is not built).',
+      audience: 'public',
+      params: 'VehicleSlugParam',
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle.',
+          schema: 'PublicVehicleDetail',
+          example: {
+            slug: CARD_EXAMPLE.slug,
+            title: CARD_EXAMPLE.title,
+            year: 2023,
+            priceLabel: '₹14,50,000',
+            negotiabilityLabel: 'Fixed price',
+            summary: 'Petrol · Automatic · 22,400 km',
+            description: 'Single owner, full service history.',
+            specs: [
+              { label: 'Make', value: 'Hyundai' },
+              { label: 'Registered at', value: 'TN 23' },
+            ],
+            images: [
+              {
+                url: 'http://localhost:4000/media/by-media/bc7de20d-30a4-41ed-a364-8f34771a20a8/1024.webp',
+                alt: '2023 Hyundai Creta SX(O), photograph 1 of 8',
+              },
+            ],
+            primaryIndex: 0,
+            publishedLabel: 'Listed 26 Sep 2026',
+            dealer: { ...CARD_EXAMPLE.dealer, location: 'Katpadi, Vellore' },
+          },
+        },
+      ],
+      errors: [400, 404, 429],
+    },
   ],
 };
