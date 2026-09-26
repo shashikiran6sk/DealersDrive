@@ -1,8 +1,10 @@
-import type { Prisma, PrismaClient, Vehicle } from '@prisma/client';
+import type { Listing, Prisma, PrismaClient, Vehicle } from '@prisma/client';
 
 import type { Tx } from '../../platform/db/prisma.js';
 
-export type VehicleRow = Vehicle;
+export type VehicleRow = Vehicle & { listing: Listing | null };
+
+const withListing = { listing: true } as const;
 
 export type VehicleWrite = Omit<
   Prisma.VehicleUncheckedUpdateInput,
@@ -22,17 +24,17 @@ export function createVehiclesRepository(prisma: PrismaClient) {
   return {
     async create(input: VehicleCreate, tx?: Tx): Promise<VehicleRow> {
       const client = tx ?? prisma;
-      return client.vehicle.create({ data: input });
+      return client.vehicle.create({ data: input, include: withListing });
     },
 
     async findOwned(dealerId: string, vehicleId: string, tx?: Tx): Promise<VehicleRow | null> {
       const client = tx ?? prisma;
-      return client.vehicle.findFirst({ where: { id: vehicleId, dealerId } });
+      return client.vehicle.findFirst({ where: { id: vehicleId, dealerId }, include: withListing });
     },
 
     async findById(vehicleId: string, tx?: Tx): Promise<VehicleRow | null> {
       const client = tx ?? prisma;
-      return client.vehicle.findUnique({ where: { id: vehicleId } });
+      return client.vehicle.findUnique({ where: { id: vehicleId }, include: withListing });
     },
 
     async updateOwned(
@@ -47,7 +49,7 @@ export function createVehiclesRepository(prisma: PrismaClient) {
         data,
       });
       if (result.count === 0) return null;
-      return client.vehicle.findUnique({ where: { id: vehicleId } });
+      return client.vehicle.findUnique({ where: { id: vehicleId }, include: withListing });
     },
 
     async deleteOwned(dealerId: string, vehicleId: string, tx?: Tx): Promise<boolean> {
@@ -60,7 +62,7 @@ export function createVehiclesRepository(prisma: PrismaClient) {
       dealerId: string,
       registrationNumber: string,
       exceptVehicleId?: string,
-    ): Promise<VehicleRow | null> {
+    ): Promise<Vehicle | null> {
       return prisma.vehicle.findFirst({
         where: {
           dealerId,
@@ -75,6 +77,7 @@ export function createVehiclesRepository(prisma: PrismaClient) {
       return prisma.vehicle.findMany({
         where: { dealerId },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        include: withListing,
       });
     },
 

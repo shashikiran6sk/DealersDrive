@@ -1279,6 +1279,8 @@ export const registry: RegistryEntry[] = [
       'draft saved',
       'review complete',
       'review incomplete',
+      'under review (read-only)',
+      'changes requested (reason shown)',
     ],
     reusable: false,
     storyId: 'vehicle-vehiclewizard',

@@ -33,6 +33,18 @@ function vehicle(overrides: Partial<DealerVehicle> = {}): DealerVehicle {
     summary: 'Petrol · Automatic · 22,400 km',
     issues: [],
     complete: true,
+    listing: {
+      id: '33333333-3333-4333-8333-333333333333',
+      status: 'DRAFT',
+      statusLabel: 'Draft',
+      statusTone: 'neutral',
+      reason: null,
+      submittedAt: null,
+      publishedAt: null,
+      canEdit: true,
+      canSubmit: true,
+      canDelete: true,
+    },
     createdAt: '2026-09-01T00:00:00.000Z',
     updatedAt: '2026-09-01T00:00:00.000Z',
     ...overrides,
@@ -139,5 +151,70 @@ describe('the review step', () => {
   it('tells the dealer that Dealers-Drive takes the photographs', () => {
     render(<VehicleWizard step="review" vehicle={vehicle()} />);
     expect(screen.getByText(/dealers-drive arranges a shoot/i)).toBeInTheDocument();
+  });
+});
+
+describe('what the listing allows (F064)', () => {
+  it('shows a vehicle under review read-only, with no form and no edit links', () => {
+    const { container } = render(
+      <VehicleWizard
+        step="basics"
+        vehicle={vehicle({
+          listing: {
+            ...vehicle().listing,
+            status: 'PENDING_REVIEW',
+            statusLabel: 'Pending review',
+            canEdit: false,
+            canSubmit: false,
+            canDelete: false,
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/cannot be edited right now/i)).toBeInTheDocument();
+    expect(screen.getByText(/with our team for review/i)).toBeInTheDocument();
+    expect(container.querySelector('form')).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument();
+  });
+
+  it('shows the moderator’s words when changes are requested, and stays editable', () => {
+    const { container } = render(
+      <VehicleWizard
+        step="details"
+        vehicle={vehicle({
+          listing: {
+            ...vehicle().listing,
+            status: 'CHANGES_REQUESTED',
+            reason: 'The odometer reading does not match the photographs.',
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/asked for changes/i)).toBeInTheDocument();
+    expect(
+      screen.getByText('The odometer reading does not match the photographs.'),
+    ).toBeInTheDocument();
+    expect(container.querySelector('form')).not.toBeNull();
+  });
+
+  it('shows why a vehicle was not approved', () => {
+    render(
+      <VehicleWizard
+        step="review"
+        vehicle={vehicle({
+          listing: {
+            ...vehicle().listing,
+            status: 'REJECTED',
+            reason: 'Duplicate of another listing.',
+            canEdit: false,
+            canDelete: false,
+          },
+        })}
+      />,
+    );
+    expect(screen.getByText('Not approved')).toBeInTheDocument();
+    expect(screen.getByText('Duplicate of another listing.')).toBeInTheDocument();
   });
 });

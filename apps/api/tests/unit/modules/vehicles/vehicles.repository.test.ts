@@ -44,7 +44,7 @@ describe('tenant scoping', () => {
     expect(calls[0]).toEqual({
       model: 'vehicle',
       method: 'findFirst',
-      args: { where: { id: VEHICLE, dealerId: DEALER } },
+      args: { where: { id: VEHICLE, dealerId: DEALER }, include: { listing: true } },
     });
   });
 
@@ -95,6 +95,7 @@ describe('tenant scoping', () => {
     expect(calls[0]?.args).toEqual({
       where: { dealerId: DEALER },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      include: { listing: true },
     });
   });
 });

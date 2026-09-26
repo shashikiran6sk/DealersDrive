@@ -41,6 +41,18 @@ function stored() {
     summary: '',
     issues: [{ field: 'make', message: 'Make is required.' }],
     complete: false,
+    listing: {
+      id: '33333333-3333-4333-8333-333333333333',
+      status: 'DRAFT',
+      statusLabel: 'Draft',
+      statusTone: 'neutral',
+      reason: null,
+      submittedAt: null,
+      publishedAt: null,
+      canEdit: true,
+      canSubmit: false,
+      canDelete: true,
+    },
     createdAt: '2026-09-01T00:00:00.000Z',
     updatedAt: '2026-09-01T00:00:00.000Z',
   };

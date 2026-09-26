@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { Listing, ListingStatus, PrismaClient } from '@prisma/client';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { VehicleRow } from '../../../../src/modules/vehicles/vehicles.repository.js';
@@ -6,6 +6,26 @@ import { createVehiclesService } from '../../../../src/modules/vehicles/vehicles
 
 const ACTOR = { dealerId: '11111111-1111-4111-8111-111111111111', userId: 'user-1' };
 const ID = '22222222-2222-4222-8222-222222222222';
+
+function listing(status: ListingStatus = 'DRAFT'): Listing {
+  return {
+    id: '33333333-3333-4333-8333-333333333333',
+    vehicleId: ID,
+    dealerId: ACTOR.dealerId,
+    status,
+    submittedAt: null,
+    lastSubmittedAt: null,
+    submissionCount: 0,
+    publishedAt: null,
+    soldAt: null,
+    removedAt: null,
+    decisionReason: null,
+    decidedBy: null,
+    decidedAt: null,
+    createdAt: new Date('2026-09-01T00:00:00Z'),
+    updatedAt: new Date('2026-09-01T00:00:00Z'),
+  };
+}
 
 function row(overrides: Partial<VehicleRow> = {}): VehicleRow {
   return {
@@ -33,11 +53,15 @@ function row(overrides: Partial<VehicleRow> = {}): VehicleRow {
     createdBy: null,
     createdAt: new Date('2026-09-01T00:00:00Z'),
     updatedAt: new Date('2026-09-01T00:00:00Z'),
+    listing: listing(),
     ...overrides,
   };
 }
 
-function setup(repoOverrides: Record<string, unknown> = {}) {
+function setup(
+  repoOverrides: Record<string, unknown> = {},
+  locked: ListingStatus | null = 'DRAFT',
+) {
   const repo = {
     create: vi.fn(async () => row()),
     findOwned: vi.fn(async () => row()),
@@ -51,8 +75,15 @@ function setup(repoOverrides: Record<string, unknown> = {}) {
     ...repoOverrides,
   };
   const audit = { record: vi.fn(async () => undefined), recordDetached: vi.fn() };
+  const tx = {
+    $queryRaw: async () => (locked ? [{ id: listing().id }] : []),
+    listing: {
+      create: async () => listing(),
+      findUnique: async () => (locked ? listing(locked) : null),
+    },
+  };
   const prisma = {
-    $transaction: async (work: (tx: unknown) => Promise<unknown>) => work({}),
+    $transaction: async (work: (client: unknown) => Promise<unknown>) => work(tx),
   } as unknown as PrismaClient;
   const service = createVehiclesService({ prisma, repo: repo, audit });
   return { service, repo, audit };
@@ -167,5 +198,68 @@ describe('suggestions', () => {
       values: ['Creta'],
     });
     expect(repo.suggestions).toHaveBeenCalledWith('model', 'Cr', 8);
+  });
+});
+
+describe('the listing decides what a dealer may still change', () => {
+  it('creates a DRAFT listing with every vehicle', async () => {
+    const { service } = setup();
+    const created = await service.create(ACTOR, { registrationNumber: 'KA01AB1234' });
+    expect(created.listing).toMatchObject({ status: 'DRAFT', canEdit: true, canDelete: true });
+  });
+
+  it.each(['PENDING_REVIEW', 'ACTIVE', 'REJECTED', 'SOLD', 'REMOVED'] as const)(
+    'refuses an edit while the listing is %s',
+    async (status) => {
+      const { service, repo } = setup({
+        findOwned: vi.fn(async () => row({ listing: listing(status) })),
+      });
+      await expect(service.update(ACTOR, ID, { make: 'Tata' })).rejects.toMatchObject({
+        status: 409,
+        code: 'VEHICLE_NOT_EDITABLE',
+      });
+      expect(repo.updateOwned).not.toHaveBeenCalled();
+    },
+  );
+
+  it('re-checks under the row lock, so a submission that won the race wins', async () => {
+    const { service, repo } = setup({}, 'PENDING_REVIEW');
+    await expect(service.update(ACTOR, ID, { make: 'Tata' })).rejects.toMatchObject({
+      code: 'VEHICLE_NOT_EDITABLE',
+    });
+    expect(repo.updateOwned).not.toHaveBeenCalled();
+  });
+
+  it('allows an edit once changes have been requested', async () => {
+    const { service, repo } = setup(
+      { findOwned: vi.fn(async () => row({ listing: listing('CHANGES_REQUESTED') })) },
+      'CHANGES_REQUESTED',
+    );
+    await service.update(ACTOR, ID, { make: 'Tata' });
+    expect(repo.updateOwned).toHaveBeenCalled();
+  });
+
+  it.each(['PENDING_REVIEW', 'CHANGES_REQUESTED', 'ACTIVE', 'REJECTED', 'SOLD'] as const)(
+    'refuses to delete a %s vehicle — it is history',
+    async (status) => {
+      const { service, repo } = setup({}, status);
+      await expect(service.remove(ACTOR, ID)).rejects.toMatchObject({
+        status: 409,
+        code: 'VEHICLE_NOT_DELETABLE',
+      });
+      expect(repo.deleteOwned).not.toHaveBeenCalled();
+    },
+  );
+
+  it('refuses to describe a vehicle that somehow has no listing', async () => {
+    const { service } = setup({ findOwned: vi.fn(async () => row({ listing: null })) });
+    await expect(service.get(ACTOR.dealerId, ID)).rejects.toThrow(/has no listing/);
+  });
+
+  it('reports a listing that vanished before the lock as not found', async () => {
+    const { service } = setup({}, null);
+    await expect(service.update(ACTOR, ID, { make: 'Tata' })).rejects.toMatchObject({
+      status: 404,
+    });
   });
 });

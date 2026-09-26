@@ -29,6 +29,18 @@ const COMPLETE: DealerVehicle = {
   summary: 'Petrol · Automatic · 22,400 km',
   issues: [],
   complete: true,
+  listing: {
+    id: '33333333-3333-4333-8333-333333333333',
+    status: 'DRAFT',
+    statusLabel: 'Draft',
+    statusTone: 'neutral',
+    reason: null,
+    submittedAt: null,
+    publishedAt: null,
+    canEdit: true,
+    canSubmit: true,
+    canDelete: true,
+  },
   createdAt: '2026-09-01T00:00:00.000Z',
   updatedAt: '2026-09-01T00:00:00.000Z',
 };
@@ -101,3 +113,38 @@ export const DraftSaved: Story = { args: { step: 'details', vehicle: DRAFT, save
 export const ReviewComplete: Story = { args: { step: 'review', vehicle: COMPLETE } };
 
 export const ReviewIncomplete: Story = { args: { step: 'review', vehicle: DRAFT } };
+
+export const UnderReview: Story = {
+  args: {
+    step: 'basics',
+    vehicle: {
+      ...COMPLETE,
+      listing: {
+        ...COMPLETE.listing,
+        status: 'PENDING_REVIEW',
+        statusLabel: 'Pending review',
+        statusTone: 'warn',
+        canEdit: false,
+        canSubmit: false,
+        canDelete: false,
+      },
+    },
+  },
+};
+
+export const ChangesRequested: Story = {
+  args: {
+    step: 'details',
+    vehicle: {
+      ...COMPLETE,
+      listing: {
+        ...COMPLETE.listing,
+        status: 'CHANGES_REQUESTED',
+        statusLabel: 'Changes requested',
+        statusTone: 'warn',
+        reason: 'The odometer reading does not match what our photographer saw: 32,400 km.',
+        canDelete: false,
+      },
+    },
+  },
+};

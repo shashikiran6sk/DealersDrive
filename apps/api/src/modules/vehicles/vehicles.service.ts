@@ -1,4 +1,6 @@
 import {
+  isListingDeletable,
+  isListingEditable,
   parseRegistration,
   type CreateVehicleInput,
   type DealerVehicle,
@@ -10,9 +12,16 @@ import type { PrismaClient } from '@prisma/client';
 
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import type { Tx } from '../../platform/db/prisma.js';
 import { ConflictError, NotFoundError, errorCode } from '../../platform/errors.js';
+import { createDraftListing, lockListingForVehicle } from '../listings/listings.facade.js';
 import { toDealerVehicle } from './vehicles.mapper.js';
-import { DUPLICATE_REGISTRATION, VEHICLE_NOT_FOUND } from './vehicles.messages.js';
+import {
+  DUPLICATE_REGISTRATION,
+  VEHICLE_NOT_DELETABLE,
+  VEHICLE_NOT_EDITABLE,
+  VEHICLE_NOT_FOUND,
+} from './vehicles.messages.js';
 import type { VehicleRow, VehicleWrite, VehiclesRepository } from './vehicles.repository.js';
 
 export interface VehicleActor {
@@ -40,6 +49,10 @@ function duplicate(): ConflictError {
   });
 }
 
+function notFound(): NotFoundError {
+  return new NotFoundError(VEHICLE_NOT_FOUND, { code: 'VEHICLE_NOT_FOUND' });
+}
+
 function rtoCodeOf(registrationNumber: string): string | null {
   const parsed = parseRegistration(registrationNumber);
   return parsed.ok ? parsed.value.rtoCode : null;
@@ -48,8 +61,18 @@ function rtoCodeOf(registrationNumber: string): string | null {
 export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
   async function requireOwned(dealerId: string, vehicleId: string): Promise<VehicleRow> {
     const vehicle = await repo.findOwned(dealerId, vehicleId);
-    if (!vehicle) throw new NotFoundError(VEHICLE_NOT_FOUND, { code: 'VEHICLE_NOT_FOUND' });
+    if (!vehicle) throw notFound();
     return vehicle;
+  }
+
+  async function lockEditable(tx: Tx, vehicleId: string): Promise<void> {
+    const listing = await lockListingForVehicle(tx, vehicleId);
+    if (!listing) throw notFound();
+    if (!isListingEditable(listing.status)) {
+      throw new ConflictError('VEHICLE_NOT_EDITABLE', VEHICLE_NOT_EDITABLE, {
+        extra: { listingStatus: listing.status },
+      });
+    }
   }
 
   async function spelled(field: 'make' | 'model', value: string): Promise<string> {
@@ -109,6 +132,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
             },
             tx,
           );
+          const listing = await createDraftListing(tx, row);
           await audit.record(tx, {
             actorType: 'DEALER',
             actorId: actor.userId,
@@ -116,9 +140,9 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
             action: 'vehicle.created',
             entityType: 'Vehicle',
             entityId: row.id,
-            after: { registrationNumber: row.registrationNumber },
+            after: { registrationNumber: row.registrationNumber, listingId: listing.id },
           });
-          return row;
+          return { ...row, listing };
         });
         return toDealerVehicle(created);
       } catch (error) {
@@ -137,6 +161,11 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       input: UpdateVehicleInput,
     ): Promise<DealerVehicle> {
       const current = await requireOwned(actor.dealerId, vehicleId);
+      if (current.listing && !isListingEditable(current.listing.status)) {
+        throw new ConflictError('VEHICLE_NOT_EDITABLE', VEHICLE_NOT_EDITABLE, {
+          extra: { listingStatus: current.listing.status },
+        });
+      }
 
       if (
         input.registrationNumber !== undefined &&
@@ -152,8 +181,9 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
 
       try {
         const updated = await withTransaction(prisma, async (tx) => {
+          await lockEditable(tx, vehicleId);
           const row = await repo.updateOwned(actor.dealerId, vehicleId, data, tx);
-          if (!row) throw new NotFoundError(VEHICLE_NOT_FOUND, { code: 'VEHICLE_NOT_FOUND' });
+          if (!row) throw notFound();
           await audit.record(tx, {
             actorType: 'DEALER',
             actorId: actor.userId,
@@ -176,8 +206,14 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       const current = await requireOwned(actor.dealerId, vehicleId);
 
       await withTransaction(prisma, async (tx) => {
+        const listing = await lockListingForVehicle(tx, vehicleId);
+        if (listing && !isListingDeletable(listing.status)) {
+          throw new ConflictError('VEHICLE_NOT_DELETABLE', VEHICLE_NOT_DELETABLE, {
+            extra: { listingStatus: listing.status },
+          });
+        }
         const deleted = await repo.deleteOwned(actor.dealerId, vehicleId, tx);
-        if (!deleted) throw new NotFoundError(VEHICLE_NOT_FOUND, { code: 'VEHICLE_NOT_FOUND' });
+        if (!deleted) throw notFound();
         await audit.record(tx, {
           actorType: 'DEALER',
           actorId: actor.userId,

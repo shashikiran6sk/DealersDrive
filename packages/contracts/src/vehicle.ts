@@ -10,6 +10,7 @@ import {
   TRANSMISSION_LABELS,
   Transmission,
 } from './enums.js';
+import { DealerListing } from './listing.js';
 import { RegistrationNumber } from './registration.js';
 
 /**
@@ -346,6 +347,7 @@ export const DealerVehicle = z.object({
   summary: z.string(),
   issues: z.array(VehicleIssueDto),
   complete: z.boolean(),
+  listing: DealerListing,
   createdAt: z.string(),
   updatedAt: z.string(),
 });
