@@ -31,6 +31,7 @@ import {
 } from '@dealers-drive/contracts';
 
 import { completenessOf } from '../vehicles/vehicles.facade.js';
+import { approvalBlockers } from './moderation.approval.js';
 import { ACTOR_LABELS, HISTORY_LABELS, SECTION_TITLES } from './moderation.messages.js';
 import type { DetailRow, HistoryRow, QueueRow } from './moderation.repository.js';
 
@@ -178,6 +179,16 @@ export function toAdminListingDetail(
 ): AdminListingDetail {
   const reviewing = listing.status === 'PENDING_REVIEW';
   const checked = new Map(listing.checks.map((check) => [check.key, check.checkedAt]));
+  const blockers = reviewing
+    ? approvalBlockers({
+        dealerStatus: listing.dealer.status,
+        vehicle: listing.vehicle,
+        checkedKeys: listing.checks.map((check) => check.key),
+        imageCount: images.items.length,
+        hasPrimary: images.items.some((image) => image.isPrimary),
+        minImages: images.min,
+      })
+    : [];
 
   return {
     listing: {
@@ -214,11 +225,12 @@ export function toAdminListingDetail(
       checkedAt: checked.get(key)?.toISOString() ?? null,
     })),
     history: historyOf(history),
+    blockers,
     actions: {
       canVerify: reviewing,
       canRequestChanges: reviewing,
       canReject: reviewing,
-      canApprove: false,
+      canApprove: reviewing && blockers.length === 0,
     },
   };
 }

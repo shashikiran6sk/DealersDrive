@@ -104,3 +104,36 @@ else, and no dealer or public DTO carries this table at all.
 
 The status is a readiness signal for people. Approval (F070) is guarded by the
 images actually attached, never by this label.
+
+### `async approve(admin, listingId)`
+
+The one decision that publishes (**F070**, guarded by **R45**/**R47**).
+Under the listing's row lock it first asks the state machine whether an
+admin may approve from here (`409 LISTING_NOT_APPROVABLE` otherwise, before
+any other work), then reads the approval state fresh inside the same
+transaction and refuses with `409 LISTING_NOT_READY` and a `blockers` array
+if anything is unmet. Only then does `transition()` move the listing to
+ACTIVE and stamp `publishedAt`.
+
+Reading inside the lock is the point: every image write and every check
+write takes the same lock, so an approval can never publish a gallery that
+dropped below the minimum a moment earlier. Two approves, or an approve and
+a reject, serialise; the loser gets `409 LISTING_STATE_CHANGED` or
+`LISTING_NOT_APPROVABLE`, and there is one audit row.
+
+`listing.minPhotos` is read before the transaction opens — it is platform
+config behind a cache, and a config read inside a row lock only lengthens
+the lock.
+
+## `apps/api/src/modules/moderation/moderation.approval.ts`
+
+### `export function approvalBlockers(state: ApprovalState): ApprovalBlocker[]`
+
+The single definition of "ready to approve": the dealership is ACTIVE, the
+vehicle data is complete, every check is ticked, at least `minImages` images
+are attached, and one is the primary. The review screen's `blockers` and the
+approve route's refusal are both this function, so the console cannot offer
+an approval the API would refuse, nor hide one it would accept.
+
+Photography status is deliberately **not** a rule. It is the operations
+team's note; the images themselves are the evidence.

@@ -106,3 +106,8 @@ export async function setPrimaryImageAction(formData: FormData): Promise<void> {
   listingActionsStub.calls.push(values);
   await new Promise((resolve) => setTimeout(resolve, 300));
 }
+
+export async function approveListingAction(_listingId: string): Promise<ListingActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  return { ok: true };
+}

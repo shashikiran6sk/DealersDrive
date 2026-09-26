@@ -1371,7 +1371,12 @@ export const registry: RegistryEntry[] = [
     aliases: ['ReviewListing', 'ModerationStrip', 'ReviewActions', 'Checklist', 'CheckRow'],
     features: ['F070'],
     props: ['detail'],
-    states: ['pending review', 'resubmission (checks cleared)', 'read-only'],
+    states: [
+      'pending review (approval blocked)',
+      'ready to approve',
+      'resubmission (checks cleared)',
+      'read-only',
+    ],
     reusable: false,
     storyId: 'admin-listingreview',
   },

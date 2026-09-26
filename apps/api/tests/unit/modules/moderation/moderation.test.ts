@@ -159,7 +159,7 @@ describe('the service', () => {
       repo: { ...repo, detail: vi.fn(), history: vi.fn() },
       prisma: {} as never,
       audit: { record: vi.fn(), recordDetached: vi.fn() },
-      images: { images: vi.fn() },
+      images: { images: vi.fn(), minimum: vi.fn() },
     });
     const response = await service.listings({ limit: 1 });
 
@@ -185,6 +185,7 @@ describe('the router', () => {
       'PUT /listings/:id/photography',
       'POST /listings/:id/request-changes',
       'POST /listings/:id/reject',
+      'POST /listings/:id/approve',
     ]);
   });
 
@@ -195,6 +196,7 @@ describe('the router', () => {
     'PUT /listings/:id/photography',
     'POST /listings/:id/request-changes',
     'POST /listings/:id/reject',
+    'POST /listings/:id/approve',
   ])('guards %s with the moderation permission', (signature) => {
     expect(permissionsOn(routeFor(router, signature) as never)).toEqual(['admin:listing:moderate']);
   });

@@ -1,4 +1,7 @@
-import type { ListingStatus, Prisma, PrismaClient } from '@prisma/client';
+import type { Listing, ListingStatus, Prisma, PrismaClient } from '@prisma/client';
+
+import type { Tx } from '../../platform/db/prisma.js';
+import type { ApprovalState } from './moderation.approval.js';
 
 export const queueInclude = {
   vehicle: { include: { photography: true, _count: { select: { images: true } } } },
@@ -98,3 +101,32 @@ export function createModerationRepository(prisma: PrismaClient) {
 }
 
 export type ModerationRepository = ReturnType<typeof createModerationRepository>;
+
+export async function approvalStateOf(
+  tx: Tx,
+  listing: Listing,
+  minImages: number,
+): Promise<ApprovalState> {
+  const dealer = await tx.dealer.findUniqueOrThrow({
+    where: { id: listing.dealerId },
+    select: { status: true },
+  });
+  const vehicle = await tx.vehicle.findUniqueOrThrow({ where: { id: listing.vehicleId } });
+  const checks = await tx.listingCheck.findMany({
+    where: { listingId: listing.id },
+    select: { key: true },
+  });
+  const imageCount = await tx.vehicleMedia.count({ where: { vehicleId: listing.vehicleId } });
+  const primaries = await tx.vehicleMedia.count({
+    where: { vehicleId: listing.vehicleId, isPrimary: true },
+  });
+
+  return {
+    dealerStatus: dealer.status,
+    vehicle,
+    checkedKeys: checks.map((check) => check.key),
+    imageCount,
+    hasPrimary: primaries === 1,
+    minImages,
+  };
+}

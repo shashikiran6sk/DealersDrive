@@ -124,6 +124,10 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
   return {
     images,
 
+    minimum(): Promise<number> {
+      return config.number('listing.minPhotos');
+    },
+
     async presign(listingId: string, input: VehicleImagePresignInput): Promise<PresignResponse> {
       const listing = await listingOf(listingId);
       assertOpen(listing);

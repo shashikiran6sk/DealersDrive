@@ -82,6 +82,20 @@ export async function requestListingChangesAction(
   return decide(listingId, 'request-changes', reason);
 }
 
+export async function approveListingAction(listingId: string): Promise<ListingActionResult> {
+  try {
+    await apiSend<AdminListingDetail>(
+      'POST',
+      `/v1/admin/listings/${encodeURIComponent(listingId)}/approve`,
+    );
+  } catch (error) {
+    return failure(error);
+  }
+  revalidatePath(reviewPath(listingId));
+  revalidatePath('/admin/listings');
+  return { ok: true };
+}
+
 export async function rejectListingAction(
   listingId: string,
   reason: string,

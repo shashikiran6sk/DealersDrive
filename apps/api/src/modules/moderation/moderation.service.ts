@@ -16,23 +16,25 @@ import type { VehicleImagesService } from '../vehicle-images/vehicle-images.faca
 import {
   LISTING_NOT_FOUND,
   TRANSITION_REFUSALS,
+  assertTransition,
   lockListing,
   transition,
 } from '../listings/listings.facade.js';
+import { approvalBlockers } from './moderation.approval.js';
 import {
   PHOTOGRAPHY_OPEN_STATUSES,
   toAdminListingDetail,
   toAdminListingRow,
 } from './moderation.mapper.js';
-import { PHOTOGRAPHY_CLOSED } from './moderation.messages.js';
+import { APPROVAL_BLOCKED, PHOTOGRAPHY_CLOSED } from './moderation.messages.js';
 import { HISTORY_LABELS } from './moderation.messages.js';
-import { sortKeyOf, type ModerationRepository } from './moderation.repository.js';
+import { approvalStateOf, sortKeyOf, type ModerationRepository } from './moderation.repository.js';
 
 export interface ModerationDeps {
   prisma: PrismaClient;
   repo: ModerationRepository;
   audit: AuditService;
-  images: Pick<VehicleImagesService, 'images'>;
+  images: Pick<VehicleImagesService, 'images' | 'minimum'>;
 }
 
 function notFound(): NotFoundError {
@@ -110,6 +112,23 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
           before: { status: before?.status ?? 'NOT_STARTED' },
           after: { status: input.status, listingId },
         });
+      });
+      return detail(listingId);
+    },
+
+    async approve(admin: AdminPrincipal, listingId: string): Promise<AdminListingDetail> {
+      const minImages = await images.minimum();
+      await withTransaction(prisma, async (tx) => {
+        const listing = await lockListing(tx, listingId);
+        if (!listing) throw notFound();
+        assertTransition(listing.status, 'approve', 'ADMIN');
+
+        const blockers = approvalBlockers(await approvalStateOf(tx, listing, minImages));
+        if (blockers.length > 0) {
+          throw new ConflictError('LISTING_NOT_READY', APPROVAL_BLOCKED, { extra: { blockers } });
+        }
+
+        await transition(tx, audit, listing, 'approve', { type: 'ADMIN', id: admin.userId });
       });
       return detail(listingId);
     },

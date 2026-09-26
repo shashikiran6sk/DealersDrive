@@ -42,3 +42,22 @@ state — because the save is a single PUT and the page re-renders from the API
 afterwards. `canUpdate` comes from the server, so the form disappears exactly
 when the API would answer `409 PHOTOGRAPHY_CLOSED`. The note is labelled as
 internal because it is: the dealer never sees it.
+
+## `apps/web/src/features/admin/listing-review/decision-panel.tsx`
+
+### `export function DecisionPanel({ detail }: { detail: AdminListingDetail })`
+
+The Approve button is always shown while the listing is in review, and it is
+disabled with the API's `blockers` listed under it until nothing blocks it —
+a moderator sees what is missing, not merely that approval is unavailable.
+The console computes none of it: `actions.canApprove` and `blockers` come
+from the same API function that guards the route.
+
+## `apps/web/src/features/admin/listing-review/approve-dialog.tsx`
+
+### `export function ApproveDialog({ submit }: ApproveDialogProps)`
+
+A confirmation, because approval publishes and freezes the gallery and the
+checklist. No reason is asked for: the decision is recorded in the audit log
+with who and when, and there is nothing to tell the dealer beyond "live". A
+refusal (someone removed an image in another tab) is shown in the dialog.

@@ -151,6 +151,7 @@ const DETAIL: AdminListingDetail = {
       atLabel: '26 Sep 2026',
     },
   ],
+  blockers: [{ code: 'TOO_FEW_IMAGES', message: '2 of the 6 images needed are uploaded.' }],
   actions: { canVerify: true, canRequestChanges: true, canReject: true, canApprove: false },
 };
 
@@ -165,6 +166,21 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const PendingReview: Story = {};
+
+export const ReadyToApprove: Story = {
+  args: {
+    detail: {
+      ...DETAIL,
+      blockers: [],
+      checks: CHECKS.map((check) => ({
+        ...check,
+        checked: true,
+        checkedAt: check.checkedAt ?? '2026-09-26T10:30:00.000Z',
+      })),
+      actions: { ...DETAIL.actions, canApprove: true },
+    },
+  },
+};
 
 export const Resubmission: Story = {
   args: {
@@ -206,6 +222,9 @@ export const ReadOnly: Story = {
         statusTone: 'ok',
         waitingLabel: null,
       },
+      blockers: [],
+      images: { ...DETAIL.images, canEdit: false },
+      photography: { ...DETAIL.photography, canUpdate: false },
       actions: { canVerify: false, canRequestChanges: false, canReject: false, canApprove: false },
     },
   },

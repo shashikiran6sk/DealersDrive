@@ -2040,6 +2040,11 @@ The full review screen: photos, specs, report, and the approve / reject / reques
   Photography status (R45) — `vehicle_photography`, set by
   `PUT /v1/admin/listings/:id/photography` while in review — lands between the
   decisions and the images, and shows in the queue row as well.
+  Approval last: `POST /v1/admin/listings/:id/approve`, guarded under the
+  listing lock by `approvalBlockers()` (dealer ACTIVE, data complete, every
+  check, `listing.minPhotos` images, a primary) — `409 LISTING_NOT_READY`
+  with `blockers` otherwise, and the same list on `AdminListingDetail`. The
+  web gets `ApproveDialog` and a blocker list in `DecisionPanel`.
 
 ### F071 — Listing takedown
 
