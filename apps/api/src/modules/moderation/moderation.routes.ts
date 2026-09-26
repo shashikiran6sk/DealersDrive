@@ -3,6 +3,7 @@ import { Router } from 'express';
 import type { ModerationService } from './moderation.service.js';
 import { getListing } from './routes/get-listing.js';
 import { getListings } from './routes/get-listings.js';
+import { postListingApprove } from './routes/post-listing-approve.js';
 import { postListingReject } from './routes/post-listing-reject.js';
 import { postListingRequestChanges } from './routes/post-listing-request-changes.js';
 import { putListingCheck } from './routes/put-listing-check.js';
@@ -16,6 +17,7 @@ const ROUTES: ModerationRoute[] = [
   putListingPhotography,
   postListingRequestChanges,
   postListingReject,
+  postListingApprove,
 ];
 
 export function createModerationRouter(service: ModerationService): Router {

@@ -147,5 +147,33 @@ export const moderationDocs: ModuleDocs = {
       ],
       errors: [400, 401, 403, 404, 409, 422],
     },
+    {
+      method: 'post',
+      path: '/v1/admin/listings/:id/approve',
+      operationId: 'approveListing',
+      tag: DOC_TAGS.moderation,
+      summary: 'Approve a listing and publish it',
+      description:
+        'PENDING_REVIEW \u2192 ACTIVE: the listing goes on the marketplace and `publishedAt` is ' +
+        'stamped. Never one click from the queue (**R45**) — the approval is guarded, and the ' +
+        'guard runs under the listing\u2019s row lock, so an image removed or a check undone ' +
+        'a moment earlier is seen:\n\n' +
+        '- the dealership is `ACTIVE`;\n' +
+        '- the vehicle data is complete;\n' +
+        '- every verification check is ticked;\n' +
+        '- at least `listing.minPhotos` images are attached (platform config, default 6);\n' +
+        '- one of them is the primary.\n\n' +
+        'Anything unmet is `409 LISTING_NOT_READY` with a `blockers` array naming each rule — ' +
+        'the same list `GET /v1/admin/listings/{id}` returns as `blockers`, computed by the ' +
+        'same function. A listing not in review is `409 LISTING_NOT_APPROVABLE`; losing a race ' +
+        'to another decision is `409 LISTING_STATE_CHANGED`. Audited as `listing.approved`.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      responses: [
+        { status: 200, description: 'The listing, now ACTIVE.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
   ],
 };

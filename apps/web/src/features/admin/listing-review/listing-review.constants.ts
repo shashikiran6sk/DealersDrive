@@ -32,8 +32,12 @@ export const LISTING_REVIEW_TEXT = {
   reasonLabel: 'Reason for the dealer',
   reasonHint: 'at least 6 characters',
   cancel: 'Cancel',
-  decisionNote:
-    'Approval becomes available once the photographs are uploaded, ordered and the checklist is complete.',
+  approve: 'Approve and publish',
+  approveTitle: 'Publish this listing',
+  approveBody:
+    'The listing goes live on the marketplace straight away, with its primary image and gallery in the order you set. Images and the checklist can no longer be changed.',
+  approveConfirm: 'Publish',
+  blockedTitle: 'Not ready to approve',
   history: 'History',
   noHistory: 'Nothing has happened to this listing yet.',
   resubmitted: (count: number) => `Submission ${count}`,

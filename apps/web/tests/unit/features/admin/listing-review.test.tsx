@@ -1,9 +1,10 @@
 import type { AdminListingDetail } from '@dealers-drive/contracts';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import AdminListingPage from '@/app/(admin)/admin/listings/[id]/page';
 import {
+  approveListingAction,
   commitListingImageAction,
   presignListingImageAction,
   removeListingImageAction,
@@ -146,6 +147,7 @@ function reviewDetail(overrides: Partial<AdminListingDetail> = {}): AdminListing
         atLabel: '25 Sep 2026',
       },
     ],
+    blockers: [{ code: 'TOO_FEW_IMAGES', message: '2 of the 6 images needed are uploaded.' }],
     actions: { canVerify: true, canRequestChanges: true, canReject: true, canApprove: false },
     ...overrides,
   };
@@ -216,12 +218,30 @@ describe('the review screen', () => {
     ).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('offers Request changes and Reject while the listing is in review, and no approve yet', () => {
+  it('offers Request changes and Reject in review, and holds Approve until nothing blocks it', () => {
     render(<ListingReview detail={reviewDetail()} />);
     const panel = within(screen.getByRole('region', { name: 'Moderation' }));
     expect(panel.getByRole('button', { name: 'Request changes' })).toBeInTheDocument();
     expect(panel.getByRole('button', { name: 'Reject' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /approve/i })).not.toBeInTheDocument();
+    expect(panel.getByRole('button', { name: 'Approve and publish' })).toBeDisabled();
+    expect(panel.getByText('Not ready to approve')).toBeInTheDocument();
+    expect(panel.getByText('2 of the 6 images needed are uploaded.')).toBeInTheDocument();
+  });
+
+  it('offers Approve once the API says nothing blocks it', async () => {
+    const detail = reviewDetail();
+    render(
+      <ListingReview
+        detail={{ ...detail, blockers: [], actions: { ...detail.actions, canApprove: true } }}
+      />,
+    );
+    const panel = within(screen.getByRole('region', { name: 'Moderation' }));
+    const approve = panel.getByRole('button', { name: 'Approve and publish' });
+    expect(approve).toBeEnabled();
+    expect(panel.queryByText('Not ready to approve')).not.toBeInTheDocument();
+
+    fireEvent.click(approve);
+    expect(await screen.findByRole('dialog', { name: 'Publish this listing' })).toBeInTheDocument();
   });
 
   it('shows the checklist read-only once the listing is out of review', () => {
@@ -353,6 +373,34 @@ describe('setPhotographyAction', () => {
     await expect(setPhotographyAction(form({ listingId: ID, status: 'READY' }))).rejects.toThrow(
       /unavailable/,
     );
+  });
+});
+
+describe('approveListingAction', () => {
+  it('approves and refreshes the review screen and the queue', async () => {
+    apiSend.mockResolvedValue({});
+    expect(await approveListingAction(ID)).toEqual({ ok: true });
+    expect(apiSend).toHaveBeenCalledWith('POST', `/v1/admin/listings/${ID}/approve`);
+    expect(revalidations.paths).toEqual(
+      expect.arrayContaining([`/admin/listings/${ID}`, '/admin/listings']),
+    );
+  });
+
+  it('passes on why the API refused', async () => {
+    const { ApiError } = await import('@/lib/api');
+    apiSend.mockRejectedValueOnce(
+      new ApiError({
+        type: 'x',
+        title: 'Conflict',
+        status: 409,
+        code: 'LISTING_NOT_READY',
+        detail: 'This listing is not ready to approve yet.',
+      }),
+    );
+    expect(await approveListingAction(ID)).toEqual({
+      ok: false,
+      message: 'This listing is not ready to approve yet.',
+    });
   });
 });
 

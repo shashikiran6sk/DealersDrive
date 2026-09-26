@@ -23,3 +23,15 @@ export const SECTION_TITLES = {
 
 export const PHOTOGRAPHY_CLOSED =
   'Photography can only be updated while the listing is with the review team.';
+
+export const APPROVAL_BLOCKED = 'This listing is not ready to approve yet.';
+
+export const BLOCKER_MESSAGES = {
+  DEALER_NOT_ACTIVE: 'The dealership is not active, so nothing of theirs can go live.',
+  VEHICLE_INCOMPLETE: 'The vehicle details are incomplete.',
+  CHECKS_INCOMPLETE: (missing: number) =>
+    `${missing} verification ${missing === 1 ? 'check is' : 'checks are'} still unticked.`,
+  TOO_FEW_IMAGES: (count: number, min: number) =>
+    `${count} of the ${min} images needed ${count === 1 ? 'is' : 'are'} uploaded.`,
+  NO_PRIMARY_IMAGE: 'No primary image is chosen.',
+} as const;

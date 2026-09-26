@@ -231,6 +231,27 @@ export const AdminVehicleImages = z.object({
 });
 export type AdminVehicleImages = z.infer<typeof AdminVehicleImages>;
 
+/**
+ * What stands between a listing in review and the marketplace (**R45**,
+ * **R47**). The API computes the list once, from the same rules the approve
+ * route enforces, so the review screen can never offer an approval the API
+ * would refuse.
+ */
+export const ApprovalBlockerCode = z.enum([
+  'DEALER_NOT_ACTIVE',
+  'VEHICLE_INCOMPLETE',
+  'CHECKS_INCOMPLETE',
+  'TOO_FEW_IMAGES',
+  'NO_PRIMARY_IMAGE',
+]);
+export type ApprovalBlockerCode = z.infer<typeof ApprovalBlockerCode>;
+
+export const ApprovalBlocker = z.object({
+  code: ApprovalBlockerCode,
+  message: z.string(),
+});
+export type ApprovalBlocker = z.infer<typeof ApprovalBlocker>;
+
 export const AdminListingDetail = z.object({
   listing: AdminListingRow.extend({
     reason: z.string().nullable(),
@@ -275,6 +296,8 @@ export const AdminListingDetail = z.object({
       atLabel: z.string(),
     }),
   ),
+  /** Empty when the listing may be approved; always empty out of review. */
+  blockers: z.array(ApprovalBlocker),
   actions: z.object({
     canVerify: z.boolean(),
     canRequestChanges: z.boolean(),
