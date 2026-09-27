@@ -584,8 +584,23 @@
     box-shadow: var(--shadow-lg);
   }
   .dialog-backdrop[data-state='open'],
-  .dialog[data-state='open'] {
+  .dialog[data-state='open'],
+  .dd-sheet-backdrop[data-state='open'] {
     animation: dd-dialog-fade 200ms ease-out;
+  }
+  .dd-sheet[data-state='open'] {
+    animation: dd-sheet-up 200ms ease-out;
+  }
+}
+
+@keyframes dd-sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 

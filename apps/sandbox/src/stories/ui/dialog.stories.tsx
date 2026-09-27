@@ -10,12 +10,14 @@ function DialogDemo({
   wide = false,
   withFooter = true,
   fullscreen = false,
+  sheet = false,
 }: {
   title: string;
   description?: string;
   wide?: boolean;
   withFooter?: boolean;
   fullscreen?: boolean;
+  sheet?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -23,7 +25,7 @@ function DialogDemo({
     <Dialog
       open={open}
       onOpenChange={setOpen}
-      variant={fullscreen ? 'fullscreen' : 'card'}
+      variant={fullscreen ? 'fullscreen' : sheet ? 'sheet' : 'card'}
       trigger={<Button variant="secondary">Open dialog</Button>}
       title={title}
       description={description}
@@ -101,4 +103,9 @@ export const Fullscreen: Story = {
     description: '3 / 18',
     fullscreen: true,
   },
+};
+
+export const Sheet: Story = {
+  args: { title: 'Filters', wide: true, sheet: true },
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
 };

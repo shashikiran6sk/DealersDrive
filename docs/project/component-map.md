@@ -411,6 +411,15 @@ Both in `components/search/search-toolbar.tsx` (`:11`, `:82`).
   Km. Tests `tests/unit/components/search/search-toolbar.test.tsx`. Sandbox
   `Search/SearchToolbar`.
 - `MobileFilterSheet` — `facets`, `params`, `basePath`, `resultCount`, `groups?`, `dimZeroRows?`. Bottom sheet; body-scroll lock, Escape-to-close, sticky CTA with a live count. Consumers: 2. **P0** — it is the only mobile-specific component in the product and there is no way to see it today without resizing a real browser against a real API.
+  **As rebuilt (F079):** `components/search/mobile-filter-sheet/`. Props
+  `facets`, `params`, `basePath`, `total`, `groups?`, `className?`. The same
+  `FilterPanel` (`framed={false}`, `idPrefix="sheet"`) inside
+  `Dialog variant="sheet"` (C070 gains the variant), so the trap, Escape, focus
+  return and scroll lock are Radix's rather than hand-rolled. The trigger sits
+  in `SearchToolbar`'s `leading` slot with an applied-count badge; filters apply
+  as ticked and _Show N cars_ shows the live total. Tests
+  `tests/unit/components/search/mobile-filter-sheet.test.tsx`. Sandbox
+  `Search/MobileFilterSheet`, `Primitives/Dialog` › `Sheet`.
 
 ### C080 — `AppliedFilters`
 

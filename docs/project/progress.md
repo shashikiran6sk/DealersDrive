@@ -136,8 +136,8 @@ revision · `[⛔]` withdrawn
 - [x] F076 — Search API & facets ⚠️ · one route answers page, total and facets; the portfolio's goes through the same `search()` · [#168](https://github.com/shashikiran6sk/DealersDrive/pull/168)
 - [x] F077 — Search results page · district, filters, chips, search, sort and paging, all in the URL
 - [x] F078 — Filter panel · twelve URL-driven groups with counted facets, the chip row, and a dimming results region; desktop rail (the sheet is F079) · [#171](https://github.com/shashikiran6sk/DealersDrive/pull/171)
-- [ ] F079 — Mobile filter sheet
-- [x] F080 — Search toolbar & sort · debounced search (replace while typing, push on Enter) and the five sorts
+- [x] F079 — Mobile filter sheet · the same panel in `Dialog variant="sheet"`, an applied-count badge, and a live Show N cars
+- [x] F080 — Search toolbar & sort · debounced search (replace while typing, push on Enter) and the five sorts · [#172](https://github.com/shashikiran6sk/DealersDrive/pull/172)
 - [ ] F081 — Homepage & hero search
 - [x] F082 — Vehicle detail page · `/car/[slug]`, ACTIVE only, 404 otherwise; no enquiry, report or save (deferred)
 - [x] F083 — Vehicle gallery & lightbox · **R48, R49** — the §2.9 strip under a blueprint main image, and the §2.10 lightbox with its numbered rail, on the `Dialog` primitive

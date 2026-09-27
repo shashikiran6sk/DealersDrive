@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AppliedFilters } from '@/components/search/applied-filters';
 import { DistrictScope } from '@/components/search/district-scope';
 import { FilterPanel } from '@/components/search/filter-panel';
+import { MobileFilterSheet } from '@/components/search/mobile-filter-sheet';
 import { SearchToolbar } from '@/components/search/search-toolbar';
 import {
   SearchNavigationProvider,
@@ -72,7 +73,19 @@ export default async function CarsPage({
               {CARS_TEXT.count(listing.page.total)}
             </span>
           </div>
-          <SearchToolbar params={params} basePath={CARS_PATH} />
+          <SearchToolbar
+            params={params}
+            basePath={CARS_PATH}
+            leading={
+              <MobileFilterSheet
+                key="filters"
+                facets={listing.facets}
+                params={params}
+                basePath={CARS_PATH}
+                total={listing.page.total}
+              />
+            }
+          />
         </div>
 
         <div className="mb-[14px] flex flex-col gap-[10px]">

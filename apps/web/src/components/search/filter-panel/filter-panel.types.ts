@@ -23,5 +23,6 @@ export interface FilterPanelProps {
   groups?: readonly FilterGroupKey[];
   idPrefix?: string;
   heading?: string;
+  framed?: boolean;
   className?: string;
 }

@@ -342,3 +342,21 @@ describe('/cars search and sort', () => {
     expect(screen.getByRole('combobox', { name: 'Sort cars' })).toHaveValue('price_desc');
   });
 });
+
+/** F079 — below `lg` the rail is hidden and the same panel opens as a sheet. */
+describe('/cars on a phone', () => {
+  it('puts a Filters button beside the sort, counting what is applied', async () => {
+    serve({ ...response([card()]), facets: FACETS });
+    render(
+      await CarsPage({
+        searchParams: Promise.resolve({ fuel: 'petrol', minKm: '0', maxKm: '20000' }),
+      }),
+    );
+    const button = screen.getByRole('button', { name: 'Filters, 2 filters applied' });
+    expect(button).toHaveClass('lg:hidden');
+    expect(screen.getByRole('complementary', { name: 'Filter cars' })).toHaveClass(
+      'hidden',
+      'lg:block',
+    );
+  });
+});

@@ -2220,6 +2220,14 @@ The bottom sheet below `lg`: backdrop click closes, body scroll locks, and the s
 - **Frontend** `MobileFilterSheet` in `components/search/search-toolbar.tsx`
 - **Components — New (Shared)** `MobileFilterSheet`
 - **Sandbox** closed / open at the 375 and 768 viewports. **P0** — the only mobile-specific component in the product, and today there is no way to see it without resizing a real browser against a real API.
+- ⚠️ **Entry corrected on landing.** `components/search/mobile-filter-sheet/`,
+  on a new `sheet` variant of the `Dialog` primitive rather than the legacy
+  hand-rolled overlay (which had no focus trap). It renders the full
+  `FilterPanel` — every group, not the legacy's budget, fuel and body only —
+  and applies each change at once, so _Show N cars_ is the live total and the
+  CTA only closes. A `framed` prop on `FilterPanel` drops the card and heading
+  inside the sheet. Tests `tests/unit/components/search/mobile-filter-sheet.test.tsx`
+  and the sheet variant in `dialog.test.tsx`.
 
 ### F080 — Search toolbar & sort
 
