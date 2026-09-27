@@ -48,3 +48,10 @@ An unknown value in a hand-edited link reads as the default.
 
 A slot before the sort, which is where the mobile _Filters_ button (F079) sits
 — side by side with the sort at 375px, as §3.3 draws it.
+
+### `searchBox?: ReactNode` — R54
+
+A page can put its own search control in the box's place. `/cars` passes
+`CarSearchBox`, which suggests and writes only on a choice; the portfolio keeps
+the debounced `SearchField`, whose one dealership's stock is small enough that
+searching as you type is the better answer.

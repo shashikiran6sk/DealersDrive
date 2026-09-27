@@ -11,6 +11,7 @@ export function SearchToolbar({
   params,
   basePath,
   showSearch = true,
+  searchBox,
   searchPlaceholder,
   idPrefix = 'results',
   leading,
@@ -22,7 +23,9 @@ export function SearchToolbar({
       aria-label={SEARCH_TOOLBAR_TEXT.groupLabel}
       className={cn('flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto', className)}
     >
-      {showSearch ? (
+      {searchBox ? (
+        <div className="w-full sm:w-auto">{searchBox}</div>
+      ) : showSearch ? (
         <div className="w-full sm:w-auto">
           <SearchField
             key={basePath}

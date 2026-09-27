@@ -5413,3 +5413,31 @@ Two defects in the filter panel, found in manual testing:
 - **Tests** `filter-panel.test.tsx` ("the district decides the place filters",
   "an option with nothing behind it"), `public-vehicle-search.test.ts` (no
   dealer or town facet without a district).
+
+## R54 — Car search suggestions
+
+**Revises F077, F080** · no schema change · new route `GET /v1/search/vehicles`
+
+The `/cars` search box becomes a typeahead like the directory's (R43), on the
+same shared `Autocomplete` rather than a second one:
+
+- **`GET /v1/search/vehicles`** (`CarSuggestQuery` → `CarSuggestResponse`):
+  brands, models and variants from the public cars in scope, each with its
+  count and the canonical parameters choosing it writes. Narrowed by
+  `district`, `city` and `dealer` only; six rows by default, ten at most;
+  `search` echoed. Nothing about any one car or dealership. BFF:
+  `/api/search/vehicles`.
+- **`CarSearchBox`** (C082) in `SearchToolbar`'s new `searchBox` slot. Typing
+  only asks (300 ms debounce, abort, stale guard); nothing is written to the
+  URL until a row is chosen (↑/↓ + Enter, or a click), Enter searches free text
+  when there is nothing to choose, × clears `q`. Escape and a click away close
+  it. Choosing: brand → `brand=`; model → `brand=` + `model=`; variant → both
+  plus `q=<variant>`.
+- **`useAutocomplete`** gains `reset(next)`, skips asking about the value it
+  was mounted with, and drops an answer that lands after its request was
+  cancelled. The dealers' box shares all three.
+- The portfolio keeps the plain debounced `SearchField`.
+- **Tests** `public-vehicle-search.test.ts` ("the typeahead"),
+  `search.test.ts` (`rankSuggestions`, router order), `public.test.ts`
+  (`CarSuggestQuery`), `search-vehicles-route.test.ts`,
+  `car-search-box.test.tsx`.

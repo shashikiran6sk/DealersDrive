@@ -1,5 +1,8 @@
 import type { FacetOption, PublicVehiclesResponse, VehicleFacets } from '@dealers-drive/contracts';
-import { PublicVehiclesResponse as ResponseSchema } from '@dealers-drive/contracts';
+import {
+  CarSuggestResponse,
+  PublicVehiclesResponse as ResponseSchema,
+} from '@dealers-drive/contracts';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -440,4 +443,94 @@ describe("one dealership's cars, through the same search", () => {
   it.each(['city=arcot', `dealer=x`, 'district=search-north'])('refuses %s', async (query) => {
     await h.agent().get(`/v1/dealers/${arcot.slug}/vehicles?${query}`).expect(400);
   });
+});
+
+/**
+ * The car typeahead (**R54**): brands, models and variants from the public cars
+ * in scope, each carrying the canonical parameters choosing it writes.
+ */
+describe('the typeahead', () => {
+  async function suggest(query: string): Promise<CarSuggestResponse> {
+    const { body } = await h.agent().get(`/v1/search/vehicles?${query}`).expect(200);
+    return CarSuggestResponse.parse(body);
+  }
+
+  it('suggests the model and its variant, counted in live cars, and echoes the search', async () => {
+    const found = await suggest(`search=cre&${HERE}`);
+    expect(found.search).toBe('cre');
+    expect(found.data).toEqual([
+      {
+        kind: 'MODEL',
+        label: 'Hyundai Creta',
+        metaLabel: 'Model · 1 car',
+        brand: 'hyundai',
+        model: 'creta',
+        variant: null,
+        count: 1,
+      },
+      {
+        kind: 'VARIANT',
+        label: 'Hyundai Creta SX(O)',
+        metaLabel: 'Variant · 1 car',
+        brand: 'hyundai',
+        model: 'creta',
+        variant: 'SX(O)',
+        count: 1,
+      },
+    ]);
+    expect(found.countLabel).toBe('2 matches');
+  });
+
+  it('puts the brand first, then its models, and folds spellings that slug alike', async () => {
+    const found = await suggest(`search=maruti&${HERE}`);
+    expect(found.data[0]).toMatchObject({ kind: 'BRAND', brand: 'maruti-suzuki', count: 2 });
+    expect(found.data.filter((row) => row.kind === 'BRAND')).toHaveLength(1);
+    expect(found.data.filter((row) => row.kind === 'MODEL').map((row) => row.model)).toEqual([
+      'dzire',
+      'swift',
+    ]);
+  });
+
+  it('matches every word, across make and model', async () => {
+    const found = await suggest(`search=hyundai%20ven&${HERE}`);
+    expect(found.data.map((row) => row.label)).toEqual(['Hyundai Venue', 'Hyundai Venue Base']);
+  });
+
+  it('keeps to the district, the towns and the dealers in the URL', async () => {
+    expect((await suggest(`search=city&${HERE}`)).data).toEqual([]);
+    expect((await suggest(`search=city&${THERE}`)).data[0]).toMatchObject({
+      kind: 'MODEL',
+      brand: 'honda',
+      model: 'city',
+    });
+    expect((await suggest(`search=tata&${HERE}&city=arcot`)).data).toEqual([]);
+    expect((await suggest(`search=tata&${HERE}&dealer=${arakkonam.slug}`)).data).toHaveLength(3);
+  });
+
+  it('leads to exactly as many cars as it counts', async () => {
+    const [row] = (await suggest(`search=hyundai&${HERE}`)).data;
+    expect(row).toMatchObject({ kind: 'BRAND', brand: 'hyundai', count: 2 });
+    const page = await search(`${HERE}&brand=${row?.brand ?? ''}`);
+    expect(page.page.total).toBe(row?.count);
+  });
+
+  it('answers with nothing about any one car or dealership', async () => {
+    const text = JSON.stringify(await suggest(`search=a&${HERE}&limit=10`));
+    expect(text).not.toContain(arcot.slug);
+    expect(text).not.toContain('Motor Yard');
+    expect(text).not.toMatch(/KL 07|₹/);
+  });
+
+  it('keeps to the limit, and says how many matched', async () => {
+    const found = await suggest(`search=a&${HERE}&limit=2`);
+    expect(found.data).toHaveLength(2);
+    expect(Number(found.countLabel.split(' ')[0])).toBeGreaterThan(2);
+  });
+
+  it.each(['search=', 'search=%20', 'search=cre&limit=11', 'search=cre&brand=hyundai', 'q=cre'])(
+    'refuses %s',
+    async (query) => {
+      await h.agent().get(`/v1/search/vehicles?${query}`).expect(400);
+    },
+  );
 });

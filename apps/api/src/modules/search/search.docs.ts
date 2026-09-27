@@ -193,5 +193,65 @@ export const searchDocs: ModuleDocs = {
       ],
       errors: [400, 404, 429],
     },
+    {
+      method: 'get',
+      path: '/v1/search/vehicles',
+      operationId: 'suggestVehicles',
+      tag: DOC_TAGS.vehiclesPublic,
+      summary: 'Car suggestions, while the buyer is still typing',
+      description:
+        'The typeahead behind the marketplace\u2019s search box (**R54**), the counterpart of ' +
+        '`GET /v1/search/dealers`: called after the first character on a 300 ms debounce, ' +
+        'six rows by default and never more than ten.\n\n' +
+        'A row is a **brand**, a **model** or a **variant** found in the public cars in ' +
+        'scope, never a car: no price, no photograph and no dealership. Each carries the ' +
+        'parameters choosing it writes \u2014 `brand` and `model` are the same slugs the ' +
+        'marketplace\u2019s filters take, and a variant, which has no filter of its own, is ' +
+        'its model plus `variant` as `q`.\n\n' +
+        'Every word of `search` must appear in the row\u2019s label. Ranking is label-prefix, ' +
+        'then word-prefix, then anywhere; ties go brand, model, variant, then most cars, ' +
+        'then alphabetically, so two identical requests cannot answer in two orders. Spellings ' +
+        'that slug alike are one row, labelled with the commonest.\n\n' +
+        '`district`, `city` and `dealer` narrow it exactly as they narrow `GET /v1/vehicles`; ' +
+        'the other filters do not, because a suggestion replaces the brand and model a buyer ' +
+        'has chosen. `search` is echoed for the client\u2019s stale-answer check, and ' +
+        '`countLabel` counts everything that matched, not the rows returned.\n\n' +
+        'Cached publicly for a minute and rate-limited per IP like every public read.',
+      audience: 'public',
+      query: 'CarSuggestQuery',
+      rateLimit: '120 requests per minute per IP, shared with the other public reads.',
+      responses: [
+        {
+          status: 200,
+          description: 'The suggestions, best match first, and the count they were cut from.',
+          schema: 'CarSuggestResponse',
+          example: {
+            search: 'cre',
+            data: [
+              {
+                kind: 'MODEL',
+                label: 'Hyundai Creta',
+                metaLabel: 'Model \u00b7 5 cars',
+                brand: 'hyundai',
+                model: 'creta',
+                variant: null,
+                count: 5,
+              },
+              {
+                kind: 'VARIANT',
+                label: 'Hyundai Creta SX(O)',
+                metaLabel: 'Variant \u00b7 2 cars',
+                brand: 'hyundai',
+                model: 'creta',
+                variant: 'SX(O)',
+                count: 2,
+              },
+            ],
+            countLabel: '2 matches',
+          },
+        },
+      ],
+      errors: [400, 429],
+    },
   ],
 };

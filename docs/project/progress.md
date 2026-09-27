@@ -221,8 +221,9 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R49 — The VDP gallery is the one the spec draws · revises F083/R48 · strip, rail and lightbox header back, per §2.9/§2.10
 - [x] R50 — `/cars` takes the header's district · revises F074/F077/R23 · `?district=` on `/v1/vehicles`, the dialog counts cars on `/cars` · [#167](https://github.com/shashikiran6sk/DealersDrive/pull/167)
 - [x] R51 — A marketplace worth searching: 320 dev cars · revises F097 (part) · `pnpm db:seed:dev` writes dealerships then cars, deterministic and re-runnable · [#169](https://github.com/shashikiran6sk/DealersDrive/pull/169)
-- [x] R52 — A car's colour is one of twelve families · revises F061/F076/F078/R51 · ⚠️ enum column, old text kept in `legacyColor`, conservative backfill
-- [x] R53 — Filters offer only what can be chosen · revises F076/F078/R52 · Dealer needs a district like City / Town; zero-count options are disabled, not grey
+- [x] R52 — A car's colour is one of twelve families · revises F061/F076/F078/R51 · ⚠️ enum column, old text kept in `legacyColor`, conservative backfill · [#175](https://github.com/shashikiran6sk/DealersDrive/pull/175)
+- [x] R53 — Filters offer only what can be chosen · revises F076/F078/R52 · Dealer needs a district like City / Town; zero-count options are disabled, not grey · [#176](https://github.com/shashikiran6sk/DealersDrive/pull/176)
+- [x] R54 — Car search suggestions · revises F077/F080 · `GET /v1/search/vehicles` + `CarSearchBox` on the shared typeahead; typing no longer writes the URL
 
 ---
 

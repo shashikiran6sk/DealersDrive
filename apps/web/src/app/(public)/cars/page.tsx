@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { AppliedFilters } from '@/components/search/applied-filters';
+import { CarSearchBox } from '@/components/search/car-search-box';
 import { DistrictScope } from '@/components/search/district-scope';
 import { FilterPanel } from '@/components/search/filter-panel';
 import { MobileFilterSheet } from '@/components/search/mobile-filter-sheet';
@@ -76,6 +77,13 @@ export default async function CarsPage({
           <SearchToolbar
             params={params}
             basePath={CARS_PATH}
+            searchBox={
+              <CarSearchBox
+                params={params}
+                basePath={CARS_PATH}
+                {...(place ? { districtName: place } : {})}
+              />
+            }
             leading={
               <MobileFilterSheet
                 key="filters"
