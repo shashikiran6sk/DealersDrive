@@ -8,13 +8,21 @@ import { DealerStrip } from './dealer-strip';
 import { VEHICLE_CARD_TEXT, vehicleHref } from './vehicle-card.constants';
 import { VehicleImage } from './vehicle-image';
 
+export type VehicleCardVariant = 'grid' | 'compact';
+
 export interface VehicleCardProps {
   vehicle: VehicleCardDto;
+  variant?: VehicleCardVariant;
   priority?: boolean;
   className?: string;
 }
 
-export function VehicleCard({ vehicle, priority = false, className }: VehicleCardProps) {
+export function VehicleCard({
+  vehicle,
+  variant = 'grid',
+  priority = false,
+  className,
+}: VehicleCardProps) {
   return (
     <article
       className={cn(
@@ -30,7 +38,12 @@ export function VehicleCard({ vehicle, priority = false, className }: VehicleCar
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-[9px] px-[13px] pt-[12px] pb-[14px]">
+      <div
+        className={cn(
+          'flex flex-col px-[13px] pt-[12px] pb-[14px]',
+          variant === 'compact' ? 'gap-[8px]' : 'gap-[9px]',
+        )}
+      >
         <h3 className="line-clamp-2 font-heading text-[15px] font-semibold leading-[1.25]">
           <Link href={vehicleHref(vehicle.slug)} className="after:absolute after:inset-0">
             {vehicle.title}
@@ -40,7 +53,7 @@ export function VehicleCard({ vehicle, priority = false, className }: VehicleCar
           {vehicle.priceLabel ?? VEHICLE_CARD_TEXT.priceOnRequest}
         </div>
         <div className="text-[12px] ink-secondary tnum">{vehicle.metaLabel}</div>
-        <DealerStrip dealer={vehicle.dealer} />
+        {variant === 'compact' ? null : <DealerStrip dealer={vehicle.dealer} />}
       </div>
     </article>
   );

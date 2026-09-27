@@ -675,8 +675,9 @@ none of which any test or tool can currently exercise.
 
 > ⚠️ **As landed (F075, scoped by R45).** `components/vehicle/vehicle-card/`
 > — `VehicleCard`, `VehicleImage`, `DealerStrip`, `VehicleCardSkeleton`, one
-> file each. Props are `vehicle: VehicleCardDto`, `priority?`, `className?`:
-> the **grid** variant only, and **no save button and no sold state**. Saved
+> file each. Props are `vehicle: VehicleCardDto`, `variant?`, `priority?`,
+> `className?`: **grid** and, since R48, **compact** (the portfolio card, no
+> dealer strip) — no list variant, and **no save button and no sold state**. Saved
 > cars (F087) are deferred, and a sold car is not public at all in this phase
 > — only ACTIVE listings reach a buyer — so neither state is reachable yet.
 > There is therefore no `useSavedCars` coupling (C-1). `VehicleImage` takes the

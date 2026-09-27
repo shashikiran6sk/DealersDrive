@@ -15,6 +15,13 @@ as the dealer card, so the one real `<a>` is the title and a screen reader
 hears the car's name rather than "link, image". The dealer strip is on every
 card, without exception: who is selling is part of what the card says.
 
+### `variant?: 'grid' | 'compact'`
+
+§2.8's two card variants that exist today (**R48**). `compact` is the
+portfolio's: the same card with an 8px body gap and **no dealer strip**,
+because it sits under that dealer's own header. The legacy card used the same
+prop name for the same reason, so a reader of either finds one vocabulary.
+
 There is no save button and no sold state. Saved cars (F087) are deferred, and
 in this phase only ACTIVE listings are public, so a sold card cannot occur.
 Both return as props when their features land.

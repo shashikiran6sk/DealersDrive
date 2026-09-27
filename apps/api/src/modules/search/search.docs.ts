@@ -105,5 +105,34 @@ export const searchDocs: ModuleDocs = {
       ],
       errors: [400, 404, 429],
     },
+    {
+      method: 'get',
+      path: '/v1/dealers/:slug/vehicles',
+      operationId: 'listPublicDealerVehicles',
+      tag: DOC_TAGS.vehiclesPublic,
+      summary: 'One dealership\u2019s cars on the marketplace',
+      description:
+        'The inventory on a dealer\u2019s portfolio page (**R48**): the same cards, the same ' +
+        'public rule and the same newest-first order as `GET /v1/vehicles`, limited to one ' +
+        'dealership. `page.total` is every live car it has, and is the number the directory ' +
+        'card and the portfolio\u2019s "Cars available" show — all three read one predicate.\n\n' +
+        'A slug that is not a listed (ACTIVE) dealership is `404 DEALER_NOT_FOUND`; a listed ' +
+        'dealership with nothing live is an empty page, not an error.',
+      audience: 'public',
+      params: 'SlugParam',
+      query: 'PublicVehicleQuery',
+      responses: [
+        {
+          status: 200,
+          description: 'A page of the dealership\u2019s vehicle cards.',
+          schema: 'PublicVehiclesResponse',
+          example: {
+            data: [CARD_EXAMPLE],
+            page: { page: 1, limit: 24, total: 1, totalPages: 1 },
+          },
+        },
+      ],
+      errors: [400, 404, 429],
+    },
   ],
 };

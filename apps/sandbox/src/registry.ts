@@ -603,6 +603,21 @@ export const registry: RegistryEntry[] = [
     storyId: 'dealers-directorycard',
   },
   {
+    id: 'C038b',
+    name: 'DealerInventory',
+    source: 'apps/web/src/components/dealers/dealer-inventory/dealer-inventory.tsx',
+    category: 'Dealer',
+    ownership: 'Feature-specific',
+    purpose:
+      'The portfolio inventory (R48, §3.6): the dealership\u2019s live cars as compact VehicleCards (no dealer strip), the total available, paging, and an empty state.',
+    aliases: ['PortfolioInventory', 'DealerCars', 'DealerStock', 'InventoryGrid'],
+    features: ['F086', 'R48'],
+    props: ['dealerSlug', 'brandName', 'inventory'],
+    states: ['several cars', 'one car', 'nothing available', 'paged'],
+    reusable: false,
+    storyId: 'dealers-dealerinventory',
+  },
+  {
     id: 'C039',
     name: 'GoogleSignInButton',
     source: 'apps/web/src/components/auth/google-button/google-button.tsx',
@@ -1338,7 +1353,7 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-shared',
     purpose:
-      'DESIGN-SPEC §2.8 grid card (F075): 4:3 primary photograph, year plate, title, tabular price, meta row, and the dealer strip on every card. Whole card links to the VDP by slug. No save button or sold state yet (F087 deferred; only ACTIVE listings are public).',
+      'DESIGN-SPEC §2.8 grid and compact cards (F075, R48): 4:3 primary photograph, year plate, title, tabular price, meta row, and the dealer strip on every card. Whole card links to the VDP by slug. No save button or sold state yet (F087 deferred; only ACTIVE listings are public).',
     aliases: [
       'CarCard',
       'ListingCard',
@@ -1347,9 +1362,10 @@ export const registry: RegistryEntry[] = [
       'VehicleCardSkeleton',
       'DealerStrip',
     ],
-    features: ['F075', 'F077', 'R45'],
-    props: ['vehicle', 'priority', 'className'],
+    features: ['F075', 'F077', 'R45', 'R48'],
+    props: ['vehicle', 'variant', 'priority', 'className'],
     states: [
+      'compact (portfolio, no dealer strip)',
       'with photograph',
       'without photograph',
       'price on request',

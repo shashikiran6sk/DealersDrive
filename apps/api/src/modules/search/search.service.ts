@@ -6,7 +6,7 @@ import type {
 
 import { NotFoundError } from '../../platform/errors.js';
 import { toPublicVehicleDetail, toVehicleCard } from './search.mapper.js';
-import { VEHICLE_NOT_FOUND } from './search.messages.js';
+import { DEALER_NOT_FOUND, VEHICLE_NOT_FOUND } from './search.messages.js';
 import type { SearchRepository } from './search.repository.js';
 
 export interface SearchDeps {
@@ -14,6 +14,27 @@ export interface SearchDeps {
 }
 
 export function createSearchService({ repo }: SearchDeps) {
+  async function page(
+    query: PublicVehicleQuery,
+    dealerSlug?: string,
+  ): Promise<PublicVehiclesResponse> {
+    const skip = (query.page - 1) * query.limit;
+    const [rows, total] = await Promise.all([
+      repo.cards(skip, query.limit, dealerSlug),
+      repo.count(dealerSlug),
+    ]);
+
+    return {
+      data: rows.map(toVehicleCard),
+      page: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / query.limit)),
+      },
+    };
+  }
+
   return {
     async vehicle(slug: string): Promise<PublicVehicleDetail> {
       const row = await repo.detail(slug);
@@ -21,19 +42,15 @@ export function createSearchService({ repo }: SearchDeps) {
       return toPublicVehicleDetail(row);
     },
 
-    async vehicles(query: PublicVehicleQuery): Promise<PublicVehiclesResponse> {
-      const skip = (query.page - 1) * query.limit;
-      const [rows, total] = await Promise.all([repo.cards(skip, query.limit), repo.count()]);
+    vehicles(query: PublicVehicleQuery): Promise<PublicVehiclesResponse> {
+      return page(query);
+    },
 
-      return {
-        data: rows.map(toVehicleCard),
-        page: {
-          page: query.page,
-          limit: query.limit,
-          total,
-          totalPages: Math.max(1, Math.ceil(total / query.limit)),
-        },
-      };
+    async dealerVehicles(slug: string, query: PublicVehicleQuery): Promise<PublicVehiclesResponse> {
+      if (!(await repo.publicDealerExists(slug))) {
+        throw new NotFoundError(DEALER_NOT_FOUND, { code: 'DEALER_NOT_FOUND' });
+      }
+      return page(query, slug);
     },
   };
 }

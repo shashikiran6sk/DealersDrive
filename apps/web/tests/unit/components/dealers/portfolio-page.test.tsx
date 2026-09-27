@@ -1,6 +1,10 @@
-import type { DealerPublicProfile } from '@dealers-drive/contracts';
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import type {
+  DealerPublicProfile,
+  PublicVehiclesResponse,
+  VehicleCardDto,
+} from '@dealers-drive/contracts';
+import { render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
 import DealerPortfolioPage, { generateMetadata } from '@/app/(public)/dealers/[slug]/page';
@@ -23,10 +27,12 @@ import { ApiError } from '@/lib/api';
  * Nothing here pins the 170px cover or the 46px logo overhang.
  */
 const apiGet = vi.fn();
+const apiGetParsed = vi.fn();
 
 vi.mock('@/lib/api', async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
   apiGet: (path: string) => apiGet(path) as unknown,
+  apiGetParsed: (...args: unknown[]) => apiGetParsed(...args) as unknown,
 }));
 
 const DEALER: DealerPublicProfile = {
@@ -70,6 +76,39 @@ const DEALER: DealerPublicProfile = {
 };
 
 const params = Promise.resolve({ slug: 'sri-lakshmi-motors' });
+const searchParams = Promise.resolve({});
+
+function inventory(
+  data: VehicleCardDto[] = [],
+  page: Partial<PublicVehiclesResponse['page']> = {},
+): PublicVehiclesResponse {
+  return {
+    data,
+    page: { page: 1, limit: 24, total: data.length, totalPages: 1, ...page },
+  };
+}
+
+function car(slug: string): VehicleCardDto {
+  return {
+    slug,
+    title: '2023 Hyundai Creta SX(O)',
+    year: 2023,
+    priceLabel: '₹14,50,000',
+    metaLabel: '22,400 km · Petrol · Automatic · Vellore',
+    image: { url: `https://media.test/${slug}.webp`, alt: '2023 Hyundai Creta SX(O)' },
+    imageCount: 8,
+    dealer: {
+      name: 'Sri Lakshmi Motors',
+      slug: 'sri-lakshmi-motors',
+      initials: 'SL',
+      isVerified: true,
+    },
+  };
+}
+
+beforeEach(() => {
+  apiGetParsed.mockResolvedValue(inventory());
+});
 
 function serve(dealer: DealerPublicProfile | ApiError): void {
   apiGet.mockImplementation(() =>
@@ -89,7 +128,7 @@ const notListed = () =>
 describe('the dealership it shows', () => {
   it('renders the identity and the address', async () => {
     serve(DEALER);
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sri Lakshmi Motors');
     expect(screen.getByText('VERIFIED DEALER')).toBeInTheDocument();
@@ -108,7 +147,7 @@ describe('the dealership it shows', () => {
    */
   it('does not repeat the registered name under the trading one', async () => {
     serve(DEALER);
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.queryByText('Sri Lakshmi Motors Pvt Ltd')).toBeNull();
     const jsonLd = container.querySelector('script[type="application/ld+json"]');
@@ -122,7 +161,7 @@ describe('the dealership it shows', () => {
    */
   it('renders the stats the API composed, rather than deriving them again', async () => {
     serve(DEALER);
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByText('Cars available')).toBeInTheDocument();
     expect(screen.getByText('27')).toBeInTheDocument();
@@ -136,7 +175,7 @@ describe('the dealership it shows', () => {
    */
   it('does not say the town twice in the one list', async () => {
     serve(DEALER);
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByText('Vellore, Tamil Nadu')).toBeInTheDocument();
     expect(screen.queryByText('Location', { selector: 'dt' })).toBeNull();
@@ -144,7 +183,7 @@ describe('the dealership it shows', () => {
 
   it('renders every contact row the API sent', async () => {
     serve(DEALER);
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByText('Vellore, Tamil Nadu')).toBeInTheDocument();
     expect(screen.getByText('33AABCS1429B1ZX')).toBeInTheDocument();
@@ -157,7 +196,7 @@ describe('the dealership it shows', () => {
    */
   it('offers no phone row to tap', async () => {
     serve(DEALER);
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.queryByText(/tap to reveal/i)).toBeNull();
     expect(screen.queryByText('Phone', { selector: 'dt' })).toBeNull();
@@ -169,7 +208,7 @@ describe('the dealership it shows', () => {
       ...DEALER,
       stats: DEALER.stats.map((s) => (s.key === 'response' ? { ...s, value: '' } : s)),
     });
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByText('—')).toBeInTheDocument();
   });
@@ -181,7 +220,7 @@ describe('the dealership it shows', () => {
    */
   it('renders the tagline under the dealership name', async () => {
     serve(DEALER);
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     const tagline = screen.getByText(DEALER.tagline as string);
 
@@ -203,7 +242,7 @@ describe('the dealership it shows', () => {
    */
   it('renders no line at all when the dealership wrote no tagline', async () => {
     serve({ ...DEALER, tagline: null });
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.queryByText(/family-run since 1998/i)).toBeNull();
     expect(screen.queryByText(/has not written an introduction yet/i)).toBeNull();
@@ -225,7 +264,7 @@ describe('the dealership it shows', () => {
 describe('the dealership card', () => {
   it('keeps the facts and the services in one card', async () => {
     serve(DEALER);
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     const card = screen.getByText('33AABCS1429B1ZX').closest('section');
 
@@ -238,16 +277,16 @@ describe('the dealership card', () => {
   /** Two cards in the info row, and the map is the second of them. */
   it('leaves the info row at two cards', async () => {
     serve(DEALER);
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
-    const cards = container.querySelectorAll('section');
+    const cards = container.querySelectorAll('section:not(#inventory)');
     expect(cards).toHaveLength(2);
     expect(cards[1]).toContainElement(container.querySelector('iframe'));
   });
 
   it('renders every service the dealership listed', async () => {
     serve(DEALER);
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     expect([...container.querySelectorAll('.tag')].map((tag) => tag.textContent)).toEqual([
       'Hatchbacks',
@@ -261,7 +300,7 @@ describe('the dealership card', () => {
    */
   it('renders no services strip for a dealership that named none', async () => {
     serve({ ...DEALER, services: [] });
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(container.querySelectorAll('.tag')).toHaveLength(0);
     // The facts are still there — only the chips are gone.
@@ -278,7 +317,7 @@ describe('the dealership card', () => {
 describe('the phone number', () => {
   it('appears nowhere in the document, JSON-LD included', async () => {
     serve(DEALER);
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(container.textContent ?? '').not.toMatch(/\b[6-9]\d{9}\b/);
     const jsonLd = container.querySelector('script[type="application/ld+json"]');
@@ -300,7 +339,7 @@ describe('the phone number', () => {
 describe('the location map', () => {
   it('draws the map the API composed', async () => {
     serve(DEALER);
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     const frame = container.querySelector('iframe');
     expect(frame?.getAttribute('src')).toBe(DEALER.address.embedUrl);
@@ -310,7 +349,7 @@ describe('the location map', () => {
 
   it('shows the slot, not a map of the town, when no pin was resolved', async () => {
     serve({ ...DEALER, address: { ...DEALER.address, geo: null, embedUrl: null } });
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(container.querySelector('iframe')).toBeNull();
     expect(screen.getByText(/Map — dealership location/i)).toBeInTheDocument();
@@ -322,7 +361,7 @@ describe('the location map', () => {
   /** The button does not wait on the map, and the map does not wait on it. */
   it('keeps the directions button when there is no map', async () => {
     serve({ ...DEALER, address: { ...DEALER.address, geo: null, embedUrl: null } });
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByRole('link', { name: /get directions/i })).toBeInTheDocument();
   });
@@ -335,7 +374,7 @@ describe('the location map', () => {
 describe('get directions', () => {
   it('links to the dealer’s own Maps link, in a new tab', async () => {
     serve(DEALER);
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     const link = screen.getByRole('link', { name: /get directions/i });
     expect(link).toHaveAttribute('href', 'https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9');
@@ -348,7 +387,7 @@ describe('get directions', () => {
       ...DEALER,
       address: { ...DEALER.address, mapsUrl: null, geo: null, embedUrl: null },
     });
-    const { container } = render(await DealerPortfolioPage({ params }));
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.queryByRole('link', { name: /get directions/i })).toBeNull();
     // And nothing was composed from the address to stand in for it.
@@ -366,10 +405,10 @@ describe('the inventory section', () => {
    */
   it('says the dealership has listed nothing, and agrees with the stat', async () => {
     serve(DEALER);
-    render(await DealerPortfolioPage({ params }));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByText('0 cars available')).toBeInTheDocument();
-    expect(screen.getByText(/has no cars listed yet/i)).toBeInTheDocument();
+    expect(screen.getByText('No vehicles currently available.')).toBeInTheDocument();
   });
 
   it('says "1 car available", not "1 cars available"', async () => {
@@ -377,7 +416,8 @@ describe('the inventory section', () => {
       ...DEALER,
       stats: DEALER.stats.map((s) => (s.key === 'cars' ? { ...s, value: '1' } : s)),
     });
-    render(await DealerPortfolioPage({ params }));
+    apiGetParsed.mockResolvedValue(inventory([car('only')]));
+    render(await DealerPortfolioPage({ params, searchParams }));
 
     expect(screen.getByText('1 car available')).toBeInTheDocument();
   });
@@ -387,14 +427,14 @@ describe('a dealership that is not listed', () => {
   it('404s rather than rendering a thin page', async () => {
     serve(notListed());
 
-    await expect(DealerPortfolioPage({ params })).rejects.toThrow('NEXT_NOT_FOUND');
+    await expect(DealerPortfolioPage({ params, searchParams })).rejects.toThrow('NEXT_NOT_FOUND');
   });
 
   /** A 500 is not a 404 — the guard is narrow on purpose. */
   it('lets a real failure through', async () => {
     serve(new ApiError({ type: 'about:blank', title: 'Internal', status: 500, code: 'INTERNAL' }));
 
-    await expect(DealerPortfolioPage({ params })).rejects.toThrow(ApiError);
+    await expect(DealerPortfolioPage({ params, searchParams })).rejects.toThrow(ApiError);
   });
 });
 
@@ -438,5 +478,74 @@ describe('metadata', () => {
     serve(notListed());
 
     expect(await generateMetadata({ params })).toEqual({ title: 'Dealership not found' });
+  });
+});
+
+describe('the inventory (R48)', () => {
+  it("asks for the dealership's live cars and draws them as compact cards", async () => {
+    serve(DEALER);
+    apiGetParsed.mockResolvedValue(inventory([car('a'), car('b'), car('c')]));
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/dealers/sri-lakshmi-motors/vehicles',
+      { revalidate: 60, tags: ['dealer:sri-lakshmi-motors', 'vehicles'] },
+    );
+    const section = within(screen.getByRole('region', { name: 'Inventory' }));
+    expect(section.getAllByRole('article')).toHaveLength(3);
+    expect(section.getByText('3 cars available')).toBeInTheDocument();
+    expect(section.getAllByRole('link', { name: '2023 Hyundai Creta SX(O)' })[0]).toHaveAttribute(
+      'href',
+      '/car/a',
+    );
+  });
+
+  it("leaves the dealer strip off the cards on the dealer's own page", async () => {
+    serve(DEALER);
+    apiGetParsed.mockResolvedValue(inventory([car('a')]));
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const card = within(screen.getByRole('article'));
+    expect(card.queryByText('Sri Lakshmi Motors')).not.toBeInTheDocument();
+    expect(card.queryByText('Verified')).not.toBeInTheDocument();
+  });
+
+  it('says plainly when nothing is available', async () => {
+    serve(DEALER);
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const section = within(screen.getByRole('region', { name: 'Inventory' }));
+    expect(section.getByText('No vehicles currently available.')).toBeInTheDocument();
+    expect(section.getByText('0 cars available')).toBeInTheDocument();
+    expect(section.queryByRole('article')).not.toBeInTheDocument();
+    expect(section.getByRole('link', { name: 'Browse all cars' })).toHaveAttribute('href', '/cars');
+  });
+
+  it('pages the inventory, keeping the full count, and reads the page from the URL', async () => {
+    serve(DEALER);
+    apiGetParsed.mockResolvedValue(
+      inventory([car('a')], { page: 2, limit: 24, total: 30, totalPages: 2 }),
+    );
+    render(await DealerPortfolioPage({ params, searchParams: Promise.resolve({ page: '2' }) }));
+
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/dealers/sri-lakshmi-motors/vehicles?page=2',
+      expect.anything(),
+    );
+    const nav = within(screen.getByRole('navigation', { name: 'Inventory pages' }));
+    expect(screen.getByText('30 cars available')).toBeInTheDocument();
+    expect(nav.getByRole('link', { name: '← Previous' })).toHaveAttribute(
+      'href',
+      '/dealers/sri-lakshmi-motors#inventory',
+    );
+    expect(nav.getByText('Page 2 of 2')).toBeInTheDocument();
+  });
+
+  it('answers the not-found page when the inventory says the dealership is not listed', async () => {
+    serve(DEALER);
+    apiGetParsed.mockRejectedValue(notListed());
+    await expect(DealerPortfolioPage({ params, searchParams })).rejects.toThrow('NEXT_NOT_FOUND');
   });
 });

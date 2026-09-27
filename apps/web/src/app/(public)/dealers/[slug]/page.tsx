@@ -1,14 +1,16 @@
-import type { DealerPublicProfile } from '@dealers-drive/contracts';
+import { PublicVehiclesResponse, type DealerPublicProfile } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { DealerInventory } from '@/components/dealers/dealer-inventory';
 import { LocationCard } from '@/components/dealers/location-card';
-import { Blueprint, EmptyState, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
-import { ApiError, apiGet } from '@/lib/api';
-import { dealerTag, DEALERS_TAG } from '@/lib/cache-tags';
+import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
+import { ApiError, apiGet, apiGetParsed, qs } from '@/lib/api';
+import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
 import { serverConfig } from '@/lib/config';
 import { seoMetadata } from '@/lib/seo';
+import { one, type SearchParamsInput } from '@/lib/url';
 
 export const revalidate = 600;
 
@@ -22,6 +24,27 @@ async function loadDealer(slug: string): Promise<DealerPublicProfile | null> {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
   }
+}
+
+async function loadInventory(
+  slug: string,
+  page: number | undefined,
+): Promise<PublicVehiclesResponse | null> {
+  try {
+    return await apiGetParsed(
+      PublicVehiclesResponse,
+      `/v1/dealers/${encodeURIComponent(slug)}/vehicles${qs({ page })}`,
+      { revalidate: 60, tags: [dealerTag(slug), VEHICLES_TAG] },
+    );
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+function inventoryPage(query: SearchParamsInput): number | undefined {
+  const raw = Number(one(query, 'page'));
+  return Number.isInteger(raw) && raw > 1 ? raw : undefined;
 }
 
 export async function generateMetadata({
@@ -50,12 +73,17 @@ export async function generateMetadata({
 
 export default async function DealerPortfolioPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<SearchParamsInput>;
 }) {
-  const { slug } = await params;
-  const dealer = await loadDealer(slug);
-  if (!dealer) notFound();
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
+  const [dealer, inventory] = await Promise.all([
+    loadDealer(slug),
+    loadInventory(slug, inventoryPage(query)),
+  ]);
+  if (!dealer || !inventory) notFound();
 
   return (
     <div>
@@ -133,22 +161,11 @@ export default async function DealerPortfolioPage({
         <LocationCard address={dealer.address} brandName={dealer.brandName} />
       </div>
 
-      <div className="mx-auto max-w-[1280px] px-6 pb-[60px] pt-[26px]">
-        <div className="mb-[18px] flex flex-wrap items-baseline gap-3">
-          <h2 className="text-[28px]">Inventory</h2>
-          <span className="text-[14px] ink-muted tnum">{carCountLabel(dealer)}</span>
-        </div>
-
-        <EmptyState
-          title={`${dealer.brandName} has no cars listed yet`}
-          message="This dealership is verified and open for enquiries — it has not put a vehicle on the marketplace yet. Browse every verified dealership in the meantime."
-          action={
-            <Link href="/dealers" className="btn btn-primary">
-              Back to dealers
-            </Link>
-          }
-        />
-      </div>
+      <DealerInventory
+        dealerSlug={dealer.slug}
+        brandName={dealer.brandName}
+        inventory={inventory}
+      />
     </div>
   );
 }
@@ -162,11 +179,6 @@ function detailRows(dealer: DealerPublicProfile): DetailRow[] {
       .filter((stat) => stat.key !== 'location')
       .map((stat) => ({ key: stat.key, label: stat.label, value: stat.value || '—' })),
   ];
-}
-
-function carCountLabel(dealer: DealerPublicProfile): string {
-  const cars = dealer.stats.find((stat) => stat.key === 'cars')?.value ?? '0';
-  return `${cars} ${cars === '1' ? 'car' : 'cars'} available`;
 }
 
 function DealerJsonLd({ dealer }: { dealer: DealerPublicProfile }) {

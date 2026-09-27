@@ -33,7 +33,11 @@ const meta = {
       </div>
     ),
   ],
-  argTypes: { vehicle: { control: 'object' }, priority: { control: 'boolean' } },
+  argTypes: {
+    vehicle: { control: 'object' },
+    variant: { control: 'inline-radio', options: ['grid', 'compact'] },
+    priority: { control: 'boolean' },
+  },
   args: { vehicle: CARD },
 } satisfies Meta<typeof VehicleCard>;
 
@@ -41,6 +45,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
+
+export const Compact: Story = { args: { variant: 'compact' } };
 
 export const WithoutPhotograph: Story = { args: { vehicle: { ...CARD, image: null } } };
 
