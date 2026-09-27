@@ -15,7 +15,7 @@ export const DEALER_NAV: NavItem[] = [
   { href: '/dealer/profile', label: 'Dealer profile' },
 ];
 
-const NOT_YET_BUILT = new Set(['/dealer/inventory', '/dealer/enquiries', '/dealer/billing']);
+const NOT_YET_BUILT = new Set(['/dealer/enquiries', '/dealer/billing']);
 
 export const LANDED_NAV: NavItem[] = DEALER_NAV.filter((item) => !NOT_YET_BUILT.has(item.href));
 

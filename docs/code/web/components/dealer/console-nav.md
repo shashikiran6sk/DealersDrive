@@ -14,14 +14,17 @@ declaration the note sat above.
 shape and the next five features fill it in. The nav renders only the routes
 that exist:
 
-/dealer/inventory F050 Dealer inventory list
-/dealer/vehicles/new F056 The vehicle wizard
 /dealer/enquiries F065 Dealer enquiries
 /dealer/billing F051 Credits & billing
 
 A nav item pointing at a 404 is worse than a missing one, so each feature
 above deletes its own line from this set as it lands. When the set is empty
 the constant goes with it and `DEALER_NAV` is used directly.
+
+`/dealer/vehicles/new` left it with the wizard (F063) and `/dealer/inventory`
+with R48: the inventory page landed with F066, but its line was left in this
+set, so the one screen that lists a dealer's cars had no way in from the
+sidebar or the tab bar. It is the second item, as §3.11 draws it.
 
 A `Set` of hrefs rather than a shortened `DEALER_NAV` deliberately: a
 reviewer comparing this file against the baseline should find the list
