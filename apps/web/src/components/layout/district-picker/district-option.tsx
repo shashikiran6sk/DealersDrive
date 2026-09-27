@@ -6,9 +6,12 @@ import { cn } from '@/lib/cn';
 import { pluralLabel } from '@/lib/plural';
 
 import { DISTRICT_PICKER_TEXT } from './district-picker.constants';
+import type { DistrictUnit } from './district-picker.types';
 
 export interface DistrictOptionProps {
   district: DistrictChip;
+  count?: number;
+  unit?: DistrictUnit;
   selected: boolean;
   showState?: boolean;
   onSelect: (slug: string) => void;
@@ -16,6 +19,8 @@ export interface DistrictOptionProps {
 
 export function DistrictOption({
   district,
+  count = district.count,
+  unit = 'dealership',
   selected,
   showState = false,
   onSelect,
@@ -50,7 +55,7 @@ export function DistrictOption({
               <span aria-hidden="true"> · </span>
             </>
           ) : null}
-          <span className="tnum">{district.count}</span> {pluralLabel(district.count, 'dealership')}
+          <span className="tnum">{count}</span> {pluralLabel(count, unit)}
         </span>
       </span>
       {selected ? (

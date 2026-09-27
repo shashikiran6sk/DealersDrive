@@ -5218,3 +5218,39 @@ numbered rail, and the legacy branch — reachable now, as `origin/legacy_branch
   `inverse` tone on `DialogDescription`.
 - **§4.15 over the baseline.** The strip and stage arrows grow to 44px below
   768, and the arrow has a focus ring; the baseline's were 30px everywhere.
+
+## R50 — `/cars` takes the header's district
+
+**Revises F074, F077, R23** · no new feature number · first of the search series (F076–F080, F086 part 2)
+
+`/dealers` could be scoped to a district and `/cars` could not. The header's
+selector — on every public page, including `/cars` — sent every choice to the
+directory, so a buyer browsing cars who picked Ranipet was moved to a list of
+dealerships. R50 makes the district the top-level scope of the car listing too,
+with the **same dialog and the same selection rule**, not a second picker.
+
+- **Contracts** `PublicVehicleQuery` gains `district` (a slug, as on the
+  directory); `DealerVehicleQuery` is new — the portfolio's query, with no
+  `district`, because the dealership already fixes where its cars are.
+  `PublicLocations.cars` counts the districts in live cars.
+- **API** `GET /v1/vehicles?district=` — the dealership's district, resolved
+  from the slug by `slugify` over the names the listed dealerships carry; an
+  unknown district is an empty page, never "no filter". `GET /v1/locations`
+  gains `cars` from the same inventory stats the directory counts with.
+  `GET /v1/dealers/:slug/vehicles` refuses `district` (400).
+- **Frontend** `useDistrictSelection` keeps a buyer on `/cars` (and sends one on
+  `/car/<slug>` there), and everything else to `/dealers` — which also fixes a
+  portfolio (`/dealers/<slug>`) that used to be written `?district=` it never
+  read. Leaving a district drops `city`, `dealer` and `page`. On `/cars` the
+  dialog counts cars. `/cars` reads `?district=`, says `Cars in Ranipet` and
+  `N cars available`, carries the district through pagination, and has an
+  empty state of its own. New `DistrictScope` (C079) is the page's own opener.
+- **All districts** removes the parameter; nothing writes `district=all`.
+- **Tests** `public-vehicles.test.ts` (district scope, public rule inside it,
+  unknown district, the location counts agree with the list, 400s),
+  `search.test.ts`, `dealers.public.service.test.ts`,
+  `location-selector.test.tsx` (six, "on the car listing"),
+  `vehicle-card.test.tsx` ("/cars in one district")
+- **Sandbox** `Search/DistrictScope` — every district · one chosen · no
+  districts; `Layout/DistrictPicker` — `OnTheCarListing`; registry C079
+- **No schema change, no new dependency.**

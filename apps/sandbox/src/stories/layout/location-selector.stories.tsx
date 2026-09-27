@@ -27,6 +27,7 @@ const ONE_STATE: PublicLocations = {
     { slug: 'tirupattur', name: 'Tirupattur', count: 8, state: 'Tamil Nadu' },
   ],
   total: 30,
+  cars: { total: 0, districts: {} },
 };
 
 const meta = {
@@ -52,6 +53,7 @@ export const ManyStates: Story = {
   args: {
     locations: {
       total: 268,
+      cars: { total: 0, districts: {} },
       districts: [
         ...TAMIL_NADU,
         { slug: 'bengaluru-urban', name: 'Bengaluru Urban', count: 27, state: 'Karnataka' },
@@ -67,13 +69,14 @@ export const ManyStates: Story = {
 };
 
 export const ManyDistricts: Story = {
-  args: { locations: { total: 212, districts: TAMIL_NADU } },
+  args: { locations: { total: 212, districts: TAMIL_NADU, cars: { total: 0, districts: {} } } },
 };
 
 export const Untidy: Story = {
   args: {
     locations: {
       total: 40,
+      cars: { total: 0, districts: {} },
       districts: [
         { slug: 'vellore', name: 'Vellore', count: 11, state: 'Tamil Nadu' },
         { slug: 'ranipet', name: 'Ranipet', count: 9, state: 'Tamil Nadu' },
@@ -85,4 +88,6 @@ export const Untidy: Story = {
   },
 };
 
-export const NoDistricts: Story = { args: { locations: { districts: [], total: 0 } } };
+export const NoDistricts: Story = {
+  args: { locations: { districts: [], total: 0, cars: { total: 0, districts: {} } } },
+};

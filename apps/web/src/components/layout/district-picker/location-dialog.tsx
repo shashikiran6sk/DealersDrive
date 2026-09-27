@@ -11,7 +11,8 @@ import { DistrictGrid } from './district-grid';
 import { DistrictOption } from './district-option';
 import { FilterChip } from './filter-chip';
 import { StateHeading } from './state-heading';
-import { groupByState } from './utils';
+import type { DistrictUnit } from './district-picker.types';
+import { countIn, groupByState, groupTotal, totalIn } from './utils';
 
 export interface LocationDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ export interface LocationDialogProps {
   trigger: ReactNode;
   locations: PublicLocations;
   chosen: DistrictChip | null;
+  unit?: DistrictUnit;
   onSelect: (slug: string | null) => void;
 }
 
@@ -28,6 +30,7 @@ export function LocationDialog({
   trigger,
   locations,
   chosen,
+  unit = 'dealership',
   onSelect,
 }: LocationDialogProps) {
   const [search, setSearch] = useState('');
@@ -64,7 +67,7 @@ export function LocationDialog({
         <div className="flex flex-col gap-[10px] md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
             <DialogTitle>{DISTRICT_PICKER_TEXT.title}</DialogTitle>
-            <DialogDescription>{DISTRICT_PICKER_TEXT.description}</DialogDescription>
+            <DialogDescription>{DISTRICT_PICKER_TEXT.description(unit)}</DialogDescription>
           </div>
           <div className="w-full md:max-w-[300px]">
             <label className="sr-only" htmlFor="location-search">
@@ -94,7 +97,7 @@ export function LocationDialog({
                 </span>
               </>
             ) : (
-              DISTRICT_PICKER_TEXT.everyDistrict
+              DISTRICT_PICKER_TEXT.everyDistrict(unit)
             )}
           </p>
           <button
@@ -106,7 +109,7 @@ export function LocationDialog({
             }}
           >
             {DISTRICT_PICKER_TEXT.allDistricts}{' '}
-            <span className="tnum ink-muted">({locations.total})</span>
+            <span className="tnum ink-muted">({totalIn(locations, unit)})</span>
           </button>
         </>
       }
@@ -157,6 +160,8 @@ export function LocationDialog({
                 <DistrictOption
                   key={district.slug}
                   district={district}
+                  count={countIn(locations, district, unit)}
+                  unit={unit}
                   showState
                   selected={district.slug === chosen?.slug}
                   onSelect={onSelect}
@@ -174,12 +179,14 @@ export function LocationDialog({
             aria-labelledby={`state-${group.key}`}
             className="space-y-[10px]"
           >
-            <StateHeading group={group} />
+            <StateHeading group={group} total={groupTotal(locations, group, unit)} unit={unit} />
             <DistrictGrid>
               {group.districts.map((district) => (
                 <DistrictOption
                   key={district.slug}
                   district={district}
+                  count={countIn(locations, district, unit)}
+                  unit={unit}
                   selected={district.slug === chosen?.slug}
                   onSelect={onSelect}
                 />

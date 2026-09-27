@@ -1,3 +1,4 @@
+import { slugify } from '@dealers-drive/contracts';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 export const PUBLIC_LISTING_WHERE = {
@@ -6,10 +7,23 @@ export const PUBLIC_LISTING_WHERE = {
   dealer: { status: 'ACTIVE' },
 } satisfies Prisma.ListingWhereInput;
 
-export function publicListingsOf(dealerSlug?: string): Prisma.ListingWhereInput {
-  return dealerSlug
-    ? { ...PUBLIC_LISTING_WHERE, dealer: { ...PUBLIC_LISTING_WHERE.dealer, slug: dealerSlug } }
-    : PUBLIC_LISTING_WHERE;
+export interface ListingScope {
+  dealerSlug?: string;
+  districts?: readonly string[];
+}
+
+export function publicListingsOf(scope: ListingScope = {}): Prisma.ListingWhereInput {
+  const { dealerSlug, districts } = scope;
+  if (dealerSlug === undefined && districts === undefined) return PUBLIC_LISTING_WHERE;
+
+  return {
+    ...PUBLIC_LISTING_WHERE,
+    dealer: {
+      ...PUBLIC_LISTING_WHERE.dealer,
+      ...(dealerSlug === undefined ? {} : { slug: dealerSlug }),
+      ...(districts === undefined ? {} : { district: { in: [...districts] } }),
+    },
+  };
 }
 
 export const cardInclude = {
@@ -40,9 +54,9 @@ export type DetailRow = Prisma.ListingGetPayload<{ include: typeof detailInclude
 
 export function createSearchRepository(prisma: PrismaClient) {
   return {
-    cards(skip: number, take: number, dealerSlug?: string): Promise<CardRow[]> {
+    cards(skip: number, take: number, scope: ListingScope = {}): Promise<CardRow[]> {
       return prisma.listing.findMany({
-        where: publicListingsOf(dealerSlug),
+        where: publicListingsOf(scope),
         include: cardInclude,
         orderBy: [{ publishedAt: 'desc' }, { id: 'desc' }],
         skip,
@@ -57,8 +71,19 @@ export function createSearchRepository(prisma: PrismaClient) {
       });
     },
 
-    count(dealerSlug?: string): Promise<number> {
-      return prisma.listing.count({ where: publicListingsOf(dealerSlug) });
+    count(scope: ListingScope = {}): Promise<number> {
+      return prisma.listing.count({ where: publicListingsOf(scope) });
+    },
+
+    async districtNames(slug: string): Promise<string[]> {
+      const rows = await prisma.dealer.findMany({
+        where: { status: PUBLIC_LISTING_WHERE.dealer.status, district: { not: null } },
+        distinct: ['district'],
+        select: { district: true },
+      });
+      return rows
+        .map((row) => row.district)
+        .filter((name): name is string => name !== null && slugify(name) === slug);
     },
 
     publicDealerExists(slug: string): Promise<boolean> {

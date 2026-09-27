@@ -168,11 +168,12 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
     },
 
     async locations(): Promise<PublicLocations> {
-      const dealers = await repo.listActive();
+      const [dealers, inventory] = await Promise.all([repo.listActive(), stats.dealerStats()]);
 
       return {
         districts: chipsOf(dealers, districtChip),
         total: dealers.length,
+        cars: carsByDistrict(dealers, inventory),
       };
     },
 
@@ -308,6 +309,24 @@ function chipsOf<T, C extends LocationChip>(rows: readonly T[], chip: (row: T) =
   }
 
   return [...chips.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+function carsByDistrict(
+  dealers: readonly { slug: string; districtSlug: string | null }[],
+  inventory: readonly DealerInventoryStat[],
+): PublicLocations['cars'] {
+  const districtOf = new Map(dealers.map((dealer) => [dealer.slug, dealer.districtSlug]));
+  const districts: Record<string, number> = {};
+  let total = 0;
+
+  for (const row of inventory) {
+    if (!districtOf.has(row.dealer_slug)) continue;
+    total += row.count;
+    const district = districtOf.get(row.dealer_slug);
+    if (district) districts[district] = (districts[district] ?? 0) + row.count;
+  }
+
+  return { total, districts };
 }
 
 function cityChip(row: { citySlug: string | null; cityName: string | null }): LocationChip | null {

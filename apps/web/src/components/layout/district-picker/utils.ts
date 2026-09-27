@@ -1,6 +1,36 @@
-import type { DistrictChip } from '@dealers-drive/contracts';
+import type { DistrictChip, PublicLocations } from '@dealers-drive/contracts';
 
-import type { StateGroup } from './district-picker.types';
+import { CARS_PATH, DIRECTORY_PATH, VEHICLE_PATH_PREFIX } from './district-picker.constants';
+import type { DistrictUnit, StateGroup } from './district-picker.types';
+
+export function scopedPathOf(pathname: string): string {
+  if (pathname === CARS_PATH || pathname.startsWith(VEHICLE_PATH_PREFIX)) return CARS_PATH;
+  return DIRECTORY_PATH;
+}
+
+export function unitOf(pathname: string): DistrictUnit {
+  return scopedPathOf(pathname) === CARS_PATH ? 'car' : 'dealership';
+}
+
+export function countIn(
+  locations: PublicLocations,
+  district: DistrictChip,
+  unit: DistrictUnit,
+): number {
+  return unit === 'car' ? (locations.cars.districts[district.slug] ?? 0) : district.count;
+}
+
+export function totalIn(locations: PublicLocations, unit: DistrictUnit): number {
+  return unit === 'car' ? locations.cars.total : locations.total;
+}
+
+export function groupTotal(
+  locations: PublicLocations,
+  group: StateGroup,
+  unit: DistrictUnit,
+): number {
+  return group.districts.reduce((sum, district) => sum + countIn(locations, district, unit), 0);
+}
 
 export function dealersIn(group: StateGroup): number {
   return group.districts.reduce((sum, district) => sum + district.count, 0);

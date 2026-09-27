@@ -87,10 +87,12 @@ describe('the service', () => {
       count: vi.fn(async () => 49),
       detail: vi.fn(),
       publicDealerExists: vi.fn(),
+      districtNames: vi.fn(),
     };
     const response = await createSearchService({ repo }).vehicles({ page: 3, limit: 24 });
 
-    expect(repo.cards).toHaveBeenCalledWith(48, 24, undefined);
+    expect(repo.cards).toHaveBeenCalledWith(48, 24, {});
+    expect(repo.districtNames).not.toHaveBeenCalled();
     expect(response.page).toEqual({ page: 3, limit: 24, total: 49, totalPages: 3 });
     expect(response.data).toHaveLength(1);
   });
@@ -101,9 +103,56 @@ describe('the service', () => {
       count: vi.fn(async () => 0),
       detail: vi.fn(),
       publicDealerExists: vi.fn(),
+      districtNames: vi.fn(),
     };
     const response = await createSearchService({ repo }).vehicles({ page: 1, limit: 24 });
     expect(response.page.totalPages).toBe(1);
+  });
+});
+
+describe('one district', () => {
+  it('narrows the public rule to the district, and keeps every part of it', () => {
+    expect(publicListingsOf({ districts: ['Ranipet'] })).toEqual({
+      status: 'ACTIVE',
+      slug: { not: null },
+      dealer: { status: 'ACTIVE', district: { in: ['Ranipet'] } },
+    });
+  });
+
+  it('resolves the slug to the district names dealerships carry, then pages over them', async () => {
+    const repo = {
+      cards: vi.fn(async () => [row()]),
+      count: vi.fn(async () => 1),
+      detail: vi.fn(),
+      publicDealerExists: vi.fn(),
+      districtNames: vi.fn(async () => ['Ranipet']),
+    };
+    const response = await createSearchService({ repo }).vehicles({
+      page: 1,
+      limit: 24,
+      district: 'ranipet',
+    });
+
+    expect(repo.districtNames).toHaveBeenCalledWith('ranipet');
+    expect(repo.cards).toHaveBeenCalledWith(0, 24, { districts: ['Ranipet'] });
+    expect(repo.count).toHaveBeenCalledWith({ districts: ['Ranipet'] });
+    expect(response.page.total).toBe(1);
+  });
+
+  it('scopes to nothing, rather than to everything, for a district nobody is in', async () => {
+    const repo = {
+      cards: vi.fn(async () => []),
+      count: vi.fn(async () => 0),
+      detail: vi.fn(),
+      publicDealerExists: vi.fn(),
+      districtNames: vi.fn(async () => []),
+    };
+    await createSearchService({ repo }).vehicles({ page: 1, limit: 24, district: 'atlantis' });
+
+    expect(repo.cards).toHaveBeenCalledWith(0, 24, { districts: [] });
+    expect(publicListingsOf({ districts: [] })).toMatchObject({
+      dealer: { district: { in: [] } },
+    });
   });
 });
 
@@ -223,6 +272,7 @@ describe('the vehicle page', () => {
       count: vi.fn(),
       detail: vi.fn(async () => null),
       publicDealerExists: vi.fn(),
+      districtNames: vi.fn(),
     };
     await expect(createSearchService({ repo }).vehicle('gone')).rejects.toMatchObject({
       status: 404,
@@ -233,7 +283,7 @@ describe('the vehicle page', () => {
 
 describe("one dealership's cars", () => {
   it('narrows the public rule to the dealership, and keeps every part of it', () => {
-    expect(publicListingsOf('sri')).toEqual({
+    expect(publicListingsOf({ dealerSlug: 'sri' })).toEqual({
       status: 'ACTIVE',
       slug: { not: null },
       dealer: { status: 'ACTIVE', slug: 'sri' },
@@ -247,13 +297,14 @@ describe("one dealership's cars", () => {
       count: vi.fn(async () => 1),
       detail: vi.fn(),
       publicDealerExists: vi.fn(async () => true),
+      districtNames: vi.fn(),
     };
     const response = await createSearchService({ repo }).dealerVehicles('sri', {
       page: 1,
       limit: 24,
     });
-    expect(repo.cards).toHaveBeenCalledWith(0, 24, 'sri');
-    expect(repo.count).toHaveBeenCalledWith('sri');
+    expect(repo.cards).toHaveBeenCalledWith(0, 24, { dealerSlug: 'sri' });
+    expect(repo.count).toHaveBeenCalledWith({ dealerSlug: 'sri' });
     expect(response.page.total).toBe(1);
   });
 
@@ -263,6 +314,7 @@ describe("one dealership's cars", () => {
       count: vi.fn(),
       detail: vi.fn(),
       publicDealerExists: vi.fn(async () => false),
+      districtNames: vi.fn(),
     };
     await expect(
       createSearchService({ repo }).dealerVehicles('gone', { page: 1, limit: 24 }),

@@ -165,20 +165,40 @@ restating it.
 **Choosing a district drops the towns.** `?district=ranipet&city=katpadi` is an
 empty page: Katpadi is in Vellore. The page number goes with them.
 
-### `next.delete('city')`
+### `const target = scopedPathOf(pathname)`
 
-The towns belonged to the district being left, and the page number to a
+Two pages read `?district=` — the directory and, since **R50**, `/cars` — so a
+choice goes to whichever of the two the buyer is on, and to the directory from
+anywhere else. Choosing a place from the home page is a person saying where
+they are, and the useful answer to that is the dealerships there, not the same
+home page with a query string on it.
 
-### `next.delete('city')`
+A buyer looking at one car (`/car/<slug>`) goes to `/cars`: they are shopping
+for a car, and the directory would be a change of subject.
 
-result set that no longer exists.
+The rule used to be `pathname.startsWith('/dealers')`, which also matched a
+**portfolio** (`/dealers/<slug>`) and wrote `?district=` onto a page that reads
+no such thing. A portfolio is one dealership; choosing a district is asking for
+the others, so it goes to the directory now.
 
-### `const target = pathname.startsWith(DIRECTORY_PATH) ? pathname : DIRECTORY_PATH`
+### `new URLSearchParams(target === pathname ? searchParams.toString() : '')`
 
-A district filters dealerships, so it goes to the directory — from
-anywhere that is not already showing one. Choosing a place from the home
-page is a person saying where they are, and the useful answer to that is
-the dealerships there, not the same home page with a query string on it.
+Parameters survive only when the buyer stays on the page that wrote them. A
+portfolio's `?page=2` means nothing on the directory.
+
+### `for (const key of LOCATION_CHILD_PARAMS) next.delete(key)`
+
+`city`, `dealer` and `page` belonged to the district being left: a town and a
+dealership are both _inside_ a district, so keeping either would ask for an
+empty page. Everything else — a search, a brand — is about the car, not the
+place, and survives.
+
+### `unit: unitOf(pathname)`
+
+On `/cars` the dialog counts **cars** (`PublicLocations.cars`), not
+dealerships: a buyer choosing where to look for a car wants to know how many
+there are. The grouping and the order stay the dealership counts', so the
+dialog does not rearrange itself between the two pages.
 
 ## `apps/web/src/components/layout/district-picker/utils.ts`
 

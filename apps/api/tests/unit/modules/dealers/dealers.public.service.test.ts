@@ -884,7 +884,38 @@ describe('locations', () => {
   it('is empty rather than absent on a platform with no dealerships', async () => {
     const h = setup({ dealers: [] });
 
-    expect(await h.service.locations()).toEqual({ districts: [], total: 0 });
+    expect(await h.service.locations()).toEqual({
+      districts: [],
+      total: 0,
+      cars: { total: 0, districts: {} },
+    });
+  });
+
+  /**
+   * R50 — the same selector scopes `/cars`, where the useful number is the
+   * live cars in a district rather than the yards. It is counted off the
+   * marketplace's own inventory stats, so it cannot disagree with the grid.
+   */
+  it('counts the live cars in each district, and in all of them', async () => {
+    const h = setup({
+      dealers: [
+        activeDealer(),
+        activeDealer({ slug: 'b', districtSlug: 'ranipet', districtName: 'Ranipet' }),
+        activeDealer({ slug: 'c', districtSlug: 'ranipet', districtName: 'Ranipet' }),
+        activeDealer({ slug: 'd', districtSlug: null, districtName: null }),
+      ],
+      stats: [
+        { dealer_slug: 'b', count: 4, from_price: 1n },
+        { dealer_slug: 'c', count: 3, from_price: 1n },
+        { dealer_slug: 'd', count: 2, from_price: 1n },
+        { dealer_slug: 'gone', count: 9, from_price: 1n },
+      ],
+    });
+
+    expect((await h.service.locations()).cars).toEqual({
+      total: 9,
+      districts: { ranipet: 7 },
+    });
   });
 });
 

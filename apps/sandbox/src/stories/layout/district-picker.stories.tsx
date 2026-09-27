@@ -19,6 +19,22 @@ const FOUR_STATES: PublicLocations = {
     { slug: 'kozhikode', name: 'Kozhikode', count: 8, state: 'Kerala' },
   ],
   total: 120,
+  cars: {
+    total: 312,
+    districts: {
+      vellore: 42,
+      ranipet: 38,
+      tirupattur: 21,
+      'bengaluru-urban': 36,
+      mysuru: 30,
+      belagavi: 18,
+      visakhapatnam: 33,
+      guntur: 29,
+      kurnool: 14,
+      ernakulam: 25,
+      thrissur: 17,
+    },
+  },
 };
 
 const meta = {
@@ -62,5 +78,16 @@ export const OneChosen: Story = {
 };
 
 export const NoDistricts: Story = {
-  args: { ...HeaderTrigger.args, locations: { districts: [], total: 0 } },
+  args: {
+    ...HeaderTrigger.args,
+    locations: { districts: [], total: 0, cars: { total: 0, districts: {} } },
+  },
+};
+
+export const OnTheCarListing: Story = {
+  args: HeaderTrigger.args,
+  parameters: {
+    layout: 'centered',
+    nextjs: { appDirectory: true, navigation: { pathname: '/cars' } },
+  },
 };

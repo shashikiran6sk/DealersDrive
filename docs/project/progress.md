@@ -219,6 +219,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R47 — The listing lifecycle, before billing exists · revises F064/F065/F067/F069/F070 · defers F050–F054 · submit, review, request changes, reject and approve landed; mark sold and remove (F067) follow
 - [x] R48 — The dealer surfaces meet the listings · revises F066/F085/F086/F082/F083 · console nav, directory and portfolio counts, portfolio inventory, and the gallery
 - [x] R49 — The VDP gallery is the one the spec draws · revises F083/R48 · strip, rail and lightbox header back, per §2.9/§2.10
+- [~] R50 — `/cars` takes the header's district · revises F074/F077/R23 · `?district=` on `/v1/vehicles`, the dialog counts cars on `/cars`
 
 ---
 

@@ -1025,7 +1025,7 @@ export const registry: RegistryEntry[] = [
       'CityDistrictModal',
       'LocationPicker',
     ],
-    features: ['R23'],
+    features: ['R23', 'R50'],
     props: ['locations', 'children'],
     states: [
       'header trigger',
@@ -1039,6 +1039,21 @@ export const registry: RegistryEntry[] = [
     ],
     reusable: true,
     storyId: 'layout-districtpicker',
+  },
+  {
+    id: 'C079',
+    name: 'DistrictScope',
+    source: 'apps/web/src/components/search/district-scope/district-scope.tsx',
+    category: 'Search',
+    ownership: 'Feature-specific',
+    purpose:
+      "The /cars page's own district opener: 'Select district' with a hint, or 'Change district' beside the chosen one. NEW at R50; the dialog and the rule are DistrictPicker (C071).",
+    aliases: ['CarsDistrict', 'DistrictFilter', 'LocationScope', 'district-scope', 'CarsLocation'],
+    features: ['R50', 'F077'],
+    props: ['locations'],
+    states: ['every district', 'one chosen', 'no districts'],
+    reusable: false,
+    storyId: 'search-districtscope',
   },
   {
     id: 'C070',

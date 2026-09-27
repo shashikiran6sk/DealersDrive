@@ -234,6 +234,20 @@ export const PublicLocations = z.object({
   districts: z.array(DistrictChip),
   /** Every ACTIVE dealership, so the "all districts" row can be counted. */
   total: z.number().int(),
+  /**
+   * The same districts counted in **live cars** rather than dealerships
+   * (**R50**), for when the selector is scoping `/cars`.
+   *
+   * Kept beside the chips rather than inside them: a `DistrictChip` is also a
+   * directory payload, and the count it carries is the directory's. `districts`
+   * is keyed by the chip's slug and omits a district with nothing live, which
+   * reads as zero. The predicate is the marketplace's own
+   * (`PUBLIC_LISTING_WHERE`), so this total and `/cars`'s agree.
+   */
+  cars: z.object({
+    total: z.number().int(),
+    districts: z.record(z.string(), z.number().int()),
+  }),
 });
 export type PublicLocations = z.infer<typeof PublicLocations>;
 
@@ -470,13 +484,36 @@ export type DealerSuggestResponse = z.infer<typeof DealerSuggestResponse>;
  * filters and facets are **F076** and deferred. `.strict()`, so a filter a
  * client assumes exists is a 400 that names it rather than a silent no-op.
  */
+const VehiclePage = {
+  page: z.coerce.number().int().min(1).max(1000).default(1),
+  limit: z.coerce.number().int().min(1).max(48).default(24),
+};
+
+/**
+ * `/v1/vehicles` — the whole marketplace, a page at a time, optionally scoped
+ * to one **district** (**R50**): the same slug, and the same meaning, as the
+ * directory's `?district=`. A district is where the *dealership* is; a car has
+ * no location of its own.
+ */
 export const PublicVehicleQuery = z
   .object({
-    page: z.coerce.number().int().min(1).max(1000).default(1),
-    limit: z.coerce.number().int().min(1).max(48).default(24),
+    ...VehiclePage,
+    district: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .max(80)
+      .optional(),
   })
   .strict();
 export type PublicVehicleQuery = z.infer<typeof PublicVehicleQuery>;
+
+/**
+ * `/v1/dealers/:slug/vehicles` — one dealership's live cars. No `district`:
+ * the dealership already fixes where they are, so a district here could only
+ * ever agree with it or empty the page.
+ */
+export const DealerVehicleQuery = z.object(VehiclePage).strict();
+export type DealerVehicleQuery = z.infer<typeof DealerVehicleQuery>;
 
 export const PublicVehicleImage = z.object({
   /** A public media URL at the card width; never a storage key or bucket. */
