@@ -2160,6 +2160,25 @@ Faceted vehicle search: filtering, sorting, pagination and facet counts.
   `normaliseLocality` in the contracts package, applied by onboarding and by
   `PATCH /v1/dealer` — so unlike the make/model case the dependency is
   satisfied rather than pending.
+- ⚠️ **Entry corrected on landing.** No `listing_search` read model and no
+  separate `/facets` route: `GET /v1/vehicles` (and the portfolio's
+  `GET /v1/dealers/:slug/vehicles`, through the same `search()`) answers the
+  page, the total and the facets together — `PublicVehiclesResponse.facets`
+  (`VehicleFacets`). Query grammar in `PublicVehicleQuery` /
+  `DealerVehicleQuery`: CSV slugs for `city`, `dealer`, `brand`, `model`,
+  `fuel`, `transmission`, `bodyType`, `color`, `owners` (`4` = four or more);
+  inclusive `minPrice`/`maxPrice` (paise), `minYear`/`maxYear` (manufacturing
+  year, as the card shows), `minKm`/`maxKm`; `q` over make, model, variant and
+  dealership name; `sort` `newest`·`price_asc`·`price_desc`·`year_desc`·
+  `km_asc`. A floor above its ceiling is a 400. Facets are counted under every
+  filter but their own; brands ignore the model filter; models need a brand;
+  towns need a district; the portfolio gets no towns or dealers. Slugs are
+  resolved to spellings with `slugify`, which merges case variants at read
+  time. New files `search.filters.ts` and `search.facets.ts`; one index,
+  `vehicles(make, model)`. **Tests** `tests/public-vehicle-search.test.ts`
+  (every filter, combinations, facet count = page total, dependent facets,
+  sorts, paging, refusals, the portfolio), `tests/unit/modules/search/
+search.{filters,facets}.test.ts`, contracts `tests/unit/public.test.ts`.
 
 ### F077 — Search results page
 

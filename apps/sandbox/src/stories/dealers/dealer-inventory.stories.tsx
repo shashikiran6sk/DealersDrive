@@ -1,4 +1,8 @@
-import type { PublicVehiclesResponse, VehicleCardDto } from '@dealers-drive/contracts';
+import {
+  NO_VEHICLE_FACETS,
+  type PublicVehiclesResponse,
+  type VehicleCardDto,
+} from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { DealerInventory } from '@/components/dealers/dealer-inventory';
@@ -31,6 +35,7 @@ function inventory(count: number, total = count, page = 1): PublicVehiclesRespon
   return {
     data: Array.from({ length: count }, (_, index) => car(index)),
     page: { page, limit: 24, total, totalPages: Math.max(1, Math.ceil(total / 24)) },
+    facets: NO_VEHICLE_FACETS,
   };
 }
 

@@ -478,42 +478,291 @@ export const DealerSuggestResponse = z.object({
 });
 export type DealerSuggestResponse = z.infer<typeof DealerSuggestResponse>;
 
-// ─────────── Public vehicles (F075, F077 as scoped by R45) ─────────────────
+// ─────────── Public vehicles (F075, F077, F076) ────────────────────────────
 /**
- * The marketplace listing's query. Newest first, a page at a time — search,
- * filters and facets are **F076** and deferred. `.strict()`, so a filter a
- * client assumes exists is a 400 that names it rather than a silent no-op.
+ * The marketplace's query grammar (**F076**).
+ *
+ * **CSV means OR within a group, and groups are ANDed**: `fuel=petrol,diesel&
+ * transmission=automatic` is petrol-or-diesel automatics. One encoding for every
+ * multi-select, and the one the directory's `city=` already uses, so a URL is
+ * readable and a shared link is short.
+ *
+ * Every value is a **slug** — lower-case, hyphenated — never a display string.
+ * Make, model, colour, town and district are text a dealer typed, so the slug is
+ * derived on the server with `slugify`, the same function that keys the facets:
+ * whatever the facet offers is exactly what this accepts.
+ *
+ * `.strict()` like every other input: an unknown parameter is a 400 naming it,
+ * never a silently unfiltered page of the whole marketplace.
  */
+const splitCsv = (value: string): string[] =>
+  value
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+
+const csvOf = <T extends z.ZodType<string, string>>(item: T, max = 20) =>
+  z.string().max(1200).transform(splitCsv).pipe(z.array(item).min(1).max(max));
+
+const slug = z
+  .string()
+  .regex(/^[a-z0-9-]+$/)
+  .max(80);
+
+/**
+ * The fuel, transmission and body values as they appear in a URL: the enum,
+ * lower-cased. Spelled out rather than derived so the type is the literal set;
+ * `public.test.ts` pins each one to its enum, so a new fuel cannot be added to
+ * one and not the other.
+ */
+export const FuelSlug = z.enum(['petrol', 'diesel', 'cng', 'electric', 'hybrid', 'lpg']);
+export type FuelSlug = z.infer<typeof FuelSlug>;
+export const TransmissionSlug = z.enum(['manual', 'automatic']);
+export type TransmissionSlug = z.infer<typeof TransmissionSlug>;
+export const BodyTypeSlug = z.enum(['hatchback', 'sedan', 'suv', 'muv', 'luxury']);
+export type BodyTypeSlug = z.infer<typeof BodyTypeSlug>;
+
+/**
+ * Owners, as a buyer asks about them: first, second, third, or **four or more**.
+ * `4` is the open-ended bucket, so a fifth-owner car is found under it rather
+ * than under nothing.
+ */
+export const OwnerBucket = z.enum(['1', '2', '3', '4']);
+export type OwnerBucket = z.infer<typeof OwnerBucket>;
+export const OWNER_BUCKET_MIN = 4;
+
+export const OWNER_BUCKET_LABELS: Record<OwnerBucket, string> = {
+  '1': 'First owner',
+  '2': 'Second owner',
+  '3': 'Third owner',
+  '4': 'Fourth owner or more',
+};
+
+/**
+ * The order a page is read in. Every one ends on the listing id, so a page
+ * boundary is stable between two requests that tie on the leading key.
+ */
+export const VehicleSort = z.enum(['newest', 'price_asc', 'price_desc', 'year_desc', 'km_asc']);
+export type VehicleSort = z.infer<typeof VehicleSort>;
+
+export const VEHICLE_SORT_LABELS: Record<VehicleSort, string> = {
+  newest: 'Newest first',
+  price_asc: 'Price — Low to High',
+  price_desc: 'Price — High to Low',
+  year_desc: 'Year — Newest first',
+  km_asc: 'Kilometers — Low to High',
+};
+
+/** Rupees are a UI boundary (rule 3): the price range is paise, like the column. */
+const PRICE_MAX_PAISE = 100_000_000_000;
+const KM_MAX = 10_000_000;
+const YEAR_MIN = 1950;
+const YEAR_MAX = 2100;
+
 const VehiclePage = {
   page: z.coerce.number().int().min(1).max(1000).default(1),
   limit: z.coerce.number().int().min(1).max(48).default(24),
 };
 
+const VehicleFilters = {
+  /**
+   * Free text over the make, model, variant and the dealership's trading name.
+   * Case-insensitive, whitespace collapsed, and every word must match somewhere
+   * — `creta sx` is a Creta in its SX trim, not every Creta and every SX. No
+   * registration and nothing else private is searched.
+   */
+  q: z.string().trim().max(120).optional(),
+  brand: csvOf(slug).optional(),
+  model: csvOf(slug, 40).optional(),
+  minPrice: z.coerce.number().int().min(0).max(PRICE_MAX_PAISE).optional(),
+  maxPrice: z.coerce.number().int().min(0).max(PRICE_MAX_PAISE).optional(),
+  /** The manufacturing year — the year the card's plate shows (`VehicleCardDto.year`). */
+  minYear: z.coerce.number().int().min(YEAR_MIN).max(YEAR_MAX).optional(),
+  maxYear: z.coerce.number().int().min(YEAR_MIN).max(YEAR_MAX).optional(),
+  minKm: z.coerce.number().int().min(0).max(KM_MAX).optional(),
+  maxKm: z.coerce.number().int().min(0).max(KM_MAX).optional(),
+  fuel: csvOf(FuelSlug).optional(),
+  transmission: csvOf(TransmissionSlug).optional(),
+  bodyType: csvOf(BodyTypeSlug).optional(),
+  color: csvOf(slug).optional(),
+  owners: csvOf(OwnerBucket).optional(),
+  sort: VehicleSort.default('newest'),
+};
+
+const RANGES = [
+  ['minPrice', 'maxPrice', 'price'],
+  ['minYear', 'maxYear', 'year'],
+  ['minKm', 'maxKm', 'kilometers'],
+] as const;
+
 /**
- * `/v1/vehicles` — the whole marketplace, a page at a time, optionally scoped
- * to one **district** (**R50**): the same slug, and the same meaning, as the
- * directory's `?district=`. A district is where the *dealership* is; a car has
- * no location of its own.
+ * A range whose floor is above its ceiling is a 400 that names the floor, not
+ * an empty page: the second is indistinguishable from "nothing matches", and
+ * the first is a client bug somebody should hear about.
+ */
+function rangesInOrder(
+  value: Partial<Record<(typeof RANGES)[number][0 | 1], number>>,
+  context: z.RefinementCtx,
+): void {
+  for (const [min, max, label] of RANGES) {
+    const low = value[min];
+    const high = value[max];
+    if (low !== undefined && high !== undefined && low > high) {
+      context.addIssue({
+        code: 'custom',
+        path: [min],
+        message: `The minimum ${label} is above the maximum ${label}.`,
+      });
+    }
+  }
+}
+
+/**
+ * `/v1/vehicles` — the whole marketplace (**F076**), scoped by **district**
+ * (**R50**) and, inside it, by **town** and **dealership**. All three are
+ * facts about the dealership: a car has no location of its own.
  */
 export const PublicVehicleQuery = z
   .object({
     ...VehiclePage,
-    district: z
-      .string()
-      .regex(/^[a-z0-9-]+$/)
-      .max(80)
-      .optional(),
+    district: slug.optional(),
+    city: csvOf(slug).optional(),
+    dealer: csvOf(
+      z
+        .string()
+        .regex(/^[a-z0-9-]+$/)
+        .max(160),
+      40,
+    ).optional(),
+    ...VehicleFilters,
   })
-  .strict();
+  .strict()
+  .superRefine(rangesInOrder);
 export type PublicVehicleQuery = z.infer<typeof PublicVehicleQuery>;
 
 /**
- * `/v1/dealers/:slug/vehicles` — one dealership's live cars. No `district`:
- * the dealership already fixes where they are, so a district here could only
- * ever agree with it or empty the page.
+ * `/v1/dealers/:slug/vehicles` — one dealership's live cars, through the same
+ * search. No `district`, `city` or `dealer`: the dealership already fixes all
+ * three, so any of them could only agree with it or empty the page.
  */
-export const DealerVehicleQuery = z.object(VehiclePage).strict();
+export const DealerVehicleQuery = z
+  .object({ ...VehiclePage, ...VehicleFilters })
+  .strict()
+  .superRefine(rangesInOrder);
 export type DealerVehicleQuery = z.infer<typeof DealerVehicleQuery>;
+
+/**
+ * The presets a buyer picks a price or a distance from. A band is a pair of
+ * **inclusive** bounds, the same `min`/`max` the query takes, so choosing one
+ * is writing two parameters — and a band's count is exactly the page it leads
+ * to. `null` is open-ended.
+ */
+export interface RangePreset {
+  min: number | null;
+  max: number | null;
+  label: string;
+}
+
+const LAKH_PAISE = 10_000_000;
+
+export const PRICE_PRESETS: readonly RangePreset[] = [
+  { min: null, max: 5 * LAKH_PAISE, label: 'Under ₹5 lakh' },
+  { min: 5 * LAKH_PAISE, max: 10 * LAKH_PAISE, label: '₹5–10 lakh' },
+  { min: 10 * LAKH_PAISE, max: 15 * LAKH_PAISE, label: '₹10–15 lakh' },
+  { min: 15 * LAKH_PAISE, max: 20 * LAKH_PAISE, label: '₹15–20 lakh' },
+  { min: 20 * LAKH_PAISE, max: null, label: '₹20 lakh+' },
+];
+
+export const KM_PRESETS: readonly RangePreset[] = [
+  { min: null, max: 20_000, label: 'Under 20,000 km' },
+  { min: 20_000, max: 40_000, label: '20,000–40,000 km' },
+  { min: 40_000, max: 60_000, label: '40,000–60,000 km' },
+  { min: 60_000, max: 100_000, label: '60,000–1,00,000 km' },
+  { min: 100_000, max: null, label: '1,00,000+ km' },
+];
+
+/**
+ * One value a buyer can tick, and how many cars ticking it would show.
+ *
+ * `value` is what goes in the URL; `label` is how the platform spells it — for
+ * text a dealer typed, the most common spelling among the cars it counts.
+ * `parent` is set on a model and names its brand's slug, so a client can drop
+ * the models of a brand that has just been unticked.
+ */
+export const FacetOption = z.object({
+  value: z.string(),
+  label: z.string(),
+  count: z.number().int(),
+  parent: z.string().optional(),
+});
+export type FacetOption = z.infer<typeof FacetOption>;
+
+export const RangeFacet = z.object({
+  min: z.number().int().nullable(),
+  max: z.number().int().nullable(),
+  label: z.string(),
+  count: z.number().int(),
+});
+export type RangeFacet = z.infer<typeof RangeFacet>;
+
+/**
+ * What the current inventory offers, counted (**F076**).
+ *
+ * ## The semantics, which are the standard ones and deliberately so
+ *
+ * Each group is counted under **every active filter except its own**. Ticking
+ * Petrol therefore leaves Diesel's count where it was — the number of cars
+ * ticking Diesel *as well* would add — so a multi-select stays usable; counting
+ * a group under itself would zero every sibling of the first box ticked.
+ *
+ * Three groups are **dependent**, and that is where the exceptions are:
+ *
+ *   · **brand** is counted without the model filter either, because a model
+ *     belongs to a brand and ticking Creta must not hide Kia;
+ *   · **model** is counted *with* the brand filter, and is empty until a brand
+ *     is ticked — Creta, Venue, i20 under Hyundai, never Swift;
+ *   · **cities** exist only inside a district; with every district in scope
+ *     they are empty rather than every town on the platform.
+ *
+ * Only values with inventory behind them are listed. A value that is in the
+ * query but has nothing behind it is still listed, with a count of zero, so it
+ * can be seen and unticked rather than silently filtering the page to nothing.
+ *
+ * Every count means **available**: the public rule (`PUBLIC_LISTING_WHERE`) is
+ * the base of every one of them.
+ */
+export const VehicleFacets = z.object({
+  cities: z.array(FacetOption),
+  brands: z.array(FacetOption),
+  models: z.array(FacetOption),
+  fuelTypes: z.array(FacetOption),
+  transmissions: z.array(FacetOption),
+  bodyTypes: z.array(FacetOption),
+  colors: z.array(FacetOption),
+  ownerCounts: z.array(FacetOption),
+  dealers: z.array(FacetOption),
+  /** Every manufacturing year with a car behind it, newest first. */
+  years: z.array(FacetOption),
+  price: z.array(RangeFacet),
+  kilometers: z.array(RangeFacet),
+});
+export type VehicleFacets = z.infer<typeof VehicleFacets>;
+
+/** Nothing offered: what a page with no inventory — or no API — has to filter by. */
+export const NO_VEHICLE_FACETS: VehicleFacets = {
+  cities: [],
+  brands: [],
+  models: [],
+  fuelTypes: [],
+  transmissions: [],
+  bodyTypes: [],
+  colors: [],
+  ownerCounts: [],
+  dealers: [],
+  years: [],
+  price: [],
+  kilometers: [],
+};
 
 export const PublicVehicleImage = z.object({
   /** A public media URL at the card width; never a storage key or bucket. */
@@ -549,6 +798,7 @@ export type VehicleCardDto = z.infer<typeof VehicleCardDto>;
 export const PublicVehiclesResponse = z.object({
   data: z.array(VehicleCardDto),
   page: OffsetPage,
+  facets: VehicleFacets,
 });
 export type PublicVehiclesResponse = z.infer<typeof PublicVehiclesResponse>;
 

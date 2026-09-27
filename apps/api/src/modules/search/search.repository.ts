@@ -1,30 +1,13 @@
-import { slugify } from '@dealers-drive/contracts';
-import type { Prisma, PrismaClient } from '@prisma/client';
+import type { BodyType, FuelType, Prisma, PrismaClient, Transmission } from '@prisma/client';
+
+import type { Counted, PublicDealerRow } from './search.facets.js';
+import type { Vocabulary } from './search.filters.js';
 
 export const PUBLIC_LISTING_WHERE = {
   status: 'ACTIVE',
   slug: { not: null },
   dealer: { status: 'ACTIVE' },
 } satisfies Prisma.ListingWhereInput;
-
-export interface ListingScope {
-  dealerSlug?: string;
-  districts?: readonly string[];
-}
-
-export function publicListingsOf(scope: ListingScope = {}): Prisma.ListingWhereInput {
-  const { dealerSlug, districts } = scope;
-  if (dealerSlug === undefined && districts === undefined) return PUBLIC_LISTING_WHERE;
-
-  return {
-    ...PUBLIC_LISTING_WHERE,
-    dealer: {
-      ...PUBLIC_LISTING_WHERE.dealer,
-      ...(dealerSlug === undefined ? {} : { slug: dealerSlug }),
-      ...(districts === undefined ? {} : { district: { in: [...districts] } }),
-    },
-  };
-}
 
 export const cardInclude = {
   vehicle: {
@@ -52,16 +35,27 @@ export const detailInclude = {
 
 export type DetailRow = Prisma.ListingGetPayload<{ include: typeof detailInclude }>;
 
+const dealerSelect = {
+  id: true,
+  slug: true,
+  brandName: true,
+  city: true,
+  district: true,
+} satisfies Prisma.DealerSelect;
+
 export function createSearchRepository(prisma: PrismaClient) {
   return {
-    cards(skip: number, take: number, scope: ListingScope = {}): Promise<CardRow[]> {
-      return prisma.listing.findMany({
-        where: publicListingsOf(scope),
-        include: cardInclude,
-        orderBy: [{ publishedAt: 'desc' }, { id: 'desc' }],
-        skip,
-        take,
-      });
+    cards(
+      where: Prisma.ListingWhereInput,
+      orderBy: Prisma.ListingOrderByWithRelationInput[],
+      skip: number,
+      take: number,
+    ): Promise<CardRow[]> {
+      return prisma.listing.findMany({ where, include: cardInclude, orderBy, skip, take });
+    },
+
+    count(where: Prisma.ListingWhereInput): Promise<number> {
+      return prisma.listing.count({ where });
     },
 
     detail(slug: string): Promise<DetailRow | null> {
@@ -71,25 +65,111 @@ export function createSearchRepository(prisma: PrismaClient) {
       });
     },
 
-    count(scope: ListingScope = {}): Promise<number> {
-      return prisma.listing.count({ where: publicListingsOf(scope) });
-    },
-
-    async districtNames(slug: string): Promise<string[]> {
-      const rows = await prisma.dealer.findMany({
-        where: { status: PUBLIC_LISTING_WHERE.dealer.status, district: { not: null } },
-        distinct: ['district'],
-        select: { district: true },
+    publicDealers(): Promise<PublicDealerRow[]> {
+      return prisma.dealer.findMany({
+        where: { status: PUBLIC_LISTING_WHERE.dealer.status },
+        select: dealerSelect,
+        orderBy: { brandName: 'asc' },
       });
-      return rows
-        .map((row) => row.district)
-        .filter((name): name is string => name !== null && slugify(name) === slug);
     },
 
-    publicDealerExists(slug: string): Promise<boolean> {
-      return prisma.dealer
-        .count({ where: { slug, status: PUBLIC_LISTING_WHERE.dealer.status } })
-        .then((found) => found > 0);
+    publicDealer(slug: string): Promise<PublicDealerRow | null> {
+      return prisma.dealer.findFirst({
+        where: { slug, status: PUBLIC_LISTING_WHERE.dealer.status },
+        select: dealerSelect,
+      });
+    },
+
+    async vocabulary(): Promise<Vocabulary> {
+      const live = { listing: { is: PUBLIC_LISTING_WHERE } } satisfies Prisma.VehicleWhereInput;
+      const [models, colors] = await Promise.all([
+        prisma.vehicle.groupBy({ by: ['make', 'model'], where: live }),
+        prisma.vehicle.groupBy({ by: ['color'], where: live }),
+      ]);
+      return {
+        makes: models.flatMap((row) => (row.make === null ? [] : [row.make])),
+        models,
+        colors: colors.flatMap((row) => (row.color === null ? [] : [row.color])),
+      };
+    },
+
+    async byMake(where: Prisma.VehicleWhereInput): Promise<Counted<string | null>[]> {
+      const rows = await prisma.vehicle.groupBy({ by: ['make'], where, _count: { _all: true } });
+      return rows.map((row) => ({ value: row.make, count: row._count._all }));
+    },
+
+    async byColor(where: Prisma.VehicleWhereInput): Promise<Counted<string | null>[]> {
+      const rows = await prisma.vehicle.groupBy({ by: ['color'], where, _count: { _all: true } });
+      return rows.map((row) => ({ value: row.color, count: row._count._all }));
+    },
+
+    async byFuel(where: Prisma.VehicleWhereInput): Promise<Counted<FuelType | null>[]> {
+      const rows = await prisma.vehicle.groupBy({
+        by: ['fuelType'],
+        where,
+        _count: { _all: true },
+      });
+      return rows.map((row) => ({ value: row.fuelType, count: row._count._all }));
+    },
+
+    async byTransmission(where: Prisma.VehicleWhereInput): Promise<Counted<Transmission | null>[]> {
+      const rows = await prisma.vehicle.groupBy({
+        by: ['transmission'],
+        where,
+        _count: { _all: true },
+      });
+      return rows.map((row) => ({ value: row.transmission, count: row._count._all }));
+    },
+
+    async byBodyType(where: Prisma.VehicleWhereInput): Promise<Counted<BodyType | null>[]> {
+      const rows = await prisma.vehicle.groupBy({
+        by: ['bodyType'],
+        where,
+        _count: { _all: true },
+      });
+      return rows.map((row) => ({ value: row.bodyType, count: row._count._all }));
+    },
+
+    async byOwners(where: Prisma.VehicleWhereInput): Promise<Counted<number | null>[]> {
+      const rows = await prisma.vehicle.groupBy({
+        by: ['ownerCount'],
+        where,
+        _count: { _all: true },
+      });
+      return rows.map((row) => ({ value: row.ownerCount, count: row._count._all }));
+    },
+
+    async byYear(where: Prisma.VehicleWhereInput): Promise<Counted<number | null>[]> {
+      const rows = await prisma.vehicle.groupBy({
+        by: ['manufacturingYear'],
+        where,
+        _count: { _all: true },
+      });
+      return rows.map((row) => ({ value: row.manufacturingYear, count: row._count._all }));
+    },
+
+    async byDealer(where: Prisma.VehicleWhereInput): Promise<Counted<string>[]> {
+      const rows = await prisma.vehicle.groupBy({
+        by: ['dealerId'],
+        where,
+        _count: { _all: true },
+      });
+      return rows.map((row) => ({ value: row.dealerId, count: row._count._all }));
+    },
+
+    async groupModels(
+      where: Prisma.VehicleWhereInput,
+    ): Promise<{ make: string | null; model: string | null; count: number }[]> {
+      const rows = await prisma.vehicle.groupBy({
+        by: ['make', 'model'],
+        where,
+        _count: { _all: true },
+      });
+      return rows.map((row) => ({ make: row.make, model: row.model, count: row._count._all }));
+    },
+
+    countVehicles(where: Prisma.VehicleWhereInput): Promise<number> {
+      return prisma.vehicle.count({ where });
     },
   };
 }

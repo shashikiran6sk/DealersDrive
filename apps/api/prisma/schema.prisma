@@ -509,6 +509,9 @@ model Vehicle {
 
   /// A dealership's own vehicles, newest first — the inventory read.
   @@index([dealerId, createdAt])
+  /// The marketplace search's brand filter and its brand and model facets
+  /// (**F076**). See `migrations/20260927100000_vehicle_search_index`.
+  @@index([make, model])
   /// "Which cars carry this registration" — the duplicate check.
   ///
   /// ⚠️ There is also a **partial unique index** Prisma cannot express:
