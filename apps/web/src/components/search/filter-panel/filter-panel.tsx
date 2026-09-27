@@ -76,6 +76,7 @@ export function FilterPanel({
   groups = ALL_FILTER_GROUPS,
   idPrefix = 'filters',
   heading = FILTER_PANEL_TEXT.heading,
+  framed = true,
   className,
 }: FilterPanelProps) {
   const { navigate, pending } = useSearchNavigation();
@@ -203,6 +204,20 @@ export function FilterPanel({
   const active = activeFilterCount(params);
   const hasInventory = facets.price.some((band) => band.count > 0) || active > 0;
 
+  const body = hasInventory ? (
+    sections
+  ) : (
+    <p className="text-[13px] ink-muted">{FILTER_PANEL_TEXT.nothingHere}</p>
+  );
+
+  if (!framed) {
+    return (
+      <div className={cn('flex flex-col gap-[18px]', className)} aria-busy={pending}>
+        {body}
+      </div>
+    );
+  }
+
   return (
     <div className={cn('card gap-[18px] p-[16px]', className)} aria-busy={pending}>
       <div className="flex items-baseline justify-between gap-2">
@@ -220,11 +235,7 @@ export function FilterPanel({
           </button>
         ) : null}
       </div>
-      {hasInventory ? (
-        sections
-      ) : (
-        <p className="text-[13px] ink-muted">{FILTER_PANEL_TEXT.nothingHere}</p>
-      )}
+      {body}
     </div>
   );
 }

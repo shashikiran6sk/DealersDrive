@@ -198,3 +198,51 @@ describe('a dialog opened from more than one place', () => {
     expect(description).not.toHaveClass('ink-muted');
   });
 });
+
+/**
+ * F079 — the bottom sheet §3.3 draws for the mobile filters: the same Radix
+ * contract, bottom-aligned, with a 44px close (§4.15) and the footer pinned
+ * under a scrolling body.
+ */
+describe('the sheet variant', () => {
+  function Sheet() {
+    const [open, setOpen] = useState(false);
+    return (
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+        variant="sheet"
+        trigger={<button type="button">Filters</button>}
+        title="Filters"
+        closeLabel="Close filters"
+        footer={<button type="button">Show 18 cars</button>}
+      >
+        <p>Groups</p>
+      </Dialog>
+    );
+  }
+
+  it('opens along the bottom edge, with a touch-sized close and the footer outside the scroll', async () => {
+    const user = userEvent.setup();
+    render(<Sheet />);
+    await user.click(screen.getByRole('button', { name: 'Filters' }));
+
+    const sheet = screen.getByRole('dialog', { name: 'Filters' });
+    expect(sheet).toHaveClass('dd-sheet', 'bottom-0', 'inset-x-0');
+    expect(screen.getByRole('button', { name: 'Close filters' })).toHaveClass('h-11', 'w-11');
+    expect(screen.getByText('Groups').parentElement).toHaveClass('overflow-y-auto');
+    expect(
+      screen.getByRole('button', { name: 'Show 18 cars' }).closest('.overflow-y-auto'),
+    ).toBeNull();
+  });
+
+  it('keeps the dialog contract: Escape closes and focus goes back to the trigger', async () => {
+    const user = userEvent.setup();
+    render(<Sheet />);
+    const trigger = screen.getByRole('button', { name: 'Filters' });
+    await user.click(trigger);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
+  });
+});
