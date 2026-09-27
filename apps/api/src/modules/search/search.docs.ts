@@ -36,7 +36,10 @@ const FACETS_EXAMPLE = {
   ],
   transmissions: [{ value: 'automatic', label: 'Automatic', count: 12 }],
   bodyTypes: [{ value: 'suv', label: 'SUV', count: 15 }],
-  colors: [{ value: 'polar-white', label: 'Polar White', count: 6 }],
+  colors: [
+    { value: 'black', label: 'Black', count: 4 },
+    { value: 'white', label: 'White', count: 6 },
+  ],
   ownerCounts: [{ value: '1', label: 'First owner', count: 21 }],
   dealers: [{ value: 'sri-lakshmi-motors-arcot', label: 'Sri Lakshmi Motors', count: 9 }],
   years: [{ value: '2023', label: '2023', count: 7 }],
@@ -58,7 +61,8 @@ const SEARCH_DESCRIPTION =
   '**Facets.** Each group is counted under every filter except its own, so ticking Petrol ' +
   'leaves Diesel\u2019s count as what ticking it too would add. `brands` ignores the model ' +
   'filter as well; `models` is empty until a brand is chosen and carries its brand as ' +
-  '`parent`. A ticked value with nothing behind it is still listed, at zero. `price` and ' +
+  '`parent`. `colors` is always the twelve generic families (**R52**), in order, zeros ' +
+  'included. A ticked value with nothing behind it is still listed, at zero. `price` and ' +
   '`kilometers` count fixed presets whose bounds are the query\u2019s own parameters. All ' +
   'counts are of public cars only.';
 

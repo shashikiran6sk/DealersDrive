@@ -40,7 +40,7 @@
 
 import { createHash } from 'node:crypto';
 
-import { slugify } from '@dealers-drive/contracts';
+import { slugify, type VehicleColor } from '@dealers-drive/contracts';
 
 import type { DevDealerRow } from './dev-dealers.data.js';
 
@@ -584,16 +584,37 @@ export const VEHICLE_CATALOG: readonly CatalogBrand[] = [
   },
 ];
 
-export const VEHICLE_COLORS = [
-  'Pearl White',
-  'Silky Silver',
-  'Magma Grey',
-  'Midnight Black',
-  'Fiery Red',
-  'Nexa Blue',
-  'Pearl Brown',
-  'Sunset Orange',
-] as const;
+/**
+ * The generic colour families (**R52**), repeated to weight the deal the way
+ * India's used-car lots look: white, silver and grey most, the loud colours
+ * rarely. Every one of the twelve appears, so the colour filter has something
+ * behind each option — or, for the rarest, a zero it can show disabled.
+ */
+export const VEHICLE_COLORS: readonly VehicleColor[] = [
+  'WHITE',
+  'WHITE',
+  'WHITE',
+  'WHITE',
+  'WHITE',
+  'SILVER',
+  'SILVER',
+  'SILVER',
+  'GREY',
+  'GREY',
+  'GREY',
+  'BLACK',
+  'BLACK',
+  'RED',
+  'RED',
+  'BLUE',
+  'BLUE',
+  'BROWN',
+  'BEIGE',
+  'GREEN',
+  'ORANGE',
+  'YELLOW',
+  'OTHER',
+];
 
 /** The RTO each district's cars are registered at. */
 const RTO_BY_DISTRICT: Record<string, string> = {
@@ -653,7 +674,7 @@ export interface DevVehicle {
   bodyType: Body;
   kilometersDriven: number;
   ownerCount: number;
-  color: string;
+  color: VehicleColor;
   pricePaise: bigint;
   status: DevListingStatus;
   listingSlug: string | null;

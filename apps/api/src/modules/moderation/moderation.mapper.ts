@@ -10,6 +10,7 @@ import {
   PHOTOGRAPHY_STATUS_TONES,
   NEGOTIABILITY_LABELS,
   TRANSMISSION_LABELS,
+  VEHICLE_COLOR_LABELS,
   VEHICLE_FIELD_LABELS,
   formatDate,
   formatKm,
@@ -130,7 +131,7 @@ export function sectionsOf(vehicle: DetailRow['vehicle']): AdminListingDetail['s
           vehicle.kilometersDriven === null ? null : formatKm(vehicle.kilometersDriven),
         ),
         row(VEHICLE_FIELD_LABELS.ownerCount, vehicle.ownerCount && ownerLabel(vehicle.ownerCount)),
-        row(VEHICLE_FIELD_LABELS.color, vehicle.color),
+        row(VEHICLE_FIELD_LABELS.color, vehicle.color && VEHICLE_COLOR_LABELS[vehicle.color]),
         row(
           VEHICLE_FIELD_LABELS.insuranceType,
           vehicle.insuranceType && INSURANCE_LABELS[vehicle.insuranceType],

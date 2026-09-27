@@ -11,6 +11,7 @@ import {
   PriceNegotiability,
   TRANSMISSION_LABELS,
   Transmission,
+  VehicleColor,
 } from './enums.js';
 import { DealerListing } from './listing.js';
 import { RegistrationNumber } from './registration.js';
@@ -40,7 +41,6 @@ export const VEHICLE_LIMITS = {
   /** ₹20 crore. */
   maxPricePaise: 20_000_000_000,
   textMax: 60,
-  colorMax: 40,
   descriptionMax: 2000,
 } as const;
 
@@ -93,7 +93,7 @@ export const VehicleFieldSchemas = {
     .int()
     .min(VEHICLE_LIMITS.minOwners, 'A car has had at least one owner.')
     .max(VEHICLE_LIMITS.maxOwners, 'Check the number of owners.'),
-  color: VehicleText(VEHICLE_LIMITS.colorMax),
+  color: VehicleColor,
   insuranceType: InsuranceType,
   insuranceValidUntil: z.iso.date('Enter a date as YYYY-MM-DD.'),
   pricePaise: z
@@ -339,7 +339,7 @@ export const DealerVehicle = z.object({
   bodyType: BodyType.nullable(),
   kilometersDriven: z.number().int().nullable(),
   ownerCount: z.number().int().nullable(),
-  color: z.string().nullable(),
+  color: VehicleColor.nullable(),
   insuranceType: InsuranceType.nullable(),
   insuranceValidUntil: z.string().nullable(),
   pricePaise: z.number().int().nullable(),

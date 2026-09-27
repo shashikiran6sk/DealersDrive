@@ -1,4 +1,11 @@
-import type { BodyType, FuelType, Prisma, PrismaClient, Transmission } from '@prisma/client';
+import type {
+  BodyType,
+  FuelType,
+  Prisma,
+  PrismaClient,
+  Transmission,
+  VehicleColor,
+} from '@prisma/client';
 
 import type { Counted, PublicDealerRow } from './search.facets.js';
 import type { Vocabulary } from './search.filters.js';
@@ -81,15 +88,13 @@ export function createSearchRepository(prisma: PrismaClient) {
     },
 
     async vocabulary(): Promise<Vocabulary> {
-      const live = { listing: { is: PUBLIC_LISTING_WHERE } } satisfies Prisma.VehicleWhereInput;
-      const [models, colors] = await Promise.all([
-        prisma.vehicle.groupBy({ by: ['make', 'model'], where: live }),
-        prisma.vehicle.groupBy({ by: ['color'], where: live }),
-      ]);
+      const models = await prisma.vehicle.groupBy({
+        by: ['make', 'model'],
+        where: { listing: { is: PUBLIC_LISTING_WHERE } },
+      });
       return {
         makes: models.flatMap((row) => (row.make === null ? [] : [row.make])),
         models,
-        colors: colors.flatMap((row) => (row.color === null ? [] : [row.color])),
       };
     },
 
@@ -98,7 +103,7 @@ export function createSearchRepository(prisma: PrismaClient) {
       return rows.map((row) => ({ value: row.make, count: row._count._all }));
     },
 
-    async byColor(where: Prisma.VehicleWhereInput): Promise<Counted<string | null>[]> {
+    async byColor(where: Prisma.VehicleWhereInput): Promise<Counted<VehicleColor | null>[]> {
       const rows = await prisma.vehicle.groupBy({ by: ['color'], where, _count: { _all: true } });
       return rows.map((row) => ({ value: row.color, count: row._count._all }));
     },

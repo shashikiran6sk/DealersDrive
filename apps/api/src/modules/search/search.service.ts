@@ -14,6 +14,7 @@ import { NotFoundError } from '../../platform/errors.js';
 import {
   bodyTypeFacet,
   cityFacet,
+  colorFacet,
   dealerFacet,
   fuelFacet,
   locationScope,
@@ -109,7 +110,7 @@ export function createSearchService({ repo }: SearchDeps) {
       fuelTypes: fuelFacet(fuels, query.fuel),
       transmissions: transmissionFacet(transmissions, query.transmission),
       bodyTypes: bodyTypeFacet(bodies, query.bodyType),
-      colors: textFacet(colors, query.color),
+      colors: colorFacet(colors),
       ownerCounts: ownerFacet(owners, query.owners),
       dealers: location
         ? dealerFacet(byDealer, scope, 'dealer' in query ? query.dealer : undefined)

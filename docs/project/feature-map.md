@@ -5351,3 +5351,40 @@ of listings an integration test leaves behind. R51 adds the cars.
   validity, readable and unique registrations, unique slugs, the registration
   claims the partial unique indexes expect, every non-public state, variety in
   every facet and every price and distance band, Ranipet's towns.
+
+## R52 — A car's colour is one of twelve families
+
+**Revises F061, F076, F078, R51** · ⚠️ schema change — `vehicles.color` becomes an enum; the old text is kept
+
+`vehicles.color` was free text. "Fiery Red", "Flame Red" and "red" were three
+colour filters for one colour, and the facet grew with every shade a dealer
+typed. The colour is now `VehicleColor` — Black, White, Grey, Silver, Red,
+Blue, Green, Brown, Beige, Yellow, Orange, Other — defined once in contracts
+(`packages/contracts/src/enums.ts`) and used by the listing form, the API's
+validation, the database enum and the search.
+
+- **Schema** `enum VehicleColor`; `vehicles.color VehicleColor?`; the old text
+  column is renamed `legacyColor` — written by nothing, read by nothing public,
+  kept so the backfill can be audited or redone.
+- **Migration** `20260927200000_vehicle_color` backfills through
+  `dd_vehicle_color(text)`, the same rule as `normaliseVehicleColor`: exactly
+  one colour word → that family ("Pearl White" → White); none, or more than one
+  → Other ("Deep Forest", "Red with black roof"); blank → null. Conservative on
+  purpose — a wrong colour files a car where a buyer will not look for it. The
+  function stays in the schema so the suite holds it to the TypeScript rule.
+- **Contracts** `VehicleColor`, `VEHICLE_COLOR_LABELS`, `VEHICLE_COLOR_WORDS`,
+  `normaliseVehicleColor`, `ColorSlug`; `VehicleFieldSchemas.color` and
+  `DealerVehicle.color` are the enum; `VEHICLE_LIMITS.colorMax` is gone.
+- **API** a shade name is a 400 naming `color`; the search maps `color=` slugs
+  to the enum without a vocabulary read, and `facets.colors` is always the
+  twelve families in order with their counts (zeros included). The public
+  vehicle page and the moderation screen print the family's label.
+- **Web** the wizard's colour is a `<select>` of the twelve; the review step
+  prints the label; the filter panel's Color group is the same twelve.
+- **Seed** `dev-vehicles.data.ts` deals only generic families, weighted
+  towards white, silver and grey.
+- **Tests** `tests/vehicle-color.test.ts` (the SQL backfill equals the TS rule
+  on 26 samples; the API accepts families and refuses shades; the database
+  enum equals the contract), `contracts/tests/unit/vehicle-color.test.ts`,
+  `public-vehicle-search.test.ts` (colour filter and the twelve-family facet),
+  the wizard's colour select, and the seed.

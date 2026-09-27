@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { BodyType, FuelType, Transmission } from '../../src/enums.js';
+import { BodyType, FuelType, Transmission, VehicleColor } from '../../src/enums.js';
 import {
   BodyTypeSlug,
+  ColorSlug,
   DealerVehicleQuery,
   FuelSlug,
   KM_PRESETS,
@@ -29,6 +30,7 @@ describe('the URL values for the three enums', () => {
       Transmission.options.map((value) => value.toLowerCase()),
     );
     expect(BodyTypeSlug.options).toEqual(BodyType.options.map((value) => value.toLowerCase()));
+    expect(ColorSlug.options).toEqual(VehicleColor.options.map((value) => value.toLowerCase()));
   });
 });
 

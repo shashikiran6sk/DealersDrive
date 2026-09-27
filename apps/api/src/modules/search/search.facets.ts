@@ -4,13 +4,15 @@ import {
   OWNER_BUCKET_LABELS,
   OWNER_BUCKET_MIN,
   TRANSMISSION_LABELS,
+  VEHICLE_COLOR_LABELS,
+  VehicleColor as ColorEnum,
   slugify,
   type FacetOption,
   type OwnerBucket,
   type RangeFacet,
   type RangePreset,
 } from '@dealers-drive/contracts';
-import type { BodyType, FuelType, Transmission } from '@prisma/client';
+import type { BodyType, FuelType, Transmission, VehicleColor } from '@prisma/client';
 
 export interface Counted<V> {
   value: V;
@@ -208,6 +210,16 @@ export const bodyTypeFacet = (
   rows: readonly Counted<BodyType | null>[],
   selected: readonly string[] | undefined,
 ): FacetOption[] => enumFacet(rows, BODY_TYPE_LABELS, selected);
+
+export function colorFacet(rows: readonly Counted<VehicleColor | null>[]): FacetOption[] {
+  const counts = new Map<VehicleColor, number>();
+  for (const row of rows) if (row.value !== null) counts.set(row.value, row.count);
+  return ColorEnum.options.map((color) => ({
+    value: color.toLowerCase(),
+    label: VEHICLE_COLOR_LABELS[color],
+    count: counts.get(color) ?? 0,
+  }));
+}
 
 const OWNER_BUCKETS: readonly OwnerBucket[] = ['1', '2', '3', '4'];
 

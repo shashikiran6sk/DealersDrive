@@ -20,7 +20,6 @@ const VOCABULARY: Vocabulary = {
     { make: 'Hyundai', model: 'Venue' },
     { make: 'Tata', model: 'Nexon' },
   ],
-  colors: ['Polar White', 'polar white', 'Fiery Red'],
 };
 
 function filtersOf(raw: Record<string, string>) {
@@ -61,12 +60,12 @@ describe('text a dealer typed, matched by its slug', () => {
   it('asks for the vocabulary only when a slug has to be resolved', () => {
     expect(needsVocabulary(PublicVehicleQuery.parse({ fuel: 'petrol' }))).toBe(false);
     expect(needsVocabulary(PublicVehicleQuery.parse({ brand: 'tata' }))).toBe(true);
-    expect(needsVocabulary(PublicVehicleQuery.parse({ color: 'fiery-red' }))).toBe(true);
+    expect(needsVocabulary(PublicVehicleQuery.parse({ color: 'red' }))).toBe(false);
   });
 
   it('matches every spelling that slugifies to the value, so case variants are one brand', () => {
     expect(filtersOf({ brand: 'maruti-suzuki' }).makes).toEqual(['Maruti Suzuki', 'MARUTI SUZUKI']);
-    expect(filtersOf({ color: 'polar-white' }).colors).toEqual(['Polar White', 'polar white']);
+    expect(filtersOf({ color: 'white,other' }).colors).toEqual(['WHITE', 'OTHER']);
   });
 
   it('resolves a slug nobody carries to nothing, which is an empty page rather than no filter', () => {

@@ -2,13 +2,14 @@ import {
   OWNER_BUCKET_MIN,
   slugify,
   type BodyTypeSlug,
+  type ColorSlug,
   type DealerVehicleQuery,
   type FuelSlug,
   type PublicVehicleQuery,
   type TransmissionSlug,
   type VehicleSort,
 } from '@dealers-drive/contracts';
-import type { BodyType, FuelType, Prisma, Transmission } from '@prisma/client';
+import type { BodyType, FuelType, Prisma, Transmission, VehicleColor } from '@prisma/client';
 
 import { PUBLIC_LISTING_WHERE } from './search.repository.js';
 
@@ -32,14 +33,13 @@ export interface Bounds {
 export interface Vocabulary {
   makes: readonly string[];
   models: readonly { make: string | null; model: string | null }[];
-  colors: readonly string[];
 }
 
 export interface ResolvedFilters {
   words: string[];
   makes?: string[];
   models?: string[];
-  colors?: string[];
+  colors?: VehicleColor[];
   price: Bounds;
   year: Bounds;
   km: Bounds;
@@ -65,6 +65,21 @@ const FUEL: Record<FuelSlug, FuelType> = {
 const TRANSMISSION: Record<TransmissionSlug, Transmission> = {
   manual: 'MANUAL',
   automatic: 'AUTOMATIC',
+};
+
+const COLOR: Record<ColorSlug, VehicleColor> = {
+  black: 'BLACK',
+  white: 'WHITE',
+  grey: 'GREY',
+  silver: 'SILVER',
+  red: 'RED',
+  blue: 'BLUE',
+  green: 'GREEN',
+  brown: 'BROWN',
+  beige: 'BEIGE',
+  yellow: 'YELLOW',
+  orange: 'ORANGE',
+  other: 'OTHER',
 };
 
 const BODY: Record<BodyTypeSlug, BodyType> = {
@@ -93,7 +108,7 @@ function spellingsOf(values: readonly (string | null)[], slugs: readonly string[
 }
 
 export function needsVocabulary(query: VehicleFilterQuery): boolean {
-  return Boolean(query.brand ?? query.model ?? query.color);
+  return Boolean(query.brand ?? query.model);
 }
 
 export function resolveFilters(
@@ -113,7 +128,7 @@ export function resolveFilters(
           ),
         }
       : {}),
-    ...(query.color ? { colors: spellingsOf(vocabulary?.colors ?? [], query.color) } : {}),
+    ...(query.color ? { colors: query.color.map((value) => COLOR[value]) } : {}),
     price: bounds(query.minPrice, query.maxPrice),
     year: bounds(query.minYear, query.maxYear),
     km: bounds(query.minKm, query.maxKm),

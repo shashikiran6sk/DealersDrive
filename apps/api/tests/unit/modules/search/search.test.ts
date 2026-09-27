@@ -120,7 +120,7 @@ function detailRow(overrides: Partial<DetailRow['vehicle']> = {}): DetailRow {
       bodyType: 'SUV',
       kilometersDriven: 22_400,
       ownerCount: 1,
-      color: 'Polar White',
+      color: 'WHITE',
       insuranceType: 'COMPREHENSIVE',
       insuranceValidUntil: new Date('2027-03-31T00:00:00.000Z'),
       pricePaise: 145_000_000n,
@@ -180,7 +180,7 @@ describe('toPublicVehicleDetail', () => {
 
 describe('specsOf', () => {
   it('lists what is known, formatted, and leaves out what is not', () => {
-    const specs = specsOf(detailRow({ variant: null, rtoCode: null, color: '' }).vehicle);
+    const specs = specsOf(detailRow({ variant: null, rtoCode: null, color: null }).vehicle);
     const labels = specs.map((entry) => entry.label);
     expect(labels).not.toContain('Variant');
     expect(labels).not.toContain('Registered at');

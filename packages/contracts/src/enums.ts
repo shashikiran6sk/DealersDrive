@@ -16,6 +16,29 @@ export type Transmission = z.infer<typeof Transmission>;
 export const BodyType = z.enum(['HATCHBACK', 'SEDAN', 'SUV', 'MUV', 'LUXURY']);
 export type BodyType = z.infer<typeof BodyType>;
 
+/**
+ * A car's colour, as a buyer filters by it (**R52**): twelve generic families,
+ * never a manufacturer's shade name. "Fiery Red" and "Flame Red" are one colour
+ * to somebody looking for a red car, and a free-text column made them two
+ * filter options, and fifty. The listing form offers exactly these; the search
+ * filters on exactly these.
+ */
+export const VehicleColor = z.enum([
+  'BLACK',
+  'WHITE',
+  'GREY',
+  'SILVER',
+  'RED',
+  'BLUE',
+  'GREEN',
+  'BROWN',
+  'BEIGE',
+  'YELLOW',
+  'ORANGE',
+  'OTHER',
+]);
+export type VehicleColor = z.infer<typeof VehicleColor>;
+
 export const InsuranceType = z.enum(['COMPREHENSIVE', 'THIRD_PARTY', 'NONE']);
 export type InsuranceType = z.infer<typeof InsuranceType>;
 
@@ -164,6 +187,68 @@ export const BODY_TYPE_LABELS: Record<BodyType, string> = {
   MUV: 'MUV',
   LUXURY: 'Luxury',
 };
+
+export const VEHICLE_COLOR_LABELS: Record<VehicleColor, string> = {
+  BLACK: 'Black',
+  WHITE: 'White',
+  GREY: 'Grey',
+  SILVER: 'Silver',
+  RED: 'Red',
+  BLUE: 'Blue',
+  GREEN: 'Green',
+  BROWN: 'Brown',
+  BEIGE: 'Beige',
+  YELLOW: 'Yellow',
+  ORANGE: 'Orange',
+  OTHER: 'Other',
+};
+
+/**
+ * The words that name each colour family, for reading a colour somebody typed
+ * before **R52** made it a choice. Deliberately short: a word here is a claim
+ * that every shade containing it belongs to the family, and a wrong claim files
+ * a car under a colour it is not.
+ *
+ * `migrations/…_vehicle_color` backfills the database with the same list, and
+ * `vehicle-color.test.ts` holds the two to each other.
+ */
+export const VEHICLE_COLOR_WORDS: Record<Exclude<VehicleColor, 'OTHER'>, readonly string[]> = {
+  BLACK: ['black'],
+  WHITE: ['white'],
+  GREY: ['grey', 'gray'],
+  SILVER: ['silver'],
+  RED: ['red', 'maroon'],
+  BLUE: ['blue', 'navy'],
+  GREEN: ['green'],
+  BROWN: ['brown'],
+  BEIGE: ['beige'],
+  YELLOW: ['yellow'],
+  ORANGE: ['orange'],
+};
+
+/**
+ * A free-text colour, read as one of the families — conservatively.
+ *
+ * Exactly one family named → that family: "Pearl White" is White, "Magma Grey"
+ * is Grey. **No family, or more than one → Other**: "Deep Forest" names none,
+ * and "Red with black roof" names two, and guessing either would file the car
+ * somewhere a buyer would call wrong. Other is honest; a wrong colour is not.
+ * Blank is no colour at all.
+ */
+export function normaliseVehicleColor(input: string | null | undefined): VehicleColor | null {
+  const text = (input ?? '').trim();
+  if (text === '') return null;
+
+  const direct = VehicleColor.safeParse(text.toUpperCase());
+  if (direct.success) return direct.data;
+
+  const words = new Set(text.toLowerCase().split(/[^a-z]+/));
+  const families = VehicleColor.options.filter(
+    (family): family is Exclude<VehicleColor, 'OTHER'> =>
+      family !== 'OTHER' && VEHICLE_COLOR_WORDS[family].some((word) => words.has(word)),
+  );
+  return families.length === 1 ? (families[0] ?? 'OTHER') : 'OTHER';
+}
 
 export const INSURANCE_LABELS: Record<InsuranceType, string> = {
   COMPREHENSIVE: 'Comprehensive',

@@ -143,7 +143,7 @@ revision · `[⛔]` withdrawn
 - [x] F083 — Vehicle gallery & lightbox · **R48, R49** — the §2.9 strip under a blueprint main image, and the §2.10 lightbox with its numbered rail, on the `Dialog` primitive
 - [ ] F084 — Similar vehicles
 - [~] F085 — Dealer directory
-- [x] F086 — Dealer portfolio · header, info row, the live inventory (R48), and its filter rail, sheet and sort through the same search as `/cars`
+- [x] F086 — Dealer portfolio · header, info row, the live inventory (R48), and its filter rail, sheet and sort through the same search as `/cars` · [#174](https://github.com/shashikiran6sk/DealersDrive/pull/174)
 - [ ] F087 — Saved cars
 
 ## Tier 13 — Enquiries
@@ -221,6 +221,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R49 — The VDP gallery is the one the spec draws · revises F083/R48 · strip, rail and lightbox header back, per §2.9/§2.10
 - [x] R50 — `/cars` takes the header's district · revises F074/F077/R23 · `?district=` on `/v1/vehicles`, the dialog counts cars on `/cars` · [#167](https://github.com/shashikiran6sk/DealersDrive/pull/167)
 - [x] R51 — A marketplace worth searching: 320 dev cars · revises F097 (part) · `pnpm db:seed:dev` writes dealerships then cars, deterministic and re-runnable · [#169](https://github.com/shashikiran6sk/DealersDrive/pull/169)
+- [x] R52 — A car's colour is one of twelve families · revises F061/F076/F078/R51 · ⚠️ enum column, old text kept in `legacyColor`, conservative backfill
 
 ---
 
