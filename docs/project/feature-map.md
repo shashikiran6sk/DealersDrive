@@ -5388,3 +5388,28 @@ validation, the database enum and the search.
   enum equals the contract), `contracts/tests/unit/vehicle-color.test.ts`,
   `public-vehicle-search.test.ts` (colour filter and the twelve-family facet),
   the wizard's colour select, and the seed.
+
+## R53 — Filters offer only what can be chosen
+
+**Revises F076, F078, R52** · no schema change
+
+Two defects in the filter panel, found in manual testing:
+
+- **The Dealer filter showed with every district in scope** — a list of every
+  dealership on the platform. It now behaves like City / Town: both groups
+  appear only once a district is chosen (`FilterPanel` hides them, and
+  `GET /v1/vehicles` returns neither facet without a district, so the API does
+  not compute a list nothing will show). Changing district already clears
+  `city`, `dealer` and `page` (R50); that is now asserted for Ranipet → Vellore
+  on `/cars` too.
+- **Greyed options could still be ticked.** A zero-count option is now a
+  **disabled** control: no click, label click or keypress ticks it, Tab skips
+  it, nothing is written to the URL and no search runs. It stays visible and
+  named with its count ("Electric (0 cars)"). A ticked option stays enabled at
+  zero so it can be unticked — there is no ticked-and-disabled state. The price
+  and kilometre presets follow the same rule; so does the portfolio, which uses
+  the same panel.
+- Colour (twelve families, R52) is shown whole rather than collapsed.
+- **Tests** `filter-panel.test.tsx` ("the district decides the place filters",
+  "an option with nothing behind it"), `public-vehicle-search.test.ts` (no
+  dealer or town facet without a district).

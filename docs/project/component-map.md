@@ -392,6 +392,10 @@ exactly what makes "which nav item is active" testable for the first time.
 > `tests/unit/components/search/filter-panel.test.tsx`. Sandbox
 > `Search/FilterPanel`, eight states.
 
+> **R53:** City / Town and Dealer appear only with a district; a zero-count
+> option is a _disabled_ control (a ticked one stays enabled so it can be
+> unticked); Colour shows all twelve families.
+
 > **F086 part 2 used it exactly that way:** the portfolio passes
 > `groups={PORTFOLIO_FILTER_GROUPS}` (no City / Town, no Dealer) and
 > `heading="Filter inventory"` to the same component, and the same

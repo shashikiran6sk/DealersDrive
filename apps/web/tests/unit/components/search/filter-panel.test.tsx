@@ -41,9 +41,16 @@ describe('what it offers', () => {
     expect(screen.queryByText(/^location$/i)).toBeNull();
   });
 
-  it('leaves out a group with nothing in it, like the towns with every district in scope', () => {
-    render(<FilterPanel facets={{ ...FACETS, cities: [] }} params={{}} basePath="/cars" />);
-    expect(groupNames()).not.toContain('City / Town');
+  it('leaves out a group with nothing in it', () => {
+    render(
+      <FilterPanel
+        facets={{ ...FACETS, colors: [], ownerCounts: [] }}
+        params={{ district: 'ranipet' }}
+        basePath="/cars"
+      />,
+    );
+    expect(groupNames()).not.toContain('Color');
+    expect(groupNames()).not.toContain('Owners');
   });
 
   it('labels each value with its count, readable as one name', () => {
@@ -74,13 +81,6 @@ describe('what it offers', () => {
   it('keeps a ticked value visible even past the fold', () => {
     render(<FilterPanel facets={FACETS} params={{ brand: 'skoda' }} basePath="/cars" />);
     expect(screen.getByRole('checkbox', { name: 'Skoda (1 car)' })).toBeChecked();
-  });
-
-  it('dims a preset with nothing behind it, and keeps it operable', () => {
-    render(<FilterPanel facets={FACETS} params={{}} basePath="/cars" />);
-    const empty = screen.getByRole('radio', { name: '₹20 lakh+ (0 cars)' });
-    expect(empty).toBeEnabled();
-    expect(empty.closest('label')).toHaveClass('opacity-40');
   });
 
   it('offers no town, district or dealer on a dealership page', () => {
@@ -206,5 +206,86 @@ describe('what it writes', () => {
       />,
     );
     expect(screen.getByText('Nothing to filter by here yet.')).toBeInTheDocument();
+  });
+});
+
+/**
+ * Which groups a buyer is offered depends on the district (**R53**): a town and
+ * a dealership are both inside one, so with every district in scope neither
+ * list would be readable, and both lead out of a scope the buyer never chose.
+ */
+describe('the district decides the place filters', () => {
+  it('offers no City / Town and no Dealer with every district in scope', () => {
+    render(<FilterPanel facets={FACETS} params={{}} basePath="/cars" />);
+    expect(groupNames()).not.toContain('City / Town');
+    expect(groupNames()).not.toContain('Dealer');
+    expect(groupNames()).toContain('Brand');
+    expect(groupNames()).toContain('Color');
+  });
+
+  it('offers both once a district is chosen', () => {
+    render(<FilterPanel facets={FACETS} params={{ district: 'ranipet' }} basePath="/cars" />);
+    expect(groupNames()).toContain('City / Town');
+    expect(groupNames()).toContain('Dealer');
+  });
+});
+
+/**
+ * An option with nothing behind it is shown, so the list does not jump around
+ * as filters change, but it is **disabled** — not merely grey (**R53**). It
+ * cannot be ticked by mouse, by its label or by the keyboard, so it can never
+ * write a filter that empties the page.
+ */
+describe('an option with nothing behind it', () => {
+  const ZERO = {
+    ...FACETS,
+    fuelTypes: [...FACETS.fuelTypes, { value: 'electric', label: 'Electric', count: 0 }],
+  };
+
+  it('is a disabled control, still named with its count', () => {
+    render(<FilterPanel facets={ZERO} params={{}} basePath="/cars" />);
+    const electric = screen.getByRole('checkbox', { name: 'Electric (0 cars)' });
+    expect(electric).toBeDisabled();
+    expect(electric.closest('label')).toHaveClass('cursor-not-allowed');
+    expect(screen.getByRole('radio', { name: '₹20 lakh+ (0 cars)' })).toBeDisabled();
+  });
+
+  it('cannot be ticked by a click on the box or its label', async () => {
+    const user = userEvent.setup();
+    render(<FilterPanel facets={ZERO} params={{}} basePath="/cars" />);
+    const electric = screen.getByRole('checkbox', { name: 'Electric (0 cars)' });
+    await user.click(electric);
+    await user.click(screen.getByText('Electric'));
+    await user.click(screen.getByRole('radio', { name: '₹20 lakh+ (0 cars)' }));
+    expect(electric).not.toBeChecked();
+    expect(navigationState.pushed).toEqual([]);
+  });
+
+  it('is skipped by the keyboard and cannot be ticked with Space', async () => {
+    const user = userEvent.setup();
+    render(<FilterPanel facets={ZERO} params={{}} basePath="/cars" />);
+    const cng = screen.getByRole('checkbox', { name: 'CNG (12 cars)' });
+    cng.focus();
+    await user.tab();
+    expect(screen.getByRole('checkbox', { name: 'Electric (0 cars)' })).not.toHaveFocus();
+    await user.keyboard(' ');
+    expect(navigationState.pushed.every((url) => !url.includes('electric'))).toBe(true);
+  });
+
+  it('stays enabled while it is ticked, so it can be unticked', async () => {
+    const user = userEvent.setup();
+    render(<FilterPanel facets={ZERO} params={{ fuel: 'electric' }} basePath="/cars" />);
+    const electric = screen.getByRole('checkbox', { name: 'Electric (0 cars)' });
+    expect(electric).toBeEnabled();
+    expect(electric).toBeChecked();
+    await user.click(electric);
+    expect(navigationState.pushed).toEqual(['/cars']);
+  });
+
+  it('shows every generic colour, disabling the ones nothing is in', () => {
+    render(<FilterPanel facets={FACETS} params={{ district: 'ranipet' }} basePath="/cars" />);
+    const colour = within(screen.getByRole('group', { name: 'Color' }));
+    expect(colour.getByRole('checkbox', { name: 'Green (0 cars)' })).toBeDisabled();
+    expect(colour.getByRole('checkbox', { name: 'White (9 cars)' })).toBeEnabled();
   });
 });

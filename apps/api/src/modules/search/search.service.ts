@@ -95,16 +95,18 @@ export function createSearchService({ repo }: SearchDeps) {
       repo.byBodyType(within(['bodyType'])),
       repo.byOwners(within(['owners'])),
       repo.byYear(within(['year'])),
-      location ? repo.byDealer(inventoryWhere(filters, scope.scopeIds)) : Promise.resolve([]),
+      location?.district
+        ? repo.byDealer(inventoryWhere(filters, scope.scopeIds))
+        : Promise.resolve([]),
       presetCounts('pricePaise', 'price', PRICE_PRESETS),
       presetCounts('kilometersDriven', 'km', KM_PRESETS),
     ]);
 
     const byDealer = new Map(perDealer.map((row) => [row.value, row.count]));
-    const showCities = location !== null && Boolean(location.district ?? location.city);
+    const inDistrict = location !== null && Boolean(location.district);
 
     return {
-      cities: showCities ? cityFacet(byDealer, scope, location?.city) : [],
+      cities: inDistrict ? cityFacet(byDealer, scope, location?.city) : [],
       brands: textFacet(brands, query.brand),
       models: modelFacet(models, query.model),
       fuelTypes: fuelFacet(fuels, query.fuel),
@@ -112,7 +114,7 @@ export function createSearchService({ repo }: SearchDeps) {
       bodyTypes: bodyTypeFacet(bodies, query.bodyType),
       colors: colorFacet(colors),
       ownerCounts: ownerFacet(owners, query.owners),
-      dealers: location
+      dealers: inDistrict
         ? dealerFacet(byDealer, scope, 'dealer' in query ? query.dealer : undefined)
         : [],
       years: yearFacet(years),

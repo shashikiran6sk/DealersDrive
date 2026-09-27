@@ -57,6 +57,10 @@ type FacetLists = Pick<
   | 'dealers'
 >;
 
+const LOCATION_GROUPS: ReadonlySet<FilterGroupKey> = new Set(['city', 'dealer']);
+
+const FIXED_LISTS: ReadonlySet<FilterGroupKey> = new Set(['color']);
+
 function describePrice(range: { min: number | null; max: number | null }): string {
   return [range.min, range.max]
     .map((value) => (value === null ? '…' : formatLakh(value)))
@@ -107,6 +111,7 @@ export function FilterPanel({
         }}
       >
         <FacetCheckboxList
+          {...(FIXED_LISTS.has(group) ? { limit: options.length } : {})}
           name={spec.key}
           idPrefix={idPrefix}
           options={options}
@@ -194,6 +199,7 @@ export function FilterPanel({
   }
 
   const sections = groups.map((group) => {
+    if (LOCATION_GROUPS.has(group) && !params.district) return null;
     if (group === 'price' || group === 'km') return rangeGroup(group);
     if (group === 'year') return yearGroup();
     if (group === 'model') return modelGroup();
