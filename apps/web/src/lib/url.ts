@@ -12,16 +12,3 @@ export function many(params: SearchParamsInput, key: string): string[] {
     .map((value) => value.trim())
     .filter((value) => value.length > 0);
 }
-
-export interface CarsQuery {
-  district?: string;
-  page?: number;
-}
-
-export function carsHref({ district, page }: CarsQuery): string {
-  const params = new URLSearchParams();
-  if (district) params.set('district', district);
-  if (page !== undefined && page > 1) params.set('page', String(page));
-  const encoded = params.toString();
-  return encoded ? `/cars?${encoded}` : '/cars';
-}

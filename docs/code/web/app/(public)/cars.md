@@ -29,3 +29,14 @@ every district, rather than pointing at the directory.
 The district's name comes from `GET /v1/locations`, which the public layout has
 already fetched for the header under the same cache tag, so it costs no second
 round trip.
+
+**F078 — the filters.** Every search parameter is read with
+`readVehicleSearch` (the contract's own schema, pruned rather than refused),
+passed to `GET /v1/vehicles` in one canonical order, and drawn back as the
+`FilterPanel` rail (sticky, 250px, desktop only until F079 brings the sheet)
+and the `AppliedFilters` chips — both from the facets in the same response,
+so a count on screen is always the count of the page it leads to. The results
+sit in a `SearchResultsRegion` inside one `SearchNavigationProvider`, so a
+filter change dims the grid rather than blanking the page. An empty result
+with filters applied says so and offers _Clear filters_, which keeps the
+district.

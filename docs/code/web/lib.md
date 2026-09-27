@@ -764,13 +764,9 @@ That is free SEO, free sharing and a free back button, and it is why every
 filter in the product is a client component that writes to the URL rather
 than a store the server has to be told about (ARCHITECTURE §15.2).
 
-── Reconstruction slice ────────────────────────────────────────────────────
-The baseline's version of this file is mostly `FACET_ORDER` — the canonical
-ordering of the thirteen vehicle facets — plus `toApiQuery` and
-`buildSearchUrl`, which walk it. All three belong to `/cars` (**F077**) and
-arrive with it. The dealer directory has two parameters and a page number, so
-what it needs from here is the type.
-────────────────────────────────────────────────────────────────────────────
+The vehicle search's own ordering and builders — the baseline's
+`FACET_ORDER`, `toApiQuery` and `buildSearchUrl` — are in `vehicle-search.ts`
+(**F078**); this file keeps the generic readers both searches share.
 
 ### `export function one(params: SearchParamsInput, key: string): string | undefined`
 
@@ -784,6 +780,44 @@ A comma-separated parameter, as the list it stands for.
 takes one value per key, the shorter form survives being pasted into a chat
 window intact, and a single slug still reads as a list of one — so every
 link shared before the chips became toggles keeps working.
+
+## `apps/web/src/lib/vehicle-search.ts`
+
+The marketplace search's state, **as a URL** (**F078**) — the baseline's
+`FACET_ORDER`, `toApiQuery` and `buildSearchUrl`, rebuilt for the F076 grammar
+in its own file so `url.ts` stays the generic half.
+
+### `export const VEHICLE_PARAM_ORDER`
+
+One order for every URL the search writes. Two links to the same search are
+then the same string — which is what makes a shared link, a bookmark, a cache
+key and the back button all agree about what "the same page" is.
+
+### `export function readVehicleSearch(params, scope)`
+
+Parsed with the **same contract the API validates with**, then pruned rather
+than refused: a hand-edited `?fuel=kerosene` drops `fuel` and keeps the rest,
+because a 400 from the API would take the whole page to the error boundary
+over one bad parameter. An inverted range loses its floor, the half the
+contract's issue names. `scope: 'dealer'` never reads `district`, `city` or
+`dealer`, which a portfolio does not take.
+
+### `export function searchHref(basePath, params)`
+
+Defaults are left out — `sort=newest`, `page=1` — so there is one URL per
+search rather than three spellings of it.
+
+### `function withoutPage(params)`
+
+**Every** change but the page itself resets to page 1: page 4 of the old
+result set is not a place in the new one.
+
+### `export function clearFilters(params)`
+
+Keeps `district`, `q` and `sort`. The district is the page's scope, chosen
+through its own control, and clearing the filter panel must not move a buyer
+to another part of the country; the search text and the order belong to the
+toolbar, not the panel.
 
 ## `apps/web/src/lib/use-debounced-value.ts`
 
