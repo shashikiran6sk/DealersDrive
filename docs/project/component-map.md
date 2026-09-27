@@ -379,6 +379,19 @@ exactly what makes "which nav item is active" testable for the first time.
 | **Sandbox priority** | **P0**                                                                                                                                                                  |
 | **Confidence**       | HIGH                                                                                                                                                                    |
 
+> **As rebuilt (F078).** `components/search/filter-panel/` — `FilterPanel`,
+> `FilterGroup`, `FacetRow`, `FacetCheckboxList`, `RangePresets`, `YearRange`.
+> Props `facets: VehicleFacets`, `params: VehicleSearchParams`, `basePath`,
+> `groups?` (default all twelve; `PORTFOLIO_FILTER_GROUPS` drops town and
+> dealer), `idPrefix?`, `heading?`, `className?`. Twelve groups in the brief's
+> order; price and km as counted presets, year as two selects, the rest as
+> checkbox lists that collapse past six. Writes through `lib/vehicle-search.ts`
+> and `SearchNavigationProvider` (C081); ticks show at once via `useOptimistic`.
+> Zero-count rows are dimmed and operable (§2.4); a group with no values is
+> absent. `dimZeroRows` is gone — every zero row is dimmed. Tests
+> `tests/unit/components/search/filter-panel.test.tsx`. Sandbox
+> `Search/FilterPanel`, eight states.
+
 > ✅ **The canonical "existing component + props" success case.** F086 (dealer
 > portfolio) needed a
 > filter panel without a dealer group. Rather than a `PortfolioFilterPanel`
@@ -391,6 +404,20 @@ Both in `components/search/search-toolbar.tsx` (`:11`, `:82`).
 
 - `SearchToolbar` — `params`, `basePath`, `showSearch?` (default `true`). Free-text field + sort `<select>`, both writing to the URL. Consumers: 2. **P1.**
 - `MobileFilterSheet` — `facets`, `params`, `basePath`, `resultCount`, `groups?`, `dimZeroRows?`. Bottom sheet; body-scroll lock, Escape-to-close, sticky CTA with a live count. Consumers: 2. **P0** — it is the only mobile-specific component in the product and there is no way to see it today without resizing a real browser against a real API.
+
+### C080 — `AppliedFilters`
+
+`components/search/applied-filters/`. Props `facets`, `params`, `basePath`.
+States: nothing applied (renders nothing), a few filters, ranges and search.
+§3.3's chip row — one removable `tag-outline` chip per applied filter plus
+_Clear all_, which keeps the district. **NEW at F078.** **P1**
+
+### C081 — `SearchNavigationProvider` · `SearchResultsRegion`
+
+`components/search/search-navigation/`. One transition for every search
+control on a page, so the results dim (`aria-busy`) while the next page renders
+instead of blanking; `useSearchNavigation` falls back to a plain router
+outside it. **NEW at F078.** **P2**
 
 ### C030 — `HeroSearch`
 

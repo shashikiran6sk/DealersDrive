@@ -2198,6 +2198,19 @@ DESIGN-SPEC §3.3 — filters that write to the **URL**, not to a store, so ever
 - **Components — New (Shared)** `FilterPanel` · props `facets`, `params`, `basePath`, `dimZeroRows?`, `groups?`, `onNavigate?`
 - **Sandbox** nothing selected / one group / multiple groups / zero-count options / price range active / portfolio subset. **P0.**
 - ✅ Fully controlled by its `params` prop, so every filter combination is a static scenario. Only `useRouter` needs stubbing.
+- ⚠️ **Entry corrected on landing.** `components/search/filter-panel/` (six
+  files, one component each) plus `AppliedFilters` (C080),
+  `SearchNavigationProvider`/`SearchResultsRegion` (C081) and
+  `lib/vehicle-search.ts` (the baseline's `FACET_ORDER`/`buildSearchUrl`,
+  rebuilt for the F076 grammar). Twelve groups — City / Town, Brand, Model,
+  Price, Year, Kilometers driven, Fuel, Transmission, Body type, Color, Owners,
+  Dealer — and no generic Location. Price and km are counted presets, year two
+  selects. **Count-0 rows are dimmed, not disabled** (§2.4: "still operable");
+  the API lists only values with inventory plus any ticked one, so nothing is
+  hidden that a buyer could need. `/cars` gets the rail (desktop), the chip
+  row and a dimming results region. Tests `tests/unit/lib/vehicle-search.test.ts`,
+  `tests/unit/components/search/{filter-panel,applied-filters}.test.tsx`, and
+  "/cars with filters" in `vehicle-card.test.tsx`.
 
 ### F079 — Mobile filter sheet
 

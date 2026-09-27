@@ -11,6 +11,8 @@ import CarsPage from '@/app/(public)/cars/page';
 import { VehicleCard, VehicleCardSkeleton } from '@/components/vehicle/vehicle-card';
 import type * as ApiModule from '@/lib/api';
 
+import { FACETS } from '../search/fixtures';
+
 import { setLocation } from '../../../setup';
 
 const apiGetParsed = vi.fn();
@@ -232,5 +234,96 @@ describe('/cars in one district', () => {
     serve(response([card()]));
     render(await CarsPage({ searchParams: Promise.resolve({ district: 'Ranipet; drop' }) }));
     expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), '/v1/vehicles', expect.anything());
+  });
+});
+
+/**
+ * F078 — the page reads every filter from the URL, asks the API for exactly
+ * that, and draws the panel and the chips from the facets it gets back.
+ */
+describe('/cars with filters', () => {
+  function withFacets(response: PublicVehiclesResponse): PublicVehiclesResponse {
+    return { ...response, facets: FACETS };
+  }
+
+  it('passes the filters in the URL on to the API, in one canonical order', async () => {
+    serve(withFacets(response([card()])));
+    render(
+      await CarsPage({
+        searchParams: Promise.resolve({
+          fuel: 'petrol,diesel',
+          district: 'ranipet',
+          brand: 'hyundai',
+          utm_source: 'x',
+        }),
+      }),
+    );
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/vehicles?district=ranipet&brand=hyundai&fuel=petrol%2Cdiesel',
+      expect.anything(),
+    );
+  });
+
+  it('drops a filter the API would refuse, rather than failing the page', async () => {
+    serve(withFacets(response([card()])));
+    render(await CarsPage({ searchParams: Promise.resolve({ fuel: 'kerosene', brand: 'kia' }) }));
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/vehicles?brand=kia',
+      expect.anything(),
+    );
+  });
+
+  it('draws the filter panel and the applied chips from the response', async () => {
+    setLocation('/cars', 'district=ranipet&fuel=petrol');
+    serve(withFacets(response([card()])));
+    render(
+      await CarsPage({ searchParams: Promise.resolve({ district: 'ranipet', fuel: 'petrol' }) }),
+    );
+    const panel = screen.getByRole('complementary', { name: 'Filter cars' });
+    expect(within(panel).getByRole('checkbox', { name: 'Petrol (18 cars)' })).toBeChecked();
+    expect(within(panel).getByRole('group', { name: 'City / Town' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove filter: Petrol' })).toBeInTheDocument();
+  });
+
+  it('says nothing matches, and offers to clear the filters but keep the district', async () => {
+    serve(withFacets(response([])));
+    render(
+      await CarsPage({
+        searchParams: Promise.resolve({ district: 'ranipet', fuel: 'cng', q: 'creta' }),
+      }),
+    );
+    expect(
+      screen.getByText('No cars found in Ranipet matching these filters.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute(
+      'href',
+      '/cars?district=ranipet',
+    );
+  });
+
+  it('says nothing matches without a district too', async () => {
+    serve(withFacets(response([])));
+    render(await CarsPage({ searchParams: Promise.resolve({ transmission: 'automatic' }) }));
+    expect(screen.getByText('No vehicles match your current filters.')).toBeInTheDocument();
+  });
+
+  it('keeps every filter on the way to the next page', async () => {
+    serve(withFacets(response([card()], 1, 3)));
+    render(
+      await CarsPage({ searchParams: Promise.resolve({ district: 'ranipet', fuel: 'petrol' }) }),
+    );
+    const nav = within(screen.getByRole('navigation', { name: 'Pagination' }));
+    expect(nav.getByRole('link', { name: 'Next →' })).toHaveAttribute(
+      'href',
+      '/cars?district=ranipet&fuel=petrol&page=2',
+    );
+  });
+
+  it('announces the total as a status, so a screen reader hears it change', async () => {
+    serve(withFacets(response([card(), card({ slug: 'b' })])));
+    render(await CarsPage({ searchParams: Promise.resolve({}) }));
+    expect(screen.getByRole('status')).toHaveTextContent('2 cars available');
   });
 });

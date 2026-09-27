@@ -18,6 +18,13 @@ export const CARS_TEXT = {
   emptyInMessage: (district: string) =>
     `No verified dealership in ${district} has a car on the marketplace right now. Every other district is one click away.`,
   emptyInAction: 'Show all districts',
+  emptyFilteredTitle: 'No vehicles match your current filters.',
+  emptyFilteredInTitle: (district: string) =>
+    `No cars found in ${district} matching these filters.`,
+  emptyFilteredMessage:
+    'Try removing a filter or two — every one you clear can only bring more cars back.',
+  emptyFilteredAction: 'Clear filters',
+  filtersLabel: 'Filter cars',
   pagination: 'Pagination',
   previous: '← Previous',
   next: 'Next →',
