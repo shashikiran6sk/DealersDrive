@@ -133,7 +133,7 @@ revision · `[⛔]` withdrawn
 - [x] F073 — Public shell — header & footer · [#69](https://github.com/shashikiran6sk/DealersDrive/pull/69)
 - [ ] F074 — City selector
 - [x] F075 — Vehicle card · grid variant, no save or sold state yet (R45, F087 deferred) · with `GET /v1/vehicles`
-- [x] F076 — Search API & facets ⚠️ · one route answers page, total and facets; the portfolio's goes through the same `search()`
+- [x] F076 — Search API & facets ⚠️ · one route answers page, total and facets; the portfolio's goes through the same `search()` · [#168](https://github.com/shashikiran6sk/DealersDrive/pull/168)
 - [~] F077 — Search results page · `/cars` lists approved cars newest first, paged; filters, sort and search follow F076
 - [ ] F078 — Filter panel
 - [ ] F079 — Mobile filter sheet
@@ -220,6 +220,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R48 — The dealer surfaces meet the listings · revises F066/F085/F086/F082/F083 · console nav, directory and portfolio counts, portfolio inventory, and the gallery
 - [x] R49 — The VDP gallery is the one the spec draws · revises F083/R48 · strip, rail and lightbox header back, per §2.9/§2.10
 - [x] R50 — `/cars` takes the header's district · revises F074/F077/R23 · `?district=` on `/v1/vehicles`, the dialog counts cars on `/cars` · [#167](https://github.com/shashikiran6sk/DealersDrive/pull/167)
+- [x] R51 — A marketplace worth searching: 320 dev cars · revises F097 (part) · `pnpm db:seed:dev` writes dealerships then cars, deterministic and re-runnable
 
 ---
 

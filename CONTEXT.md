@@ -934,6 +934,15 @@ directly — which is what `GOOGLE_CALLBACK_URL`'s default already assumes.
 
 Copy `.env.example` to `.env` before running anything that touches the database.
 
+`pnpm db:seed:dev` fills a **local** database with 120 dealerships and 320 cars
+(272 live, the rest in every non-public state), refusing any non-loopback host
+unless `ALLOW_REMOTE_DEV_SEED=yes`. The cars are generated from a catalogue in
+`apps/api/prisma/seed/dev-vehicles.data.ts` with a fixed PRNG seed and fixed
+dates, and written by deterministic id — so a re-run updates rather than
+duplicates, and two developers looking at "Ranipet → Hyundai" see the same
+cars. They have no photographs on purpose: the card's no-photo slot is what
+they render, and nothing is uploaded to storage.
+
 ---
 
 ## 8a. A dealership's slug is its storage identity

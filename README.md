@@ -42,6 +42,15 @@ pnpm infra:up                 # Postgres, MinIO, Mailpit
 pnpm typecheck && pnpm test && pnpm build
 ```
 
+For a marketplace worth looking at locally, migrate and then seed the dev data
+— 120 dealerships across four states and 320 cars on them (272 live):
+
+```bash
+pnpm --filter @dealers-drive/api db:migrate
+pnpm db:seed:dev              # dealerships, then their cars; safe to re-run
+pnpm db:seed:vehicles:dev     # only the cars, once the dealerships exist
+```
+
 Use `.env.example.dev` and `.env.example.production` as the corresponding
 deployment templates.
 
