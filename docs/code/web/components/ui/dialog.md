@@ -94,3 +94,18 @@ pass `<DialogTitle>` — because `aria-labelledby` points at it.
 ### `footer?: ReactNode`
 
 Pinned below the scrolling region.
+
+## `apps/web/src/components/ui/dialog/dialog.variants.ts`
+
+### `export const DIALOG_VARIANTS: Record<DialogVariant, DialogVariantClasses>`
+
+Two shapes of one primitive (**R48**). `card` is the dialog every existing
+consumer uses, class for class what it was before the prop existed. `fullscreen`
+is the dark, edge-to-edge surface DESIGN-SPEC §2.10 draws for the photo viewer:
+the same Radix root, so the same focus trap, Escape, scroll lock and focus
+return, with a 54px header (title, a counter in the description slot, a 40px
+close button) and a body that does not scroll — whatever is inside is sized to
+fit instead.
+
+It is a variant rather than a second dialog component because everything that
+makes a modal correct is the part the two share; only the paint differs.

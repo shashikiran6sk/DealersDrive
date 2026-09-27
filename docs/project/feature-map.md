@@ -2241,6 +2241,15 @@ DESIGN-SPEC §2.9/§2.10 — the 108 px thumbnail strip and the fullscreen light
 - **Components — New (Shared)** `VehicleGallery` · **Reused** `Corners`, `ImageSlot`
 - **Sandbox** 0 / 1 / 2 / 12 photos; strip at start, middle and end; lightbox open at index n; wrap at both ends. **P0.**
 - ⚠️ `apps/web/vitest.config.ts` documents choosing jsdom over happy-dom **specifically so this component's focus management could be asserted on**. That test was never written (finding D-4). This is the clearest single case for the sandbox paying for itself.
+- ⚠️ **Entry corrected on landing (R48).** `components/vehicle/vehicle-gallery/`
+  — `VehicleGallery`, `GalleryViewer`, `GalleryArrow` — with the lightbox on the
+  `Dialog` primitive's new `fullscreen` variant (C070) rather than the legacy
+  hand-rolled overlay. Arrows wrap as the legacy did; ←/→ act while the gallery
+  has focus; the viewer has the counter, Escape, focus trap and return, and a
+  scroll lock. The thumbnail strip and the viewer's rail are dropped (a sideways
+  scroll on the page, and a quarter of a phone's width). Depends on F082, not
+  F034. The focus assertions D-4 asked for are in
+  `tests/unit/components/vehicle/vehicle-gallery.test.tsx`.
 
 ### F084 — Similar vehicles
 

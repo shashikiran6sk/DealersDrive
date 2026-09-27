@@ -24,7 +24,7 @@ const meta = {
     ),
   ],
   argTypes: { primaryIndex: { control: { type: 'number', min: 0 } } },
-  args: { images: images(8), primaryIndex: 0 },
+  args: { title: '2023 Hyundai Creta SX(O)', images: images(8), primaryIndex: 0 },
 } satisfies Meta<typeof VehicleGallery>;
 
 export default meta;
@@ -39,3 +39,14 @@ export const OnePhoto: Story = { args: { images: images(1) } };
 export const NoPhotos: Story = { args: { images: [] } };
 
 export const Twenty: Story = { args: { images: images(20) } };
+
+export const Phone: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 360, margin: '0 auto' }}>
+        <Story />
+      </div>
+    ),
+  ],
+};

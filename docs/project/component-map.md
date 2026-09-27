@@ -581,17 +581,17 @@ no place and no count.
 
 ### C070 — `Dialog`
 
-|                      |                                                                                                                                                           |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Location**         | `components/ui/dialog.tsx`                                                                                                                                |
-| **Purpose**          | DESIGN-SPEC §2.14. **New at R22** — the resolution of finding **D-C**, at the first consumer.                                                             |
-| **Props**            | `open`, `onOpenChange`, `trigger`, `title`, `description?`, `closeLabel?`, `className?`, `contentClassName?`, `header?`, `footer?`, `children`            |
-| **States**           | default 440px, with description, wide + scrolling, no footer                                                                                              |
-| **Consumers**        | 1 (`LocationSelector`) — `ReviewActions` (C060) is the next, at F070                                                                                      |
-| **Tests**            | `tests/unit/components/ui/dialog.test.tsx` — the contract only: modal, named, focus in, focus trapped, document inert, focus restored, close button named |
-| **Ownership**        | Primitive                                                                                                                                                 |
-| **Sandbox priority** | **P0** — the trap and the focus restore are invisible with a mouse, and the width override is the thing a caller gets wrong                               |
-| **Confidence**       | HIGH                                                                                                                                                      |
+|                      |                                                                                                                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `components/ui/dialog.tsx`                                                                                                                                                               |
+| **Purpose**          | DESIGN-SPEC §2.14. **New at R22** — the resolution of finding **D-C**, at the first consumer.                                                                                            |
+| **Props**            | `open`, `onOpenChange`, `trigger`, `title`, `description?`, `closeLabel?`, `className?`, `contentClassName?`, `header?`, `footer?`, `children`, `variant?` (`card` \| `fullscreen`, R48) |
+| **States**           | default 440px, with description, wide + scrolling, no footer, fullscreen (R48, the photo viewer)                                                                                         |
+| **Consumers**        | `LocationSelector`, `DecisionDialog`, `ApproveDialog`, `GalleryViewer` (fullscreen)                                                                                                      |
+| **Tests**            | `tests/unit/components/ui/dialog.test.tsx` — the contract only: modal, named, focus in, focus trapped, document inert, focus restored, close button named                                |
+| **Ownership**        | Primitive                                                                                                                                                                                |
+| **Sandbox priority** | **P0** — the trap and the focus restore are invisible with a mouse, and the width override is the thing a caller gets wrong                                                              |
+| **Confidence**       | HIGH                                                                                                                                                                                     |
 
 Radix underneath, the design system's classes on top. That direction matters: the
 alternative is a hand-rolled trap, and every item on the list a modal has to get
@@ -712,6 +712,12 @@ props. Both **P2**.
 > happy-dom _specifically so this component's focus management, keyboard
 > handling and `scrollIntoView` could be asserted on_. That test was never
 > written. The infrastructure decision was made and the payoff never taken.
+>
+> **As landed (R48).** `components/vehicle/vehicle-gallery/` —
+> `VehicleGallery` (`title`, `images`, `primaryIndex`), `GalleryViewer`,
+> `GalleryArrow`. No strip; wrapping arrows and ←/→ on the page; the lightbox is
+> `Dialog variant="fullscreen"`. Focus trap, return, Escape and scroll lock are
+> now tested.
 
 ### C036 — `VdpCtaStack` · C037 — `RevealContactButton`
 

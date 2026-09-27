@@ -61,7 +61,11 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
 
       <div className="grid gap-[30px] lg:grid-cols-[1.35fr_1fr]">
         <div className="flex min-w-0 flex-col gap-[26px]">
-          <VehicleGallery images={vehicle.images} primaryIndex={vehicle.primaryIndex} />
+          <VehicleGallery
+            title={vehicle.title}
+            images={vehicle.images}
+            primaryIndex={vehicle.primaryIndex}
+          />
 
           <section aria-labelledby="specs-heading" className="flex flex-col gap-[10px]">
             <h2 id="specs-heading" className="text-[20px]">

@@ -1,24 +1,32 @@
 'use client';
 
 import type { PublicVehicleImage } from '@dealers-drive/contracts';
-import { useState } from 'react';
+import { useCallback, useState, type KeyboardEvent } from 'react';
 
 import { ImageSlot, Tag } from '@/components/ui/primitives';
-import { cn } from '@/lib/cn';
 
+import { GalleryArrow } from './gallery-arrow';
+import { GalleryViewer } from './gallery-viewer';
 import { VEHICLE_GALLERY_TEXT } from './vehicle-gallery.constants';
+import { arrowStep, isTextEntry, startIndex, wrapIndex } from './utils';
 
 export interface VehicleGalleryProps {
+  title: string;
   images: PublicVehicleImage[];
   primaryIndex: number;
 }
 
-export function VehicleGallery({ images, primaryIndex }: VehicleGalleryProps) {
-  const [selected, setSelected] = useState(
-    primaryIndex >= 0 && primaryIndex < images.length ? primaryIndex : 0,
-  );
-  const current = images[selected];
+export function VehicleGallery({ title, images, primaryIndex }: VehicleGalleryProps) {
+  const total = images.length;
+  const [index, setIndex] = useState(() => startIndex(primaryIndex, total));
+  const [open, setOpen] = useState(false);
 
+  const step = useCallback(
+    (delta: -1 | 1) => setIndex((currentIndex) => wrapIndex(currentIndex + delta, total)),
+    [total],
+  );
+
+  const current = images[index];
   if (!current) {
     return (
       <div className="aspect-[4/3] border border-(--color-divider)">
@@ -27,40 +35,52 @@ export function VehicleGallery({ images, primaryIndex }: VehicleGalleryProps) {
     );
   }
 
-  return (
-    <div className="flex min-w-0 flex-col gap-[14px]">
-      <figure className="relative m-0 aspect-[4/3] border border-(--color-divider) bg-(--color-neutral-200)">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={current.url} alt={current.alt} className="h-full w-full object-cover" />
-        <Tag className="absolute right-[10px] bottom-[10px] bg-white text-[11px] tnum">
-          {VEHICLE_GALLERY_TEXT.count(selected, images.length)}
-        </Tag>
-      </figure>
+  const several = total > 1;
 
-      {images.length > 1 ? (
-        <ul
-          aria-label={VEHICLE_GALLERY_TEXT.thumbsLabel}
-          className="flex gap-[8px] overflow-x-auto pb-[4px]"
-        >
-          {images.map((image, index) => (
-            <li key={image.url} className="flex-[0_0_108px]">
-              <button
-                type="button"
-                aria-label={VEHICLE_GALLERY_TEXT.showLabel(index, images.length)}
-                aria-pressed={index === selected}
-                onClick={() => setSelected(index)}
-                className={cn(
-                  'block aspect-[4/3] w-full overflow-hidden border',
-                  index === selected ? 'border-(--color-accent)' : 'border-(--color-divider)',
-                )}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={image.url} alt="" className="h-full w-full object-cover" loading="lazy" />
-              </button>
-            </li>
-          ))}
-        </ul>
+  function onKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (!several || open || isTextEntry(event.target)) return;
+    const delta = arrowStep(event.key);
+    if (delta === null) return;
+    event.preventDefault();
+    step(delta);
+  }
+
+  return (
+    <section
+      aria-roledescription="carousel"
+      aria-label={VEHICLE_GALLERY_TEXT.label}
+      onKeyDown={onKeyDown}
+      className="relative aspect-[4/3] min-w-0 overflow-hidden border border-(--color-divider) bg-(--color-neutral-200)"
+    >
+      <GalleryViewer
+        title={title}
+        images={images}
+        index={index}
+        open={open}
+        onOpenChange={setOpen}
+        onStep={step}
+        trigger={
+          <button
+            type="button"
+            aria-label={VEHICLE_GALLERY_TEXT.open(index, total)}
+            className="block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-accent)"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={current.url} alt={current.alt} className="h-full w-full object-cover" />
+          </button>
+        }
+      />
+
+      {several ? (
+        <>
+          <GalleryArrow direction="previous" onClick={() => step(-1)} />
+          <GalleryArrow direction="next" onClick={() => step(1)} />
+        </>
       ) : null}
-    </div>
+
+      <Tag className="pointer-events-none absolute right-[10px] bottom-[10px] z-[2] bg-white text-[11px] tnum">
+        <span aria-live="polite">{VEHICLE_GALLERY_TEXT.count(index, total)}</span>
+      </Tag>
+    </section>
   );
 }

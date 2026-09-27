@@ -1,12 +1,11 @@
 import type { PublicVehicleDetail } from '@dealers-drive/contracts';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import VehiclePage, { generateMetadata } from '@/app/(public)/car/[slug]/page';
 import { PriceBlock } from '@/components/vehicle/price-block';
 import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
-import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
 import type * as ApiModule from '@/lib/api';
 
 const apiGetParsed = vi.fn();
@@ -54,43 +53,6 @@ function detail(overrides: Partial<PublicVehicleDetail> = {}): PublicVehicleDeta
 
 afterEach(() => {
   apiGetParsed.mockReset();
-});
-
-describe('VehicleGallery', () => {
-  it('opens on the primary photograph and counts from it', () => {
-    render(<VehicleGallery images={detail().images} primaryIndex={1} />);
-
-    const main = screen.getByRole('img', { name: '2023 Hyundai Creta SX(O), photograph 2 of 3' });
-    expect(main).toHaveAttribute('src', 'https://media.test/by-media/m1/1024.webp');
-    expect(screen.getByText('2 / 3')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Show photograph 2 of 3' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-  });
-
-  it('shows the photograph a thumbnail is pressed for', () => {
-    render(<VehicleGallery images={detail().images} primaryIndex={1} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Show photograph 3 of 3' }));
-
-    expect(
-      screen.getByRole('img', { name: '2023 Hyundai Creta SX(O), photograph 3 of 3' }),
-    ).toBeInTheDocument();
-    expect(screen.getByText('3 / 3')).toBeInTheDocument();
-  });
-
-  it('draws no strip for a single photograph', () => {
-    render(<VehicleGallery images={[image(0)]} primaryIndex={0} />);
-    expect(screen.queryByRole('list', { name: 'Photographs' })).not.toBeInTheDocument();
-  });
-
-  it('holds the frame with a labelled slot when there are none, and survives a bad index', () => {
-    const { rerender } = render(<VehicleGallery images={[]} primaryIndex={0} />);
-    expect(screen.getByRole('img', { name: 'Photographs coming soon' })).toBeInTheDocument();
-
-    rerender(<VehicleGallery images={detail().images} primaryIndex={9} />);
-    expect(screen.getByText('1 / 3')).toBeInTheDocument();
-  });
 });
 
 describe('the price, specifications and dealer', () => {

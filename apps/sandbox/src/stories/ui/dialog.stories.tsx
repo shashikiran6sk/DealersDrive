@@ -9,11 +9,13 @@ function DialogDemo({
   description,
   wide = false,
   withFooter = true,
+  fullscreen = false,
 }: {
   title: string;
   description?: string;
   wide?: boolean;
   withFooter?: boolean;
+  fullscreen?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -21,13 +23,14 @@ function DialogDemo({
     <Dialog
       open={open}
       onOpenChange={setOpen}
+      variant={fullscreen ? 'fullscreen' : 'card'}
       trigger={<Button variant="secondary">Open dialog</Button>}
       title={title}
       description={description}
       closeLabel={`Close ${title.toLowerCase()}`}
       className={wide ? 'w-[min(880px,100%)]' : undefined}
       footer={
-        withFooter ? (
+        withFooter && !fullscreen ? (
           <>
             <p className="text-[13px] ink-muted">Nothing is saved until you confirm.</p>
             <span className="flex gap-[7px]">
@@ -91,3 +94,11 @@ export const Wide: Story = {
 };
 
 export const NoFooter: Story = { args: { withFooter: false } };
+
+export const Fullscreen: Story = {
+  args: {
+    title: '2023 Hyundai Creta SX(O) — photographs',
+    description: '3 / 18',
+    fullscreen: true,
+  },
+};
