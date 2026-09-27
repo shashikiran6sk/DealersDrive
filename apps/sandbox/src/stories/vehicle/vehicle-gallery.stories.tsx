@@ -5,9 +5,9 @@ import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
 
 const SHADES = ['1f2937', '374151', '4b5563', '0f172a', '1e293b', '334155', '475569', '111827'];
 
-function images(count: number): PublicVehicleImage[] {
+function images(count: number, size = '1200x900'): PublicVehicleImage[] {
   return Array.from({ length: count }, (_, index) => ({
-    url: `https://placehold.co/1200x900/${SHADES[index % SHADES.length] ?? '1f2937'}/e5e7eb.png?text=Photo+${index + 1}`,
+    url: `https://placehold.co/${size}/${SHADES[index % SHADES.length] ?? '1f2937'}/e5e7eb.png?text=Photo+${index + 1}`,
     alt: `2023 Hyundai Creta SX(O), photograph ${index + 1} of ${count}`,
   }));
 }
@@ -39,6 +39,8 @@ export const OnePhoto: Story = { args: { images: images(1) } };
 export const NoPhotos: Story = { args: { images: [] } };
 
 export const Twenty: Story = { args: { images: images(20) } };
+
+export const Portrait: Story = { args: { images: images(6, '900x1200') } };
 
 export const Phone: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },

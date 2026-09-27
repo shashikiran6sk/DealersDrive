@@ -2,10 +2,9 @@ import type { ReactNode } from 'react';
 
 import type { DialogVariant } from './dialog.variants';
 
-export interface DialogProps {
+interface DialogBaseProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  trigger: ReactNode;
   title: string;
   description?: string;
   closeLabel?: string;
@@ -16,3 +15,15 @@ export interface DialogProps {
   children: ReactNode;
   variant?: DialogVariant;
 }
+
+interface DialogWithTrigger {
+  trigger: ReactNode;
+  onCloseAutoFocus?: (event: Event) => void;
+}
+
+interface DialogWithOwnFocusReturn {
+  trigger?: undefined;
+  onCloseAutoFocus: (event: Event) => void;
+}
+
+export type DialogProps = DialogBaseProps & (DialogWithTrigger | DialogWithOwnFocusReturn);

@@ -97,7 +97,7 @@ export const NoFooter: Story = { args: { withFooter: false } };
 
 export const Fullscreen: Story = {
   args: {
-    title: '2023 Hyundai Creta SX(O) — photographs',
+    title: '2023 Hyundai Creta SX(O)',
     description: '3 / 18',
     fullscreen: true,
   },

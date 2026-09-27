@@ -23,15 +23,20 @@ export function Dialog({
   footer,
   children,
   variant = 'card',
+  onCloseAutoFocus,
 }: DialogProps) {
   const classes = DIALOG_VARIANTS[variant];
 
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
-      <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>
+      {trigger ? <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger> : null}
       <RadixDialog.Portal>
         <RadixDialog.Overlay className={classes.overlay} />
-        <RadixDialog.Content aria-modal="true" className={cn(classes.content, className)}>
+        <RadixDialog.Content
+          aria-modal="true"
+          className={cn(classes.content, className)}
+          onCloseAutoFocus={onCloseAutoFocus}
+        >
           <div className={classes.header}>
             <div className="min-w-0 flex-1">
               {header ?? (
@@ -46,6 +51,7 @@ export function Dialog({
               )}
             </div>
             <RadixDialog.Close className={classes.close} aria-label={closeLabel}>
+              {classes.closeShowsLabel ? <span>{closeLabel}</span> : null}
               <span aria-hidden="true">{CLOSE_GLYPH}</span>
             </RadixDialog.Close>
           </div>

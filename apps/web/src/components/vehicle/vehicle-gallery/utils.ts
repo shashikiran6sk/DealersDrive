@@ -1,3 +1,5 @@
+import { RAIL_NUMBER_DIGITS } from './vehicle-gallery.constants';
+
 export function wrapIndex(index: number, total: number): number {
   if (total <= 0) return 0;
   return ((index % total) + total) % total;
@@ -13,12 +15,22 @@ export function arrowStep(key: string): -1 | 1 | null {
   return null;
 }
 
-export function isTextEntry(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  return (
-    target.isContentEditable ||
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement
-  );
+export interface StripMetrics {
+  scrollLeft: number;
+  clientWidth: number;
+  scrollWidth: number;
+}
+
+export function stripEdges({ scrollLeft, clientWidth, scrollWidth }: StripMetrics): {
+  atStart: boolean;
+  atEnd: boolean;
+} {
+  return {
+    atStart: scrollLeft <= 1,
+    atEnd: scrollLeft + clientWidth >= scrollWidth - 1,
+  };
+}
+
+export function railNumber(index: number): string {
+  return String(index + 1).padStart(RAIL_NUMBER_DIGITS, '0');
 }

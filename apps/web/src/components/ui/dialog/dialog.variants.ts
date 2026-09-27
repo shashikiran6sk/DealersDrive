@@ -8,6 +8,7 @@ export interface DialogVariantClasses {
   description: string;
   close: string;
   body: string;
+  closeShowsLabel: boolean;
 }
 
 export const DIALOG_VARIANTS: Record<DialogVariant, DialogVariantClasses> = {
@@ -21,6 +22,7 @@ export const DIALOG_VARIANTS: Record<DialogVariant, DialogVariantClasses> = {
     description: 'mt-[2px] text-[13px] ink-muted',
     close: 'btn btn-secondary h-9 w-9 flex-none border-transparent p-0 text-[15px]',
     body: 'min-h-0 flex-1 overflow-y-auto px-[18px] py-[16px]',
+    closeShowsLabel: false,
   },
   fullscreen: {
     overlay: 'fixed inset-0 z-70 bg-[#0d1017]',
@@ -30,7 +32,8 @@ export const DIALOG_VARIANTS: Record<DialogVariant, DialogVariantClasses> = {
     title: 'truncate text-[15px] text-white',
     description: 'text-[12px] text-white/60 tnum',
     close:
-      'btn btn-secondary h-10 w-10 flex-none border-white/35 bg-transparent p-0 text-[15px] text-white hover:bg-white/10',
+      'btn btn-secondary h-10 flex-none gap-[6px] border-white/35 bg-transparent px-3 text-[14px] text-white hover:bg-white/10',
     body: 'relative flex min-h-0 flex-1 overflow-hidden',
+    closeShowsLabel: true,
   },
 };

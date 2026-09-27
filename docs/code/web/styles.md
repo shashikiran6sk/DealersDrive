@@ -66,7 +66,8 @@ F012 .skeleton
 F013 .field, .input
 F045 .table, .seg/.seg-opt
 R19 .dd-nav-item
-R22 .dialog, .dialog-backdrop ← this PR
+R22 .dialog, .dialog-backdrop
+R49 .dd-strip, .dd-arrow, .dd-rail
 `.dd-nav-item` is the exception that proves the rule, and it is why the rule
 is written down: `LocationSelector` landed at R11 _using_ the class, and the
 class did not land with it. Every option in the district menu has been an
@@ -112,6 +113,16 @@ Cards — §2.7. White on the cool grey ground; a border, never a shadow.
 
 The blueprint frame — §2.6. Four registration marks, always. A
 `.blueprint` missing a corner is a bug the design spec calls out by name.
+
+### `.dd-strip`
+
+Gallery strip, arrows and lightbox rail — §2.9/§2.10, ported from the
+baseline with `GalleryStrip`, `GalleryArrow` and `GalleryRail` (**R49**). The
+track hides its scrollbar and keeps `min-width: 0`, which is what holds the
+thumbnails inside the gallery column. Three changes from the baseline: the
+arrow sets its own ink colour, it has a visible focus ring (§4.15), and its
+hover skips a disabled arrow, which at 0.45 opacity would otherwise flash the
+accent at the end of the strip.
 
 ### `.image-slot`
 

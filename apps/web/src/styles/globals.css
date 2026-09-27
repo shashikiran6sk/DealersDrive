@@ -345,6 +345,58 @@
     right: -6px;
   }
 
+  .dd-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .dd-strip::-webkit-scrollbar {
+    display: none;
+  }
+  .dd-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--color-divider);
+    background: #fff;
+    color: var(--color-ink);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    line-height: 1;
+    z-index: 3;
+    padding: 0;
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out;
+  }
+  .dd-arrow:hover:not(:disabled) {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+  }
+  .dd-arrow:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .dd-arrow:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .dd-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
   .image-slot {
     display: grid;
     place-items: center;
