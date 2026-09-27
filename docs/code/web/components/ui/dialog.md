@@ -9,7 +9,10 @@ declaration the note sat above.
 
 ### `export function DialogDescription(`
 
-The supporting line, and the dialog's `aria-describedby`.
+The supporting line, and the dialog's `aria-describedby`. `tone` is `muted`
+(the ink colour) by default and `inverse` on a dark header, where the ink
+colour would be invisible (**R49**) — a class passed in cannot override
+`ink-muted`, because tailwind-merge does not know it is a colour.
 
 ## `apps/web/src/components/ui/dialog/dialog-title.tsx`
 
@@ -66,6 +69,14 @@ to go through Radix: a modal `Content` restores focus to _its trigger_, so a
 dialog opened by a button Radix does not know about closes with focus on
 `<body>` and the next Tab starts from the top of the document.
 
+### `onCloseAutoFocus: (event: Event) => void`
+
+The one way to leave `trigger` out (**R49**). A dialog opened from several
+controls — the photo lightbox, opened by the main image or any thumbnail —
+cannot give Radix one trigger, so it returns focus itself: call
+`event.preventDefault()` and focus whichever control opened it. The props are a
+union, so a dialog with neither does not compile.
+
 ### `title: string`
 
 The accessible name. Rendered visibly unless `header` replaces it.
@@ -76,7 +87,8 @@ Optional supporting line under the title, and the accessible description.
 
 ### `closeLabel?: string`
 
-The icon-only close button's `aria-label` — §4.15 requires one.
+The icon-only close button's `aria-label` — §4.15 requires one. The
+`fullscreen` variant also prints it beside the ✕ (§2.10's `Close ✕`).
 
 ### `className?: string`
 
@@ -106,6 +118,9 @@ the same Radix root, so the same focus trap, Escape, scroll lock and focus
 return, with a 54px header (title, a counter in the description slot, a 40px
 close button) and a body that does not scroll — whatever is inside is sized to
 fit instead.
+
+`closeShowsLabel` is the one non-class entry: the fullscreen close button
+prints its label, the card's is icon-only.
 
 It is a variant rather than a second dialog component because everything that
 makes a modal correct is the part the two share; only the paint differs.

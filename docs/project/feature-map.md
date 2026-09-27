@@ -2250,6 +2250,13 @@ DESIGN-SPEC §2.9/§2.10 — the 108 px thumbnail strip and the fullscreen light
   scroll on the page, and a quarter of a phone's width). Depends on F082, not
   F034. The focus assertions D-4 asked for are in
   `tests/unit/components/vehicle/vehicle-gallery.test.tsx`.
+- ⚠️ **Entry corrected again (R49).** The strip and the rail are back, as
+  §2.9/§2.10 and the legacy `gallery.tsx` draw them: a `.blueprint` main image
+  with a "N photos · view all" tag, the 108px strip with ‹ › that scroll ±240px
+  and disable at the ends, and a lightbox with the `DD` chip, title, counter,
+  `Close ✕`, a numbered rail and a 4:3 stage. New files `gallery-strip.tsx` and
+  `gallery-rail.tsx`; the lightbox stays on `Dialog variant="fullscreen"`,
+  which gained `onCloseAutoFocus` so focus returns to the exact opener.
 
 ### F084 — Similar vehicles
 
@@ -5185,3 +5192,29 @@ scrolling thumbnail strip with the gallery DESIGN-SPEC §2.9/§2.10 describes.
   trap, focus returned to the image, and the page locked behind it. The legacy
   branch was not reachable from this repository; the behaviour is taken from
   §2.9/§2.10 and the F083 entry, which describe it.
+
+## R49 — The VDP gallery is the one the spec draws
+
+**Revises F083, R48** · no new feature numbers
+
+R48 replaced the gallery's thumbnail strip with arrows on the main image, and
+dropped the lightbox's rail. That is not what the product looks like: §2.9 and
+§2.10 draw a strip under a blueprint-framed main image and a lightbox with a
+numbered rail, and the legacy branch — reachable now, as `origin/legacy_branch`
+— implements exactly that. R49 puts it back.
+
+- **Ported from the legacy `gallery.tsx`, not copied.** The layout, sizes,
+  labels and behaviour are the baseline's: ±240px strip scrolling that
+  disables at either end, the lightbox opening on the photo pressed, ←/→ with
+  wrap, Escape, a focus trap, focus returned to the exact opener, the active
+  rail cell scrolled into view.
+- **Kept from R48.** The lightbox is `Dialog variant="fullscreen"`, not a
+  hand-rolled overlay, so the trap, Escape and scroll lock are Radix's. The
+  main image is the admin's primary photograph. The photograph is
+  `object-contain` in the stage, so a portrait shot is never cropped.
+- **`Dialog`** gains `onCloseAutoFocus` (a dialog with several openers returns
+  focus itself; the props are a union, so leaving out both it and `trigger`
+  does not compile), a visible `Close` label in the fullscreen variant, and an
+  `inverse` tone on `DialogDescription`.
+- **§4.15 over the baseline.** The strip and stage arrows grow to 44px below
+  768, and the arrow has a focus ring; the baseline's were 30px everywhere.

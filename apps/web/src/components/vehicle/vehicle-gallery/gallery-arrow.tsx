@@ -1,34 +1,46 @@
 import { cn } from '@/lib/cn';
 
-import { NEXT_GLYPH, PREVIOUS_GLYPH, VEHICLE_GALLERY_TEXT } from './vehicle-gallery.constants';
+import { NEXT_GLYPH, PREVIOUS_GLYPH } from './vehicle-gallery.constants';
+
+export type GalleryArrowPlacement = 'strip' | 'stage';
 
 export interface GalleryArrowProps {
   direction: 'previous' | 'next';
+  label: string;
   onClick: () => void;
-  size?: 'md' | 'lg';
+  placement: GalleryArrowPlacement;
+  disabled?: boolean;
 }
 
-export function GalleryArrow({ direction, onClick, size = 'md' }: GalleryArrowProps) {
+const PLACEMENT_CLASS: Record<
+  GalleryArrowPlacement,
+  { base: string; previous: string; next: string }
+> = {
+  strip: { base: 'max-md:h-11 max-md:w-11', previous: 'left-0', next: 'right-0' },
+  stage: {
+    base: 'h-[38px] w-[38px] bg-white/90 max-md:h-11 max-md:w-11',
+    previous: 'left-[14px] max-md:left-[6px]',
+    next: 'right-[14px] max-md:right-[6px]',
+  },
+};
+
+export function GalleryArrow({
+  direction,
+  label,
+  onClick,
+  placement,
+  disabled,
+}: GalleryArrowProps) {
+  const classes = PLACEMENT_CLASS[placement];
   const previous = direction === 'previous';
 
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={previous ? VEHICLE_GALLERY_TEXT.previous : VEHICLE_GALLERY_TEXT.next}
-      className={cn(
-        'absolute top-1/2 z-[3] grid -translate-y-1/2 place-items-center border border-(--color-divider) bg-white/90 text-(--color-ink) shadow-md',
-        'transition-colors hover:border-(--color-accent) hover:bg-(--color-accent) hover:text-white',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-accent)',
-        size === 'lg' ? 'h-11 w-11 text-[30px] leading-none' : 'h-10 w-10 text-[26px] leading-none',
-        previous
-          ? size === 'lg'
-            ? 'left-[14px]'
-            : 'left-[10px]'
-          : size === 'lg'
-            ? 'right-[14px]'
-            : 'right-[10px]',
-      )}
+      disabled={disabled}
+      aria-label={label}
+      className={cn('dd-arrow', classes.base, previous ? classes.previous : classes.next)}
     >
       <span aria-hidden="true">{previous ? PREVIOUS_GLYPH : NEXT_GLYPH}</span>
     </button>

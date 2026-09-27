@@ -140,7 +140,7 @@ revision · `[⛔]` withdrawn
 - [ ] F080 — Search toolbar & sort
 - [ ] F081 — Homepage & hero search
 - [x] F082 — Vehicle detail page · `/car/[slug]`, ACTIVE only, 404 otherwise; no enquiry, report or save (deferred)
-- [x] F083 — Vehicle gallery & lightbox · **R48** — wrapping arrows and ←/→ on the page, a fullscreen viewer on the `Dialog` primitive; no thumbnail strip or rail
+- [x] F083 — Vehicle gallery & lightbox · **R48, R49** — the §2.9 strip under a blueprint main image, and the §2.10 lightbox with its numbered rail, on the `Dialog` primitive
 - [ ] F084 — Similar vehicles
 - [~] F085 — Dealer directory
 - [~] F086 — Dealer portfolio · header, info row and the live inventory (R48); the filter rail and sort wait on F076
@@ -218,6 +218,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R46 — Vehicle details are entered by hand; RC lookup is deferred · revises F056/F060/F061/F063 · defers F057/F058/F059/F068
 - [~] R47 — The listing lifecycle, before billing exists · revises F064/F065/F067/F069/F070 · defers F050–F054 · submit, review, request changes, reject and approve landed; mark sold and remove (F067) follow
 - [x] R48 — The dealer surfaces meet the listings · revises F066/F085/F086/F082/F083 · console nav, directory and portfolio counts, portfolio inventory, and the gallery
+- [x] R49 — The VDP gallery is the one the spec draws · revises F083/R48 · strip, rail and lightbox header back, per §2.9/§2.10
 
 ---
 

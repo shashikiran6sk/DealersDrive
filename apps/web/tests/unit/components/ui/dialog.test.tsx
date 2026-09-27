@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { Dialog } from '@/components/ui/dialog';
+import { Dialog, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
 /**
  * DESIGN-SPEC §2.14, and component-map finding **D-C**.
@@ -130,5 +130,71 @@ describe('the dialog contract', () => {
 
     expect(screen.getByRole('button', { name: 'Inside' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Footer action' })).toBeInTheDocument();
+  });
+});
+
+function OpenedFromTwoPlaces() {
+  const [open, setOpen] = useState(false);
+  const opener = useRef<HTMLElement | null>(null);
+
+  return (
+    <>
+      {['First', 'Second'].map((name) => (
+        <button
+          key={name}
+          type="button"
+          onClick={(event) => {
+            opener.current = event.currentTarget;
+            setOpen(true);
+          }}
+        >
+          {name}
+        </button>
+      ))}
+      <Dialog
+        variant="fullscreen"
+        open={open}
+        onOpenChange={setOpen}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          opener.current?.focus();
+        }}
+        title="Photos"
+        closeLabel="Close"
+        header={
+          <>
+            <DialogTitle>Photos</DialogTitle>
+            <DialogDescription tone="inverse">2 / 5</DialogDescription>
+          </>
+        }
+      >
+        <button type="button">Inside</button>
+      </Dialog>
+    </>
+  );
+}
+
+describe('a dialog opened from more than one place', () => {
+  it('hands focus back to whichever control opened it', async () => {
+    const user = userEvent.setup();
+    render(<OpenedFromTwoPlaces />);
+
+    await user.click(screen.getByRole('button', { name: 'Second' }));
+    expect(await screen.findByRole('dialog')).toHaveAccessibleName('Photos');
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Second' })).toHaveFocus();
+  });
+
+  it('prints the close label beside the ✕ in the fullscreen variant, and a light description', async () => {
+    const user = userEvent.setup();
+    render(<OpenedFromTwoPlaces />);
+    await user.click(screen.getByRole('button', { name: 'First' }));
+
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveTextContent('Close✕');
+    const description = screen.getByText('2 / 5');
+    expect(description).toHaveClass('text-white/60');
+    expect(description).not.toHaveClass('ink-muted');
   });
 });

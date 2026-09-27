@@ -581,17 +581,17 @@ no place and no count.
 
 ### C070 — `Dialog`
 
-|                      |                                                                                                                                                                                          |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Location**         | `components/ui/dialog.tsx`                                                                                                                                                               |
-| **Purpose**          | DESIGN-SPEC §2.14. **New at R22** — the resolution of finding **D-C**, at the first consumer.                                                                                            |
-| **Props**            | `open`, `onOpenChange`, `trigger`, `title`, `description?`, `closeLabel?`, `className?`, `contentClassName?`, `header?`, `footer?`, `children`, `variant?` (`card` \| `fullscreen`, R48) |
-| **States**           | default 440px, with description, wide + scrolling, no footer, fullscreen (R48, the photo viewer)                                                                                         |
-| **Consumers**        | `LocationSelector`, `DecisionDialog`, `ApproveDialog`, `GalleryViewer` (fullscreen)                                                                                                      |
-| **Tests**            | `tests/unit/components/ui/dialog.test.tsx` — the contract only: modal, named, focus in, focus trapped, document inert, focus restored, close button named                                |
-| **Ownership**        | Primitive                                                                                                                                                                                |
-| **Sandbox priority** | **P0** — the trap and the focus restore are invisible with a mouse, and the width override is the thing a caller gets wrong                                                              |
-| **Confidence**       | HIGH                                                                                                                                                                                     |
+|                      |                                                                                                                                                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `components/ui/dialog.tsx`                                                                                                                                                                                           |
+| **Purpose**          | DESIGN-SPEC §2.14. **New at R22** — the resolution of finding **D-C**, at the first consumer.                                                                                                                        |
+| **Props**            | `open`, `onOpenChange`, `trigger` or `onCloseAutoFocus` (R49), `title`, `description?`, `closeLabel?`, `className?`, `contentClassName?`, `header?`, `footer?`, `children`, `variant?` (`card` \| `fullscreen`, R48) |
+| **States**           | default 440px, with description, wide + scrolling, no footer, fullscreen (R48, the photo viewer)                                                                                                                     |
+| **Consumers**        | `LocationSelector`, `DecisionDialog`, `ApproveDialog`, `GalleryViewer` (fullscreen)                                                                                                                                  |
+| **Tests**            | `tests/unit/components/ui/dialog.test.tsx` — the contract only: modal, named, focus in, focus trapped, document inert, focus restored, close button named                                                            |
+| **Ownership**        | Primitive                                                                                                                                                                                                            |
+| **Sandbox priority** | **P0** — the trap and the focus restore are invisible with a mouse, and the width override is the thing a caller gets wrong                                                                                          |
+| **Confidence**       | HIGH                                                                                                                                                                                                                 |
 
 Radix underneath, the design system's classes on top. That direction matters: the
 alternative is a hand-rolled trap, and every item on the list a modal has to get
@@ -718,6 +718,13 @@ props. Both **P2**.
 > `GalleryArrow`. No strip; wrapping arrows and ←/→ on the page; the lightbox is
 > `Dialog variant="fullscreen"`. Focus trap, return, Escape and scroll lock are
 > now tested.
+>
+> **As corrected (R49).** The strip and the rail are back, per §2.9/§2.10:
+> `GalleryStrip` (±240px, arrows disable at the ends), `GalleryViewer` (`DD`
+> chip, title, counter, `Close ✕`, 4:3 stage, caption), `GalleryRail`
+> (numbered cells, active one accented and scrolled into view), `GalleryArrow`
+> (`placement`: `strip` | `stage`). The main image is a `.blueprint` with a
+> "N photos · view all" tag. Focus returns to the exact opener.
 
 ### C036 — `VdpCtaStack` · C037 — `RevealContactButton`
 
