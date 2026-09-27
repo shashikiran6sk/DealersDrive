@@ -398,6 +398,18 @@ describe("one dealership's cars, through the same search", () => {
     expect(JSON.stringify(found)).not.toContain(arakkonam.slug);
   });
 
+  it("never answers with another dealership's car, whatever is asked for", async () => {
+    const { body } = await h
+      .agent()
+      .get(`/v1/dealers/${arcot.slug}/vehicles?brand=tata&fuel=electric`)
+      .expect(200);
+    const found = ResponseSchema.parse(body);
+    expect(found.data).toEqual([]);
+    expect(found.page.total).toBe(0);
+    expect(found.facets.brands).toEqual([{ value: 'tata', label: 'Tata', count: 0 }]);
+    expect(found.facets.fuelTypes.every((option) => option.value !== 'cng')).toBe(true);
+  });
+
   it.each(['city=arcot', `dealer=x`, 'district=search-north'])('refuses %s', async (query) => {
     await h.agent().get(`/v1/dealers/${arcot.slug}/vehicles?${query}`).expect(400);
   });

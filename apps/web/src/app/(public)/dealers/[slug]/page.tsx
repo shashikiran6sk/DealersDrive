@@ -3,14 +3,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { DealerInventory } from '@/components/dealers/dealer-inventory';
+import { DealerInventory, placeOf } from '@/components/dealers/dealer-inventory';
 import { LocationCard } from '@/components/dealers/location-card';
 import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { ApiError, apiGet, apiGetParsed, qs } from '@/lib/api';
 import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
 import { serverConfig } from '@/lib/config';
 import { seoMetadata } from '@/lib/seo';
-import { one, type SearchParamsInput } from '@/lib/url';
+import type { SearchParamsInput } from '@/lib/url';
+import { readVehicleSearch, type VehicleSearchParams } from '@/lib/vehicle-search';
 
 export const revalidate = 600;
 
@@ -28,12 +29,12 @@ async function loadDealer(slug: string): Promise<DealerPublicProfile | null> {
 
 async function loadInventory(
   slug: string,
-  page: number | undefined,
+  params: VehicleSearchParams,
 ): Promise<PublicVehiclesResponse | null> {
   try {
     return await apiGetParsed(
       PublicVehiclesResponse,
-      `/v1/dealers/${encodeURIComponent(slug)}/vehicles${qs({ page })}`,
+      `/v1/dealers/${encodeURIComponent(slug)}/vehicles${qs(params)}`,
       { revalidate: 60, tags: [dealerTag(slug), VEHICLES_TAG] },
     );
   } catch (error) {
@@ -42,9 +43,9 @@ async function loadInventory(
   }
 }
 
-function inventoryPage(query: SearchParamsInput): number | undefined {
-  const raw = Number(one(query, 'page'));
-  return Number.isInteger(raw) && raw > 1 ? raw : undefined;
+function liveCars(dealer: DealerPublicProfile): number | undefined {
+  const value = Number(dealer.stats.find((stat) => stat.key === 'cars')?.value);
+  return Number.isInteger(value) ? value : undefined;
 }
 
 export async function generateMetadata({
@@ -79,10 +80,8 @@ export default async function DealerPortfolioPage({
   searchParams: Promise<SearchParamsInput>;
 }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
-  const [dealer, inventory] = await Promise.all([
-    loadDealer(slug),
-    loadInventory(slug, inventoryPage(query)),
-  ]);
+  const search = readVehicleSearch(query, 'dealer');
+  const [dealer, inventory] = await Promise.all([loadDealer(slug), loadInventory(slug, search)]);
   if (!dealer || !inventory) notFound();
 
   return (
@@ -165,6 +164,9 @@ export default async function DealerPortfolioPage({
         dealerSlug={dealer.slug}
         brandName={dealer.brandName}
         inventory={inventory}
+        params={search}
+        location={placeOf([dealer.address.city, dealer.address.district, dealer.address.state])}
+        {...(liveCars(dealer) === undefined ? {} : { liveTotal: liveCars(dealer) })}
       />
     </div>
   );

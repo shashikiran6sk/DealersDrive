@@ -392,6 +392,11 @@ exactly what makes "which nav item is active" testable for the first time.
 > `tests/unit/components/search/filter-panel.test.tsx`. Sandbox
 > `Search/FilterPanel`, eight states.
 
+> **F086 part 2 used it exactly that way:** the portfolio passes
+> `groups={PORTFOLIO_FILTER_GROUPS}` (no City / Town, no Dealer) and
+> `heading="Filter inventory"` to the same component, and the same
+> `MobileFilterSheet` below `lg`. No portfolio-specific panel exists.
+
 > ✅ **The canonical "existing component + props" success case.** F086 (dealer
 > portfolio) needed a
 > filter panel without a dealer group. Rather than a `PortfolioFilterPanel`
