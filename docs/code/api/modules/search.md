@@ -87,3 +87,13 @@ whose listing matches `PUBLIC_LISTING_WHERE` — count and cheapest price per
 dealership — and one lookup of the slugs it found: two queries whatever the
 number of dealerships, never one per card. It uses the same predicate as the
 public list, not a second `status = ACTIVE`, which is the whole point.
+
+### `export function publicListingsOf(dealerSlug?)` — and `async dealerVehicles(slug, query)`
+
+One dealership's cars (**R48**), for the portfolio. The predicate is
+`PUBLIC_LISTING_WHERE` narrowed by the dealership's slug — the dealer clause is
+extended, not replaced, so "the dealership is ACTIVE" still holds — and the
+page and its total come from the same code path as `GET /v1/vehicles`. A slug
+that is not a listed dealership is `404 DEALER_NOT_FOUND`, so a suspended
+dealership's portfolio cannot be read through this route either; a listed one
+with nothing live is an empty page.

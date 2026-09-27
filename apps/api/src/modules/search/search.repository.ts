@@ -6,6 +6,12 @@ export const PUBLIC_LISTING_WHERE = {
   dealer: { status: 'ACTIVE' },
 } satisfies Prisma.ListingWhereInput;
 
+export function publicListingsOf(dealerSlug?: string): Prisma.ListingWhereInput {
+  return dealerSlug
+    ? { ...PUBLIC_LISTING_WHERE, dealer: { ...PUBLIC_LISTING_WHERE.dealer, slug: dealerSlug } }
+    : PUBLIC_LISTING_WHERE;
+}
+
 export const cardInclude = {
   vehicle: {
     include: {
@@ -34,9 +40,9 @@ export type DetailRow = Prisma.ListingGetPayload<{ include: typeof detailInclude
 
 export function createSearchRepository(prisma: PrismaClient) {
   return {
-    cards(skip: number, take: number): Promise<CardRow[]> {
+    cards(skip: number, take: number, dealerSlug?: string): Promise<CardRow[]> {
       return prisma.listing.findMany({
-        where: PUBLIC_LISTING_WHERE,
+        where: publicListingsOf(dealerSlug),
         include: cardInclude,
         orderBy: [{ publishedAt: 'desc' }, { id: 'desc' }],
         skip,
@@ -51,8 +57,14 @@ export function createSearchRepository(prisma: PrismaClient) {
       });
     },
 
-    count(): Promise<number> {
-      return prisma.listing.count({ where: PUBLIC_LISTING_WHERE });
+    count(dealerSlug?: string): Promise<number> {
+      return prisma.listing.count({ where: publicListingsOf(dealerSlug) });
+    },
+
+    publicDealerExists(slug: string): Promise<boolean> {
+      return prisma.dealer
+        .count({ where: { slug, status: PUBLIC_LISTING_WHERE.dealer.status } })
+        .then((found) => found > 0);
     },
   };
 }

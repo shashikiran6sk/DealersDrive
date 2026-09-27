@@ -6,7 +6,10 @@ import {
   toVehicleCard,
 } from '../../../../src/modules/search/search.mapper.js';
 import type { CardRow, DetailRow } from '../../../../src/modules/search/search.repository.js';
-import { PUBLIC_LISTING_WHERE } from '../../../../src/modules/search/search.repository.js';
+import {
+  PUBLIC_LISTING_WHERE,
+  publicListingsOf,
+} from '../../../../src/modules/search/search.repository.js';
 import { createSearchRouter } from '../../../../src/modules/search/search.routes.js';
 import { createSearchService } from '../../../../src/modules/search/search.service.js';
 import { permissionsOn, routesOf, signaturesOf, validatedSources } from '../../../router-probe.js';
@@ -83,16 +86,22 @@ describe('the service', () => {
       cards: vi.fn(async () => [row()]),
       count: vi.fn(async () => 49),
       detail: vi.fn(),
+      publicDealerExists: vi.fn(),
     };
     const response = await createSearchService({ repo }).vehicles({ page: 3, limit: 24 });
 
-    expect(repo.cards).toHaveBeenCalledWith(48, 24);
+    expect(repo.cards).toHaveBeenCalledWith(48, 24, undefined);
     expect(response.page).toEqual({ page: 3, limit: 24, total: 49, totalPages: 3 });
     expect(response.data).toHaveLength(1);
   });
 
   it('reports one page when there is nothing at all', async () => {
-    const repo = { cards: vi.fn(async () => []), count: vi.fn(async () => 0), detail: vi.fn() };
+    const repo = {
+      cards: vi.fn(async () => []),
+      count: vi.fn(async () => 0),
+      detail: vi.fn(),
+      publicDealerExists: vi.fn(),
+    };
     const response = await createSearchService({ repo }).vehicles({ page: 1, limit: 24 });
     expect(response.page.totalPages).toBe(1);
   });
@@ -101,8 +110,12 @@ describe('the service', () => {
 describe('the router', () => {
   const router = createSearchRouter({} as never, () => (_req, _res, next) => next());
 
-  it('declares the public list and the vehicle page, in that order', () => {
-    expect(signaturesOf(router)).toEqual(['GET /vehicles', 'GET /vehicles/:slug']);
+  it("declares the public list, the vehicle page and a dealership's list, in that order", () => {
+    expect(signaturesOf(router)).toEqual([
+      'GET /vehicles',
+      'GET /vehicles/:slug',
+      'GET /dealers/:slug/vehicles',
+    ]);
   });
 
   it('asks for no permission and parses its query', () => {
@@ -205,10 +218,55 @@ describe('specsOf', () => {
 
 describe('the vehicle page', () => {
   it('answers a slug that is not public with a 404', async () => {
-    const repo = { cards: vi.fn(), count: vi.fn(), detail: vi.fn(async () => null) };
+    const repo = {
+      cards: vi.fn(),
+      count: vi.fn(),
+      detail: vi.fn(async () => null),
+      publicDealerExists: vi.fn(),
+    };
     await expect(createSearchService({ repo }).vehicle('gone')).rejects.toMatchObject({
       status: 404,
       code: 'VEHICLE_NOT_FOUND',
     });
+  });
+});
+
+describe("one dealership's cars", () => {
+  it('narrows the public rule to the dealership, and keeps every part of it', () => {
+    expect(publicListingsOf('sri')).toEqual({
+      status: 'ACTIVE',
+      slug: { not: null },
+      dealer: { status: 'ACTIVE', slug: 'sri' },
+    });
+    expect(publicListingsOf()).toBe(PUBLIC_LISTING_WHERE);
+  });
+
+  it("pages the dealership's cars and counts them with the same rule", async () => {
+    const repo = {
+      cards: vi.fn(async () => [row()]),
+      count: vi.fn(async () => 1),
+      detail: vi.fn(),
+      publicDealerExists: vi.fn(async () => true),
+    };
+    const response = await createSearchService({ repo }).dealerVehicles('sri', {
+      page: 1,
+      limit: 24,
+    });
+    expect(repo.cards).toHaveBeenCalledWith(0, 24, 'sri');
+    expect(repo.count).toHaveBeenCalledWith('sri');
+    expect(response.page.total).toBe(1);
+  });
+
+  it('answers 404 for a dealership that is not listed', async () => {
+    const repo = {
+      cards: vi.fn(),
+      count: vi.fn(),
+      detail: vi.fn(),
+      publicDealerExists: vi.fn(async () => false),
+    };
+    await expect(
+      createSearchService({ repo }).dealerVehicles('gone', { page: 1, limit: 24 }),
+    ).rejects.toMatchObject({ status: 404, code: 'DEALER_NOT_FOUND' });
+    expect(repo.cards).not.toHaveBeenCalled();
   });
 });

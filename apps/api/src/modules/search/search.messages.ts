@@ -9,6 +9,8 @@ export const GALLERY_ALT = (title: string, index: number, total: number): string
 
 export const VEHICLE_NOT_FOUND = 'That car is not on Dealers-Drive.';
 
+export const DEALER_NOT_FOUND = 'That dealership is not listed.';
+
 export const RTO_LABEL = 'Registered at';
 
 export const PUBLISHED = (date: string): string => `Listed ${date}`;

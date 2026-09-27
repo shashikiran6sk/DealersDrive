@@ -155,17 +155,20 @@ The full service list lives here and nowhere else. The directory card
 shows the first three — the API slices to three as well — and this is
 where a buyer who clicked through sees the rest.
 
-### `<div className="mx-auto max-w-[1280px] px-6 pb-[60px] pt-[26px]">`
+### `<DealerInventory dealerSlug={dealer.slug} brandName={dealer.brandName} inventory={inventory} />`
 
-── 3. Inventory ──────────────────────────────────────────────────
+── 3. Inventory (R48) ────────────────────────────────────────────
 
-### `<EmptyState`
-
-The filter rail, the toolbar and the card grid belong here — F078,
-F080/F079 and F075, over F076's two endpoints. See the note at the top
-of this file: what is below is the empty state this page would show
-anyway for a dealership that has listed nothing, which today is every
-dealership on the platform.
+The dealership's live cars, from `GET /v1/dealers/:slug/vehicles`, as
+compact `VehicleCard`s. The heading's count is the response's `page.total`
+— the number of cards a buyer can page through — which is the same
+predicate the directory card and the "Cars available" row count with, so
+the three cannot disagree. The profile and the inventory are fetched
+together; if the inventory says the dealership is not listed, the page is
+the not-found page like the profile's 404. `?page=` pages the inventory
+and the links carry `#inventory` so paging lands on the grid, not the
+cover. The filter rail and toolbar (F078/F080) are still deferred with
+search.
 
 ### `function detailRows(dealer: DealerPublicProfile): DetailRow[]`
 

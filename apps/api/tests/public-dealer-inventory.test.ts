@@ -130,3 +130,52 @@ describe('the portfolio', () => {
     }
   });
 });
+
+describe('the portfolio inventory', () => {
+  it('lists exactly the cars the directory counts, newest first', async () => {
+    const card = await directoryCard(a);
+    const { body } = await h.agent().get(`/v1/dealers/${a.slug}/vehicles`).expect(200);
+
+    expect(body.page.total).toBe(card.carCount);
+    expect(body.data).toHaveLength(card.carCount);
+    expect(
+      (body.data as { dealer: { slug: string } }[]).every((entry) => entry.dealer.slug === a.slug),
+    ).toBe(true);
+  });
+
+  it('keeps the total while paging', async () => {
+    const { body } = await h.agent().get(`/v1/dealers/${a.slug}/vehicles?limit=2`).expect(200);
+    expect(body.data).toHaveLength(2);
+    expect(body.page).toMatchObject({ total: 3, totalPages: 2 });
+
+    const second = await h.agent().get(`/v1/dealers/${a.slug}/vehicles?limit=2&page=2`).expect(200);
+    expect(second.body.data).toHaveLength(1);
+  });
+
+  it('is empty, not an error, for a listed dealership with nothing live', async () => {
+    const { body } = await h.agent().get(`/v1/dealers/${empty.slug}/vehicles`).expect(200);
+    expect(body).toEqual({ data: [], page: { page: 1, limit: 24, total: 0, totalPages: 1 } });
+  });
+
+  it('answers 404 for a dealership that is not listed', async () => {
+    await h.agent().get('/v1/dealers/no-such-dealership/vehicles').expect(404);
+    await h.prisma.dealer.update({ where: { id: a.dealerId }, data: { status: 'SUSPENDED' } });
+    try {
+      const refused = await h.agent().get(`/v1/dealers/${a.slug}/vehicles`).expect(404);
+      expect(refused.body.code).toBe('DEALER_NOT_FOUND');
+    } finally {
+      await h.prisma.dealer.update({ where: { id: a.dealerId }, data: { status: 'ACTIVE' } });
+    }
+  });
+
+  it('refuses a filter it does not have', async () => {
+    await h.agent().get(`/v1/dealers/${a.slug}/vehicles?status=DRAFT`).expect(400);
+  });
+
+  it('carries no id, registration or contact detail', async () => {
+    const { body } = await h.agent().get(`/v1/dealers/${a.slug}/vehicles`).expect(200);
+    const text = JSON.stringify(body);
+    expect(text).not.toContain(a.dealerId);
+    expect(text).not.toMatch(/KA05DI|KA 05 DI|\+91|storageKey|vehicles\//);
+  });
+});
