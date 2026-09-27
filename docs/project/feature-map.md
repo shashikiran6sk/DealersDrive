@@ -5273,3 +5273,40 @@ with the **same dialog and the same selection rule**, not a second picker.
 - **Sandbox** `Search/DistrictScope` — every district · one chosen · no
   districts; `Layout/DistrictPicker` — `OnTheCarListing`; registry C079
 - **No schema change, no new dependency.**
+
+## R51 — A marketplace worth searching: 320 dev cars
+
+**Revises F097 (part)** · development data only; no schema, API or UI change
+
+The dev seed had 120 dealerships and not one car, so the search (**F076**) and
+the filter panel that follows it could only be looked at against the handful
+of listings an integration test leaves behind. R51 adds the cars.
+
+- **Seed** `prisma/seed/dev-vehicles.data.ts` — a catalogue of real brand/model
+  pairs (12 brands, 46 models, each with its body, fuels, gearboxes, trims,
+  price band and model years), 8 colours, an RTO per district, a `mulberry32`
+  PRNG with a fixed seed, and one pure function, `generateDevVehicles`, that
+  deals 320 cars out to the 120 dev dealerships: every dealership at least
+  one, Tamil Nadu's more (Ranipet 39 live across its four towns). 272 are
+  ACTIVE; 48 are spread over DRAFT, PENDING_REVIEW, CHANGES_REQUESTED,
+  REJECTED, SOLD and REMOVED so the public rule has something to exclude.
+  `prisma/seed/dev-vehicles.ts` writes them; `prisma/seed/dev-guard.ts` is the
+  loopback-only guard, now shared with `dev-dealers.ts`.
+- **Deterministic and idempotent.** Fixed seed, fixed anchor date, ids derived
+  from a name (`devUuid`), so every run writes the same rows and upserts them
+  by id. A seeded car the data file no longer generates is pruned — a dev
+  dealership's vehicle with no `createdBy`, which nothing a person enters has.
+- **Ordering is checked.** Cars are linked by the dealership's GSTIN; every one
+  of the 120 is looked up first, and a missing one stops the run naming
+  `pnpm db:seed:dev`.
+- **No photographs**, and no invented image URLs: the card's labelled no-photo
+  slot is what they render. These rows never pass the approval guard that
+  requires photographs — they are written directly.
+- **Scripts** `db:seed:dev` now runs the dealerships then the cars;
+  `db:seed:dev:dealers` and `db:seed:vehicles:dev` run one each. The root
+  `package.json` forwards `db:seed:dev` and `db:seed:vehicles:dev`.
+- **Tests** `tests/unit/seed/dev-vehicles.test.ts` — count, determinism,
+  every car on a seeded dealership, location from the dealership, brand/model
+  validity, readable and unique registrations, unique slugs, the registration
+  claims the partial unique indexes expect, every non-public state, variety in
+  every facet and every price and distance band, Ranipet's towns.

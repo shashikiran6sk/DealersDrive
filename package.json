@@ -2,7 +2,7 @@
   "name": "dealers-drive",
   "version": "0.0.0",
   "private": true,
-  "description": "Dealers-Drive — B2B2C used-car marketplace monorepo",
+  "description": "Dealers-Drive \u2014 B2B2C used-car marketplace monorepo",
   "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": ">=24"
@@ -22,6 +22,8 @@
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
     "infra:reset": "docker compose down -v && docker compose up -d",
+    "db:seed:dev": "pnpm --filter @dealers-drive/api db:seed:dev",
+    "db:seed:vehicles:dev": "pnpm --filter @dealers-drive/api db:seed:vehicles:dev",
     "app:up": "bash scripts/app-up.sh",
     "app:down": "docker compose --profile app down",
     "app:logs": "docker compose --profile app logs -f api web",

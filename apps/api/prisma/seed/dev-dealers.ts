@@ -3,13 +3,15 @@ import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../src/config/env.js';
 import { DEV_DEALERS, DEV_STATES } from './dev-dealers.data.js';
+import { assertLocalDatabase } from './dev-guard.js';
 
 /**
  * Writes a hundred and twenty dealerships — thirty each in Tamil Nadu,
  * Karnataka, Andhra Pradesh and Kerala — into a **local** database, so the
  * directory and the portfolio page have something to be looked at.
  *
- *     pnpm --filter @dealers-drive/api db:seed:dev
+ *     pnpm db:seed:dev:dealers     only the dealerships
+ *     pnpm db:seed:dev             the dealerships, then their cars (dev-vehicles.ts)
  *
  * ── What this is not ────────────────────────────────────────────────────────
  * It is not part of `pnpm db:seed`, and `tests/global-setup.ts` does not call
@@ -19,14 +21,7 @@ import { DEV_DEALERS, DEV_STATES } from './dev-dealers.data.js';
  * `dev-dealers.data.ts`.
  *
  * ── Why it refuses to run against a remote database ─────────────────────────
- * This writes a hundred and twenty invented dealerships with invented GSTINs
- * across four states. Pointed at a shared or hosted database that is not a
- * mistake you notice — it is a hundred and twenty rows a colleague then has to
- * identify and delete by hand, and on a public marketplace it is a hundred and
- * twenty businesses that do not exist. So the host in `DATABASE_URL` has to be
- * a loopback address, and overriding that has to be typed out in full:
- *
- *     ALLOW_REMOTE_DEV_SEED=yes pnpm --filter @dealers-drive/api db:seed:dev
+ * See `dev-guard.ts`, which both dev seeds share.
  *
  * ── Re-running it ───────────────────────────────────────────────────────────
  * Every write is an upsert keyed on the GSTIN or the email, so running it
@@ -37,29 +32,6 @@ import { DEV_DEALERS, DEV_STATES } from './dev-dealers.data.js';
  */
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DATABASE_URL }) });
 const now = new Date();
-
-/** Loopback only, unless the operator says otherwise in words. */
-function assertLocalDatabase(): void {
-  if (process.env.ALLOW_REMOTE_DEV_SEED === 'yes') {
-    console.warn('ALLOW_REMOTE_DEV_SEED=yes — writing dev dealerships to a non-local database.');
-    return;
-  }
-
-  if (env.isProduction) {
-    throw new Error('dev-dealers refuses to run with NODE_ENV=production.');
-  }
-
-  const host = new URL(env.DATABASE_URL).hostname;
-  const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
-
-  if (!isLocal) {
-    throw new Error(
-      `DATABASE_URL points at "${host}", not at localhost.\n` +
-        'These are a hundred and twenty invented dealerships — they do not belong in a shared database.\n' +
-        'If you meant it: ALLOW_REMOTE_DEV_SEED=yes pnpm --filter @dealers-drive/api db:seed:dev',
-    );
-  }
-}
 
 /**
  * The owner account behind a dealership.
@@ -165,7 +137,7 @@ async function seedDealer(dealer: (typeof DEV_DEALERS)[number]): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  assertLocalDatabase();
+  assertLocalDatabase('dealerships');
 
   // Sequential on purpose. A hundred and twenty rows is a few seconds, and a
   // `Promise.all` over upserts that share unique indexes is how you get a

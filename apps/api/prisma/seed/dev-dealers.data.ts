@@ -15,7 +15,7 @@
  * about whether the chips work. Nothing in `apps/api/src` imports it, no test
  * runs it, and `pnpm db:seed` does not call it. It runs when a developer asks:
  *
- *     pnpm --filter @dealers-drive/api db:seed:dev
+ *     pnpm db:seed:dev:dealers   (or pnpm db:seed:dev for the dealerships and their cars)
  *
  * ── The geography, and why it is real ───────────────────────────────────────
  * Forty-four towns across twelve districts in four states, because the three
