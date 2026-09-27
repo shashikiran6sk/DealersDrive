@@ -2230,6 +2230,15 @@ Free-text field and sort select, both writing to the URL.
 - **Tests** `tests/unit/lib/url.test.ts` ✅
 - **Components — New (Shared)** `SearchToolbar` (`showSearch?`)
 - **Sandbox** with and without the search field; each sort option selected
+- ⚠️ **Entry corrected on landing.** `components/search/search-toolbar/`
+  (`SearchToolbar`, `SearchField`, `SortSelect`); the URL helpers are
+  `lib/vehicle-search.ts` (F078), not `lib/url.ts`. Sorts are the F076
+  vocabulary — `newest` (default, omitted from the URL), `price_asc`,
+  `price_desc`, `year_desc`, `km_asc`; the baseline's `relevance` is gone with
+  its full-text ranking. The search box is debounced (350 ms), replaces the
+  history entry while typing and pushes on Enter. **This lands F077**: `/cars`
+  now has the district, the filters, the chips, search, sort and paging that
+  keeps them all. Tests `tests/unit/components/search/search-toolbar.test.tsx`.
 
 ### F081 — Homepage & hero search
 

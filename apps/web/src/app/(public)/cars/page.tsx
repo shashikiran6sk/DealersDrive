@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AppliedFilters } from '@/components/search/applied-filters';
 import { DistrictScope } from '@/components/search/district-scope';
 import { FilterPanel } from '@/components/search/filter-panel';
+import { SearchToolbar } from '@/components/search/search-toolbar';
 import {
   SearchNavigationProvider,
   SearchResultsRegion,
@@ -64,11 +65,14 @@ export default async function CarsPage({
           <Link href="/">{CARS_TEXT.home}</Link> / {CARS_TEXT.breadcrumb}
         </nav>
 
-        <div className="mb-[10px] flex flex-wrap items-baseline gap-3">
-          <h1 className="text-[34px]">{place ? CARS_TEXT.titleIn(place) : CARS_TEXT.title}</h1>
-          <span className="text-[14px] ink-muted tnum" role="status">
-            {CARS_TEXT.count(listing.page.total)}
-          </span>
+        <div className="mb-[10px] flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-baseline gap-3">
+            <h1 className="text-[34px]">{place ? CARS_TEXT.titleIn(place) : CARS_TEXT.title}</h1>
+            <span className="text-[14px] ink-muted tnum" role="status">
+              {CARS_TEXT.count(listing.page.total)}
+            </span>
+          </div>
+          <SearchToolbar params={params} basePath={CARS_PATH} />
         </div>
 
         <div className="mb-[14px] flex flex-col gap-[10px]">
