@@ -1,4 +1,4 @@
-import { parseRegistration, slugify } from '@dealers-drive/contracts';
+import { parseRegistration, slugify, VehicleColor } from '@dealers-drive/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { DEV_DEALERS } from '../../../prisma/seed/dev-dealers.data.js';
@@ -118,7 +118,7 @@ describe('the dev vehicle seed', () => {
     expect(distinct((car) => car.fuelType)).toBeGreaterThanOrEqual(4);
     expect(distinct((car) => car.transmission)).toBe(2);
     expect(distinct((car) => car.bodyType)).toBe(5);
-    expect(distinct((car) => car.color)).toBeGreaterThanOrEqual(6);
+    expect(distinct((car) => car.color)).toBeGreaterThanOrEqual(8);
     expect(distinct((car) => Math.min(car.ownerCount, 4))).toBe(4);
     expect(distinct((car) => car.manufacturingYear)).toBeGreaterThanOrEqual(8);
   });
@@ -157,5 +157,11 @@ describe('the dev vehicle seed', () => {
   it('names its slugs the way the platform does', () => {
     const car = live[0]!;
     expect(car.listingSlug?.startsWith(slugify(`${car.manufacturingYear} ${car.make}`))).toBe(true);
+  });
+});
+
+describe('the dev colours (R52)', () => {
+  it('are only the generic families the form offers and the search filters on', () => {
+    for (const car of cars) expect(VehicleColor.options).toContain(car.color);
   });
 });

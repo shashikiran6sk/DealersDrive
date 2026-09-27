@@ -521,6 +521,21 @@ export const TransmissionSlug = z.enum(['manual', 'automatic']);
 export type TransmissionSlug = z.infer<typeof TransmissionSlug>;
 export const BodyTypeSlug = z.enum(['hatchback', 'sedan', 'suv', 'muv', 'luxury']);
 export type BodyTypeSlug = z.infer<typeof BodyTypeSlug>;
+export const ColorSlug = z.enum([
+  'black',
+  'white',
+  'grey',
+  'silver',
+  'red',
+  'blue',
+  'green',
+  'brown',
+  'beige',
+  'yellow',
+  'orange',
+  'other',
+]);
+export type ColorSlug = z.infer<typeof ColorSlug>;
 
 /**
  * Owners, as a buyer asks about them: first, second, third, or **four or more**.
@@ -584,7 +599,7 @@ const VehicleFilters = {
   fuel: csvOf(FuelSlug).optional(),
   transmission: csvOf(TransmissionSlug).optional(),
   bodyType: csvOf(BodyTypeSlug).optional(),
-  color: csvOf(slug).optional(),
+  color: csvOf(ColorSlug).optional(),
   owners: csvOf(OwnerBucket).optional(),
   sort: VehicleSort.default('newest'),
 };

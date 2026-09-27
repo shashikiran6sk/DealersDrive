@@ -478,7 +478,13 @@ model Vehicle {
 
   kilometersDriven    Int?
   ownerCount          Int?
-  color               String?
+  /// One of twelve generic families (**R52**), never a manufacturer's shade —
+  /// the listing form offers these and the search filters on them.
+  color               VehicleColor?
+  /// The colour as it was typed before R52 made it a choice. Written by
+  /// nothing; kept so the backfill into `color` can be audited or redone, and
+  /// read by nothing public.
+  legacyColor         String?
   insuranceType       InsuranceType?
   insuranceValidUntil DateTime?      @db.Date
 
@@ -707,6 +713,23 @@ enum BodyType {
   SUV
   MUV
   LUXURY
+}
+
+/// A car's colour as a buyer filters by it (**R52**). Mirrors `VehicleColor`
+/// in `packages/contracts/src/enums.ts`.
+enum VehicleColor {
+  BLACK
+  WHITE
+  GREY
+  SILVER
+  RED
+  BLUE
+  GREEN
+  BROWN
+  BEIGE
+  YELLOW
+  ORANGE
+  OTHER
 }
 
 enum InsuranceType {

@@ -18,7 +18,7 @@ const COMPLETE = {
   bodyType: 'SUV',
   kilometersDriven: 22_400,
   ownerCount: 1,
-  color: 'White',
+  color: 'WHITE',
   pricePaise: 145_000_000n,
   city: 'Vellore',
   insuranceType: 'COMPREHENSIVE',

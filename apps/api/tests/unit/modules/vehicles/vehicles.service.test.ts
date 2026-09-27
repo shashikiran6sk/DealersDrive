@@ -45,6 +45,7 @@ function row(overrides: Partial<VehicleRow> = {}): VehicleRow {
     kilometersDriven: null,
     ownerCount: null,
     color: null,
+    legacyColor: null,
     insuranceType: null,
     insuranceValidUntil: null,
     pricePaise: null,

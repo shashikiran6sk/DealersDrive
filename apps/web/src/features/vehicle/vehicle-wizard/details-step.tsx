@@ -1,7 +1,8 @@
 import {
   INSURANCE_LABELS,
   InsuranceType,
-  VEHICLE_LIMITS,
+  VEHICLE_COLOR_LABELS,
+  VehicleColor,
   ownerLabel,
 } from '@dealers-drive/contracts';
 
@@ -47,15 +48,20 @@ export function DetailsStep({ vehicle, errors, values }: StepProps) {
         </Select>
       </StepField>
       <StepField name="color" errors={errors}>
-        <Input
+        <Select
           id="color"
           name="color"
-          defaultValue={value('color')}
-          placeholder={VEHICLE_WIZARD_TEXT.colorPlaceholder}
-          maxLength={VEHICLE_LIMITS.colorMax}
+          defaultValue={VehicleColor.safeParse(value('color')).data ?? ''}
           required
           {...invalidProps('color', errors.color)}
-        />
+        >
+          <option value="">{VEHICLE_WIZARD_TEXT.choose}</option>
+          {VehicleColor.options.map((option) => (
+            <option key={option} value={option}>
+              {VEHICLE_COLOR_LABELS[option]}
+            </option>
+          ))}
+        </Select>
       </StepField>
       <StepField name="insuranceType" errors={errors}>
         <Select

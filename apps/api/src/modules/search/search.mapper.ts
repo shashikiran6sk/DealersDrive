@@ -4,6 +4,7 @@ import {
   INSURANCE_LABELS,
   NEGOTIABILITY_LABELS,
   TRANSMISSION_LABELS,
+  VEHICLE_COLOR_LABELS,
   VEHICLE_FIELD_LABELS,
   formatDate,
   formatKm,
@@ -60,7 +61,7 @@ export function specsOf(vehicle: DetailRow['vehicle']): Spec[] {
       vehicle.kilometersDriven === null ? null : formatKm(vehicle.kilometersDriven),
     ),
     ...spec(VEHICLE_FIELD_LABELS.ownerCount, vehicle.ownerCount && ownerLabel(vehicle.ownerCount)),
-    ...spec(VEHICLE_FIELD_LABELS.color, vehicle.color),
+    ...spec(VEHICLE_FIELD_LABELS.color, vehicle.color && VEHICLE_COLOR_LABELS[vehicle.color]),
     ...spec(
       VEHICLE_FIELD_LABELS.insuranceType,
       vehicle.insuranceType && INSURANCE_LABELS[vehicle.insuranceType],

@@ -192,7 +192,7 @@ describe('saveVehicleStepAction', () => {
         step: 'details',
         kilometersDriven: 'twenty thousand',
         ownerCount: '1',
-        color: 'Red',
+        color: 'RED',
         insuranceType: 'NONE',
         insuranceValidUntil: '',
         intent: 'continue',

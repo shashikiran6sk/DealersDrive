@@ -73,7 +73,6 @@ export const VEHICLE_WIZARD_TEXT = {
   registrationYearHint: 'optional',
   choose: 'Choose…',
   kmPlaceholder: '22,400',
-  colorPlaceholder: 'Polar White',
   insuranceDateHint: 'not needed without insurance',
   pricePlaceholder: '14,50,000',
   priceHint: 'in rupees',

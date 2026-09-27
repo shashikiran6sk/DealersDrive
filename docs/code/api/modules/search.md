@@ -220,3 +220,12 @@ filter has to be resolved. Its size is the catalogue's, not the inventory's.
 One method per column rather than one generic `group(field)`: Prisma's
 `groupBy` does not type a `by` that is a type parameter, and the alternative is
 an assertion on every row.
+
+### `colorFacet(rows)` — R52
+
+Colour is no longer text a dealer typed but one of twelve families
+(`VehicleColor`), so the colour filter is an enum like fuel: the URL carries
+`color=white,red`, no vocabulary is read to resolve it, and the facet lists
+**all twelve families, in one fixed order, zeros included**. The panel then
+shows the same twelve options the listing form offers, whatever the inventory
+holds — a zero is a family nothing is in right now, not a missing option.

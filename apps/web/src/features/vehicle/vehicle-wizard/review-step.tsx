@@ -5,6 +5,7 @@ import {
   INSURANCE_LABELS,
   NEGOTIABILITY_LABELS,
   TRANSMISSION_LABELS,
+  VEHICLE_COLOR_LABELS,
   formatDate,
   formatKm,
   ownerLabel,
@@ -67,7 +68,10 @@ function sections(vehicle: DealerVehicle): { step: WizardStep; rows: Row[] }[] {
           label: FIELD_LABELS.ownerCount,
           value: vehicle.ownerCount ? ownerLabel(vehicle.ownerCount) : null,
         },
-        { label: FIELD_LABELS.color, value: vehicle.color },
+        {
+          label: FIELD_LABELS.color,
+          value: vehicle.color ? VEHICLE_COLOR_LABELS[vehicle.color] : null,
+        },
         {
           label: FIELD_LABELS.insuranceType,
           value: vehicle.insuranceType ? INSURANCE_LABELS[vehicle.insuranceType] : null,

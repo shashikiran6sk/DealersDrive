@@ -85,7 +85,7 @@ const DETAIL: AdminListingDetail = {
       rows: [
         { label: 'Kilometres driven', value: '22,400 km' },
         { label: 'Owners', value: 'First owner' },
-        { label: 'Colour', value: 'Polar White' },
+        { label: 'Colour', value: 'White' },
         { label: 'Insurance', value: 'Comprehensive' },
         { label: 'Insurance valid until', value: '31 Mar 2027' },
       ],

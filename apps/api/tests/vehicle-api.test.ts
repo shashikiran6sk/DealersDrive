@@ -154,7 +154,7 @@ describe('saving wizard steps', () => {
         bodyType: 'SUV',
         kilometersDriven: 18_000,
         ownerCount: 1,
-        color: 'Flame Red',
+        color: 'RED',
         insuranceType: 'COMPREHENSIVE',
         insuranceValidUntil: '2027-06-30',
         pricePaise: 98_500_000,
@@ -233,7 +233,7 @@ describe('saving wizard steps', () => {
 
     await a.agent
       .patch(`/v1/dealer/vehicles/${other.id}`)
-      .send({ registrationNumber: other.registrationNumber, color: 'Silver' })
+      .send({ registrationNumber: other.registrationNumber, color: 'SILVER' })
       .expect(200);
   });
 });

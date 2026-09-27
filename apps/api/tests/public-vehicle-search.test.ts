@@ -79,7 +79,7 @@ beforeAll(async () => {
       transmission: 'AUTOMATIC',
       bodyType: 'SUV',
       ownerCount: 1,
-      color: 'Polar White',
+      color: 'WHITE',
     }),
   );
   cars.venue = await kit.published(
@@ -93,7 +93,7 @@ beforeAll(async () => {
       transmission: 'MANUAL',
       bodyType: 'SUV',
       ownerCount: 2,
-      color: 'polar white',
+      color: 'WHITE',
     }),
   );
   cars.nexon = await kit.published(
@@ -107,7 +107,7 @@ beforeAll(async () => {
       transmission: 'AUTOMATIC',
       bodyType: 'SUV',
       ownerCount: 1,
-      color: 'Flame Red',
+      color: 'RED',
     }),
   );
   cars.swift = await kit.published(
@@ -121,7 +121,7 @@ beforeAll(async () => {
       transmission: 'MANUAL',
       bodyType: 'HATCHBACK',
       ownerCount: 4,
-      color: 'Fiery Red',
+      color: 'RED',
     }),
   );
   cars.dzire = await kit.published(
@@ -135,7 +135,7 @@ beforeAll(async () => {
       transmission: 'MANUAL',
       bodyType: 'SEDAN',
       ownerCount: 3,
-      color: 'Silver',
+      color: 'SILVER',
     }),
   );
   cars.city = await kit.published(
@@ -149,7 +149,7 @@ beforeAll(async () => {
       transmission: 'AUTOMATIC',
       bodyType: 'SEDAN',
       ownerCount: 1,
-      color: 'Polar White',
+      color: 'WHITE',
     }),
   );
 
@@ -183,7 +183,8 @@ describe('one filter at a time', () => {
     ['fuel=petrol,diesel', ['creta', 'venue', 'swift']],
     ['transmission=automatic', ['creta', 'nexon']],
     ['bodyType=hatchback,sedan', ['swift', 'dzire']],
-    ['color=polar-white', ['creta', 'venue']],
+    ['color=white', ['creta', 'venue']],
+    ['color=red,silver', ['nexon', 'swift', 'dzire']],
     ['owners=4', ['swift']],
     ['owners=1,3', ['creta', 'nexon', 'dzire']],
     ['q=creta', ['creta']],
@@ -309,10 +310,27 @@ describe('dependent facets', () => {
     expect(hyundai.facets.models).toHaveLength(2);
   });
 
-  it('merges spellings of one brand and one colour', async () => {
+  it('merges spellings of one brand', async () => {
     const { facets } = await search(HERE);
     expect(facets.brands.find((option) => option.value === 'maruti-suzuki')?.count).toBe(2);
-    expect(facets.colors.find((option) => option.value === 'polar-white')?.count).toBe(2);
+  });
+
+  it('offers every generic colour, in one order, zeros included (R52)', async () => {
+    const { facets } = await search(HERE);
+    expect(facets.colors.map((option) => [option.label, option.count])).toEqual([
+      ['Black', 0],
+      ['White', 2],
+      ['Grey', 0],
+      ['Silver', 1],
+      ['Red', 2],
+      ['Blue', 0],
+      ['Green', 0],
+      ['Brown', 0],
+      ['Beige', 0],
+      ['Yellow', 0],
+      ['Orange', 0],
+      ['Other', 0],
+    ]);
   });
 
   it('keeps every other brand when a model is ticked', async () => {
@@ -363,6 +381,7 @@ describe('what the query refuses', () => {
     ['owners=0', 'owners'],
     ['sort=cheapest', 'sort'],
     ['brand=Hyundai', 'brand'],
+    ['color=fiery-red', 'color'],
     ['limit=100000', 'limit'],
     ['pageSize=500', 'pageSize'],
   ])('%s', async (query, field) => {

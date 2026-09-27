@@ -23,7 +23,7 @@ function vehicle(overrides: Partial<DealerVehicle> = {}): DealerVehicle {
     bodyType: 'SUV',
     kilometersDriven: 22_400,
     ownerCount: 1,
-    color: 'Polar White',
+    color: 'WHITE',
     insuranceType: 'COMPREHENSIVE',
     insuranceValidUntil: '2027-03-31',
     pricePaise: 145_000_000,
@@ -99,6 +99,43 @@ describe('a saved vehicle', () => {
   it('confirms a saved draft', () => {
     render(<VehicleWizard step="details" vehicle={vehicle()} saved />);
     expect(screen.getByText(/draft saved/i)).toBeInTheDocument();
+  });
+});
+
+/**
+ * R52 — the colour is chosen from the twelve generic families, the same list
+ * the marketplace filters by; a shade name cannot be typed in.
+ */
+describe('the colour', () => {
+  it('is a choice of the twelve families, holding the saved one', () => {
+    render(<VehicleWizard step="details" vehicle={vehicle()} />);
+    const colour = screen.getByRole('combobox', { name: /colour/i });
+    expect(colour.tagName).toBe('SELECT');
+    expect(colour).toHaveValue('WHITE');
+    expect(
+      within(colour)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual([
+      'Choose…',
+      'Black',
+      'White',
+      'Grey',
+      'Silver',
+      'Red',
+      'Blue',
+      'Green',
+      'Brown',
+      'Beige',
+      'Yellow',
+      'Orange',
+      'Other',
+    ]);
+  });
+
+  it('shows the family by name on the review step', () => {
+    render(<VehicleWizard step="review" vehicle={vehicle({ color: 'SILVER' })} />);
+    expect(screen.getByText('Silver')).toBeInTheDocument();
   });
 });
 

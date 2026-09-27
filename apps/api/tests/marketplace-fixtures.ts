@@ -30,7 +30,7 @@ export const COMPLETE_VEHICLE = {
   bodyType: 'SUV',
   kilometersDriven: 22_400,
   ownerCount: 1,
-  color: 'Polar White',
+  color: 'WHITE',
   insuranceType: 'COMPREHENSIVE',
   insuranceValidUntil: '2027-03-31',
   pricePaise: 145_000_000,
