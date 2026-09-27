@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { env } from '../../../../src/config/env.js';
 import {
   createDealersPublicService,
-  noInventoryYet,
   type DealerInventoryStats,
 } from '../../../../src/modules/dealers/dealers.public.service.js';
 import type { DealersRepository } from '../../../../src/modules/dealers/dealers.repository.js';
@@ -26,8 +25,8 @@ import { NotFoundError } from '../../../../src/platform/errors.js';
  *
  * ── Divergences from the baseline's version of this file ────────────────────
  *   · The stats dependency is `DealerInventoryStats`, not the search
- *     repository — see the note on that interface. `noInventoryYet` is what the
- *     container passes until **F076**, and it has its own test here.
+ *     repository — see the note on that interface. Since **R48** the container
+ *     passes the search module's grouped aggregate over public listings.
  *   · `city` and `state` are columns on the dealership, not a joined `cities`
  *     row (**D6**), so the baseline's "defaults the state to Tamil Nadu" case
  *     is gone: there is no row to default from, and a dealership in Bengaluru
@@ -1185,18 +1184,5 @@ describe('profile', () => {
     const h = setup({ profile: publicDealer({ brandName: 'Velavan Cars' }) });
 
     expect((await h.service.profile('x')).initials).toBe('VC');
-  });
-});
-
-/**
- * The car-count source the container passes until **F076**.
- *
- * Worth its own test because it is the seam: when the search module lands, this
- * is the one argument that changes, and a reader should be able to see exactly
- * what it stands in for.
- */
-describe('noInventoryYet', () => {
-  it('reports no inventory, for anybody', async () => {
-    await expect(noInventoryYet.dealerStats()).resolves.toEqual([]);
   });
 });

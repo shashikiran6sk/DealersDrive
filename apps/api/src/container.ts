@@ -15,7 +15,6 @@ import { createPhoneService, type PhoneService } from './modules/auth/phone.serv
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import {
   createDealersPublicService,
-  noInventoryYet,
   type DealersPublicService,
 } from './modules/dealers/dealers.public.service.js';
 import { createDealersRepository } from './modules/dealers/dealers.repository.js';
@@ -30,6 +29,7 @@ import {
   createVehicleImagesService,
   type VehicleImagesService,
 } from './modules/vehicle-images/vehicle-images.service.js';
+import { createPublicInventoryStats } from './modules/search/search.facade.js';
 import { createSearchRepository } from './modules/search/search.repository.js';
 import { createSearchService, type SearchService } from './modules/search/search.service.js';
 import { createVehiclesRepository } from './modules/vehicles/vehicles.repository.js';
@@ -129,7 +129,10 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const audit = createAuditService(prisma);
   const dealersRepo = createDealersRepository(prisma);
   const dealers = createDealersService({ prisma, repo: dealersRepo, storage, maps, audit });
-  const dealersPublic = createDealersPublicService({ repo: dealersRepo, stats: noInventoryYet });
+  const dealersPublic = createDealersPublicService({
+    repo: dealersRepo,
+    stats: createPublicInventoryStats(prisma),
+  });
   const auth = createAuthService({
     prisma,
     sessions: sessionStore,

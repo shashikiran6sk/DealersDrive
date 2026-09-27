@@ -14,7 +14,7 @@ import {
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
-import { revalidatePublicVehicles } from '@/lib/cache-tags';
+import { revalidatePublicDealer, revalidatePublicVehicles } from '@/lib/cache-tags';
 
 export interface ListingActionResult {
   ok: boolean;
@@ -84,8 +84,9 @@ export async function requestListingChangesAction(
 }
 
 export async function approveListingAction(listingId: string): Promise<ListingActionResult> {
+  let approved: AdminListingDetail;
   try {
-    await apiSend<AdminListingDetail>(
+    approved = await apiSend<AdminListingDetail>(
       'POST',
       `/v1/admin/listings/${encodeURIComponent(listingId)}/approve`,
     );
@@ -95,6 +96,7 @@ export async function approveListingAction(listingId: string): Promise<ListingAc
   revalidatePath(reviewPath(listingId));
   revalidatePath('/admin/listings');
   revalidatePublicVehicles();
+  revalidatePublicDealer(approved.dealer.slug);
   return { ok: true };
 }
 

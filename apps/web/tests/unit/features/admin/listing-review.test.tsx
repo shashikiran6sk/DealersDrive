@@ -377,14 +377,16 @@ describe('setPhotographyAction', () => {
 });
 
 describe('approveListingAction', () => {
-  it('approves and refreshes the review screen and the queue', async () => {
-    apiSend.mockResolvedValue({});
+  it('approves and refreshes the review screen, the queue and the public pages', async () => {
+    apiSend.mockResolvedValue(reviewDetail());
     expect(await approveListingAction(ID)).toEqual({ ok: true });
     expect(apiSend).toHaveBeenCalledWith('POST', `/v1/admin/listings/${ID}/approve`);
     expect(revalidations.paths).toEqual(
       expect.arrayContaining([`/admin/listings/${ID}`, '/admin/listings']),
     );
-    expect(revalidations.tags).toContain('vehicles');
+    expect(revalidations.tags).toEqual(
+      expect.arrayContaining(['vehicles', 'dealers', 'dealer:sri']),
+    );
   });
 
   it('passes on why the API refused', async () => {

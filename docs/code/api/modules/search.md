@@ -76,3 +76,14 @@ The registration is shown only as its RTO ("TN 23"). The full number identifies
 an owner, not a car, and nothing about deciding to enquire needs it. As on the
 card, there is no phone number: rule 7 keeps it behind the rate-limited reveal
 route, which is not built, so the page carries none.
+
+## `apps/api/src/modules/search/search.stats.ts`
+
+### `export function createPublicInventoryStats(prisma)`
+
+The dealer directory's and the portfolio's car counts (**R48**), implementing
+the dealers module's `DealerInventoryStats` port. One `groupBy` over vehicles
+whose listing matches `PUBLIC_LISTING_WHERE` — count and cheapest price per
+dealership — and one lookup of the slugs it found: two queries whatever the
+number of dealerships, never one per card. It uses the same predicate as the
+public list, not a second `status = ACTIVE`, which is the whole point.

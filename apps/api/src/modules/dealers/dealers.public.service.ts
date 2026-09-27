@@ -30,10 +30,6 @@ export interface DealerInventoryStats {
   dealerStats(): Promise<DealerInventoryStat[]>;
 }
 
-export const noInventoryYet: DealerInventoryStats = {
-  dealerStats: () => Promise.resolve([]),
-};
-
 const CARD_COVER_WIDTH = 640;
 const PORTFOLIO_COVER_WIDTH = 1600;
 
