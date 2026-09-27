@@ -40,3 +40,8 @@ sit in a `SearchResultsRegion` inside one `SearchNavigationProvider`, so a
 filter change dims the grid rather than blanking the page. An empty result
 with filters applied says so and offers _Clear filters_, which keeps the
 district.
+
+**F080 — search and sort.** `SearchToolbar` sits in the title row, per §3.3:
+the search box (debounced, written to `?q=`) and the sort select. Both keep
+every filter and go back to page one; the total beside the heading is the
+response's `page.total`, never the length of the page.

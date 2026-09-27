@@ -327,3 +327,18 @@ describe('/cars with filters', () => {
     expect(screen.getByRole('status')).toHaveTextContent('2 cars available');
   });
 });
+
+/** F080 — the search box and the sort sit in the title row, reading the URL. */
+describe('/cars search and sort', () => {
+  it('shows the search and the order the URL carries, and asks the API for them', async () => {
+    serve({ ...response([card()]), facets: FACETS });
+    render(await CarsPage({ searchParams: Promise.resolve({ q: 'creta', sort: 'price_desc' }) }));
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/vehicles?q=creta&sort=price_desc',
+      expect.anything(),
+    );
+    expect(screen.getByRole('searchbox', { name: /search cars/i })).toHaveValue('creta');
+    expect(screen.getByRole('combobox', { name: 'Sort cars' })).toHaveValue('price_desc');
+  });
+});

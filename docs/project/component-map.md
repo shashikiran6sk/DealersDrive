@@ -403,6 +403,13 @@ exactly what makes "which nav item is active" testable for the first time.
 Both in `components/search/search-toolbar.tsx` (`:11`, `:82`).
 
 - `SearchToolbar` — `params`, `basePath`, `showSearch?` (default `true`). Free-text field + sort `<select>`, both writing to the URL. Consumers: 2. **P1.**
+  **As rebuilt (F080):** `components/search/search-toolbar/` — `SearchToolbar`,
+  `SearchField`, `SortSelect`. Adds `searchPlaceholder?`, `idPrefix?`,
+  `leading?` (the mobile Filters button's slot) and `className?`. The field is
+  debounced (350 ms) and _replaces_ history while typing, _pushes_ on Enter,
+  and follows the URL on Back. The sort offers Newest, Price ↑, Price ↓, Year,
+  Km. Tests `tests/unit/components/search/search-toolbar.test.tsx`. Sandbox
+  `Search/SearchToolbar`.
 - `MobileFilterSheet` — `facets`, `params`, `basePath`, `resultCount`, `groups?`, `dimZeroRows?`. Bottom sheet; body-scroll lock, Escape-to-close, sticky CTA with a live count. Consumers: 2. **P0** — it is the only mobile-specific component in the product and there is no way to see it today without resizing a real browser against a real API.
 
 ### C080 — `AppliedFilters`
