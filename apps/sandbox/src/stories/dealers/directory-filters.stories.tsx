@@ -14,6 +14,7 @@ const LOCATIONS: PublicLocations = {
     { slug: 'kozhikode', name: 'Kozhikode', count: 8, state: 'Kerala' },
   ],
   total: 120,
+  cars: { total: 0, districts: {} },
 };
 
 const CITIES = [

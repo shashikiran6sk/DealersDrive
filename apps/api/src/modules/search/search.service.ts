@@ -1,4 +1,5 @@
 import type {
+  DealerVehicleQuery,
   PublicVehicleDetail,
   PublicVehicleQuery,
   PublicVehiclesResponse,
@@ -7,7 +8,7 @@ import type {
 import { NotFoundError } from '../../platform/errors.js';
 import { toPublicVehicleDetail, toVehicleCard } from './search.mapper.js';
 import { DEALER_NOT_FOUND, VEHICLE_NOT_FOUND } from './search.messages.js';
-import type { SearchRepository } from './search.repository.js';
+import type { ListingScope, SearchRepository } from './search.repository.js';
 
 export interface SearchDeps {
   repo: SearchRepository;
@@ -15,13 +16,13 @@ export interface SearchDeps {
 
 export function createSearchService({ repo }: SearchDeps) {
   async function page(
-    query: PublicVehicleQuery,
-    dealerSlug?: string,
+    query: { page: number; limit: number },
+    scope: ListingScope,
   ): Promise<PublicVehiclesResponse> {
     const skip = (query.page - 1) * query.limit;
     const [rows, total] = await Promise.all([
-      repo.cards(skip, query.limit, dealerSlug),
-      repo.count(dealerSlug),
+      repo.cards(skip, query.limit, scope),
+      repo.count(scope),
     ]);
 
     return {
@@ -42,15 +43,18 @@ export function createSearchService({ repo }: SearchDeps) {
       return toPublicVehicleDetail(row);
     },
 
-    vehicles(query: PublicVehicleQuery): Promise<PublicVehiclesResponse> {
-      return page(query);
+    async vehicles(query: PublicVehicleQuery): Promise<PublicVehiclesResponse> {
+      const scope: ListingScope = query.district
+        ? { districts: await repo.districtNames(query.district) }
+        : {};
+      return page(query, scope);
     },
 
-    async dealerVehicles(slug: string, query: PublicVehicleQuery): Promise<PublicVehiclesResponse> {
+    async dealerVehicles(slug: string, query: DealerVehicleQuery): Promise<PublicVehiclesResponse> {
       if (!(await repo.publicDealerExists(slug))) {
         throw new NotFoundError(DEALER_NOT_FOUND, { code: 'DEALER_NOT_FOUND' });
       }
-      return page(query, slug);
+      return page(query, { dealerSlug: slug });
     },
   };
 }

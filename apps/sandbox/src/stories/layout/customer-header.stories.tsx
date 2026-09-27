@@ -10,6 +10,7 @@ const LOCATIONS: PublicLocations = {
     { slug: 'tirupattur', name: 'Tirupattur', count: 8, state: 'Tamil Nadu' },
   ],
   total: 30,
+  cars: { total: 0, districts: {} },
 };
 
 const meta = {

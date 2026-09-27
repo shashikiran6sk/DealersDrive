@@ -495,8 +495,8 @@ name, rating and an in-frame directions control without the card changing shape.
 `components/layout/district-picker.tsx`. Props: `locations: PublicLocations`,
 `children: (chosen: DistrictChip | null) => ReactNode`. States: header trigger,
 directory trigger, one chosen, many states, searching, state filtered, no state
-recorded, no districts. Two consumers (`LocationSelector`, `DirectoryFilters`).
-**Reusable.**
+recorded, no districts. Three consumers (`LocationSelector`, `DirectoryFilters`,
+`DistrictScope`). **Reusable.**
 
 **New at R23**, extracted whole out of C069. Two openers is the moment the
 dialog stops belonging to the header — and what is shared is not only the markup
@@ -513,6 +513,24 @@ inherits the rule rather than restating it.
 The dialog's own design is R22's and unchanged: a state is a heading nothing can
 select, a district is a button, the state row filters and never selects, and
 search is a flat list where every row names its state.
+
+### C079 — `DistrictScope`
+
+`components/search/district-scope/`. Props: `locations: PublicLocations`.
+States: every district, one chosen, no districts. One consumer (`/cars`).
+**NEW at R50.** **P2**
+
+The `/cars` page's own opener for `DistrictPicker` (C071): a `Select district`
+button with a hint when nothing is chosen, `Change district` beside
+`District: Ranipet, Tamil Nadu` when something is. It adds no selection logic —
+the header's selector and this button write the same `?district=` through the
+same `useDistrictSelection`.
+
+**R50 — the rule learned which page it is on.** `useDistrictSelection` now keeps
+a buyer on `/cars` (and sends one on `/car/<slug>` there), and sends everything
+else — home, a portfolio — to `/dealers`. Leaving the district drops `city`,
+`dealer` and `page`, the three parameters that belonged to it. On `/cars` the
+dialog counts **cars** (`PublicLocations.cars`) instead of dealerships.
 
 ### C069 — `LocationSelector`
 

@@ -5,3 +5,5 @@ export interface StateGroup {
   state: string | null;
   districts: DistrictChip[];
 }
+
+export type DistrictUnit = 'dealership' | 'car';

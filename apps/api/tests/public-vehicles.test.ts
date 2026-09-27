@@ -194,3 +194,82 @@ describe('the slug', () => {
     expect(row.slug).toBeNull();
   });
 });
+
+/**
+ * R50 — `/cars` scoped to one district, by the same slug the directory and
+ * the header's selector use. A car has no location of its own: the district
+ * is the dealership's, so moving a dealership moves its cars.
+ */
+describe('one district', () => {
+  let elsewhere: Dealership;
+  let there: Published;
+
+  async function slugsIn(district: string): Promise<{ slugs: string[]; total: number }> {
+    const slugs: string[] = [];
+    for (let page = 1; ; page += 1) {
+      const { body } = await h
+        .agent()
+        .get(`/v1/vehicles?district=${district}&page=${page}&limit=48`)
+        .expect(200);
+      slugs.push(...(body.data as VehicleCardDto[]).map((card) => card.slug));
+      if (page >= (body.page.totalPages as number)) {
+        return { slugs, total: body.page.total as number };
+      }
+    }
+  }
+
+  beforeAll(async () => {
+    elsewhere = await marketplaceFixtures(h, 'public-vehicles-district').dealership();
+    there = await kit.published(elsewhere, nextPlate());
+    await h.prisma.dealer.update({
+      where: { id: elsewhere.dealerId },
+      data: { city: 'Arcot', district: 'Ranipet' },
+    });
+  });
+
+  it('lists only the cars of dealerships in that district, and counts only them', async () => {
+    const ranipet = await slugsIn('ranipet');
+    expect(ranipet.slugs).toContain(there.slug);
+    expect(ranipet.slugs).not.toContain(live.slug);
+    expect(ranipet.total).toBe(ranipet.slugs.length);
+
+    const vellore = await slugsIn('vellore');
+    expect(vellore.slugs).toContain(live.slug);
+    expect(vellore.slugs).not.toContain(there.slug);
+  });
+
+  it('keeps the public rule inside the district', async () => {
+    const hidden = await kit.published(elsewhere, nextPlate());
+    await h.prisma.listing.update({ where: { id: hidden.listingId }, data: { status: 'SOLD' } });
+
+    expect((await slugsIn('ranipet')).slugs).not.toContain(hidden.slug);
+  });
+
+  it('answers a district nobody trades in with an empty page, not every car', async () => {
+    const { body } = await h.agent().get('/v1/vehicles?district=atlantis').expect(200);
+    expect(body.data).toEqual([]);
+    expect(body.page.total).toBe(0);
+  });
+
+  it('adds up, across districts, to the whole marketplace', async () => {
+    const all = await allCards();
+    const { body: locations } = await h.agent().get('/v1/locations').expect(200);
+
+    expect(locations.cars.total).toBe(all.length);
+    expect(locations.cars.districts.ranipet).toBe((await slugsIn('ranipet')).total);
+    expect(locations.cars.districts.vellore).toBe((await slugsIn('vellore')).total);
+  });
+
+  it('refuses a district that is not a slug', async () => {
+    const refused = await h.agent().get('/v1/vehicles?district=Ranipet%20District').expect(400);
+    expect(JSON.stringify(refused.body)).toContain('district');
+  });
+
+  it("is not a filter on one dealership's cars — the dealership fixes where they are", async () => {
+    const refused = await h
+      .agent()
+      .get(`/v1/dealers/${elsewhere.slug}/vehicles?district=ranipet`)
+      .expect(400);
+    expect(JSON.stringify(refused.body)).toContain('district');
+  });
+});

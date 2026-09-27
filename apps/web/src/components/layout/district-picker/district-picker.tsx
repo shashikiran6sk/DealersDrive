@@ -13,7 +13,7 @@ export interface DistrictPickerProps {
 
 export function DistrictPicker({ locations, children }: DistrictPickerProps) {
   const [open, setOpen] = useState(false);
-  const { chosen, select } = useDistrictSelection(locations);
+  const { chosen, unit, select } = useDistrictSelection(locations);
 
   return (
     <LocationDialog
@@ -21,6 +21,7 @@ export function DistrictPicker({ locations, children }: DistrictPickerProps) {
       onOpenChange={setOpen}
       locations={locations}
       chosen={chosen}
+      unit={unit}
       onSelect={(slug) => {
         select(slug);
         setOpen(false);

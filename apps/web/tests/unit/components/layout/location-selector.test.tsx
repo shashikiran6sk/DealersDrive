@@ -37,6 +37,7 @@ const LOCATIONS: PublicLocations = {
     { slug: 'bengaluru-urban', name: 'Bengaluru Urban', count: 4, state: 'Karnataka' },
   ],
   total: 44,
+  cars: { total: 61, districts: { vellore: 30, ranipet: 18, mysuru: 13 } },
 };
 
 /** Opens the dialog and hands back the trigger, which most tests then assert on. */
@@ -190,6 +191,7 @@ describe('states group the districts', () => {
       <LocationSelector
         locations={{
           total: 20,
+          cars: { total: 0, districts: {} },
           districts: [
             { slug: 'nowhere', name: 'Nowhere', count: 9, state: null },
             { slug: 'vellore', name: 'Vellore', count: 2, state: 'Tamil Nadu' },
@@ -425,6 +427,7 @@ describe('the state filter', () => {
       <LocationSelector
         locations={{
           total: 22,
+          cars: { total: 0, districts: {} },
           districts: [{ slug: 'vellore', name: 'Vellore', count: 11, state: 'Tamil Nadu' }],
         }}
       />,
@@ -444,12 +447,98 @@ describe('when there is nothing to offer', () => {
   it('opens and explains itself', async () => {
     setLocation('/dealers');
     const user = userEvent.setup();
-    render(<LocationSelector locations={{ districts: [], total: 0 }} />);
+    render(
+      <LocationSelector
+        locations={{ districts: [], total: 0, cars: { total: 0, districts: {} } }}
+      />,
+    );
 
     await open(user, /select district/i);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(/no dealerships are listed yet/i)).toBeInTheDocument();
     expect(districtOptions()).toEqual([]);
+  });
+});
+
+/**
+ * R50 — the same selector scopes `/cars`. One dialog and one rule for what
+ * choosing a district means; what changes with the page is where the choice
+ * goes and what the numbers count.
+ */
+describe('on the car listing', () => {
+  it('stays on /cars, rather than sending a car buyer to the directory', async () => {
+    setLocation('/cars');
+    const user = userEvent.setup();
+    render(<LocationSelector locations={LOCATIONS} />);
+
+    await open(user, /select district/i);
+    await user.click(screen.getByRole('button', { name: /^ranipet/i }));
+
+    expect(navigationState.pushed).toEqual(['/cars?district=ranipet']);
+  });
+
+  it('drops the towns, the dealers and the page that belonged to the old district', async () => {
+    setLocation('/cars', 'district=vellore&city=katpadi&dealer=sri-lakshmi&page=4&q=creta');
+    const user = userEvent.setup();
+    render(<LocationSelector locations={LOCATIONS} />);
+
+    await open(user, /vellore/i);
+    await user.click(screen.getByRole('button', { name: /^ranipet/i }));
+
+    expect(navigationState.pushed).toEqual(['/cars?district=ranipet&q=creta']);
+  });
+
+  it('goes back to every district by removing the parameter, not by writing "all"', async () => {
+    setLocation('/cars', 'district=vellore&city=katpadi');
+    const user = userEvent.setup();
+    render(<LocationSelector locations={LOCATIONS} />);
+
+    await open(user, /vellore/i);
+    await user.click(screen.getByRole('button', { name: /all districts \(61\)/i }));
+
+    expect(navigationState.pushed).toEqual(['/cars']);
+  });
+
+  it('counts cars, not dealerships, in every district and every state', async () => {
+    setLocation('/cars');
+    const user = userEvent.setup();
+    render(<LocationSelector locations={LOCATIONS} />);
+
+    await open(user, /select district/i);
+    const dialog = screen.getByRole('dialog');
+
+    expect(within(dialog).getByText(/browse cars/i)).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: /^vellore\s*30 cars/i })).toBeVisible();
+    expect(within(dialog).getByRole('button', { name: /^tirupattur\s*0 cars/i })).toBeVisible();
+    expect(within(dialog).getByText('48 cars')).toBeInTheDocument();
+    expect(within(dialog).queryByText(/dealership/i)).toBeNull();
+  });
+
+  it('sends a buyer looking at one car to the cars in the district they choose', async () => {
+    setLocation('/car/2023-hyundai-creta-sx-o-katpadi-3f9a1c2b');
+    const user = userEvent.setup();
+    render(<LocationSelector locations={LOCATIONS} />);
+
+    await open(user, /select district/i);
+    await user.click(screen.getByRole('button', { name: /^mysuru/i }));
+
+    expect(navigationState.pushed).toEqual(['/cars?district=mysuru']);
+  });
+
+  /**
+   * `/dealers/<slug>` starts with `/dealers`, and the old rule stayed on it —
+   * writing `?district=` onto a portfolio page that reads no such thing. A
+   * portfolio is one dealership; choosing a district is asking for the others.
+   */
+  it("sends a visitor on a dealership's page to the directory, without its page number", async () => {
+    setLocation('/dealers/sri-lakshmi-motors-katpadi-vellore-tamil-nadu', 'page=2');
+    const user = userEvent.setup();
+    render(<LocationSelector locations={LOCATIONS} />);
+
+    await open(user, /select district/i);
+    await user.click(screen.getByRole('button', { name: /^ranipet/i }));
+
+    expect(navigationState.pushed).toEqual(['/dealers?district=ranipet']);
   });
 });

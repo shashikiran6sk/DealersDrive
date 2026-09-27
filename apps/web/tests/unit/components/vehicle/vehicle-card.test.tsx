@@ -1,10 +1,16 @@
-import type { PublicVehiclesResponse, VehicleCardDto } from '@dealers-drive/contracts';
+import type {
+  PublicLocations,
+  PublicVehiclesResponse,
+  VehicleCardDto,
+} from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import CarsPage from '@/app/(public)/cars/page';
 import { VehicleCard, VehicleCardSkeleton } from '@/components/vehicle/vehicle-card';
 import type * as ApiModule from '@/lib/api';
+
+import { setLocation } from '../../../setup';
 
 const apiGetParsed = vi.fn();
 
@@ -32,6 +38,22 @@ function card(overrides: Partial<VehicleCardDto> = {}): VehicleCardDto {
 
 function response(data: VehicleCardDto[], page = 1, totalPages = 1): PublicVehiclesResponse {
   return { data, page: { page, limit: 24, total: data.length, totalPages } };
+}
+
+const LOCATIONS: PublicLocations = {
+  districts: [
+    { slug: 'vellore', name: 'Vellore', count: 11, state: 'Tamil Nadu' },
+    { slug: 'ranipet', name: 'Ranipet', count: 11, state: 'Tamil Nadu' },
+  ],
+  total: 22,
+  cars: { total: 40, districts: { vellore: 25, ranipet: 15 } },
+};
+
+/** The page reads two things — the cars, and the districts the header offers. */
+function serve(vehicles: PublicVehiclesResponse): void {
+  apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+    Promise.resolve(path === '/v1/locations' ? LOCATIONS : vehicles),
+  );
 }
 
 afterEach(() => {
@@ -99,9 +121,7 @@ describe('VehicleCard', () => {
 
 describe('/cars', () => {
   it('reads the first page and renders a card for each car with the count', async () => {
-    apiGetParsed.mockResolvedValue(
-      response([card(), card({ slug: 'b', title: '2021 Tata Nexon' })]),
-    );
+    serve(response([card(), card({ slug: 'b', title: '2021 Tata Nexon' })]));
     render(await CarsPage({ searchParams: Promise.resolve({}) }));
 
     expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), '/v1/vehicles', {
@@ -109,13 +129,13 @@ describe('/cars', () => {
       tags: ['vehicles'],
     });
     expect(screen.getByRole('heading', { level: 1, name: 'Used cars' })).toBeInTheDocument();
-    expect(screen.getByText('2 cars')).toBeInTheDocument();
+    expect(screen.getByText('2 cars available')).toBeInTheDocument();
     expect(screen.getAllByRole('article')).toHaveLength(2);
     expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument();
   });
 
   it('asks for the page in the URL and links to its neighbours', async () => {
-    apiGetParsed.mockResolvedValue(response([card()], 2, 3));
+    serve(response([card()], 2, 3));
     render(await CarsPage({ searchParams: Promise.resolve({ page: '2' }) }));
 
     expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), '/v1/vehicles?page=2', {
@@ -129,13 +149,13 @@ describe('/cars', () => {
   });
 
   it('ignores a page that is not a page', async () => {
-    apiGetParsed.mockResolvedValue(response([card()]));
+    serve(response([card()]));
     render(await CarsPage({ searchParams: Promise.resolve({ page: 'drop table' }) }));
     expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), '/v1/vehicles', expect.anything());
   });
 
   it('says honestly when nothing is listed yet, and points at the dealers', async () => {
-    apiGetParsed.mockResolvedValue(response([]));
+    serve(response([]));
     render(await CarsPage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByText('No cars listed yet')).toBeInTheDocument();
@@ -143,5 +163,69 @@ describe('/cars', () => {
       'href',
       '/dealers',
     );
+  });
+});
+
+/**
+ * R50 — `/cars` scoped by the header's district. The URL is the state: the
+ * page reads `?district=`, asks the API for it, and carries it through every
+ * link it draws.
+ */
+describe('/cars in one district', () => {
+  it('asks for the district in the URL, and names it in the heading', async () => {
+    setLocation('/cars', 'district=ranipet');
+    serve(response([card()]));
+    render(await CarsPage({ searchParams: Promise.resolve({ district: 'ranipet' }) }));
+
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/vehicles?district=ranipet',
+      expect.anything(),
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'Cars in Ranipet' })).toBeInTheDocument();
+    expect(screen.getByText('1 car available')).toBeInTheDocument();
+    expect(screen.getByText('District: Ranipet, Tamil Nadu')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /change district/i })).toBeInTheDocument();
+  });
+
+  it('keeps the district on the way to the next page and back', async () => {
+    serve(response([card()], 2, 3));
+    render(await CarsPage({ searchParams: Promise.resolve({ district: 'ranipet', page: '2' }) }));
+
+    const nav = within(screen.getByRole('navigation', { name: 'Pagination' }));
+    expect(nav.getByRole('link', { name: '← Previous' })).toHaveAttribute(
+      'href',
+      '/cars?district=ranipet',
+    );
+    expect(nav.getByRole('link', { name: 'Next →' })).toHaveAttribute(
+      'href',
+      '/cars?district=ranipet&page=3',
+    );
+  });
+
+  it('says there is nothing in that district, and offers every district', async () => {
+    serve(response([]));
+    render(await CarsPage({ searchParams: Promise.resolve({ district: 'ranipet' }) }));
+
+    expect(screen.getByText('No cars found in Ranipet')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Show all districts' })).toHaveAttribute(
+      'href',
+      '/cars',
+    );
+  });
+
+  it('offers to choose a district when none is chosen', async () => {
+    setLocation('/cars');
+    serve(response([card()]));
+    render(await CarsPage({ searchParams: Promise.resolve({}) }));
+
+    expect(screen.getByRole('button', { name: /select district/i })).toBeInTheDocument();
+    expect(screen.getByText(/showing cars in every district/i)).toBeInTheDocument();
+  });
+
+  it('does not pass a district that is not a slug on to the API', async () => {
+    serve(response([card()]));
+    render(await CarsPage({ searchParams: Promise.resolve({ district: 'Ranipet; drop' }) }));
+    expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), '/v1/vehicles', expect.anything());
   });
 });

@@ -3,10 +3,18 @@ import { countLabel } from '@/lib/plural';
 import { stateCode } from '@/lib/state-codes';
 
 import { DISTRICT_PICKER_TEXT } from './district-picker.constants';
-import type { StateGroup } from './district-picker.types';
+import type { DistrictUnit, StateGroup } from './district-picker.types';
 import { dealersIn } from './utils';
 
-export function StateHeading({ group }: { group: StateGroup }) {
+export function StateHeading({
+  group,
+  total = dealersIn(group),
+  unit = 'dealership',
+}: {
+  group: StateGroup;
+  total?: number;
+  unit?: DistrictUnit;
+}) {
   const code = stateCode(group.state);
 
   return (
@@ -21,9 +29,7 @@ export function StateHeading({ group }: { group: StateGroup }) {
       <span className="text-[11px] ink-faint tnum">
         {countLabel(group.districts.length, 'district')}
       </span>
-      <span className="ml-auto text-[11px] ink-subtle tnum">
-        {countLabel(dealersIn(group), 'dealership')}
-      </span>
+      <span className="ml-auto text-[11px] ink-subtle tnum">{countLabel(total, unit)}</span>
     </div>
   );
 }

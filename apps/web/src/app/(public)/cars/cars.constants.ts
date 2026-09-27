@@ -8,11 +8,16 @@ export const CARS_TEXT = {
   home: 'Home',
   breadcrumb: 'Cars',
   title: 'Used cars',
-  count: (total: number) => countLabel(total, 'car'),
+  titleIn: (district: string) => `Cars in ${district}`,
+  count: (total: number) => `${countLabel(total, 'car')} available`,
   emptyTitle: 'No cars listed yet',
   emptyMessage:
     'Every car here is photographed by Dealers-Drive and reviewed before it goes live. The first ones are on their way — meet the dealers in the meantime.',
   emptyAction: 'Browse dealers',
+  emptyInTitle: (district: string) => `No cars found in ${district}`,
+  emptyInMessage: (district: string) =>
+    `No verified dealership in ${district} has a car on the marketplace right now. Every other district is one click away.`,
+  emptyInAction: 'Show all districts',
   pagination: 'Pagination',
   previous: '← Previous',
   next: 'Next →',

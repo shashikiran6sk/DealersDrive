@@ -1,7 +1,7 @@
 import {
-  PublicVehicleQuery,
+  DealerVehicleQuery,
   SlugParam,
-  type PublicVehicleQuery as PublicVehicleQueryType,
+  type DealerVehicleQuery as DealerVehicleQueryType,
   type SlugParam as SlugParamType,
 } from '@dealers-drive/contracts';
 
@@ -13,12 +13,12 @@ export const getDealerVehicles: SearchRoute = (router, { service, publicReads })
   router.get(
     '/dealers/:slug/vehicles',
     publicReads,
-    validate({ params: SlugParam, query: PublicVehicleQuery }),
+    validate({ params: SlugParam, query: DealerVehicleQuery }),
     (req, res, next) => {
       void (async () => {
         try {
           const params = validated<SlugParamType>(req, 'params');
-          const query = validated<PublicVehicleQueryType>(req, 'query');
+          const query = validated<DealerVehicleQueryType>(req, 'query');
           const vehicles = await service.dealerVehicles(params.slug, query);
           res.set('Cache-Control', 'public, max-age=60');
           res.json(vehicles);

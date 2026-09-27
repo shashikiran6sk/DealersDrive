@@ -88,7 +88,7 @@ dealership — and one lookup of the slugs it found: two queries whatever the
 number of dealerships, never one per card. It uses the same predicate as the
 public list, not a second `status = ACTIVE`, which is the whole point.
 
-### `export function publicListingsOf(dealerSlug?)` — and `async dealerVehicles(slug, query)`
+### `export function publicListingsOf(scope)` — and `async dealerVehicles(slug, query)`
 
 One dealership's cars (**R48**), for the portfolio. The predicate is
 `PUBLIC_LISTING_WHERE` narrowed by the dealership's slug — the dealer clause is
@@ -97,3 +97,28 @@ page and its total come from the same code path as `GET /v1/vehicles`. A slug
 that is not a listed dealership is `404 DEALER_NOT_FOUND`, so a suspended
 dealership's portfolio cannot be read through this route either; a listed one
 with nothing live is an empty page.
+
+**R50** made the argument a `ListingScope` — `{ dealerSlug?, districts? }` —
+because the marketplace list gained a scope of its own. Both narrow the same
+dealer clause; neither replaces it.
+
+### `async districtNames(slug)` — and the district scope on `vehicles(query)`
+
+`GET /v1/vehicles?district=ranipet` (**R50**). A district is where the
+dealership is; a car has no location of its own, and none is copied onto it.
+
+The URL carries a **slug** and the column holds the name the dealer typed
+(normalised on write by `normaliseLocality`). The slug is `slugify(name)`,
+which is also what `/v1/locations` and the directory key their chips by, so
+the way back is to ask which district names the listed dealerships carry and
+keep the ones whose slug matches — the same derivation, run the other way,
+rather than a second slug rule written in SQL that could disagree with it
+(`slugify` normalises Unicode, which a `regexp_replace` would not).
+
+An unknown district resolves to **no names**, and `district IN ()` is an empty
+page. It must never resolve to "no filter": `?district=atlantis` answering with
+every car on the platform would be a scope that silently does nothing.
+
+`DealerVehicleQuery` is the portfolio's own schema and has no `district`: the
+dealership already fixes where its cars are, so a district there could only
+agree with it or empty the page, and `.strict()` turns it into a 400.

@@ -277,6 +277,7 @@ const LOCATIONS: PublicLocations = {
     { slug: 'ranipet', name: 'Ranipet', count: 7, state: 'Tamil Nadu' },
   ],
   total: 19,
+  cars: { total: 0, districts: {} },
 };
 
 /**

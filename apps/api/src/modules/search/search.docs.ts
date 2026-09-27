@@ -38,7 +38,10 @@ export const searchDocs: ModuleDocs = {
       tag: DOC_TAGS.vehiclesPublic,
       summary: 'The vehicles on the marketplace',
       description:
-        'Newest approval first, a page at a time (offset pagination, 1–48 per page). Each ' +
+        'Newest approval first, a page at a time (offset pagination, 1–48 per page). ' +
+        '`district` scopes the list to the dealerships in one district — the same slug the ' +
+        'directory and `GET /v1/locations` use; an unknown district is an empty page, not an ' +
+        'error (**R50**). Each ' +
         'card carries the primary image as a public media URL, or `null` if none could be ' +
         'served. Cached publicly for a minute and rate-limited per IP like every public read.',
       audience: 'public',
@@ -120,7 +123,7 @@ export const searchDocs: ModuleDocs = {
         'dealership with nothing live is an empty page, not an error.',
       audience: 'public',
       params: 'SlugParam',
-      query: 'PublicVehicleQuery',
+      query: 'DealerVehicleQuery',
       responses: [
         {
           status: 200,

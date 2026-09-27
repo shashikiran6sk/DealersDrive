@@ -108,6 +108,9 @@ export const dealersPublicDocs: ModuleDocs = {
         'out for itself would be a second source of truth for a pairing no table holds. It ' +
         'is `null` when the dealerships in that district never filled the field in; the ' +
         'district is still offered, because it is still a place a buyer can reach.\n\n' +
+        '`cars` counts the same districts in **live cars** (**R50**) — the number the ' +
+        'selector shows when it is scoping `/cars` — under the marketplace\u2019s own ' +
+        'predicate, so it agrees with `GET /v1/vehicles?district=`.\n\n' +
         '`Cache-Control: public, max-age=300`.',
       audience: 'public',
       rateLimit: '120 requests per minute per IP, shared with the other public reads.',

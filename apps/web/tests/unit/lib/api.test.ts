@@ -515,6 +515,7 @@ describe('apiGetParsed', () => {
   const CURRENT = {
     districts: [{ slug: 'chennai', name: 'Chennai', count: 1, state: 'Tamil Nadu' }],
     total: 1,
+    cars: { total: 3, districts: { chennai: 3 } },
   };
 
   it('returns the payload when it matches the contract', async () => {
@@ -544,6 +545,7 @@ describe('apiGetParsed', () => {
     globalThis.fetch = respondWith({
       districts: [{ slug: 'chennai', name: 'Chennai', count: 1, state: null }],
       total: 1,
+      cars: { total: 0, districts: {} },
     }) as unknown as typeof fetch;
 
     await expect(apiGetParsed(PublicLocations, '/v1/locations')).resolves.toBeTruthy();
@@ -560,6 +562,7 @@ describe('apiGetParsed', () => {
         { slug: 'chennai', name: 'Chennai', count: 1, state: 'Tamil Nadu', carCount: 48 },
       ],
       total: 1,
+      cars: { total: 48, districts: { chennai: 48 } },
       nextThing: true,
     }) as unknown as typeof fetch;
 

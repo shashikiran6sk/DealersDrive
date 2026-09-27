@@ -3,10 +3,13 @@
 import type { DistrictChip, PublicLocations } from '@dealers-drive/contracts';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { DIRECTORY_PATH } from './district-picker.constants';
+import { LOCATION_CHILD_PARAMS } from './district-picker.constants';
+import type { DistrictUnit } from './district-picker.types';
+import { scopedPathOf, unitOf } from './utils';
 
 export function useDistrictSelection(locations: PublicLocations): {
   chosen: DistrictChip | null;
+  unit: DistrictUnit;
   select: (slug: string | null) => void;
 } {
   const router = useRouter();
@@ -15,18 +18,17 @@ export function useDistrictSelection(locations: PublicLocations): {
 
   const active = searchParams.get('district');
   const chosen = locations.districts.find((row) => row.slug === active) ?? null;
+  const target = scopedPathOf(pathname);
 
   function select(slug: string | null): void {
-    const next = new URLSearchParams(searchParams.toString());
+    const next = new URLSearchParams(target === pathname ? searchParams.toString() : '');
     if (slug === null) next.delete('district');
     else next.set('district', slug);
-    next.delete('city');
-    next.delete('page');
+    for (const key of LOCATION_CHILD_PARAMS) next.delete(key);
 
-    const target = pathname.startsWith(DIRECTORY_PATH) ? pathname : DIRECTORY_PATH;
     const query = next.toString();
     router.push(query ? `${target}?${query}` : target);
   }
 
-  return { chosen, select };
+  return { chosen, unit: unitOf(pathname), select };
 }
