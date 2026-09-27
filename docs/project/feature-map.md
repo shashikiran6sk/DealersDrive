@@ -5148,3 +5148,31 @@ REJECTED · SOLD · REMOVED`. `APPROVED` is spelled `ACTIVE`, and `EXPIRED` is
 - When billing returns, the hold/consume/release movements attach to the
   `submit`, `approve` and `reject` transitions — which is exactly where the
   baseline had them — without changing a state.
+
+## R48 — The dealer surfaces meet the listings
+
+**Revises F066, F085, F086, F082/F083** · no new feature numbers
+
+The listing series (R45–R47) ended at `/cars` and `/car/[slug]`. The dealer
+surfaces built before it — the console nav, the directory card's car count and
+the portfolio's inventory — were left pointing at nothing, because at the time
+there was nothing to point at. R48 connects them, and replaces the VDP's
+scrolling thumbnail strip with the gallery DESIGN-SPEC §2.9/§2.10 describes.
+
+- **Console nav.** `Inventory` joins the sidebar and the tab bar. The page
+  landed with F066; its line was still in `NOT_YET_BUILT`.
+- **One definition of "public".** The directory's car count and the portfolio's
+  inventory both read `PUBLIC_LISTING_WHERE` (the search module's predicate,
+  exported through its facade): an `ACTIVE` listing, with a slug, of an
+  `ACTIVE` dealership. The count is a grouped aggregate, never one query per
+  dealer, so the directory's "5 cars" and the portfolio's five cards cannot
+  disagree.
+- **One card.** The portfolio renders `VehicleCard`, the same component `/cars`
+  does, with the dealer strip left out — on a dealer's own page it only repeats
+  the header.
+- **Gallery.** Arrows on the main image (wrapping at both ends, as the legacy
+  lightbox did), `←`/`→` while the gallery has focus, and a fullscreen viewer
+  on the `Dialog` primitive with a counter, the same arrows, Escape, a focus
+  trap, focus returned to the image, and the page locked behind it. The legacy
+  branch was not reachable from this repository; the behaviour is taken from
+  §2.9/§2.10 and the F083 entry, which describe it.

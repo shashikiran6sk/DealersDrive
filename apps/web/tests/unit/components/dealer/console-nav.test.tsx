@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { setLocation } from '../../../setup';
@@ -75,6 +76,38 @@ describe('the nav the console actually renders', () => {
     expect(LANDED_NAV.map((item) => item.href)).toContain('/dealer');
   });
 
+  /**
+   * **R48.** The inventory page landed with F066 but stayed in the not-built
+   * set, so a dealer could only reach their own cars by typing the URL.
+   */
+  it('offers Inventory, second, as §3.11 draws it', () => {
+    expect(LANDED_NAV.map((item) => item.label).slice(0, 3)).toEqual([
+      'Dashboard',
+      'Inventory',
+      'Add vehicle',
+    ]);
+    expect(LANDED_NAV.find((item) => item.label === 'Inventory')?.href).toBe('/dealer/inventory');
+  });
+
+  it('lights Inventory on the inventory page, and lets the keyboard reach it in order', async () => {
+    setLocation('/dealer/inventory');
+    render(<ConsoleNav items={LANDED_NAV} />);
+
+    const links = screen.getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual([
+      'Dashboard',
+      'Inventory',
+      'Add vehicle',
+      'Dealer profile',
+    ]);
+    expect(screen.getByRole('link', { name: 'Inventory' })).toHaveAttribute('aria-current', 'true');
+
+    const user = userEvent.setup();
+    await user.tab();
+    await user.tab();
+    expect(screen.getByRole('link', { name: 'Inventory' })).toHaveFocus();
+  });
+
   it('keeps the order the baseline declares', () => {
     expect(LANDED_NAV.map((item) => item.href)).toEqual(
       DEALER_NAV.map((item) => item.href).filter((href) =>
@@ -130,6 +163,12 @@ describe('ConsoleTabBar', () => {
 
     expect(labels).toContain('Home');
     expect(labels).toContain('Dealer profile');
+    expect(labels).toContain('Stock');
+    expect(screen.getByRole('link', { name: 'Stock' })).toHaveAttribute(
+      'href',
+      '/dealer/inventory',
+    );
+    expect(screen.getByRole('link', { name: 'Stock' })).toHaveAttribute('aria-current', 'true');
   });
 
   it('falls back to the five the spec draws, the moment they all exist', () => {

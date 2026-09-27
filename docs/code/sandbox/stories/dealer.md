@@ -29,8 +29,8 @@ these colours are wrong on cobalt-900 — see its own story.
 ## Two lists, and why the shell renders the shorter one
 
 `DEALER_NAV` is the baseline's six items and is what this component is _for_.
-`LANDED_NAV` is the subset whose routes exist today — Dashboard and Dealer
-profile, since **F048**. The shell renders `LANDED_NAV` because a nav item
+`LANDED_NAV` is the subset whose routes exist today — Dashboard, Inventory,
+Add vehicle and Dealer profile (**F048**, **F063**, **R48**). The shell renders `LANDED_NAV` because a nav item
 onto a 404 is the console telling a dealer a page exists and then not having
 it, and each of F050, F051, F056 and F065 deletes its own line from the set
 as it lands.
