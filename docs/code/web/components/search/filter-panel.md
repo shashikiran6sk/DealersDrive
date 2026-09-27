@@ -39,8 +39,20 @@ _City / Town_ and _Dealer_.
 ### `export function FacetRow(...)`
 
 §2.4's filter row: a native checkbox or radio inside its `<label>`, so the
-whole row is the hit target. A zero-count row is `opacity:0.4` and still
-operable — a ticked value whose last car has sold must stay untickable.
+whole row is the hit target.
+
+### `const unavailable = count === 0 && !checked`
+
+An option with nothing behind it is **disabled**, not merely grey (**R53**).
+It stays in the list — the list does not jump as other filters change, and a
+buyer can see the value exists — but a `disabled` input is one no click, no
+label click and no keypress can tick, and one Tab skips; so it can never write
+a filter that empties the page. The label reads in `ink-subtle` rather than at
+40% opacity, which kept the text legible where the opacity did not.
+
+**One strategy for the contradiction:** an option that is _ticked_ stays
+enabled even at zero — another filter can take its last car away — so the
+buyer can untick it. There is no ticked-and-disabled state.
 
 ### `aria-label={... FILTER_PANEL_TEXT.named(label, count)}`
 

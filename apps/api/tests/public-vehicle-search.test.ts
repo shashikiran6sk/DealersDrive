@@ -289,6 +289,14 @@ describe('dependent facets', () => {
     expect((await search('')).facets.cities).toEqual([]);
   });
 
+  it('offers no dealer to filter by until a district is chosen', async () => {
+    const everywhere = await search('');
+    expect(everywhere.facets.dealers).toEqual([]);
+    expect(everywhere.facets.cities).toEqual([]);
+    expect((await search(`city=arcot`)).facets.cities).toEqual([]);
+    expect((await search(HERE)).facets.dealers.length).toBeGreaterThan(0);
+  });
+
   it('offers only the dealers of the district, narrowed by town', async () => {
     const here = await search(HERE);
     expect(here.facets.dealers.map((option) => option.value).sort()).toEqual(
