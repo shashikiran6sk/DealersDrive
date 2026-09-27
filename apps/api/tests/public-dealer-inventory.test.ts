@@ -154,7 +154,14 @@ describe('the portfolio inventory', () => {
 
   it('is empty, not an error, for a listed dealership with nothing live', async () => {
     const { body } = await h.agent().get(`/v1/dealers/${empty.slug}/vehicles`).expect(200);
-    expect(body).toEqual({ data: [], page: { page: 1, limit: 24, total: 0, totalPages: 1 } });
+    expect(body).toMatchObject({
+      data: [],
+      page: { page: 1, limit: 24, total: 0, totalPages: 1 },
+      facets: { brands: [], models: [], cities: [], dealers: [], years: [] },
+    });
+    for (const band of [...body.facets.price, ...body.facets.kilometers]) {
+      expect(band.count).toBe(0);
+    }
   });
 
   it('answers 404 for a dealership that is not listed', async () => {

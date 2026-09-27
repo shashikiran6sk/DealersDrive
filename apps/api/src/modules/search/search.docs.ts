@@ -20,6 +20,48 @@ const CARD_EXAMPLE = {
   },
 };
 
+const FACETS_EXAMPLE = {
+  cities: [
+    { value: 'arcot', label: 'Arcot', count: 18 },
+    { value: 'arakkonam', label: 'Arakkonam', count: 14 },
+  ],
+  brands: [
+    { value: 'hyundai', label: 'Hyundai', count: 11 },
+    { value: 'tata', label: 'Tata', count: 8 },
+  ],
+  models: [{ value: 'creta', label: 'Creta', count: 5, parent: 'hyundai' }],
+  fuelTypes: [
+    { value: 'petrol', label: 'Petrol', count: 20 },
+    { value: 'diesel', label: 'Diesel', count: 10 },
+  ],
+  transmissions: [{ value: 'automatic', label: 'Automatic', count: 12 }],
+  bodyTypes: [{ value: 'suv', label: 'SUV', count: 15 }],
+  colors: [{ value: 'polar-white', label: 'Polar White', count: 6 }],
+  ownerCounts: [{ value: '1', label: 'First owner', count: 21 }],
+  dealers: [{ value: 'sri-lakshmi-motors-arcot', label: 'Sri Lakshmi Motors', count: 9 }],
+  years: [{ value: '2023', label: '2023', count: 7 }],
+  price: [{ min: null, max: 50_000_000, label: 'Under ₹5 lakh', count: 6 }],
+  kilometers: [{ min: null, max: 20_000, label: 'Under 20,000 km', count: 4 }],
+};
+
+const SEARCH_DESCRIPTION =
+  '**Filters.** Multi-select values are comma-separated and ORed within a group; groups are ' +
+  'ANDed (`fuel=petrol,diesel&transmission=automatic`). Every value is a slug, exactly as ' +
+  'the matching facet offers it. `minPrice`/`maxPrice` are **paise**, inclusive; ' +
+  '`minYear`/`maxYear` are the manufacturing year the card shows; `minKm`/`maxKm` are ' +
+  'kilometres. A floor above its ceiling is a 400 naming the floor. `owners=4` means four or ' +
+  'more. `q` matches every word against the make, model, variant and dealership name, ' +
+  'case-insensitively — never the registration.\n\n' +
+  '**Sort.** `newest` (default), `price_asc`, `price_desc`, `year_desc`, `km_asc`; a car ' +
+  'missing the sort key comes last, and every sort ends on the approval date and the id so ' +
+  'pages are stable.\n\n' +
+  '**Facets.** Each group is counted under every filter except its own, so ticking Petrol ' +
+  'leaves Diesel\u2019s count as what ticking it too would add. `brands` ignores the model ' +
+  'filter as well; `models` is empty until a brand is chosen and carries its brand as ' +
+  '`parent`. A ticked value with nothing behind it is still listed, at zero. `price` and ' +
+  '`kilometers` count fixed presets whose bounds are the query\u2019s own parameters. All ' +
+  'counts are of public cars only.';
+
 export const searchDocs: ModuleDocs = {
   tag: DOC_TAGS.vehiclesPublic,
   description:
@@ -28,8 +70,7 @@ export const searchDocs: ModuleDocs = {
     'listing in review, one sent back, rejected, sold or removed, and every listing of a ' +
     'suspended dealership, is absent, not greyed. A vehicle is addressed by its public ' +
     '`slug`; no internal id, registration number, moderation or audit field, storage key or ' +
-    'dealer phone number appears in any response here. Search, filters and facets are ' +
-    '**F076** and not built.',
+    'dealer phone number appears in any response here.',
   operations: [
     {
       method: 'get',
@@ -38,10 +79,14 @@ export const searchDocs: ModuleDocs = {
       tag: DOC_TAGS.vehiclesPublic,
       summary: 'The vehicles on the marketplace',
       description:
-        'Newest approval first, a page at a time (offset pagination, 1–48 per page). ' +
-        '`district` scopes the list to the dealerships in one district — the same slug the ' +
-        'directory and `GET /v1/locations` use; an unknown district is an empty page, not an ' +
-        'error (**R50**). Each ' +
+        'The marketplace search (**F076**): a page of cards (offset pagination, 1–48 per ' +
+        'page, newest approval first unless sorted), the total, and the facets. `district` ' +
+        'scopes the list to the dealerships in one district — the same slug the directory ' +
+        'and `GET /v1/locations` use; an unknown district is an empty page, not an error ' +
+        '(**R50**). `city` and `dealer` narrow inside it; `cities` is offered only once a ' +
+        'district is chosen.\n\n' +
+        SEARCH_DESCRIPTION +
+        '\n\nEach ' +
         'card carries the primary image as a public media URL, or `null` if none could be ' +
         'served. Cached publicly for a minute and rate-limited per IP like every public read.',
       audience: 'public',
@@ -54,6 +99,7 @@ export const searchDocs: ModuleDocs = {
           example: {
             data: [CARD_EXAMPLE],
             page: { page: 1, limit: 24, total: 1, totalPages: 1 },
+            facets: FACETS_EXAMPLE,
           },
         },
       ],
@@ -120,7 +166,12 @@ export const searchDocs: ModuleDocs = {
         'dealership. `page.total` is every live car it has, and is the number the directory ' +
         'card and the portfolio\u2019s "Cars available" show — all three read one predicate.\n\n' +
         'A slug that is not a listed (ACTIVE) dealership is `404 DEALER_NOT_FOUND`; a listed ' +
-        'dealership with nothing live is an empty page, not an error.',
+        'dealership with nothing live is an empty page, not an error.\n\n' +
+        '**The same search as `GET /v1/vehicles`** (**F086**), fixed to one dealership: every ' +
+        'filter, sort and facet is available except `district`, `city` and `dealer`, which the ' +
+        'dealership already decides (a 400 if sent). `cities` and `dealers` are always empty, ' +
+        'so no count can reveal another dealership.\n\n' +
+        SEARCH_DESCRIPTION,
       audience: 'public',
       params: 'SlugParam',
       query: 'DealerVehicleQuery',
@@ -132,6 +183,7 @@ export const searchDocs: ModuleDocs = {
           example: {
             data: [CARD_EXAMPLE],
             page: { page: 1, limit: 24, total: 1, totalPages: 1 },
+            facets: FACETS_EXAMPLE,
           },
         },
       ],

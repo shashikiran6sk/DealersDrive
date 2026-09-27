@@ -3,6 +3,7 @@ import type {
   PublicVehiclesResponse,
   VehicleCardDto,
 } from '@dealers-drive/contracts';
+import { NO_VEHICLE_FACETS } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -85,6 +86,7 @@ function inventory(
   return {
     data,
     page: { page: 1, limit: 24, total: data.length, totalPages: 1, ...page },
+    facets: NO_VEHICLE_FACETS,
   };
 }
 

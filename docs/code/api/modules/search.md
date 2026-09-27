@@ -5,10 +5,11 @@ Parent: [api](../../README.md)
 The notes below belonged to the files named under each heading. Each heading is the
 declaration the note sat above.
 
-The public marketplace (**F075**, **F077**, as scoped by **R45**). Search,
-filters and facets (**F076**), the `listing_search` read model and similar
-cars are deferred; what is here is the list a buyer browses and, with F082,
-the page for one car.
+The public marketplace (**F075**, **F077**, as scoped by **R45**) and its
+search (**F076**): the list a buyer browses — filtered, sorted, counted — and,
+with F082, the page for one car. The `listing_search` read model and similar
+cars are still deferred; the search reads the live tables through
+`PUBLIC_LISTING_WHERE`.
 
 ## `apps/api/src/modules/search/search.repository.ts`
 
@@ -88,37 +89,134 @@ dealership — and one lookup of the slugs it found: two queries whatever the
 number of dealerships, never one per card. It uses the same predicate as the
 public list, not a second `status = ACTIVE`, which is the whole point.
 
-### `export function publicListingsOf(scope)` — and `async dealerVehicles(slug, query)`
+### `async dealerVehicles(slug, query)`
 
-One dealership's cars (**R48**), for the portfolio. The predicate is
-`PUBLIC_LISTING_WHERE` narrowed by the dealership's slug — the dealer clause is
-extended, not replaced, so "the dealership is ACTIVE" still holds — and the
-page and its total come from the same code path as `GET /v1/vehicles`. A slug
-that is not a listed dealership is `404 DEALER_NOT_FOUND`, so a suspended
-dealership's portfolio cannot be read through this route either; a listed one
-with nothing live is an empty page.
+One dealership's cars (**R48**), for the portfolio — and since **F076** through
+**the same `search()`** as the marketplace, with the location scope fixed to
+that one dealership (`oneDealerScope`). There is no second filtering engine to
+drift from the first. A slug that is not a listed dealership is
+`404 DEALER_NOT_FOUND`, so a suspended dealership's portfolio cannot be read
+through this route either; a listed one with nothing live is an empty page.
+`cities` and `dealers` are never computed for it: a count of the town or of the
+dealership would be a count of itself, and computing either at all would be a
+query that could only leak another dealership.
 
-**R50** made the argument a `ListingScope` — `{ dealerSlug?, districts? }` —
-because the marketplace list gained a scope of its own. Both narrow the same
-dealer clause; neither replaces it.
+## `apps/api/src/modules/search/search.service.ts` — the search (F076)
 
-### `async districtNames(slug)` — and the district scope on `vehicles(query)`
+### `async function search(query, scope, location)`
 
-`GET /v1/vehicles?district=ranipet` (**R50**). A district is where the
-dealership is; a car has no location of its own, and none is copied onto it.
+One query shape for both routes: resolve the slugs, build one `where`, then
+read the page, the total and the facets in parallel. The total is its own
+`count` over exactly the page's `where`, never the page's length.
 
-The URL carries a **slug** and the column holds the name the dealer typed
-(normalised on write by `normaliseLocality`). The slug is `slugify(name)`,
-which is also what `/v1/locations` and the directory key their chips by, so
-the way back is to ask which district names the listed dealerships carry and
-keep the ones whose slug matches — the same derivation, run the other way,
-rather than a second slug rule written in SQL that could disagree with it
-(`slugify` normalises Unicode, which a `regexp_replace` would not).
+The number of queries is **fixed, not proportional to anything**: the page,
+the total, one grouped read per facet, one count per range preset, plus the
+public dealerships (for the location scope) and — only when a brand, model or
+colour is being filtered — the vocabulary. No query per dealership, per card
+or per option: the town and dealer facets both come out of one grouped read
+by `dealerId`.
 
-An unknown district resolves to **no names**, and `district IN ()` is an empty
-page. It must never resolve to "no filter": `?district=atlantis` answering with
-every car on the platform would be a scope that silently does nothing.
+### `async function facetsOf(...)`
 
-`DealerVehicleQuery` is the portfolio's own schema and has no `district`: the
-dealership already fixes where its cars are, so a district there could only
-agree with it or empty the page, and `.strict()` turns it into a 400.
+Standard faceted-search semantics, and deliberately so: **each group is
+counted under every filter except its own** (`inventoryWhere(filters, ids,
+[key])`). Counting a group under itself would zero every sibling of the first
+box ticked, and a multi-select would be unusable after one click.
+
+The two dependent exceptions:
+
+- **brands** is counted without the model filter too (`['brand', 'model']`) —
+  a model belongs to one brand, so ticking Creta must not hide Kia;
+- **models** is counted _with_ the brand filter, and not at all until a brand
+  (or a model, arriving by a shared link) is in the query. A list of every
+  model on the platform is not a filter anybody can read.
+
+The **town and dealer facets** come from one grouped read by dealership over
+the _district_ (`scopeIds`), not over the result: the town counts apply the
+dealer filter, and the dealer counts apply the town filter, in memory. Towns
+are offered only once a district is chosen — with every district in scope they
+would be every town on the platform, which is R23's argument about the
+directory's chips.
+
+## `apps/api/src/modules/search/search.filters.ts`
+
+### `export function resolveFilters(query, vocabulary)`
+
+The URL carries **slugs**; make, model, colour, town and district are columns
+of text a dealer typed. The way back is to ask which spellings are live and
+keep the ones whose `slugify` matches — the same function that keys the
+facets, so whatever a facet offers is exactly what the filter accepts. Two
+consequences worth keeping:
+
+- spellings that differ only in case or punctuation (`Maruti Suzuki`,
+  `MARUTI SUZUKI`) are **one** brand to a buyer, which is the write-time
+  normalisation (F060) finished at read time rather than left to fragment;
+- a slug nobody carries resolves to **no spellings**, and `make IN ()` is an
+  empty page. It must never resolve to "no filter".
+
+It is not a second slug rule written in SQL: `slugify` normalises Unicode,
+which a `regexp_replace` would not, and two rules would eventually disagree.
+
+### `function wordMatch(word)`
+
+Every word of `q` must match the make, model, variant or the dealership's name,
+case-insensitively (`ILIKE`, parameterised by Prisma). Words rather than the
+whole string, so spacing does not matter and `creta sx` is a Creta in an SX
+trim rather than the literal substring. The registration, the description and
+anything else private is never searched — a public search over the plate would
+be a lookup of whose car it is.
+
+### `export function vehicleWhere(filters, omit)`
+
+`omit` is how a facet leaves its own group out. Owners' fourth bucket is
+**four or more** (`ownerCount >= 4`), so a fifth-owner car is found somewhere.
+
+### `export function orderOf(sort)`
+
+Every sort ends on `publishedAt desc, id desc`, so two cars with the same price
+cannot swap places between page 1 and page 2. A car missing the sort key
+(`nulls: 'last'`) comes after every car that has one — "cheapest first" should
+not open on the cars whose price is on request.
+
+## `apps/api/src/modules/search/search.facets.ts`
+
+### `export function locationScope(dealers, query)`
+
+Location is always **the dealership's**: a car has no location of its own, and
+none is copied onto it. So district, town and dealer all reduce to one set of
+dealership ids, and the listing query is `dealerId IN (…)`. With none of the
+three in the query there is no set at all (`null`) — "every dealership" is not
+spelled as a list of every dealership.
+
+A town or dealer from another district is excluded by construction: the result
+set is filtered from the district's dealerships, never added to it.
+
+### `function withSelected(options, selected)`
+
+A ticked value with nothing behind it is still offered, at zero — it arrives by
+a shared link, or its last car sells — so it can be seen and unticked instead
+of silently filtering the page to nothing.
+
+### `function mostCommon(spellings)`
+
+A facet's label is the spelling most of its cars carry, ties broken
+alphabetically so the label cannot flicker between requests.
+
+## `apps/api/src/modules/search/search.repository.ts` — the search reads
+
+### `publicDealers()`
+
+Every listed dealership's id, slug, name, town and district: the location scope
+is worked out from these rather than by joining text columns in SQL. It is the
+same read the directory already makes per request (`listActive`).
+
+### `vocabulary()`
+
+The live make/model pairs and colours, read only when a brand, model or colour
+filter has to be resolved. Its size is the catalogue's, not the inventory's.
+
+### `byMake(where)` … `byDealer(where)`
+
+One method per column rather than one generic `group(field)`: Prisma's
+`groupBy` does not type a `by` that is a type parameter, and the alternative is
+an assertion on every row.

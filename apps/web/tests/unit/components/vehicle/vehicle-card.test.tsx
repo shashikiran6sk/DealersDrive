@@ -1,7 +1,8 @@
-import type {
-  PublicLocations,
-  PublicVehiclesResponse,
-  VehicleCardDto,
+import {
+  NO_VEHICLE_FACETS,
+  type PublicLocations,
+  type PublicVehiclesResponse,
+  type VehicleCardDto,
 } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -37,7 +38,11 @@ function card(overrides: Partial<VehicleCardDto> = {}): VehicleCardDto {
 }
 
 function response(data: VehicleCardDto[], page = 1, totalPages = 1): PublicVehiclesResponse {
-  return { data, page: { page, limit: 24, total: data.length, totalPages } };
+  return {
+    data,
+    page: { page, limit: 24, total: data.length, totalPages },
+    facets: NO_VEHICLE_FACETS,
+  };
 }
 
 const LOCATIONS: PublicLocations = {
