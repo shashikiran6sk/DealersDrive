@@ -4,12 +4,16 @@ import type {
   VehicleCardDto,
 } from '@dealers-drive/contracts';
 import { NO_VEHICLE_FACETS } from '@dealers-drive/contracts';
+import userEvent from '@testing-library/user-event';
 import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
 import DealerPortfolioPage, { generateMetadata } from '@/app/(public)/dealers/[slug]/page';
 import { ApiError } from '@/lib/api';
+
+import { navigationState } from '../../../setup';
+import { FACETS } from '../search/fixtures';
 
 /**
  * `/dealers/[slug]` — one dealership's public page.
@@ -179,7 +183,7 @@ describe('the dealership it shows', () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params, searchParams }));
 
-    expect(screen.getByText('Vellore, Tamil Nadu')).toBeInTheDocument();
+    expect(screen.getByText('Vellore, Tamil Nadu', { selector: 'dd' })).toBeInTheDocument();
     expect(screen.queryByText('Location', { selector: 'dt' })).toBeNull();
   });
 
@@ -187,7 +191,7 @@ describe('the dealership it shows', () => {
     serve(DEALER);
     render(await DealerPortfolioPage({ params, searchParams }));
 
-    expect(screen.getByText('Vellore, Tamil Nadu')).toBeInTheDocument();
+    expect(screen.getByText('Vellore, Tamil Nadu', { selector: 'dd' })).toBeInTheDocument();
     expect(screen.getByText('33AABCS1429B1ZX')).toBeInTheDocument();
   });
 
@@ -549,5 +553,138 @@ describe('the inventory (R48)', () => {
     serve(DEALER);
     apiGetParsed.mockRejectedValue(notListed());
     await expect(DealerPortfolioPage({ params, searchParams })).rejects.toThrow('NEXT_NOT_FOUND');
+  });
+});
+
+/**
+ * F086 part 2 — the portfolio's inventory is searched through the same engine
+ * as /cars, fixed to this dealership. The dealership decides the place, so
+ * the only filters on offer are the car's own.
+ */
+describe('filtering the inventory (F086)', () => {
+  const STOCKED: DealerPublicProfile = {
+    ...DEALER,
+    stats: DEALER.stats.map((stat) => (stat.key === 'cars' ? { ...stat, value: '12' } : stat)),
+  };
+
+  function stocked(data: VehicleCardDto[], page: Partial<PublicVehiclesResponse['page']> = {}) {
+    return { ...inventory(data, page), facets: { ...FACETS, cities: [], dealers: [] } };
+  }
+
+  it('asks the dealership route for the filters in the URL, and never for a place', async () => {
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue(stocked([car('a')]));
+    render(
+      await DealerPortfolioPage({
+        params,
+        searchParams: Promise.resolve({
+          fuel: 'petrol',
+          district: 'ranipet',
+          city: 'arcot',
+          dealer: 'someone-else',
+          sort: 'price_asc',
+        }),
+      }),
+    );
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/dealers/sri-lakshmi-motors/vehicles?fuel=petrol&sort=price_asc',
+      expect.anything(),
+    );
+  });
+
+  it('offers the vehicle filters and no place or dealer to choose', async () => {
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue(stocked([car('a')]));
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const rail = within(screen.getByRole('complementary', { name: /filter this dealership/i }));
+    expect(rail.getByRole('heading', { name: 'Filter inventory' })).toBeInTheDocument();
+    const groups = rail
+      .getAllByRole('group')
+      .map((group) => group.querySelector('legend')?.textContent);
+    expect(groups).toEqual(
+      expect.arrayContaining(['Brand', 'Price', 'Fuel type', 'Transmission', 'Owners']),
+    );
+    for (const hidden of ['City / Town', 'Dealer', 'District', 'State', 'Location']) {
+      expect(groups).not.toContain(hidden);
+    }
+  });
+
+  it('names where the cars are as a fact, not a control', async () => {
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue(stocked([car('a')]));
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const section = within(screen.getByRole('region', { name: 'Inventory' }));
+    expect(section.getByText('Every car here is at')).toBeInTheDocument();
+    expect(section.getByText('Vellore, Tamil Nadu')).toBeInTheDocument();
+    expect(section.queryByRole('button', { name: /select district|change district/i })).toBeNull();
+  });
+
+  it('sorts but does not search, and puts the mobile filters beside the sort', async () => {
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue(stocked([car('a')]));
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    expect(screen.getByRole('combobox', { name: 'Sort cars' })).toBeInTheDocument();
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Filters' })).toHaveClass('lg:hidden');
+  });
+
+  it('writes a filter to the portfolio URL, not to /cars', async () => {
+    const user = userEvent.setup();
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue(stocked([car('a')]));
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    const rail = within(screen.getByRole('complementary', { name: /filter this dealership/i }));
+    await user.click(rail.getByRole('checkbox', { name: 'Diesel (8 cars)' }));
+    expect(navigationState.pushed).toEqual(['/dealers/sri-lakshmi-motors?fuel=diesel']);
+  });
+
+  it('counts what matches out of what the yard has', async () => {
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue(stocked([car('a'), car('b')]));
+    render(await DealerPortfolioPage({ params, searchParams: Promise.resolve({ fuel: 'cng' }) }));
+    expect(screen.getByText('2 of 12 cars')).toBeInTheDocument();
+  });
+
+  it('says nothing matches, and clears the filters in place', async () => {
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue(stocked([]));
+    render(
+      await DealerPortfolioPage({
+        params,
+        searchParams: Promise.resolve({ fuel: 'cng', sort: 'km_asc' }),
+      }),
+    );
+    const section = within(screen.getByRole('region', { name: 'Inventory' }));
+    expect(section.getByText('No vehicles match your current filters.')).toBeInTheDocument();
+    expect(section.getByRole('link', { name: 'Clear filters' })).toHaveAttribute(
+      'href',
+      '/dealers/sri-lakshmi-motors?sort=km_asc#inventory',
+    );
+  });
+
+  it('keeps the filters on the way through the pages', async () => {
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue(
+      stocked([car('a')], { page: 1, limit: 24, total: 30, totalPages: 2 }),
+    );
+    render(await DealerPortfolioPage({ params, searchParams: Promise.resolve({ brand: 'tata' }) }));
+    const nav = within(screen.getByRole('navigation', { name: 'Inventory pages' }));
+    expect(nav.getByRole('link', { name: 'Next →' })).toHaveAttribute(
+      'href',
+      '/dealers/sri-lakshmi-motors?brand=tata&page=2#inventory',
+    );
+  });
+
+  it('offers no filters at all to a yard with nothing listed', async () => {
+    serve(DEALER);
+    apiGetParsed.mockResolvedValue(inventory([]));
+    render(await DealerPortfolioPage({ params, searchParams }));
+    expect(screen.queryByRole('complementary', { name: /filter this dealership/i })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Sort cars' })).toBeNull();
   });
 });

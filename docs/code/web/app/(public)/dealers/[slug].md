@@ -213,3 +213,8 @@ that will not check it, and these coordinates come from a link a dealer
 pasted rather than from anything surveyed: good enough to centre a map a
 person is looking at, not good enough to assert to a search engine. The map
 is in `LocationCard`; `mapsUrl` (R6) is in the anchor beside it.
+
+**F086 part 2.** The inventory's query is the vehicle filters in the URL, read
+with `readVehicleSearch(query, 'dealer')` — which never reads a place — and
+passed to the dealership's route. Other portfolio parameters are left alone,
+and the dealership's `cars` stat is handed down as the "of m" in "n of m cars".

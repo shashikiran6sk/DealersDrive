@@ -2382,6 +2382,17 @@ DESIGN-SPEC §2.9/§2.10 — the 108 px thumbnail strip and the fullscreen light
   `inventory.data[0]` exists and an empty yard has never shown it. The second is
   **F089**; the "Enquire with dealer" button anchors to that form, so both
   arrive together rather than leaving a button that jumps to nothing.
+- ⚠️ **Part 2 landed.** `DealerInventory` gains `params`, `liveTotal` and
+  `location`: §3.6's "Filter inventory" rail (`FilterPanel` with
+  `PORTFOLIO_FILTER_GROUPS` — no town, no dealer), the mobile sheet, the sort
+  (no search box), the chip row, "n of m cars", and an empty state for "no
+  match" that clears the filters in place. The API side is F076's
+  `GET /v1/dealers/:slug/vehicles` — the marketplace's own `search()` fixed to
+  the dealership, refusing `district`, `city` and `dealer`, with no town or
+  dealer facets — so there is one filtering engine. The location is shown as a
+  line ("Every car here is at …"), never as a control. No `/facets` route: the
+  facets arrive with the page. Tests `portfolio-page.test.tsx` ("filtering the
+  inventory (F086)") and `public-vehicle-search.test.ts`.
 - ⚠️ **No `geo` block in the JSON-LD.** The baseline emitted `GeoCoordinates`
   from `dealer.address.lat/lng`, which came off the `cities` row **D6** removed
   — and were the _town's_ coordinates rather than the yard's, so publishing them
