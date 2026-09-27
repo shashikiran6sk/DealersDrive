@@ -145,22 +145,15 @@ either way.
 
 One dealership's live inventory, as the directory needs to count it.
 
-── Reconstruction slice ────────────────────────────────────────────────────
-The baseline read this straight off `search.dealerStats()`, which groups
-`listing_search` — the read model **F064** creates and **F076** queries.
-Neither exists yet, so this feature declares the shape it needs and takes it
-as a dependency rather than reaching for a module that is not there.
+The baseline read this straight off `search.dealerStats()`, grouping the
+`listing_search` read model. This module declares the shape it needs and takes
+it as a dependency rather than reaching into search.
 
-`noInventoryYet` below is the implementation until F076: no listings exist,
-so every dealership genuinely has none, and the honest answer is zero. The
-directory already renders that case — a dealership with no live cars appears
-with an em dash rather than being hidden (A8) — so nothing here is a
-placeholder waiting to be redesigned. F076 replaces one function.
-────────────────────────────────────────────────────────────────────────────
-
-### `export const noInventoryYet: DealerInventoryStats =`
-
-No listings exist before F064. Zero is the truth, not a stub.
+Since **R48** the container passes `createPublicInventoryStats` from the search
+module: one grouped aggregate over `PUBLIC_LISTING_WHERE` — the same predicate
+`GET /v1/vehicles` lists with — so a directory card's count, the portfolio's
+"Cars available" and the portfolio's inventory cannot disagree. The stub that
+stood in before listings existed (`noInventoryYet`) is gone.
 
 ### `const CARD_COVER_WIDTH = 640`
 

@@ -217,7 +217,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R45 — Dealers-Drive photographs the car; the dealer never uploads a photo · revises F035/F062/F063/F069/F070 · defers F034 · photography status, admin upload, order and primary, guarded approval, public images only while ACTIVE
 - [x] R46 — Vehicle details are entered by hand; RC lookup is deferred · revises F056/F060/F061/F063 · defers F057/F058/F059/F068
 - [~] R47 — The listing lifecycle, before billing exists · revises F064/F065/F067/F069/F070 · defers F050–F054 · submit, review, request changes, reject and approve landed; mark sold and remove (F067) follow
-- [~] R48 — The dealer surfaces meet the listings · revises F066/F085/F086/F082/F083 · console nav landed; directory count, portfolio inventory and gallery follow
+- [~] R48 — The dealer surfaces meet the listings · revises F066/F085/F086/F082/F083 · console nav and the directory and portfolio counts landed; portfolio inventory and gallery follow
 
 ---
 
