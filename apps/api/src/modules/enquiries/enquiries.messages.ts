@@ -5,8 +5,8 @@ export const LISTING_NOT_AVAILABLE =
 
 export const OWN_LISTING = 'This car belongs to your own dealership.';
 
-export const ALREADY_SUBMITTED =
-  'You enquired about this car in the last day — the dealership already has your details and will call you.';
+export const ALREADY_OPEN =
+  'The dealership already has your details. You can enquire about this car again once they close your enquiry.';
 
 export const ENQUIRY_RATE_LIMITED =
   'You have sent a lot of enquiries. Try again in a little while.';

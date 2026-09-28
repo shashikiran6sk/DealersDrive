@@ -12,7 +12,7 @@ import { createAuthHarness, createFakeGoogle, type AuthHarness } from './auth-ha
  * reaches, so the suite signs real customers in through the phone flow and
  * posts through the real guard. The customer never says who they are; the
  * dealership is the listing's; only a car on the marketplace right now takes
- * one; and the same customer cannot flood the same car.
+ * one; and the same customer has one open enquiry per car at a time (R68).
  */
 let h: AuthHarness;
 let counter = 0;
@@ -263,16 +263,66 @@ describe('only a car on the marketplace right now', () => {
   });
 });
 
-describe('floods are refused, follow-ups are not', () => {
-  it('refuses a second enquiry about the same car within a day', async () => {
+describe('one open enquiry per car (R68)', () => {
+  async function closeAs(id: string, status: 'CONTACTED' | 'CLOSED' | 'SPAM') {
+    await h.prisma.enquiry.update({ where: { id }, data: { status } });
+  }
+
+  it('refuses a second enquiry about the same car while the first is open', async () => {
     const { agent } = await customer();
     const { slug, listing: row } = await listing();
 
     await enquire(agent, { listingSlug: slug }).expect(201);
     const again = await enquire(agent, { listingSlug: slug, message: 'Hello?' }).expect(409);
 
-    expect(again.body.code).toBe('ENQUIRY_ALREADY_SUBMITTED_RECENTLY');
+    expect(again.body.code).toBe('ENQUIRY_ALREADY_OPEN');
     expect(await h.prisma.enquiry.count({ where: { listingId: row.id } })).toBe(1);
+  });
+
+  /** The old 24-hour window is gone: time alone does not reopen the door. */
+  it('still refuses it days later, while the dealership has not closed it', async () => {
+    const { agent, id } = await customer();
+    const { slug, listing: row } = await listing();
+
+    await enquire(agent, { listingSlug: slug }).expect(201);
+    await h.prisma.enquiry.updateMany({
+      where: { customerId: id, listingId: row.id },
+      data: { createdAt: new Date(Date.now() - 5 * 86_400_000) },
+    });
+
+    const again = await enquire(agent, { listingSlug: slug }).expect(409);
+    expect(again.body.code).toBe('ENQUIRY_ALREADY_OPEN');
+  });
+
+  it('refuses it while the dealership has marked the first contacted', async () => {
+    const { agent } = await customer();
+    const { slug } = await listing();
+    const first = await enquire(agent, { listingSlug: slug }).expect(201);
+    await closeAs(first.body.id, 'CONTACTED');
+
+    const again = await enquire(agent, { listingSlug: slug }).expect(409);
+    expect(again.body.code).toBe('ENQUIRY_ALREADY_OPEN');
+  });
+
+  it('allows a new enquiry once the dealership has closed the first', async () => {
+    const { agent } = await customer();
+    const { slug, listing: row } = await listing();
+    const first = await enquire(agent, { listingSlug: slug }).expect(201);
+    await closeAs(first.body.id, 'CLOSED');
+
+    await enquire(agent, { listingSlug: slug, message: 'Still interested' }).expect(201);
+    expect(await h.prisma.enquiry.count({ where: { listingId: row.id } })).toBe(2);
+  });
+
+  /** Spam reads as closed to the customer, but it does not let them straight back in. */
+  it('keeps refusing after the first was marked as spam', async () => {
+    const { agent } = await customer();
+    const { slug } = await listing();
+    const first = await enquire(agent, { listingSlug: slug }).expect(201);
+    await closeAs(first.body.id, 'SPAM');
+
+    const again = await enquire(agent, { listingSlug: slug }).expect(409);
+    expect(again.body.code).toBe('ENQUIRY_ALREADY_OPEN');
   });
 
   /** Five presses at once — a double-tap on a slow phone — land exactly one. */
@@ -287,19 +337,6 @@ describe('floods are refused, follow-ups are not', () => {
     expect(results.filter((res) => res.status === 201)).toHaveLength(1);
     expect(results.filter((res) => res.status === 409)).toHaveLength(4);
     expect(await h.prisma.enquiry.count({ where: { listingId: row.id } })).toBe(1);
-  });
-
-  it('allows a follow-up once the day has passed', async () => {
-    const { agent, id } = await customer();
-    const { slug, listing: row } = await listing();
-
-    await enquire(agent, { listingSlug: slug }).expect(201);
-    await h.prisma.enquiry.updateMany({
-      where: { customerId: id, listingId: row.id },
-      data: { createdAt: new Date(Date.now() - 25 * 3_600_000) },
-    });
-
-    await enquire(agent, { listingSlug: slug }).expect(201);
   });
 
   it('does not stop the same customer asking about a different car', async () => {
@@ -317,6 +354,109 @@ describe('floods are refused, follow-ups are not', () => {
     await enquire((await customer('Asha')).agent, { listingSlug: slug }).expect(201);
     await enquire((await customer('Bala')).agent, { listingSlug: slug }).expect(201);
     expect(await h.prisma.enquiry.count({ where: { listingId: row.id } })).toBe(2);
+  });
+});
+
+describe('a customer’s own enquiries (R68)', () => {
+  it('refuses nobody-in-particular', async () => {
+    await h.agent().get('/v1/enquiries').expect(401);
+  });
+
+  it('lists only their own, newest first, with the dealership and the car', async () => {
+    const me = await customer('Meena');
+    const someoneElse = await customer('Other');
+    const first = await listing();
+    const second = await listing();
+    const older = await enquire(me.agent, { listingSlug: first.slug, message: 'Price?' }).expect(
+      201,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const newer = await enquire(me.agent, { listingSlug: second.slug }).expect(201);
+    await enquire(someoneElse.agent, { listingSlug: first.slug }).expect(201);
+
+    const res = await me.agent.get('/v1/enquiries').expect(200);
+
+    expect(res.headers['cache-control']).toBe('no-store');
+    expect(res.body.data.map((row: { id: string }) => row.id)).toEqual([
+      newer.body.id,
+      older.body.id,
+    ]);
+    expect(res.body.data[1]).toMatchObject({
+      status: 'SENT',
+      statusLabel: 'Sent',
+      message: 'Price?',
+      dealerName: first.dealer.brandName,
+      vehicle: { title: '2023 Hyundai Creta SX(O)', href: `/car/${first.slug}` },
+    });
+    expect(res.body.page).toEqual({ nextCursor: null, hasMore: false });
+  });
+
+  it.each([
+    ['NEW', 'SENT'],
+    ['CONTACTED', 'CONTACTED'],
+    ['CLOSED', 'CLOSED'],
+    ['SPAM', 'CLOSED'],
+  ] as const)('shows a %s enquiry as %s, and never says spam', async (status, shown) => {
+    const { agent } = await customer();
+    const { slug } = await listing();
+    const sent = await enquire(agent, { listingSlug: slug }).expect(201);
+    await h.prisma.enquiry.update({ where: { id: sent.body.id }, data: { status } });
+
+    const res = await agent.get('/v1/enquiries').expect(200);
+
+    expect(res.body.data[0].status).toBe(shown);
+    expect(JSON.stringify(res.body)).not.toMatch(/spam/i);
+  });
+
+  it('drops the link once the car is off the marketplace', async () => {
+    const { agent } = await customer();
+    const { slug, listing: row } = await listing();
+    await enquire(agent, { listingSlug: slug }).expect(201);
+    await h.prisma.listing.update({ where: { id: row.id }, data: { status: 'SOLD' } });
+
+    const res = await agent.get('/v1/enquiries').expect(200);
+    expect(res.body.data[0].vehicle.href).toBeNull();
+  });
+
+  it('pages with a cursor', async () => {
+    const { agent } = await customer();
+    for (let n = 0; n < 3; n += 1) {
+      await enquire(agent, { listingSlug: (await listing()).slug }).expect(201);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+
+    const first = await agent.get('/v1/enquiries?limit=2').expect(200);
+    expect(first.body.data).toHaveLength(2);
+    expect(first.body.page.hasMore).toBe(true);
+
+    const second = await agent
+      .get(`/v1/enquiries?limit=2&cursor=${String(first.body.page.nextCursor)}`)
+      .expect(200);
+    expect(second.body.data).toHaveLength(1);
+    expect(second.body.page.hasMore).toBe(false);
+  });
+
+  it.each(['customerId', 'status', 'dealerId'])('refuses %s in the query', async (field) => {
+    const { agent } = await customer();
+    await agent.get(`/v1/enquiries?${field}=x`).expect(400);
+  });
+
+  /** A dealer's session is the customer that dealer also is (R62), and sees only their own. */
+  it('lists a dealer’s own enquiries as a customer, and none of their inbox', async () => {
+    h.google.claims = {
+      subject: `enquiry-mine-${String(counter)}`,
+      email: `enquiry.mine${String(counter)}@example.com`,
+      emailVerified: true,
+      name: 'Karthik Raman',
+    };
+    const dealerAgent = h.agent();
+    await h.signIn(dealerAgent);
+    await h.proveNumber(dealerAgent, freeNumber());
+    const { slug } = await listing();
+    await enquire(dealerAgent, { listingSlug: slug }).expect(201);
+
+    const res = await dealerAgent.get('/v1/enquiries').expect(200);
+    expect(res.body.data).toHaveLength(1);
   });
 });
 

@@ -64,6 +64,14 @@ describe('enquiryCustomerAction', () => {
     expect(calls[0]?.url).toMatch(/\/v1\/auth\/customer\/me$/);
   });
 
+  it('asks nothing of the API when there is no session cookie', async () => {
+    cookieJar.delete('dd_session');
+    globalThis.fetch = respond(200);
+
+    await expect(enquiryCustomerAction()).resolves.toBeNull();
+    expect(calls).toHaveLength(0);
+  });
+
   it('answers null for somebody not signed in as a customer', async () => {
     globalThis.fetch = respond(401, {
       type: 'about:blank',

@@ -2,7 +2,9 @@
 
 import { CreateEnquiryInput, CustomerSession, type EnquiryReceipt } from '@dealers-drive/contracts';
 
-import { ApiError, apiGetParsed, apiSend } from '@/lib/api';
+import { cookies } from 'next/headers';
+
+import { ApiError, apiGetParsed, apiSend, SESSION_COOKIE } from '@/lib/api';
 
 import { ENQUIRY_ACTION_TEXT } from './actions.constants';
 
@@ -18,6 +20,7 @@ export type SendEnquiryState =
   | { status: 'invalid'; message: string };
 
 export async function enquiryCustomerAction(): Promise<EnquiryCustomer | null> {
+  if (!(await cookies()).get(SESSION_COOKIE)?.value) return null;
   try {
     const session = await apiGetParsed(CustomerSession, '/v1/auth/customer/me', {
       revalidate: false,

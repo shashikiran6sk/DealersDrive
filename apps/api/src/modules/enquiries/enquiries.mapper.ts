@@ -1,4 +1,7 @@
 import {
+  CUSTOMER_ENQUIRY_STATUS_LABELS,
+  CUSTOMER_ENQUIRY_STATUS_TONES,
+  customerEnquiryStatus,
   ENQUIRY_STATUS_LABELS,
   ENQUIRY_STATUS_TONES,
   formatDate,
@@ -7,6 +10,7 @@ import {
   initialsOf,
   timeAgo,
   vehicleTitle,
+  type CustomerEnquiry,
   type DealerEnquiry,
 } from '@dealers-drive/contracts';
 import type { Prisma } from '@prisma/client';
@@ -42,7 +46,9 @@ export const INBOX_SELECT = {
 
 export type InboxRow = Prisma.EnquiryGetPayload<{ select: typeof INBOX_SELECT }>;
 
-function publicHref(listing: InboxRow['listing']): string | null {
+function publicHref(
+  listing: Pick<InboxRow['listing'], 'status' | 'slug' | 'dealer'>,
+): string | null {
   const live = listing.status === 'ACTIVE' && listing.dealer.status === 'ACTIVE';
   return live && listing.slug ? `/car/${listing.slug}` : null;
 }
@@ -76,6 +82,51 @@ export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEn
       title: vehicleTitle(vehicle) || registrationDisplay,
       registrationDisplay,
       listingStatus: row.listing.status,
+      href: publicHref(row.listing),
+    },
+  };
+}
+
+export const CUSTOMER_SELECT = {
+  id: true,
+  status: true,
+  message: true,
+  createdAt: true,
+  dealer: { select: { brandName: true } },
+  listing: {
+    select: {
+      status: true,
+      slug: true,
+      dealer: { select: { status: true } },
+      vehicle: {
+        select: {
+          manufacturingYear: true,
+          make: true,
+          model: true,
+          variant: true,
+          registrationNumber: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.EnquirySelect;
+
+export type CustomerRow = Prisma.EnquiryGetPayload<{ select: typeof CUSTOMER_SELECT }>;
+
+export function toCustomerEnquiry(row: CustomerRow): CustomerEnquiry {
+  const status = customerEnquiryStatus(row.status);
+  const vehicle = row.listing.vehicle;
+  return {
+    id: row.id,
+    status,
+    statusLabel: CUSTOMER_ENQUIRY_STATUS_LABELS[status],
+    statusTone: CUSTOMER_ENQUIRY_STATUS_TONES[status],
+    message: row.message,
+    createdAt: row.createdAt.toISOString(),
+    createdLabel: formatDate(row.createdAt),
+    dealerName: row.dealer.brandName,
+    vehicle: {
+      title: vehicleTitle(vehicle) || formatRegistration(vehicle.registrationNumber),
       href: publicHref(row.listing),
     },
   };

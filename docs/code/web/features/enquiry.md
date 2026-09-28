@@ -51,10 +51,21 @@ Idle → checking → form → sent / already / gone.
   router or pathname does, and an effect keyed on it would reopen the form
   after a send. After a successful send the parameter is dropped with
   `router.replace(pathname)`, so a reload does not offer the form again.
-- **Already enquired / no longer available.** `ENQUIRY_ALREADY_SUBMITTED_RECENTLY`
+- **Already has an open enquiry / no longer available.** `ENQUIRY_ALREADY_OPEN`
+  (R68; it was `ENQUIRY_ALREADY_SUBMITTED_RECENTLY` under R64's 24-hour rule)
   and `LISTING_NOT_AVAILABLE` replace the form with a banner carrying the API's
   sentence, and no second Send is offered. The second is reachable because the
   page is cached for up to a minute after a car sells.
+- **Requires login (R68).** Under both Enquire buttons, "Requires login with
+  your mobile number", so pressing it is not a surprise. The panel asks
+  `enquiryCustomerAction` once on mount and drops the hint for a customer it
+  knows is signed in. That check costs nothing for a visitor with no session
+  cookie — the action answers `null` without calling the API — and it asks
+  once, in its own effect with no dependencies, because `open` changes
+  identity with the router and an effect keyed on it would ask again on every
+  render.
+- **Track it (R68).** The sent and already-open banners link to
+  `/enquiries`.
 - **Mobile.** Below `lg` the Enquire button is also pinned as a bottom bar
   (DESIGN-SPEC §3.4 at 375: the 64px action bar with `--shadow-lg`); the page
   pads its bottom by the bar's height so the last line is never under it.
@@ -81,3 +92,21 @@ Reads `?enquire=1` with `useSearchParams`, which is why it is its own component:
 on a statically rendered page `useSearchParams` must sit under a `Suspense`
 boundary, and the page's fallback is the same panel without `autoOpen`, so the
 button is in the static HTML and the query is only read in the browser.
+
+## `apps/web/src/features/enquiry/customer-enquiries/customer-enquiry-list.tsx`
+
+### `export function CustomerEnquiryList({ enquiries }: CustomerEnquiryListProps)`
+
+**My enquiries (R68).** Read-only and the current state only: the car (a
+link while it is listed, "No longer listed" once it is not), the dealership,
+the message, when it was sent and a status tag — Sent, Contacted or Closed.
+There is nothing to press, and no history. The API has already folded spam
+into Closed, so this component cannot show it. An empty list points at
+`/cars`.
+
+## `apps/web/src/features/enquiry/customer-enquiries/customer-enquiry-card.tsx`
+
+### `export function CustomerEnquiryCard({ enquiry }: CustomerEnquiryCardProps)`
+
+One enquiry, laid out like the dealer's card (§3.15) without the actions:
+the car first, because that is what the customer remembers asking about.

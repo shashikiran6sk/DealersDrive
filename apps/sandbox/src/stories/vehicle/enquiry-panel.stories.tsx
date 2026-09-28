@@ -76,9 +76,9 @@ export const AlreadySent: Story = {
   beforeEach: () => {
     enquiryActionStub.result = {
       status: 'refused',
-      code: 'ENQUIRY_ALREADY_SUBMITTED_RECENTLY',
+      code: 'ENQUIRY_ALREADY_OPEN',
       message:
-        'You enquired about this car in the last day — the dealership already has your details and will call you.',
+        'The dealership already has your details. You can enquire about this car again once they close your enquiry.',
     };
   },
   play: async ({ canvasElement }) => {

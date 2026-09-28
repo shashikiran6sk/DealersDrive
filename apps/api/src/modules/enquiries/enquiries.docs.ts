@@ -15,6 +15,30 @@ export const enquiriesDocs: ModuleDocs = {
     'phone numbers.',
   operations: [
     {
+      method: 'get',
+      path: '/v1/enquiries',
+      operationId: 'listMyEnquiries',
+      tag: DOC_TAGS.enquiries,
+      summary: 'Your enquiries',
+      description:
+        'The signed-in customer’s own enquiries, newest first, cursor-paginated (**R68**). ' +
+        'Read-only and the current state only: `SENT` until the dealership acts, `CONTACTED` ' +
+        'once they have called, `CLOSED` once they are done. **An enquiry the dealership ' +
+        'marked as spam is `CLOSED` here** — the customer is never told, and `SPAM` appears in ' +
+        'no customer response. `vehicle.href` is the car’s public page while it is on the ' +
+        'marketplace.',
+      audience: 'customer',
+      query: 'CustomerEnquiryQuery',
+      responses: [
+        {
+          status: 200,
+          description: 'A page of the customer’s enquiries.',
+          schema: 'CustomerEnquiriesResponse',
+        },
+      ],
+      errors: [400, 401, 409],
+    },
+    {
       method: 'post',
       path: '/v1/enquiries',
       operationId: 'createEnquiry',
@@ -29,11 +53,12 @@ export const enquiriesDocs: ModuleDocs = {
         'dealership `ACTIVE`, the same rule the public pages use. A car sold, removed or ' +
         'taken down between opening its page and pressing Send is `409 LISTING_NOT_AVAILABLE`; ' +
         'a slug that was never a listing is `404 LISTING_NOT_FOUND`.\n\n' +
-        '**One enquiry per car per day.** A second enquiry from the same customer about the ' +
-        'same car within 24 hours is `409 ENQUIRY_ALREADY_SUBMITTED_RECENTLY` — the dealership ' +
-        'already has their details — and two presses at once cannot both land: the check and ' +
-        'the write are serialised per customer and car. A follow-up the next day is allowed.' +
-        '\n\n' +
+        '**One open enquiry per car (R68).** While the customer has an enquiry about this car ' +
+        'that the dealership has not closed, a new one is `409 ENQUIRY_ALREADY_OPEN` — the ' +
+        'dealership already has their details. Once the dealership closes it, the customer may ' +
+        'enquire again. An enquiry marked as spam keeps blocking, though the customer sees it ' +
+        'as closed. Two presses at once cannot both land: the check and the write are ' +
+        'serialised per customer and car.\n\n' +
         '`422 ENQUIRY_OWN_LISTING` for a dealer enquiring about their own dealership’s car.\n\n' +
         'Rate-limited to 10 an hour per customer and 30 an hour per IP.',
       audience: 'customer',

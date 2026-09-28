@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { CreateEnquiryInput, DealerEnquiryQuery, UpdateEnquiryInput } from '../../src/enquiry.js';
+import {
+  CreateEnquiryInput,
+  CustomerEnquiryQuery,
+  CustomerEnquiryStatus,
+  customerEnquiryStatus,
+  DealerEnquiryQuery,
+  UpdateEnquiryInput,
+} from '../../src/enquiry.js';
 import { ENQUIRY_STATUS_LABELS, ENQUIRY_STATUS_TONES, EnquiryStatus } from '../../src/enums.js';
 
 /**
@@ -62,5 +69,26 @@ describe('the dealership’s inbox (R66)', () => {
       expect(ENQUIRY_STATUS_LABELS[status]).toEqual(expect.any(String));
       expect(ENQUIRY_STATUS_TONES[status]).toEqual(expect.any(String));
     }
+  });
+});
+
+describe('a customer’s own enquiries (R68)', () => {
+  it.each([
+    ['NEW', 'SENT'],
+    ['CONTACTED', 'CONTACTED'],
+    ['CLOSED', 'CLOSED'],
+    ['SPAM', 'CLOSED'],
+  ] as const)('shows %s to the customer as %s', (status, shown) => {
+    expect(customerEnquiryStatus(status)).toBe(shown);
+  });
+
+  it('never has a spam state a customer could be shown', () => {
+    expect(CustomerEnquiryStatus.options).toEqual(['SENT', 'CONTACTED', 'CLOSED']);
+  });
+
+  it('pages twenty at a time and refuses anything else in the query', () => {
+    expect(CustomerEnquiryQuery.parse({})).toEqual({ limit: 20 });
+    expect(CustomerEnquiryQuery.safeParse({ status: 'SPAM' }).success).toBe(false);
+    expect(CustomerEnquiryQuery.safeParse({ customerId: 'x' }).success).toBe(false);
   });
 });

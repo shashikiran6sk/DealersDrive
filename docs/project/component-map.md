@@ -1250,6 +1250,25 @@ no-number state. **Tests** `apps/web/tests/unit/features/auth/header-account.tes
 `customer-account-actions.test.ts`. **Sandbox** `Layout/CustomerHeader`,
 `Dealer/DashboardPanels`.
 
+### C094 — `CustomerEnquiryList` · C095 `CustomerEnquiryCard`
+
+**New at R68** (`features/enquiry/customer-enquiries/`). My enquiries on
+`/enquiries`: a customer's own enquiries, read-only and current state only —
+Sent, Contacted or Closed; the API shows spam as Closed. Server-rendered, no
+client state, nothing to press.
+
+| Component             | Props       | States                                                    |
+| --------------------- | ----------- | --------------------------------------------------------- |
+| `CustomerEnquiryList` | `enquiries` | every state · empty · more pages · mobile                 |
+| `CustomerEnquiryCard` | `enquiry`   | sent · contacted · closed · no message · no longer listed |
+
+**Changed:** `EnquiryPanel` (C088) shows "Requires login with your mobile
+number" until it knows the visitor is signed in, and links its sent and
+already-open banners to `/enquiries`; `HeaderAccount` (C093) links to
+`/enquiries`. **Reuses** `StatusTag`, `EmptyState`, `ButtonLink`. **Tests**
+`apps/web/tests/unit/features/enquiry/my-enquiries-page.test.tsx`. **Sandbox**
+`Vehicle/CustomerEnquiryList`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,
