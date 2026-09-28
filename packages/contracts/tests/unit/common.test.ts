@@ -13,6 +13,7 @@ import {
   GoogleMapsUrl,
   isIndianMobile,
   mapsUrlFrom,
+  normaliseIndianMobile,
   normaliseLocality,
   slugify,
   timeAgo,
@@ -530,6 +531,60 @@ describe('isIndianMobile', () => {
     // silent corruption.
     for (const value of ['9840012345', '98400 12345', '+91 98400-12345']) {
       expect(toE164(value)).toBe('+919840012345');
+    }
+  });
+});
+
+/**
+ * One number is one identity (**R58**). A phone becomes a sign-in identity in
+ * this phase, and a unique index over the stored string only protects it if
+ * every spelling of one handset reduces to the same string before it is stored
+ * or looked up.
+ */
+describe('normaliseIndianMobile', () => {
+  it.each([
+    '9840012345',
+    '98400 12345',
+    '98400-12345',
+    '(984) 001-2345',
+    '98400.12345',
+    '+919840012345',
+    '+91 98400 12345',
+    '919840012345',
+    '0091 98400 12345',
+    '09840012345',
+    '0919840012345',
+    '091 98400 12345',
+    '  9840012345  ',
+  ])('reduces %j to the one canonical form', (value) => {
+    expect(normaliseIndianMobile(value)).toBe('+919840012345');
+  });
+
+  it.each([
+    '0416224889',
+    '1234567890',
+    '98400123',
+    '98400123456',
+    '+1 98400 12345',
+    '98400abc12345',
+    'nine eight four',
+    '',
+  ])('refuses %j', (value) => {
+    expect(normaliseIndianMobile(value)).toBeNull();
+  });
+
+  /**
+   * A ten-digit number that happens to begin `91` is a number, not a country
+   * code with eight digits after it.
+   */
+  it('does not mistake a number starting 91 for a country code', () => {
+    expect(normaliseIndianMobile('9198400123')).toBe('+919198400123');
+  });
+
+  it('is what isIndianMobile and toE164 are both defined by', () => {
+    for (const value of ['09840012345', '0919840012345', '(984) 001-2345']) {
+      expect(isIndianMobile(value)).toBe(true);
+      expect(toE164(value)).toBe(normaliseIndianMobile(value));
     }
   });
 });

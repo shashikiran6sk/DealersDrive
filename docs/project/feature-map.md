@@ -5513,3 +5513,101 @@ for measurement rather than memoisation everywhere. The measurement came first
   element across new props; the sheet stays open with the new total; the
   search box keeps focus and text; the fade is delayed and light, and the
   return is immediate.
+
+## R58 — One proof of a handset, for every purpose
+
+**Revises R39** · no schema change · first of ten (R58–R67): customer accounts,
+customer and dealer phone sign-in, Google/phone identity linking, and enquiries
+
+This phase makes a verified mobile number a way to **sign in**, where R39 made
+it only a contact detail on an account Google had already authenticated. R58
+is the foundation and changes no behaviour a dealer can see: it moves the
+proof out of the one flow that used it, and gives the number one canonical
+form.
+
+### What the audit found
+
+- **One OTP integration, and it is the MSG91 widget.** The browser sends and
+  collects the code; the API takes the widget's access token to MSG91
+  (`verifyAccessToken`) and asks which number it proves. There is no
+  server-side send, so the API cannot rate-limit sends — only who receives the
+  widget credentials and how often a token is presented (see R39).
+- **The proof was fused to its first use.** `phone.service.ts` asked MSG91,
+  compared the number, spent the token _and_ wrote `users.phone`. Every new
+  flow in this phase needs the first three and not the fourth.
+- **Identity today.** One `User` row per person. Google is an `OAuthIdentity`
+  (`provider + providerSubject` unique). The phone is `users.phone` (unique,
+  written only by a completed OTP — R39's single-writer rule) plus
+  `users.phoneVerifiedAt`. Seats are `UserRole` (`DEALER`, `ADMIN`); sessions
+  are scoped `DEALER` or `ADMIN`. A `DEALER`-scoped session with no active
+  membership resolves as `PENDING` — a dealer mid-onboarding — so **a customer
+  session cannot reuse that scope unchanged**; R59 decides how a customer is
+  told apart.
+- **Post-sign-in routing is already written twice** — `auth.service.ts`
+  (`completeGoogle`) and `dealers.service.ts` (`session`) each derive
+  `ONBOARDING` / `PENDING_APPROVAL` / `DASHBOARD` from the dealership status.
+  A third copy for phone sign-in is what R60 must not add.
+- **Normalisation had a hole.** `toE164('09840012345')` answered
+  `+09840012345` — the validator refused that input, so nothing stored it, but
+  a phone identity looked up with a lookup-side normaliser that disagreed with
+  the write-side one would miss the account and create a second.
+
+### What changed
+
+- **`normaliseIndianMobile`** (contracts) is the one canonical form,
+  `+919840012345`, or `null`. It accepts the bare number, `91` / `+91` /
+  `0091`, and the trunk prefixes `0` / `091`; separators are stripped, letters
+  are not. `isIndianMobile` and `toE164` are both defined by it, so the
+  validator and the normaliser cannot disagree. ⚠️ `IndianMobile` now also
+  accepts `098400 12345` and `(984) 001-2345`, which it used to refuse; both
+  store as `+919840012345`. Nothing previously accepted changes form.
+- **`phone-proof.service.ts`** — `createPhoneProofService({ otp, cache })`,
+  with `widget()` and `prove({ phone, accessToken, purpose })`. It answers the
+  canonical number a token proves, or refuses, and knows nothing about
+  accounts. `phone.service.ts` keeps what is specific to linking — the
+  availability check, the collision refusal and the write — and calls
+  `prove({ purpose: 'DEALER_PHONE_LINK' })`.
+- **Purposes** — `DEALER_PHONE_LINK`, `DEALER_LOGIN`, `CUSTOMER_LOGIN`. Server
+  intent, decided by the route, never by the body. Replay across purposes is
+  already impossible — the spent-token key is purpose-free, so a token spent
+  anywhere is spent everywhere — so the purpose decides only what genuinely
+  differs: **when the replay guard is unreachable, linking fails open (as R39
+  did) and signing in fails closed** (`503 PHONE_OTP_UNAVAILABLE`), because a
+  sign-in proof that cannot rule out a replay would mint a session for a
+  captured token.
+- **The claim and the provider's identifier are compared canonically.** A
+  provider answer of `9840012345` now matches a claim of `+919840012345`; a
+  different handset is still refused with the same message as a wrong code.
+- **The widget sends to the canonical number.** `identifierOf` (web) now
+  derives MSG91's identifier from `normaliseIndianMobile`; the old digit-gluing
+  would have sent a trunk-prefixed number's code to `9109840012345` once the
+  validator accepted it.
+- **Messages** `modules/auth/auth.messages.ts`.
+
+### Not changed
+
+No route, no schema, no contract shape, no screen. `GET /v1/auth/phone/widget`
+stays behind `requireSignedIn` until a customer flow needs it (R63), and that
+PR owns the decision about serving it anonymously.
+
+- **Tests** `packages/contracts/tests/unit/common.test.ts`
+  (`normaliseIndianMobile`), `apps/api/tests/unit/modules/auth/phone-proof.service.test.ts`,
+  `apps/web/tests/unit/features/auth/phone-identifier.test.ts`;
+  `phone.service.test.ts` and `phone-verification.test.ts` pass unchanged.
+
+### The phase, in order
+
+Each is its own PR, merged before the next starts.
+
+| R   | Scope                                                                                                                                                 |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R58 | This entry — the reusable proof, purposes, canonical number                                                                                           |
+| R59 | Identity model — a phone as a sign-in identity beside Google, customers told apart from pending dealers, linking and `IDENTITY_ALREADY_LINKED`        |
+| R60 | Dealer phone sign-in — `resolveDealerPostAuthDestination`, shared by Google and phone, and onboarding resume                                          |
+| R61 | Dealer provisional sign-up and identity completion — phone-first or Google-first, step 1 needs both                                                   |
+| R62 | Unified Login — header `Login`, Customer / Dealer tabs                                                                                                |
+| R63 | Customer account and phone sign-in — name only, no email or password                                                                                  |
+| R64 | Enquiry model and API — revises F088: the customer is a signed-in account, not typed text; identity derived from the session; dealer from the listing |
+| R65 | Vehicle page enquiry — revises F089: sign-in interrupts and resumes the enquiry                                                                       |
+| R66 | Dealer enquiry inbox — revises F091                                                                                                                   |
+| R67 | Dashboard enquiry counts, header signed-in state, polish                                                                                              |
