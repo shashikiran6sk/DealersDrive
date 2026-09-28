@@ -442,24 +442,6 @@ down to the permissions the new OWNER seat carries.
 `userId` is for the log line only — the token decides which row is
 revoked, so a caller cannot sign anybody else out by naming them.
 
-### `async function createIdentity(claims:`
-
-A first sign-in.
-
-The refusal in the middle is the account-linking policy, written out: an
-email that already belongs to an account is _not_ enough to take it over.
-Google verifying `owner@example.com` today says nothing about who held that
-address when the dealership was created, and silently merging on a matching
-string is how an expired domain becomes somebody else's inventory.
-
-### `emailVerifiedAt: new Date()`
-
-Google is the verifier. There is no separate email round trip, and
-
-### `emailVerifiedAt: new Date()`
-
-no OTP: the identity token _is_ the proof.
-
 ### `async function completeAdminGoogle`
 
 B7 — the admin console's sign-in, which is now the same round trip as the
@@ -473,7 +455,7 @@ refusal to _issue_; `resolveAdmin` asks the same question again on every
 subsequent request, so taking a name off the list closes a console that is
 already open rather than waiting twelve hours for it to expire.
 
-The account-linking rule that `createIdentity` enforces is deliberately
+The account-linking rule that `createWithGoogle` (`identity.service.ts`) enforces is deliberately
 relaxed for exactly these addresses. There, an existing user row with no
 linked identity is a refusal, because a matching email string is not proof
 that the same person still holds it. Here the platform team wrote the
@@ -735,6 +717,109 @@ is the reason a replayed token from elsewhere cannot be used here.
 ### `function challengeFor(codeVerifier: string): string`
 
 PKCE S256: `BASE64URL(SHA256(verifier))` (RFC 7636 §4.2).
+
+## `apps/api/src/modules/auth/identity.service.ts`
+
+### `export function createIdentityService({ prisma, audit }: IdentityDeps)`
+
+**R59** — a phone and a Google account are two ways into **one** account.
+
+Every write that creates an account from an identity, or attaches an identity
+to an account, is in this file and nowhere else. Sign-in flows ask it questions
+(`findByVerifiedPhone`, `identitiesOf`) and ask it to act (`createWithPhone`,
+`createWithGoogle`, `linkGoogle`); none of them writes `users` or
+`oauth_identities` itself. The reason is the failure this phase is most exposed
+to: a person who signs up with Google and later with their phone, and ends up
+as two users with half a dealership each.
+
+**The model.** One `users` row per person. Google is an `oauth_identities` row,
+found by Google's stable `sub`. The phone is `users.phone` itself — unique,
+canonical (the `users_phone_canonical` CHECK), and written only by a completed
+OTP (R39), so a non-null value with `phoneVerifiedAt` _is_ a proved handset.
+There is deliberately no `PHONE` row in `oauth_identities`: a second copy of
+the number would be a second thing to keep in step with the first, and the
+unique index on `users.phone` already is the guarantee a phone identity needs.
+
+**Linking is never merging.** Two identities converge on one account only when
+one of them is already that account's — the caller is signed in with it — and
+the other was just proved in the same flow. Two _existing_ accounts are never
+combined, whatever the evidence: the phone belongs to User A and the Google
+account to User B is `409 IDENTITY_ALREADY_LINKED`, both rows untouched, and
+the message says what to do (sign in with the other identity) without saying
+whose account it is.
+
+Linking a **phone** to a Google-first account is `phone.service.ts`'s `verify`,
+as it was under R39; this file adds the other direction.
+
+### `async identitiesOf(userId: string): Promise<UserIdentities>`
+
+What onboarding step 1 needs to draw two ticks: which of the two identities
+this account holds. `complete` is both. A phone counts only once proved —
+a legacy row with a typed, unverified number is not a phone identity.
+
+### `async findByVerifiedPhone(input: string)`
+
+How a phone sign-in finds its account. Normalised before the lookup, so the
+spelling a person typed cannot decide which account they reach; and a holder
+whose number was never proved is not found at all, so a legacy row cannot be
+signed into with a code sent to a number nobody verified.
+
+### `async createWithPhone(`
+
+A first sign-in with a phone — the user row _is_ the phone identity, so this
+is one insert, and there is no partially-created state to leave behind.
+
+Two OTP callbacks for one new number, at the same instant, race to the unique
+index rather than to a read: the loser's `P2002` is answered with the winner's
+account (`created: false`), so both callers end up signed in to the same user
+and neither sees an error. A holder that never proved the number (a legacy
+row) is the one case that is refused — the person who just proved it is very
+likely its owner, but moving a number between accounts is support's call, not
+an automatic one.
+
+The seat (`DEALER`, or a customer's) is the caller's to grant afterwards.
+A user row with no seat is harmless: an absent seat grants nothing (R41).
+
+### `async linkGoogle(userId: string, claims: OAuthClaims): Promise<{ linked: boolean }>`
+
+Attach a Google account to an account that began with a phone. Refused, never
+merged, when the Google account already belongs to somebody else, when this
+account already has a different Google account, or when another account holds
+the address. Linking the same Google account again is a no-op, so a
+double-submitted consent screen is harmless.
+
+### `await tx.$queryRaw`
+
+The user row is locked for the link. Two tabs linking two different Google
+accounts to one user would otherwise both pass the "no Google account yet"
+read. A unique index on `oauth_identities(userId, provider)` would say the same
+thing, but the admin sign-in can legitimately attach a second subject for one
+address (a re-created Google account), so the guarantee is taken on the one
+path that needs it rather than imposed on every path.
+
+### `if (errorCode(error) === 'P2002') throw refusal('lost-race')`
+
+Two accounts linking one Google account at once: `(provider, providerSubject)`
+is unique, so the second insert fails and is answered like any other
+collision.
+
+### `async createWithGoogle(claims: OAuthClaims): Promise<string>`
+
+A first sign-in with Google. Moved here from `auth.service.ts` by **R59**, unchanged, so that every account-creating write lives in one file.
+
+The refusal in the middle is the account-linking policy, written out: an
+email that already belongs to an account is _not_ enough to take it over.
+Google verifying `owner@example.com` today says nothing about who held that
+address when the dealership was created, and silently merging on a matching
+string is how an expired domain becomes somebody else's inventory.
+
+### `emailVerifiedAt: new Date()`
+
+Google is the verifier. There is no separate email round trip, and
+
+### `emailVerifiedAt: new Date()`
+
+no OTP: the identity token _is_ the proof.
 
 ## `apps/api/src/modules/auth/oauth-transaction.ts`
 
