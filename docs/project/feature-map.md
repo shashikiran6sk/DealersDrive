@@ -5488,3 +5488,28 @@ could only be reached by scrolling the whole page to the end of the results.
 - **Tests** `tests/unit/styles/filter-rail.test.ts`: both pages use the rail;
   the utility is sticky, bounded and scrolls itself; the offset is the header
   token.
+
+## R57 — Results update in place, without a flash
+
+**Revises F078, F079, F080** · no schema change
+
+The brief asked for updates that do not remount the page, keep the panel's
+scroll, open sections and the search focus, and do not flicker. It also asked
+for measurement rather than memoisation everywhere. The measurement came first
+(Playwright, dev seed, `/cars` and a portfolio):
+
+- **Already true, now pinned by tests.** The rail, panel, mobile sheet and
+  results region keep their DOM elements across a navigation. Rail scroll
+  (900 → 901px), "Show all" expansion, the open sheet (scroll 951px, live CTA
+  count) and search focus all survive. Cards are keyed by slug (18 of 18 reused
+  after a sort). The grid never empties between pages, and there is no
+  `loading.tsx` to swap in.
+- **Changed.** The results dimmed to 50% immediately for every update of about
+  200 ms, which is a flash. The dim now waits 200 ms and is 60%, and returns
+  instantly. Measured minimum opacity for an ordinary update: 0.987 (before:
+  0.5). For an update held back 900 ms: 0.6.
+- No `memo` or `useMemo` was added: nothing re-rendered that did not need to.
+- **Tests** `result-updates.test.tsx`: the panel keeps an opened list and its
+  element across new props; the sheet stays open with the new total; the
+  search box keeps focus and text; the fade is delayed and light, and the
+  return is immediate.
