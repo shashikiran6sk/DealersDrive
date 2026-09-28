@@ -138,7 +138,7 @@ revision · `[⛔]` withdrawn
 - [x] F078 — Filter panel · twelve URL-driven groups with counted facets, the chip row, and a dimming results region; desktop rail (the sheet is F079) · [#171](https://github.com/shashikiran6sk/DealersDrive/pull/171)
 - [x] F079 — Mobile filter sheet · the same panel in `Dialog variant="sheet"`, an applied-count badge, and a live Show N cars · [#173](https://github.com/shashikiran6sk/DealersDrive/pull/173)
 - [x] F080 — Search toolbar & sort · debounced search (replace while typing, push on Enter) and the five sorts · [#172](https://github.com/shashikiran6sk/DealersDrive/pull/172)
-- [ ] F081 — Homepage & hero search
+- [~] F081 — Homepage & hero search · as revised by **R72** — hero search into `/cars`, four discovery rows
 - [x] F082 — Vehicle detail page · `/car/[slug]`, ACTIVE only, 404 otherwise; no enquiry, report or save (deferred)
 - [x] F083 — Vehicle gallery & lightbox · **R48, R49** — the §2.9 strip under a blueprint main image, and the §2.10 lightbox with its numbered rail, on the `Dialog` primitive
 - [ ] F084 — Similar vehicles
@@ -240,7 +240,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R68 — Customers track their enquiries, and ask again once one is closed · revises R64/R65/R67 · `GET /v1/enquiries` + `/enquiries` (Sent / Contacted / Closed; spam shown as Closed); one open enquiry per car replaces the 24-hour rule; "Requires login" under Enquire
 - [x] R69 — The listing lifecycle a buyer can see: Active, Reserved, Sold, Withdrawn · revises F064/F067/R47 · ⚠️ `REMOVED` renamed `WITHDRAWN`, `RESERVED` added · five dealer routes; `SOLD` is final; a withdrawn car keeps its plate · [#192](https://github.com/shashikiran6sk/DealersDrive/pull/192)
 - [x] R70 — The dealer reserves, sells, withdraws and relists from the console · revises F067/R69 · confirmation dialogs, a reason to withdraw, the moves on every inventory row and the vehicle page · [#193](https://github.com/shashikiran6sk/DealersDrive/pull/193)
-- [~] R71 — A reserved car stays on show; a sold or withdrawn one leaves every public surface · revises F075/F076/F082/F086/R48/R64/R69 · visible vs available predicates, `availability` on card and page, `available` count, reserved card with no link, `409 LISTING_RESERVED`
+- [x] R71 — A reserved car stays on show; a sold or withdrawn one leaves every public surface · revises F075/F076/F082/F086/R48/R64/R69 · visible vs available predicates, `availability` on card and page, `available` count, reserved card with no link, `409 LISTING_RESERVED` · [#194](https://github.com/shashikiran6sk/DealersDrive/pull/194)
+- [~] R72 — The homepage searches the marketplace, and shows what is on it · lands F081 · hero District/Brand/Model/Budget → `/cars` URL; four `/v1/vehicles` rows, available cars only
 
 ---
 

@@ -6593,3 +6593,63 @@ listing's reason and note and **View on site** while the car is on sale.
   - `vehicle-page.test.tsx`: reserved shows the notice and no Enquire.
   - `portfolio-page.test.tsx`: a reserved card is shown, unlinked and not counted.
 - Contracts: `listing.test.ts`.
+
+## R72 — The homepage searches the marketplace, and shows what is on it
+
+**Lands F081, as revised** · no API change
+
+- **Hero:** "Find your next car", with a search block of four fields:
+  - **District**: the header's `LocationDialog`, counting cars.
+  - **Brand**: the marketplace brand facet, with counts.
+  - **Model**: disabled until a brand is chosen, then filled from
+    `/v1/vehicles?brand=…` facets through `heroFacetsAction`.
+  - **Budget**: up to ₹3/5/8/10/15/20/30 lakh, sent as `maxPrice` in paise.
+- **Search cars** navigates to `searchHref('/cars', …)`. For example, Ranipet,
+  Hyundai, Creta, up to ₹15 lakh becomes
+  `/cars?district=ranipet&brand=hyundai&model=creta&maxPrice=150000000`.
+  It is a GET form, so it also works without script.
+- **Discovery rows**, each `/v1/vehicles` with ordinary filters and `limit=4`,
+  and each with **View all N →** to the same filters on `/cars`:
+
+  | Row            | Filter                   |
+  | -------------- | ------------------------ |
+  | Recently added | none (newest)            |
+  | SUVs           | `bodyType=suv`           |
+  | Automatic cars | `transmission=automatic` |
+  | Under ₹10 lakh | `maxPrice=100000000`     |
+
+- **Rows promote ACTIVE cars only.** Any card that is not `AVAILABLE` is
+  dropped, so a row may hold fewer than four cars but never a reserved one; sold
+  and withdrawn cars are never returned. "View all N" counts `available`. An
+  empty row is not rendered.
+- The DESIGN-SPEC §3.2 body-type tiles and trusted-dealers row are left out;
+  the brief asked for a few focused sections, not ten.
+- Copy that said search and enquiries were "coming soon" is corrected. The page
+  revalidates every 60 s and is tagged `vehicles`.
+
+### Files
+
+- `apps/web/src/features/home/`:
+  - `actions.ts`
+  - `load-home.ts`
+  - `home.constants.ts`
+  - `hero-search/{hero-search,hero-district,hero-search.constants,hero-search.types,utils,index}`
+  - `discovery-row/{discovery-row,discovery-row.types,index}`
+- `app/(public)/page.tsx`
+- **Components:** C101 `HeroSearch`, C102 `DiscoveryRow`. The sandbox has
+  `Home/HeroSearch`, with the action stubbed by
+  `apps/sandbox/src/mocks/home-actions.ts`, and `Home/DiscoveryRow`.
+
+### Tests
+
+`apps/web/tests/unit/features/home/home-page.test.tsx` (16) covers:
+
+- the four requests and their filters, rows and links
+- reserved cars never promoted, empty rows dropped, the API being down, and no
+  "coming soon" copy
+- the hero: empty search, brand counts, model disabled until a brand, the
+  district via the dialog, the full URL, the model reset, budgets, and the GET form
+- `heroHref`, and `heroFacetsAction` (validation, request, failure)
+
+The old homepage assertions in `public-pages.test.tsx` were removed with the
+copy they asserted.
