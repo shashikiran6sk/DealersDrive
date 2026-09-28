@@ -4,12 +4,14 @@ import {
   isListingDeletable,
   isListingEditable,
   isListingSubmittable,
+  lifecycleActionsOf,
   listingStatusLabel,
   listingStatusTone,
   formatRupees,
   vehicleIssues,
   vehicleSummary,
   vehicleTitle,
+  withdrawalReasonLabel,
   type DealerInventoryRow,
   type DealerListing,
   type DealerVehicle,
@@ -54,9 +56,22 @@ export function toDealerListing(listing: Listing, complete: boolean): DealerList
         : null,
     submittedAt: listing.lastSubmittedAt?.toISOString() ?? null,
     publishedAt: listing.publishedAt?.toISOString() ?? null,
+    slug: listing.slug,
+    reservedAt: listing.reservedAt?.toISOString() ?? null,
+    soldAt: listing.soldAt?.toISOString() ?? null,
+    withdrawnAt: listing.withdrawnAt?.toISOString() ?? null,
+    withdrawal:
+      listing.status === 'WITHDRAWN' && listing.withdrawalReason
+        ? {
+            reason: listing.withdrawalReason,
+            reasonLabel: withdrawalReasonLabel(listing.withdrawalReason),
+            note: listing.withdrawalNote,
+          }
+        : null,
     canEdit: isListingEditable(listing.status),
     canSubmit: complete && isListingSubmittable(listing.status),
     canDelete: isListingDeletable(listing.status),
+    actions: lifecycleActionsOf(listing.status),
   };
 }
 
@@ -110,6 +125,8 @@ export function toInventoryRow(row: VehicleRow): DealerInventoryRow {
     statusTone: vehicle.listing.statusTone,
     reason: vehicle.listing.reason,
     complete: vehicle.complete,
+    slug: vehicle.listing.slug,
+    actions: vehicle.listing.actions,
     updatedAt: row.updatedAt.toISOString(),
     updatedLabel: formatDate(row.updatedAt),
   };

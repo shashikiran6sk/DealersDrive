@@ -13,7 +13,7 @@ import {
   Transmission,
   VehicleColor,
 } from './enums.js';
-import { DealerListing } from './listing.js';
+import { DealerListing, ListingLifecycleAction } from './listing.js';
 import { RegistrationNumber } from './registration.js';
 
 /**
@@ -383,6 +383,10 @@ export const DealerInventoryRow = z.object({
   statusTone: StatusTone,
   reason: z.string().nullable(),
   complete: z.boolean(),
+  /** The public address once it has been live (**R69**). */
+  slug: z.string().nullable(),
+  /** The lifecycle moves this row offers now (**R69**). */
+  actions: z.array(ListingLifecycleAction),
   updatedAt: z.string(),
   updatedLabel: z.string(),
 });

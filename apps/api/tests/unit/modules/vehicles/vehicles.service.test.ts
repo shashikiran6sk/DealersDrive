@@ -19,7 +19,10 @@ function listing(status: ListingStatus = 'DRAFT'): Listing {
     submissionCount: 0,
     publishedAt: null,
     soldAt: null,
-    removedAt: null,
+    reservedAt: null,
+    withdrawnAt: null,
+    withdrawalReason: null,
+    withdrawalNote: null,
     decisionReason: null,
     decidedBy: null,
     decidedAt: null,
@@ -213,7 +216,7 @@ describe('the listing decides what a dealer may still change', () => {
     expect(created.listing).toMatchObject({ status: 'DRAFT', canEdit: true, canDelete: true });
   });
 
-  it.each(['PENDING_REVIEW', 'ACTIVE', 'REJECTED', 'SOLD', 'REMOVED'] as const)(
+  it.each(['PENDING_REVIEW', 'ACTIVE', 'REJECTED', 'SOLD', 'WITHDRAWN'] as const)(
     'refuses an edit while the listing is %s',
     async (status) => {
       const { service, repo } = setup({

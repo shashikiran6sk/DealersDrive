@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { ListingStatus } from '../../src/enums.js';
+import { ListingStatus, WithdrawalReason } from '../../src/enums.js';
 import {
+  LISTING_LIFECYCLE_FROM,
   LISTING_PUBLIC_STATUS,
+  ListingLifecycleAction,
+  WithdrawListingInput,
   displayStatusOf,
+  lifecycleActionsOf,
+  withdrawalReasonLabel,
   isListingDeletable,
   isListingEditable,
   isListingSubmittable,
@@ -32,14 +37,67 @@ describe('what a listing status means', () => {
       'Pending review',
       'Changes requested',
       'Active',
+      'Reserved',
       'Rejected',
       'Sold',
-      'Removed',
+      'Withdrawn',
     ]);
     expect(listingStatusTone('ACTIVE')).toBe('ok');
     expect(listingStatusTone('PENDING_REVIEW')).toBe('warn');
     expect(listingStatusTone('REJECTED')).toBe('err');
     expect(displayStatusOf('PENDING_REVIEW')).toBe('PENDING');
     expect(displayStatusOf('SOLD')).toBe('SOLD');
+    expect(listingStatusTone('RESERVED')).toBe('warn');
+    expect(listingStatusTone('WITHDRAWN')).toBe('neutral');
+  });
+});
+
+describe('the lifecycle a dealership drives once a listing has been live (R69)', () => {
+  it('offers exactly the moves the product names, for each status', () => {
+    const offered = Object.fromEntries(
+      ListingStatus.options.map((status) => [status, lifecycleActionsOf(status)]),
+    );
+    expect(offered).toEqual({
+      DRAFT: [],
+      PENDING_REVIEW: [],
+      CHANGES_REQUESTED: [],
+      ACTIVE: ['reserve', 'markSold', 'withdraw'],
+      RESERVED: ['reactivate', 'markSold', 'withdraw'],
+      REJECTED: [],
+      SOLD: [],
+      WITHDRAWN: ['relist'],
+    });
+  });
+
+  it('has no way back from SOLD', () => {
+    expect(lifecycleActionsOf('SOLD')).toEqual([]);
+    for (const action of ListingLifecycleAction.options) {
+      expect(LISTING_LIFECYCLE_FROM[action]).not.toContain('SOLD');
+    }
+  });
+
+  it('labels every withdrawal reason in sentence case', () => {
+    for (const reason of WithdrawalReason.options) {
+      const label = withdrawalReasonLabel(reason);
+      expect(label).toBeTruthy();
+      expect(label).not.toContain('_');
+    }
+  });
+
+  it('takes a withdrawal reason and an optional note, and nothing else', () => {
+    expect(WithdrawListingInput.parse({ reason: 'VEHICLE_ISSUE' })).toEqual({
+      reason: 'VEHICLE_ISSUE',
+    });
+    expect(
+      WithdrawListingInput.parse({ reason: 'OTHER', note: '  Waiting on the RC transfer. ' }),
+    ).toEqual({ reason: 'OTHER', note: 'Waiting on the RC transfer.' });
+    expect(WithdrawListingInput.safeParse({}).success).toBe(false);
+    expect(WithdrawListingInput.safeParse({ reason: 'BORED' }).success).toBe(false);
+    expect(WithdrawListingInput.safeParse({ reason: 'OTHER', note: 'x'.repeat(501) }).success).toBe(
+      false,
+    );
+    expect(WithdrawListingInput.safeParse({ reason: 'OTHER', status: 'ACTIVE' }).success).toBe(
+      false,
+    );
   });
 });

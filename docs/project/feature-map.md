@@ -6397,3 +6397,75 @@ they are, as asked.
     `enquiry-panel.test.tsx` (hint shown / hidden, tracking links, the new
     code), `actions.test.ts` (no cookie → no request),
     `features/auth/header-account.test.tsx` (the My enquiries links).
+
+## R69 — The listing lifecycle a buyer can see: Active, Reserved, Sold, Withdrawn
+
+**Revises F064 / F067 / R47** · ⚠️ enum value renamed (`REMOVED` → `WITHDRAWN`), one added (`RESERVED`), four columns
+
+The first of the marketplace-lifecycle series (R69–R77). This slice is the
+domain and the dealer API; the console controls (R70) and every public surface
+(R71) follow.
+
+### States
+
+| State       | Public                          | Available | Way out                           |
+| ----------- | ------------------------------- | --------- | --------------------------------- |
+| `ACTIVE`    | yes                             | yes       | reserve · mark sold · withdraw    |
+| `RESERVED`  | yes, greyed and not clickable\* | no        | reactivate · mark sold · withdraw |
+| `SOLD`      | no                              | no        | none — history                    |
+| `WITHDRAWN` | no                              | no        | relist → `ACTIVE`                 |
+
+\* R71. Until R71 lands, only `ACTIVE` is public, so a reserved car is simply
+not shown — the conservative reading R47 took for sold cars.
+
+- `WITHDRAWN` is `REMOVED` renamed (`ALTER TYPE … RENAME VALUE`), and
+  `removedAt` is `withdrawnAt`. `RESERVED` is added **after `ACTIVE`**, so an
+  ascending sort on status puts available before reserved.
+- New columns on `listings`: `reservedAt`, `withdrawalReason`
+  (`WithdrawalReason`: `NO_LONGER_FOR_SALE · VEHICLE_ISSUE · DOCUMENT_ISSUE ·
+TEMPORARILY_PAUSED · OTHER`), `withdrawalNote`. Reason and note are the
+  dealership's; no public response carries them.
+- **`SOLD → ACTIVE` does not exist.** A sale recorded by mistake is an
+  administrative correction.
+- **`WITHDRAWN` keeps the registration** (R47's `REMOVED` released it), so a
+  relist never collides. A pre-R69 removal that released its plate is
+  reclaimed on relist, or refused `409 DUPLICATE_REGISTRATION` if another
+  dealership has claimed the car since.
+- Stamps are chosen by event: reactivate and relist reach `ACTIVE` without
+  touching `decidedBy`/`decidedAt`, and keep `publishedAt` and the slug.
+
+### API (dealer, `listing:submit`, dealership ACTIVE)
+
+`POST /v1/dealer/vehicles/:id/reserve` · `/reactivate` · `/mark-sold` ·
+`/withdraw` (body `WithdrawListingInput { reason, note? ≤ 500 }`, `.strict()`) ·
+`/relist`. Each answers `DealerVehicle`; each refusal is a `409` naming the move
+(`LISTING_NOT_RESERVABLE`, `LISTING_NOT_RESERVED`, `LISTING_NOT_SELLABLE`,
+`LISTING_NOT_WITHDRAWABLE`, `LISTING_NOT_RELISTABLE`). Another dealership's car
+is a 404. `DealerListing` gains `slug`, `reservedAt`, `soldAt`, `withdrawnAt`,
+`withdrawal` and `actions`; `DealerInventoryRow` gains `slug` and `actions`.
+Audit actions `listing.reserved`, `listing.reactivated`, `listing.marked_sold`,
+`listing.withdrawn` (reason and `hasNote`, never the note), `listing.relisted`.
+
+### Files
+
+- `apps/api/prisma/migrations/20260928120000_listing_reserved_withdrawn`, `schema.prisma`
+- `packages/contracts/src/{enums,listing,vehicle}.ts` — `ListingStatus`,
+  `DisplayStatus`, `WithdrawalReason` + labels, `ListingLifecycleAction`,
+  `LISTING_LIFECYCLE_FROM`, `lifecycleActionsOf`, `WithdrawListingInput`
+- `apps/api/src/modules/listings/{listing.state,listings.messages}.ts`
+- `apps/api/src/modules/vehicles/` — `lifecycle()`, `routes/lifecycle.ts`,
+  five `routes/post-vehicle-*.ts`, five operations in `vehicles.docs.ts`
+- `apps/api/prisma/seed/dev-vehicles*.ts` — 12 `RESERVED`, 6 `WITHDRAWN` (with
+  reasons), 260 `ACTIVE`
+- web: `REMOVED` renamed in the inventory and moderation tabs (`Reserved` tab
+  added to both) and the wizard's locked copy
+
+### Tests
+
+`tests/unit/modules/listings/listing.state.test.ts` (the whole 8 × 10 × 2
+table; nothing leaves `SOLD`; only approve/reactivate/relist reach `ACTIVE`;
+contracts table equal to the machine; stamps; withdrawal reason required),
+`tests/dealer-listing-lifecycle.test.ts` (24 — every move over HTTP, refusals,
+400s, tenant 404, enquiries kept, registration held/released/reclaimed, a race),
+`vehicles.routes.test.ts`, `packages/contracts/tests/unit/listing.test.ts`,
+`tests/unit/seed/dev-vehicles.test.ts`.

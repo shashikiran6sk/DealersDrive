@@ -173,5 +173,136 @@ export const vehiclesDocs: ModuleDocs = {
       ],
       errors: [400, 401, 403, 404, 409, 422],
     },
+    {
+      method: 'post',
+      path: '/v1/dealer/vehicles/:id/reserve',
+      operationId: 'reserveDealerVehicle',
+      tag: DOC_TAGS.vehicles,
+      summary: 'Reserve a car for a buyer',
+      description:
+        'Moves the listing from `ACTIVE` to `RESERVED` (**R69**). A reserved car stays on the ' +
+        'marketplace, marked Reserved, but cannot be opened from a card or enquired about.\n\n' +
+        'Any other state is a `409 LISTING_NOT_RESERVABLE` carrying `listingStatus`. The listing ' +
+        'row is locked and the new state is written with the old one in the `WHERE`, so two ' +
+        'moves racing on one car land one and refuse the other with `409 LISTING_STATE_CHANGED`.',
+      audience: 'dealer',
+      permission: 'listing:submit',
+      requiresActiveDealer: true,
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle, with its listing now `RESERVED`.',
+          schema: 'DealerVehicle',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/vehicles/:id/reactivate',
+      operationId: 'reactivateDealerVehicle',
+      tag: DOC_TAGS.vehicles,
+      summary: 'Put a reserved car back on sale',
+      description:
+        'Moves the listing from `RESERVED` back to `ACTIVE` (**R69**): the buyer did not ' +
+        'proceed. Anything but a reserved car is a `409 LISTING_NOT_RESERVED`.',
+      audience: 'dealer',
+      permission: 'listing:submit',
+      requiresActiveDealer: true,
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle, with its listing now `ACTIVE`.',
+          schema: 'DealerVehicle',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/vehicles/:id/mark-sold',
+      operationId: 'markDealerVehicleSold',
+      tag: DOC_TAGS.vehicles,
+      summary: 'Mark a car sold',
+      description:
+        'Moves the listing from `ACTIVE` or `RESERVED` to `SOLD` (**F067**, **R69**). A sold car ' +
+        'leaves every public surface and no longer counts as stock; the record, its enquiries ' +
+        'and its audit trail are kept. The registration is released, so the same car can be ' +
+        'listed again by whoever sells it next.\n\n' +
+        '**There is no way back.** No route moves a listing out of `SOLD`; a sale recorded by ' +
+        'mistake is an administrative correction. Anything but an active or reserved car is a ' +
+        '`409 LISTING_NOT_SELLABLE`.',
+      audience: 'dealer',
+      permission: 'listing:submit',
+      requiresActiveDealer: true,
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle, with its listing now `SOLD`.',
+          schema: 'DealerVehicle',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/vehicles/:id/withdraw',
+      operationId: 'withdrawDealerVehicle',
+      tag: DOC_TAGS.vehicles,
+      summary: 'Withdraw a listing without selling it',
+      description:
+        'Moves the listing from `ACTIVE` or `RESERVED` to `WITHDRAWN` (**R69**): off the ' +
+        'marketplace, not sold, and relistable. The dealership keeps holding the registration ' +
+        'while it is withdrawn.\n\n' +
+        '`reason` is one of five and is required; `note` is optional, at most 500 characters. ' +
+        'Both are the dealership’s own record and appear in no public response. Anything but an ' +
+        'active or reserved car is a `409 LISTING_NOT_WITHDRAWABLE`.',
+      audience: 'dealer',
+      permission: 'listing:submit',
+      requiresActiveDealer: true,
+      params: 'IdParam',
+      requestBody: {
+        schema: 'WithdrawListingInput',
+        example: { reason: 'TEMPORARILY_PAUSED', note: 'Back after the service.' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle, with its listing now `WITHDRAWN`.',
+          schema: 'DealerVehicle',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409, 422],
+    },
+    {
+      method: 'post',
+      path: '/v1/dealer/vehicles/:id/relist',
+      operationId: 'relistDealerVehicle',
+      tag: DOC_TAGS.vehicles,
+      summary: 'Put a withdrawn listing back on sale',
+      description:
+        'Moves the listing from `WITHDRAWN` straight back to `ACTIVE` (**R69**) — the car was ' +
+        'reviewed and photographed before, and nothing about it can have been edited since. The ' +
+        'withdrawal reason and note are cleared; the audit log keeps them.\n\n' +
+        'A listing withdrawn before R69 may have released its registration; relisting reclaims ' +
+        'it, and if another dealership has claimed the same car since, this is a ' +
+        '`409 DUPLICATE_REGISTRATION` that does not say which. Anything but a withdrawn listing ' +
+        'is a `409 LISTING_NOT_RELISTABLE`.',
+      audience: 'dealer',
+      permission: 'listing:submit',
+      requiresActiveDealer: true,
+      params: 'IdParam',
+      responses: [
+        {
+          status: 200,
+          description: 'The vehicle, with its listing now `ACTIVE`.',
+          schema: 'DealerVehicle',
+        },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
   ],
 };

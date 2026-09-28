@@ -462,7 +462,7 @@ describe('who may see an image', () => {
     const served = await h.agent().get(path).expect(200);
     expect(Buffer.from(served.body as Buffer).equals(JPEG)).toBe(true);
 
-    await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'REMOVED' } });
+    await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'WITHDRAWN' } });
     await h.agent().get(path).expect(404);
   });
 

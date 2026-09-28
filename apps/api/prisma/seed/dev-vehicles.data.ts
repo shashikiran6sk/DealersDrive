@@ -49,7 +49,25 @@ type Gearbox = 'MANUAL' | 'AUTOMATIC';
 type Body = 'HATCHBACK' | 'SEDAN' | 'SUV' | 'MUV' | 'LUXURY';
 
 export type DevListingStatus =
-  'DRAFT' | 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'ACTIVE' | 'REJECTED' | 'SOLD' | 'REMOVED';
+  | 'DRAFT'
+  | 'PENDING_REVIEW'
+  | 'CHANGES_REQUESTED'
+  | 'ACTIVE'
+  | 'RESERVED'
+  | 'REJECTED'
+  | 'SOLD'
+  | 'WITHDRAWN';
+
+type DevWithdrawalReason =
+  'NO_LONGER_FOR_SALE' | 'VEHICLE_ISSUE' | 'DOCUMENT_ISSUE' | 'TEMPORARILY_PAUSED' | 'OTHER';
+
+const WITHDRAWAL_REASONS: readonly DevWithdrawalReason[] = [
+  'TEMPORARILY_PAUSED',
+  'VEHICLE_ISSUE',
+  'DOCUMENT_ISSUE',
+  'NO_LONGER_FOR_SALE',
+  'OTHER',
+];
 
 interface CatalogModel {
   model: string;
@@ -642,16 +660,18 @@ const PAISE_PER_LAKH = 10_000_000;
 const PRICE_STEP_PAISE = 500_000;
 
 /**
- * The non-public states, and how many of each. Everything else is ACTIVE —
- * 272 of 320 — which is the inventory the search is tested against.
+ * Every state but ACTIVE, and how many of each. Everything else is ACTIVE —
+ * 260 of 320 — which is the inventory the search is tested against. RESERVED
+ * is on show but not available (R69), so it is counted here with the rest.
  */
 const HIDDEN: readonly [DevListingStatus, number][] = [
   ['DRAFT', 8],
   ['PENDING_REVIEW', 10],
   ['CHANGES_REQUESTED', 6],
+  ['RESERVED', 12],
   ['REJECTED', 6],
   ['SOLD', 12],
-  ['REMOVED', 6],
+  ['WITHDRAWN', 6],
 ];
 
 export interface DevVehicle {
@@ -680,8 +700,10 @@ export interface DevVehicle {
   listingSlug: string | null;
   submittedAt: Date | null;
   publishedAt: Date | null;
+  reservedAt: Date | null;
   soldAt: Date | null;
-  removedAt: Date | null;
+  withdrawnAt: Date | null;
+  withdrawalReason: DevWithdrawalReason | null;
   claimedAt: Date | null;
   releasedAt: Date | null;
   decisionReason: string | null;
@@ -799,12 +821,13 @@ export function generateDevVehicles(dealers: readonly DevDealerRow[]): DevVehicl
       const submittedAt = new Date(
         DEV_VEHICLE_ANCHOR.getTime() - Math.floor(between(random, 3, 90)) * DAY_MS,
       );
-      const isLive = status === 'ACTIVE' || status === 'SOLD' || status === 'REMOVED';
+      const isLive =
+        status === 'ACTIVE' || status === 'RESERVED' || status === 'SOLD' || status === 'WITHDRAWN';
       const publishedAt = isLive
         ? new Date(submittedAt.getTime() + Math.floor(between(random, 1, 3)) * DAY_MS)
         : null;
       const hasClaim = status !== 'DRAFT';
-      const released = status === 'SOLD' || status === 'REMOVED' || status === 'REJECTED';
+      const released = status === 'SOLD' || status === 'REJECTED';
       const suffix = devUuid(`vehicle-${index}`).slice(0, 8);
 
       vehicles.push({
@@ -835,10 +858,20 @@ export function generateDevVehicles(dealers: readonly DevDealerRow[]): DevVehicl
           : null,
         submittedAt: status === 'DRAFT' ? null : submittedAt,
         publishedAt,
+        reservedAt:
+          status === 'RESERVED' && publishedAt
+            ? new Date(publishedAt.getTime() + 3 * DAY_MS)
+            : null,
         soldAt:
           status === 'SOLD' && publishedAt ? new Date(publishedAt.getTime() + 5 * DAY_MS) : null,
-        removedAt:
-          status === 'REMOVED' && publishedAt ? new Date(publishedAt.getTime() + 4 * DAY_MS) : null,
+        withdrawnAt:
+          status === 'WITHDRAWN' && publishedAt
+            ? new Date(publishedAt.getTime() + 4 * DAY_MS)
+            : null,
+        withdrawalReason:
+          status === 'WITHDRAWN'
+            ? (WITHDRAWAL_REASONS[index % WITHDRAWAL_REASONS.length] ?? 'OTHER')
+            : null,
         claimedAt: hasClaim ? submittedAt : null,
         releasedAt: released ? DEV_VEHICLE_ANCHOR : null,
         decisionReason:

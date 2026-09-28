@@ -238,6 +238,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R66 — The dealer's enquiry inbox · revises F091 · `GET /v1/dealer/enquiries` (+ `/counts`), `PATCH /v1/dealer/enquiries/:id`; New / Contacted / Closed / Spam; tenant-scoped, a 404 for another dealership's; `/dealer/enquiries` in the console nav
 - [x] R67 — Enquiry counts on the dashboard, and the signed-in header · revises F048/F073 · dashboard tile, recent panel and `counts.newEnquiries` read `enquiries`; header shows "Hi, name" + Logout for a customer; mobile header fits at 375
 - [x] R68 — Customers track their enquiries, and ask again once one is closed · revises R64/R65/R67 · `GET /v1/enquiries` + `/enquiries` (Sent / Contacted / Closed; spam shown as Closed); one open enquiry per car replaces the 24-hour rule; "Requires login" under Enquire
+- [~] R69 — The listing lifecycle a buyer can see: Active, Reserved, Sold, Withdrawn · revises F064/F067/R47 · ⚠️ `REMOVED` renamed `WITHDRAWN`, `RESERVED` added · five dealer routes; `SOLD` is final; a withdrawn car keeps its plate
 
 ---
 

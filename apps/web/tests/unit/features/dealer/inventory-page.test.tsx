@@ -26,6 +26,8 @@ function inventory(overrides: Partial<DealerInventoryResponse> = {}): DealerInve
         statusTone: 'warn',
         reason: null,
         complete: true,
+        slug: null,
+        actions: [],
         updatedAt: '2026-09-20T00:00:00.000Z',
         updatedLabel: '20 Sep 2026',
       },
@@ -40,6 +42,8 @@ function inventory(overrides: Partial<DealerInventoryResponse> = {}): DealerInve
         statusTone: 'warn',
         reason: 'The variant is wrong.',
         complete: true,
+        slug: null,
+        actions: [],
         updatedAt: '2026-09-19T00:00:00.000Z',
         updatedLabel: '19 Sep 2026',
       },
@@ -85,8 +89,9 @@ describe('/dealer/inventory', () => {
       'Pending review1',
       'Changes requested1',
       'Active0',
+      'Reserved0',
       'Sold0',
-      'Removed0',
+      'Withdrawn0',
     ]);
     expect(tabs.getByRole('link', { name: /Changes requested/ })).toHaveAttribute(
       'aria-current',
