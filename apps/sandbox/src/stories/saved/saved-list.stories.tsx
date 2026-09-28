@@ -25,13 +25,19 @@ function saved(cars: VehicleCardDto[], nextCursor: string | null = null): SavedV
   };
 }
 
+const EVERY_SLUG = ['vxi', 'zxi', 'lxi', 'vdi', 'zdi'];
+
+function everySaved() {
+  return Promise.resolve({ status: 'customer' as const, slugs: EVERY_SLUG });
+}
+
 const meta = {
   title: 'Vehicle/SavedList',
   component: SavedList,
   parameters: { layout: 'padded', nextjs: { appDirectory: true } },
   decorators: [
     (Story) => (
-      <SavedVehiclesProvider>
+      <SavedVehiclesProvider loadSlugs={everySaved}>
         <Story />
       </SavedVehiclesProvider>
     ),
