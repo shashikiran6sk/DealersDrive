@@ -5685,3 +5685,77 @@ completion on onboarding step 1) are their first callers.
   directions of convergence, idempotent relinking, every collision refused,
   three races, the CHECK); `auth.test.ts`, `phone-verification.test.ts` and
   `dealer-onboarding.test.ts` pass unchanged.
+
+## R60 — Dealers sign in with their phone, and land where Google would have sent them
+
+**Revises F018 / R39** · no schema change
+
+A dealer whose number is verified can now sign in with it: the MSG91 widget
+proves the handset, and the API issues the same `dd_session` a Google sign-in
+issues. The rule that governs the whole PR is that **the method of sign-in
+never changes the destination**.
+
+### One destination resolver
+
+Before R60 the status-to-destination branch was written out twice — the Google
+callback and the dealer session (`GET /v1/auth/me`). It is now:
+
+- `dealerSessionNext(status)` in contracts — the pure rule. `null` (no
+  dealership) and `DRAFT` → `ONBOARDING`; `PENDING_APPROVAL` →
+  `PENDING_APPROVAL`; everything else → `DASHBOARD`.
+- `resolveDealerPostAuthDestination(db, userId, requested?)` in
+  `modules/auth/post-auth.ts` — the lookup, the `SUSPENDED` refusal and the
+  return path (`safeReturnTo`, ignored while onboarding).
+
+Google sign-in, phone sign-in and `/me` all answer through them. With the
+repository's actual statuses:
+
+| Dealership status                                 | Destination                            |
+| ------------------------------------------------- | -------------------------------------- |
+| none yet                                          | `ONBOARDING` → `/dealer/onboarding`    |
+| `DRAFT` (incl. changes requested — back to DRAFT) | `ONBOARDING` → `/dealer/onboarding`    |
+| `PENDING_APPROVAL`                                | `PENDING_APPROVAL` → `/dealer`         |
+| `ACTIVE`                                          | `DASHBOARD` → `/dealer` or a safe path |
+| `REJECTED`, `CLOSED`                              | `DASHBOARD` (unchanged behaviour)      |
+| `SUSPENDED`, or the dealer seat closed            | refused, `403 ACCOUNT_SUSPENDED`       |
+
+### Phone sign-in
+
+- `POST /v1/auth/sign-in/phone/dealer` — `PhoneSignInInput` `{ phone,
+accessToken, returnTo? }` → `PhoneSignInResponse` `{ next, returnTo }`,
+  with `dd_session` set. Proof purpose `DEALER_LOGIN`, so an unreachable
+  replay guard refuses rather than allows (R58).
+- The account is found by its **verified** phone only (`findByVerifiedPhone`,
+  R59). A dealer account holds a dealer seat or an active membership.
+- `404 DEALER_NOT_FOUND` for a proved number no dealer holds — said only after
+  possession is proved, and nothing is created (that is R61).
+- Audited as `auth.login.phone`; logged as `auth.session.created` with
+  `method: 'PHONE'` (the Google line now carries `method: 'GOOGLE'`).
+- Rate limits: 20 per 10 minutes per IP and 10 per 10 minutes per number.
+
+### ⚠️ The widget credentials are now public
+
+`GET /v1/auth/sign-in/phone/widget` serves `PhoneOtpWidget` without a session,
+30 an hour per IP. A phone sign-in has no session before it starts, so R39's
+gate on MSG91 spend — "only somebody who completed a Google sign-in can read
+the widget credentials" — no longer holds. The remaining controls are
+MSG91's per-number limits and **widget captcha, which should be switched on in
+the MSG91 dashboard before this reaches production**, plus the API's limits on
+the sign-in that spends the token. The API still cannot count sends; only an
+API-side send endpoint could. The session-gated `GET /v1/auth/phone/widget` is
+left exactly as it was, so onboarding does not change.
+
+### Not here
+
+No screen (R62), no provisional account for an unknown number (R61), no
+customer sign-in (R63). The web action that relays the `dd_session` cookie
+from this response lands with the Login UI.
+
+- **Tests** `apps/api/tests/dealer-phone-sign-in.test.ts` — every status
+  signed into by Google and by phone with the answers compared, `/me` after a
+  phone sign-in, the console and logout, audit, safe and unsafe return paths,
+  wrong code, replayed token, mismatched number, unknown number, unverified
+  legacy number, closed seat, unknown field; `tests/unit/modules/auth/phone-sign-in.routes.test.ts`
+  (both limits, the keys, the cookie); `packages/contracts/tests/unit/auth.test.ts`
+  (`dealerSessionNext` over every status). `auth.test.ts` and
+  `phone-verification.test.ts` pass unchanged.

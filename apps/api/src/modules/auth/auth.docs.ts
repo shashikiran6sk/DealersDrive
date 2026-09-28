@@ -255,7 +255,10 @@ export const authDocs: ModuleDocs = {
         'What the onboarding screen initialises `verify.msg91.com/otp-provider.js` with ' +
         '(**R39**). Served from the API rather than inlined as `NEXT_PUBLIC_*`, so rotating a ' +
         'widget is a restart and not a rebuild of the web image (rule 9).\n\n' +
-        '**Behind a session on purpose.** The widget sends the SMS from the browser, so ' +
+        '**Behind a session on purpose** — though since **R60** the same configuration is ' +
+        'also served, rate-limited per IP, to people signing in with their phone ' +
+        '(`GET /v1/auth/sign-in/phone/widget`), so the session is no longer the spend ' +
+        'control it was. The widget sends the SMS from the browser, so ' +
         'whoever holds `widgetId` and `tokenAuth` can spend this MSG91 balance — which makes ' +
         'who may read them the only gate the API still owns over that spend. On ' +
         '`GET /v1/config/public` that gate would have been the open internet, and that ' +
@@ -396,6 +399,86 @@ export const authDocs: ModuleDocs = {
         'separately; both revoke whatever row the presented cookie names.',
       audience: 'public',
       responses: [{ status: 204, description: 'Revoked and cleared.' }],
+    },
+    {
+      method: 'get',
+      path: '/v1/auth/sign-in/phone/widget',
+      operationId: 'getSignInPhoneWidget',
+      tag: DOC_TAGS.auth,
+      summary: 'Credentials for the MSG91 OTP widget, before sign-in',
+      description:
+        'The same configuration `GET /v1/auth/phone/widget` serves, for somebody who is ' +
+        '**not signed in yet** and wants to sign in with their phone (**R60**).\n\n' +
+        '**What this changes about R39\u2019s spend control.** The widget sends the SMS from ' +
+        'the browser, so these two strings are a licence to send messages, and R39 kept them ' +
+        'behind a session for that reason. A phone sign-in cannot have a session before it ' +
+        'starts, so from R60 the controls are: 30 reads an hour per IP here; MSG91\u2019s own ' +
+        'per-number limits and the widget\u2019s captcha, configured on the MSG91 dashboard; ' +
+        'and, on the API side, the rate limits on the sign-in that spends the token. The API ' +
+        'still cannot count sends — only an API-side send endpoint could, and that is a ' +
+        'different integration.\n\n' +
+        '`MSG91_AUTH_KEY` is never here. `Cache-Control: no-store`.',
+      audience: 'public',
+      responses: [
+        {
+          status: 200,
+          description: 'The widget configuration for this deployment.',
+          schema: 'PhoneOtpWidget',
+          example: {
+            enabled: true,
+            driver: 'msg91',
+            widgetId: 'example-widget-id',
+            tokenAuth: 'example-widget-token',
+            devCode: null,
+            reason: null,
+          },
+        },
+      ],
+      errors: [429],
+    },
+    {
+      method: 'post',
+      path: '/v1/auth/sign-in/phone/dealer',
+      operationId: 'signInDealerWithPhone',
+      tag: DOC_TAGS.auth,
+      summary: 'Sign a dealer in with a proved phone',
+      description:
+        'The second way into the dealer console (**R60**). The browser runs the MSG91 widget; ' +
+        'this takes the access token it produced to MSG91 with the server-only key, confirms ' +
+        'it proves **this** number, finds the dealer account whose *verified* phone it is, and ' +
+        'issues the same `dd_session` cookie a Google sign-in issues. The destination comes ' +
+        'from the same resolver the Google callback uses, so the method of sign-in never ' +
+        'changes where a dealer lands: onboarding while the dealership is a draft (including ' +
+        'after an operator asked for changes), the review screen while it is pending, the ' +
+        'dashboard otherwise.\n\n' +
+        '**Only a proved number signs in.** A number an account holds but never verified is ' +
+        'treated as unknown. Nothing is revealed about a number before its token is proved: ' +
+        'the first refusal a caller can see is `422 PHONE_VERIFICATION_FAILED`, the same for a ' +
+        'wrong code, a token for another number and a token already used.\n\n' +
+        '`404 DEALER_NOT_FOUND` when the proved number belongs to no dealer account — ' +
+        'answered only after possession is proved, so it tells a caller nothing about a number ' +
+        'they do not hold. `403 ACCOUNT_SUSPENDED` for a suspended account or dealership. ' +
+        '`503 PHONE_OTP_UNAVAILABLE` when MSG91, or the replay guard, cannot answer — a ' +
+        'sign-in that cannot rule out a replayed token is refused rather than allowed.\n\n' +
+        'Rate-limited to 20 attempts in 10 minutes per IP and 10 per number.',
+      audience: 'public',
+      requestBody: {
+        schema: 'PhoneSignInInput',
+        example: {
+          phone: '9840012345',
+          accessToken: '<the signed token verifyOtp() handed the page>',
+          returnTo: '/dealer/inventory',
+        },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Signed in; `dd_session` is set on the response.',
+          schema: 'PhoneSignInResponse',
+          example: { next: 'DASHBOARD', returnTo: '/dealer/inventory' },
+        },
+      ],
+      errors: [400, 403, 404, 422, 429, 503],
     },
   ],
 };

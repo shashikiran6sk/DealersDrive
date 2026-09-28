@@ -12,6 +12,10 @@ import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
 import type { OAuthProvider } from './modules/auth/oauth.port.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
 import { createPhoneService, type PhoneService } from './modules/auth/phone.service.js';
+import {
+  createPhoneSignInService,
+  type PhoneSignInService,
+} from './modules/auth/phone-sign-in.service.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import {
   createDealersPublicService,
@@ -82,6 +86,7 @@ export interface Container {
   readonly auth: AuthService;
   readonly phoneOtp: PhoneOtpPort;
   readonly phone: PhoneService;
+  readonly phoneSignIn: PhoneSignInService;
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
   readonly admin: AdminService;
@@ -143,6 +148,13 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   });
   const phoneOtp = overrides.phoneOtp ?? createPhoneOtp();
   const phone = createPhoneService({ prisma, otp: phoneOtp, cache });
+  const phoneSignIn = createPhoneSignInService({
+    prisma,
+    sessions: sessionStore,
+    otp: phoneOtp,
+    cache,
+    audit,
+  });
   const admin = createAdminService({ prisma, audit, config, storage, dealers });
   const publicConfig = createConfigService({ config });
   const media = createMediaService({ prisma, storage });
@@ -180,6 +192,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     auth,
     phoneOtp,
     phone,
+    phoneSignIn,
     dealers,
     dealersPublic,
     admin,
