@@ -343,6 +343,27 @@ describe('/cars search and sort', () => {
   });
 });
 
+/**
+ * R55 — the controls read in the order `/dealers` uses: the search first, then
+ * the district, then the sort (and on a phone the Filters button) at the end.
+ */
+describe('/cars controls row', () => {
+  it('puts the search, the district and the sort in one group, in that order', async () => {
+    setLocation('/cars', 'district=ranipet');
+    serve({ ...response([card()]), facets: FACETS });
+    render(await CarsPage({ searchParams: Promise.resolve({ district: 'ranipet' }) }));
+    const row = screen.getByRole('group', { name: 'Search, district and sort' });
+    const search = within(row).getByRole('combobox', { name: /search cars by make/i });
+    const district = within(row).getByRole('button', { name: /change district/i });
+    const sort = within(row).getByRole('combobox', { name: 'Sort cars' });
+    expect(
+      search.compareDocumentPosition(district) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(district.compareDocumentPosition(sort) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(row).queryByRole('searchbox')).toBeNull();
+  });
+});
+
 /** F079 — below `lg` the rail is hidden and the same panel opens as a sheet. */
 describe('/cars on a phone', () => {
   it('puts a Filters button beside the sort, counting what is applied', async () => {

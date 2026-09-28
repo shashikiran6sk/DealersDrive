@@ -1575,7 +1575,6 @@ export const registry: RegistryEntry[] = [
       'params',
       'basePath',
       'showSearch',
-      'searchBox',
       'searchPlaceholder',
       'idPrefix',
       'leading',

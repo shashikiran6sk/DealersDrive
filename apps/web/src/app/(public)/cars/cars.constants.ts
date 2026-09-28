@@ -25,6 +25,7 @@ export const CARS_TEXT = {
     'Try removing a filter or two — every one you clear can only bring more cars back.',
   emptyFilteredAction: 'Clear filters',
   filtersLabel: 'Filter cars',
+  controlsLabel: 'Search, district and sort',
   pagination: 'Pagination',
   previous: '← Previous',
   next: 'Next →',

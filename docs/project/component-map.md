@@ -419,6 +419,10 @@ Both in `components/search/search-toolbar.tsx` (`:11`, `:82`).
   and follows the URL on Back. The sort offers Newest, Price ↑, Price ↓, Year,
   Km. Tests `tests/unit/components/search/search-toolbar.test.tsx`. Sandbox
   `Search/SearchToolbar`.
+  **R55:** `/cars` renders it with `showSearch={false}` — sort and Filters only,
+  pushed right in the page's controls row — and puts `CarSearchBox` and
+  `DistrictScope` first, the order `/dealers` uses. The portfolio still uses the
+  whole toolbar.
 - `MobileFilterSheet` — `facets`, `params`, `basePath`, `resultCount`, `groups?`, `dimZeroRows?`. Bottom sheet; body-scroll lock, Escape-to-close, sticky CTA with a live count. Consumers: 2. **P0** — it is the only mobile-specific component in the product and there is no way to see it today without resizing a real browser against a real API.
   **As rebuilt (F079):** `components/search/mobile-filter-sheet/`. Props
   `facets`, `params`, `basePath`, `total`, `groups?`, `className?`. The same
@@ -531,7 +535,7 @@ because its _town_ matched has none of the typed characters in its name.
 `components/search/car-search-box/`. Props: `params`, `basePath`,
 `districtName?`, `className?`. States: empty, loading, suggestions (first
 highlighted), arrowed, nothing found, endpoint failed, a search already applied.
-One consumer (`/cars`, through `SearchToolbar`'s `searchBox` slot). **NEW at
+One consumer (`/cars`, first in the page's controls row since R55). **NEW at
 R54.** **P1**
 
 The second consumer of `Autocomplete` (C073), as C073 required — no second

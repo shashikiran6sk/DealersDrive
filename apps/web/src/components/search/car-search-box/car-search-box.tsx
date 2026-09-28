@@ -68,7 +68,7 @@ export function CarSearchBox({ params, basePath, districtName, className }: CarS
   return (
     <form
       role="search"
-      className={cn('w-full sm:w-[300px]', className)}
+      className={cn('w-full sm:max-w-[360px]', className)}
       onSubmit={(event) => {
         event.preventDefault();
         submit();

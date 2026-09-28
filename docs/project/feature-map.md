@@ -5441,3 +5441,25 @@ same shared `Autocomplete` rather than a second one:
   `search.test.ts` (`rankSuggestions`, router order), `public.test.ts`
   (`CarSuggestQuery`), `search-vehicles-route.test.ts`,
   `car-search-box.test.tsx`.
+
+## R55 — `/cars` controls read like `/dealers`
+
+**Revises F080, R50, R54** · no schema change · layout only
+
+`/cars` had its search and sort floated right of the title, with the district
+control on a row of its own below. It now has the directory's shape:
+
+- The title and count on their own row, as on `/dealers`.
+- One controls row (`role="group"`, "Search, district and sort"):
+  `CarSearchBox` first, the same 38px field and 360px width as
+  `DealerSearchBox`; then `DistrictScope` (which reuses `DistrictPicker`); then
+  `SearchToolbar` with `showSearch={false}`, the sort pushed right by `ml-auto`,
+  and the mobile Filters button before it.
+- On a phone the search is full width, the district button wraps under it, and
+  Filters + Sort share the last line. No horizontal scroll at 390, 820 or
+  1360px.
+- The applied-filter chips move to their own row, which collapses when empty.
+- `SearchToolbar`'s `searchBox` slot from R54 is removed. The page composes the
+  row itself, so the slot had no consumer.
+- **Tests** `vehicle-card.test.tsx` ("/cars controls row": one group, in order,
+  and no second search field).
