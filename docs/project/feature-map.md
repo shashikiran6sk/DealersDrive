@@ -6076,3 +6076,66 @@ R67.
   five simultaneous presses → one; follow-up after a day, other car, other
   customer all accepted; the phone absent from the public page),
   `tests/unit/routes.test.ts` (the route runs only the customer guard).
+
+## R65 — Enquire from the vehicle page, through sign-in and back
+
+**Revises F089** · no schema, no API change
+
+The baseline's vehicle page had a form a buyer typed a name and number into.
+Now the page has one button, **Enquire now**, and the enquiry is sent by a
+signed-in customer (R62) through `POST /v1/enquiries` (R64).
+
+### What a buyer sees
+
+- **`/car/[slug]`** — `Enquire now` (`btn-primary`, 44px) under the price
+  block, per DESIGN-SPEC §3.4; below `lg` it is also pinned as the bottom
+  action bar with `--shadow-lg`.
+- **Not signed in** → `/login?returnTo=/car/<slug>?enquire=1`, on the Customer
+  tab (the default). After the code — and, for a new number, the name — the
+  customer lands back on the car.
+- **`?enquire=1`** opens the form by itself. It is dropped once the enquiry is
+  sent, so a reload does not reopen it.
+- **The form** — the customer's name and mobile shown read-only, the mobile
+  tagged `Verified`; an optional message (1,000 characters); a sentence saying
+  the dealership receives the name and verified number; `Send enquiry` and
+  `Cancel`. There is no field for a name or number.
+- **Sent** — "Enquiry sent — <dealer> has received your contact request."
+- **Already enquired** (`ENQUIRY_ALREADY_SUBMITTED_RECENTLY`) and **no longer
+  available** (`LISTING_NOT_AVAILABLE`) replace the form with a banner and the
+  API's sentence; no second Send is offered. Any other refusal (a rate limit,
+  own dealership) stays on the form as an alert.
+
+### How
+
+- The page **stays static** (ISR, `revalidate = 60`). The panel is a client
+  component; who is signed in is asked by `enquiryCustomerAction` only when
+  Enquire is pressed, and the send is `sendEnquiryAction` — both Server
+  Actions forwarding the visitor's own cookie.
+- `?enquire=1` is read by `EnquireFromUrl` under a `Suspense` boundary whose
+  fallback is the same panel, so the button is in the static HTML.
+- **Double submit** — a ref set synchronously on submit; the API's
+  one-per-day guard is the backstop.
+- **The request** is `{ listingSlug, message? }` only, parsed with the
+  contracts `CreateEnquiryInput` before it is sent.
+
+### Files
+
+`apps/web/src/features/enquiry/` — `actions.ts`, `actions.constants.ts`,
+`enquiry-panel/{enquiry-panel.tsx, enquiry-form.tsx, enquire-from-url.tsx,
+enquiry-panel.constants.ts, enquiry-panel.types.ts, index.ts}`;
+`apps/web/src/app/(public)/car/[slug]/page.tsx`.
+
+- **Components** C088 `EnquiryPanel`, C089 `EnquiryForm` — sandbox
+  `Vehicle/EnquiryPanel` (idle, signed out, form, sent, already sent, no
+  longer available, rate-limited), mock `apps/sandbox/src/mocks/enquiry-actions.ts`.
+- **Tests** `apps/web/tests/unit/features/enquiry/enquiry-panel.test.tsx`
+  (anonymous → login with the return path; prefilled read-only name and
+  verified mobile; no message; a typed message; three presses send once; sold
+  meanwhile; already enquired; session ended; `?enquire=1` auto-opens and is
+  dropped after sending), `actions.test.ts` (the customer, or null on 401; only
+  slug and message sent; a blank message omitted; refusal codes passed through;
+  401 → signed out; an over-long message refused before any call).
+
+### Not here
+
+The dealer's inbox (R66); the signed-in header and the dashboard counts (R67).
