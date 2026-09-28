@@ -1,6 +1,12 @@
 import { PHONE_TEXT } from './phone-verification.constants';
 
-export function PhoneUnavailable({ reason }: { reason?: string }) {
+export function PhoneUnavailable({
+  reason,
+  tail = PHONE_TEXT.unavailableTail,
+}: {
+  reason?: string;
+  tail?: string;
+}) {
   return (
     <section
       role="status"
@@ -8,7 +14,7 @@ export function PhoneUnavailable({ reason }: { reason?: string }) {
     >
       <p className="font-semibold text-(--color-warn)">{PHONE_TEXT.unavailableTitle}</p>
       <p className="mt-[4px] ink-body">
-        {reason ?? PHONE_TEXT.unavailableReason} {PHONE_TEXT.unavailableTail}
+        {reason ?? PHONE_TEXT.unavailableReason} {tail}
       </p>
     </section>
   );

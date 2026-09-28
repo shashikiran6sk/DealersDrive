@@ -24,6 +24,7 @@ export interface PhoneCodePanelProps {
   onVerify: () => void;
   onResend: () => void;
   onReset: () => void;
+  verifyLabel?: string;
 }
 
 export function PhoneCodePanel({
@@ -40,6 +41,7 @@ export function PhoneCodePanel({
   onVerify,
   onResend,
   onReset,
+  verifyLabel = PHONE_TEXT.verifyAndContinue,
 }: PhoneCodePanelProps) {
   const exhausted = attemptsLeft <= 0;
 
@@ -133,7 +135,7 @@ export function PhoneCodePanel({
           disabled={code.length < OTP_DIGITS || exhausted}
           onClick={onVerify}
         >
-          {PHONE_TEXT.verifyAndContinue}
+          {verifyLabel}
         </Button>
         <Button variant="secondary" size="md" onClick={onReset}>
           {PHONE_TEXT.cancel}

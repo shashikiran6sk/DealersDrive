@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { checkPhoneAvailabilityAction, verifyPhoneAction } from '@/features/auth/phone-actions';
-import { loadMsg91Widget, retryMsg91Otp, sendMsg91Otp, verifyMsg91Otp } from '@/lib/msg91-widget';
+import { phoneOtpToken, sendPhoneOtp } from '@/lib/phone-otp';
 
 import { Captcha } from './captcha';
 import { PhoneCodePanel } from './phone-code-panel';
@@ -18,7 +18,7 @@ import {
   RESEND_SECONDS,
 } from './phone-verification.constants';
 import type { PhoneStage, PhoneVerificationProps } from './phone-verification.types';
-import { identifierOf, isServiceFailure } from './utils';
+import { isServiceFailure } from './utils';
 
 export function PhoneVerification({
   widget,
@@ -80,15 +80,7 @@ export function PhoneVerification({
         }
       }
 
-      if (widget.driver === 'msg91') {
-        await loadMsg91Widget({
-          widgetId: widget.widgetId ?? '',
-          tokenAuth: widget.tokenAuth ?? '',
-          captchaRenderId: captchaId,
-        });
-        if (resend) await retryMsg91Otp(identifierOf(phone));
-        else await sendMsg91Otp(identifierOf(phone));
-      }
+      await sendPhoneOtp(widget, phone, { resend, captchaRenderId: captchaId });
 
       setCode('');
       setAttemptsLeft(LOCAL_ATTEMPTS);
@@ -108,10 +100,7 @@ export function PhoneVerification({
     setFailure(null);
 
     try {
-      const accessToken =
-        widget.driver === 'msg91'
-          ? await verifyMsg91Otp(entered)
-          : `dev-otp:${identifierOf(phone)}:${entered}:${String(Date.now())}`;
+      const accessToken = await phoneOtpToken(widget, phone, entered);
 
       const result = await verifyPhoneAction(phone, accessToken);
 

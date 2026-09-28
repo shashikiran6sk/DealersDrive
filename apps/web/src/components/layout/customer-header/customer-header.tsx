@@ -39,9 +39,8 @@ export function CustomerHeader({ locations }: { locations: PublicLocations }) {
           <Suspense fallback={<LocationChipFallback />}>
             <LocationSelector locations={locations} />
           </Suspense>
-          <Link href={HEADER_NAV.dealerConsole} className="btn btn-primary">
-            <span className="hidden lg:inline">{HEADER_TEXT.dealerLogin}</span>
-            <span className="lg:hidden">{HEADER_TEXT.login}</span>
+          <Link href={HEADER_NAV.login} className="btn btn-primary">
+            {HEADER_TEXT.login}
           </Link>
         </div>
       </div>

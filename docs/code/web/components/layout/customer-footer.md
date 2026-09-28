@@ -13,11 +13,12 @@ The buyer sections, in the header's order. One list rather than three JSX
 blocks, so "does the footer agree with the header" is a question somebody can
 answer by reading eight lines.
 
-### `export const DEALER_LINKS: FooterLink[] = [{ href: '/dealer', label: 'Dealer login' }]`
+### `export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'Dealer login' }]`
 
-One door, and it is `/dealer` (**R35**). The console decides between "sign in"
-and "finish onboarding" from the session, so neither header nor footer has to
-guess which a visitor needs — and therefore neither can get it wrong.
+One door (**R35**). Since **R63** it opens the unified login on its Dealer tab
+rather than `/dealer`, which only redirected a signed-out visitor to sign-in;
+a signed-in dealer asking for the Dealer tab is still sent to their console by
+the shared destination resolver, so neither header nor footer has to guess.
 
 ## `apps/web/src/components/layout/customer-footer/customer-footer.tsx`
 

@@ -349,6 +349,8 @@ Global frame: content `max-width:1280px`, `margin:0 auto`, `padding:0 24px`; des
 
 **R35** removed the second CTA. `List your cars` (`btn-primary`) sat beside `Dealer login` and pointed at the same `/dealer` route, so the pair read as a choice and had one outcome; the surviving button takes the primary weight and is visible at every width, because it is now the only way in.
 
+**R63** renamed it. The CTA says `Login` at every width and opens `/login`, whose Customer tab is the default and whose Dealer tab replaces §3.9's sign-in screen; buyers have accounts since R62.
+
 ### 3.2 Homepage
 
 1. **Hero** — `background:#fff`, `padding:56px 24px 44px`, two columns `repeat(auto-fit, minmax(320px,1fr))`, `gap:36px`, `align-items:center`. Left: `label-brand` eyebrow · `display` H1 ("Find your next car") · 16px 70% paragraph (`max-width:46ch`) · blueprint search block (`padding:14px`: 48px single input + 48px `btn-primary`, then a 12px 55% city line) · popular chips row (`gap:8px`, 12px `btn-secondary`). Right: `.blueprint.duotone` hero image, `aspect-ratio:4/3`.
@@ -416,6 +418,8 @@ Centred column `max-width:560px; padding:52px 24px 70px` on `#fff`. Brand row (l
 - **OTP**: `h1-page` "Enter the OTP" · context line · six 52×58 cells `gap:9px` · optional `--err-bg` error banner · 44px primary (`Verify and sign in` / `Verify and continue`) · footer row `← Change number` / `Resend OTP (00:24)`.
 
 Sign-in OTP → dealer dashboard. Sign-up OTP → onboarding step 1. 375: `padding:32px 16px`; OTP cells 44×52, `gap:6px`.
+
+**R63**: this is now the Dealer tab of `/login` — `Continue with Google`, an `or` rule, then the phone field and `Send OTP`, with the OTP state as drawn above. The Customer tab is the same phone flow with one extra state for a first sign-in: "Your number is verified", a single `Name` field and `Create account`. Tabs are the §2.4 `.seg`.
 
 ### 3.10 Dealer onboarding
 
@@ -551,6 +555,8 @@ A listing is public **only** in `ACTIVE`. `PENDING` and `REJECTED` must never ap
 ### 4.10 Buyer anonymity
 
 No customer auth anywhere. Saved cars, city choice, and search query live in `localStorage`/URL state only. Never gate the catalogue, a VDP, a portfolio, or an enquiry form behind a sign-in.
+
+**R62 superseded the enquiry half of this.** Customers sign in with their phone (no email, no password), and an enquiry needs a signed-in customer so the number a dealer receives is a proved one. Browsing is unchanged: the catalogue, a VDP and a portfolio are never gated, and saved cars and the district stay device-local.
 
 ### 4.11 Counts are derived
 
