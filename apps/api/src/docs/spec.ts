@@ -2,7 +2,7 @@ import type { JsonSchema } from './schemas.js';
 
 export type HttpMethod = 'get' | 'post' | 'patch' | 'put' | 'delete';
 
-export type Audience = 'public' | 'dealer' | 'admin' | 'internal';
+export type Audience = 'public' | 'dealer' | 'admin' | 'customer' | 'internal';
 
 export interface ResponseSpec {
   status: number;

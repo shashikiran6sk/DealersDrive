@@ -442,3 +442,84 @@ export const PhoneSignInResponse = z.object({
   returnTo: z.string(),
 });
 export type PhoneSignInResponse = z.infer<typeof PhoneSignInResponse>;
+
+/**
+ * ── R62 · customers ─────────────────────────────────────────────────────────
+ *
+ * A buyer signs in with their phone and nothing else: no Google, no email, no
+ * password. A number the platform has not seen is proved first and named
+ * second, so an account never exists before its owner has both shown they hold
+ * the handset and told us what to call them.
+ */
+
+/**
+ * What a customer is called — the one thing sign-up asks for.
+ *
+ * One field, not first and last: plenty of people have one name, and the
+ * dealer who calls back needs what the buyer answers to, not a form's idea of
+ * how names are shaped. Any script — `\p{L}` rather than `[A-Za-z]` — so
+ * "ಶಶಿಕಿರಣ್" and "Sasikiran" are both names. It must contain a letter, and
+ * control characters are refused, so a name cannot be blank-looking or break a
+ * line on the dealer's screen.
+ */
+export const CustomerName = z
+  .string()
+  .trim()
+  .min(2, 'Enter your name.')
+  .max(80, 'Keep your name under 80 characters.')
+  .refine((value) => /\p{L}/u.test(value), 'Enter your name.')
+  .refine((value) => !/\p{Cc}/u.test(value), 'Enter your name.');
+
+/** `POST /v1/auth/sign-in/phone/customer` — the same proof a dealer presents. */
+export const CustomerSignInInput = z
+  .object({
+    phone: IndianMobile,
+    accessToken: z.string().trim().min(1, 'The verification token is missing.').max(4096),
+  })
+  .strict();
+export type CustomerSignInInput = z.infer<typeof CustomerSignInInput>;
+
+/** A customer, as the customer themselves sees it. */
+export const CustomerProfile = z.object({
+  id: Uuid,
+  fullName: z.string(),
+  phone: z.string(),
+  phoneDisplay: z.string(),
+});
+export type CustomerProfile = z.infer<typeof CustomerProfile>;
+
+/**
+ * What a proved number leads to.
+ *
+ * `SIGNED_IN` — the account existed; `dd_session` is on the response.
+ *
+ * `NAME_REQUIRED` — the number is proved and no account is named for it yet.
+ * `signUpToken` is the proof, carried to `POST /v1/auth/sign-up/customer`: an
+ * HMAC-sealed, single-use ticket for **this** number that expires at
+ * `expiresAt`. It is not a session and opens nothing else.
+ */
+export const CustomerSignInResponse = z.object({
+  status: z.enum(['SIGNED_IN', 'NAME_REQUIRED']),
+  /** The signed-in customer. Null while `NAME_REQUIRED`. */
+  customer: CustomerProfile.nullable(),
+  /** The sealed sign-up ticket. Null once `SIGNED_IN`. */
+  signUpToken: z.string().nullable(),
+  /** When `signUpToken` stops being accepted. Null once `SIGNED_IN`. */
+  expiresAt: z.string().nullable(),
+  /** The proved number, formatted — what the name screen says was verified. */
+  phoneDisplay: z.string(),
+});
+export type CustomerSignInResponse = z.infer<typeof CustomerSignInResponse>;
+
+/** `POST /v1/auth/sign-up/customer` — the ticket, and the name. Nothing else. */
+export const CustomerSignUpInput = z
+  .object({
+    signUpToken: z.string().trim().min(1).max(2048),
+    fullName: CustomerName,
+  })
+  .strict();
+export type CustomerSignUpInput = z.infer<typeof CustomerSignUpInput>;
+
+/** `GET /v1/auth/customer/me` and the answer to a completed sign-up. */
+export const CustomerSession = z.object({ customer: CustomerProfile });
+export type CustomerSession = z.infer<typeof CustomerSession>;

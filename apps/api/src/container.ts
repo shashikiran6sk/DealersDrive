@@ -1,7 +1,8 @@
 import type { PrismaClient } from '@prisma/client';
+import type { RequestHandler } from 'express';
 
 import { env, type Env } from './config/env.js';
-import { createAuthMiddleware } from './middleware/auth.js';
+import { createAuthMiddleware, createCustomerGuard } from './middleware/auth.js';
 import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
 import { createAdminService, type AdminService } from './modules/admin/admin.service.js';
 import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
@@ -11,6 +12,11 @@ import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js'
 import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
 import type { OAuthProvider } from './modules/auth/oauth.port.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
+import {
+  createCustomerAuthService,
+  type CustomerAuthService,
+} from './modules/auth/customer-auth.service.js';
+import { createCustomerResolver } from './modules/auth/customer-session.js';
 import { createPhoneService, type PhoneService } from './modules/auth/phone.service.js';
 import {
   createPhoneSignInService,
@@ -82,11 +88,12 @@ export interface Container {
   readonly sessions: SessionResolver;
   readonly sessionStore: SessionService;
   readonly oauth: OAuthProvider;
-  readonly guards: ReturnType<typeof createAuthMiddleware>;
+  readonly guards: ReturnType<typeof createAuthMiddleware> & { requireCustomer: RequestHandler };
   readonly auth: AuthService;
   readonly phoneOtp: PhoneOtpPort;
   readonly phone: PhoneService;
   readonly phoneSignIn: PhoneSignInService;
+  readonly customers: CustomerAuthService;
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
   readonly admin: AdminService;
@@ -128,7 +135,10 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
 
   const sessionStore = createSessionService(prisma);
   const sessions = overrides.sessions ?? createResolver(prisma, sessionStore);
-  const guards = createAuthMiddleware(sessions);
+  const guards = {
+    ...createAuthMiddleware(sessions),
+    requireCustomer: createCustomerGuard(createCustomerResolver(sessionStore)),
+  };
   const oauth = overrides.oauth ?? createGoogleOAuthProvider();
 
   const audit = createAuditService(prisma);
@@ -148,6 +158,13 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   });
   const phoneOtp = overrides.phoneOtp ?? createPhoneOtp();
   const phone = createPhoneService({ prisma, otp: phoneOtp, cache });
+  const customers = createCustomerAuthService({
+    prisma,
+    sessions: sessionStore,
+    otp: phoneOtp,
+    cache,
+    audit,
+  });
   const phoneSignIn = createPhoneSignInService({
     prisma,
     sessions: sessionStore,
@@ -193,6 +210,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     phoneOtp,
     phone,
     phoneSignIn,
+    customers,
     dealers,
     dealersPublic,
     admin,

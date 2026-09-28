@@ -29,7 +29,16 @@ export interface AdminPrincipal {
   permissions: readonly string[];
 }
 
-export type Principal = DealerPrincipal | PendingPrincipal | AdminPrincipal;
+export interface CustomerPrincipal {
+  kind: 'CUSTOMER';
+  userId: string;
+  fullName: string;
+  phone: string;
+  via: 'CUSTOMER' | 'DEALER';
+  permissions: readonly string[];
+}
+
+export type Principal = DealerPrincipal | PendingPrincipal | AdminPrincipal | CustomerPrincipal;
 
 export interface SessionResolver {
   resolveDealer(req: Request): Promise<DealerPrincipal | null>;

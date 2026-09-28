@@ -98,6 +98,10 @@ model UserRole {
 enum PlatformRole {
   DEALER
   ADMIN
+  /// A buyer (**R62**). One person can hold this and `DEALER` at once: a dealer
+  /// who signs in on the customer tab with their proved phone reaches the same
+  /// user, now with two seats, never a second account.
+  CUSTOMER
 }
 
 enum UserRoleStatus {
@@ -156,9 +160,14 @@ enum UserStatus {
   DELETED
 }
 
+/// `CUSTOMER` (**R62**) is a buyer signed in with their phone. It is a third
+/// scope rather than a dealer session with no dealership, because that shape is
+/// already taken: a `DEALER` session without a membership is a dealer
+/// mid-onboarding, and a customer read that way would be offered a wizard.
 enum SessionScope {
   DEALER
   ADMIN
+  CUSTOMER
 }
 
 enum OAuthProvider {

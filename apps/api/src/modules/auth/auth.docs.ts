@@ -513,5 +513,129 @@ export const authDocs: ModuleDocs = {
       ],
       errors: [400, 403, 409, 422, 429, 503],
     },
+    {
+      method: 'post',
+      path: '/v1/auth/sign-in/phone/customer',
+      operationId: 'signInCustomerWithPhone',
+      tag: DOC_TAGS.auth,
+      summary: 'Sign a customer in with a proved phone',
+      description:
+        'The only way a buyer signs in (**R62**): the MSG91 widget proves the handset, and this ' +
+        'takes the access token to MSG91 with the server-only key. No Google, no email, no ' +
+        'password.\n\n' +
+        '**An account with a name is signed in** — `SIGNED_IN`, with a `CUSTOMER`-scope ' +
+        '`dd_session` set. That includes a dealer whose proved number this is: the same user ' +
+        'gains a customer seat, never a second account.\n\n' +
+        '**A number with no named account is not given one yet** — `NAME_REQUIRED`, with a ' +
+        '`signUpToken`: an HMAC-sealed, single-use ticket for this number that expires in ten ' +
+        'minutes. Nothing is created until `POST /v1/auth/sign-up/customer` brings a name.\n\n' +
+        'Nothing is said about a number before its token is proved: the first refusal a ' +
+        'caller can see is `422 PHONE_VERIFICATION_FAILED`, the same for a wrong code, a token ' +
+        'for another number and a token already used. `503 PHONE_OTP_UNAVAILABLE` when MSG91 or ' +
+        'the replay guard cannot answer — a sign-in never proceeds on a proof it cannot check.' +
+        '\n\nRate-limited to 20 attempts in 10 minutes per IP and 10 per number.',
+      audience: 'public',
+      requestBody: {
+        schema: 'CustomerSignInInput',
+        example: {
+          phone: '9840012345',
+          accessToken: '<the signed token verifyOtp() handed the page>',
+        },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Signed in, or proved and waiting for a name.',
+          schema: 'CustomerSignInResponse',
+          example: {
+            status: 'NAME_REQUIRED',
+            customer: null,
+            signUpToken: '<sealed ticket>',
+            expiresAt: '2026-09-28T10:10:00.000Z',
+            phoneDisplay: '+91 98400 12345',
+          },
+        },
+      ],
+      errors: [403, 422, 429, 503],
+    },
+    {
+      method: 'post',
+      path: '/v1/auth/sign-up/customer',
+      operationId: 'signUpCustomer',
+      tag: DOC_TAGS.auth,
+      summary: 'Name a proved number, and create the customer account',
+      description:
+        'The second half of a first sign-in (**R62**). The ticket proves the number; the name ' +
+        'is the only thing asked for — no email, no password, no address. One field, any ' +
+        'script, 2–80 characters, at least one letter.\n\n' +
+        'The ticket is spent on first use and expires ten minutes after the proof: ' +
+        '`422 SIGN_UP_EXPIRED` for one that is used, forged, for another purpose or late. Two ' +
+        'sign-ups for one number at once reach **one** account — the unique index on ' +
+        '`users.phone` decides (R59). `201` with the customer, and `dd_session` set.\n\n' +
+        'Rate-limited to 10 an hour per IP.',
+      audience: 'public',
+      requestBody: {
+        schema: 'CustomerSignUpInput',
+        example: { signUpToken: '<sealed ticket>', fullName: 'Shashikiran' },
+      },
+      responses: [
+        {
+          status: 201,
+          description: 'Created and signed in.',
+          schema: 'CustomerSession',
+          example: {
+            customer: {
+              id: '0f8a2c1e-3b4d-4e5f-8a9b-1c2d3e4f5a6b',
+              fullName: 'Shashikiran',
+              phone: '+919840012345',
+              phoneDisplay: '+91 98400 12345',
+            },
+          },
+        },
+      ],
+      errors: [403, 409, 422, 429, 503],
+    },
+    {
+      method: 'post',
+      path: '/v1/auth/customer/logout',
+      operationId: 'customerLogout',
+      tag: DOC_TAGS.auth,
+      summary: 'End the customer session',
+      description:
+        'Revokes the `sessions` row behind the presented cookie and clears it — the same ' +
+        'revocation every other sign-out uses (**R62**). Unguarded, like the admin sign-out: it ' +
+        'has to work when the session has already expired, and it can only revoke the token in ' +
+        "the caller's own cookie.",
+      audience: 'public',
+      responses: [{ status: 204, description: 'Revoked and cleared.' }],
+    },
+    {
+      method: 'get',
+      path: '/v1/auth/customer/me',
+      operationId: 'getCustomerSession',
+      tag: DOC_TAGS.auth,
+      summary: 'The signed-in customer',
+      description:
+        'Who is signed in as a customer (**R62**): the name and the **proved** number, which is ' +
+        'what an enquiry will carry — derived here, never typed. A dealer session whose account ' +
+        'has a proved phone and a name answers too, so a dealer browsing the marketplace is ' +
+        'the same person, not a second account.\n\n`Cache-Control: no-store`.',
+      audience: 'customer',
+      responses: [
+        {
+          status: 200,
+          description: 'The signed-in customer.',
+          schema: 'CustomerSession',
+          example: {
+            customer: {
+              id: '0f8a2c1e-3b4d-4e5f-8a9b-1c2d3e4f5a6b',
+              fullName: 'Shashikiran',
+              phone: '+919840012345',
+              phoneDisplay: '+91 98400 12345',
+            },
+          },
+        },
+      ],
+    },
   ],
 };

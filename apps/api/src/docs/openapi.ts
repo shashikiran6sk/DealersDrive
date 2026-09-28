@@ -37,6 +37,7 @@ const RAW_BINARY = '__raw_binary__';
 
 const DEALER_SECURITY = 'dealerSession';
 const ADMIN_SECURITY = 'adminSession';
+const CUSTOMER_SECURITY = 'customerSession';
 
 interface Parameter {
   name: string;
@@ -93,6 +94,7 @@ const TRACE_HEADER: Parameter = {
 function securityFor(audience: Audience): { name: string; scheme: string } | null {
   if (audience === 'dealer') return { name: 'dealer', scheme: DEALER_SECURITY };
   if (audience === 'admin') return { name: 'admin', scheme: ADMIN_SECURITY };
+  if (audience === 'customer') return { name: 'customer', scheme: CUSTOMER_SECURITY };
   return null;
 }
 
@@ -102,7 +104,11 @@ function errorStatusesFor(operation: OperationSpec): number[] {
   if (operation.params || operation.query || operation.requestBody || operation.inlineQuery) {
     statuses.add(400);
   }
-  if (operation.audience === 'dealer' || operation.audience === 'admin') {
+  if (
+    operation.audience === 'dealer' ||
+    operation.audience === 'admin' ||
+    operation.audience === 'customer'
+  ) {
     statuses.add(401);
     statuses.add(403);
   }
@@ -441,6 +447,16 @@ export function buildOpenApiDocument(options: OpenApiOptions = {}): Record<strin
             'The same session cookie, resolved as a platform admin. **Not required by this ' +
             'build** — the development resolver reads the first `ADMIN_ALLOWLIST` entry ' +
             'server-side.',
+        },
+        [CUSTOMER_SECURITY]: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'dd_session',
+          description:
+            'The same session cookie, resolved as a customer (**R62**) — a `CUSTOMER` session ' +
+            'from a phone sign-in, or a dealer session whose account has a proved phone and a ' +
+            'name. Unlike the two above, the development resolver does not stand in for it: ' +
+            'sign in with `POST /v1/auth/sign-in/phone/customer` on the `fake` driver.',
         },
       },
       schemas: catalogue.schemas,

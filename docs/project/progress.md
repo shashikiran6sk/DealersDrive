@@ -231,8 +231,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R59 — A phone and a Google account are two ways into one account · revises F014/F018/R39 · `identity.service.ts` owns every identity write; linking refuses, never merges (`IDENTITY_ALREADY_LINKED`); `users_phone_canonical` CHECK
 - [x] R60 — Dealers sign in with their phone, and land where Google would have sent them · revises F018/R39 · `POST /v1/auth/sign-in/phone/dealer`, `GET /v1/auth/sign-in/phone/widget`; one `resolveDealerPostAuthDestination` for Google, phone and `/me`
 - [x] R61 — A new dealer starts with either identity and completes the other on step 1 · revises F037/F038/R39/R60 · phone-first provisional dealers; `GET /v1/auth/google/link/start`; `ONBOARDING_IDENTITY_INCOMPLETE`; step 1 shows and requires both
-- [ ] R62 — One Login, with Customer and Dealer tabs · revises F017/F073
-- [ ] R63 — Customer accounts, by phone alone · a customer session is told apart from a pending dealer
+- [x] R62 — Customer accounts, by phone alone · supersedes DESIGN-SPEC §4.10 for enquiries · ⚠️ two enum values · `CUSTOMER` session scope and seat; prove → name → create; one user for a dealer's number
+- [ ] R63 — One Login, with Customer and Dealer tabs · revises F017/F073
 - [ ] R64 — Enquiries come from signed-in customers · revises F088
 - [ ] R65 — Enquire from the vehicle page, through sign-in and back · revises F089
 - [ ] R66 — The dealer's enquiry inbox · revises F091

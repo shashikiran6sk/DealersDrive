@@ -5,6 +5,7 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AuthService } from '../../../../src/modules/auth/auth.service.js';
+import type { CustomerAuthService } from '../../../../src/modules/auth/customer-auth.service.js';
 import type { PhoneSignInService } from '../../../../src/modules/auth/phone-sign-in.service.js';
 import { byClaimedPhone, byIp } from '../../../../src/modules/auth/routes/phone-sign-in-limit.js';
 import { createMemoryCache } from '../../../../src/platform/cache/memory.adapter.js';
@@ -58,6 +59,7 @@ async function app() {
     createPublicAuthRouter(
       {} as AuthService,
       phoneSignIn(),
+      {} as CustomerAuthService,
       createRateLimiter(createMemoryCache()),
     ),
   );

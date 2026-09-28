@@ -2,12 +2,15 @@ import type { Request, RequestHandler } from 'express';
 
 import type {
   AdminPrincipal,
+  CustomerPrincipal,
   DealerPrincipal,
   PendingPrincipal,
   SessionResolver,
 } from '../modules/auth/session.port.js';
 import { ForbiddenError, UnauthorizedError } from '../platform/errors.js';
 import { setContextValue } from './request-context.js';
+
+const CUSTOMER_SIGN_IN_REQUIRED = 'Sign in with your mobile number to do that.';
 
 export function createAuthMiddleware(sessions: SessionResolver) {
   const requireDealer: RequestHandler = (req, _res, next) => {
@@ -55,6 +58,32 @@ export function createAuthMiddleware(sessions: SessionResolver) {
   };
 
   return { requireDealer, requireSignedIn, requireAdmin };
+}
+
+export function createCustomerGuard(
+  resolve: (req: Request) => Promise<CustomerPrincipal | null>,
+): RequestHandler {
+  return (req, _res, next) => {
+    void (async () => {
+      try {
+        const principal = await resolve(req);
+        if (!principal) throw new UnauthorizedError(CUSTOMER_SIGN_IN_REQUIRED);
+        req.principal = principal;
+        setContextValue('userId', principal.userId);
+        next();
+      } catch (error) {
+        next(error);
+      }
+    })();
+  };
+}
+
+export function customerPrincipal(req: Request): CustomerPrincipal {
+  const principal = req.principal;
+  if (!principal || principal.kind !== 'CUSTOMER') {
+    throw new Error('customerPrincipal() without requireCustomer on the route.');
+  }
+  return principal;
 }
 
 export const requireDealerActive: RequestHandler = (req, _res, next) => {
