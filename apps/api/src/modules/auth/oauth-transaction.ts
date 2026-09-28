@@ -7,7 +7,7 @@ export const OAUTH_COOKIE = 'dd_oauth';
 
 export const OAUTH_TRANSACTION_TTL_SECONDS = 600;
 
-export type OAuthAudience = 'DEALER' | 'ADMIN';
+export type OAuthAudience = 'DEALER' | 'ADMIN' | 'LINK';
 
 export interface OAuthTransaction {
   state: string;
@@ -16,18 +16,22 @@ export interface OAuthTransaction {
   audience: OAuthAudience;
   returnTo: string;
   issuedAt: number;
+  linkUserId?: string;
 }
 
 export const DEFAULT_RETURN_TO: Record<OAuthAudience, string> = {
   DEALER: '/dealer',
   ADMIN: '/admin',
+  LINK: '/dealer/onboarding',
 };
 
 export function createOAuthTransaction(
   returnTo: string,
   audience: OAuthAudience = 'DEALER',
+  linkUserId?: string,
 ): OAuthTransaction {
   return {
+    ...(linkUserId ? { linkUserId } : {}),
     state: randomBytes(32).toString('base64url'),
     nonce: randomBytes(32).toString('base64url'),
     codeVerifier: randomBytes(32).toString('base64url'),
@@ -60,7 +64,7 @@ export function openTransaction(sealed: string | undefined): OAuthTransaction | 
   }
 
   if (!isRecord(parsed)) return null;
-  const { state, nonce, codeVerifier, returnTo, issuedAt, audience } = parsed;
+  const { state, nonce, codeVerifier, returnTo, issuedAt, audience, linkUserId } = parsed;
 
   if (
     typeof state !== 'string' ||
@@ -68,14 +72,24 @@ export function openTransaction(sealed: string | undefined): OAuthTransaction | 
     typeof codeVerifier !== 'string' ||
     typeof returnTo !== 'string' ||
     typeof issuedAt !== 'number' ||
-    (audience !== 'DEALER' && audience !== 'ADMIN')
+    (audience !== 'DEALER' && audience !== 'ADMIN' && audience !== 'LINK')
   ) {
     return null;
   }
 
+  if (audience === 'LINK' && typeof linkUserId !== 'string') return null;
+
   if (Date.now() - issuedAt > OAUTH_TRANSACTION_TTL_SECONDS * 1000) return null;
 
-  return { state, nonce, codeVerifier, returnTo, issuedAt, audience };
+  return {
+    state,
+    nonce,
+    codeVerifier,
+    returnTo,
+    issuedAt,
+    audience,
+    ...(audience === 'LINK' && typeof linkUserId === 'string' ? { linkUserId } : {}),
+  };
 }
 
 export function safeReturnTo(candidate: string | undefined, fallback = '/dealer'): string {

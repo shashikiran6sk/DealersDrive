@@ -6,6 +6,7 @@ import type { PhoneService } from './phone.service.js';
 import type { PhoneSignInService } from './phone-sign-in.service.js';
 import { getAdminGoogleStart } from './routes/get-admin-google-start.js';
 import { getGoogleCallback } from './routes/get-google-callback.js';
+import { getGoogleLinkStart } from './routes/get-google-link-start.js';
 import { getGoogleStart } from './routes/get-google-start.js';
 import { getMe } from './routes/get-me.js';
 import { getPhoneWidget } from './routes/get-phone-widget.js';
@@ -41,6 +42,7 @@ export function createPublicAuthRouter(
 
 const SESSION_ROUTES: SessionAuthRoute[] = [
   getMe,
+  getGoogleLinkStart,
   postOnboarding,
   getPhoneWidget,
   postPhoneAvailability,

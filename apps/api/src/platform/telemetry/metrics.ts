@@ -243,10 +243,12 @@ export type OAuthReason =
   | 'account_link_required'
   | 'account_suspended'
   | 'not_authorised'
+  | 'identity_already_linked'
+  | 'link_session_mismatch'
   | 'internal';
 
 export function recordOAuthAttempt(
-  audience: 'DEALER' | 'ADMIN',
+  audience: 'DEALER' | 'ADMIN' | 'LINK',
   outcome: OAuthOutcome,
   reason: OAuthReason,
 ): void {

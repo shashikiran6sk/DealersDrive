@@ -127,6 +127,17 @@ const meta = {
       description: 'GET /v1/dealer/completeness. Read by the error banner and step 3s Continue.',
     },
     yardPhoto: { control: false, description: 'GET /v1/dealer/yard-photo. Step 3 only.' },
+    googleLinkUrl: {
+      control: 'text',
+      description:
+        'Where "Link Google account" goes (**R61**) — `GET /v1/auth/providers` → ' +
+        '`google.linkStartUrl`. Read only when the session has no Google identity.',
+    },
+    linkError: {
+      control: 'inline-radio',
+      options: [null, 'identity_already_linked', 'link_session_mismatch'],
+      description: 'The `?error=` the link callback sent back (**R61**).',
+    },
     phoneWidget: {
       control: false,
       description:
@@ -175,6 +186,31 @@ export const AccountVerified: Story = {
       phoneDisplay: '+91 98400 12345',
       phoneVerified: true,
     }),
+  },
+};
+
+export const AccountPhoneFirst: Story = {
+  args: {
+    step: 0,
+    session: {
+      ...session({
+        fullName: 'K. Raman',
+        phone: '9840012345',
+        phoneDisplay: '+91 98400 12345',
+        phoneVerified: true,
+        email: null,
+      }),
+      identity: null,
+    },
+    googleLinkUrl:
+      'http://localhost:4000/v1/auth/google/link/start?returnTo=%2Fdealer%2Fonboarding',
+  },
+};
+
+export const AccountGoogleLinkRefused: Story = {
+  args: {
+    ...AccountPhoneFirst.args,
+    linkError: 'identity_already_linked',
   },
 };
 

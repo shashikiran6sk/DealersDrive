@@ -4,6 +4,7 @@ export { DocumentsStep, type DocumentsStepProps } from './documents-step';
 export { OnboardingWizard, type OnboardingWizardProps } from './onboarding-wizard';
 export {
   ACCOUNT_FIELDS,
+  LINK_ERRORS,
   MISSING_LABELS,
   ONBOARDING_PATH,
   ONBOARDING_STEPS,

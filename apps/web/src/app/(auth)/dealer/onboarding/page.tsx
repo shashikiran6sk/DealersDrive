@@ -1,4 +1,5 @@
 import type {
+  AuthProvidersResponse,
   AuthSession,
   CompletenessResponse,
   DealerDocumentsResponse,
@@ -17,6 +18,8 @@ export const dynamic = 'force-dynamic';
 
 const PRIVATE_ROBOTS: Metadata['robots'] = { index: false, follow: false };
 
+const LINK_RETURN_TO = '/dealer/onboarding';
+
 export const metadata: Metadata = {
   title: 'Set up your dealership',
   robots: PRIVATE_ROBOTS,
@@ -25,7 +28,7 @@ export const metadata: Metadata = {
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ step?: string }>;
+  searchParams: Promise<{ step?: string; error?: string }>;
 }) {
   const session = await session_();
 
@@ -33,23 +36,26 @@ export default async function OnboardingPage({
     redirect('/dealer');
   }
 
-  const [documents, dealer, completeness, yardPhoto, phoneWidget] = await Promise.all([
-    session.dealer
-      ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
-      : Promise.resolve(null),
-    session.dealer
-      ? apiGet<DealerProfile>('/v1/dealer', { revalidate: false })
-      : Promise.resolve(null),
-    session.dealer
-      ? apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false })
-      : Promise.resolve(null),
-    session.dealer
-      ? apiGet<YardPhotoDto>('/v1/dealer/yard-photo', { revalidate: false })
-      : Promise.resolve(null),
-    phoneWidgetOrNull(),
-  ]);
+  const [documents, dealer, completeness, yardPhoto, phoneWidget, googleLinkUrl] =
+    await Promise.all([
+      session.dealer
+        ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
+        : Promise.resolve(null),
+      session.dealer
+        ? apiGet<DealerProfile>('/v1/dealer', { revalidate: false })
+        : Promise.resolve(null),
+      session.dealer
+        ? apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false })
+        : Promise.resolve(null),
+      session.dealer
+        ? apiGet<YardPhotoDto>('/v1/dealer/yard-photo', { revalidate: false })
+        : Promise.resolve(null),
+      phoneWidgetOrNull(),
+      session.identity ? Promise.resolve(null) : googleLinkUrlOrNull(),
+    ]);
 
-  const requested = Number((await searchParams).step ?? NaN);
+  const params = await searchParams;
+  const requested = Number(params.step ?? NaN);
 
   const floor = session.dealer?.status === 'PENDING_APPROVAL' ? 3 : 0;
   const step = Number.isFinite(requested)
@@ -66,6 +72,8 @@ export default async function OnboardingPage({
         completeness={completeness}
         yardPhoto={yardPhoto}
         phoneWidget={phoneWidget}
+        googleLinkUrl={googleLinkUrl}
+        linkError={params.error ?? null}
       />
     </AuthShell>
   );
@@ -96,6 +104,19 @@ function landingStep(
 async function phoneWidgetOrNull(): Promise<PhoneOtpWidget | null> {
   try {
     return await apiGet<PhoneOtpWidget>('/v1/auth/phone/widget', { revalidate: false });
+  } catch {
+    return null;
+  }
+}
+
+async function googleLinkUrlOrNull(): Promise<string | null> {
+  try {
+    const providers = await apiGet<AuthProvidersResponse>('/v1/auth/providers', {
+      revalidate: false,
+    });
+    return providers.google.enabled
+      ? `${providers.google.linkStartUrl}?returnTo=${encodeURIComponent(LINK_RETURN_TO)}`
+      : null;
   } catch {
     return null;
   }

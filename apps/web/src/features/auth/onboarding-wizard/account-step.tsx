@@ -2,6 +2,7 @@
 
 import type { AuthSession } from '@dealers-drive/contracts';
 
+import { GoogleSignInButton } from '@/components/auth/google-button';
 import { Field, invalidProps } from '@/components/forms/field';
 import { StatusTag } from '@/components/ui/primitives';
 
@@ -16,6 +17,7 @@ export interface AccountStepProps {
   phone: string;
   onPhoneChange: (value: string) => void;
   phoneVerified: boolean;
+  googleLinkUrl: string | null;
 }
 
 export function AccountStep({
@@ -27,6 +29,7 @@ export function AccountStep({
   phone,
   onPhoneChange,
   phoneVerified,
+  googleLinkUrl,
 }: AccountStepProps) {
   return (
     <fieldset hidden={hidden} className="m-0 border-0 p-0">
@@ -37,19 +40,47 @@ export function AccountStep({
       </h1>
       <p className="mb-[20px] mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.accountIntro}</p>
 
-      <div className="mb-[16px] flex items-center gap-[10px] border border-(--color-divider) bg-(--color-accent-100) px-[13px] py-[10px]">
-        <div className="min-w-0">
-          <div className="text-[11px] uppercase tracking-[0.1em] text-(--color-accent-800)">
-            {ONBOARDING_TEXT.googleAccount}
+      {session.identity ? (
+        <div className="mb-[16px] flex items-center gap-[10px] border border-(--color-divider) bg-(--color-accent-100) px-[13px] py-[10px]">
+          <div className="min-w-0">
+            <div className="text-[11px] uppercase tracking-[0.1em] text-(--color-accent-800)">
+              {ONBOARDING_TEXT.googleAccount}
+            </div>
+            <div className="truncate text-[14px] font-medium">{session.identity.email}</div>
           </div>
-          <div className="truncate text-[14px] font-medium">
-            {session.identity?.email ?? session.user.email}
-          </div>
+          <StatusTag tone="ok" className="ml-auto">
+            {ONBOARDING_TEXT.verifiedWithGoogle}
+          </StatusTag>
         </div>
-        <StatusTag tone="ok" className="ml-auto">
-          {ONBOARDING_TEXT.verifiedWithGoogle}
-        </StatusTag>
-      </div>
+      ) : (
+        <div
+          className="mb-[16px] flex flex-col gap-[10px] border border-(--color-divider) px-[13px] py-[12px]"
+          aria-describedby={errors.google ? 'google-error' : undefined}
+        >
+          <div className="flex items-center gap-[10px]">
+            <div className="min-w-0">
+              <div className="text-[11px] uppercase tracking-[0.1em] ink-secondary">
+                {ONBOARDING_TEXT.googleAccount}
+              </div>
+              <div className="text-[14px] font-medium">{ONBOARDING_TEXT.googleNotLinked}</div>
+            </div>
+            <StatusTag tone="warn" className="ml-auto">
+              {ONBOARDING_TEXT.googleRequired}
+            </StatusTag>
+          </div>
+          <p className="m-0 text-[13px] ink-secondary">{ONBOARDING_TEXT.googleNotLinkedNote}</p>
+          <GoogleSignInButton
+            href={googleLinkUrl ?? '#'}
+            label={ONBOARDING_TEXT.linkGoogle}
+            disabled={!googleLinkUrl}
+          />
+          {errors.google ? (
+            <p id="google-error" role="alert" className="m-0 text-[11px] text-(--color-err)">
+              {errors.google}
+            </p>
+          ) : null}
+        </div>
+      )}
 
       <div className="grid gap-[14px] sm:grid-cols-2">
         <Field id="fullName" label={ONBOARDING_TEXT.fullNameLabel} error={errors.fullName}>

@@ -16,13 +16,19 @@ import type { MapsPort } from '../../platform/maps/maps-link.js';
 import {
   ConfigurationError,
   ConflictError,
+  DomainError,
   ForbiddenError,
   UnauthorizedError,
 } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealersService } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
-import { ACCOUNT_SUSPENDED, DEALERSHIP_SUSPENDED } from './auth.messages.js';
+import {
+  ACCOUNT_SUSPENDED,
+  DEALERSHIP_SUSPENDED,
+  IDENTITY_INCOMPLETE,
+  LINK_SESSION_MISMATCH,
+} from './auth.messages.js';
 import { createIdentityService } from './identity.service.js';
 import type { OAuthClaims, OAuthProvider } from './oauth.port.js';
 import {
@@ -50,8 +56,8 @@ export interface AuthDeps {
 }
 
 export interface CallbackResult {
-  token: string;
-  expiresAt: Date;
+  token: string | null;
+  expiresAt: Date | null;
   audience: OAuthAudience;
   next: AuthSession['next'];
   returnTo: string;
@@ -111,6 +117,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           enabled,
           startUrl: `${env.API_BASE_URL}/v1/auth/google/start`,
           adminStartUrl: `${env.API_BASE_URL}/v1/auth/admin/google/start`,
+          linkStartUrl: `${env.API_BASE_URL}/v1/auth/google/link/start`,
           reason: enabled
             ? null
             : 'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are not set on the API.',
@@ -121,6 +128,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     startGoogle(
       returnTo: string | undefined,
       audience: OAuthAudience = 'DEALER',
+      linkUserId?: string,
     ): {
       authorizationUrl: string;
       cookie: string;
@@ -138,6 +146,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       const transaction = createOAuthTransaction(
         safeReturnTo(returnTo, DEFAULT_RETURN_TO[audience]),
         audience,
+        linkUserId,
       );
 
       logger.info({ event: 'auth.oauth.started', provider: 'GOOGLE', audience }, 'oauth started');
@@ -157,10 +166,15 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       code: string;
       state: string;
       transaction: OAuthTransaction | null;
+      sessionToken?: string | undefined;
       ip?: string | undefined;
       userAgent?: string | undefined;
     }): Promise<CallbackResult> {
       const { transaction } = input;
+
+      if (transaction?.audience === 'LINK' && transaction.state === input.state) {
+        await assertLinkSession(transaction, input.sessionToken);
+      }
 
       if (!transaction || transaction.state !== input.state) {
         logger.warn({ event: 'auth.oauth.failed', reason: 'state' }, 'oauth state mismatch');
@@ -180,6 +194,10 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
       if (transaction.audience === 'ADMIN') {
         return await completeAdminGoogle(claims, transaction, input);
+      }
+
+      if (transaction.audience === 'LINK') {
+        return await completeGoogleLink(claims, transaction, input.sessionToken);
       }
 
       const existing = await prisma.oAuthIdentity.findUnique({
@@ -246,6 +264,19 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     },
 
     async onboard(principal: PendingPrincipal, input: OnboardingInput): Promise<AuthSession> {
+      const linked = await identities.identitiesOf(principal.userId);
+      if (!linked.google) {
+        throw new DomainError('ONBOARDING_IDENTITY_INCOMPLETE', IDENTITY_INCOMPLETE, {
+          errors: [
+            {
+              field: 'identity.google',
+              code: 'ONBOARDING_IDENTITY_INCOMPLETE',
+              message: 'Link your Google account.',
+            },
+          ],
+        });
+      }
+
       const city = normaliseLocality(input.city);
       const district = normaliseLocality(input.district);
       const state = normaliseLocality(input.state);
@@ -363,6 +394,49 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       logger.info({ event: 'auth.session.revoked', userId: userId ?? null }, 'session revoked');
     },
   };
+
+  async function assertLinkSession(
+    transaction: OAuthTransaction,
+    sessionToken: string | undefined,
+  ): Promise<string> {
+    const session = await sessions.resolve(sessionToken, 'DEALER');
+    if (!session || !transaction.linkUserId || session.userId !== transaction.linkUserId) {
+      logger.warn(
+        { event: 'auth.oauth.failed', audience: 'LINK', reason: 'session-mismatch' },
+        'google link completed without the session that started it',
+      );
+      throw new UnauthorizedError(LINK_SESSION_MISMATCH, { code: 'LINK_SESSION_MISMATCH' });
+    }
+    return session.userId;
+  }
+
+  async function completeGoogleLink(
+    claims: OAuthClaims,
+    transaction: OAuthTransaction,
+    sessionToken: string | undefined,
+  ): Promise<CallbackResult> {
+    const userId = await assertLinkSession(transaction, sessionToken);
+    const { linked } = await identities.linkGoogle(userId, claims);
+
+    logger.info(
+      { event: 'auth.identity.linked', provider: 'GOOGLE', userId, linked },
+      'google account linked',
+    );
+
+    const destination = await resolveDealerPostAuthDestination(
+      prisma,
+      userId,
+      transaction.returnTo,
+    );
+
+    return {
+      token: null,
+      expiresAt: null,
+      audience: 'LINK',
+      next: destination.next,
+      returnTo: transaction.returnTo,
+    };
+  }
 
   async function completeAdminGoogle(
     claims: OAuthClaims,

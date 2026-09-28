@@ -247,6 +247,14 @@ the three KYC rows the review screen expects.
 Deliberately refused for anyone who already has a dealership. A second
 call must not be able to create a second tenant under one session.
 
+### `const linked = await identities.identitiesOf(principal.userId)`
+
+**R61** — both identities first. A dealer who started with their phone has no
+Google account until step 1 links one, and a dealership is not created
+without it: `422 ONBOARDING_IDENTITY_INCOMPLETE`, before anything is written.
+The phone half of the same rule is `assertPhoneVerified` below (R39). The
+order they were proved in does not matter; both must be in place.
+
 ### `const city = normaliseLocality(input.city)`
 
 Case and spacing settled once, on the way in. Everything downstream —
@@ -436,6 +444,25 @@ down to the permissions the new OWNER seat carries.
 
 `userId` is for the log line only — the token decides which row is
 revoked, so a caller cannot sign anybody else out by naming them.
+
+### `async function assertLinkSession(`
+
+**R61** — the check that makes linking safe. The OAuth transaction carries the
+user who started the link, sealed with the rest; the callback attaches the
+Google account only if the `dd_session` presented _on the callback_ belongs to
+that same user. A link finished in another browser, or with somebody else's
+session, links nothing — so a victim cannot be walked through a callback that
+attaches an attacker's Google account to their dealership, or the other way
+round.
+
+It runs twice: once before the code is exchanged, so a mismatched callback
+does not spend a Google authorization code, and once more to name the user.
+
+### `async function completeGoogleLink(`
+
+Links, keeps the existing session (no new cookie is issued), and sends the
+dealer back to where they started — step 1 of onboarding. The destination
+resolver still runs, because it is what refuses a suspended dealership.
 
 ### `async function completeAdminGoogle`
 
@@ -1143,24 +1170,24 @@ the session row, the cookie — is the same code or the same shape. That is
 deliberate; the moment the two paths differ after the proof is the moment a
 dealer's destination starts depending on which button they pressed.
 
-### `const user = await identities.findByVerifiedPhone(proven.phone)`
+### `const existing = await identities.findByVerifiedPhone(proven.phone)`
 
 Only a **proved** number finds an account. A legacy row whose number was
 typed and never verified is not found, so a code sent to that number does not
-sign anybody into it.
+sign anybody into it — and `createWithPhone` then refuses to take it over
+(`409 IDENTITY_ALREADY_LINKED`), because moving a number between accounts is
+support's call.
 
-### `const isDealer = user?.roles.some((seat) => seat.role === 'DEALER') === true || member !== null`
+### `: await identities.createWithPhone(proven)`
 
-A dealer account is one that holds a dealer seat (every Google dealer sign-in
-grants one) or an active membership. This is the line that keeps a dealer
-phone sign-in from resolving anybody else — a customer account, from R63,
-holds neither.
+**R61** — a proved number with no account starts one: a provisional dealer
+with the phone verified and no Google account, sent to onboarding step 1,
+which will not let a dealership be created until Google is linked. Until R61
+this was `404 DEALER_NOT_FOUND`.
 
-### `throw new NotFoundError(DEALER_NOT_FOUND, { code: 'DEALER_NOT_FOUND' })`
-
-Said only after the number is proved, so it tells a caller nothing about a
-number they do not hold (brief §58). Nothing is created: R61 is where a
-proved number with no account starts one.
+Any account that proved the number signs in, and gets a dealer seat if it had
+none: the person has shown they hold the handset, and a second account for
+the same handset is exactly what R59 exists to prevent.
 
 ### `await audit.recordDetached(`
 

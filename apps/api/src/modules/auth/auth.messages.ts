@@ -24,5 +24,8 @@ export const DEALERSHIP_SUSPENDED = 'This dealership has been suspended. Contact
 
 export const ACCOUNT_SUSPENDED = 'This account has been suspended. Contact support.';
 
-export const DEALER_NOT_FOUND =
-  'No dealer account uses this number yet. Continue with Google to create one, or sign in with Google and add this number.';
+export const LINK_SESSION_MISMATCH =
+  'That Google account could not be linked. Sign in again and link it from the same browser.';
+
+export const IDENTITY_INCOMPLETE =
+  'Link your Google account before continuing — your dealership needs both a verified mobile number and a Google account.';

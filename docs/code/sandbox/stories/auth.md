@@ -251,6 +251,17 @@ and **Services you offer**. They are asked for here because this is the one
 moment a dealer is already describing their business \u2014 a profile screen
 offered later is a screen most of them never open.
 
+### `export const AccountPhoneFirst: Story =`
+
+**R61** — a dealer who started with their phone. The number is proved; the
+Google block says Google is missing and offers the link, and Continue holds
+until it is done.
+
+### `export const AccountGoogleLinkRefused: Story =`
+
+**R61** — the Google account chosen already belongs to another account, so the
+link callback sent the dealer back with `?error=identity_already_linked`.
+
 ## They replaced a paragraph, and this story is the before-and-after
 
 The step used to end in **About your dealership**, a multi-line box wanting
