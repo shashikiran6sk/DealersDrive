@@ -73,6 +73,13 @@ function dashboard(overrides: Partial<DashboardResponse> = {}): DashboardRespons
         tone: 'ok',
       },
       {
+        key: 'RESERVED',
+        label: 'Reserved',
+        value: 1,
+        href: '/dealer/inventory?status=RESERVED',
+        tone: 'warn',
+      },
+      {
         key: 'PENDING_REVIEW',
         label: 'Pending review',
         value: 2,
@@ -314,11 +321,13 @@ describe('the vehicle counts (F066)', () => {
     const links = within(nav).getAllByRole('link');
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/dealer/inventory?status=ACTIVE',
+      '/dealer/inventory?status=RESERVED',
       '/dealer/inventory?status=PENDING_REVIEW',
       '/dealer/inventory?status=CHANGES_REQUESTED',
       '/dealer/inventory?status=SOLD',
     ]);
     expect(within(nav).getByText('Changes requested')).toBeInTheDocument();
+    expect(within(nav).getByText('Reserved')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '+ Add vehicle' })).toHaveAttribute(
       'href',
       '/dealer/vehicles/new',

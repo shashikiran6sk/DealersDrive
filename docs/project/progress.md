@@ -118,7 +118,7 @@ revision · `[⛔]` withdrawn
 - [x] F064 — Listing model & state machine · **states revised, R47** · one `transition()`, race-safe, audited
 - [x] F065 — Listing submission & resubmission · **no credit hold, R47** · plate claimed across dealerships on submit
 - [x] F066 — Dealer inventory list · status tabs with counts, plate/make/model search; the dashboard counts the same listings
-- [ ] F067 — Mark sold, remove & renew
+- [~] F067 — Mark sold, remove & renew · as revised by **R69**/**R70** — reserve, reactivate, mark sold, withdraw, relist landed; renew waits on listing expiry, which waits on billing (F050–F054)
 - [⏸] F068 — Vehicle history report · **deferred by R46**
 
 ## Tier 11 — Moderation
@@ -216,7 +216,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R44 — A footer worth having, and the social links live in configuration · revises F073 · adds six `social.*` config keys · [#133](https://github.com/shashikiran6sk/DealersDrive/pull/133)
 - [x] R45 — Dealers-Drive photographs the car; the dealer never uploads a photo · revises F035/F062/F063/F069/F070 · defers F034 · photography status, admin upload, order and primary, guarded approval, public images only while ACTIVE
 - [x] R46 — Vehicle details are entered by hand; RC lookup is deferred · revises F056/F060/F061/F063 · defers F057/F058/F059/F068
-- [~] R47 — The listing lifecycle, before billing exists · revises F064/F065/F067/F069/F070 · defers F050–F054 · submit, review, request changes, reject and approve landed; mark sold and remove (F067) follow
+- [x] R47 — The listing lifecycle, before billing exists · revises F064/F065/F067/F069/F070 · defers F050–F054 · submit, review, request changes, reject and approve landed; mark sold and remove (F067) landed as R69/R70
 - [x] R48 — The dealer surfaces meet the listings · revises F066/F085/F086/F082/F083 · console nav, directory and portfolio counts, portfolio inventory, and the gallery
 - [x] R49 — The VDP gallery is the one the spec draws · revises F083/R48 · strip, rail and lightbox header back, per §2.9/§2.10
 - [x] R50 — `/cars` takes the header's district · revises F074/F077/R23 · `?district=` on `/v1/vehicles`, the dialog counts cars on `/cars` · [#167](https://github.com/shashikiran6sk/DealersDrive/pull/167)
@@ -245,7 +245,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R73 — Similar vehicles on the vehicle page · lands F084 · `GET /v1/vehicles/:slug/similar`, available only, deterministic score, newest-available fallback · [#196](https://github.com/shashikiran6sk/DealersDrive/pull/196)
 - [x] R74 — Saved cars live on the server, and survive the lifecycle · revises F087 · ⚠️ new table `saved_vehicles` · `/v1/saved-vehicles` (list, slugs, PUT/DELETE by slug), customer guard, never deleted by the lifecycle · [#197](https://github.com/shashikiran6sk/DealersDrive/pull/197)
 - [x] R75 — The heart, the sign-in that completes it, and the Saved cars page · revises F087/F075/F082 · heart on every card and the VDP, optimistic with rollback, `?save=` login intent, `/saved` grouped Available / Reserved / No longer available · [#198](https://github.com/shashikiran6sk/DealersDrive/pull/198)
-- [~] R76 — The customer's account menu · revises R67/R68/F073 · one round avatar with initials; a menu with name, masked mobile, Saved cars, My enquiries, Logout; keyboard and screen-reader complete
+- [x] R76 — The customer's account menu · revises R67/R68/F073 · one round avatar with initials; a menu with name, masked mobile, Saved cars, My enquiries, Logout; keyboard and screen-reader complete · [#199](https://github.com/shashikiran6sk/DealersDrive/pull/199)
+- [~] R77 — Every surface agrees on the lifecycle · revises F066/R69–R76 · audit matrix in feature-map; dealer dashboard gains a Reserved tile
 
 ---
 

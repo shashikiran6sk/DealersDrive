@@ -2172,8 +2172,10 @@ describe('dashboard', () => {
 });
 
 describe('dashboard listing stats (F066)', () => {
-  it('counts the four statuses a dealer acts on, each linking to its inventory tab', async () => {
-    const h = setup({ listingCounts: { ACTIVE: 3, PENDING_REVIEW: 2, SOLD: 1, DRAFT: 4 } });
+  it('counts the five statuses a dealer acts on, each linking to its inventory tab', async () => {
+    const h = setup({
+      listingCounts: { ACTIVE: 3, RESERVED: 2, PENDING_REVIEW: 2, SOLD: 1, DRAFT: 4 },
+    });
     const dashboard = await h.service.dashboard('dealer-1');
 
     expect(dashboard.listingStats).toEqual([
@@ -2183,6 +2185,13 @@ describe('dashboard listing stats (F066)', () => {
         value: 3,
         href: '/dealer/inventory?status=ACTIVE',
         tone: 'ok',
+      },
+      {
+        key: 'RESERVED',
+        label: 'Reserved',
+        value: 2,
+        href: '/dealer/inventory?status=RESERVED',
+        tone: 'warn',
       },
       {
         key: 'PENDING_REVIEW',
