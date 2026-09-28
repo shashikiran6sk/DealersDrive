@@ -16,8 +16,8 @@ export const savedActionStub: {
   delayMs: 500,
 };
 
-export async function savedSlugsAction(): Promise<SavedSlugsState> {
-  return savedActionStub.account;
+export function savedSlugsAction(): Promise<SavedSlugsState> {
+  return Promise.resolve(savedActionStub.account);
 }
 
 export async function setSavedAction(_slug: string, saved: boolean): Promise<SetSavedResult> {
