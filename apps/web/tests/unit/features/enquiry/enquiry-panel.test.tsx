@@ -95,8 +95,12 @@ describe('a signed-in customer', () => {
 
     expect(await screen.findByText('Enquiry sent')).toBeInTheDocument();
     expect(
-      screen.getByText('Sri Lakshmi Motors has received your contact request.'),
+      screen.getByText('Sri Lakshmi Motors has received your contact request.', { exact: false }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Track it in My enquiries' })).toHaveAttribute(
+      'href',
+      '/enquiries',
+    );
     expect(sendEnquiryAction).toHaveBeenCalledWith('2023-hyundai-creta', '');
   });
 
@@ -158,21 +162,28 @@ describe('a signed-in customer', () => {
     expect(screen.queryByRole('button', { name: 'Send enquiry' })).toBeNull();
   });
 
-  it('says so when they already enquired today, and offers no second send', async () => {
+  /** R68: one open enquiry per car — the customer is pointed at where to follow it. */
+  it('says so when they already have an open enquiry, and offers no second send', async () => {
     const user = userEvent.setup();
     vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
     vi.mocked(sendEnquiryAction).mockResolvedValue({
       status: 'refused',
-      code: 'ENQUIRY_ALREADY_SUBMITTED_RECENTLY',
-      message: 'The dealership already has your details.',
+      code: 'ENQUIRY_ALREADY_OPEN',
+      message: 'You already have an enquiry about this car.',
     });
     panel();
 
     await pressEnquire(user);
     await user.click(await screen.findByRole('button', { name: 'Send enquiry' }));
 
-    expect(await screen.findByText('You have already enquired about this car')).toBeInTheDocument();
+    expect(
+      await screen.findByText('You already have an enquiry about this car'),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send enquiry' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Track it in My enquiries' })).toHaveAttribute(
+      'href',
+      '/enquiries',
+    );
   });
 
   it('is sent to sign in again when the session ended mid-way', async () => {
@@ -187,6 +198,28 @@ describe('a signed-in customer', () => {
     await waitFor(() => {
       expect(navigationState.pushed[0]).toMatch(/^\/login\?returnTo=/);
     });
+  });
+});
+
+describe('the requires-login hint (R68)', () => {
+  it('tells somebody not signed in that enquiring needs a login', async () => {
+    vi.mocked(enquiryCustomerAction).mockResolvedValue(null);
+    panel();
+
+    await waitFor(() => {
+      expect(enquiryCustomerAction).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getAllByText('Requires login with your mobile number')).toHaveLength(2);
+  });
+
+  it('drops the hint for a customer who is already signed in', async () => {
+    vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
+    panel();
+
+    await waitFor(() => {
+      expect(screen.queryByText('Requires login with your mobile number')).toBeNull();
+    });
+    expect(enquiryCustomerAction).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -5611,6 +5611,7 @@ Each is its own PR, merged before the next starts.
 | R65 | Vehicle page enquiry — revises F089: sign-in interrupts and resumes the enquiry                                                                       |
 | R66 | Dealer enquiry inbox — revises F091                                                                                                                   |
 | R67 | Dashboard enquiry counts, header signed-in state, polish                                                                                              |
+| R68 | Customer enquiry tracking — My enquiries, one open enquiry per car, the requires-login hint (added after the series, at review)                       |
 
 ## R59 — A phone and a Google account are two ways into one account
 
@@ -6320,3 +6321,79 @@ restored.
     `tests/unit/features/dealer/dashboard-page.test.tsx` — no Call without a
     number; the `All enquiries →` link (replacing "offers no link … because
     there is not one yet", as that case said it would be).
+
+## R68 — Customers can track their enquiries, and ask again once one is closed
+
+**Revises R64 / R65 / R67** · no schema change · asked for after the series, while testing
+
+### Rule change: one open enquiry per car
+
+R64's "one enquiry per customer per car per 24 hours" is replaced. A customer
+may have **one open enquiry per car**: while their enquiry is New or Contacted
+— or marked as spam — a new one is `409 ENQUIRY_ALREADY_OPEN`. Once the
+dealership **closes** it, the customer may enquire again. Time alone no longer
+reopens the door. Spam keeps blocking (a product decision taken at review),
+though the customer is shown Closed. The advisory lock still serialises the
+check and the write, so five simultaneous presses still land one.
+
+### My enquiries — `GET /v1/enquiries` and `/enquiries`
+
+- **API** (customer guard, `no-store`): `CustomerEnquiryQuery` `{ cursor?,
+limit ≤ 50 }`, `.strict()`. `CustomerEnquiry` `{ status, statusLabel,
+statusTone, message, createdAt, createdLabel, dealerName, vehicle { title,
+href } }`, newest first. **Three states** — `SENT`, `CONTACTED`, `CLOSED` —
+  mapped from the dealer's four on the server by `customerEnquiryStatus`, so
+  **spam is Closed and the word appears in no customer response**. Current
+  state only; no history.
+- **Page** `/enquiries` (public group, `force-dynamic`, `noindex`): read-only
+  cards — the car (linked while listed), dealership, message, date sent,
+  status tag. Signed out → `/login?returnTo=/enquiries`. Empty → Browse cars.
+- **Ways in:** `My enquiries` in the signed-in header (the initials avatar on
+  a phone); "Track it in My enquiries" on the sent and already-open banners.
+
+### Vehicle page
+
+- **"Requires login with your mobile number"** under both Enquire buttons,
+  hidden once the panel knows the visitor is a signed-in customer. The panel
+  asks once on mount; with no session cookie the action answers without
+  calling the API.
+- The already-open banner replaces the already-enquired one, with the API's
+  sentence and the tracking link.
+
+### Not changed
+
+The dealer inbox, and how dealer and customer sessions relate (R62) — left as
+they are, as asked.
+
+### Files
+
+- `packages/contracts/src/enquiry.ts` — `CustomerEnquiryStatus`,
+  `customerEnquiryStatus`, labels, tones, `CustomerEnquiryQuery`,
+  `CustomerEnquiry`, `CustomerEnquiriesResponse`.
+- `apps/api/src/modules/enquiries/` — `BLOCKING_STATUSES` and
+  `ENQUIRY_ALREADY_OPEN` in the service, `mine`, `toCustomerEnquiry`,
+  `routes/get-my-enquiries.ts`, the docs operation `listMyEnquiries`;
+  `CustomerEnquiryQuery` in `INPUT_SCHEMA_NAMES`.
+- `apps/web/src/features/enquiry/` — the panel's hint, mount check and links;
+  `actions.ts` skips the API without a cookie;
+  `customer-enquiries/{customer-enquiry-list, customer-enquiry-card, constants, types, utils, index}`;
+  `app/(public)/enquiries/page.tsx`; `features/auth/header-account` link.
+- **Components** C094 `CustomerEnquiryList`, C095 `CustomerEnquiryCard` —
+  sandbox `Vehicle/CustomerEnquiryList`; C088 and C093 gain states.
+- **Tests**
+  - `apps/api/tests/enquiries.test.ts` — the R64 "floods" block becomes "one
+    open enquiry per car": open blocks; days later still blocks; contacted
+    blocks; closed allows; spam blocks; five at once land one; another car or
+    customer unaffected. New "a customer's own enquiries": 401 anonymous; own
+    only, newest first, with dealership and car; NEW/CONTACTED/CLOSED/SPAM
+    shown as SENT/CONTACTED/CLOSED/CLOSED and never "spam"; link dropped once
+    sold; cursor paging; three query fields refused; a dealer's session lists
+    its own.
+  - `tests/unit/routes.test.ts` — `GET /v1/enquiries` runs only the customer
+    guard.
+  - `packages/contracts/tests/unit/enquiry.test.ts` — the mapping, the
+    three-state enum, the query.
+  - `apps/web/tests/unit/features/enquiry/my-enquiries-page.test.tsx` (7),
+    `enquiry-panel.test.tsx` (hint shown / hidden, tracking links, the new
+    code), `actions.test.ts` (no cookie → no request),
+    `features/auth/header-account.test.tsx` (the My enquiries links).

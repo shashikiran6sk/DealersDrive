@@ -48,12 +48,49 @@ listing, serialises exactly that pair for the length of the transaction —
 so the second press sees the first enquiry and is refused — without making
 unrelated enquiries wait for each other.
 
-### `export const DUPLICATE_WINDOW_HOURS = 24`
+### `export const BLOCKING_STATUSES = ['NEW', 'CONTACTED', 'SPAM']`
 
-One enquiry per customer per car per day. It stops a customer flooding a
-dealer's inbox with the same lead, and does not stop a genuine follow-up the
-next day, a different car, or a different customer. The refusal says the
-dealership already has their details, because it does.
+**One open enquiry per customer per car (R68)**, replacing R64's 24-hour
+window. While the customer has an enquiry about this car that the dealership
+has not closed, a new one is `409 ENQUIRY_ALREADY_OPEN`: the dealership
+already has their details, and time passing does not change that. Once the
+dealership **closes** it, the door reopens — closing is the dealership saying
+it is finished with this lead, so a new question is a new lead.
+
+**Spam keeps blocking**, although the customer sees it as Closed. Letting a
+customer the dealership marked as spam straight back in would make marking
+spam pointless; showing it as spam would tell a spammer to change tactics. A
+different car, or a different customer, is unaffected.
+
+A dealership that **reopens** a closed enquiry after the customer has sent a
+new one ends up with two open enquiries from that customer about the car.
+That is the dealership's own choice and nothing is lost, so it is not refused.
+
+### `async mine(customer: CustomerPrincipal, query: CustomerEnquiryQuery)`
+
+The customer's own enquiries, newest first (**R68**) — filtered by the
+session's user id, never an id in the request. Every status is listed,
+including spam, because the customer should see every enquiry they sent; how
+each is shown is the mapper's job.
+
+## `apps/api/src/modules/enquiries/enquiries.mapper.ts` — the customer's view
+
+### `export function toCustomerEnquiry(row: CustomerRow): CustomerEnquiry`
+
+Three states, not four: `customerEnquiryStatus` folds `NEW` into `SENT` and
+`SPAM` into `CLOSED` **here, on the server**, so no customer response carries
+the word spam — the page could not leak it if it tried. The current state
+only; there is no history of moves, which is the dealership's audit log and
+not the customer's business. The car links to its public page only while it
+is live, the same rule the inbox uses.
+
+## `apps/api/src/modules/enquiries/routes/get-my-enquiries.ts`
+
+### `export const getMyEnquiries: EnquiriesRoute`
+
+`GET /v1/enquiries`, on the same customer-guarded router as the POST, so a
+dealer's session reaches it as the customer that dealer also is (R62).
+`no-store`, like every answer that is about one person.
 
 ## `apps/api/src/modules/enquiries/routes/post-enquiry.ts`
 

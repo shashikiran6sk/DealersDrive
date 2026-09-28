@@ -220,6 +220,14 @@ describe('the dealer boundary', () => {
    * customer guard and nothing else; a dealer session reaches it only as the
    * customer it also is.
    */
+  it('runs only the customer guard for GET /v1/enquiries', async () => {
+    const result = await dispatch('GET', '/v1/enquiries');
+
+    expect(result.customerGuard).toBe(true);
+    expect(result.dealerGuard).toBe(false);
+    expect(result.reached).toBe(true);
+  });
+
   it('runs only the customer guard for POST /v1/enquiries', async () => {
     const result = await dispatch('POST', '/v1/enquiries');
 

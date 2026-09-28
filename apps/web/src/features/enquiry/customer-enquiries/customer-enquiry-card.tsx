@@ -1,0 +1,40 @@
+import Link from 'next/link';
+
+import { StatusTag } from '@/components/ui/primitives';
+
+import { CUSTOMER_ENQUIRIES_TEXT } from './customer-enquiries.constants';
+import type { CustomerEnquiryCardProps } from './customer-enquiries.types';
+
+export function CustomerEnquiryCard({ enquiry }: CustomerEnquiryCardProps) {
+  return (
+    <li className="card flex flex-col gap-[8px] bg-white p-[14px]">
+      <div className="flex flex-wrap items-start justify-between gap-[10px]">
+        <div className="min-w-0">
+          {enquiry.vehicle.href ? (
+            <Link
+              href={enquiry.vehicle.href}
+              className="text-[15px] font-semibold text-(--color-ink)"
+            >
+              {enquiry.vehicle.title}
+            </Link>
+          ) : (
+            <div className="text-[15px] font-semibold">
+              {enquiry.vehicle.title}{' '}
+              <span className="text-[12px] font-normal ink-subtle">
+                {CUSTOMER_ENQUIRIES_TEXT.noLongerListed}
+              </span>
+            </div>
+          )}
+          <div className="text-[13px] ink-muted">{enquiry.dealerName}</div>
+        </div>
+        <StatusTag tone={enquiry.statusTone}>{enquiry.statusLabel}</StatusTag>
+      </div>
+      <p className="m-0 text-[13px] whitespace-pre-line">
+        {enquiry.message ?? <span className="ink-subtle">{CUSTOMER_ENQUIRIES_TEXT.noMessage}</span>}
+      </p>
+      <time dateTime={enquiry.createdAt} className="text-[11px] ink-faint tnum">
+        {CUSTOMER_ENQUIRIES_TEXT.sentOn(enquiry.createdLabel)}
+      </time>
+    </li>
+  );
+}

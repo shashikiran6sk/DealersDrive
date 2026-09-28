@@ -2,6 +2,8 @@ import {
   formatRegistration,
   vehicleTitle,
   type CreateEnquiryInput,
+  type CustomerEnquiriesResponse,
+  type CustomerEnquiryQuery,
   type DealerEnquiriesResponse,
   type DealerEnquiry,
   type DealerEnquiryCounts,
@@ -19,9 +21,14 @@ import { ConflictError, DomainError, NotFoundError } from '../../platform/errors
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import { PUBLIC_LISTING_WHERE } from '../search/search.facade.js';
-import { INBOX_SELECT, toDealerEnquiry } from './enquiries.mapper.js';
 import {
-  ALREADY_SUBMITTED,
+  CUSTOMER_SELECT,
+  INBOX_SELECT,
+  toCustomerEnquiry,
+  toDealerEnquiry,
+} from './enquiries.mapper.js';
+import {
+  ALREADY_OPEN,
   ENQUIRY_NOT_FOUND,
   LISTING_NOT_AVAILABLE,
   LISTING_NOT_FOUND,
@@ -33,7 +40,11 @@ export interface EnquiriesDeps {
   audit: AuditService;
 }
 
-export const DUPLICATE_WINDOW_HOURS = 24;
+export const BLOCKING_STATUSES = [
+  'NEW',
+  'CONTACTED',
+  'SPAM',
+] as const satisfies readonly EnquiryStatus[];
 
 export interface EnquiryActor {
   dealerId: string;
@@ -83,6 +94,30 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
 
   return {
     counts,
+
+    async mine(
+      customer: CustomerPrincipal,
+      query: CustomerEnquiryQuery,
+    ): Promise<CustomerEnquiriesResponse> {
+      const rows = await prisma.enquiry.findMany({
+        where: {
+          customerId: customer.userId,
+          ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: query.limit + 1,
+        select: CUSTOMER_SELECT,
+      });
+
+      const hasMore = rows.length > query.limit;
+      const page = hasMore ? rows.slice(0, query.limit) : rows;
+      const last = page[page.length - 1];
+
+      return {
+        data: page.map(toCustomerEnquiry),
+        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+      };
+    },
 
     async inbox(dealerId: string, query: DealerEnquiryQuery): Promise<DealerEnquiriesResponse> {
       const [rows, tabs] = await Promise.all([
@@ -191,18 +226,15 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
 
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`enquiry:${customer.userId}:${available.id}`}))`;
 
-        const since = new Date(Date.now() - DUPLICATE_WINDOW_HOURS * 3_600_000);
-        const recent = await tx.enquiry.findFirst({
+        const open = await tx.enquiry.findFirst({
           where: {
             customerId: customer.userId,
             listingId: available.id,
-            createdAt: { gte: since },
+            status: { in: [...BLOCKING_STATUSES] },
           },
           select: { id: true },
         });
-        if (recent) {
-          throw new ConflictError('ENQUIRY_ALREADY_SUBMITTED_RECENTLY', ALREADY_SUBMITTED);
-        }
+        if (open) throw new ConflictError('ENQUIRY_ALREADY_OPEN', ALREADY_OPEN);
 
         const enquiry = await tx.enquiry.create({
           data: {

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -13,7 +14,7 @@ import {
 } from '@/features/enquiry/actions';
 
 import { EnquiryForm } from './enquiry-form';
-import { ENQUIRY_PANEL_TEXT, loginHref } from './enquiry-panel.constants';
+import { ENQUIRY_PANEL_TEXT, loginHref, MY_ENQUIRIES_HREF } from './enquiry-panel.constants';
 import type { EnquiryPanelProps, EnquiryPanelStage } from './enquiry-panel.types';
 
 export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: EnquiryPanelProps) {
@@ -43,6 +44,20 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
     void open();
   }, [autoOpen, open]);
 
+  useEffect(() => {
+    if (autoOpen) return;
+    let live = true;
+    enquiryCustomerAction()
+      .then((found) => {
+        if (live && found) setCustomer(found);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- asked once on mount; autoOpen asks through open()
+  }, []);
+
   async function send(message: string): Promise<SendEnquiryState> {
     const result = await sendEnquiryAction(listingSlug, message);
     if (result.status === 'sent') {
@@ -50,7 +65,7 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
       if (autoOpen) router.replace(pathname, { scroll: false });
     }
     if (result.status === 'signed-out') router.push(loginHref(pathname));
-    if (result.status === 'refused' && result.code === 'ENQUIRY_ALREADY_SUBMITTED_RECENTLY') {
+    if (result.status === 'refused' && result.code === 'ENQUIRY_ALREADY_OPEN') {
       setNotice(result.message);
       setStage('already');
     }
@@ -78,6 +93,11 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
           >
             {ENQUIRY_PANEL_TEXT.enquire}
           </Button>
+          {customer ? null : (
+            <p className="m-0 text-center text-[12px] ink-secondary">
+              {ENQUIRY_PANEL_TEXT.requiresLogin}
+            </p>
+          )}
           <div className="fixed inset-x-0 bottom-0 z-30 border-t border-(--color-divider) bg-white p-[10px] shadow-(--shadow-lg) lg:hidden">
             <Button
               variant="primary"
@@ -91,6 +111,11 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
             >
               {ENQUIRY_PANEL_TEXT.enquire}
             </Button>
+            {customer ? null : (
+              <p className="m-0 mt-[4px] text-center text-[11px] ink-secondary">
+                {ENQUIRY_PANEL_TEXT.requiresLogin}
+              </p>
+            )}
           </div>
         </>
       ) : null}
@@ -108,13 +133,19 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
 
       {stage === 'sent' ? (
         <Banner tone="ok" title={ENQUIRY_PANEL_TEXT.sentTitle}>
-          {ENQUIRY_PANEL_TEXT.sentBody(dealerName)}
+          {ENQUIRY_PANEL_TEXT.sentBody(dealerName)}{' '}
+          <Link href={MY_ENQUIRIES_HREF} className="font-medium underline">
+            {ENQUIRY_PANEL_TEXT.track}
+          </Link>
         </Banner>
       ) : null}
 
       {stage === 'already' ? (
         <Banner tone="warn" title={ENQUIRY_PANEL_TEXT.alreadySentTitle}>
-          {notice}
+          {notice}{' '}
+          <Link href={MY_ENQUIRIES_HREF} className="font-medium underline">
+            {ENQUIRY_PANEL_TEXT.track}
+          </Link>
         </Banner>
       ) : null}
 

@@ -56,6 +56,16 @@ describe('HeaderAccount', () => {
     expect(screen.queryByRole('link', { name: 'Login' })).toBeNull();
   });
 
+  /** R68: the way to the customer's own enquiries — text on desktop, the initials on a phone. */
+  it('links a signed-in customer to their enquiries', async () => {
+    vi.mocked(customerAccountAction).mockResolvedValue({ fullName: 'Asha Menon' });
+    render(<HeaderAccount />);
+
+    const links = await screen.findAllByRole('link', { name: 'My enquiries' });
+    expect(links).toHaveLength(2);
+    for (const link of links) expect(link).toHaveAttribute('href', '/enquiries');
+  });
+
   it('logs out, shows Login again and refreshes the page', async () => {
     const user = userEvent.setup();
     vi.mocked(customerAccountAction).mockResolvedValue({ fullName: 'Asha Menon' });

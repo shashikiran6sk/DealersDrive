@@ -44,6 +44,10 @@ Below `sm` the greeting is visually hidden and the customer's initials stand in
 for it, because the full phrase and Logout do not fit beside the district chip
 at 375px; the full name is in the corner's `title` at every width.
 
+**My enquiries (R68).** A signed-in customer gets a `My enquiries` link beside
+the greeting; below `sm`, where there is no room for it, the initials avatar is
+that link.
+
 ### `export function firstNameOf(fullName: string): string`
 
 "Hi, Asha" rather than "Hi, Asha Menon": the header is a greeting, not an

@@ -148,3 +148,69 @@ export type DealerEnquiriesResponse = z.infer<typeof DealerEnquiriesResponse>;
  */
 export const UpdateEnquiryInput = z.object({ status: EnquiryStatus }).strict();
 export type UpdateEnquiryInput = z.infer<typeof UpdateEnquiryInput>;
+
+/**
+ * ── R68 · a customer's own enquiries ──────────────────────────────────────
+ *
+ * Read-only, and the current state only — no history. The customer sees three
+ * states, not the dealer's four: an enquiry the dealership has not acted on is
+ * `SENT`; `CONTACTED` once they have called; `CLOSED` once they are done.
+ * **Spam is shown as `CLOSED`.** A customer is never told they were marked as
+ * spam, and the mapping happens on the server, so `SPAM` is in no response a
+ * customer can read.
+ */
+export const CustomerEnquiryStatus = z.enum(['SENT', 'CONTACTED', 'CLOSED']);
+export type CustomerEnquiryStatus = z.infer<typeof CustomerEnquiryStatus>;
+
+export function customerEnquiryStatus(status: EnquiryStatus): CustomerEnquiryStatus {
+  if (status === 'NEW') return 'SENT';
+  if (status === 'CONTACTED') return 'CONTACTED';
+  return 'CLOSED';
+}
+
+export const CUSTOMER_ENQUIRY_STATUS_LABELS: Record<CustomerEnquiryStatus, string> = {
+  SENT: 'Sent',
+  CONTACTED: 'Contacted',
+  CLOSED: 'Closed',
+};
+
+export const CUSTOMER_ENQUIRY_STATUS_TONES: Record<CustomerEnquiryStatus, StatusTone> = {
+  SENT: 'accent',
+  CONTACTED: 'ok',
+  CLOSED: 'neutral',
+};
+
+/** `GET /v1/enquiries` — newest first, cursor-paginated. */
+export const CustomerEnquiryQuery = z
+  .object({
+    cursor: z.string().max(500).optional(),
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+  })
+  .strict();
+export type CustomerEnquiryQuery = z.infer<typeof CustomerEnquiryQuery>;
+
+/**
+ * One of the customer's enquiries. `vehicle.href` is the car's public page
+ * while it is on the marketplace, and null once it is not.
+ */
+export const CustomerEnquiry = z.object({
+  id: Uuid,
+  status: CustomerEnquiryStatus,
+  statusLabel: z.string(),
+  statusTone: StatusTone,
+  message: z.string().nullable(),
+  createdAt: z.string(),
+  createdLabel: z.string(),
+  dealerName: z.string(),
+  vehicle: z.object({
+    title: z.string(),
+    href: z.string().nullable(),
+  }),
+});
+export type CustomerEnquiry = z.infer<typeof CustomerEnquiry>;
+
+export const CustomerEnquiriesResponse = z.object({
+  data: z.array(CustomerEnquiry),
+  page: CursorPage,
+});
+export type CustomerEnquiriesResponse = z.infer<typeof CustomerEnquiriesResponse>;
