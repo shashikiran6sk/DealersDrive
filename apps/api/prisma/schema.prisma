@@ -26,6 +26,12 @@ model User {
   /// Optional until onboarding collects it: a dealer arrives from Google with a
   /// verified email and nothing else, and an unverified placeholder must never
   /// occupy the unique index (ARCHITECTURE §8.1).
+  ///
+  /// **The phone identity** (R59). Written only by a completed OTP (R39), so a
+  /// value here *is* a proved handset, and it is how a phone sign-in finds its
+  /// account — there is no second table for it to drift from. Always the one
+  /// canonical form, `+919840012345`: the `users_phone_canonical` CHECK in the
+  /// R59 migration refuses any other spelling.
   phone           String?    @unique
   emailVerifiedAt DateTime?
   phoneVerifiedAt DateTime?

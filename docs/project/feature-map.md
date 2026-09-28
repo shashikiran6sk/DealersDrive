@@ -5602,12 +5602,86 @@ Each is its own PR, merged before the next starts.
 | R   | Scope                                                                                                                                                 |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | R58 | This entry — the reusable proof, purposes, canonical number                                                                                           |
-| R59 | Identity model — a phone as a sign-in identity beside Google, customers told apart from pending dealers, linking and `IDENTITY_ALREADY_LINKED`        |
+| R59 | Identity model — a phone as a sign-in identity beside Google, linking and `IDENTITY_ALREADY_LINKED`                                                   |
 | R60 | Dealer phone sign-in — `resolveDealerPostAuthDestination`, shared by Google and phone, and onboarding resume                                          |
 | R61 | Dealer provisional sign-up and identity completion — phone-first or Google-first, step 1 needs both                                                   |
 | R62 | Unified Login — header `Login`, Customer / Dealer tabs                                                                                                |
-| R63 | Customer account and phone sign-in — name only, no email or password                                                                                  |
+| R63 | Customer account and phone sign-in — name only, no email or password; a customer session told apart from a pending dealer                             |
 | R64 | Enquiry model and API — revises F088: the customer is a signed-in account, not typed text; identity derived from the session; dealer from the listing |
 | R65 | Vehicle page enquiry — revises F089: sign-in interrupts and resumes the enquiry                                                                       |
 | R66 | Dealer enquiry inbox — revises F091                                                                                                                   |
 | R67 | Dashboard enquiry counts, header signed-in state, polish                                                                                              |
+
+## R59 — A phone and a Google account are two ways into one account
+
+**Revises F014 / F018 / R39** · one CHECK constraint, no new table or column
+
+R58 made the phone proof reusable. R59 decides what a proved phone _is_ once it
+can open an account, and puts every write that creates or links an identity in
+one file, `modules/auth/identity.service.ts`, so the sign-in flows of R60–R63
+ask it rather than each writing `users` themselves.
+
+### The model, and why it is not a new table
+
+- **One `users` row per person.** Google stays an `oauth_identities` row, found
+  by Google's stable `sub`.
+- **The phone identity is `users.phone`** — already unique, and since R39
+  written only by a completed OTP, so a value with `phoneVerifiedAt` _is_ a
+  proved handset. A `PHONE` row in `oauth_identities` was considered and
+  rejected: it would be a second copy of the number to keep in step with the
+  first, and the unique index on `users.phone` already is the guarantee.
+- **Dealer-specific state stays where it is** — `Dealer`, `DealerMember`,
+  `UserRole`. A person's seats say what they may do; their identities say how
+  they get in.
+
+### Linking is never merging
+
+Two identities converge on one account only when one of them already _is_ that
+account's and the other was just proved in the same flow. Two existing
+accounts are never combined: phone on User A plus Google on User B is
+`409 IDENTITY_ALREADY_LINKED`, both rows untouched, with a message that says
+what to do and not whose account it is. Linking a phone to a Google-first
+account remains `POST /v1/auth/phone/verify` (R39), which answers the same
+collision with `PHONE_ALREADY_REGISTERED`.
+
+### What the database guarantees
+
+- **`users_phone_canonical`** — `phone IS NULL OR phone ~ '^\+91[6-9][0-9]{9}$'`.
+  The unique index is over the stored string, so every writer must store the
+  one spelling R58 defined; this holds a writer that forgot to normalise.
+- **Two sign-ups for one new number** race to the unique index; the loser is
+  answered with the winner's account, so both callers reach the same user.
+- **Two accounts linking one Google account** race to
+  `(provider, providerSubject)`; the loser is refused.
+- **One account linking two Google accounts** is serialised by a `FOR UPDATE`
+  lock on the user row.
+- ⚠️ **Not** a unique index on `oauth_identities(userId, provider)`. It was
+  tried and broke admin sign-in: the admin path matches an allow-listed address
+  by email and can attach a second Google subject for one address (a Google
+  account re-created under the same address has a new `sub`), which
+  `auth.test.ts` exercises. The row lock gives the one-Google-account guarantee
+  on the linking path without changing admin sign-in.
+- **A legacy unverified holder** of a number is never found by a phone sign-in
+  and never silently taken over by the person who just proved the number: that
+  is `IDENTITY_ALREADY_LINKED` with a contact-support message.
+
+### What changed
+
+- `identity.service.ts` — `identitiesOf`, `findByVerifiedPhone`,
+  `createWithPhone`, `createWithGoogle`, `linkGoogle`.
+- `auth.service.ts` — `createIdentity` moved to `createWithGoogle`, unchanged;
+  Google sign-in behaves exactly as before.
+- Migration `20260928000000_identity_linking` — the CHECK.
+- Messages in `auth.messages.ts`; the linking audit row is
+  `auth.identity.linked` with `{ provider: 'GOOGLE' }`.
+
+### Not changed
+
+No route, no contract shape, no screen. Nothing calls `createWithPhone` or
+`linkGoogle` from a route yet — R60 (dealer phone sign-in) and R61 (identity
+completion on onboarding step 1) are their first callers.
+
+- **Tests** `apps/api/tests/identity-linking.test.ts` (real database: both
+  directions of convergence, idempotent relinking, every collision refused,
+  three races, the CHECK); `auth.test.ts`, `phone-verification.test.ts` and
+  `dealer-onboarding.test.ts` pass unchanged.

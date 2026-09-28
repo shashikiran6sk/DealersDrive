@@ -22,6 +22,7 @@ import {
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealersService } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
+import { createIdentityService } from './identity.service.js';
 import type { OAuthClaims, OAuthProvider } from './oauth.port.js';
 import {
   createOAuthTransaction,
@@ -55,6 +56,8 @@ export interface CallbackResult {
 }
 
 export function createAuthService({ prisma, sessions, oauth, dealers, audit, maps }: AuthDeps) {
+  const identities = createIdentityService({ prisma, audit });
+
   async function identityFor(userId: string): Promise<AuthSession['identity']> {
     const identity = await prisma.oAuthIdentity.findFirst({
       where: { userId, provider: 'GOOGLE' },
@@ -212,7 +215,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         });
         await prisma.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
       } else {
-        userId = await createIdentity(claims);
+        userId = await identities.createWithGoogle(claims);
       }
 
       const membership = await prisma.dealerMember.findFirst({
@@ -376,56 +379,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       logger.info({ event: 'auth.session.revoked', userId: userId ?? null }, 'session revoked');
     },
   };
-
-  async function createIdentity(claims: {
-    subject: string;
-    email: string;
-    emailVerified: boolean;
-    name?: string | undefined;
-    picture?: string | undefined;
-  }): Promise<string> {
-    const collision = await prisma.user.findUnique({
-      where: { email: claims.email },
-      include: { identities: true },
-    });
-
-    if (collision) {
-      logger.warn(
-        { event: 'auth.oauth.failed', reason: 'unlinked-account' },
-        'google sign-in matched an existing email with no linked identity',
-      );
-      throw new ConflictError(
-        'ACCOUNT_LINK_REQUIRED',
-        'An account already uses this email address. Contact support to link Google sign-in to it.',
-      );
-    }
-
-    return withTransaction(prisma, async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          email: claims.email,
-          emailVerifiedAt: new Date(),
-          fullName: claims.name ?? null,
-          lastLoginAt: new Date(),
-        },
-      });
-
-      await tx.oAuthIdentity.create({
-        data: {
-          userId: user.id,
-          provider: 'GOOGLE',
-          providerSubject: claims.subject,
-          email: claims.email,
-          emailVerified: claims.emailVerified,
-          displayName: claims.name ?? null,
-          pictureUrl: claims.picture ?? null,
-          lastLoginAt: new Date(),
-        },
-      });
-
-      return user.id;
-    });
-  }
 
   async function completeAdminGoogle(
     claims: OAuthClaims,
