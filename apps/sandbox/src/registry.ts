@@ -1755,6 +1755,36 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'forms-login',
   },
+  {
+    id: 'C088',
+    name: 'EnquiryPanel',
+    source: 'apps/web/src/features/enquiry/enquiry-panel/enquiry-panel.tsx',
+    category: 'Vehicle',
+    ownership: 'Feature-specific',
+    purpose:
+      'Enquire now on the vehicle page (R65). Asks who is signed in only when pressed, so the page stays static: an anonymous visitor goes to the Customer tab and comes back with ?enquire=1; a customer gets the form. Pins a bottom bar on mobile.',
+    aliases: ['Enquire', 'EnquireNow', 'ContactDealer', 'LeadForm', 'EnquiryCta', 'enquiry-panel'],
+    features: ['R65', 'R64'],
+    props: ['listingSlug', 'dealerName', 'autoOpen'],
+    states: ['idle', 'checking', 'form', 'sent', 'already enquired', 'no longer available'],
+    reusable: false,
+    storyId: 'vehicle-enquirypanel',
+  },
+  {
+    id: 'C089',
+    name: 'EnquiryForm',
+    source: 'apps/web/src/features/enquiry/enquiry-panel/enquiry-form.tsx',
+    category: 'Vehicle',
+    ownership: 'Feature-specific',
+    purpose:
+      "The enquiry itself (R65): the customer's name and verified mobile shown read-only — they come from the session, never a field — an optional message, and one Send that cannot fire twice.",
+    aliases: ['EnquiryForm', 'ContactForm', 'LeadCapture', 'enquiry-form'],
+    features: ['R65'],
+    props: ['customer', 'dealerName', 'onSend', 'onCancel'],
+    states: ['empty', 'sending', 'refused'],
+    reusable: false,
+    storyId: 'vehicle-enquirypanel',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

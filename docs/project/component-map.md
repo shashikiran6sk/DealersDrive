@@ -1192,6 +1192,25 @@ and either returns or hands over to `CustomerNameStep` (one Name field);
 `apps/web/tests/unit/app/login-page.test.tsx`. **Sandbox** `Forms/Login`,
 `Forms/PhoneSignIn`.
 
+### C088 — `EnquiryPanel` · C089 `EnquiryForm`
+
+**New at R65** — Enquire on the vehicle page (`features/enquiry/enquiry-panel/`).
+`EnquiryPanel` is the button, the sign-in interruption and the outcome banners;
+it asks who is signed in only when pressed, so the page stays static.
+`EnquiryForm` shows the customer's name and verified mobile read-only and takes
+an optional message; `EnquireFromUrl` is the `?enquire=1` reader the page puts
+under `Suspense`.
+
+| Component      | Props                                          | States                                                                 |
+| -------------- | ---------------------------------------------- | ---------------------------------------------------------------------- |
+| `EnquiryPanel` | `listingSlug`, `dealerName`, `autoOpen?`       | idle · checking · form · sent · already enquired · no longer available |
+| `EnquiryForm`  | `customer`, `dealerName`, `onSend`, `onCancel` | empty · sending · refused                                              |
+
+**Reuses** `Button`, `Banner`, `StatusTag`, the `.field` / `.input` classes.
+**Consumers:** `/car/[slug]`. **Tests**
+`apps/web/tests/unit/features/enquiry/enquiry-panel.test.tsx`,
+`actions.test.ts`. **Sandbox** `Vehicle/EnquiryPanel`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

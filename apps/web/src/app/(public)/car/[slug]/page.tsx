@@ -2,12 +2,14 @@ import { PublicVehicleDetail } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { Plate } from '@/components/ui/primitives';
 import { PriceBlock } from '@/components/vehicle/price-block';
 import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
 import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
+import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
 import { ApiError, apiGetParsed } from '@/lib/api';
 import { VEHICLES_TAG, vehicleTag } from '@/lib/cache-tags';
 import { seoMetadata } from '@/lib/seo';
@@ -54,7 +56,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
   if (!vehicle) notFound();
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 pt-[22px] pb-[60px]">
+    <div className="mx-auto max-w-[1280px] px-6 pt-[22px] pb-[88px] lg:pb-[60px]">
       <Link href="/cars" className="btn btn-ghost mb-[14px]">
         {VEHICLE_PAGE_TEXT.back}
       </Link>
@@ -101,6 +103,11 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
             priceLabel={vehicle.priceLabel}
             negotiabilityLabel={vehicle.negotiabilityLabel}
           />
+          <Suspense
+            fallback={<EnquiryPanel listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />}
+          >
+            <EnquireFromUrl listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
+          </Suspense>
           <VdpDealerCard dealer={vehicle.dealer} />
         </aside>
       </div>
