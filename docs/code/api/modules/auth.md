@@ -219,17 +219,12 @@ a different seat — working.
 
 Refreshed, never looked up by: the account is the `sub`.
 
-### `if (membership?.dealer.status === 'SUSPENDED')`
+### `const destination = await resolveDealerPostAuthDestination(`
 
-The seat check above handles suspensions performed by the current admin
-
-### `if (membership?.dealer.status === 'SUSPENDED')`
-
-workflow. This dealer-status guard also blocks legacy or manually
-
-### `if (membership?.dealer.status === 'SUSPENDED')`
-
-suspended rows whose member seat was never closed.
+Where this dealer goes, and whether their dealership lets them in at all, is
+`post-auth.ts`'s answer since **R60** — the same answer a phone sign-in gets.
+It runs before the seat is ensured and before any session exists, so a
+suspended dealership is refused with nothing issued.
 
 ### `await ensureSeat(prisma, { userId, role: 'DEALER' })`
 
@@ -1134,6 +1129,68 @@ The read is the message; the unique index on `users.phone` is the
 guarantee. Two people verifying one number at the same instant race
 past this check and the second one's write fails — which is the right
 way round, because the index is the thing that cannot be wrong.
+
+## `apps/api/src/modules/auth/phone-sign-in.service.ts`
+
+### `export function createPhoneSignInService({ prisma, sessions, otp, cache, audit }: PhoneSignInDeps)`
+
+**R60** — the second way into the dealer console.
+
+A phone sign-in is a Google sign-in with a different proof at the front:
+`prove({ purpose: 'DEALER_LOGIN' })` stands where the OAuth exchange stands,
+and everything after it — the suspension checks, the destination, the seat,
+the session row, the cookie — is the same code or the same shape. That is
+deliberate; the moment the two paths differ after the proof is the moment a
+dealer's destination starts depending on which button they pressed.
+
+### `const user = await identities.findByVerifiedPhone(proven.phone)`
+
+Only a **proved** number finds an account. A legacy row whose number was
+typed and never verified is not found, so a code sent to that number does not
+sign anybody into it.
+
+### `const isDealer = user?.roles.some((seat) => seat.role === 'DEALER') === true || member !== null`
+
+A dealer account is one that holds a dealer seat (every Google dealer sign-in
+grants one) or an active membership. This is the line that keeps a dealer
+phone sign-in from resolving anybody else — a customer account, from R63,
+holds neither.
+
+### `throw new NotFoundError(DEALER_NOT_FOUND, { code: 'DEALER_NOT_FOUND' })`
+
+Said only after the number is proved, so it tells a caller nothing about a
+number they do not hold (brief §58). Nothing is created: R61 is where a
+proved number with no account starts one.
+
+### `await audit.recordDetached(`
+
+The Google sign-in logs and does not audit; this audits as well, because a
+phone sign-in is new and a dealer asking "who signed in to my account" should
+be able to see which door was used. Detached, so a failed audit write does
+not turn a good sign-in into an error.
+
+## `apps/api/src/modules/auth/post-auth.ts`
+
+### `export async function resolveDealerPostAuthDestination(`
+
+**R60** — where a dealer goes after signing in, for every way of signing in.
+
+Before R60 this was written out twice: in the Google callback and in the
+dealer session (`GET /v1/auth/me`). Adding the phone would have made three,
+and three copies of a three-way branch is how an OTP sign-in one day lands
+somewhere Google does not. So the status-to-destination rule is
+`dealerSessionNext` in contracts, and this function adds what only a sign-in
+needs: the dealership lookup, the suspension refusal and the return path.
+
+`requested` is sanitised with `safeReturnTo`, the Google callback's own rule —
+a path or nothing — and ignored entirely while the dealer still belongs in
+onboarding.
+
+### `if (membership?.dealer.status === 'SUSPENDED')`
+
+The seat check each caller makes first handles suspensions performed by the
+current admin workflow. This dealer-status guard also blocks legacy or
+manually suspended rows whose member seat was never closed.
 
 ## `apps/api/src/modules/auth/roles.ts`
 

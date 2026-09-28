@@ -19,3 +19,10 @@ export const OTHER_GOOGLE_ALREADY_LINKED =
 
 export const PHONE_HELD_UNVERIFIED =
   'This mobile number is already on another account. Contact support to have it moved to you.';
+
+export const DEALERSHIP_SUSPENDED = 'This dealership has been suspended. Contact support.';
+
+export const ACCOUNT_SUSPENDED = 'This account has been suspended. Contact support.';
+
+export const DEALER_NOT_FOUND =
+  'No dealer account uses this number yet. Continue with Google to create one, or sign in with Google and add this number.';

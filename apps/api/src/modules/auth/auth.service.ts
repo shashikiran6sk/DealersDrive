@@ -22,6 +22,7 @@ import {
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealersService } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
+import { ACCOUNT_SUSPENDED, DEALERSHIP_SUSPENDED } from './auth.messages.js';
 import { createIdentityService } from './identity.service.js';
 import type { OAuthClaims, OAuthProvider } from './oauth.port.js';
 import {
@@ -33,6 +34,7 @@ import {
   type OAuthAudience,
   type OAuthTransaction,
 } from './oauth-transaction.js';
+import { resolveDealerPostAuthDestination } from './post-auth.js';
 import { ensureSeat, isSeatSuspended } from './roles.js';
 import { assertPhoneVerified } from './verified-phone.js';
 import { permissionsForRole, type DealerPrincipal, type PendingPrincipal } from './session.port.js';
@@ -191,15 +193,11 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
       if (existing) {
         if (existing.user.status !== 'ACTIVE') {
-          throw new ForbiddenError('This account has been suspended. Contact support.', {
-            code: 'ACCOUNT_SUSPENDED',
-          });
+          throw new ForbiddenError(ACCOUNT_SUSPENDED, { code: 'ACCOUNT_SUSPENDED' });
         }
 
         if (isSeatSuspended(existing.user.roles, 'DEALER')) {
-          throw new ForbiddenError('This dealership has been suspended. Contact support.', {
-            code: 'ACCOUNT_SUSPENDED',
-          });
+          throw new ForbiddenError(DEALERSHIP_SUSPENDED, { code: 'ACCOUNT_SUSPENDED' });
         }
 
         userId = existing.userId;
@@ -218,17 +216,11 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         userId = await identities.createWithGoogle(claims);
       }
 
-      const membership = await prisma.dealerMember.findFirst({
-        where: { userId, status: 'ACTIVE' },
-        include: { dealer: true },
-        orderBy: { id: 'asc' },
-      });
-
-      if (membership?.dealer.status === 'SUSPENDED') {
-        throw new ForbiddenError('This dealership has been suspended. Contact support.', {
-          code: 'ACCOUNT_SUSPENDED',
-        });
-      }
+      const destination = await resolveDealerPostAuthDestination(
+        prisma,
+        userId,
+        transaction.returnTo,
+      );
 
       await ensureSeat(prisma, { userId, role: 'DEALER' });
 
@@ -240,24 +232,16 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       });
 
       logger.info(
-        { event: 'auth.session.created', scope: 'DEALER', userId },
+        { event: 'auth.session.created', scope: 'DEALER', method: 'GOOGLE', userId },
         'dealer session created',
       );
-
-      const next: AuthSession['next'] = !membership
-        ? 'ONBOARDING'
-        : membership.dealer.status === 'DRAFT'
-          ? 'ONBOARDING'
-          : membership.dealer.status === 'PENDING_APPROVAL'
-            ? 'PENDING_APPROVAL'
-            : 'DASHBOARD';
 
       return {
         token: session.token,
         expiresAt: session.expiresAt,
         audience: 'DEALER',
-        next,
-        returnTo: next === 'ONBOARDING' ? '/dealer/onboarding' : transaction.returnTo,
+        next: destination.next,
+        returnTo: destination.returnTo,
       };
     },
 

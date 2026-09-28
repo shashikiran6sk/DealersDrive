@@ -1,4 +1,5 @@
 import {
+  dealerSessionNext,
   DEALER_STATUS_LABELS,
   distinctServices,
   DOC_TYPE_LABELS,
@@ -230,12 +231,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const phone = owner?.user.phone ?? dealer.contactPhone ?? '';
 
       return {
-        next:
-          dealer.status === 'DRAFT'
-            ? 'ONBOARDING'
-            : dealer.status === 'PENDING_APPROVAL'
-              ? 'PENDING_APPROVAL'
-              : 'DASHBOARD',
+        next: dealerSessionNext(dealer.status),
         identity: null,
         user: {
           id: principal.userId,

@@ -24,6 +24,26 @@ import { AdminRole, DealerRole, DealerStatus } from './enums.js';
 export const SessionNext = z.enum(['DASHBOARD', 'ONBOARDING', 'PENDING_APPROVAL']);
 export type SessionNext = z.infer<typeof SessionNext>;
 
+/**
+ * Where a signed-in dealer goes next, decided by their dealership's status
+ * alone (**R60**) — `null` when they have no dealership yet.
+ *
+ * One function, because there are now two ways to sign in and the destination
+ * must not depend on which was used: Google sign-in, phone sign-in and
+ * `GET /v1/auth/me` all answer through this. Before R60 the same three-way
+ * branch was written out in two services, and a third copy for the phone is
+ * exactly how an OTP sign-in would one day land somewhere Google does not.
+ *
+ * `DRAFT` covers "changes requested" too: an operator's request for changes
+ * returns a dealership to `DRAFT`, and the onboarding wizard is the correction
+ * flow. `SUSPENDED` never reaches here — both sign-ins refuse it first.
+ */
+export function dealerSessionNext(status: DealerStatus | null): SessionNext {
+  if (status === null || status === 'DRAFT') return 'ONBOARDING';
+  if (status === 'PENDING_APPROVAL') return 'PENDING_APPROVAL';
+  return 'DASHBOARD';
+}
+
 /** The sign-in methods this deployment can actually perform. */
 export const AuthProvidersResponse = z.object({
   google: z.object({
@@ -300,6 +320,12 @@ export type AuthSession = z.infer<typeof AuthSession>;
  * Behind `requireSignedIn` the cost is bounded by the set of people who have
  * already completed a Google sign-in, which is the smallest gate the widget
  * design allows us to put in front of it.
+ *
+ * **R60 moved that gate.** A phone sign-in has no session before it starts, so
+ * the same shape is also served by `GET /v1/auth/sign-in/phone/widget`,
+ * rate-limited per address. The session is no longer what bounds the spend;
+ * MSG91's per-number limits and widget captcha, and the limits on the sign-in
+ * that spends the token, are.
  */
 export const PhoneOtpWidget = z.object({
   /** False when this deployment cannot verify a number at all; `reason` says why. */
@@ -372,3 +398,39 @@ export const VerifyPhoneResponse = z.object({
   verifiedAt: z.string(),
 });
 export type VerifyPhoneResponse = z.infer<typeof VerifyPhoneResponse>;
+
+/**
+ * ── R60 · a dealer signs in with their phone ────────────────────────────────
+ *
+ * `POST /v1/auth/sign-in/phone/dealer` — the widget's access token, and the
+ * number it is claimed to prove, exactly as `VerifyPhoneInput` carries them.
+ * The difference is what the server does with a good one: it finds the dealer
+ * account that holds that *proved* number and issues the same `dd_session`
+ * a Google sign-in would. Nothing in the body names an account; the number is
+ * the assertion being checked, not an identifier being trusted.
+ */
+export const PhoneSignInInput = z
+  .object({
+    phone: IndianMobile,
+    accessToken: z.string().trim().min(1, 'The verification token is missing.').max(4096),
+    /**
+     * Where to land after a dealer whose dealership is past onboarding signs
+     * in. A **path** — anything else is replaced with `/dealer`, the same rule
+     * the Google callback applies, because a sign-in that redirects wherever
+     * the caller asks is an open redirect.
+     */
+    returnTo: z.string().trim().max(512).optional(),
+  })
+  .strict();
+export type PhoneSignInInput = z.infer<typeof PhoneSignInInput>;
+
+/**
+ * What a phone sign-in decided. The session itself is the `dd_session` cookie
+ * on the response, never a field here.
+ */
+export const PhoneSignInResponse = z.object({
+  next: SessionNext,
+  /** A path on the web app: onboarding while the dealership is a draft. */
+  returnTo: z.string(),
+});
+export type PhoneSignInResponse = z.infer<typeof PhoneSignInResponse>;

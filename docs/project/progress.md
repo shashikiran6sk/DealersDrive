@@ -229,7 +229,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R57 — Results update in place, without a flash · revises F078/F079/F080 · measured no remounts; the dim waits 200 ms, so ordinary updates do not flicker
 - [x] R58 — One proof of a handset, for every purpose · revises R39 · `normaliseIndianMobile` is the one canonical number; the MSG91 proof moves out of onboarding into `phone-proof.service.ts` with `DEALER_PHONE_LINK` / `DEALER_LOGIN` / `CUSTOMER_LOGIN` purposes
 - [x] R59 — A phone and a Google account are two ways into one account · revises F014/F018/R39 · `identity.service.ts` owns every identity write; linking refuses, never merges (`IDENTITY_ALREADY_LINKED`); `users_phone_canonical` CHECK
-- [ ] R60 — Dealers sign in with their phone, and land where Google would have sent them · revises F018
+- [x] R60 — Dealers sign in with their phone, and land where Google would have sent them · revises F018/R39 · `POST /v1/auth/sign-in/phone/dealer`, `GET /v1/auth/sign-in/phone/widget`; one `resolveDealerPostAuthDestination` for Google, phone and `/me`
 - [ ] R61 — A new dealer starts with either identity and completes the other on step 1 · revises F037/F038/R39
 - [ ] R62 — One Login, with Customer and Dealer tabs · revises F017/F073
 - [ ] R63 — Customer accounts, by phone alone · a customer session is told apart from a pending dealer

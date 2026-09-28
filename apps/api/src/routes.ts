@@ -36,7 +36,10 @@ export function createRoutes(container: Container): Router {
   v1.use(createPublicDealersRouter(container.dealersPublic, container.rateLimit));
   v1.use(createSearchRouter(container.search, container.rateLimit));
 
-  v1.use('/auth', createPublicAuthRouter(container.auth));
+  v1.use(
+    '/auth',
+    createPublicAuthRouter(container.auth, container.phoneSignIn, container.rateLimit),
+  );
   v1.use(
     '/auth',
     container.guards.requireSignedIn,

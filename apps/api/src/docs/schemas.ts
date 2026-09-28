@@ -31,6 +31,7 @@ const INPUT_SCHEMA_NAMES = [
   'GrantAdminAccessInput',
   'PhoneAvailabilityInput',
   'VerifyPhoneInput',
+  'PhoneSignInInput',
   'CreateVehicleInput',
   'UpdateVehicleInput',
   'VehicleSuggestQuery',
