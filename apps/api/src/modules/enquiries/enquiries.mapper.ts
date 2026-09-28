@@ -11,7 +11,7 @@ import {
 } from '@dealers-drive/contracts';
 import type { Prisma } from '@prisma/client';
 
-import { UNNAMED_CUSTOMER } from './enquiries.messages.js';
+import { UNNAMED_CUSTOMER } from '../../platform/messages.js';
 
 export const INBOX_SELECT = {
   id: true,

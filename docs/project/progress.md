@@ -236,7 +236,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R64 — Enquiries come from signed-in customers · revises F088 · ⚠️ new table `enquiries` · `POST /v1/enquiries` takes a listing slug and an optional message; identity from the session, dealership from the listing; live listings only; one per customer per car per day
 - [x] R65 — Enquire from the vehicle page, through sign-in and back · revises F089 · `Enquire now` on `/car/[slug]`; anonymous → Customer login and back with `?enquire=1`; name and verified mobile read-only; the page stays static
 - [x] R66 — The dealer's enquiry inbox · revises F091 · `GET /v1/dealer/enquiries` (+ `/counts`), `PATCH /v1/dealer/enquiries/:id`; New / Contacted / Closed / Spam; tenant-scoped, a 404 for another dealership's; `/dealer/enquiries` in the console nav
-- [ ] R67 — Enquiry counts on the dashboard, and the signed-in header · revises F048/F073
+- [x] R67 — Enquiry counts on the dashboard, and the signed-in header · revises F048/F073 · dashboard tile, recent panel and `counts.newEnquiries` read `enquiries`; header shows "Hi, name" + Logout for a customer; mobile header fits at 375
 
 ---
 

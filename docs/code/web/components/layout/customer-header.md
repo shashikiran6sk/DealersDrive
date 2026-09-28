@@ -7,7 +7,7 @@ declaration the note sat above.
 
 ## `apps/web/src/components/layout/customer-header/customer-header.tsx`
 
-### `export function CustomerHeader({ locations }: { locations: PublicLocations })`
+### `export function CustomerHeader({ locations, account }: CustomerHeaderProps)`
 
 DESIGN-SPEC §3.1 — sticky, 64px, white on a hairline.
 
@@ -32,14 +32,24 @@ string, and `useSearchParams` opts a route out of static prerendering
 unless it sits behind a boundary. Keeping the boundary this tight
 means the rest of the header still renders on the server.
 
-### `<Link href={HEADER_NAV.dealerConsole} className="btn btn-primary">`
+### `{account ?? (<Link href={HEADER_NAV.login} …>)}`
 
-One door, and it is a `/dealer` link (**R35**). The console already
-decides between "sign in" and "finish onboarding" from the session,
-so two buttons pointing at that one door only asked the visitor to
-guess — and either answer took them to the same screen. It carries
-`btn-primary` as the only action in the cluster, and is visible at
-every width because it is the only way in.
+One door, `Login` (**R35**, renamed at **R63**), visible at every width
+because it is the only way in. From **R67** the corner is a slot: the public
+layout passes `HeaderAccount`, which becomes "Hi, name" and Logout for a
+signed-in customer. A slot rather than an import so this shared layout
+component does not depend on a feature's Server Actions; without one the
+header still renders the plain Login link, which is what every existing
+consumer and test sees.
+
+### `px-4 sm:px-6`, `max-sm:sr-only` on the wordmark
+
+At phone width the header did not fit: the logo, the wordmark, the district
+chip and Login measured 450px in a 390px viewport, pushing Login off-screen.
+DESIGN-SPEC §3.1 at 375 draws "logo + city + CTA only", so the wordmark is
+visually hidden below `sm` (still read by a screen reader) and the gutter is
+the 16px every phone layout uses. Found and fixed at **R67**, when the signed-in
+corner made the overflow worse.
 
 ## `apps/web/src/components/layout/customer-header/header-link.tsx`
 

@@ -366,19 +366,67 @@ describe('ownerOf', () => {
 describe('the console counters', () => {
   /**
    * ── Reconstruction slice ────────────────────────────────────────────────
-   * The baseline has three cases here, asserting the `where` clauses of
-   * `prisma.enquiry.count` and `prisma.listing.count`. Neither model exists
-   * yet — `Enquiry` arrives at F088 and `Listing` at F064 — so the repository
-   * returns zero and those three cases return with the queries they describe.
-   * What can be asserted now is that both counters exist and are safe to call,
-   * which is what `dealers.service.session()` needs of them at F018.
+   * The baseline asserted the `where` clauses of `prisma.enquiry.count` and
+   * `prisma.listing.count` here. `Enquiry` arrived with R64, so the enquiry
+   * counter is back with its query (**R67**): only `NEW`, only this
+   * dealership. `pendingListingCount` still answers zero — nothing in the
+   * session reads it yet.
    */
-  it('answers zero for both until the enquiry and listing tables exist', async () => {
+  it('counts only this dealership’s new enquiries', async () => {
+    const { prisma, calls } = fakePrisma({ 'enquiry.count': 3 });
+    const repo = createDealersRepository(prisma);
+
+    expect(await repo.newEnquiryCount('dealer-1')).toBe(3);
+    expect(calls).toEqual([
+      {
+        model: 'enquiry',
+        method: 'count',
+        args: { where: { dealerId: 'dealer-1', status: 'NEW' } },
+      },
+    ]);
+  });
+
+  it('answers zero pending listings without a query', async () => {
     const { prisma, calls } = fakePrisma();
     const repo = createDealersRepository(prisma);
 
-    expect(await repo.newEnquiryCount('dealer-1')).toBe(0);
     expect(await repo.pendingListingCount('dealer-1')).toBe(0);
     expect(calls).toEqual([]);
+  });
+
+  it('counts this week’s new enquiries against the week before’s, spam left out', async () => {
+    const { prisma, calls } = fakePrisma({ 'enquiry.count': 2 });
+    const repo = createDealersRepository(prisma);
+    const from = new Date('2026-09-22T00:00:00.000Z');
+
+    expect(await repo.enquiryCounts('dealer-1', from)).toEqual({ thisWeek: 2, previousWeek: 2 });
+    expect(calls.map((call) => call.args)).toEqual([
+      { where: { dealerId: 'dealer-1', status: 'NEW', createdAt: { gte: from } } },
+      {
+        where: {
+          dealerId: 'dealer-1',
+          status: { not: 'SPAM' },
+          createdAt: { gte: new Date('2026-09-15T00:00:00.000Z'), lt: from },
+        },
+      },
+    ]);
+  });
+
+  /** Spam is kept in its tab, not put in front of the dealer on the dashboard. */
+  it('lists recent enquiries newest first, leaving spam out', async () => {
+    const { prisma, calls } = fakePrisma({ 'enquiry.findMany': [] });
+    const repo = createDealersRepository(prisma);
+
+    await repo.recentEnquiries('dealer-1', 4);
+
+    expect(calls[0]).toMatchObject({
+      model: 'enquiry',
+      method: 'findMany',
+      args: {
+        where: { dealerId: 'dealer-1', status: { not: 'SPAM' } },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: 4,
+      },
+    });
   });
 });

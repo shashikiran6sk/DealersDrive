@@ -12,5 +12,3 @@ export const ENQUIRY_RATE_LIMITED =
   'You have sent a lot of enquiries. Try again in a little while.';
 
 export const ENQUIRY_NOT_FOUND = 'That enquiry is not in your inbox.';
-
-export const UNNAMED_CUSTOMER = 'Customer';

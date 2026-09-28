@@ -5,12 +5,14 @@ import {
   DOC_TYPE_LABELS,
   formatDate,
   formatPhone,
+  formatRegistration,
   initialsOf,
   listingStatusTone,
   normaliseLocality,
   PROFILE_CHANGE_STATUS_LABELS,
   timeAgo,
   toE164,
+  vehicleTitle,
   type AuthSession,
   type CompletenessResponse,
   type DealerDocumentsResponse,
@@ -45,6 +47,7 @@ import type { DealersRepository, DealerWithRelations } from './dealers.repositor
 import {
   ALREADY_REGISTERED,
   DOCUMENT_NOT_FOUND,
+  UNNAMED_CUSTOMER,
   UPLOAD_INCOMPLETE,
   UPLOAD_NOT_FOUND,
 } from '../../platform/messages.js';
@@ -855,24 +858,20 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           max,
           series,
         },
-        recentEnquiries: recent.map((enquiry) => ({
-          id: enquiry.id,
-          initials: initialsOf(enquiry.name),
-          name: enquiry.name,
-          vehicleTitle: enquiry.vehicle
-            ? [
-                enquiry.vehicle.year,
-                enquiry.vehicle.make.name,
-                enquiry.vehicle.model.name,
-                enquiry.vehicle.variant?.name,
-              ]
-                .filter(Boolean)
-                .join(' ')
-            : null,
-          phoneDisplay: formatPhone(enquiry.phone),
-          callHref: `tel:${enquiry.phone}`,
-          timeAgoLabel: timeAgo(enquiry.createdAt),
-        })),
+        recentEnquiries: recent.map((enquiry) => {
+          const name = enquiry.name?.trim() || UNNAMED_CUSTOMER;
+          return {
+            id: enquiry.id,
+            initials: initialsOf(name),
+            name,
+            vehicleTitle:
+              vehicleTitle(enquiry.vehicle) ||
+              formatRegistration(enquiry.vehicle.registrationNumber),
+            phoneDisplay: enquiry.phone ? formatPhone(enquiry.phone) : null,
+            callHref: enquiry.phone ? `tel:${enquiry.phone}` : null,
+            timeAgoLabel: timeAgo(enquiry.createdAt),
+          };
+        }),
         creditBalance: dealer.creditBalance,
         creditsHeld: dealer.creditsHeld,
         listingStats: DASHBOARD_LISTING_STATS.map((stat) => ({

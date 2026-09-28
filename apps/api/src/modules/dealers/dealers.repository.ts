@@ -188,9 +188,8 @@ export function createDealersRepository(prisma: PrismaClient) {
       });
     },
 
-    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F088
-    async newEnquiryCount(_dealerId: string): Promise<number> {
-      return 0;
+    async newEnquiryCount(dealerId: string): Promise<number> {
+      return prisma.enquiry.count({ where: { dealerId, status: 'NEW' } });
     },
 
     // eslint-disable-next-line @typescript-eslint/require-await -- restored at F064
@@ -211,17 +210,55 @@ export function createDealersRepository(prisma: PrismaClient) {
       return null;
     },
 
-    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F088
     async enquiryCounts(
-      _dealerId: string,
-      _from: Date,
+      dealerId: string,
+      from: Date,
     ): Promise<{ thisWeek: number; previousWeek: number }> {
-      return { thisWeek: 0, previousWeek: 0 };
+      const previousFrom = new Date(from.getTime() - 7 * 86_400_000);
+      const [thisWeek, previousWeek] = await Promise.all([
+        prisma.enquiry.count({ where: { dealerId, status: 'NEW', createdAt: { gte: from } } }),
+        prisma.enquiry.count({
+          where: {
+            dealerId,
+            status: { not: 'SPAM' },
+            createdAt: { gte: previousFrom, lt: from },
+          },
+        }),
+      ]);
+      return { thisWeek, previousWeek };
     },
 
-    // eslint-disable-next-line @typescript-eslint/require-await -- restored at F088
-    async recentEnquiries(_dealerId: string, _limit: number): Promise<RecentEnquiryRow[]> {
-      return [];
+    async recentEnquiries(dealerId: string, limit: number): Promise<RecentEnquiryRow[]> {
+      const rows = await prisma.enquiry.findMany({
+        where: { dealerId, status: { not: 'SPAM' } },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: limit,
+        select: {
+          id: true,
+          createdAt: true,
+          customer: { select: { fullName: true, phone: true } },
+          listing: {
+            select: {
+              vehicle: {
+                select: {
+                  manufacturingYear: true,
+                  make: true,
+                  model: true,
+                  variant: true,
+                  registrationNumber: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return rows.map((row) => ({
+        id: row.id,
+        name: row.customer.fullName,
+        phone: row.customer.phone,
+        createdAt: row.createdAt,
+        vehicle: row.listing.vehicle,
+      }));
     },
 
     // eslint-disable-next-line @typescript-eslint/require-await -- nothing expires a listing yet (R47)
@@ -253,15 +290,16 @@ export function createDealersRepository(prisma: PrismaClient) {
 
 export interface RecentEnquiryRow {
   id: string;
-  name: string;
-  phone: string;
+  name: string | null;
+  phone: string | null;
   createdAt: Date;
   vehicle: {
-    year: number;
-    make: { name: string };
-    model: { name: string };
-    variant: { name: string } | null;
-  } | null;
+    manufacturingYear: number | null;
+    make: string | null;
+    model: string | null;
+    variant: string | null;
+    registrationNumber: string;
+  };
 }
 
 export type DealersRepository = ReturnType<typeof createDealersRepository>;

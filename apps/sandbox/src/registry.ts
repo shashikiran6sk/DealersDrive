@@ -323,7 +323,8 @@ export const registry: RegistryEntry[] = [
     source: 'apps/web/src/components/layout/customer-header/customer-header.tsx',
     category: 'Layout',
     ownership: 'Shared',
-    purpose: 'The buyer chrome — sticky 64px, wordmark, section nav, the two dealer doors.',
+    purpose:
+      'The buyer chrome — sticky 64px, wordmark, section nav, the location chip, and the account corner: Login (R63), or the signed-in customer (R67).',
     aliases: [
       'PublicHeader',
       'SiteHeader',
@@ -333,9 +334,10 @@ export const registry: RegistryEntry[] = [
       'MarketplaceHeader',
       'customer-header',
     ],
-    features: ['F073'],
-    props: ['none — it reads usePathname()'],
+    features: ['F073', 'R63', 'R67'],
+    props: ['locations', 'account? — the account corner; Login when absent (R67)'],
     states: [
+      'signed-in customer (R67)',
       'home (nothing current)',
       'cars',
       'dealers',
@@ -1829,6 +1831,21 @@ export const registry: RegistryEntry[] = [
     states: ['per status', 'moving', 'refused'],
     reusable: false,
     storyId: 'dealer-enquiryinbox',
+  },
+  {
+    id: 'C093',
+    name: 'HeaderAccount',
+    source: 'apps/web/src/features/auth/header-account/header-account.tsx',
+    category: 'Layout',
+    ownership: 'Feature-specific',
+    purpose:
+      'The account corner of the customer header (R67): Login, or "Hi, <first name>" and Logout for a signed-in customer. Asked in the browser through a Server Action, so the public pages stay static.',
+    aliases: ['AccountMenu', 'UserMenu', 'SignedIn', 'Logout', 'header-account'],
+    features: ['R67', 'R62'],
+    props: ['none — it asks customerAccountAction()'],
+    states: ['signed out', 'signed in', 'long name at phone width', 'logging out'],
+    reusable: false,
+    storyId: 'layout-customerheader',
   },
 ];
 

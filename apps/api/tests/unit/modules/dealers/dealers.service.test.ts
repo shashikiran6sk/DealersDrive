@@ -2046,10 +2046,11 @@ describe('dashboard', () => {
           phone: '9876543210',
           createdAt: new Date(Date.now() - 3_600_000),
           vehicle: {
-            year: 2021,
-            make: { name: 'Maruti Suzuki' },
-            model: { name: 'Alto 800' },
-            variant: { name: 'VXI' },
+            manufacturingYear: 2021,
+            make: 'Maruti Suzuki',
+            model: 'Alto 800',
+            variant: 'VXI',
+            registrationNumber: 'TN23AB1234',
           },
         },
       ],
@@ -2067,23 +2068,59 @@ describe('dashboard', () => {
   });
 
   /**
-   * Somebody asking the dealership a question rather than asking about one
-   * car. The row is kept — a lead is a lead — and the panel labels it.
+   * **R67.** Every enquiry is about one listing (R64), so there is no general
+   * enquiry any more; a car with no make or model yet is named by its plate.
    */
-  it('leaves the vehicle title null on a general enquiry', async () => {
+  it('names a car with no make or model by its plate', async () => {
     const h = setup({
       recent: [
         {
           id: 'enquiry-1',
           name: 'Anitha R',
-          phone: '9876543210',
+          phone: '+919876543210',
           createdAt: new Date(),
-          vehicle: null,
+          vehicle: {
+            manufacturingYear: null,
+            make: null,
+            model: null,
+            variant: null,
+            registrationNumber: 'TN23AB1234',
+          },
         },
       ],
     });
 
-    expect((await h.service.dashboard('dealer-1')).recentEnquiries[0]?.vehicleTitle).toBe(null);
+    expect((await h.service.dashboard('dealer-1')).recentEnquiries[0]?.vehicleTitle).toBe(
+      'TN 23 AB 1234',
+    );
+  });
+
+  /** A released number is no number to call, and a missing name is still a lead. */
+  it('offers no call link without a number, and names an unnamed customer', async () => {
+    const h = setup({
+      recent: [
+        {
+          id: 'enquiry-1',
+          name: null,
+          phone: null,
+          createdAt: new Date(),
+          vehicle: {
+            manufacturingYear: 2021,
+            make: 'Tata',
+            model: 'Nexon',
+            variant: null,
+            registrationNumber: 'TN23AB1234',
+          },
+        },
+      ],
+    });
+
+    expect((await h.service.dashboard('dealer-1')).recentEnquiries[0]).toMatchObject({
+      name: 'Customer',
+      initials: 'CU',
+      phoneDisplay: null,
+      callHref: null,
+    });
   });
 
   it('raises the expiry alert only when something is expiring', async () => {

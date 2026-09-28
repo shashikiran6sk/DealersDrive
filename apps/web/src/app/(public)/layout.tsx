@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { CustomerFooter } from '@/components/layout/customer-footer';
 import { CustomerHeader } from '@/components/layout/customer-header';
+import { HeaderAccount } from '@/features/auth/header-account';
 import { getPublicLocations } from '@/lib/locations';
 import { getPublicConfig } from '@/lib/public-config';
 
@@ -10,7 +11,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <CustomerHeader locations={locations} />
+      <CustomerHeader locations={locations} account={<HeaderAccount />} />
       <main className="flex-1">{children}</main>
       <CustomerFooter
         social={config.social}

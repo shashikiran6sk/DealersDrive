@@ -5,6 +5,7 @@ Parent: [web/features](../README.md)
 ## Pages
 
 - [document-uploader](document-uploader.md)
+- [header-account](header-account.md)
 - [login](login.md)
 - [onboarding-wizard](onboarding-wizard.md)
 - [phone-sign-in](phone-sign-in.md)

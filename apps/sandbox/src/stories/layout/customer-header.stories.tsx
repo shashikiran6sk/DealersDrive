@@ -1,7 +1,10 @@
 import type { PublicLocations } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { customerAccountStub } from '../../mocks/customer-account-actions';
+
 import { CustomerHeader } from '@/components/layout/customer-header';
+import { HeaderAccount } from '@/features/auth/header-account';
 
 const LOCATIONS: PublicLocations = {
   districts: [
@@ -17,6 +20,10 @@ const meta = {
   title: 'Layout/CustomerHeader',
   component: CustomerHeader,
   args: { locations: LOCATIONS },
+  argTypes: { account: { control: false } },
+  beforeEach: () => {
+    customerAccountStub.account = null;
+  },
   parameters: {
     layout: 'fullscreen',
     nextjs: { appDirectory: true, navigation: { pathname: '/' } },
@@ -66,3 +73,23 @@ export const Tablet: Story = {
     viewport: { defaultViewport: 'tablet' },
   },
 };
+
+export const SignedInCustomer: Story = {
+  args: { account: <HeaderAccount /> },
+  beforeEach: () => {
+    customerAccountStub.account = { fullName: 'Asha Menon' };
+  },
+};
+
+export const SignedInCustomerMobile: Story = {
+  args: { account: <HeaderAccount /> },
+  beforeEach: () => {
+    customerAccountStub.account = { fullName: 'Shashikiran Venkataramanan' };
+  },
+  parameters: {
+    nextjs: { appDirectory: true, navigation: { pathname: '/cars' } },
+    viewport: { defaultViewport: 'mobile' },
+  },
+};
+
+export const SignedOutWithAccountSlot: Story = { args: { account: <HeaderAccount /> } };

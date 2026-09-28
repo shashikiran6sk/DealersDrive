@@ -1230,6 +1230,26 @@ C-2 (`@tanstack/react-query`) no longer applies.
 `apps/web/tests/unit/features/dealer/enquiries-page.test.tsx`,
 `enquiry-actions.test.ts`. **Sandbox** `Dealer/EnquiryInbox`.
 
+### C093 — `HeaderAccount` · C020 `CustomerHeader` gains `account`
+
+**New at R67** (`features/auth/header-account/`). The account corner of the
+customer header: Login, or "Hi, first name" and Logout (initials below `sm`)
+for a signed-in customer, asked once in the browser through
+`customerAccountAction` so the public pages stay static. `CustomerHeader`
+takes it through a new optional `account` slot and renders the plain Login
+link without one; below `sm` its wordmark is visually hidden so the header
+fits at 375 (§3.1).
+
+| Component        | Props                   | States                                                          |
+| ---------------- | ----------------------- | --------------------------------------------------------------- |
+| `HeaderAccount`  | —                       | signed out · signed in · long name at phone width · logging out |
+| `CustomerHeader` | `locations`, `account?` | + signed-in customer                                            |
+
+`RecentEnquiries` (dashboard panels) gains the `All enquiries →` link and a
+no-number state. **Tests** `apps/web/tests/unit/features/auth/header-account.test.tsx`,
+`customer-account-actions.test.ts`. **Sandbox** `Layout/CustomerHeader`,
+`Dealer/DashboardPanels`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,
