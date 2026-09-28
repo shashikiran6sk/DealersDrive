@@ -5,6 +5,7 @@ import { VehicleCard, VehicleCardSkeleton } from '@/components/vehicle/vehicle-c
 
 const CARD: VehicleCardDto = {
   slug: '2023-hyundai-creta-sx-o-katpadi-3f9a1c2b',
+  availability: 'AVAILABLE',
   title: '2023 Hyundai Creta SX(O)',
   year: 2023,
   priceLabel: '₹14,50,000',
@@ -66,6 +67,14 @@ export const UnverifiedDealer: Story = {
   args: { vehicle: { ...CARD, dealer: { ...CARD.dealer, isVerified: false } } },
 };
 
+export const Reserved: Story = { args: { vehicle: { ...CARD, availability: 'RESERVED' } } };
+
+export const Sold: Story = { args: { vehicle: { ...CARD, availability: 'SOLD' } } };
+
+export const NoLongerAvailable: Story = {
+  args: { vehicle: { ...CARD, availability: 'UNAVAILABLE' } },
+};
+
 export const Skeleton: Story = { render: () => <VehicleCardSkeleton /> };
 
 export const Grid: Story = {
@@ -87,6 +96,7 @@ export const Grid: Story = {
       <VehicleCard vehicle={CARD} priority />
       <VehicleCard vehicle={{ ...CARD, slug: 'b', image: null, year: 2021 }} />
       <VehicleCard vehicle={{ ...CARD, slug: 'c', priceLabel: null }} />
+      <VehicleCard vehicle={{ ...CARD, slug: 'd', availability: 'RESERVED' }} />
       <VehicleCardSkeleton />
     </div>
   ),

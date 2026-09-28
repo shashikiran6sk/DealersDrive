@@ -150,8 +150,8 @@ The baseline read this straight off `search.dealerStats()`, grouping the
 it as a dependency rather than reaching into search.
 
 Since **R48** the container passes `createPublicInventoryStats` from the search
-module: one grouped aggregate over `PUBLIC_LISTING_WHERE` — the same predicate
-`GET /v1/vehicles` lists with — so a directory card's count, the portfolio's
+module: one grouped aggregate over `PUBLIC_AVAILABLE_LISTING_WHERE` — the rule
+`GET /v1/vehicles` counts `available` with (**R71**) — so a directory card's count, the portfolio's
 "Cars available" and the portfolio's inventory cannot disagree. The stub that
 stood in before listings existed (`noInventoryYet`) is gone.
 

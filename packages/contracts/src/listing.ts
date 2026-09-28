@@ -20,8 +20,60 @@ import {
  */
 export const LISTING_EDITABLE_STATUSES: readonly ListingStatus[] = ['DRAFT', 'CHANGES_REQUESTED'];
 
-/** Only an ACTIVE listing is public (DESIGN-SPEC §4.9). */
-export const LISTING_PUBLIC_STATUS: ListingStatus = 'ACTIVE';
+/**
+ * The two public rules (**R71**), and the split between them is load-bearing.
+ *
+ * **Visible** is what a buyer can see on the marketplace: ACTIVE and RESERVED.
+ * A reserved car stays on `/cars` and on its dealership's page — greyed, marked
+ * Reserved and not clickable — because a dealer who moves stock should be seen
+ * to. **Available** is what a buyer can act on: ACTIVE alone. Every count that
+ * says "available", every facet, the directory's car counts, similar vehicles,
+ * the homepage's promoted rows and the enquiry guard all mean available.
+ *
+ * SOLD and WITHDRAWN are neither: gone from every public surface.
+ */
+export const LISTING_PUBLIC_VISIBLE_STATUSES: readonly ListingStatus[] = ['ACTIVE', 'RESERVED'];
+
+export const LISTING_AVAILABLE_STATUS: ListingStatus = 'ACTIVE';
+
+export function isListingPubliclyVisible(status: ListingStatus): boolean {
+  return LISTING_PUBLIC_VISIBLE_STATUSES.includes(status);
+}
+
+export function isListingAvailable(status: ListingStatus): boolean {
+  return status === LISTING_AVAILABLE_STATUS;
+}
+
+/**
+ * How a car stands for a buyer (**R71**): the one field a public card or page
+ * carries about the lifecycle. SOLD and UNAVAILABLE are never on the
+ * marketplace; they exist for a customer's own saved cars, which keep what was
+ * saved and say plainly what became of it.
+ */
+export const PublicAvailability = z.enum(['AVAILABLE', 'RESERVED', 'SOLD', 'UNAVAILABLE']);
+export type PublicAvailability = z.infer<typeof PublicAvailability>;
+
+export const PUBLIC_AVAILABILITY_LABELS: Record<PublicAvailability, string> = {
+  AVAILABLE: 'Available',
+  RESERVED: 'Reserved',
+  SOLD: 'Sold',
+  UNAVAILABLE: 'No longer available',
+};
+
+const PUBLIC_AVAILABILITY_OF: Record<ListingStatus, PublicAvailability> = {
+  DRAFT: 'UNAVAILABLE',
+  PENDING_REVIEW: 'UNAVAILABLE',
+  CHANGES_REQUESTED: 'UNAVAILABLE',
+  ACTIVE: 'AVAILABLE',
+  RESERVED: 'RESERVED',
+  REJECTED: 'UNAVAILABLE',
+  SOLD: 'SOLD',
+  WITHDRAWN: 'UNAVAILABLE',
+};
+
+export function publicAvailabilityOf(status: ListingStatus): PublicAvailability {
+  return PUBLIC_AVAILABILITY_OF[status];
+}
 
 export function isListingEditable(status: ListingStatus): boolean {
   return LISTING_EDITABLE_STATUSES.includes(status);

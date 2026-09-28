@@ -1,3 +1,4 @@
+import { isListingPubliclyVisible } from '@dealers-drive/contracts';
 import type { PrismaClient } from '@prisma/client';
 
 import type { StoragePort } from '../../platform/storage/storage.port.js';
@@ -18,7 +19,11 @@ export function createMediaService({ prisma, storage }: MediaDeps) {
         include: { attachment: { include: { vehicle: { include: { listing: true } } } } },
       });
       if (!media || media.status !== 'READY') return null;
-      if (media.ownerType === 'VEHICLE' && media.attachment?.vehicle.listing?.status !== 'ACTIVE') {
+      const listingStatus = media.attachment?.vehicle.listing?.status;
+      if (
+        media.ownerType === 'VEHICLE' &&
+        !(listingStatus && isListingPubliclyVisible(listingStatus))
+      ) {
         return null;
       }
 

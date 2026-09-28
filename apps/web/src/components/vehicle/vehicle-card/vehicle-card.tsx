@@ -5,6 +5,8 @@ import { Plate } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
 import { DealerStrip } from './dealer-strip';
+import { AvailabilityBadge } from './availability-badge';
+import { availabilityLabel, availabilityNote } from './utils';
 import { VEHICLE_CARD_TEXT, vehicleHref } from './vehicle-card.constants';
 import { VehicleImage } from './vehicle-image';
 
@@ -23,31 +25,51 @@ export function VehicleCard({
   priority = false,
   className,
 }: VehicleCardProps) {
+  const unavailable = vehicle.availability !== 'AVAILABLE';
+
   return (
     <article
       className={cn(
         'card group relative gap-0 overflow-hidden bg-white p-0',
-        'transition-colors duration-150 hover:border-(--color-accent)',
+        unavailable
+          ? 'cursor-default'
+          : 'transition-colors duration-150 hover:border-(--color-accent)',
         className,
       )}
     >
       <div className="relative aspect-[4/3] border-b border-(--color-divider) bg-(--color-neutral-200)">
-        <VehicleImage image={vehicle.image} priority={priority} />
+        <VehicleImage
+          image={vehicle.image}
+          priority={priority}
+          className={unavailable ? 'opacity-60 grayscale' : undefined}
+        />
         {vehicle.year ? (
           <Plate className="absolute top-[10px] left-[10px] z-[2]">{vehicle.year}</Plate>
         ) : null}
+        {unavailable ? <AvailabilityBadge label={availabilityLabel(vehicle.availability)} /> : null}
       </div>
 
       <div
         className={cn(
           'flex flex-col px-[13px] pt-[12px] pb-[14px]',
           variant === 'compact' ? 'gap-[8px]' : 'gap-[9px]',
+          unavailable && 'ink-muted',
         )}
       >
         <h3 className="line-clamp-2 font-heading text-[15px] font-semibold leading-[1.25]">
-          <Link href={vehicleHref(vehicle.slug)} className="after:absolute after:inset-0">
-            {vehicle.title}
-          </Link>
+          {unavailable ? (
+            <span>
+              {vehicle.title}
+              <span className="sr-only">
+                {' — '}
+                {availabilityNote(vehicle.availability)}
+              </span>
+            </span>
+          ) : (
+            <Link href={vehicleHref(vehicle.slug)} className="after:absolute after:inset-0">
+              {vehicle.title}
+            </Link>
+          )}
         </h3>
         <div className="text-[20px] font-bold tnum">
           {vehicle.priceLabel ?? VEHICLE_CARD_TEXT.priceOnRequest}

@@ -3,8 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { ListingStatus, WithdrawalReason } from '../../src/enums.js';
 import {
   LISTING_LIFECYCLE_FROM,
-  LISTING_PUBLIC_STATUS,
   ListingLifecycleAction,
+  PUBLIC_AVAILABILITY_LABELS,
+  PublicAvailability,
+  isListingAvailable,
+  isListingPubliclyVisible,
+  publicAvailabilityOf,
   WithdrawListingInput,
   displayStatusOf,
   lifecycleActionsOf,
@@ -27,8 +31,30 @@ describe('what a listing status means', () => {
     expect(ListingStatus.options.filter(isListingDeletable)).toEqual(['DRAFT']);
   });
 
-  it('makes only ACTIVE public', () => {
-    expect(LISTING_PUBLIC_STATUS).toBe('ACTIVE');
+  it('shows ACTIVE and RESERVED on the marketplace, and lets a buyer act only on ACTIVE (R71)', () => {
+    expect(ListingStatus.options.filter(isListingPubliclyVisible)).toEqual(['ACTIVE', 'RESERVED']);
+    expect(ListingStatus.options.filter(isListingAvailable)).toEqual(['ACTIVE']);
+  });
+
+  it('tells a buyer how every status stands, never naming an internal one', () => {
+    expect(
+      Object.fromEntries(ListingStatus.options.map((s) => [s, publicAvailabilityOf(s)])),
+    ).toEqual({
+      DRAFT: 'UNAVAILABLE',
+      PENDING_REVIEW: 'UNAVAILABLE',
+      CHANGES_REQUESTED: 'UNAVAILABLE',
+      ACTIVE: 'AVAILABLE',
+      RESERVED: 'RESERVED',
+      REJECTED: 'UNAVAILABLE',
+      SOLD: 'SOLD',
+      WITHDRAWN: 'UNAVAILABLE',
+    });
+    expect(PublicAvailability.options.map((a) => PUBLIC_AVAILABILITY_LABELS[a])).toEqual([
+      'Available',
+      'Reserved',
+      'Sold',
+      'No longer available',
+    ]);
   });
 
   it('labels every status for a dealer, with the badge the design gives it', () => {

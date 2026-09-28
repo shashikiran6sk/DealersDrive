@@ -1379,7 +1379,7 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-shared',
     purpose:
-      'DESIGN-SPEC §2.8 grid and compact cards (F075, R48): 4:3 primary photograph, year plate, title, tabular price, meta row, and the dealer strip on every card. Whole card links to the VDP by slug. No save button or sold state yet (F087 deferred; only ACTIVE listings are public).',
+      'DESIGN-SPEC §2.8 grid and compact cards (F075, R48): 4:3 primary photograph, year plate, title, tabular price, meta row, and the dealer strip on every card. An available card links to the VDP by slug; a reserved one (R71) — or a sold or no-longer-available one in saved cars — is greyed, badged and not a link at all.',
     aliases: [
       'CarCard',
       'ListingCard',
@@ -1388,9 +1388,12 @@ export const registry: RegistryEntry[] = [
       'VehicleCardSkeleton',
       'DealerStrip',
     ],
-    features: ['F075', 'F077', 'R45', 'R48'],
+    features: ['F075', 'F077', 'R45', 'R48', 'R71'],
     props: ['vehicle', 'variant', 'priority', 'className'],
     states: [
+      'reserved (greyed, badged, no link)',
+      'sold',
+      'no longer available',
       'compact (portfolio, no dealer strip)',
       'with photograph',
       'without photograph',
@@ -1958,6 +1961,36 @@ export const registry: RegistryEntry[] = [
     states: ['live', 'withdrawn with a note', 'sold (nothing)'],
     reusable: false,
     storyId: 'dealer-listinglifecycleactions--panel-withdrawn',
+  },
+  {
+    id: 'C099',
+    name: 'AvailabilityBadge',
+    source: 'apps/web/src/components/vehicle/vehicle-card/availability-badge.tsx',
+    category: 'Vehicle',
+    ownership: 'Shared',
+    purpose:
+      'The corner label on a car a buyer cannot act on (R71): Reserved, Sold or No longer available, from PUBLIC_AVAILABILITY_LABELS. On the card it sits over the photograph; on the VDP beside the year plate.',
+    aliases: ['ReservedBadge', 'SoldBadge', 'StatusBadge', 'availability-badge'],
+    features: ['R71'],
+    props: ['label', 'className'],
+    states: ['on a card', 'inline on the VDP'],
+    reusable: true,
+    storyId: 'vehicle-vehiclecard--reserved',
+  },
+  {
+    id: 'C100',
+    name: 'AvailabilityNotice',
+    source: 'apps/web/src/components/vehicle/availability-notice/availability-notice.tsx',
+    category: 'Vehicle',
+    ownership: 'Feature-shared',
+    purpose:
+      'What a reserved car’s page shows where the enquiry would be (R71): a Reserved banner that says enquiries are paused, and a way back to available cars.',
+    aliases: ['ReservedNotice', 'UnavailableNotice', 'availability-notice'],
+    features: ['R71'],
+    props: [],
+    states: ['reserved'],
+    reusable: false,
+    storyId: 'vehicle-availabilitynotice',
   },
 ];
 

@@ -239,7 +239,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R67 — Enquiry counts on the dashboard, and the signed-in header · revises F048/F073 · dashboard tile, recent panel and `counts.newEnquiries` read `enquiries`; header shows "Hi, name" + Logout for a customer; mobile header fits at 375
 - [x] R68 — Customers track their enquiries, and ask again once one is closed · revises R64/R65/R67 · `GET /v1/enquiries` + `/enquiries` (Sent / Contacted / Closed; spam shown as Closed); one open enquiry per car replaces the 24-hour rule; "Requires login" under Enquire
 - [x] R69 — The listing lifecycle a buyer can see: Active, Reserved, Sold, Withdrawn · revises F064/F067/R47 · ⚠️ `REMOVED` renamed `WITHDRAWN`, `RESERVED` added · five dealer routes; `SOLD` is final; a withdrawn car keeps its plate · [#192](https://github.com/shashikiran6sk/DealersDrive/pull/192)
-- [~] R70 — The dealer reserves, sells, withdraws and relists from the console · revises F067/R69 · confirmation dialogs, a reason to withdraw, the moves on every inventory row and the vehicle page
+- [x] R70 — The dealer reserves, sells, withdraws and relists from the console · revises F067/R69 · confirmation dialogs, a reason to withdraw, the moves on every inventory row and the vehicle page · [#193](https://github.com/shashikiran6sk/DealersDrive/pull/193)
+- [~] R71 — A reserved car stays on show; a sold or withdrawn one leaves every public surface · revises F075/F076/F082/F086/R48/R64/R69 · visible vs available predicates, `availability` on card and page, `available` count, reserved card with no link, `409 LISTING_RESERVED`
 
 ---
 

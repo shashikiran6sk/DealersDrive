@@ -64,6 +64,7 @@ describe('what the marketplace lists', () => {
     const card = (await allCards()).find((entry) => entry.slug === live.slug);
     expect(card).toEqual({
       slug: live.slug,
+      availability: 'AVAILABLE',
       title: '2023 Tata Nexon XZ+',
       year: 2023,
       priceLabel: '₹14,50,000',
@@ -137,7 +138,17 @@ describe('what a card never carries', () => {
     const text = JSON.stringify(card);
 
     expect(Object.keys(card ?? {}).sort()).toEqual(
-      ['dealer', 'image', 'imageCount', 'metaLabel', 'priceLabel', 'slug', 'title', 'year'].sort(),
+      [
+        'availability',
+        'dealer',
+        'image',
+        'imageCount',
+        'metaLabel',
+        'priceLabel',
+        'slug',
+        'title',
+        'year',
+      ].sort(),
     );
     expect(Object.keys(card?.dealer ?? {}).sort()).toEqual(
       ['initials', 'isVerified', 'name', 'slug'].sort(),
@@ -208,7 +219,9 @@ describe('one district', () => {
   let elsewhere: Dealership;
   let there: Published;
 
-  async function slugsIn(district: string): Promise<{ slugs: string[]; total: number }> {
+  async function slugsIn(
+    district: string,
+  ): Promise<{ slugs: string[]; total: number; available: number }> {
     const slugs: string[] = [];
     for (let page = 1; ; page += 1) {
       const { body } = await h
@@ -217,7 +230,11 @@ describe('one district', () => {
         .expect(200);
       slugs.push(...(body.data as VehicleCardDto[]).map((card) => card.slug));
       if (page >= (body.page.totalPages as number)) {
-        return { slugs, total: body.page.total as number };
+        return {
+          slugs,
+          total: body.page.total as number,
+          available: body.available as number,
+        };
       }
     }
   }
@@ -255,13 +272,15 @@ describe('one district', () => {
     expect(body.page.total).toBe(0);
   });
 
-  it('adds up, across districts, to the whole marketplace', async () => {
+  it('adds up, across districts, to the cars available on the whole marketplace (R71)', async () => {
     const all = await allCards();
     const { body: locations } = await h.agent().get('/v1/locations').expect(200);
 
-    expect(locations.cars.total).toBe(all.length);
-    expect(locations.cars.districts.ranipet).toBe((await slugsIn('ranipet')).total);
-    expect(locations.cars.districts.vellore).toBe((await slugsIn('vellore')).total);
+    expect(locations.cars.total).toBe(
+      all.filter((card) => card.availability === 'AVAILABLE').length,
+    );
+    expect(locations.cars.districts.ranipet).toBe((await slugsIn('ranipet')).available);
+    expect(locations.cars.districts.vellore).toBe((await slugsIn('vellore')).available);
   });
 
   it('refuses a district that is not a slug', async () => {

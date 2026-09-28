@@ -241,11 +241,11 @@ describe('facet counts', () => {
         const options = facets[group] as FacetOption[];
         for (const option of options) {
           const without = active.replace(new RegExp(`&${param}=[^&]*`), '');
-          const { page } = await search(`${HERE}${without}&${param}=${option.value}`);
+          const { available } = await search(`${HERE}${without}&${param}=${option.value}`);
           expect({ group, value: option.value, count: option.count }).toEqual({
             group,
             value: option.value,
-            count: page.total,
+            count: available,
           });
         }
       }
@@ -273,7 +273,7 @@ describe('facet counts', () => {
         band.min === null ? '' : `&${low}=${band.min}`,
         band.max === null ? '' : `&${high}=${band.max}`,
       ].join('');
-      expect((await search(`${HERE}${bounds}`)).page.total).toBe(band.count);
+      expect((await search(`${HERE}${bounds}`)).available).toBe(band.count);
     }
   });
 
@@ -511,7 +511,7 @@ describe('the typeahead', () => {
     const [row] = (await suggest(`search=hyundai&${HERE}`)).data;
     expect(row).toMatchObject({ kind: 'BRAND', brand: 'hyundai', count: 2 });
     const page = await search(`${HERE}&brand=${row?.brand ?? ''}`);
-    expect(page.page.total).toBe(row?.count);
+    expect(page.available).toBe(row?.count);
   });
 
   it('answers with nothing about any one car or dealership', async () => {

@@ -26,12 +26,20 @@ still in review, or on a suspended dealership — is `409 LISTING_NOT_AVAILABLE`
 The second is the case a buyer actually meets: the page was open when the car
 sold, and the press arrived afterwards.
 
-### `where: { ...PUBLIC_LISTING_WHERE, id: listing.id },`
+### `where: { ...PUBLIC_AVAILABLE_LISTING_WHERE, id: listing.id },`
 
-The same visibility rule the public pages use, imported from the search
+The available rule the public counts use (**R71**), imported from the search
 module's facade rather than restated. An enquiry must be possible for exactly
-the cars a buyer can see, and two copies of that rule would one day disagree.
-Read inside the transaction that writes the enquiry.
+the cars a buyer can act on, and two copies of that rule would one day
+disagree. A reserved car is visible but not available: it is refused as
+`409 LISTING_RESERVED`, with its own sentence, so the buyer learns why rather
+than being told the car is gone.
+
+The listing row is read `FOR SHARE` first. A dealer's reservation, sale or
+withdrawal takes the row `FOR UPDATE`, so the two serialise. Either the move
+lands first and the enquiry reads the new status and is refused, or the
+enquiry commits first and the move waits for it. An enquiry about a car that
+was already sold at the moment of writing cannot happen.
 
 ### `if (ownDealership) throw new DomainError('ENQUIRY_OWN_LISTING', OWN_LISTING)`
 
@@ -114,9 +122,9 @@ show the correction rather than preserve the mistake.
 ### `function publicHref(listing: InboxRow['listing'])`
 
 The car links to its public page only while that page exists — listing
-`ACTIVE` and dealership `ACTIVE`, the same pair `PUBLIC_LISTING_WHERE` tests.
-A sold or removed car's enquiry stays in the inbox with its title and plate, but
-without a link that would 404.
+visible (`ACTIVE` or `RESERVED`, **R71**) and dealership `ACTIVE`, the pair
+`PUBLIC_VISIBLE_LISTING_WHERE` tests. A sold or withdrawn car's enquiry stays in
+the inbox with its title and plate, but without a link that would 404.
 
 ### `export function toDealerEnquiry(row: InboxRow, now: Date = new Date())`
 

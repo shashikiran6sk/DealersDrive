@@ -49,10 +49,13 @@ export const enquiriesDocs: ModuleDocs = {
         'message, and nothing else. No name, no phone, no `dealerId`: the body is `.strict()`, ' +
         'so sending one is a 400 that names it. An empty or whitespace-only message is stored ' +
         'as no message.\n\n' +
-        '**Only a car that is on the marketplace right now** — listing `ACTIVE` and its ' +
-        'dealership `ACTIVE`, the same rule the public pages use. A car sold, removed or ' +
-        'taken down between opening its page and pressing Send is `409 LISTING_NOT_AVAILABLE`; ' +
-        'a slug that was never a listing is `404 LISTING_NOT_FOUND`.\n\n' +
+        '**Only a car that is available right now** — listing `ACTIVE` and its dealership ' +
+        '`ACTIVE`, the rule every public count uses (**R71**). A reserved car is ' +
+        '`409 LISTING_RESERVED`; one sold, withdrawn or taken down between opening its page and ' +
+        'pressing Send is `409 LISTING_NOT_AVAILABLE`; a slug that was never a listing is ' +
+        '`404 LISTING_NOT_FOUND`. The listing row is read `FOR SHARE`, so a dealer marking the ' +
+        'car sold at the same moment either lands first and refuses the enquiry, or waits for ' +
+        'it.\n\n' +
         '**One open enquiry per car (R68).** While the customer has an enquiry about this car ' +
         'that the dealership has not closed, a new one is `409 ENQUIRY_ALREADY_OPEN` — the ' +
         'dealership already has their details. Once the dealership closes it, the customer may ' +

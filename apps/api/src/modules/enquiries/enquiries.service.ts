@@ -20,7 +20,10 @@ import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
-import { PUBLIC_LISTING_WHERE } from '../search/search.facade.js';
+import {
+  PUBLIC_AVAILABLE_LISTING_WHERE,
+  PUBLIC_VISIBLE_LISTING_WHERE,
+} from '../search/search.facade.js';
 import {
   CUSTOMER_SELECT,
   INBOX_SELECT,
@@ -32,6 +35,7 @@ import {
   ENQUIRY_NOT_FOUND,
   LISTING_NOT_AVAILABLE,
   LISTING_NOT_FOUND,
+  LISTING_RESERVED,
   OWN_LISTING,
 } from './enquiries.messages.js';
 
@@ -197,8 +201,9 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       if (!listing) throw new NotFoundError(LISTING_NOT_FOUND, { code: 'LISTING_NOT_FOUND' });
 
       return withTransaction(prisma, async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "listings" WHERE "id" = ${listing.id}::uuid FOR SHARE`;
         const available = await tx.listing.findFirst({
-          where: { ...PUBLIC_LISTING_WHERE, id: listing.id },
+          where: { ...PUBLIC_AVAILABLE_LISTING_WHERE, id: listing.id },
           select: {
             id: true,
             dealerId: true,
@@ -215,7 +220,12 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           },
         });
         if (!available) {
-          throw new ConflictError('LISTING_NOT_AVAILABLE', LISTING_NOT_AVAILABLE);
+          const reserved = await tx.listing.count({
+            where: { ...PUBLIC_VISIBLE_LISTING_WHERE, id: listing.id, status: 'RESERVED' },
+          });
+          throw reserved > 0
+            ? new ConflictError('LISTING_RESERVED', LISTING_RESERVED)
+            : new ConflictError('LISTING_NOT_AVAILABLE', LISTING_NOT_AVAILABLE);
         }
 
         const ownDealership = await tx.dealerMember.findFirst({

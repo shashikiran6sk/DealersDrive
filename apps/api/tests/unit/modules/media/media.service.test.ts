@@ -138,6 +138,18 @@ describe('serve, for a vehicle image (R45)', () => {
     expect(await h.service.serve('media-1', 640)).toBeNull();
   });
 
+  it.each(['ACTIVE', 'RESERVED'])(
+    'serves an image whose listing is %s — a reserved car is still on show (R71)',
+    async (status) => {
+      const h = setup({
+        objectBody: Buffer.from('x'),
+        media: { attachment: { vehicle: { listing: { status } } } },
+      });
+
+      expect(await h.service.serve('media-1', 640)).toBeTruthy();
+    },
+  );
+
   it('serves a yard photograph, which belongs to no listing', async () => {
     const h = setup({
       objectBody: Buffer.from('x'),

@@ -1,4 +1,5 @@
 import { OffsetPage } from './common.js';
+import { PublicAvailability } from './listing.js';
 import { z } from 'zod';
 
 /**
@@ -241,8 +242,9 @@ export const PublicLocations = z.object({
    * Kept beside the chips rather than inside them: a `DistrictChip` is also a
    * directory payload, and the count it carries is the directory's. `districts`
    * is keyed by the chip's slug and omits a district with nothing live, which
-   * reads as zero. The predicate is the marketplace's own
-   * (`PUBLIC_LISTING_WHERE`), so this total and `/cars`'s agree.
+   * reads as zero. The predicate is the marketplace's own available-car rule
+   * (`PUBLIC_AVAILABLE_LISTING_WHERE`, **R71**), so this total and `/cars`'s
+   * "N cars available" agree.
    */
   cars: z.object({
     total: z.number().int(),
@@ -849,12 +851,15 @@ export type PublicVehicleImage = z.infer<typeof PublicVehicleImage>;
 /**
  * One vehicle on the marketplace, as a buyer's card shows it (**F075**).
  *
- * Only an ACTIVE listing of an ACTIVE dealership ever becomes one. It carries
- * the public `slug` and nothing internal: no listing, vehicle or dealer id, no
+ * Only a publicly visible listing (ACTIVE or RESERVED, **R71**) of an ACTIVE
+ * dealership becomes one on a marketplace surface; `availability` says which,
+ * and a RESERVED card is drawn greyed and not clickable. It carries the public
+ * `slug` and nothing internal: no listing, vehicle or dealer id, no
  * registration number, no moderation or audit field, no phone number.
  */
 export const VehicleCardDto = z.object({
   slug: z.string(),
+  availability: PublicAvailability,
   title: z.string(),
   year: z.number().int().nullable(),
   priceLabel: z.string().nullable(),
@@ -870,9 +875,19 @@ export const VehicleCardDto = z.object({
 });
 export type VehicleCardDto = z.infer<typeof VehicleCardDto>;
 
+/**
+ * A page of the marketplace (**F076**, **R71**).
+ *
+ * `page.total` counts the cards the query returns — available and reserved —
+ * because that is what the pages are cut from. `available` counts only the
+ * cars a buyer can act on, under the same filters and scope, and is the number
+ * every "N cars available" sentence shows. The facets count available cars too,
+ * so a reserved car never inflates a choice it cannot satisfy.
+ */
 export const PublicVehiclesResponse = z.object({
   data: z.array(VehicleCardDto),
   page: OffsetPage,
+  available: z.number().int(),
   facets: VehicleFacets,
 });
 export type PublicVehiclesResponse = z.infer<typeof PublicVehiclesResponse>;
@@ -892,14 +907,16 @@ export type VehicleSlugParam = z.infer<typeof VehicleSlugParam>;
 /**
  * One vehicle's public page (**F082** as scoped by **R45**).
  *
- * Only an ACTIVE listing of an ACTIVE dealership has one; anything else is a
- * 404. The registration appears only as its RTO — the full number identifies
+ * An ACTIVE or RESERVED listing of an ACTIVE dealership has one (**R71**);
+ * anything else — sold, withdrawn, in review — is a 404. A RESERVED page says
+ * so through `availability` and offers no enquiry. The registration appears only as its RTO — the full number identifies
  * the owner, not the car, and a buyer does not need it to decide to enquire.
  * Like the card, it carries no internal id, moderation field, storage key or
  * phone number.
  */
 export const PublicVehicleDetail = z.object({
   slug: z.string(),
+  availability: PublicAvailability,
   title: z.string(),
   year: z.number().int().nullable(),
   priceLabel: z.string().nullable(),

@@ -70,7 +70,7 @@ export default async function CarsPage({
         <div className="mb-[14px] flex flex-wrap items-baseline gap-3">
           <h1 className="text-[34px]">{place ? CARS_TEXT.titleIn(place) : CARS_TEXT.title}</h1>
           <span className="text-[14px] ink-muted tnum" role="status">
-            {CARS_TEXT.count(listing.page.total)}
+            {CARS_TEXT.count(listing.available)}
           </span>
         </div>
 

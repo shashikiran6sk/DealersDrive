@@ -10,7 +10,10 @@ import type {
   DetailRow,
   SearchRepository,
 } from '../../../../src/modules/search/search.repository.js';
-import { PUBLIC_LISTING_WHERE } from '../../../../src/modules/search/search.repository.js';
+import {
+  PUBLIC_AVAILABLE_LISTING_WHERE,
+  PUBLIC_VISIBLE_LISTING_WHERE,
+} from '../../../../src/modules/search/search.repository.js';
 import { createSearchRouter } from '../../../../src/modules/search/search.routes.js';
 import { createSearchService } from '../../../../src/modules/search/search.service.js';
 import { rankSuggestions } from '../../../../src/modules/search/search.suggest.js';
@@ -44,6 +47,7 @@ describe('toVehicleCard', () => {
   it('draws the card from the vehicle and the dealership', () => {
     expect(toVehicleCard(row())).toEqual({
       slug: '2023-hyundai-creta-sx-o-vellore-0a1b2c3d',
+      availability: 'AVAILABLE',
       title: '2023 Hyundai Creta SX(O)',
       year: 2023,
       priceLabel: '₹14,50,000',
@@ -62,6 +66,12 @@ describe('toVehicleCard', () => {
     });
   });
 
+  it('says a reserved car is reserved, and nothing more about the lifecycle (R71)', () => {
+    const reserved = toVehicleCard({ ...row(), status: 'RESERVED' });
+    expect(reserved.availability).toBe('RESERVED');
+    expect(Object.keys(reserved)).not.toContain('status');
+  });
+
   it('leaves out what is not known rather than printing a blank', () => {
     const card = toVehicleCard(
       row({ kilometersDriven: null, fuelType: null, pricePaise: null, images: [] }),
@@ -72,9 +82,17 @@ describe('toVehicleCard', () => {
   });
 });
 
-describe('who is public', () => {
-  it('is an ACTIVE listing, with a slug, of an ACTIVE dealership — nothing else', () => {
-    expect(PUBLIC_LISTING_WHERE).toEqual({
+describe('who is public (R71)', () => {
+  it('shows an ACTIVE or RESERVED listing, with a slug, of an ACTIVE dealership — nothing else', () => {
+    expect(PUBLIC_VISIBLE_LISTING_WHERE).toEqual({
+      status: { in: ['ACTIVE', 'RESERVED'] },
+      slug: { not: null },
+      dealer: { status: 'ACTIVE' },
+    });
+  });
+
+  it('counts as available only an ACTIVE listing, with a slug, of an ACTIVE dealership', () => {
+    expect(PUBLIC_AVAILABLE_LISTING_WHERE).toEqual({
       status: 'ACTIVE',
       slug: { not: null },
       dealer: { status: 'ACTIVE' },

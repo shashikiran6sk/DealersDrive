@@ -11,7 +11,10 @@ import {
   wordsOf,
   type Vocabulary,
 } from '../../../../src/modules/search/search.filters.js';
-import { PUBLIC_LISTING_WHERE } from '../../../../src/modules/search/search.repository.js';
+import {
+  PUBLIC_AVAILABLE_LISTING_WHERE,
+  PUBLIC_VISIBLE_LISTING_WHERE,
+} from '../../../../src/modules/search/search.repository.js';
 
 const VOCABULARY: Vocabulary = {
   makes: ['Hyundai', 'Maruti Suzuki', 'MARUTI SUZUKI', 'Tata'],
@@ -121,15 +124,26 @@ describe('the rest of the filters', () => {
 });
 
 describe('the public rule underneath every query', () => {
-  it('is the public rule alone with no location, and narrowed by dealer ids with one', () => {
-    expect(listingWhere(null)).toBe(PUBLIC_LISTING_WHERE);
-    expect(listingWhere(['d1'])).toEqual({ ...PUBLIC_LISTING_WHERE, dealerId: { in: ['d1'] } });
-    expect(listingWhere([])).toEqual({ ...PUBLIC_LISTING_WHERE, dealerId: { in: [] } });
+  it('is the available rule by default, alone with no location, narrowed by dealer ids with one', () => {
+    expect(listingWhere(null)).toBe(PUBLIC_AVAILABLE_LISTING_WHERE);
+    expect(listingWhere(['d1'])).toEqual({
+      ...PUBLIC_AVAILABLE_LISTING_WHERE,
+      dealerId: { in: ['d1'] },
+    });
+    expect(listingWhere([])).toEqual({ ...PUBLIC_AVAILABLE_LISTING_WHERE, dealerId: { in: [] } });
   });
 
-  it('puts it under every facet count too', () => {
+  it('is the visible rule only when asked for it — the result list, never a count', () => {
+    expect(listingWhere(null, 'visible')).toBe(PUBLIC_VISIBLE_LISTING_WHERE);
+    expect(listingWhere(['d1'], 'visible')).toEqual({
+      ...PUBLIC_VISIBLE_LISTING_WHERE,
+      dealerId: { in: ['d1'] },
+    });
+  });
+
+  it('puts the available rule under every facet count (R71)', () => {
     expect(inventoryWhere(filtersOf({}), ['d1'])).toEqual({
-      listing: { is: { ...PUBLIC_LISTING_WHERE, dealerId: { in: ['d1'] } } },
+      listing: { is: { ...PUBLIC_AVAILABLE_LISTING_WHERE, dealerId: { in: ['d1'] } } },
     });
   });
 });
@@ -141,17 +155,23 @@ describe('the order', () => {
     }
   });
 
+  it('puts an available car before a reserved one, whatever the sort (R71)', () => {
+    for (const sort of ['newest', 'price_asc', 'price_desc', 'year_desc', 'km_asc'] as const) {
+      expect(orderOf(sort)[0]).toEqual({ status: 'asc' });
+    }
+  });
+
   it('puts cars with no price, year or distance last', () => {
-    expect(orderOf('price_asc')[0]).toEqual({
+    expect(orderOf('price_asc')[1]).toEqual({
       vehicle: { pricePaise: { sort: 'asc', nulls: 'last' } },
     });
-    expect(orderOf('price_desc')[0]).toEqual({
+    expect(orderOf('price_desc')[1]).toEqual({
       vehicle: { pricePaise: { sort: 'desc', nulls: 'last' } },
     });
-    expect(orderOf('year_desc')[0]).toEqual({
+    expect(orderOf('year_desc')[1]).toEqual({
       vehicle: { manufacturingYear: { sort: 'desc', nulls: 'last' } },
     });
-    expect(orderOf('km_asc')[0]).toEqual({
+    expect(orderOf('km_asc')[1]).toEqual({
       vehicle: { kilometersDriven: { sort: 'asc', nulls: 'last' } },
     });
   });
