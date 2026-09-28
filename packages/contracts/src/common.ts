@@ -142,8 +142,19 @@ export function formatPhone(e164: string): string {
   return `+91 ${local.slice(0, 5)} ${local.slice(5)}`.trimEnd();
 }
 
-/** Any Indian input -> E.164. Bare 10-digit numbers get the +91 they omitted. */
+/**
+ * Any Indian input -> E.164. Bare 10-digit numbers get the +91 they omitted.
+ *
+ * An Indian mobile number, however it was typed, takes the one canonical form
+ * `normaliseIndianMobile` gives it — including the trunk-prefixed `0 98400
+ * 12345` and `091 98400 12345`, which used to come out as `+09840012345`.
+ * Anything else is passed through with a `+`: this is a normaliser, not a
+ * validator.
+ */
 export function toE164(input: string): string {
+  const mobile = normaliseIndianMobile(input);
+  if (mobile) return mobile;
+
   const digits = input.replace(/\D/g, '');
   if (digits.length === 10) return `+91${digits}`;
   if (digits.length === 12 && digits.startsWith('91')) return `+${digits}`;
@@ -335,7 +346,39 @@ export function distinctServices(values: readonly string[]): string[] {
  * rejecting a formatting habit, not a wrong number.
  */
 export function isIndianMobile(value: string): boolean {
-  return /^(\+?91)?[6-9]\d{9}$/.test(value.trim().replace(/[\s-]/g, ''));
+  return normaliseIndianMobile(value) !== null;
+}
+
+const MOBILE_SEPARATORS = /[\s\-().]/g;
+
+/**
+ * The ways a person writes the same Indian mobile number: bare, with the
+ * country code (`91`, `+91`, `0091`), or with the trunk `0` a landline habit
+ * puts in front (`0`, `091`). Tried longest first, and a prefix is only taken
+ * when ten digits starting 6–9 are left after it.
+ */
+const INDIAN_MOBILE = /^(?:\+91|0091|091|91|0)?([6-9]\d{9})$/;
+
+/**
+ * **The** canonical form of an Indian mobile number — `+919840012345` — or
+ * `null` when the input is not one.
+ *
+ * One number is one identity. `9840012345`, `+91 98400 12345`, `098400 12345`
+ * and `0919840012345` are the same handset, and a unique index over the stored
+ * string only means something if every writer stores the same string. So every
+ * writer and every lookup goes through this, and `isIndianMobile` and `toE164`
+ * are both defined in terms of it rather than beside it: a validator and a
+ * normaliser that disagree about one input is a number that validates and is
+ * then stored as something else.
+ *
+ * Separators (spaces, hyphens, dots, brackets) are stripped; letters are not,
+ * so `nine eight four` and `98400abc12345` are refused rather than read as the
+ * digits they happen to contain.
+ */
+export function normaliseIndianMobile(value: string): string | null {
+  const match = INDIAN_MOBILE.exec(value.trim().replace(MOBILE_SEPARATORS, ''));
+  const local = match?.[1];
+  return local ? `+91${local}` : null;
 }
 
 export const IndianMobile = z

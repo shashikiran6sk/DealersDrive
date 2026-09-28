@@ -231,6 +231,13 @@ The number is settled, and the step's forward action is Continue.
 
 `9840012345` → `919840012345`, which is the identifier shape MSG91 uses.
 
+Derived from `normaliseIndianMobile` since **R58**, so every spelling the form
+accepts — `098400 12345` and `0091 98400 12345` included — reaches MSG91 as the
+same handset the API will later compare the answer against. Gluing `91` onto
+the digits, as it used to, would have sent a trunk-prefixed number's code to
+`9109840012345`. The digit-gluing survives only as the fallback for input the
+form has already refused.
+
 ### `export function isServiceFailure(error: unknown): error is Error`
 
 A provider problem the dealer cannot solve by retyping, as opposed to a wrong code.

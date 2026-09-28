@@ -868,38 +868,54 @@ Throws rather than returning null: a failure here is either a
 misconfiguration or an attack, never an ordinary outcome the caller should
 branch on.
 
-## `apps/api/src/modules/auth/phone.service.ts`
+## `apps/api/src/modules/auth/phone-proof.service.ts`
 
-### `export interface PhoneServiceDeps`
+### `export function createPhoneProofService({ otp, cache }: PhoneProofDeps)`
 
-B8 — proving the mobile number (**R39**).
+One proof of a handset, for every flow that needs one (**R58**).
+
+Until R58 the MSG91 verification lived inside `phone.service.ts`, fused to the
+one thing it was first used for: writing `users.phone` on a Google-signed-in
+dealer's row. This phase adds three more flows that need the same proof — a
+dealer signing in with their phone, a customer signing in, and a dealer who
+started with the phone linking Google later — and a second copy of "ask MSG91,
+compare the number, spend the token" is exactly the kind of copy that drifts.
+So the proof is here, and it knows nothing about accounts: it answers **which
+number this token proves**, in the one canonical form, or refuses. What to do
+with the number (link it, find the account that holds it, create one) is the
+caller's business.
 
 ── Where the work happens, and what that costs ─────────────────────────────
-MSG91's OTP widget does the sending and the collecting **in the dealer's
-browser**. The API never sees the six digits, never calls a send endpoint,
-and therefore cannot rate-limit the sending. That is a real consequence of
-the widget design and it is worth stating plainly rather than papering over:
-the two controls this module _does_ hold are
+MSG91's OTP widget does the sending and the collecting **in the browser**. The
+API never sees the six digits, never calls a send endpoint, and therefore
+cannot rate-limit the sending. That is a real consequence of the widget design
+and it is worth stating plainly rather than papering over. The controls this
+module _does_ hold are
 
-1. **who gets the widget credentials at all** — `widget()` is behind
-   `requireSignedIn`, so an SMS can only be provoked by somebody who has
-   already completed a Google sign-in, not by the open internet; and
-2. **how often a token may be presented** — the route is rate-limited per
-   session, and a token that has been accepted once is never accepted
-   again.
+1. **who gets the widget credentials at all** — decided by the route that
+   serves `widget()`, not here;
+2. **how often a token may be presented** — each route that calls `prove` is
+   rate-limited, and a token that has been accepted once is never accepted
+   again, for any purpose.
 
 The provider's own per-identifier limits are the third, and they are the only
-thing standing between a signed-in account and repeated sends. If that proves
-too loose in practice the answer is an API-side send endpoint, which is a
-different integration, not a tightening of this one.
+thing standing between one caller and repeated sends. If that proves too loose
+in practice the answer is an API-side send endpoint, which is a different
+integration, not a tightening of this one.
 
-── What a verification is, and is not ──────────────────────────────────────
-It issues no session, grants no permission and unlocks no screen. Identity is
-the Google account and was before the code was sent. What it buys is that the
-number printed on a public portfolio rings the dealership that published it —
-so the write it performs is a contact detail, not a credential.
+### `export const OTP_PURPOSES`
 
-### `const TOKEN_SPENT_WINDOW_SECONDS = 15 * 60`
+Why a proof was asked for. Server-side intent, never client input: the route a
+request arrives on decides the purpose, so there is nothing a caller can send
+to change it.
+
+The purpose is not what stops a token being replayed across flows — the
+spent-token key below deliberately omits it, so a token spent on any purpose is
+spent for all of them. It decides the one thing that genuinely differs between
+flows (`REPLAY_GUARD_FAILS_OPEN`) and is written on every refusal log line, so
+an operator can tell a mistyped customer code from a dealer's.
+
+### `export const TOKEN_SPENT_WINDOW_SECONDS = 15 * 60`
 
 How long an accepted token is remembered as spent.
 
@@ -908,12 +924,27 @@ total rather than probabilistic: a token that outlives its entry here would
 be one that could be replayed. Fifteen minutes is comfortably past the
 widget's own expiry and costs one short-lived counter row per verification.
 
+### `export const REPLAY_GUARD_FAILS_OPEN`
+
+What happens when the cache that remembers spent tokens cannot be reached.
+
+**Linking fails open** — the R39 behaviour, unchanged. The caller has already
+signed in with Google; the proof adds a contact detail to an account that is
+already authenticated, and turning a database blip into "nobody can finish
+signing up" converts a degraded dependency into an outage — the same reasoning
+`createRateLimiter` applies.
+
+**Signing in fails closed.** There the proof _is_ the authentication. A proof
+that cannot rule out a replay would mint a session for whoever captured a
+token, so the answer is the same `503` a provider outage gets: try again in a
+moment, rather than a wrong code.
+
 ### `widget(): PhoneOtpWidget`
 
 What the browser needs to initialise the widget — and nothing else.
 
 `MSG91_AUTH_KEY` is conspicuously absent. It is the credential that can
-spend the account's balance and the reason `verify` below is a
+spend the account's balance and the reason `prove` below is a
 server-to-server call; it must never appear in a response.
 
 ### `if (!widgetId || !tokenAuth)`
@@ -923,6 +954,69 @@ without both — and answered rather than thrown anyway. A sign-up
 screen that renders an explanation is better than one that renders a
 500, and this is the same shape `GET /v1/auth/providers` takes for a
 deployment with no Google client.
+
+### `async prove(input: ProvePhoneInput): Promise<ProvenPhone>`
+
+Take the widget's access token to MSG91, and say which number it proves.
+
+Four things have to hold, in this order, and each of them refuses
+differently:
+
+1. The claim is an Indian mobile number at all — refused before the provider
+   is asked anything.
+2. MSG91 recognises the token — otherwise there is no verification.
+3. The identifier it names is **the number this request claims**. Without
+   this a caller could verify a handset they hold and then claim a number
+   they do not.
+4. The token has not been presented before.
+
+### `if (normaliseIndianMobile(verdict.identifier) !== phone)`
+
+MSG91 states identifiers as digits with the country code and no `+`, but the
+comparison does not depend on it: both sides go through
+`normaliseIndianMobile`, so `919840012345`, `9840012345` and `+919840012345`
+all name one handset, and nothing else names it.
+
+### `function refused(input: ProvePhoneInput, reason: string): DomainError`
+
+One message for every refusal, deliberately. "That code was for a different
+number" would confirm to whoever is holding a stolen token which number it
+belongs to, and there is no legitimate flow in which the page sends a token
+for a number the person did not just type. The reason goes to the log, with
+the purpose, and never to the caller.
+
+### `async function consumeToken(cache: CachePort, input: ProvePhoneInput): Promise<void>`
+
+One token, one verification — across every purpose.
+
+Checked _after_ the provider has accepted the token rather than before, so a
+vendor timeout does not burn the only attempt: a token that never verified
+was never spent, and pressing the button again has to work. The token is
+hashed because it is a bearer credential and cache keys are not a place to
+keep one.
+
+## `apps/api/src/modules/auth/phone.service.ts`
+
+### `export interface PhoneServiceDeps`
+
+B8 — proving the mobile number (**R39**), for the dealer who signed in with
+Google.
+
+── What a verification is, and is not ──────────────────────────────────────
+It issues no session, grants no permission and unlocks no screen. Identity is
+the Google account and was before the code was sent. What it buys is that the
+number printed on a public portfolio rings the dealership that published it —
+so the write it performs is a contact detail, not a credential.
+
+The proof itself — the provider call, the number comparison and the replay
+guard — is `phone-proof.service.ts` since **R58**. What is left here is what
+is specific to this flow: who may claim a number, and the write.
+
+### `widget(): PhoneOtpWidget`
+
+Served behind `requireSignedIn`, so an SMS can only be provoked by somebody
+who has already completed a Google sign-in, not by the open internet. The
+answer itself is the proof service's.
 
 ### `async assertAvailable(userId: string, input: PhoneAvailabilityInput): Promise<void>`
 
@@ -946,28 +1040,8 @@ Deliberately says nothing about who holds a taken number — see
 
 ### `async verify`
 
-Take the widget's access token to MSG91, and record what comes back.
-
-Four things have to hold, in this order, and each of them refuses
-differently:
-
-1. MSG91 recognises the token — otherwise there is no verification.
-2. The identifier it names is **the number this request claims**.
-   Without this a dealer could verify a handset they hold and then
-   register a number they do not.
-3. The token has not been presented before.
-4. The number is not already somebody else's.
-
-### `const claimed = phone.replace(/\D/g, '')`
-
-MSG91 states identifiers as digits with the country code and no `+`.
-
-### `logger.info`
-
-One message for both, deliberately. "That code was for a different
-number" would confirm to whoever is holding a stolen token which
-number it belongs to, and there is no legitimate flow in which the
-page sends a token for a number the dealer did not just type.
+Prove the handset for `DEALER_PHONE_LINK`, then record it — and the number
+must not already be somebody else's.
 
 ### `const holder = await prisma.user.findUnique({ where: { phone }, select: { id: true } })`
 
@@ -975,20 +1049,6 @@ The read is the message; the unique index on `users.phone` is the
 guarantee. Two people verifying one number at the same instant race
 past this check and the second one's write fails — which is the right
 way round, because the index is the thing that cannot be wrong.
-
-### `async function consumeToken(cache: CachePort, accessToken: string): Promise<void>`
-
-One token, one verification.
-
-Checked _after_ the provider has accepted the token rather than before, so a
-vendor timeout does not burn the dealer's only attempt: a token that never
-verified was never spent, and pressing the button again has to work.
-
-A cache failure does not deny the request, for the same reason
-`createRateLimiter` does not: this is a replay guard, not a spend control,
-and turning a database blip into "nobody can finish signing up" converts a
-degraded dependency into an outage. The token is hashed because it is a
-bearer credential and cache keys are not a place to keep one.
 
 ## `apps/api/src/modules/auth/roles.ts`
 

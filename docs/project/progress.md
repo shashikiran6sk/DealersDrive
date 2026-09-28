@@ -227,6 +227,16 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R55 — `/cars` controls read like `/dealers` · revises F080/R50/R54 · search, district, then sort on the right, one row · [#178](https://github.com/shashikiran6sk/DealersDrive/pull/178)
 - [x] R56 — The filter rail scrolls on its own · revises F078/F086 · sticky, viewport-bounded, own scroller; results keep the page scroll · [#179](https://github.com/shashikiran6sk/DealersDrive/pull/179)
 - [x] R57 — Results update in place, without a flash · revises F078/F079/F080 · measured no remounts; the dim waits 200 ms, so ordinary updates do not flicker
+- [x] R58 — One proof of a handset, for every purpose · revises R39 · `normaliseIndianMobile` is the one canonical number; the MSG91 proof moves out of onboarding into `phone-proof.service.ts` with `DEALER_PHONE_LINK` / `DEALER_LOGIN` / `CUSTOMER_LOGIN` purposes
+- [ ] R59 — A phone is a sign-in identity beside Google, and a customer is not a pending dealer · revises F014/F016/R39
+- [ ] R60 — Dealers sign in with their phone, and land where Google would have sent them · revises F018
+- [ ] R61 — A new dealer starts with either identity and completes the other on step 1 · revises F037/F038/R39
+- [ ] R62 — One Login, with Customer and Dealer tabs · revises F017/F073
+- [ ] R63 — Customer accounts, by phone alone
+- [ ] R64 — Enquiries come from signed-in customers · revises F088
+- [ ] R65 — Enquire from the vehicle page, through sign-in and back · revises F089
+- [ ] R66 — The dealer's enquiry inbox · revises F091
+- [ ] R67 — Enquiry counts on the dashboard, and the signed-in header · revises F048/F073
 
 ---
 
