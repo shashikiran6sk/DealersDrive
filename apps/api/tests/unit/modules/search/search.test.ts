@@ -13,6 +13,7 @@ import type {
 import { PUBLIC_LISTING_WHERE } from '../../../../src/modules/search/search.repository.js';
 import { createSearchRouter } from '../../../../src/modules/search/search.routes.js';
 import { createSearchService } from '../../../../src/modules/search/search.service.js';
+import { rankSuggestions } from '../../../../src/modules/search/search.suggest.js';
 import { permissionsOn, routesOf, signaturesOf, validatedSources } from '../../../router-probe.js';
 
 function row(overrides: Partial<CardRow['vehicle']> = {}): CardRow {
@@ -84,11 +85,12 @@ describe('who is public', () => {
 describe('the router', () => {
   const router = createSearchRouter({} as never, () => (_req, _res, next) => next());
 
-  it("declares the public list, the vehicle page and a dealership's list, in that order", () => {
+  it("declares the public list, the vehicle page, a dealership's list and the typeahead, in that order", () => {
     expect(signaturesOf(router)).toEqual([
       'GET /vehicles',
       'GET /vehicles/:slug',
       'GET /dealers/:slug/vehicles',
+      'GET /search/vehicles',
     ]);
   });
 
@@ -197,5 +199,48 @@ describe('the vehicle page', () => {
       status: 404,
       code: 'VEHICLE_NOT_FOUND',
     });
+  });
+});
+
+describe('rankSuggestions', () => {
+  const rows = [
+    { make: 'Hyundai', model: 'Creta', variant: 'SX', count: 3 },
+    { make: 'Hyundai', model: 'Creta', variant: 'sx', count: 1 },
+    { make: 'HYUNDAI', model: 'i20', variant: null, count: 2 },
+    { make: 'Kia', model: 'Carens', variant: 'Premium', count: 4 },
+    { make: null, model: 'Orphan', variant: null, count: 9 },
+  ];
+
+  it('ranks a label that starts with the search first, then a word that does, then anywhere', () => {
+    const labels = rankSuggestions(rows, 'cre', 10).data.map((row) => row.label);
+    expect(labels).toEqual(['Hyundai Creta', 'Hyundai Creta SX']);
+    expect(rankSuggestions(rows, 'ar', 10).data.map((row) => row.label)).toEqual([
+      'Kia Carens',
+      'Kia Carens Premium',
+    ]);
+  });
+
+  it('folds spellings into one row labelled with the commonest, and sums the count', () => {
+    const { data } = rankSuggestions(rows, 'hyundai', 10);
+    expect(data[0]).toMatchObject({ kind: 'BRAND', label: 'Hyundai', count: 6 });
+    expect(data.filter((row) => row.kind === 'VARIANT')).toEqual([
+      expect.objectContaining({ label: 'Hyundai Creta SX', variant: 'SX', count: 4 }),
+    ]);
+  });
+
+  it('breaks ties brand, model, variant, then most cars, then alphabetically', () => {
+    expect(rankSuggestions(rows, 'hyundai', 10).data.map((row) => row.label)).toEqual([
+      'Hyundai',
+      'Hyundai Creta',
+      'Hyundai i20',
+      'Hyundai Creta SX',
+    ]);
+  });
+
+  it('skips a car with no make, and cuts to the limit while counting every match', () => {
+    expect(rankSuggestions(rows, 'orphan', 10)).toEqual({ data: [], total: 0 });
+    const cut = rankSuggestions(rows, 'hyundai', 2);
+    expect(cut.data).toHaveLength(2);
+    expect(cut.total).toBe(4);
   });
 });

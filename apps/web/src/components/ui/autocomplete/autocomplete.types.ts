@@ -25,6 +25,7 @@ export interface UseAutocomplete<T> {
   value: string;
   setValue: (next: string) => void;
   clear: () => void;
+  reset: (next: string) => void;
   open: boolean;
   close: () => void;
   status: AutocompleteStatus;

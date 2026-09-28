@@ -1,5 +1,7 @@
 import {
   KM_PRESETS,
+  type CarSuggestQuery,
+  type CarSuggestResponse,
   PRICE_PRESETS,
   type DealerVehicleQuery,
   type PublicVehicleDetail,
@@ -39,8 +41,9 @@ import {
   type VehicleFilterQuery,
 } from './search.filters.js';
 import { toPublicVehicleDetail, toVehicleCard } from './search.mapper.js';
-import { DEALER_NOT_FOUND, VEHICLE_NOT_FOUND } from './search.messages.js';
+import { DEALER_NOT_FOUND, SUGGEST_COUNT, VEHICLE_NOT_FOUND } from './search.messages.js';
 import type { SearchRepository } from './search.repository.js';
+import { rankSuggestions, suggestWhere } from './search.suggest.js';
 
 export interface SearchDeps {
   repo: SearchRepository;
@@ -173,6 +176,13 @@ export function createSearchService({ repo }: SearchDeps) {
       const dealer = await repo.publicDealer(slug);
       if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND, { code: 'DEALER_NOT_FOUND' });
       return search(query, oneDealerScope(dealer), null);
+    },
+
+    async suggestCars(query: CarSuggestQuery): Promise<CarSuggestResponse> {
+      const scope = locationScope(await repo.publicDealers(), query);
+      const rows = await repo.suggestRows(suggestWhere(query.search, scope.resultIds));
+      const { data, total } = rankSuggestions(rows, query.search, query.limit);
+      return { search: query.search, data, countLabel: SUGGEST_COUNT(total) };
     },
   };
 }

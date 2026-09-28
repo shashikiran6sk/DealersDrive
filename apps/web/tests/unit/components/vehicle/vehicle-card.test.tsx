@@ -338,7 +338,7 @@ describe('/cars search and sort', () => {
       '/v1/vehicles?q=creta&sort=price_desc',
       expect.anything(),
     );
-    expect(screen.getByRole('searchbox', { name: /search cars/i })).toHaveValue('creta');
+    expect(screen.getByRole('combobox', { name: /search cars by make/i })).toHaveValue('creta');
     expect(screen.getByRole('combobox', { name: 'Sort cars' })).toHaveValue('price_desc');
   });
 });

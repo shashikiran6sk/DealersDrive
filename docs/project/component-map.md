@@ -495,9 +495,12 @@ the first row highlighted after every fresh answer, ↑/↓ with wrapping, Escap
 the outside-pointerdown close, and the ARIA 1.2 combobox wiring
 (`role="combobox"` + `aria-activedescendant`, so focus never leaves the input).
 
-`DealerSearchBox` (C074) is the first consumer. **The vehicle/model search at
-F077 is the second, and must not write a second one of these** — that is the
-D-6 failure caught before the duplicate exists rather than after.
+`DealerSearchBox` (C074) is the first consumer. **`CarSearchBox` (C082, R54) is
+the second**, and it did not write a second one of these — that is the D-6
+failure caught before the duplicate exists rather than after. R54 added
+`reset(next)` (set the value without opening or asking) and made the hook skip
+asking about the value it was mounted with, and drop any answer that arrives
+after its request was cancelled.
 
 `HighlightedText` marks every occurrence of the search, case-insensitively, in
 `<mark>`. It renders the text unmarked when it does not contain the search,
@@ -522,6 +525,28 @@ characters marked, a meta line, a verified tag, and `Select ↵` on the
 highlighted row — the one affordance that explains the default highlight.
 **`matchedOn` decides which of the two lines is marked**: a dealership offered
 because its _town_ matched has none of the typed characters in its name.
+
+### C082 — `CarSearchBox`
+
+`components/search/car-search-box/`. Props: `params`, `basePath`,
+`districtName?`, `className?`. States: empty, loading, suggestions (first
+highlighted), arrowed, nothing found, endpoint failed, a search already applied.
+One consumer (`/cars`, through `SearchToolbar`'s `searchBox` slot). **NEW at
+R54.** **P1**
+
+The second consumer of `Autocomplete` (C073), as C073 required — no second
+typeahead. The source is `fetch` against `/api/search/vehicles`, passing the
+page's `district`, `city` and `dealer` through. A row draws `CarSuggestion`: a
+kind tile (B, M or V), the label with the typed characters marked, and a meta
+line.
+
+**Typing only asks; it never writes the URL.** Choosing a row writes canonical
+filters (`suggestionParams`): a brand replaces `brand=` and drops `model=`, a
+model sets both, and a variant sets both plus the variant as `q=`. Every other
+filter and the district are kept, and the page is dropped. Enter with no row to
+take searches the typed words as `q=`, and × clears `q=`. The box follows the
+URL's `q` (the hook's `reset`), so removing the search chip empties it without
+opening the panel or asking again.
 
 ### C068 — `LocationCard`
 

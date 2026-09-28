@@ -667,6 +667,66 @@ export const DealerVehicleQuery = z
 export type DealerVehicleQuery = z.infer<typeof DealerVehicleQuery>;
 
 /**
+ * The car typeahead's query (**R54**) — `SuggestQuery`, plus the place the
+ * marketplace is already looking at, in the same shapes `PublicVehicleQuery`
+ * takes them, so the box passes the URL's own parameters through.
+ *
+ * Only the place, not the other filters: a suggestion *replaces* the brand and
+ * model a buyer has chosen, so counting it under them would hide exactly the
+ * rows a buyer is typing to reach.
+ */
+export const CarSuggestQuery = SuggestQuery.extend({
+  district: slug.optional(),
+  city: csvOf(slug).optional(),
+  dealer: csvOf(
+    z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .max(160),
+    40,
+  ).optional(),
+}).strict();
+export type CarSuggestQuery = z.infer<typeof CarSuggestQuery>;
+
+/**
+ * What a car suggestion names. Each is a filter the marketplace already has, so
+ * choosing one writes canonical parameters rather than free text: a **brand**
+ * is `brand=`, a **model** is `brand=` and `model=`, and a **variant** — which
+ * has no filter of its own — is its model plus the variant as `q`.
+ */
+export const CarSuggestionKind = z.enum(['BRAND', 'MODEL', 'VARIANT']);
+export type CarSuggestionKind = z.infer<typeof CarSuggestionKind>;
+
+/**
+ * One row in the car dropdown — the row as drawn and the parameters it writes,
+ * and nothing about any one car: no price, no photograph, no dealership.
+ */
+export const CarSuggestion = z.object({
+  kind: CarSuggestionKind,
+  /** "Hyundai Creta SX(O)" — the make, model and variant this row names. */
+  label: z.string(),
+  /** "Model · 12 cars" — composed once, on the server. */
+  metaLabel: z.string(),
+  /** The brand's slug, as `brand=` takes it. */
+  brand: z.string(),
+  /** The model's slug, as `model=` takes it; `null` on a brand. */
+  model: z.string().nullable(),
+  /** The variant as the dealer wrote it, written to `q`; `null` above a variant. */
+  variant: z.string().nullable(),
+  /** The live cars in scope this row leads to. */
+  count: z.number().int(),
+});
+export type CarSuggestion = z.infer<typeof CarSuggestion>;
+
+/** The dropdown's payload — `search` echoed for the stale-answer check, as on the dealers'. */
+export const CarSuggestResponse = z.object({
+  search: z.string(),
+  data: z.array(CarSuggestion),
+  countLabel: z.string(),
+});
+export type CarSuggestResponse = z.infer<typeof CarSuggestResponse>;
+
+/**
  * The presets a buyer picks a price or a distance from. A band is a pair of
  * **inclusive** bounds, the same `min`/`max` the query takes, so choosing one
  * is writing two parameters — and a band's count is exactly the page it leads

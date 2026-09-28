@@ -28,7 +28,7 @@ export function useAutocomplete<T>({
   const search = value.trim();
   const debounced = useDebouncedValue(search, SUGGEST_DEBOUNCE_MS);
 
-  const chosen = useRef<string | null>(null);
+  const chosen = useRef<string | null>(initialValue.trim() || null);
 
   const sourceRef = useRef(source);
   sourceRef.current = source;
@@ -49,6 +49,7 @@ export function useAutocomplete<T>({
       try {
         const payload = await sourceRef.current.suggest(debounced, controller.signal);
 
+        if (controller.signal.aborted) return;
         if (payload.search.trim() !== debounced) return;
 
         setResult({
@@ -91,6 +92,13 @@ export function useAutocomplete<T>({
     setOpen(false);
     onClear?.();
   }, [onClear]);
+
+  const reset = useCallback((next: string) => {
+    chosen.current = next.trim();
+    setValue(next);
+    setResult(EMPTY);
+    setOpen(false);
+  }, []);
 
   const items = result.items;
   const activeIndex = items.length === 0 ? -1 : Math.min(highlighted, items.length - 1);
@@ -143,6 +151,7 @@ export function useAutocomplete<T>({
       else setOpen(false);
     },
     clear,
+    reset,
     open: open && search.length >= SUGGEST_MIN_CHARS,
     close,
     status: result.status,

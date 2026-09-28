@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BodyType, FuelType, Transmission, VehicleColor } from '../../src/enums.js';
 import {
   BodyTypeSlug,
+  CarSuggestQuery,
   ColorSlug,
   DealerVehicleQuery,
   FuelSlug,
@@ -117,5 +118,34 @@ describe('what the panel is built from', () => {
 
   it('has an empty facets payload that is a valid one', () => {
     expect(VehicleFacets.parse(NO_VEHICLE_FACETS)).toEqual(NO_VEHICLE_FACETS);
+  });
+});
+
+/**
+ * The car typeahead's query (**R54**): the suggest grammar the dealers' box
+ * uses, plus the marketplace's place parameters — and nothing else.
+ */
+describe('CarSuggestQuery', () => {
+  it('takes a search, a limit and the place, and reads the place like the marketplace', () => {
+    const parsed = CarSuggestQuery.parse({
+      search: ' cre ',
+      limit: '8',
+      district: 'ranipet',
+      city: 'arcot,walajapet',
+    });
+    expect(parsed).toEqual({
+      search: 'cre',
+      limit: 8,
+      district: 'ranipet',
+      city: ['arcot', 'walajapet'],
+    });
+  });
+
+  it('refuses an empty search, a limit above ten and any filter it does not take', () => {
+    expect(CarSuggestQuery.safeParse({ search: '   ' }).success).toBe(false);
+    expect(CarSuggestQuery.safeParse({ search: 'cre', limit: 11 }).success).toBe(false);
+    const extra = CarSuggestQuery.safeParse({ search: 'cre', brand: 'hyundai' });
+    expect(extra.success).toBe(false);
+    expect(extra.error?.issues[0]?.message).toMatch(/brand/);
   });
 });

@@ -104,6 +104,13 @@ The search these items answer — what the highlighter marks.
 
 Clears the box and closes the list, without choosing anything.
 
+### `reset: (next: string) => void`
+
+Sets the box to a value that came from outside — the URL's search, removed by a
+chip or changed by Back — **without** opening the list or asking about it
+(**R54**). `setValue` is typing; this is the page telling the box what it now
+shows.
+
 ### `search: string`
 
 The characters the rows matched — pass to `HighlightedText`.
@@ -167,17 +174,27 @@ Accessibility is the ARIA 1.2 combobox pattern by hand — Radix has no
 combobox. The input keeps focus throughout and `aria-activedescendant` moves
 the screen reader's cursor, so a buyer can arrow the list while still typing.
 
-### `const chosen = useRef<string | null>(null)`
+### `const chosen = useRef<string | null>(initialValue.trim() || null)`
 
 The value this box wrote into itself by choosing a row — otherwise choosing
 "Vellore Cars" debounces into a request for the name just chosen and
 reopens the dropdown over a page that is already navigating. A ref because
 nothing renders from it and it must be true before the effect runs.
 
+It starts as the value the box was mounted with (**R54**). A page loaded with
+a search already applied is showing the answer to it; asking for suggestions
+about it would pop the list open over results nobody asked to change.
+
 ### `const sourceRef = useRef(source)`
 
 `source` is almost always an object literal, so it is a new reference every
 render and cannot go in the dependency list without refetching on each one.
+
+### `if (controller.signal.aborted) return` — after the answer
+
+A request cancelled after its answer was already on its way is dropped here
+too (**R54**). The echoed `search` below cannot catch it: it is compared with
+the question _that_ request asked, which it always matches.
 
 ### `if (payload.search.trim() !== debounced) return`
 

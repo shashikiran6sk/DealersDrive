@@ -9,6 +9,7 @@ import type {
 
 import type { Counted, PublicDealerRow } from './search.facets.js';
 import type { Vocabulary } from './search.filters.js';
+import type { SuggestRow } from './search.suggest.js';
 
 export const PUBLIC_LISTING_WHERE = {
   status: 'ACTIVE',
@@ -171,6 +172,20 @@ export function createSearchRepository(prisma: PrismaClient) {
         _count: { _all: true },
       });
       return rows.map((row) => ({ make: row.make, model: row.model, count: row._count._all }));
+    },
+
+    async suggestRows(where: Prisma.VehicleWhereInput): Promise<SuggestRow[]> {
+      const rows = await prisma.vehicle.groupBy({
+        by: ['make', 'model', 'variant'],
+        where,
+        _count: { _all: true },
+      });
+      return rows.map((row) => ({
+        make: row.make,
+        model: row.model,
+        variant: row.variant,
+        count: row._count._all,
+      }));
     },
 
     countVehicles(where: Prisma.VehicleWhereInput): Promise<number> {

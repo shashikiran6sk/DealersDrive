@@ -229,3 +229,32 @@ Colour is no longer text a dealer typed but one of twelve families
 **all twelve families, in one fixed order, zeros included**. The panel then
 shows the same twelve options the listing form offers, whatever the inventory
 holds — a zero is a family nothing is in right now, not a missing option.
+
+## `apps/api/src/modules/search/search.suggest.ts` — the car typeahead (R54)
+
+### `export function suggestWhere(search, dealerIds)`
+
+Every typed word must appear in the make, the model or the variant of a public
+car in scope. The dealership's name is deliberately not searched, unlike `q`:
+a row names a make, model or variant, and a car found by its yard's name would
+put a row in the list whose label does not contain what was typed.
+
+### `export function rankSuggestions(rows, search, limit)`
+
+One `groupBy` over make, model and variant gives every distinct triple with its
+count, and the brand, model and variant rows are folded from those in memory.
+The rows are bounded by the distinct models in scope, not by the cars.
+
+Spellings that slug alike are **one row** (`Maruti Suzuki`, `MARUTI SUZUKI`),
+labelled with the commonest spelling, because the filter a row writes is the
+slug and the slug already treats them as one. Model and variant labels use the
+brand's label for the make, so one brand reads one way down the list.
+
+A row matches only if every word is in its **label** — "hyundai cre" is Hyundai
+Creta, never Hyundai alone. Label-prefix beats word-prefix beats anywhere, then
+brand beats model beats variant, then more cars, then alphabetical: the order is
+total, so the same request always answers in the same order.
+
+Only the place narrows it, never the other filters: choosing a row _replaces_
+the brand and model, so counting under the current ones would hide exactly what
+a buyer is typing to reach.
