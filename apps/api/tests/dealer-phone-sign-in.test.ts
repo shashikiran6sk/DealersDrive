@@ -258,29 +258,19 @@ describe('what it refuses', () => {
       .expect(422);
   });
 
-  /** After the proof, saying "no account" tells a caller nothing they do not hold. */
-  it('a proved number no dealer holds — and creates nothing', async () => {
-    const phone = freeNumber();
-    const before = await h.prisma.user.count();
-
-    const res = await phoneSignIn(h.agent(), phone).expect(404);
-
-    expect(res.body.code).toBe('DEALER_NOT_FOUND');
-    expect(res.headers['set-cookie']).toBeUndefined();
-    expect(await h.prisma.user.count()).toBe(before);
-  });
-
   /**
    * A legacy dealer whose number was typed, never proved, does not become
-   * signed in by proving it now: that number is not an identity yet.
+   * signed in by proving it now, and is not taken over by whoever proved it:
+   * that is support's call (**R61** answers 409 where R60 answered 404).
    */
   it('a number an account holds but never verified', async () => {
     const phone = freeNumber();
     const user = await h.prisma.user.create({ data: { phone: `+91${phone}` } });
     await h.prisma.userRole.create({ data: { userId: user.id, role: 'DEALER' } });
 
-    const res = await phoneSignIn(h.agent(), phone).expect(404);
-    expect(res.body.code).toBe('DEALER_NOT_FOUND');
+    const res = await phoneSignIn(h.agent(), phone).expect(409);
+    expect(res.body.code).toBe('IDENTITY_ALREADY_LINKED');
+    expect(res.headers['set-cookie']).toBeUndefined();
   });
 
   it('a dealer seat that has been closed', async () => {

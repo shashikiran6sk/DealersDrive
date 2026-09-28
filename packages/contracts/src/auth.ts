@@ -60,6 +60,14 @@ export const AuthProvidersResponse = z.object({
      * secrecy of this path, is what keeps the console closed.
      */
     adminStartUrl: z.string(),
+    /**
+     * The same flow again, to **link** Google to the account that is already
+     * signed in rather than to sign in (**R61**) — a dealer who started with
+     * their phone. It needs the session: the callback attaches the Google
+     * account to the user whose session started the round trip, and to nobody
+     * else.
+     */
+    linkStartUrl: z.string(),
     /** Present only when `enabled` is false: what a developer must configure. */
     reason: z.string().nullable(),
   }),

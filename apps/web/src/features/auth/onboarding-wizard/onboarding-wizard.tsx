@@ -24,6 +24,7 @@ import { BusinessStep } from './business-step';
 import { DocumentsStep } from './documents-step';
 import {
   ACCOUNT_FIELDS,
+  LINK_ERRORS,
   ONBOARDING_PATH,
   ONBOARDING_STEPS,
   ONBOARDING_TEXT,
@@ -40,6 +41,8 @@ export interface OnboardingWizardProps {
   completeness: CompletenessResponse | null;
   yardPhoto: YardPhotoDto | null;
   phoneWidget: PhoneOtpWidget | null;
+  googleLinkUrl?: string | null;
+  linkError?: string | null;
 }
 
 export function OnboardingWizard({
@@ -50,6 +53,8 @@ export function OnboardingWizard({
   completeness,
   yardPhoto,
   phoneWidget,
+  googleLinkUrl = null,
+  linkError = null,
 }: OnboardingWizardProps) {
   const router = useRouter();
   const [local, setLocal] = useState<LocalStep>(step === 1 ? 1 : 0);
@@ -95,6 +100,8 @@ export function OnboardingWizard({
     return session.user.phoneVerified && digits.length === 10 ? digits : null;
   });
   const phoneVerified = verifiedPhone !== null && verifiedPhone === localDigits(phone);
+  const googleLinked = session.identity !== null;
+  const linkRefusal = linkError ? (LINK_ERRORS[linkError] ?? null) : null;
 
   function continueFromAccount(form: HTMLFormElement | null): boolean {
     const found = validateAccount(form);
@@ -107,6 +114,8 @@ export function OnboardingWizard({
   return (
     <div className="flex flex-col gap-[22px]">
       <Stepper steps={ONBOARDING_STEPS} current={current} />
+
+      {linkRefusal && !googleLinked ? <Banner tone="err" title={linkRefusal} /> : null}
 
       {sentBack ? (
         <Banner tone="warn" title={ONBOARDING_TEXT.sentBackTitle}>
@@ -141,6 +150,7 @@ export function OnboardingWizard({
             phone={phone}
             onPhoneChange={setPhone}
             phoneVerified={phoneVerified}
+            googleLinkUrl={googleLinkUrl}
           />
           <BusinessStep dealer={dealer} errors={errors} values={values} hidden={local === 0} />
 
@@ -158,6 +168,13 @@ export function OnboardingWizard({
                 setVerifiedPhone(localDigits(verified));
               }}
               onContinue={() => {
+                if (!googleLinked) {
+                  setAccountErrors((found) => ({
+                    ...found,
+                    google: ONBOARDING_TEXT.googleMissing,
+                  }));
+                  return;
+                }
                 setLocal(1);
               }}
             />

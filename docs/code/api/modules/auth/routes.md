@@ -61,6 +61,14 @@ Both refusals of an operations seat land on the same screen: one is
 
 apart from the other.
 
+## `apps/api/src/modules/auth/routes/get-google-link-start.ts`
+
+### `export const getGoogleLinkStart: SessionAuthRoute = (router, { service }) =>`
+
+**R61** — starts the same Google round trip as sign-in, behind the session,
+sealing the signed-in user's id into the transaction so the callback can link
+the Google account to that user and nobody else.
+
 ## `apps/api/src/modules/auth/routes/get-phone-widget.ts`
 
 ### `export const getPhoneWidget: SessionAuthRoute = (router, { phone, rateLimit }) =>`

@@ -17,6 +17,15 @@ The verified identity, shown rather than asked for. Google has already
 proved this address belongs to whoever is at the keyboard, and an
 editable email field would be a way to claim one it never verified.
 
+### `googleLinkUrl: string | null`
+
+**R61** — a dealer who started with their phone has no Google identity yet, so
+the block becomes the ask: "Not linked yet", marked Required, with the Google
+button pointing at `linkStartUrl`. It is disabled rather than hidden when the
+deployment has no Google client, so the dealer can see what is missing. There
+is still no editable email field: the address arrives from Google or not at
+all.
+
 ### `readOnly={phoneVerified}`
 
 Settled once it has been proved: a verified number is a fact about
@@ -129,7 +138,7 @@ earlier.
 
 ## `apps/web/src/features/auth/onboarding-wizard/onboarding-wizard.constants.ts`
 
-### `export const ACCOUNT_FIELDS = new Set(['fullName', 'phone'])`
+### `export const ACCOUNT_FIELDS = new Set(['fullName', 'phone', 'google'])`
 
 The fields that live on step 1.
 
@@ -137,6 +146,15 @@ One list, used for both halves of the same rule: what the browser validates
 before it will move off the Account step, and what the wizard walks _back_ to
 that step for when the API refuses one of them. Two lists would drift, and the
 drift would be a dealer stuck on step 2 with an invisible error.
+
+`google` joined it with **R61**: the API refuses a dealership without a linked
+Google account as `identity.google`, and that refusal belongs on step 1.
+
+### `export const LINK_ERRORS: Readonly<Record<string, string>> =`
+
+The two `?error=` values the link callback can send back (**R61**). A lookup,
+not an echo: anything else in the query string is ignored rather than
+rendered.
 
 ### `export const TAGLINE_MIN = 10`
 
@@ -368,6 +386,14 @@ One button now, and it is always the submit. It used to be two — a
 local move on Account, a submit on Business — reconciled as one DOM
 node and needing distinct `key`s to stop a single press doing both.
 R39 removed the pair rather than the symptom.
+
+### `const googleLinked = session.identity !== null`
+
+**R61** — step 1 is identity completion: a proved phone **and** a linked Google
+account, in either order. Continue checks the Google half in the browser and
+says so on the Google block rather than moving on; the API refuses the create
+anyway (`ONBOARDING_IDENTITY_INCOMPLETE`), so this is the cheap copy of a rule
+enforced on the server, not the rule.
 
 ## `apps/web/src/features/auth/onboarding-wizard/onboarding-wizard.types.ts`
 

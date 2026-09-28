@@ -1,6 +1,13 @@
 export const ONBOARDING_STEPS = ['Account', 'Business', 'Documents', 'Review'] as const;
 
-export const ACCOUNT_FIELDS = new Set(['fullName', 'phone']);
+export const ACCOUNT_FIELDS = new Set(['fullName', 'phone', 'google']);
+
+export const LINK_ERRORS: Readonly<Record<string, string>> = {
+  identity_already_linked:
+    'That Google account is already linked to a different Dealers-Drive account. Sign in with it instead, or link another Google account.',
+  link_session_mismatch:
+    'That Google account could not be linked. Link it again from this browser.',
+};
 
 export const ONBOARDING_PATH = {
   account: '/dealer/onboarding?step=1',
@@ -50,6 +57,13 @@ export const ONBOARDING_TEXT = {
   accountIntro: 'This is the person who will manage the dealership on Dealers-Drive.',
   googleAccount: 'Google account',
   verifiedWithGoogle: 'Verified with Google',
+  googleNotLinked: 'Not linked yet',
+  googleRequired: 'Required',
+  googleNotLinkedNote:
+    'Your dealership needs a Google account as well as a verified mobile number. Link one to continue.',
+  linkGoogle: 'Link Google account',
+  googleMissing: 'Link your Google account before continuing.',
+
   fullNameLabel: 'Full name',
   phoneLabel: 'Phone',
   phoneHint: '+91',

@@ -5759,3 +5759,76 @@ from this response lands with the Login UI.
   (both limits, the keys, the cookie); `packages/contracts/tests/unit/auth.test.ts`
   (`dealerSessionNext` over every status). `auth.test.ts` and
   `phone-verification.test.ts` pass unchanged.
+
+## R61 — A new dealer starts with either identity, and step 1 completes the other
+
+**Revises F037 / F038 / R39 / R60** · no schema change
+
+A dealer's account needs both a verified mobile number and a Google account.
+Before R61 the only way in was Google, so the order was fixed. Now either can
+come first, and onboarding step 1 is where the other is completed.
+
+| Entry        | After sign-in                                           | Step 1 asks for                                |
+| ------------ | ------------------------------------------------------- | ---------------------------------------------- |
+| Phone first  | provisional dealer: phone verified, **no Google**       | Link Google (`/v1/auth/google/link/start`)     |
+| Google first | provisional dealer: Google linked, **phone unverified** | Prove the phone (`/v1/auth/phone/verify`, R39) |
+
+Both converge on **one** user: afterwards Google and the phone each sign in to
+the same account (`dealer-identity-completion.test.ts` asserts the user id is
+the same across all three sign-ins).
+
+### Phone first
+
+`POST /v1/auth/sign-in/phone/dealer` with a proved number no account holds now
+**creates** a provisional dealer (`identities.createWithPhone`, a dealer seat,
+audited as `auth.identity.created`) and sends it to `/dealer/onboarding` —
+where R60 answered `404 DEALER_NOT_FOUND`. A number held, unverified, by a
+legacy account is `409 IDENTITY_ALREADY_LINKED`, never taken over.
+
+### Linking Google to the signed-in account
+
+- `GET /v1/auth/google/link/start` — behind the session. The OAuth transaction
+  gains a third audience, `LINK`, and carries the id of the user who started
+  it, sealed with the rest (`AuthProvidersResponse.google.linkStartUrl`
+  publishes the URL).
+- The shared callback, for `LINK`, requires the `dd_session` presented **on the
+  callback** to belong to that same user — checked before the code is
+  exchanged. A link finished in another browser or with another account's
+  session links nothing (`?error=link_session_mismatch`).
+- Then `identities.linkGoogle` (R59): refused, never merged, when the Google
+  account belongs to another user or this account already has a different one
+  (`?error=identity_already_linked`). No new session is issued; the dealer
+  returns to step 1.
+
+### Step 1 requires both
+
+- **Server:** `POST /v1/auth/onboarding` refuses an account with no Google
+  identity — `422 ONBOARDING_IDENTITY_INCOMPLETE`, field `identity.google` —
+  before anything is written. The phone half is R39's `PHONE_NOT_VERIFIED`.
+- **Screen:** the Google block on step 1 shows "Verified with Google" or "Not
+  linked yet · Required" with a **Link Google account** button; Continue will
+  not leave step 1 without it. A link refusal is a banner, from a fixed lookup
+  of the two error codes rather than an echo of the query string.
+- ⚠️ **One web test changed**: "falls back to the account email when there is
+  no linked identity" pinned the old fallback (show `user.email` as if
+  verified). That state is now a phone-first dealer, so the test now asserts
+  the not-linked block and the link button.
+
+### Not here
+
+The Login screen that offers phone sign-in to a person who is not signed in
+yet is R62; until it lands, phone-first sign-up is reachable through the API
+only.
+
+- **Tests** `apps/api/tests/dealer-identity-completion.test.ts` (phone first →
+  provisional → create refused → link → create; Google first → create refused
+  → prove → create; convergence across three sign-ins; A's phone + B's Google
+  refused both ways; a second Google account refused; the link needs a session;
+  a callback with no session or another account's session links nothing);
+  `dealer-phone-sign-in.test.ts` (legacy unverified number now 409);
+  `tests/unit/modules/auth/oauth-transaction.test.ts` (the `LINK` transaction);
+  `apps/web/tests/unit/features/auth/onboarding-wizard.test.tsx` (the
+  not-linked block, Continue held, both refusal banners, an unknown error
+  ignored).
+- **Sandbox** `Forms/OnboardingWizard` — `AccountPhoneFirst`,
+  `AccountGoogleLinkRefused`.

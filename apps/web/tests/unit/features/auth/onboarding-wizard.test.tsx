@@ -605,8 +605,13 @@ describe('OnboardingWizard — the Account step', () => {
     expect(screen.getByText('Verified with Google')).toBeInTheDocument();
   });
 
-  /** The identity is the verified one; `user.email` is only the fallback. */
-  it('falls back to the account email when there is no linked identity', () => {
+  /**
+   * **R61** replaced the fallback this used to pin. A session with no linked
+   * Google identity used to show `user.email` in the Google block, as if it were
+   * verified; that state is now a dealer who started with their phone, and the
+   * block says Google is missing and offers to link it instead.
+   */
+  it('says Google is not linked, and offers to link it, when there is no identity', () => {
     render(
       <OnboardingWizard
         step={0}
@@ -616,11 +621,82 @@ describe('OnboardingWizard — the Account step', () => {
         completeness={null}
         yardPhoto={null}
         phoneWidget={FAKE_WIDGET}
+        googleLinkUrl="http://api.test/v1/auth/google/link/start?returnTo=%2Fdealer%2Fonboarding"
       />,
     );
 
-    expect(screen.getByText('karthik@srilakshmimotors.in')).toBeInTheDocument();
+    expect(screen.queryByText('Verified with Google')).toBeNull();
+    expect(screen.getByText('Not linked yet')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Link Google account/ })).toHaveAttribute(
+      'href',
+      'http://api.test/v1/auth/google/link/start?returnTo=%2Fdealer%2Fonboarding',
+    );
     expect(screen.queryByLabelText('Email')).toBeNull();
+  });
+
+  /** Phone proved, Google missing: step 1 holds until both are in place. */
+  it(
+    'will not continue to Business with a proved phone and no Google account',
+    async () => {
+      const user = userEvent.setup();
+      render(
+        <OnboardingWizard
+          step={0}
+          session={session({ identity: null, user: { fullName: 'K. Raman' } })}
+          documents={[]}
+          dealer={null}
+          completeness={null}
+          yardPhoto={null}
+          phoneWidget={FAKE_WIDGET}
+          googleLinkUrl="http://api.test/v1/auth/google/link/start"
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Continue to business details' }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Link your Google account before continuing.',
+      );
+      expect(filledSteps()).toEqual(['Account']);
+    },
+    TRANSITION_TIMEOUT,
+  );
+
+  it('explains a Google account that belongs to somebody else', () => {
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ identity: null })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+        googleLinkUrl={null}
+        linkError="identity_already_linked"
+      />,
+    );
+
+    expect(
+      screen.getByText(/already linked to a different Dealers-Drive account/),
+    ).toBeInTheDocument();
+  });
+
+  it('ignores an error it does not know rather than echoing the query string', () => {
+    render(
+      <OnboardingWizard
+        step={0}
+        session={session({ identity: null })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+        linkError="<script>alert(1)</script>"
+      />,
+    );
+
+    expect(screen.queryByText(/script/)).toBeNull();
   });
 
   it('prefills the name from the Google profile when the user record has none', () => {

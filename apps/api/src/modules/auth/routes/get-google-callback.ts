@@ -1,4 +1,9 @@
-import { clearOAuthCookie, readOAuthCookie, setSessionCookie } from '../session.cookie.js';
+import {
+  clearOAuthCookie,
+  readOAuthCookie,
+  readSessionToken,
+  setSessionCookie,
+} from '../session.cookie.js';
 import { env } from '../../../config/env.js';
 import { errorCode } from '../../../platform/errors.js';
 import { openTransaction, type OAuthAudience } from '../oauth-transaction.js';
@@ -20,6 +25,7 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
         const transaction = openTransaction(readOAuthCookie(req));
         audience = transaction?.audience ?? 'DEALER';
         if (audience === 'ADMIN') signInPath = '/admin/login';
+        if (audience === 'LINK') signInPath = '/dealer/onboarding';
         clearOAuthCookie(res);
 
         if (typeof req.query.error === 'string') {
@@ -38,11 +44,14 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
           code,
           state,
           transaction,
+          sessionToken: readSessionToken(req),
           ip: req.ip,
           userAgent: req.get('user-agent'),
         });
 
-        setSessionCookie(res, result.token, result.expiresAt);
+        if (result.token && result.expiresAt) {
+          setSessionCookie(res, result.token, result.expiresAt);
+        }
         recordOAuthAttempt(result.audience, 'success', 'completed');
         res.redirect(302, `${env.WEB_BASE_URL}${result.returnTo}`);
       } catch (error) {
@@ -57,6 +66,14 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
         }
         if (code === 'ACCOUNT_LINK_REQUIRED') {
           back('account_link_required');
+          return;
+        }
+        if (code === 'IDENTITY_ALREADY_LINKED') {
+          back('identity_already_linked');
+          return;
+        }
+        if (code === 'LINK_SESSION_MISMATCH') {
+          back('link_session_mismatch');
           return;
         }
         if (code === 'ACCOUNT_SUSPENDED') {

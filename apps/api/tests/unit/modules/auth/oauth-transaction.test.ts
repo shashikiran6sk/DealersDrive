@@ -163,3 +163,32 @@ describe('where a sign-in may land', () => {
     expect(safeReturnTo('https://evil.example', '/dealer/onboarding')).toBe('/dealer/onboarding');
   });
 });
+
+/**
+ * R61 — linking Google to the account that is already signed in.
+ *
+ * The transaction carries the user who started the link, sealed with the rest,
+ * so the callback can refuse to attach the Google account to anybody else.
+ */
+describe('a link transaction', () => {
+  it('seals and opens the user it was started for', () => {
+    const minted = createOAuthTransaction('/dealer/onboarding', 'LINK', 'user-1');
+    const opened = openTransaction(sealTransaction(minted));
+
+    expect(opened).toMatchObject({ audience: 'LINK', linkUserId: 'user-1' });
+  });
+
+  it('lands on onboarding by default', () => {
+    expect(createOAuthTransaction('', 'LINK', 'user-1').returnTo).toBe('/dealer/onboarding');
+  });
+
+  it('is refused without the user it links to', () => {
+    const minted = createOAuthTransaction('/dealer/onboarding', 'LINK');
+    expect(openTransaction(sealTransaction(minted))).toBeNull();
+  });
+
+  it('carries no link user for an ordinary sign-in', () => {
+    const opened = openTransaction(sealTransaction(createOAuthTransaction('/dealer')));
+    expect(opened).not.toHaveProperty('linkUserId');
+  });
+});

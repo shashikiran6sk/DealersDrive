@@ -38,6 +38,7 @@ export const authDocs: ModuleDocs = {
               enabled: true,
               startUrl: 'http://localhost:4000/v1/auth/google/start',
               adminStartUrl: 'http://localhost:4000/v1/auth/admin/google/start',
+              linkStartUrl: 'http://localhost:4000/v1/auth/google/link/start',
               reason: null,
             },
           },
@@ -183,6 +184,33 @@ export const authDocs: ModuleDocs = {
       errors: [401],
     },
     {
+      method: 'get',
+      path: '/v1/auth/google/link/start',
+      operationId: 'startGoogleLink',
+      tag: DOC_TAGS.auth,
+      summary: 'Link a Google account to the signed-in account',
+      description:
+        'A browser navigation for a dealer who started with their phone (**R61**). The same ' +
+        'Google round trip as `/v1/auth/google/start`, except that the sealed `dd_oauth` ' +
+        'cookie records **which user started it**, and the shared callback attaches the ' +
+        'Google account to that user only if the same `dd_session` is still presented when ' +
+        'Google sends the browser back. No new session is issued.\n\n' +
+        'A Google account that already belongs to another account is never merged into this ' +
+        'one: the callback redirects to `/dealer/onboarding?error=identity_already_linked`. ' +
+        'A callback that arrives without the session that started the link redirects with ' +
+        '`error=link_session_mismatch`.\n\n' +
+        'Optional `?returnTo=` — a path, defaulting to `/dealer/onboarding`.',
+      audience: 'dealer',
+      responses: [
+        {
+          status: 302,
+          description: 'Redirect to Google, with `dd_oauth` set.',
+          headers: LOCATION_HEADER,
+        },
+      ],
+      errors: [401, 503],
+    },
+    {
       method: 'post',
       path: '/v1/auth/onboarding',
       operationId: 'completeOnboarding',
@@ -214,6 +242,9 @@ export const authDocs: ModuleDocs = {
         'otherwise, which is what makes the OTP round trip unskippable rather than merely ' +
         'expected. `PHONE_ALREADY_REGISTERED` is answered by the verify endpoint now, at the ' +
         'moment the claim is made.\n\n' +
+        '**Both identities first** (**R61**): an account with no Google account linked — a ' +
+        'dealer who started with their phone — is refused with ' +
+        '`422 ONBOARDING_IDENTITY_INCOMPLETE` before anything is written.\n\n' +
         '`409 DEALER_ALREADY_EXISTS` if the session already manages one, `409 ' +
         'DEALER_NAME_TAKEN` if another dealership already trades under that name **in that ' +
         'city** — the same name in another city is not a collision.',
@@ -455,9 +486,11 @@ export const authDocs: ModuleDocs = {
         'treated as unknown. Nothing is revealed about a number before its token is proved: ' +
         'the first refusal a caller can see is `422 PHONE_VERIFICATION_FAILED`, the same for a ' +
         'wrong code, a token for another number and a token already used.\n\n' +
-        '`404 DEALER_NOT_FOUND` when the proved number belongs to no dealer account — ' +
-        'answered only after possession is proved, so it tells a caller nothing about a number ' +
-        'they do not hold. `403 ACCOUNT_SUSPENDED` for a suspended account or dealership. ' +
+        '**A proved number with no account starts one** (**R61**): a provisional dealer with ' +
+        'the phone verified and no Google account yet, sent to `/dealer/onboarding`, where step ' +
+        '1 asks for Google before anything else can be saved. A number held, unverified, by a ' +
+        'legacy account is `409 IDENTITY_ALREADY_LINKED` rather than taken over. ' +
+        '`403 ACCOUNT_SUSPENDED` for a suspended account or dealership. ' +
         '`503 PHONE_OTP_UNAVAILABLE` when MSG91, or the replay guard, cannot answer — a ' +
         'sign-in that cannot rule out a replayed token is refused rather than allowed.\n\n' +
         'Rate-limited to 20 attempts in 10 minutes per IP and 10 per number.',
@@ -478,7 +511,7 @@ export const authDocs: ModuleDocs = {
           example: { next: 'DASHBOARD', returnTo: '/dealer/inventory' },
         },
       ],
-      errors: [400, 403, 404, 422, 429, 503],
+      errors: [400, 403, 409, 422, 429, 503],
     },
   ],
 };

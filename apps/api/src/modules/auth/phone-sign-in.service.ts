@@ -3,10 +3,10 @@ import type { PrismaClient } from '@prisma/client';
 
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { CachePort } from '../../platform/cache/cache.port.js';
-import { ForbiddenError, NotFoundError } from '../../platform/errors.js';
+import { ForbiddenError } from '../../platform/errors.js';
 import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
-import { ACCOUNT_SUSPENDED, DEALER_NOT_FOUND, DEALERSHIP_SUSPENDED } from './auth.messages.js';
+import { ACCOUNT_SUSPENDED, DEALERSHIP_SUSPENDED } from './auth.messages.js';
 import { createIdentityService } from './identity.service.js';
 import { createPhoneProofService } from './phone-proof.service.js';
 import { resolveDealerPostAuthDestination } from './post-auth.js';
@@ -49,22 +49,23 @@ export function createPhoneSignInService({ prisma, sessions, otp, cache, audit }
         ip: context.ip,
       });
 
-      const user = await identities.findByVerifiedPhone(proven.phone);
-      const member = user
-        ? await prisma.dealerMember.findFirst({
-            where: { userId: user.id, status: 'ACTIVE' },
-            select: { id: true },
-          })
-        : null;
-      const isDealer =
-        user?.roles.some((seat) => seat.role === 'DEALER') === true || member !== null;
+      const existing = await identities.findByVerifiedPhone(proven.phone);
+      const account = existing
+        ? { userId: existing.id, created: false }
+        : await identities.createWithPhone(proven);
+      const user = existing ?? (await identities.findByVerifiedPhone(proven.phone));
 
-      if (!user || !isDealer) {
-        logger.info(
-          { event: 'auth.phone.sign_in.refused', reason: 'no-dealer-account' },
-          'phone sign-in for a number no dealer account holds',
-        );
-        throw new NotFoundError(DEALER_NOT_FOUND, { code: 'DEALER_NOT_FOUND' });
+      if (!user) throw new Error('a proved phone account vanished between create and read');
+
+      if (account.created) {
+        await audit.recordDetached({
+          actorType: 'DEALER',
+          actorId: user.id,
+          action: 'auth.identity.created',
+          entityType: 'User',
+          entityId: user.id,
+          after: { provider: 'PHONE', seat: 'DEALER' },
+        });
       }
 
       if (user.status !== 'ACTIVE') {
@@ -87,7 +88,13 @@ export function createPhoneSignInService({ prisma, sessions, otp, cache, audit }
       });
 
       logger.info(
-        { event: 'auth.session.created', scope: 'DEALER', method: 'PHONE', userId: user.id },
+        {
+          event: 'auth.session.created',
+          scope: 'DEALER',
+          method: 'PHONE',
+          created: account.created,
+          userId: user.id,
+        },
         'dealer session created',
       );
       await audit.recordDetached({
