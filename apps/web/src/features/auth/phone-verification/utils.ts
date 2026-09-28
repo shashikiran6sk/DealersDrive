@@ -1,12 +1,4 @@
-import { normaliseIndianMobile } from '@dealers-drive/contracts';
-
-export function identifierOf(phone: string): string {
-  const canonical = normaliseIndianMobile(phone);
-  if (canonical) return canonical.slice(1);
-
-  const digits = phone.replace(/\D/g, '');
-  return digits.startsWith('91') && digits.length > 10 ? digits : `91${digits}`;
-}
+export { identifierOf } from '@/lib/phone-otp';
 
 export function countdown(seconds: number): string {
   const minutes = Math.floor(seconds / 60);

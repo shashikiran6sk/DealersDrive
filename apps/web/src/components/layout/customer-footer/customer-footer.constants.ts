@@ -6,7 +6,7 @@ export const BUYER_LINKS: FooterLink[] = [
   { href: '/saved', label: 'Saved cars' },
 ];
 
-export const DEALER_LINKS: FooterLink[] = [{ href: '/dealer', label: 'Dealer login' }];
+export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'Dealer login' }];
 
 export const FOOTER_TEXT = {
   brand: 'Dealers-Drive',

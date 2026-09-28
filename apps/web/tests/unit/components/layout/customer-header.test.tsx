@@ -81,34 +81,29 @@ describe('which section is current', () => {
   });
 });
 
-describe('the dealer door', () => {
+describe('the login door', () => {
   /**
-   * There is one, and it goes to `/dealer`. The console decides between "sign
-   * in" and "finish onboarding" from the session, so the header never has to
-   * guess which of the two a visitor needs — and therefore cannot get it wrong.
+   * **R63** replaced the dealer door. The header used to say "Dealer login"
+   * and go to `/dealer`, because only dealers had accounts; now buyers do too,
+   * so it says "Login" at every width and goes to `/login`, where the Customer
+   * tab is the default and the Dealer tab is one click away.
    */
-  it('points at the console', () => {
+  it('says Login and points at the unified login', () => {
     setLocation('/');
     render(<CustomerHeader locations={LOCATIONS} />);
 
-    expect(screen.getByRole('link', { name: /dealer login|^login$/i })).toHaveAttribute(
-      'href',
-      '/dealer',
-    );
+    expect(screen.getByRole('link', { name: /^login$/i })).toHaveAttribute('href', '/login');
+    expect(screen.queryByRole('link', { name: /dealer login/i })).not.toBeInTheDocument();
   });
 
-  /**
-   * **R35.** The second button said "List your cars" and went to exactly the
-   * same place, which made it a choice with one outcome. `getAllByRole` rather
-   * than `getByRole` so this fails on a duplicate rather than on the query.
-   */
+  /** Still one door (**R35**), and still no "List your cars" beside it. */
   it('offers only one of them', () => {
     setLocation('/');
     render(<CustomerHeader locations={LOCATIONS} />);
 
     const doors = screen
       .getAllByRole('link')
-      .filter((link) => link.getAttribute('href') === '/dealer');
+      .filter((link) => ['/login', '/dealer'].includes(link.getAttribute('href') ?? ''));
 
     expect(doors).toHaveLength(1);
     expect(screen.queryByRole('link', { name: /list (your )?cars/i })).not.toBeInTheDocument();

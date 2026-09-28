@@ -42,6 +42,7 @@ export interface RequestOptions {
   tags?: string[];
   signal?: AbortSignal;
   headers?: Record<string, string>;
+  onSetCookie?: (cookies: string[]) => void;
 }
 
 async function request<T>(
@@ -79,6 +80,7 @@ async function request<T>(
   }
 
   const response = await fetch(url, init);
+  options.onSetCookie?.(response.headers.getSetCookie());
 
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a 204 has no body to parse
   if (response.status === 204) return undefined as T;

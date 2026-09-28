@@ -292,7 +292,7 @@ one short-label and one long-label scenario.
 | **Props**            | `id`, `value: string`, `onChange: (value: string) => void`, `length?` (6), `invalid?`, `disabled?`, `autoFocus?`, `label?`, `onComplete?` |
 | **States**           | empty, partly typed, filled, invalid, disabled                                                                                            |
 | **Dependencies**     | `cn` only                                                                                                                                 |
-| **Consumers**        | 1 (`PhoneVerification`)                                                                                                                   |
+| **Consumers**        | 2 (`PhoneVerification`, `PhoneSignIn` through `PhoneCodePanel`, **R63**)                                                                  |
 | **Tests**            | ✅ `apps/web/tests/unit/components/ui/otp-input.test.tsx`                                                                                 |
 | **Ownership**        | Shared                                                                                                                                    |
 | **Sandbox priority** | **P1** — the keyboard contract is the whole component                                                                                     |
@@ -1166,6 +1166,31 @@ The gap between 13.83 % and 90 % is, almost exactly, the component layer.
 Closing it is the sandbox's job.
 
 ---
+
+### C083 — `PhoneSignIn` · C084 `LoginTabs` · C085 `CustomerLogin` · C086 `CustomerNameStep` · C087 `DealerLogin`
+
+**New at R63** — the unified Login. `PhoneSignIn` (`features/auth/phone-sign-in/`)
+is the shared phone form: number, Send OTP, then `PhoneCodePanel` (C040b's,
+extended with `verifyLabel`); `onProved(phone, token)` answers an error or
+`null`, and the caller decides what a proved number means. The other four
+live in `features/auth/login/`: `LoginTabs` is the `.seg` Customer / Dealer
+switch with tab semantics and roving focus; `CustomerLogin` proves the number
+and either returns or hands over to `CustomerNameStep` (one Name field);
+`DealerLogin` is Google plus `PhoneSignIn`.
+
+| Component          | Props                                                                              | States                                                          |
+| ------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `PhoneSignIn`      | `widget`, `idPrefix`, `onProved`, `verifyLabel?`, `initialStage?`, `initialPhone?` | number · invalid number · code entry · refused · not configured |
+| `LoginTabs`        | `initial`, `customer`, `dealer`                                                    | customer · dealer                                               |
+| `CustomerLogin`    | `widget`, `returnTo`                                                               | number · code · name required · unavailable                     |
+| `CustomerNameStep` | `phoneDisplay`, `onCreated`, `onRestart`                                           | empty · refused · ticket expired · creating                     |
+| `DealerLogin`      | `widget`, `google`, `returnTo`, `error`                                            | Google + phone · Google refused · Google not configured         |
+
+**Changed:** `PhoneCodePanel` gains `verifyLabel?`; `PhoneUnavailable` gains
+`tail?` (the onboarding sentence stays the default). **Consumers:** the
+`/login` page. **Tests** `apps/web/tests/unit/features/auth/login.test.tsx`,
+`apps/web/tests/unit/app/login-page.test.tsx`. **Sandbox** `Forms/Login`,
+`Forms/PhoneSignIn`.
 
 ## D1 impact — components affected by removing the catalogue
 

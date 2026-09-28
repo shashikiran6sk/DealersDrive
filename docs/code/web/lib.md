@@ -508,6 +508,16 @@ ever appears — it is not a string and does not survive `catch {}`.
 
 Test-only: forget the loaded widget so the next call re-initialises.
 
+## `apps/web/src/lib/phone-otp.ts`
+
+### `export async function sendPhoneOtp(`
+
+**R63** — the two MSG91 steps both phone flows share, extracted from
+`PhoneVerification` rather than copied into the sign-in form: load the widget
+and send (or resend) to the canonical identifier, and turn an entered code
+into the token the API verifies. The `fake` driver sends nothing and mints
+the documented development token.
+
 ## `apps/web/src/lib/nav.ts`
 
 ### `export function isCurrentPath(pathname: string, href: string, rootHref: string): boolean`
@@ -690,6 +700,16 @@ The same question for the admin console, whose sessions are a separate scope.
 
 Where a signed-in dealer belongs, given what the API says about them.
 
+## `apps/web/src/lib/session-cookie.ts`
+
+### `export async function relaySessionCookie(setCookies: readonly string[]): Promise<boolean>`
+
+**R63** — carries the API's `dd_session` onto the response a Server Action
+returns. Parsed from the `Set-Cookie` the API sent — value, expiry, domain,
+path, `Secure` — and always written `HttpOnly` and `SameSite=Lax`, whatever
+the header said, because those two are what keep the session out of page
+script and off cross-site requests.
+
 ## `apps/web/src/lib/state-codes.ts`
 
 ### `const CODES: Record<string, string> =`
@@ -780,6 +800,14 @@ A comma-separated parameter, as the list it stands for.
 takes one value per key, the shorter form survives being pasted into a chat
 window intact, and a single slug still reads as a list of one — so every
 link shared before the chips became toggles keeps working.
+
+### `export function safeReturnPath(candidate: string | undefined | null, fallback = '/'): string`
+
+**R63** — where a sign-in may send somebody afterwards: a path on this site, or
+the fallback. Absolute URLs, protocol-relative `//host`, a backslash (which
+some browsers read as `/`) and whitespace are all refused, because a login
+that redirects wherever the query string says is an open redirect with a
+trusted domain in front of it.
 
 ## `apps/web/src/lib/vehicle-search.ts`
 

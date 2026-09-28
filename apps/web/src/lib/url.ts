@@ -12,3 +12,10 @@ export function many(params: SearchParamsInput, key: string): string[] {
     .map((value) => value.trim())
     .filter((value) => value.length > 0);
 }
+
+export function safeReturnPath(candidate: string | undefined | null, fallback = '/'): string {
+  if (!candidate) return fallback;
+  if (!candidate.startsWith('/') || candidate.startsWith('//')) return fallback;
+  if (/[\\\s]/.test(candidate)) return fallback;
+  return candidate;
+}

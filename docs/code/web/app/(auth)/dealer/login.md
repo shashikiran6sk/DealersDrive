@@ -7,40 +7,17 @@ declaration the note sat above.
 
 ## `apps/web/src/app/(auth)/dealer/login/page.tsx`
 
-### `export const dynamic = 'force-dynamic'`
+### `export default async function DealerLoginPage({`
 
-DESIGN-SPEC §3.9 — dealer sign-in.
+**R63** — the dealer sign-in screen moved into the unified `/login`, as its
+Dealer tab. This route stays, as a redirect, because three things still send
+people here: the API's Google callback (every refusal arrives as
+`/dealer/login?error=…`), the console's own session-expired bounce, and the
+sign-out action. Rewriting all three would spread one decision across three
+files; a redirect keeps it here.
 
-One control. There is no password field and no OTP box, because there is no
-dealer password and no dealer OTP: Google verifies the identity and the API
-verifies Google. A form here would be a second way in, and the second way in
-is always the one that gets attacked.
+### `const CARRIED = ['error', 'returnTo'] as const`
 
-The failure states are query parameters rather than component state — every
-one of them arrives as a redirect from the API's OAuth callback, so there is
-no client-side error to hold.
-
-### `const PRIVATE_ROBOTS: Metadata['robots'] = { index: false, follow: false }`
-
-── Reconstruction slice ────────────────────────────────────────────────────
-The baseline spreads `seoMetadata({ kind: 'private' })` from `lib/seo.ts`
-here. That file is the whole indexing policy in one function and belongs to
-**F095**, which brings it and its tests; what it resolves to for a `private`
-route is the literal below, and a sign-in screen must be `noindex` from the
-day it exists rather than from the day the SEO feature lands.
-
-### `const session = await currentSession()`
-
-Already signed in? The console is the destination, not this screen. The
-
-### `const session = await currentSession()`
-
-question goes to the API rather than to the cookie jar: a cookie that
-
-### `const session = await currentSession()`
-
-exists but no longer works must land here, on a form, and not bounce
-
-### `const session = await currentSession()`
-
-between this screen and a console that will refuse it.
+Only the two parameters the old screen understood are carried across. Anything
+else in the query string is dropped rather than forwarded, so this cannot be
+used to smuggle arbitrary parameters onto the login page.
