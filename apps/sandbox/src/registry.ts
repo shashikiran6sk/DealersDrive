@@ -1992,6 +1992,42 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'vehicle-availabilitynotice',
   },
+  {
+    id: 'C101',
+    name: 'HeroSearch',
+    source: 'apps/web/src/features/home/hero-search/hero-search.tsx',
+    category: 'Search',
+    ownership: 'Feature-specific',
+    purpose:
+      'The homepage search (R72): District (the same LocationDialog the header uses), Brand, Model (loaded from the marketplace facets once a brand is chosen) and Budget, submitting to /cars with the parameters /cars reads. A GET form, so it works before the script loads.',
+    aliases: ['HomeSearch', 'HeroSearchBar', 'SearchBlock', 'hero-search'],
+    features: ['R72', 'F081'],
+    props: ['locations', 'brands', 'loadFacets'],
+    states: [
+      'empty',
+      'district chosen',
+      'brand chosen, models loading',
+      'no inventory yet',
+      'mobile',
+    ],
+    reusable: false,
+    storyId: 'home-herosearch',
+  },
+  {
+    id: 'C102',
+    name: 'DiscoveryRow',
+    source: 'apps/web/src/features/home/discovery-row/discovery-row.tsx',
+    category: 'Vehicle',
+    ownership: 'Feature-specific',
+    purpose:
+      'One homepage row (R72): a heading, "View all N →" to the same search on /cars, and up to four VehicleCards. Renders nothing when empty.',
+    aliases: ['FeaturedInventory', 'HomeRow', 'CarRow', 'discovery-row'],
+    features: ['R72', 'F081'],
+    props: ['id', 'title', 'href', 'total', 'cars'],
+    states: ['four cars', 'fewer than four', 'empty (nothing)', 'mobile'],
+    reusable: false,
+    storyId: 'home-discoveryrow',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

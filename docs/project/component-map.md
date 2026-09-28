@@ -1315,6 +1315,35 @@ enquiries are paused, and **Browse available cars**. **Reuses** `Banner`,
 `ButtonLink`. **Tests** `vehicle-card.test.tsx`, `vehicle-page.test.tsx`.
 **Sandbox** `Vehicle/VehicleCard` (Reserved), `Vehicle/AvailabilityNotice`.
 
+### C101 — `HeroSearch` · C102 — `DiscoveryRow`
+
+**New at R72** (`features/home/`), the F081 homepage as an entry into `/cars`.
+
+`HeroSearch` is a client `<form action="/cars" method="get">` with four fields:
+
+- **District**: `LocationDialog` from the header's district picker, with
+  `unit="car"`, used through its `onSelect` rather than navigating.
+- **Brand**: the marketplace's brand facet, with counts.
+- **Model**: disabled until a brand is chosen, then loaded from
+  `heroFacetsAction`, which reads the same `/v1/vehicles` facets `/cars` uses.
+- **Budget**: ceilings in lakh, sent as `maxPrice`.
+
+On submit it pushes `searchHref('/cars', …)` — the URL builder `/cars` already
+uses, so the parameters and their order are identical.
+
+`DiscoveryRow` is a server component: a heading, **View all N →** to the same
+filters on `/cars`, and up to four `VehicleCard`s. It renders nothing when empty.
+
+| Component      | Props                                  | States                                                           |
+| -------------- | -------------------------------------- | ---------------------------------------------------------------- |
+| `HeroSearch`   | `locations`, `brands`, `loadFacets?`   | empty · district chosen · models loading · no inventory · mobile |
+| `DiscoveryRow` | `id`, `title`, `href`, `total`, `cars` | four · fewer · empty (nothing) · mobile                          |
+
+**Reuses** `LocationDialog`, `Select`, `Button`, `VehicleCard`, `searchHref`.
+**Tests** `apps/web/tests/unit/features/home/home-page.test.tsx`. **Sandbox**
+`Home/HeroSearch` (with `heroFacetsAction` stubbed by
+`apps/sandbox/src/mocks/home-actions.ts`) and `Home/DiscoveryRow`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

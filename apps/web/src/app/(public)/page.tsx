@@ -2,7 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Blueprint, Plate } from '@/components/ui/primitives';
+import { DiscoveryRow } from '@/features/home/discovery-row';
+import { HOME_TEXT } from '@/features/home/home.constants';
+import { HeroSearch } from '@/features/home/hero-search';
+import { loadHomeInventory } from '@/features/home/load-home';
+import { getPublicLocations } from '@/lib/locations';
 import { seoMetadata } from '@/lib/seo';
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: {
@@ -36,8 +43,8 @@ const TRUST_POINTS = [
   },
   {
     number: '05',
-    title: 'No buyer account needed',
-    body: 'Browse, compare and enquire without creating an account. Saved cars will stay on your device.',
+    title: 'Your number, proved once',
+    body: 'Browse without an account. When you enquire, you sign in with your mobile number, so the dealer knows the lead is real.',
   },
 ] as const;
 
@@ -50,7 +57,7 @@ const JOURNEY = [
   {
     number: '02',
     title: 'Discover the right car',
-    body: 'Browse cars Dealers-Drive has photographed and reviewed. Search and comparison are coming soon.',
+    body: 'Search cars Dealers-Drive has photographed and reviewed, by district, brand, model and budget.',
   },
   {
     number: '03',
@@ -59,36 +66,36 @@ const JOURNEY = [
   },
 ] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [inventory, locations] = await Promise.all([loadHomeInventory(), getPublicLocations()]);
+
   return (
     <div>
       <section className="border-b border-(--color-divider) bg-white">
-        <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-6 py-12 md:py-16 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16 lg:py-20">
-          <div>
+        <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-9 sm:px-6 md:py-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16 lg:py-16">
+          <div className="min-w-0">
             <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-accent-700)">
-              Independent dealers · one trusted platform
+              {HOME_TEXT.eyebrow}
             </div>
-            <h1 className="max-w-[13ch] text-[42px] leading-[1.02] sm:text-[52px] lg:text-[62px]">
-              A clearer way to find your next car
+            <h1 className="max-w-[13ch] text-[38px] leading-[1.02] sm:text-[52px] lg:text-[62px]">
+              {HOME_TEXT.title}
             </h1>
-            <p className="mt-5 max-w-[56ch] text-[16px] leading-[1.7] ink-secondary sm:text-[17px]">
-              Dealers-Drive brings verified independent dealerships into one place. We provide the
-              trusted marketplace; the dealer owns, prices and maintains the car.
+            <p className="mt-5 max-w-[56ch] text-[16px] leading-[1.7] ink-secondary">
+              {HOME_TEXT.lede}
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/dealers" className="btn btn-primary px-5 py-[10px]">
-                Explore verified dealers
-              </Link>
-              <Link href="/cars" className="btn btn-secondary px-5 py-[10px]">
-                Browse used cars
-              </Link>
+            <div className="mt-7">
+              <HeroSearch locations={locations} brands={inventory.brands} />
             </div>
 
-            <p className="mt-4 text-[12px] ink-subtle">
-              The dealer directory and the car marketplace are live. Search, saving and enquiries
-              are the next features arriving.
-            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href="/cars" className="btn btn-ghost">
+                {HOME_TEXT.browseAll}
+              </Link>
+              <Link href="/dealers" className="btn btn-ghost">
+                {HOME_TEXT.browseDealers}
+              </Link>
+            </div>
           </div>
 
           <Blueprint className="bg-(--color-accent-100) p-6 sm:p-8" as="div">
@@ -121,6 +128,18 @@ export default function HomePage() {
           </Blueprint>
         </div>
       </section>
+
+      {inventory.rows.some((row) => row.cars.length > 0) ? (
+        <div
+          aria-label={HOME_TEXT.discoveryLabel}
+          role="region"
+          className="mx-auto flex max-w-[1280px] flex-col gap-[44px] px-4 py-11 sm:px-6"
+        >
+          {inventory.rows.map((row) => (
+            <DiscoveryRow key={row.id} {...row} />
+          ))}
+        </div>
+      ) : null}
 
       <section className="mx-auto max-w-[1280px] px-6 py-12 md:py-16">
         <div className="mb-8 max-w-[62ch]">
@@ -167,8 +186,8 @@ export default function HomePage() {
               <div className="text-[11px] uppercase tracking-[0.12em] ink-subtle">For buyers</div>
               <h3 className="mt-4 text-[22px]">Know who you are buying from</h3>
               <p className="mt-3 text-[13px] leading-[1.65] ink-secondary">
-                Start with verified dealer profiles and cars reviewed before they go live. Search,
-                saved cars and direct vehicle enquiries are coming soon.
+                Start with verified dealer profiles and cars reviewed before they go live, then
+                enquire about a car directly with the dealership that owns it.
               </p>
               <Link href="/dealers" className="btn btn-ghost mt-6">
                 Browse the dealer directory →
