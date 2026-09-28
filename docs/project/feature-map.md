@@ -6653,3 +6653,63 @@ listing's reason and note and **View on site** while the car is on sale.
 
 The old homepage assertions in `public-pages.test.tsx` were removed with the
 copy they asserted.
+
+## R73 — Similar vehicles on the vehicle page
+
+**Lands F084, as revised** · new route `GET /v1/vehicles/:slug/similar`
+
+- **Only available cars:** `ACTIVE` listings of `ACTIVE` dealerships. Never
+  reserved, sold or withdrawn, and never the car itself.
+- **Scoring** (`search.similar.ts`), deterministic:
+
+  | Trait in common              | Weight |
+  | ---------------------------- | ------ |
+  | Same model                   | +4     |
+  | Same make                    | +3     |
+  | Same body type               | +3     |
+  | Same district                | +2     |
+  | Price within ±20%            | +2     |
+  | Same fuel                    | +1     |
+  | Same transmission            | +1     |
+  | Manufacturing year within ±2 | +1     |
+
+  Ties go to the closer price, then the newer listing, then the id.
+
+- **Pool:** available cars sharing the make, body type or district, or within
+  a ±35% price band; newest 120, ranked in memory.
+- **Fallback:** the newest other available cars fill up to four, so the section
+  is empty only when the marketplace is.
+- **Limit:** four (`SIMILAR_VEHICLE_LIMIT`).
+- **Source:** may be `ACTIVE` or `RESERVED`. Any other slug is `404
+VEHICLE_NOT_FOUND`. The response is `Cache-Control: public, max-age=60`, and
+  the route sits behind the same public-read limiter as the page.
+- **Web:** `/car/[slug]` fetches the section with the page's own tags and
+  renders `SimilarVehicles` (C103): the grid `VehicleCard`, dealer strip
+  included. If the fetch fails, the page renders without the section.
+- The OpenAPI search examples now carry R71's `availability` and `available`.
+
+### Files
+
+- `packages/contracts/src/public.ts`: `SIMILAR_VEHICLE_LIMIT`,
+  `SimilarVehiclesResponse`.
+- `apps/api/src/modules/search/`:
+  - `search.similar.ts`
+  - the repository's `similarSource`, `similarPool`, `similarPoolWhere` and
+    `newestAvailable`, and `cardInclude.dealer.district`
+  - `service.similar` and `traitsOf`
+  - `routes/get-vehicle-similar.ts`
+  - the `getSimilarVehicles` doc operation
+- `apps/web/src/components/vehicle/similar-vehicles/` and
+  `app/(public)/car/[slug]/page.tsx`
+
+### Tests
+
+- `apps/api/tests/unit/modules/search/search.similar.test.ts`: each weight,
+  unknowns, tie-breaks, order independence, the limit and the pool's `where`.
+- `search.test.ts`: the service's 404, the fallback without repeats, no filler
+  when four are found, and the route list.
+- `apps/api/tests/public-similar-vehicles.test.ts` (11): the ranking,
+  exclusions, available-only, at most four, determinism, the dealer strip, a
+  reserved source, 404s and 400s, and the cache header.
+- `apps/web/tests/unit/components/vehicle/vehicle-page.test.tsx`: the section
+  renders, and is left out when empty or failed.

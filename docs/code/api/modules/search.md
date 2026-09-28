@@ -280,3 +280,59 @@ total, so the same request always answers in the same order.
 Only the place narrows it, never the other filters: choosing a row _replaces_
 the brand and model, so counting under the current ones would hide exactly what
 a buyer is typing to reach.
+
+## `apps/api/src/modules/search/search.similar.ts`
+
+### `export function similarityScore(source, candidate)`
+
+Similar vehicles (**R73**, landing F084) are a small deterministic score, not
+a model:
+
+| Trait in common               | Weight |
+| ----------------------------- | ------ |
+| Same model (of the same make) | +4     |
+| Same make                     | +3     |
+| Same body type                | +3     |
+| Same district                 | +2     |
+| Price within ±20%             | +2     |
+| Same fuel                     | +1     |
+| Same transmission             | +1     |
+| Manufacturing year within ±2  | +1     |
+
+A model name only counts under the same make, so a "Creta" typed by another
+brand's dealer scores nothing. Make and model compare case-insensitively
+because they are dealer-typed text (D1, R46). An unknown value never matches
+anything, not even another unknown.
+
+The weights come from the brief. The domain data gives no reason to move them:
+make, model and body type are the fields a buyer filters on first, and district
+is the only location a car has. They sit in one exported table, so tuning them
+is one line, and the tests assert each weight separately.
+
+### `export function rankSimilar(source, candidates, traitsOf, limit)`
+
+Ties are broken by the closer price, then the newer listing, then the id, so
+the same inputs give the same order in any arrival order. A test reverses the
+pool to prove it. The source itself is skipped even if the pool returns it.
+
+## `apps/api/src/modules/search/search.repository.ts` — similar vehicles
+
+### `export function similarPoolWhere(source)`
+
+The candidate pool is **available** cars only (`PUBLIC_AVAILABLE_LISTING_WHERE`):
+a suggestion must lead somewhere a buyer can act, so reserved, sold and
+withdrawn cars are never candidates. The pool excludes the source and takes
+anything sharing the make, the body type, the district, or a ±35% price band.
+That is wider than the ±20% that scores, so a car scoring on price is always
+in the pool. It keeps the newest 120, then ranks in memory: one indexed query,
+no per-candidate work, and no full scan of the marketplace.
+
+### `async similarSource(slug)` · `async newestAvailable(excludeIds, take)`
+
+The source may be `ACTIVE` or `RESERVED`, because a reserved car's page still
+shows suggestions. Anything else is the same 404 the page gives. When fewer
+than four candidates exist, the service fills the rest with the newest other
+available cars, excluding the source and those already chosen. That is the
+last step of broadening: same model, then same make, body type, price and
+district through the score, then anything on sale. So the section is never
+empty while the marketplace is not.

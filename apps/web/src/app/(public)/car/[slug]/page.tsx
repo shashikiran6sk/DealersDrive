@@ -1,4 +1,4 @@
-import { PublicVehicleDetail } from '@dealers-drive/contracts';
+import { PublicVehicleDetail, SimilarVehiclesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -7,6 +7,7 @@ import { Suspense } from 'react';
 import { Plate } from '@/components/ui/primitives';
 import { AvailabilityNotice } from '@/components/vehicle/availability-notice';
 import { PriceBlock } from '@/components/vehicle/price-block';
+import { SimilarVehicles } from '@/components/vehicle/similar-vehicles';
 import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
 import { AvailabilityBadge, availabilityLabel } from '@/components/vehicle/vehicle-card';
@@ -29,6 +30,20 @@ async function loadVehicle(slug: string): Promise<PublicVehicleDetail | null> {
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 400)) return null;
     throw error;
+  }
+}
+
+async function loadSimilar(slug: string): Promise<SimilarVehiclesResponse['data']> {
+  try {
+    const { data } = await apiGetParsed(
+      SimilarVehiclesResponse,
+      `/v1/vehicles/${encodeURIComponent(slug)}/similar`,
+      { revalidate: 60, tags: [VEHICLES_TAG, vehicleTag(slug)] },
+    );
+    return data;
+  } catch (error) {
+    console.error('[vehicle] similar vehicles unavailable', error);
+    return [];
   }
 }
 
@@ -57,6 +72,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
   const vehicle = await loadVehicle(slug);
   if (!vehicle) notFound();
   const available = vehicle.availability === 'AVAILABLE';
+  const similar = await loadSimilar(vehicle.slug);
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 pt-[22px] pb-[88px] lg:pb-[60px]">
@@ -128,6 +144,12 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           <VdpDealerCard dealer={vehicle.dealer} />
         </aside>
       </div>
+
+      {similar.length > 0 ? (
+        <div className="mt-[44px]">
+          <SimilarVehicles vehicles={similar} />
+        </div>
+      ) : null}
     </div>
   );
 }

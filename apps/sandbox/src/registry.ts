@@ -2028,6 +2028,21 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'home-discoveryrow',
   },
+  {
+    id: 'C103',
+    name: 'SimilarVehicles',
+    source: 'apps/web/src/components/vehicle/similar-vehicles/similar-vehicles.tsx',
+    category: 'Vehicle',
+    ownership: 'Feature-shared',
+    purpose:
+      'The foot of a vehicle page (R73, F084): "Similar vehicles" — up to four available cars from GET /v1/vehicles/:slug/similar, as ordinary VehicleCards with the dealer strip. Renders nothing when empty.',
+    aliases: ['RelatedCars', 'SimilarCars', 'Recommendations', 'similar-vehicles'],
+    features: ['R73', 'F084'],
+    props: ['vehicles'],
+    states: ['four', 'fewer', 'none (nothing)', 'mobile'],
+    reusable: true,
+    storyId: 'vehicle-similarvehicles',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

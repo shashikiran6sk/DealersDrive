@@ -892,6 +892,19 @@ export const PublicVehiclesResponse = z.object({
 });
 export type PublicVehiclesResponse = z.infer<typeof PublicVehiclesResponse>;
 
+/**
+ * Cars like the one on a vehicle page (**R73**, lands F084): a few available
+ * cars, ranked by `search.similar.ts`, never the car itself and never one a
+ * buyer cannot act on. The same card as everywhere else, dealer strip included,
+ * because these are other dealerships' cars as often as not.
+ */
+export const SIMILAR_VEHICLE_LIMIT = 4;
+
+export const SimilarVehiclesResponse = z.object({
+  data: z.array(VehicleCardDto).max(SIMILAR_VEHICLE_LIMIT),
+});
+export type SimilarVehiclesResponse = z.infer<typeof SimilarVehiclesResponse>;
+
 /** A listing's public address, as `/car/{slug}` carries it back in (**F082**). */
 export const VehicleSlugParam = z
   .object({
