@@ -40,6 +40,7 @@ const INPUT_SCHEMA_NAMES = [
   'UpdateEnquiryInput',
   'CreateVehicleInput',
   'UpdateVehicleInput',
+  'WithdrawListingInput',
   'VehicleSuggestQuery',
   'DealerInventoryQuery',
   'AdminListingQuery',

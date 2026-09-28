@@ -6,16 +6,26 @@ The notes below belong to the files named under each heading. Each heading is th
 declaration the note sits above.
 
 A listing is a vehicle's life on the marketplace (**F064**, as revised by
-**R47**). There is one per vehicle, created with it as `DRAFT`, and only
-`ACTIVE` is public.
+**R47** and **R69**). There is one per vehicle, created with it as `DRAFT`.
 
 ```
-DRAFT ──submit──▶ PENDING_REVIEW ──approve──▶ ACTIVE ──mark sold──▶ SOLD
-                    │    ▲    │                  │
-       request      │    │    └──reject──▶ REJECTED
-       changes      ▼    │ resubmit              └──remove──▶ REMOVED
-               CHANGES_REQUESTED
+DRAFT ──submit──▶ PENDING_REVIEW ──approve──▶ ACTIVE ◀──reactivate── RESERVED
+                    │    ▲    │               │ │ │  ──reserve──────▶   │ │
+       request      │    │    └─reject─▶ REJECTED │ └─mark sold─▶ SOLD ◀──┘ │
+       changes      ▼    │ resubmit             │                          │
+               CHANGES_REQUESTED                └─withdraw─▶ WITHDRAWN ◀────┘
+                                                   ◀──relist──┘
 ```
+
+Once a car has been live, four states are the ones a buyer can tell apart
+(**R69**):
+
+| State       | Meaning                                         | Way out                           |
+| ----------- | ----------------------------------------------- | --------------------------------- |
+| `ACTIVE`    | On sale                                         | reserve, mark sold, withdraw      |
+| `RESERVED`  | Held for a buyer — on show, not available       | reactivate, mark sold, withdraw   |
+| `SOLD`      | Sold. History, never back on sale               | none                              |
+| `WITHDRAWN` | Taken off sale unsold (was `REMOVED` until R69) | relist, straight back to `ACTIVE` |
 
 ## `apps/api/src/modules/listings/listing.state.ts`
 
@@ -33,8 +43,19 @@ before it looks at the state. The wrong actor is a `403`; the wrong state is a
 `409` whose code names the decision (`LISTING_NOT_SUBMITTABLE`,
 `LISTING_NOT_APPROVABLE`, …) and whose body carries `listingStatus`.
 
-`REJECTED`, `SOLD` and `REMOVED` have no way out. A rejected car is kept, with
-the moderator's reason, rather than deleted — the history is the point.
+`REJECTED` and `SOLD` have no way out. A rejected car is kept, with the
+moderator's reason, rather than deleted — the history is the point. A sale
+recorded by mistake is an administrative correction, not a toggle, which is why
+no event leaves `SOLD`.
+
+Reserve, reactivate, mark sold and relist are the dealership's alone; withdraw
+may also be an admin's, as `remove` was before it. Only three moves reach
+`ACTIVE` — approve, reactivate and relist — and the last two start from a state
+that was itself reached from a reviewed, photographed listing whose data cannot
+be edited outside `DRAFT` and `CHANGES_REQUESTED`, so nothing unreviewed is ever
+published. `listing.state.test.ts` pins that list, and holds the contracts'
+`LISTING_LIFECYCLE_FROM` — the console's copy of which moves exist — equal to
+this table.
 
 ### `export async function transition(tx, audit, listing, event, actor, options)`
 
@@ -51,8 +72,17 @@ Three guarantees, all inside the caller's transaction:
    and after and the moderator's reason, so the log cannot describe a decision
    that rolled back.
 3. **A terminal state releases the registration.** `vehicles.releasedAt` is set
-   on `REJECTED`, `SOLD` and `REMOVED`, which takes the vehicle out of the
-   partial unique index and lets the plate be entered again (F056).
+   on `REJECTED` and `SOLD`, which takes the vehicle out of the partial unique
+   index and lets the plate be entered again (F056). `WITHDRAWN` is not
+   terminal and keeps the plate, so a relist can never collide with a car
+   listed meanwhile; a car genuinely gone is marked sold.
+
+The stamps are chosen by the **event**, not the target state: approve and
+reactivate both reach `ACTIVE`, but only approve is a moderator's decision and
+writes `decidedBy`/`decidedAt`. `reservedAt` is when the current reservation
+began and is cleared by reactivate or relist; `withdrawnAt`, the withdrawal
+reason and note are cleared by relist. The audit log keeps every earlier value,
+with the reason and whether there was a note — not the note itself.
 
 `publishedAt` is stamped the first time a listing goes live and never moved;
 `submittedAt` is the first submission and `lastSubmittedAt` the latest, which is

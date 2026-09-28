@@ -4,7 +4,11 @@ export const HISTORY_LABELS: Record<string, string> = {
   'listing.changes_requested': 'Changes requested',
   'listing.rejected': 'Rejected',
   'listing.approved': 'Approved and published',
+  'listing.reserved': 'Reserved for a buyer',
+  'listing.reactivated': 'Back on sale after a reservation',
   'listing.marked_sold': 'Marked sold',
+  'listing.withdrawn': 'Withdrawn by the dealer',
+  'listing.relisted': 'Relisted by the dealer',
   'listing.removed': 'Removed from the marketplace',
 };
 

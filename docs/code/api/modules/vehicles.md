@@ -140,3 +140,27 @@ by a search that matches the plate with separators stripped (`ka-01-ab` finds
 by the filter and the search: the tabs show how many vehicles are in each state,
 not how many match what was typed, and switching tab never empties the tab bar.
 `ALL` is their sum.
+
+### `async lifecycle(actor, vehicleId, action, withdrawal?)`
+
+The five moves a dealership makes once a car has been live — reserve,
+reactivate, mark sold, withdraw, relist (**R69**) — in one method, because they
+differ only in the event they hand to `transition()`. Each has its own route
+file, built by `apps/api/src/modules/vehicles/routes/lifecycle.ts`, rather than one
+route taking an action name, so the reference lists five operations a client
+can read, and nothing resembles "set the status".
+
+It takes the listing row `FOR UPDATE` first, exactly as `submit` does, so two
+moves on one car serialise: a reservation and a sale pressed together either
+both land in order (`ACTIVE → RESERVED → SOLD`) or the second is refused with
+the state it found. `assertTransition` runs before anything is written, so a
+refused move changes nothing.
+
+**Relist reclaims the registration.** A withdrawal made under R69 keeps the
+plate, so a relist normally has nothing to do here. A listing `REMOVED` before
+R69 did release it; relisting that one clears `releasedAt`, which re-enters it
+into both partial unique indexes. If another dealership has claimed the same
+car since, the index refuses with `P2002` and the move is answered as
+`409 DUPLICATE_REGISTRATION`, the same sentence `submit` uses and for the same
+reason — it does not say who has it. The transaction rolls back, so the listing
+stays `WITHDRAWN`.

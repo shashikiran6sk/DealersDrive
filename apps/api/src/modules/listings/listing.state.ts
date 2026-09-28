@@ -1,4 +1,4 @@
-import type { Listing, ListingStatus } from '@prisma/client';
+import type { Listing, ListingStatus, WithdrawalReason } from '@prisma/client';
 
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { Tx } from '../../platform/db/prisma.js';
@@ -7,10 +7,20 @@ import {
   LISTING_STATE_CHANGED,
   REASON_REQUIRED,
   TRANSITION_REFUSALS,
+  WITHDRAWAL_REASON_REQUIRED,
 } from './listings.messages.js';
 
 export type ListingEvent =
-  'submit' | 'resubmit' | 'requestChanges' | 'reject' | 'approve' | 'markSold' | 'remove';
+  | 'submit'
+  | 'resubmit'
+  | 'requestChanges'
+  | 'reject'
+  | 'approve'
+  | 'reserve'
+  | 'reactivate'
+  | 'markSold'
+  | 'withdraw'
+  | 'relist';
 
 export type ListingActorType = 'DEALER' | 'ADMIN';
 
@@ -63,23 +73,44 @@ export const LISTING_TRANSITIONS: Record<ListingEvent, TransitionRule> = {
     action: 'listing.approved',
     needsReason: false,
   },
-  markSold: {
+  reserve: {
     from: ['ACTIVE'],
+    to: 'RESERVED',
+    actors: ['DEALER'],
+    action: 'listing.reserved',
+    needsReason: false,
+  },
+  reactivate: {
+    from: ['RESERVED'],
+    to: 'ACTIVE',
+    actors: ['DEALER'],
+    action: 'listing.reactivated',
+    needsReason: false,
+  },
+  markSold: {
+    from: ['ACTIVE', 'RESERVED'],
     to: 'SOLD',
     actors: ['DEALER'],
     action: 'listing.marked_sold',
     needsReason: false,
   },
-  remove: {
-    from: ['ACTIVE'],
-    to: 'REMOVED',
+  withdraw: {
+    from: ['ACTIVE', 'RESERVED'],
+    to: 'WITHDRAWN',
     actors: ['DEALER', 'ADMIN'],
-    action: 'listing.removed',
+    action: 'listing.withdrawn',
+    needsReason: false,
+  },
+  relist: {
+    from: ['WITHDRAWN'],
+    to: 'ACTIVE',
+    actors: ['DEALER'],
+    action: 'listing.relisted',
     needsReason: false,
   },
 };
 
-export const RELEASING_STATUSES: readonly ListingStatus[] = ['REJECTED', 'SOLD', 'REMOVED'];
+export const RELEASING_STATUSES: readonly ListingStatus[] = ['REJECTED', 'SOLD'];
 
 export function nextStatus(
   status: ListingStatus,
@@ -110,41 +141,57 @@ export function assertTransition(
   return to;
 }
 
+export interface Withdrawal {
+  reason: WithdrawalReason;
+  note?: string | null | undefined;
+}
+
 function stampsFor(
   listing: Listing,
-  to: ListingStatus,
+  event: ListingEvent,
   actor: ListingActor,
   reason: string | null,
+  withdrawal: Withdrawal | null,
   now: Date,
 ) {
-  switch (to) {
-    case 'PENDING_REVIEW':
+  switch (event) {
+    case 'submit':
+    case 'resubmit':
       return {
         submittedAt: listing.submittedAt ?? now,
         lastSubmittedAt: now,
         submissionCount: listing.submissionCount + 1,
       };
-    case 'CHANGES_REQUESTED':
-    case 'REJECTED':
+    case 'requestChanges':
+    case 'reject':
       return { decisionReason: reason, decidedBy: actor.id, decidedAt: now };
-    case 'ACTIVE':
+    case 'approve':
       return {
         publishedAt: listing.publishedAt ?? now,
         decisionReason: null,
         decidedBy: actor.id,
         decidedAt: now,
       };
-    case 'SOLD':
+    case 'reserve':
+      return { reservedAt: now };
+    case 'reactivate':
+      return { reservedAt: null };
+    case 'markSold':
       return { soldAt: now };
-    case 'REMOVED':
-      return { removedAt: now };
-    case 'DRAFT':
-      return {};
+    case 'withdraw':
+      return {
+        withdrawnAt: now,
+        withdrawalReason: withdrawal?.reason ?? null,
+        withdrawalNote: withdrawal?.note?.trim() || null,
+      };
+    case 'relist':
+      return { reservedAt: null, withdrawnAt: null, withdrawalReason: null, withdrawalNote: null };
   }
 }
 
 export interface TransitionOptions {
   reason?: string | null;
+  withdrawal?: Withdrawal | null;
   now?: Date;
 }
 
@@ -160,11 +207,15 @@ export async function transition(
   const rule = LISTING_TRANSITIONS[event];
   const reason = options.reason?.trim() ?? null;
   if (rule.needsReason && !reason) throw new DomainError('REASON_REQUIRED', REASON_REQUIRED);
+  const withdrawal = options.withdrawal ?? null;
+  if (event === 'withdraw' && !withdrawal) {
+    throw new DomainError('WITHDRAWAL_REASON_REQUIRED', WITHDRAWAL_REASON_REQUIRED);
+  }
 
   const now = options.now ?? new Date();
   const moved = await tx.listing.updateMany({
     where: { id: listing.id, status: listing.status },
-    data: { status: to, ...stampsFor(listing, to, actor, reason, now) },
+    data: { status: to, ...stampsFor(listing, event, actor, reason, withdrawal, now) },
   });
   if (moved.count === 0) throw new ConflictError('LISTING_STATE_CHANGED', LISTING_STATE_CHANGED);
 
@@ -184,7 +235,14 @@ export async function transition(
     entityType: 'Listing',
     entityId: listing.id,
     before: { status: listing.status },
-    after: { status: to, vehicleId: listing.vehicleId, ...(reason ? { reason } : {}) },
+    after: {
+      status: to,
+      vehicleId: listing.vehicleId,
+      ...(reason ? { reason } : {}),
+      ...(withdrawal
+        ? { withdrawalReason: withdrawal.reason, hasNote: Boolean(withdrawal.note?.trim()) }
+        : {}),
+    },
   });
 
   return tx.listing.findUniqueOrThrow({ where: { id: listing.id } });

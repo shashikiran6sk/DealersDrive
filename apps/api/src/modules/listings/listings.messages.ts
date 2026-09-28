@@ -24,14 +24,28 @@ export const TRANSITION_REFUSALS = {
     code: 'LISTING_NOT_APPROVABLE',
     message: 'Only a listing waiting for review can be approved.',
   },
+  reserve: {
+    code: 'LISTING_NOT_RESERVABLE',
+    message: 'Only a car that is on sale can be reserved.',
+  },
+  reactivate: {
+    code: 'LISTING_NOT_RESERVED',
+    message: 'Only a reserved car can be put back on sale.',
+  },
   markSold: {
     code: 'LISTING_NOT_SELLABLE',
-    message: 'Only a live listing can be marked sold.',
+    message: 'Only a car that is on sale or reserved can be marked sold.',
   },
-  remove: {
-    code: 'LISTING_NOT_REMOVABLE',
-    message: 'Only a live listing can be taken off the marketplace.',
+  withdraw: {
+    code: 'LISTING_NOT_WITHDRAWABLE',
+    message: 'Only a car that is on sale or reserved can be withdrawn.',
+  },
+  relist: {
+    code: 'LISTING_NOT_RELISTABLE',
+    message: 'Only a withdrawn listing can be relisted.',
   },
 } as const;
 
 export const REASON_REQUIRED = 'A reason is required for this decision.';
+
+export const WITHDRAWAL_REASON_REQUIRED = 'Choose why the listing is being withdrawn.';

@@ -49,19 +49,22 @@ export const VehicleStatus = z.enum(['DRAFT', 'READY', 'SOLD', 'ARCHIVED']);
 export type VehicleStatus = z.infer<typeof VehicleStatus>;
 
 /**
- * The moderation state machine's own vocabulary (**F064**, as revised by
- * **R47**): a listing is born DRAFT with its vehicle, and only ACTIVE is
- * public. There is no APPROVED (it is spelled ACTIVE) and no EXPIRED until
- * something expires a listing. Mirrors the Prisma enum of the same name.
+ * The state machine's own vocabulary (**F064**, as revised by **R47** and
+ * **R69**): a listing is born DRAFT with its vehicle and goes through review;
+ * once live it is ACTIVE (on sale), RESERVED (on show, not available), SOLD or
+ * WITHDRAWN (taken off sale unsold, and relistable). There is no APPROVED (it
+ * is spelled ACTIVE) and no EXPIRED until something expires a listing. Mirrors
+ * the Prisma enum of the same name, in the same order.
  */
 export const ListingStatus = z.enum([
   'DRAFT',
   'PENDING_REVIEW',
   'CHANGES_REQUESTED',
   'ACTIVE',
+  'RESERVED',
   'REJECTED',
   'SOLD',
-  'REMOVED',
+  'WITHDRAWN',
 ]);
 export type ListingStatus = z.infer<typeof ListingStatus>;
 
@@ -76,11 +79,26 @@ export const DisplayStatus = z.enum([
   'PENDING',
   'CHANGES_REQUESTED',
   'ACTIVE',
+  'RESERVED',
   'REJECTED',
   'SOLD',
-  'REMOVED',
+  'WITHDRAWN',
 ]);
 export type DisplayStatus = z.infer<typeof DisplayStatus>;
+
+/**
+ * Why a dealer withdrew a listing without selling it (**R69**). Operational
+ * and for reporting: the dealership sees it on its own inventory, and no
+ * public response ever carries it.
+ */
+export const WithdrawalReason = z.enum([
+  'NO_LONGER_FOR_SALE',
+  'VEHICLE_ISSUE',
+  'DOCUMENT_ISSUE',
+  'TEMPORARILY_PAUSED',
+  'OTHER',
+]);
+export type WithdrawalReason = z.infer<typeof WithdrawalReason>;
 
 export const DealerStatus = z.enum([
   'DRAFT',
@@ -266,9 +284,18 @@ export const DISPLAY_STATUS_LABELS: Record<DisplayStatus, string> = {
   PENDING: 'Pending review',
   CHANGES_REQUESTED: 'Changes requested',
   ACTIVE: 'Active',
+  RESERVED: 'Reserved',
   REJECTED: 'Rejected',
   SOLD: 'Sold',
-  REMOVED: 'Removed',
+  WITHDRAWN: 'Withdrawn',
+};
+
+export const WITHDRAWAL_REASON_LABELS: Record<WithdrawalReason, string> = {
+  NO_LONGER_FOR_SALE: 'No longer for sale',
+  VEHICLE_ISSUE: 'Issue with the vehicle',
+  DOCUMENT_ISSUE: 'Issue with the documents',
+  TEMPORARILY_PAUSED: 'Paused for now',
+  OTHER: 'Another reason',
 };
 
 export const DISPLAY_STATUS_TONES: Record<DisplayStatus, StatusTone> = {
@@ -276,9 +303,10 @@ export const DISPLAY_STATUS_TONES: Record<DisplayStatus, StatusTone> = {
   PENDING: 'warn',
   CHANGES_REQUESTED: 'warn',
   ACTIVE: 'ok',
+  RESERVED: 'warn',
   REJECTED: 'err',
   SOLD: 'accent',
-  REMOVED: 'neutral',
+  WITHDRAWN: 'neutral',
 };
 
 export const DEALER_STATUS_LABELS: Record<DealerStatus, string> = {

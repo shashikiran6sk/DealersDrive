@@ -203,16 +203,20 @@ describe('what an enquiry carries', () => {
 });
 
 describe('only a car on the marketplace right now', () => {
-  it.each(['SOLD', 'REMOVED', 'REJECTED', 'PENDING_REVIEW', 'DRAFT', 'CHANGES_REQUESTED'] as const)(
-    'refuses a %s listing',
-    async (status) => {
-      const { agent } = await customer();
-      const { slug } = await listing(status);
+  it.each([
+    'SOLD',
+    'WITHDRAWN',
+    'REJECTED',
+    'PENDING_REVIEW',
+    'DRAFT',
+    'CHANGES_REQUESTED',
+  ] as const)('refuses a %s listing', async (status) => {
+    const { agent } = await customer();
+    const { slug } = await listing(status);
 
-      const res = await enquire(agent, { listingSlug: slug }).expect(409);
-      expect(res.body.code).toBe('LISTING_NOT_AVAILABLE');
-    },
-  );
+    const res = await enquire(agent, { listingSlug: slug }).expect(409);
+    expect(res.body.code).toBe('LISTING_NOT_AVAILABLE');
+  });
 
   it('refuses a live listing on a suspended dealership', async () => {
     const { agent } = await customer();

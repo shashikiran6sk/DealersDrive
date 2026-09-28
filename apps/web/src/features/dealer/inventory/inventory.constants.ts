@@ -8,8 +8,9 @@ export const INVENTORY_TABS: { value: ListingStatus | undefined; label: string }
   { value: 'PENDING_REVIEW', label: 'Pending review' },
   { value: 'CHANGES_REQUESTED', label: 'Changes requested' },
   { value: 'ACTIVE', label: 'Active' },
+  { value: 'RESERVED', label: 'Reserved' },
   { value: 'SOLD', label: 'Sold' },
-  { value: 'REMOVED', label: 'Removed' },
+  { value: 'WITHDRAWN', label: 'Withdrawn' },
 ];
 
 export const INVENTORY_TEXT = {

@@ -80,16 +80,27 @@ describe('the dev vehicle seed', () => {
     const slugs = cars.flatMap((car) => (car.listingSlug ? [car.listingSlug] : []));
     expect(new Set(slugs).size).toBe(slugs.length);
     for (const car of cars) {
-      const everLive = ['ACTIVE', 'SOLD', 'REMOVED'].includes(car.status);
+      const everLive = ['ACTIVE', 'RESERVED', 'SOLD', 'WITHDRAWN'].includes(car.status);
       expect(car.listingSlug !== null).toBe(everLive);
       expect(car.publishedAt !== null).toBe(everLive);
     }
   });
 
+  it('stamps each lifecycle state, and gives every withdrawal a reason (R69)', () => {
+    for (const car of cars) {
+      expect(car.reservedAt !== null).toBe(car.status === 'RESERVED');
+      expect(car.soldAt !== null).toBe(car.status === 'SOLD');
+      expect(car.withdrawnAt !== null).toBe(car.status === 'WITHDRAWN');
+      expect(car.withdrawalReason !== null).toBe(car.status === 'WITHDRAWN');
+    }
+    expect(cars.filter((car) => car.status === 'RESERVED')).toHaveLength(12);
+    expect(cars.filter((car) => car.status === 'ACTIVE')).toHaveLength(260);
+  });
+
   it('holds the registration claims the database constraints expect', () => {
     for (const car of cars) {
       expect(car.claimedAt === null).toBe(car.status === 'DRAFT');
-      expect(car.releasedAt !== null).toBe(['SOLD', 'REMOVED', 'REJECTED'].includes(car.status));
+      expect(car.releasedAt !== null).toBe(['SOLD', 'REJECTED'].includes(car.status));
     }
   });
 
@@ -101,7 +112,8 @@ describe('the dev vehicle seed', () => {
       'CHANGES_REQUESTED',
       'REJECTED',
       'SOLD',
-      'REMOVED',
+      'WITHDRAWN',
+      'RESERVED',
     ]) {
       expect(statuses.has(status as never)).toBe(true);
     }

@@ -114,7 +114,14 @@ describe('an approved car', () => {
 });
 
 describe('everything else is a 404', () => {
-  it.each(['DRAFT', 'PENDING_REVIEW', 'CHANGES_REQUESTED', 'REJECTED', 'SOLD', 'REMOVED'] as const)(
+  it.each([
+    'DRAFT',
+    'PENDING_REVIEW',
+    'CHANGES_REQUESTED',
+    'REJECTED',
+    'SOLD',
+    'WITHDRAWN',
+  ] as const)(
     'answers 404 for a listing that is %s, exactly as for one that never existed',
     async (status) => {
       const hidden = await kit.published(a, nextPlate());
@@ -155,7 +162,7 @@ describe('everything else is a 404', () => {
     const path = `/media/by-media/${car.mediaIds[0]!}/1024.webp`;
 
     await h.agent().get(path).expect(200);
-    await h.prisma.listing.update({ where: { id: car.listingId }, data: { status: 'REMOVED' } });
+    await h.prisma.listing.update({ where: { id: car.listingId }, data: { status: 'WITHDRAWN' } });
     await h.agent().get(path).expect(404);
     await h.agent().get(`/v1/vehicles/${car.slug}`).expect(404);
   });

@@ -8,9 +8,10 @@ export const MODERATION_TABS: { value: ListingStatus; label: string }[] = [
   { value: 'PENDING_REVIEW', label: 'Pending review' },
   { value: 'CHANGES_REQUESTED', label: 'Changes requested' },
   { value: 'ACTIVE', label: 'Active' },
+  { value: 'RESERVED', label: 'Reserved' },
   { value: 'REJECTED', label: 'Rejected' },
   { value: 'SOLD', label: 'Sold' },
-  { value: 'REMOVED', label: 'Removed' },
+  { value: 'WITHDRAWN', label: 'Withdrawn' },
   { value: 'DRAFT', label: 'Draft' },
 ];
 

@@ -111,7 +111,7 @@ describe('serve', () => {
 });
 
 describe('serve, for a vehicle image (R45)', () => {
-  it.each(['DRAFT', 'PENDING_REVIEW', 'CHANGES_REQUESTED', 'REJECTED', 'SOLD', 'REMOVED'])(
+  it.each(['DRAFT', 'PENDING_REVIEW', 'CHANGES_REQUESTED', 'REJECTED', 'SOLD', 'WITHDRAWN'])(
     'refuses an image whose listing is %s',
     async (status) => {
       const h = setup({

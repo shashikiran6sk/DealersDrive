@@ -97,9 +97,10 @@ export const VEHICLE_WIZARD_TEXT = {
     PENDING_REVIEW:
       'It is with our team for review. We will arrange the photographs and let you know if anything needs changing.',
     ACTIVE: 'It is live on the marketplace.',
+    RESERVED: 'It is reserved for a buyer, and still shown on the marketplace.',
     REJECTED: 'It was not approved for the marketplace.',
     SOLD: 'It has been marked sold.',
-    REMOVED: 'It has been taken off the marketplace.',
+    WITHDRAWN: 'You have withdrawn it from the marketplace. Relist it from your inventory.',
   },
   changesRequestedTitle: 'Our team asked for changes',
   rejectedTitle: 'Not approved',

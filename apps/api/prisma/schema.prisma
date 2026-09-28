@@ -509,9 +509,9 @@ model Vehicle {
   negotiability PriceNegotiability?
   description   String?
 
-  /// When this vehicle stopped holding its registration number — it was sold,
-  /// removed or rejected (R47). NULL while it holds it, which is every state a
-  /// dealer can still act on.
+  /// When this vehicle stopped holding its registration number — it was sold
+  /// or rejected (R47). NULL while it holds it, which is every state a dealer
+  /// can still act on — a withdrawn car included, so it can be relisted (R69).
   releasedAt DateTime?
   /// When this vehicle first entered review, which is when its registration
   /// stopped being the dealership's private note and became a claim on the
@@ -568,16 +568,25 @@ model Listing {
 
   /// The first submission. `lastSubmittedAt` moves on every resubmission and
   /// orders the moderation queue; this one does not.
-  submittedAt     DateTime?
-  lastSubmittedAt DateTime?
-  submissionCount Int       @default(0)
+  submittedAt      DateTime?
+  lastSubmittedAt  DateTime?
+  submissionCount  Int               @default(0)
   /// When the listing first went live. It is what the public sort uses.
-  publishedAt     DateTime?
+  publishedAt      DateTime?
   /// The public address of the listing (**F075**, **F082**): minted once, at
   /// the first approval, and never reused. The only identifier a buyer sees.
-  slug            String?   @unique
-  soldAt          DateTime?
-  removedAt       DateTime?
+  slug             String?           @unique
+  /// When the current reservation began (**R69**). Cleared when the listing
+  /// goes back on sale; the audit log keeps every earlier one.
+  reservedAt       DateTime?
+  soldAt           DateTime?
+  /// When the dealer took the listing off sale without selling it (**R69**,
+  /// was `removedAt`). Cleared, with the reason and note, on a relist.
+  withdrawnAt      DateTime?
+  /// Why it was withdrawn. Internal: shown to the dealership, never public.
+  withdrawalReason WithdrawalReason?
+  /// The dealer's own words about a withdrawal. Internal, like the reason.
+  withdrawalNote   String?
 
   /// The moderator's last decision, and the words the dealer is shown. A
   /// request for changes or a rejection always carries one; an approval clears it.
@@ -746,14 +755,26 @@ enum EnquiryStatus {
   SPAM
 }
 
+/// `RESERVED` sits after `ACTIVE` so an ascending sort on status puts an
+/// available car ahead of a reserved one (**R69**). `WITHDRAWN` was `REMOVED`.
 enum ListingStatus {
   DRAFT
   PENDING_REVIEW
   CHANGES_REQUESTED
   ACTIVE
+  RESERVED
   REJECTED
   SOLD
-  REMOVED
+  WITHDRAWN
+}
+
+/// Why a dealer took a listing off sale without selling it (**R69**).
+enum WithdrawalReason {
+  NO_LONGER_FOR_SALE
+  VEHICLE_ISSUE
+  DOCUMENT_ISSUE
+  TEMPORARILY_PAUSED
+  OTHER
 }
 
 enum FuelType {

@@ -98,16 +98,20 @@ describe('what the marketplace lists', () => {
     expect(card?.image?.url).toContain(`/by-media/${chosen.mediaIds[3]!}/`);
   });
 
-  it.each(['DRAFT', 'PENDING_REVIEW', 'CHANGES_REQUESTED', 'REJECTED', 'SOLD', 'REMOVED'] as const)(
-    'leaves out a listing that is %s',
-    async (status) => {
-      const hidden = await kit.published(a, nextPlate());
-      await h.prisma.listing.update({ where: { id: hidden.listingId }, data: { status } });
+  it.each([
+    'DRAFT',
+    'PENDING_REVIEW',
+    'CHANGES_REQUESTED',
+    'REJECTED',
+    'SOLD',
+    'WITHDRAWN',
+  ] as const)('leaves out a listing that is %s', async (status) => {
+    const hidden = await kit.published(a, nextPlate());
+    await h.prisma.listing.update({ where: { id: hidden.listingId }, data: { status } });
 
-      const slugs = (await allCards()).map((card) => card.slug);
-      expect(slugs).not.toContain(hidden.slug);
-    },
-  );
+    const slugs = (await allCards()).map((card) => card.slug);
+    expect(slugs).not.toContain(hidden.slug);
+  });
 
   it('leaves out every listing of a dealership that is no longer active', async () => {
     const suspended = await kit.published(b, nextPlate());

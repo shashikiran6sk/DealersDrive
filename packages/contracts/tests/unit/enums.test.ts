@@ -213,6 +213,7 @@ describe('the label maps', () => {
     ['BODY_TYPE_LABELS', enums.BODY_TYPE_LABELS, enums.BodyType.options],
     ['DISPLAY_STATUS_LABELS', enums.DISPLAY_STATUS_LABELS, enums.DisplayStatus.options],
     ['DEALER_STATUS_LABELS', enums.DEALER_STATUS_LABELS, enums.DealerStatus.options],
+    ['WITHDRAWAL_REASON_LABELS', enums.WITHDRAWAL_REASON_LABELS, enums.WithdrawalReason.options],
   ];
 
   it.each(maps)('%s has an entry for every member and no extras', (_name, map, options) => {

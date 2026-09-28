@@ -81,8 +81,11 @@ async function writeVehicle(car: DevVehicle, dealerId: string): Promise<void> {
     submissionCount: car.submittedAt ? 1 : 0,
     publishedAt: car.publishedAt,
     slug: car.listingSlug,
+    reservedAt: car.reservedAt,
     soldAt: car.soldAt,
-    removedAt: car.removedAt,
+    withdrawnAt: car.withdrawnAt,
+    withdrawalReason: car.withdrawalReason,
+    withdrawalNote: null,
     decisionReason: car.decisionReason,
     decidedAt: car.decisionReason || car.publishedAt ? (car.publishedAt ?? car.submittedAt) : null,
   };

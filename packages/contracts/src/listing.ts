@@ -6,6 +6,8 @@ import {
   type DisplayStatus,
   ListingStatus,
   StatusTone,
+  WITHDRAWAL_REASON_LABELS,
+  WithdrawalReason,
 } from './enums.js';
 
 /**
@@ -48,6 +50,65 @@ export function listingStatusTone(status: ListingStatus): StatusTone {
 }
 
 /**
+ * The five moves a dealership makes on a listing once it has been live
+ * (**R69**). Each is its own route — there is no "set status" — and each maps
+ * one-for-one onto an event of the API's state machine, which is the authority;
+ * this table is the console's copy of it, and a test in the API holds the two
+ * together.
+ *
+ * There is deliberately no way back from SOLD: a sold car is history, and a
+ * sale recorded by mistake is an administrative correction, not a toggle.
+ */
+export const ListingLifecycleAction = z.enum([
+  'reserve',
+  'reactivate',
+  'markSold',
+  'withdraw',
+  'relist',
+]);
+export type ListingLifecycleAction = z.infer<typeof ListingLifecycleAction>;
+
+export const LISTING_LIFECYCLE_FROM: Record<ListingLifecycleAction, readonly ListingStatus[]> = {
+  reserve: ['ACTIVE'],
+  reactivate: ['RESERVED'],
+  markSold: ['ACTIVE', 'RESERVED'],
+  withdraw: ['ACTIVE', 'RESERVED'],
+  relist: ['WITHDRAWN'],
+};
+
+/** Which lifecycle moves a listing in `status` offers, in the order the console shows them. */
+export function lifecycleActionsOf(status: ListingStatus): ListingLifecycleAction[] {
+  return ListingLifecycleAction.options.filter((action) =>
+    LISTING_LIFECYCLE_FROM[action].includes(status),
+  );
+}
+
+export function withdrawalReasonLabel(reason: WithdrawalReason): string {
+  return WITHDRAWAL_REASON_LABELS[reason];
+}
+
+/**
+ * The body of `POST /v1/dealer/vehicles/:id/withdraw`. The reason is one of a
+ * fixed set so it can be counted; the note is the dealer's own words, kept for
+ * the dealership and never published.
+ */
+export const WithdrawListingInput = z
+  .object({
+    reason: WithdrawalReason,
+    note: z.string().trim().max(500).optional(),
+  })
+  .strict();
+export type WithdrawListingInput = z.infer<typeof WithdrawListingInput>;
+
+/** A withdrawal as the dealership sees it on its own listing. */
+export const ListingWithdrawal = z.object({
+  reason: WithdrawalReason,
+  reasonLabel: z.string(),
+  note: z.string().nullable(),
+});
+export type ListingWithdrawal = z.infer<typeof ListingWithdrawal>;
+
+/**
  * The listing block on a vehicle, as its own dealership sees it.
  *
  * `reason` is the moderator's words on a request for changes or a rejection,
@@ -62,8 +123,16 @@ export const DealerListing = z.object({
   reason: z.string().nullable(),
   submittedAt: z.string().nullable(),
   publishedAt: z.string().nullable(),
+  /** The public address once it has been live, for the console's "View on site". */
+  slug: z.string().nullable(),
+  reservedAt: z.string().nullable(),
+  soldAt: z.string().nullable(),
+  withdrawnAt: z.string().nullable(),
+  withdrawal: ListingWithdrawal.nullable(),
   canEdit: z.boolean(),
   canSubmit: z.boolean(),
   canDelete: z.boolean(),
+  /** The lifecycle moves this listing offers now (**R69**). */
+  actions: z.array(ListingLifecycleAction),
 });
 export type DealerListing = z.infer<typeof DealerListing>;

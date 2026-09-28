@@ -54,7 +54,10 @@ beforeAll(async () => {
   const sold = await kit.published(a, nextPlate());
   await h.prisma.listing.update({ where: { id: sold.listingId }, data: { status: 'SOLD' } });
   const removed = await kit.published(a, nextPlate());
-  await h.prisma.listing.update({ where: { id: removed.listingId }, data: { status: 'REMOVED' } });
+  await h.prisma.listing.update({
+    where: { id: removed.listingId },
+    data: { status: 'WITHDRAWN' },
+  });
   const rejected = await kit.submitted(a, nextPlate());
   await admin
     .post(`/v1/admin/listings/${rejected.listingId}/reject`)
@@ -101,7 +104,10 @@ describe('the directory card', () => {
     const extra = await kit.published(a, nextPlate());
     expect((await directoryCard(a)).carCount).toBe(4);
 
-    await h.prisma.listing.update({ where: { id: extra.listingId }, data: { status: 'REMOVED' } });
+    await h.prisma.listing.update({
+      where: { id: extra.listingId },
+      data: { status: 'WITHDRAWN' },
+    });
     expect((await directoryCard(a)).carCount).toBe(3);
   });
 });
