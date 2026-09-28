@@ -1,5 +1,6 @@
 export type {
   AdminPrincipal,
+  CustomerPrincipal,
   DealerPrincipal,
   Principal,
   SessionResolver,

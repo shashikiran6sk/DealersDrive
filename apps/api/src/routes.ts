@@ -8,6 +8,7 @@ import {
   createPublicAuthRouter,
   createSessionAuthRouter,
 } from './modules/auth/auth.routes.js';
+import { createEnquiriesRouter } from './modules/enquiries/enquiries.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
 import { createPublicDealersRouter } from './modules/dealers/dealers.public.routes.js';
@@ -53,6 +54,11 @@ export function createRoutes(container: Container): Router {
     '/auth/customer',
     container.guards.requireCustomer,
     createCustomerAuthRouter(container.customers),
+  );
+  v1.use(
+    '/enquiries',
+    container.guards.requireCustomer,
+    createEnquiriesRouter(container.enquiries, container.rateLimit),
   );
   v1.use(
     '/auth',

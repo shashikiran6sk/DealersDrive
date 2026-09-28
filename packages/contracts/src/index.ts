@@ -26,6 +26,7 @@ export * from './moderation.js';
 export * from './registration.js';
 export * from './vehicle.js';
 export * from './admin.js';
+export * from './enquiry.js';
 
 /** Bumped when a breaking change ships; surfaced in the API's /health/ready. */
 export const CONTRACTS_VERSION = '1.0.0';

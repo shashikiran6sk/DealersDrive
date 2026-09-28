@@ -11,6 +11,7 @@ import { storageDocs } from '../modules/media/media.docs.js';
 import { moderationDocs } from '../modules/moderation/moderation.docs.js';
 import { searchDocs } from '../modules/search/search.docs.js';
 import { vehicleImagesDocs } from '../modules/vehicle-images/vehicle-images.docs.js';
+import { enquiriesDocs } from '../modules/enquiries/enquiries.docs.js';
 import { vehiclesDocs } from '../modules/vehicles/vehicles.docs.js';
 import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
@@ -25,6 +26,7 @@ const MODULES: ModuleDocs[] = [
   searchDocs,
   dealersDocs,
   vehiclesDocs,
+  enquiriesDocs,
   adminDocs,
   moderationDocs,
   vehicleImagesDocs,
