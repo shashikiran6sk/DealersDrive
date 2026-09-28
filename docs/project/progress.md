@@ -246,7 +246,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R74 — Saved cars live on the server, and survive the lifecycle · revises F087 · ⚠️ new table `saved_vehicles` · `/v1/saved-vehicles` (list, slugs, PUT/DELETE by slug), customer guard, never deleted by the lifecycle · [#197](https://github.com/shashikiran6sk/DealersDrive/pull/197)
 - [x] R75 — The heart, the sign-in that completes it, and the Saved cars page · revises F087/F075/F082 · heart on every card and the VDP, optimistic with rollback, `?save=` login intent, `/saved` grouped Available / Reserved / No longer available · [#198](https://github.com/shashikiran6sk/DealersDrive/pull/198)
 - [x] R76 — The customer's account menu · revises R67/R68/F073 · one round avatar with initials; a menu with name, masked mobile, Saved cars, My enquiries, Logout; keyboard and screen-reader complete · [#199](https://github.com/shashikiran6sk/DealersDrive/pull/199)
-- [~] R77 — Every surface agrees on the lifecycle · revises F066/R69–R76 · audit matrix in feature-map; dealer dashboard gains a Reserved tile
+- [x] R77 — Every surface agrees on the lifecycle · revises F066/R69–R76 · audit matrix in feature-map; dealer dashboard gains a Reserved tile · [#200](https://github.com/shashikiran6sk/DealersDrive/pull/200)
 
 ---
 
