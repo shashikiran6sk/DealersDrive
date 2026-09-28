@@ -141,10 +141,10 @@ revision · `[⛔]` withdrawn
 - [x] F081 — Homepage & hero search · as revised by **R72** — hero search into `/cars`, four discovery rows
 - [x] F082 — Vehicle detail page · `/car/[slug]`, ACTIVE only, 404 otherwise; no enquiry, report or save (deferred)
 - [x] F083 — Vehicle gallery & lightbox · **R48, R49** — the §2.9 strip under a blueprint main image, and the §2.10 lightbox with its numbered rail, on the `Dialog` primitive
-- [~] F084 — Similar vehicles · as revised by **R73** — by slug, available cars only, the grid card
+- [x] F084 — Similar vehicles · as revised by **R73** — by slug, available cars only, the grid card
 - [~] F085 — Dealer directory
 - [x] F086 — Dealer portfolio · header, info row, the live inventory (R48), and its filter rail, sheet and sort through the same search as `/cars` · [#174](https://github.com/shashikiran6sk/DealersDrive/pull/174)
-- [ ] F087 — Saved cars
+- [~] F087 — Saved cars · as revised by **R74**/**R75** — server-backed, per customer, not `localStorage`
 
 ## Tier 13 — Enquiries
 
@@ -242,7 +242,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R70 — The dealer reserves, sells, withdraws and relists from the console · revises F067/R69 · confirmation dialogs, a reason to withdraw, the moves on every inventory row and the vehicle page · [#193](https://github.com/shashikiran6sk/DealersDrive/pull/193)
 - [x] R71 — A reserved car stays on show; a sold or withdrawn one leaves every public surface · revises F075/F076/F082/F086/R48/R64/R69 · visible vs available predicates, `availability` on card and page, `available` count, reserved card with no link, `409 LISTING_RESERVED` · [#194](https://github.com/shashikiran6sk/DealersDrive/pull/194)
 - [x] R72 — The homepage searches the marketplace, and shows what is on it · lands F081 · hero District/Brand/Model/Budget → `/cars` URL; four `/v1/vehicles` rows, available cars only · [#195](https://github.com/shashikiran6sk/DealersDrive/pull/195)
-- [~] R73 — Similar vehicles on the vehicle page · lands F084 · `GET /v1/vehicles/:slug/similar`, available only, deterministic score, newest-available fallback
+- [x] R73 — Similar vehicles on the vehicle page · lands F084 · `GET /v1/vehicles/:slug/similar`, available only, deterministic score, newest-available fallback · [#196](https://github.com/shashikiran6sk/DealersDrive/pull/196)
+- [~] R74 — Saved cars live on the server, and survive the lifecycle · revises F087 · ⚠️ new table `saved_vehicles` · `/v1/saved-vehicles` (list, slugs, PUT/DELETE by slug), customer guard, never deleted by the lifecycle
 
 ---
 

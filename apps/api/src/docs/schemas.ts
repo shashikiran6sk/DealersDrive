@@ -36,6 +36,7 @@ const INPUT_SCHEMA_NAMES = [
   'CustomerSignUpInput',
   'CreateEnquiryInput',
   'CustomerEnquiryQuery',
+  'SavedVehiclesQuery',
   'DealerEnquiryQuery',
   'UpdateEnquiryInput',
   'CreateVehicleInput',

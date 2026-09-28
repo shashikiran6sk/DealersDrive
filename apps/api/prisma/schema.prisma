@@ -43,11 +43,12 @@ model User {
   lastLoginAt     DateTime?
   createdAt       DateTime   @default(now())
 
-  sessions    Session[]
-  memberships DealerMember[]
-  identities  OAuthIdentity[]
-  roles       UserRole[]
-  enquiries   Enquiry[]
+  sessions      Session[]
+  memberships   DealerMember[]
+  identities    OAuthIdentity[]
+  roles         UserRole[]
+  enquiries     Enquiry[]
+  savedVehicles SavedVehicle[]
 
   @@map("users")
 }
@@ -601,6 +602,7 @@ model Listing {
   dealer    Dealer         @relation(fields: [dealerId], references: [id], onDelete: Cascade)
   checks    ListingCheck[]
   enquiries Enquiry[]
+  savedBy   SavedVehicle[]
 
   /// A dealership's inventory filtered by status, most recently touched first.
   @@index([dealerId, status, updatedAt])
@@ -745,6 +747,33 @@ model Enquiry {
   /// The listing's own enquiries, and the cascade when a listing goes.
   @@index([listingId])
   @@map("enquiries")
+}
+
+/// A car a signed-in customer has saved (**R74**, revises F087).
+///
+/// Server-backed, not `localStorage`: a customer's shortlist follows their
+/// account to any device. One row per customer per listing — the pair is the
+/// primary way in and unique, so a double tap saves once.
+///
+/// **Never deleted by the lifecycle.** A saved car that is reserved, sold or
+/// withdrawn keeps its row; the Saved cars page says what became of it rather
+/// than the list silently shrinking. Only the customer removes a row (or the
+/// cascade when an account or a listing is deleted outright).
+model SavedVehicle {
+  id         String   @id @default(uuid()) @db.Uuid
+  customerId String   @db.Uuid
+  listingId  String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  customer User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  /// One save per customer per car, and the customer's list, newest first.
+  @@unique([customerId, listingId])
+  @@index([customerId, createdAt])
+  /// The cascade when a listing goes, and "how many saved this car".
+  @@index([listingId])
+  @@map("saved_vehicles")
 }
 
 /// Mirrors `EnquiryStatus` in contracts, SPAM included (DESIGN-SPEC §3.15).

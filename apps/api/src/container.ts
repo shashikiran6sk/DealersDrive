@@ -14,6 +14,10 @@ import {
   createEnquiriesService,
   type EnquiriesService,
 } from './modules/enquiries/enquiries.service.js';
+import {
+  createSavedVehiclesService,
+  type SavedVehiclesService,
+} from './modules/saved-vehicles/saved-vehicles.service.js';
 import type { OAuthProvider } from './modules/auth/oauth.port.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
 import {
@@ -98,6 +102,7 @@ export interface Container {
   readonly phone: PhoneService;
   readonly phoneSignIn: PhoneSignInService;
   readonly enquiries: EnquiriesService;
+  readonly savedVehicles: SavedVehiclesService;
   readonly customers: CustomerAuthService;
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
@@ -188,6 +193,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   });
   const vehicleImages = createVehicleImagesService({ prisma, storage, audit, config });
   const enquiries = createEnquiriesService({ prisma, audit });
+  const savedVehicles = createSavedVehiclesService({ prisma, audit });
   const moderation = createModerationService({
     prisma,
     repo: createModerationRepository(prisma),
@@ -226,6 +232,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     moderation,
     vehicleImages,
     enquiries,
+    savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };
 }
