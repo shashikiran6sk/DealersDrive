@@ -67,23 +67,28 @@ export default async function CarsPage({
           <Link href="/">{CARS_TEXT.home}</Link> / {CARS_TEXT.breadcrumb}
         </nav>
 
-        <div className="mb-[10px] flex flex-wrap items-center gap-3">
-          <div className="flex flex-wrap items-baseline gap-3">
-            <h1 className="text-[34px]">{place ? CARS_TEXT.titleIn(place) : CARS_TEXT.title}</h1>
-            <span className="text-[14px] ink-muted tnum" role="status">
-              {CARS_TEXT.count(listing.page.total)}
-            </span>
-          </div>
+        <div className="mb-[14px] flex flex-wrap items-baseline gap-3">
+          <h1 className="text-[34px]">{place ? CARS_TEXT.titleIn(place) : CARS_TEXT.title}</h1>
+          <span className="text-[14px] ink-muted tnum" role="status">
+            {CARS_TEXT.count(listing.page.total)}
+          </span>
+        </div>
+
+        <div
+          role="group"
+          aria-label={CARS_TEXT.controlsLabel}
+          className="mb-[14px] flex flex-wrap items-center gap-2"
+        >
+          <CarSearchBox
+            params={params}
+            basePath={CARS_PATH}
+            {...(place ? { districtName: place } : {})}
+          />
+          <DistrictScope locations={locations} />
           <SearchToolbar
             params={params}
             basePath={CARS_PATH}
-            searchBox={
-              <CarSearchBox
-                params={params}
-                basePath={CARS_PATH}
-                {...(place ? { districtName: place } : {})}
-              />
-            }
+            showSearch={false}
             leading={
               <MobileFilterSheet
                 key="filters"
@@ -96,8 +101,7 @@ export default async function CarsPage({
           />
         </div>
 
-        <div className="mb-[14px] flex flex-col gap-[10px]">
-          <DistrictScope locations={locations} />
+        <div className="mb-[14px] empty:hidden">
           <AppliedFilters facets={listing.facets} params={params} basePath={CARS_PATH} />
         </div>
 

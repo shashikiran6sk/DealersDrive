@@ -6,7 +6,6 @@ export interface SearchToolbarProps {
   params: VehicleSearchParams;
   basePath: string;
   showSearch?: boolean;
-  searchBox?: ReactNode;
   searchPlaceholder?: string;
   idPrefix?: string;
   leading?: ReactNode;
