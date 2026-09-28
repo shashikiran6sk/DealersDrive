@@ -8,6 +8,8 @@ import {
   type PublicVehicleQuery,
   type PublicVehiclesResponse,
   type RangePreset,
+  SIMILAR_VEHICLE_LIMIT,
+  type SimilarVehiclesResponse,
   type VehicleFacets,
 } from '@dealers-drive/contracts';
 import type { Prisma } from '@prisma/client';
@@ -42,7 +44,8 @@ import {
 } from './search.filters.js';
 import { toPublicVehicleDetail, toVehicleCard } from './search.mapper.js';
 import { DEALER_NOT_FOUND, SUGGEST_COUNT, VEHICLE_NOT_FOUND } from './search.messages.js';
-import type { SearchRepository } from './search.repository.js';
+import type { CardRow, SearchRepository } from './search.repository.js';
+import { rankSimilar, type SimilarTraits } from './search.similar.js';
 import { rankSuggestions, suggestWhere } from './search.suggest.js';
 
 export interface SearchDeps {
@@ -61,6 +64,21 @@ function withinPreset(
     ...(preset.max === null ? {} : { lte: preset.max }),
   };
   return { AND: [where, { [column]: bounds }] };
+}
+
+export function traitsOf(row: CardRow): SimilarTraits {
+  return {
+    id: row.id,
+    make: row.vehicle.make,
+    model: row.vehicle.model,
+    bodyType: row.vehicle.bodyType,
+    fuelType: row.vehicle.fuelType,
+    transmission: row.vehicle.transmission,
+    manufacturingYear: row.vehicle.manufacturingYear,
+    pricePaise: row.vehicle.pricePaise,
+    district: row.dealer.district,
+    publishedAt: row.publishedAt,
+  };
 }
 
 export function createSearchService({ repo }: SearchDeps) {
@@ -165,6 +183,28 @@ export function createSearchService({ repo }: SearchDeps) {
       const row = await repo.detail(slug);
       if (!row) throw new NotFoundError(VEHICLE_NOT_FOUND, { code: 'VEHICLE_NOT_FOUND' });
       return toPublicVehicleDetail(row);
+    },
+
+    async similar(slug: string): Promise<SimilarVehiclesResponse> {
+      const row = await repo.similarSource(slug);
+      if (!row) throw new NotFoundError(VEHICLE_NOT_FOUND, { code: 'VEHICLE_NOT_FOUND' });
+      const source = traitsOf(row);
+
+      const ranked = rankSimilar(
+        source,
+        await repo.similarPool(source),
+        traitsOf,
+        SIMILAR_VEHICLE_LIMIT,
+      );
+      const filler =
+        ranked.length < SIMILAR_VEHICLE_LIMIT
+          ? await repo.newestAvailable(
+              [source.id, ...ranked.map((entry) => entry.id)],
+              SIMILAR_VEHICLE_LIMIT - ranked.length,
+            )
+          : [];
+
+      return { data: [...ranked, ...filler].map(toVehicleCard) };
     },
 
     async vehicles(query: PublicVehicleQuery): Promise<PublicVehiclesResponse> {

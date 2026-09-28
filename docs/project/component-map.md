@@ -1344,6 +1344,23 @@ filters on `/cars`, and up to four `VehicleCard`s. It renders nothing when empty
 `Home/HeroSearch` (with `heroFacetsAction` stubbed by
 `apps/sandbox/src/mocks/home-actions.ts`) and `Home/DiscoveryRow`.
 
+### C103 — `SimilarVehicles`
+
+**New at R73** (`components/vehicle/similar-vehicles/`), landing F084. A
+`section` titled "Similar vehicles" at the foot of `/car/[slug]`: a grid of the
+shared `VehicleCard`. It uses the grid variant, with the dealer strip, because
+these are usually other dealerships' cars. The legacy entry named
+`variant="compact"`, but compact is the portfolio's card without a dealer, and
+that would be wrong here. It renders nothing when the list is empty, and the
+page leaves out even its margin.
+
+| Component         | Props      | States                                 |
+| ----------------- | ---------- | -------------------------------------- |
+| `SimilarVehicles` | `vehicles` | four · fewer · none (nothing) · mobile |
+
+**Tests** `apps/web/tests/unit/components/vehicle/vehicle-page.test.tsx`.
+**Sandbox** `Vehicle/SimilarVehicles`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

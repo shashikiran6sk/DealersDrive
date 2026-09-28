@@ -3,6 +3,7 @@ import { DOC_TAGS } from '../../docs/tags.js';
 
 const CARD_EXAMPLE = {
   slug: '2023-hyundai-creta-sx-o-katpadi-3f9a1c2b',
+  availability: 'AVAILABLE',
   title: '2023 Hyundai Creta SX(O)',
   year: 2023,
   priceLabel: '₹14,50,000',
@@ -107,6 +108,7 @@ export const searchDocs: ModuleDocs = {
           example: {
             data: [CARD_EXAMPLE],
             page: { page: 1, limit: 24, total: 1, totalPages: 1 },
+            available: 1,
             facets: FACETS_EXAMPLE,
           },
         },
@@ -140,6 +142,7 @@ export const searchDocs: ModuleDocs = {
           schema: 'PublicVehicleDetail',
           example: {
             slug: CARD_EXAMPLE.slug,
+            availability: 'AVAILABLE',
             title: CARD_EXAMPLE.title,
             year: 2023,
             priceLabel: '₹14,50,000',
@@ -160,6 +163,37 @@ export const searchDocs: ModuleDocs = {
             publishedLabel: 'Listed 26 Sep 2026',
             dealer: { ...CARD_EXAMPLE.dealer, location: 'Katpadi, Vellore' },
           },
+        },
+      ],
+      errors: [400, 404, 429],
+    },
+    {
+      method: 'get',
+      path: '/v1/vehicles/:slug/similar',
+      operationId: 'getSimilarVehicles',
+      tag: DOC_TAGS.vehiclesPublic,
+      summary: 'Cars like this one',
+      description:
+        'Up to four other cars for the foot of a vehicle page (**R73**, lands **F084**). ' +
+        'Only **available** cars are ever returned — an `ACTIVE` listing of an `ACTIVE` ' +
+        'dealership — never a reserved, sold or withdrawn one, and never the car itself, so ' +
+        'every suggestion leads somewhere a buyer can act.\n\n' +
+        '**Deterministic ranking**, in `search.similar.ts`: same model +4, same make +3, same ' +
+        'body type +3, same district +2, price within ±20% +2, same fuel +1, same transmission ' +
+        '+1, year within ±2 +1; ties go to the closer price, then the newer listing, then the ' +
+        'id. Candidates are the available cars sharing the make, the body type, the district or ' +
+        'a ±35% price band. **Fallback:** when fewer than four score, the rest are the newest ' +
+        'other available cars, so the section is never empty while the marketplace is not.\n\n' +
+        'The source may be `ACTIVE` or `RESERVED` — a reserved car\u2019s page still has a ' +
+        'suggestions section. Any other slug is `404 VEHICLE_NOT_FOUND`.',
+      audience: 'public',
+      params: 'VehicleSlugParam',
+      responses: [
+        {
+          status: 200,
+          description: 'At most four cards, most similar first.',
+          schema: 'SimilarVehiclesResponse',
+          example: { data: [CARD_EXAMPLE] },
         },
       ],
       errors: [400, 404, 429],
@@ -193,6 +227,7 @@ export const searchDocs: ModuleDocs = {
           example: {
             data: [CARD_EXAMPLE],
             page: { page: 1, limit: 24, total: 1, totalPages: 1 },
+            available: 1,
             facets: FACETS_EXAMPLE,
           },
         },

@@ -103,10 +103,11 @@ describe('who is public (R71)', () => {
 describe('the router', () => {
   const router = createSearchRouter({} as never, () => (_req, _res, next) => next());
 
-  it("declares the public list, the vehicle page, a dealership's list and the typeahead, in that order", () => {
+  it("declares the public list, the vehicle page, its similar cars, a dealership's list and the typeahead, in that order", () => {
     expect(signaturesOf(router)).toEqual([
       'GET /vehicles',
       'GET /vehicles/:slug',
+      'GET /vehicles/:slug/similar',
       'GET /dealers/:slug/vehicles',
       'GET /search/vehicles',
     ]);
@@ -217,6 +218,59 @@ describe('the vehicle page', () => {
       status: 404,
       code: 'VEHICLE_NOT_FOUND',
     });
+  });
+});
+
+describe('similar vehicles (R73)', () => {
+  function listed(id: string, overrides: Partial<CardRow['vehicle']> = {}): CardRow {
+    const base = row(overrides);
+    return {
+      ...base,
+      id,
+      slug: `car-${id}`,
+      publishedAt: new Date('2026-09-01T00:00:00Z'),
+      dealer: { ...base.dealer, district: 'Vellore' },
+    };
+  }
+
+  it('answers a slug that is not visible with a 404, and asks nothing else', async () => {
+    const similarPool = vi.fn();
+    const repo = {
+      similarSource: vi.fn(async () => null),
+      similarPool,
+    } as unknown as SearchRepository;
+    await expect(createSearchService({ repo }).similar('gone')).rejects.toMatchObject({
+      status: 404,
+      code: 'VEHICLE_NOT_FOUND',
+    });
+    expect(similarPool).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the newest other available cars when too few are alike, without repeats', async () => {
+    const newestAvailable = vi.fn(async () => [listed('n1'), listed('n2')]);
+    const repo = {
+      similarSource: vi.fn(async () => listed('source')),
+      similarPool: vi.fn(async () => [listed('p1', { model: 'Venue' })]),
+      newestAvailable,
+    } as unknown as SearchRepository;
+
+    const { data } = await createSearchService({ repo }).similar('car-source');
+
+    expect(data.map((card) => card.slug)).toEqual(['car-p1', 'car-n1', 'car-n2']);
+    expect(newestAvailable).toHaveBeenCalledWith(['source', 'p1'], 3);
+  });
+
+  it('asks for no filler when the pool already has four', async () => {
+    const newestAvailable = vi.fn();
+    const repo = {
+      similarSource: vi.fn(async () => listed('source')),
+      similarPool: vi.fn(async () => ['a', 'b', 'c', 'd', 'e'].map((id) => listed(id))),
+      newestAvailable,
+    } as unknown as SearchRepository;
+
+    const { data } = await createSearchService({ repo }).similar('car-source');
+    expect(data).toHaveLength(4);
+    expect(newestAvailable).not.toHaveBeenCalled();
   });
 });
 

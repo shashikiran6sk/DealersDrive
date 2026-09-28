@@ -1,4 +1,4 @@
-import type { PublicVehicleDetail } from '@dealers-drive/contracts';
+import type { PublicVehicleDetail, VehicleCardDto } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -52,6 +52,26 @@ function detail(overrides: Partial<PublicVehicleDetail> = {}): PublicVehicleDeta
   };
 }
 
+function serve(car: PublicVehicleDetail, similar: VehicleCardDto[] = []) {
+  apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+    Promise.resolve(path.endsWith('/similar') ? { data: similar } : car),
+  );
+}
+
+function similarCard(slug: string): VehicleCardDto {
+  return {
+    slug,
+    availability: 'AVAILABLE',
+    title: `2022 Kia Seltos ${slug}`,
+    year: 2022,
+    priceLabel: '₹13,20,000',
+    metaLabel: '28,000 km · Petrol · Manual · Arcot',
+    image: null,
+    imageCount: 0,
+    dealer: { name: 'Arcot Car Point', slug: 'arcot-car-point', initials: 'AC', isVerified: true },
+  };
+}
+
 afterEach(() => {
   apiGetParsed.mockReset();
 });
@@ -88,7 +108,7 @@ describe('the price, specifications and dealer', () => {
 
 describe('/car/[slug]', () => {
   it('reads the car by slug and renders the page', async () => {
-    apiGetParsed.mockResolvedValue(detail());
+    serve(detail());
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
 
     expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), `/v1/vehicles/${SLUG}`, {
@@ -107,7 +127,7 @@ describe('/car/[slug]', () => {
   });
 
   it('shows a reserved car plainly as reserved, and offers no enquiry (R71)', async () => {
-    apiGetParsed.mockResolvedValue(detail({ availability: 'RESERVED' }));
+    serve(detail({ availability: 'RESERVED' }));
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
 
     expect(screen.getAllByText('Reserved').length).toBeGreaterThanOrEqual(2);
@@ -120,15 +140,47 @@ describe('/car/[slug]', () => {
   });
 
   it('offers the enquiry on an available car, with no reserved notice', async () => {
-    apiGetParsed.mockResolvedValue(detail());
+    serve(detail());
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
 
     expect(screen.getAllByRole('button', { name: /Enquire/ }).length).toBeGreaterThan(0);
     expect(screen.queryByText(/reserved for another buyer/)).not.toBeInTheDocument();
   });
 
+  it('shows similar vehicles under the page, each with its dealership and a link (R73)', async () => {
+    serve(detail(), [similarCard('a'), similarCard('b')]);
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    expect(apiGetParsed).toHaveBeenCalledWith(expect.anything(), `/v1/vehicles/${SLUG}/similar`, {
+      revalidate: 60,
+      tags: ['vehicles', `vehicle:${SLUG}`],
+    });
+    const section = within(screen.getByRole('region', { name: 'Similar vehicles' }));
+    expect(section.getAllByRole('article')).toHaveLength(2);
+    expect(section.getByRole('link', { name: '2022 Kia Seltos a' })).toHaveAttribute(
+      'href',
+      '/car/a',
+    );
+    expect(section.getAllByText('Arcot Car Point')).toHaveLength(2);
+  });
+
+  it('leaves the section out when there is nothing similar, or the API fails', async () => {
+    serve(detail(), []);
+    const { unmount } = render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+    expect(screen.queryByRole('region', { name: 'Similar vehicles' })).not.toBeInTheDocument();
+    unmount();
+
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+      path.endsWith('/similar') ? Promise.reject(new Error('down')) : Promise.resolve(detail()),
+    );
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Similar vehicles' })).not.toBeInTheDocument();
+  });
+
   it('leaves out the description section when the dealer wrote none', async () => {
-    apiGetParsed.mockResolvedValue(detail({ description: null }));
+    serve(detail({ description: null }));
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
     expect(screen.queryByRole('region', { name: 'From the dealer' })).not.toBeInTheDocument();
   });
@@ -149,7 +201,7 @@ describe('/car/[slug]', () => {
   });
 
   it('titles, describes and canonicalises the page from the car', async () => {
-    apiGetParsed.mockResolvedValue(detail());
+    serve(detail());
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });
 
     expect(metadata.title).toBe('2023 Hyundai Creta SX(O) — ₹14,50,000');

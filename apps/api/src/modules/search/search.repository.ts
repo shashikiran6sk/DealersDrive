@@ -8,6 +8,7 @@ import type {
 } from '@prisma/client';
 
 import type { Counted, PublicDealerRow } from './search.facets.js';
+import { POOL_PRICE_BAND, type SimilarTraits } from './search.similar.js';
 import type { Vocabulary } from './search.filters.js';
 import type { SuggestRow } from './search.suggest.js';
 
@@ -27,6 +28,35 @@ export const PUBLIC_AVAILABLE_LISTING_WHERE = {
 
 export type PublicListingRule = 'visible' | 'available';
 
+const NEWEST_FIRST: Prisma.ListingOrderByWithRelationInput[] = [
+  { publishedAt: 'desc' },
+  { id: 'desc' },
+];
+
+export const SIMILAR_POOL_SIZE = 120;
+
+function priceBand(pricePaise: bigint): Prisma.BigIntNullableFilter {
+  const price = Number(pricePaise);
+  return {
+    gte: BigInt(Math.floor(price * (1 - POOL_PRICE_BAND))),
+    lte: BigInt(Math.ceil(price * (1 + POOL_PRICE_BAND))),
+  };
+}
+
+export function similarPoolWhere(source: SimilarTraits): Prisma.ListingWhereInput {
+  const near: Prisma.ListingWhereInput[] = [
+    ...(source.make
+      ? [{ vehicle: { is: { make: { equals: source.make, mode: 'insensitive' as const } } } }]
+      : []),
+    ...(source.bodyType ? [{ vehicle: { is: { bodyType: source.bodyType } } }] : []),
+    ...(source.pricePaise && source.pricePaise > 0n
+      ? [{ vehicle: { is: { pricePaise: priceBand(source.pricePaise) } } }]
+      : []),
+    ...(source.district ? [{ dealer: { district: source.district } }] : []),
+  ];
+  return { ...PUBLIC_AVAILABLE_LISTING_WHERE, id: { not: source.id }, OR: near };
+}
+
 export function publicListingWhere(rule: PublicListingRule): Prisma.ListingWhereInput {
   return rule === 'visible' ? PUBLIC_VISIBLE_LISTING_WHERE : PUBLIC_AVAILABLE_LISTING_WHERE;
 }
@@ -38,7 +68,7 @@ export const cardInclude = {
       _count: { select: { images: true } },
     },
   },
-  dealer: { select: { brandName: true, slug: true, city: true } },
+  dealer: { select: { brandName: true, slug: true, city: true, district: true } },
 } satisfies Prisma.ListingInclude;
 
 export type CardRow = Prisma.ListingGetPayload<{ include: typeof cardInclude }>;
@@ -78,6 +108,31 @@ export function createSearchRepository(prisma: PrismaClient) {
 
     count(where: Prisma.ListingWhereInput): Promise<number> {
       return prisma.listing.count({ where });
+    },
+
+    similarSource(slug: string): Promise<CardRow | null> {
+      return prisma.listing.findFirst({
+        where: { ...PUBLIC_VISIBLE_LISTING_WHERE, slug },
+        include: cardInclude,
+      });
+    },
+
+    similarPool(source: SimilarTraits): Promise<CardRow[]> {
+      return prisma.listing.findMany({
+        where: similarPoolWhere(source),
+        include: cardInclude,
+        orderBy: NEWEST_FIRST,
+        take: SIMILAR_POOL_SIZE,
+      });
+    },
+
+    newestAvailable(excludeIds: readonly string[], take: number): Promise<CardRow[]> {
+      return prisma.listing.findMany({
+        where: { ...PUBLIC_AVAILABLE_LISTING_WHERE, id: { notIn: [...excludeIds] } },
+        include: cardInclude,
+        orderBy: NEWEST_FIRST,
+        take,
+      });
     },
 
     detail(slug: string): Promise<DetailRow | null> {
