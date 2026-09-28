@@ -6841,3 +6841,56 @@ This slice is the backend; the heart, the sign-in intent and the page are R75.
 - `saved-actions.test.ts` (8): slugs as customer / anonymous / expired /
   outage; PUT and DELETE with revalidation; an invalid slug; signed out; the
   API's refusal.
+
+## R76 — The customer's account menu
+
+**Revises R67 / R68 / F073** · no API change
+
+- **Signed out:** the header shows **Login**, unchanged.
+- **Signed in:** the header shows a round avatar with the customer's initials.
+  - `personInitials()` takes the first and last name, at most two letters:
+    Rahul → R, John Doe → JD, Shashikiran Kumar → SK. A one-word "Shashikiran"
+    is S. The brief's "Shashikiran → SK" assumes a surname.
+  - The avatar uses the brand accent tint, never a per-user colour.
+  - It shows the initials only; there are no profile images in the product.
+- **The menu** holds the name and the masked mobile (`+91 98XXXXXX12`), then
+  **Saved cars** (`/saved`, R75), **My enquiries** (`/enquiries`, R68, reused),
+  and **Logout** (the existing `customerLogoutAction`, which revokes the
+  session and then refreshes the page).
+- **Behaviour:** the menu is a Radix `Popover`, which is already a dependency,
+  so there is nothing new to install.
+  - It is a `role="menu"`, and opening it focuses the first item.
+  - The arrow keys wrap, and Home and End jump to the ends.
+  - Escape closes it and returns focus to the avatar; so does a click outside,
+    or choosing an item.
+  - It is at most `calc(100vw - 24px)` wide, with collision padding, so it
+    fits at 375.
+- **Dealer console:** unaffected. The customer session carries no dealer flag,
+  so the menu is the customer's alone, and `/dealer` keeps its own entry and
+  its own shell.
+- `CustomerAccount` gains `phoneMasked`, computed on the server, so the full
+  number never reaches the browser. `firstNameOf` and the "Hi, name" greeting
+  are removed.
+
+### Files
+
+- `apps/web/src/lib/person.ts`: `personInitials`, `maskIndianMobile`
+- `apps/web/src/features/auth/`:
+  - `customer-account-actions.ts`
+  - `header-account/{account-menu,header-account,header-account.constants,header-account.types,index}`
+  - `utils.ts` is removed
+- **Components:** C107 `AccountMenu`, and C093 revised. The sandbox story is
+  `Layout/CustomerHeader`, with the stub's account gaining `phoneMasked`.
+
+### Tests
+
+- `apps/web/tests/unit/features/auth/header-account.test.tsx`:
+  - Login when signed out
+  - the avatar: initials, round, `haspopup`, closed
+  - the menu contents and links
+  - focus: first item, arrow keys, Home, End, wrap
+  - Escape returns focus; outside click; choosing an item closes it
+  - logout: refresh and Login again; a failed check keeps Login
+  - `personInitials` (8 cases) and `maskIndianMobile`
+- `customer-account-actions.test.ts`: the masked number is returned, never the
+  raw one.

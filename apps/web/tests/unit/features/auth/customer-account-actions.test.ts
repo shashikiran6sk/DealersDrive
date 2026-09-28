@@ -44,7 +44,7 @@ describe('customerAccountAction', () => {
     expect(urls).toEqual([]);
   });
 
-  it('answers the signed-in customer’s name', async () => {
+  it('answers the signed-in customer’s name and masked number, never the number itself', async () => {
     cookieJar.set('dd_session', 'session-token');
     globalThis.fetch = respond(200, {
       customer: {
@@ -55,7 +55,10 @@ describe('customerAccountAction', () => {
       },
     });
 
-    await expect(customerAccountAction()).resolves.toEqual({ fullName: 'Asha Menon' });
+    await expect(customerAccountAction()).resolves.toEqual({
+      fullName: 'Asha Menon',
+      phoneMasked: '+91 98XXXXXX45',
+    });
     expect(urls[0]).toMatch(/\/v1\/auth\/customer\/me$/);
   });
 

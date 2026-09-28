@@ -144,7 +144,7 @@ revision · `[⛔]` withdrawn
 - [x] F084 — Similar vehicles · as revised by **R73** — by slug, available cars only, the grid card
 - [~] F085 — Dealer directory
 - [x] F086 — Dealer portfolio · header, info row, the live inventory (R48), and its filter rail, sheet and sort through the same search as `/cars` · [#174](https://github.com/shashikiran6sk/DealersDrive/pull/174)
-- [~] F087 — Saved cars · as revised by **R74**/**R75** — server-backed, per customer, not `localStorage`
+- [x] F087 — Saved cars · as revised by **R74**/**R75** — server-backed, per customer, not `localStorage`
 
 ## Tier 13 — Enquiries
 
@@ -244,7 +244,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R72 — The homepage searches the marketplace, and shows what is on it · lands F081 · hero District/Brand/Model/Budget → `/cars` URL; four `/v1/vehicles` rows, available cars only · [#195](https://github.com/shashikiran6sk/DealersDrive/pull/195)
 - [x] R73 — Similar vehicles on the vehicle page · lands F084 · `GET /v1/vehicles/:slug/similar`, available only, deterministic score, newest-available fallback · [#196](https://github.com/shashikiran6sk/DealersDrive/pull/196)
 - [x] R74 — Saved cars live on the server, and survive the lifecycle · revises F087 · ⚠️ new table `saved_vehicles` · `/v1/saved-vehicles` (list, slugs, PUT/DELETE by slug), customer guard, never deleted by the lifecycle · [#197](https://github.com/shashikiran6sk/DealersDrive/pull/197)
-- [~] R75 — The heart, the sign-in that completes it, and the Saved cars page · revises F087/F075/F082 · heart on every card and the VDP, optimistic with rollback, `?save=` login intent, `/saved` grouped Available / Reserved / No longer available
+- [x] R75 — The heart, the sign-in that completes it, and the Saved cars page · revises F087/F075/F082 · heart on every card and the VDP, optimistic with rollback, `?save=` login intent, `/saved` grouped Available / Reserved / No longer available · [#198](https://github.com/shashikiran6sk/DealersDrive/pull/198)
+- [~] R76 — The customer's account menu · revises R67/R68/F073 · one round avatar with initials; a menu with name, masked mobile, Saved cars, My enquiries, Logout; keyboard and screen-reader complete
 
 ---
 

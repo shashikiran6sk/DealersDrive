@@ -4,11 +4,13 @@ import { CustomerSession } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
 
 import { apiGetParsed, apiSend, SESSION_COOKIE } from '@/lib/api';
+import { maskIndianMobile } from '@/lib/person';
 
 import { CUSTOMER_ACCOUNT_PATHS } from './customer-account-actions.constants';
 
 export interface CustomerAccount {
   fullName: string;
+  phoneMasked: string;
 }
 
 export async function customerAccountAction(): Promise<CustomerAccount | null> {
@@ -17,7 +19,10 @@ export async function customerAccountAction(): Promise<CustomerAccount | null> {
     const session = await apiGetParsed(CustomerSession, CUSTOMER_ACCOUNT_PATHS.me, {
       revalidate: false,
     });
-    return { fullName: session.customer.fullName };
+    return {
+      fullName: session.customer.fullName,
+      phoneMasked: maskIndianMobile(session.customer.phone),
+    };
   } catch {
     return null;
   }
