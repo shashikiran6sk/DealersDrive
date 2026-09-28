@@ -243,7 +243,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R71 — A reserved car stays on show; a sold or withdrawn one leaves every public surface · revises F075/F076/F082/F086/R48/R64/R69 · visible vs available predicates, `availability` on card and page, `available` count, reserved card with no link, `409 LISTING_RESERVED` · [#194](https://github.com/shashikiran6sk/DealersDrive/pull/194)
 - [x] R72 — The homepage searches the marketplace, and shows what is on it · lands F081 · hero District/Brand/Model/Budget → `/cars` URL; four `/v1/vehicles` rows, available cars only · [#195](https://github.com/shashikiran6sk/DealersDrive/pull/195)
 - [x] R73 — Similar vehicles on the vehicle page · lands F084 · `GET /v1/vehicles/:slug/similar`, available only, deterministic score, newest-available fallback · [#196](https://github.com/shashikiran6sk/DealersDrive/pull/196)
-- [~] R74 — Saved cars live on the server, and survive the lifecycle · revises F087 · ⚠️ new table `saved_vehicles` · `/v1/saved-vehicles` (list, slugs, PUT/DELETE by slug), customer guard, never deleted by the lifecycle
+- [x] R74 — Saved cars live on the server, and survive the lifecycle · revises F087 · ⚠️ new table `saved_vehicles` · `/v1/saved-vehicles` (list, slugs, PUT/DELETE by slug), customer guard, never deleted by the lifecycle · [#197](https://github.com/shashikiran6sk/DealersDrive/pull/197)
+- [~] R75 — The heart, the sign-in that completes it, and the Saved cars page · revises F087/F075/F082 · heart on every card and the VDP, optimistic with rollback, `?save=` login intent, `/saved` grouped Available / Reserved / No longer available
 
 ---
 

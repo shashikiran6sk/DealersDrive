@@ -2043,6 +2043,51 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'vehicle-similarvehicles',
   },
+  {
+    id: 'C104',
+    name: 'SaveButton',
+    source: 'apps/web/src/components/vehicle/save-button/save-button.tsx',
+    category: 'Vehicle',
+    ownership: 'Shared',
+    purpose:
+      'The heart (R75): on every VehicleCard (overlay) and on the vehicle page (labelled, "Save"/"Saved"). Reads SavedVehiclesContext; renders nothing without a provider, so cards outside the public pages have no heart.',
+    aliases: ['Heart', 'FavouriteButton', 'SaveToggle', 'SaveCar', 'save-button'],
+    features: ['R75', 'F087'],
+    props: ['slug', 'title', 'variant', 'className'],
+    states: ['not saved', 'saved', 'labelled', 'pending', 'refused (rolled back)', 'on cards'],
+    reusable: true,
+    storyId: 'vehicle-savebutton',
+  },
+  {
+    id: 'C105',
+    name: 'SavedVehiclesProvider',
+    source: 'apps/web/src/features/saved/saved-vehicles-provider.tsx',
+    category: 'Vehicle',
+    ownership: 'Feature-shared',
+    purpose:
+      'The public layout’s saved-cars state (R75): loads the saved slugs once, toggles optimistically with rollback, sends a signed-out visitor to the customer login with a ?save= intent, and completes that save on return (SaveFromUrl).',
+    aliases: ['SavedCarsProvider', 'useSavedCars', 'SaveFromUrl', 'saved-vehicles-provider'],
+    features: ['R75', 'F087'],
+    props: ['children', 'loadSlugs', 'setSaved'],
+    states: ['customer', 'anonymous', 'unknown'],
+    reusable: false,
+    storyId: 'vehicle-savebutton',
+  },
+  {
+    id: 'C106',
+    name: 'SavedList',
+    source: 'apps/web/src/features/saved/saved-list/saved-list.tsx',
+    category: 'Vehicle',
+    ownership: 'Feature-specific',
+    purpose:
+      '/saved (R75): the customer’s saved cars grouped as Available, Reserved and No longer available (sold or withdrawn), as ordinary VehicleCards; empty state and Show more.',
+    aliases: ['SavedCarsList', 'Shortlist', 'saved-list'],
+    features: ['R75', 'F087'],
+    props: ['saved'],
+    states: ['every state', 'only available', 'empty', 'more pages', 'mobile'],
+    reusable: false,
+    storyId: 'vehicle-savedlist',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {
