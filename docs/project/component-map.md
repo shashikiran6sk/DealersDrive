@@ -448,6 +448,10 @@ control on a page, so the results dim (`aria-busy`) while the next page renders
 instead of blanking; `useSearchNavigation` falls back to a plain router
 outside it. **NEW at F078.** **P2**
 
+**R57:** the dim waits 200 ms and is 60%, not 50% (`resultsRegionClass`), so an
+ordinary ~200 ms update does not flash the grid. A measured baseline shows
+nothing on the page remounts during an update; see `docs/code/web/components/search/search-navigation.md`.
+
 ### C030 — `HeroSearch`
 
 `components/search/hero-search.tsx:13`. Props: `cityName: string`,

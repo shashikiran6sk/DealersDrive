@@ -225,7 +225,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R53 — Filters offer only what can be chosen · revises F076/F078/R52 · Dealer needs a district like City / Town; zero-count options are disabled, not grey · [#176](https://github.com/shashikiran6sk/DealersDrive/pull/176)
 - [x] R54 — Car search suggestions · revises F077/F080 · `GET /v1/search/vehicles` + `CarSearchBox` on the shared typeahead; typing no longer writes the URL · [#177](https://github.com/shashikiran6sk/DealersDrive/pull/177)
 - [x] R55 — `/cars` controls read like `/dealers` · revises F080/R50/R54 · search, district, then sort on the right, one row · [#178](https://github.com/shashikiran6sk/DealersDrive/pull/178)
-- [x] R56 — The filter rail scrolls on its own · revises F078/F086 · sticky, viewport-bounded, own scroller; results keep the page scroll
+- [x] R56 — The filter rail scrolls on its own · revises F078/F086 · sticky, viewport-bounded, own scroller; results keep the page scroll · [#179](https://github.com/shashikiran6sk/DealersDrive/pull/179)
+- [x] R57 — Results update in place, without a flash · revises F078/F079/F080 · measured no remounts; the dim waits 200 ms, so ordinary updates do not flicker
 
 ---
 
