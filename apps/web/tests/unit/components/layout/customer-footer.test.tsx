@@ -71,11 +71,14 @@ describe('the destinations it claims exist', () => {
     expect(columnHrefs('Buy a car')).toEqual(['/cars', '/dealers', '/saved']);
   });
 
-  /** One door (**R35**) — the console decides between sign-in and onboarding. */
-  it('offers one dealer door, at /dealer', () => {
+  /**
+   * One door (**R35**), now opening the unified login on its Dealer tab
+   * (**R63**) rather than the console, which only redirected to sign-in.
+   */
+  it('offers one dealer door, at the dealer tab of the login', () => {
     renderFooter();
 
-    expect(columnHrefs('For dealers')).toEqual(['/dealer']);
+    expect(columnHrefs('For dealers')).toEqual(['/login?as=dealer']);
   });
 
   it('invents no page that does not exist', () => {
@@ -86,7 +89,7 @@ describe('the destinations it claims exist', () => {
       .map((link) => link.getAttribute('href') ?? '')
       .filter((href) => href.startsWith('/'));
 
-    expect(new Set(routes)).toEqual(new Set(['/cars', '/dealers', '/saved', '/dealer']));
+    expect(new Set(routes)).toEqual(new Set(['/cars', '/dealers', '/saved', '/login?as=dealer']));
   });
 });
 

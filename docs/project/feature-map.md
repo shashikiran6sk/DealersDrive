@@ -5912,3 +5912,87 @@ session yet.
   (`CustomerName`). `phone-sign-in.routes.test.ts`, `server.test.ts` and `openapi.test.ts` gained
   a stub for the new guard or router argument in their fake containers — no
   assertion changed.
+
+## R63 — One Login, with Customer and Dealer tabs
+
+**Revises F017 / F018 / F073 / R35** · no schema, no API change
+
+The header said `Dealer login` because only dealers had accounts. From R62
+buyers do too, so there is one `Login`, and it opens a screen with two tabs.
+
+### What a visitor sees
+
+- **Header** — `Login` at every width (the `lg:` / short-label split is gone),
+  to `/login`. Still one door (R35), still no "List your cars".
+- **`/login`** — `h1` "Login", then the §2.4 `.seg` as a `tablist`: **Customer**
+  (default) and **Dealer**. Arrow keys, Home and End move the selection with
+  roving focus; both panels stay mounted so a half-typed number survives a
+  switch. `?as=dealer` opens the Dealer tab.
+- **Customer tab** — mobile number (`+91`, numeric keypad, `tel-national`
+  autofill) → `Send OTP` → the OTP panel onboarding already uses → either back
+  to where they came from (existing customer) or **"Your number is verified"**
+  with one `Name` field and `Create account` (new customer). No email, no
+  password, no Google.
+- **Dealer tab** — `Continue with Google`, an `or` rule, then the same phone
+  form. After the proof the dealer goes wherever R60's resolver says:
+  onboarding for a draft or a new phone-first account (R61), the review screen
+  while pending, the console otherwise.
+- **`/dealer/login`** redirects to `/login?as=dealer`, carrying `error` and
+  `returnTo` only — the Google callback, the console's session-expired bounce
+  and sign-out all still send people there.
+- **Footer** `Dealer login` → `/login?as=dealer`.
+
+### How the session reaches the browser
+
+A phone sign-in is a Server Action calling the API, so the API's `dd_session`
+arrives as a `Set-Cookie` on a server-to-server response. `relaySessionCookie`
+(`lib/session-cookie.ts`) copies it onto the action's response with the API's
+own attributes — value, expiry, **domain**, path, `Secure` — and always
+`HttpOnly` and `SameSite=Lax`, so it is the same cookie the Google callback
+sets. `apiSend` gained an `onSetCookie` option for this; nothing else changed
+in the client.
+
+A new customer's sign-up ticket is held in an HttpOnly `dd_signup` cookie for
+its ten minutes; the page is told only that a name is needed.
+
+### One OTP implementation in the browser
+
+`lib/phone-otp.ts` — `sendPhoneOtp`, `phoneOtpToken`, `identifierOf` — is the
+MSG91 half of `PhoneVerification`, extracted rather than copied; onboarding and
+both Login tabs call it. `PhoneVerification`'s own tests pass unchanged.
+
+### Where a sign-in may send somebody
+
+`safeReturnPath` (`lib/url.ts`): a path on this site or the fallback — absolute
+URLs, `//host`, a backslash and whitespace refused. The API applies its own
+`safeReturnTo` to the same value for both Google and the phone.
+
+### Components
+
+**New:** `PhoneSignIn` (C083), `LoginTabs` (C084), `CustomerLogin` (C085),
+`CustomerNameStep` (C086), `DealerLogin` (C087). **Changed:**
+`PhoneCodePanel` gains `verifyLabel?`, `PhoneUnavailable` gains `tail?`.
+**Sandbox:** `Forms/Login` (customer, dealer, Google refused, Google not
+configured, new-customer name, phone unavailable), `Forms/PhoneSignIn`.
+
+### Tests changed
+
+- ⚠️ `customer-header.test.tsx` — "the dealer door" pinned `/dealer` and the
+  words "Dealer login"; it is now "the login door": `Login` → `/login`, still
+  exactly one door and no "List your cars".
+- ⚠️ `customer-footer.test.tsx` — the dealer column's href is `/login?as=dealer`.
+
+### Not here
+
+The header does not yet know a customer is signed in (R67), and nothing
+requires a customer session yet (R64/R65).
+
+- **Tests** `apps/web/tests/unit/features/auth/login.test.tsx` (tabs, keyboard,
+  customer new → name → return, existing → straight back, name refused, wrong
+  code, landline refused before a send, numeric keypad, unavailable; dealer
+  Google + phone, phone → API destination, error lookup),
+  `tests/unit/features/auth/sign-in-actions.test.ts` (session relayed, refusal
+  relays nothing, ticket kept out of the page, sign-up forgets the ticket,
+  expired ticket, `parseSessionCookie`), `tests/unit/app/login-page.test.tsx`
+  (default tab, `?as=dealer`, safe and unsafe `returnTo`, the old route's
+  redirect), `tests/unit/lib/safe-return-path.test.ts`.
