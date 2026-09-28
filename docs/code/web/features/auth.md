@@ -171,3 +171,32 @@ read the code off their own handset, and only then found out.
 `204` is free. Anything else is the API's own sentence, which is rendered
 against the phone box rather than as a banner: the refusal is about the value
 in front of them.
+
+## `apps/web/src/features/auth/header-account/account-menu.tsx`
+
+### `export function AccountMenu({ account, onLogout, loggingOut })`
+
+The signed-in customer's header corner (**R76**) is one round avatar at every
+width. It replaces the "Hi, name · My enquiries · Logout" row that had to hide
+half of itself on a phone. The menu is a Radix `Popover` rather than a
+hand-rolled overlay: outside-click, Escape, focus return and collision
+handling come from the dependency the product already uses for its other
+floating panels.
+
+The menu semantics sit inside it. The list is `role="menu"`, and ↑/↓ (wrapping)
+and Home/End move between the three items, because a popover alone gives a
+keyboard user Tab and nothing else. Opening focuses the first item, and
+choosing one closes the menu.
+
+The number is masked on the server (`customerAccountAction` → `phoneMasked`),
+so the full number is never in the browser's memory for a header that only
+needs to remind the customer which account this is.
+
+## `apps/web/src/lib/person.ts`
+
+### `export function personInitials(fullName)`
+
+A person's initials are the first and the last name: "Rahul" is R, and "Asha
+Mary Menon" is AM. That is deliberately not contracts' `initialsOf`, which
+makes a two-letter logo tile for a dealership and so turns a single word into
+two letters ("Velavan" → VE). A person with one name is one letter.

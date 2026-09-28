@@ -1,5 +1,6 @@
 export interface CustomerAccount {
   fullName: string;
+  phoneMasked: string;
 }
 
 export const customerAccountStub: { delayMs: number; account: CustomerAccount | null } = {

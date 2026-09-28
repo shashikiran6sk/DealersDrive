@@ -1850,13 +1850,14 @@ export const registry: RegistryEntry[] = [
     category: 'Layout',
     ownership: 'Feature-specific',
     purpose:
-      'The account corner of the customer header (R67): Login, or "Hi, <first name>" and Logout for a signed-in customer. Asked in the browser through a Server Action, so the public pages stay static.',
+      'The account corner of the customer header (R67, R76): Login, or for a signed-in customer the round-avatar AccountMenu. Asked in the browser through a Server Action, so the public pages stay static.',
     aliases: ['AccountMenu', 'UserMenu', 'SignedIn', 'Logout', 'header-account'],
-    features: ['R67', 'R62'],
+    features: ['R67', 'R62', 'R76'],
     props: ['none — it asks customerAccountAction()'],
     states: [
       'signed out',
-      'signed in, with My enquiries (R68)',
+      'signed in (avatar)',
+      'menu open',
       'long name at phone width',
       'logging out',
     ],
@@ -2087,6 +2088,21 @@ export const registry: RegistryEntry[] = [
     states: ['every state', 'only available', 'empty', 'more pages', 'mobile'],
     reusable: false,
     storyId: 'vehicle-savedlist',
+  },
+  {
+    id: 'C107',
+    name: 'AccountMenu',
+    source: 'apps/web/src/features/auth/header-account/account-menu.tsx',
+    category: 'Layout',
+    ownership: 'Feature-specific',
+    purpose:
+      'The signed-in customer’s menu (R76): a 36px round avatar with their initials opens a Radix Popover holding their name, masked mobile number, Saved cars, My enquiries and Logout — a role="menu" with arrow keys, Home/End, Escape and outside click.',
+    aliases: ['AvatarMenu', 'UserDropdown', 'ProfileMenu', 'account-menu'],
+    features: ['R76'],
+    props: ['account', 'onLogout', 'loggingOut'],
+    states: ['closed', 'open', 'logging out', 'phone width'],
+    reusable: false,
+    storyId: 'layout-customerheader--signed-in-customer',
   },
 ];
 

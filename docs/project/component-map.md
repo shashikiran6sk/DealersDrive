@@ -1401,6 +1401,35 @@ return. `AvailabilityBadge` moves to the photograph's bottom-left to make room.
 - `Vehicle/SavedList`
 - The actions are stubbed by `apps/sandbox/src/mocks/saved-actions.ts`.
 
+### C107 — `AccountMenu` · C093 `HeaderAccount` becomes a menu
+
+**New at R76** (`features/auth/header-account/account-menu.tsx`). A signed-in
+customer's header corner is no longer "Hi, name · My enquiries · Logout". It is
+a single **36px round avatar** with their initials, at every width.
+
+- **Initials:** `personInitials()` in `lib/person.ts`, first and last name, at
+  most two letters, so "Rahul" is R and "John Doe" is JD. It takes the brand
+  accent tint, never a per-user colour.
+- **The menu:** the avatar opens a Radix `Popover` (already a dependency)
+  holding the name, the mobile masked by `maskIndianMobile()` (`+91 98XXXXXX12`),
+  then **Saved cars**, **My enquiries**, a separator, and **Logout**.
+- **Semantics:** the trigger is `aria-haspopup="menu"` with `aria-expanded`.
+  The list is `role="menu"` with `menuitem`s; opening focuses the first item.
+- **Keyboard:** ↑/↓ wrap, Home and End jump to the ends, and Escape closes and
+  returns focus to the avatar. A click outside closes it, and choosing a
+  destination closes it.
+
+| Component       | Props                               | States                                    |
+| --------------- | ----------------------------------- | ----------------------------------------- |
+| `AccountMenu`   | `account`, `onLogout`, `loggingOut` | closed · open · logging out · phone width |
+| `HeaderAccount` | —                                   | signed out (Login) · signed in (avatar)   |
+
+`CustomerAccount` gains `phoneMasked`; the raw number never reaches the
+browser. `firstNameOf` is gone with the greeting. **Tests**
+`apps/web/tests/unit/features/auth/header-account.test.tsx`,
+`customer-account-actions.test.ts`. **Sandbox** `Layout/CustomerHeader`
+(`SignedInCustomer`, `SignedInCustomerMobile`).
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

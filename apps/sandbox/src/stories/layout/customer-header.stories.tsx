@@ -77,14 +77,17 @@ export const Tablet: Story = {
 export const SignedInCustomer: Story = {
   args: { account: <HeaderAccount /> },
   beforeEach: () => {
-    customerAccountStub.account = { fullName: 'Asha Menon' };
+    customerAccountStub.account = { fullName: 'Asha Menon', phoneMasked: '+91 98XXXXXX12' };
   },
 };
 
 export const SignedInCustomerMobile: Story = {
   args: { account: <HeaderAccount /> },
   beforeEach: () => {
-    customerAccountStub.account = { fullName: 'Shashikiran Venkataramanan' };
+    customerAccountStub.account = {
+      fullName: 'Shashikiran Venkataramanan',
+      phoneMasked: '+91 97XXXXXX08',
+    };
   },
   parameters: {
     nextjs: { appDirectory: true, navigation: { pathname: '/cars' } },

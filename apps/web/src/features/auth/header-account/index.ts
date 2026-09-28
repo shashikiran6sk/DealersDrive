@@ -1,3 +1,4 @@
+export { AccountMenu } from './account-menu';
 export { HeaderAccount } from './header-account';
 export { HEADER_ACCOUNT_TEXT } from './header-account.constants';
-export { firstNameOf } from './utils';
+export type { AccountMenuProps } from './header-account.types';
