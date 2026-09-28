@@ -47,6 +47,7 @@ model User {
   memberships DealerMember[]
   identities  OAuthIdentity[]
   roles       UserRole[]
+  enquiries   Enquiry[]
 
   @@map("users")
 }
@@ -266,7 +267,7 @@ model Dealer {
   notifications NotificationDelivery[]
   vehicles      Vehicle[]
   listings      Listing[]
-  // enquiries   Enquiry[]              ← returns with F088
+  enquiries     Enquiry[]
   // ledger      CreditTransaction[]    ← returns with F050
   // orders      Order[]                ← returns with F051
   // payments    Payment[]              ← returns with F052
@@ -587,9 +588,10 @@ model Listing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  vehicle Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  dealer  Dealer         @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  checks  ListingCheck[]
+  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealer    Dealer         @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  checks    ListingCheck[]
+  enquiries Enquiry[]
 
   /// A dealership's inventory filtered by status, most recently touched first.
   @@index([dealerId, status, updatedAt])
@@ -696,6 +698,52 @@ enum ListingCheckKey {
   ODOMETER
   OWNERSHIP
   PRICING
+}
+
+/// A signed-in customer's enquiry about one listing (**R64**, revises F088).
+///
+/// **Identity is a reference, not a copy.** The name and the proved number the
+/// dealer sees are read from the customer's `users` row at the moment they are
+/// shown, never typed into this row. The number cannot drift — `users.phone`
+/// is written only by a completed OTP (R39) — and a customer who corrects the
+/// spelling of their name is the same lead, so a snapshot would only preserve
+/// a mistake. No `vehicleId` either: a listing has exactly one vehicle
+/// (`listings.vehicleId` is unique), so it would be a second copy of a fact.
+///
+/// `dealerId` is the listing's, copied on write and never accepted from a
+/// request — it is the tenant key every dealer read filters on (rule 1).
+model Enquiry {
+  id          String        @id @default(uuid()) @db.Uuid
+  customerId  String        @db.Uuid
+  dealerId    String        @db.Uuid
+  listingId   String        @db.Uuid
+  /// Optional. A customer who only wants a call back sends no text at all.
+  message     String?
+  status      EnquiryStatus @default(NEW)
+  contactedAt DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  customer User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  dealer   Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  /// The dealer's inbox: one status tab, newest first (R66).
+  @@index([dealerId, status, createdAt])
+  /// "Has this customer enquired about this car recently?" — the duplicate guard.
+  @@index([customerId, listingId, createdAt])
+  /// The listing's own enquiries, and the cascade when a listing goes.
+  @@index([listingId])
+  @@map("enquiries")
+}
+
+/// Mirrors `EnquiryStatus` in contracts, SPAM included (DESIGN-SPEC §3.15).
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  CLOSED
+  SPAM
 }
 
 enum ListingStatus {

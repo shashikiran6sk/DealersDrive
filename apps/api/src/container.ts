@@ -10,6 +10,10 @@ import { createCookieSessionResolver } from './modules/auth/cookie-session.adapt
 import { createConfigService, type ConfigService } from './modules/config/config.service.js';
 import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
 import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
+import {
+  createEnquiriesService,
+  type EnquiriesService,
+} from './modules/enquiries/enquiries.service.js';
 import type { OAuthProvider } from './modules/auth/oauth.port.js';
 import type { SessionResolver } from './modules/auth/session.port.js';
 import {
@@ -93,6 +97,7 @@ export interface Container {
   readonly phoneOtp: PhoneOtpPort;
   readonly phone: PhoneService;
   readonly phoneSignIn: PhoneSignInService;
+  readonly enquiries: EnquiriesService;
   readonly customers: CustomerAuthService;
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
@@ -182,6 +187,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     audit,
   });
   const vehicleImages = createVehicleImagesService({ prisma, storage, audit, config });
+  const enquiries = createEnquiriesService({ prisma, audit });
   const moderation = createModerationService({
     prisma,
     repo: createModerationRepository(prisma),
@@ -219,6 +225,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     vehicles,
     moderation,
     vehicleImages,
+    enquiries,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };
 }

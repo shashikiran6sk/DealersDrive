@@ -213,6 +213,20 @@ describe('the dealer boundary', () => {
    * that one: mounted after the dealer's signed-in guard, it would answer a
    * customer with a 401 and a pending dealer with a customer's profile.
    */
+  /**
+   * **R64** — an enquiry is a customer's, so its one route is behind the
+   * customer guard and nothing else; a dealer session reaches it only as the
+   * customer it also is.
+   */
+  it('runs only the customer guard for POST /v1/enquiries', async () => {
+    const result = await dispatch('POST', '/v1/enquiries');
+
+    expect(result.customerGuard).toBe(true);
+    expect(result.dealerGuard).toBe(false);
+    expect(result.signedInGuard).toBe(false);
+    expect(result.reached).toBe(true);
+  });
+
   it('runs only the customer guard for GET /v1/auth/customer/me', async () => {
     const result = await dispatch('GET', '/v1/auth/customer/me');
 
