@@ -2,6 +2,7 @@ import type { VehicleCardDto } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
 import { Plate } from '@/components/ui/primitives';
+import { SaveButton } from '@/components/vehicle/save-button';
 import { cn } from '@/lib/cn';
 
 import { DealerStrip } from './dealer-strip';
@@ -47,6 +48,11 @@ export function VehicleCard({
           <Plate className="absolute top-[10px] left-[10px] z-[2]">{vehicle.year}</Plate>
         ) : null}
         {unavailable ? <AvailabilityBadge label={availabilityLabel(vehicle.availability)} /> : null}
+        <SaveButton
+          slug={vehicle.slug}
+          title={vehicle.title}
+          className="absolute top-[10px] right-[10px]"
+        />
       </div>
 
       <div

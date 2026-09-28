@@ -7,6 +7,7 @@ import { Suspense } from 'react';
 import { Plate } from '@/components/ui/primitives';
 import { AvailabilityNotice } from '@/components/vehicle/availability-notice';
 import { PriceBlock } from '@/components/vehicle/price-block';
+import { SaveButton } from '@/components/vehicle/save-button';
 import { SimilarVehicles } from '@/components/vehicle/similar-vehicles';
 import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
@@ -129,6 +130,12 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           <PriceBlock
             priceLabel={vehicle.priceLabel}
             negotiabilityLabel={vehicle.negotiabilityLabel}
+          />
+          <SaveButton
+            slug={vehicle.slug}
+            title={vehicle.title}
+            variant="labelled"
+            className="self-start"
           />
           {available ? (
             <Suspense

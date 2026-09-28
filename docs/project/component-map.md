@@ -1361,6 +1361,46 @@ page leaves out even its margin.
 **Tests** `apps/web/tests/unit/components/vehicle/vehicle-page.test.tsx`.
 **Sandbox** `Vehicle/SimilarVehicles`.
 
+### C104 — `SaveButton` · C105 — `SavedVehiclesProvider` · C106 — `SavedList`
+
+**New at R75**, the UI of saved cars (F087 as revised by R74).
+
+`SaveButton` (`components/vehicle/save-button/`) is the heart. It appears as
+the `overlay` variant on every `VehicleCard`, top-right over the photograph and
+above the card's stretched link, and as the `labelled` variant ("Save" /
+"Saved") under the price on the vehicle page. It reads `SavedVehiclesContext`,
+whose default is "disabled", so **without a provider it renders nothing** — no
+throwing hook, unlike the baseline's `useSavedCars()`, so coupling C-1 does not
+return. `AvailabilityBadge` moves to the photograph's bottom-left to make room.
+
+`SavedVehiclesProvider` (`features/saved/`) wraps the public layout:
+
+- loads the saved slugs once through `savedSlugsAction`
+- toggles optimistically and rolls back on a refusal, announcing it in a
+  polite live region
+- sends a signed-out visitor to `/login?returnTo=<page>?save=<slug>`
+- completes that save on return, through `SaveFromUrl` in its own `Suspense`,
+  so no public page is forced to render on the client
+
+`SavedList` renders `/saved`.
+
+| Component               | Props                                     | States                                                      |
+| ----------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| `SaveButton`            | `slug`, `title`, `variant?`, `className?` | not saved · saved · labelled · pending · refused · on cards |
+| `SavedVehiclesProvider` | `children`, `loadSlugs?`, `setSaved?`     | customer · anonymous · unknown                              |
+| `SavedList`             | `saved`                                   | every state · only available · empty · more pages · mobile  |
+
+**Tests:**
+
+- `apps/web/tests/unit/features/saved/saved-cars.test.tsx`
+- `saved-actions.test.ts`
+
+**Sandbox:**
+
+- `Vehicle/SaveButton`, with a provider decorator
+- `Vehicle/SavedList`
+- The actions are stubbed by `apps/sandbox/src/mocks/saved-actions.ts`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

@@ -6772,3 +6772,72 @@ This slice is the backend; the heart, the sign-in intent and the page are R75.
   - unsaving is idempotent in any state; paging; unknown query refused
 - `tests/unit/modules/saved-vehicles/saved-vehicles.mapper.test.ts` (9)
 - `tests/unit/routes.test.ts`: each route runs only the customer guard.
+
+## R75 — The heart, the sign-in that completes it, and the Saved cars page
+
+**Revises F087 / F075 / F082** · no API change (R74's routes)
+
+- **Heart on every card**: `SaveButton` (C104) sits top-right over the
+  photograph, including on reserved cards, which can still be saved. The vehicle
+  page adds a labelled **Save / Saved** under the price, for reserved cars as
+  well.
+  - The labels are "Save {title}" and "Remove {title} from saved vehicles".
+  - `aria-pressed` reflects the state, and the button is disabled while a write
+    is pending.
+  - `AvailabilityBadge` moves to the photograph's bottom-left.
+- **One provider** (`SavedVehiclesProvider`, C105) in the public layout keeps
+  every heart for the same car in step:
+  - It loads the saved slugs once after mount, so pages stay static.
+  - Toggles are optimistic, rolled back on refusal and announced politely.
+  - On `/saved`, a successful toggle refreshes the page.
+- **Signed out**: a tap goes to
+  `/login?returnTo=<page with its query>&save=<slug>`. On the way back,
+  `SaveFromUrl` strips `save` and completes the save, so the visitor does not
+  press twice. A session that expired mid-page is treated the same way.
+- **`/saved`** (replacing the coming-soon page): customer-only, `force-dynamic`,
+  `noindex`. Signed out, it redirects to `/login?returnTo=/saved`. It lists up
+  to 50 cars per page in three groups: **Available**, **Reserved**, and **No
+  longer available** (sold or withdrawn). Each card is the shared
+  `VehicleCard`; reserved and departed cars are greyed and unlinked, and every
+  card keeps its heart so it can be removed. The page has an empty state and
+  Show more.
+- The header's existing **Saved cars** link now leads somewhere real.
+
+### Files
+
+- `apps/web/src/components/vehicle/save-button/`:
+  - `save-button.tsx`
+  - `saved-vehicles-context.ts`
+  - `save-button.constants.ts`
+- `apps/web/src/features/saved/`:
+  - `actions.ts`
+  - `saved-vehicles-provider.tsx`
+  - `save-from-url.tsx`
+  - `saved.constants.ts`, `saved.types.ts`
+  - `saved-list/`
+- `app/(public)/layout.tsx`
+- `app/(public)/saved/page.tsx`
+- `app/(public)/car/[slug]/page.tsx`
+- `components/vehicle/vehicle-card/{vehicle-card,availability-badge}.tsx`
+- **Components** C104–C106. The sandbox has `Vehicle/SaveButton` and
+  `Vehicle/SavedList`, with the actions stubbed by
+  `apps/sandbox/src/mocks/saved-actions.ts`.
+- `tests/unit/components/public/public-pages.test.tsx` is removed. Its only
+  remaining case was the coming-soon `/saved`.
+
+### Tests
+
+- `apps/web/tests/unit/features/saved/saved-cars.test.tsx` (17):
+  - no heart without a provider; labels and state
+  - the optimistic save, and that the car is not opened
+  - rollback with a message; remove
+  - hearts in step; a reserved car can be saved
+  - signed out: to login with the page's query and `save`
+  - the return trip completes and strips the intent, with no double save
+  - an expired session
+  - the URL helpers
+  - `/saved`: the uncached read, the three groups with no links off the
+    marketplace, the empty state, the next page, and the redirect when signed out
+- `saved-actions.test.ts` (8): slugs as customer / anonymous / expired /
+  outage; PUT and DELETE with revalidation; an invalid slug; signed out; the
+  API's refusal.

@@ -1,21 +1,44 @@
+import { SavedVehiclesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
-import { ComingSoon } from '@/components/public/coming-soon';
-import { seoMetadata } from '@/lib/seo';
+import { SAVED_LIST_TEXT, SAVED_PAGE_LIMIT, SavedList } from '@/features/saved/saved-list';
+import { ApiError, apiGetParsed, qs } from '@/lib/api';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Saved cars — coming soon',
-  description:
-    'Saved cars are coming soon to Dealers-Drive. Explore verified independent dealers in the meantime.',
-  ...seoMetadata({ kind: 'resolved', canonical: '/saved', isIndexable: false }),
+  title: SAVED_LIST_TEXT.title,
+  robots: { index: false, follow: false },
 };
 
-export default function SavedCarsPage() {
+type SearchParamsInput = Record<string, string | string[] | undefined>;
+
+const LOGIN_TO_SEE = `/login?returnTo=${encodeURIComponent('/saved')}`;
+
+export default async function SavedCarsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParamsInput>;
+}) {
+  const params = await searchParams;
+  const cursor = typeof params.cursor === 'string' ? params.cursor : undefined;
+
+  let saved: SavedVehiclesResponse;
+  try {
+    saved = await apiGetParsed(
+      SavedVehiclesResponse,
+      `/v1/saved-vehicles${qs({ cursor, limit: SAVED_PAGE_LIMIT })}`,
+      { revalidate: false },
+    );
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) redirect(LOGIN_TO_SEE);
+    throw error;
+  }
+
   return (
-    <ComingSoon
-      eyebrow="Your shortlist"
-      title="Save the cars you love — coming soon"
-      description="We are building an easy way to keep your favourite vehicles together while you compare your options. Your saved cars will stay on your device, with no buyer account or sign-in required."
-    />
+    <div className="mx-auto w-full max-w-[1280px] px-4 pt-[22px] pb-[60px] sm:px-6">
+      <SavedList saved={saved} />
+    </div>
   );
 }
