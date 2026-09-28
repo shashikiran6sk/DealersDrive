@@ -237,6 +237,22 @@ describe('the dealer boundary', () => {
     expect(result.reached).toBe(true);
   });
 
+  /** **R74** — a saved car is the customer's, behind the customer guard and nothing else. */
+  it.each([
+    'GET /v1/saved-vehicles',
+    'GET /v1/saved-vehicles/slugs',
+    'PUT /v1/saved-vehicles/2023-hyundai-creta-abc',
+    'DELETE /v1/saved-vehicles/2023-hyundai-creta-abc',
+  ])('runs only the customer guard for %s', async (signature) => {
+    const [method, url] = signature.split(' ') as [string, string];
+    const result = await dispatch(method, url);
+
+    expect(result.customerGuard).toBe(true);
+    expect(result.dealerGuard).toBe(false);
+    expect(result.signedInGuard).toBe(false);
+    expect(result.reached).toBe(true);
+  });
+
   /** The inbox is the dealership's; a customer session reaches none of it (R66). */
   it.each([
     'GET /v1/dealer/enquiries',

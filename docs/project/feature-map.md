@@ -6713,3 +6713,62 @@ VEHICLE_NOT_FOUND`. The response is `Cache-Control: public, max-age=60`, and
   reserved source, 404s and 400s, and the cache header.
 - `apps/web/tests/unit/components/vehicle/vehicle-page.test.tsx`: the section
   renders, and is left out when empty or failed.
+
+## R74 — Saved cars live on the server, and survive the lifecycle
+
+**Revises F087** · ⚠️ new table `saved_vehicles` · new module `saved-vehicles`
+
+F087's device-only `localStorage` list is replaced by a server-backed one:
+customers have accounts (R62), and a shortlist should follow the account.
+This slice is the backend; the heart, the sign-in intent and the page are R75.
+
+- **`SavedVehicle { id, customerId → users, listingId → listings, createdAt }`**:
+  - unique `(customerId, listingId)`
+  - index `(customerId, createdAt)` for the list and `(listingId)` for the cascade
+  - cascades only when the account or the listing itself is deleted
+- **API** (`/v1/saved-vehicles`, customer guard only, `no-store`), addressed by
+  public slug:
+  - `GET /` lists `SavedVehiclesQuery { cursor?, limit ≤ 50 }` →
+    `SavedVehiclesResponse { data: { savedAt, vehicle: VehicleCardDto }[], page }`,
+    newest first.
+  - `GET /slugs` → `SavedVehicleSlugs { slugs ≤ 500 }`, so a page of cards
+    draws every heart from one request.
+  - `PUT /:slug` saves, idempotently (`SavedState`). Only a car on the
+    marketplace (ACTIVE or RESERVED) can be newly saved; otherwise
+    `409 LISTING_NOT_SAVEABLE`. The listing row is read `FOR SHARE`, so a
+    racing withdrawal is deterministic.
+  - `DELETE /:slug` unsaves, idempotently, in any state.
+  - Both writes are rate-limited per customer (120/hour). An unknown slug is
+    `404 LISTING_NOT_FOUND`.
+- **Lifecycle:** a saved row is never deleted by a reservation, sale or
+  withdrawal. `availability` says what became of the car: `AVAILABLE`,
+  `RESERVED`, `SOLD`, or `UNAVAILABLE` (withdrawn, taken down, or dealership
+  suspended). A car off the marketplace carries `image: null`.
+- **Audit:** `vehicle.saved` and `vehicle.unsaved` (actor `CUSTOMER`, entity
+  the listing), written only when a row actually changes.
+- **Isolation:** the customer is always the session. No input names a customer,
+  and every schema is `.strict()`.
+
+### Files
+
+- `apps/api/prisma/migrations/20260928130000_saved_vehicles` and `schema.prisma`
+- `packages/contracts/src/saved.ts`
+- `apps/api/src/modules/saved-vehicles/`:
+  - `saved-vehicles.{service,mapper,messages,routes,docs}.ts`
+  - `routes/{get-saved-vehicles,get-saved-slugs,put-saved-vehicle,delete-saved-vehicle,write-limit,handle,route}.ts`
+- The search facade exports `cardInclude`, `toVehicleCard` and
+  `PUBLIC_DEALER_STATUS`.
+- Wiring: the container, `routes.ts`, `MODULES`, `DOC_TAGS` and `TAG_ORDER`
+  ("Saved cars"), and `SavedVehiclesQuery` in `INPUT_SCHEMA_NAMES`.
+
+### Tests
+
+- `apps/api/tests/saved-vehicles.test.ts` (18):
+  - signed out is 401, customers are isolated, no customer parameter exists
+  - saving: first save, the double save and the burst, a reserved car saved,
+    sold and withdrawn cars refused, 404 and 400
+  - lifecycle: reserved → sold keeps the row, withdrawn → relisted,
+    dealership suspended
+  - unsaving is idempotent in any state; paging; unknown query refused
+- `tests/unit/modules/saved-vehicles/saved-vehicles.mapper.test.ts` (9)
+- `tests/unit/routes.test.ts`: each route runs only the customer guard.

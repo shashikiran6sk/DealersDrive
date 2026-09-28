@@ -10,6 +10,7 @@ import {
 } from './modules/auth/auth.routes.js';
 import { createDealerEnquiriesRouter } from './modules/enquiries/enquiries.dealer.routes.js';
 import { createEnquiriesRouter } from './modules/enquiries/enquiries.routes.js';
+import { createSavedVehiclesRouter } from './modules/saved-vehicles/saved-vehicles.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
 import { createPublicDealersRouter } from './modules/dealers/dealers.public.routes.js';
@@ -60,6 +61,11 @@ export function createRoutes(container: Container): Router {
     '/enquiries',
     container.guards.requireCustomer,
     createEnquiriesRouter(container.enquiries, container.rateLimit),
+  );
+  v1.use(
+    '/saved-vehicles',
+    container.guards.requireCustomer,
+    createSavedVehiclesRouter(container.savedVehicles, container.rateLimit),
   );
   v1.use(
     '/auth',
