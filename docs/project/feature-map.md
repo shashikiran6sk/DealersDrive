@@ -6894,3 +6894,52 @@ This slice is the backend; the heart, the sign-in intent and the page are R75.
   - `personInitials` (8 cases) and `maskIndianMobile`
 - `customer-account-actions.test.ts`: the masked number is returned, never the
   raw one.
+
+## R77 — Every surface agrees on the lifecycle
+
+**Revises F066 / R69–R76** · no schema or route change
+
+An audit of every surface that reads a listing's status, against the four
+lifecycle states. The one surface found out of step was the dealer dashboard;
+everything else already matched the matrix.
+
+| Surface                          | ACTIVE    | RESERVED               | SOLD                | WITHDRAWN           |
+| -------------------------------- | --------- | ---------------------- | ------------------- | ------------------- |
+| `/cars` and dealer portfolio     | listed    | listed, after, no link | hidden              | hidden              |
+| Counts, facets, "View all N"     | counted   | not counted            | —                   | —                   |
+| Vehicle page                     | open      | open, notice           | 404                 | 404                 |
+| Enquiry                          | taken     | `409 LISTING_RESERVED` | `409`               | `409`               |
+| Similar vehicles (suggested)     | yes       | no                     | no                  | no                  |
+| Similar vehicles (source page)   | yes       | yes                    | 404                 | 404                 |
+| Homepage discovery rows          | yes       | no                     | no                  | no                  |
+| Save                             | yes       | yes                    | `409`               | `409`               |
+| Saved list                       | Available | Reserved               | No longer available | No longer available |
+| Customer's enquiry list          | linked    | linked                 | not linked          | not linked          |
+| Dealer inventory tab             | yes       | yes                    | yes                 | yes                 |
+| **Dealer dashboard tile**        | yes       | **yes (R77)**          | yes                 | no                  |
+| Admin overview "Active listings" | yes       | no                     | no                  | no                  |
+
+- **The dashboard** gains a **Reserved** tile between Active and Pending
+  review, linking to `/dealer/inventory?status=RESERVED`. A reservation waits
+  on the dealer — it ends in a sale or a release — so it is counted where the
+  dealer looks first. Withdrawn stays on the inventory tab only.
+- **The seed** already holds every state: 12 RESERVED, 12 SOLD, 6 WITHDRAWN
+  among the 320 dev vehicles (R69).
+- **F067** (mark sold, remove & renew) is marked in progress rather than
+  done. R69 and R70 delivered mark sold and remove, as reserve, reactivate,
+  mark sold, withdraw and relist. Renew does not exist yet: a listing does not
+  expire until billing (F050–F054) gives it a paid term.
+
+### Files
+
+- `apps/api/src/modules/dealers/dealers.service.ts`: `DASHBOARD_LISTING_STATS`
+- `apps/sandbox/src/stories/dealer/listing-stats.stories.tsx`
+
+### Tests
+
+- `apps/api/tests/unit/modules/dealers/dealers.service.test.ts`: five tiles, in
+  order, with the reserved count and tone
+- `apps/api/tests/dealer-inventory.test.ts`: the dashboard counts the same
+  listings as the inventory, reserved included
+- `apps/web/tests/unit/features/dealer/dashboard-page.test.tsx`: the Reserved
+  tile links to its inventory tab

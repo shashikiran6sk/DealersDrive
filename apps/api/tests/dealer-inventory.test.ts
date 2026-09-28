@@ -124,13 +124,14 @@ describe('the inventory', () => {
 });
 
 describe('the dashboard counts the same listings', () => {
-  it('reports Active, Pending review, Changes requested and Sold, and flags the changes', async () => {
+  it('reports Active, Reserved, Pending review, Changes requested and Sold, and flags the changes', async () => {
     const { body } = await a.agent.get('/v1/dealer/dashboard').expect(200);
 
     expect(
       body.listingStats.map((stat: { key: string; value: number }) => [stat.key, stat.value]),
     ).toEqual([
       ['ACTIVE', 2],
+      ['RESERVED', 0],
       ['PENDING_REVIEW', 1],
       ['CHANGES_REQUESTED', 1],
       ['SOLD', 1],

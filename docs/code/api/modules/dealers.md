@@ -1044,6 +1044,16 @@ only reachable while DRAFT. It is here for the client that goes looking.
 C2 — the dealership editing itself, after onboarding is over, with the
 two public sentences held for review (**R34**).
 
+### `const DASHBOARD_LISTING_STATS =`
+
+The tiles are the statuses a dealer acts on, in the order they would act: what
+is on sale, what is held for a buyer, what waits on the moderator, what the
+moderator sent back, and what has sold. **R77** added `RESERVED` after R69
+introduced it — a reservation is a promise to a buyer that has to be either
+kept (mark sold) or released (back on sale), and a count nobody can see is one
+that gets forgotten. `WITHDRAWN` and `DRAFT` stay off the dashboard: neither is
+waiting on anyone, and the inventory tabs list both.
+
 ## Why this is not just `update`
 
 Three fields reach this method and they do not all mean the same thing.

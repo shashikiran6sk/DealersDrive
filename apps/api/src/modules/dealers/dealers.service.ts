@@ -72,6 +72,7 @@ function sameServices(a: readonly string[], b: readonly string[]): boolean {
 
 const DASHBOARD_LISTING_STATS = [
   { status: 'ACTIVE', label: 'Active listings' },
+  { status: 'RESERVED', label: 'Reserved' },
   { status: 'PENDING_REVIEW', label: 'Pending review' },
   { status: 'CHANGES_REQUESTED', label: 'Changes requested' },
   { status: 'SOLD', label: 'Sold' },

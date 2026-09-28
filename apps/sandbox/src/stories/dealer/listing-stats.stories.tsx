@@ -9,6 +9,7 @@ const meta = {
   args: {
     stats: [
       { key: 'ACTIVE', label: 'Active listings', value: 7, href: '#', tone: 'ok' },
+      { key: 'RESERVED', label: 'Reserved', value: 2, href: '#', tone: 'warn' },
       { key: 'PENDING_REVIEW', label: 'Pending review', value: 2, href: '#', tone: 'warn' },
       { key: 'CHANGES_REQUESTED', label: 'Changes requested', value: 1, href: '#', tone: 'warn' },
       { key: 'SOLD', label: 'Sold', value: 14, href: '#', tone: 'accent' },
@@ -25,6 +26,7 @@ export const NewDealership: Story = {
   args: {
     stats: [
       { key: 'ACTIVE', label: 'Active listings', value: 0, href: '#', tone: 'ok' },
+      { key: 'RESERVED', label: 'Reserved', value: 0, href: '#', tone: 'warn' },
       { key: 'PENDING_REVIEW', label: 'Pending review', value: 0, href: '#', tone: 'warn' },
       { key: 'CHANGES_REQUESTED', label: 'Changes requested', value: 0, href: '#', tone: 'warn' },
       { key: 'SOLD', label: 'Sold', value: 0, href: '#', tone: 'accent' },
