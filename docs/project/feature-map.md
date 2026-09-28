@@ -5996,3 +5996,83 @@ requires a customer session yet (R64/R65).
   expired ticket, `parseSessionCookie`), `tests/unit/app/login-page.test.tsx`
   (default tab, `?as=dealer`, safe and unsafe `returnTo`, the old route's
   redirect), `tests/unit/lib/safe-return-path.test.ts`.
+
+## R64 — Enquiries come from signed-in customers
+
+**Revises F088** · ⚠️ new table `enquiries`, new enum `EnquiryStatus`
+
+The baseline's enquiry was a form a buyer typed their name and number into,
+and a dealer rang whatever was typed. Now an enquiry is sent by a customer who
+proved their handset (R62), and **the request says only which car** — who is
+asking comes from the session, and which dealership receives it comes from the
+listing.
+
+### The model
+
+`enquiries` — `customerId`, `dealerId`, `listingId`, `message?`, `status`
+(`NEW` · `CONTACTED` · `CLOSED` · `SPAM`), `contactedAt?`, `closedAt?`,
+timestamps.
+
+- **No name or phone column — deliberately.** The dealer sees the customer's
+  current name and proved number, read from `users` when the inbox renders
+  them (R66). The number cannot drift (written only by a completed OTP, R39),
+  and a corrected name is the same lead, so a snapshot would only preserve a
+  mistake.
+- **No `vehicleId`.** A listing has exactly one vehicle (`listings.vehicleId`
+  is unique), so it would be a second copy of a fact.
+- **`SPAM` is kept** from the baseline's `EnquiryStatus` rather than trimmed to
+  the brief's three: DESIGN-SPEC §3.15 draws it as an inbox tab, and it is the
+  dealer's answer to the abuse this phase guards against.
+- **Indexes, each for a read that exists:** `(dealerId, status, createdAt)` —
+  the inbox tab, newest first; `(customerId, listingId, createdAt)` — the
+  duplicate guard; `(listingId)`.
+
+### `POST /v1/enquiries`
+
+Behind `requireCustomer`: a `CUSTOMER` session, or a dealer session whose
+account has a proved phone and a name (R62).
+
+- **Body** `CreateEnquiryInput` `{ listingSlug, message? }`, `.strict()` —
+  `customerPhone`, `customerName`, `dealerId`, `status` are each a 400 that
+  names the field. The slug is the listing's public address, the only
+  identifier a buyer sees; it is a reference, not a slug the caller chooses.
+  An empty or whitespace-only message is stored as no message.
+- **Only a car on the marketplace right now** — the public pages' own
+  `PUBLIC_LISTING_WHERE` (listing `ACTIVE`, dealership `ACTIVE`), read inside
+  the transaction that writes. Sold, removed, rejected, in review, or on a
+  suspended dealership → `409 LISTING_NOT_AVAILABLE`; a slug that was never a
+  listing → `404 LISTING_NOT_FOUND`.
+- **Not your own dealership's car** → `422 ENQUIRY_OWN_LISTING`.
+- **One per customer per car per day** → `409
+ENQUIRY_ALREADY_SUBMITTED_RECENTLY`; the check and the write are serialised
+  per customer and car by a transaction-scoped advisory lock, so five
+  simultaneous presses land exactly one. A follow-up the next day, another car,
+  or another customer is unaffected.
+- **Rate limits** 10 an hour per customer, 30 an hour per IP.
+- **Answer** `201 EnquiryReceipt` `{ id, status, createdAt, dealerName,
+vehicleTitle }`. Audited as `enquiry.created` (actor `CUSTOMER`, against the
+  dealership).
+- **OpenAPI** new tag `Enquiries`, module `enquiriesDocs`, `CreateEnquiryInput`
+  in `INPUT_SCHEMA_NAMES`.
+
+### Privacy
+
+The customer's number is in no public response: the public vehicle page is
+unchanged, and the only place the number will appear is the dealership's own
+inbox (R66), behind `requireDealer` and filtered by the session's dealership.
+
+### Not here
+
+The Enquire button and its sign-in interruption (R65); the inbox and status
+changes (R66); the dashboard counts, whose repository stubs return zero until
+R67.
+
+- **Tests** `apps/api/tests/enquiries.test.ts` (32, real database: anonymous
+  401; customer and dealer-as-customer accepted; customer and dealership
+  derived; no message / empty / whitespace stored as none; seven identity and
+  state fields refused by name; message limit; audit; six non-live listing
+  states and a suspended dealership refused; sold between page and press; 404
+  for an unknown slug; own dealership refused; duplicate within a day refused;
+  five simultaneous presses → one; follow-up after a day, other car, other
+  customer all accepted; the phone absent from the public page),
+  `tests/unit/routes.test.ts` (the route runs only the customer guard).

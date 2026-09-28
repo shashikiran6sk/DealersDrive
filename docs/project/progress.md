@@ -233,7 +233,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R61 — A new dealer starts with either identity and completes the other on step 1 · revises F037/F038/R39/R60 · phone-first provisional dealers; `GET /v1/auth/google/link/start`; `ONBOARDING_IDENTITY_INCOMPLETE`; step 1 shows and requires both
 - [x] R62 — Customer accounts, by phone alone · supersedes DESIGN-SPEC §4.10 for enquiries · ⚠️ two enum values · `CUSTOMER` session scope and seat; prove → name → create; one user for a dealer's number
 - [x] R63 — One Login, with Customer and Dealer tabs · revises F017/F018/F073/R35 · header `Login` → `/login` (Customer default); Dealer tab is Google + phone; `/dealer/login` redirects; the session cookie is relayed by Server Actions
-- [ ] R64 — Enquiries come from signed-in customers · revises F088
+- [x] R64 — Enquiries come from signed-in customers · revises F088 · ⚠️ new table `enquiries` · `POST /v1/enquiries` takes a listing slug and an optional message; identity from the session, dealership from the listing; live listings only; one per customer per car per day
 - [ ] R65 — Enquire from the vehicle page, through sign-in and back · revises F089
 - [ ] R66 — The dealer's enquiry inbox · revises F091
 - [ ] R67 — Enquiry counts on the dashboard, and the signed-in header · revises F048/F073
