@@ -63,3 +63,70 @@ Two limits: ten an hour per customer — a person does not enquire about more
 cars than that in an hour — and thirty an hour per address, so one address
 cannot cycle through throwaway accounts. The duplicate guard in the service
 is the per-car limit; these are the overall ones.
+
+## `apps/api/src/modules/enquiries/enquiries.mapper.ts`
+
+### `export const INBOX_SELECT`
+
+The dealer's view of an enquiry (**R66**). The customer's name and phone are
+selected from `users` at read time, not copied onto the enquiry: the phone is
+written only by a completed OTP (R39), so the number the dealer rings is the one
+the customer proved; and a corrected name is the same lead, so the inbox should
+show the correction rather than preserve the mistake.
+
+### `function publicHref(listing: InboxRow['listing'])`
+
+The car links to its public page only while that page exists — listing
+`ACTIVE` and dealership `ACTIVE`, the same pair `PUBLIC_LISTING_WHERE` tests.
+A sold or removed car's enquiry stays in the inbox with its title and plate, but
+without a link that would 404.
+
+### `export function toDealerEnquiry(row: InboxRow, now: Date = new Date())`
+
+`phone` is nullable because `users.phone` is: an account whose number has since
+been released has no number to call, and the card then offers no Call button
+rather than a `tel:` that dials nothing. `now` is passed once per page so every
+row's "18 min ago" is measured from the same instant.
+
+## `apps/api/src/modules/enquiries/enquiries.service.ts` — the inbox
+
+### `async inbox(dealerId: string, query: DealerEnquiryQuery)`
+
+`dealerId` is the session's, never a parameter a client names (rule 1), and it
+is the first term of every `where` here. Newest first, cursor on `createdAt`
+like the inventory. The counts come from the same `groupBy` the counts route
+uses and ignore the tab, so switching tab never empties the bar.
+
+### `async setStatus(actor: EnquiryActor, enquiryId: string, input: UpdateEnquiryInput)`
+
+The row is locked `FOR UPDATE` **by id and dealership together**, so another
+dealership's enquiry is not found — a 404, never a 403, and nothing about it is
+revealed — and two people on one dealership pressing at once are serialised:
+the second sees the first's status and, if it asked for the same one, changes
+nothing. Without the lock both read `NEW` and both write an audit row.
+
+Any status may follow any other, so a mistaken Close or Spam is undone by
+choosing the right one; there is no state machine to argue with. A move to the
+status an enquiry already has returns it unchanged and audits nothing, so a
+double press leaves one record.
+
+### `function stampsFor(current, status, now)`
+
+`contactedAt` is the **first** contact and is kept through a close and a
+reopen — it answers "how long did we take to call back", which a later press
+should not rewrite. `closedAt` is the current close only, cleared on reopen.
+
+### `const STATUS_AUDIT_ACTIONS: Record<EnquiryStatus, string>`
+
+One audit action per move — `enquiry.contacted`, `enquiry.closed`,
+`enquiry.spam`, `enquiry.reopened` — each against the dealership, with the
+member who moved it and the status before and after.
+
+## `apps/api/src/modules/enquiries/enquiries.dealer.routes.ts`
+
+### `export function createDealerEnquiriesRouter(service: EnquiriesService)`
+
+Mounted inside the dealer router, so `requireDealer` has already run;
+`enquiry:read` and `enquiry:update` are the permissions every seat in the
+baseline's role table already held. `/enquiries/counts` is registered before
+`/enquiries/:id`. Every answer is `no-store` — it carries customers' numbers.

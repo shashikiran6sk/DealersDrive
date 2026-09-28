@@ -6139,3 +6139,101 @@ enquiry-panel.constants.ts, enquiry-panel.types.ts, index.ts}`;
 ### Not here
 
 The dealer's inbox (R66); the signed-in header and the dashboard counts (R67).
+
+## R66 — The dealership's enquiry inbox
+
+**Revises F091** · no schema change
+
+The dealer side of R64: every enquiry a customer sent about one of the
+dealership's cars, in the four tabs DESIGN-SPEC §3.15 draws, each with the
+customer's verified mobile to call and a button to move it on.
+
+### API — three routes on the dealer router
+
+Behind `requireDealer`; the dealership is always the session's.
+
+- **`GET /v1/dealer/enquiries`** (`enquiry:read`) — `DealerEnquiryQuery`
+  `{ status?, cursor?, limit }`, `.strict()`. Newest first, cursor-paginated.
+  Each row (`DealerEnquiry`) carries the customer's **current** name and
+  proved phone read from `users` (with `phoneDisplay`, `callHref`, initials),
+  the message, `createdAt` / `contactedAt` / `closedAt`, and the car — title,
+  plate, listing status, and `href` to `/car/<slug>` only while it is live.
+  `counts` — `ALL`, `NEW`, `CONTACTED`, `CLOSED`, `SPAM` — ignore the filter.
+- **`GET /v1/dealer/enquiries/counts`** (`enquiry:read`) — the counts alone,
+  for a badge (R67).
+- **`PATCH /v1/dealer/enquiries/:id`** (`enquiry:update`) —
+  `UpdateEnquiryInput { status }`, `.strict()`, so no name, number or message
+  can be edited. Any status may follow any other. `contactedAt` is the first
+  contact and survives a close and reopen; `closedAt` is set on close and
+  cleared on reopen. Setting the current status changes and audits nothing.
+  Audited as `enquiry.contacted` / `enquiry.closed` / `enquiry.spam` /
+  `enquiry.reopened`, actor `DEALER`, against the dealership.
+
+**Tenant isolation.** Every read filters on the session's `dealerId`; the
+update locks the row `FOR UPDATE` by id **and** dealership, so another
+dealership's enquiry is a `404 ENQUIRY_NOT_FOUND` — the same answer as an id
+that never existed — and two simultaneous presses write one audit row. Every
+response is `no-store`.
+
+**OpenAPI** three operations in `enquiriesDocs`; `DealerEnquiryQuery` and
+`UpdateEnquiryInput` in `INPUT_SCHEMA_NAMES`. Also fixes four `'\\n\\n'`
+in R64's operation text that rendered as a literal `\n` in Swagger UI.
+
+### Web — `/dealer/enquiries`
+
+- **Nav** — `Enquiries` leaves `NOT_YET_BUILT`; it was already in `DEALER_NAV`.
+- **Page** — server-rendered, `force-dynamic`, read uncached. Opens on **New**;
+  a status it does not know falls back to New. The tab and cursor are the URL.
+- **Card** (§3.15) — avatar, name, mono phone + `Verified`, status tag, time;
+  "About **<car>** <plate>", linked while live; the message, or "Asked to be
+  contacted."; `Call +91 …` (full-width 44px below `sm`) and the moves.
+  No Email button — customers have no email (R62).
+- **Moves** — New: Mark contacted · Close · Spam; Contacted: Close · Spam;
+  Closed: Reopen; Spam: Not spam. A Server Action
+  (`setEnquiryStatusAction`) PATCHes and revalidates the page; a refusal
+  shows the API's sentence.
+- **Not the baseline's shape.** F091 used `@tanstack/react-query` and a BFF
+  route (`app/api/dealer/enquiries`); this follows the inventory's
+  server-rendered pattern (R47) instead, so neither comes across. The
+  dependency stays in `package.json`, unused, as it was before this entry.
+
+### Files
+
+- `packages/contracts/src/enquiry.ts` — `DealerEnquiryQuery`,
+  `DealerEnquiryCounts`, `DealerEnquiry`, `DealerEnquiriesResponse`,
+  `UpdateEnquiryInput`; `enums.ts` — `ENQUIRY_STATUS_TONES`.
+- `apps/api/src/modules/enquiries/` — `enquiries.mapper.ts`,
+  `enquiries.dealer.routes.ts`, `routes/{dealer-route, handle,
+get-dealer-enquiries, get-dealer-enquiry-counts, patch-dealer-enquiry}.ts`,
+  service `inbox` / `counts` / `setStatus`, messages; mounted in `routes.ts`.
+- `apps/web/src/features/dealer/enquiries/` — `EnquiryInbox`, `EnquiryCard`,
+  `EnquiryStatusActions`, constants, types, utils;
+  `features/dealer/enquiry-actions.ts`;
+  `app/(dealer)/dealer/enquiries/page.tsx`.
+- **Components** C090 `EnquiryInbox`, C091 `EnquiryCard`, C092
+  `EnquiryStatusActions` (replacing the baseline's C054 and C065) — sandbox
+  `Dealer/EnquiryInbox` (new, contacted, closed, spam, empty, more pages,
+  move refused, mobile), mock `apps/sandbox/src/mocks/dealer-enquiry-actions.ts`.
+- **Tests**
+  - `apps/api/tests/dealer-enquiries.test.ts` (26, real database): anonymous
+    and customer sessions refused; newest first with the customer read from the
+    account; a renamed customer shown by the new name; the link dropped once
+    sold; cursor pages without repeats; tab filter keeps counts, and the counts
+    route agrees; bad queries refused; **each dealership sees and counts only
+    its own; another's enquiry is a 404 and is left untouched and unaudited**;
+    an unknown id is the same 404; contacted / closed / reopened / spam with
+    stamps and audit rows; same status changes nothing; two simultaneous moves
+    write one audit row; five identity fields refused by name; bad status and
+    non-uuid refused.
+  - `apps/api/tests/unit/routes.test.ts` — the three routes run the dealer
+    guard and never the customer one.
+  - `packages/contracts/tests/unit/enquiry.test.ts` — query defaults and
+    refusals, status-only update, a label and tone for every status.
+  - `apps/web/tests/unit/features/dealer/enquiries-page.test.tsx` (15) and
+    `enquiry-actions.test.ts` (4); `console-nav.test.tsx` now expects
+    Enquiries in the nav.
+
+### Not here
+
+The dashboard's enquiry counts and recent enquiries, the session's
+`counts.newEnquiries`, and the signed-in customer header (R67).

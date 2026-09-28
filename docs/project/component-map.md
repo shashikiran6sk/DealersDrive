@@ -1211,6 +1211,25 @@ under `Suspense`.
 `apps/web/tests/unit/features/enquiry/enquiry-panel.test.tsx`,
 `actions.test.ts`. **Sandbox** `Vehicle/EnquiryPanel`.
 
+### C090 — `EnquiryInbox` · C091 `EnquiryCard` · C092 `EnquiryStatusActions`
+
+**New at R66**, replacing the baseline's C054 `EnquiryInbox` and C065
+`QueryProvider` (`features/dealer/enquiries/`). Server-rendered, like
+`InventoryView`: the tabs and Show more are links, and the only client
+component is `EnquiryStatusActions`, which calls a Server Action — so coupling
+C-2 (`@tanstack/react-query`) no longer applies.
+
+| Component              | Props                                 | States                                                                |
+| ---------------------- | ------------------------------------- | --------------------------------------------------------------------- |
+| `EnquiryInbox`         | `inbox`, `status`                     | new · contacted · closed · spam · empty per tab · more pages · mobile |
+| `EnquiryCard`          | `enquiry`                             | with message · no message · car off the marketplace · number gone     |
+| `EnquiryStatusActions` | `enquiryId`, `status`, `customerName` | moves per status · moving · refused                                   |
+
+**Reuses** `Avatar`, `StatusTag`, `Button`, `EmptyState`, the `.seg` tabs.
+**Consumers:** `/dealer/enquiries`. **Tests**
+`apps/web/tests/unit/features/dealer/enquiries-page.test.tsx`,
+`enquiry-actions.test.ts`. **Sandbox** `Dealer/EnquiryInbox`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

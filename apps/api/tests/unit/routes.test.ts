@@ -162,6 +162,8 @@ describe('the dealer boundary', () => {
     'GET /v1/dealer/dashboard',
     'GET /v1/dealer/documents',
     'GET /v1/dealer/enquiries',
+    'GET /v1/dealer/enquiries/counts',
+    'PATCH /v1/dealer/enquiries/00000000-0000-4000-8000-000000000000',
     'GET /v1/dealer/billing/summary',
   ])('runs requireDealer for %s', async (signature) => {
     const [method, url] = signature.split(' ') as [string, string];
@@ -225,6 +227,18 @@ describe('the dealer boundary', () => {
     expect(result.dealerGuard).toBe(false);
     expect(result.signedInGuard).toBe(false);
     expect(result.reached).toBe(true);
+  });
+
+  /** The inbox is the dealership's; a customer session reaches none of it (R66). */
+  it.each([
+    'GET /v1/dealer/enquiries',
+    'PATCH /v1/dealer/enquiries/00000000-0000-4000-8000-000000000000',
+  ])('never runs the customer guard for %s', async (signature) => {
+    const [method, url] = signature.split(' ') as [string, string];
+    const result = await dispatch(method, url);
+
+    expect(result.customerGuard).toBe(false);
+    expect(result.dealerGuard).toBe(true);
   });
 
   it('runs only the customer guard for GET /v1/auth/customer/me', async () => {

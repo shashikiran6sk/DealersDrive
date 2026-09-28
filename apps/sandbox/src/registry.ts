@@ -1785,6 +1785,51 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'vehicle-enquirypanel',
   },
+  {
+    id: 'C090',
+    name: 'EnquiryInbox',
+    source: 'apps/web/src/features/dealer/enquiries/enquiry-inbox.tsx',
+    category: 'Console',
+    ownership: 'Feature-specific',
+    purpose:
+      'The dealership’s enquiries (R66, revises F091 and replaces C054): New / Contacted / Closed / Spam tabs with counts, a card per enquiry, an empty state per tab, Show more. Server-rendered; no query client.',
+    aliases: ['Inbox', 'Leads', 'LeadInbox', 'EnquiryList', 'Enquiries', 'enquiry-inbox'],
+    features: ['R66', 'F091'],
+    props: ['inbox', 'status'],
+    states: ['new', 'contacted', 'closed', 'spam', 'empty', 'more pages', 'move refused', 'mobile'],
+    reusable: false,
+    storyId: 'dealer-enquiryinbox',
+  },
+  {
+    id: 'C091',
+    name: 'EnquiryCard',
+    source: 'apps/web/src/features/dealer/enquiries/enquiry-card.tsx',
+    category: 'Console',
+    ownership: 'Feature-specific',
+    purpose:
+      'One enquiry (DESIGN-SPEC §3.15): avatar, name, verified mobile, status and time; the car, linked while it is live; the message; Call {phone} first and full-width on mobile, then the status moves.',
+    aliases: ['LeadCard', 'EnquiryRow', 'enquiry-card'],
+    features: ['R66'],
+    props: ['enquiry'],
+    states: ['with message', 'no message', 'car off the marketplace', 'number gone'],
+    reusable: false,
+    storyId: 'dealer-enquiryinbox',
+  },
+  {
+    id: 'C092',
+    name: 'EnquiryStatusActions',
+    source: 'apps/web/src/features/dealer/enquiries/enquiry-status-actions.tsx',
+    category: 'Console',
+    ownership: 'Feature-specific',
+    purpose:
+      'The moves an enquiry can make from where it is — Mark contacted, Close, Spam, Reopen, Not spam — through a Server Action; the revalidated page redraws the inbox.',
+    aliases: ['MarkContacted', 'CloseEnquiry', 'SpamButton', 'enquiry-status-actions'],
+    features: ['R66'],
+    props: ['enquiryId', 'status', 'customerName'],
+    states: ['per status', 'moving', 'refused'],
+    reusable: false,
+    storyId: 'dealer-enquiryinbox',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

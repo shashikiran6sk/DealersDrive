@@ -333,6 +333,14 @@ export const ENQUIRY_STATUS_LABELS: Record<EnquiryStatus, string> = {
   SPAM: 'Spam',
 };
 
+/** R66 — the inbox tag: a new enquiry is the accent, one dealt with is quiet. */
+export const ENQUIRY_STATUS_TONES: Record<EnquiryStatus, StatusTone> = {
+  NEW: 'accent',
+  CONTACTED: 'ok',
+  CLOSED: 'neutral',
+  SPAM: 'err',
+};
+
 export const DOC_TYPE_LABELS: Record<DealerDocType, string> = {
   GST_CERTIFICATE: 'GST certificate',
   PAN_CARD: 'PAN card',

@@ -111,3 +111,12 @@ the point of the numbers being the API's.
 The two panels are their own file rather than private functions here, so both
 can have a sandbox entry (CLAUDE.md §6). See `dashboard-panels.tsx`.
 ────────────────────────────────────────────────────────────────────────────
+
+## `apps/web/src/app/(dealer)/dealer/enquiries/page.tsx`
+
+### `export default async function EnquiriesPage(...)`
+
+The inbox (**R66**). `force-dynamic` and read with `revalidate: false`, like the
+inventory: it carries customers' numbers and must never be served from a cache.
+A `status` it does not know falls back to New rather than being sent; only the
+tab and the cursor reach the API.
