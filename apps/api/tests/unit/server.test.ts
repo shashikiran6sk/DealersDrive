@@ -44,6 +44,7 @@ function app(): Express {
       requireDealer: (_req: Request, _res: Response, next: NextFunction) => next(),
       requireSignedIn: (_req: Request, _res: Response, next: NextFunction) => next(),
       requireAdmin: (_req: Request, _res: Response, next: NextFunction) => next(),
+      requireCustomer: (_req: Request, _res: Response, next: NextFunction) => next(),
     },
     // Pass-through: this file pins middleware *order*, and a limiter that
     // counted would start refusing once a test dispatched the same path twice.

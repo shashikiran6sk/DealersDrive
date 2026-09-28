@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { dealerSessionNext, PhoneSignInInput } from '../../src/auth.js';
+import {
+  CustomerName,
+  CustomerSignUpInput,
+  dealerSessionNext,
+  PhoneSignInInput,
+} from '../../src/auth.js';
 import { DealerStatus } from '../../src/enums.js';
 
 /**
@@ -49,5 +54,37 @@ describe('PhoneSignInInput', () => {
     expect(PhoneSignInInput.safeParse({ phone: '0416224889', accessToken: 't' }).success).toBe(
       false,
     );
+  });
+});
+
+/**
+ * The one thing a customer is asked (**R62**). Any script, one field, and
+ * nothing that could render as blank or break a line on a dealer's screen.
+ */
+describe('CustomerName', () => {
+  it.each(['Ravi', 'ಶಶಿಕಿರಣ್', 'Nguyễn Thị Anh', "D'Souza", 'Mary-Jane O Neil'])(
+    'accepts %j',
+    (name) => {
+      expect(CustomerName.parse(name)).toBe(name);
+    },
+  );
+
+  it('trims what surrounds the name', () => {
+    expect(CustomerName.parse('  Ravi  ')).toBe('Ravi');
+  });
+
+  it.each(['', '   ', 'R', '1234', '---', 'x'.repeat(81), 'Ravi\nKumar', 'Ra\u0000vi'])(
+    'refuses %j',
+    (name) => {
+      expect(CustomerName.safeParse(name).success).toBe(false);
+    },
+  );
+});
+
+describe('CustomerSignUpInput', () => {
+  it.each(['phone', 'email', 'password'])('refuses %s by name', (field) => {
+    expect(
+      CustomerSignUpInput.safeParse({ signUpToken: 't', fullName: 'Ravi', [field]: 'x' }).success,
+    ).toBe(false);
   });
 });

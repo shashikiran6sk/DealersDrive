@@ -5605,8 +5605,8 @@ Each is its own PR, merged before the next starts.
 | R59 | Identity model — a phone as a sign-in identity beside Google, linking and `IDENTITY_ALREADY_LINKED`                                                   |
 | R60 | Dealer phone sign-in — `resolveDealerPostAuthDestination`, shared by Google and phone, and onboarding resume                                          |
 | R61 | Dealer provisional sign-up and identity completion — phone-first or Google-first, step 1 needs both                                                   |
-| R62 | Unified Login — header `Login`, Customer / Dealer tabs                                                                                                |
-| R63 | Customer account and phone sign-in — name only, no email or password; a customer session told apart from a pending dealer                             |
+| R62 | Customer account and phone sign-in — name only, no email or password; a customer session told apart from a pending dealer                             |
+| R63 | Unified Login — header `Login`, Customer / Dealer tabs                                                                                                |
 | R64 | Enquiry model and API — revises F088: the customer is a signed-in account, not typed text; identity derived from the session; dealer from the listing |
 | R65 | Vehicle page enquiry — revises F089: sign-in interrupts and resumes the enquiry                                                                       |
 | R66 | Dealer enquiry inbox — revises F091                                                                                                                   |
@@ -5832,3 +5832,83 @@ only.
   ignored).
 - **Sandbox** `Forms/OnboardingWizard` — `AccountPhoneFirst`,
   `AccountGoogleLinkRefused`.
+
+## R62 — Customer accounts, by phone alone
+
+**New** · ⚠️ two enum values (`SessionScope.CUSTOMER`, `PlatformRole.CUSTOMER`),
+no table or column · **supersedes DESIGN-SPEC §4.10 for enquiries**
+
+> **Order changed.** The brief listed the unified Login screen (PR 5) before
+> customer accounts (PR 6). The Login screen's _default_ tab is Customer, so
+> shipping it first would have shipped a default tab with nothing behind it.
+> R62 is customer accounts; R63 is the Login screen, with both tabs working.
+
+> **DESIGN-SPEC §4.10 said "no customer auth anywhere"** and that an enquiry
+> form is never gated behind a sign-in. This phase deliberately reverses the
+> second half: an enquiry now needs a signed-in customer, so the phone the
+> dealer receives is a proved one (R64). Browsing is untouched — the catalogue,
+> vehicle pages and portfolios stay anonymous, and nothing in R62 gates them.
+
+### The flow: prove, then name, then create
+
+| Step                                                         | New number                                                | Existing customer             |
+| ------------------------------------------------------------ | --------------------------------------------------------- | ----------------------------- |
+| `POST /v1/auth/sign-in/phone/customer`                       | `NAME_REQUIRED` + a sealed `signUpToken`; nothing created | `SIGNED_IN`, `dd_session` set |
+| `POST /v1/auth/sign-up/customer` `{ signUpToken, fullName }` | account created, `201`, `dd_session` set                  | —                             |
+
+- The only question is **a name**: one field, any script, 2–80 characters, at
+  least one letter, no control characters (`CustomerName`). No email, no
+  password, no address, no Google. `CustomerSignUpInput` is `.strict()`, so a
+  sent `email` or `phone` is a 400 naming it.
+- The ticket is HMAC-sealed with the purpose, canonical-number-only, expires in
+  ten minutes and is **spent on first use** — refusing (`503`) rather than
+  risking a replay when the cache cannot say whether it was used.
+- A proved number on an account with no name (a phone-first dealer who never
+  finished step 1) goes to the name screen, and sign-up names that account.
+
+### Identity: one person, one account (brief §34, §40)
+
+- A customer is a `users` row — the phone is `users.phone`, R59's proved-handset
+  identity — with a `CUSTOMER` seat and `CUSTOMER`-scope sessions in the same
+  `sessions` table and the same `dd_session` cookie.
+- **A dealer's number on the customer tab reaches the dealer's own user** and
+  adds a `CUSTOMER` seat. There is never a second account for one handset.
+- **A dealer session counts as a customer** when its account has a proved phone
+  and a name (`createCustomerResolver`), so a dealer browsing the marketplace
+  can enquire without signing in again.
+- **A customer session opens nothing in the console.** `resolveSignedIn` reads
+  `DEALER` sessions only; a `CUSTOMER` session is 401 on `/v1/auth/me`,
+  `/v1/dealer/*` and onboarding, and is never read as a dealer mid-onboarding.
+
+### Routes
+
+| Method | Path                              | Auth     | Purpose                                 |
+| ------ | --------------------------------- | -------- | --------------------------------------- |
+| POST   | `/v1/auth/sign-in/phone/customer` | public   | prove → sign in, or `NAME_REQUIRED`     |
+| POST   | `/v1/auth/sign-up/customer`       | public   | ticket + name → account + session       |
+| GET    | `/v1/auth/customer/me`            | customer | the name and proved number              |
+| POST   | `/v1/auth/customer/logout`        | public   | the same revocation every sign-out uses |
+
+Rate limits: sign-in 20 / 10 min per IP and 10 / 10 min per number; sign-up
+10 / hour per IP. A new OpenAPI audience, `customer`, with its own
+`customerSession` scheme. Audited as `auth.identity.created` (actor
+`CUSTOMER`) and `auth.login.customer`.
+
+### Not here
+
+No screen (R63), no enquiry (R64). The web app does not read a customer
+session yet.
+
+- **Tests** `apps/api/tests/customer-auth.test.ts` (new customer → name →
+  account; nothing created before the name; four scripts of name accepted, six
+  bad names refused; email/phone/password/address refused by name; ticket spent
+  once; ticket edited to another number refused; two tickets for one number
+  race to one account; existing customer signs straight in; closed seat 403;
+  wrong code, replayed token, landline; a dealer's number and a dealer's
+  session reach one user; a customer session opens nothing in the console;
+  logout revokes; audit), `tests/unit/modules/auth/sign-up-ticket.test.ts`,
+  `tests/unit/routes.test.ts` (the customer route runs only the customer guard;
+  five sign-in routes need no session), `packages/contracts/tests/unit/auth.test.ts`
+  (`CustomerName`). `phone-sign-in.routes.test.ts`, `server.test.ts` and `openapi.test.ts` gained
+  a stub for the new guard or router argument in their fake containers — no
+  assertion changed.

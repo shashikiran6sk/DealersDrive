@@ -29,3 +29,8 @@ export const LINK_SESSION_MISMATCH =
 
 export const IDENTITY_INCOMPLETE =
   'Link your Google account before continuing — your dealership needs both a verified mobile number and a Google account.';
+
+export const SIGN_UP_EXPIRED =
+  'That verification has expired. Enter your mobile number again to get a new code.';
+
+export const CUSTOMER_SUSPENDED = 'This account has been suspended. Contact support.';

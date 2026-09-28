@@ -39,12 +39,13 @@ interface Dispatch {
   dealerGuard: boolean;
   signedInGuard: boolean;
   adminGuard: boolean;
+  customerGuard: boolean;
   /** A handler ran — including one that then rejected its input. */
   reached: boolean;
 }
 
 function harness() {
-  const calls = { dealer: 0, signedIn: 0, admin: 0 };
+  const calls = { dealer: 0, signedIn: 0, admin: 0, customer: 0 };
 
   const requireDealer = (_req: Request, _res: Response, next: () => void) => {
     calls.dealer += 1;
@@ -58,6 +59,10 @@ function harness() {
     calls.admin += 1;
     next();
   };
+  const requireCustomer = (_req: Request, _res: Response, next: () => void) => {
+    calls.customer += 1;
+    next();
+  };
 
   /**
    * Every service is a Proxy that answers any method with a promise. The
@@ -68,7 +73,7 @@ function harness() {
   const service = new Proxy({}, { get: () => () => Promise.resolve({}) }) as never;
 
   const container = {
-    guards: { requireDealer, requireSignedIn, requireAdmin },
+    guards: { requireDealer, requireSignedIn, requireAdmin, requireCustomer },
     // Pass-through: this file is about which guard chain a path lands on, and
     // a limiter that actually counted would make the assertion depend on how
     // many times the suite dispatched the same URL.
@@ -76,6 +81,8 @@ function harness() {
       next();
     },
     auth: service,
+    phoneSignIn: service,
+    customers: service,
     publicConfig: service,
     locations: service,
     dealers: service,
@@ -98,6 +105,7 @@ function harness() {
     calls.dealer = 0;
     calls.signedIn = 0;
     calls.admin = 0;
+    calls.customer = 0;
     let unmatched = false;
 
     const req = {
@@ -131,6 +139,7 @@ function harness() {
       dealerGuard: calls.dealer > 0,
       signedInGuard: calls.signedIn > 0,
       adminGuard: calls.admin > 0,
+      customerGuard: calls.customer > 0,
       reached: !unmatched,
     };
   }
@@ -184,6 +193,11 @@ describe('the dealer boundary', () => {
     'GET /v1/auth/google/callback',
     'GET /v1/auth/admin/google/start',
     'POST /v1/auth/admin/logout',
+    'GET /v1/auth/sign-in/phone/widget',
+    'POST /v1/auth/sign-in/phone/dealer',
+    'POST /v1/auth/sign-in/phone/customer',
+    'POST /v1/auth/sign-up/customer',
+    'POST /v1/auth/customer/logout',
   ])('leaves %s reachable without any session', async (signature) => {
     const [method, url] = signature.split(' ') as [string, string];
     const result = await dispatch(method, url);
@@ -191,6 +205,20 @@ describe('the dealer boundary', () => {
     expect(result.signedInGuard).toBe(false);
     expect(result.dealerGuard).toBe(false);
     expect(result.adminGuard).toBe(false);
+    expect(result.customerGuard).toBe(false);
+  });
+
+  /**
+   * **R62** — the customer's own route is behind the customer guard, and only
+   * that one: mounted after the dealer's signed-in guard, it would answer a
+   * customer with a 401 and a pending dealer with a customer's profile.
+   */
+  it('runs only the customer guard for GET /v1/auth/customer/me', async () => {
+    const result = await dispatch('GET', '/v1/auth/customer/me');
+
+    expect(result.customerGuard).toBe(true);
+    expect(result.signedInGuard).toBe(false);
+    expect(result.reached).toBe(true);
   });
 
   /** R45: a dealer never writes vehicle media, so there is no route to reach. */

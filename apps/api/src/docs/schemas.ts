@@ -32,6 +32,8 @@ const INPUT_SCHEMA_NAMES = [
   'PhoneAvailabilityInput',
   'VerifyPhoneInput',
   'PhoneSignInInput',
+  'CustomerSignInInput',
+  'CustomerSignUpInput',
   'CreateVehicleInput',
   'UpdateVehicleInput',
   'VehicleSuggestQuery',

@@ -626,6 +626,56 @@ would make the allow-list vacuous — an address taken off it would keep
 
 working forever on the strength of its own last visit.
 
+## `apps/api/src/modules/auth/customer-auth.service.ts`
+
+### `export function createCustomerAuthService({`
+
+**R62** — customers, by phone alone. No Google, no email, no password.
+
+The flow is the shape the brief asks for and the order is deliberate: **prove,
+then name, then create**. A proved number that already has a named account
+signs straight in. A proved number without one gets a sealed sign-up ticket
+and nothing else — no row, no seat, no session — and the account is created
+only when the ticket comes back with a name. So an account never exists
+before its owner has both shown they hold the handset and said what to call
+them, and an abandoned name screen leaves nothing behind.
+
+A customer is an ordinary `users` row with a `CUSTOMER` seat and
+`CUSTOMER`-scope sessions in the same table every console uses. The phone is
+`users.phone` — the identity R59 made the unique key for a proved handset — so
+a dealer's number on the customer tab reaches the dealer's own user and adds a
+seat; it never makes a second account.
+
+### `if (user?.fullName && user.phone)`
+
+"Existing customer" means a proved number on an account **with a name**. A
+phone-first dealer who never finished step 1 has an account and no name; they
+are sent to the name screen like anybody new, and sign-up names the account
+they already have rather than making another.
+
+### `async signUp(`
+
+The ticket is redeemed first — spent on first use, refused once expired — and
+`createWithPhone` then races any other sign-up for the number to the unique
+index. The loser is answered with the winner's account, so two tabs that both
+reached the name screen both end up signed in to one user.
+
+## `apps/api/src/modules/auth/customer-session.ts`
+
+### `export function createCustomerResolver(sessions: SessionService): CustomerResolver`
+
+Who counts as a customer (**R62**), which is deliberately separate from who
+counts as a dealer: `resolveSignedIn` reads `DEALER`-scope sessions only, so a
+customer session is never mistaken for a dealer mid-onboarding and never
+opens the console.
+
+A customer is a `CUSTOMER` session, **or** a `DEALER` session whose account
+has a proved phone and a name. The second is the brief's §40 — a dealer
+browsing the marketplace who presses Enquire is the same person, and making
+them sign in again would either replace their dealer session or tempt a
+second account. What an enquiry needs is a verified number and a name, and
+that account has both.
+
 ## `apps/api/src/modules/auth/dev-session.adapter.ts`
 
 ### `export function createDevSessionResolver(prisma: PrismaClient): SessionResolver`
@@ -1307,6 +1357,28 @@ difference: this is an authorization fact — somebody decided — where the
 other is a footprint. It also **reopens** a closed seat, because granting
 access to somebody whose access was withdrawn is the same act as granting it
 the first time, and a SUPER_ADMIN is doing both on purpose.
+
+## `apps/api/src/modules/auth/sign-up-ticket.ts`
+
+### `export function issueSignUpTicket(`
+
+The proof a first-time customer carries from the code screen to the name
+screen (**R62**): the canonical number, a nonce and the time, sealed with an
+HMAC over `SESSION_SECRET` and the purpose. A ticket rather than a row
+because nothing should exist before the name does, and a ticket rather than
+the MSG91 token because that token is spent the moment it is proved.
+
+### `const PURPOSE = 'CUSTOMER_SIGN_UP'`
+
+In the signed material as well as the payload. The same secret seals the OAuth
+transaction; a value sealed for any other purpose does not open as this one.
+
+### `export async function redeemSignUpTicket(cache: CachePort, token: string): Promise<SignUpTicket>`
+
+Single-use by the same spent-key pattern the OTP replay guard uses, keyed by a
+hash of the nonce. Unlike linking a phone to a signed-in dealer, this creates
+an account and a session, so when the cache cannot answer it **refuses**
+(`503`) rather than risk honouring a replayed ticket.
 
 ## `apps/api/src/modules/auth/session.cookie.ts`
 

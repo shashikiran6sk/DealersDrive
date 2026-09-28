@@ -3,7 +3,11 @@ import { Router } from 'express';
 import { env } from './config/env.js';
 import type { Container } from './container.js';
 import { createDocsRouter } from './docs/docs.routes.js';
-import { createPublicAuthRouter, createSessionAuthRouter } from './modules/auth/auth.routes.js';
+import {
+  createCustomerAuthRouter,
+  createPublicAuthRouter,
+  createSessionAuthRouter,
+} from './modules/auth/auth.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
 import { createPublicDealersRouter } from './modules/dealers/dealers.public.routes.js';
@@ -38,7 +42,17 @@ export function createRoutes(container: Container): Router {
 
   v1.use(
     '/auth',
-    createPublicAuthRouter(container.auth, container.phoneSignIn, container.rateLimit),
+    createPublicAuthRouter(
+      container.auth,
+      container.phoneSignIn,
+      container.customers,
+      container.rateLimit,
+    ),
+  );
+  v1.use(
+    '/auth/customer',
+    container.guards.requireCustomer,
+    createCustomerAuthRouter(container.customers),
   );
   v1.use(
     '/auth',

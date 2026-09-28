@@ -11,6 +11,15 @@ declaration the note sat above.
 
 Counted per person, not per address: a dealership is often one office NAT.
 
+## `apps/api/src/modules/auth/routes/get-customer-me.ts`
+
+### `export const getCustomerMe: CustomerAuthRoute = (router, { customers }) =>`
+
+**R62** — the name and the proved number an enquiry will carry, derived from
+the session and never typed. Mounted at `/v1/auth/customer` **before** the
+dealer's signed-in router, because that router's guard runs for every path
+under `/v1/auth` and would answer a customer with a 401.
+
 ## `apps/api/src/modules/auth/routes/get-google-callback.ts`
 
 ### `let signInPath = '/dealer/login'`
@@ -125,6 +134,13 @@ Revokes whatever session the caller presents and clears the cookie. No
 guard: signing out must work even when the session is already dead, and it
 can only ever revoke the token in the caller's own cookie.
 
+## `apps/api/src/modules/auth/routes/post-customer-logout.ts`
+
+### `export const postCustomerLogout: PublicAuthRoute = (router, { customers }) =>`
+
+**R62** — unguarded, like the admin sign-out: it must work on an expired
+session, and it can only ever revoke the token in the caller's own cookie.
+
 ## `apps/api/src/modules/auth/routes/post-phone-availability.ts`
 
 ### `export const postPhoneAvailability: SessionAuthRoute = (router, { phone, rateLimit }) =>`
@@ -162,6 +178,21 @@ list of numbers.
 **R60** — sets `dd_session` exactly as the Google callback does, and answers
 `{ next, returnTo }` rather than redirecting, because the caller is a form on
 the page, not a browser navigation. The token is only ever in the cookie.
+
+## `apps/api/src/modules/auth/routes/post-sign-in-phone-customer.ts`
+
+### `export const postSignInPhoneCustomer: PublicAuthRoute = (router, { customers, rateLimit }) =>`
+
+**R62** — the same two limits as the dealer's phone sign-in, by address and by
+number, under their own names so one door's traffic does not spend the
+other's allowance.
+
+## `apps/api/src/modules/auth/routes/post-sign-up-customer.ts`
+
+### `export const postSignUpCustomer: PublicAuthRoute = (router, { customers, rateLimit }) =>`
+
+**R62** — ten an hour per address. Each call needs a ticket that only a proved
+code produces, so this limit is on account creation rather than on sends.
 
 ## `apps/api/src/modules/auth/routes/start-google.ts`
 

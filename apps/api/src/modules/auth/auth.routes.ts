@@ -2,9 +2,14 @@ import { Router } from 'express';
 
 import type { RateLimiter } from '../../middleware/rate-limit.js';
 import type { AuthService } from './auth.service.js';
+import type { CustomerAuthService } from './customer-auth.service.js';
 import type { PhoneService } from './phone.service.js';
 import type { PhoneSignInService } from './phone-sign-in.service.js';
 import { getAdminGoogleStart } from './routes/get-admin-google-start.js';
+import { getCustomerMe } from './routes/get-customer-me.js';
+import { postSignInPhoneCustomer } from './routes/post-sign-in-phone-customer.js';
+import { postSignUpCustomer } from './routes/post-sign-up-customer.js';
+import { postCustomerLogout } from './routes/post-customer-logout.js';
 import { getGoogleCallback } from './routes/get-google-callback.js';
 import { getGoogleLinkStart } from './routes/get-google-link-start.js';
 import { getGoogleStart } from './routes/get-google-start.js';
@@ -18,7 +23,7 @@ import { postOnboarding } from './routes/post-onboarding.js';
 import { postPhoneAvailability } from './routes/post-phone-availability.js';
 import { postPhoneVerify } from './routes/post-phone-verify.js';
 import { postSignInPhoneDealer } from './routes/post-sign-in-phone-dealer.js';
-import type { PublicAuthRoute, SessionAuthRoute } from './routes/route.js';
+import type { CustomerAuthRoute, PublicAuthRoute, SessionAuthRoute } from './routes/route.js';
 
 const PUBLIC_ROUTES: PublicAuthRoute[] = [
   getProviders,
@@ -28,15 +33,27 @@ const PUBLIC_ROUTES: PublicAuthRoute[] = [
   postAdminLogout,
   getSignInPhoneWidget,
   postSignInPhoneDealer,
+  postSignInPhoneCustomer,
+  postSignUpCustomer,
+  postCustomerLogout,
 ];
 
 export function createPublicAuthRouter(
   service: AuthService,
   phoneSignIn: PhoneSignInService,
+  customers: CustomerAuthService,
   rateLimit: RateLimiter,
 ): Router {
   const router = Router();
-  for (const route of PUBLIC_ROUTES) route(router, { service, phoneSignIn, rateLimit });
+  for (const route of PUBLIC_ROUTES) route(router, { service, phoneSignIn, customers, rateLimit });
+  return router;
+}
+
+const CUSTOMER_ROUTES: CustomerAuthRoute[] = [getCustomerMe];
+
+export function createCustomerAuthRouter(customers: CustomerAuthService): Router {
+  const router = Router();
+  for (const route of CUSTOMER_ROUTES) route(router, { customers });
   return router;
 }
 
