@@ -11,11 +11,25 @@ import type { Counted, PublicDealerRow } from './search.facets.js';
 import type { Vocabulary } from './search.filters.js';
 import type { SuggestRow } from './search.suggest.js';
 
-export const PUBLIC_LISTING_WHERE = {
+export const PUBLIC_DEALER_STATUS = 'ACTIVE' as const;
+
+export const PUBLIC_VISIBLE_LISTING_WHERE = {
+  status: { in: ['ACTIVE', 'RESERVED'] },
+  slug: { not: null },
+  dealer: { status: PUBLIC_DEALER_STATUS },
+} satisfies Prisma.ListingWhereInput;
+
+export const PUBLIC_AVAILABLE_LISTING_WHERE = {
   status: 'ACTIVE',
   slug: { not: null },
-  dealer: { status: 'ACTIVE' },
+  dealer: { status: PUBLIC_DEALER_STATUS },
 } satisfies Prisma.ListingWhereInput;
+
+export type PublicListingRule = 'visible' | 'available';
+
+export function publicListingWhere(rule: PublicListingRule): Prisma.ListingWhereInput {
+  return rule === 'visible' ? PUBLIC_VISIBLE_LISTING_WHERE : PUBLIC_AVAILABLE_LISTING_WHERE;
+}
 
 export const cardInclude = {
   vehicle: {
@@ -68,14 +82,14 @@ export function createSearchRepository(prisma: PrismaClient) {
 
     detail(slug: string): Promise<DetailRow | null> {
       return prisma.listing.findFirst({
-        where: { ...PUBLIC_LISTING_WHERE, slug },
+        where: { ...PUBLIC_VISIBLE_LISTING_WHERE, slug },
         include: detailInclude,
       });
     },
 
     publicDealers(): Promise<PublicDealerRow[]> {
       return prisma.dealer.findMany({
-        where: { status: PUBLIC_LISTING_WHERE.dealer.status },
+        where: { status: PUBLIC_DEALER_STATUS },
         select: dealerSelect,
         orderBy: { brandName: 'asc' },
       });
@@ -83,7 +97,7 @@ export function createSearchRepository(prisma: PrismaClient) {
 
     publicDealer(slug: string): Promise<PublicDealerRow | null> {
       return prisma.dealer.findFirst({
-        where: { slug, status: PUBLIC_LISTING_WHERE.dealer.status },
+        where: { slug, status: PUBLIC_DEALER_STATUS },
         select: dealerSelect,
       });
     },
@@ -91,7 +105,7 @@ export function createSearchRepository(prisma: PrismaClient) {
     async vocabulary(): Promise<Vocabulary> {
       const models = await prisma.vehicle.groupBy({
         by: ['make', 'model'],
-        where: { listing: { is: PUBLIC_LISTING_WHERE } },
+        where: { listing: { is: PUBLIC_VISIBLE_LISTING_WHERE } },
       });
       return {
         makes: models.flatMap((row) => (row.make === null ? [] : [row.make])),

@@ -8,22 +8,42 @@ declaration the note sat above.
 The public marketplace (**F075**, **F077**, as scoped by **R45**) and its
 search (**F076**): the list a buyer browses — filtered, sorted, counted — and,
 with F082, the page for one car. The `listing_search` read model and similar
-cars are still deferred; the search reads the live tables through
-`PUBLIC_LISTING_WHERE`.
+cars are still deferred; the search reads the live tables through the two
+public predicates below (**R71**).
 
 ## `apps/api/src/modules/search/search.repository.ts`
 
-### `export const PUBLIC_LISTING_WHERE`
+### `export const PUBLIC_VISIBLE_LISTING_WHERE` · `export const PUBLIC_AVAILABLE_LISTING_WHERE`
 
-The only definition of "a buyer may see this": an `ACTIVE` listing, with a
-public slug, of an `ACTIVE` dealership. Every public query in the module goes
-through it, so a listing in review, sent back, rejected, sold or removed — and
-every listing of a suspended dealership — is **absent**, never greyed.
+The only two definitions of what a buyer meets (**R71**, which replaced R47's
+single `PUBLIC_LISTING_WHERE`). Both require a public slug and an `ACTIVE`
+dealership.
 
-In this phase a sold car is not public either. Rule 6's "a sold car stays on
-the marketplace, greyed" belongs to the search read model, which is deferred;
-until it exists the product says only what it is sure of: ACTIVE means
-available.
+- **Visible** is `ACTIVE` or `RESERVED`: what may appear. The result list and
+  the vehicle page use it, and nothing else.
+- **Available** is `ACTIVE`: what a buyer can act on. Every count uses it —
+  the facets, the response's `available`, suggestions, the directory's and the
+  district dialog's car counts — and so does the enquiry guard in another
+  module.
+
+The split is rule 6's, with `RESERVED` in the role the baseline gave a sold
+car: shown, greyed, sorted last, and never counted. A sold or withdrawn car is
+now simply absent. The same rule is `isListingPubliclyVisible` /
+`isListingAvailable` in contracts, for code that has a status rather than a
+query (the media route, the enquiry links).
+
+`publicListingWhere(rule)` picks one. `listingWhere(dealerIds, rule)` in
+`search.filters.ts` defaults to `'available'`, so a new count written without
+thinking about it counts stock, and only the result list passes `'visible'`.
+
+## `apps/api/src/modules/search/search.filters.ts`
+
+### `export function orderOf(sort)`
+
+Every sort starts with `status asc`. `RESERVED` is declared right after
+`ACTIVE` in the Postgres enum, and Postgres orders an enum by declaration, so
+available cars come first and reserved ones after them, whatever the chosen
+sort. A reserved card never pushes an available one onto page two.
 
 ### `export const cardInclude`
 
@@ -63,8 +83,10 @@ when a moderator approves.
 ### `async vehicle(slug)` — and `toPublicVehicleDetail`
 
 One car's public page (**F082** as scoped by **R45**). The query is the same
-`PUBLIC_LISTING_WHERE` plus the slug, so the page exists exactly when the card
-does. Anything else — a listing in review, sent back, rejected, sold, removed,
+`PUBLIC_VISIBLE_LISTING_WHERE` plus the slug, so the page exists exactly when
+the card does — a reserved car included, marked with `availability`, because a
+buyer holding its link should learn it is reserved rather than meet a 404.
+Anything else — a listing in review, sent back, rejected, sold, withdrawn,
 one of a suspended dealership, a slug that never existed, or a listing or
 vehicle **id** — is the same `404 VEHICLE_NOT_FOUND` with the same sentence: the
 response says nothing about whether a car exists behind it.
@@ -84,7 +106,7 @@ route, which is not built, so the page carries none.
 
 The dealer directory's and the portfolio's car counts (**R48**), implementing
 the dealers module's `DealerInventoryStats` port. One `groupBy` over vehicles
-whose listing matches `PUBLIC_LISTING_WHERE` — count and cheapest price per
+whose listing matches `PUBLIC_AVAILABLE_LISTING_WHERE` — count and cheapest price per
 dealership — and one lookup of the slugs it found: two queries whatever the
 number of dealerships, never one per card. It uses the same predicate as the
 public list, not a second `status = ACTIVE`, which is the whole point.

@@ -3,6 +3,9 @@ export const LISTING_NOT_FOUND = 'That car is not on Dealers-Drive.';
 export const LISTING_NOT_AVAILABLE =
   'This car is no longer available, so the dealership is not taking enquiries about it.';
 
+export const LISTING_RESERVED =
+  'This car is reserved for another buyer, so the dealership is not taking enquiries about it for now.';
+
 export const OWN_LISTING = 'This car belongs to your own dealership.';
 
 export const ALREADY_OPEN =

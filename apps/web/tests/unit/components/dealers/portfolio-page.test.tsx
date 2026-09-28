@@ -90,6 +90,7 @@ function inventory(
   return {
     data,
     page: { page: 1, limit: 24, total: data.length, totalPages: 1, ...page },
+    available: page.total ?? data.length,
     facets: NO_VEHICLE_FACETS,
   };
 }
@@ -97,6 +98,7 @@ function inventory(
 function car(slug: string): VehicleCardDto {
   return {
     slug,
+    availability: 'AVAILABLE',
     title: '2023 Hyundai Creta SX(O)',
     year: 2023,
     priceLabel: '₹14,50,000',
@@ -648,6 +650,20 @@ describe('filtering the inventory (F086)', () => {
     apiGetParsed.mockResolvedValue(stocked([car('a'), car('b')]));
     render(await DealerPortfolioPage({ params, searchParams: Promise.resolve({ fuel: 'cng' }) }));
     expect(screen.getByText('2 of 12 cars')).toBeInTheDocument();
+  });
+
+  it('shows a reserved car greyed, unlinked, and out of the count (R71)', async () => {
+    serve(STOCKED);
+    apiGetParsed.mockResolvedValue({
+      ...stocked([car('a'), { ...car('b'), availability: 'RESERVED' }]),
+      available: 1,
+    });
+    render(await DealerPortfolioPage({ params, searchParams }));
+    const section = within(screen.getByRole('region', { name: 'Inventory' }));
+    expect(section.getByText('1 car available')).toBeInTheDocument();
+    expect(section.getAllByRole('article')).toHaveLength(2);
+    expect(section.getByText('Reserved')).toBeInTheDocument();
+    expect(section.getAllByRole('link', { name: /Hyundai Creta/ })).toHaveLength(1);
   });
 
   it('says nothing matches, and clears the filters in place', async () => {

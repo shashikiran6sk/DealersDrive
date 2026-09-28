@@ -25,6 +25,7 @@ vi.mock('@/lib/api', async (importOriginal) => {
 function card(overrides: Partial<VehicleCardDto> = {}): VehicleCardDto {
   return {
     slug: '2023-hyundai-creta-sx-o-katpadi-3f9a1c2b',
+    availability: 'AVAILABLE',
     title: '2023 Hyundai Creta SX(O)',
     year: 2023,
     priceLabel: '₹14,50,000',
@@ -43,6 +44,7 @@ function response(data: VehicleCardDto[], page = 1, totalPages = 1): PublicVehic
   return {
     data,
     page: { page, limit: 24, total: data.length, totalPages },
+    available: data.length,
     facets: NO_VEHICLE_FACETS,
   };
 }
@@ -118,6 +120,40 @@ describe('VehicleCard', () => {
     const [first, second] = screen.getAllByRole('img');
     expect(first).toHaveAttribute('loading', 'eager');
     expect(second).toHaveAttribute('loading', 'lazy');
+  });
+
+  it('draws a reserved car greyed and labelled, with no link to open it (R71)', () => {
+    render(<VehicleCard vehicle={card({ availability: 'RESERVED' })} />);
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByText('Reserved')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: /2023 Hyundai Creta SX\(O\).*Reserved for another buyer/,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('img')).toHaveClass('grayscale');
+  });
+
+  it('cannot be reached or activated from the keyboard when reserved', () => {
+    const { container } = render(<VehicleCard vehicle={card({ availability: 'RESERVED' })} />);
+    expect(container.querySelectorAll('a, button, [tabindex]')).toHaveLength(0);
+  });
+
+  it.each([
+    ['SOLD', 'Sold'],
+    ['UNAVAILABLE', 'No longer available'],
+  ] as const)('labels a %s car and does not link it', (availability, label) => {
+    render(<VehicleCard vehicle={card({ availability })} />);
+    expect(screen.getByText(label)).toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('links an available car, with nothing greyed', () => {
+    render(<VehicleCard vehicle={card()} />);
+    expect(screen.getByRole('link', { name: '2023 Hyundai Creta SX(O)' })).toBeInTheDocument();
+    expect(screen.queryByText('Reserved')).not.toBeInTheDocument();
+    expect(screen.getByRole('img')).not.toHaveClass('grayscale');
   });
 
   it('has a skeleton that is hidden from assistive technology', () => {
@@ -319,6 +355,16 @@ describe('/cars with filters', () => {
       'href',
       '/cars?district=ranipet&fuel=petrol&page=2',
     );
+  });
+
+  it('counts only the available cars, never a reserved one it also shows (R71)', async () => {
+    serve({
+      ...response([card(), card({ slug: 'b', availability: 'RESERVED' })]),
+      available: 1,
+    });
+    render(await CarsPage({ searchParams: Promise.resolve({}) }));
+    expect(screen.getByRole('status')).toHaveTextContent('1 car available');
+    expect(screen.getAllByRole('article')).toHaveLength(2);
   });
 
   it('announces the total as a status, so a screen reader hears it change', async () => {

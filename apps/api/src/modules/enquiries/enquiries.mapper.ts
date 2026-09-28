@@ -2,6 +2,7 @@ import {
   CUSTOMER_ENQUIRY_STATUS_LABELS,
   CUSTOMER_ENQUIRY_STATUS_TONES,
   customerEnquiryStatus,
+  isListingPubliclyVisible,
   ENQUIRY_STATUS_LABELS,
   ENQUIRY_STATUS_TONES,
   formatDate,
@@ -49,7 +50,7 @@ export type InboxRow = Prisma.EnquiryGetPayload<{ select: typeof INBOX_SELECT }>
 function publicHref(
   listing: Pick<InboxRow['listing'], 'status' | 'slug' | 'dealer'>,
 ): string | null {
-  const live = listing.status === 'ACTIVE' && listing.dealer.status === 'ACTIVE';
+  const live = isListingPubliclyVisible(listing.status) && listing.dealer.status === 'ACTIVE';
   return live && listing.slug ? `/car/${listing.slug}` : null;
 }
 

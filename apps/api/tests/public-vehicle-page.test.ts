@@ -87,6 +87,7 @@ describe('an approved car', () => {
 
     expect(Object.keys(body).sort()).toEqual(
       [
+        'availability',
         'dealer',
         'description',
         'images',

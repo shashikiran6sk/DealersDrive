@@ -22,9 +22,18 @@ portfolio's: the same card with an 8px body gap and **no dealer strip**,
 because it sits under that dealer's own header. The legacy card used the same
 prop name for the same reason, so a reader of either finds one vocabulary.
 
-There is no save button and no sold state. Saved cars (F087) are deferred, and
-in this phase only ACTIVE listings are public, so a sold card cannot occur.
-Both return as props when their features land.
+There is no save button yet; saved cars return with R75.
+
+### `const unavailable = vehicle.availability !== 'AVAILABLE'`
+
+A reserved car stays on the marketplace (**R71**) but cannot be opened, so its
+card is not a link at all. The title is plain text, so there is nothing to
+focus, nothing to press with Enter or Space, and no stretched `::after` to
+click. Hiding a link with `pointer-events: none` would still leave it in the
+tab order and announce it as a link. A visually hidden "— Reserved for another
+buyer" makes the heading say what the grey photograph shows. The hover border
+goes with the link: it promised a click. The same treatment covers `SOLD` and
+`UNAVAILABLE`, which only a customer's own saved cars will ever send.
 
 ## `apps/web/src/components/vehicle/vehicle-card/vehicle-image.tsx`
 

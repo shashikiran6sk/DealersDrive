@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 
-import { PUBLIC_LISTING_WHERE } from './search.repository.js';
+import { PUBLIC_AVAILABLE_LISTING_WHERE } from './search.repository.js';
 
 export interface PublicInventoryStat {
   dealer_slug: string;
@@ -13,7 +13,7 @@ export function createPublicInventoryStats(prisma: PrismaClient) {
     async dealerStats(): Promise<PublicInventoryStat[]> {
       const groups = await prisma.vehicle.groupBy({
         by: ['dealerId'],
-        where: { listing: { is: PUBLIC_LISTING_WHERE } },
+        where: { listing: { is: PUBLIC_AVAILABLE_LISTING_WHERE } },
         _count: { _all: true },
         _min: { pricePaise: true },
       });

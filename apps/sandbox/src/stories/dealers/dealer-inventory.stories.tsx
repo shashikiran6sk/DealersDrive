@@ -14,6 +14,7 @@ const SHADES = ['1f2937', '374151', '4b5563', '0f172a', '1e293b', '334155'];
 function car(index: number): VehicleCardDto {
   return {
     slug: `car-${index}`,
+    availability: index === 1 ? 'RESERVED' : 'AVAILABLE',
     title:
       ['2023 Hyundai Creta SX(O)', '2021 Tata Nexon XZ+', '2019 Maruti Suzuki Swift VXi'][
         index % 3
@@ -37,6 +38,7 @@ function inventory(count: number, total = count, page = 1): PublicVehiclesRespon
   return {
     data: Array.from({ length: count }, (_, index) => car(index)),
     page: { page, limit: 24, total, totalPages: Math.max(1, Math.ceil(total / 24)) },
+    available: count > 1 ? total - 1 : total,
     facets: NO_VEHICLE_FACETS,
   };
 }

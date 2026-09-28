@@ -27,6 +27,7 @@ function image(index: number) {
 function detail(overrides: Partial<PublicVehicleDetail> = {}): PublicVehicleDetail {
   return {
     slug: SLUG,
+    availability: 'AVAILABLE',
     title: '2023 Hyundai Creta SX(O)',
     year: 2023,
     priceLabel: '₹14,50,000',
@@ -103,6 +104,27 @@ describe('/car/[slug]', () => {
     const specs = within(screen.getByRole('region', { name: 'Specifications' }));
     expect(specs.getByText('Hyundai')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '← All cars' })).toHaveAttribute('href', '/cars');
+  });
+
+  it('shows a reserved car plainly as reserved, and offers no enquiry (R71)', async () => {
+    apiGetParsed.mockResolvedValue(detail({ availability: 'RESERVED' }));
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    expect(screen.getAllByText('Reserved').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/reserved for another buyer/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Enquire/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Browse available cars' })).toHaveAttribute(
+      'href',
+      '/cars',
+    );
+  });
+
+  it('offers the enquiry on an available car, with no reserved notice', async () => {
+    apiGetParsed.mockResolvedValue(detail());
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    expect(screen.getAllByRole('button', { name: /Enquire/ }).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/reserved for another buyer/)).not.toBeInTheDocument();
   });
 
   it('leaves out the description section when the dealer wrote none', async () => {

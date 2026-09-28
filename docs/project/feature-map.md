@@ -6524,3 +6524,72 @@ listing's reason and note and **View on site** while the car is on sale.
   refusals before any call, and API errors.
 - `inventory-page.test.tsx` (per-row moves) and `vehicle-wizard.test.tsx`
   (a reserved car's moves).
+
+## R71 — A reserved car stays on show; a sold or withdrawn one leaves every public surface
+
+**Revises F075 / F076 / F082 / F086 / R48 / R64 / R69** · no schema change
+
+### The rule, in one place
+
+| Status      | `/cars`, portfolio  | Card                    | Vehicle page          | Counts, facets  | Enquiry                     |
+| ----------- | ------------------- | ----------------------- | --------------------- | --------------- | --------------------------- |
+| `ACTIVE`    | shown               | linked                  | open                  | counted         | taken                       |
+| `RESERVED`  | shown, after ACTIVE | greyed, badged, no link | open, marked Reserved | **not counted** | `409 LISTING_RESERVED`      |
+| `SOLD`      | absent              | —                       | 404                   | —               | `409 LISTING_NOT_AVAILABLE` |
+| `WITHDRAWN` | absent              | —                       | 404                   | —               | `409 LISTING_NOT_AVAILABLE` |
+
+- **Two predicates** replace R47's single `PUBLIC_LISTING_WHERE`, both in
+  `search.repository.ts`:
+  - `PUBLIC_VISIBLE_LISTING_WHERE` (`ACTIVE`/`RESERVED`) is used only by the
+    result list and the vehicle page.
+  - `PUBLIC_AVAILABLE_LISTING_WHERE` (`ACTIVE`) is used by every count: facets,
+    `available`, suggestions, the directory's and the district dialog's car
+    counts. The enquiry guard uses it too.
+  - `listingWhere()` defaults to **available**, so a new count counts stock.
+  - Contracts mirror both as `isListingPubliclyVisible` / `isListingAvailable`,
+    for code holding a status: the media route and the enquiry links.
+- **Paging vs availability.** `page.total` counts the cards returned (available
+  - reserved), which is what pages are cut from. The new top-level `available`
+    counts ACTIVE cars under the same scope and filters, and is what "N cars
+    available" shows on `/cars` and on the portfolio. Every sort starts with
+    `status asc`, so reserved cards come after every available one.
+- `VehicleCardDto` and `PublicVehicleDetail` gain `availability`
+  (`PublicAvailability`: `AVAILABLE · RESERVED · SOLD · UNAVAILABLE`, labelled
+  Available / Reserved / Sold / No longer available). Search only ever sends
+  the first two; the others are for saved cars (R75). No internal status leaves
+  the API.
+- **Enquiries** read the listing row `FOR SHARE` before checking availability,
+  so a sale racing an enquiry serialises with it.
+- **Media** serves a reserved car's photographs; a sold or withdrawn car's are a 404.
+
+### Web
+
+- `VehicleCard`, when not `AVAILABLE`:
+  - greyscale photograph at 60% opacity, muted text
+  - `AvailabilityBadge` (C099)
+  - no link: plain-text title with a visually hidden "— Reserved for another
+    buyer", nothing focusable, no hover border
+  - one component, so `/cars`, the portfolio and later surfaces all behave the same
+- `/car/[slug]` for a reserved car shows the badge beside the year plate and
+  `AvailabilityNotice` (C100) in place of the enquiry panel, so there is no
+  Enquire button and no `?enquire=1` auto-open.
+- `/cars` and the portfolio count `available`. The portfolio shows its rail
+  when it has any card at all.
+
+### Tests
+
+- `apps/api/tests/public-lifecycle.test.ts` (16) covers the matrix:
+  - moves made through the R69 routes
+  - list, sort order, `available`, portfolio, facets, directory count
+  - the vehicle page (200/200/404/404)
+  - enquiries for all four states, a reactivated car taking one again, and a
+    sale racing an enquiry
+- Updated: `search.test.ts` and `search.filters.test.ts` (both predicates,
+  default rule, status-first order), `media.service.test.ts` (RESERVED served),
+  `public-vehicles` / `public-vehicle-page` (key lists).
+- Web:
+  - `vehicle-card.test.tsx`: reserved has no link, is not focusable and is
+    greyed; sold and unavailable are labelled; `/cars` counts available.
+  - `vehicle-page.test.tsx`: reserved shows the notice and no Enquire.
+  - `portfolio-page.test.tsx`: a reserved card is shown, unlinked and not counted.
+- Contracts: `listing.test.ts`.

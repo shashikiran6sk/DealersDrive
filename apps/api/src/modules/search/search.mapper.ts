@@ -12,6 +12,7 @@ import {
   formatRupees,
   initialsOf,
   ownerLabel,
+  publicAvailabilityOf,
   vehicleSummary,
   vehicleTitle,
   type PublicVehicleDetail,
@@ -91,6 +92,7 @@ export function toPublicVehicleDetail(row: DetailRow): PublicVehicleDetail {
 
   return {
     slug: row.slug ?? '',
+    availability: publicAvailabilityOf(row.status),
     title,
     year: vehicle.manufacturingYear,
     priceLabel: vehicle.pricePaise === null ? null : formatRupees(vehicle.pricePaise),
@@ -132,6 +134,7 @@ export function toVehicleCard(row: CardRow): VehicleCardDto {
 
   return {
     slug: row.slug ?? '',
+    availability: publicAvailabilityOf(row.status),
     title,
     year: vehicle.manufacturingYear,
     priceLabel: vehicle.pricePaise === null ? null : formatRupees(vehicle.pricePaise),

@@ -70,9 +70,13 @@ export const searchDocs: ModuleDocs = {
   tag: DOC_TAGS.vehiclesPublic,
   description:
     'The public marketplace (**F075**, **F077**, as scoped by **R45**). No session.\n\n' +
-    '**Only an `ACTIVE` listing of an `ACTIVE` dealership is ever returned** — a draft, a ' +
-    'listing in review, one sent back, rejected, sold or removed, and every listing of a ' +
-    'suspended dealership, is absent, not greyed. A vehicle is addressed by its public ' +
+    '**Two public rules (R71).** A listing is *visible* when it is `ACTIVE` or `RESERVED` and ' +
+    'its dealership is `ACTIVE`; it is *available* only when `ACTIVE`. Search results and the ' +
+    'detail page return visible listings, each card carrying `availability` (`AVAILABLE` or ' +
+    '`RESERVED`), with reserved cars sorted after available ones. Every count that means ' +
+    'stock — the facets, `available`, the directory’s car counts, suggestions — counts ' +
+    'available cars only. A draft, a listing in review, one sent back, rejected, sold or ' +
+    'withdrawn, and every listing of a suspended dealership, is absent. A vehicle is addressed by its public ' +
     '`slug`; no internal id, registration number, moderation or audit field, storage key or ' +
     'dealer phone number appears in any response here.',
   operations: [
@@ -119,9 +123,11 @@ export const searchDocs: ModuleDocs = {
         'The vehicle detail page (**F082** as scoped by **R45**): title, price, the ' +
         'specifications, the dealer\u2019s description, every image in the admin\u2019s ' +
         'gallery order with `primaryIndex` naming the one to show first, and the dealership.\n\n' +
-        '**A listing that is not `ACTIVE`, or whose dealership is not, is `404 ' +
-        'VEHICLE_NOT_FOUND`** — the same answer as a slug that never existed, so the response ' +
-        'says nothing about a car in review, rejected, sold or removed. The registration ' +
+        '**A reserved car has a page** (**R71**), with `availability: RESERVED`; the page offers ' +
+        'no enquiry. **A listing that is neither `ACTIVE` nor `RESERVED`, or whose dealership ' +
+        'is not `ACTIVE`, is `404 VEHICLE_NOT_FOUND`** — the same answer as a slug that never ' +
+        'existed, so the response says nothing about a car in review, rejected, sold or ' +
+        'withdrawn. The registration ' +
         'appears only as its RTO; no id, moderation field, storage key or phone number is ' +
         'returned (a dealer\u2019s number is only ever revealed by the rate-limited reveal ' +
         'route, which is not built).',

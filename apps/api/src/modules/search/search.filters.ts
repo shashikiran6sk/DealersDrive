@@ -11,7 +11,7 @@ import {
 } from '@dealers-drive/contracts';
 import type { BodyType, FuelType, Prisma, Transmission, VehicleColor } from '@prisma/client';
 
-import { PUBLIC_LISTING_WHERE } from './search.repository.js';
+import { publicListingWhere, type PublicListingRule } from './search.repository.js';
 
 export type FilterKey =
   | 'brand'
@@ -206,10 +206,12 @@ export function vehicleWhere(
   return and.length > 0 ? { AND: and } : {};
 }
 
-export function listingWhere(dealerIds: readonly string[] | null): Prisma.ListingWhereInput {
-  return dealerIds === null
-    ? PUBLIC_LISTING_WHERE
-    : { ...PUBLIC_LISTING_WHERE, dealerId: { in: [...dealerIds] } };
+export function listingWhere(
+  dealerIds: readonly string[] | null,
+  rule: PublicListingRule = 'available',
+): Prisma.ListingWhereInput {
+  const base = publicListingWhere(rule);
+  return dealerIds === null ? base : { ...base, dealerId: { in: [...dealerIds] } };
 }
 
 export function inventoryWhere(
@@ -222,7 +224,13 @@ export function inventoryWhere(
 
 const NEWEST: Prisma.ListingOrderByWithRelationInput[] = [{ publishedAt: 'desc' }, { id: 'desc' }];
 
+const AVAILABLE_FIRST: Prisma.ListingOrderByWithRelationInput = { status: 'asc' };
+
 export function orderOf(sort: VehicleSort): Prisma.ListingOrderByWithRelationInput[] {
+  return [AVAILABLE_FIRST, ...sortOf(sort)];
+}
+
+function sortOf(sort: VehicleSort): Prisma.ListingOrderByWithRelationInput[] {
   switch (sort) {
     case 'price_asc':
       return [{ vehicle: { pricePaise: { sort: 'asc', nulls: 'last' } } }, ...NEWEST];

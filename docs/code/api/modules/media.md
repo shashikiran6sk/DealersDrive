@@ -61,11 +61,13 @@ vehicle media at all.
 
 Resolves a delivery request to stored bytes. Content-addressed, immutable.
 
-**A vehicle image is public only while its listing is `ACTIVE` (R45).** The
-media row is read with its `vehicle_media` attachment, the vehicle and the
-listing, and anything else — a pending review, changes requested, rejected,
-sold, removed, or an image attached to nothing — is the same 404 as an id that
-does not exist. A moderator previews unpublished images through a signed read
+**A vehicle image is public only while its listing is visible — `ACTIVE`, or
+`RESERVED` since R71, because a reserved car's card and page are still shown
+(R45, R71).** The rule is contracts' `isListingPubliclyVisible`, the same one the
+search's visible predicate spells. The media row is read with its
+`vehicle_media` attachment, the vehicle and the listing, and anything else — a
+pending review, changes requested, rejected, sold, withdrawn, or an image
+attached to nothing — is the same 404 as an id that does not exist. A moderator previews unpublished images through a signed read
 URL instead. Other owner types (a yard photograph) are unaffected.
 
 The response stays `immutable` for a year: once an image has been public its

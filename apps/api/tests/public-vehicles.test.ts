@@ -64,6 +64,7 @@ describe('what the marketplace lists', () => {
     const card = (await allCards()).find((entry) => entry.slug === live.slug);
     expect(card).toEqual({
       slug: live.slug,
+      availability: 'AVAILABLE',
       title: '2023 Tata Nexon XZ+',
       year: 2023,
       priceLabel: '₹14,50,000',
@@ -137,7 +138,17 @@ describe('what a card never carries', () => {
     const text = JSON.stringify(card);
 
     expect(Object.keys(card ?? {}).sort()).toEqual(
-      ['dealer', 'image', 'imageCount', 'metaLabel', 'priceLabel', 'slug', 'title', 'year'].sort(),
+      [
+        'availability',
+        'dealer',
+        'image',
+        'imageCount',
+        'metaLabel',
+        'priceLabel',
+        'slug',
+        'title',
+        'year',
+      ].sort(),
     );
     expect(Object.keys(card?.dealer ?? {}).sort()).toEqual(
       ['initials', 'isVerified', 'name', 'slug'].sort(),

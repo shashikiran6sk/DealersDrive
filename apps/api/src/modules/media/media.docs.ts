@@ -130,7 +130,7 @@ export const storageDocs: ModuleDocs = {
       description:
         'Content-addressed image delivery for every kind of image the product stores — a ' +
         'vehicle photograph and a dealership yard photograph are the same bytes behind the ' +
-        'same handler. **A vehicle image is served only while its listing is `ACTIVE`** ' +
+        'same handler. **A vehicle image is served only while its listing is `ACTIVE` or `RESERVED`** ' +
         '(**R45**): before approval, after a sale or a removal it is a 404, and a moderator ' +
         'previews it through a signed read URL instead. A new upload is a new id and therefore a new URL, ' +
         'so a cache never has to be invalidated — hence ' +

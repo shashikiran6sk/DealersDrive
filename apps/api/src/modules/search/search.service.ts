@@ -133,15 +133,17 @@ export function createSearchService({ repo }: SearchDeps) {
   ): Promise<PublicVehiclesResponse> {
     const vocabulary = needsVocabulary(query) ? await repo.vocabulary() : null;
     const filters = resolveFilters(query, vocabulary);
+    const vehicle = { is: vehicleWhere(filters) };
     const where: Prisma.ListingWhereInput = {
-      ...listingWhere(scope.resultIds),
-      vehicle: { is: vehicleWhere(filters) },
+      ...listingWhere(scope.resultIds, 'visible'),
+      vehicle,
     };
     const skip = (query.page - 1) * query.limit;
 
-    const [rows, total, facets] = await Promise.all([
+    const [rows, total, available, facets] = await Promise.all([
       repo.cards(where, orderOf(query.sort), skip, query.limit),
       repo.count(where),
+      repo.count({ ...listingWhere(scope.resultIds, 'available'), vehicle }),
       facetsOf(query, filters, scope, location),
     ]);
 
@@ -153,6 +155,7 @@ export function createSearchService({ repo }: SearchDeps) {
         total,
         totalPages: Math.max(1, Math.ceil(total / query.limit)),
       },
+      available,
       facets,
     };
   }

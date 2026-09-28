@@ -789,6 +789,16 @@ none of which any test or tool can currently exercise.
 > Tested in `tests/unit/components/vehicle/vehicle-card.test.tsx`; sandbox
 > `Vehicle/VehicleCard`.
 
+> ⚠️ **R71 — the unavailable states.** `VehicleCardDto.availability` is
+> `AVAILABLE`, `RESERVED`, `SOLD` or `UNAVAILABLE`. Anything but `AVAILABLE` is
+> drawn greyed (`grayscale` + 60% opacity on the photograph, muted text), with
+> `AvailabilityBadge` (C099) over the photograph, **and no link**: the title is
+> plain text with a visually hidden "— Reserved for another buyer", so there is
+> nothing to focus, tab to or press. The hover border is dropped with the link.
+> `/cars` and the portfolio can only ever send `RESERVED`; `SOLD` and
+> `UNAVAILABLE` exist for saved cars (R75). Stories `Reserved`, `Sold`,
+> `NoLongerAvailable`, and a reserved card in `Grid`.
+
 ### C033 — `VehicleImage` · C034 — `VehicleCardSkeleton`
 
 Same file, `:196` and `:243`. `VehicleImage` takes
@@ -1293,6 +1303,17 @@ in an anchor); `VehicleWizard`'s locked view renders the panel. **Reuses**
 `listing-lifecycle-actions.test.ts`, `inventory-page.test.tsx`. **Sandbox**
 `Dealer/ListingLifecycleActions`, `Dealer/InventoryView`; the Server Action is
 stubbed by `apps/sandbox/src/mocks/listing-lifecycle-actions.ts`.
+
+### C099 — `AvailabilityBadge` · C100 — `AvailabilityNotice`
+
+**New at R71.** `AvailabilityBadge` (`components/vehicle/vehicle-card/`) is the
+Reserved / Sold / No longer available corner label; `VehicleCard` places it over
+the photograph, and the vehicle page places it beside the year plate with
+`className="static"`. `AvailabilityNotice` (`components/vehicle/availability-notice/`)
+replaces the enquiry panel on a reserved car's page: a warn `Banner` saying
+enquiries are paused, and **Browse available cars**. **Reuses** `Banner`,
+`ButtonLink`. **Tests** `vehicle-card.test.tsx`, `vehicle-page.test.tsx`.
+**Sandbox** `Vehicle/VehicleCard` (Reserved), `Vehicle/AvailabilityNotice`.
 
 ## D1 impact — components affected by removing the catalogue
 

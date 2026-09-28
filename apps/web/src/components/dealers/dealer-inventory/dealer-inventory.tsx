@@ -35,14 +35,14 @@ export function DealerInventory({
   brandName,
   inventory,
   params = {},
-  liveTotal = inventory.page.total,
+  liveTotal = inventory.available,
   location = null,
 }: DealerInventoryProps) {
-  const { page, facets } = inventory;
+  const { page, facets, available } = inventory;
   const basePath = portfolioPath(dealerSlug);
   const filtered = activeFilterCount(params) > 0;
-  const total = filtered ? Math.max(liveTotal, page.total) : page.total;
-  const hasStock = total > 0;
+  const total = filtered ? Math.max(liveTotal, available) : available;
+  const hasStock = total > 0 || page.total > 0;
 
   return (
     <SearchNavigationProvider>
@@ -78,8 +78,8 @@ export function DealerInventory({
                 </h2>
                 <span className="text-[14px] ink-muted tnum" role="status">
                   {filtered
-                    ? DEALER_INVENTORY_TEXT.countOf(page.total, total)
-                    : DEALER_INVENTORY_TEXT.count(page.total)}
+                    ? DEALER_INVENTORY_TEXT.countOf(available, total)
+                    : DEALER_INVENTORY_TEXT.count(available)}
                 </span>
               </div>
               {hasStock ? (

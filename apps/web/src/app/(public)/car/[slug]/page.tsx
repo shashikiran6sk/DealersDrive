@@ -5,9 +5,11 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { Plate } from '@/components/ui/primitives';
+import { AvailabilityNotice } from '@/components/vehicle/availability-notice';
 import { PriceBlock } from '@/components/vehicle/price-block';
 import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
+import { AvailabilityBadge, availabilityLabel } from '@/components/vehicle/vehicle-card';
 import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
 import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
 import { ApiError, apiGetParsed } from '@/lib/api';
@@ -54,6 +56,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const vehicle = await loadVehicle(slug);
   if (!vehicle) notFound();
+  const available = vehicle.availability === 'AVAILABLE';
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 pt-[22px] pb-[88px] lg:pb-[60px]">
@@ -90,7 +93,15 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
 
         <aside className="flex flex-col gap-[16px] self-start lg:sticky lg:rail-top">
           <div className="flex flex-col gap-[6px]">
-            {vehicle.year ? <Plate className="self-start">{vehicle.year}</Plate> : null}
+            <div className="relative flex items-center gap-[8px]">
+              {vehicle.year ? <Plate className="self-start">{vehicle.year}</Plate> : null}
+              {available ? null : (
+                <AvailabilityBadge
+                  label={availabilityLabel(vehicle.availability)}
+                  className="static"
+                />
+              )}
+            </div>
             <h1 className="text-[28px] leading-[1.15]">{vehicle.title}</h1>
             {vehicle.summary ? (
               <p className="text-[13px] ink-secondary tnum">{vehicle.summary}</p>
@@ -103,11 +114,17 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
             priceLabel={vehicle.priceLabel}
             negotiabilityLabel={vehicle.negotiabilityLabel}
           />
-          <Suspense
-            fallback={<EnquiryPanel listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />}
-          >
-            <EnquireFromUrl listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
-          </Suspense>
+          {available ? (
+            <Suspense
+              fallback={
+                <EnquiryPanel listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
+              }
+            >
+              <EnquireFromUrl listingSlug={vehicle.slug} dealerName={vehicle.dealer.name} />
+            </Suspense>
+          ) : (
+            <AvailabilityNotice />
+          )}
           <VdpDealerCard dealer={vehicle.dealer} />
         </aside>
       </div>
