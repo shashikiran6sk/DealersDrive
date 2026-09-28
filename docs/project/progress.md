@@ -224,7 +224,8 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R52 — A car's colour is one of twelve families · revises F061/F076/F078/R51 · ⚠️ enum column, old text kept in `legacyColor`, conservative backfill · [#175](https://github.com/shashikiran6sk/DealersDrive/pull/175)
 - [x] R53 — Filters offer only what can be chosen · revises F076/F078/R52 · Dealer needs a district like City / Town; zero-count options are disabled, not grey · [#176](https://github.com/shashikiran6sk/DealersDrive/pull/176)
 - [x] R54 — Car search suggestions · revises F077/F080 · `GET /v1/search/vehicles` + `CarSearchBox` on the shared typeahead; typing no longer writes the URL · [#177](https://github.com/shashikiran6sk/DealersDrive/pull/177)
-- [x] R55 — `/cars` controls read like `/dealers` · revises F080/R50/R54 · search, district, then sort on the right, one row
+- [x] R55 — `/cars` controls read like `/dealers` · revises F080/R50/R54 · search, district, then sort on the right, one row · [#178](https://github.com/shashikiran6sk/DealersDrive/pull/178)
+- [x] R56 — The filter rail scrolls on its own · revises F078/F086 · sticky, viewport-bounded, own scroller; results keep the page scroll
 
 ---
 
