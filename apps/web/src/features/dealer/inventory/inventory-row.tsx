@@ -2,6 +2,7 @@ import type { DealerInventoryRow } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
 import { StatusTag } from '@/components/ui/primitives';
+import { ListingLifecycleActions } from '@/features/dealer/listing-lifecycle';
 
 import { INVENTORY_TEXT } from './inventory.constants';
 import { vehicleHref } from './utils';
@@ -32,11 +33,19 @@ export function InventoryRow({ row }: { row: DealerInventoryRow }) {
       </td>
       <td className="whitespace-nowrap text-[12px] ink-subtle tnum">{row.updatedLabel}</td>
       <td className="text-right">
-        <Link href={vehicleHref(row)} className="btn btn-ghost text-[12px]">
-          {row.status === 'DRAFT' || row.status === 'CHANGES_REQUESTED'
-            ? INVENTORY_TEXT.edit
-            : INVENTORY_TEXT.open}
-        </Link>
+        <div className="flex flex-wrap items-center justify-end gap-[6px]">
+          <ListingLifecycleActions
+            vehicleId={row.id}
+            vehicleTitle={row.title}
+            actions={row.actions}
+            size="sm"
+          />
+          <Link href={vehicleHref(row)} className="btn btn-ghost text-[12px]">
+            {row.status === 'DRAFT' || row.status === 'CHANGES_REQUESTED'
+              ? INVENTORY_TEXT.edit
+              : INVENTORY_TEXT.open}
+          </Link>
+        </div>
       </td>
     </tr>
   );

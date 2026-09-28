@@ -6469,3 +6469,58 @@ contracts table equal to the machine; stamps; withdrawal reason required),
 400s, tenant 404, enquiries kept, registration held/released/reclaimed, a race),
 `vehicles.routes.test.ts`, `packages/contracts/tests/unit/listing.test.ts`,
 `tests/unit/seed/dev-vehicles.test.ts`.
+
+## R70 — The dealer reserves, sells, withdraws and relists from the console
+
+**Revises F067 / R69** · no schema or API change
+
+The console half of R69. Every live car in the inventory now shows the moves
+the API lists in `actions`. The same moves appear under the read-only review on
+the car's own page (`/dealer/vehicles/:id/edit`), together with a withdrawn
+listing's reason and note and **View on site** while the car is on sale.
+
+| Status      | Buttons                            |
+| ----------- | ---------------------------------- |
+| `ACTIVE`    | Reserve · Mark sold · Withdraw     |
+| `RESERVED`  | Make active · Mark sold · Withdraw |
+| `WITHDRAWN` | Relist                             |
+| `SOLD`      | none                               |
+
+- Every move is confirmed in a `Dialog`, using the product's wording:
+  - _Reserve this vehicle?_: the listing stays visible, but customers cannot open it or enquire.
+  - _Mark this vehicle as sold?_: it leaves public listings and search, and cannot be put back on sale.
+  - _Withdraw this listing?_: it leaves public listings, and can be relisted later. Needs a reason; the note is optional.
+  - _Put this vehicle back on sale?_
+  - _Relist this vehicle?_
+- `listingLifecycleAction` (a Server Action) calls the R69 route and then redraws:
+  - the inventory, the dashboard and the vehicle page
+  - `VEHICLES_TAG`, `DEALERS_TAG` and the car's own `vehicle:<slug>` tag
+- The inventory tabs gained Reserved and Withdrawn in R69.
+- The mobile inventory card is no longer one link: the link covers its upper
+  part, so the buttons are not nested inside an anchor.
+
+### Files
+
+- `apps/web/src/features/dealer/listing-lifecycle/`:
+  - `actions.ts`
+  - `listing-lifecycle-actions.tsx`
+  - `lifecycle-dialog.tsx`
+  - `listing-lifecycle-panel.tsx`
+  - `listing-lifecycle.constants.ts`
+  - `listing-lifecycle.types.ts`
+  - `index.ts`
+- `features/dealer/inventory/{inventory-row,inventory-card}.tsx`
+- `features/vehicle/vehicle-wizard/vehicle-wizard.tsx`
+- **Components** C096 `ListingLifecycleActions`, C097 `LifecycleDialog`,
+  C098 `ListingLifecyclePanel`. The sandbox has `Dealer/ListingLifecycleActions`,
+  with the Server Action stubbed by `apps/sandbox/src/mocks/listing-lifecycle-actions.ts`.
+
+### Tests
+
+- `apps/web/tests/unit/features/dealer/listing-lifecycle.test.tsx` (14): the
+  moves offered per status, every confirmation, cancel, refusal, withdraw
+  gated on a reason with a trimmed note, and the panel.
+- `listing-lifecycle-actions.test.ts` (12): paths, body, revalidation,
+  refusals before any call, and API errors.
+- `inventory-page.test.tsx` (per-row moves) and `vehicle-wizard.test.tsx`
+  (a reserved car's moves).

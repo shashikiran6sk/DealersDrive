@@ -115,6 +115,50 @@ describe('/dealer/inventory', () => {
     );
   });
 
+  it('offers each row only the lifecycle moves the API lists for it (R70)', async () => {
+    const base = inventory().data[0]!;
+    apiGetParsed.mockResolvedValue(
+      inventory({
+        data: [
+          {
+            ...base,
+            id: '33333333-3333-4333-8333-333333333333',
+            title: '2020 Maruti Suzuki Swift VXi',
+            status: 'ACTIVE',
+            statusLabel: 'Active',
+            statusTone: 'ok',
+            actions: ['reserve', 'markSold', 'withdraw'],
+          },
+          {
+            ...base,
+            id: '44444444-4444-4444-8444-444444444444',
+            title: '2019 Honda City VX',
+            status: 'RESERVED',
+            statusLabel: 'Reserved',
+            statusTone: 'warn',
+            actions: ['reactivate', 'markSold', 'withdraw'],
+          },
+          { ...base, status: 'SOLD', statusLabel: 'Sold', statusTone: 'accent', actions: [] },
+        ],
+      }),
+    );
+    render(await page());
+
+    const table = screen.getByRole('table');
+    const labels = (title: string) =>
+      within(within(table).getByRole('group', { name: `Change the listing status of ${title}` }))
+        .getAllByRole('button')
+        .map((button) => button.textContent);
+    expect(labels('2020 Maruti Suzuki Swift VXi')).toEqual(['Reserve', 'Mark sold', 'Withdraw']);
+    expect(labels('2019 Honda City VX')).toEqual(['Make active', 'Mark sold', 'Withdraw']);
+    expect(
+      within(table).queryByRole('group', {
+        name: 'Change the listing status of 2023 Hyundai Creta SX(O)',
+      }),
+    ).not.toBeInTheDocument();
+    expect(within(table).getByText('Reserved')).toBeInTheDocument();
+  });
+
   it('invites a first vehicle when the inventory is empty', async () => {
     apiGetParsed.mockResolvedValue(inventory({ data: [], counts: { ALL: 0 } }));
     render(await page());
