@@ -2,18 +2,27 @@ import {
   formatRegistration,
   vehicleTitle,
   type CreateEnquiryInput,
+  type DealerEnquiriesResponse,
+  type DealerEnquiry,
+  type DealerEnquiryCounts,
+  type DealerEnquiryQuery,
   type EnquiryReceipt,
+  type EnquiryStatus,
+  type UpdateEnquiryInput,
 } from '@dealers-drive/contracts';
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 
 import type { CustomerPrincipal } from '../auth/auth.facade.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
+import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import { PUBLIC_LISTING_WHERE } from '../search/search.facade.js';
+import { INBOX_SELECT, toDealerEnquiry } from './enquiries.mapper.js';
 import {
   ALREADY_SUBMITTED,
+  ENQUIRY_NOT_FOUND,
   LISTING_NOT_AVAILABLE,
   LISTING_NOT_FOUND,
   OWN_LISTING,
@@ -26,8 +35,125 @@ export interface EnquiriesDeps {
 
 export const DUPLICATE_WINDOW_HOURS = 24;
 
-export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
+export interface EnquiryActor {
+  dealerId: string;
+  userId: string;
+}
+
+const STATUS_AUDIT_ACTIONS: Record<EnquiryStatus, string> = {
+  NEW: 'enquiry.reopened',
+  CONTACTED: 'enquiry.contacted',
+  CLOSED: 'enquiry.closed',
+  SPAM: 'enquiry.spam',
+};
+
+function notFound(): NotFoundError {
+  return new NotFoundError(ENQUIRY_NOT_FOUND, { code: 'ENQUIRY_NOT_FOUND' });
+}
+
+function stampsFor(
+  current: { contactedAt: Date | null },
+  status: EnquiryStatus,
+  now: Date,
+): Prisma.EnquiryUpdateInput {
   return {
+    status,
+    contactedAt: status === 'CONTACTED' ? (current.contactedAt ?? now) : current.contactedAt,
+    closedAt: status === 'CLOSED' ? now : null,
+  };
+}
+
+export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
+  async function counts(dealerId: string): Promise<DealerEnquiryCounts> {
+    const grouped = await prisma.enquiry.groupBy({
+      by: ['status'],
+      where: { dealerId },
+      _count: { _all: true },
+    });
+    const of = (status: EnquiryStatus) =>
+      grouped.find((row) => row.status === status)?._count._all ?? 0;
+    return {
+      ALL: grouped.reduce((sum, row) => sum + row._count._all, 0),
+      NEW: of('NEW'),
+      CONTACTED: of('CONTACTED'),
+      CLOSED: of('CLOSED'),
+      SPAM: of('SPAM'),
+    };
+  }
+
+  return {
+    counts,
+
+    async inbox(dealerId: string, query: DealerEnquiryQuery): Promise<DealerEnquiriesResponse> {
+      const [rows, tabs] = await Promise.all([
+        prisma.enquiry.findMany({
+          where: {
+            dealerId,
+            ...(query.status ? { status: query.status } : {}),
+            ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
+          },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          take: query.limit + 1,
+          select: INBOX_SELECT,
+        }),
+        counts(dealerId),
+      ]);
+
+      const hasMore = rows.length > query.limit;
+      const page = hasMore ? rows.slice(0, query.limit) : rows;
+      const last = page[page.length - 1];
+      const now = new Date();
+
+      return {
+        data: page.map((row) => toDealerEnquiry(row, now)),
+        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+        counts: tabs,
+      };
+    },
+
+    async setStatus(
+      actor: EnquiryActor,
+      enquiryId: string,
+      input: UpdateEnquiryInput,
+    ): Promise<DealerEnquiry> {
+      return withTransaction(prisma, async (tx) => {
+        const locked = await tx.$queryRaw<{ id: string }[]>`
+          SELECT "id" FROM "enquiries"
+          WHERE "id" = ${enquiryId}::uuid AND "dealerId" = ${actor.dealerId}::uuid
+          FOR UPDATE`;
+        if (locked.length === 0) throw notFound();
+
+        const current = await tx.enquiry.findUniqueOrThrow({
+          where: { id: enquiryId },
+          select: { status: true, contactedAt: true },
+        });
+        if (current.status === input.status) {
+          return toDealerEnquiry(
+            await tx.enquiry.findUniqueOrThrow({ where: { id: enquiryId }, select: INBOX_SELECT }),
+          );
+        }
+
+        const updated = await tx.enquiry.update({
+          where: { id: enquiryId },
+          data: stampsFor(current, input.status, new Date()),
+          select: INBOX_SELECT,
+        });
+
+        await audit.record(tx, {
+          actorType: 'DEALER',
+          actorId: actor.userId,
+          dealerId: actor.dealerId,
+          action: STATUS_AUDIT_ACTIONS[input.status],
+          entityType: 'Enquiry',
+          entityId: enquiryId,
+          before: { status: current.status },
+          after: { status: input.status },
+        });
+
+        return toDealerEnquiry(updated);
+      });
+    },
+
     async create(customer: CustomerPrincipal, input: CreateEnquiryInput): Promise<EnquiryReceipt> {
       const listing = await prisma.listing.findUnique({
         where: { slug: input.listingSlug },

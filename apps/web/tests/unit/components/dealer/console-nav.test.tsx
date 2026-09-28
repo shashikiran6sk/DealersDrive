@@ -98,6 +98,7 @@ describe('the nav the console actually renders', () => {
       'Dashboard',
       'Inventory',
       'Add vehicle',
+      'Enquiries',
       'Dealer profile',
     ]);
     expect(screen.getByRole('link', { name: 'Inventory' })).toHaveAttribute('aria-current', 'true');
@@ -106,6 +107,18 @@ describe('the nav the console actually renders', () => {
     await user.tab();
     await user.tab();
     expect(screen.getByRole('link', { name: 'Inventory' })).toHaveFocus();
+  });
+
+  /** **R66.** The inbox landed, so its item comes out of the not-built set. */
+  it('offers Enquiries once the inbox exists, and lights it there', () => {
+    setLocation('/dealer/enquiries');
+    render(<ConsoleNav items={LANDED_NAV} />);
+
+    expect(screen.getByRole('link', { name: 'Enquiries' })).toHaveAttribute(
+      'href',
+      '/dealer/enquiries',
+    );
+    expect(screen.getByRole('link', { name: 'Enquiries' })).toHaveAttribute('aria-current', 'true');
   });
 
   it('keeps the order the baseline declares', () => {

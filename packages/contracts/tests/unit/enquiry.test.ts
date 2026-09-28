@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { CreateEnquiryInput } from '../../src/enquiry.js';
+import { CreateEnquiryInput, DealerEnquiryQuery, UpdateEnquiryInput } from '../../src/enquiry.js';
+import { ENQUIRY_STATUS_LABELS, ENQUIRY_STATUS_TONES, EnquiryStatus } from '../../src/enums.js';
 
 /**
  * What a customer may say when they enquire (**R64**): which car, and
@@ -31,5 +32,35 @@ describe('CreateEnquiryInput', () => {
     expect(
       CreateEnquiryInput.safeParse({ listingSlug: 'car-1', message: 'x'.repeat(1001) }).success,
     ).toBe(false);
+  });
+});
+
+describe('the dealership’s inbox (R66)', () => {
+  it('lists every tab by default, twenty-five at a time', () => {
+    expect(DealerEnquiryQuery.parse({})).toEqual({ limit: 25 });
+    expect(DealerEnquiryQuery.parse({ status: 'SPAM', limit: '10' })).toEqual({
+      status: 'SPAM',
+      limit: 10,
+    });
+  });
+
+  it.each([{ status: 'OPEN' }, { dealerId: 'x' }, { limit: '0' }, { limit: '101' }])(
+    'refuses %j as a query',
+    (query) => {
+      expect(DealerEnquiryQuery.safeParse(query).success).toBe(false);
+    },
+  );
+
+  it('moves an enquiry by status and nothing else', () => {
+    expect(UpdateEnquiryInput.parse({ status: 'CONTACTED' })).toEqual({ status: 'CONTACTED' });
+    expect(UpdateEnquiryInput.safeParse({ status: 'CONTACTED', message: 'x' }).success).toBe(false);
+    expect(UpdateEnquiryInput.safeParse({}).success).toBe(false);
+  });
+
+  it('gives every status a label and a tone', () => {
+    for (const status of EnquiryStatus.options) {
+      expect(ENQUIRY_STATUS_LABELS[status]).toEqual(expect.any(String));
+      expect(ENQUIRY_STATUS_TONES[status]).toEqual(expect.any(String));
+    }
   });
 });

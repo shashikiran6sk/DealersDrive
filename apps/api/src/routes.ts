@@ -8,6 +8,7 @@ import {
   createPublicAuthRouter,
   createSessionAuthRouter,
 } from './modules/auth/auth.routes.js';
+import { createDealerEnquiriesRouter } from './modules/enquiries/enquiries.dealer.routes.js';
 import { createEnquiriesRouter } from './modules/enquiries/enquiries.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
@@ -70,6 +71,7 @@ export function createRoutes(container: Container): Router {
   dealer.use(container.guards.requireDealer);
   dealer.use(createDealersRouter(container.dealers));
   dealer.use(createVehiclesRouter(container.vehicles));
+  dealer.use(createDealerEnquiriesRouter(container.enquiries));
   v1.use('/dealer', dealer);
 
   const admin = Router();
