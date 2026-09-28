@@ -248,6 +248,37 @@ describe('what the listing allows (F064)', () => {
     expect(container.querySelector('form')).not.toBeNull();
   });
 
+  it('offers a reserved car its lifecycle moves under the read-only review (R70)', () => {
+    render(
+      <VehicleWizard
+        step="review"
+        vehicle={vehicle({
+          listing: {
+            ...vehicle().listing,
+            status: 'RESERVED',
+            statusLabel: 'Reserved',
+            statusTone: 'warn',
+            canEdit: false,
+            canSubmit: false,
+            canDelete: false,
+            slug: '2023-hyundai-creta-katpadi-abc',
+            reservedAt: '2026-09-25T10:00:00.000Z',
+            actions: ['reactivate', 'markSold', 'withdraw'],
+          },
+        })}
+      />,
+    );
+    expect(screen.getByText(/reserved for a buyer/i)).toBeInTheDocument();
+    const group = screen.getByRole('group', {
+      name: 'Change the listing status of 2023 Hyundai Creta SX(O)',
+    });
+    expect(
+      within(group)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Make active', 'Mark sold', 'Withdraw']);
+  });
+
   it('shows why a vehicle was not approved', () => {
     render(
       <VehicleWizard

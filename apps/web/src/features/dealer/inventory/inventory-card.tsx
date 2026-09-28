@@ -2,16 +2,17 @@ import type { DealerInventoryRow } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
 import { StatusTag } from '@/components/ui/primitives';
+import { ListingLifecycleActions } from '@/features/dealer/listing-lifecycle';
 
 import { INVENTORY_TEXT } from './inventory.constants';
 import { vehicleHref } from './utils';
 
 export function InventoryCard({ row }: { row: DealerInventoryRow }) {
   return (
-    <li>
+    <li className="card flex flex-col gap-[8px] bg-white p-[14px] text-(--color-ink)">
       <Link
         href={vehicleHref(row)}
-        className="card flex flex-col gap-[8px] bg-white p-[14px] text-(--color-ink) no-underline"
+        className="flex flex-col gap-[8px] text-(--color-ink) no-underline"
       >
         <div className="flex items-start justify-between gap-[10px]">
           <div className="min-w-0">
@@ -32,6 +33,12 @@ export function InventoryCard({ row }: { row: DealerInventoryRow }) {
           </div>
         ) : null}
       </Link>
+      <ListingLifecycleActions
+        vehicleId={row.id}
+        vehicleTitle={row.title}
+        actions={row.actions}
+        size="sm"
+      />
     </li>
   );
 }

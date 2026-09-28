@@ -1269,6 +1269,31 @@ already-open banners to `/enquiries`; `HeaderAccount` (C093) links to
 `apps/web/tests/unit/features/enquiry/my-enquiries-page.test.tsx`. **Sandbox**
 `Vehicle/CustomerEnquiryList`.
 
+### C096 — `ListingLifecycleActions` · C097 `LifecycleDialog` · C098 `ListingLifecyclePanel`
+
+**New at R70** (`features/dealer/listing-lifecycle/`), the console half of
+F067 as R69 redefines it. `ListingLifecycleActions` renders only the moves the
+API lists in `listing.actions` — so it can never offer one the server would
+refuse — each as a `LifecycleDialog` on the `Dialog` primitive calling the
+`listingLifecycleAction` Server Action. Withdraw asks for a reason (required)
+and a private note. `ListingLifecyclePanel` sits under the read-only review on
+a live vehicle's page.
+
+| Component                 | Props                                                      | States                                                                      |
+| ------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `ListingLifecycleActions` | `vehicleId`, `vehicleTitle`, `actions`, `size?`, `submit?` | active · reserved · withdrawn · sold (renders nothing) · row size · refused |
+| `LifecycleDialog`         | `vehicleId`, `action`, `size`, `submit`                    | open · withdraw without a reason · pending · refused                        |
+| `ListingLifecyclePanel`   | `vehicleId`, `vehicleTitle`, `listing`                     | live (View on site) · withdrawn with reason and note · sold                 |
+
+**Changed:** `InventoryRow` and `InventoryCard` render the actions (the card is
+no longer one link — the link is its upper part, so the buttons are not nested
+in an anchor); `VehicleWizard`'s locked view renders the panel. **Reuses**
+`Dialog`, `Button`, `ButtonLink`, `Field`, `Select`, `Textarea`, `Banner`.
+**Tests** `apps/web/tests/unit/features/dealer/listing-lifecycle.test.tsx`,
+`listing-lifecycle-actions.test.ts`, `inventory-page.test.tsx`. **Sandbox**
+`Dealer/ListingLifecycleActions`, `Dealer/InventoryView`; the Server Action is
+stubbed by `apps/sandbox/src/mocks/listing-lifecycle-actions.ts`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

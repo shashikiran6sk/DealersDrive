@@ -5,6 +5,7 @@ import { useActionState } from 'react';
 
 import { ButtonLink } from '@/components/ui/button';
 import { Banner, Stepper } from '@/components/ui/primitives';
+import { ListingLifecyclePanel } from '@/features/dealer/listing-lifecycle';
 import { createVehicleAction, saveVehicleStepAction } from '@/features/vehicle/actions';
 
 import { BasicsStep } from './basics-step';
@@ -92,6 +93,11 @@ export function VehicleWizard({
         {locked ? (
           <>
             <ReviewStep vehicle={vehicle} readOnly />
+            <ListingLifecyclePanel
+              vehicleId={vehicle.id}
+              vehicleTitle={vehicle.title}
+              listing={vehicle.listing}
+            />
             <div className="flex flex-wrap gap-[9px] border-t border-(--color-divider) pt-[16px]">
               <ButtonLink href={cancelHref} variant="secondary" className="ml-auto">
                 {VEHICLE_WIZARD_TEXT.done}

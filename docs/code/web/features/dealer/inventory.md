@@ -20,3 +20,13 @@ Every row opens the vehicle's review screen. For a draft or a vehicle sent back
 that screen has the Edit links and the Submit button; for anything else it is
 the read-only view with its status — so there is one place a dealer looks at a
 car, whatever state it is in.
+
+## `apps/web/src/features/dealer/inventory/inventory-card.tsx`
+
+### `export function InventoryCard({ row }: { row: DealerInventoryRow })`
+
+Until R70 the whole card was one link. It now carries the lifecycle buttons
+(`ListingLifecycleActions`), and a button inside an anchor is invalid HTML that
+also makes every tap ambiguous. So the link covers the upper part of the card
+(identity, price, status, the moderator's words) and the buttons sit below it,
+outside the link. The table row gets the same buttons beside Open or Edit.
