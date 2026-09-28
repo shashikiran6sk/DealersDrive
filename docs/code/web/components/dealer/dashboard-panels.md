@@ -28,12 +28,13 @@ entry if it cannot be imported.
 ### `export function RecentEnquiries(`
 
 The newest four leads, each with a one-tap `tel:`. The empty state is not a
-placeholder — it is the state every new dealership sees, and until `Enquiry`
-lands at **F088** it is also the only state the API can produce.
+placeholder — it is the state every new dealership sees.
 
-The baseline's heading row carries an `All enquiries →` ghost button onto
-`/dealer/enquiries`, which arrives with **F065**. It is held back rather than
-pointed at a 404, and both return together.
+The heading row's `All enquiries →` ghost button onto `/dealer/enquiries` is
+the baseline's; it was held back until the inbox existed (R66) and came back
+with **R67**, when the panel started showing real enquiries. A lead whose
+number is no longer on file has no Call button rather than a `tel:` that
+dials nothing.
 
 ## `apps/web/src/components/dealer/dashboard-panels/views-chart.tsx`
 

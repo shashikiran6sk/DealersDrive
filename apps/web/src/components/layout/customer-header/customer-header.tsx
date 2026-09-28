@@ -3,7 +3,7 @@
 import type { PublicLocations } from '@dealers-drive/contracts';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, type ReactNode } from 'react';
 
 import { LocationSelector } from '@/components/layout/location-selector';
 import { Plate } from '@/components/ui/primitives';
@@ -12,15 +12,22 @@ import { HEADER_NAV, HEADER_TEXT } from './customer-header.constants';
 import { HeaderLink } from './header-link';
 import { LocationChipFallback } from './location-chip-fallback';
 
-export function CustomerHeader({ locations }: { locations: PublicLocations }) {
+export interface CustomerHeaderProps {
+  locations: PublicLocations;
+  account?: ReactNode;
+}
+
+export function CustomerHeader({ locations, account }: CustomerHeaderProps) {
   const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-20 border-b border-(--color-divider) bg-white">
-      <div className="mx-auto flex h-(--header-height) max-w-[1280px] items-center gap-4 px-6 md:gap-7">
+      <div className="mx-auto flex h-(--header-height) max-w-[1280px] items-center gap-3 px-4 sm:gap-4 sm:px-6 md:gap-7">
         <Link href="/" className="flex flex-none items-center gap-[9px]">
           <Plate size="logo">DD</Plate>
-          <span className="font-heading text-[16px] font-bold">{HEADER_TEXT.brand}</span>
+          <span className="font-heading text-[16px] font-bold max-sm:sr-only">
+            {HEADER_TEXT.brand}
+          </span>
         </Link>
 
         <nav className="hidden gap-[22px] text-[14px] md:flex" aria-label={HEADER_TEXT.navLabel}>
@@ -39,9 +46,11 @@ export function CustomerHeader({ locations }: { locations: PublicLocations }) {
           <Suspense fallback={<LocationChipFallback />}>
             <LocationSelector locations={locations} />
           </Suspense>
-          <Link href={HEADER_NAV.login} className="btn btn-primary">
-            {HEADER_TEXT.login}
-          </Link>
+          {account ?? (
+            <Link href={HEADER_NAV.login} className="btn btn-primary">
+              {HEADER_TEXT.login}
+            </Link>
+          )}
         </div>
       </div>
     </header>

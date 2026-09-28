@@ -6,4 +6,6 @@ export const RECENT_ENQUIRIES_TEXT = {
   generalEnquiry: 'General enquiry',
   callLabel: 'Call',
   callAriaLabel: (name: string, phoneDisplay: string) => `Call ${name} on ${phoneDisplay}`,
+  viewAll: 'All enquiries →',
+  viewAllHref: '/dealer/enquiries',
 } as const;

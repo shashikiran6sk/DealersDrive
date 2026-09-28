@@ -123,3 +123,13 @@ export const LongNamesAtPhoneWidth: StoryObj<typeof RecentEnquiries> = {
   ),
   parameters: { viewport: { defaultViewport: 'mobile1' } },
 };
+
+export const NumberNoLongerOnFile: StoryObj<typeof RecentEnquiries> = {
+  render: () => (
+    <RecentEnquiries
+      enquiries={[
+        { ...ENQUIRIES[0]!, name: 'Customer', initials: 'CU', phoneDisplay: null, callHref: null },
+      ]}
+    />
+  ),
+};

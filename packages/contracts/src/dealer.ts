@@ -585,8 +585,9 @@ export const DashboardResponse = z.object({
       initials: z.string(),
       name: z.string(),
       vehicleTitle: z.string().nullable(),
-      phoneDisplay: z.string(),
-      callHref: z.string(),
+      /** Null only for an account whose number has since been released (R67). */
+      phoneDisplay: z.string().nullable(),
+      callHref: z.string().nullable(),
       timeAgoLabel: z.string(),
     }),
   ),

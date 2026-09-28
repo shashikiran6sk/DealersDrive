@@ -689,15 +689,13 @@ ever existed; a sweeper reconciles orphaned rows against storage, and a
 row deleted the instant its object is removed leaves nothing to reconcile
 against if the storage call is the half that fails.
 
-### `async newEnquiryCount(_dealerId: string): Promise<number>`
+### `async newEnquiryCount(dealerId: string): Promise<number>`
 
-── Reconstruction slice ──────────────────────────────────────────────
-The baseline body is
-`prisma.enquiry.count({ where: { dealerId, status: 'NEW' } })`
-and the `Enquiry` model arrives at **F088**. With no enquiries table
-there are no enquiries, so zero is the answer rather than a placeholder
-— but it is not the baseline's code, and the query is restored with the
-model. `pendingListingCount` is the same story against **F064**.
+The session's `counts.newEnquiries`: enquiries still in the New tab. Restored
+with its baseline query at **R67**, once `Enquiry` existed (R64) —
+`prisma.enquiry.count({ where: { dealerId, status: 'NEW' } })`.
+`pendingListingCount` is still the reconstruction slice against **F064**: it
+answers zero, and nothing in the console reads it yet.
 
 ### `async viewRollups`
 
@@ -770,16 +768,27 @@ before it — the pair the "vs last week" sentence is built from.
 One method for two counts because they are only ever wanted together and
 must be measured against one clock.
 
-Baseline: two `prisma.enquiry.count` calls. `Enquiry` arrives at
-**F088**.
+Restored at **R67** as the baseline's two `prisma.enquiry.count` calls: the
+tile counts what is still **new** this week — a lead the dealership has
+already called is not one it needs to see counted — and the comparison week
+counts everything received except spam. The asymmetry is the baseline's and is
+kept.
 
-### `async recentEnquiries(_dealerId: string, _limit: number): Promise<RecentEnquiryRow[]>`
+### `async recentEnquiries(dealerId: string, limit: number): Promise<RecentEnquiryRow[]>`
 
-The newest enquiries, for the console's right-hand panel.
+The newest enquiries, for the console's right-hand panel (**R67**).
 
-Baseline: `enquiries.recentForDealer(dealerId, limit)` — a facade call
-into the enquiries module, which arrives at **F088** and brings the
-`EnquiriesService` dependency with it.
+The baseline called `enquiries.recentForDealer(dealerId, limit)` through a
+facade, which brought an `EnquiriesService` dependency into this module. This
+is a direct read of the dealership's own rows instead: one query, scoped by
+`dealerId`, and no second service to wire for four rows.
+
+Spam is left out — it has its own tab (R66) and is not a lead to put in front
+of the dealer. The name and phone are the customer's current ones, read from
+`users` like the inbox, and either may be null; the service names an unnamed
+customer and offers no call for a number that is gone. `RecentEnquiryRow`
+carries the vehicle's free-text make and model rather than the baseline's
+catalogue objects (D1).
 
 ### `async expiringListingCount(_dealerId: string, _horizon: Date): Promise<number>`
 

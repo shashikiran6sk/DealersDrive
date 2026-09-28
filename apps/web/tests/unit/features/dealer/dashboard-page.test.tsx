@@ -215,9 +215,8 @@ describe('the alerts', () => {
 
 describe('recent enquiries', () => {
   /**
-   * The state every new dealership sees, and — until `Enquiry` lands at F088 —
-   * the only one the API can produce. It says where leads will appear rather
-   * than leaving an empty panel.
+   * The state every new dealership sees. It says where leads will appear
+   * rather than leaving an empty panel.
    */
   it('says where leads will appear when there are none', async () => {
     await renderPage();
@@ -268,20 +267,41 @@ describe('recent enquiries', () => {
     expect(screen.getByText('General enquiry')).toBeInTheDocument();
   });
 
+  /** **R67.** A lead whose number has since been released has nothing to dial. */
+  it('offers no call for an enquiry with no number on file', async () => {
+    await renderPage(
+      dashboard({
+        recentEnquiries: [
+          {
+            id: '7f3c9a21-1111-4000-8000-000000000003',
+            initials: 'CU',
+            name: 'Customer',
+            vehicleTitle: '2021 Tata Nexon',
+            phoneDisplay: null,
+            callHref: null,
+            timeAgoLabel: '3 hours ago',
+          },
+        ],
+      }),
+    );
+
+    expect(screen.getByText('Customer')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Call/ })).toBeNull();
+  });
+
   /**
-   * ── Reconstruction slice ──────────────────────────────────────────────────
    * The baseline's panel heading carries an `All enquiries →` ghost button onto
-   * `/dealer/enquiries`, which is **F065**. It is held back rather than pointed
-   * at a 404 — the same rule `console-nav.tsx` applies to the sidebar item for
-   * that route — and this case is what should fail when F065 restores it.
-   * ──────────────────────────────────────────────────────────────────────────
+   * `/dealer/enquiries`. It was held back until the inbox existed (R66), and
+   * comes back with R67.
    */
-  it('offers no link to the enquiries screen, because there is not one yet', async () => {
+  it('links to the enquiries screen', async () => {
     await renderPage();
 
     const panel = screen.getByRole('heading', { name: 'Recent enquiries' }).closest('section');
     expect(panel).not.toBeNull();
-    expect(within(panel as HTMLElement).queryByRole('link')).toBeNull();
+    expect(
+      within(panel as HTMLElement).getByRole('link', { name: 'All enquiries →' }),
+    ).toHaveAttribute('href', '/dealer/enquiries');
   });
 });
 

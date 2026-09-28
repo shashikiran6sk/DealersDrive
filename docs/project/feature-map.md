@@ -6237,3 +6237,86 @@ get-dealer-enquiries, get-dealer-enquiry-counts, patch-dealer-enquiry}.ts`,
 
 The dashboard's enquiry counts and recent enquiries, the session's
 `counts.newEnquiries`, and the signed-in customer header (R67).
+
+## R67 — Enquiry counts on the dashboard, and the signed-in header
+
+**Revises F048 / F073** · no schema change · the last PR of the R58–R67 series
+
+### The dashboard and the session read real enquiries
+
+`dealers.repository.ts` held three reconstruction stubs answering zero until
+`Enquiry` existed. It has since R64, so:
+
+- **`newEnquiryCount`** → the session's `counts.newEnquiries` (`GET
+/v1/auth/me`): enquiries in the New tab. The baseline's query, restored.
+- **`enquiryCounts`** → the dashboard's _New enquiries_ tile and its "vs last
+  week" sentence: **new** enquiries received this week, against every
+  non-spam enquiry received the week before. The baseline's two queries,
+  restored with the baseline's asymmetry.
+- **`recentEnquiries`** → the _Recent enquiries_ panel: the newest four,
+  spam left out. A direct query rather than the baseline's
+  `enquiries.recentForDealer` facade call, which would have brought an
+  `EnquiriesService` dependency into the dealers module for four rows.
+  `RecentEnquiryRow` carries free-text make/model (D1); a car with neither
+  is named by its plate.
+
+**Contract** `DashboardResponse.recentEnquiries[].phoneDisplay` and
+`callHref` become nullable: an account whose number has been released has
+nothing to dial, and the panel then offers no Call button. The panel's
+`All enquiries →` ghost button — the baseline's, held back until R66 — is
+restored.
+
+### The customer header knows who is signed in
+
+- **`HeaderAccount`** (`features/auth/header-account/`) in `CustomerHeader`'s
+  new `account` slot, passed by the public layout. It renders **Login** first
+  and asks `customerAccountAction` once in the browser; a signed-in customer
+  sees **"Hi, first name"** and **Logout** (initials below `sm`).
+- **`customerAccountAction`** makes no API call at all without a
+  `dd_session` cookie, and answers `null` rather than an error for a `401` or
+  an unreachable API — the check costs an anonymous page view nothing and
+  can never break the page. The public pages stay static.
+- **`customerLogoutAction`** → `POST /v1/auth/customer/logout`, then drops
+  the cookie even if the API is unreachable; the header shows Login and the
+  route refreshes.
+- **Mobile header fix.** At 390px the header measured 450px wide — Login was
+  off-screen — on `main` already. Per DESIGN-SPEC §3.1 at 375 ("logo + city +
+  CTA only") the wordmark is visually hidden below `sm` and the gutter is
+  16px; both states now fit at 375 and 390 with no horizontal scroll.
+
+### Not done
+
+- **A New-enquiries badge in the console nav.** The console layout reads the
+  dealer profile, not the session, so a badge is a second request on every
+  console page; `counts.newEnquiries` is served and the dashboard tile shows
+  the number. Left for a later, deliberate change.
+
+### Files
+
+- `apps/api/src/modules/dealers/{dealers.repository.ts, dealers.service.ts}`;
+  `UNNAMED_CUSTOMER` moves to `platform/messages.ts` (two modules say it).
+- `packages/contracts/src/dealer.ts` — the two nullable fields.
+- `apps/web/src/components/dealer/dashboard-panels/*`,
+  `components/layout/customer-header/*`,
+  `features/auth/{customer-account-actions.ts, customer-account-actions.constants.ts, header-account/}`,
+  `app/(public)/layout.tsx`.
+- **Components** C093 `HeaderAccount`; C020 `CustomerHeader` gains
+  `account`. Sandbox `Layout/CustomerHeader` (signed in, signed in at phone
+  width, account slot signed out), `Dealer/DashboardPanels`
+  (`NumberNoLongerOnFile`), mock `apps/sandbox/src/mocks/customer-account-actions.ts`.
+- **Tests**
+  - `apps/api/tests/dealer-enquiry-counts.test.ts` (2, real database): the
+    tile counts this week's new ones; recent is newest first without spam,
+    with the customer's name, the car's title and `tel:`; the session's
+    `counts.newEnquiries`; another dealership's enquiries count for nothing.
+  - `tests/unit/modules/dealers/dealers.repository.test.ts` — the restored
+    queries (replacing the "answers zero until the tables exist" case, as
+    that case said it would be).
+  - `tests/unit/modules/dealers/dealers.service.test.ts` — the recent row in
+    the D1 shape; "general enquiry" replaced by "named by its plate" (every
+    enquiry is about a listing since R64); no number / no name.
+  - `apps/web/tests/unit/features/auth/header-account.test.tsx` (6),
+    `customer-account-actions.test.ts` (5);
+    `tests/unit/features/dealer/dashboard-page.test.tsx` — no Call without a
+    number; the `All enquiries →` link (replacing "offers no link … because
+    there is not one yet", as that case said it would be).
