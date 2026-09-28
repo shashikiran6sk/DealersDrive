@@ -233,3 +233,36 @@ looks enough like a component bug to send someone hunting in the wrong file.
 
 So the source root is stated rather than inferred. Stories themselves are
 scanned too: a story may use a utility no component happens to use yet.
+
+### `--header-height`, `--rail-gap`, `--rail-top` — R56
+
+The customer header's height (`h-(--header-height)`) is also the offset every
+sticky column under it needs, so it is one custom property rather than `h-16`
+in the header and `top-[84px]` in three pages. `--rail-top` is that height plus
+the gap a sticky column keeps below it.
+
+### `@utility filter-rail` — R56
+
+The desktop filter column on `/cars` and on a dealership's inventory. Before
+R56 it was only sticky: a panel taller than the viewport could not be read to
+its end until the page itself reached the bottom of the results. Now it is:
+
+- **sticky** at `--rail-top`, so it stays beside the results;
+- **bounded** at `100dvh` minus that offset and a gap, so it never runs past
+  the bottom of the screen (`dvh`, so a browser's collapsing toolbar does not
+  hide the last group);
+- **its own scroller** — `overflow-y: auto` with `overscroll-behavior:
+contain`, so the wheel over the panel scrolls the panel and, at its end,
+  does not start scrolling the page.
+
+The results keep the page's scroll rather than getting a second scroller:
+Back restores the position, the footer is reachable, and a phone — where the
+rail is hidden and the panel is a sheet — is unaffected.
+
+It is an `@utility`, not a class in `@layer components`, because only a
+utility takes a variant in Tailwind v4, and the rail only exists at `lg:`.
+
+### `@utility rail-top` — R56
+
+The same offset for a column that is sticky but not a scroller — the vehicle
+page's summary.

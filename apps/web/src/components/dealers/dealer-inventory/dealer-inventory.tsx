@@ -56,7 +56,7 @@ export function DealerInventory({
         >
           {hasStock ? (
             <aside
-              className="hidden lg:sticky lg:top-[84px] lg:block lg:self-start"
+              className="hidden lg:block lg:filter-rail"
               aria-label={DEALER_INVENTORY_TEXT.filtersLabel}
             >
               <FilterPanel

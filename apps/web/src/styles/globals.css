@@ -51,6 +51,23 @@
 :root {
   --color-divider: color-mix(in srgb, #14171c 15%, transparent);
   --color-rule: color-mix(in srgb, #14171c 8%, transparent);
+  --header-height: 4rem;
+  --rail-gap: 20px;
+  --rail-top: calc(var(--header-height) + var(--rail-gap));
+}
+
+@utility filter-rail {
+  position: sticky;
+  top: var(--rail-top);
+  align-self: start;
+  max-height: calc(100dvh - var(--rail-top) - var(--rail-gap));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+@utility rail-top {
+  top: var(--rail-top);
 }
 
 @layer base {

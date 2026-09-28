@@ -86,7 +86,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           ) : null}
         </div>
 
-        <aside className="flex flex-col gap-[16px] self-start lg:sticky lg:top-[84px]">
+        <aside className="flex flex-col gap-[16px] self-start lg:sticky lg:rail-top">
           <div className="flex flex-col gap-[6px]">
             {vehicle.year ? <Plate className="self-start">{vehicle.year}</Plate> : null}
             <h1 className="text-[28px] leading-[1.15]">{vehicle.title}</h1>

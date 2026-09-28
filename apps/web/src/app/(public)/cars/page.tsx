@@ -107,7 +107,7 @@ export default async function CarsPage({
 
         <div className="grid gap-[22px] lg:grid-cols-[250px_minmax(0,1fr)]">
           <aside
-            className="hidden lg:sticky lg:top-[84px] lg:block lg:self-start"
+            className="hidden lg:block lg:filter-rail"
             aria-label={CARS_TEXT.filtersLabel}
           >
             <FilterPanel facets={listing.facets} params={params} basePath={CARS_PATH} />

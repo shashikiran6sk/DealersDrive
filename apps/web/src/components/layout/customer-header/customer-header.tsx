@@ -17,7 +17,7 @@ export function CustomerHeader({ locations }: { locations: PublicLocations }) {
 
   return (
     <header className="sticky top-0 z-20 border-b border-(--color-divider) bg-white">
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-4 px-6 md:gap-7">
+      <div className="mx-auto flex h-(--header-height) max-w-[1280px] items-center gap-4 px-6 md:gap-7">
         <Link href="/" className="flex flex-none items-center gap-[9px]">
           <Plate size="logo">DD</Plate>
           <span className="font-heading text-[16px] font-bold">{HEADER_TEXT.brand}</span>

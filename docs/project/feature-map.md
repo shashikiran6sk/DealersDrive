@@ -5463,3 +5463,28 @@ control on a row of its own below. It now has the directory's shape:
   row itself, so the slot had no consumer.
 - **Tests** `vehicle-card.test.tsx` ("/cars controls row": one group, in order,
   and no second search field).
+
+## R56 — The filter rail scrolls on its own
+
+**Revises F078, F086** · no schema change · layout only
+
+On a desktop the filter panel on `/cars` (and on a dealership's inventory) was
+sticky but unbounded. When it was taller than the screen, its lower groups
+could only be reached by scrolling the whole page to the end of the results.
+
+- New `filter-rail` utility (`styles/globals.css`): sticky under the header,
+  `max-height: calc(100dvh - var(--rail-top) - var(--rail-gap))`,
+  `overflow-y: auto`, `overscroll-behavior: contain`. Both filtered pages use
+  it at `lg:`.
+- The results keep the page scroll. Below `lg` the rail is hidden (the panel is
+  the mobile sheet), so phones are unchanged.
+- The offset comes from one token: `--header-height` (the header uses it),
+  `--rail-gap`, and `--rail-top` derived from both. This replaces `top-[84px]`
+  on `/cars`, the inventory and the vehicle page.
+- **Measured** (Playwright, 1360×760, `/cars?district=ranipet`): the rail is
+  656px tall (760 − 84 − 20) over 2,623px of content. The wheel over the rail
+  scrolled it 600px with `window.scrollY` still 0. The wheel over the results
+  scrolled the page 900px with the rail still at `top: 84px`.
+- **Tests** `tests/unit/styles/filter-rail.test.ts`: both pages use the rail;
+  the utility is sticky, bounded and scrolls itself; the offset is the header
+  token.
