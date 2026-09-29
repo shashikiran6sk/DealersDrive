@@ -84,17 +84,19 @@ export default async function DealerDirectoryPage({
   const place = placeName(directory, city, district);
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 pb-[60px] pt-[26px]">
+    <div className="mx-auto max-w-[1280px] px-4 pb-[64px] pt-[28px] sm:px-6">
       <nav className="mb-[10px] text-[12px] ink-subtle" aria-label="Breadcrumb">
         <Link href="/">Home</Link> / Dealers
       </nav>
 
       <div className="flex flex-wrap items-baseline gap-3">
-        <h1 className="text-[34px]">{place ? `Dealers in ${place}` : 'Verified dealers'}</h1>
+        <h1 className="text-[26px] sm:text-[30px]">
+          {place ? `Dealers in ${place}` : 'Verified dealers'}
+        </h1>
         <span className="text-[14px] ink-muted tnum">{directory.countLabel}</span>
       </div>
 
-      <p className="mb-[18px] mt-[6px] max-w-[62ch] text-[14px] ink-secondary">
+      <p className="mb-[20px] mt-[8px] max-w-[62ch] text-[14px] leading-[1.6] ink-muted">
         Every dealership below is identity- and GST-verified by Dealers-Drive. The cars belong to
         them — enquiries go straight to the yard.
       </p>
@@ -108,7 +110,7 @@ export default async function DealerDirectoryPage({
       />
 
       {directory.data.length > 0 ? (
-        <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(290px,1fr))]">
+        <div className="grid items-stretch gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(270px,1fr))]">
           {directory.data.map((dealer) => (
             <DirectoryCard key={dealer.slug} dealer={dealer} />
           ))}

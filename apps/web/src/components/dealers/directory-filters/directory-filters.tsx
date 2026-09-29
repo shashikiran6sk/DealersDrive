@@ -58,10 +58,8 @@ export function DirectoryFilters({ cities, city, district, q, locations }: Direc
             aria-pressed={on}
             onClick={() => toggle(entry.slug)}
             className={cn(
-              'tag cursor-pointer px-3 py-[6px] text-[12px]',
-              on
-                ? 'bg-(--color-accent) text-white'
-                : 'border border-(--color-divider) bg-transparent',
+              'dd-chip min-h-[38px]',
+              on ? 'bg-(--color-accent) text-white' : 'bg-white',
             )}
           >
             {entry.name} <span className="tnum opacity-70">{entry.count}</span>
@@ -84,7 +82,6 @@ export function DirectoryFilters({ cities, city, district, q, locations }: Direc
           <DistrictPicker locations={locations}>
             {() => (
               <button type="button" className="btn btn-secondary flex items-center gap-[7px]">
-                <span className="block h-[14px] w-[5px] bg-(--color-accent)" aria-hidden="true" />
                 {DIRECTORY_FILTERS_TEXT.selectDistrict}
               </button>
             )}

@@ -27,7 +27,7 @@ export function DealerCardCover({ dealer }: { dealer: DealerCardDto }) {
       )}
 
       {dealer.isVerified ? (
-        <span className="absolute right-[10px] top-[10px] bg-ink/75 px-[7px] py-[2px] font-mono text-[10px] tracking-[0.08em] text-white backdrop-blur-[2px]">
+        <span className="absolute right-[10px] top-[10px] rounded-full bg-white/90 px-[9px] py-[3px] text-[10px] font-extrabold tracking-[0.06em] text-(--color-ink) backdrop-blur-[2px]">
           {DEALER_CARD_TEXT.yardVerified}
         </span>
       ) : null}
