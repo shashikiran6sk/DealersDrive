@@ -1449,12 +1449,17 @@ status and home shortcuts. Components that changed shape:
   discloses the phone form behind "Use mobile number instead" (shown at once
   when Google is not configured).
 - **`StatCard`** — `inverse` for the dashboard's credits tile.
+- **Homepage hero** — the "How it works" trust panel is replaced by **C111
+  `HeroBanner`**, a single full-width photograph banner. The photograph is the
+  `image` prop (`HOME_HERO_IMAGE`, static today, admin-configurable later — see
+  `docs/code/web/features/home.md`).
 
 | Component          | Props                                          | States                                                              |
 | ------------------ | ---------------------------------------------- | ------------------------------------------------------------------- |
 | C108 `SupportPage` | `support`                                      | default · WhatsApp not configured · fallback · long address · phone |
 | C109 `SupportCard` | `icon`, `title`, `body`, `headingId`, children | default                                                             |
 | C110 `EntryShell`  | `children`                                     | desktop (story panel) · phone width (form only)                     |
+| C111 `HeroBanner`  | `image`, children                              | no photograph (dark ground) · with photograph · phone width         |
 
 `/contact` renders `SupportPage` from `GET /v1/config/public`'s `support`
 object, which reads five `support.*` keys an operator edits in `/admin/config`

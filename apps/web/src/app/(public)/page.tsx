@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { CarSearchBox } from '@/components/search/car-search-box';
-import { Blueprint, Plate } from '@/components/ui/primitives';
+import { Blueprint } from '@/components/ui/primitives';
 import { DiscoveryRow } from '@/features/home/discovery-row';
+import { HeroBanner, HOME_HERO_IMAGE } from '@/features/home/hero-banner';
 import { HOME_SEARCH_PATH, HOME_TEXT } from '@/features/home/home.constants';
 import { loadHomeInventory } from '@/features/home/load-home';
 import { seoMetadata } from '@/lib/seo';
@@ -70,69 +71,35 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="border-b border-(--color-divider) bg-(--color-bg)">
-        <div className="mx-auto grid max-w-[1440px] items-center gap-8 px-4 py-8 sm:px-6 md:py-12 lg:grid-cols-[1fr_1.05fr] lg:gap-12 lg:px-10 lg:py-14">
-          <div className="min-w-0">
-            <div className="eyebrow mb-4">{HOME_TEXT.eyebrow}</div>
-            <h1 className="max-w-[14ch] text-[40px] leading-[1.05] tracking-[-0.04em] sm:text-[48px] lg:text-[54px]">
-              {HOME_TEXT.title}
-            </h1>
-            <p className="mt-5 max-w-[52ch] text-[15px] leading-[1.8] ink-muted">
-              {HOME_TEXT.lede}
-            </p>
-
-            <div className="mt-7">
-              <CarSearchBox
-                params={{}}
-                basePath={HOME_SEARCH_PATH}
-                action={HOME_SEARCH_PATH}
-                className="sm:max-w-[560px]"
-              />
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Link href="/cars" className="dd-chip">
-                {HOME_TEXT.browseAll}
-              </Link>
-              <Link href="/dealers" className="dd-chip">
-                {HOME_TEXT.browseDealers}
-              </Link>
-            </div>
-          </div>
-
-          <Blueprint
-            className="rounded-[26px] border-0 bg-white p-6 shadow-lg sm:p-8 lg:p-10"
-            as="div"
-          >
-            <div className="flex flex-col justify-between lg:min-h-[360px]">
-              <div>
-                <Plate size="chip">HOW IT WORKS</Plate>
-                <h2 className="mt-5 max-w-[13ch] text-[30px] leading-[1.08] sm:text-[36px]">
-                  Trust first, from discovery to dealership
-                </h2>
-              </div>
-
-              <div className="mt-10 grid gap-0 border-y border-(--color-divider)">
-                {[
-                  ['Verified', 'Dealer identity and business documents checked'],
-                  ['Transparent', 'Dealer-owned inventory with dealer-set prices'],
-                  ['Direct', 'Buyer enquiries delivered to the dealership'],
-                ].map(([label, detail]) => (
-                  <div
-                    key={label}
-                    className="grid grid-cols-[100px_1fr] gap-4 border-b border-(--color-divider) py-4 last:border-b-0 sm:grid-cols-[120px_1fr]"
-                  >
-                    <strong className="font-heading text-[14px] font-extrabold text-(--color-ink)">
-                      {label}
-                    </strong>
-                    <span className="text-[13px] leading-[1.5] ink-secondary">{detail}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Blueprint>
+      <HeroBanner image={HOME_HERO_IMAGE}>
+        <div className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white/80">
+          {HOME_TEXT.eyebrow}
         </div>
-      </section>
+        <h1 className="max-w-[14ch] text-[40px] leading-[1.05] tracking-[-0.04em] text-white sm:text-[48px] lg:text-[56px]">
+          {HOME_TEXT.title}
+        </h1>
+        <p className="mt-5 max-w-[52ch] text-[15px] leading-[1.8] text-white/85">
+          {HOME_TEXT.lede}
+        </p>
+
+        <div className="mt-7 text-(--color-ink)">
+          <CarSearchBox
+            params={{}}
+            basePath={HOME_SEARCH_PATH}
+            action={HOME_SEARCH_PATH}
+            className="sm:max-w-[560px]"
+          />
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link href="/cars" className="dd-chip">
+            {HOME_TEXT.browseAll}
+          </Link>
+          <Link href="/dealers" className="dd-chip">
+            {HOME_TEXT.browseDealers}
+          </Link>
+        </div>
+      </HeroBanner>
 
       {inventory.rows.some((row) => row.cars.length > 0) ? (
         <div

@@ -2136,6 +2136,21 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'auth-entryshell',
   },
+  {
+    id: 'C111',
+    name: 'HeroBanner',
+    source: 'apps/web/src/features/home/hero-banner/hero-banner.tsx',
+    category: 'Layout',
+    ownership: 'Page-specific',
+    purpose:
+      'The homepage single full-width hero (R81): one photograph under a black scrim, with the headline, search and shortcuts over it. `image` is a prop so a future admin setting can supply it; null draws a dark ground.',
+    aliases: ['Hero', 'HomeHero', 'Banner', 'HeroImage', 'hero-banner'],
+    features: ['R81', 'R79'],
+    props: ['image', 'children'],
+    states: ['no photograph', 'with photograph', 'phone width'],
+    reusable: false,
+    storyId: 'home-herobanner',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {
