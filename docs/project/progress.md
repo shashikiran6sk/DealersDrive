@@ -156,8 +156,8 @@ revision · `[⛔]` withdrawn
 
 ## Tier 14 — Surface polish
 
-- [ ] F093 — Error boundaries & error pages
-- [ ] F094 — Loading & not-found states
+- [~] F093 — Error boundaries & error pages · public, route, dealer, root and global boundaries; `RESOURCE_NOT_FOUND` vs `SERVICE_UNAVAILABLE`/`INTERNAL_ERROR` in `lib/errors.ts`; sanitised BFF problems; section fallbacks; no `console` in production source · see `docs/errors.md`
+- [~] F094 — Loading & not-found states · the branded 404 (root and public); `loading.tsx` deliberately not added above public pages — it would turn 404/500 into 200
 - [~] F095 — SEO & metadata · production SEO for the public marketplace — one origin, per-page metadata and Open Graph, faceted-URL policy, `Car`/`Offer`/`AutoDealer`/`BreadcrumbList`/`Organization`/`WebSite` JSON-LD, `GET /v1/sitemap` + `sitemap.xml`, `robots.txt`, favicon set; see `docs/seo.md`
 - [ ] F096 — Postman collection · ⚠️ reduced by D5; OpenAPI moved to F098
 - [ ] F097 — Seed data & developer bootstrap

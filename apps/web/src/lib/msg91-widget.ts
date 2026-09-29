@@ -162,12 +162,7 @@ export function retryMsg91Otp(identifier: string): Promise<void> {
       },
       reject,
     );
-  }).catch(async (error: unknown) => {
-    console.warn(
-      '[msg91] retryOtp was refused; resending instead. Configure a retry channel on the widget ' +
-        'to use the provider’s own resend.',
-      error,
-    );
+  }).catch(async () => {
     await sendMsg91Otp(identifier);
   });
 }
@@ -221,7 +216,6 @@ function call<T>(
 
     const ok = settle(resolve);
     const no = settle<unknown>((error) => {
-      console.error(`[msg91] ${method} failed`, error);
       reject(
         error instanceof Error ? error : new Error(`The verification service refused ${method}.`),
       );

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { SectionError } from '@/components/errors/section-error';
 import { CarSearchBox } from '@/components/search/car-search-box';
 import { Blueprint } from '@/components/ui/primitives';
 import { DiscoveryRow } from '@/features/home/discovery-row';
@@ -108,6 +109,16 @@ export default async function HomePage() {
           </Link>
         </div>
       </HeroBanner>
+
+      {inventory.unavailable ? (
+        <div
+          aria-label={HOME_TEXT.discoveryLabel}
+          role="region"
+          className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10 lg:py-12"
+        >
+          <SectionError title={HOME_TEXT.unavailableTitle} message={HOME_TEXT.unavailableMessage} />
+        </div>
+      ) : null}
 
       {inventory.rows.some((row) => row.cars.length > 0) ? (
         <div

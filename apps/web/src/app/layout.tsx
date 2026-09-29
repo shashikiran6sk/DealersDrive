@@ -1,17 +1,10 @@
 import type { Metadata, Viewport } from 'next';
-import { Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { serverConfig } from '@/lib/config';
+import { manrope } from '@/lib/fonts';
 import { rootMetadata } from '@/lib/seo';
 import '@/styles/globals.css';
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  display: 'swap',
-  variable: '--font-manrope',
-});
 
 export function generateMetadata(): Metadata {
   return rootMetadata();

@@ -2488,14 +2488,17 @@ The dealer side: status tabs, counts, and per-enquiry status changes.
 Five Next.js error boundaries — root, global, and one per route group.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F012
-- **Frontend** `app/{error,global-error}.tsx`, `app/({public,dealer,admin})/error.tsx`
-- **Components — Reused** `ErrorState`, `Blueprint`, `Button`
-- **Sandbox** `ErrorState` — default title / custom title / with and without action
+- **Frontend** `app/{error,global-error}.tsx`, `app/({public,dealer,admin})/error.tsx`, `app/(public)/{cars,car/[slug],dealers,dealers/[slug]}/error.tsx`, `lib/{errors,logger,bff}.ts`, the error model in `lib/api.ts`
+- **Components — New** `StatusPage`, `RouteError`, `SectionError`, `RetryButton`, `StatusShell` (C113–C117) · **Reused** `ErrorState`, `ButtonLink`, `Button`, `Plate`
+- **Sandbox** `Errors/StatusPage` — not found / server error / route message / phone width; `Errors/SectionError` — homepage rows / dealer inventory / retry
+- ⚠️ **Not a port.** The baseline is unreachable from this repository's remotes; the design is `docs/errors.md`.
+- ⚠️ **No `console` in production source.** `no-console` is an error for `src/**`; the web app logs through `lib/logger.ts`.
 
 ### F094 — Loading & not-found states
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F012, F082
-- **Frontend** `app/(public)/loading.tsx`, `app/(public)/car/[slug]/{loading,not-found}.tsx`
+- **Frontend** `app/(public)/loading.tsx`, `app/(public)/car/[slug]/{loading,not-found}.tsx` — as landed: `app/not-found.tsx` and `app/(public)/not-found.tsx`, and **no** `loading.tsx` above a public page
+- ⚠️ **`loading.tsx` is left out on purpose.** A Suspense boundary above a page streams the shell before its data, and a `notFound()` or failure after that is answered 200 — which would undo the 404/500 semantics F093 and F095 depend on.
 - **Components — Reused** `SkeletonLines`, `VehicleCardSkeleton`, `EmptyState`
 - **Sandbox** skeleton layouts for the grid and the VDP
 

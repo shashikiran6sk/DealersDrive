@@ -7,6 +7,7 @@ import { PriceBlock } from '@/components/vehicle/price-block';
 import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
 import type * as ApiModule from '@/lib/api';
+import { ApiError, UpstreamUnavailableError } from '@/lib/api';
 
 const apiGetParsed = vi.fn();
 
@@ -209,6 +210,25 @@ describe('/car/[slug]', () => {
     await expect(VehiclePage({ params: Promise.resolve({ slug: 'gone' }) })).rejects.toThrow(
       'NEXT_NOT_FOUND',
     );
+  });
+
+  /**
+   * The distinction the whole error model exists for: an API that is down, slow
+   * or broken says nothing about whether the car exists, so it is never a 404.
+   */
+  it.each([
+    ['unreachable', () => new UpstreamUnavailableError('network', 'GET', `/v1/vehicles/${SLUG}`)],
+    ['timed out', () => new UpstreamUnavailableError('timeout', 'GET', `/v1/vehicles/${SLUG}`)],
+    [
+      'a 503',
+      () => new ApiError({ type: 'x', title: 'Unavailable', status: 503, code: 'NOT_READY' }),
+    ],
+    ['a 500', () => new ApiError({ type: 'x', title: 'Internal', status: 500, code: 'INTERNAL' })],
+  ])('sends an API that is %s to the error page, never the 404', async (_label, failure) => {
+    const error = failure();
+    apiGetParsed.mockRejectedValue(error);
+
+    await expect(VehiclePage({ params: Promise.resolve({ slug: SLUG }) })).rejects.toBe(error);
   });
 
   it('lets any other failure through to the error page', async () => {

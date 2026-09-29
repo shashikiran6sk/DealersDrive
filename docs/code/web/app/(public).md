@@ -52,3 +52,29 @@ district of its own to scope by.
 
 `action="/cars"` keeps what the four-field hero had: a GET form that works
 before the script loads.
+
+## `apps/web/src/app/(public)/layout.tsx` — `<PublicShell>`
+
+The shell moved to `components/layout/public-shell` so the root `not-found.tsx`
+can draw the same header and footer; this layout is now only that.
+
+## `apps/web/src/app/(public)/not-found.tsx`
+
+### `export default function PublicNotFound()`
+
+`notFound()` from `/car/[slug]` and `/dealers/[slug]` lands here, inside the
+public layout, rather than bubbling to the root boundary.
+
+## `apps/web/src/app/(public)/error.tsx` and the four route boundaries
+
+### `<RouteError {...props} description={ROUTE_ERROR_TEXT.cars} />`
+
+One component, one sentence each: `/cars`, `/car/[slug]`, `/dealers` and
+`/dealers/[slug]` say which thing could not be loaded. They exist only for that
+sentence; the behaviour is `RouteError`'s.
+
+### Why there is no `loading.tsx` here
+
+A Suspense boundary above a page streams the layout before the page's data
+arrives, and a `notFound()` or a failure after that is answered 200. See
+`docs/errors.md` §3.

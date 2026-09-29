@@ -77,3 +77,10 @@ next homepage render uses it.
 
 The URL must point at an image already hosted somewhere reachable by browsers;
 uploading the file from the admin screen is not part of this.
+
+### `unavailable: true`
+
+The rows failing is not the homepage failing. `loadHomeInventory` says so rather
+than returning no rows, and the page draws `SectionError` in their place: an
+empty space where the cars were read as "there are no cars", which is a
+different and wrong sentence.

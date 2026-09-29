@@ -1,6 +1,7 @@
 import { PublicVehiclesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { cache } from 'react';
 
 import { AppliedFilters } from '@/components/search/applied-filters';
 import { CarSearchBox } from '@/components/search/car-search-box';
@@ -43,14 +44,15 @@ export const dynamic = 'force-dynamic';
 
 const CARS_PATH = '/cars';
 
+const fetchCars = cache((query: string) =>
+  apiGetParsed(PublicVehiclesResponse, `/v1/vehicles${query}`, {
+    revalidate: 60,
+    tags: [VEHICLES_TAG],
+  }),
+);
+
 async function loadCars(params: VehicleSearchParams) {
-  const [listing, locations] = await Promise.all([
-    apiGetParsed(PublicVehiclesResponse, `/v1/vehicles${qs(params)}`, {
-      revalidate: 60,
-      tags: [VEHICLES_TAG],
-    }),
-    getPublicLocations(),
-  ]);
+  const [listing, locations] = await Promise.all([fetchCars(qs(params)), getPublicLocations()]);
   const district = params.district;
   const place = district
     ? (locations.districts.find((entry) => entry.slug === district)?.name ?? district)

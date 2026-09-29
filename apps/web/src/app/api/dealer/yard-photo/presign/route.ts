@@ -1,7 +1,8 @@
 import { YardPhotoPresignInput, type PresignResponse } from '@dealers-drive/contracts';
 import { NextResponse } from 'next/server';
 
-import { ApiError, apiSend } from '@/lib/api';
+import { apiSend } from '@/lib/api';
+import { problemResponse } from '@/lib/bff';
 
 export async function POST(request: Request): Promise<NextResponse> {
   let body: unknown;
@@ -27,16 +28,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    return problem(error);
+    return problemResponse(error, '/api/dealer/yard-photo/presign');
   }
-}
-
-function problem(error: unknown): NextResponse {
-  if (error instanceof ApiError) {
-    return NextResponse.json(error.problem, {
-      status: error.status,
-      headers: { 'Content-Type': 'application/problem+json' },
-    });
-  }
-  return NextResponse.json({ error: 'Upstream unavailable.' }, { status: 502 });
 }

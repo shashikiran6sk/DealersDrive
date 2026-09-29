@@ -110,3 +110,11 @@ into Closed, so this component cannot show it. An empty list points at
 
 One enquiry, laid out like the dealer's card (§3.15) without the actions:
 the car first, because that is what the customer remembers asking about.
+
+### `open()` and `send()` — the `catch`
+
+`enquiryCustomerAction` throws when the API cannot be reached (only a 401 is an
+answer to it), and a server action can fail on the way to the server. Either
+used to leave the Enquire button spinning. The panel now says the form could
+not be opened, or that the enquiry was not sent, and the button or the form is
+still there to try again.

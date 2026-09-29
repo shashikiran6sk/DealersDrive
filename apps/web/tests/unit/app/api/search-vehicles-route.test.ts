@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
-import { ApiError } from '@/lib/api';
+import { ApiError, UpstreamUnavailableError } from '@/lib/api';
 
 /**
  * `src/app/api/search/vehicles/route.ts` (**R54**) — the BFF the car typeahead
@@ -70,7 +70,7 @@ describe('GET /api/search/vehicles', () => {
   });
 
   it('answers 502 when the API cannot be reached at all', async () => {
-    apiGet.mockRejectedValue(new Error('connect ECONNREFUSED'));
+    apiGet.mockRejectedValue(new UpstreamUnavailableError('network', 'GET', '/v1/search/vehicles'));
     expect((await GET(request('?search=cre'))).status).toBe(502);
   });
 });

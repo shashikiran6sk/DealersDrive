@@ -25,4 +25,6 @@ export const HOME_TEXT = {
   browseDealers: 'Explore verified dealers',
   viewAll: 'View all →',
   discoveryLabel: 'Cars on Dealers-Drive now',
+  unavailableTitle: 'We couldn’t load these vehicles right now',
+  unavailableMessage: 'Please try again, or browse every car on the marketplace.',
 } as const;

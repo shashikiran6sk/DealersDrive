@@ -9,6 +9,13 @@ export interface FileRule {
   wrongType: string;
 }
 
+export class UploadFailure extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UploadFailure';
+  }
+}
+
 export function fileRejection(file: File, rule: FileRule): string | null {
   if (file.size > rule.maxBytes) return rule.tooLarge;
   if (!rule.mimeTypes.includes(file.type)) return rule.wrongType;
@@ -25,7 +32,7 @@ export async function postJson(path: string, body: unknown): Promise<Response> {
 
 export async function presign(path: string, body: unknown): Promise<PresignResponse> {
   const response = await postJson(path, body);
-  if (!response.ok) throw new Error('We could not start that upload.');
+  if (!response.ok) throw new UploadFailure('We could not start that upload.');
   return readJson<PresignResponse>(response);
 }
 
@@ -35,9 +42,9 @@ export async function putToStorage(signed: PresignResponse, file: File): Promise
     headers: { 'Content-Type': file.type },
     body: file,
   });
-  if (!put.ok) throw new Error('The upload was rejected by storage.');
+  if (!put.ok) throw new UploadFailure('The upload was rejected by storage.');
 }
 
 export function failureMessage(caught: unknown, fallback: string): string {
-  return caught instanceof Error ? caught.message : fallback;
+  return caught instanceof UploadFailure ? caught.message : fallback;
 }

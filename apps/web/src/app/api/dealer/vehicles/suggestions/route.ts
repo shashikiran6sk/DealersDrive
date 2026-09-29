@@ -1,7 +1,8 @@
 import { VehicleSuggestQuery, type VehicleSuggestions } from '@dealers-drive/contracts';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { ApiError, apiGet, qs } from '@/lib/api';
+import { apiGet, qs } from '@/lib/api';
+import { problemResponse } from '@/lib/bff';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const parsed = VehicleSuggestQuery.safeParse(
@@ -18,12 +19,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
     return NextResponse.json(payload, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    if (error instanceof ApiError) {
-      return NextResponse.json(error.problem, {
-        status: error.status,
-        headers: { 'Content-Type': 'application/problem+json' },
-      });
-    }
-    return NextResponse.json({ error: 'Upstream unavailable.' }, { status: 502 });
+    return problemResponse(error, '/api/dealer/vehicles/suggestions');
   }
 }

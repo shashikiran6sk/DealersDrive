@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
 import DealerPortfolioPage, { generateMetadata } from '@/app/(public)/dealers/[slug]/page';
-import { ApiError } from '@/lib/api';
+import { ApiError, UpstreamUnavailableError } from '@/lib/api';
 
 import { navigationState } from '../../../setup';
 import { FACETS } from '../search/fixtures';
@@ -443,6 +443,47 @@ describe('a dealership that is not listed', () => {
     serve(new ApiError({ type: 'about:blank', title: 'Internal', status: 500, code: 'INTERNAL' }));
 
     await expect(DealerPortfolioPage({ params, searchParams })).rejects.toThrow(ApiError);
+  });
+
+  it('sends an unreachable API to the error page, never the 404', async () => {
+    const outage = new UpstreamUnavailableError('network', 'GET', '/v1/dealers/sri-lakshmi-motors');
+    apiGet.mockRejectedValue(outage);
+
+    await expect(DealerPortfolioPage({ params, searchParams })).rejects.toBe(outage);
+  });
+});
+
+/**
+ * The dealership's own details loaded; only its cars did not. That is a
+ * section failing, not the page: the name, the address and the map are still
+ * worth having, and the inventory's place says what happened and offers to try
+ * again rather than claiming the dealership has no cars.
+ */
+describe('an inventory that could not be loaded', () => {
+  it('renders the dealership, with a retryable notice where the cars would be', async () => {
+    serve(DEALER);
+    apiGetParsed.mockRejectedValue(
+      new UpstreamUnavailableError('timeout', 'GET', '/v1/dealers/sri-lakshmi-motors/vehicles'),
+    );
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Sri Lakshmi Motors' }),
+    ).toBeInTheDocument();
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('We couldn’t load this dealership’s cars right now');
+    expect(within(alert).getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(screen.queryByText(/No cars|0 cars available/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps the dealership’s structured data, which describes the part that loaded', async () => {
+    serve(DEALER);
+    apiGetParsed.mockRejectedValue(
+      new ApiError({ type: 'x', title: 'Internal', status: 500, code: 'INTERNAL' }),
+    );
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+
+    expect(container.querySelector('script[type="application/ld+json"]')).not.toBeNull();
   });
 });
 
