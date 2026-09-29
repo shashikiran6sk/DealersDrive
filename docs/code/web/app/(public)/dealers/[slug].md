@@ -196,7 +196,13 @@ is the em dash the stat cards used for an empty value, kept because a blank
 The count, from the stat the API already composed rather than from a second
 derivation of the same fact.
 
-### `function DealerJsonLd({ dealer }: { dealer: DealerPublicProfile })`
+### `<JsonLd nodes={[dealerSchema(dealer), breadcrumbSchema(…)]} />`
+
+Was `DealerJsonLd`, which wrote `JSON.stringify` straight into the `<script>` —
+a tagline containing `</script>` ended the element. It is built by
+`lib/seo/schemas/dealer.ts` now and serialised safely; the canonical, `url`
+and `@id` come from the web app's own origin rather than the API's
+`seo.canonical`, so one environment variable decides every URL on the page.
 
 `AutoDealer` + `BreadcrumbList` (ARCHITECTURE §17.3), phone deliberately
 absent — structured data is the easiest place in a page to leak a field
@@ -218,3 +224,18 @@ is in `LocationCard`; `mapsUrl` (R6) is in the anchor beside it.
 with `readVehicleSearch(query, 'dealer')` — which never reads a place — and
 passed to the dealership's route. Other portfolio parameters are left alone,
 and the dealership's `cars` stat is handed down as the "of m" in "n of m cars".
+
+### `export async function generateMetadata({ params, searchParams })`
+
+`seo.isIndexable` (an ACTIVE dealership with an available car) decides the bare
+portfolio. A filtered or sorted inventory is `noindex, follow`, canonical to
+the portfolio; a later page of it is its own canonical, so the cars on it stay
+reachable by links. The description leads with the dealer's own tagline and
+names the place from the three address parts, without repeating a town that is
+also its district. The yard photograph is the social image when there is one.
+
+### `alt={DEALER_PAGE_TEXT.coverAlt(dealer.brandName)}`
+
+Was `alt=""`. On the directory card the photograph is decoration beside a link
+that names the dealership; here it is the page's own picture of the yard, and
+the only description of it an image search has.

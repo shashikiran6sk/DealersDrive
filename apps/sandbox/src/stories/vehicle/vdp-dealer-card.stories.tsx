@@ -8,6 +8,9 @@ const DEALER = {
   initials: 'SL',
   isVerified: true,
   location: 'Katpadi, Vellore',
+  city: 'Katpadi',
+  district: 'Vellore',
+  state: 'Tamil Nadu',
 };
 
 const meta = {
@@ -35,4 +38,6 @@ export const LongName: Story = {
   },
 };
 
-export const NoLocation: Story = { args: { dealer: { ...DEALER, location: null } } };
+export const NoLocation: Story = {
+  args: { dealer: { ...DEALER, location: null, city: null, district: null, state: null } },
+};

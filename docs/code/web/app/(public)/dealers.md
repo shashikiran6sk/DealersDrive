@@ -28,13 +28,16 @@ accepts and the form that survives being pasted into a chat window.
 
 The list, back in the shape the API and the links both want.
 
-### `...seoMetadata(`
+### `export async function generateMetadata(...)`
 
-A name search is a thin, unbounded surface; a place page is a real one.
-**One** town is a real one — two toggled together is a comparison a buyer
-made for themselves, and there is no audience searching for the pair, so
-it is passed through as a multi-value and the policy declines to index it
-exactly as it declines a name search.
+A name search is a thin, unbounded surface; a district page is a real one. A
+town inside a district, or two toggled together, is a comparison a buyer made
+for themselves: `noindex, follow`, canonical to the district. The policy is
+[`directoryView`](../../lib.md) — the same one `/cars` uses — and it reads the
+same directory request the page makes, so the empty-page check costs nothing.
+
+The canonical used to be `/dealers?city={district}`: the baseline's parameter
+name for a place, from before R22 split district from town.
 
 ### `function placeName`
 

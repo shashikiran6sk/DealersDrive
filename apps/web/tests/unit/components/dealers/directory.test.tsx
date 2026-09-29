@@ -613,22 +613,53 @@ describe('DirectoryFilters', () => {
  * near-duplicate of the page above it.
  */
 describe('the indexing policy', () => {
-  it('indexes the directory and each city page, at their own URL', () => {
-    expect(indexPolicy({ kind: 'dealers', hasQuery: false })).toEqual({
+  const landing = { narrowed: false, empty: false };
+
+  it('indexes the directory and each district page, at their own URL', () => {
+    expect(indexPolicy({ kind: 'dealers', ...landing })).toEqual({
       robots: { index: true, follow: true },
       canonical: '/dealers',
     });
-    expect(indexPolicy({ kind: 'dealers', city: 'vellore', hasQuery: false })).toEqual({
+    expect(indexPolicy({ kind: 'dealers', district: 'vellore', ...landing })).toEqual({
       robots: { index: true, follow: true },
-      canonical: '/dealers?city=vellore',
+      canonical: '/dealers?district=vellore',
+    });
+  });
+
+  /**
+   * The district is `?district=`, not `?city=`: the policy used to canonicalise
+   * a district page to `/dealers?city=vellore`, which is a different page — a
+   * town filter — and usually an empty one.
+   */
+  it('canonicalises a district page to its own district parameter', () => {
+    expect(indexPolicy({ kind: 'dealers', district: 'vellore', ...landing }).canonical).toBe(
+      '/dealers?district=vellore',
+    );
+  });
+
+  it('indexes a later page at its own URL, so the dealerships on it can be reached', () => {
+    expect(indexPolicy({ kind: 'dealers', district: 'vellore', page: 2, ...landing })).toEqual({
+      robots: { index: true, follow: true },
+      canonical: '/dealers?district=vellore&page=2',
     });
   });
 
   /** Still `follow`: the links out of a searched page are how deep pages get crawled. */
-  it('keeps a name search out of the index but follows it', () => {
-    expect(indexPolicy({ kind: 'dealers', city: 'vellore', hasQuery: true })).toEqual({
+  it('keeps a name search or a town filter out of the index but follows it', () => {
+    expect(
+      indexPolicy({ kind: 'dealers', district: 'vellore', narrowed: true, empty: false }),
+    ).toEqual({
       robots: { index: false, follow: true },
-      canonical: '/dealers?city=vellore',
+      canonical: '/dealers?district=vellore',
+    });
+  });
+
+  it('keeps an empty page out of the index', () => {
+    expect(
+      indexPolicy({ kind: 'dealers', district: 'nowhere', narrowed: false, empty: true }),
+    ).toEqual({
+      robots: { index: false, follow: true },
+      canonical: '/dealers?district=nowhere',
     });
   });
 

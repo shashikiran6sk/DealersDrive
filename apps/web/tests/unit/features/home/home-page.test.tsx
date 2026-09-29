@@ -12,6 +12,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import HomePage from '@/app/(public)/page';
 import type * as ApiModule from '@/lib/api';
+import { NO_PUBLIC_CONFIG } from '@/lib/public-config';
 
 import { navigationState } from '../../../setup.js';
 
@@ -60,7 +61,7 @@ function response(data: VehicleCardDto[], available = data.length): PublicVehicl
 
 function serve(byPath: (path: string) => PublicVehiclesResponse) {
   apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
-    Promise.resolve(byPath(path)),
+    Promise.resolve(path === '/v1/config/public' ? NO_PUBLIC_CONFIG : byPath(path)),
   );
 }
 

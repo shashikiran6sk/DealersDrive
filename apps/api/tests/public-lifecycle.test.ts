@@ -1,4 +1,9 @@
-import type { DealerCard, PublicVehiclesResponse, VehicleCardDto } from '@dealers-drive/contracts';
+import {
+  PublicSitemapResponse,
+  type DealerCard,
+  type PublicVehiclesResponse,
+  type VehicleCardDto,
+} from '@dealers-drive/contracts';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -23,6 +28,7 @@ import { marketplaceFixtures, type Dealership } from './marketplace-fixtures.js'
 let h: AuthHarness;
 let admin: request.Agent;
 let a: Dealership;
+let fixtures: ReturnType<typeof marketplaceFixtures>;
 let kit: ReturnType<typeof createApprovalKit>;
 let cars: Record<'ACTIVE' | 'RESERVED' | 'SOLD' | 'WITHDRAWN', Published>;
 let plate = 700;
@@ -69,7 +75,7 @@ async function everyCard(): Promise<VehicleCardDto[]> {
 
 beforeAll(async () => {
   h = await createAuthHarness(createFakeGoogle());
-  const fixtures = marketplaceFixtures(h, 'public-lifecycle');
+  fixtures = marketplaceFixtures(h, 'public-lifecycle');
   a = await fixtures.dealership();
   admin = await fixtures.moderator();
   kit = createApprovalKit(h, admin);
@@ -224,6 +230,68 @@ describe('enquiries — enforced by the server, not by a hidden button', () => {
     } else {
       expect(enquiry.status).toBe(409);
       expect(enquiries).toHaveLength(0);
+    }
+  });
+});
+
+describe('/v1/sitemap — what search engines are told to index', () => {
+  async function sitemap(): Promise<PublicSitemapResponse> {
+    const response = await h.agent().get('/v1/sitemap').expect(200);
+    expect(response.headers['cache-control']).toBe('public, max-age=300');
+    return PublicSitemapResponse.parse(response.body);
+  }
+
+  it('lists the cars with a public page — ACTIVE and RESERVED — and never SOLD or WITHDRAWN', async () => {
+    const slugs = new Set((await sitemap()).vehicles.map((entry) => entry.slug));
+
+    expect(slugs.has(cars.ACTIVE.slug)).toBe(true);
+    expect(slugs.has(cars.RESERVED.slug)).toBe(true);
+    expect(slugs.has(cars.SOLD.slug)).toBe(false);
+    expect(slugs.has(cars.WITHDRAWN.slug)).toBe(false);
+  });
+
+  it('dates each car from its own rows, not from the request', async () => {
+    const before = Date.now();
+    const entry = (await sitemap()).vehicles.find((row) => row.slug === cars.ACTIVE.slug);
+    const listing = await h.prisma.listing.findUniqueOrThrow({
+      where: { id: cars.ACTIVE.listingId },
+      include: { vehicle: true },
+    });
+    const latest = Math.max(listing.updatedAt.getTime(), listing.vehicle.updatedAt.getTime());
+
+    expect(entry?.lastModified).toBe(new Date(latest).toISOString());
+    expect(new Date(entry?.lastModified ?? 0).getTime()).toBeLessThanOrEqual(before);
+  });
+
+  it('lists a dealership with an available car, and neither an empty one nor one not yet approved', async () => {
+    const empty = await fixtures.dealership();
+    const pending = await fixtures.dealership('PENDING_APPROVAL');
+    const slugs = new Set((await sitemap()).dealers.map((entry) => entry.slug));
+
+    expect(slugs.has(a.slug)).toBe(true);
+    expect(slugs.has(empty.slug)).toBe(false);
+    expect(slugs.has(pending.slug)).toBe(false);
+  });
+
+  it('drops a suspended dealership and every car it has', async () => {
+    const other = await fixtures.dealership();
+    const car = await kit.published(other, nextPlate());
+    await h.prisma.dealer.update({ where: { id: other.dealerId }, data: { status: 'SUSPENDED' } });
+    const map = await sitemap();
+
+    expect(map.dealers.some((entry) => entry.slug === other.slug)).toBe(false);
+    expect(map.vehicles.some((entry) => entry.slug === car.slug)).toBe(false);
+  });
+
+  it('refuses a parameter it does not take, by name', async () => {
+    const { body } = await h.agent().get('/v1/sitemap?page=2').expect(400);
+    expect(JSON.stringify(body)).toContain('page');
+  });
+
+  it('carries slugs and dates, and nothing else about a car or a dealership', async () => {
+    const map = await sitemap();
+    for (const entry of [...map.vehicles, ...map.dealers]) {
+      expect(Object.keys(entry).sort()).toEqual(['lastModified', 'slug']);
     }
   });
 });

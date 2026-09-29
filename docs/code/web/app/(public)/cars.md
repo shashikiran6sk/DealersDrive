@@ -45,3 +45,17 @@ district.
 the search box (debounced, written to `?q=`) and the sort select. Both keep
 every filter and go back to page one; the total beside the heading is the
 response's `page.total`, never the length of the page.
+
+### `async function loadCars(params)`
+
+Shared by `generateMetadata` and the page, so the listing and the locations are
+fetched once per request (Next memoises identical GETs). The metadata needs the
+result as well as the URL: a district, a page past the end, or a filter that
+matches nothing is `noindex`, but it is still a 200 — a buyer's empty search is
+not a missing page. The indexing policy is in [lib/seo](../../lib.md).
+
+### `<JsonLd nodes={[breadcrumbSchema(…), …itemListSchema(…)]} />`
+
+The `ItemList` carries only the cars the page links to — a reserved car's card
+has no link — and only on an indexable view, numbered from where the page
+starts.

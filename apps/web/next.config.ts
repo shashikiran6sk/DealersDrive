@@ -57,6 +57,28 @@ const nextConfig: NextConfig = {
    * is the correct behaviour for a local `pnpm dev`, where the API is reached
    * on its own port anyway.
    */
+  /**
+   * Metadata goes in `<head>`, for every client.
+   *
+   * Next 15 streams a dynamic page's `<title>`, robots and canonical into the
+   * `<body>` unless the user agent is on a short list of "HTML-limited" bots —
+   * a list Googlebot is deliberately not on. Google ignores a `rel=canonical`
+   * outside `<head>`, and every crawler not on the list reads the initial HTML
+   * as it arrives. Matching every user agent makes metadata blocking, which
+   * costs nothing measurable here: each public page's `generateMetadata`
+   * awaits the same memoised fetch the page itself needs. See docs/seo.md.
+   */
+  htmlLimitedBots: /.*/,
+
+  /**
+   * `/support` is the name people reach for; the page lives at `/contact`
+   * (R81). A permanent redirect rather than a second route, so there is one
+   * URL to index and one canonical to point at — see docs/seo.md.
+   */
+  async redirects() {
+    return [{ source: '/support', destination: '/contact', permanent: true }];
+  },
+
   async rewrites() {
     const apiOrigin = process.env.API_ORIGIN;
     if (!apiOrigin) return [];

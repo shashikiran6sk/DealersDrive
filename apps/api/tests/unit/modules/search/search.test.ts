@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   specsOf,
   toPublicVehicleDetail,
+  toSitemapDealer,
+  toSitemapListing,
   toVehicleCard,
 } from '../../../../src/modules/search/search.mapper.js';
 import type {
@@ -103,13 +105,14 @@ describe('who is public (R71)', () => {
 describe('the router', () => {
   const router = createSearchRouter({} as never, () => (_req, _res, next) => next());
 
-  it("declares the public list, the vehicle page, its similar cars, a dealership's list and the typeahead, in that order", () => {
+  it("declares the public list, the vehicle page, its similar cars, a dealership's list, the typeahead and the sitemap, in that order", () => {
     expect(signaturesOf(router)).toEqual([
       'GET /vehicles',
       'GET /vehicles/:slug',
       'GET /vehicles/:slug/similar',
       'GET /dealers/:slug/vehicles',
       'GET /search/vehicles',
+      'GET /sitemap',
     ]);
   });
 
@@ -158,6 +161,7 @@ function detailRow(overrides: Partial<DetailRow['vehicle']> = {}): DetailRow {
       slug: 'sri',
       city: 'Katpadi',
       district: 'Vellore',
+      state: 'Tamil Nadu',
     },
   } as unknown as DetailRow;
 }
@@ -187,7 +191,35 @@ describe('toPublicVehicleDetail', () => {
       initials: 'SL',
       isVerified: true,
       location: 'Katpadi, Vellore',
+      city: 'Katpadi',
+      district: 'Vellore',
+      state: 'Tamil Nadu',
     });
+  });
+
+  it('carries the specifications as values, labelled as the page prints them', () => {
+    expect(toPublicVehicleDetail(detailRow()).facts).toEqual({
+      make: 'Hyundai',
+      model: 'Creta',
+      variant: 'SX(O)',
+      bodyType: 'SUV',
+      fuelType: 'Petrol',
+      transmission: 'Automatic',
+      color: 'White',
+      kilometersDriven: 22_400,
+      ownerCount: 1,
+      pricePaise: 145_000_000,
+    });
+  });
+
+  it('leaves a fact the dealer never entered as null, never a guess', () => {
+    const facts = toPublicVehicleDetail(
+      detailRow({ fuelType: null, color: null, pricePaise: null, kilometersDriven: null }),
+    ).facts;
+    expect(facts.fuelType).toBeNull();
+    expect(facts.color).toBeNull();
+    expect(facts.pricePaise).toBeNull();
+    expect(facts.kilometersDriven).toBeNull();
   });
 
   it('copes with a gallery that is empty and a listing that has no date', () => {
@@ -314,5 +346,30 @@ describe('rankSuggestions', () => {
     const cut = rankSuggestions(rows, 'hyundai', 2);
     expect(cut.data).toHaveLength(2);
     expect(cut.total).toBe(4);
+  });
+});
+
+describe('the sitemap entries', () => {
+  it("dates a car by the later of the listing's and the vehicle's changes", () => {
+    expect(
+      toSitemapListing({
+        slug: 'a-car',
+        updatedAt: new Date('2026-09-20T00:00:00.000Z'),
+        vehicle: { updatedAt: new Date('2026-09-25T08:00:00.000Z') },
+      }),
+    ).toEqual({ slug: 'a-car', lastModified: '2026-09-25T08:00:00.000Z' });
+  });
+
+  it("dates a dealership by its approval or its newest car's change, whichever is later", () => {
+    expect(
+      toSitemapDealer({
+        slug: 'sri',
+        approvedAt: new Date('2026-01-01T00:00:00.000Z'),
+        inventoryUpdatedAt: new Date('2026-09-01T00:00:00.000Z'),
+      }),
+    ).toEqual({ slug: 'sri', lastModified: '2026-09-01T00:00:00.000Z' });
+    expect(
+      toSitemapDealer({ slug: 'sri', approvedAt: null, inventoryUpdatedAt: null }).lastModified,
+    ).toBeNull();
   });
 });

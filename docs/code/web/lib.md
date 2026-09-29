@@ -613,65 +613,112 @@ Named rather than swallowed: an empty footer and an unreachable API look
 
 identical from the outside, and only one of them is worth waking up for.
 
-## `apps/web/src/lib/seo.ts`
+## `apps/web/src/lib/seo/`
 
-### `export type SeoRoute =`
+The whole search-engine surface of the web app: the origin, the indexing
+policy, the metadata builders, the JSON-LD builders, the sitemap and
+robots.txt. [`docs/seo.md`](../../seo.md) is the operating manual and says what
+each of these decides; the notes below say why the code is shaped the way it is.
 
-ARCHITECTURE §17.2 — the whole indexing policy, in one function.
+### `site.ts` — `export function siteUrl(): string` · `absoluteUrl(path)`
 
-"Implement as a single function — given a route and its result count, return
-`{index, follow, canonical}` — called by every `generateMetadata`. One place,
-so the policy cannot drift between routes."
+`WEB_BASE_URL`'s **origin**, not the variable verbatim: a trailing slash or a
+path in the environment would otherwise put `//cars` or `/app/cars` into every
+canonical. Every absolute URL the site publishes goes through `absoluteUrl`, so
+there is no second copy of the domain to drift.
 
-The rules it encodes, in full:
+### `export function indexingEnabled(): boolean`
 
-| Route                              | Policy                         |
-| ---------------------------------- | ------------------------------ |
-| `/`, `/cars`, `/dealers`           | index, follow · self canonical |
-| `/cars?page=2..40`                 | index, follow · self canonical |
-| any URL with filter query params   | noindex, follow · clean path   |
-| `/car/{slug}` live                 | index · self                   |
-| `/car/{slug}` sold > 30 days       | noindex, follow (API decides)  |
-| `/dealers/{slug}` active + ≥1 live | index · self (API decides)     |
-| `/saved`, `/enquiry-sent`          | noindex                        |
-| `/dealer/*`, `/admin/*`, `/api/*`  | noindex + robots.txt disallow  |
+Production **and** a public origin. The second half is the one that matters in
+an incident: a production deploy whose `WEB_BASE_URL` is `http://localhost:3000`
+or a `*.vercel.app` preview would otherwise publish canonicals to it, and
+search engines would follow them. Refusing to be indexed is the loud failure;
+a site canonicalised to localhost is the quiet one that is noticed months later.
 
-Where the API already resolved indexability (`seo.isIndexable` on A5 and A9),
-that answer wins: it knows the sold-30-days and live-listing-count facts this
-layer does not.
+### `policy.ts` — `export function indexPolicy(route: SeoRoute): SeoPolicy`
 
-── Reconstruction slice ────────────────────────────────────────────────────
-**F095** owns this file and lands the table above in full. **F085** brings it
-into existence with the two cases the dealer directory needs — `dealers` and
-`resolved` — because a searchable directory that is indexable at every `?q=`
-permutation is exactly the thin-page problem this policy was written to
-prevent, and deferring it would mean shipping the harm and fixing it later.
+ARCHITECTURE §17.2's single function — given a route, return robots and
+canonical — kept pure: it does not read the environment, so the policy can be
+tested as a table. `robotsFor` is where the environment is applied.
 
-The shape is the baseline's, not a sketch of it: F095 adds `home`, `cars` and
-`private` to the same union and the same switch. `hasFilterParams` and
-`NON_FILTER_KEYS` arrive with `/cars` (**F077**), which is the only route
-that has filters to ask about.
-────────────────────────────────────────────────────────────────────────────
+The table the baseline planned had a "sold > 30 days → noindex" row. **R71**
+made a sold car a 404 instead, so that row has nothing to act on; see
+docs/seo.md §7.
 
-### `const NOINDEX_FOLLOW: SeoPolicy['robots'] = { index: false, follow: true }`
+**`dealers` was `{ city, hasQuery }` and canonicalised to `/dealers?city=`.**
+The directory's place parameter has been `?district=` since R22, so a district
+page declared `/dealers?city=vellore` its canonical — a town filter, and
+usually an empty one. `cars` and `dealers` now share `DirectoryView`: the
+district and the page are the landing-page parameters, everything else is a
+narrowing.
+
+### `export function directoryView(params, empty): DirectoryView`
+
+Reads the URL a directory was asked for, not the result: `narrowed` is any
+parameter other than `district` and `page` with a value in it. An empty string
+or an empty list is not a narrowing — the dealer directory always carries a
+`city: []`.
+
+### `const NOINDEX_FOLLOW`
 
 Still `follow`: the links out of a filtered page are how deep pages get crawled.
 
-### `const canonical = route.city ? `/dealers?city=${route.city}` : '/dealers'`
+### `export function robotsFor(robots: SeoRobots)`
 
-A city is a facet we deliberately index; a name search is not. It is an
+`max-image-preview:large` on every indexable page, and never a `nosnippet` or
+`max-snippet`: those limit what Search and AI experiences may quote or show,
+and there is no business reason to limit them.
 
-### `const canonical = route.city ? `/dealers?city=${route.city}` : '/dealers'`
+### `metadata.ts` — `export function pageMetadata(...)`
 
-unbounded surface — one URL per string anybody has ever typed — and
+Open Graph and Twitter are written whole, on every page, because Next replaces
+a parent's `openGraph` object instead of merging it — a page that set only
+`openGraph.url` would lose the site name, the locale and the image.
 
-### `const canonical = route.city ? `/dealers?city=${route.city}` : '/dealers'`
+### `export function rootMetadata(): Metadata`
 
-every one of them is a near-duplicate of the page above it.
+No `robots` in production. Every public page states its own, and a root
+default is inherited by the not-found page, which then carried Next's
+`noindex` beside an `index, follow`. Outside production it is the net under
+any page that forgot.
 
-### `export function seoMetadata(route: SeoRoute): Pick<Metadata, 'robots' | 'alternates'>`
+No `icons`: `app/favicon.ico`, `app/icon.png` and `app/apple-icon.png` are the
+declaration, and a second one is how a page ends up with two favicons.
 
-The `Metadata` fragment, ready to spread into a `generateMetadata` return.
+### `json-ld.ts` — `export function serializeJsonLd(document)`
+
+`JSON.stringify` alone lets a `</script>` in a dealer's tagline end the element
+and run whatever follows it. The five characters that can break out of a
+`<script>` or a JavaScript string are written as `\uXXXX`, which JSON parsers
+read back as the same character.
+
+### `schemas/vehicle.ts` — `export function vehicleSchema(vehicle)`
+
+Built from `facts`, never parsed out of `specs` labels. `Offer` only when there
+is a price, at `round(pricePaise / 100)` — the same arithmetic `formatRupees`
+prints with, so the number a crawler reads is the number on the page.
+`RESERVED` is `https://schema.org/Reserved`, a real `ItemAvailability` member,
+rather than `InStock`, which would be false, or `OutOfStock`, which is less
+true.
+
+### `schemas/dealer.ts` — `export function dealerSchema(dealer)`
+
+No `geo` and no `telephone` — see
+[the portfolio page](<app/(public)/dealers/[slug].md>). `taxID` is the GSTIN
+the details card prints; `hasMap` is the dealer's own Maps link the location
+card opens.
+
+### `schemas/site.ts` — `export function organizationSchema(...)`
+
+The footer prints the support contacts and the social links on every public
+page, so the `Organization` says what the footer says and nothing more. A
+WhatsApp link is a way to message somebody, not a profile, so it is not a
+`sameAs`.
+
+### `sitemap.ts` — `export function buildSitemap(pages, locations)`
+
+No `lastModified` on the static pages: they have no honest last-changed time,
+and "now" on every request teaches a crawler to ignore the field.
 
 ## `apps/web/src/lib/services.ts`
 

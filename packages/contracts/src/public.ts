@@ -980,12 +980,80 @@ export const PublicVehicleDetail = z.object({
   /** Index of the primary image in `images`, the one shown first; 0 when empty. */
   primaryIndex: z.number().int(),
   publishedLabel: z.string().nullable(),
+  /**
+   * The same facts `specs` prints, as values rather than rows (**SEO**).
+   *
+   * The page's structured data is built from these, and every one of them is
+   * also on the page as a `specs` row, the price or the dealer card — JSON-LD
+   * that says something the page does not is exactly what search engines
+   * penalise. Labels (`Petrol`, `Automatic`) rather than enum values, because
+   * the label is what the page shows. `pricePaise` is paise like every money
+   * field; rupees are the UI's conversion (rule 3).
+   */
+  facts: z.object({
+    make: z.string().nullable(),
+    model: z.string().nullable(),
+    variant: z.string().nullable(),
+    bodyType: z.string().nullable(),
+    fuelType: z.string().nullable(),
+    transmission: z.string().nullable(),
+    color: z.string().nullable(),
+    kilometersDriven: z.number().int().nullable(),
+    ownerCount: z.number().int().nullable(),
+    pricePaise: z.number().int().nullable(),
+  }),
   dealer: z.object({
     name: z.string(),
     slug: z.string(),
     initials: z.string(),
     isVerified: z.boolean(),
     location: z.string().nullable(),
+    /** The parts `location` is joined from, for the title and structured data. */
+    city: z.string().nullable(),
+    district: z.string().nullable(),
+    state: z.string().nullable(),
   }),
 });
 export type PublicVehicleDetail = z.infer<typeof PublicVehicleDetail>;
+
+/**
+ * One public page in the sitemap: its slug, and when what it shows last changed.
+ *
+ * `lastModified` is an ISO timestamp read off the rows the page is built from,
+ * never the time of the request — a sitemap that says everything changed every
+ * hour teaches a crawler to ignore it.
+ */
+export const SitemapEntry = z.object({
+  slug: z.string(),
+  lastModified: z.string().nullable(),
+});
+export type SitemapEntry = z.infer<typeof SitemapEntry>;
+
+/**
+ * The most URLs of one kind the sitemap read returns. A single sitemap file
+ * holds 50,000; this leaves room for the static pages and the district pages
+ * beside the cars, and is the point at which the sitemap splits into segments.
+ */
+export const SITEMAP_ENTRY_LIMIT = 45_000;
+
+/**
+ * `GET /v1/sitemap` takes nothing, and says so: a stray parameter is a 400 that
+ * names it (rule 2), not a sitemap that looks filtered and is not.
+ */
+export const SitemapQuery = z.object({}).strict();
+export type SitemapQuery = z.infer<typeof SitemapQuery>;
+
+/**
+ * Every indexable entity page, for `sitemap.xml` (**SEO**).
+ *
+ * `vehicles` are the listings with a public page — ACTIVE or RESERVED, of an
+ * ACTIVE dealership (**R71**); sold, withdrawn and every unpublished state are
+ * absent because their page is a 404. `dealers` are the ACTIVE dealerships
+ * with at least one available car, the same rule that makes a portfolio
+ * indexable (`seo.isIndexable`). Slugs only: nothing else about either leaves.
+ */
+export const PublicSitemapResponse = z.object({
+  vehicles: z.array(SitemapEntry).max(SITEMAP_ENTRY_LIMIT),
+  dealers: z.array(SitemapEntry).max(SITEMAP_ENTRY_LIMIT),
+});
+export type PublicSitemapResponse = z.infer<typeof PublicSitemapResponse>;

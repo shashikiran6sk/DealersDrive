@@ -16,11 +16,17 @@ import {
   vehicleSummary,
   vehicleTitle,
   type PublicVehicleDetail,
+  type SitemapEntry,
   type VehicleCardDto,
 } from '@dealers-drive/contracts';
 
 import { mediaUrl } from '../../platform/media/urls.js';
-import type { CardRow, DetailRow } from './search.repository.js';
+import type {
+  CardRow,
+  DetailRow,
+  SitemapDealerRow,
+  SitemapListingRow,
+} from './search.repository.js';
 import {
   CARD_IMAGE_WIDTH,
   DETAIL_IMAGE_WIDTH,
@@ -106,14 +112,46 @@ export function toPublicVehicleDetail(row: DetailRow): PublicVehicleDetail {
     })),
     primaryIndex,
     publishedLabel: row.publishedAt ? PUBLISHED(formatDate(row.publishedAt)) : null,
+    facts: factsOf(vehicle),
     dealer: {
       name: dealer.brandName,
       slug: dealer.slug,
       initials: initialsOf(dealer.brandName),
       isVerified: true,
       location: locationOf(dealer),
+      city: dealer.city,
+      district: dealer.district,
+      state: dealer.state,
     },
   };
+}
+
+export function factsOf(vehicle: DetailRow['vehicle']): PublicVehicleDetail['facts'] {
+  return {
+    make: vehicle.make,
+    model: vehicle.model,
+    variant: vehicle.variant,
+    bodyType: vehicle.bodyType ? BODY_TYPE_LABELS[vehicle.bodyType] : null,
+    fuelType: vehicle.fuelType ? FUEL_LABELS[vehicle.fuelType] : null,
+    transmission: vehicle.transmission ? TRANSMISSION_LABELS[vehicle.transmission] : null,
+    color: vehicle.color ? VEHICLE_COLOR_LABELS[vehicle.color] : null,
+    kilometersDriven: vehicle.kilometersDriven,
+    ownerCount: vehicle.ownerCount,
+    pricePaise: vehicle.pricePaise === null ? null : Number(vehicle.pricePaise),
+  };
+}
+
+export function toSitemapListing(row: SitemapListingRow): SitemapEntry {
+  return { slug: row.slug ?? '', lastModified: latestOf(row.updatedAt, row.vehicle.updatedAt) };
+}
+
+export function toSitemapDealer(row: SitemapDealerRow): SitemapEntry {
+  return { slug: row.slug, lastModified: latestOf(row.approvedAt, row.inventoryUpdatedAt) };
+}
+
+function latestOf(...dates: (Date | null)[]): string | null {
+  const times = dates.flatMap((date) => (date ? [date.getTime()] : []));
+  return times.length > 0 ? new Date(Math.max(...times)).toISOString() : null;
 }
 
 export function metaLabelOf(vehicle: CardRow['vehicle'], town: string | null): string {

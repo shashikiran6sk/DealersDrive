@@ -1194,7 +1194,7 @@ describe('profile', () => {
     const seo = (await h.service.profile('sri-lakshmi-motors')).seo;
 
     expect(seo.canonical).toBe(`${env.WEB_BASE_URL}/dealers/sri-lakshmi-motors`);
-    expect(seo.title).toBe('Sri Lakshmi Motors — used cars in Vellore | Dealers-Drive');
+    expect(seo.title).toBe('Sri Lakshmi Motors — Used Car Dealer in Vellore | Dealers-Drive');
   });
 
   /**
@@ -1207,7 +1207,7 @@ describe('profile', () => {
 
     const profile = await h.service.profile('x');
     expect(profile.address.state).toBe('');
-    expect(profile.seo.title).toBe('Sri Lakshmi Motors — used cars | Dealers-Drive');
+    expect(profile.seo.title).toBe('Sri Lakshmi Motors — Used Car Dealer | Dealers-Drive');
     expect(profile.contact.find((entry) => entry.key === 'city')?.value).toBe('');
   });
 

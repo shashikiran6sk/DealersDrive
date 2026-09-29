@@ -2504,9 +2504,13 @@ Five Next.js error boundaries — root, global, and one per route group.
 Sitemap, robots, canonical URLs and per-page metadata.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F077, F082, F085
-- **Frontend** `app/{sitemap,robots}.ts`, `lib/seo.ts`, `generateMetadata` in the public routes
-- **Tests** `tests/unit/lib/seo.test.ts` ✅
-- **Components** none · **Sandbox** none
+- **Frontend** `app/{sitemap,robots}.ts`, `app/{favicon.ico,icon.png,apple-icon.png}`, `public/og/dealers-drive.png`, `lib/seo/**` (was `lib/seo.ts`), `components/seo/json-ld`, `generateMetadata` in the public routes
+- **API** `GET /v1/sitemap` (search module) · `PublicVehicleDetail` gains `facts` and the dealer's `city`/`district`/`state`
+- **Tests** `apps/web/tests/unit/lib/seo/*.test.ts`, `apps/web/tests/unit/app/seo-routes.test.tsx`, the vehicle and portfolio page tests; `apps/api/tests/public-lifecycle.test.ts` (sitemap × lifecycle)
+- **Components** `JsonLd` (C100) · **Sandbox** none — it draws nothing
+- ⚠️ **Not a port.** The baseline is unreachable from this repository's remotes, and the product has moved past it: R71 made a sold car a 404, so the baseline's "sold > 30 days → noindex" row has nothing to act on. The design is in `docs/seo.md`.
+- ⚠️ **Fixes F085's canonical.** A district page canonicalised to `/dealers?city={district}` — the pre-R22 parameter name — which is a town filter. It is `/dealers?district=` now, and `/cars` shares the same policy.
+- ⚠️ **`htmlLimitedBots: /.*/`** in `next.config.ts`: Next 15 otherwise streams a dynamic page's metadata into `<body>` for Googlebot, where Google ignores the canonical.
 
 ### F096 — Postman collection
 

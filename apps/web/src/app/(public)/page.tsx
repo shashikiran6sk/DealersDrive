@@ -7,19 +7,25 @@ import { DiscoveryRow } from '@/features/home/discovery-row';
 import { HeroBanner, heroImageFrom } from '@/features/home/hero-banner';
 import { HOME_SEARCH_PATH, HOME_TEXT } from '@/features/home/home.constants';
 import { loadHomeInventory } from '@/features/home/load-home';
+import { JsonLd } from '@/components/seo/json-ld';
 import { getPublicConfig } from '@/lib/public-config';
-import { seoMetadata } from '@/lib/seo';
+import {
+  HOME_TITLE,
+  organizationSchema,
+  pageMetadata,
+  SITE_DESCRIPTION,
+  websiteSchema,
+} from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: {
-    absolute: 'Dealers-Drive — used cars from verified independent dealers',
-  },
-  description:
-    'Discover verified independent used-car dealers with transparent listings and direct enquiries on Dealers-Drive.',
-  ...seoMetadata({ kind: 'resolved', canonical: '/', isIndexable: true }),
-};
+export function generateMetadata(): Metadata {
+  return pageMetadata({
+    title: { absolute: HOME_TITLE },
+    description: SITE_DESCRIPTION,
+    route: { kind: 'resolved', canonical: '/', isIndexable: true },
+  });
+}
 
 const TRUST_POINTS = [
   {
@@ -72,6 +78,7 @@ export default async function HomePage() {
 
   return (
     <div>
+      <JsonLd nodes={[organizationSchema(config), websiteSchema()]} />
       <HeroBanner image={heroImageFrom(config.heroImage)}>
         <div className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white/80">
           {HOME_TEXT.eyebrow}

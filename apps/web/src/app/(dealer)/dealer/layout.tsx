@@ -16,14 +16,13 @@ import { Blueprint, Plate, StatusTag } from '@/components/ui/primitives';
 import { SignOutButton } from '@/features/auth/sign-out';
 import { apiGet } from '@/lib/api';
 import { currentSession } from '@/lib/session';
+import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-const PRIVATE_ROBOTS: Metadata['robots'] = { index: false, follow: false };
-
 export const metadata: Metadata = {
   title: { default: 'Dealer console', template: '%s · Dealer console' },
-  robots: PRIVATE_ROBOTS,
+  ...seoMetadata({ kind: 'private' }),
 };
 
 export default async function DealerLayout({ children }: { children: ReactNode }) {

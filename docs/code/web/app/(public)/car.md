@@ -14,8 +14,15 @@ pretending the car is missing.
 
 The fetch is tagged `vehicles` and `vehicle:{slug}` and revalidates within a
 minute; approval revalidates the `vehicles` tag. The page is indexable with a
-canonical of `/car/{slug}`; structured data and the rest of the SEO work are
-deferred.
+canonical of `/car/{slug}`.
+
+**SEO.** `generateMetadata` and the page call the same `loadVehicle`, whose
+fetch Next memoises, so the metadata costs no second request. The title is
+`{title} in {town}`; the description is built from the price, the summary
+and the dealership, and says "Reserved for another buyer." first on a reserved
+car. The primary photograph is the social image. `Car` + `Offer` +
+`BreadcrumbList` come from `lib/seo/schemas`; see [lib](../../lib.md) and
+docs/seo.md §7 for what each lifecycle state answers.
 
 **R65** puts **Enquire now** under the price. It changes nothing about how the
 page is rendered: the panel is a client component that asks who is signed in

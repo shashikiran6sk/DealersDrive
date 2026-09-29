@@ -3,6 +3,7 @@ import { Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { serverConfig } from '@/lib/config';
+import { rootMetadata } from '@/lib/seo';
 import '@/styles/globals.css';
 
 const manrope = Manrope({
@@ -12,14 +13,9 @@ const manrope = Manrope({
   variable: '--font-manrope',
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: 'Dealers-Drive — used cars from verified independent dealers',
-    template: '%s · Dealers-Drive',
-  },
-  description:
-    'Every vehicle on Dealers-Drive is owned, priced and maintained by a verified independent dealer near you.',
-};
+export function generateMetadata(): Metadata {
+  return rootMetadata();
+}
 
 export const viewport: Viewport = {
   width: 'device-width',

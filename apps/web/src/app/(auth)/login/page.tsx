@@ -10,15 +10,13 @@ import { CustomerLogin, DealerLogin, LOGIN_TEXT, LoginTabs } from '@/features/au
 import { apiGet } from '@/lib/api';
 import { currentSession, destinationFor } from '@/lib/session';
 import { one, safeReturnPath, type SearchParamsInput } from '@/lib/url';
+import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-const PRIVATE_ROBOTS: Metadata['robots'] = { index: false, follow: false };
-
-export const metadata: Metadata = {
-  title: 'Login',
-  robots: PRIVATE_ROBOTS,
-};
+export function generateMetadata(): Metadata {
+  return { title: 'Login', ...seoMetadata({ kind: 'noindex' }) };
+}
 
 const LOGIN_EYEBROW = 'Dealers-Drive';
 

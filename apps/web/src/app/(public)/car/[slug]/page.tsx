@@ -13,10 +13,17 @@ import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
 import { AvailabilityBadge, availabilityLabel } from '@/components/vehicle/vehicle-card';
 import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
+import { JsonLd } from '@/components/seo/json-ld';
 import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
 import { ApiError, apiGetParsed } from '@/lib/api';
 import { VEHICLES_TAG, vehicleTag } from '@/lib/cache-tags';
-import { seoMetadata } from '@/lib/seo';
+import {
+  BREADCRUMB_TEXT,
+  breadcrumbSchema,
+  pageMetadata,
+  vehiclePath,
+  vehicleSchema,
+} from '@/lib/seo';
 
 import { VEHICLE_PAGE_TEXT } from './vehicle-page.constants';
 
@@ -57,15 +64,25 @@ export async function generateMetadata({
   const vehicle = await loadVehicle(slug);
   if (!vehicle) return { title: VEHICLE_PAGE_TEXT.notFoundTitle };
 
-  return {
-    title: VEHICLE_PAGE_TEXT.metaTitle(vehicle.title, vehicle.priceLabel),
-    description: VEHICLE_PAGE_TEXT.metaDescription(
-      vehicle.title,
-      vehicle.summary,
-      vehicle.dealer.name,
-    ),
-    ...seoMetadata({ kind: 'resolved', canonical: `/car/${vehicle.slug}`, isIndexable: true }),
-  };
+  const primary = vehicle.images[vehicle.primaryIndex] ?? vehicle.images[0];
+  return pageMetadata({
+    title: VEHICLE_PAGE_TEXT.metaTitle(vehicle.title, vehicle.dealer.city),
+    description: VEHICLE_PAGE_TEXT.metaDescription({
+      title: vehicle.title,
+      place: vehicle.dealer.location,
+      priceLabel: vehicle.priceLabel,
+      summary: vehicle.summary,
+      dealerName: vehicle.dealer.name,
+      dealerVerified: vehicle.dealer.isVerified,
+      reserved: vehicle.availability === 'RESERVED',
+    }),
+    route: {
+      kind: 'resolved',
+      canonical: vehiclePath(vehicle.slug),
+      isIndexable: vehicle.availability === 'AVAILABLE' || vehicle.availability === 'RESERVED',
+    },
+    ...(primary ? { images: [{ url: primary.url, alt: primary.alt }] } : {}),
+  });
 }
 
 export default async function VehiclePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -77,6 +94,16 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="mx-auto max-w-[1280px] px-4 pt-[24px] pb-[88px] sm:px-6 lg:pb-[64px]">
+      <JsonLd
+        nodes={[
+          vehicleSchema(vehicle),
+          breadcrumbSchema([
+            { name: BREADCRUMB_TEXT.home, path: '/' },
+            { name: BREADCRUMB_TEXT.cars, path: '/cars' },
+            { name: vehicle.title, path: vehiclePath(vehicle.slug) },
+          ]),
+        ]}
+      />
       <Link href="/cars" className="btn btn-ghost mb-[14px]">
         {VEHICLE_PAGE_TEXT.back}
       </Link>

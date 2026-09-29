@@ -258,8 +258,8 @@ export function createDealersPublicService({ repo, stats }: DealersPublicDeps) {
           canonical: `${env.WEB_BASE_URL}/dealers/${dealer.slug}`,
           isIndexable: carCount > 0,
           title: city
-            ? `${dealer.brandName} — used cars in ${city} | Dealers-Drive`
-            : `${dealer.brandName} — used cars | Dealers-Drive`,
+            ? `${dealer.brandName} — Used Car Dealer in ${city} | Dealers-Drive`
+            : `${dealer.brandName} — Used Car Dealer | Dealers-Drive`,
         },
       };
     },

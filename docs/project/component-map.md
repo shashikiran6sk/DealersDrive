@@ -359,6 +359,17 @@ exactly what makes "which nav item is active" testable for the first time.
 
 ---
 
+### C100 — `JsonLd`
+
+`components/seo/json-ld/`. Props `nodes` (typed JSON-LD nodes from
+`lib/seo/schemas`). Renders one `<script type="application/ld+json">` holding
+an `@graph`, serialised by `serializeJsonLd` so dealer-typed text cannot close
+the element; renders nothing for no nodes. Consumers: `/`, `/cars`,
+`/car/[slug]`, `/dealers`, `/dealers/[slug]`. Replaces the portfolio's private
+`DealerJsonLd`. **NEW with the SEO work (F095).** **No sandbox entry** — it
+draws nothing; its output is asserted in `tests/unit/app/seo-routes.test.tsx`
+and the page tests. See `docs/seo.md`.
+
 ## Layer 4 — Search (`components/search/`)
 
 ### C027 — `FilterPanel`
