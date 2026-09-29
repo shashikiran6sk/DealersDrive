@@ -14,6 +14,7 @@ export interface AutocompletePanelProps<T> {
   placeholder: string;
   groupLabel: string;
   emptyMessage: (search: string) => string;
+  name?: string;
   className?: string;
   children: (autocomplete: UseAutocomplete<T>) => ReactNode;
 }
@@ -24,6 +25,7 @@ export function AutocompletePanel<T>({
   placeholder,
   groupLabel,
   emptyMessage,
+  name,
   className,
   children,
 }: AutocompletePanelProps<T>) {
@@ -54,6 +56,7 @@ export function AutocompletePanel<T>({
         <input
           id={inputId}
           type="text"
+          name={name}
           placeholder={placeholder}
           className="h-[36px] min-w-0 flex-1 border-none bg-transparent text-[13.5px] caret-(--color-accent) outline-none placeholder:ink-subtle"
           {...autocomplete.inputProps}

@@ -4,5 +4,6 @@ export interface CarSearchBoxProps {
   params: VehicleSearchParams;
   basePath: string;
   districtName?: string;
+  action?: string;
   className?: string;
 }

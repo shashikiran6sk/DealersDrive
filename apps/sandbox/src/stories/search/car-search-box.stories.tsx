@@ -107,8 +107,14 @@ const meta = {
     districtName: 'Ranipet',
   },
   decorators: [
-    (Story) => (
-      <div style={{ width: 420, paddingBottom: 340 }}>
+    (Story, { parameters }) => (
+      <div
+        style={{
+          width: '100%',
+          maxWidth: typeof parameters.frameWidth === 'number' ? parameters.frameWidth : 420,
+          paddingBottom: 340,
+        }}
+      >
         <Story />
       </div>
     ),
@@ -126,6 +132,11 @@ export const EveryDistrict: Story = {
 
 export const SearchAlreadyApplied: Story = {
   args: { params: { district: 'ranipet', q: 'SX(O)', brand: 'hyundai', model: 'creta' } },
+};
+
+export const OnTheHomepage: Story = {
+  args: { params: {}, districtName: undefined, action: '/cars', className: 'sm:max-w-[560px]' },
+  parameters: { frameWidth: 560 },
 };
 
 export const Loading: Story = {

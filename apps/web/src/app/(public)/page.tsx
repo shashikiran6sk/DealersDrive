@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { CarSearchBox } from '@/components/search/car-search-box';
 import { Blueprint, Plate } from '@/components/ui/primitives';
 import { DiscoveryRow } from '@/features/home/discovery-row';
-import { HOME_TEXT } from '@/features/home/home.constants';
-import { HeroSearch } from '@/features/home/hero-search';
+import { HOME_SEARCH_PATH, HOME_TEXT } from '@/features/home/home.constants';
 import { loadHomeInventory } from '@/features/home/load-home';
-import { getPublicLocations } from '@/lib/locations';
 import { seoMetadata } from '@/lib/seo';
 
 export const revalidate = 60;
@@ -57,7 +56,7 @@ const JOURNEY = [
   {
     number: '02',
     title: 'Discover the right car',
-    body: 'Search cars Dealers-Drive has photographed and reviewed, by district, brand, model and budget.',
+    body: 'Search cars Dealers-Drive has photographed and reviewed by make, model or variant.',
   },
   {
     number: '03',
@@ -67,7 +66,7 @@ const JOURNEY = [
 ] as const;
 
 export default async function HomePage() {
-  const [inventory, locations] = await Promise.all([loadHomeInventory(), getPublicLocations()]);
+  const inventory = await loadHomeInventory();
 
   return (
     <div>
@@ -85,7 +84,12 @@ export default async function HomePage() {
             </p>
 
             <div className="mt-7">
-              <HeroSearch locations={locations} brands={inventory.brands} />
+              <CarSearchBox
+                params={{}}
+                basePath={HOME_SEARCH_PATH}
+                action={HOME_SEARCH_PATH}
+                className="sm:max-w-[560px]"
+              />
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3">

@@ -11,3 +11,5 @@ export const CAR_SEARCH_TEXT = {
 } as const;
 
 export const CAR_SUGGEST_PATH = '/api/search/vehicles';
+
+export const CAR_SEARCH_QUERY_PARAM = 'q';

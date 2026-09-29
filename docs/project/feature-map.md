@@ -6971,3 +6971,56 @@ everything else already matched the matrix.
 
 - `apps/web/tests/unit/features/home/home-page.test.tsx`: each row's link reads
   exactly "View all →" even when the API reports counts.
+
+## R79 — One search bar on the homepage, the same as `/cars`
+
+**Revises R72 / F081** · no API change
+
+- The hero's four selectors (District, Brand, Model, Budget) and its Search
+  button are gone. In their place is `CarSearchBox`, the `/cars` search box,
+  reused rather than copied so the two cannot drift apart.
+- **Typing** shows the same make, model and variant suggestions from the same
+  endpoint (`/api/search/vehicles`), across the whole marketplace. The
+  homepage has no district of its own: the header's district picker already
+  goes to `/cars?district=…`.
+- **Choosing a suggestion** opens `/cars` with it as filters: a brand is
+  `brand=`, a model `brand=&model=`, and a variant adds `q=`.
+- **Enter on free text** opens `/cars?q=<text>`, exactly as on `/cars`.
+- There is **no button**, as on `/cars`.
+- **Before the script loads** it is still a GET form to `/cars`, with the input
+  named `q`, as the four-field hero was.
+- The homepage no longer reads `/v1/locations`, or the brand facet that only
+  the hero used.
+
+### Component changes
+
+- `CarSearchBox` (C082) gains an optional `action`. When it is given, the form
+  is `action=… method="get"` and the input is named `q`. `/cars` passes
+  neither, and is unchanged.
+- `AutocompletePanel` (C073) gains an optional `name` for its input.
+  `DealerSearchBox` does not pass it.
+- C101 `HeroSearch`, `heroFacetsAction`, the sandbox's `home-actions` stub and
+  the `Home/HeroSearch` story are removed.
+
+### Files
+
+- `apps/web/src/app/(public)/page.tsx`
+- `apps/web/src/components/search/car-search-box/{car-search-box,car-search-box.constants,car-search-box.types}`
+- `apps/web/src/components/ui/autocomplete/autocomplete-panel.tsx`
+- `apps/web/src/features/home/{home.constants,load-home}`
+- removed: `apps/web/src/features/home/hero-search/**`,
+  `apps/web/src/features/home/actions.ts`
+- sandbox: the `Search/CarSearchBox` story "On the homepage", the registry,
+  and `.storybook/main.ts` (the `home-actions` alias is removed)
+
+### Tests
+
+- `apps/web/tests/unit/features/home/home-page.test.tsx`:
+  - one text box and no button
+  - suggestions come from `/api/search/vehicles`
+  - choosing a suggestion opens `/cars?brand=…&model=…`
+  - Enter on free text opens `/cars?q=…`
+  - the form is a GET to `/cars` with the input named `q`
+  - no `/v1/locations` read
+- The HeroSearch, `heroHref` and `heroFacetsAction` tests are removed with
+  their code. The `CarSearchBox` tests are unchanged and still pass.
