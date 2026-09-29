@@ -12,7 +12,10 @@ export function Table({
 }: TableProps) {
   return (
     <div
-      className={cn('overflow-x-auto border border-(--color-divider) bg-white', containerClassName)}
+      className={cn(
+        'overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white',
+        containerClassName,
+      )}
     >
       <table className={cn('table', className)} {...props}>
         {caption ? <caption className="sr-only">{caption}</caption> : null}

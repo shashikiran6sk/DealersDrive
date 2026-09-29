@@ -7,7 +7,7 @@ import { cn } from '@/lib/cn';
 
 export function DialogTitle({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <RadixDialog.Title className={cn('font-heading text-[16px] font-semibold', className)}>
+    <RadixDialog.Title className={cn('font-heading text-[18px] font-extrabold', className)}>
       {children}
     </RadixDialog.Title>
   );

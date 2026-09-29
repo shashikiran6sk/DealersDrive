@@ -12,7 +12,7 @@ export function Stepper({ steps, current, className }: StepperProps) {
       {steps.map((label, index) => (
         <li key={label} className="flex-1">
           <div
-            className="h-[3px]"
+            className="h-[3px] rounded-full"
             style={{
               background: index <= current ? 'var(--color-accent)' : 'var(--color-neutral-300)',
             }}

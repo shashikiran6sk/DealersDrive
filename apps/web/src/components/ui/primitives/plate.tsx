@@ -7,7 +7,7 @@ const plate = cva('dd-plate', {
   variants: {
     size: {
       year: '',
-      logo: 'text-[12px] font-semibold py-[3px] pr-[9px]',
+      logo: 'h-[30px] min-w-[30px] justify-center rounded-[9px] border-(--color-accent) bg-(--color-accent) px-[6px] py-0 text-[12px] tracking-[-0.03em] text-white',
       chip: 'text-[10px]',
       marker: 'text-[9px]',
     },

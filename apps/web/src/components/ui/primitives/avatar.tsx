@@ -11,7 +11,7 @@ export function Avatar({ initials, size = 20, className }: AvatarProps) {
     <span
       aria-hidden="true"
       className={cn(
-        'grid flex-none place-items-center bg-(--color-accent-200) font-bold text-(--color-accent-800)',
+        'grid flex-none place-items-center rounded-full bg-(--color-neutral-150) font-extrabold text-(--color-ink)',
         className,
       )}
       style={{ width: size, height: size, fontSize: Math.max(9, Math.round(size * 0.42)) }}

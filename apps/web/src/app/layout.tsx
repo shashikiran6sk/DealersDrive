@@ -1,15 +1,15 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { serverConfig } from '@/lib/config';
 import '@/styles/globals.css';
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '500', '600', '700', '800'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-manrope',
 });
 
 export const metadata: Metadata = {
@@ -24,21 +24,14 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#f4f5f7',
+  themeColor: '#ffffff',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const config = serverConfig();
 
   return (
-    <html lang="en" className={inter.variable}>
-      <head>
-        <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f%5B%5D=cabinet-grotesk@600,700,800&display=swap"
-        />
-      </head>
+    <html lang="en" className={manrope.variable}>
       <body className="min-h-dvh">
         {config.appEnv !== 'production' ? (
           <div className="bg-(--color-warn-bg) px-6 py-[6px] text-center text-[11px] uppercase tracking-[0.1em] text-(--color-warn)">

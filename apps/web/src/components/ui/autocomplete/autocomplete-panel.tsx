@@ -51,21 +51,21 @@ export function AutocompletePanel<T>({
         {label}
       </label>
 
-      <div className="input flex h-[38px] items-center gap-[6px] px-[8px] py-0 focus-within:border-(--color-accent) focus-within:outline focus-within:outline-2 focus-within:outline-(--color-accent)">
+      <div className="input flex h-[42px] items-center gap-[6px] px-[10px] py-0 focus-within:border-(--color-focus) focus-within:outline focus-within:outline-2 focus-within:outline-(--color-focus)">
         <SearchIcon />
         <input
           id={inputId}
           type="text"
           name={name}
           placeholder={placeholder}
-          className="h-[36px] min-w-0 flex-1 border-none bg-transparent text-[13.5px] caret-(--color-accent) outline-none placeholder:ink-subtle"
+          className="h-[40px] min-w-0 flex-1 border-none bg-transparent text-[14px] caret-(--color-focus) outline-none placeholder:text-(--color-neutral-500)"
           {...autocomplete.inputProps}
         />
         {autocomplete.value.length > 0 ? (
           <button
             type="button"
             onClick={autocomplete.clear}
-            className="flex h-[24px] w-[24px] shrink-0 cursor-pointer items-center justify-center rounded-[2px] text-[12px] ink-subtle hover:bg-(--color-surface) hover:ink-body"
+            className="flex h-[24px] w-[24px] shrink-0 cursor-pointer items-center justify-center rounded-full text-[12px] ink-subtle hover:bg-(--color-surface) hover:ink-body"
             aria-label={AUTOCOMPLETE_TEXT.clearLabel}
           >
             {AUTOCOMPLETE_TEXT.clearGlyph}
@@ -82,11 +82,11 @@ export function AutocompletePanel<T>({
       </div>
 
       {showPanel ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 border border-(--color-divider) bg-white shadow-[var(--shadow-lg)]">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-[14px] border border-(--color-divider) bg-white shadow-md">
           {status === 'ready' && items.length > 0 ? (
             <>
               <div className="flex items-center justify-between border-b border-(--color-divider) bg-(--color-neutral-100) px-[12px] pb-[5px] pt-[7px]">
-                <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] ink-subtle">
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] ink-subtle">
                   {groupLabel}
                 </span>
                 <span className="text-[10.5px] ink-subtle tnum">{countLabel}</span>
