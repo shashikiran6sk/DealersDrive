@@ -6943,3 +6943,31 @@ everything else already matched the matrix.
   listings as the inventory, reserved included
 - `apps/web/tests/unit/features/dealer/dashboard-page.test.tsx`: the Reserved
   tile links to its inventory tab
+
+## R78 — The homepage never says how many cars there are
+
+**Revises R72** · no API change
+
+- Every homepage row's link now reads **View all →** instead of
+  **View all N →**. It still goes to the same filters on `/cars`.
+- The size of the marketplace is not something the homepage tells a visitor.
+  The rows are fetched on the server, so the API's `page.total` and
+  `available` never reach the browser from this page.
+- Everything else about the rows is unchanged: four rows, four available cars
+  each, newest first, hidden when empty.
+- `DiscoveryRow` loses its `total` prop, and `HomeInventory` its `total`
+  field, which nothing read.
+
+### Files
+
+- `apps/web/src/features/home/`:
+  - `home.constants.ts`
+  - `load-home.ts`
+  - `discovery-row/{discovery-row,discovery-row.types}`
+- `apps/sandbox/src/stories/home/discovery-row.stories.tsx`, and the registry
+  entry for `DiscoveryRow`
+
+### Tests
+
+- `apps/web/tests/unit/features/home/home-page.test.tsx`: each row's link reads
+  exactly "View all →" even when the API reports counts.

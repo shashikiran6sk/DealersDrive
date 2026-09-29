@@ -5,7 +5,7 @@ import { HOME_TEXT } from '@/features/home/home.constants';
 
 import type { DiscoveryRowProps } from './discovery-row.types';
 
-export function DiscoveryRow({ id, title, href, total, cars }: DiscoveryRowProps) {
+export function DiscoveryRow({ id, title, href, cars }: DiscoveryRowProps) {
   if (cars.length === 0) return null;
 
   return (
@@ -15,7 +15,7 @@ export function DiscoveryRow({ id, title, href, total, cars }: DiscoveryRowProps
           {title}
         </h2>
         <Link href={href} className="btn btn-ghost">
-          {HOME_TEXT.viewAll(total)}
+          {HOME_TEXT.viewAll}
         </Link>
       </div>
       <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))]">

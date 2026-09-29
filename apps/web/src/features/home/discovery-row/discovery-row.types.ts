@@ -4,6 +4,5 @@ export interface DiscoveryRowProps {
   id: string;
   title: string;
   href: string;
-  total: number;
   cars: readonly VehicleCardDto[];
 }
