@@ -15,6 +15,11 @@ export const NO_PUBLIC_CONFIG: PublicConfig = {
   rcLookupEnabled: false,
   vehicleReportEnabled: false,
   social: [],
+  support: {
+    customer: { email: '', phone: '' },
+    dealer: { email: '', phone: '' },
+    whatsappHref: null,
+  },
 };
 
 export async function getPublicConfig(): Promise<PublicConfig> {

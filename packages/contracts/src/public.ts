@@ -43,6 +43,29 @@ export const SocialLink = z.object({
 });
 export type SocialLink = z.infer<typeof SocialLink>;
 
+/**
+ * One audience's way to reach the platform. Both values are always present: an
+ * operator's entry in `/admin/config` when it is a usable address or number,
+ * otherwise the deployment's own support contact.
+ */
+export const SupportContact = z.object({
+  email: z.string(),
+  phone: z.string(),
+});
+export type SupportContact = z.infer<typeof SupportContact>;
+
+/**
+ * The Contact & support page. `whatsappHref` is an `https:` chat link already
+ * checked on the way out, or `null` until an operator configures one — the
+ * page shows the chat as unavailable rather than inventing a number.
+ */
+export const SupportContacts = z.object({
+  customer: SupportContact,
+  dealer: SupportContact,
+  whatsappHref: z.string().nullable(),
+});
+export type SupportContacts = z.infer<typeof SupportContacts>;
+
 export const PublicConfig = z.object({
   mediaBaseUrl: z.string(),
   captchaSiteKey: z.string().nullable(),
@@ -65,6 +88,8 @@ export const PublicConfig = z.object({
    * renders it (**R44**). Empty until an operator publishes one.
    */
   social: z.array(SocialLink),
+  /** Who a customer or a dealer contacts for help, editable in `/admin/config`. */
+  support: SupportContacts,
 });
 export type PublicConfig = z.infer<typeof PublicConfig>;
 

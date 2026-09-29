@@ -88,6 +88,17 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
   { key: 'social.x', label: 'X (Twitter) URL', type: 'string', value: '' },
   { key: 'social.whatsapp', label: 'WhatsApp URL', type: 'string', value: '' },
 
+  { key: 'support.customerEmail', label: 'Customer support email', type: 'string', value: '' },
+  { key: 'support.customerPhone', label: 'Customer support phone', type: 'string', value: '' },
+  { key: 'support.dealerEmail', label: 'Dealer support email', type: 'string', value: '' },
+  { key: 'support.dealerPhone', label: 'Dealer support phone', type: 'string', value: '' },
+  {
+    key: 'support.whatsapp',
+    label: 'Support WhatsApp number or chat URL',
+    type: 'string',
+    value: '',
+  },
+
   {
     key: 'listing.rejectionReasonPresets',
     label: 'Rejection reason presets',
@@ -116,6 +127,11 @@ export const CONFIG_READERS: Record<string, string> = {
   'social.linkedin': "GET /v1/config/public — the public footer's social row",
   'social.x': "GET /v1/config/public — the public footer's social row",
   'social.whatsapp': "GET /v1/config/public — the public footer's social row",
+  'support.customerEmail': 'GET /v1/config/public — the Contact & support page',
+  'support.customerPhone': 'GET /v1/config/public — the Contact & support page',
+  'support.dealerEmail': 'GET /v1/config/public — the Contact & support page',
+  'support.dealerPhone': 'GET /v1/config/public — the Contact & support page',
+  'support.whatsapp': 'GET /v1/config/public — the Contact & support page',
 };
 
 export interface PlatformConfigService {
