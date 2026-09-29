@@ -570,4 +570,69 @@ describe('apiGetParsed', () => {
       total: 1,
     });
   });
+
+  /**
+   * A cached read that no longer matches is the cache's fault, not the API's.
+   * Next hands back an expired entry, however old, while it revalidates in the
+   * background, so the first request for a URL after a contract change gets
+   * the old body. It asks the API once more, uncached, and answers from that.
+   */
+  describe('when a cached read no longer matches its contract', () => {
+    const STALE = { districts: [{ slug: 'chennai', name: 'Chennai', count: 1 }], total: 1 };
+
+    function answers(...bodies: unknown[]): ReturnType<typeof vi.fn> {
+      return vi.fn((url: string, requestInit: Captured['init']) => {
+        calls.push({ url, init: requestInit });
+        const body = bodies[Math.min(calls.length - 1, bodies.length - 1)];
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          text: () => Promise.resolve(JSON.stringify(body)),
+          headers: new Headers(),
+        } as Response);
+      });
+    }
+
+    it('asks the API again, uncached, and answers from that', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      globalThis.fetch = answers(STALE, CURRENT) as unknown as typeof fetch;
+
+      await expect(
+        apiGetParsed(PublicLocations, '/v1/locations', { revalidate: 600, tags: ['locations'] }),
+      ).resolves.toEqual(CURRENT);
+
+      expect(calls).toHaveLength(2);
+      expect(calls[0]?.init.next).toEqual({ revalidate: 600, tags: ['locations'] });
+      expect(calls[1]?.init.cache).toBe('no-store');
+      expect(calls[1]?.init.next).toBeUndefined();
+    });
+
+    it('sends no session cookie on the second ask — the read is still public', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      cookieJar.set('dd_session', 'the-token');
+      globalThis.fetch = answers(STALE, CURRENT) as unknown as typeof fetch;
+
+      await apiGetParsed(PublicLocations, '/v1/locations', { revalidate: 600 });
+
+      expect(new Headers(calls[1]?.init.headers).has('cookie')).toBe(false);
+    });
+
+    it('still throws when the API itself answers the old shape', async () => {
+      globalThis.fetch = answers(STALE, STALE) as unknown as typeof fetch;
+
+      await expect(
+        apiGetParsed(PublicLocations, '/v1/locations', { revalidate: 600 }),
+      ).rejects.toThrow(/districts\.0\.state/);
+      expect(calls).toHaveLength(2);
+    });
+
+    it('does not ask twice for a read that was never cached', async () => {
+      globalThis.fetch = answers(STALE, CURRENT) as unknown as typeof fetch;
+
+      await expect(
+        apiGetParsed(PublicLocations, '/v1/locations', { revalidate: false }),
+      ).rejects.toThrow(/districts\.0\.state/);
+      expect(calls).toHaveLength(1);
+    });
+  });
 });

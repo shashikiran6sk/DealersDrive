@@ -126,6 +126,26 @@ Zod objects ignore unknown keys by default, so an additive API change still
 parses. Only a field this app _requires_ going missing is an error, which is
 exactly the skew direction that hurts.
 
+## A cached read that fails is asked for again (R80)
+
+The R22 incident has a second half. Next's fetch cache hands back an _expired_
+entry, however old, while it revalidates in the background. So the first
+request for a URL after a contract change gets the body from before it, even
+when the API has been answering the new shape for days, and only the next
+request sees the fresh one. On `/cars` that was an error page that a refresh
+cured: `/cars?brand=volkswagen&model=virtus`, cached before R71, came back
+without `availability` or `available`.
+
+So when a read that went through the cache (`revalidate` is a number) fails
+its contract, it is asked for once more with `cache: 'no-store'`. If that
+matches, it is the answer, and the background revalidation Next already
+started replaces the stale entry. If it does not, the API itself is behind,
+which is the R22 skew, and it throws exactly as before. A read that was never
+cached is not asked twice: the second answer would be the same.
+
+The second request carries no session cookie. It is the same public read,
+only uncached, and `revalidate: false` would have added one.
+
 ### `throw new Error`
 
 Named, and loud. The caller degrades — that is its business — but a

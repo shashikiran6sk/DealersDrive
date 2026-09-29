@@ -1,6 +1,6 @@
 import type { ProblemDetails } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
-import type { ZodType } from 'zod';
+import type { ZodError, ZodType } from 'zod';
 
 import { serverConfig } from './config';
 
@@ -50,6 +50,7 @@ async function request<T>(
   path: string,
   body?: unknown,
   options: RequestOptions = {},
+  bypassCache = false,
 ): Promise<T> {
   const url = `${serverConfig().apiBaseUrl}${path}`;
 
@@ -72,6 +73,8 @@ async function request<T>(
     if (session) {
       init.headers = { ...init.headers, Cookie: `${SESSION_COOKIE}=${session}` };
     }
+  } else if (bypassCache) {
+    init.cache = 'no-store';
   } else if (typeof options.revalidate === 'number') {
     init.next = {
       revalidate: options.revalidate,
@@ -116,23 +119,30 @@ export function apiGet<T>(path: string, options?: RequestOptions): Promise<T> {
   return request<T>('GET', path, undefined, options);
 }
 
+function contractError(path: string, error: ZodError): Error {
+  return new Error(
+    `GET ${path} did not match its contract: ${error.issues
+      .map((issue) => `${issue.path.join('.') || '(root)'} ${issue.message}`)
+      .join('; ')}`,
+  );
+}
+
 export async function apiGetParsed<T>(
   schema: ZodType<T>,
   path: string,
   options?: RequestOptions,
 ): Promise<T> {
-  const payload = await request<unknown>('GET', path, undefined, options);
-  const parsed = schema.safeParse(payload);
+  const parsed = schema.safeParse(await request<unknown>('GET', path, undefined, options));
+  if (parsed.success) return parsed.data;
 
-  if (!parsed.success) {
-    throw new Error(
-      `GET ${path} did not match its contract: ${parsed.error.issues
-        .map((issue) => `${issue.path.join('.') || '(root)'} ${issue.message}`)
-        .join('; ')}`,
-    );
+  if (typeof options?.revalidate !== 'number') throw contractError(path, parsed.error);
+
+  const fresh = schema.safeParse(await request<unknown>('GET', path, undefined, options, true));
+  if (fresh.success) {
+    console.warn(`[api] cached GET ${path} did not match its contract; answered from the API`);
+    return fresh.data;
   }
-
-  return parsed.data;
+  throw contractError(path, fresh.error);
 }
 
 export function apiSend<T>(
