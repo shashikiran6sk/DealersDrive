@@ -12,23 +12,20 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
   return (
     <article
       className={cn(
-        'card group relative gap-0 overflow-hidden p-0',
-        'transition-colors duration-150 hover:border-(--color-accent)',
+        'card group relative gap-0 overflow-hidden rounded-[16px] p-0 shadow-sm',
+        'transition-[border-color,box-shadow] duration-150 hover:border-(--color-neutral-400) hover:shadow-md',
+        'has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-(--color-focus)',
         CARD_HEIGHT,
       )}
     >
       <DealerCardCover dealer={dealer} />
 
-      <div className="flex flex-1 flex-col px-[18px] pb-[14px]">
+      <div className="flex min-h-0 flex-1 flex-col px-[18px] pb-[14px]">
         <div
-          className="relative mb-[12px] flex items-end justify-between gap-2"
+          className="relative mb-[10px] flex items-end justify-between gap-2"
           style={{ marginTop: -TILE_SIZE / 2 }}
         >
-          <LogoTile
-            initials={dealer.initials}
-            size={TILE_SIZE}
-            className="border-(--color-ink) bg-white"
-          />
+          <LogoTile initials={dealer.initials} size={TILE_SIZE} className="bg-white shadow-sm" />
           {dealer.isVerified ? (
             <Plate size="chip" className="bg-white">
               {DEALER_CARD_TEXT.verifiedDealer}
@@ -36,37 +33,27 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
           ) : null}
         </div>
 
-        <h3 className="line-clamp-2 font-heading text-[17px] font-semibold leading-[1.2]">
-          <Link href={`/dealers/${dealer.slug}`} className="after:absolute after:inset-0">
+        <h3 className="line-clamp-2 font-heading text-[17px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+          <Link
+            href={`/dealers/${dealer.slug}`}
+            className="after:absolute after:inset-0 focus-visible:outline-none"
+          >
             {dealer.brandName}
           </Link>
         </h3>
-        <div className="mt-[3px] text-[12px] ink-subtle tnum">{dealer.yearsLabel}</div>
+        <div className="mt-[3px] truncate text-[12px] ink-muted tnum">{dealer.yearsLabel}</div>
 
         <div
           data-slot="prose"
-          className="mt-[10px] flex min-h-0 flex-1 flex-col gap-[10px] overflow-hidden"
+          className="mt-[12px] flex min-h-0 flex-1 flex-col gap-[10px] overflow-hidden"
         >
-          {dealer.tagline ? (
-            <div className="shrink-0 border-l-2 border-(--color-accent) bg-(--color-neutral-100) px-[10px] py-[10px]">
-              <p className="line-clamp-2 text-[12px] leading-[1.5] ink-secondary">
-                <span aria-hidden="true">{DEALER_CARD_TEXT.openQuote}</span>
-                {dealer.tagline}
-                <span aria-hidden="true">{DEALER_CARD_TEXT.closeQuote}</span>
-              </p>
-            </div>
-          ) : null}
-
           {dealer.services.length > 0 ? (
             <div className="flex shrink-0 flex-wrap gap-[6px]">
               {dealer.services.slice(0, SERVICES_SHOWN).map((service, index) => (
                 <Tag
                   key={service}
                   variant={index === 0 ? 'accent' : 'neutral'}
-                  className={cn(
-                    'border text-[10px]',
-                    index === 0 ? 'border-(--color-accent-200)' : 'border-(--color-neutral-200)',
-                  )}
+                  className="max-w-full truncate text-[11px]"
                 >
                   {service}
                 </Tag>

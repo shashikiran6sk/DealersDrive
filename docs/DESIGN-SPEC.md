@@ -1,8 +1,10 @@
 # Dealers-Drive — Developer Handoff Specification
 
-MVP v0.1 · source of truth: `Dealers-Drive.dc.html` + `ds/industry.css`
-Base system: Industry, retuned to the Dealers-Drive cobalt palette.
-Stack assumption: React/Next.js + Tailwind (map tokens to `theme.extend`).
+UI revamp (**R81**) · source of truth for the look: the revamped prototype v4 (`Dealers-Drive.dc.html` + `ds/industry.css`, "Studio" visual system), reconciled with production behaviour.
+Implemented in `apps/web/src/styles/globals.css` (`@theme` + `@layer components`) — that file is the live token sheet; this document describes it.
+Stack: Next.js 15 App Router + Tailwind v4 `@theme` + CVA, Radix primitives.
+
+> **Reading this after R81.** The original MVP spec drew a square-cornered, cobalt "Industry" system with registration-plate and blueprint-corner motifs. The revamp replaces it with a **neutral-first** system: white surfaces, a warm off-white canvas, near-black primary actions, Manrope, rounded cards and soft elevation. Section numbers are unchanged so existing `§` citations still resolve; where a section describes behaviour rather than appearance, the behaviour is still production's and is noted as such. The one deliberate content change is §3.5: the directory card no longer shows the dealer tagline.
 
 ---
 
@@ -10,498 +12,460 @@ Stack assumption: React/Next.js + Tailwind (map tokens to `theme.extend`).
 
 ### 1.1 Colour — primitives
 
-**Cobalt ramp** (brand; the only decorative colour in the product)
+**Neutral ramp** (the whole product is built from this ramp; there is no decorative hue)
 
-| Token                | Hex       | Used for                                                                                                                                                        |
-| -------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--color-accent-100` | `#eef2ff` | Dealer-logo tiles, credit-balance card fill, review-summary panel, grid-column demo fill                                                                        |
-| `--color-accent-200` | `#dbe3ff` | 20px dealer avatar chips on vehicle cards, spacing-scale swatch fill                                                                                            |
-| `--color-accent-300` | `#b9c8ff` | Spacing swatch fill, grid-column borders                                                                                                                        |
-| `--color-accent-400` | `#8ba3f7` | Pressed state on dark grounds only (unused in MVP)                                                                                                              |
-| `--color-accent-500` | `#5a79ec` | — reserved                                                                                                                                                      |
-| `--color-accent-600` | `#2f55dd` | **Action/Primary base** = `--color-accent`; primary button, focus ring, links, active nav, plate left band, chart bars, progress fill, active thumbnail outline |
-| `--color-accent-700` | `#1e3fae` | Primary button `:active`; accent text at paragraph size (kickers, device label)                                                                                 |
-| `--color-accent-800` | `#172f7d` | Text on `accent-100`/`accent-200` fills (avatar initials, tag text)                                                                                             |
-| `--color-accent-900` | `#101f4f` | Full-field grounds: "Why Dealers-Drive" band, admin sidebar                                                                                                     |
+| Token                 | Hex       | Used for                                                                           |
+| --------------------- | --------- | ---------------------------------------------------------------------------------- |
+| `--color-neutral-100` | `#f7f7f5` | Subtle surface: tag fill, hover fill, story ground, icon tiles, logo tiles         |
+| `--color-neutral-150` | `#efefec` | Selected nav item, image-slot ground, pressed secondary, selected segment          |
+| `--color-neutral-200` | `#ececea` | Canvas, skeleton bars                                                              |
+| `--color-neutral-300` | `#e4e3df` | Border (same value as `--color-divider`), stepper inactive bar, switch track (off) |
+| `--color-neutral-400` | `#c9c7c1` | Inactive/hover border, card hover border                                           |
+| `--color-neutral-500` | `#9a9892` | Placeholder text                                                                   |
+| `--color-neutral-600` | `#6f6d68` | Secondary text, eyebrows, inactive nav text                                        |
+| `--color-neutral-700` | `#56534e` | Tag text, field labels                                                             |
+| `--color-neutral-800` | `#2c2c2a` | Primary button hover                                                               |
+| `--color-neutral-900` | `#171716` | Primary text                                                                       |
 
-**Neutral ramp** (inherited from Industry, unchanged)
+**Accent ramp — aliased to neutrals.** The `--color-accent-*` names survive so every component that already reads them follows the revamp without an edit:
 
-| Token                 | Hex       | Used for                                            |
-| --------------------- | --------- | --------------------------------------------------- |
-| `--color-neutral-100` | `#f5f5f8` | Admin app ground, `.tag-neutral` fill               |
-| `--color-neutral-200` | `#e7e7ea` | Draft/Expired badge fill                            |
-| `--color-neutral-300` | `#d4d4d7` | Skeleton bars, stepper inactive bar, progress track |
-| `--color-neutral-400` | `#b7b7ba` | Scrollbar thumb                                     |
-| `--color-neutral-500` | `#98989b` | —                                                   |
-| `--color-neutral-600` | `#7a7a7d` | —                                                   |
-| `--color-neutral-700` | `#5d5d60` | Expired badge text                                  |
-| `--color-neutral-800` | `#424244` | Draft badge text, `.tag-neutral` text               |
-| `--color-neutral-900` | `#2b2b2d` | Shadow tint source, dialog backdrop tint            |
+| Token                | Hex       | Now means                                                          |
+| -------------------- | --------- | ------------------------------------------------------------------ |
+| `--color-accent-100` | `#f7f7f5` | subtle fill (was cobalt tint)                                      |
+| `--color-accent-200` | `#efefec` | avatar/initials chip fill                                          |
+| `--color-accent-300` | `#e4e3df` | quiet border                                                       |
+| `--color-accent-400` | `#c9c7c1` | text on the black field (eyebrow in "Why Dealers-Drive")           |
+| `--color-accent-500` | `#9a9892` | —                                                                  |
+| `--color-accent-600` | `#2c2c2a` | primary hover                                                      |
+| `--color-accent-700` | `#56534e` | muted emphasis text                                                |
+| `--color-accent-800` | `#2c2c2a` | text on `accent-100/200` fills                                     |
+| `--color-accent-900` | `#0c0c0b` | full-field black grounds ("Why Dealers-Drive", inverted stat tile) |
 
 ### 1.2 Colour — semantic
 
-| Token              | Hex                                                           | Used for                                                                         |
-| ------------------ | ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `--color-bg`       | `#f4f5f7`                                                     | Page ground (customer + dealer app), frame background                            |
-| `--color-surface`  | `#eaecf0`                                                     | Image-slot / placeholder ground, `+91` prefix field                              |
-| `--color-text`     | `#14171c`                                                     | All primary text, plate border                                                   |
-| `--color-accent`   | `#2f55dd`                                                     | Primary action (aliased to `accent-600`; overridable via the `accentColor` prop) |
-| `--color-divider`  | `rgba(20,23,28,0.15)` (`color-mix(#14171c 15%, transparent)`) | Every hairline border, card border, table header rule                            |
-| Elevated surface   | `#ffffff`                                                     | Cards, headers, sidebars, tables, dialogs, bottom sheet                          |
-| Row rule           | `rgba(20,23,28,0.08)`                                         | Table `td` bottom border, spec-row rule, list-item rule                          |
-| `--ok`             | `#0f7a5a`                                                     | Success text/icon, Active badge text, positive delta, ledger credit              |
-| `--ok-bg`          | `#e6f4ef`                                                     | Success banner + Active badge fill                                               |
-| `--warn`           | `#a15c00`                                                     | Pending text, negative delta, queue counter                                      |
-| `--warn-bg`        | `#fbf0dd`                                                     | Pending badge + "under review" fill                                              |
-| `--err`            | `#b3261e`                                                     | Error text, Rejected badge, reject button, ledger debit                          |
-| `--err-bg`         | `#fbe9e7`                                                     | Error banner + Rejected badge fill                                               |
-| Lightbox ground    | `#0d1017`                                                     | Fullscreen gallery chrome                                                        |
-| Lightbox stage     | `#151a23`                                                     | Fullscreen image frame                                                           |
-| Lightbox rail cell | `#1a1f29`                                                     | Thumbnail cell in rail                                                           |
+| Token              | Hex       | Used for                                                                                  |
+| ------------------ | --------- | ----------------------------------------------------------------------------------------- |
+| `--color-page`     | `#ffffff` | Body ground on every surface                                                              |
+| `--color-bg`       | `#f7f7f5` | Subtle section ground (login story panel, "both sides" panels), dialog footer, hover fill |
+| `--color-canvas`   | `#ececea` | Canvas behind framed content (reserved)                                                   |
+| `--color-sidebar`  | `#fbfbfa` | Dealer-console sidebar, footer, table header row                                          |
+| `--color-surface`  | `#efefec` | Image-slot / placeholder ground                                                           |
+| `--color-ink`      | `#171716` | All primary text                                                                          |
+| `--color-accent`   | `#0c0c0b` | **Primary action**: primary button, selected chip, switch (on), chart bars, active marks  |
+| `--color-focus`    | `#315cf5` | Focus ring, input focus border, caret — the only blue in the product                      |
+| `--color-divider`  | `#e4e3df` | Every hairline border, card border, header/footer rule                                    |
+| `--color-rule`     | `#efefec` | Table `td` rule, spec-row rule, list-item rule                                            |
+| `--color-ok`       | `#09835b` | Success text, Active/Verified badge text, positive delta                                  |
+| `--color-ok-bg`    | `#ecfdf3` | Success banner + Active badge fill                                                        |
+| `--color-warn`     | `#8f5b13` | Pending/Reserved text, negative delta                                                     |
+| `--color-warn-bg`  | `#fff8e6` | Pending/Reserved badge + warning banner fill                                              |
+| `--color-err`      | `#c8261b` | Error text, Rejected badge, destructive button                                            |
+| `--color-err-bg`   | `#fff1f2` | Error banner + Rejected badge fill                                                        |
+| Lightbox ground    | `#0c0c0b` | Fullscreen gallery chrome                                                                 |
+| Lightbox stage     | `#151514` | Fullscreen image frame                                                                    |
+| Lightbox rail cell | `#1d1d1b` | Thumbnail cell in rail                                                                    |
 
-Text opacity ladder (all `color-mix(#14171c N%, transparent)`), use in this order:
+The semantic text tones are darker than the prototype's (`#0f9f6e`, `#a96c18`, `#d92d20`) so that badge and banner text on its own tint meets WCAG AA at 11–13px.
 
-| Role           | Value                 | Used for                                    |
-| -------------- | --------------------- | ------------------------------------------- |
-| Text/Primary   | `100%`                | Headings, prices, values, names             |
-| Text/Body      | `75%`                 | Descriptions, long-form paragraphs          |
-| Text/Secondary | `70%`                 | Hero paragraph, field labels                |
-| Text/Muted     | `62%` / `60%` / `58%` | Card meta rows, section sublines, spec keys |
-| Text/Subtle    | `55%`                 | Timestamps, counts, breadcrumb              |
-| Text/Faint     | `50%` / `45%`         | Table expiry, filter counts, rail numbers   |
+Text ladder (solid colours, not opacity mixes — they read the same on white and on `#f7f7f5`):
 
-On the `accent-900` field and in the lightbox use `#fff` at `1 / 0.75 / 0.6 / 0.55` opacity; rules there are `rgba(255,255,255,0.14–0.25)`.
+| Role           | Utility         | Value     | Used for                                     |
+| -------------- | --------------- | --------- | -------------------------------------------- |
+| Text/Primary   | —               | `#171716` | Headings, prices, values, names              |
+| Text/Body      | `ink-body`      | `#3f3d39` | Long-form paragraphs                         |
+| Text/Secondary | `ink-secondary` | `#56534e` | Field labels, secondary lines                |
+| Text/Muted     | `ink-muted`     | `#6f6d68` | Card meta rows, sublines, spec keys, eyebrow |
+| Text/Subtle    | `ink-subtle`    | `#6f6d68` | Timestamps, counts, breadcrumb               |
+| Text/Faint     | `ink-faint`     | `#75736d` | Least-important meta (still ≥ 4.5:1)         |
+
+On the black field use `#fff` at `1 / 0.75 / 0.6` opacity; rules there are `rgba(255,255,255,0.25)`.
 
 ### 1.3 Type
 
-Families: `--font-heading: "Cabinet Grotesk", "Inter", system-ui, sans-serif` (600/700) · `--font-body: "Inter", system-ui, sans-serif` (400/500/600/700) · numeric/plate: `ui-monospace, SFMono-Regular, Menlo, monospace`.
+Family: **Manrope** (400/500/600/700/800), loaded with `next/font/google` as `--font-manrope`; `--font-heading` and `--font-body` both resolve to it, falling back to `Arial, system-ui, sans-serif`. Technical identifiers keep `--font-mono` (`ui-monospace, SFMono-Regular, Menlo, monospace`).
 
-Global: `-webkit-font-smoothing: antialiased`, body `letter-spacing: -0.005em`, headings `-0.02em`.
+Global: `-webkit-font-smoothing: antialiased`, body 15px / 1.55, `letter-spacing: -0.005em`; headings weight 800, line-height 1.2, `letter-spacing: -0.025em`. Legibility wins over fixture sizes: the prototype's 10–12px control labels are raised to 13–14px in production.
 
-| Token           | Size             | Line-height | Weight | Tracking          | Family           | Used for                                                   |
-| --------------- | ---------------- | ----------- | ------ | ----------------- | ---------------- | ---------------------------------------------------------- |
-| `display`       | 3.25rem / 52px   | 1.02        | 700    | -0.02em           | heading          | Homepage H1                                                |
-| `h1`            | 2.75rem / 44px   | 1.05        | 700    | -0.02em           | heading          | Foundations title                                          |
-| `h1-page`       | 2.125rem / 34px  | 1.1         | 600    | -0.02em           | heading          | Search results, saved cars, dealer portfolio, auth         |
-| `h1-app`        | 1.75rem / 28px   | 1.15        | 600    | -0.02em           | heading          | Dealer console page titles                                 |
-| `h1-vdp`        | 1.8125rem / 29px | 1.1         | 600    | -0.02em           | heading          | Vehicle title, submitted state                             |
-| `h2`            | 1.75rem / 28px   | 1.15        | 600    | -0.02em           | heading          | Homepage section headings                                  |
-| `h2-sm`         | 1.5rem / 24px    | 1.15        | 600    | -0.02em           | heading          | Portfolio + foundations section headings                   |
-| `h3`            | 1.3125rem / 21px | 1.2         | 600    | -0.02em           | heading          | VDP subsection headings                                    |
-| `h3-sm`         | 1.1875rem / 19px | 1.2         | 600    | -0.02em           | heading          | Card section headings, form step headings                  |
-| `h4-card`       | 1.0625rem / 17px | 1.2         | 600    | -0.02em           | heading          | Dealer card name, body-type tile                           |
-| `card-title`    | 1rem / 16px      | 1.2         | 600    | -0.02em           | heading          | Vehicle card name, dealer name                             |
-| `body-lg`       | 1rem / 16px      | 1.5         | 400    | —                 | body             | Hero paragraph, auth paragraph                             |
-| `body`          | 0.9375rem / 15px | 1.55        | 400    | —                 | body             | Success/onboarding paragraphs                              |
-| `body-sm`       | 0.875rem / 14px  | 1.65        | 400    | —                 | body             | Descriptions, section sublines, inputs, buttons            |
-| `body-xs`       | 0.8125rem / 13px | 1.5         | 400    | —                 | body             | Spec rows, table cells, nav items, list rows               |
-| `caption`       | 0.75rem / 12px   | 1.45        | 400    | —                 | body             | Meta, breadcrumbs, field labels, small buttons             |
-| `caption-sm`    | 0.6875rem / 11px | 1.45        | 400    | —                 | body             | Card meta, tags, timestamps, counts                        |
-| `micro`         | 0.625rem / 10px  | 1.4         | 400    | 0.1em, uppercase  | body             | Kickers, `h6`, nav group labels, badges                    |
-| `label-eyebrow` | 0.6875rem / 11px | 1.45        | 400    | 0.1em, uppercase  | body             | Stat-card labels, price-block label                        |
-| `label-brand`   | 0.6875rem / 11px | 1.45        | 400    | 0.14em, uppercase | body             | Hero eyebrow, foundations eyebrow                          |
-| `price-hero`    | 2.25rem / 36px   | 1.1         | 700    | -0.02em           | heading, tabular | VDP price block                                            |
-| `price-lg`      | 1.375rem / 22px  | 1.2         | 600    | —                 | body, tabular    | Saved-cars row price                                       |
-| `price`         | 1.25rem / 20px   | 1.2         | 600    | —                 | body, tabular    | Vehicle card price                                         |
-| `stat-xl`       | 2.75rem / 44px   | 1.05        | 700    | -0.02em           | heading, tabular | Billing credit balance                                     |
-| `stat-lg`       | 2.125rem / 34px  | 1.15        | 700    | -0.02em           | heading, tabular | Dealer dashboard stats                                     |
-| `stat`          | 2rem / 32px      | 1.15        | 700    | -0.02em           | heading, tabular | Credit pack size, dealer logo initial                      |
-| `stat-sm`       | 1.75rem / 28px   | 1.15        | 700    | -0.02em           | heading, tabular | Admin stat cards, sidebar credits                          |
-| `stat-xs`       | 1.625rem / 26px  | 1.15        | 700    | -0.02em           | heading, tabular | Portfolio stat tiles                                       |
-| `plate`         | 0.6875rem / 11px | 1.5         | 400    | 0.08em            | mono             | Plate motif default                                        |
-| `plate-logo`    | 0.8125rem / 13px | 1.5         | 600    | 0.08em            | mono             | Logo plate (sidebar); 12px in headers, 18px in foundations |
-| `mono-data`     | 0.8125rem / 13px | 1.5         | 400    | —                 | mono             | GSTIN, PAN, phone numbers, invoice numbers, RTO            |
-| `mono-xs`       | 0.75rem / 12px   | 1.5         | 400    | —                 | mono             | Invoice ids, ledger deltas (600 weight)                    |
+| Token          | Size                  | Line-height | Weight | Tracking          | Used for                                              |
+| -------------- | --------------------- | ----------- | ------ | ----------------- | ----------------------------------------------------- |
+| `display`      | 56px (48 · 40 mobile) | 1.05        | 800    | -0.04em           | Homepage H1                                           |
+| `story`        | 42px (36 < xl)        | 1.08        | 800    | -0.04em           | Login story panel headline                            |
+| `h1-page`      | 30px (26 mobile)      | 1.2         | 800    | -0.035em          | `/cars`, `/dealers`, saved, enquiries, contact, login |
+| `h1-app`       | 30px (25 mobile)      | 1.2         | 800    | -0.035em          | Dealer console page titles                            |
+| `h1-vdp`       | 30px (26 mobile)      | 1.15        | 800    | -0.035em          | Vehicle title                                         |
+| `h1-portfolio` | 34px (28 mobile)      | 1.1         | 800    | -0.035em          | Dealer portfolio name                                 |
+| `h2`           | 24px (22 mobile)      | 1.2         | 800    | -0.025em          | Homepage/VDP/portfolio section headings               |
+| `h3-sm`        | 18px                  | 1.2         | 800    | -0.025em          | Card section headings, dialog title, support cards    |
+| `h4-card`      | 17px                  | 1.25        | 800    | -0.02em           | Dealer card name                                      |
+| `card-title`   | 14px                  | 1.25        | 800    | -0.015em          | Vehicle card title (two-line slot)                    |
+| `body-lg`      | 15px                  | 1.8         | 400    | —                 | Hero and story paragraphs                             |
+| `body-sm`      | 14px                  | 1.6         | 400    | —                 | Descriptions, sublines, inputs, buttons               |
+| `body-xs`      | 13px                  | 1.5         | 400    | —                 | Table cells, list rows, footer links                  |
+| `caption`      | 12px                  | 1.5         | 400    | —                 | Card meta, breadcrumbs, field labels (700)            |
+| `micro`        | 11px                  | 1.4         | 700    | —                 | Tags, badges                                          |
+| `eyebrow`      | 11px                  | 1.4         | 800    | 0.12em, uppercase | Kickers, footer column titles, price label            |
+| `price-hero`   | 36px                  | 1           | 800    | —                 | VDP price block, tabular                              |
+| `price`        | 20px                  | 1.2         | 700    | -0.02em           | Vehicle card price, tabular                           |
+| `stat`         | 30px (26 mobile)      | 1.15        | 800    | -0.03em           | Stat cards, tabular                                   |
+| `stat-sm`      | 28px                  | 1           | 800    | —                 | Sidebar credits, tabular                              |
+| `mono-data`    | 13px                  | 1.5         | 400    | —                 | GSTIN, PAN, registration numbers, OTP-verified phone  |
 
 ### 1.4 Spacing
 
-Design scale (use these; Industry's `--space-*` are 0.85× and only apply inside inherited component classes):
+Rhythm: `4 · 8 · 12 · 16 · 20 · 24 · 32` px, with `6 · 10 · 14 · 18 · 22 · 28 · 40 · 48 · 64` used where a layout needs the half step.
 
-`4 · 6 · 7 · 8 · 9 · 10 · 12 · 14 · 16 · 18 · 20 · 22 · 24 · 26 · 30 · 34 · 36 · 44 · 48 · 52 · 56 · 60 · 80` px
+Canonical uses: `4–8` icon/label gaps · `8` chip rows · `10–12` intra-card stacks · `14–16` form-field gaps and card grid gaps (`18` for vehicle/dealer grids) · `18–24` card padding · `22–30` app page padding · `40–48` between homepage sections · `64` page bottom padding.
 
-Canonical uses: `4–8` icon/label gaps · `7` tag rows · `8` grid gaps in tight strips · `9–10` intra-card stacks · `12–14` form-field gaps and card gaps · `16–18` card grid gaps · `20–26` page padding blocks · `34–44` between page sections · `48–56` hero padding · `60` page bottom padding.
-
-Inherited Industry scale: `--space-1: 3.4px` · `--space-2: 6.8px` · `--space-3: 10.2px` · `--space-4: 13.6px` · `--space-6: 20.4px` · `--space-8: 27.2px`.
+Page gutters: **16px** below `sm`, **24px** from `sm`, **40px** for full-bleed marketing sections from `lg`. Content widths: `1280px` (marketplace pages), `1440px` (header, footer, homepage bands), `1180px` (contact), `760px` (enquiry history), `560px` (auth form column).
 
 ### 1.5 Radius
 
-| Token         | Value | Applies to                                                                                                                                       |
-| ------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--radius-sm` | 2px   | —                                                                                                                                                |
-| `--radius-md` | 4px   | Buttons, inputs, cards, segmented control, tags (`×0.75` = 3px)                                                                                  |
-| `--radius-lg` | 7px   | Dialog                                                                                                                                           |
-| `0` (square)  | 0px   | **Everything authored in this product**: plates, image frames, thumbnails, stat tiles, tables, badges, banners, avatars, lightbox chrome, arrows |
+| Token          | Value | Applies to                                                                     |
+| -------------- | ----- | ------------------------------------------------------------------------------ |
+| `--radius-sm`  | 8px   | Menu items, small icon tiles, suggestion avatars                               |
+| `--radius-md`  | 10px  | Buttons, inputs, selects, segmented control, nav items, logo tiles, thumbnails |
+| (14px)         | 14px  | Tables, stat cards, dropdown/popover panels, sidebar credits card              |
+| (15px)         | 15px  | Vehicle cards                                                                  |
+| `--radius-lg`  | 16px  | Cards, blueprint frames, filter panel, support cards, dealer cards             |
+| `--radius-xl`  | 20px  | Dialogs, bottom-sheet top corners                                              |
+| `--radius-2xl` | 26px  | Reserved (large feature panels)                                                |
+| `--radius-tag` | 999px | Tags, badges, chips, the header Login button, avatars, switch                  |
+| (6px)          | 6px   | Year/verified chips (`.dd-plate`), skeleton bars                               |
 
-Square-cornered is the product default. Only the inherited `.btn` / `.input` / `.card` / `.dialog` classes carry 4–7px.
+Rounded is the product default; nothing authored is square except full-bleed bands and the lightbox stage.
 
 ### 1.6 Shadow
 
-| Token         | Value                             | Applies to                               |
-| ------------- | --------------------------------- | ---------------------------------------- |
-| `--shadow-sm` | `0 1px 2px rgba(43,43,45,0.14)`   | not used                                 |
-| `--shadow-md` | `0 3px 10px rgba(43,43,45,0.16)`  | not used                                 |
-| `--shadow-lg` | `0 12px 32px rgba(43,43,45,0.22)` | Mobile frame edge, city dropdown, dialog |
+| Token         | Value                             | Applies to                                                                |
+| ------------- | --------------------------------- | ------------------------------------------------------------------------- |
+| `--shadow-sm` | `0 2px 6px rgb(20 20 18 / 0.024)` | Vehicle cards, dealer cards, save button, inventory cards, gallery arrows |
+| `--shadow-md` | `0 14px 38px rgb(20 20 18 / 0.1)` | Account menu, autocomplete panel, dialogs, dealer-card hover              |
+| `--shadow-lg` | `0 24px 70px rgb(18 18 16 / 0.1)` | Login story card, mobile sticky enquiry bar                               |
 
-Nothing else in the product carries a shadow. See §4.1.
+Elevation stays quiet: borders do most of the separating; shadows only lift things that float or that invite a click. See §4.1.
 
 ### 1.7 Motion
 
-| Name      | Duration                         | Easing     | Applies to                                            |
-| --------- | -------------------------------- | ---------- | ----------------------------------------------------- |
-| `instant` | 0ms                              | —          | Screen changes, filter application, badge/state flips |
-| `hover`   | 120ms                            | `ease-out` | Button/nav/arrow background + colour transitions      |
-| `sheet`   | 200ms                            | `ease-out` | Mobile filter sheet slide-up, dialog fade-in          |
-| `scroll`  | native `scroll-behavior: smooth` | browser    | Thumbnail strip paging, lightbox rail auto-centre     |
+| Name      | Duration                         | Easing     | Applies to                                                    |
+| --------- | -------------------------------- | ---------- | ------------------------------------------------------------- |
+| `instant` | 0ms                              | —          | Screen changes, filter application, badge/state flips         |
+| `hover`   | 120ms                            | `ease-out` | Button/nav/chip/card border + background + colour transitions |
+| `switch`  | 120–150ms                        | default    | Login Customer ⟷ Dealer switch knob                           |
+| `sheet`   | 200ms                            | `ease-out` | Mobile filter sheet slide-up, dialog fade-in                  |
+| `scroll`  | native `scroll-behavior: smooth` | browser    | Thumbnail strip paging, lightbox rail auto-centre             |
 
-No entrance animations, no skeleton shimmer (skeletons are static `neutral-300` bars), no layout transitions.
+`prefers-reduced-motion: reduce` zeroes every transition and animation. No entrance animations, no skeleton shimmer.
 
 ---
 
 ## 2. Components
 
-Shared rules: every interactive element gets `:focus-visible { outline: 2px solid #2f55dd; outline-offset: 2px }` (inputs use `outline-offset: 0` and switch `border-color` to accent). Disabled = `opacity: 0.45; cursor: not-allowed`.
+Shared rules: every interactive element gets `:focus-visible { outline: 2px solid #315cf5; outline-offset: 2px }`; inputs use `outline-offset: 0` and switch `border-color` to `--color-focus`. Cards whose whole surface is one stretched link draw the ring on the **card** (`has-[a:focus-visible]:outline-*`) and suppress it on the anchor. Disabled = `opacity: 0.45; cursor: not-allowed`.
 
 ### 2.1 Button (`.btn`)
 
-Base: `display:inline-flex; align-items:center; justify-content:center; gap:6px; font-family:heading; font-weight:600; font-size:14px; line-height:1.2; padding:6.8px 12.24px; border:1px solid transparent; border-radius:4px; cursor:pointer`. Natural height ≈ 32px.
+Base: `inline-flex; align-items:center; justify-content:center; gap:8px; font: 700 14px/1.3 Manrope; padding:8px 15px; border:1px solid #e4e3df; border-radius:10px; background:#fff; color:#171716; white-space:nowrap`. Natural height ≈ 38px.
 
-| Variant            | Default                                                      | Hover                     | Active                    | Focus                        | Disabled    |
-| ------------------ | ------------------------------------------------------------ | ------------------------- | ------------------------- | ---------------------------- | ----------- |
-| `btn-primary`      | bg `#2f55dd`, text `#f4f5f7`                                 | bg `#2f55dd` (600)        | bg `#1e3fae` (700)        | 2px `#2f55dd` ring, offset 2 | opacity .45 |
-| `btn-secondary`    | transparent, border `--color-divider`, text `#14171c`        | bg `rgba(20,23,28,0.07)`  | bg `rgba(20,23,28,0.14)`  | as above                     | opacity .45 |
-| `btn-ghost`        | transparent, text `#2f55dd`, inline padding 3.4px            | bg `rgba(47,85,221,0.10)` | bg `rgba(47,85,221,0.18)` | as above                     | opacity .45 |
-| `btn-destructive`  | `btn-secondary` + text `--err`, border `rgba(179,38,30,0.4)` | bg `rgba(179,38,30,0.07)` | bg `rgba(179,38,30,0.14)` | as above                     | opacity .45 |
-| `btn-danger-solid` | `btn-primary` + bg/border `--err`                            | darken 8%                 | darken 16%                | as above                     | opacity .45 |
-| `btn-icon`         | 36×36, padding 0                                             | per variant               | per variant               | as above                     | opacity .45 |
-| `btn-block`        | `width:100%; margin-top:6.8px`                               | —                         | —                         | —                            | —           |
+| Variant            | Default                                             | Hover                          | Active       | Disabled    |
+| ------------------ | --------------------------------------------------- | ------------------------------ | ------------ | ----------- |
+| `btn-primary`      | bg/border `#0c0c0b`, text `#fff`                    | bg/border `#2c2c2a`            | `#56534e`    | opacity .45 |
+| `btn-secondary`    | bg `#fff`, border `--color-divider`, text `#171716` | bg `#f7f7f5`, border `#c9c7c1` | bg `#efefec` | opacity .45 |
+| `btn-ghost`        | transparent, no border, text `#171716`, `px 8px`    | bg `#f7f7f5`                   | bg `#efefec` | opacity .45 |
+| `btn-destructive`  | secondary + text `--color-err`, border err at 35%   | bg `--color-err-bg`            | —            | opacity .45 |
+| `btn-danger-solid` | bg/border `--color-err`, text `#fff`                | `brightness(0.92)`             | —            | opacity .45 |
+| `btn-block`        | `width:100%`                                        | —                              | —            | —           |
 
-Authored size overrides (apply as-is):
+Sizes (CVA `size`): `sm` 12px / `4px 10px` · `md` 40px · `lg` 44px / 15px · `hero` 48px / 15px. Mobile primary actions are ≥ 44px. The header **Login** link is `btn-primary` with `rounded-full`, `min-height:40px`, `px:18px`.
 
-| Context                                   | Height         | Font | Padding                               |
-| ----------------------------------------- | -------------- | ---- | ------------------------------------- |
-| Hero search CTA                           | 48px           | 15px | `0 26px`                              |
-| VDP primary CTA / auth submit / sheet CTA | 44px           | 15px | default inline                        |
-| VDP secondary pair / onboarding next      | 40–42px        | 14px | default                               |
-| Header, toolbar                           | 32px (natural) | 14px | default                               |
-| In-card / table / chip actions            | natural        | 12px | `4px 10px` (popular chips) or default |
-| Sidebar credits CTA                       | natural        | 12px | `btn-block`                           |
+Loading: keep width, replace the label with a 14px `currentColor` spinner, `aria-busy="true"`. Keyboard: native `<button>` or `<a>` throughout — never a `<div>` with `onClick`.
 
-Loading state (not yet drawn — implement): keep width, replace label with a 14px 1.5px-stroke spinner in `currentColor`, `aria-busy="true"`, `pointer-events: none`, opacity 1.
+### 2.2 Registration plate (`.dd-plate`) → chip
 
-Keyboard: native `<button>` throughout — Enter/Space activate. Never a `<div>` with `onClick`.
+The plate motif is retired. `.dd-plate` is now a small neutral chip: `inline-flex; gap:6px; border:1px solid #e4e3df; background:#fff; padding:3px 8px; border-radius:6px; font: 800 11px/1.35 Manrope; letter-spacing:0.03em`. No left band.
 
-### 2.2 Registration plate (`.dd-plate`)
+| Variant (`Plate size`) | Override                                                                                 | Where                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `logo`                 | the **brand mark**: 30×30, `border-radius:9px`, bg/border `#0c0c0b`, white 12px/800 "DD" | Header, footer, auth shell, console sidebar        |
+| `year` (default)       | chip                                                                                     | Vehicle card image (absolute `top/left:10px`), VDP |
+| `chip`                 | 10px, `VERIFIED DEALER` / `HOW IT WORKS`                                                 | VDP dealer card, portfolio header, directory card  |
+| `marker`               | 9px                                                                                      | Reserved                                           |
 
-`display:inline-flex; align-items:center; gap:7px; border:1px solid #14171c; background:#f4f5f7; padding:2px 9px 2px 0; border-radius:0; font-family:mono; font-size:11px; letter-spacing:0.08em; line-height:1.5; color:#14171c`. `::before` = the left band: `width:5px; align-self:stretch; background:#2f55dd`.
-
-| Variant       | Override                                                                                          | Where                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Logo          | 13px/600, padding `4px 10px 4px 0` (12px in page headers, 18px + `6px 14px 6px 0` in foundations) | Sidebar, customer header, dealer header                                         |
-| Year badge    | default 11px                                                                                      | Vehicle card image (absolute `top:10px; left:10px; z-index:2`), VDP title block |
-| Verified chip | 10px, label `VERIFIED DEALER` / `VERIFIED`                                                        | VDP dealer card, portfolio header, directory card                               |
-| Photo marker  | 9px, label `PRIMARY`                                                                              | Add-vehicle primary photo tile                                                  |
-
-No other use. No hover/active state — it is not interactive.
+Not interactive.
 
 ### 2.3 Input (`.input`)
 
-`width:100%; min-height:36px; padding:6px 10px; font-size:14px; background:#eaecf0; border:1px solid --color-divider; border-radius:4px; caret-color:#2f55dd`.
+`width:100%; min-height:42px; padding:9px 12px; font-size:14px; background:#fff; border:1px solid #e4e3df; border-radius:10px; caret-color:#315cf5`.
 
-| State    | Spec                                                                                   |
-| -------- | -------------------------------------------------------------------------------------- |
-| Hover    | `border-color: rgba(20,23,28,0.45)`                                                    |
-| Focus    | `border-color: #2f55dd`, `outline-offset: 0`                                           |
-| Error    | `border-color: --err` + 11px `--err` message, `margin-top:4px`                         |
-| Disabled | opacity .45, `cursor: not-allowed` (used on the pre-filled phone in onboarding step 1) |
-| Textarea | `min-height:90px; resize:vertical`                                                     |
+| State    | Spec                                                             |
+| -------- | ---------------------------------------------------------------- |
+| Hover    | `border-color: #c9c7c1`                                          |
+| Focus    | `border-color: #315cf5`, 2px `#315cf5` outline, offset 0         |
+| Error    | `border-color: --color-err` + 12px error message                 |
+| Disabled | opacity .45, `cursor: not-allowed`                               |
+| Textarea | `min-height:90px; resize:vertical`                               |
+| Select   | `appearance:none`, 5px CSS chevron at `right 12–17px`, `pr:32px` |
 
-Label (`.field > label`): 12px, `margin-bottom:5px`, `rgba(20,23,28,0.70)`.
+Label (`.field > label`): 12px/700, `margin-bottom:6px`, `#56534e`. Placeholder `#9a9892`.
 
-Authored sizes: hero search 48px/16px · OTP cell 52×58px, 22px, centred, `maxlength=1` · header city/sort/search `width:auto`, `min-width:170–200px`.
+Search/typeahead (`AutocompletePanel`): the `.input` shell at 42px with a leading search glyph and a clear button; suggestions open in a 14px-radius `--shadow-md` panel with an 8px-radius initials tile per row. Behaviour (debounce, suggestions, Enter → `/cars?q=`) is production's.
 
-Phone input: 62px `+91` prefix box (`.input`, `background:#eaecf0`, centred) + flexible number field, `gap:8px`.
+OTP cells and the `+91` phone field keep their production behaviour and take the input styling above.
 
-Keyboard: OTP cells auto-advance on entry, Backspace moves back, paste of 6 digits distributes across cells; Enter on the hero field runs the search.
+### 2.4 Checkbox / Radio / Segmented / Chip / Switch
 
-### 2.4 Checkbox / Radio / Segmented
-
-- Filter checkbox: native `<input type="checkbox">`, `width:15px; height:15px; accent-color:#2f55dd`; wrapped in a `<label>` (`display:flex; gap:9px; font-size:13px; cursor:pointer`) so the whole row is the hit target. Zero-count row: `opacity:0.4`, still operable.
-- Range slider: native `<input type="range">`, `width:100%`, `accent-color:#2f55dd`, min `200000`, max `3000000`, step `50000`.
-- `.seg` / `.seg-opt`: inline-flex, 1px divider border, 4px radius; selected option takes accent fill with `#f4f5f7` text. Used for enquiry tabs and the fuel example. Arrow keys move selection (radio group semantics).
+- Filter checkbox/radio: native input, 15px, `accent-color:#0c0c0b`, wrapped in a `<label>` row; zero-count options are **disabled** (R53), not merely faded.
+- `.seg` / `.seg-opt`: `inline-flex`, 1px border, 10px radius, white; options 13px `#6f6d68`; selected `bg #efefec`, `#171716`, 800. Still used in admin.
+- **`.dd-chip`** (new): pill, `min-height:34px; padding:0 13px; border:1px solid #e4e3df; border-radius:999px; font:700 12px`, `#56534e`; hover border `#c9c7c1`; `aria-pressed="true"` / `aria-current` → bg/border `#0c0c0b`, text `#fff`. Used for directory towns, inventory and enquiry status tabs, homepage shortcuts.
+- **Login switch** (§3.9): `Customer [●—] Dealer` — a 44×26 track (`#e4e3df` off, `#171716` on) with an 18px white knob, flanked by the two tab buttons. The track is decorative (`aria-hidden`); the buttons are the `role="tab"` elements and keep arrow/Home/End support.
 
 ### 2.5 Tag / Badge (`.tag`)
 
-`inline-flex; font-size:11px; letter-spacing:0.02em; padding:3px 10px; border-radius:3px`.
+`inline-flex; gap:5px; font: 700 11px/1.4; letter-spacing:0.01em; padding:4px 10px; border-radius:999px; white-space:nowrap`.
 
-| Variant                    | Fill                              | Text                  |
-| -------------------------- | --------------------------------- | --------------------- |
-| `tag-accent`               | `#eef2ff`                         | `#172f7d`             |
-| `tag-neutral`              | `#f5f5f8`                         | `#424244`             |
-| `tag-outline`              | transparent, 1px `#2f55dd` border | `#2f55dd`             |
-| Status: Active             | `--ok-bg`                         | `--ok`                |
-| Status: Pending review     | `--warn-bg`                       | `--warn`              |
-| Status: Rejected           | `--err-bg`                        | `--err`               |
-| Status: Draft              | `--color-neutral-200`             | `--color-neutral-800` |
-| Status: Sold               | `--color-accent-100`              | `--color-accent-800`  |
-| Status: Expired            | `--color-neutral-200`             | `--color-neutral-700` |
-| Payment: Captured / Failed | `--ok-bg` / `--err-bg`            | `--ok` / `--err`      |
+| Variant                                           | Fill                       | Text                              |
+| ------------------------------------------------- | -------------------------- | --------------------------------- |
+| `tag-accent`                                      | `#f7f7f5` + 1px `#efefec`  | `#56534e`                         |
+| `tag-neutral`                                     | `#f7f7f5`                  | `#56534e`                         |
+| `tag-outline`                                     | transparent, 1px `#e4e3df` | `#56534e`                         |
+| `tag-ok` (Active)                                 | `--color-ok-bg`            | `--color-ok`                      |
+| `tag-warn` (Pending, Reserved, Changes requested) | `--color-warn-bg`          | `--color-warn`                    |
+| `tag-err` (Rejected)                              | `--color-err-bg`           | `--color-err`                     |
+| `tag-draft` / `tag-expired` / `tag-sold`          | `#efefec`                  | `#2c2c2a` / `#56534e` / `#2c2c2a` |
 
-Filter chip = `tag-outline` + `cursor:pointer`, `gap:7px`, 11px, trailing `✕`; click removes that filter. Toggle chip (mobile sheet, directory city, portfolio legacy) = 12px, `padding:6px 12px`; selected fill `#2f55dd` / text `#fff` / border `#2f55dd`, unselected transparent / `#14171c` / `--color-divider`.
+Applied-filter chip = `tag-outline` + `cursor:pointer` + trailing `✕`.
 
 ### 2.6 Blueprint frame (`.blueprint`)
 
-Any framed object: `.blueprint` + four `<i class="corner tl|tr|bl|br">` children. **Never omit the four marks.** Applied to: hero search block, hero image, body-type tiles, dealer stat tiles, dashboard stat cards, price block, review-summary panel, empty states, under-review panel, foundations plate specimen. Border 1px `--color-divider`, radius 0, no fill beyond the stated ground.
+The corner marks are retired. `.blueprint` is now a framed surface: `position:relative; overflow:hidden; border:1px solid #e4e3df; border-radius:16px`. The `<Corners />` children are still rendered for compatibility but hidden (`display:none`). Used by the price block, stat cards, empty/error states, the gallery main image, the portfolio cover and the location card.
 
 ### 2.7 Card (`.card`)
 
-`display:flex; flex-direction:column; gap:6.8px; padding:10.2px; border-radius:4px; background:#eaecf0` — in this product always overridden to `background:#fff` and, where stated, `gap:8–11px`, `padding:16–20px`. Border 1px `--color-divider`. No shadow. `.card-kicker`: 10px, `0.1em`, uppercase, `#2f55dd`.
+`display:flex; flex-direction:column; gap:10px; padding:18px; background:#fff; border:1px solid #e4e3df; border-radius:16px`. No shadow by default (see §1.6 for the cards that lift). `.card-kicker`: 11px/800, `0.08em`, uppercase, `#6f6d68`.
 
 ### 2.8 Vehicle card
 
-| Variant                           | Spec                                                                                                                                                                                         |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VehicleCard/Grid`                | `padding:0; overflow:hidden; background:#fff`; image band `aspect-ratio:4/3`, `background:#eaecf0`, 1px bottom divider; body `padding:12px 13px 14px`, `gap:9px`; whole card clickable → VDP |
-| `VehicleCard/List` (saved cars)   | `flex-direction:row; flex-wrap:wrap`; image 250px fixed, `aspect-ratio:4/3`, right divider; body `padding:16px`, `gap:10px`; price right-aligned                                             |
-| `VehicleCard/Compact` (portfolio) | Grid variant, `gap:8px` body, no save button                                                                                                                                                 |
-| `VehicleCard/Featured` (homepage) | Grid variant, min column 262px                                                                                                                                                               |
+One structure for every context, so every card in a row lines up whatever its data:
 
-Slots, in order: year plate (absolute TL) · save button (absolute TR) · title `card-title` · price row (`price` 20px tabular + `caption-sm` EMI) · meta row (`caption-sm` 62% — km · fuel · transmission · city, `·` separators) · dealer strip (`padding-top:9px`, 1px top divider, 20px `accent-200` avatar with `accent-800` 9px/700 initials, 12px name with ellipsis, `tag-accent` "Verified").
+| Part         | Spec                                                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Card         | `.card`, `p-0`, `h-full`, `border-radius:15px`, `--shadow-sm`; hover border `#c9c7c1` (available cars only)                                      |
+| Image band   | fixed `aspect-ratio:1.75` (`1.6` below `sm`), `#efefec` ground, 1px bottom divider, `object-fit:cover`                                           |
+| Overlays     | year chip TL · save button TR (36px, 10px radius, `--shadow-sm`) · Reserved badge BL                                                             |
+| Body         | `flex:1; padding:13px 14px 14px; gap:8px`                                                                                                        |
+| Title        | `card-title` 14px/800, `line-clamp-2` **and** `min-height:2.5em` — a one-line title reserves the second line                                     |
+| Price        | 20px/700 tabular                                                                                                                                 |
+| Meta         | 12px `#6f6d68` tabular, `line-clamp-2`, `min-height:3em` (km · fuel · transmission · town)                                                       |
+| Dealer strip | `margin-top:auto; min-height:35px`, 1px top divider, `padding-top:10px`: 20px round initials chip, 13px name (ellipsis), `tag-accent` "Verified" |
 
-Save button: 30×30, `background:#fff`, 1px `--color-divider`, radius 0, 14px glyph; `♡` `#14171c` → `♥` `#2f55dd` when saved. `stopPropagation` so it never opens the VDP. `aria-pressed` reflects state; label "Save this car".
+The title's anchor is stretched over the card (`after:absolute after:inset-0`), so the whole card opens the VDP and the focus ring is drawn on the card. `compact` omits the dealer strip.
+
+**Reserved** (R71): the image is `grayscale` at 60% opacity, a `tag-warn`-style pill "Reserved" sits bottom-left, the title is plain text with a screen-reader note, and the card has **no link** — it cannot be opened or enquired on. The label is text, never colour alone.
+
+Save button: `♡` / `♥`, `aria-pressed`, labelled per car; `stopPropagation` so it never opens the VDP. Signed-out presses go through the production login-return intent (R75).
 
 ### 2.9 Gallery — strip
 
-Container `position:relative; padding:0 34px` (VDP) / `0 32px` (moderation). Track `.dd-strip`: `display:flex; gap:8px; overflow-x:auto; scroll-behavior:smooth`, scrollbar hidden, `min-width:0`. Thumb: `flex:0 0 108px` (VDP) / `92px` (moderation), `aspect-ratio:4/3`, 1px `--color-divider`, radius 0, `overflow:hidden`.
+Container `position:relative; padding:0 34px` (`0 52px` mobile). Track `.dd-strip` (`flex; gap:8px; overflow-x:auto; smooth`, scrollbar hidden). Thumb `flex:0 0 108px` (88px mobile), `aspect-ratio:4/3`, 1px divider, **10px radius**.
 
-`.dd-arrow`: 30×30 (26×26 moderation), absolute, `top:50%; translateY(-50%)`, `background:#fff`, 1px `--color-divider`, radius 0, 14px glyph, `z-index:3`. Hover → `background:#2f55dd`, `color:#fff`, `border-color:#2f55dd`. Scrolls ±240px smooth. Hide (or disable at .45) when the track is at either end.
+`.dd-arrow`: 34×34 round, `#fff`, 1px divider, `--shadow-sm`, 16px glyph; hover `#efefec`. Hidden or disabled at .45 at either end.
 
-Main image button: full width, `aspect-ratio:4/3`, 1px `--color-divider`, `cursor:zoom-in`, count tag bottom-right (`background:#fff`, 11px). Opens the lightbox at index 0.
+Main image button: full width, `aspect-ratio:4/3`, `.blueprint` (16px radius), `cursor:zoom-in`, white count tag bottom-right. Opens the lightbox.
 
 ### 2.10 Gallery — lightbox
 
-`position:fixed; inset:0; z-index:90; background:#0d1017; display:flex; flex-direction:column`.
+Unchanged in structure and keyboard behaviour; recoloured to the neutral darks of §1.2 (`#0c0c0b` chrome, `#151514` stage, `#1d1d1b` rail cells, active cell border `#fff`-on-dark accent). ← / → page, Esc closes, focus is trapped and returns to the opener.
 
-- Header: 54px, `padding:0 16px`, bottom rule `rgba(255,255,255,0.14)`; mono `DD` chip (1px `rgba(255,255,255,0.4)`, `2px 7px`), 15px/600 title, 12px tabular counter at 0.6 opacity, Close button right (`btn-secondary`, transparent, `#fff`, border `rgba(255,255,255,0.35)`).
-- Rail `.dd-rail`: `width:132px` desktop / `84px` mobile, `flex:none`, `padding:12px`, `overflow-y:auto`, `flex-direction:column; gap:8px`. Cell: full width, `aspect-ratio:4/3`, `background:#1a1f29`, **2px** border — `#2f55dd` when active, `transparent` otherwise; index badge bottom-left (mono 10px, `rgba(13,16,23,0.75)` fill, `#fff`, `padding:1px 5px`). Active cell auto-centres via smooth scroll on index change.
-- Stage: `flex:1`, centred, `padding:20px`; frame `width:min(100%,1100px)`, `aspect-ratio:4/3`, `background:#151a23`, 1px `rgba(255,255,255,0.16)`. 38×38 arrows inset 14px, `background:rgba(255,255,255,0.9)`. Caption centred, `bottom:14px`, 12px, `rgba(255,255,255,0.7)`.
+### 2.11 Price block (`PriceBlock`)
 
-Keyboard: ← / → page, Esc closes, focus is trapped inside the overlay and returns to the trigger thumbnail on close. Index wraps at both ends.
-
-### 2.11 Price block (`PriceBlock/Plate`)
-
-`.blueprint` + 4 marks, `background:#fff`, `padding:16px`. Rows: `label-eyebrow` at 50% ("Dealer price") · `price-hero` 36px/700 heading tabular · 13px 62% line ("EMI from ₹48,900/month · Fixed price, no hidden charges"). VDP only.
+`.blueprint` (16px radius), `background:#fff`, `padding:20px`: `eyebrow` "Dealer price" · `price-hero` 36px/800 tabular · 13px `#56534e` negotiability line. VDP only.
 
 ### 2.12 Stat card
 
-`.blueprint` + 4 marks, `background:#fff`, `padding:16px`. Rows: `label-eyebrow` 52% · `stat-lg` 34px/700 tabular · 12px delta in `--ok` (positive) / `--warn` (negative) / 55% neutral. Admin variant: no blueprint marks, plain 1px `--color-divider` box, `padding:14px`, `stat-sm` 28px.
+`.blueprint`, `border-radius:14px`, `padding:20px`, `min-height:120px`, content spread top-to-bottom: 12px/700 `#6f6d68` label (sentence case) · `stat` 30px/800 tabular · 12px delta in `--color-ok` / `--color-warn` / muted. **`inverse`** variant: bg/border `#0c0c0b`, white value, labels at 75% white — used for the dashboard's _Available credits_ tile.
 
 ### 2.13 Table (`.table`)
 
-`th`: 11px, `0.08em`, uppercase, 60% text, `padding:6.8px`, bottom 1px `--color-divider`. `td`: `padding:6.8px`, bottom 1px `rgba(20,23,28,0.08)`. Wrapper: `background:#fff`, 1px `--color-divider`, radius 0. Numeric columns `font-variant-numeric: tabular-nums`. Action column `text-align:right; white-space:nowrap`. Row hover: `background:rgba(20,23,28,0.03)` (add). Vehicle cell = 44×33 `#eaecf0` thumb + 13px/500 name + 11px 50% meta.
+Wrapper: `#fff`, 1px divider, **14px radius**, `overflow-x:auto`. `th`: 11px/800, `0.04em`, sentence case, `#6f6d68`, `background:#fbfbfa`, `padding:12px 14px`, bottom 1px divider. `td`: `padding:13px 14px`, bottom 1px `#efefec`. Row hover `#fbfbfa`. Numeric columns tabular; action column right-aligned.
 
 ### 2.14 Dialog
 
-`.dialog-backdrop`: `position:fixed; inset:0; display:grid; place-items:center; padding:13.6px; background:rgba(43,43,45,0.5)`, `z-index:70`. `.dialog`: `width:min(440px,100%)`, `gap:10.2px`, `padding:13.6px`, `border-radius:7px`, `background:#fff`, `--shadow-lg`. Title 16px/600 heading · body 14px at .85 · actions right-aligned, `gap:6.8px`, `margin-top:6.8px`.
+Radix Dialog. Backdrop `rgb(12 12 11 / 0.44)` + `backdrop-filter: blur(3px)`, `z-index:70`. Card: `width:min(460px,100%)`, `border-radius:20px`, 1px divider, `--shadow-md`; header `padding:16px 22px` with an 18px/800 title and a round 36px close button; body `padding:18px 22px`; optional footer on `#f7f7f5`. Sheet variant: bottom-anchored, `border-radius:20px 20px 0 0`, `max-height:85dvh`. Fullscreen variant: the lightbox.
 
-Two instances: **Approve** (`btn-secondary` Cancel + `btn-primary` "Approve & publish") and **Reject** (textarea + `btn-secondary` Cancel + `btn-danger-solid` "Reject listing", disabled until reason ≥ 6 chars).
-
-Keyboard: Esc cancels, focus trapped, initial focus on the textarea (reject) or the confirm button (approve), `role="dialog" aria-modal="true"`.
+Keyboard: Esc cancels, focus trapped, focus restored on close, `aria-modal="true"`.
 
 ### 2.15 Banner / Toast
 
-Inline banner, `margin:16px 20–22px 0`, `padding:10px 14px`, 13px, 1px border at 30% of its semantic colour, fill `--ok-bg` / `--warn-bg` / `--err-bg`, text the matching solid. Rejection banner adds a 14px/600 title, a 13px 75% reason line and an `Edit & resubmit` `btn-primary` at 12px. Auto-dismiss: none — cleared on navigation.
+`border-radius:12px; padding:11px 14px; 13px`, 1px border at 30% of its semantic colour, fill `--color-*-bg`, text the matching solid; optional 14px/700 title and an action row. `role="status"`.
 
 ### 2.16 Stepper
 
-Row of equal `flex:1` cells, `gap:6px`. Each: 3px bar (`#2f55dd` when index < current, else `--color-neutral-300`) + 11px label `margin-top:7px` (`#1e3fae` active/done, 45% otherwise). Used by onboarding (Account → Business → Documents → Review) and add-vehicle (Basics → Details → Photos → Price & review).
+Row of equal cells, `gap:6px`; each a 3px **rounded** bar (`#0c0c0b` done/current, `#e4e3df` otherwise) + 11px label. Used by onboarding and the listing wizard (Registration → Vehicle basics → Vehicle details → Pricing → Review).
 
 ### 2.17 Nav item (`.dd-nav-item`)
 
-`display:block; width:100%; text-align:left; font-size:13px; padding:5px 10px; background:transparent; color:rgba(20,23,28,0.70)`. Hover `background:rgba(47,85,221,0.10)`, `color:#14171c`. `aria-current="true"` → `background:#2f55dd`, `color:#fff`. Admin sidebar (dark ground): default `rgba(255,255,255,0.7)`, active `rgba(255,255,255,0.16)` fill + `#fff`, `padding:6px 10px`.
+`flex; align-items:center; gap:12px; min-height:42px; padding:10px 14px; border-radius:10px; font:700 14px; color:#6f6d68`. Hover `#f7f7f5` / `#171716`. `aria-current` → `background:#efefec`, `#171716`, 800.
 
-### 2.18 City selector
+Mobile console tab bar: 60px, `bg #fff/95` + blur, top divider; current item is 800 `#171716` **with a 2px top bar**, others 600 muted — never colour alone.
 
-Trigger: `btn-secondary`, `display:flex; gap:7px`, containing a 5×14 `#2f55dd` bar + city label + `▾`. Menu: `position:absolute; top:calc(100% + 6px); right:0; width:220px; z-index:40; background:#fff; 1px --color-divider; --shadow-lg; padding:6px`; a 10px uppercase 50% header then `.dd-nav-item` rows with the live count right-aligned at 11px/0.6 tabular. Closes on selection and on any screen change.
+### 2.18 City selector (district picker)
 
-Keyboard: Enter/Space opens, ↑/↓ moves, Enter selects, Esc closes and returns focus to the trigger. Add an outside-click listener.
+Trigger: `btn-secondary` with the district name (or "Select district") and `▾` — the 5px accent bar is gone. The picker itself (dialog with search, state filter and district grid, R22/R50) is production's and takes the dialog/chip styling above.
 
 ### 2.19 Image slot
 
-`<image-slot>` fills its container (`display:block; width:100%; height:100%; min-width:0`) over an `#eaecf0` ground. Each needs a unique `id` and a `placeholder` naming the shot. Hero and gallery mains sit inside `.duotone`. In production these become `next/image` with `object-fit: cover`.
+`ImageSlot`: fills its container over `#efefec`, 12px `#6f6d68` centred label naming the missing shot ("Photographs coming soon", "{dealer} — yard photo"). `role="img"` with that label. Real images are `object-fit: cover`.
 
 ### 2.20 Skeleton / Empty / Error
 
-- Skeleton: static bars, `height:11px`, `background:--color-neutral-300`, widths 70% / 46% / 88%, `gap:6px`. No shimmer.
-- Empty state: `.blueprint` + 4 marks, `background:#fff`, `padding:44–56px 20–24px`, centred — 19–22px/600 heading, 13–14px 60% line, one `btn-primary` recovery action.
-- Error state: same shell, `--err` heading, `Try again` `btn-primary`.
+- Skeleton: static bars, 11px, `#ececea`, 6px radius, widths 70% / 46% / 88%. No shimmer.
+- Empty state: `.blueprint` (16px radius), `#fff`, `padding:56px 24px`, centred — 20px/800 heading, 14px muted line, one `btn-primary` recovery action.
+- Error state: same shell, `--color-err` heading, `role="alert"`.
 
 ---
 
 ## 3. Screens
 
-Global frame: content `max-width:1280px`, `margin:0 auto`, `padding:0 24px`; desktop design frame 1440. Grid 12 columns / 24px gutters desktop, 4 columns / 16px gutters at 375. Section rhythm: 44px between major sections, 22–26px inside an app screen.
+Global frame: marketplace content `max-width:1280px`, header/footer/homepage bands `1440px`; gutters per §1.4. Desktop design frame 1440; verified at 320 / 375 / 390 / 430 / 768 / 1024 / 1440 with **no horizontal page overflow**.
 
 ### 3.1 Customer header — sticky
 
-`position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid --color-divider; height:64px`, inner flex `gap:28px`. Order: logo plate + wordmark (16px/700) · nav links `Buy cars` / `Dealers` / `Saved cars (n)` at 14px, `gap:22px` · right cluster `gap:8px`: city selector, `Dealer login` (`btn-primary`).
+`position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid #e4e3df; height: var(--header-height)` (64px, **76px from `md`**), inner `max-width:1440px`, `gap:28px`. Order: brand mark + "Dealers-Drive" (17px/800; the word hides below `sm`) · nav **Buy cars** / **Dealers** (14px/700, `#6f6d68`; current section `#171716` **plus a 2px underline** and `aria-current="page"`) · right cluster `gap:8px`: district selector, then the account corner.
 
-768: nav links collapse into a hamburger sheet; city selector and the CTA stay. 375: links hidden, logo + city + CTA only; the CTA label shortens to `Login`.
+Account corner (production behaviour, R67/R76): signed out → one `Login` pill (`btn-primary`, rounded) to `/login`; signed in → a 40px black round avatar with white initials opening the account menu (14px-radius panel, `--shadow-md`): name + masked mobile, **Saved cars**, **My enquiries**, separator, **Logout** — 44px rounded items, arrow/Home/End, Escape restores focus.
 
-**R35** removed the second CTA. `List your cars` (`btn-primary`) sat beside `Dealer login` and pointed at the same `/dealer` route, so the pair read as a choice and had one outcome; the surviving button takes the primary weight and is visible at every width, because it is now the only way in.
+**R81** removed `Saved cars` from the top bar; it is reached from the account menu and the footer. The prototype's signed-out avatar menu (Customer login / Dealer login) is **not** used: production keeps a single Login door (R35/R63), and Dealer login is reached from the login switch and the footer.
 
-**R63** renamed it. The CTA says `Login` at every width and opens `/login`, whose Customer tab is the default and whose Dealer tab replaces §3.9's sign-in screen; buyers have accounts since R62.
+375: brand mark only, district selector and Login/avatar on one row.
 
 ### 3.2 Homepage
 
-1. **Hero** — `background:#fff`, `padding:56px 24px 44px`, two columns `repeat(auto-fit, minmax(320px,1fr))`, `gap:36px`, `align-items:center`. Left: `label-brand` eyebrow · `display` H1 ("Find your next car") · 16px 70% paragraph (`max-width:46ch`) · blueprint search block (`padding:14px`: 48px single input + 48px `btn-primary`, then a 12px 55% city line) · popular chips row (`gap:8px`, 12px `btn-secondary`). Right: `.blueprint.duotone` hero image, `aspect-ratio:4/3`.
-2. **Featured inventory** — `padding:44px 24px`; header row (`h2` + `btn-ghost` "View all n cars →"); grid `repeat(auto-fill, minmax(262px,1fr))`, `gap:18px`, 4 × `VehicleCard/Featured`.
-3. **Browse by body type** — `background:#fff`, 1px top divider, `padding:44px 24px`; grid `repeat(auto-fit, minmax(160px,1fr))`, `gap:14px`; 5 blueprint tiles (`padding:18px 16px`, `h4-card` label + 12px count).
-4. **Trusted dealers** — `padding:44px 24px`; grid `repeat(auto-fill, minmax(250px,1fr))`, `gap:16px`; dealer cards (36px logo tile, name, city, then a divider row with car count / years / `tag-accent`). Whole card → portfolio.
-5. **Why Dealers-Drive** — `background:#101f4f`, `color:#fff`, `padding:48px 24px`; grid `repeat(auto-fit, minmax(190px,1fr))`, `gap:26px`; 5 items each with a 1px `rgba(255,255,255,0.25)` top rule, mono index at 0.6, 17px/600 title, 13px 0.75 body.
+1. **Hero banner** (`HeroBanner`) — a **single full-width banner**: one photograph of an Indian dealership — dealer, customers and the yard — `object-fit:cover`, under a black scrim (`black/80 → black/50 → black/10` left to right from `md`, a flat `black/55` on phones). `min-height:560px` (500px mobile), content `max-width:640px` left-aligned inside the 1440px frame: white eyebrow · `display` H1 in white · 15px/1.8 paragraph at 85% white · the production `CarSearchBox` (R79: suggestions open `/cars`, Enter opens `/cars?q=`) · `.dd-chip` shortcuts "Browse every car" / "Explore verified dealers". It replaces the MVP's two-column hero and the "How it works" trust panel. The default photograph is committed at `apps/web/public/images/home-hero.webp` (a salesperson with an Indian family in a showroom). **It is editable in `/admin/config`**: _Homepage hero image URL_ (`home.heroImageUrl`, an `https:` URL or a `/images/…` path) and _Homepage hero image description_ (`home.heroImageAlt`); the page falls back to the committed photograph when none is set, and the banner can also draw a dark `#0c0c0b` radial ground (`image: null`), never a broken image.
+2. **Discovery rows** (R72/R78) — `max-width:1440px`, `gap:48px`; each row: `h2` + "View all →" ghost, grid `repeat(auto-fill, minmax(262px,1fr))`, `gap:18px`, `items-stretch`, vehicle cards (§2.8). Available cars only; no counts.
+3. **Your journey** — three `.blueprint` cards (mono index, 20px title, muted body).
+4. **Built for both sides** — two 16px-radius `#f7f7f5` panels with ghost links (wrap on narrow widths).
+5. **Why Dealers-Drive** — full-bleed `#0c0c0b`, white type, five items with a `rgba(255,255,255,0.25)` top rule.
 
-768: hero becomes one column (image below); featured 2-up; body types 3-up; dealers 2-up; why 2-up. 375: everything 1-up; hero padding `36px 16px 28px`; H1 → 38px; search input and CTA stack full-width.
+768: discovery rows 2-up. 375: everything 1-up; H1 40px; the banner stays full-bleed with the flat scrim.
 
 ### 3.3 Search results (`/cars`)
 
-`padding:26px 24px 60px`. Order: breadcrumb (12px 55%) · title row (`h1-page` "Used cars in {city}" + result count + right cluster: 200px search input, `Filters` button on mobile only, sort `<select>` `min-width:180px`) · filter chip row (`tag-outline` chips + `Clear all`) · body grid `250px 1fr`, `gap:22px`.
+`max-width:1280px; padding:28px 16px|24px 64px`. Order: breadcrumb (12px muted) · title row (`h1-page` + live "n cars available", `role="status"`) · controls row (R55): `CarSearchBox` · district scope · sort select, right-aligned · applied-filter chips · body grid `250px 1fr`, `gap:22px`.
 
-Sidebar (desktop only) is `position:sticky; top:84px; align-self:start`: one white card, `gap:18px` — Budget range + min/max labels, then Fuel / Body type / Transmission / Dealer groups, each separated by a 1px top divider + `padding-top:14px`, `h6` heading, rows `gap:7px` with right-aligned counts.
+Filter rail (desktop): `.card` (16px radius) inside the sticky, viewport-bounded, self-scrolling `filter-rail` (R56); groups separated by 1px dividers, 12px/800 group headings (sentence case), checkbox/radio rows with right-aligned tabular counts; zero-count options disabled (R53).
 
-Results grid `repeat(auto-fill, minmax(258px,1fr))`, `gap:16px`, `VehicleCard/Grid`. Empty state per §2.20 with `Clear all filters`.
+Results: `repeat(auto-fill, minmax(258px,1fr))`, `gap:16px`, vehicle cards (§2.8); results update in place with the 200ms-delayed dim (R57). Pagination: Previous / "Page n of m" / Next. All query/URL semantics are production's.
 
-768: sidebar collapses to the `Filters` bottom sheet; results 2-up. 375: 1-up; the title row wraps to two lines; `Filters` + sort sit side by side full-width.
-
-**Filter bottom sheet** (mobile): `position:fixed; inset:0; z-index:60; background:rgba(20,23,28,0.45)`, panel bottom-aligned `width:100%; background:#fff; padding:18px; max-height:80vh; overflow:auto`. Header (`h3` + `Clear all` ghost), Budget slider, Fuel and Body type as toggle chips, then a sticky 44px `btn-primary` "Show n cars". Backdrop click closes; body scroll locks while open.
+768 and below: the rail becomes the `Filters` bottom sheet (§2.14 sheet), results 2-up then 1-up.
 
 ### 3.4 Vehicle detail (VDP)
 
-`padding:22px 24px 60px`; back `btn-ghost`; grid `1.35fr 1fr`, `gap:30px`.
+`max-width:1280px; padding:24px 16px|24px 64px`; back ghost ("← All cars"); grid `1.35fr 1fr`, `gap:30px`.
 
-Left column (`min-width:0`): main image button (`aspect-ratio:4/3`, count tag) · thumbnail strip with arrows (`margin-top:14px`) · Specifications (`h3` + bordered white list, rows `padding:11px 14px`, key 58% / value 500 tabular, 8 rows) · Features (`h3` + `tag-neutral` chips, 12px, `padding:5px 11px`, `gap:7px`) · Dealer description (`h3` + 14px/1.65 75% paragraph, `max-width:66ch`).
+Left: gallery (§2.9) · Specifications (`h2` 22px + a 14px-radius white list, rows `padding:12px 16px` on `#efefec` rules, key muted / value 600 tabular) · Dealer description.
 
-Right column is `position:sticky; top:84px; align-self:start`, `gap:16px`: year plate + `h1-vdp` title + 13px 58% summary · PriceBlock/Plate · CTA stack (44px `Enquire now` `btn-primary`, then a `gap:8px` row of 40px `Call dealer` + `♡ Save`) · dealer card (42px logo tile, name, "city · n cars listed", divider row with verified plate + `View dealership →`) · 12px 50% trust note.
+Right, sticky under the header: year chip (+ Reserved pill when reserved) · `h1-vdp` · summary · listed date · PriceBlock · **Enquire now** (44px full-width `btn-primary`, with "Requires login…" note; the form opens inline in a 16px-radius card with read-only name and verified mobile — R64/R65/R68) or, when reserved, the Reserved banner + "Browse available cars" · **Save / Saved** full-width secondary · dealer card (`.card`, 20px padding: 42px logo tile, name, location, `VERIFIED DEALER` chip, "View dealership →") · trust note.
 
-768: single column — gallery, title, price, CTAs, dealer card, then specs/features/description; the right column loses its sticky. 375: same, thumbs `flex:0 0 88px`, CTA stack full-width and pinned as a 64px bottom action bar (`Enquire` + `Call`) with `--shadow-lg`.
+The prototype's Call and EMI actions are not part of production and are not drawn. Mobile: single column with the sticky bottom enquiry bar.
 
 ### 3.5 Dealer directory (`/dealers`)
 
-`padding:26px 24px 60px`. Order: breadcrumb · `h1-page` "Dealers near {city}" + count · 14px 65% intro (`max-width:62ch`) · filter row (`gap:8px`: 260px name search + city toggle chips) · grid `repeat(auto-fill, minmax(290px,1fr))`, `gap:18px`.
+`max-width:1280px; padding:28px 16px|24px 64px`. Breadcrumb · `h1-page` + count · 14px muted intro · filters (R43 typeahead, then district button or `.dd-chip` town toggles with counts and "Clear n towns") · grid `repeat(auto-fill, minmax(270px,1fr))`, `gap:18px`, `items-stretch`.
 
-Directory card: 104px `.duotone` cover with bottom divider · body `padding:14px`, `gap:10px` — 44px logo tile pulled up `margin-top:-34px` (`z-index:2`), `h4-card` name, 12px 55% "city, Tamil Nadu · n years", verified plate right · 12px 65% blurb · 3 `tag-neutral` service tags at 10px · divider row: bold tabular car count, "from ₹x" at 12px 55%, `View inventory →` ghost right. Whole card → portfolio.
+**Directory card (R81):** fixed height **330px**, 16px radius, `--shadow-sm`, hover border `#c9c7c1` + `--shadow-md`.
 
-768: 2-up. 375: 1-up; search input full-width above the city chips.
+- 112px cover (`coverUrl` or a named image slot) with a white "YARD VERIFIED" pill top-right when verified.
+- 48px white logo tile straddling the cover edge (`margin-top:-24px`), `VERIFIED DEALER` chip on the same row.
+- Name 17px/800 (`line-clamp-2`), "town, state · n years" 12px muted.
+- Up to three service tags (first `tag-accent`, rest `tag-neutral`).
+- Footer on a 1px top divider: "n cars listed" 13px/700 tabular, "from ₹x" right-aligned.
+
+**No tagline and no "View inventory →"** on this card. The whole card is one link to `/dealers/[slug]` — the name's anchor stretched over the card — with the focus ring on the card. The tagline still exists everywhere else (API, onboarding, dealer profile, portfolio header).
+
+768: 2-up. 375: 1-up.
 
 ### 3.6 Dealer portfolio (`/dealers/[slug]`)
 
-1. **Header block** (`background:#fff`, bottom divider): back ghost · 170px `.blueprint.duotone` cover (bottom border removed) · identity row `padding:18px 24px 22px`, `gap:18px`: 78px logo tile pulled up `margin-top:-46px` (`z-index:2`), `h1-page` name + verified plate, 14px 62% address, 13px mono phone, right cluster `Enquire with dealer` (`btn-primary`) + `Call dealership` · stat row `repeat(auto-fit, minmax(150px,1fr))`, `gap:12px`, 4 blueprint tiles (`stat-xs`).
-2. **Info row** — `padding:24px 24px 0`, grid `repeat(auto-fit, minmax(260px,1fr))`, `gap:16px`: About (paragraph + service tags on a top divider), Contact (4 key/value rows on 1px rules), Location (map slot `min-height:120px` + `Get directions`).
-3. **Inventory** — `padding:26px 24px 60px`, grid `234px 1fr`, `gap:22px`. Sidebar sticky `top:84px`: "Filter inventory" `h6` + `Clear` ghost, Budget slider, then Fuel / Body type / Transmission groups with per-dealer counts (zero-count rows at `opacity:0.4`). Right: heading row (`h2-sm` "Inventory" + "n of m cars" + sort select), chip row, grid `repeat(auto-fill, minmax(250px,1fr))`, `gap:16px` of `VehicleCard/Compact`, plus its own empty state.
+1. **Header** (white, bottom divider): back ghost · identity row: 78px logo tile (60px mobile), `h1-portfolio` name + `VERIFIED DEALER` chip, the **tagline** (16px/500, R25), address · 440px `.blueprint` cover (340 / 240 at smaller widths).
+2. **Info row** — `repeat(auto-fit, minmax(260px,1fr))`, `gap:16px`: Dealership details `.card` (18px padding, key/value rows on `#efefec` rules, service tags) and the Location card (map + Get directions).
+3. **Inventory** — grid `234px 1fr`: sticky filter rail (as §3.3, per-dealer counts) and the results (`h2` "Inventory" + count, sort, applied chips, vehicle cards, pagination).
 
-768: info row 2-up; inventory sidebar becomes a `Filters` sheet; cards 2-up. 375: everything 1-up; cover 120px; logo tile 60px, `margin-top:-34px`; stat tiles 2-up.
+A dealer's phone never appears here (invariant: only the reveal endpoint returns one), so the prototype's Call / Enquire-with-dealer buttons and phone line are not drawn.
 
 ### 3.7 Saved cars
 
-`padding:26px 24px 60px`: breadcrumb · `h1-page` + count + `Clear all` ghost right · 14px 65% note · list `flex-direction:column; gap:12px` of `VehicleCard/List`. Empty state per §2.20 → `Browse n cars`. Persist to `localStorage` (device-scoped, no account).
+`max-width:1280px`: `h1-page` + intro · groups (R75) **Available**, **Reserved**, **No longer available**, each an 18px/800 heading with a count and a note, then a vehicle-card grid (`minmax(240px,1fr)`, `items-stretch`). Server-backed and account-gated (R74/R75); signed-out visitors are sent to `/login?returnTo=/saved`. Empty state per §2.20.
 
-768: rows keep the 250px image. 375: rows stack — image full-width `aspect-ratio:4/3`, body below, price left-aligned under the title, actions full-width.
+### 3.8 Enquiry success / history
 
-### 3.8 Enquiry success
+Enquiry confirmation is inline on the VDP (R65). **My enquiries** (`/enquiries`, R68): `max-width:760px`, `h1-page` + intro, tabs as production, list of `.card`s (18px padding): vehicle title (link while listed, otherwise plain with "no longer listed"), dealer name, status tag, message, and a 12px "Sent on …" line on a top divider.
 
-`max-width:640px; margin:0 auto; padding:80px 24px`. Blueprint card `padding:34px`: 44×44 `--ok-bg` / `--ok` check tile · `h1-page` "Enquiry sent to {dealer}" · 15px 68% paragraph with the mono reference · vehicle summary strip (1px border, `padding:14px`, `gap:14px`, 74×56 thumb) · action row `gap:8px` (`Keep browsing` primary, `Back to the car` secondary). 375: `padding:44px 16px`, card `padding:22px`.
+### 3.9 Login (`/login`)
 
-### 3.9 Dealer auth
+**R81** split layout, `EntryShell`:
 
-Centred column `max-width:560px; padding:52px 24px 70px` on `#fff`. Brand row (logo plate + "Dealers-Drive for dealers" + `← Back to marketplace` ghost right), `margin-bottom:34px`.
+- Left (from `lg`): `#f7f7f5` story panel — eyebrow "Welcome to Dealers-Drive", `story` headline (Find a car. / Connect directly. / Drive forward.), 14px muted line, and a white 22px-radius `--shadow-lg` card listing Verified dealers / Direct enquiries / Local expertise. No photograph (the prototype's is a fixture).
+- Right: `AuthShell` column (`max-width:560px`): brand mark + "Dealers-Drive" + "← Back to marketplace"; the page's `h1` "Login" is visually hidden; then the **compact switch** (§2.4) right-aligned, `Customer` selected by default (`?as=dealer` selects Dealer).
+- **Customer**: `h2` "Customer login" (30px/800) · intro · production phone OTP flow (Send OTP → six cells → Verify) · first sign-in adds "Your number is verified" + Name + Create account (R62).
+- **Dealer**: `h2` "Dealer login" · intro · error/unconfigured banners · **Continue with Google** as a 48px `btn-primary` with the Google mark in a white circle · "Use mobile number instead" (underlined text button, `aria-expanded`, `aria-controls`) disclosing the "or" rule and the production phone flow, focusing the mobile field. When Google is not configured the phone form shows immediately.
+- Below both: "Trouble signing in? Contact support" → `/contact`.
 
-- **Sign in**: `h1-page` "Sign in to your dealer account" · 15px 65% line · phone field (`+91` prefix) · 44px `btn-primary` "Send OTP" · row of `Use email instead` / `Trouble signing in?` ghosts · divider + `Create a dealer account` secondary.
-- **Sign up**: same shell; phone + work email; "Send OTP"; 12px 55% centred note; divider + `Sign in instead`.
-- **OTP**: `h1-page` "Enter the OTP" · context line · six 52×58 cells `gap:9px` · optional `--err-bg` error banner · 44px primary (`Verify and sign in` / `Verify and continue`) · footer row `← Change number` / `Resend OTP (00:24)`.
-
-Sign-in OTP → dealer dashboard. Sign-up OTP → onboarding step 1. 375: `padding:32px 16px`; OTP cells 44×52, `gap:6px`.
-
-**R63**: this is now the Dealer tab of `/login` — `Continue with Google`, an `or` rule, then the phone field and `Send OTP`, with the OTP state as drawn above. The Customer tab is the same phone flow with one extra state for a first sign-in: "Your number is verified", a single `Name` field and `Create account`. Tabs are the §2.4 `.seg`.
+Behaviour — OTP, Google linking, provisional dealers, onboarding detection, post-login routing, return intents — is production's (R58–R63). 375: story panel hidden, form only.
 
 ### 3.10 Dealer onboarding
 
-Same centred shell. Stepper at top (`margin-bottom:22px`). Steps: 1 Account (2-col `minmax(200px,1fr)` fields) · 2 Dealership information (full-width name/legal/address rows + 2-col city/state/pincode/landline) · 3 Business verification (GSTIN + PAN mono fields, then 3 document rows: 1px dashed border, `padding:13px`, 32px status tile, label + status line, right action button) · 4 Review (blueprint panel, `Under review` warn tag, `h1-app` heading, two 14px 68% paragraphs). Footer: `Back` secondary + 42px `btn-primary` (`Continue` / `Submit for verification` / `Go to dashboard`). 375: all fields 1-up.
+Production flow and fields (R37–R61) in the `AuthShell` column with the revamped inputs, stepper (§2.16), document rows and review panel. Footer: `Back` secondary + 42px `btn-primary`.
 
 ### 3.11 Dealer console shell
 
-Sidebar 214px, `flex:none`, `background:#fff`, right divider, `padding:18px 12px`, `gap:18px`: brand row, `.dd-nav-item` list (Dashboard, Inventory, Add vehicle, Enquiries, Billing, Dealer profile), then a `margin-top:auto` blueprint credits card (`background:#eef2ff`, `padding:12px`: 11px uppercase `accent-800` label, `stat-sm` count, `btn-primary btn-block` "Buy credits").
+Sidebar **224px**, sticky full-height, `background:#fbfbfa`, right divider, `padding:24px 16px 20px`, `gap:28px`: brand mark + "Dealer console" (16px/800) · `.dd-nav-item` list (Dashboard, Inventory, Add vehicle, Enquiries, Dealer profile) · `margin-top:auto` white credits card (14px radius, `padding:16px`: eyebrow "Listing credits", 28px/800 tabular balance, held-credits line).
 
-Top bar sticky `top:0; z-index:15; height:58px; background:#fff`, bottom divider, `padding:0 20px`: dealership name (16px/600) + `Verified` tag + right cluster (credits count 12px tabular + `Add vehicle` primary). Toast slots directly under it.
+Top bar sticky, **70px** (64px mobile), `#fff`, bottom divider, `padding:0 32px` (16px mobile): dealership name (16px/800, truncates) + status tag (`tag-ok` when active, `tag-warn` otherwise) · right: credits count (13px tabular), `Add vehicle` primary (hidden on mobile), Sign out.
 
-768/375: sidebar → bottom tab bar, 5 items, 56px tall, `background:#fff`, top divider, active item `#2f55dd`; the credits card moves into Billing.
+Below `md`: sidebar → bottom tab bar (§2.17), main content padded 60px at the bottom.
 
 ### 3.12 Dealer dashboard
 
-`padding:22px`: `h1-app` greeting + 13px 58% subline · stat grid `repeat(auto-fit, minmax(178px,1fr))`, `gap:14px`, 4 blueprint stat cards · two-panel grid `repeat(auto-fit, minmax(300px,1fr))`, `gap:18px`: **Views this week** (white card, heading row + 132px bar chart, bars `flex:1`, `gap:9px`, `background:#2f55dd`, 10px day labels) and **Recent enquiries** (heading + `All enquiries →` ghost, 4 rows `padding:10px 0` on 1px rules: 30px avatar, name 13px/500, vehicle 11px 55% ellipsis, time 11px 45%, `Call` secondary 11px). 375: stats 2-up, panels stacked, chart height 110px.
+`padding:30px 32px` (22px 16px mobile): `h1-app` greeting + subline + "+ Add vehicle" · alerts (warn banners) · listing-status stat row (`minmax(160px,1fr)`, each tile links to its inventory tab) · metric stat row (`minmax(178px,1fr)`; _Available credits_ is the **inverse** tile) · two panels (`minmax(300px,1fr)`): **Views this week** (`.card`, 132px bar chart, bars `#0c0c0b` with 6px top radius) and **Recent enquiries** (`.card`, rows with 30px round initials, name 14px/700, vehicle, time, Call secondary). 375: stats 2-up, panels stacked.
 
 ### 3.13 Dealer inventory
 
-`padding:22px`: `h1-app` + count · optional rejection banner · desktop table with columns Vehicle / Price / Status / Views / Enq. / Expires / actions (`Edit` ghost right). Statuses per §2.5. 768 and below: card list `gap:10px` — 70×52 thumb + name/price + status tag top-right, then a divider row with views · enquiries · expiry.
+`h1-app` + count + Add vehicle · status tabs as **`.dd-chip`s with counts** (All, Draft, Pending review, Changes requested, Active, Reserved, Sold, Withdrawn), horizontally scrollable · search form (370px input + Search secondary + Clear) · desktop: the production table (§2.13: Vehicle / Price / Status / Updated / Actions) with lifecycle actions per row (R70: Reserve / Mark sold / Withdraw / Reactivate / Relist / Open / Edit, with confirmation dialogs) · below `md`: `.card` list (16px padding, `--shadow-sm`: title 15px/800, registration mono, status tag, summary, price 17px/800, reason, actions) · cursor pagination "Show more".
+
+The prototype's photo cards, views and sort are not drawn — the inventory response does not carry them.
 
 ### 3.14 Add vehicle
 
-**Step 0 — Registration.** One plate field, styled as a number plate, plus a
-`Look up` button. `Enter the details instead` is present **before** anything
-fails, not only after: a dealer who already knows their import is not on VAHAN
-should not have to be refused first. Every failure — no RC, provider down, over
-the cap — lands on the same manual form with the plate carried across.
+Production's five-step wizard (R45–R47): **Registration → Vehicle basics → Vehicle details → Pricing → Review**, no dealer photo upload (Dealers-Drive arranges photography after submission). `max-width:860px`, `h1-app`, stepper, white `.card` steps with the revamped inputs; footer Back / Save draft / Continue or Submit. RC lookup (step 0 plate lookup, confidence chips, records panel) remains deferred by R46; when it lands it takes this styling.
 
-**Step 1 — Confirm (was Basics).** The same seven fields, pre-filled. Each
-resolved field renders its confidence: `EXACT` is stated plainly, `LIKELY` gets
-an amber "Best match — please check" chip, `NONE` is an empty control. Only
-`LIKELY` is badged — badging `NONE` would put a warning beside a field the
-dealer simply has to fill, which reads as an error they caused.
-
-Variant and transmission are **always** empty, and the copy says why: RC trim
-strings are truncated, and a registration certificate does not record a gearbox.
-
-**The records panel.** Two treatments, deliberately not one component with a
-flag:
-
-- _Dealer and moderator_ (`ReportPanel`) — itemised challans with dates,
-  amounts and a court flag; blacklist reasons; a `Check again` button on step 4.
-- _Buyer_ (`ReportSummary`) — verdict chips, aggregate counts, offence types and
-  years. No challan references, no exact dates, no registration number.
-
-Both carry the source and the `as of` date in the footer, at 11px but never
-hidden: "no challans found in government records as of 12 Feb" and "this car has
-no challans" are different claims, and only the first is one we make.
-
-A vehicle whose challan feed was silent renders `Records unavailable` in neutral
-— never a green `None found`.
-
-`padding:22px; max-width:860px`: `h1-app` · stepper · white card `padding:20px`.
-
-- Step 1 Basics: `repeat(auto-fit, minmax(190px,1fr))` — Make, Model, Variant, Year, Fuel, Transmission, Body type.
-- Step 2 Details: KM driven, Owners, Colour, Registration (mono), Insurance, Location.
-- Step 3 Photos: grid `repeat(auto-fill, minmax(150px,1fr))`, `gap:10px`; primary tile spans 2 columns with a 1px `#2f55dd` border and the `PRIMARY` plate; 3 secondary tiles; one dashed drop tile ("Drag photos here / or browse"); below, an upload progress row (12px labels + 4px `neutral-300` track with `#2f55dd` fill).
-- Step 4 Price & review: price + negotiable + full-width description; then a blueprint summary panel (`background:#eef2ff`) with title, price/km/fuel line and "Credits after publish" right.
-
-Footer inside the card: 1px top divider, `padding-top:16px`, `gap:9px` — `Back` secondary, `Save draft` secondary (`margin-left:auto`), `Continue` / `Submit for approval` primary. 375: fields 1-up, photo grid 2-up, footer buttons full-width stacked.
-
-Submit → **Submitted** screen: `padding:40px 22px; max-width:640px`, blueprint card `padding:28px` with `Pending approval` warn tag, `h1-vdp` heading, 14px 68% paragraph, `View inventory` primary + `Open admin queue (demo)` secondary.
+Submit → Submitted panel (`.blueprint`, 28px padding) with the pending tag, heading, paragraph and "View inventory".
 
 ### 3.15 Dealer enquiries
 
-`padding:22px`: `h1-app` · `.seg` tabs (New / Contacted / Closed / Spam with counts) · list `gap:10px`. Each card `gap:10px`: identity row (34px avatar, 15px/600 name, mono phone, `tag-accent` source, 11px 45% time) · 13px 72% message line with the vehicle bolded · action row on a 1px top divider: `Call {phone}` primary, `Email`, `Mark contacted`, `Close` ghost right. 375: `Call` becomes full-width 44px and first in the action row.
+`h1-app` + count · status tabs as `.dd-chip`s (New / Contacted / Closed / Spam with counts) · list `gap:10px` of `.card`s (18px padding): 34px round initials, 16px/800 name, mono phone, time · vehicle line (link while listed) with registration · message · action row on a top divider: `Call {phone}` primary (full-width 44px on mobile) and the production status transitions (R66).
 
 ### 3.16 Dealer billing
 
-`padding:22px`: `h1-app` · blueprint balance card (`padding:18px`: 11px uppercase 52% label, `stat-xl` 44px count, 13px 60% line) · `h3-sm` "Buy credits" + pack grid `repeat(auto-fit, minmax(190px,1fr))`, `gap:14px` (each: optional `tag-accent` badge, `stat` count, "credits", 18px price, 11px per-listing rate, `btn-primary btn-block`; the 25-pack card takes `border-color:#2f55dd`) · two-panel grid `repeat(auto-fit, minmax(290px,1fr))`, `gap:20px`: **Credit history** (rows `padding:10px 13px` on 1px rules: 38px mono delta in `--ok`/`--err`, label, date 11px 45%, "bal n" 12px 60%) and **Payment history** (table: Invoice mono / Date / Amount tabular / Status tag / `PDF` ghost). 375: packs 2-up, panels stacked.
+Not landed — the credit-pack and payment screens of the MVP spec are excluded from the revamp (R47 defers billing). The credit balance appears on the dashboard and in the console sidebar only.
 
 ### 3.17 Admin console
 
-Ground `#f5f5f8`. Sidebar 206px, `background:#101f4f`, `color:#fff`, `padding:18px 10px`, `gap:16px`: mono `DD` chip + "Admin console", nav items (Dashboard / Listings / Dealers / Payments / Configuration), `margin-top:auto` 11px 0.55 note. Top bar 54px `background:#fff`, bottom divider, `padding:0 20px`: 14px/600 screen title + right cluster (warn tag "n awaiting review", 12px 55% operator email). Toast under it.
+Admin keeps its production structure and inherits the revamp through tokens: neutral grounds, 10px controls, 14–16px cards and tables, pill tags, rounded dialogs. The configuration screen's "Platform settings" list (14px-radius panel) now includes the five **Support** keys of §3.18 and the two **Homepage hero image** keys of §3.2.
 
-- **Dashboard**: `padding:20px`; stat grid `repeat(auto-fit, minmax(158px,1fr))`, `gap:12px`, 6 plain stat boxes; then a moderation-queue panel (`padding:16px`) with `h3-sm`, `Open queue →` ghost and a 13px 60% line.
-- **Moderation queue**: `h1-app`-sized 26px title + pending count; table Vehicle / Dealer / Price / Location / Submitted / actions (`Review` secondary + `Approve` primary, `margin-right:6px`); empty state "Queue clear".
-- **Review listing**: `padding:20px; max-width:1000px`; back ghost; grid `repeat(auto-fit, minmax(290px,1fr))`, `gap:20px`. Left `min-width:0`: main submitted photo with count tag + 92px thumbnail strip with 26px arrows. Right: 24px title, 14px tabular price/city/dealer line, 7-row spec box, action row (`Approve listing` primary, `Reject` secondary, `Request changes` secondary), 12px 55% consequence note.
-- **Dealers**: table Dealer / City / Status / Vehicles / Active / Joined / `Manage` ghost; statuses Active `ok`, Pending `warn`, Suspended `err`.
+### 3.18 Contact & support (`/contact`) — new in R81
 
-Admin is desktop-first: at 768 the sidebar collapses to a top select and tables scroll horizontally inside a 1px-bordered container; below 375 no dedicated design — reuse the 768 layout.
+`max-width:1180px; padding:52px 24px 72px` (40px 16px mobile): `eyebrow` "We're here to help" · `h1-page` "Contact Dealers-Drive" · 15px muted intro · grid of three `.card`s (24px padding; 3-up from `md`, 1-up below):
+
+| Card             | Content                                                                                                                                                                           |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Customer support | 40px icon tile · heading · one line of help · Email and Phone (`mailto:` / `tel:` links, 800, underlined)                                                                         |
+| Dealer support   | the same, for dealerships                                                                                                                                                         |
+| Chat on WhatsApp | icon · heading · line · `Chat in WhatsApp ↗` primary opening in a new tab (`noopener noreferrer`); when not configured, a disabled button + "WhatsApp chat is not available yet." |
+
+Every value comes from `GET /v1/config/public` → `support`, built from the admin-editable keys `support.customerEmail`, `support.customerPhone`, `support.dealerEmail`, `support.dealerPhone`, `support.whatsapp` (number → `https://wa.me/…`, or an `https:` URL). An empty or unusable value falls back to the deployment's `SUPPORT_EMAIL` / `SUPPORT_PHONE`. Linked from the footer's Support column and the login's "Trouble signing in?".
+
+### 3.19 Footer
+
+`background:#fbfbfa`, top divider, `max-width:1440px`, four columns from `lg` (`2fr 1fr 1fr 1fr`): brand mark + trust sentence + social row (36px 10px-radius icon buttons, only configured networks, R44) · **Buy a car** (Buy cars, Dealer directory, Saved cars) · **For dealers** (Dealer login → `/login?as=dealer`, note) · **Support** (**Contact & support** → `/contact`, then the support email and phone). Column titles are `eyebrow`s; links 13px/700. Bottom bar: © year · "not a party to any sale" disclaimer.
 
 ---
 
@@ -509,71 +473,67 @@ Admin is desktop-first: at 768 the sidebar collapses to a top select and tables 
 
 ### 4.1 Shadows
 
-Only three elements carry one, all `--shadow-lg`: the mobile-frame edge, the city dropdown, the dialog. **Never** shadow cards, stat tiles, image frames, plates, tables, headers, sidebars, badges, buttons, the bottom sheet panel, or the lightbox. Depth is expressed with 1px `--color-divider` hairlines and white-on-`#f4f5f7` contrast.
+Shadows are soft and sparing (§1.6): `--shadow-sm` on clickable cards and floating small controls, `--shadow-md` on menus, popovers, dialogs and card hover, `--shadow-lg` on the login story card and the mobile enquiry bar. Never shadow tables, stat tiles, form panels, headers, sidebars, badges or buttons (except the save button and gallery arrows, which float over imagery). Borders carry the structure.
 
 ### 4.2 Tabular numerals
 
-`font-variant-numeric: tabular-nums` is mandatory on: all prices and EMIs, KM readings, credit counts and balances, stat values, filter counts, table numeric columns, invoice amounts, ledger deltas and balances, city counts, gallery counters, pincode, and the "from ₹x" line. Never on prose.
+`font-variant-numeric: tabular-nums` is mandatory on: all prices, KM readings, credit counts and balances, stat values, filter counts, table numeric columns, district/town counts, gallery counters, phone numbers, and the "from ₹x" line. Never on prose.
 
-### 4.3 Square corners
+### 4.3 Rounded corners
 
-Radius 0 is the product default. The only rounded things are the inherited `.btn` / `.input` / `.card` / `.seg` (4px), `.tag` (3px) and `.dialog` (7px). Never round an image frame, thumbnail, plate, avatar tile, stat tile, badge, banner, table, or the lightbox chrome. Never `border-radius: 50%` — avatars are squares.
+Rounded is the default (§1.5): 10px controls, 14–16px cards and panels, 20px dialogs, pills for tags/chips/avatars. Only full-bleed bands and the lightbox stage are square. Images inside a rounded frame are clipped by the frame (`overflow:hidden`), never rounded independently of it.
 
 ### 4.4 Blueprint marks
 
-If an element has `.blueprint`, it must have all four `<i class="corner tl|tr|bl|br">` children. Do not use `.blueprint` on plain content cards — reserve it for the hero search block, hero/gallery figures, body-type tiles, stat and balance cards, the price block, review-summary panels, the under-review panel, and empty states.
+Retired. `.blueprint` is a rounded framed surface (§2.6); do not reintroduce corner marks or crosshairs.
 
-### 4.5 Plate motif
+### 4.5 Brand mark and chips
 
-Exactly four uses: logo, year badge, verified chip, `PRIMARY` photo marker. Do not apply it to prices, buttons, section headings, statuses, or dealer names. The left band is always `--color-accent` at 5px, full height, never rounded.
+The registration-plate motif is retired. The only branded mark is the black 30px "DD" tile (§2.2 `logo`). Year, verified and "how it works" labels are neutral chips; do not apply the brand mark to anything but the logo, and do not colour chips with the accent.
 
 ### 4.6 Spacing: between vs within
 
-- Between major page sections: **44px** (customer marketing), **26px** (app screens), **22px** page padding in the consoles.
-- Between cards in a grid: **16–18px** (14px for tight stat/tile grids, 12px for admin stats).
-- Within a card: **8–11px** stack gap, **12–14px** between form fields, `padding:12–20px`.
-- Inside a row group (tags, chips, buttons): **6–9px**.
-- Divider-separated groups inside a card: 1px top border + **14px** `padding-top`.
-  Always use flex/grid `gap` — never margins between siblings, never whitespace text nodes.
+- Between major page sections: **40–48px** (marketing), **18–30px** (app screens).
+- Between cards in a grid: **16–18px** (14px for stat grids, 8px for chip rows).
+- Within a card: **8–12px** stack gap, **14–16px** between form fields, `padding:16–24px`.
+- Divider-separated groups inside a card: 1px top border + **10–14px** `padding-top`.
+  Always use flex/grid `gap` — never margins between siblings.
 
 ### 4.7 Button variants
 
-- `btn-primary` — one per view, the single forward action (Search cars, Enquire now, Send OTP, Continue, Submit for approval, Approve listing, Buy). Never two side by side except in dialog action rows.
-- `btn-secondary` — alternate paths of equal weight (Call dealer, Save, Back, Save draft, Review, Request changes) and toolbar controls.
-- `btn-ghost` — navigation and low-stakes affordances (View all →, Back to results, Clear all, PDF, Manage, Edit).
-- `btn-destructive` — outlined, for Reject in a row context. Solid `--err` only inside the reject dialog's confirm.
-- Never a `btn-primary` inside a table row; use `Approve`-style primary only in the moderation queue, where it is the queue's whole purpose.
+- `btn-primary` (black) — the single forward action per view (Send OTP, Continue with Google, Enquire now, Send enquiry, Add vehicle, Submit, Approve). Avoid two side by side outside dialog action rows.
+- `btn-secondary` (white, bordered) — alternate paths and toolbar controls (Save, Search, Back, Save draft, Reserve, Mark sold).
+- `btn-ghost` — navigation and low-stakes text actions (View all →, ← All cars, Clear, Open, Edit, View dealership →).
+- `btn-destructive` — outlined red for Withdraw/Reject in row context; solid `--color-err` only inside a destructive dialog's confirm.
 
 ### 4.8 Colour discipline
 
-Cobalt is the only decorative colour. Semantic colours appear only as status: green = published/captured/positive, amber = pending/under review/negative delta, red = rejected/failed/destructive. Never use a semantic colour for emphasis or decoration. Body-size accent text must use `--color-accent-700`, not `--color-accent` (contrast).
+The product is neutral; black is the action colour and blue appears **only** as the focus ring. Semantic colours appear only as status: green = active/verified/positive, amber = pending/reserved/changes requested/negative delta, red = rejected/failed/destructive. Never use a semantic colour for emphasis or decoration.
 
 ### 4.9 Moderation invariants
 
-A listing is public **only** in `ACTIVE`. `PENDING` and `REJECTED` must never appear in the customer catalogue, in search, on a portfolio, on the homepage, or in a saved-cars list. Approval consumes the held credit and is irreversible in the MVP; rejection requires a reason of ≥ 6 characters, which is stored and surfaced verbatim to the dealer with an `Edit & resubmit` action. Resubmission returns the listing to `PENDING`, never straight to `ACTIVE`.
+A listing reaches the public catalogue only through moderation. **R71:** `ACTIVE` and `RESERVED` are publicly visible (reserved cars greyed, labelled and non-navigable, never enquirable); `SOLD` and `WITHDRAWN` leave every public surface but stay in saved cars and enquiry history. `DRAFT`, `PENDING_REVIEW`, `CHANGES_REQUESTED` and `REJECTED` never appear publicly. Rejection and changes-requested reasons are surfaced verbatim to the dealer. Listing status changes only through the lifecycle transitions.
 
 ### 4.10 Buyer anonymity
 
-No customer auth anywhere. Saved cars, city choice, and search query live in `localStorage`/URL state only. Never gate the catalogue, a VDP, a portfolio, or an enquiry form behind a sign-in.
-
-**R62 superseded the enquiry half of this.** Customers sign in with their phone (no email, no password), and an enquiry needs a signed-in customer so the number a dealer receives is a proved one. Browsing is unchanged: the catalogue, a VDP and a portfolio are never gated, and saved cars and the district stay device-local.
+Browsing is never gated: the catalogue, a VDP and a portfolio need no account. **R62/R74:** customers sign in with their phone (no email, no password) to enquire and to save cars; saved cars live on the server. The district choice and search query stay in the URL/device.
 
 ### 4.11 Counts are derived
 
-Every count shown to a user (cars available, dealer inventory, filter counts, city counts, "from ₹x", queue count, saved count) is computed from the live catalogue filtered to `ACTIVE` — never a stored or hard-coded number.
+Every count shown (cars available, dealer inventory, filter counts, district/town counts, "from ₹x", status tab counts) is computed from live data — never stored or hard-coded. Public counts mean **available** cars (R71); the homepage shows no count at all (R78).
 
 ### 4.12 Grid overflow
 
-Any grid or flex column that contains an image strip, a table, or ellipsised text needs `min-width: 0`; strips need `overflow-x: auto` on the track, not the container. This is what keeps thumbnails inside the gallery column.
+Any grid or flex child that contains an image strip, a table, a chip row or ellipsised text needs `min-width: 0`; strips and chip rows scroll on the track (`overflow-x: auto`), not the page. No page may scroll horizontally at 320px.
 
 ### 4.13 Typography
 
-Sentence case everywhere. All-caps only at `micro`/`label-*` sizes with `0.08–0.14em` tracking, and in the plate. Headings use `--font-heading` (Cabinet Grotesk, fallback Inter); all UI text, numbers and prices use Inter; only technical identifiers (GSTIN, PAN, phone, invoice, RTO, plate, index badges) use mono. Add `text-wrap: pretty` to every multi-line paragraph. Long-form copy caps at `62–66ch`.
+Sentence case everywhere. All-caps only for `eyebrow`s (0.08–0.12em tracking) and the short chip labels (`VERIFIED DEALER`, `YARD VERIFIED`, `HOW IT WORKS`). One family — Manrope — for headings, UI, numbers and prices; mono only for technical identifiers (GSTIN, PAN, registration numbers, OTP-verified phone in forms). `text-wrap: pretty` on multi-line paragraphs; long-form copy caps at `52–68ch`.
 
 ### 4.14 Currency and locale
 
-`₹` prefix, Lakh notation to 2 decimals (`₹6.45 Lakh`); raw amounts use `toLocaleString('en-IN')` grouping (`42,180 km`, `₹10,000`). Phones as `+91 98400 12345`. Dates as `02 Aug 2026`. EMI as `₹48,900/month` (long) or `₹11,700/mo` (card).
+`₹` prefix; production composes price strings (`₹5,95,000`, "from ₹3.50 Lakh") — the UI renders the API's labels rather than re-formatting. Grouping `en-IN` (`42,180 km`). Phones as `+91 98400 12345` (masked `+91 98XXXXXX12` in the account menu). Dates as `19 Sep 2026`.
 
 ### 4.15 Accessibility
 
-Minimum touch target 44×44 on mobile — the 30×30 save button and 26–30px arrows must grow to 44px below 768. Focus is never removed, only restyled. Every icon-only control needs an `aria-label`. The lightbox and dialog trap focus and restore it on close. Status is never conveyed by colour alone — the badge text always carries it.
+Minimum touch target 44×44 on mobile for primary actions, menu items and tab-bar items. Focus is never removed, only restyled (§2); whole-card links show the ring on the card. Every icon-only control has an `aria-label`; decorative icons and the login switch track are `aria-hidden`. Menus support arrow keys, Home/End and Escape with focus restore; dialogs and the lightbox trap focus and restore it on close; disclosures expose `aria-expanded`/`aria-controls`. Status is never conveyed by colour alone — badge text, a Reserved label, an underline or a weight change always carries it. Text contrast meets WCAG AA (§1.2).

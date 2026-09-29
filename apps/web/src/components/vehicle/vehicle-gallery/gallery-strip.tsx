@@ -49,7 +49,7 @@ export function GalleryStrip({ images, onOpen }: GalleryStripProps) {
             type="button"
             onClick={(event) => onOpen(index, event.currentTarget)}
             aria-label={VEHICLE_GALLERY_TEXT.openThumb(index, images.length)}
-            className="relative aspect-[4/3] flex-[0_0_108px] cursor-zoom-in overflow-hidden border border-(--color-divider) bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-accent) max-sm:flex-[0_0_88px]"
+            className="relative aspect-[4/3] flex-[0_0_108px] cursor-zoom-in overflow-hidden rounded-[10px] border border-(--color-divider) bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-focus) max-sm:flex-[0_0_88px]"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={image.url} alt="" loading="lazy" className="h-full w-full object-cover" />

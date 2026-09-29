@@ -35,7 +35,7 @@ export function AccountStep({
     <fieldset hidden={hidden} className="m-0 border-0 p-0">
       <legend className="sr-only">{ONBOARDING_TEXT.accountLegend}</legend>
 
-      <h1 className="font-heading text-[34px] font-semibold leading-[1.1] tracking-[-0.02em]">
+      <h1 className="font-heading text-[34px] font-extrabold leading-[1.1] tracking-[-0.02em]">
         {ONBOARDING_TEXT.accountHeading}
       </h1>
       <p className="mb-[20px] mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.accountIntro}</p>

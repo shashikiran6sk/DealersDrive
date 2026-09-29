@@ -18,11 +18,15 @@ export function AuthShell({
   className,
 }: AuthShellProps) {
   return (
-    <main className={cn('mx-auto w-full max-w-[560px] px-6 pb-[70px] pt-[52px]', className)}>
-      <div className="mb-[34px] flex items-center gap-[9px]">
+    <main
+      className={cn('mx-auto w-full max-w-[560px] px-5 pb-[70px] pt-[40px] sm:px-8', className)}
+    >
+      <div className="mb-[30px] flex flex-wrap items-center gap-x-[10px] gap-y-2">
         <Plate size="logo">DD</Plate>
-        <span className="font-heading text-[15px] font-semibold">{eyebrow}</span>
-        <Link href="/" className="ml-auto text-[13px] text-(--color-accent) no-underline">
+        <span className="font-heading text-[16px] font-extrabold tracking-[-0.02em]">
+          {eyebrow}
+        </span>
+        <Link href="/" className="ml-auto text-[13px] font-bold text-(--color-ink) hover:underline">
           {AUTH_SHELL_TEXT.backToMarketplace}
         </Link>
       </div>

@@ -9,11 +9,11 @@ export interface PriceBlockProps {
 
 export function PriceBlock({ priceLabel, negotiabilityLabel }: PriceBlockProps) {
   return (
-    <Blueprint className="flex flex-col gap-[6px] bg-white p-4">
-      <span className="text-[11px] font-semibold tracking-[0.12em] uppercase ink-subtle">
+    <Blueprint className="flex flex-col gap-[6px] bg-white p-5">
+      <span className="text-[11px] font-bold tracking-[0.12em] uppercase ink-subtle">
         {PRICE_BLOCK_TEXT.eyebrow}
       </span>
-      <span className="font-heading text-[36px] leading-none font-bold tnum">
+      <span className="font-heading text-[36px] leading-none font-extrabold tnum">
         {priceLabel ?? PRICE_BLOCK_TEXT.onRequest}
       </span>
       {negotiabilityLabel ? (

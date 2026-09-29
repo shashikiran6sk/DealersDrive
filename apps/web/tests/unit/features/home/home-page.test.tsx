@@ -243,6 +243,8 @@ describe('the homepage search — the /cars search box, pointed at /cars', () =>
     await homeSearch();
     const paths = apiGetParsed.mock.calls.map((call) => String(call[1]));
     expect(paths.some((path) => path.startsWith('/v1/locations'))).toBe(false);
-    expect(paths.every((path) => path.endsWith('limit=4'))).toBe(true);
+    // The one other read is the public config, for the admin-set hero photograph (R81).
+    const others = paths.filter((path) => !path.endsWith('limit=4'));
+    expect(others).toEqual(['/v1/config/public']);
   });
 });

@@ -2,6 +2,8 @@
 
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
+import { cn } from '@/lib/cn';
+
 import { LOGIN_AUDIENCES, LOGIN_TEXT } from './login.constants';
 import type { LoginAudience } from './login.types';
 
@@ -43,28 +45,54 @@ export function LoginTabs({ initial, customer, dealer }: LoginTabsProps) {
       <div
         role="tablist"
         aria-label={LOGIN_TEXT.tabsLabel}
-        className="seg w-full"
+        className="flex items-center justify-end gap-[10px]"
         onKeyDown={onKeyDown}
       >
-        {LOGIN_AUDIENCES.map((audience) => (
-          <button
-            key={audience}
-            ref={(element) => {
-              tabs.current[audience] = element;
-            }}
-            type="button"
-            role="tab"
-            id={`login-tab-${audience}`}
-            aria-controls={`login-panel-${audience}`}
-            aria-selected={active === audience}
-            tabIndex={active === audience ? 0 : -1}
-            className="seg-opt min-h-[44px] flex-1 justify-center"
-            onClick={() => {
-              select(audience);
-            }}
-          >
-            {LOGIN_TEXT.tabs[audience]}
-          </button>
+        {LOGIN_AUDIENCES.map((audience, index) => (
+          <span key={audience} className="contents">
+            {index === 1 ? (
+              <span
+                aria-hidden="true"
+                data-slot="switch"
+                className={cn(
+                  'relative h-[26px] w-[44px] flex-none cursor-pointer rounded-full border border-(--color-divider) p-[3px] transition-colors',
+                  active === 'dealer' ? 'bg-(--color-ink)' : 'bg-(--color-neutral-300)',
+                )}
+                onClick={() => {
+                  select(active === 'dealer' ? 'customer' : 'dealer');
+                }}
+              >
+                <span
+                  className={cn(
+                    'block h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform',
+                    active === 'dealer' && 'translate-x-[18px]',
+                  )}
+                />
+              </span>
+            ) : null}
+            <button
+              ref={(element) => {
+                tabs.current[audience] = element;
+              }}
+              type="button"
+              role="tab"
+              id={`login-tab-${audience}`}
+              aria-controls={`login-panel-${audience}`}
+              aria-selected={active === audience}
+              tabIndex={active === audience ? 0 : -1}
+              className={cn(
+                'min-h-[44px] rounded-[8px] px-[4px] text-[13px] transition-colors',
+                active === audience
+                  ? 'font-extrabold text-(--color-ink)'
+                  : 'font-bold ink-muted hover:text-(--color-ink)',
+              )}
+              onClick={() => {
+                select(audience);
+              }}
+            >
+              {LOGIN_TEXT.tabs[audience]}
+            </button>
+          </span>
         ))}
       </div>
 

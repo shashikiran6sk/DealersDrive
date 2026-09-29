@@ -1425,6 +1425,50 @@ browser. `firstNameOf` is gone with the greeting. **Tests**
 `customer-account-actions.test.ts`. **Sandbox** `Layout/CustomerHeader`
 (`SignedInCustomer`, `SignedInCustomerMobile`).
 
+### R81 — the UI revamp: tokens, shell, cards, login, and C108–C110
+
+**R81** re-skins the product to the revamped prototype (neutral-first, Manrope,
+black primary actions, rounded surfaces) without changing behaviour. Most of it
+is `globals.css`: the accent scale now maps to neutrals, `--radius-*` grow, the
+`.blueprint` corner marks are hidden, and `.dd-chip` is the pill used for town,
+status and home shortcuts. Components that changed shape:
+
+- **C093/C107 `HeaderAccount` / `AccountMenu`** — a 40px black avatar; the menu
+  items are unchanged. **Saved cars** leaves the top bar: it is reached from the
+  account menu and the footer.
+- **`CustomerHeader`** — Buy cars and Dealers only; active link underlined as
+  well as dark (not colour alone).
+- **`VehicleCard`** — `h-full`, a fixed image ratio, a two-line title slot, a
+  two-line meta slot and the dealer strip pinned to the bottom, so every card
+  in a row lines up whatever its data.
+- **`DirectoryCard`** — **no tagline and no "View inventory →"**. Still one
+  stretched link over the whole card; a focus ring is drawn on the card while
+  its link has keyboard focus. Fixed height is now 330px.
+- **`LoginTabs`** — a compact Customer ⟷ Dealer switch; still a `tablist` with
+  two `tab`s, arrow keys, Home and End. **`DealerLogin`** leads with Google and
+  discloses the phone form behind "Use mobile number instead" (shown at once
+  when Google is not configured).
+- **`StatCard`** — `inverse` for the dashboard's credits tile.
+- **Homepage hero** — the "How it works" trust panel is replaced by **C111
+  `HeroBanner`**, a single full-width photograph banner. The photograph is the
+  `image` prop: the committed `home-hero.webp` by default, or the photograph
+  set in `/admin/config` (`home.heroImageUrl` / `home.heroImageAlt`) — see
+  `docs/code/web/features/home.md`.
+
+| Component          | Props                                          | States                                                              |
+| ------------------ | ---------------------------------------------- | ------------------------------------------------------------------- |
+| C108 `SupportPage` | `support`                                      | default · WhatsApp not configured · fallback · long address · phone |
+| C109 `SupportCard` | `icon`, `title`, `body`, `headingId`, children | default                                                             |
+| C110 `EntryShell`  | `children`                                     | desktop (story panel) · phone width (form only)                     |
+| C111 `HeroBanner`  | `image`, children                              | no photograph (dark ground) · with photograph · phone width         |
+
+`/contact` renders `SupportPage` from `GET /v1/config/public`'s `support`
+object, which reads five `support.*` keys an operator edits in `/admin/config`
+and falls back to `SUPPORT_EMAIL` / `SUPPORT_PHONE`. **Tests**
+`apps/web/tests/unit/features/support/support-page.test.tsx`,
+`apps/api/tests/unit/modules/config/config.service.test.ts`. **Sandbox**
+`Layout/SupportPage`, `Auth/EntryShell`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

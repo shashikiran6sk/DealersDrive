@@ -15,7 +15,7 @@ export function ListingStats({ stats }: { stats: DashboardResponse['listingStats
         <Link
           key={stat.key}
           href={stat.href}
-          className="no-underline hover:[&>*]:border-(--color-accent)"
+          className="rounded-[14px] no-underline hover:[&>*]:border-(--color-neutral-400)"
         >
           <StatCard label={stat.label} value={String(stat.value)} />
         </Link>

@@ -37,9 +37,10 @@ const DEALER: DealerCard = {
 
 describe('DirectoryCard', () => {
   /**
-   * The heading's anchor is stretched over the whole card, and "View inventory"
-   * is a lifted affordance rather than a second anchor — a nested link would be
-   * invalid HTML and would announce the same destination twice.
+   * The heading's anchor is stretched over the whole card, so the whole card
+   * opens the portfolio. The revamp drops the separate "View inventory →"
+   * affordance entirely — and there is still exactly one anchor: a nested link
+   * would be invalid HTML and would announce the same destination twice.
    */
   it('is one link to the portfolio, not two', () => {
     render(<DirectoryCard dealer={DEALER} />);
@@ -48,6 +49,22 @@ describe('DirectoryCard', () => {
     expect(links).toHaveLength(1);
     expect(links[0]).toHaveAttribute('href', '/dealers/sri-lakshmi-motors');
     expect(links[0]).toHaveTextContent('Sri Lakshmi Motors');
+    expect(links[0]?.className).toContain('after:inset-0');
+    expect(screen.queryByText(/view inventory/i)).toBeNull();
+  });
+
+  /**
+   * The one deliberate content change of the UI revamp: the directory card no
+   * longer carries the dealership's one-line tagline. The field is untouched —
+   * it is still on the API payload, still edited in onboarding and the dealer
+   * profile, and still the portfolio header's line of prose
+   * (`portfolio-page.test.tsx`). Only this card stops rendering it.
+   */
+  it('does not render the tagline, even when the dealership wrote one', () => {
+    render(<DirectoryCard dealer={DEALER} />);
+
+    expect(DEALER.tagline).toBeTruthy();
+    expect(screen.queryByText(/hatchbacks under ₹6 lakh/i)).toBeNull();
   });
 
   it('renders the API-composed strings rather than recomposing them', () => {
@@ -133,11 +150,13 @@ describe('DirectoryCard', () => {
     expect(screen.getByText('C')).toBeInTheDocument();
   });
 
-  it('drops the tagline and the service row entirely when there are none', () => {
-    render(<DirectoryCard dealer={{ ...DEALER, tagline: null, services: [] }} />);
+  it('drops the service row entirely when there are none', () => {
+    const { container } = render(
+      <DirectoryCard dealer={{ ...DEALER, tagline: null, services: [] }} />,
+    );
 
-    expect(screen.queryByText(/hatchbacks under/i)).toBeNull();
     expect(screen.queryByText('RC transfer')).toBeNull();
+    expect(container.querySelectorAll('.tag')).toHaveLength(0);
   });
 
   /**
@@ -149,7 +168,8 @@ describe('DirectoryCard', () => {
    * one dealership writing a longer tagline still grew every card on the page.
    * What is asserted now is that the *same* height class is on the card in
    * every data state; jsdom computes no layout, so the sandbox's
-   * `SameDataTwice` is what measures the result (400px, both grids).
+   * `SameDataTwice` is what measures the result (330px since the revamp dropped
+   * the tagline, both grids).
    */
   const heightOf = (dealer: DealerCard): string =>
     render(<DirectoryCard dealer={dealer} />).container.querySelector('article')?.className ?? '';
@@ -162,8 +182,8 @@ describe('DirectoryCard', () => {
       services: ['In-house workshop', 'RC transfer assistance', 'Bank loan tie-ups'],
     });
 
-    expect(sparse).toContain('h-[400px]');
-    expect(full).toContain('h-[400px]');
+    expect(sparse).toContain('h-[330px]');
+    expect(full).toContain('h-[330px]');
     // And no floor left behind to imply the height is negotiable.
     expect(sparse).not.toContain('min-h-');
   });
@@ -173,13 +193,12 @@ describe('DirectoryCard', () => {
    * variable in its row of the card, and each is checked where it is applied
    * rather than through a rendered pixel jsdom does not compute.
    */
-  it('clamps the name, clamps the tagline, and clips the prose box', () => {
+  it('clamps the name and clips the prose box', () => {
     const { container } = render(
       <DirectoryCard dealer={{ ...DEALER, brandName: 'Sri Venkateswara '.repeat(4) }} />,
     );
 
     expect(container.querySelector('h3')?.className).toContain('line-clamp-2');
-    expect(container.querySelector('[data-slot="prose"] p')?.className).toContain('line-clamp-2');
     // `min-h-0` is what lets the box clip instead of pushing the footer down.
     // Selected by slot rather than by `.overflow-hidden`: R28 put that class on
     // the article as well, so the bare selector now matches the card first.

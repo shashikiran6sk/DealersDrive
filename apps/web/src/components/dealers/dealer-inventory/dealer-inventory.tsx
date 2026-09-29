@@ -49,7 +49,7 @@ export function DealerInventory({
       <section
         id={INVENTORY_ANCHOR}
         aria-labelledby="inventory-heading"
-        className="mx-auto max-w-[1280px] scroll-mt-[84px] px-6 pt-[26px] pb-[60px]"
+        className="mx-auto max-w-[1280px] scroll-mt-[84px] px-4 sm:px-6 pt-[26px] pb-[60px]"
       >
         <div
           className={hasStock ? 'grid gap-[22px] lg:grid-cols-[234px_minmax(0,1fr)]' : undefined}
@@ -73,7 +73,7 @@ export function DealerInventory({
           <div className="min-w-0">
             <div className="mb-[12px] flex flex-wrap items-center gap-3">
               <div className="flex flex-wrap items-baseline gap-3">
-                <h2 id="inventory-heading" className="text-[28px]">
+                <h2 id="inventory-heading" className="text-[24px]">
                   {DEALER_INVENTORY_TEXT.heading}
                 </h2>
                 <span className="text-[14px] ink-muted tnum" role="status">

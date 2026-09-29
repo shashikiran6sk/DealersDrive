@@ -7,7 +7,7 @@ import { VDP_DEALER_TEXT } from './vdp-dealer-card.constants';
 
 export function VdpDealerCard({ dealer }: { dealer: PublicVehicleDetail['dealer'] }) {
   return (
-    <section aria-labelledby="vdp-dealer-heading" className="card gap-[10px] bg-white p-4">
+    <section aria-labelledby="vdp-dealer-heading" className="card gap-[12px] bg-white p-5">
       <span className="text-[11px] tracking-[0.12em] uppercase ink-subtle">
         {VDP_DEALER_TEXT.soldBy}
       </span>

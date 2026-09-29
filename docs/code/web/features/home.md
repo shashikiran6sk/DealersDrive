@@ -36,3 +36,44 @@ sections, without the rows.
 
 Renders nothing when a row is empty, so the homepage never shows a heading
 with an empty grid beneath it.
+
+## `apps/web/src/features/home/hero-banner/hero-banner.tsx`
+
+### `export function HeroBanner(props)`
+
+The homepage's single full-width hero (**R81**). It replaced the "How it works"
+trust panel: one photograph behind the headline, the `/cars` search box and the
+two shortcuts. A left-to-right black scrim (a flat 55% one on phones) keeps the
+white copy legible whatever the photograph is.
+
+**The photograph is one prop, `image`, on purpose.** The layout never decides
+which picture it shows, so making it editable is a data change, not a redesign.
+`image: null` draws the dark ground and no `<img>`, so the page is never a
+broken-image icon while a photograph is being chosen. The suggestion panel of
+the search box hangs below the banner, which is why the clipping
+(`overflow-hidden`) is on the background layer and not on the section.
+
+### `apps/web/src/features/home/hero-banner/hero-banner.constants.ts` — `HOME_HERO_IMAGE`
+
+The committed default: `apps/web/public/images/home-hero.webp`, a showroom
+scene of a salesperson with an Indian family, supplied for R81. It is what the
+homepage shows whenever no operator has set a photograph.
+
+### `apps/web/src/features/home/hero-banner/utils.ts` — `heroImageFrom(configured)`
+
+**The photograph is admin-editable.** Two platform-config keys, edited in
+`/admin/config` under _Platform settings_: `home.heroImageUrl` (an `https:`
+URL, or a path on the web app such as `/images/home-hero-diwali.webp`) and
+`home.heroImageAlt` (its description). The API checks the URL on the way out
+(`heroImage()` in `config.service.ts`: anything else — `http:`, `data:`,
+`javascript:`, protocol-relative, a relative path — is `null`) and publishes it
+as `heroImage` on `GET /v1/config/public`.
+
+`heroImageFrom` picks the configured photograph when there is one and the
+committed default otherwise, and keeps the default's description if the
+operator left theirs blank, so the `<img>` is never unlabelled. Saving the
+setting revalidates `CONFIG_TAG` (the admin config action already does), so the
+next homepage render uses it.
+
+The URL must point at an image already hosted somewhere reachable by browsers;
+uploading the file from the admin screen is not part of this.

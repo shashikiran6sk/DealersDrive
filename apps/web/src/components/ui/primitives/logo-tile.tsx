@@ -11,7 +11,7 @@ export function LogoTile({ initials, size = 42, className }: LogoTileProps) {
     <span
       aria-hidden="true"
       className={cn(
-        'grid flex-none place-items-center border border-(--color-divider) bg-(--color-accent-100) font-heading font-bold text-(--color-accent-800)',
+        'grid flex-none place-items-center rounded-[10px] border border-(--color-divider) bg-(--color-neutral-100) font-heading font-extrabold text-(--color-ink)',
         className,
       )}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.3) }}

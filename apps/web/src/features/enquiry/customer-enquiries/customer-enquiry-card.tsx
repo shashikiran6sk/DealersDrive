@@ -7,18 +7,18 @@ import type { CustomerEnquiryCardProps } from './customer-enquiries.types';
 
 export function CustomerEnquiryCard({ enquiry }: CustomerEnquiryCardProps) {
   return (
-    <li className="card flex flex-col gap-[8px] bg-white p-[14px]">
+    <li className="card flex flex-col gap-[10px] bg-white p-[18px]">
       <div className="flex flex-wrap items-start justify-between gap-[10px]">
         <div className="min-w-0">
           {enquiry.vehicle.href ? (
             <Link
               href={enquiry.vehicle.href}
-              className="text-[15px] font-semibold text-(--color-ink)"
+              className="text-[16px] font-extrabold text-(--color-ink) hover:underline"
             >
               {enquiry.vehicle.title}
             </Link>
           ) : (
-            <div className="text-[15px] font-semibold">
+            <div className="text-[16px] font-extrabold">
               {enquiry.vehicle.title}{' '}
               <span className="text-[12px] font-normal ink-subtle">
                 {CUSTOMER_ENQUIRIES_TEXT.noLongerListed}
@@ -32,7 +32,10 @@ export function CustomerEnquiryCard({ enquiry }: CustomerEnquiryCardProps) {
       <p className="m-0 text-[13px] whitespace-pre-line">
         {enquiry.message ?? <span className="ink-subtle">{CUSTOMER_ENQUIRIES_TEXT.noMessage}</span>}
       </p>
-      <time dateTime={enquiry.createdAt} className="text-[11px] ink-faint tnum">
+      <time
+        dateTime={enquiry.createdAt}
+        className="border-t border-(--color-divider) pt-[9px] text-[12px] ink-muted tnum"
+      >
         {CUSTOMER_ENQUIRIES_TEXT.sentOn(enquiry.createdLabel)}
       </time>
     </li>

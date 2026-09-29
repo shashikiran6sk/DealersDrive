@@ -32,7 +32,7 @@ export default async function AdminConfigPage() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-[17px]">Platform settings</h2>
-        <div className="border border-(--color-divider) bg-white">
+        <div className="overflow-hidden rounded-[14px] border border-(--color-divider) bg-white">
           {inUse.map((entry) => (
             <ConfigRow key={entry.key} entry={entry} />
           ))}
@@ -48,7 +48,7 @@ export default async function AdminConfigPage() {
               They become editable in the section above on the day something reads them.
             </p>
           </div>
-          <div className="border border-(--color-divider) bg-white">
+          <div className="overflow-hidden rounded-[14px] border border-(--color-divider) bg-white">
             {dormant.map((entry) => (
               <ConfigRow key={entry.key} entry={entry} />
             ))}

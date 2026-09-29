@@ -15,8 +15,8 @@ export function SavedList({ saved }: SavedListProps) {
   return (
     <div className="flex flex-col gap-[26px]">
       <div>
-        <h1 className="text-[32px]">{SAVED_LIST_TEXT.title}</h1>
-        <p className="text-[13px] ink-muted">{SAVED_LIST_TEXT.intro}</p>
+        <h1 className="text-[26px] sm:text-[30px]">{SAVED_LIST_TEXT.title}</h1>
+        <p className="mt-[6px] text-[14px] ink-muted">{SAVED_LIST_TEXT.intro}</p>
       </div>
 
       {saved.data.length === 0 ? (
@@ -42,15 +42,15 @@ export function SavedList({ saved }: SavedListProps) {
               className="flex flex-col gap-[12px]"
             >
               <div>
-                <h2 id={`saved-${group.key}`} className="text-[20px]">
+                <h2 id={`saved-${group.key}`} className="text-[18px]">
                   {group.title}{' '}
-                  <span className="text-[14px] font-normal ink-subtle tnum">
+                  <span className="text-[14px] font-medium ink-subtle tnum">
                     {SAVED_LIST_TEXT.count(rows.length)}
                   </span>
                 </h2>
                 {group.note ? <p className="text-[13px] ink-muted">{group.note}</p> : null}
               </div>
-              <div className="grid gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+              <div className="grid items-stretch gap-[16px] [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
                 {rows.map((row) => (
                   <VehicleCard key={row.vehicle.slug} vehicle={row.vehicle} />
                 ))}

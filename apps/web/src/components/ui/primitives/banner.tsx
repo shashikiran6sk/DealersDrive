@@ -21,10 +21,14 @@ export interface BannerProps {
 export function Banner({ tone, title, children, action, className }: BannerProps) {
   return (
     <div
-      className={cn('border px-[14px] py-[10px] text-[13px]', TONE_CLASS[tone], className)}
+      className={cn(
+        'rounded-[12px] border px-[14px] py-[11px] text-[13px]',
+        TONE_CLASS[tone],
+        className,
+      )}
       role="status"
     >
-      {title ? <div className="mb-[3px] text-[14px] font-semibold">{title}</div> : null}
+      {title ? <div className="mb-[3px] text-[14px] font-bold">{title}</div> : null}
       {children ? <div className="ink-body">{children}</div> : null}
       {action ? <div className="mt-[9px]">{action}</div> : null}
     </div>

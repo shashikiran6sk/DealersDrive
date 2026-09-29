@@ -32,7 +32,10 @@ export function HeaderAccount() {
 
   if (!account) {
     return (
-      <Link href={HEADER_ACCOUNT_TEXT.loginHref} className="btn btn-primary">
+      <Link
+        href={HEADER_ACCOUNT_TEXT.loginHref}
+        className="btn btn-primary min-h-[40px] rounded-full px-[18px]"
+      >
         {HEADER_ACCOUNT_TEXT.login}
       </Link>
     );

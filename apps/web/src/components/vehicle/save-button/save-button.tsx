@@ -37,9 +37,9 @@ export function SaveButton({ slug, title, variant = 'overlay', className }: Save
         'transition-colors duration-150 disabled:cursor-progress',
         isSaved
           ? 'border-(--color-accent) text-(--color-accent)'
-          : 'border-(--color-divider) text-(--color-ink) hover:border-(--color-accent)',
+          : 'border-(--color-divider) text-(--color-ink) hover:border-(--color-neutral-400)',
         variant === 'overlay'
-          ? 'h-[36px] w-[36px] rounded-full text-[18px] leading-none'
+          ? 'h-[36px] w-[36px] rounded-[10px] text-[18px] leading-none shadow-sm'
           : 'btn btn-secondary h-[40px] px-[14px] text-[14px]',
         className,
       )}

@@ -1,6 +1,6 @@
 import { Plate } from '@/components/ui/primitives';
 
-import { BUYER_LINKS, DEALER_LINKS, FOOTER_TEXT } from './customer-footer.constants';
+import { BUYER_LINKS, DEALER_LINKS, FOOTER_TEXT, SUPPORT_LINKS } from './customer-footer.constants';
 import type { CustomerFooterProps } from './customer-footer.types';
 import { FooterColumn } from './footer-column';
 import { FooterLinkItem } from './footer-link-item';
@@ -8,12 +8,14 @@ import { SocialRow } from './social-row';
 
 export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerFooterProps) {
   return (
-    <footer className="border-t border-(--color-divider) bg-white">
-      <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-9 px-6 py-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-12">
+    <footer className="border-t border-(--color-divider) bg-(--color-sidebar)">
+      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-9 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-12 lg:px-10">
         <div className="flex flex-col gap-4 sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center gap-[9px]">
+          <div className="flex items-center gap-[10px]">
             <Plate size="logo">DD</Plate>
-            <span className="font-heading text-[15px] font-bold">{FOOTER_TEXT.brand}</span>
+            <span className="font-heading text-[16px] font-extrabold tracking-[-0.02em]">
+              {FOOTER_TEXT.brand}
+            </span>
           </div>
 
           <p className="max-w-[46ch] text-[12px] leading-[1.6] ink-subtle">{FOOTER_TEXT.trust}</p>
@@ -37,16 +39,25 @@ export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerF
         </FooterColumn>
 
         <FooterColumn title={FOOTER_TEXT.supportColumn}>
+          {SUPPORT_LINKS.map((link) => (
+            <FooterLinkItem key={link.href} {...link} />
+          ))}
           {supportEmail ? (
             <li>
-              <a href={`mailto:${supportEmail}`} className="text-[13px] ink-secondary">
+              <a
+                href={`mailto:${supportEmail}`}
+                className="text-[13px] ink-secondary [overflow-wrap:anywhere] hover:text-(--color-ink)"
+              >
                 {supportEmail}
               </a>
             </li>
           ) : null}
           {supportPhone ? (
             <li>
-              <a href={`tel:${supportPhone}`} className="text-[13px] ink-secondary tnum">
+              <a
+                href={`tel:${supportPhone}`}
+                className="text-[13px] ink-secondary tnum hover:text-(--color-ink)"
+              >
                 {supportPhone}
               </a>
             </li>
@@ -55,7 +66,7 @@ export function CustomerFooter({ social, supportEmail, supportPhone }: CustomerF
       </div>
 
       <div className="border-t border-(--color-rule)">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-5 gap-y-2 px-6 py-4 text-[11px] ink-faint">
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-5 gap-y-2 px-4 py-5 text-[12px] ink-muted sm:px-6 lg:px-10">
           <span className="tnum">{FOOTER_TEXT.copyright(new Date().getFullYear())}</span>
           <span>{FOOTER_TEXT.disclaimer}</span>
         </div>

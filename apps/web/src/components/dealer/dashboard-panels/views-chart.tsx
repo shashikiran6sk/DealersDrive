@@ -2,9 +2,9 @@ import type { DashboardResponse } from '@dealers-drive/contracts';
 
 export function ViewsChart({ chart }: { chart: DashboardResponse['viewsChart'] }) {
   return (
-    <section className="card gap-3 p-[14px]">
+    <section className="card gap-3 p-5">
       <div className="flex items-baseline gap-3">
-        <h2 className="text-[19px]">{chart.title}</h2>
+        <h2 className="text-[18px]">{chart.title}</h2>
         <span className="ml-auto text-[12px] ink-muted tnum">{chart.totalLabel}</span>
       </div>
 
@@ -12,7 +12,7 @@ export function ViewsChart({ chart }: { chart: DashboardResponse['viewsChart'] }
         {chart.series.map((point) => (
           <div key={point.date} className="flex h-full flex-1 flex-col justify-end">
             <div
-              className="bg-(--color-accent)"
+              className="rounded-t-[6px] bg-(--color-accent)"
               style={{ height: `${String(point.heightPct)}%` }}
               role="img"
               aria-label={`${point.day}: ${String(point.views)} views`}

@@ -22,7 +22,7 @@ export function StateHeading({
       {code ? <Plate>{code}</Plate> : null}
       <h3
         id={`state-${group.key}`}
-        className="font-heading text-[14px] font-semibold uppercase tracking-[0.04em]"
+        className="font-heading text-[14px] font-extrabold uppercase tracking-[0.04em]"
       >
         {group.state ?? DISTRICT_PICKER_TEXT.unknownState}
       </h3>

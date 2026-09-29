@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { env } from '../../../../src/config/env.js';
-import { createConfigService } from '../../../../src/modules/config/config.service.js';
+import {
+  createConfigService,
+  heroImage,
+  supportContacts,
+} from '../../../../src/modules/config/config.service.js';
 import type { PlatformConfigService } from '../../../../src/platform/config/platform-config.js';
 
 /**
@@ -158,5 +162,115 @@ describe('social links', () => {
     expect((await service.publicConfig()).social).toEqual([
       { network: 'facebook', label: 'Facebook', href: 'https://facebook.com/dealersdrive' },
     ]);
+  });
+});
+
+/**
+ * The Contact & support page's addresses. Like the social row, each value is
+ * typed into `/admin/config` and rendered into an `href`, so it is checked on
+ * the way out; an empty or unusable entry falls back to the deployment's own
+ * support contact rather than rendering nothing or something unsafe.
+ */
+describe('support contacts', () => {
+  it('falls back to the deployment support contact until an operator sets one', async () => {
+    const { support } = await createConfigService({ config: config() }).publicConfig();
+
+    expect(support).toEqual({
+      customer: { email: env.SUPPORT_EMAIL, phone: env.SUPPORT_PHONE },
+      dealer: { email: env.SUPPORT_EMAIL, phone: env.SUPPORT_PHONE },
+      whatsappHref: null,
+    });
+  });
+
+  it('carries the customer and dealer contacts an operator configured', async () => {
+    const service = createConfigService({
+      config: config({
+        'support.customerEmail': 'help@example.org',
+        'support.customerPhone': '+91 98400 12345',
+        'support.dealerEmail': 'dealers@example.org',
+        'support.dealerPhone': '044-2345-6789',
+      }),
+    });
+
+    expect((await service.publicConfig()).support).toMatchObject({
+      customer: { email: 'help@example.org', phone: '+91 98400 12345' },
+      dealer: { email: 'dealers@example.org', phone: '044-2345-6789' },
+    });
+  });
+
+  it.each([['javascript:alert(1)'], ['not an email'], ['a@b'], ['"x"@example.org']])(
+    'refuses %j as an email and keeps the fallback',
+    (value) => {
+      expect(supportContacts([value]).customer.email).toBe(env.SUPPORT_EMAIL);
+    },
+  );
+
+  it.each([['tel:+91'], ['call us'], ['12'], ['+91 98400 12345; drop']])(
+    'refuses %j as a phone number and keeps the fallback',
+    (value) => {
+      expect(supportContacts(['', value]).customer.phone).toBe(env.SUPPORT_PHONE);
+    },
+  );
+
+  it('turns a WhatsApp number into a wa.me chat link', () => {
+    expect(supportContacts(['', '', '', '', '+91 98400 12345']).whatsappHref).toBe(
+      'https://wa.me/919840012345',
+    );
+  });
+
+  it('keeps an https chat URL and refuses any other scheme', () => {
+    expect(supportContacts(['', '', '', '', 'https://wa.me/919840012345']).whatsappHref).toBe(
+      'https://wa.me/919840012345',
+    );
+    expect(supportContacts(['', '', '', '', 'http://wa.me/919840012345']).whatsappHref).toBeNull();
+    expect(supportContacts(['', '', '', '', 'javascript:alert(1)']).whatsappHref).toBeNull();
+    expect(supportContacts(['', '', '', '', '']).whatsappHref).toBeNull();
+  });
+});
+
+/**
+ * The homepage hero photograph (**R81**). Like the social row it is typed
+ * into `/admin/config` and rendered into a `src` on the busiest page in the
+ * product, so the value is checked here: an `https:` URL or a path on the web
+ * app, and nothing else. `null` hands the choice back to the web app's
+ * committed default.
+ */
+describe('hero image', () => {
+  it('is null until an operator sets one, so the web app keeps its own photograph', async () => {
+    const { heroImage: hero } = await createConfigService({ config: config() }).publicConfig();
+
+    expect(hero).toBeNull();
+  });
+
+  it('carries an https URL and its description', async () => {
+    const service = createConfigService({
+      config: config({
+        'home.heroImageUrl': 'https://media.example.org/hero.webp',
+        'home.heroImageAlt': 'A dealer with a family in a showroom',
+      }),
+    });
+
+    expect((await service.publicConfig()).heroImage).toEqual({
+      src: 'https://media.example.org/hero.webp',
+      alt: 'A dealer with a family in a showroom',
+    });
+  });
+
+  it('accepts a path on the web app', () => {
+    expect(heroImage('/images/home-hero-diwali.webp', '')).toEqual({
+      src: '/images/home-hero-diwali.webp',
+      alt: '',
+    });
+  });
+
+  it.each([
+    ['http://media.example.org/hero.webp'],
+    ['javascript:alert(1)'],
+    ['data:image/png;base64,AAAA'],
+    ['//evil.example/hero.webp'],
+    ['images/hero.webp'],
+    ['/images/hero.webp?x="><script>'],
+  ])('refuses %j', (value) => {
+    expect(heroImage(value, 'alt')).toBeNull();
   });
 });

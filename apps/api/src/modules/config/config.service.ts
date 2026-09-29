@@ -1,4 +1,9 @@
-import type { PublicConfig, SocialLink } from '@dealers-drive/contracts';
+import type {
+  HeroImageConfig,
+  PublicConfig,
+  SocialLink,
+  SupportContacts,
+} from '@dealers-drive/contracts';
 
 import { env } from '../../config/env.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
@@ -25,6 +30,51 @@ function socialHref(value: string): string | null {
   }
 }
 
+const SUPPORT_KEYS = [
+  'support.customerEmail',
+  'support.customerPhone',
+  'support.dealerEmail',
+  'support.dealerPhone',
+  'support.whatsapp',
+] as const;
+
+const EMAIL_PATTERN = /^[^\s@<>()"',;:]+@[^\s@<>()"',;:]+\.[a-z]{2,}$/i;
+const PHONE_PATTERN = /^\+?[0-9][0-9 -]{5,18}[0-9]$/;
+const WHATSAPP_DIGITS = /^[0-9]{8,15}$/;
+
+function supportEmail(value: string): string {
+  return EMAIL_PATTERN.test(value) ? value : env.SUPPORT_EMAIL;
+}
+
+function supportPhone(value: string): string {
+  return PHONE_PATTERN.test(value) ? value : env.SUPPORT_PHONE;
+}
+
+function whatsappHref(value: string): string | null {
+  if (value === '') return null;
+  const digits = value.replace(/[\s()+-]/g, '');
+  if (WHATSAPP_DIGITS.test(digits)) return `https://wa.me/${digits}`;
+  return socialHref(value);
+}
+
+const SITE_PATH = /^\/(?!\/)[A-Za-z0-9._~/-]+$/;
+
+export function heroImage(url: string, alt: string): HeroImageConfig | null {
+  if (url === '') return null;
+  const src = SITE_PATH.test(url) ? url : socialHref(url);
+  return src === null ? null : { src, alt };
+}
+
+export function supportContacts(values: readonly string[]): SupportContacts {
+  const [customerEmail = '', customerPhone = '', dealerEmail = '', dealerPhone = '', chat = ''] =
+    values;
+  return {
+    customer: { email: supportEmail(customerEmail), phone: supportPhone(customerPhone) },
+    dealer: { email: supportEmail(dealerEmail), phone: supportPhone(dealerPhone) },
+    whatsappHref: whatsappHref(chat),
+  };
+}
+
 export function createConfigService({ config }: ConfigDeps) {
   return {
     async publicConfig(): Promise<PublicConfig> {
@@ -36,6 +86,9 @@ export function createConfigService({ config }: ConfigDeps) {
         rcLookup,
         vehicleReport,
         socialValues,
+        supportValues,
+        heroUrl,
+        heroAlt,
       ] = await Promise.all([
         config.number('listing.minPhotos'),
         config.number('listing.durationDays'),
@@ -44,6 +97,9 @@ export function createConfigService({ config }: ConfigDeps) {
         config.boolean('feature.rcLookup'),
         config.boolean('feature.vehicleReport'),
         Promise.all(SOCIAL_NETWORKS.map((entry) => config.string(entry.key))),
+        Promise.all(SUPPORT_KEYS.map((key) => config.string(key))),
+        config.string('home.heroImageUrl'),
+        config.string('home.heroImageAlt'),
       ]);
 
       const social: SocialLink[] = [];
@@ -64,6 +120,8 @@ export function createConfigService({ config }: ConfigDeps) {
         rcLookupEnabled: rcLookup,
         vehicleReportEnabled: vehicleReport,
         social,
+        support: supportContacts(supportValues),
+        heroImage: heroImage(heroUrl, heroAlt),
       };
     },
   };

@@ -16,9 +16,9 @@ export default async function DealerProfilePage() {
   ]);
 
   return (
-    <div className="mx-auto flex max-w-[900px] flex-col gap-[18px] p-[22px]">
+    <div className="mx-auto flex max-w-[900px] flex-col gap-[18px] px-4 py-[22px] md:px-8 md:py-[30px]">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-[26px]">Dealer profile</h1>
+        <h1 className="text-[25px] tracking-[-0.035em] md:text-[30px]">Dealer profile</h1>
         <StatusTag tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'}>
           {dealer.statusLabel}
         </StatusTag>

@@ -36,7 +36,7 @@ export function DealerSuggestionRow({
     >
       <span className="flex min-w-0 items-center gap-[10px]">
         <span
-          className="flex h-[28px] w-[28px] shrink-0 items-center justify-center bg-(--color-accent-200) text-[11px] font-bold text-(--color-accent-800) font-heading"
+          className="flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-[8px] bg-(--color-accent-200) text-[11px] font-extrabold text-(--color-accent-800) font-heading"
           aria-hidden="true"
         >
           {item.initials}

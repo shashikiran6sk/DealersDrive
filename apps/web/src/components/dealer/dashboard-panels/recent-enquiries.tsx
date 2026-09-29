@@ -11,9 +11,9 @@ export function RecentEnquiries({
   enquiries: DashboardResponse['recentEnquiries'];
 }) {
   return (
-    <section className="card gap-0 p-[14px]">
+    <section className="card gap-0 p-5">
       <div className="mb-2 flex items-baseline gap-3">
-        <h2 className="text-[19px]">{RECENT_ENQUIRIES_TEXT.heading}</h2>
+        <h2 className="text-[18px]">{RECENT_ENQUIRIES_TEXT.heading}</h2>
         <ButtonLink
           href={RECENT_ENQUIRIES_TEXT.viewAllHref}
           variant="ghost"
@@ -33,7 +33,7 @@ export function RecentEnquiries({
           >
             <Avatar initials={enquiry.initials} size={30} />
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-medium">{enquiry.name}</div>
+              <div className="text-[14px] font-bold">{enquiry.name}</div>
               <div className="truncate text-[11px] ink-subtle">
                 {enquiry.vehicleTitle ?? RECENT_ENQUIRIES_TEXT.generalEnquiry}
               </div>

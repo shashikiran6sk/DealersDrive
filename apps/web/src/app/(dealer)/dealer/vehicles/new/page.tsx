@@ -8,9 +8,11 @@ export const metadata: Metadata = { title: VEHICLE_WIZARD_TEXT.pageTitle };
 
 export default function NewVehiclePage() {
   return (
-    <div className="flex max-w-[860px] flex-col gap-[18px] p-[22px]">
+    <div className="flex max-w-[860px] flex-col gap-[18px] px-4 py-[22px] md:px-8 md:py-[30px]">
       <div>
-        <h1 className="text-[28px]">{VEHICLE_WIZARD_TEXT.pageTitle}</h1>
+        <h1 className="text-[25px] tracking-[-0.035em] md:text-[30px]">
+          {VEHICLE_WIZARD_TEXT.pageTitle}
+        </h1>
         <p className="mt-1 max-w-[62ch] text-[13px] ink-muted">{VEHICLE_WIZARD_TEXT.intro}</p>
       </div>
       <VehicleWizard step="registration" vehicle={null} />

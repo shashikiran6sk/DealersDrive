@@ -89,7 +89,7 @@ export default async function DealerPortfolioPage({
       <DealerJsonLd dealer={dealer} />
 
       <div className="border-b border-(--color-divider) bg-white">
-        <div className="mx-auto max-w-[1280px] px-6 pt-[22px]">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pt-[22px]">
           <Link href="/dealers" className="btn btn-ghost mb-[14px]">
             ← Back to dealers
           </Link>
@@ -104,7 +104,9 @@ export default async function DealerPortfolioPage({
 
           <div className="min-w-[260px] flex-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-[34px] leading-[1.08]">{dealer.brandName}</h1>
+              <h1 className="text-[28px] leading-[1.1] tracking-[-0.035em] sm:text-[34px]">
+                {dealer.brandName}
+              </h1>
               {dealer.isVerified ? <Plate size="chip">VERIFIED DEALER</Plate> : null}
             </div>
             {dealer.tagline ? (
@@ -118,7 +120,7 @@ export default async function DealerPortfolioPage({
           </div>
         </div>
 
-        <div className="mx-auto max-w-[1280px] px-6 pb-[20px]">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pb-[20px]">
           <Blueprint className="h-[440px] bg-(--color-surface) max-lg:h-[340px] max-md:h-[240px]">
             {dealer.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -131,17 +133,17 @@ export default async function DealerPortfolioPage({
       </div>
 
       <div className="mx-auto grid max-w-[1280px] gap-4 px-6 pt-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
-        <section className="card p-[14px]">
+        <section className="card p-[18px]">
           <h2 className="eyebrow">Dealership details</h2>
 
           <dl className="border-t border-(--color-divider)">
             {detailRows(dealer).map((row) => (
               <div
                 key={row.key}
-                className="flex justify-between gap-4 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
+                className="flex justify-between gap-4 border-b border-(--color-rule) py-[11px] text-[14px] last:border-b-0"
               >
                 <dt className="ink-muted">{row.label}</dt>
-                <dd className={row.mono ? 'font-mono' : 'font-medium'}>{row.value}</dd>
+                <dd className={row.mono ? 'font-mono' : 'font-semibold'}>{row.value}</dd>
               </div>
             ))}
           </dl>

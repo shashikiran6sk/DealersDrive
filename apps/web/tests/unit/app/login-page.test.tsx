@@ -63,6 +63,14 @@ describe('/login', () => {
     expect(screen.getByRole('tab', { name: 'Customer' })).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('links a buyer or dealer who is stuck to the Contact & support page', async () => {
+    await page({});
+    expect(screen.getByRole('link', { name: /trouble signing in/i })).toHaveAttribute(
+      'href',
+      '/contact',
+    );
+  });
+
   it('opens on Dealer when asked', async () => {
     await page({ as: 'dealer' });
     expect(screen.getByRole('tab', { name: 'Dealer' })).toHaveAttribute('aria-selected', 'true');

@@ -7,21 +7,26 @@ export interface GoogleSignInButtonProps {
   href: string;
   label?: string;
   disabled?: boolean;
+  variant?: 'secondary' | 'primary';
 }
 
 export function GoogleSignInButton({
   href,
   label = GOOGLE_SIGN_IN_LABEL,
   disabled = false,
+  variant = 'secondary',
 }: GoogleSignInButtonProps) {
   const className = cn(
-    'btn btn-secondary btn-block h-11 gap-[10px] text-[15px]',
+    'btn btn-block h-12 gap-[12px] text-[15px]',
+    variant === 'primary' ? 'btn-primary' : 'btn-secondary',
     disabled && 'pointer-events-none opacity-45',
   );
 
   const content = (
     <>
-      <GoogleMark />
+      <span className="grid h-[26px] w-[26px] flex-none place-items-center rounded-full bg-white">
+        <GoogleMark />
+      </span>
       {label}
     </>
   );

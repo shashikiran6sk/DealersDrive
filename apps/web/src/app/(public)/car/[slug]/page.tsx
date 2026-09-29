@@ -76,7 +76,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
   const similar = await loadSimilar(vehicle.slug);
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 pt-[22px] pb-[88px] lg:pb-[60px]">
+    <div className="mx-auto max-w-[1280px] px-4 pt-[24px] pb-[88px] sm:px-6 lg:pb-[64px]">
       <Link href="/cars" className="btn btn-ghost mb-[14px]">
         {VEHICLE_PAGE_TEXT.back}
       </Link>
@@ -90,7 +90,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           />
 
           <section aria-labelledby="specs-heading" className="flex flex-col gap-[10px]">
-            <h2 id="specs-heading" className="text-[20px]">
+            <h2 id="specs-heading" className="text-[22px]">
               {VEHICLE_PAGE_TEXT.specifications}
             </h2>
             <SpecList specs={vehicle.specs} />
@@ -98,7 +98,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
 
           {vehicle.description ? (
             <section aria-labelledby="description-heading" className="flex flex-col gap-[10px]">
-              <h2 id="description-heading" className="text-[20px]">
+              <h2 id="description-heading" className="text-[22px]">
                 {VEHICLE_PAGE_TEXT.description}
               </h2>
               <p className="max-w-[66ch] text-[14px] leading-[1.65] whitespace-pre-line ink-body">
@@ -119,7 +119,9 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
                 />
               )}
             </div>
-            <h1 className="text-[28px] leading-[1.15]">{vehicle.title}</h1>
+            <h1 className="text-[26px] leading-[1.15] tracking-[-0.035em] sm:text-[30px]">
+              {vehicle.title}
+            </h1>
             {vehicle.summary ? (
               <p className="text-[13px] ink-secondary tnum">{vehicle.summary}</p>
             ) : null}
@@ -130,12 +132,6 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           <PriceBlock
             priceLabel={vehicle.priceLabel}
             negotiabilityLabel={vehicle.negotiabilityLabel}
-          />
-          <SaveButton
-            slug={vehicle.slug}
-            title={vehicle.title}
-            variant="labelled"
-            className="self-start"
           />
           {available ? (
             <Suspense
@@ -148,6 +144,12 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           ) : (
             <AvailabilityNotice />
           )}
+          <SaveButton
+            slug={vehicle.slug}
+            title={vehicle.title}
+            variant="labelled"
+            className="w-full"
+          />
           <VdpDealerCard dealer={vehicle.dealer} />
         </aside>
       </div>
