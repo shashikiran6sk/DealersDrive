@@ -2,7 +2,10 @@ import type { AuthProvidersResponse, PhoneOtpWidget } from '@dealers-drive/contr
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
+import Link from 'next/link';
+
 import { AuthHeading, AuthShell } from '@/components/auth/auth-shell';
+import { EntryShell } from '@/components/auth/entry-shell';
 import { CustomerLogin, DealerLogin, LOGIN_TEXT, LoginTabs } from '@/features/auth/login';
 import { apiGet } from '@/lib/api';
 import { currentSession, destinationFor } from '@/lib/session';
@@ -45,25 +48,33 @@ export default async function LoginPage({
     : providers.google.startUrl;
 
   return (
-    <AuthShell eyebrow={LOGIN_EYEBROW}>
-      <AuthHeading title={LOGIN_TEXT.title} />
-      <LoginTabs
-        initial={audience}
-        customer={<CustomerLogin widget={widget} returnTo={safeReturnPath(requested, '/')} />}
-        dealer={
-          <DealerLogin
-            widget={widget}
-            google={{
-              href: googleHref,
-              enabled: providers.google.enabled,
-              reason: providers.google.reason,
-            }}
-            returnTo={dealerReturnTo}
-            error={error}
-          />
-        }
-      />
-    </AuthShell>
+    <EntryShell>
+      <AuthShell eyebrow={LOGIN_EYEBROW}>
+        <AuthHeading title={LOGIN_TEXT.title} visuallyHidden />
+        <LoginTabs
+          initial={audience}
+          customer={<CustomerLogin widget={widget} returnTo={safeReturnPath(requested, '/')} />}
+          dealer={
+            <DealerLogin
+              widget={widget}
+              google={{
+                href: googleHref,
+                enabled: providers.google.enabled,
+                reason: providers.google.reason,
+              }}
+              returnTo={dealerReturnTo}
+              error={error}
+            />
+          }
+        />
+        <Link
+          href={LOGIN_TEXT.troubleHref}
+          className="mx-auto mt-[22px] flex min-h-[40px] w-fit items-center text-[13px] font-bold ink-muted underline underline-offset-[3px] hover:text-(--color-ink)"
+        >
+          {LOGIN_TEXT.trouble}
+        </Link>
+      </AuthShell>
+    </EntryShell>
   );
 }
 

@@ -44,7 +44,7 @@ export function DocumentsStep({
   return (
     <div className="flex flex-col gap-[18px]">
       <div>
-        <h1 className="font-heading text-[34px] font-semibold leading-[1.1] tracking-[-0.02em]">
+        <h1 className="font-heading text-[34px] font-extrabold leading-[1.1] tracking-[-0.02em]">
           {ONBOARDING_TEXT.documentsHeading}
         </h1>
         <p className="mt-[8px] text-[15px] ink-secondary">{ONBOARDING_TEXT.documentsIntro}</p>

@@ -22,10 +22,13 @@ export function CustomerLogin({ widget, returnTo }: CustomerLoginProps) {
 
   return (
     <section aria-labelledby="customer-login-heading">
-      <h2 id="customer-login-heading" className="font-heading text-[20px] font-semibold">
+      <h2
+        id="customer-login-heading"
+        className="font-heading text-[28px] font-extrabold tracking-[-0.035em] sm:text-[30px]"
+      >
         {LOGIN_TEXT.customerHeading}
       </h2>
-      <p className="mb-[18px] mt-[6px] text-[14px] leading-[1.5] ink-secondary">
+      <p className="mb-[20px] mt-[8px] text-[14px] leading-[1.6] ink-muted">
         {LOGIN_TEXT.customerIntro}
       </p>
 

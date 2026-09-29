@@ -10,7 +10,7 @@ import { HEADER_ACCOUNT_TEXT } from './header-account.constants';
 import type { AccountMenuProps } from './header-account.types';
 
 const ITEM =
-  'flex min-h-[40px] w-full items-center px-[14px] text-left text-[14px] text-(--color-ink) no-underline outline-none hover:bg-(--color-bg) focus-visible:bg-(--color-accent-100)';
+  'flex min-h-[44px] w-full items-center rounded-[8px] px-[12px] text-left text-[14px] font-bold text-(--color-ink) no-underline outline-none hover:bg-(--color-neutral-100) focus-visible:bg-(--color-neutral-150) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-focus) disabled:opacity-45';
 
 function moveFocus(menu: HTMLElement | null, key: string): boolean {
   const items = Array.from(menu?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
@@ -47,7 +47,7 @@ export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps)
           type="button"
           aria-haspopup="menu"
           aria-label={HEADER_ACCOUNT_TEXT.menuLabel(account.fullName)}
-          className="grid h-[36px] w-[36px] place-items-center rounded-full bg-(--color-accent-200) text-[13px] font-bold text-(--color-accent-800) outline-offset-2 hover:bg-(--color-accent-300)"
+          className="grid h-[40px] w-[40px] place-items-center rounded-full bg-(--color-accent) text-[13px] font-extrabold text-white outline-offset-2 hover:bg-(--color-neutral-800)"
         >
           <span aria-hidden="true">{initials}</span>
         </button>
@@ -61,10 +61,10 @@ export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps)
             event.preventDefault();
             menu.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
           }}
-          className="z-50 w-[240px] max-w-[calc(100vw-24px)] border border-(--color-divider) bg-white py-[6px] shadow-lg"
+          className="z-50 w-[240px] max-w-[calc(100vw-24px)] rounded-[14px] border border-(--color-divider) bg-white p-[6px] shadow-md"
         >
-          <div className="border-b border-(--color-divider) px-[14px] pt-[6px] pb-[10px]">
-            <div className="truncate text-[14px] font-semibold">{account.fullName}</div>
+          <div className="mb-[4px] border-b border-(--color-divider) px-[12px] pt-[8px] pb-[10px]">
+            <div className="truncate text-[14px] font-extrabold">{account.fullName}</div>
             <div className="text-[12px] ink-subtle tnum">{account.phoneMasked}</div>
           </div>
           <div
@@ -72,7 +72,7 @@ export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps)
             role="menu"
             aria-label={HEADER_ACCOUNT_TEXT.menuItemsLabel}
             onKeyDown={onKeyDown}
-            className="flex flex-col pt-[4px]"
+            className="flex flex-col"
           >
             <Link
               role="menuitem"

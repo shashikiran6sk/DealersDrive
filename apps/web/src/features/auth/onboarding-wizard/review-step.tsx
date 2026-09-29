@@ -40,7 +40,7 @@ export function ReviewStep({ session, completeness }: ReviewStepProps) {
           {submitted ? ONBOARDING_TEXT.underReview : ONBOARDING_TEXT.readyToSubmit}
         </StatusTag>
 
-        <h1 className="mt-[12px] font-heading text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">
+        <h1 className="mt-[12px] font-heading text-[28px] font-extrabold leading-[1.15] tracking-[-0.02em]">
           {submitted ? ONBOARDING_TEXT.reviewingHeading : ONBOARDING_TEXT.submitHeading}
         </h1>
 

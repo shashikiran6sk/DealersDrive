@@ -23,6 +23,9 @@ export const LOGIN_TEXT = {
   dealerIntro:
     'Use the Google account or the mobile number of your dealership. A new dealership starts here too.',
   or: 'or',
+  usePhoneInstead: 'Use mobile number instead',
+  trouble: 'Trouble signing in? Contact support',
+  troubleHref: '/contact',
   googleUnavailable: 'Google sign-in is not configured',
 } as const;
 

@@ -247,14 +247,44 @@ describe('CustomerLogin', () => {
 });
 
 describe('DealerLogin', () => {
-  it('offers Google and the phone, one above the other', () => {
+  /**
+   * The revamp leads with Google and keeps the verified mobile one click away:
+   * the same two ways in, the same actions behind them, and the phone form
+   * disclosed by a real button that says what it controls.
+   */
+  it('offers Google first, and the phone behind "Use mobile number instead"', async () => {
+    const user = userEvent.setup();
     render(<DealerLogin widget={WIDGET} google={GOOGLE} returnTo={null} error={null} />);
 
     expect(screen.getByRole('link', { name: /continue with google/i })).toHaveAttribute(
       'href',
       GOOGLE.href,
     );
-    expect(screen.getByLabelText(/Mobile number/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Mobile number/)).not.toBeVisible();
+
+    const reveal = screen.getByRole('button', { name: 'Use mobile number instead' });
+    expect(reveal).toHaveAttribute('aria-expanded', 'false');
+    expect(reveal).toHaveAttribute('aria-controls', 'dealer-phone-panel');
+    await user.click(reveal);
+
+    expect(screen.getByLabelText(/Mobile number/)).toBeVisible();
+    expect(screen.getByLabelText(/Mobile number/)).toHaveFocus();
+    expect(screen.queryByRole('button', { name: 'Use mobile number instead' })).toBeNull();
+  });
+
+  /** Without Google there is only one way in, so it is not hidden behind a click. */
+  it('shows the phone straight away when Google is not configured', () => {
+    render(
+      <DealerLogin
+        widget={WIDGET}
+        google={{ ...GOOGLE, enabled: false, reason: 'Set GOOGLE_CLIENT_ID.' }}
+        returnTo={null}
+        error={null}
+      />,
+    );
+
+    expect(screen.getByLabelText(/Mobile number/)).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Use mobile number instead' })).toBeNull();
   });
 
   it(
@@ -266,6 +296,7 @@ describe('DealerLogin', () => {
         <DealerLogin widget={WIDGET} google={GOOGLE} returnTo="/dealer/inventory" error={null} />,
       );
 
+      await user.click(screen.getByRole('button', { name: 'Use mobile number instead' }));
       await proveNumber(user);
 
       await waitFor(() => {
