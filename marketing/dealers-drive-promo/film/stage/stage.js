@@ -127,7 +127,8 @@
       const u = unit();
       const stamp = el('div', 'stamp', root, clip.stamp);
       const portrait = state.format === 'portrait';
-      stamp.style.cssText = `position:absolute;${portrait ? `left:0;right:0;text-align:center;bottom:${150 * u}px` : `left:${70 * u}px;top:50%;margin-top:${-70 * u}px`};font-weight:800;letter-spacing:-0.03em;color:#fff;font-size:${(portrait ? 110 : 96) * u}px;line-height:1`;
+      const stacked = state.format !== 'landscape';
+      stamp.style.cssText = `position:absolute;${stacked ? `left:0;right:0;text-align:center;bottom:${(portrait ? 150 : 70) * u}px` : `left:${70 * u}px;top:50%;margin-top:${-70 * u}px`};font-weight:800;letter-spacing:-0.03em;color:#fff;font-size:${(portrait ? 110 : stacked ? 88 : 96) * u}px;line-height:1`;
       clip.stampNode = stamp;
     }
     buildLower(clip, root);
@@ -137,7 +138,10 @@
     const vw = clip.viewport.width;
     const vh = clip.viewport.height;
     if (clip.frame === 'card')
-      return Math.min(state.width / vw, state.height / vh) * (clip.cardScale || 0.84);
+      return (
+        Math.min(state.width / vw, state.height / vh) *
+        (state.format === 'landscape' ? clip.cardScale || 0.84 : 0.9)
+      );
     if (state.format === 'landscape') return Math.max(state.width / vw, state.height / vh);
     if (state.format === 'square') return state.height / vh;
     return state.width / vw;
@@ -151,13 +155,17 @@
     const W = state.width;
     const H = state.height;
     const focusX =
-      state.format === 'square' && clip.squareFocusX !== undefined && clip.frame !== 'card'
-        ? clip.squareFocusX + (cam.x - vw / 2) * 0.35
+      state.format === 'square' &&
+      !clip.ownSquareCamera &&
+      clip.squareFocusX !== undefined &&
+      clip.frame !== 'card'
+        ? clip.squareFocusX
         : cam.x;
     let tx = W / 2 - focusX * s;
     let ty = H / 2 - cam.y * s;
     if (clip.frame === 'card' && state.format === 'landscape') tx += W * (clip.cardShiftX ?? 0.12);
-    if (clip.frame === 'card' && state.format !== 'landscape') ty -= H * 0.06;
+    if (clip.frame === 'card' && state.format !== 'landscape')
+      ty -= H * (state.format === 'square' ? 0.1 : 0.06);
     if (clip.frame !== 'card') {
       tx = vw * s <= W ? (W - vw * s) / 2 : clamp(tx, W - vw * s, 0);
       ty = vh * s <= H ? (H - vh * s) / 2 : clamp(ty, H - vh * s, 0);
@@ -293,7 +301,9 @@
       root.style.display = 'none';
       const built = { ...clip, root };
       if (clip.kind === 'ui') {
-        built.cameraKeys = (clip.camera || []).map((k) => ({ z: 1, ...k }));
+        const keys = format === 'square' && clip.squareCamera ? clip.squareCamera : clip.camera;
+        built.cameraKeys = (keys || []).map((k) => ({ z: 1, ...k }));
+        built.ownSquareCamera = format === 'square' && Boolean(clip.squareCamera);
         buildUi(built, root);
       } else buildTitle(built, root);
       return built;
