@@ -1,0 +1,24 @@
+{
+  "name": "dealers-drive-promo",
+  "private": true,
+  "type": "module",
+  "description": "Marketing-only tooling for the Dealers-Drive promotional film. Not part of the pnpm workspace; never deployed.",
+  "scripts": {
+    "prepare-demo": "bash scripts/prepare-demo.sh",
+    "media": "node scripts/generate-media.mjs",
+    "media:force": "node scripts/generate-media.mjs --force",
+    "capture": "node scripts/capture.mjs --device=desktop",
+    "capture:mobile": "node scripts/capture.mjs --device=mobile",
+    "preview": "node scripts/preview.mjs",
+    "render:4k": "node scripts/render-film.mjs --format=landscape --out=exports/dealers-drive-promo-4k.mp4",
+    "render:1080p": "node scripts/downscale.mjs exports/dealers-drive-promo-4k.mp4 exports/dealers-drive-promo-1080p.mp4",
+    "render:vertical": "node scripts/render-film.mjs --format=portrait --out=exports/dealers-drive-promo-9x16.mp4",
+    "render:square": "node scripts/render-film.mjs --format=square --out=exports/dealers-drive-promo-1x1.mp4",
+    "render:all": "npm run render:4k && npm run render:1080p && npm run render:vertical && npm run render:square",
+    "mix": "bash scripts/mix-audio.sh",
+    "captions": "node scripts/write-captions.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.56.1"
+  }
+}

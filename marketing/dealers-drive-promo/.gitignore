@@ -1,0 +1,6 @@
+node_modules/
+.scratch/
+assets/generated/
+assets/catalog.json
+recordings/
+exports/
