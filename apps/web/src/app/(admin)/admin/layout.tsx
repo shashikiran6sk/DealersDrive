@@ -9,14 +9,13 @@ import { AdminNav } from '@/components/admin/admin-nav';
 import { StatusTag } from '@/components/ui/primitives';
 import { SignOutButton } from '@/features/auth/sign-out';
 import { ApiError, apiGet } from '@/lib/api';
+import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-const PRIVATE_ROBOTS: Metadata['robots'] = { index: false, follow: false };
-
 export const metadata: Metadata = {
   title: { default: 'Admin console', template: '%s · Admin' },
-  robots: PRIVATE_ROBOTS,
+  ...seoMetadata({ kind: 'private' }),
 };
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {

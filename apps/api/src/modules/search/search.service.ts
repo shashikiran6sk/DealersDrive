@@ -6,8 +6,10 @@ import {
   type DealerVehicleQuery,
   type PublicVehicleDetail,
   type PublicVehicleQuery,
+  type PublicSitemapResponse,
   type PublicVehiclesResponse,
   type RangePreset,
+  SITEMAP_ENTRY_LIMIT,
   SIMILAR_VEHICLE_LIMIT,
   type SimilarVehiclesResponse,
   type VehicleFacets,
@@ -42,7 +44,12 @@ import {
   type ResolvedFilters,
   type VehicleFilterQuery,
 } from './search.filters.js';
-import { toPublicVehicleDetail, toVehicleCard } from './search.mapper.js';
+import {
+  toPublicVehicleDetail,
+  toSitemapDealer,
+  toSitemapListing,
+  toVehicleCard,
+} from './search.mapper.js';
 import { DEALER_NOT_FOUND, SUGGEST_COUNT, VEHICLE_NOT_FOUND } from './search.messages.js';
 import type { CardRow, SearchRepository } from './search.repository.js';
 import { rankSimilar, type SimilarTraits } from './search.similar.js';
@@ -219,6 +226,17 @@ export function createSearchService({ repo }: SearchDeps) {
       const dealer = await repo.publicDealer(slug);
       if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND, { code: 'DEALER_NOT_FOUND' });
       return search(query, oneDealerScope(dealer), null);
+    },
+
+    async sitemap(): Promise<PublicSitemapResponse> {
+      const [listings, dealers] = await Promise.all([
+        repo.sitemapListings(SITEMAP_ENTRY_LIMIT),
+        repo.sitemapDealers(SITEMAP_ENTRY_LIMIT),
+      ]);
+      return {
+        vehicles: listings.map(toSitemapListing),
+        dealers: dealers.map(toSitemapDealer),
+      };
     },
 
     async suggestCars(query: CarSuggestQuery): Promise<CarSuggestResponse> {

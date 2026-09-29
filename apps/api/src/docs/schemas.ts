@@ -53,6 +53,7 @@ const INPUT_SCHEMA_NAMES = [
   'ReorderImagesInput',
   'PublicVehicleQuery',
   'CarSuggestQuery',
+  'SitemapQuery',
   'DealerVehicleQuery',
   'VehicleSlugParam',
 ] as const;

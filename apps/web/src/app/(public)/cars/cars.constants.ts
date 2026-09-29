@@ -1,9 +1,11 @@
 import { countLabel } from '@/lib/plural';
 
 export const CARS_TEXT = {
-  metaTitle: 'Used cars from verified dealers',
-  metaDescription:
-    'Used cars from verified independent dealerships, each photographed by Dealers-Drive and reviewed before it goes live.',
+  metaTitle: (place: string | undefined, page: number) =>
+    `${place ? `Used Cars in ${place}` : 'Used Cars for Sale'}${page > 1 ? ` – Page ${page}` : ''}`,
+  metaDescription: (place: string | undefined) =>
+    `Browse used cars for sale${place ? ` in ${place}` : ''} from verified independent dealerships on Dealers-Drive. Every car is photographed by Dealers-Drive and reviewed before it goes live.`,
+  listName: (place: string | undefined) => (place ? `Used cars in ${place}` : 'Used cars'),
   breadcrumbLabel: 'Breadcrumb',
   home: 'Home',
   breadcrumb: 'Cars',

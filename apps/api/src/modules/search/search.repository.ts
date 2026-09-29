@@ -82,10 +82,24 @@ export const detailInclude = {
       },
     },
   },
-  dealer: { select: { brandName: true, slug: true, city: true, district: true } },
+  dealer: { select: { brandName: true, slug: true, city: true, district: true, state: true } },
 } satisfies Prisma.ListingInclude;
 
 export type DetailRow = Prisma.ListingGetPayload<{ include: typeof detailInclude }>;
+
+const sitemapListingSelect = {
+  slug: true,
+  updatedAt: true,
+  vehicle: { select: { updatedAt: true } },
+} satisfies Prisma.ListingSelect;
+
+export type SitemapListingRow = Prisma.ListingGetPayload<{ select: typeof sitemapListingSelect }>;
+
+export interface SitemapDealerRow {
+  slug: string;
+  approvedAt: Date | null;
+  inventoryUpdatedAt: Date | null;
+}
 
 const dealerSelect = {
   id: true,
@@ -140,6 +154,35 @@ export function createSearchRepository(prisma: PrismaClient) {
         where: { ...PUBLIC_VISIBLE_LISTING_WHERE, slug },
         include: detailInclude,
       });
+    },
+
+    sitemapListings(take: number): Promise<SitemapListingRow[]> {
+      return prisma.listing.findMany({
+        where: PUBLIC_VISIBLE_LISTING_WHERE,
+        select: sitemapListingSelect,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+        take,
+      });
+    },
+
+    async sitemapDealers(take: number): Promise<SitemapDealerRow[]> {
+      const stocked = await prisma.listing.groupBy({
+        by: ['dealerId'],
+        where: PUBLIC_AVAILABLE_LISTING_WHERE,
+        _max: { updatedAt: true },
+      });
+      const latest = new Map(stocked.map((row) => [row.dealerId, row._max.updatedAt]));
+      const dealers = await prisma.dealer.findMany({
+        where: { status: PUBLIC_DEALER_STATUS, id: { in: [...latest.keys()] } },
+        select: { id: true, slug: true, approvedAt: true },
+        orderBy: { slug: 'asc' },
+        take,
+      });
+      return dealers.map((dealer) => ({
+        slug: dealer.slug,
+        approvedAt: dealer.approvedAt,
+        inventoryUpdatedAt: latest.get(dealer.id) ?? null,
+      }));
     },
 
     publicDealers(): Promise<PublicDealerRow[]> {

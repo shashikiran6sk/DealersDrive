@@ -336,3 +336,40 @@ available cars, excluding the source and those already chosen. That is the
 last step of broadening: same model, then same make, body type, price and
 district through the score, then anything on sale. So the section is never
 empty while the marketplace is not.
+
+## `apps/api/src/modules/search/routes/get-sitemap.ts` — `GET /v1/sitemap`
+
+### `validate({ query: SitemapQuery })`
+
+The route takes nothing, and says so with a strict empty schema: a stray
+`?page=2` is a 400 naming `page` rather than an answer that looks paginated
+and is not.
+
+## `apps/api/src/modules/search/search.repository.ts` — the sitemap reads
+
+### `sitemapListings(take)`
+
+`PUBLIC_VISIBLE_LISTING_WHERE` — ACTIVE and RESERVED — because those are the
+listings with a page. Sold, withdrawn and every unpublished state 404, so they
+are not offered. Selects the slug and two timestamps; nothing else leaves the
+database.
+
+### `sitemapDealers(take)`
+
+A `groupBy` over available listings gives both halves at once: which ACTIVE
+dealerships have a car (the portfolio's `isIndexable` rule) and when the
+newest of them changed. `Dealer` has no `updatedAt`, so a dealership's
+last-modified is the later of its approval and that.
+
+## `apps/api/src/modules/search/search.mapper.ts` — `factsOf` · `toSitemapListing`
+
+### `export function factsOf(vehicle)`
+
+The specifications as values, for the web app's structured data. Labels, not
+enum values, because the label is what the page prints; `pricePaise` as a
+number, because every money field is paise and rupees are the UI's conversion.
+
+### `function latestOf(...dates)`
+
+A car's page changes when either row does — a price edit touches the vehicle, a
+reservation touches the listing — so its last-modified is the later of the two.

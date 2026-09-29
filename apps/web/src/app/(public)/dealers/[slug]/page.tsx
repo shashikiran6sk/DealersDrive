@@ -5,13 +5,24 @@ import { notFound } from 'next/navigation';
 
 import { DealerInventory, placeOf } from '@/components/dealers/dealer-inventory';
 import { LocationCard } from '@/components/dealers/location-card';
+import { JsonLd } from '@/components/seo/json-ld';
 import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { ApiError, apiGet, apiGetParsed, qs } from '@/lib/api';
 import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
-import { serverConfig } from '@/lib/config';
-import { seoMetadata } from '@/lib/seo';
+import {
+  BREADCRUMB_TEXT,
+  breadcrumbSchema,
+  dealerPath,
+  dealerSchema,
+  directoryPath,
+  directoryView,
+  isIndexableView,
+  pageMetadata,
+} from '@/lib/seo';
 import type { SearchParamsInput } from '@/lib/url';
 import { readVehicleSearch, type VehicleSearchParams } from '@/lib/vehicle-search';
+
+import { DEALER_PAGE_TEXT } from './dealer-page.constants';
 
 export const revalidate = 600;
 
@@ -48,28 +59,48 @@ function liveCars(dealer: DealerPublicProfile): number | undefined {
   return Number.isInteger(value) ? value : undefined;
 }
 
+function placeNameOf(dealer: DealerPublicProfile): string | null {
+  return placeOf([dealer.address.city, dealer.address.district, dealer.address.state]);
+}
+
+function canonicalOf(
+  dealer: DealerPublicProfile,
+  search: VehicleSearchParams,
+): {
+  canonical: string;
+  isIndexable: boolean;
+} {
+  const view = directoryView(search, false);
+  const base = dealerPath(dealer.slug);
+  return isIndexableView(view)
+    ? { canonical: directoryPath(base, undefined, view.page), isIndexable: dealer.seo.isIndexable }
+    : { canonical: base, isIndexable: false };
+}
+
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<SearchParamsInput>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const [{ slug }, query] = await Promise.all([params, searchParams ?? Promise.resolve({})]);
   const dealer = await loadDealer(slug);
-  if (!dealer) return { title: 'Dealership not found' };
+  if (!dealer) return { title: DEALER_PAGE_TEXT.notFoundTitle };
 
-  return {
+  return pageMetadata({
     title: { absolute: dealer.seo.title },
-    description:
-      dealer.tagline ??
-      `${dealer.brandName} is a verified independent used-car dealership${
-        dealer.address.city ? ` in ${dealer.address.city}` : ''
-      }.`,
-    ...seoMetadata({
-      kind: 'resolved',
-      canonical: dealer.seo.canonical,
-      isIndexable: dealer.seo.isIndexable,
+    description: DEALER_PAGE_TEXT.metaDescription({
+      brandName: dealer.brandName,
+      tagline: dealer.tagline,
+      place: placeNameOf(dealer),
+      isVerified: dealer.isVerified,
     }),
-  };
+    route: { kind: 'resolved', ...canonicalOf(dealer, readVehicleSearch(query, 'dealer')) },
+    ...(dealer.coverUrl
+      ? { images: [{ url: dealer.coverUrl, alt: DEALER_PAGE_TEXT.coverAlt(dealer.brandName) }] }
+      : {}),
+  });
 }
 
 export default async function DealerPortfolioPage({
@@ -86,7 +117,16 @@ export default async function DealerPortfolioPage({
 
   return (
     <div>
-      <DealerJsonLd dealer={dealer} />
+      <JsonLd
+        nodes={[
+          dealerSchema(dealer),
+          breadcrumbSchema([
+            { name: BREADCRUMB_TEXT.home, path: '/' },
+            { name: BREADCRUMB_TEXT.dealers, path: '/dealers' },
+            { name: dealer.brandName, path: dealerPath(dealer.slug) },
+          ]),
+        ]}
+      />
 
       <div className="border-b border-(--color-divider) bg-white">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pt-[22px]">
@@ -124,7 +164,11 @@ export default async function DealerPortfolioPage({
           <Blueprint className="h-[440px] bg-(--color-surface) max-lg:h-[340px] max-md:h-[240px]">
             {dealer.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
+              <img
+                src={dealer.coverUrl}
+                alt={DEALER_PAGE_TEXT.coverAlt(dealer.brandName)}
+                className="h-full w-full object-cover"
+              />
             ) : (
               <ImageSlot label="Dealership frontage / yard photo" />
             )}
@@ -167,7 +211,7 @@ export default async function DealerPortfolioPage({
         brandName={dealer.brandName}
         inventory={inventory}
         params={search}
-        location={placeOf([dealer.address.city, dealer.address.district, dealer.address.state])}
+        location={placeNameOf(dealer)}
         {...(liveCars(dealer) === undefined ? {} : { liveTotal: liveCars(dealer) })}
       />
     </div>
@@ -183,40 +227,4 @@ function detailRows(dealer: DealerPublicProfile): DetailRow[] {
       .filter((stat) => stat.key !== 'location')
       .map((stat) => ({ key: stat.key, label: stat.label, value: stat.value || '—' })),
   ];
-}
-
-function DealerJsonLd({ dealer }: { dealer: DealerPublicProfile }) {
-  const { webBaseUrl } = serverConfig();
-  const data = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'AutoDealer',
-        name: dealer.brandName,
-        legalName: dealer.legalName,
-        url: dealer.seo.canonical,
-        ...(dealer.tagline ? { description: dealer.tagline } : {}),
-        address: {
-          '@type': 'PostalAddress',
-          ...(dealer.address.line ? { streetAddress: dealer.address.line } : {}),
-          ...(dealer.address.city ? { addressLocality: dealer.address.city } : {}),
-          ...(dealer.address.state ? { addressRegion: dealer.address.state } : {}),
-          ...(dealer.address.pincode ? { postalCode: dealer.address.pincode } : {}),
-          addressCountry: 'IN',
-        },
-      },
-      {
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: webBaseUrl },
-          { '@type': 'ListItem', position: 2, name: 'Dealers', item: `${webBaseUrl}/dealers` },
-          { '@type': 'ListItem', position: 3, name: dealer.brandName, item: dealer.seo.canonical },
-        ],
-      },
-    ],
-  };
-
-  return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
-  );
 }

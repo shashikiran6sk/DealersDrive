@@ -125,6 +125,11 @@ export const searchDocs: ModuleDocs = {
         'The vehicle detail page (**F082** as scoped by **R45**): title, price, the ' +
         'specifications, the dealer\u2019s description, every image in the admin\u2019s ' +
         'gallery order with `primaryIndex` naming the one to show first, and the dealership.\n\n' +
+        '`facts` carries the same specifications as values (make, model, variant, labels for ' +
+        'fuel, transmission, body and colour, kilometres, owners, and the price in paise), ' +
+        'and `dealer` the city, district and state its `location` is joined from \u2014 what ' +
+        'the page\u2019s title and structured data are built from, all of it also printed on ' +
+        'the page.\n\n' +
         '**A reserved car has a page** (**R71**), with `availability: RESERVED`; the page offers ' +
         'no enquiry. **A listing that is neither `ACTIVE` nor `RESERVED`, or whose dealership ' +
         'is not `ACTIVE`, is `404 VEHICLE_NOT_FOUND`** — the same answer as a slug that never ' +
@@ -161,7 +166,25 @@ export const searchDocs: ModuleDocs = {
             ],
             primaryIndex: 0,
             publishedLabel: 'Listed 26 Sep 2026',
-            dealer: { ...CARD_EXAMPLE.dealer, location: 'Katpadi, Vellore' },
+            facts: {
+              make: 'Hyundai',
+              model: 'Creta',
+              variant: 'SX(O)',
+              bodyType: 'SUV',
+              fuelType: 'Petrol',
+              transmission: 'Automatic',
+              color: 'White',
+              kilometersDriven: 22_400,
+              ownerCount: 1,
+              pricePaise: 145_000_000,
+            },
+            dealer: {
+              ...CARD_EXAMPLE.dealer,
+              location: 'Katpadi, Vellore',
+              city: 'Katpadi',
+              district: 'Vellore',
+              state: 'Tamil Nadu',
+            },
           },
         },
       ],
@@ -289,6 +312,41 @@ export const searchDocs: ModuleDocs = {
               },
             ],
             countLabel: '2 matches',
+          },
+        },
+      ],
+      errors: [400, 429],
+    },
+    {
+      method: 'get',
+      path: '/v1/sitemap',
+      operationId: 'getPublicSitemap',
+      tag: DOC_TAGS.vehiclesPublic,
+      summary: 'Every indexable vehicle and dealership page, for the sitemap',
+      description:
+        'What the web app\u2019s `sitemap.xml` is built from: a slug and a last-modified ' +
+        'timestamp per page, and nothing else.\n\n' +
+        '`vehicles` are the listings with a public page \u2014 `ACTIVE` or `RESERVED`, of an ' +
+        '`ACTIVE` dealership (**R71**). A sold, withdrawn, draft, in-review, sent-back or ' +
+        'rejected listing is absent, because its page is a 404. `lastModified` is the later of ' +
+        'the listing\u2019s and the vehicle\u2019s own update times, so a price change or a ' +
+        'reservation moves it.\n\n' +
+        '`dealers` are the `ACTIVE` dealerships with at least one available car \u2014 the same ' +
+        'rule that makes a portfolio indexable. `lastModified` is the later of the approval ' +
+        'and the newest change to one of its available cars.\n\n' +
+        'Each list is capped at 45,000, newest change first for vehicles; past that the sitemap ' +
+        'splits into segments. Cached publicly for five minutes and rate-limited per IP like ' +
+        'every public read.',
+      audience: 'public',
+      query: 'SitemapQuery',
+      responses: [
+        {
+          status: 200,
+          description: 'The indexable slugs, with their last-modified times.',
+          schema: 'PublicSitemapResponse',
+          example: {
+            vehicles: [{ slug: CARD_EXAMPLE.slug, lastModified: '2026-09-28T10:42:07.000Z' }],
+            dealers: [{ slug: CARD_EXAMPLE.dealer.slug, lastModified: '2026-09-28T10:42:07.000Z' }],
           },
         },
       ],

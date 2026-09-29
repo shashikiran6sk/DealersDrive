@@ -158,7 +158,7 @@ revision · `[⛔]` withdrawn
 
 - [ ] F093 — Error boundaries & error pages
 - [ ] F094 — Loading & not-found states
-- [ ] F095 — SEO & metadata
+- [~] F095 — SEO & metadata · production SEO for the public marketplace — one origin, per-page metadata and Open Graph, faceted-URL policy, `Car`/`Offer`/`AutoDealer`/`BreadcrumbList`/`Organization`/`WebSite` JSON-LD, `GET /v1/sitemap` + `sitemap.xml`, `robots.txt`, favicon set; see `docs/seo.md`
 - [ ] F096 — Postman collection · ⚠️ reduced by D5; OpenAPI moved to F098
 - [ ] F097 — Seed data & developer bootstrap
 

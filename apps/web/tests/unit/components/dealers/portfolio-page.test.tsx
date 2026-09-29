@@ -6,7 +6,7 @@ import type {
 import { NO_VEHICLE_FACETS } from '@dealers-drive/contracts';
 import userEvent from '@testing-library/user-event';
 import { render, screen, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
 import DealerPortfolioPage, { generateMetadata } from '@/app/(public)/dealers/[slug]/page';
@@ -75,7 +75,7 @@ const DEALER: DealerPublicProfile = {
   coverUrl: null,
   seo: {
     canonical: 'http://localhost:3000/dealers/sri-lakshmi-motors',
-    title: 'Sri Lakshmi Motors — used cars in Vellore | Dealers-Drive',
+    title: 'Sri Lakshmi Motors — Used Car Dealer in Vellore | Dealers-Drive',
     isIndexable: false,
   },
 };
@@ -447,45 +447,188 @@ describe('a dealership that is not listed', () => {
 });
 
 describe('metadata', () => {
-  it('uses the title the API composed, and its canonical', async () => {
+  beforeEach(() => {
+    vi.stubEnv('APP_ENV', 'production');
+    vi.stubEnv('WEB_BASE_URL', 'https://www.dealers-drive.com');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('uses the title the API composed, and canonicalises to the web origin', async () => {
     serve(DEALER);
     const meta = await generateMetadata({ params });
 
     expect(meta.title).toEqual({
-      absolute: 'Sri Lakshmi Motors — used cars in Vellore | Dealers-Drive',
+      absolute: 'Sri Lakshmi Motors — Used Car Dealer in Vellore | Dealers-Drive',
     });
-    expect(meta.alternates?.canonical).toBe('http://localhost:3000/dealers/sri-lakshmi-motors');
+    expect(meta.alternates?.canonical).toBe(
+      'https://www.dealers-drive.com/dealers/sri-lakshmi-motors',
+    );
   });
 
   /**
    * §17.2 — A9 knows the live-listing count and this layer does not, so the
-   * API's answer wins. Every dealership is `noindex` until F064, which is
-   * right: a portfolio with nothing in it is not a page to send anybody to.
+   * API's answer wins: a portfolio with nothing in it is not a page to send
+   * anybody to.
    */
   it('defers to the API on whether the page may be indexed', async () => {
     serve(DEALER);
     expect((await generateMetadata({ params })).robots).toEqual({ index: false, follow: true });
 
     serve({ ...DEALER, seo: { ...DEALER.seo, isIndexable: true } });
-    expect((await generateMetadata({ params })).robots).toEqual({ index: true, follow: true });
+    expect((await generateMetadata({ params })).robots).toEqual({
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+    });
+  });
+
+  it('keeps a filtered or sorted inventory out of the index, canonical to the portfolio', async () => {
+    serve({ ...DEALER, seo: { ...DEALER.seo, isIndexable: true } });
+    const meta = await generateMetadata({
+      params,
+      searchParams: Promise.resolve({ fuel: 'diesel', sort: 'price_asc' }),
+    });
+
+    expect(meta.robots).toEqual({ index: false, follow: true });
+    expect(meta.alternates?.canonical).toBe(
+      'https://www.dealers-drive.com/dealers/sri-lakshmi-motors',
+    );
+  });
+
+  it('indexes a later page of the inventory at its own URL', async () => {
+    serve({ ...DEALER, seo: { ...DEALER.seo, isIndexable: true } });
+    const meta = await generateMetadata({ params, searchParams: Promise.resolve({ page: '2' }) });
+
+    expect(meta.robots).toMatchObject({ index: true });
+    expect(meta.alternates?.canonical).toBe(
+      'https://www.dealers-drive.com/dealers/sri-lakshmi-motors?page=2',
+    );
+  });
+
+  it('describes the dealership from its own words and where it is', async () => {
+    serve(DEALER);
+
+    expect((await generateMetadata({ params })).description).toBe(
+      'Family-run since 1998, and every car is inspected in-house. Sri Lakshmi Motors is a verified independent used-car dealer in Vellore, Tamil Nadu. Browse the cars it has available and enquire directly on Dealers-Drive.',
+    );
   });
 
   it('does not invent a locality for a dealership that has none', async () => {
     serve({
       ...DEALER,
       tagline: null,
-      address: { ...DEALER.address, city: '', full: '' },
+      address: { ...DEALER.address, city: '', district: null, state: '', full: '' },
     });
 
     expect((await generateMetadata({ params })).description).toBe(
-      'Sri Lakshmi Motors is a verified independent used-car dealership.',
+      'Sri Lakshmi Motors is a verified independent used-car dealer. Browse the cars it has available and enquire directly on Dealers-Drive.',
     );
+  });
+
+  it('shares the yard photograph when there is one, and the brand card when there is not', async () => {
+    serve({ ...DEALER, coverUrl: 'https://media.test/yard/1600.webp' });
+    const withCover = await generateMetadata({ params });
+    expect(withCover.openGraph?.images).toEqual([
+      { url: 'https://media.test/yard/1600.webp', alt: 'Sri Lakshmi Motors dealership yard' },
+    ]);
+
+    serve(DEALER);
+    const without = await generateMetadata({ params });
+    expect(JSON.stringify(without.openGraph?.images)).toContain('/og/dealers-drive.png');
   });
 
   it('titles a missing dealership rather than throwing', async () => {
     serve(notListed());
 
     expect(await generateMetadata({ params })).toEqual({ title: 'Dealership not found' });
+  });
+});
+
+describe('structured data', () => {
+  beforeEach(() => {
+    vi.stubEnv('WEB_BASE_URL', 'https://www.dealers-drive.com');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  function graphOf(container: HTMLElement): Record<string, unknown>[] {
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const parsed = JSON.parse(script?.textContent ?? '{}') as {
+      '@graph'?: Record<string, unknown>[];
+    };
+    return parsed['@graph'] ?? [];
+  }
+
+  it('describes the dealership as an AutoDealer, from what the page shows', async () => {
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+    const dealer = graphOf(container).find((node) => node['@type'] === 'AutoDealer');
+
+    expect(dealer).toMatchObject({
+      '@id': 'https://www.dealers-drive.com/dealers/sri-lakshmi-motors#dealer',
+      name: 'Sri Lakshmi Motors',
+      url: 'https://www.dealers-drive.com/dealers/sri-lakshmi-motors',
+      description: DEALER.tagline,
+      hasMap: DEALER.address.mapsUrl,
+      taxID: '33AABCS1429B1ZX',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '12 Katpadi Road',
+        addressLocality: 'Vellore',
+        addressRegion: 'Tamil Nadu',
+        postalCode: '632001',
+        addressCountry: 'IN',
+      },
+    });
+    expect(dealer).not.toHaveProperty('geo');
+    expect(dealer).not.toHaveProperty('aggregateRating');
+    expect(dealer).not.toHaveProperty('openingHoursSpecification');
+  });
+
+  it('breadcrumbs Home, Dealers and the dealership at their canonical URLs', async () => {
+    serve(DEALER);
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+    const trail = graphOf(container).find((node) => node['@type'] === 'BreadcrumbList');
+
+    expect(trail?.itemListElement).toEqual([
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.dealers-drive.com/' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Dealers',
+        item: 'https://www.dealers-drive.com/dealers',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: 'Sri Lakshmi Motors',
+        item: 'https://www.dealers-drive.com/dealers/sri-lakshmi-motors',
+      },
+    ]);
+  });
+
+  it('cannot be broken out of by what a dealer typed', async () => {
+    serve({ ...DEALER, tagline: '</script><script>alert(1)</script>' });
+    const { container } = render(await DealerPortfolioPage({ params, searchParams }));
+    const script = container.querySelector('script[type="application/ld+json"]');
+
+    expect(script?.innerHTML ?? '').not.toContain('</script>');
+    expect(graphOf(container)[0]?.description).toBe('</script><script>alert(1)</script>');
+  });
+
+  it('describes the yard photograph by the dealership it belongs to', async () => {
+    serve({ ...DEALER, coverUrl: 'https://media.test/yard/1600.webp' });
+    render(await DealerPortfolioPage({ params, searchParams }));
+
+    expect(screen.getByAltText('Sri Lakshmi Motors dealership yard')).toHaveAttribute(
+      'src',
+      'https://media.test/yard/1600.webp',
+    );
   });
 });
 

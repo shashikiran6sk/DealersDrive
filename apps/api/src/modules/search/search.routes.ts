@@ -3,6 +3,7 @@ import { Router } from 'express';
 import type { RateLimiter } from '../../middleware/rate-limit.js';
 import { getDealerVehicles } from './routes/get-dealer-vehicles.js';
 import { getSearchVehicles } from './routes/get-search-vehicles.js';
+import { getSitemap } from './routes/get-sitemap.js';
 import { getVehicle } from './routes/get-vehicle.js';
 import { getVehicleSimilar } from './routes/get-vehicle-similar.js';
 import { getVehicles } from './routes/get-vehicles.js';
@@ -15,6 +16,7 @@ const ROUTES: SearchRoute[] = [
   getVehicleSimilar,
   getDealerVehicles,
   getSearchVehicles,
+  getSitemap,
 ];
 
 export function createSearchRouter(service: SearchService, rateLimit: RateLimiter): Router {

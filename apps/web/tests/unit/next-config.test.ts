@@ -22,4 +22,19 @@ describe('Next.js rewrites', () => {
       },
     ]);
   });
+
+  it('sends /support to the contact page permanently, so one URL is indexed', async () => {
+    const { default: config } = await import('../../next.config');
+
+    await expect(config.redirects?.()).resolves.toEqual([
+      { source: '/support', destination: '/contact', permanent: true },
+    ]);
+  });
+
+  it('puts metadata in <head> for every client, not only the bots Next lists', async () => {
+    const { default: config } = await import('../../next.config');
+
+    expect(config.htmlLimitedBots?.test('Mozilla/5.0 (compatible; Googlebot/2.1)')).toBe(true);
+    expect(config.htmlLimitedBots?.test('curl/8')).toBe(true);
+  });
 });

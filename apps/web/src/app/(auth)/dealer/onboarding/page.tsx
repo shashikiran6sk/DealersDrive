@@ -13,16 +13,15 @@ import { redirect } from 'next/navigation';
 import { AuthShell } from '@/components/auth/auth-shell';
 import { OnboardingWizard, type OnboardingStep } from '@/features/auth/onboarding-wizard';
 import { ApiError, apiGet } from '@/lib/api';
+import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
-
-const PRIVATE_ROBOTS: Metadata['robots'] = { index: false, follow: false };
 
 const LINK_RETURN_TO = '/dealer/onboarding';
 
 export const metadata: Metadata = {
   title: 'Set up your dealership',
-  robots: PRIVATE_ROBOTS,
+  ...seoMetadata({ kind: 'private' }),
 };
 
 export default async function OnboardingPage({

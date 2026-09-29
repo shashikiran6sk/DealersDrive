@@ -90,6 +90,7 @@ describe('an approved car', () => {
         'availability',
         'dealer',
         'description',
+        'facts',
         'images',
         'negotiabilityLabel',
         'primaryIndex',
@@ -103,7 +104,7 @@ describe('an approved car', () => {
       ].sort(),
     );
     expect(Object.keys(body.dealer).sort()).toEqual(
-      ['initials', 'isVerified', 'location', 'name', 'slug'].sort(),
+      ['city', 'district', 'initials', 'isVerified', 'location', 'name', 'slug', 'state'].sort(),
     );
     expect(text).not.toContain(live.listingId);
     expect(text).not.toContain(live.vehicleId);

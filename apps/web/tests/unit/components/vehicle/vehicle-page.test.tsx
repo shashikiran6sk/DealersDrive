@@ -41,12 +41,27 @@ function detail(overrides: Partial<PublicVehicleDetail> = {}): PublicVehicleDeta
     images: [image(0), image(1), image(2)],
     primaryIndex: 1,
     publishedLabel: 'Listed 26 Sep 2026',
+    facts: {
+      make: 'Hyundai',
+      model: 'Creta',
+      variant: 'SX(O)',
+      bodyType: 'SUV',
+      fuelType: 'Petrol',
+      transmission: 'Automatic',
+      color: 'White',
+      kilometersDriven: 22_400,
+      ownerCount: 1,
+      pricePaise: 145_000_000,
+    },
     dealer: {
       name: 'Sri Lakshmi Motors',
       slug: 'sri-lakshmi-motors',
       initials: 'SL',
       isVerified: true,
       location: 'Katpadi, Vellore',
+      city: 'Katpadi',
+      district: 'Vellore',
+      state: 'Tamil Nadu',
     },
     ...overrides,
   };
@@ -73,6 +88,7 @@ function similarCard(slug: string): VehicleCardDto {
 }
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   apiGetParsed.mockReset();
 });
 
@@ -201,14 +217,52 @@ describe('/car/[slug]', () => {
   });
 
   it('titles, describes and canonicalises the page from the car', async () => {
+    vi.stubEnv('APP_ENV', 'production');
+    vi.stubEnv('WEB_BASE_URL', 'https://www.dealers-drive.com');
     serve(detail());
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });
 
-    expect(metadata.title).toBe('2023 Hyundai Creta SX(O) — ₹14,50,000');
+    expect(metadata.title).toBe('2023 Hyundai Creta SX(O) in Katpadi');
     expect(metadata.description).toBe(
-      '2023 Hyundai Creta SX(O), Petrol · Automatic · 22,400 km. Sold by Sri Lakshmi Motors, a verified dealership on Dealers-Drive.',
+      '2023 Hyundai Creta SX(O) for sale in Katpadi, Vellore at ₹14,50,000 — Petrol · Automatic · 22,400 km. Sold by Sri Lakshmi Motors, a verified dealership on Dealers-Drive.',
     );
-    expect(metadata.alternates?.canonical).toBe(`/car/${SLUG}`);
+    expect(metadata.alternates?.canonical).toBe(`https://www.dealers-drive.com/car/${SLUG}`);
+    expect(metadata.robots).toEqual({ index: true, follow: true, 'max-image-preview': 'large' });
+    vi.unstubAllEnvs();
+  });
+
+  it('shares the primary photograph, not the brand card', async () => {
+    serve(detail());
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });
+
+    expect(metadata.openGraph).toMatchObject({
+      title: '2023 Hyundai Creta SX(O) in Katpadi | Dealers-Drive',
+      siteName: 'Dealers-Drive',
+      url: `http://localhost:3000/car/${SLUG}`,
+      images: [image(1)],
+    });
+    expect(metadata.twitter).toMatchObject({ card: 'summary_large_image', images: [image(1)] });
+  });
+
+  it('says a reserved car is reserved, and keeps its page indexable', async () => {
+    vi.stubEnv('APP_ENV', 'production');
+    vi.stubEnv('WEB_BASE_URL', 'https://www.dealers-drive.com');
+    serve(detail({ availability: 'RESERVED' }));
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });
+
+    expect(metadata.description).toMatch(/^Reserved for another buyer\. /);
+    expect(metadata.robots).toMatchObject({ index: true });
+    vi.unstubAllEnvs();
+  });
+
+  it('never lets a non-production deployment be indexed', async () => {
+    vi.stubEnv('APP_ENV', 'dev');
+    vi.stubEnv('WEB_BASE_URL', 'https://dev.dealers-drive.com');
+    serve(detail());
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });
+
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+    vi.unstubAllEnvs();
   });
 
   it('titles a missing car plainly', async () => {
@@ -218,5 +272,116 @@ describe('/car/[slug]', () => {
     );
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'gone' }) });
     expect(metadata.title).toBe('Car not found');
+  });
+});
+
+describe('/car/[slug] structured data', () => {
+  function graphOf(container: HTMLElement): Record<string, unknown>[] {
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const parsed = JSON.parse(script?.textContent ?? '{}') as {
+      '@graph'?: Record<string, unknown>[];
+    };
+    return parsed['@graph'] ?? [];
+  }
+
+  async function carNode(car: PublicVehicleDetail) {
+    serve(car);
+    const { container } = render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+    return graphOf(container).find((node) => node['@type'] === 'Car');
+  }
+
+  it('describes the car from the facts the page prints, and nothing else', async () => {
+    expect(await carNode(detail())).toEqual({
+      '@type': 'Car',
+      '@id': `http://localhost:3000/car/${SLUG}#vehicle`,
+      name: '2023 Hyundai Creta SX(O)',
+      url: `http://localhost:3000/car/${SLUG}`,
+      description: 'Single owner, full service history.',
+      image: [image(1).url, image(0).url, image(2).url],
+      brand: { '@type': 'Brand', name: 'Hyundai' },
+      model: 'Creta',
+      vehicleConfiguration: 'SX(O)',
+      vehicleModelDate: '2023',
+      bodyType: 'SUV',
+      fuelType: 'Petrol',
+      vehicleTransmission: 'Automatic',
+      color: 'White',
+      mileageFromOdometer: { '@type': 'QuantitativeValue', value: 22_400, unitCode: 'KMT' },
+      numberOfPreviousOwners: 1,
+      itemCondition: 'https://schema.org/UsedCondition',
+      offers: {
+        '@type': 'Offer',
+        url: `http://localhost:3000/car/${SLUG}`,
+        price: 1_450_000,
+        priceCurrency: 'INR',
+        availability: 'https://schema.org/InStock',
+        itemCondition: 'https://schema.org/UsedCondition',
+        seller: {
+          '@type': 'AutoDealer',
+          '@id': 'http://localhost:3000/dealers/sri-lakshmi-motors#dealer',
+          name: 'Sri Lakshmi Motors',
+          url: 'http://localhost:3000/dealers/sri-lakshmi-motors',
+        },
+      },
+    });
+  });
+
+  it('prices the offer at exactly the rupees the page shows', async () => {
+    const node = await carNode(detail());
+    const offer = node?.offers as { price: number };
+    expect(`₹${offer.price.toLocaleString('en-IN')}`).toBe('₹14,50,000');
+  });
+
+  it('never calls a reserved car in stock', async () => {
+    const node = await carNode(detail({ availability: 'RESERVED' }));
+    expect(node?.offers).toMatchObject({ availability: 'https://schema.org/Reserved' });
+  });
+
+  it('makes no offer when the page shows no price', async () => {
+    const node = await carNode(
+      detail({ priceLabel: null, facts: { ...detail().facts, pricePaise: null } }),
+    );
+    expect(node).not.toHaveProperty('offers');
+  });
+
+  it('leaves out what the dealer never entered, rather than guessing', async () => {
+    const node = await carNode(
+      detail({
+        description: null,
+        facts: { ...detail().facts, color: null, kilometersDriven: null, ownerCount: null },
+      }),
+    );
+    expect(node).not.toHaveProperty('description');
+    expect(node).not.toHaveProperty('color');
+    expect(node).not.toHaveProperty('mileageFromOdometer');
+    expect(node).not.toHaveProperty('numberOfPreviousOwners');
+  });
+
+  it('breadcrumbs Home, Cars and the car', async () => {
+    serve(detail());
+    const { container } = render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+    const trail = graphOf(container).find((node) => node['@type'] === 'BreadcrumbList');
+
+    expect(trail?.itemListElement).toEqual([
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'http://localhost:3000/' },
+      { '@type': 'ListItem', position: 2, name: 'Cars', item: 'http://localhost:3000/cars' },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: '2023 Hyundai Creta SX(O)',
+        item: `http://localhost:3000/car/${SLUG}`,
+      },
+    ]);
+  });
+
+  it('links the car to its dealership with a crawlable link', async () => {
+    serve(detail());
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    expect(
+      screen
+        .getAllByRole('link')
+        .some((link) => link.getAttribute('href') === '/dealers/sri-lakshmi-motors'),
+    ).toBe(true);
   });
 });

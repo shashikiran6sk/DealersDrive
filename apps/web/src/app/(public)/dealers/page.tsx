@@ -4,12 +4,23 @@ import Link from 'next/link';
 
 import { DirectoryCard } from '@/components/dealers/dealer-card';
 import { DirectoryFilters } from '@/components/dealers/directory-filters';
+import { JsonLd } from '@/components/seo/json-ld';
 import { EmptyState } from '@/components/ui/primitives';
 import { apiGet, qs } from '@/lib/api';
 import { DEALERS_TAG } from '@/lib/cache-tags';
 import { getPublicLocations } from '@/lib/locations';
-import { seoMetadata } from '@/lib/seo';
+import {
+  BREADCRUMB_TEXT,
+  breadcrumbSchema,
+  dealerPath,
+  directoryView,
+  isIndexableView,
+  itemListSchema,
+  pageMetadata,
+} from '@/lib/seo';
 import { many, one, type SearchParamsInput } from '@/lib/url';
+
+import { DEALERS_TEXT } from './dealers.constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,28 +42,29 @@ function cityParam(city: string[]): string | undefined {
   return city.length > 0 ? [...city].sort().join(',') : undefined;
 }
 
+function loadDirectory(params: ReturnType<typeof readParams>): Promise<DealerDirectoryResponse> {
+  const { city, district, q, page } = params;
+  return apiGet<DealerDirectoryResponse>(
+    `/v1/dealers${qs({ city: cityParam(city), district, q, page })}`,
+    { revalidate: 600, tags: [DEALERS_TAG] },
+  );
+}
+
 export async function generateMetadata({
   searchParams,
 }: {
   searchParams: Promise<SearchParamsInput>;
 }): Promise<Metadata> {
-  const { city, district, q } = readParams(await searchParams);
-  const directory = await apiGet<DealerDirectoryResponse>(
-    `/v1/dealers${qs({ city: cityParam(city), district })}`,
-    { revalidate: 600, tags: [DEALERS_TAG] },
-  );
+  const params = readParams(await searchParams);
+  const directory = await loadDirectory(params);
+  const place = placeName(directory, params.city, params.district);
+  const view = directoryView(params, directory.data.length === 0);
 
-  const place = placeName(directory, city, district) ?? 'your area';
-
-  return {
-    title: `Used car dealers in ${place}`,
-    description: `Verified independent used-car dealerships in ${place}. Identity, GSTIN and address checked before a single car goes live.`,
-    ...seoMetadata({
-      kind: 'dealers',
-      ...(district ? { city: district } : city.length === 1 ? { city: city[0] } : {}),
-      hasQuery: Boolean(q) || city.length > 1,
-    }),
-  };
+  return pageMetadata({
+    title: DEALERS_TEXT.metaTitle(place, view.page ?? 1),
+    description: DEALERS_TEXT.metaDescription(place),
+    route: { kind: 'dealers', ...view },
+  });
 }
 
 function placeName(
@@ -72,19 +84,35 @@ export default async function DealerDirectoryPage({
 }: {
   searchParams: Promise<SearchParamsInput>;
 }) {
-  const { city, district, q, page } = readParams(await searchParams);
-  const [directory, locations] = await Promise.all([
-    apiGet<DealerDirectoryResponse>(
-      `/v1/dealers${qs({ city: cityParam(city), district, q, page })}`,
-      { revalidate: 600, tags: [DEALERS_TAG] },
-    ),
-    getPublicLocations(),
-  ]);
+  const params = readParams(await searchParams);
+  const { city, district, q } = params;
+  const [directory, locations] = await Promise.all([loadDirectory(params), getPublicLocations()]);
 
   const place = placeName(directory, city, district);
+  const view = directoryView(params, directory.data.length === 0);
 
   return (
     <div className="mx-auto max-w-[1280px] px-4 pb-[64px] pt-[28px] sm:px-6">
+      <JsonLd
+        nodes={[
+          breadcrumbSchema([
+            { name: BREADCRUMB_TEXT.home, path: '/' },
+            { name: BREADCRUMB_TEXT.dealers, path: '/dealers' },
+          ]),
+          ...(isIndexableView(view)
+            ? [
+                itemListSchema(
+                  DEALERS_TEXT.listName(place),
+                  directory.data.map((dealer) => ({
+                    name: dealer.brandName,
+                    path: dealerPath(dealer.slug),
+                  })),
+                  (directory.page.page - 1) * directory.page.limit,
+                ),
+              ]
+            : []),
+        ]}
+      />
       <nav className="mb-[10px] text-[12px] ink-subtle" aria-label="Breadcrumb">
         <Link href="/">Home</Link> / Dealers
       </nav>

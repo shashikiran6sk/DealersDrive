@@ -7,14 +7,13 @@ import { GoogleSignInButton } from '@/components/auth/google-button';
 import { Banner } from '@/components/ui/primitives';
 import { apiGet } from '@/lib/api';
 import { currentAdmin } from '@/lib/session';
+import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-const PRIVATE_ROBOTS: Metadata['robots'] = { index: false, follow: false };
-
 export const metadata: Metadata = {
   title: 'Admin sign-in',
-  robots: PRIVATE_ROBOTS,
+  ...seoMetadata({ kind: 'private' }),
 };
 
 const ERRORS: Record<string, string> = {

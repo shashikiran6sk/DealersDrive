@@ -8,12 +8,13 @@ import {
   loginToSee,
 } from '@/features/enquiry/customer-enquiries';
 import { ApiError, apiGetParsed, qs } from '@/lib/api';
+import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: CUSTOMER_ENQUIRIES_TEXT.title,
-  robots: { index: false, follow: false },
+  ...seoMetadata({ kind: 'private' }),
 };
 
 type SearchParamsInput = Record<string, string | string[] | undefined>;

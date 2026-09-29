@@ -12,12 +12,21 @@ import {
   SearchNavigationProvider,
   SearchResultsRegion,
 } from '@/components/search/search-navigation';
+import { JsonLd } from '@/components/seo/json-ld';
 import { EmptyState } from '@/components/ui/primitives';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { apiGetParsed, qs } from '@/lib/api';
 import { VEHICLES_TAG } from '@/lib/cache-tags';
 import { getPublicLocations } from '@/lib/locations';
-import { seoMetadata } from '@/lib/seo';
+import {
+  BREADCRUMB_TEXT,
+  breadcrumbSchema,
+  directoryView,
+  isIndexableView,
+  itemListSchema,
+  pageMetadata,
+  vehiclePath,
+} from '@/lib/seo';
 import type { SearchParamsInput } from '@/lib/url';
 import {
   activeFilterCount,
@@ -25,26 +34,16 @@ import {
   readVehicleSearch,
   searchHref,
   setParam,
+  type VehicleSearchParams,
 } from '@/lib/vehicle-search';
 
 import { CARS_TEXT } from './cars.constants';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: CARS_TEXT.metaTitle,
-  description: CARS_TEXT.metaDescription,
-  ...seoMetadata({ kind: 'resolved', canonical: '/cars', isIndexable: true }),
-};
-
 const CARS_PATH = '/cars';
 
-export default async function CarsPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParamsInput>;
-}) {
-  const params = readVehicleSearch(await searchParams);
+async function loadCars(params: VehicleSearchParams) {
   const [listing, locations] = await Promise.all([
     apiGetParsed(PublicVehiclesResponse, `/v1/vehicles${qs(params)}`, {
       revalidate: 60,
@@ -52,16 +51,60 @@ export default async function CarsPage({
     }),
     getPublicLocations(),
   ]);
-
   const district = params.district;
   const place = district
     ? (locations.districts.find((entry) => entry.slug === district)?.name ?? district)
     : undefined;
+  return { listing, locations, place, view: directoryView(params, listing.data.length === 0) };
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParamsInput>;
+}): Promise<Metadata> {
+  const { place, view } = await loadCars(readVehicleSearch(await searchParams));
+  return pageMetadata({
+    title: CARS_TEXT.metaTitle(place, view.page ?? 1),
+    description: CARS_TEXT.metaDescription(place),
+    route: { kind: 'cars', ...view },
+  });
+}
+
+export default async function CarsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParamsInput>;
+}) {
+  const params = readVehicleSearch(await searchParams);
+  const { listing, locations, place, view } = await loadCars(params);
+
   const filtered = activeFilterCount(params) > 0 || Boolean(params.q);
   const pageHref = (page: number) => searchHref(CARS_PATH, setParam(params, 'page', String(page)));
+  const listed = listing.data.filter((vehicle) => vehicle.availability === 'AVAILABLE');
 
   return (
     <SearchNavigationProvider>
+      <JsonLd
+        nodes={[
+          breadcrumbSchema([
+            { name: BREADCRUMB_TEXT.home, path: '/' },
+            { name: BREADCRUMB_TEXT.cars, path: CARS_PATH },
+          ]),
+          ...(isIndexableView(view) && listed.length > 0
+            ? [
+                itemListSchema(
+                  CARS_TEXT.listName(place),
+                  listed.map((vehicle) => ({
+                    name: vehicle.title,
+                    path: vehiclePath(vehicle.slug),
+                  })),
+                  (listing.page.page - 1) * listing.page.limit,
+                ),
+              ]
+            : []),
+        ]}
+      />
       <div className="mx-auto max-w-[1280px] px-4 pt-[28px] pb-[64px] sm:px-6">
         <nav className="mb-[10px] text-[12px] ink-subtle" aria-label={CARS_TEXT.breadcrumbLabel}>
           <Link href="/">{CARS_TEXT.home}</Link> / {CARS_TEXT.breadcrumb}
