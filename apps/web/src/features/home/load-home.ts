@@ -1,4 +1,4 @@
-import { PublicVehiclesResponse, type FacetOption } from '@dealers-drive/contracts';
+import { PublicVehiclesResponse } from '@dealers-drive/contracts';
 
 import { apiGetParsed, qs } from '@/lib/api';
 import { VEHICLES_TAG } from '@/lib/cache-tags';
@@ -9,10 +9,9 @@ import type { DiscoveryRowProps } from './discovery-row/discovery-row.types';
 
 export interface HomeInventory {
   rows: DiscoveryRowProps[];
-  brands: FacetOption[];
 }
 
-const EMPTY: HomeInventory = { rows: [], brands: [] };
+const EMPTY: HomeInventory = { rows: [] };
 
 export async function loadHomeInventory(): Promise<HomeInventory> {
   try {
@@ -35,7 +34,6 @@ export async function loadHomeInventory(): Promise<HomeInventory> {
           cars: (response?.data ?? []).filter((car) => car.availability === 'AVAILABLE'),
         };
       }),
-      brands: responses[0]?.facets.brands ?? [],
     };
   } catch (error) {
     console.error('[home] inventory unavailable', error);

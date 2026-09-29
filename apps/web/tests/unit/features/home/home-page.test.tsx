@@ -1,16 +1,16 @@
 import type {
+  CarSuggestion,
+  CarSuggestResponse,
   FacetOption,
-  PublicLocations,
   PublicVehiclesResponse,
   VehicleCardDto,
 } from '@dealers-drive/contracts';
 import { NO_VEHICLE_FACETS } from '@dealers-drive/contracts';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import HomePage from '@/app/(public)/page';
-import { heroFacetsAction } from '@/features/home/actions';
-import { HeroSearch, heroHref, type HeroFacetsLoader } from '@/features/home/hero-search';
 import type * as ApiModule from '@/lib/api';
 
 import { navigationState } from '../../../setup.js';
@@ -29,23 +29,9 @@ vi.mock('@/lib/api', async (importOriginal) => {
   return { ...actual, apiGetParsed: (...args: unknown[]) => apiGetParsed(...args) as unknown };
 });
 
-const LOCATIONS: PublicLocations = {
-  districts: [
-    { slug: 'ranipet', name: 'Ranipet', count: 4, state: 'Tamil Nadu' },
-    { slug: 'vellore', name: 'Vellore', count: 6, state: 'Tamil Nadu' },
-  ],
-  total: 10,
-  cars: { total: 30, districts: { ranipet: 12, vellore: 18 } },
-};
-
 const BRANDS: FacetOption[] = [
   { value: 'hyundai', label: 'Hyundai', count: 9 },
   { value: 'tata', label: 'Tata', count: 4 },
-];
-
-const MODELS: FacetOption[] = [
-  { value: 'creta', label: 'Creta', count: 5, parent: 'hyundai' },
-  { value: 'venue', label: 'Venue', count: 4, parent: 'hyundai' },
 ];
 
 function card(slug: string, overrides: Partial<VehicleCardDto> = {}): VehicleCardDto {
@@ -73,14 +59,14 @@ function response(data: VehicleCardDto[], available = data.length): PublicVehicl
 }
 
 function serve(byPath: (path: string) => PublicVehiclesResponse) {
-  apiGetParsed.mockImplementation((_schema: unknown, path: string) => {
-    if (path.startsWith('/v1/locations')) return Promise.resolve(LOCATIONS);
-    return Promise.resolve(byPath(path));
-  });
+  apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+    Promise.resolve(byPath(path)),
+  );
 }
 
 afterEach(() => {
   apiGetParsed.mockReset();
+  vi.unstubAllGlobals();
 });
 
 describe('the homepage', () => {
@@ -156,14 +142,10 @@ describe('the homepage', () => {
 
   it('still offers the search when the marketplace cannot be reached', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
-      path.startsWith('/v1/locations')
-        ? Promise.resolve(LOCATIONS)
-        : Promise.reject(new Error('down')),
-    );
+    apiGetParsed.mockRejectedValue(new Error('down'));
     render(await HomePage());
 
-    expect(screen.getByRole('search', { name: 'Find a car' })).toBeInTheDocument();
+    expect(screen.getByRole('search')).toBeInTheDocument();
     expect(
       screen.queryByRole('region', { name: 'Cars on Dealers-Drive now' }),
     ).not.toBeInTheDocument();
@@ -177,120 +159,90 @@ describe('the homepage', () => {
   });
 });
 
-function hero(
-  loadFacets: HeroFacetsLoader = vi.fn(() => Promise.resolve({ brands: BRANDS, models: MODELS })),
-) {
-  render(<HeroSearch locations={LOCATIONS} brands={BRANDS} loadFacets={loadFacets} />);
-  return loadFacets;
+const CRETA: CarSuggestion = {
+  kind: 'MODEL',
+  label: 'Hyundai Creta',
+  metaLabel: 'Model · 5 cars',
+  brand: 'hyundai',
+  model: 'creta',
+  variant: null,
+  count: 5,
+};
+
+function suggesting(data: CarSuggestion[] = [CRETA]): string[] {
+  const calls: string[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : input.toString();
+      calls.push(url);
+      const search = new URL(url, 'http://localhost').searchParams.get('search') ?? '';
+      const body: CarSuggestResponse = {
+        search,
+        data,
+        countLabel: `${String(data.length)} matches`,
+      };
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) });
+    }),
+  );
+  return calls;
 }
 
-describe('HeroSearch', () => {
-  it('searches every car when nothing is chosen', () => {
-    hero();
-    fireEvent.click(screen.getByRole('button', { name: 'Search cars' }));
-    expect(navigationState.pushed).toEqual(['/cars']);
+async function homeSearch() {
+  serve(() => response([card('a')]));
+  render(await HomePage());
+  return screen.getByRole('combobox', { name: 'Search cars by make, model or variant' });
+}
+
+describe('the homepage search — the /cars search box, pointed at /cars', () => {
+  it('is one text box with no button to press', async () => {
+    await homeSearch();
+    const form = screen.getByRole('search');
+    expect(within(form).getAllByRole('combobox')).toHaveLength(1);
+    expect(within(form).queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Brand')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Budget')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'District' })).not.toBeInTheDocument();
   });
 
-  it('offers the marketplace’s brands with their counts, and no model until a brand is chosen', () => {
-    hero();
-    const brand = screen.getByLabelText('Brand');
-    expect(
-      within(brand)
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['Any brand', 'Hyundai (9)', 'Tata (4)']);
-    expect(screen.getByLabelText('Model')).toBeDisabled();
-    expect(screen.getByLabelText('Model')).toHaveDisplayValue('Choose a brand first');
+  it('suggests makes and models from the whole marketplace as the buyer types', async () => {
+    const calls = suggesting();
+    const user = userEvent.setup();
+    await user.type(await homeSearch(), 'creta');
+    expect(await screen.findByRole('option', { name: /Hyundai Creta/ })).toBeInTheDocument();
+    expect(calls).toEqual(['/api/search/vehicles?search=creta']);
   });
 
-  it('loads the chosen brand’s models from the facets, then searches district, brand, model and budget', async () => {
-    const loadFacets = hero();
-
-    const district = screen.getByRole('button', { name: 'District' });
-    expect(district).toHaveTextContent('Select district');
-    fireEvent.click(district);
-    const dialog = await screen.findByRole('dialog');
-    fireEvent.click(within(dialog).getByRole('button', { name: /Ranipet/ }));
-    await waitFor(() => expect(loadFacets).toHaveBeenCalledWith('ranipet', undefined));
-
-    fireEvent.change(screen.getByLabelText('Brand'), { target: { value: 'hyundai' } });
-    await waitFor(() => expect(loadFacets).toHaveBeenLastCalledWith('ranipet', 'hyundai'));
-    await waitFor(() => expect(screen.getByLabelText('Model')).toBeEnabled());
-    expect(
-      within(screen.getByLabelText('Model'))
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['Any model', 'Creta (5)', 'Venue (4)']);
-
-    fireEvent.change(screen.getByLabelText('Model'), { target: { value: 'creta' } });
-    fireEvent.change(screen.getByLabelText('Budget'), { target: { value: '150000000' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Search cars' }));
-
-    expect(navigationState.pushed).toEqual([
-      '/cars?district=ranipet&brand=hyundai&model=creta&maxPrice=150000000',
-    ]);
+  it('opens /cars with the chosen suggestion as filters', async () => {
+    suggesting();
+    const user = userEvent.setup();
+    await user.type(await homeSearch(), 'creta');
+    await user.click(await screen.findByRole('option', { name: /Hyundai Creta/ }));
+    expect(navigationState.pushed).toEqual(['/cars?brand=hyundai&model=creta']);
   });
 
-  it('forgets the model when the brand changes', async () => {
-    hero();
-    fireEvent.change(screen.getByLabelText('Brand'), { target: { value: 'hyundai' } });
-    await waitFor(() => expect(screen.getByLabelText('Model')).toBeEnabled());
-    fireEvent.change(screen.getByLabelText('Model'), { target: { value: 'creta' } });
-    fireEvent.change(screen.getByLabelText('Brand'), { target: { value: 'tata' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Search cars' }));
-    expect(navigationState.pushed.at(-1)).toBe('/cars?brand=tata');
+  it('opens /cars?q= with the words when Enter is pressed on free text', async () => {
+    suggesting([]);
+    const user = userEvent.setup();
+    const input = await homeSearch();
+    await user.type(input, 'creta sx');
+    await waitFor(() => expect(screen.getByText(/No matching cars/)).toBeInTheDocument());
+    await user.keyboard('{Enter}');
+    expect(navigationState.pushed).toEqual(['/cars?q=creta+sx']);
   });
 
-  it('offers budgets as ceilings in rupee lakh', () => {
-    hero();
-    const options = within(screen.getByLabelText('Budget'))
-      .getAllByRole('option')
-      .map((option) => option.textContent);
-    expect(options[0]).toBe('Any budget');
-    expect(options).toContain('Up to ₹15 lakh');
-  });
-
-  it('is a GET form on /cars, so it works before the script loads', () => {
-    hero();
-    const form = screen.getByRole('search', { name: 'Find a car' });
+  it('is a GET form on /cars with the words as q, so it works before the script loads', async () => {
+    const input = await homeSearch();
+    const form = screen.getByRole('search');
     expect(form).toHaveAttribute('action', '/cars');
     expect(form).toHaveAttribute('method', 'get');
-  });
-});
-
-describe('heroHref', () => {
-  it('drops a model with no brand, and every empty field', () => {
-    expect(heroHref({ district: '', brand: '', model: 'creta', maxPrice: '' })).toBe('/cars');
-    expect(heroHref({ district: 'vellore', brand: '', model: '', maxPrice: '50000000' })).toBe(
-      '/cars?district=vellore&maxPrice=50000000',
-    );
-  });
-});
-
-describe('heroFacetsAction', () => {
-  it('reads the brands and a brand’s models from the marketplace search', async () => {
-    apiGetParsed.mockResolvedValue({
-      ...response([]),
-      facets: { ...NO_VEHICLE_FACETS, brands: BRANDS, models: MODELS },
-    });
-    await expect(heroFacetsAction('ranipet', 'hyundai')).resolves.toEqual({
-      brands: BRANDS,
-      models: MODELS,
-    });
-    expect(apiGetParsed).toHaveBeenCalledWith(
-      expect.anything(),
-      '/v1/vehicles?district=ranipet&brand=hyundai&limit=1',
-      expect.anything(),
-    );
+    expect(input).toHaveAttribute('name', 'q');
   });
 
-  it('sends nothing for a value the search would refuse', async () => {
-    await expect(heroFacetsAction('Not A Slug!')).resolves.toEqual({ brands: [], models: [] });
-    expect(apiGetParsed).not.toHaveBeenCalled();
-  });
-
-  it('answers with nothing rather than failing when the API is down', async () => {
-    apiGetParsed.mockRejectedValue(new Error('down'));
-    await expect(heroFacetsAction()).resolves.toEqual({ brands: [], models: [] });
+  it('no longer loads districts or model facets for the hero', async () => {
+    await homeSearch();
+    const paths = apiGetParsed.mock.calls.map((call) => String(call[1]));
+    expect(paths.some((path) => path.startsWith('/v1/locations'))).toBe(false);
+    expect(paths.every((path) => path.endsWith('limit=4'))).toBe(true);
   });
 });

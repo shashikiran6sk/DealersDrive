@@ -1654,7 +1654,7 @@ export const registry: RegistryEntry[] = [
     category: 'Search',
     ownership: 'Feature-specific',
     purpose:
-      'The /cars search with make, model and variant suggestions — the second consumer of the shared Autocomplete. Typing only asks; choosing a row writes brand=/model= (a variant adds q=), Enter with nothing to choose searches the words. NEW at R54.',
+      'The /cars search with make, model and variant suggestions — the second consumer of the shared Autocomplete. Typing only asks; choosing a row writes brand=/model= (a variant adds q=), Enter with nothing to choose searches the words. NEW at R54. Since R79 it is also the homepage search: no params, basePath and action /cars, so it lands on /cars and works as a GET form before the script loads.',
     aliases: [
       'CarSearch',
       'VehicleSearchBox',
@@ -1664,8 +1664,8 @@ export const registry: RegistryEntry[] = [
       'MakeModelSearch',
       'car-search-box',
     ],
-    features: ['R54', 'F077'],
-    props: ['params', 'basePath', 'districtName', 'className'],
+    features: ['R54', 'F077', 'R79'],
+    props: ['params', 'basePath', 'districtName', 'action', 'className'],
     states: [
       'empty',
       'loading',
@@ -1674,6 +1674,7 @@ export const registry: RegistryEntry[] = [
       'nothing found',
       'endpoint failed',
       'a search already applied',
+      'on the homepage',
     ],
     reusable: false,
     storyId: 'search-carsearchbox',
@@ -1992,27 +1993,6 @@ export const registry: RegistryEntry[] = [
     states: ['reserved'],
     reusable: false,
     storyId: 'vehicle-availabilitynotice',
-  },
-  {
-    id: 'C101',
-    name: 'HeroSearch',
-    source: 'apps/web/src/features/home/hero-search/hero-search.tsx',
-    category: 'Search',
-    ownership: 'Feature-specific',
-    purpose:
-      'The homepage search (R72): District (the same LocationDialog the header uses), Brand, Model (loaded from the marketplace facets once a brand is chosen) and Budget, submitting to /cars with the parameters /cars reads. A GET form, so it works before the script loads.',
-    aliases: ['HomeSearch', 'HeroSearchBar', 'SearchBlock', 'hero-search'],
-    features: ['R72', 'F081'],
-    props: ['locations', 'brands', 'loadFacets'],
-    states: [
-      'empty',
-      'district chosen',
-      'brand chosen, models loading',
-      'no inventory yet',
-      'mobile',
-    ],
-    reusable: false,
-    storyId: 'home-herosearch',
   },
   {
     id: 'C102',

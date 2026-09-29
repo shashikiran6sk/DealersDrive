@@ -13,12 +13,22 @@ import { cn } from '@/lib/cn';
 import { readJson } from '@/lib/fetch-json';
 import { searchHref, setParam } from '@/lib/vehicle-search';
 
-import { CAR_SEARCH_TEXT, CAR_SUGGEST_PATH } from './car-search-box.constants';
+import {
+  CAR_SEARCH_QUERY_PARAM,
+  CAR_SEARCH_TEXT,
+  CAR_SUGGEST_PATH,
+} from './car-search-box.constants';
 import type { CarSearchBoxProps } from './car-search-box.types';
 import { CarSuggestionRow } from './car-suggestion-row';
 import { suggestionKey, suggestionParams, suggestQuery } from './utils';
 
-export function CarSearchBox({ params, basePath, districtName, className }: CarSearchBoxProps) {
+export function CarSearchBox({
+  params,
+  basePath,
+  districtName,
+  action,
+  className,
+}: CarSearchBoxProps) {
   const { navigate } = useSearchNavigation();
   const applied = params.q ?? '';
   const [seen, setSeen] = useState(applied);
@@ -68,6 +78,8 @@ export function CarSearchBox({ params, basePath, districtName, className }: CarS
   return (
     <form
       role="search"
+      action={action}
+      method={action ? 'get' : undefined}
       className={cn('w-full sm:max-w-[360px]', className)}
       onSubmit={(event) => {
         event.preventDefault();
@@ -77,6 +89,7 @@ export function CarSearchBox({ params, basePath, districtName, className }: CarS
       <AutocompletePanel
         autocomplete={autocomplete}
         label={CAR_SEARCH_TEXT.label}
+        name={action ? CAR_SEARCH_QUERY_PARAM : undefined}
         placeholder={
           districtName
             ? CAR_SEARCH_TEXT.placeholderInDistrict(districtName)

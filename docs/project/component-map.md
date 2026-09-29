@@ -491,7 +491,8 @@ form — the box is keyed on the applied search, so a navigation resets it.
 
 `components/ui/autocomplete.tsx`. Props (`AutocompletePanel`):
 `autocomplete: UseAutocomplete<T>`, `label`, `placeholder`, `groupLabel`,
-`emptyMessage: (search) => string`, `children: (autocomplete) => ReactNode`.
+`emptyMessage: (search) => string`, `name?` (the input's form name, R79),
+`children: (autocomplete) => ReactNode`.
 States: closed, loading, rows, nothing found, endpoint failed. **NEW at R43.**
 Shared, reusable, **P1**.
 
@@ -537,10 +538,15 @@ because its _town_ matched has none of the typed characters in its name.
 ### C082 — `CarSearchBox`
 
 `components/search/car-search-box/`. Props: `params`, `basePath`,
-`districtName?`, `className?`. States: empty, loading, suggestions (first
-highlighted), arrowed, nothing found, endpoint failed, a search already applied.
-One consumer (`/cars`, first in the page's controls row since R55). **NEW at
-R54.** **P1**
+`districtName?`, `action?`, `className?`. States: empty, loading, suggestions
+(first highlighted), arrowed, nothing found, endpoint failed, a search already
+applied, on the homepage. Two consumers: `/cars`, first in the page's controls
+row since R55, and the homepage hero since **R79**, with no params and
+`basePath` and `action` both `/cars`. **NEW at R54.** **P1**
+
+`action` makes the form a real `<form action method="get">` and names the input
+`q`, so Enter before the script loads still lands on `/cars?q=…`. `/cars` does
+not pass it and is unchanged.
 
 The second consumer of `Autocomplete` (C073), as C073 required — no second
 typeahead. The source is `fetch` against `/api/search/vehicles`, passing the
@@ -1315,35 +1321,23 @@ enquiries are paused, and **Browse available cars**. **Reuses** `Banner`,
 `ButtonLink`. **Tests** `vehicle-card.test.tsx`, `vehicle-page.test.tsx`.
 **Sandbox** `Vehicle/VehicleCard` (Reserved), `Vehicle/AvailabilityNotice`.
 
-### C101 — `HeroSearch` · C102 — `DiscoveryRow`
+### C102 — `DiscoveryRow`
 
 **New at R72** (`features/home/`), the F081 homepage as an entry into `/cars`.
-
-`HeroSearch` is a client `<form action="/cars" method="get">` with four fields:
-
-- **District**: `LocationDialog` from the header's district picker, with
-  `unit="car"`, used through its `onSelect` rather than navigating.
-- **Brand**: the marketplace's brand facet, with counts.
-- **Model**: disabled until a brand is chosen, then loaded from
-  `heroFacetsAction`, which reads the same `/v1/vehicles` facets `/cars` uses.
-- **Budget**: ceilings in lakh, sent as `maxPrice`.
-
-On submit it pushes `searchHref('/cars', …)` — the URL builder `/cars` already
-uses, so the parameters and their order are identical.
+C101 `HeroSearch` sat beside it until **R79**, which replaced the four-field
+hero with `CarSearchBox` (C082) and removed it.
 
 `DiscoveryRow` is a server component: a heading, **View all →** (no count since
 R78) to the same filters on `/cars`, and up to four `VehicleCard`s. It renders
 nothing when empty.
 
-| Component      | Props                                | States                                                           |
-| -------------- | ------------------------------------ | ---------------------------------------------------------------- |
-| `HeroSearch`   | `locations`, `brands`, `loadFacets?` | empty · district chosen · models loading · no inventory · mobile |
-| `DiscoveryRow` | `id`, `title`, `href`, `cars`        | four · fewer · empty (nothing) · mobile                          |
+| Component      | Props                         | States                                  |
+| -------------- | ----------------------------- | --------------------------------------- |
+| `DiscoveryRow` | `id`, `title`, `href`, `cars` | four · fewer · empty (nothing) · mobile |
 
-**Reuses** `LocationDialog`, `Select`, `Button`, `VehicleCard`, `searchHref`.
-**Tests** `apps/web/tests/unit/features/home/home-page.test.tsx`. **Sandbox**
-`Home/HeroSearch` (with `heroFacetsAction` stubbed by
-`apps/sandbox/src/mocks/home-actions.ts`) and `Home/DiscoveryRow`.
+**Reuses** `VehicleCard`, `searchHref`. **Tests**
+`apps/web/tests/unit/features/home/home-page.test.tsx`. **Sandbox**
+`Home/DiscoveryRow`.
 
 ### C103 — `SimilarVehicles`
 

@@ -8,6 +8,8 @@ export interface DiscoverySection {
 
 export const DISCOVERY_CARD_COUNT = 4;
 
+export const HOME_SEARCH_PATH = '/cars';
+
 export const DISCOVERY_SECTIONS: readonly DiscoverySection[] = [
   { key: 'recent', title: 'Recently added', params: {} },
   { key: 'suv', title: 'SUVs', params: { bodyType: 'suv' } },
