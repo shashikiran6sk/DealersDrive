@@ -1,0 +1,8 @@
+node_modules/
+.storage/
+.cache/
+recordings/
+scenes/
+exports/
+*.log
+story.json

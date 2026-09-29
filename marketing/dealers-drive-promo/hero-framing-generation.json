@@ -1,0 +1,74 @@
+[
+  {
+    "target": "assets/vehicles/elevate/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-3e8a1398-66eb-4749-b72f-7cf49db2bb54.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/city/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-d70b2f78-a752-471e-99a3-b284eb2d5ee5.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/wagon/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-a731b7c9-0908-4e24-8221-c46d23f1f02a.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/innova/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-a0160864-889b-4881-a089-9d262ce22e0f.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/brezza/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-794eaa28-c811-4c24-8883-d0a916ba7bc1.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/tiago/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-ab36f07a-3695-4112-90b1-d6a27a62881a.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/thar/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-2b7849d4-86e3-4da8-89f5-8161f3eb3be5.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/fortuner/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-276d72a2-d902-4173-b359-0ebcb2bcffbf.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/nexon/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-aca436d9-f82d-4a3f-b456-b67e9143d6b2.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/hyryder/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-f2d6fe45-b635-44a5-9cc3-331595f996f4.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/carens/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-83bdef9a-cd84-4a9d-9cbd-344451395eb8.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/kushaq/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-b78d0484-2a6c-45d1-9606-75a8288635a3.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30"
+  }
+]

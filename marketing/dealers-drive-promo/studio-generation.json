@@ -1,0 +1,320 @@
+[
+  {
+    "target": "assets/vehicles/elevate/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-3e8a1398-66eb-4749-b72f-7cf49db2bb54.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/elevate/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-880820c6-5c56-437d-8a18-665cfd55d735.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/elevate/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-8c266f4b-8d6f-4b10-86b7-743511407725.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/city/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-d70b2f78-a752-471e-99a3-b284eb2d5ee5.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/city/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-dd549cd1-103b-44b0-a981-2a61d04fe81b.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/city/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-e05f16fa-9bea-4104-8fe4-3a054a1d4731.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/wagon/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-a731b7c9-0908-4e24-8221-c46d23f1f02a.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/wagon/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-7f2631f7-1f0f-4d27-b583-2908de2d35d2.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/wagon/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-1375e37d-f7ac-4bae-bdf5-ffa995d27922.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/innova/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-a0160864-889b-4881-a089-9d262ce22e0f.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/innova/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-69a107da-5012-4413-a2c8-eb8da8d75fb1.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/innova/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-806b71f5-bb8e-4fda-a900-eadd2d60c8ce.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/brezza/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-794eaa28-c811-4c24-8883-d0a916ba7bc1.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/brezza/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-436adef5-a3a1-40e4-b06d-6eb274bbbe92.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/brezza/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-3300cee2-1dae-4c33-9de9-29d2e162198e.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/tiago/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-ab36f07a-3695-4112-90b1-d6a27a62881a.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/tiago/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-1defdc03-c034-4f18-b672-7e7fc24c11ab.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/tiago/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-0b0167e3-5eaa-4b21-9ad9-db7807915a68.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/thar/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-2b7849d4-86e3-4da8-89f5-8161f3eb3be5.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/thar/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-e2e4173b-befb-4dae-90ba-a1ff4ae489b9.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/thar/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-837acc72-6fa8-46fd-85fd-e8f26a1f38d0.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/fortuner/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-276d72a2-d902-4173-b359-0ebcb2bcffbf.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/fortuner/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-87c2551a-74a0-4c2e-9558-6353d8489b1e.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/fortuner/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-ca88a272-9e56-4fd5-aa59-bec779a93fa5.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/nexon/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-aca436d9-f82d-4a3f-b456-b67e9143d6b2.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/nexon/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-aefac871-60ac-41b7-8b12-4a90a17652d7.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/nexon/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-d2d987c9-175d-4962-83bd-e9ee2f306814.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/hyryder/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-f2d6fe45-b635-44a5-9cc3-331595f996f4.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/hyryder/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-ac216426-12c1-4d6a-b972-5ee7703e79b0.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/hyryder/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-4b69baed-f2e8-486e-be7a-262a8f7fb117.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/carens/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-83bdef9a-cd84-4a9d-9cbd-344451395eb8.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/carens/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-df356925-e227-48cc-8f91-bb691717056b.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/carens/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-184e00ce-027f-4d32-8f44-0d902df366e6.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/kushaq/hero.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-b78d0484-2a6c-45d1-9606-75a8288635a3.png",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationDate": "2026-09-30",
+    "previousEdit": {
+      "target": "assets/vehicles/kushaq/hero.png",
+      "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-7a7c1c4a-8c2f-4d5f-a46f-32d3e5268373.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied vehicle photograph. Create its replacement for a premium used-car marketplace card. Keep this exact car model, body design, paint colour, trim, wheel design and realistic proportions. Replace the entire environment with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor, no horizon line or gradients. Add a soft natural grey contact shadow beneath the tyres and chassis, broad studio lighting and clean white reflections (remove all outdoor/tree/building reflections). Critical composition: full car front three-quarter view at approximately 45 degrees, FRONT BUMPER AND NOSE POINTING TOWARD THE RIGHT edge of the image; rear toward the LEFT. Car remains upright, level on all four tyres, not tilted/rolled in the image plane. Show front fascia and near side. Consistent 50mm lens at headlamp height. Entire car centred, about 80% of image width, generous white margins and all wheels visible. Wide 16:9 photographic image. No logos, letters, text, watermark, scenery, props, floor tiles or grey background. Plain blank white number plate. Preserve the car's identity; only alter its presentation and setting.",
+      "generationDate": "2026-09-30"
+    }
+  },
+  {
+    "target": "assets/vehicles/kushaq/rear.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-1a455b7f-d8eb-4ec2-9c07-99107f4a81af.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/elevate/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-a9c42e04-7576-44c4-acbd-91a9a79e4a56.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/city/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-3093e5b9-2f41-42ba-8605-d10ca24fe173.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/wagon/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-80d74777-c7d2-4e97-a8b4-05df4dbc35a4.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/innova/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-8db9b5e3-dfee-46c7-bd4d-0bb40dd9a69f.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/brezza/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-aa6a8442-ca93-4c6e-9cbe-772f969356d1.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/tiago/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-70af7f89-08f4-4ed6-a42c-bd2ec3ec498d.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/thar/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-ae4b9876-a627-4cc6-944c-319cf215165d.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/fortuner/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-b9b4412f-0470-417c-bdec-d5218e12bdfb.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/nexon/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-02cc706b-1361-4aba-aa4f-21347a13a2f0.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/hyryder/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-de7b652c-0378-47c8-ba23-cffb10fafb7c.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/carens/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-3f500e7c-c414-4916-84cd-4c6f10f6eeae.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/kushaq/dashboard.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-17a1a28b-031a-4e8e-a326-42b46caa48f2.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/elevate/side.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-6af8aa22-7461-4970-9f7b-72ae45df6880.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing black Honda Elevate side photograph. Preserve exact car identity, body design, black paint, wheel design, proportions, full side-profile camera angle. Replace all surrounding environment and floor with seamless pure WHITE studio cyclorama, matte white floor, no horizon. Realistic soft grey contact shadows under tyres/chassis, neutral broad studio lighting. Remove all trees, buildings, outdoor reflections and replace with clean white studio reflections. Preserve dark interior surfaces and real material textures. No scenery, tiles, logos, added text or watermark. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/elevate/front-seats.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-a12f061c-0fa3-4af8-b495-a2747c7dc327.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/elevate/rear-seats.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-3b1cf34c-9e87-4503-84c3-9b475b0e65ad.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/elevate/boot.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-1c7353e0-209c-4fbc-bb00-25638f3b38cc.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing black Honda Elevate boot photograph. Preserve exact car identity, body design, black paint, wheel design, proportions, open tailgate and dark carpeted cargo compartment. Replace all surrounding environment and floor with seamless pure WHITE studio cyclorama, matte white floor, no horizon. Realistic soft grey contact shadows under tyres/chassis, neutral broad studio lighting. Remove all trees, buildings, outdoor reflections and replace with clean white studio reflections. Preserve dark interior surfaces and real material textures. No scenery, tiles, logos, added text or watermark. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  },
+  {
+    "target": "assets/vehicles/elevate/wheel.png",
+    "source": "/Users/shashikiran/.codex/generated_images/01a0eda7-d63c-7d33-89ad-1764c2e14ce0/exec-17602af0-5a15-417a-af3c-234aad64eca3.png",
+    "prompt": "Use case: precise-object-edit. Edit this existing black Honda Elevate wheel photograph. Preserve exact car identity, body design, black paint, wheel design, proportions, close-up wheel and headlamp camera angle. Replace all surrounding environment and floor with seamless pure WHITE studio cyclorama, matte white floor, no horizon. Realistic soft grey contact shadows under tyres/chassis, neutral broad studio lighting. Remove all trees, buildings, outdoor reflections and replace with clean white studio reflections. Preserve dark interior surfaces and real material textures. No scenery, tiles, logos, added text or watermark. Wide 16:9.",
+    "generationDate": "2026-09-30"
+  }
+]
