@@ -256,7 +256,7 @@ describe('/car/[slug]', () => {
   });
 
   it('never lets a non-production deployment be indexed', async () => {
-    vi.stubEnv('APP_ENV', 'dev');
+    vi.stubEnv('APP_ENV', 'development');
     vi.stubEnv('WEB_BASE_URL', 'https://dev.dealers-drive.com');
     serve(detail());
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: SLUG }) });

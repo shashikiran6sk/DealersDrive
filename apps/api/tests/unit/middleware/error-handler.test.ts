@@ -320,6 +320,7 @@ describe('unknown throwables', () => {
   it('never leaks a bug message in production', async () => {
     vi.resetModules();
     vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('APP_ENV', 'production');
     vi.stubEnv('WEB_ORIGIN', 'https://dealers-drive.com');
     vi.stubEnv('WEB_BASE_URL', 'https://dealers-drive.com');
     vi.stubEnv('API_BASE_URL', 'https://api.dealers-drive.com');
@@ -329,9 +330,13 @@ describe('unknown throwables', () => {
     // Production refuses to boot without these; see `env.test.ts`.
     vi.stubEnv('GOOGLE_CLIENT_ID', 'client.apps.googleusercontent.com');
     vi.stubEnv('GOOGLE_CLIENT_SECRET', 'google-secret');
-    vi.stubEnv('STORAGE_DRIVER', 'r2');
-    vi.stubEnv('S3_ACCESS_KEY_ID', 'r2-key');
-    vi.stubEnv('S3_SECRET_ACCESS_KEY', 'r2-secret');
+    vi.stubEnv('STORAGE_DRIVER', 's3');
+    vi.stubEnv('AWS_REGION', 'ap-south-1');
+    vi.stubEnv('S3_BUCKET', 'dealers-drive-production');
+    vi.stubEnv('ADMIN_ALLOWLIST', 'admin@dealers-drive.com');
+    vi.stubEnv('METRICS_ENABLED', 'true');
+    vi.stubEnv('METRICS_SCRAPE_TOKEN', 'test-metrics-scrape-token-0123456789abcdef');
+    vi.stubEnv('DOCS_ENABLED', 'false');
     vi.stubEnv('SESSION_SECRET', 'a-real-production-session-secret');
     // R40 — production refuses MAIL_DRIVER=console, which sends nothing.
     vi.stubEnv('MAIL_DRIVER', 'resend');

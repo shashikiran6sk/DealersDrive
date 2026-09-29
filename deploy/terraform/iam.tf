@@ -6,10 +6,7 @@
 #   execution role  — what ECS itself uses to pull the image and read the SSM
 #                     parameters *before* the container starts. The container
 #                     never holds these permissions.
-#   api task role   — what the running API can do. Today: almost nothing. It
-#                     talks to Postgres and to Cloudflare R2, neither of which
-#                     is AWS IAM, so an empty role is the honest answer and a
-#                     wide one would be a lie waiting to be exploited.
+#   api task role   — scoped S3 access for uploads and downloads.
 #   migrate task role — the same, for the one-off migration task.
 #   GitHub roles    — assumed from CI over OIDC. No long-lived AWS key exists
 #                     anywhere in the repository (§20.7).
@@ -73,13 +70,27 @@ resource "aws_iam_role_policy" "execution_secrets" {
 
 # ── what the running containers can do ────────────────────────────────────
 #
-# Deliberately empty. The API's dependencies are Postgres (a connection string)
-# and R2 (an access key), neither of which is AWS IAM. The roles exist so that
-# adding a permission later is a diff rather than a new resource, and so that
-# every task has an identity CloudTrail can name.
 resource "aws_iam_role" "api_task" {
   name               = "${local.name}-api-task"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
+}
+
+data "aws_iam_policy_document" "api_s3" {
+  statement {
+    actions   = ["s3:ListBucket"]
+    resources = ["arn:aws:s3:::${var.s3_bucket}"]
+  }
+
+  statement {
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = ["arn:aws:s3:::${var.s3_bucket}/*"]
+  }
+}
+
+resource "aws_iam_role_policy" "api_s3" {
+  name   = "${local.name}-api-s3"
+  role   = aws_iam_role.api_task.id
+  policy = data.aws_iam_policy_document.api_s3.json
 }
 
 resource "aws_iam_role" "migrate_task" {

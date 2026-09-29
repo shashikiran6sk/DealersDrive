@@ -23,7 +23,11 @@ export default defineConfig({
   // `platform/db/prisma.ts` for the `@prisma/adapter-pg` the running server
   // actually connects with).
   datasource: {
-    url: process.env.DATABASE_URL,
+    url:
+      process.env.DATABASE_URL ??
+      (process.env.APP_ENV === 'production'
+        ? undefined
+        : 'postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'),
   },
   migrations: {
     seed: 'tsx prisma/seed/index.ts',

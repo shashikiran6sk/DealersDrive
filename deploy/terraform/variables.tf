@@ -23,6 +23,16 @@ variable "region" {
   default     = "ap-south-1"
 }
 
+variable "s3_bucket" {
+  description = "Dedicated S3 bucket for this environment."
+  type        = string
+}
+
+variable "admin_allowlist" {
+  description = "Comma-separated administrator email addresses."
+  type        = string
+}
+
 variable "github_repository" {
   description = <<-EOT
     owner/repo, e.g. shashikiran6sk/dealers-drive.
@@ -239,34 +249,6 @@ variable "worker_desired_count" {
   EOT
   type        = number
   default     = 1
-}
-
-variable "mail_driver" {
-  description = <<-EOT
-    `resend` in production, `console` anywhere still being set up.
-
-    `env.ts` refuses `console` in production, so this must be `resend` there and
-    RESEND_API_KEY must be in Parameter Store — otherwise the task fails at boot
-    with the variable named, which is the intended behaviour. The alternative is
-    a platform that approves dealerships and silently tells nobody.
-  EOT
-  type        = string
-  default     = "console"
-}
-
-variable "phone_otp_driver" {
-  description = <<-EOT
-    Who proves a dealer's mobile number (**R39**). `msg91` in production.
-
-    `env.ts` refuses `fake` in production — it accepts a fixed code and proves
-    nothing about who holds the handset — so this must be `msg91` there, with
-    MSG91_AUTH_KEY in Parameter Store and the two widget values below set.
-    Otherwise the task fails at boot with the variable named, which is the
-    intended behaviour: a dealership built around an unproved number publishes
-    a contact that has never been shown to reach anybody.
-  EOT
-  type        = string
-  default     = "fake"
 }
 
 variable "msg91_widget_id" {

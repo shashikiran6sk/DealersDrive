@@ -19,6 +19,7 @@
     "db:migrate:new": "prisma migrate dev --create-only",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed/index.ts",
+    "db:seed:local-auth": "tsx prisma/seed/local-auth.ts",
     "db:seed:dev": "tsx prisma/seed/dev-dealers.ts && tsx prisma/seed/dev-vehicles.ts",
     "db:seed:dev:dealers": "tsx prisma/seed/dev-dealers.ts",
     "db:seed:vehicles:dev": "tsx prisma/seed/dev-vehicles.ts",

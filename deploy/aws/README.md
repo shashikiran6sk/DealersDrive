@@ -1,5 +1,10 @@
 # Standing up dev and production on AWS
 
+> The remote `dev` deployment described below predates the three-environment
+> configuration model. Supported `APP_ENV=development` uses local PostgreSQL,
+> Mailpit, and workers as documented in the root README. Production ECS must
+> use AWS S3 with its task role; the old R2 and console-mail values are invalid.
+
 One-time setup. After this, deploying is a merge (dev) or an approval
 (production), and nothing here is touched again — `deploy` changes the image
 and nothing else.

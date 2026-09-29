@@ -103,7 +103,7 @@ describe('robotsTxt', () => {
   });
 
   it('disallows everything outside production, and advertises no sitemap', () => {
-    vi.stubEnv('APP_ENV', 'dev');
+    vi.stubEnv('APP_ENV', 'development');
     vi.stubEnv('WEB_BASE_URL', 'https://dev.dealers-drive.com');
     expect(robotsTxt()).toEqual({ rules: { userAgent: '*', disallow: '/' } });
   });

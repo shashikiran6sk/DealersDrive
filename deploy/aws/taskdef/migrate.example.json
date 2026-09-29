@@ -1,6 +1,6 @@
 {
   "_comment": [
-    "The schema owner — dd-migrate-dev and dd-migrate-prod. It is a TASK, not a service: it runs",
+    "The schema owner \u2014 dd-migrate-dev and dd-migrate-prod. It is a TASK, not a service: it runs",
     "`prisma migrate deploy`, exits, and is never long-lived.",
     "",
     "Migrations do not belong in the API's boot path. Two tasks starting together would race to",
@@ -14,12 +14,15 @@
     "Two variables, one of them the database. The smallest surface in the system that can alter",
     "the schema is the right size for it."
   ],
-  "family": "dd-migrate-dev",
+  "family": "dd-migrate-prod",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
   "memory": "1024",
-  "runtimePlatform": { "cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX" },
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
   "executionRoleArn": "arn:aws:iam::<account>:role/dd-ecs-execution",
   "taskRoleArn": "arn:aws:iam::<account>:role/dd-migrate-task-dev",
   "containerDefinitions": [
@@ -28,11 +31,20 @@
       "image": "<account>.dkr.ecr.<region>.amazonaws.com/dealers-drive/migrator:sha-PLACEHOLDER",
       "essential": true,
       "command": ["pnpm", "db:migrate:deploy"],
-      "environment": [{ "name": "NODE_ENV", "value": "development" }],
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "APP_ENV",
+          "value": "production"
+        }
+      ],
       "secrets": [
         {
           "name": "DATABASE_URL",
-          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/dev/DATABASE_URL"
+          "valueFrom": "arn:aws:ssm:<region>:<account>:parameter/dealers-drive/production/DATABASE_URL"
         }
       ],
       "logConfiguration": {

@@ -249,7 +249,7 @@ function createResolver(prisma: PrismaClient, sessionStore: SessionService): Ses
 }
 
 export async function startBackground(container: Container): Promise<void> {
-  if (env.STORAGE_DRIVER !== 'local') {
+  if (env.STORAGE_DRIVER === 'minio') {
     await ensureBucket();
     logger.info({ bucket: env.S3_BUCKET, endpoint: env.S3_ENDPOINT }, 'object storage ready');
   }

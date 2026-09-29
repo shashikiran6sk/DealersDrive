@@ -11,7 +11,8 @@ dotenv.config({
   quiet: true,
 });
 
-const isProduction = process.env.NODE_ENV === 'production';
+const appEnvironment = process.env.APP_ENV || 'local';
+const isProduction = appEnvironment === 'production';
 
 const required = (localDefault: string) =>
   isProduction ? z.string().min(1) : z.string().min(1).default(localDefault);
@@ -21,7 +22,7 @@ const optional = <T extends z.ZodTypeAny>(schema: T) =>
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  APP_ENV: z.enum(['local', 'preview', 'dev', 'production']).default('local'),
+  APP_ENV: z.enum(['local', 'development', 'production']).default('local'),
   GIT_SHA: z.string().min(1).default('unknown'),
   PORT: z.coerce.number().int().positive().max(65535).default(4000),
   HOST: z.string().min(1).default('0.0.0.0'),
@@ -29,7 +30,7 @@ const envSchema = z.object({
 
   METRICS_ENABLED: z
     .enum(['true', 'false'])
-    .default('false')
+    .default(isProduction ? 'true' : 'false')
     .transform((value) => value === 'true'),
   METRICS_SCRAPE_TOKEN: optional(z.string().min(32)),
   DB_SLOW_OPERATION_MS: z.coerce.number().int().positive().default(500),
@@ -64,12 +65,14 @@ const envSchema = z.object({
   SESSION_SECRET: z.string().min(16).default('dealers-drive-local-session-secret'),
   SESSION_COOKIE_DOMAIN: optional(z.string().min(1)),
 
-  STORAGE_DRIVER: z.enum(['local', 'minio', 'r2']).default('local'),
+  STORAGE_DRIVER: z
+    .enum(['local', 'minio', 's3', 'r2'])
+    .default(appEnvironment === 'local' ? 'minio' : 's3'),
   STORAGE_LOCAL_DIR: z.string().min(1).default('.storage'),
 
   S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
-  S3_REGION: z.string().min(1).default('auto'),
-  S3_BUCKET: z.string().min(1).default('dealers-drive'),
+  S3_REGION: z.string().min(1).default('us-east-1'),
+  S3_BUCKET: z.string().min(1).default('dealers-drive-local'),
   S3_ACCESS_KEY_ID: optional(z.string().min(1)),
   S3_SECRET_ACCESS_KEY: optional(z.string().min(1)),
   S3_FORCE_PATH_STYLE: z
@@ -79,11 +82,15 @@ const envSchema = z.object({
   UPLOAD_SIGNING_SECRET: z.string().min(8).default('dealers-drive-local-upload-secret'),
   MEDIA_BASE_URL: required('http://localhost:4000/media'),
 
-  MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
+  MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default(isProduction ? 'resend' : 'smtp'),
+  SMTP_HOST: z.string().min(1).default('localhost'),
+  SMTP_PORT: z.coerce.number().int().positive().default(1025),
   RESEND_API_KEY: optional(z.string().min(1)),
   MSG91_AUTH_KEY: optional(z.string().min(1)),
 
-  PHONE_OTP_DRIVER: z.enum(['fake', 'msg91']).default('fake'),
+  PHONE_OTP_DRIVER: z
+    .enum(['fake', 'msg91'])
+    .default(appEnvironment === 'local' ? 'fake' : 'msg91'),
   MSG91_WIDGET_ID: optional(z.string().min(1)),
   MSG91_WIDGET_TOKEN: optional(z.string().min(1)),
   PHONE_OTP_TIMEOUT_MS: z.coerce.number().int().positive().default(4000),
@@ -98,7 +105,7 @@ const envSchema = z.object({
 
   WORKER_INLINE: z
     .enum(['true', 'false'])
-    .default('true')
+    .default('false')
     .transform((value) => value === 'true'),
   JOBS_ENABLED: z
     .enum(['true', 'false'])
@@ -134,27 +141,87 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     ctx.addIssue({ code: 'custom', path: [path], message });
   };
 
-  const production = value.NODE_ENV === 'production';
+  const production = value.APP_ENV === 'production';
+  const development = value.APP_ENV === 'development';
+  const testing = value.NODE_ENV === 'test';
+
+  if (!testing && value.NODE_ENV !== (production ? 'production' : 'development')) {
+    require('NODE_ENV', `must be ${production ? 'production' : 'development'} for APP_ENV=${value.APP_ENV}.`);
+  }
+
+  if (!testing) {
+    const expected = [
+      { key: 'AUTH_MODE', actual: value.AUTH_MODE, wanted: 'cookie' },
+      {
+        key: 'STORAGE_DRIVER',
+        actual: value.STORAGE_DRIVER,
+        wanted: value.APP_ENV === 'local' ? 'minio' : 's3',
+      },
+      { key: 'MAIL_DRIVER', actual: value.MAIL_DRIVER, wanted: production ? 'resend' : 'smtp' },
+      {
+        key: 'PHONE_OTP_DRIVER',
+        actual: value.PHONE_OTP_DRIVER,
+        wanted: value.APP_ENV === 'local' ? 'fake' : 'msg91',
+      },
+      { key: 'DOCS_ENABLED', actual: value.DOCS_ENABLED, wanted: !production },
+      { key: 'METRICS_ENABLED', actual: value.METRICS_ENABLED, wanted: production },
+    ];
+    for (const { key, actual, wanted } of expected) {
+      if (actual !== wanted) {
+        require(key, `must be ${String(wanted)} for APP_ENV=${value.APP_ENV}. Remove the obsolete override.`);
+      }
+    }
+  }
+
+  if (development || production) {
+    for (const key of [
+      'GOOGLE_CLIENT_ID',
+      'GOOGLE_CLIENT_SECRET',
+      'MSG91_AUTH_KEY',
+      'MSG91_WIDGET_ID',
+      'MSG91_WIDGET_TOKEN',
+    ] as const) {
+      if (!value[key]) require(key, `is required in ${value.APP_ENV}.`);
+    }
+    if (!value.S3_BUCKET || value.S3_BUCKET === 'dealers-drive-local')
+      require('S3_BUCKET', `a dedicated ${value.APP_ENV} S3 bucket is required.`);
+    if (value.S3_REGION === 'us-east-1' && !process.env.S3_REGION && !process.env.AWS_REGION)
+      require('AWS_REGION', `is required in ${value.APP_ENV}.`);
+    if (development && /(?:^|[-_])prod(?:uction)?(?:[-_]|$)/i.test(value.S3_BUCKET))
+      require('S3_BUCKET', 'development must not use a production bucket.');
+    if (production && /(?:^|[-_])dev(?:elopment)?(?:[-_]|$)/i.test(value.S3_BUCKET))
+      require('S3_BUCKET', 'production must not use a development bucket.');
+    if (development && !/(?:^|[-_])dev(?:elopment)?(?:[-_]|$)/i.test(value.S3_BUCKET))
+      require('S3_BUCKET', 'development bucket name must contain dev or development.');
+    if (production && !/(?:^|[-_])prod(?:uction)?(?:[-_]|$)/i.test(value.S3_BUCKET))
+      require('S3_BUCKET', 'production bucket name must contain prod or production.');
+    if (value.S3_ENDPOINT !== 'http://localhost:9000')
+      require('S3_ENDPOINT', 'custom S3 endpoints are not allowed outside local.');
+  }
+
+  try {
+    const dbHost = new URL(value.DATABASE_URL).hostname;
+    const localDb = ['localhost', '127.0.0.1', '::1', 'postgres'].includes(dbHost);
+    if (
+      production &&
+      value.DATABASE_URL === 'postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'
+    )
+      require('DATABASE_URL', 'production must not use the local PostgreSQL default.');
+    if (development && !localDb) require('DATABASE_URL', 'development must use local PostgreSQL.');
+  } catch {
+    require('DATABASE_URL', 'must be a valid PostgreSQL URL.');
+  }
+
+  if (production && !process.env.ADMIN_ALLOWLIST?.trim()) {
+    require('ADMIN_ALLOWLIST', 'is required in production.');
+  }
 
   if (production && value.AUTH_MODE === 'dev') {
     require('AUTH_MODE', 'must be `cookie` in production — `dev` bypasses identity verification.');
   }
 
-  if (value.STORAGE_DRIVER !== 'local') {
-    if (!value.S3_ACCESS_KEY_ID) {
-      require('S3_ACCESS_KEY_ID', `is required when STORAGE_DRIVER=${value.STORAGE_DRIVER}.`);
-    }
-    if (!value.S3_SECRET_ACCESS_KEY) {
-      require('S3_SECRET_ACCESS_KEY', `is required when STORAGE_DRIVER=${value.STORAGE_DRIVER}.`);
-    }
-  }
-
   if (production && value.MAIL_DRIVER === 'console') {
     require('MAIL_DRIVER', 'must be `resend` in production — `console` sends nothing.');
-  }
-
-  if (value.MAIL_DRIVER === 'smtp') {
-    require('MAIL_DRIVER', 'is not implemented. Use `console` locally or `resend` in production — there is no SMTP adapter.');
   }
 
   if (value.MAIL_DRIVER === 'resend' && !value.RESEND_API_KEY) {
@@ -224,8 +291,8 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
   }
 
-  if (value.STORAGE_DRIVER === 'local') {
-    require('STORAGE_DRIVER', 'must be `r2` in production — container filesystems are not durable.');
+  if (value.STORAGE_DRIVER !== 's3') {
+    require('STORAGE_DRIVER', 'must be `s3` in production.');
   }
 
   if (value.CACHE_DRIVER === 'memory') {
@@ -250,7 +317,23 @@ export type Env = z.infer<typeof envSchema> & {
 };
 
 function loadEnv(): Env {
-  const parsed = checkedEnvSchema.safeParse(process.env);
+  const parsed = checkedEnvSchema.safeParse({
+    ...process.env,
+    S3_REGION: process.env.AWS_REGION ?? process.env.S3_REGION,
+    S3_ACCESS_KEY_ID:
+      appEnvironment === 'local' && process.env.NODE_ENV !== 'test'
+        ? 'dealersdrive'
+        : (process.env.AWS_ACCESS_KEY_ID ?? process.env.S3_ACCESS_KEY_ID),
+    S3_SECRET_ACCESS_KEY:
+      appEnvironment === 'local' && process.env.NODE_ENV !== 'test'
+        ? 'dealersdrive'
+        : (process.env.AWS_SECRET_ACCESS_KEY ?? process.env.S3_SECRET_ACCESS_KEY),
+    GOOGLE_CALLBACK_URL:
+      process.env.GOOGLE_CALLBACK_URL ??
+      (process.env.API_BASE_URL
+        ? `${process.env.API_BASE_URL}/v1/auth/google/callback`
+        : undefined),
+  });
 
   if (!parsed.success) {
     const details = parsed.error.issues
@@ -258,7 +341,9 @@ function loadEnv(): Env {
       .join('\n');
 
     console.error(`\nInvalid environment configuration:\n${details}\n`);
-    console.error('Copy .env.example to .env at the repo root and fill in the missing values.\n');
+    console.error(
+      `Copy .env.example.${appEnvironment} to .env at the repo root and fill in the missing values.\n`,
+    );
     process.exit(1);
   }
 
@@ -266,7 +351,7 @@ function loadEnv(): Env {
 
   return Object.freeze({
     ...value,
-    isProduction: value.NODE_ENV === 'production',
+    isProduction: value.APP_ENV === 'production',
     isDevelopment: value.NODE_ENV === 'development',
     isTest: value.NODE_ENV === 'test',
     webOrigins: value.WEB_ORIGIN.split(',')
@@ -279,6 +364,25 @@ function loadEnv(): Env {
 }
 
 export const env: Env = loadEnv();
+
+export const config = Object.freeze({
+  app: Object.freeze({ env: env.APP_ENV, nodeEnv: env.NODE_ENV }),
+  database: Object.freeze({ url: env.DATABASE_URL }),
+  auth: Object.freeze({
+    mode: env.AUTH_MODE,
+    google: Object.freeze({ enabled: env.APP_ENV !== 'local' }),
+  }),
+  otp: Object.freeze({ provider: env.PHONE_OTP_DRIVER }),
+  email: Object.freeze({
+    provider: env.MAIL_DRIVER,
+    smtpHost: env.SMTP_HOST,
+    smtpPort: env.SMTP_PORT,
+  }),
+  storage: Object.freeze({ provider: env.STORAGE_DRIVER, bucket: env.S3_BUCKET }),
+  jobs: Object.freeze({ enabled: env.JOBS_ENABLED, inline: env.WORKER_INLINE }),
+  metrics: Object.freeze({ enabled: env.METRICS_ENABLED }),
+  docs: Object.freeze({ enabled: env.DOCS_ENABLED }),
+});
 
 export function googleCredentials(): {
   clientId: string;
