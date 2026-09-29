@@ -112,7 +112,7 @@ describe('the homepage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Find your next car' })).toBeVisible();
     const suvs = within(screen.getByRole('region', { name: 'SUVs' }));
     expect(suvs.getAllByRole('article')).toHaveLength(2);
-    expect(suvs.getByRole('link', { name: 'View all 17 →' })).toHaveAttribute(
+    expect(suvs.getByRole('link', { name: 'View all →' })).toHaveAttribute(
       'href',
       '/cars?bodyType=suv',
     );
@@ -124,6 +124,17 @@ describe('the homepage', () => {
       const row = within(screen.getByRole('region', { name }));
       expect(row.getByRole('link', { name: /View all/ })).toHaveAttribute('href', href);
     }
+  });
+
+  it('never says how many cars the marketplace holds', async () => {
+    serve((path) =>
+      path.includes('bodyType=suv') ? response([card('suv-1')], 17) : response([card(path)], 40),
+    );
+    render(await HomePage());
+
+    const links = screen.getAllByRole('link', { name: /View all/ });
+    expect(links).toHaveLength(4);
+    for (const link of links) expect(link).toHaveTextContent(/^View all →$/);
   });
 
   it('promotes only cars a buyer can act on — never a reserved one', async () => {

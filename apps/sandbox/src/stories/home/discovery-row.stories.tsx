@@ -25,7 +25,6 @@ const meta = {
     id: 'home-suv',
     title: 'SUVs',
     href: '/cars?bodyType=suv',
-    total: 42,
     cars: [1, 2, 3, 4].map(car),
   },
 } satisfies Meta<typeof DiscoveryRow>;
@@ -35,8 +34,8 @@ type Story = StoryObj<typeof meta>;
 
 export const FourCars: Story = {};
 
-export const FewerThanFour: Story = { args: { cars: [car(1), car(2)], total: 2 } };
+export const FewerThanFour: Story = { args: { cars: [car(1), car(2)] } };
 
-export const EmptyRendersNothing: Story = { args: { cars: [], total: 0 } };
+export const EmptyRendersNothing: Story = { args: { cars: [] } };
 
 export const Mobile: Story = { parameters: { viewport: { defaultViewport: 'mobile1' } } };

@@ -2021,7 +2021,7 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-specific',
     purpose:
-      'One homepage row (R72): a heading, "View all N →" to the same search on /cars, and up to four VehicleCards. Renders nothing when empty.',
+      'One homepage row (R72): a heading, "View all →" (never a count, R78) to the same search on /cars, and up to four VehicleCards. Renders nothing when empty.',
     aliases: ['FeaturedInventory', 'HomeRow', 'CarRow', 'discovery-row'],
     features: ['R72', 'F081'],
     props: ['id', 'title', 'href', 'total', 'cars'],

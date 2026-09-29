@@ -10,10 +10,9 @@ import type { DiscoveryRowProps } from './discovery-row/discovery-row.types';
 export interface HomeInventory {
   rows: DiscoveryRowProps[];
   brands: FacetOption[];
-  total: number;
 }
 
-const EMPTY: HomeInventory = { rows: [], brands: [], total: 0 };
+const EMPTY: HomeInventory = { rows: [], brands: [] };
 
 export async function loadHomeInventory(): Promise<HomeInventory> {
   try {
@@ -33,12 +32,10 @@ export async function loadHomeInventory(): Promise<HomeInventory> {
           id: `home-${section.key}`,
           title: section.title,
           href: searchHref('/cars', section.params),
-          total: response?.available ?? 0,
           cars: (response?.data ?? []).filter((car) => car.availability === 'AVAILABLE'),
         };
       }),
       brands: responses[0]?.facets.brands ?? [],
-      total: responses[0]?.available ?? 0,
     };
   } catch (error) {
     console.error('[home] inventory unavailable', error);

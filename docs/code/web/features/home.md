@@ -55,7 +55,12 @@ actions revalidate.
 available one (R71), so the first four are all available whenever four exist.
 The row also drops any card that is not `AVAILABLE`, so it may show fewer than
 four but never a car a buyer cannot open. Sold and withdrawn cars never reach
-it. "View all N" uses the response's `available`.
+it.
+
+**"View all →" carries no number (R78).** How many cars Dealers-Drive holds is
+not something the homepage tells a visitor, so the link names the search, not
+its size. The rows are fetched on the server, so the counts in the API
+response never reach the browser either.
 
 The brands for the hero come from the first response's facets, so the page makes
 no fifth request for them. If the API is down, the page still renders the hero

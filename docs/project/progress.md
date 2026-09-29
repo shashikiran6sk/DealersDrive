@@ -247,6 +247,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R75 — The heart, the sign-in that completes it, and the Saved cars page · revises F087/F075/F082 · heart on every card and the VDP, optimistic with rollback, `?save=` login intent, `/saved` grouped Available / Reserved / No longer available · [#198](https://github.com/shashikiran6sk/DealersDrive/pull/198)
 - [x] R76 — The customer's account menu · revises R67/R68/F073 · one round avatar with initials; a menu with name, masked mobile, Saved cars, My enquiries, Logout; keyboard and screen-reader complete · [#199](https://github.com/shashikiran6sk/DealersDrive/pull/199)
 - [x] R77 — Every surface agrees on the lifecycle · revises F066/R69–R76 · audit matrix in feature-map; dealer dashboard gains a Reserved tile · [#200](https://github.com/shashikiran6sk/DealersDrive/pull/200)
+- [~] R78 — The homepage never says how many cars there are · revises R72 · every row's link reads "View all →"; `total` leaves `DiscoveryRow`
 
 ---
 

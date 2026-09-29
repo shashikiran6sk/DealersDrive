@@ -21,6 +21,6 @@ export const HOME_TEXT = {
   lede: 'Used cars from verified independent dealerships, photographed by Dealers-Drive and reviewed before they go live. Choose where, what and how much — the marketplace does the rest.',
   browseAll: 'Browse every car',
   browseDealers: 'Explore verified dealers',
-  viewAll: (count: number) => `View all ${count.toLocaleString('en-IN')} →`,
+  viewAll: 'View all →',
   discoveryLabel: 'Cars on Dealers-Drive now',
 } as const;

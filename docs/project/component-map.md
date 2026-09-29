@@ -1331,13 +1331,14 @@ enquiries are paused, and **Browse available cars**. **Reuses** `Banner`,
 On submit it pushes `searchHref('/cars', …)` — the URL builder `/cars` already
 uses, so the parameters and their order are identical.
 
-`DiscoveryRow` is a server component: a heading, **View all N →** to the same
-filters on `/cars`, and up to four `VehicleCard`s. It renders nothing when empty.
+`DiscoveryRow` is a server component: a heading, **View all →** (no count since
+R78) to the same filters on `/cars`, and up to four `VehicleCard`s. It renders
+nothing when empty.
 
-| Component      | Props                                  | States                                                           |
-| -------------- | -------------------------------------- | ---------------------------------------------------------------- |
-| `HeroSearch`   | `locations`, `brands`, `loadFacets?`   | empty · district chosen · models loading · no inventory · mobile |
-| `DiscoveryRow` | `id`, `title`, `href`, `total`, `cars` | four · fewer · empty (nothing) · mobile                          |
+| Component      | Props                                | States                                                           |
+| -------------- | ------------------------------------ | ---------------------------------------------------------------- |
+| `HeroSearch`   | `locations`, `brands`, `loadFacets?` | empty · district chosen · models loading · no inventory · mobile |
+| `DiscoveryRow` | `id`, `title`, `href`, `cars`        | four · fewer · empty (nothing) · mobile                          |
 
 **Reuses** `LocationDialog`, `Select`, `Button`, `VehicleCard`, `searchHref`.
 **Tests** `apps/web/tests/unit/features/home/home-page.test.tsx`. **Sandbox**
