@@ -18,7 +18,7 @@ export function SocialRow({ links }: { links: PublicConfig['social'] }) {
               rel="noopener noreferrer"
               title={link.label}
               aria-label={FOOTER_TEXT.socialLinkLabel(link.label)}
-              className="flex h-8 w-8 items-center justify-center border border-(--color-divider) ink-muted hover:border-(--color-accent) hover:text-(--color-accent)"
+              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-(--color-divider) bg-white ink-muted hover:border-(--color-neutral-400) hover:text-(--color-ink)"
             >
               <SocialIcon network={link.network} />
             </a>

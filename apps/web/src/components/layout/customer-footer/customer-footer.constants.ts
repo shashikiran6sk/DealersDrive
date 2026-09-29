@@ -8,6 +8,8 @@ export const BUYER_LINKS: FooterLink[] = [
 
 export const DEALER_LINKS: FooterLink[] = [{ href: '/login?as=dealer', label: 'Dealer login' }];
 
+export const SUPPORT_LINKS: FooterLink[] = [{ href: '/contact', label: 'Contact & support' }];
+
 export const FOOTER_TEXT = {
   brand: 'Dealers-Drive',
   trust:

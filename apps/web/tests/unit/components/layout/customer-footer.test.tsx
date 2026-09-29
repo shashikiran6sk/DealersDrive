@@ -89,7 +89,9 @@ describe('the destinations it claims exist', () => {
       .map((link) => link.getAttribute('href') ?? '')
       .filter((href) => href.startsWith('/'));
 
-    expect(new Set(routes)).toEqual(new Set(['/cars', '/dealers', '/saved', '/login?as=dealer']));
+    expect(new Set(routes)).toEqual(
+      new Set(['/cars', '/dealers', '/saved', '/login?as=dealer', '/contact']),
+    );
   });
 });
 
@@ -134,10 +136,15 @@ describe('the social row', () => {
 });
 
 describe('the support contacts', () => {
-  it('links the address and the number the API supplied', () => {
+  /**
+   * The revamp's Contact & support page (`/contact`) is the Support column's
+   * first entry; the address and number the API supplied still follow it.
+   */
+  it('links the contact page, then the address and the number the API supplied', () => {
     renderFooter();
 
     expect(columnHrefs('Support')).toEqual([
+      '/contact',
       'mailto:support@dealers-drive.com',
       'tel:+914162248890',
     ]);
@@ -151,6 +158,6 @@ describe('the support contacts', () => {
   it('omits a contact the API could not supply, rather than linking nothing', () => {
     renderFooter({ supportEmail: '', supportPhone: '' });
 
-    expect(columnHrefs('Support')).toEqual([]);
+    expect(columnHrefs('Support')).toEqual(['/contact']);
   });
 });
