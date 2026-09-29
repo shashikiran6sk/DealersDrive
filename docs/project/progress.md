@@ -249,6 +249,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R77 — Every surface agrees on the lifecycle · revises F066/R69–R76 · audit matrix in feature-map; dealer dashboard gains a Reserved tile · [#200](https://github.com/shashikiran6sk/DealersDrive/pull/200)
 - [x] R78 — The homepage never says how many cars there are · revises R72 · every row's link reads "View all →"; `total` leaves `DiscoveryRow` · [#202](https://github.com/shashikiran6sk/DealersDrive/pull/202)
 - [x] R79 — One search bar on the homepage, the same as `/cars` · revises R72/F081 · `CarSearchBox` replaces District/Brand/Model/Budget; suggestions open `/cars`, Enter opens `/cars?q=`; `HeroSearch` removed · [#203](https://github.com/shashikiran6sk/DealersDrive/pull/203)
+- [~] R80 — A stale cached read is asked for again, not shown as an error · revises R22 · `apiGetParsed` refetches once with `no-store` when a cached payload fails its contract; a live mismatch still throws
 
 ---
 

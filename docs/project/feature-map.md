@@ -7024,3 +7024,39 @@ everything else already matched the matrix.
   - no `/v1/locations` read
 - The HeroSearch, `heroHref` and `heroFacetsAction` tests are removed with
   their code. The `CarSearchBox` tests are unchanged and still pass.
+
+## R80 — A stale cached read is asked for again, not shown as an error
+
+**Revises R22** · no API change
+
+**What happened.** `/cars?brand=volkswagen&model=virtus` sometimes rendered an
+error page ("did not match its contract: data.0.availability … available
+Invalid input"), and a refresh cured it.
+
+**Why.** Next's fetch cache serves an expired entry, however old, while it
+revalidates in the background. That URL's entry had been written before R71
+added `availability` and `available`. The first request after R71 got that
+body, and `apiGetParsed` rightly refused it. By the refresh, the background
+revalidation had replaced it. The API was answering correctly throughout.
+
+**The change.** When a read that went through the cache fails its contract,
+`apiGetParsed` asks once more, uncached (`cache: 'no-store'`, no session
+cookie), and answers from that. If the API itself answers the old shape, the
+R22 skew, it still throws exactly as before. A read that was never cached is
+not asked twice.
+
+This affects every `apiGetParsed` read, not only `/cars`. It also covers
+production: any deploy that changes a contract while the web app's fetch cache
+survives would otherwise show one error page per cached URL.
+
+### Files
+
+- `apps/web/src/lib/api.ts`
+
+### Tests
+
+- `apps/web/tests/unit/lib/api.test.ts`:
+  - a stale cached payload is answered from a second, `no-store` request
+  - the second request sends no session cookie
+  - the old shape from the API itself still throws, naming the field
+  - an uncached read is not retried
