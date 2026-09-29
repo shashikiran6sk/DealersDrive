@@ -18,7 +18,7 @@ export function FilterGroup({ label, activeCount, onClear, children }: FilterGro
       <div className="mb-[10px] flex min-h-[24px] items-center justify-between gap-2">
         <h3
           aria-hidden="true"
-          className="font-heading text-[13px] font-semibold uppercase tracking-[0.1em]"
+          className="font-heading text-[12px] font-extrabold tracking-[0.06em]"
         >
           {label}
           {activeCount > 0 ? (

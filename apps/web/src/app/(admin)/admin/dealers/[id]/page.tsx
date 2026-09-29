@@ -62,7 +62,9 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
         ].map(([label, value]) => (
           <div key={String(label)} className="border border-(--color-divider) bg-white p-[14px]">
             <div className="eyebrow">{label}</div>
-            <div className="font-heading text-[28px] font-bold leading-[1.15] tnum">{value}</div>
+            <div className="font-heading text-[28px] font-extrabold leading-[1.15] tnum">
+              {value}
+            </div>
           </div>
         ))}
       </div>

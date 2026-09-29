@@ -4,7 +4,7 @@ export function AvailabilityBadge({ label, className }: { label: string; classNa
   return (
     <span
       className={cn(
-        'absolute bottom-[10px] left-[10px] z-[2] border border-(--color-warn) bg-white px-[8px] py-[3px] text-[11px] font-semibold uppercase tracking-[0.08em] text-(--color-warn)',
+        'absolute bottom-[10px] left-[10px] z-[2] rounded-full bg-(--color-warn-bg) px-[10px] py-[4px] text-[11px] font-extrabold text-(--color-warn)',
         className,
       )}
     >

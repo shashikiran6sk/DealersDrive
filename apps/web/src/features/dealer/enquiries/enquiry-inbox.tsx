@@ -11,22 +11,22 @@ export function EnquiryInbox({ inbox, status }: EnquiryInboxProps) {
   return (
     <div className="flex flex-col gap-[18px]">
       <div>
-        <h1 className="text-[28px]">{ENQUIRIES_TEXT.title}</h1>
+        <h1 className="text-[25px] tracking-[-0.035em] md:text-[30px]">{ENQUIRIES_TEXT.title}</h1>
         <p className="text-[13px] ink-muted tnum">{ENQUIRIES_TEXT.count(inbox.counts.ALL)}</p>
       </div>
 
-      <nav aria-label={ENQUIRIES_TEXT.tabsLabel} className="overflow-x-auto">
-        <div className="seg">
+      <nav aria-label={ENQUIRIES_TEXT.tabsLabel} className="-mx-1 overflow-x-auto px-1 pb-1">
+        <div className="flex gap-[8px]">
           {ENQUIRY_TABS.map((tab) => (
             <Link
               key={tab.value}
               href={enquiriesHref({ status: tab.value })}
               aria-current={status === tab.value ? 'page' : undefined}
               aria-selected={status === tab.value}
-              className="seg-opt whitespace-nowrap no-underline"
+              className="dd-chip no-underline"
             >
               {tab.label}
-              <span className="tnum ink-subtle">{inbox.counts[tab.value]}</span>
+              <span className="tnum opacity-70">{inbox.counts[tab.value]}</span>
             </Link>
           ))}
         </div>

@@ -62,13 +62,15 @@ export default async function CarsPage({
 
   return (
     <SearchNavigationProvider>
-      <div className="mx-auto max-w-[1280px] px-6 pt-[26px] pb-[60px]">
+      <div className="mx-auto max-w-[1280px] px-4 pt-[28px] pb-[64px] sm:px-6">
         <nav className="mb-[10px] text-[12px] ink-subtle" aria-label={CARS_TEXT.breadcrumbLabel}>
           <Link href="/">{CARS_TEXT.home}</Link> / {CARS_TEXT.breadcrumb}
         </nav>
 
         <div className="mb-[14px] flex flex-wrap items-baseline gap-3">
-          <h1 className="text-[34px]">{place ? CARS_TEXT.titleIn(place) : CARS_TEXT.title}</h1>
+          <h1 className="text-[26px] sm:text-[30px]">
+            {place ? CARS_TEXT.titleIn(place) : CARS_TEXT.title}
+          </h1>
           <span className="text-[14px] ink-muted tnum" role="status">
             {CARS_TEXT.count(listing.available)}
           </span>

@@ -30,20 +30,22 @@ export default async function DealerLayout({ children }: { children: ReactNode }
   const dealer = await requireDealer();
 
   return (
-    <div className="flex min-h-dvh bg-(--color-bg)">
-      <aside className="hidden w-[214px] flex-none flex-col gap-[18px] border-r border-(--color-divider) bg-white px-3 py-[18px] md:flex">
-        <Link href="/" className="flex items-center gap-[9px] no-underline">
+    <div className="flex min-h-dvh bg-white">
+      <aside className="sticky top-0 hidden h-dvh w-[224px] flex-none flex-col gap-[28px] border-r border-(--color-divider) bg-(--color-sidebar) px-4 pt-[24px] pb-[20px] md:flex">
+        <Link href="/" className="flex h-[30px] items-center gap-[10px] px-1 no-underline">
           <Plate size="logo">DD</Plate>
-          <span className="font-heading text-[15px] font-semibold">Dealer console</span>
+          <span className="font-heading text-[16px] font-extrabold tracking-[-0.02em]">
+            Dealer console
+          </span>
         </Link>
 
         <ConsoleNav items={LANDED_NAV} />
 
-        <Blueprint className="mt-auto bg-(--color-accent-100) p-3">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-(--color-accent-800)">
+        <Blueprint className="mt-auto rounded-[14px] bg-white p-4">
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] ink-muted">
             Listing credits
           </div>
-          <div className="my-1 font-heading text-[28px] font-bold leading-none tnum">
+          <div className="my-[6px] font-heading text-[28px] font-extrabold leading-none tnum">
             {dealer.creditBalance}
           </div>
           {dealer.creditsHeld > 0 ? (
@@ -55,15 +57,15 @@ export default async function DealerLayout({ children }: { children: ReactNode }
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-[15] flex h-[58px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5">
-          <span className="truncate font-heading text-[16px] font-semibold">
+        <header className="sticky top-0 z-[15] flex h-[64px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-4 md:h-[70px] md:px-8">
+          <span className="min-w-0 truncate font-heading text-[16px] font-extrabold tracking-[-0.02em]">
             {dealer.brandName}
           </span>
-          <StatusTag tone={dealer.status === 'ACTIVE' ? 'accent' : 'warn'}>
+          <StatusTag tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'} className="flex-none">
             {dealer.statusLabel}
           </StatusTag>
 
-          <span className="ml-auto whitespace-nowrap text-[12px] ink-muted tnum">
+          <span className="ml-auto whitespace-nowrap text-[13px] ink-muted tnum">
             {dealer.creditBalance} credits
           </span>
           <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="max-md:hidden">
@@ -72,7 +74,7 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           <SignOutButton />
         </header>
 
-        <main className="min-w-0 flex-1 pb-[56px] md:pb-0">{children}</main>
+        <main className="min-w-0 flex-1 pb-[60px] md:pb-0">{children}</main>
       </div>
 
       <ConsoleTabBar items={LANDED_NAV} />

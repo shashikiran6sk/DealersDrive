@@ -12,8 +12,8 @@ export function CustomerEnquiryList({ enquiries }: CustomerEnquiryListProps) {
   return (
     <div className="flex flex-col gap-[16px]">
       <div>
-        <h1 className="text-[28px]">{CUSTOMER_ENQUIRIES_TEXT.title}</h1>
-        <p className="text-[13px] ink-muted">{CUSTOMER_ENQUIRIES_TEXT.intro}</p>
+        <h1 className="text-[26px] sm:text-[30px]">{CUSTOMER_ENQUIRIES_TEXT.title}</h1>
+        <p className="mt-[6px] text-[14px] ink-muted">{CUSTOMER_ENQUIRIES_TEXT.intro}</p>
       </div>
 
       {enquiries.data.length === 0 ? (

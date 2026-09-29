@@ -55,7 +55,7 @@ export function VehicleGallery({ title, images, primaryIndex }: VehicleGalleryPr
         type="button"
         onClick={(event) => openAt(primary, event.currentTarget)}
         aria-label={VEHICLE_GALLERY_TEXT.openAll(title, total)}
-        className="blueprint block aspect-[4/3] w-full cursor-zoom-in bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-accent)"
+        className="blueprint block aspect-[4/3] w-full cursor-zoom-in bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
       >
         <Corners />
         {/* eslint-disable-next-line @next/next/no-img-element */}

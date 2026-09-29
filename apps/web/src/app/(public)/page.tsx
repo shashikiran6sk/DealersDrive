@@ -70,16 +70,14 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="border-b border-(--color-divider) bg-white">
-        <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-9 sm:px-6 md:py-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16 lg:py-16">
+      <section className="border-b border-(--color-divider) bg-(--color-bg)">
+        <div className="mx-auto grid max-w-[1440px] items-center gap-8 px-4 py-8 sm:px-6 md:py-12 lg:grid-cols-[1fr_1.05fr] lg:gap-12 lg:px-10 lg:py-14">
           <div className="min-w-0">
-            <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-accent-700)">
-              {HOME_TEXT.eyebrow}
-            </div>
-            <h1 className="max-w-[13ch] text-[38px] leading-[1.02] sm:text-[52px] lg:text-[62px]">
+            <div className="eyebrow mb-4">{HOME_TEXT.eyebrow}</div>
+            <h1 className="max-w-[14ch] text-[40px] leading-[1.05] tracking-[-0.04em] sm:text-[48px] lg:text-[54px]">
               {HOME_TEXT.title}
             </h1>
-            <p className="mt-5 max-w-[56ch] text-[16px] leading-[1.7] ink-secondary">
+            <p className="mt-5 max-w-[52ch] text-[15px] leading-[1.8] ink-muted">
               {HOME_TEXT.lede}
             </p>
 
@@ -92,18 +90,21 @@ export default async function HomePage() {
               />
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/cars" className="btn btn-ghost">
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link href="/cars" className="dd-chip">
                 {HOME_TEXT.browseAll}
               </Link>
-              <Link href="/dealers" className="btn btn-ghost">
+              <Link href="/dealers" className="dd-chip">
                 {HOME_TEXT.browseDealers}
               </Link>
             </div>
           </div>
 
-          <Blueprint className="bg-(--color-accent-100) p-6 sm:p-8" as="div">
-            <div className="flex min-h-[360px] flex-col justify-between">
+          <Blueprint
+            className="rounded-[26px] border-0 bg-white p-6 shadow-lg sm:p-8 lg:p-10"
+            as="div"
+          >
+            <div className="flex flex-col justify-between lg:min-h-[360px]">
               <div>
                 <Plate size="chip">HOW IT WORKS</Plate>
                 <h2 className="mt-5 max-w-[13ch] text-[30px] leading-[1.08] sm:text-[36px]">
@@ -121,7 +122,7 @@ export default async function HomePage() {
                     key={label}
                     className="grid grid-cols-[100px_1fr] gap-4 border-b border-(--color-divider) py-4 last:border-b-0 sm:grid-cols-[120px_1fr]"
                   >
-                    <strong className="font-heading text-[14px] text-(--color-accent-800)">
+                    <strong className="font-heading text-[14px] font-extrabold text-(--color-ink)">
                       {label}
                     </strong>
                     <span className="text-[13px] leading-[1.5] ink-secondary">{detail}</span>
@@ -137,7 +138,7 @@ export default async function HomePage() {
         <div
           aria-label={HOME_TEXT.discoveryLabel}
           role="region"
-          className="mx-auto flex max-w-[1280px] flex-col gap-[44px] px-4 py-11 sm:px-6"
+          className="mx-auto flex max-w-[1440px] flex-col gap-[48px] px-4 py-10 sm:px-6 lg:px-10 lg:py-12"
         >
           {inventory.rows.map((row) => (
             <DiscoveryRow key={row.id} {...row} />
@@ -145,11 +146,9 @@ export default async function HomePage() {
         </div>
       ) : null}
 
-      <section className="mx-auto max-w-[1280px] px-6 py-12 md:py-16">
+      <section className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 md:py-16 lg:px-10">
         <div className="mb-8 max-w-[62ch]">
-          <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-accent-700)">
-            Your journey
-          </div>
+          <div className="eyebrow mb-3">Your journey</div>
           <h2 className="text-[30px] sm:text-[36px]">
             From local discovery to a real conversation
           </h2>
@@ -162,7 +161,7 @@ export default async function HomePage() {
         <div className="grid gap-4 md:grid-cols-3">
           {JOURNEY.map((step) => (
             <Blueprint key={step.number} className="bg-white p-6" as="article">
-              <div className="font-mono text-[11px] text-(--color-accent-700)">{step.number}</div>
+              <div className="font-mono text-[11px] ink-muted">{step.number}</div>
               <h3 className="mt-8 text-[20px]">{step.title}</h3>
               <p className="mt-2 text-[13px] leading-[1.65] ink-secondary">{step.body}</p>
             </Blueprint>
@@ -171,11 +170,9 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-(--color-divider) bg-white">
-        <div className="mx-auto grid max-w-[1280px] gap-10 px-6 py-12 md:grid-cols-[0.75fr_1.25fr] md:py-16 lg:gap-20">
+        <div className="mx-auto grid max-w-[1440px] gap-10 px-4 py-12 sm:px-6 md:grid-cols-[0.75fr_1.25fr] md:py-16 lg:gap-20 lg:px-10">
           <div>
-            <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-accent-700)">
-              Built for both sides
-            </div>
+            <div className="eyebrow mb-3">Built for both sides</div>
             <h2 className="text-[30px] sm:text-[36px]">
               A marketplace where the dealer stays the dealer
             </h2>
@@ -186,26 +183,29 @@ export default async function HomePage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="border border-(--color-divider) bg-(--color-bg) p-6">
-              <div className="text-[11px] uppercase tracking-[0.12em] ink-subtle">For buyers</div>
+            <div className="rounded-[16px] border border-(--color-divider) bg-(--color-bg) p-6">
+              <div className="eyebrow">For buyers</div>
               <h3 className="mt-4 text-[22px]">Know who you are buying from</h3>
               <p className="mt-3 text-[13px] leading-[1.65] ink-secondary">
                 Start with verified dealer profiles and cars reviewed before they go live, then
                 enquire about a car directly with the dealership that owns it.
               </p>
-              <Link href="/dealers" className="btn btn-ghost mt-6">
+              <Link
+                href="/dealers"
+                className="btn btn-ghost mt-6 -ml-2 whitespace-normal text-left"
+              >
                 Browse the dealer directory →
               </Link>
             </div>
 
-            <div className="border border-(--color-divider) bg-(--color-bg) p-6">
-              <div className="text-[11px] uppercase tracking-[0.12em] ink-subtle">For dealers</div>
+            <div className="rounded-[16px] border border-(--color-divider) bg-(--color-bg) p-6">
+              <div className="eyebrow">For dealers</div>
               <h3 className="mt-4 text-[22px]">Build a trusted digital presence</h3>
               <p className="mt-3 text-[13px] leading-[1.65] ink-secondary">
                 Join the verified network, manage your dealership profile and get ready to showcase
                 inventory to serious local buyers.
               </p>
-              <Link href="/dealer" className="btn btn-ghost mt-6">
+              <Link href="/dealer" className="btn btn-ghost mt-6 -ml-2 whitespace-normal text-left">
                 Open the dealer console →
               </Link>
             </div>
@@ -214,9 +214,9 @@ export default async function HomePage() {
       </section>
 
       <section className="bg-(--color-accent-900) text-white">
-        <div className="mx-auto max-w-[1280px] px-6 py-12 md:py-16">
+        <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 md:py-16 lg:px-10">
           <div className="mb-8 max-w-[58ch]">
-            <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-accent-300)">
+            <div className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-(--color-accent-400)">
               Why Dealers-Drive
             </div>
             <h2 className="text-[30px] text-white sm:text-[36px]">
@@ -227,9 +227,9 @@ export default async function HomePage() {
           <div className="grid gap-x-7 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
             {TRUST_POINTS.map((point) => (
               <div key={point.number} className="border-t border-white/25 pt-4">
-                <div className="font-mono text-[11px] text-white/55">{point.number}</div>
+                <div className="font-mono text-[11px] text-white/60">{point.number}</div>
                 <h3 className="mt-5 text-[17px] text-white">{point.title}</h3>
-                <p className="mt-2 text-[12px] leading-[1.65] text-white/70">{point.body}</p>
+                <p className="mt-2 text-[13px] leading-[1.65] text-white/75">{point.body}</p>
               </div>
             ))}
           </div>

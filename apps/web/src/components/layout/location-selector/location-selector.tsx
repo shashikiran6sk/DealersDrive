@@ -11,7 +11,6 @@ export function LocationSelector({ locations }: { locations: PublicLocations }) 
     <DistrictPicker locations={locations}>
       {(chosen) => (
         <button type="button" className="btn btn-secondary flex items-center gap-[7px]">
-          <span className="block h-[14px] w-[5px] bg-(--color-accent)" aria-hidden="true" />
           {chosen?.name ?? DISTRICT_PICKER_TEXT.selectDistrict}{' '}
           <span aria-hidden="true">{CARET}</span>
         </button>

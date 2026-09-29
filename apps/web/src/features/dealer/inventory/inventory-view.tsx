@@ -34,7 +34,7 @@ export function InventoryView({ inventory, status, q }: InventoryViewProps) {
     <div className="flex flex-col gap-[18px]">
       <div className="flex flex-wrap items-end justify-between gap-[12px]">
         <div>
-          <h1 className="text-[28px]">{INVENTORY_TEXT.title}</h1>
+          <h1 className="text-[25px] tracking-[-0.035em] md:text-[30px]">{INVENTORY_TEXT.title}</h1>
           <p className="text-[13px] ink-muted tnum">{INVENTORY_TEXT.count(total)}</p>
         </div>
         <ButtonLink href={ADD_VEHICLE_HREF} variant="primary">
@@ -42,18 +42,18 @@ export function InventoryView({ inventory, status, q }: InventoryViewProps) {
         </ButtonLink>
       </div>
 
-      <nav aria-label={INVENTORY_TEXT.tabsLabel} className="overflow-x-auto">
-        <div className="seg">
+      <nav aria-label={INVENTORY_TEXT.tabsLabel} className="-mx-1 overflow-x-auto px-1 pb-1">
+        <div className="flex gap-[8px]">
           {INVENTORY_TABS.map((tab) => (
             <Link
               key={tab.label}
               href={inventoryHref({ status: tab.value, q })}
               aria-current={status === tab.value ? 'page' : undefined}
               aria-selected={status === tab.value}
-              className="seg-opt whitespace-nowrap no-underline"
+              className="dd-chip no-underline"
             >
               {tab.label}
-              <span className="tnum ink-subtle">{inventory.counts[tab.value ?? 'ALL'] ?? 0}</span>
+              <span className="tnum opacity-70">{inventory.counts[tab.value ?? 'ALL'] ?? 0}</span>
             </Link>
           ))}
         </div>
@@ -75,7 +75,7 @@ export function InventoryView({ inventory, status, q }: InventoryViewProps) {
           type="search"
           defaultValue={q ?? ''}
           placeholder={INVENTORY_TEXT.searchPlaceholder}
-          className="max-w-[300px]"
+          className="max-w-[370px]"
         />
         <button type="submit" className="btn btn-secondary">
           {INVENTORY_TEXT.search}

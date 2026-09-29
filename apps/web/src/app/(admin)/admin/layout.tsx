@@ -29,7 +29,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <span className="border border-white/40 px-[7px] py-[2px] font-mono text-[11px] text-white">
             DD
           </span>
-          <span className="font-heading text-[15px] font-semibold text-white">Admin console</span>
+          <span className="font-heading text-[15px] font-extrabold text-white">Admin console</span>
         </Link>
 
         <div className="max-md:ml-auto max-md:overflow-x-auto">

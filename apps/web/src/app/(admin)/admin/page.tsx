@@ -22,7 +22,7 @@ export default async function AdminDashboardPage() {
           const box = (
             <>
               <div className="eyebrow">{stat.label}</div>
-              <div className="font-heading text-[28px] font-bold leading-[1.15] tnum">
+              <div className="font-heading text-[28px] font-extrabold leading-[1.15] tnum">
                 {stat.valueLabel}
               </div>
             </>

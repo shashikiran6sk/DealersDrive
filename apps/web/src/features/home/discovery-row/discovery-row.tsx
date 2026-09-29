@@ -11,14 +11,14 @@ export function DiscoveryRow({ id, title, href, cars }: DiscoveryRowProps) {
   return (
     <section aria-labelledby={`${id}-heading`} className="flex flex-col gap-[14px]">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 id={`${id}-heading`} className="text-[24px] sm:text-[28px]">
+        <h2 id={`${id}-heading`} className="text-[22px] sm:text-[24px]">
           {title}
         </h2>
-        <Link href={href} className="btn btn-ghost">
+        <Link href={href} className="btn btn-ghost text-[13px]">
           {HOME_TEXT.viewAll}
         </Link>
       </div>
-      <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))]">
+      <div className="grid items-stretch gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))]">
         {cars.map((car) => (
           <VehicleCard key={car.slug} vehicle={car} />
         ))}

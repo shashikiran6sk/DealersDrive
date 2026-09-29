@@ -31,14 +31,15 @@ export function VehicleCard({
   return (
     <article
       className={cn(
-        'card group relative gap-0 overflow-hidden bg-white p-0',
+        'card group relative h-full min-w-0 gap-0 overflow-hidden rounded-[15px] bg-white p-0 shadow-sm',
+        'has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-(--color-focus)',
         unavailable
           ? 'cursor-default'
-          : 'transition-colors duration-150 hover:border-(--color-accent)',
+          : 'transition-colors duration-150 hover:border-(--color-neutral-400)',
         className,
       )}
     >
-      <div className="relative aspect-[4/3] border-b border-(--color-divider) bg-(--color-neutral-200)">
+      <div className="relative aspect-[1.6] flex-none overflow-hidden border-b border-(--color-divider) bg-(--color-neutral-150) sm:aspect-[1.75]">
         <VehicleImage
           image={vehicle.image}
           priority={priority}
@@ -57,12 +58,12 @@ export function VehicleCard({
 
       <div
         className={cn(
-          'flex flex-col px-[13px] pt-[12px] pb-[14px]',
-          variant === 'compact' ? 'gap-[8px]' : 'gap-[9px]',
+          'flex min-w-0 flex-1 flex-col px-[14px] pt-[13px] pb-[14px]',
+          variant === 'compact' ? 'gap-[8px]' : 'gap-[8px]',
           unavailable && 'ink-muted',
         )}
       >
-        <h3 className="line-clamp-2 font-heading text-[15px] font-semibold leading-[1.25]">
+        <h3 className="line-clamp-2 min-h-[2.5em] font-heading text-[14px] font-extrabold leading-[1.25] tracking-[-0.015em]">
           {unavailable ? (
             <span>
               {vehicle.title}
@@ -72,15 +73,20 @@ export function VehicleCard({
               </span>
             </span>
           ) : (
-            <Link href={vehicleHref(vehicle.slug)} className="after:absolute after:inset-0">
+            <Link
+              href={vehicleHref(vehicle.slug)}
+              className="after:absolute after:inset-0 focus-visible:outline-none"
+            >
               {vehicle.title}
             </Link>
           )}
         </h3>
-        <div className="text-[20px] font-bold tnum">
+        <div className="text-[20px] font-bold tracking-[-0.02em] tnum">
           {vehicle.priceLabel ?? VEHICLE_CARD_TEXT.priceOnRequest}
         </div>
-        <div className="text-[12px] ink-secondary tnum">{vehicle.metaLabel}</div>
+        <div className="line-clamp-2 min-h-[3em] text-[12px] leading-[1.5] ink-muted tnum">
+          {vehicle.metaLabel}
+        </div>
         {variant === 'compact' ? null : <DealerStrip dealer={vehicle.dealer} />}
       </div>
     </article>

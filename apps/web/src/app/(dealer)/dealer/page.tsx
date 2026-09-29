@@ -17,10 +17,10 @@ export default async function DealerDashboardPage() {
   const dashboard = await apiGet<DashboardResponse>('/v1/dealer/dashboard', { revalidate: false });
 
   return (
-    <div className="flex flex-col gap-[18px] p-[22px]">
+    <div className="flex flex-col gap-[18px] px-4 py-[22px] md:px-8 md:py-[30px]">
       <div className="flex flex-wrap items-end justify-between gap-[12px]">
         <div>
-          <h1 className="text-[26px]">{dashboard.greeting}</h1>
+          <h1 className="text-[25px] tracking-[-0.035em] md:text-[30px]">{dashboard.greeting}</h1>
           <p className="mt-1 text-[13px] ink-muted">{dashboard.subline}</p>
         </div>
         <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" size="md">
@@ -52,6 +52,7 @@ export default async function DealerDashboardPage() {
             value={stat.valueLabel}
             delta={stat.delta}
             deltaTone={stat.deltaTone}
+            inverse={stat.key === 'credits'}
           />
         ))}
       </div>

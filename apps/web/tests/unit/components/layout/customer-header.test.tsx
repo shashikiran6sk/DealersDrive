@@ -51,7 +51,6 @@ describe('which section is current', () => {
   it.each([
     ['/cars', 'Buy cars'],
     ['/dealers', 'Dealers'],
-    ['/saved', 'Saved cars'],
   ])('marks %s as %s', (pathname, label) => {
     setLocation(pathname);
     render(<CustomerHeader locations={LOCATIONS} />);
@@ -78,6 +77,21 @@ describe('which section is current', () => {
 
     expect(screen.getByRole('link', { name: 'Buy cars' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Dealers' })).not.toHaveAttribute('aria-current');
+  });
+});
+
+/**
+ * The revamp moves Saved cars out of the top bar: a signed-in customer reaches
+ * it from the account menu (`header-account.test.tsx`), and everybody from the
+ * footer's Buy a car column. The page and its sign-in redirect are unchanged.
+ */
+describe('saved cars', () => {
+  it('is not a top-level header link', () => {
+    setLocation('/saved');
+    render(<CustomerHeader locations={LOCATIONS} />);
+
+    expect(screen.queryByRole('link', { name: 'Saved cars' })).not.toBeInTheDocument();
+    expect(current()).toEqual([]);
   });
 });
 

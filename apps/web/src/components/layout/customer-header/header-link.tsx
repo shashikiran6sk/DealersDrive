@@ -18,7 +18,10 @@ export function HeaderLink({
     <Link
       href={href}
       aria-current={active ? 'page' : undefined}
-      className={cn(active && 'text-(--color-accent-700)')}
+      className={cn(
+        'transition-colors hover:text-(--color-ink)',
+        active ? 'text-(--color-ink) underline decoration-2 underline-offset-[10px]' : 'ink-muted',
+      )}
     >
       {children}
     </Link>

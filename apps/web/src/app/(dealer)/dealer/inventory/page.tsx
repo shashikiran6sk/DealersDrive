@@ -33,7 +33,7 @@ export default async function InventoryPage({
   );
 
   return (
-    <div className="p-[22px]">
+    <div className="px-4 py-[22px] md:px-8 md:py-[30px]">
       <InventoryView inventory={inventory} status={status} q={q} />
     </div>
   );

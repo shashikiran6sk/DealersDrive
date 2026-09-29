@@ -20,7 +20,7 @@ export function ConsoleTabBar({ items }: { items: NavItem[] }) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 flex h-[56px] border-t border-(--color-divider) bg-white md:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 flex h-[60px] border-t border-(--color-divider) bg-white/95 backdrop-blur-md md:hidden"
       aria-label={DEALER_NAV_LABEL}
     >
       {bar.map((item) => {
@@ -32,7 +32,9 @@ export function ConsoleTabBar({ items }: { items: NavItem[] }) {
             aria-current={current ? 'true' : undefined}
             className={cn(
               'flex flex-1 items-center justify-center px-1 text-center text-[12px]',
-              current ? 'text-(--color-accent)' : 'ink-muted',
+              current
+                ? 'font-extrabold text-(--color-ink) shadow-[inset_0_2px_0_var(--color-ink)]'
+                : 'font-semibold ink-muted',
             )}
           >
             {item.short ?? item.label}

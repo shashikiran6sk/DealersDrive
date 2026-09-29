@@ -32,7 +32,7 @@ export default async function EnquiriesPage({
   );
 
   return (
-    <div className="p-[22px]">
+    <div className="px-4 py-[22px] md:px-8 md:py-[30px]">
       <EnquiryInbox inbox={inbox} status={status} />
     </div>
   );

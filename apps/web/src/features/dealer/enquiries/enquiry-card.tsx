@@ -10,11 +10,11 @@ export function EnquiryCard({ enquiry }: EnquiryCardProps) {
   const { customer, vehicle } = enquiry;
 
   return (
-    <li className="card flex flex-col gap-[10px] bg-white p-[14px]">
+    <li className="card flex flex-col gap-[12px] bg-white p-[18px]">
       <div className="flex flex-wrap items-center gap-[10px]">
         <Avatar initials={customer.initials} size={34} />
         <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-semibold">{customer.name}</div>
+          <div className="text-[16px] font-extrabold">{customer.name}</div>
           {customer.phoneDisplay ? (
             <div className="flex flex-wrap items-center gap-[6px]">
               <span className="font-mono text-[13px] whitespace-nowrap tnum">

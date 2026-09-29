@@ -5,7 +5,6 @@ export const HEADER_TEXT = {
   navLabel: 'Main',
   buyCars: 'Buy cars',
   dealers: 'Dealers',
-  savedCars: 'Saved cars',
   login: 'Login',
   selectDistrict: DISTRICT_PICKER_TEXT.selectDistrict,
   caret: '▾',
@@ -14,6 +13,5 @@ export const HEADER_TEXT = {
 export const HEADER_NAV = {
   cars: '/cars',
   dealers: '/dealers',
-  saved: '/saved',
   login: '/login',
 } as const;

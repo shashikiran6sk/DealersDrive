@@ -22,23 +22,23 @@ export function CustomerHeader({ locations, account }: CustomerHeaderProps) {
 
   return (
     <header className="sticky top-0 z-20 border-b border-(--color-divider) bg-white">
-      <div className="mx-auto flex h-(--header-height) max-w-[1280px] items-center gap-3 px-4 sm:gap-4 sm:px-6 md:gap-7">
-        <Link href="/" className="flex flex-none items-center gap-[9px]">
+      <div className="mx-auto flex h-(--header-height) max-w-[1440px] items-center gap-3 px-4 sm:gap-4 sm:px-6 md:gap-7 lg:px-10">
+        <Link href="/" className="flex flex-none items-center gap-[10px]">
           <Plate size="logo">DD</Plate>
-          <span className="font-heading text-[16px] font-bold max-sm:sr-only">
+          <span className="font-heading text-[17px] font-extrabold tracking-[-0.02em] max-sm:sr-only">
             {HEADER_TEXT.brand}
           </span>
         </Link>
 
-        <nav className="hidden gap-[22px] text-[14px] md:flex" aria-label={HEADER_TEXT.navLabel}>
+        <nav
+          className="hidden gap-[24px] text-[14px] font-bold md:flex"
+          aria-label={HEADER_TEXT.navLabel}
+        >
           <HeaderLink href={HEADER_NAV.cars} active={pathname.startsWith(HEADER_NAV.cars)}>
             {HEADER_TEXT.buyCars}
           </HeaderLink>
           <HeaderLink href={HEADER_NAV.dealers} active={pathname.startsWith(HEADER_NAV.dealers)}>
             {HEADER_TEXT.dealers}
-          </HeaderLink>
-          <HeaderLink href={HEADER_NAV.saved} active={pathname.startsWith(HEADER_NAV.saved)}>
-            {HEADER_TEXT.savedCars}
           </HeaderLink>
         </nav>
 
@@ -47,7 +47,10 @@ export function CustomerHeader({ locations, account }: CustomerHeaderProps) {
             <LocationSelector locations={locations} />
           </Suspense>
           {account ?? (
-            <Link href={HEADER_NAV.login} className="btn btn-primary">
+            <Link
+              href={HEADER_NAV.login}
+              className="btn btn-primary min-h-[40px] rounded-full px-[18px]"
+            >
               {HEADER_TEXT.login}
             </Link>
           )}

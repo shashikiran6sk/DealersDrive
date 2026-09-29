@@ -17,7 +17,7 @@ export function EnquiryForm({ customer, dealerName, onSend, onCancel }: EnquiryF
 
   return (
     <form
-      className="flex flex-col gap-[14px] border border-(--color-divider) bg-white p-[16px]"
+      className="flex flex-col gap-[14px] rounded-[16px] border border-(--color-divider) bg-white p-[18px]"
       aria-labelledby={`${id}-heading`}
       noValidate
       onSubmit={(event) => {
@@ -33,7 +33,7 @@ export function EnquiryForm({ customer, dealerName, onSend, onCancel }: EnquiryF
         });
       }}
     >
-      <h2 id={`${id}-heading`} className="text-[17px] font-semibold">
+      <h2 id={`${id}-heading`} className="text-[17px]">
         {ENQUIRY_PANEL_TEXT.heading}
       </h2>
 

@@ -35,9 +35,9 @@ export default async function EditVehiclePage({
   const step = isWizardStep(query.step) ? query.step : 'basics';
 
   return (
-    <div className="flex max-w-[860px] flex-col gap-[18px] p-[22px]">
+    <div className="flex max-w-[860px] flex-col gap-[18px] px-4 py-[22px] md:px-8 md:py-[30px]">
       <div>
-        <h1 className="text-[28px]">{vehicle.title}</h1>
+        <h1 className="text-[25px] tracking-[-0.035em] md:text-[30px]">{vehicle.title}</h1>
         <p className="mt-1 text-[13px] ink-muted">
           <span className="font-mono">{vehicle.registrationDisplay}</span>
           {vehicle.summary ? <span className="tnum"> · {vehicle.summary}</span> : null}

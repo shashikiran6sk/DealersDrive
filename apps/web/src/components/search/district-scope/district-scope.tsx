@@ -20,7 +20,6 @@ export function DistrictScope({ locations }: DistrictScopeProps) {
       <DistrictPicker locations={locations}>
         {(picked) => (
           <button type="button" className="btn btn-secondary flex items-center gap-[7px]">
-            <span className="block h-[14px] w-[5px] bg-(--color-accent)" aria-hidden="true" />
             {picked ? DISTRICT_SCOPE_TEXT.change : DISTRICT_SCOPE_TEXT.selectDistrict}
           </button>
         )}

@@ -35,7 +35,7 @@ export function ComingSoon({ eyebrow, title, description }: ComingSoonProps) {
         <div className="flex min-h-[260px] items-center justify-center border-t border-(--color-divider) bg-(--color-accent-100) p-8 md:min-h-[430px] md:border-l md:border-t-0">
           <div className="text-center">
             <Plate size="logo">DD</Plate>
-            <div className="mt-5 font-heading text-[26px] font-semibold text-(--color-accent-900)">
+            <div className="mt-5 font-heading text-[26px] font-extrabold text-(--color-accent-900)">
               Coming soon
             </div>
             <p className="mx-auto mt-2 max-w-[28ch] text-[13px] leading-[1.6] ink-secondary">
