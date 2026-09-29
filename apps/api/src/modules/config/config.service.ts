@@ -1,4 +1,9 @@
-import type { PublicConfig, SocialLink, SupportContacts } from '@dealers-drive/contracts';
+import type {
+  HeroImageConfig,
+  PublicConfig,
+  SocialLink,
+  SupportContacts,
+} from '@dealers-drive/contracts';
 
 import { env } from '../../config/env.js';
 import type { PlatformConfigService } from '../../platform/config/platform-config.js';
@@ -52,6 +57,14 @@ function whatsappHref(value: string): string | null {
   return socialHref(value);
 }
 
+const SITE_PATH = /^\/(?!\/)[A-Za-z0-9._~/-]+$/;
+
+export function heroImage(url: string, alt: string): HeroImageConfig | null {
+  if (url === '') return null;
+  const src = SITE_PATH.test(url) ? url : socialHref(url);
+  return src === null ? null : { src, alt };
+}
+
 export function supportContacts(values: readonly string[]): SupportContacts {
   const [customerEmail = '', customerPhone = '', dealerEmail = '', dealerPhone = '', chat = ''] =
     values;
@@ -74,6 +87,8 @@ export function createConfigService({ config }: ConfigDeps) {
         vehicleReport,
         socialValues,
         supportValues,
+        heroUrl,
+        heroAlt,
       ] = await Promise.all([
         config.number('listing.minPhotos'),
         config.number('listing.durationDays'),
@@ -83,6 +98,8 @@ export function createConfigService({ config }: ConfigDeps) {
         config.boolean('feature.vehicleReport'),
         Promise.all(SOCIAL_NETWORKS.map((entry) => config.string(entry.key))),
         Promise.all(SUPPORT_KEYS.map((key) => config.string(key))),
+        config.string('home.heroImageUrl'),
+        config.string('home.heroImageAlt'),
       ]);
 
       const social: SocialLink[] = [];
@@ -104,6 +121,7 @@ export function createConfigService({ config }: ConfigDeps) {
         vehicleReportEnabled: vehicleReport,
         social,
         support: supportContacts(supportValues),
+        heroImage: heroImage(heroUrl, heroAlt),
       };
     },
   };

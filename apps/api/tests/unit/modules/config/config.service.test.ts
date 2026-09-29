@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { env } from '../../../../src/config/env.js';
 import {
   createConfigService,
+  heroImage,
   supportContacts,
 } from '../../../../src/modules/config/config.service.js';
 import type { PlatformConfigService } from '../../../../src/platform/config/platform-config.js';
@@ -224,5 +225,52 @@ describe('support contacts', () => {
     expect(supportContacts(['', '', '', '', 'http://wa.me/919840012345']).whatsappHref).toBeNull();
     expect(supportContacts(['', '', '', '', 'javascript:alert(1)']).whatsappHref).toBeNull();
     expect(supportContacts(['', '', '', '', '']).whatsappHref).toBeNull();
+  });
+});
+
+/**
+ * The homepage hero photograph (**R81**). Like the social row it is typed
+ * into `/admin/config` and rendered into a `src` on the busiest page in the
+ * product, so the value is checked here: an `https:` URL or a path on the web
+ * app, and nothing else. `null` hands the choice back to the web app's
+ * committed default.
+ */
+describe('hero image', () => {
+  it('is null until an operator sets one, so the web app keeps its own photograph', async () => {
+    const { heroImage: hero } = await createConfigService({ config: config() }).publicConfig();
+
+    expect(hero).toBeNull();
+  });
+
+  it('carries an https URL and its description', async () => {
+    const service = createConfigService({
+      config: config({
+        'home.heroImageUrl': 'https://media.example.org/hero.webp',
+        'home.heroImageAlt': 'A dealer with a family in a showroom',
+      }),
+    });
+
+    expect((await service.publicConfig()).heroImage).toEqual({
+      src: 'https://media.example.org/hero.webp',
+      alt: 'A dealer with a family in a showroom',
+    });
+  });
+
+  it('accepts a path on the web app', () => {
+    expect(heroImage('/images/home-hero-diwali.webp', '')).toEqual({
+      src: '/images/home-hero-diwali.webp',
+      alt: '',
+    });
+  });
+
+  it.each([
+    ['http://media.example.org/hero.webp'],
+    ['javascript:alert(1)'],
+    ['data:image/png;base64,AAAA'],
+    ['//evil.example/hero.webp'],
+    ['images/hero.webp'],
+    ['/images/hero.webp?x="><script>'],
+  ])('refuses %j', (value) => {
+    expect(heroImage(value, 'alt')).toBeNull();
   });
 });

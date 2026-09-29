@@ -66,6 +66,17 @@ export const SupportContacts = z.object({
 });
 export type SupportContacts = z.infer<typeof SupportContacts>;
 
+/**
+ * The homepage hero photograph an operator set in `/admin/config`. `src` is an
+ * `https:` URL or a path on the web app (`/images/…`), already checked; `null`
+ * means the web app shows the photograph committed with it.
+ */
+export const HeroImageConfig = z.object({
+  src: z.string(),
+  alt: z.string(),
+});
+export type HeroImageConfig = z.infer<typeof HeroImageConfig>;
+
 export const PublicConfig = z.object({
   mediaBaseUrl: z.string(),
   captchaSiteKey: z.string().nullable(),
@@ -90,6 +101,8 @@ export const PublicConfig = z.object({
   social: z.array(SocialLink),
   /** Who a customer or a dealer contacts for help, editable in `/admin/config`. */
   support: SupportContacts,
+  /** The homepage hero photograph, or `null` for the web app's own default. */
+  heroImage: HeroImageConfig.nullable(),
 });
 export type PublicConfig = z.infer<typeof PublicConfig>;
 

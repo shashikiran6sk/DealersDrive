@@ -20,6 +20,7 @@ export const NO_PUBLIC_CONFIG: PublicConfig = {
     dealer: { email: '', phone: '' },
     whatsappHref: null,
   },
+  heroImage: null,
 };
 
 export async function getPublicConfig(): Promise<PublicConfig> {

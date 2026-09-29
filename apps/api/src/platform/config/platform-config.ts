@@ -92,6 +92,13 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
   { key: 'support.customerPhone', label: 'Customer support phone', type: 'string', value: '' },
   { key: 'support.dealerEmail', label: 'Dealer support email', type: 'string', value: '' },
   { key: 'support.dealerPhone', label: 'Dealer support phone', type: 'string', value: '' },
+  { key: 'home.heroImageUrl', label: 'Homepage hero image URL', type: 'string', value: '' },
+  {
+    key: 'home.heroImageAlt',
+    label: 'Homepage hero image description',
+    type: 'string',
+    value: '',
+  },
   {
     key: 'support.whatsapp',
     label: 'Support WhatsApp number or chat URL',
@@ -127,6 +134,8 @@ export const CONFIG_READERS: Record<string, string> = {
   'social.linkedin': "GET /v1/config/public — the public footer's social row",
   'social.x': "GET /v1/config/public — the public footer's social row",
   'social.whatsapp': "GET /v1/config/public — the public footer's social row",
+  'home.heroImageUrl': 'GET /v1/config/public — the homepage hero banner',
+  'home.heroImageAlt': 'GET /v1/config/public — the homepage hero banner',
   'support.customerEmail': 'GET /v1/config/public — the Contact & support page',
   'support.customerPhone': 'GET /v1/config/public — the Contact & support page',
   'support.dealerEmail': 'GET /v1/config/public — the Contact & support page',

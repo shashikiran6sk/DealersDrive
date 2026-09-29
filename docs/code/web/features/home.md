@@ -55,15 +55,25 @@ the search box hangs below the banner, which is why the clipping
 
 ### `apps/web/src/features/home/hero-banner/hero-banner.constants.ts` — `HOME_HERO_IMAGE`
 
-Today the photograph is static: a file committed under
-`apps/web/public/images/` and named here as `{ src, alt }`. It is `null` until a
-licensed photograph of an Indian dealership — dealer, customers and yard — is
-committed; the prototype's showroom photograph is a fixture and was not used.
+The committed default: `apps/web/public/images/home-hero.webp`, a showroom
+scene of a salesperson with an Indian family, supplied for R81. It is what the
+homepage shows whenever no operator has set a photograph.
 
-**Making it admin-editable later** follows the R44/R81 pattern for public
-settings: add a `home.heroImage` key (and its alt text) to `CONFIG_DEFAULTS`
-with a reader in `CONFIG_READERS`, expose it on `GET /v1/config/public` as an
-`https:` URL checked on the way out (or an uploaded media id resolved against
-`MEDIA_BASE_URL`), and pass `config.heroImage ?? HOME_HERO_IMAGE` into
-`HeroBanner`. The admin config action already revalidates `CONFIG_TAG`, and the
-homepage revalidates every 60 seconds.
+### `apps/web/src/features/home/hero-banner/utils.ts` — `heroImageFrom(configured)`
+
+**The photograph is admin-editable.** Two platform-config keys, edited in
+`/admin/config` under _Platform settings_: `home.heroImageUrl` (an `https:`
+URL, or a path on the web app such as `/images/home-hero-diwali.webp`) and
+`home.heroImageAlt` (its description). The API checks the URL on the way out
+(`heroImage()` in `config.service.ts`: anything else — `http:`, `data:`,
+`javascript:`, protocol-relative, a relative path — is `null`) and publishes it
+as `heroImage` on `GET /v1/config/public`.
+
+`heroImageFrom` picks the configured photograph when there is one and the
+committed default otherwise, and keeps the default's description if the
+operator left theirs blank, so the `<img>` is never unlabelled. Saving the
+setting revalidates `CONFIG_TAG` (the admin config action already does), so the
+next homepage render uses it.
+
+The URL must point at an image already hosted somewhere reachable by browsers;
+uploading the file from the admin screen is not part of this.

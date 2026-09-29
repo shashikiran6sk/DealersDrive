@@ -1451,8 +1451,9 @@ status and home shortcuts. Components that changed shape:
 - **`StatCard`** — `inverse` for the dashboard's credits tile.
 - **Homepage hero** — the "How it works" trust panel is replaced by **C111
   `HeroBanner`**, a single full-width photograph banner. The photograph is the
-  `image` prop (`HOME_HERO_IMAGE`, static today, admin-configurable later — see
-  `docs/code/web/features/home.md`).
+  `image` prop: the committed `home-hero.webp` by default, or the photograph
+  set in `/admin/config` (`home.heroImageUrl` / `home.heroImageAlt`) — see
+  `docs/code/web/features/home.md`.
 
 | Component          | Props                                          | States                                                              |
 | ------------------ | ---------------------------------------------- | ------------------------------------------------------------------- |

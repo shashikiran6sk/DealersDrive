@@ -339,7 +339,7 @@ Account corner (production behaviour, R67/R76): signed out → one `Login` pill 
 
 ### 3.2 Homepage
 
-1. **Hero banner** (`HeroBanner`) — a **single full-width banner**: one photograph of an Indian dealership — dealer, customers and the yard — `object-fit:cover`, under a black scrim (`black/80 → black/50 → black/10` left to right from `md`, a flat `black/55` on phones). `min-height:560px` (500px mobile), content `max-width:640px` left-aligned inside the 1440px frame: white eyebrow · `display` H1 in white · 15px/1.8 paragraph at 85% white · the production `CarSearchBox` (R79: suggestions open `/cars`, Enter opens `/cars?q=`) · `.dd-chip` shortcuts "Browse every car" / "Explore verified dealers". It replaces the MVP's two-column hero and the "How it works" trust panel. The photograph is a static file under `apps/web/public/images/` today, named by `HOME_HERO_IMAGE`; with no photograph the banner draws a dark `#0c0c0b` radial ground, never a broken image. **Future:** the image becomes an admin setting (a `home.heroImage` platform-config key surfaced on `GET /v1/config/public`) without changing the layout.
+1. **Hero banner** (`HeroBanner`) — a **single full-width banner**: one photograph of an Indian dealership — dealer, customers and the yard — `object-fit:cover`, under a black scrim (`black/80 → black/50 → black/10` left to right from `md`, a flat `black/55` on phones). `min-height:560px` (500px mobile), content `max-width:640px` left-aligned inside the 1440px frame: white eyebrow · `display` H1 in white · 15px/1.8 paragraph at 85% white · the production `CarSearchBox` (R79: suggestions open `/cars`, Enter opens `/cars?q=`) · `.dd-chip` shortcuts "Browse every car" / "Explore verified dealers". It replaces the MVP's two-column hero and the "How it works" trust panel. The default photograph is committed at `apps/web/public/images/home-hero.webp` (a salesperson with an Indian family in a showroom). **It is editable in `/admin/config`**: _Homepage hero image URL_ (`home.heroImageUrl`, an `https:` URL or a `/images/…` path) and _Homepage hero image description_ (`home.heroImageAlt`); the page falls back to the committed photograph when none is set, and the banner can also draw a dark `#0c0c0b` radial ground (`image: null`), never a broken image.
 2. **Discovery rows** (R72/R78) — `max-width:1440px`, `gap:48px`; each row: `h2` + "View all →" ghost, grid `repeat(auto-fill, minmax(262px,1fr))`, `gap:18px`, `items-stretch`, vehicle cards (§2.8). Available cars only; no counts.
 3. **Your journey** — three `.blueprint` cards (mono index, 20px title, muted body).
 4. **Built for both sides** — two 16px-radius `#f7f7f5` panels with ghost links (wrap on narrow widths).
@@ -449,7 +449,7 @@ Not landed — the credit-pack and payment screens of the MVP spec are excluded 
 
 ### 3.17 Admin console
 
-Admin keeps its production structure and inherits the revamp through tokens: neutral grounds, 10px controls, 14–16px cards and tables, pill tags, rounded dialogs. The configuration screen's "Platform settings" list (14px-radius panel) now includes the five **Support** keys of §3.18.
+Admin keeps its production structure and inherits the revamp through tokens: neutral grounds, 10px controls, 14–16px cards and tables, pill tags, rounded dialogs. The configuration screen's "Platform settings" list (14px-radius panel) now includes the five **Support** keys of §3.18 and the two **Homepage hero image** keys of §3.2.
 
 ### 3.18 Contact & support (`/contact`) — new in R81
 

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { HeroBanner } from '@/features/home/hero-banner';
+import { HeroBanner, HOME_HERO_IMAGE } from '@/features/home/hero-banner';
 
 const COPY = (
   <>
@@ -29,14 +29,10 @@ type Story = StoryObj<typeof meta>;
 export const NoPhotograph: Story = {};
 
 export const WithPhotograph: Story = {
-  args: {
-    image: {
-      src: 'https://images.example.com/dealership-yard.jpg',
-      alt: 'A dealer with customers in a used-car yard',
-    },
-  },
+  args: { image: HOME_HERO_IMAGE },
 };
 
 export const PhoneWidth: Story = {
+  args: { image: HOME_HERO_IMAGE },
   parameters: { viewport: { defaultViewport: 'mobile' } },
 };

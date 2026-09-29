@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { CarSearchBox } from '@/components/search/car-search-box';
 import { Blueprint } from '@/components/ui/primitives';
 import { DiscoveryRow } from '@/features/home/discovery-row';
-import { HeroBanner, HOME_HERO_IMAGE } from '@/features/home/hero-banner';
+import { HeroBanner, heroImageFrom } from '@/features/home/hero-banner';
 import { HOME_SEARCH_PATH, HOME_TEXT } from '@/features/home/home.constants';
 import { loadHomeInventory } from '@/features/home/load-home';
+import { getPublicConfig } from '@/lib/public-config';
 import { seoMetadata } from '@/lib/seo';
 
 export const revalidate = 60;
@@ -67,11 +68,11 @@ const JOURNEY = [
 ] as const;
 
 export default async function HomePage() {
-  const inventory = await loadHomeInventory();
+  const [inventory, config] = await Promise.all([loadHomeInventory(), getPublicConfig()]);
 
   return (
     <div>
-      <HeroBanner image={HOME_HERO_IMAGE}>
+      <HeroBanner image={heroImageFrom(config.heroImage)}>
         <div className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white/80">
           {HOME_TEXT.eyebrow}
         </div>
