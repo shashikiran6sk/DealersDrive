@@ -45,6 +45,7 @@ async function page(params: Record<string, string>) {
             tokenAuth: null,
             devCode: '123456',
             reason: null,
+            channel: 'sms',
           },
     ),
   );

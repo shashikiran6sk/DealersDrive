@@ -23,6 +23,12 @@ export const CONFIG_DEFAULTS: ConfigDefinition[] = [
   },
   { key: 'otp.maxAttempts', label: 'OTP attempts allowed', type: 'number', value: 3 },
   { key: 'otp.resendCooldownSeconds', label: 'OTP resend cooldown (s)', type: 'number', value: 60 },
+  {
+    key: 'otp.whatsappEnabled',
+    label: 'Send OTPs on WhatsApp (off: SMS)',
+    type: 'boolean',
+    value: false,
+  },
   { key: 'enquiry.rateLimitPerHour', label: 'Enquiries per hour per IP', type: 'number', value: 5 },
   { key: 'reveal.dailyCapPerIp', label: 'Phone reveals per day per IP', type: 'number', value: 20 },
   {
@@ -141,6 +147,8 @@ export const CONFIG_READERS: Record<string, string> = {
   'support.dealerEmail': 'GET /v1/config/public — the Contact & support page',
   'support.dealerPhone': 'GET /v1/config/public — the Contact & support page',
   'support.whatsapp': 'GET /v1/config/public — the Contact & support page',
+  'otp.whatsappEnabled':
+    'GET /v1/auth/phone/widget and /v1/auth/sign-in/phone/widget — the channel an OTP is sent on',
 };
 
 export interface PlatformConfigService {

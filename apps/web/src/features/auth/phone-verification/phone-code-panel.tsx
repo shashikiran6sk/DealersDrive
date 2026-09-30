@@ -80,7 +80,7 @@ export function PhoneCodePanel({
               </>
             ) : widget.driver === 'fake' ? (
               <>
-                No SMS is sent in this environment — enter{' '}
+                No code is sent in this environment — enter{' '}
                 <strong className="tnum">{widget.devCode}</strong>.
               </>
             ) : (

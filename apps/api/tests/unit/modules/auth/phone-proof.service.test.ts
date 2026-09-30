@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  WHATSAPP_OTP_KEY,
   createPhoneProofService,
   OTP_PURPOSES,
   REPLAY_GUARD_FAILS_OPEN,
@@ -34,8 +35,12 @@ beforeEach(() => {
   cache = createMemoryCache();
 });
 
-function proof(otp: PhoneOtpPort = otpAnswering(VERIFIED)) {
-  return createPhoneProofService({ otp, cache });
+function channel(whatsapp: boolean) {
+  return { boolean: vi.fn((key: string) => Promise.resolve(key === WHATSAPP_OTP_KEY && whatsapp)) };
+}
+
+function proof(otp: PhoneOtpPort = otpAnswering(VERIFIED), whatsapp = false) {
+  return createPhoneProofService({ otp, cache, config: channel(whatsapp) });
 }
 
 describe('proving a handset', () => {
@@ -182,7 +187,128 @@ describe('when the replay guard is unreachable', () => {
 });
 
 describe('the widget configuration', () => {
-  it('is the same answer the onboarding step already gets', () => {
-    expect(proof().widget()).toMatchObject({ enabled: true, driver: 'fake', devCode: '123456' });
+  it('is the same answer the onboarding step already gets', async () => {
+    await expect(proof().widget()).resolves.toMatchObject({
+      enabled: true,
+      driver: 'fake',
+      devCode: '123456',
+      channel: 'sms',
+    });
+  });
+});
+
+/**
+ * The OTP channel: the admin's `otp.whatsappEnabled` decides which MSG91
+ * widget the browser is handed — the widget both generates the code and
+ * delivers it — and the server says which, so the screen can label its button.
+ * Verification never looks at it.
+ */
+describe('the OTP channel', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  async function msg91(env: Record<string, string>, whatsapp: boolean | Error) {
+    for (const [key, value] of Object.entries(env)) vi.stubEnv(key, value);
+    vi.resetModules();
+    const { createPhoneProofService: build } =
+      await import('../../../../src/modules/auth/phone-proof.service.js');
+    const config = {
+      boolean: vi.fn(() =>
+        whatsapp instanceof Error ? Promise.reject(whatsapp) : Promise.resolve(whatsapp),
+      ),
+    };
+    const service = build({
+      otp: { ...otpAnswering(VERIFIED), driver: 'msg91' },
+      cache,
+      config,
+    });
+    return { widget: await service.widget(), config };
+  }
+
+  const BOTH = {
+    MSG91_WIDGET_ID: 'sms-widget',
+    MSG91_WIDGET_TOKEN: 'sms-token',
+    MSG91_WHATSAPP_WIDGET_ID: 'wa-widget',
+    MSG91_WHATSAPP_WIDGET_TOKEN: 'wa-token',
+    MSG91_AUTH_KEY: 'the-secret-auth-key',
+  };
+
+  it('hands over the WhatsApp widget, and says so, when WhatsApp OTP is on', async () => {
+    const { widget, config } = await msg91(BOTH, true);
+    expect(config.boolean).toHaveBeenCalledWith('otp.whatsappEnabled');
+    expect(widget).toEqual({
+      enabled: true,
+      driver: 'msg91',
+      widgetId: 'wa-widget',
+      tokenAuth: 'wa-token',
+      devCode: null,
+      reason: null,
+      channel: 'whatsapp',
+    });
+    expect(JSON.stringify(widget)).not.toContain('the-secret-auth-key');
+  });
+
+  it('hands over the SMS widget when WhatsApp OTP is off', async () => {
+    const { widget } = await msg91(BOTH, false);
+    expect(widget).toMatchObject({
+      widgetId: 'sms-widget',
+      tokenAuth: 'sms-token',
+      channel: 'sms',
+    });
+  });
+
+  it('falls back to SMS, honestly, when WhatsApp is on but has no widget configured', async () => {
+    const { widget } = await msg91(
+      {
+        MSG91_WIDGET_ID: 'sms-widget',
+        MSG91_WIDGET_TOKEN: 'sms-token',
+        MSG91_WHATSAPP_WIDGET_ID: '',
+      },
+      true,
+    );
+    expect(widget).toMatchObject({ enabled: true, widgetId: 'sms-widget', channel: 'sms' });
+  });
+
+  it('falls back to SMS when the setting cannot be read, rather than failing sign-in', async () => {
+    const { widget } = await msg91(BOTH, new Error('database down'));
+    expect(widget).toMatchObject({ enabled: true, widgetId: 'sms-widget', channel: 'sms' });
+  });
+
+  it('keeps the local development driver as it is, only labelling the channel', async () => {
+    await expect(proof(otpAnswering(VERIFIED), true).widget()).resolves.toEqual({
+      enabled: true,
+      driver: 'fake',
+      widgetId: null,
+      tokenAuth: null,
+      devCode: '123456',
+      reason: null,
+      channel: 'whatsapp',
+    });
+  });
+
+  it('verifies a code identically whichever channel carried it', async () => {
+    const results = [];
+    for (const whatsapp of [false, true]) {
+      const otp = otpAnswering(VERIFIED);
+      const proven = await proof(otp, whatsapp).prove({
+        phone: '98400 12345',
+        accessToken: `token-${String(whatsapp)}`,
+        purpose: 'CUSTOMER_LOGIN',
+      });
+      expect(otp.identify).toHaveBeenCalledWith(`token-${String(whatsapp)}`);
+      results.push({ phone: proven.phone, purpose: proven.purpose });
+    }
+    expect(results[0]).toEqual(results[1]);
+
+    const refused = otpAnswering({ status: 'REJECTED', reason: 'wrong code' });
+    await expect(
+      proof(refused, true).prove({
+        phone: '9840012345',
+        accessToken: 't',
+        purpose: 'DEALER_LOGIN',
+      }),
+    ).rejects.toMatchObject({ code: 'PHONE_VERIFICATION_FAILED', status: 422 });
   });
 });

@@ -86,6 +86,8 @@ const envSchema = z.object({
   PHONE_OTP_DRIVER: z.enum(['fake', 'msg91']).default('fake'),
   MSG91_WIDGET_ID: optional(z.string().min(1)),
   MSG91_WIDGET_TOKEN: optional(z.string().min(1)),
+  MSG91_WHATSAPP_WIDGET_ID: optional(z.string().min(1)),
+  MSG91_WHATSAPP_WIDGET_TOKEN: optional(z.string().min(1)),
   PHONE_OTP_TIMEOUT_MS: z.coerce.number().int().positive().default(4000),
   PHONE_OTP_DEV_CODE: z
     .string()

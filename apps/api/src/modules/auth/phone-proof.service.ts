@@ -1,9 +1,14 @@
 import { createHash } from 'node:crypto';
 
-import { normaliseIndianMobile, type PhoneOtpWidget } from '@dealers-drive/contracts';
+import {
+  normaliseIndianMobile,
+  type OtpChannel,
+  type PhoneOtpWidget,
+} from '@dealers-drive/contracts';
 
 import { env } from '../../config/env.js';
 import type { CachePort } from '../../platform/cache/cache.port.js';
+import type { PlatformConfigService } from '../../platform/config/platform-config.js';
 import { DomainError, UpstreamUnavailableError } from '../../platform/errors.js';
 import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
@@ -32,10 +37,15 @@ export interface ProvenPhone {
   provenAt: Date;
 }
 
+export type OtpChannelConfig = Pick<PlatformConfigService, 'boolean'>;
+
 export interface PhoneProofDeps {
   otp: PhoneOtpPort;
   cache: CachePort;
+  config: OtpChannelConfig;
 }
+
+export const WHATSAPP_OTP_KEY = 'otp.whatsappEnabled';
 
 export const TOKEN_SPENT_WINDOW_SECONDS = 15 * 60;
 
@@ -47,7 +57,33 @@ export const REPLAY_GUARD_FAILS_OPEN: Readonly<Record<OtpPurpose, boolean>> = {
 
 const TOKEN_FIELD = 'body.accessToken';
 
-export function createPhoneProofService({ otp, cache }: PhoneProofDeps) {
+export function createPhoneProofService({ otp, cache, config }: PhoneProofDeps) {
+  async function whatsappWanted(): Promise<boolean> {
+    try {
+      return await config.boolean(WHATSAPP_OTP_KEY);
+    } catch (error) {
+      logger.warn({ event: 'phone.otp.channel_unreadable', err: error }, 'OTP channel unread');
+      return false;
+    }
+  }
+
+  function widgetCredentials(
+    whatsapp: boolean,
+  ): { widgetId: string; tokenAuth: string; channel: OtpChannel } | null {
+    if (whatsapp) {
+      const widgetId = env.MSG91_WHATSAPP_WIDGET_ID;
+      const tokenAuth = env.MSG91_WHATSAPP_WIDGET_TOKEN;
+      if (widgetId && tokenAuth) return { widgetId, tokenAuth, channel: 'whatsapp' };
+      logger.warn(
+        { event: 'phone.otp.whatsapp_unconfigured' },
+        'WhatsApp OTP is on but MSG91_WHATSAPP_WIDGET_ID/TOKEN are unset; sending by SMS',
+      );
+    }
+    const widgetId = env.MSG91_WIDGET_ID;
+    const tokenAuth = env.MSG91_WIDGET_TOKEN;
+    return widgetId && tokenAuth ? { widgetId, tokenAuth, channel: 'sms' } : null;
+  }
+
   function refused(input: ProvePhoneInput, reason: string): DomainError {
     logger.info(
       {
@@ -64,7 +100,9 @@ export function createPhoneProofService({ otp, cache }: PhoneProofDeps) {
   }
 
   return {
-    widget(): PhoneOtpWidget {
+    async widget(): Promise<PhoneOtpWidget> {
+      const whatsapp = await whatsappWanted();
+
       if (otp.driver === 'fake') {
         return {
           enabled: true,
@@ -73,13 +111,12 @@ export function createPhoneProofService({ otp, cache }: PhoneProofDeps) {
           tokenAuth: null,
           devCode: env.PHONE_OTP_DEV_CODE,
           reason: null,
+          channel: whatsapp ? 'whatsapp' : 'sms',
         };
       }
 
-      const widgetId = env.MSG91_WIDGET_ID;
-      const tokenAuth = env.MSG91_WIDGET_TOKEN;
-
-      if (!widgetId || !tokenAuth) {
+      const credentials = widgetCredentials(whatsapp);
+      if (!credentials) {
         return {
           enabled: false,
           driver: 'msg91',
@@ -87,10 +124,11 @@ export function createPhoneProofService({ otp, cache }: PhoneProofDeps) {
           tokenAuth: null,
           devCode: null,
           reason: OTP_WIDGET_NOT_CONFIGURED,
+          channel: 'sms',
         };
       }
 
-      return { enabled: true, driver: 'msg91', widgetId, tokenAuth, devCode: null, reason: null };
+      return { enabled: true, driver: 'msg91', devCode: null, reason: null, ...credentials };
     },
 
     async prove(input: ProvePhoneInput): Promise<ProvenPhone> {

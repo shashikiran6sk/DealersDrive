@@ -5,7 +5,7 @@ export const LOCAL_ATTEMPTS = 3;
 export const OTP_DIGITS = 6;
 
 export const PHONE_TEXT = {
-  wrongCode: 'That code is not right. Check the SMS, or ask for a new one.',
+  wrongCode: 'That code is not right. Check the message, or ask for a new one.',
   sendFailed: 'We could not send a code to that number. Check it and try again.',
 
   unavailableTitle: 'Mobile verification is unavailable',
@@ -19,7 +19,6 @@ export const PHONE_TEXT = {
   nextStep: 'Next: your dealership’s details',
   continueToBusiness: 'Continue to business details',
 
-  sendOtp: 'Send OTP',
   codeTitle: 'Verify your mobile number',
   failedTitle: 'That code did not match',
   changeNumber: 'Change number',

@@ -13,6 +13,7 @@ const FAKE_WIDGET: PhoneOtpWidget = {
   tokenAuth: null,
   devCode: '123456',
   reason: null,
+  channel: 'sms',
 };
 
 function Harness({
@@ -123,6 +124,7 @@ export const NotConfigured: Story = {
       tokenAuth: null,
       devCode: null,
       reason: 'Set MSG91_WIDGET_ID and MSG91_WIDGET_TOKEN to verify mobile numbers.',
+      channel: 'sms',
     },
   },
 };
