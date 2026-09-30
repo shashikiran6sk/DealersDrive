@@ -255,6 +255,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R83 — Cars and information take turns down the homepage · revises R72/R81 · `HOME_FLOW` order: Recently added → journey → SUVs → why Dealers-Drive → automatic → built for both sides → under ₹10 lakh; the explainers become `JourneySection`/`TrustSection`/`AudienceSection`; `DiscoveryBand` leaves no gap for an empty row; same four reads
 - [x] R84 — A selected filter chip keeps its label on hover · fixes `.dd-chip` (dealer inventory, dealer enquiries): the hover rule no longer out-ranks the selected state; selected hover darkens the ground only
 - [x] R85 — Dealer Login in the customer's account menu · revises R76 · a `Link` to `/dealer` between separators, after My enquiries and before Logout; no auth logic of its own
+- [x] R86 — The login's Customer/Dealer switch is aligned to the left of the form · layout only (`justify-end` → `justify-start` on the tablist); no auth change
 
 ---
 

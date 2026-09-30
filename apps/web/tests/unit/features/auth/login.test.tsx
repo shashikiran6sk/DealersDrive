@@ -111,6 +111,47 @@ describe('LoginTabs', () => {
     expect(screen.getByRole('tab', { name: 'Customer' })).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('sits at the start of the form, aligned with what follows, in the order Customer, switch, Dealer', () => {
+    tabs();
+    const list = screen.getByRole('tablist', { name: 'Sign in as' });
+    expect(list).toHaveClass('flex', 'items-center', 'justify-start');
+    expect(list).not.toHaveClass('justify-end');
+    expect(list.className).not.toMatch(/\b(ml-auto|mx-auto|absolute|translate-x|left-\[)/);
+
+    const order = Array.from(list.querySelectorAll('[role="tab"], [data-slot="switch"]')).map(
+      (element) => element.getAttribute('data-slot') ?? element.textContent,
+    );
+    expect(order).toEqual(['Customer', 'switch', 'Dealer']);
+  });
+
+  it('switches with the switch itself, and the switch shows the selected mode', async () => {
+    const user = userEvent.setup();
+    tabs();
+    const toggle = document.querySelector('[data-slot="switch"]');
+    if (!(toggle instanceof HTMLElement)) throw new Error('no switch');
+    expect(toggle).toHaveAttribute('aria-hidden', 'true');
+    expect(toggle).toHaveClass('bg-(--color-neutral-300)');
+
+    await user.click(toggle);
+    expect(screen.getByRole('tab', { name: 'Dealer' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Dealer' })).toHaveFocus();
+    expect(toggle).toHaveClass('bg-(--color-ink)');
+    expect(screen.getByText('dealer panel')).toBeVisible();
+
+    await user.click(toggle);
+    expect(screen.getByRole('tab', { name: 'Customer' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('customer panel')).toBeVisible();
+  });
+
+  it('opens on Dealer when asked to', () => {
+    render(
+      <LoginTabs initial="dealer" customer={<p>customer panel</p>} dealer={<p>dealer panel</p>} />,
+    );
+    expect(screen.getByRole('tab', { name: 'Dealer' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Dealer' })).toHaveAttribute('tabindex', '0');
+    expect(screen.getByText('dealer panel')).toBeVisible();
+  });
+
   it('ties each panel to its tab', () => {
     tabs();
     const panel = screen.getByRole('tabpanel');

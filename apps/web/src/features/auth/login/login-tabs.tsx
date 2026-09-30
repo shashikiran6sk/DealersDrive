@@ -45,7 +45,7 @@ export function LoginTabs({ initial, customer, dealer }: LoginTabsProps) {
       <div
         role="tablist"
         aria-label={LOGIN_TEXT.tabsLabel}
-        className="flex items-center justify-end gap-[10px]"
+        className="flex items-center justify-start gap-[10px]"
         onKeyDown={onKeyDown}
       >
         {LOGIN_AUDIENCES.map((audience, index) => (
