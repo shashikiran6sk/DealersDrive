@@ -12,6 +12,8 @@ import type { AccountMenuProps } from './header-account.types';
 const ITEM =
   'flex min-h-[44px] w-full items-center rounded-[8px] px-[12px] text-left text-[14px] font-bold text-(--color-ink) no-underline outline-none hover:bg-(--color-neutral-100) focus-visible:bg-(--color-neutral-150) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-focus) disabled:opacity-45';
 
+const SEPARATOR = 'my-[4px] border-t border-(--color-divider)';
+
 function moveFocus(menu: HTMLElement | null, key: string): boolean {
   const items = Array.from(menu?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
   if (items.length === 0) return false;
@@ -90,7 +92,16 @@ export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps)
             >
               {HEADER_ACCOUNT_TEXT.myEnquiries}
             </Link>
-            <div role="separator" className="my-[4px] border-t border-(--color-divider)" />
+            <div role="separator" className={SEPARATOR} />
+            <Link
+              role="menuitem"
+              href={HEADER_ACCOUNT_TEXT.dealerLoginHref}
+              className={ITEM}
+              onClick={() => setOpen(false)}
+            >
+              {HEADER_ACCOUNT_TEXT.dealerLogin}
+            </Link>
+            <div role="separator" className={SEPARATOR} />
             <button
               role="menuitem"
               type="button"
