@@ -2,7 +2,7 @@ import type { PhoneOtpWidget } from '@dealers-drive/contracts';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { OtpSendButton, WHATSAPP_GREEN } from '@/components/auth/otp-send-button';
+import { OtpSendButton, WHATSAPP_GREEN, WHATSAPP_TILE } from '@/components/auth/otp-send-button';
 import { PhoneSignIn } from '@/features/auth/phone-sign-in';
 import { PhoneVerification } from '@/features/auth/phone-verification';
 
@@ -40,13 +40,13 @@ describe('OtpSendButton', () => {
     expect(icon?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('draws the logo alone, in WhatsApp green, with no background behind it', () => {
+  it('draws the app-icon logo: the green WhatsApp mark on a black tile, no white disc', () => {
     render(<OtpSendButton whatsapp>Send OTP</OtpSendButton>);
 
     const icon = logo();
     expect(icon?.className).not.toContain('bg-white');
-    expect(icon?.className).not.toContain('rounded-full');
-    expect(icon?.querySelector('svg')).toHaveAttribute('width', '24');
+    expect(icon?.querySelector('svg')).toHaveAttribute('width', '28');
+    expect(icon?.querySelector(`path[fill="${WHATSAPP_TILE}"]`)).not.toBeNull();
     expect(icon?.querySelector(`path[fill="${WHATSAPP_GREEN}"]`)).not.toBeNull();
   });
 

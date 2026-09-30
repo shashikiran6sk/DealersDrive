@@ -43,6 +43,9 @@ the span would be lost, reading "Send OTPon WhatsApp".
 
 ### `export function WhatsAppMark()`
 
-The WhatsApp logo at 24px: a bubble in WhatsApp green (`WHATSAPP_GREEN`,
-`#25D366`) with the handset in white. It is drawn as two shapes, the solid
-bubble and then the white handset, so it needs no background of its own.
+The WhatsApp app-icon logo at 28px: the outline WhatsApp mark (bubble ring and
+handset) in green (`WHATSAPP_GREEN`, `#62C96A`) on a black rounded-square tile
+(`WHATSAPP_TILE`). It is drawn as SVG from the chosen reference artwork rather
+than shipped as a raster, so it is sharp at any size and needs no asset file.
+On the dark button the tile blends in and the green mark carries the icon; on a
+light background the tile shows.
