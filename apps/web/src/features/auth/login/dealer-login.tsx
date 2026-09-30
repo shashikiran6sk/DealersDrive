@@ -13,7 +13,13 @@ import type { DealerLoginProps } from './login.types';
 
 const DEALER_PHONE_PANEL = 'dealer-phone-panel';
 
-export function DealerLogin({ widget, google, returnTo, error }: DealerLoginProps) {
+export function DealerLogin({
+  widget,
+  google,
+  returnTo,
+  error,
+  whatsappOtp = false,
+}: DealerLoginProps) {
   const router = useRouter();
   const [phoneOpen, setPhoneOpen] = useState(!google.enabled);
   const revealed = useRef(false);
@@ -74,6 +80,7 @@ export function DealerLogin({ widget, google, returnTo, error }: DealerLoginProp
         <PhoneSignIn
           widget={widget}
           idPrefix="dealer"
+          whatsappOtp={whatsappOtp}
           onProved={async (phone, accessToken) => {
             const result = await dealerPhoneSignInAction(phone, accessToken, returnTo ?? undefined);
             if (result.error) return result.error;

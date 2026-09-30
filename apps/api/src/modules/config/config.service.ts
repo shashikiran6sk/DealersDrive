@@ -89,6 +89,7 @@ export function createConfigService({ config }: ConfigDeps) {
         supportValues,
         heroUrl,
         heroAlt,
+        whatsappOtp,
       ] = await Promise.all([
         config.number('listing.minPhotos'),
         config.number('listing.durationDays'),
@@ -100,6 +101,7 @@ export function createConfigService({ config }: ConfigDeps) {
         Promise.all(SUPPORT_KEYS.map((key) => config.string(key))),
         config.string('home.heroImageUrl'),
         config.string('home.heroImageAlt'),
+        config.boolean('otp.whatsappEnabled'),
       ]);
 
       const social: SocialLink[] = [];
@@ -122,6 +124,7 @@ export function createConfigService({ config }: ConfigDeps) {
         social,
         support: supportContacts(supportValues),
         heroImage: heroImage(heroUrl, heroAlt),
+        whatsappOtpEnabled: whatsappOtp,
       };
     },
   };

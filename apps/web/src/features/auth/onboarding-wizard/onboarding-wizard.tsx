@@ -43,6 +43,7 @@ export interface OnboardingWizardProps {
   phoneWidget: PhoneOtpWidget | null;
   googleLinkUrl?: string | null;
   linkError?: string | null;
+  whatsappOtp?: boolean;
 }
 
 export function OnboardingWizard({
@@ -55,6 +56,7 @@ export function OnboardingWizard({
   phoneWidget,
   googleLinkUrl = null,
   linkError = null,
+  whatsappOtp = false,
 }: OnboardingWizardProps) {
   const router = useRouter();
   const [local, setLocal] = useState<LocalStep>(step === 1 ? 1 : 0);
@@ -157,6 +159,7 @@ export function OnboardingWizard({
           <div hidden={local === 1}>
             <PhoneVerification
               widget={phoneWidget}
+              whatsappOtp={whatsappOtp}
               phone={phone}
               fullName={fullName}
               verified={phoneVerified}

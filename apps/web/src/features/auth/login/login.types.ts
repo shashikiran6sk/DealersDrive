@@ -11,6 +11,7 @@ export interface GoogleEntry {
 export interface CustomerLoginProps {
   widget: PhoneOtpWidget | null;
   returnTo: string;
+  whatsappOtp?: boolean;
 }
 
 export interface DealerLoginProps {
@@ -18,4 +19,5 @@ export interface DealerLoginProps {
   google: GoogleEntry;
   returnTo: string | null;
   error: string | null;
+  whatsappOtp?: boolean;
 }

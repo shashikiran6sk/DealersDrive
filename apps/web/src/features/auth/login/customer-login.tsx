@@ -10,7 +10,7 @@ import { CustomerNameStep } from './customer-name-step';
 import { LOGIN_TEXT } from './login.constants';
 import type { CustomerLoginProps } from './login.types';
 
-export function CustomerLogin({ widget, returnTo }: CustomerLoginProps) {
+export function CustomerLogin({ widget, returnTo, whatsappOtp = false }: CustomerLoginProps) {
   const router = useRouter();
   const [phoneDisplay, setPhoneDisplay] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -46,6 +46,7 @@ export function CustomerLogin({ widget, returnTo }: CustomerLoginProps) {
           key={attempt}
           widget={widget}
           idPrefix="customer"
+          whatsappOtp={whatsappOtp}
           onProved={async (phone, accessToken) => {
             const result = await customerPhoneSignInAction(phone, accessToken);
             if (result.error) return result.error;

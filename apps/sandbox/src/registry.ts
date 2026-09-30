@@ -2273,6 +2273,21 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'vehicle-vehiclename',
   },
+  {
+    id: 'C119',
+    name: 'OtpSendButton',
+    source: 'apps/web/src/components/auth/otp-send-button/otp-send-button.tsx',
+    category: 'Forms',
+    ownership: 'Shared',
+    purpose:
+      'The primary, full-width button that sends a one-time code (R90). The admin’s WhatsApp OTP switch (`otp.whatsappEnabled`, read from `GET /v1/config/public`) decides whether it carries the WhatsApp logo; the label is the caller’s, and “on WhatsApp” is added to the accessible name only while the logo shows.',
+    aliases: ['GetOtpButton', 'SendOtpButton', 'WhatsAppOtpButton', 'otp-send-button'],
+    features: ['R90'],
+    props: ['whatsapp', 'loading', 'disabled', 'children'],
+    states: ['WhatsApp logo', 'no logo', 'loading', 'disabled'],
+    reusable: true,
+    storyId: 'forms-otpsendbutton',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

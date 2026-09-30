@@ -103,6 +103,12 @@ export const PublicConfig = z.object({
   support: SupportContacts,
   /** The homepage hero photograph, or `null` for the web app's own default. */
   heroImage: HeroImageConfig.nullable(),
+  /**
+   * The admin's WhatsApp OTP switch (`otp.whatsappEnabled` in `/admin/config`):
+   * whether the OTP button carries the WhatsApp logo. A boolean and nothing
+   * else — no provider setting or credential rides on it.
+   */
+  whatsappOtpEnabled: z.boolean(),
 });
 export type PublicConfig = z.infer<typeof PublicConfig>;
 

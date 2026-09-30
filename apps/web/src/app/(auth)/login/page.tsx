@@ -8,6 +8,7 @@ import { AuthHeading, AuthShell } from '@/components/auth/auth-shell';
 import { EntryShell } from '@/components/auth/entry-shell';
 import { CustomerLogin, DealerLogin, LOGIN_TEXT, LoginTabs } from '@/features/auth/login';
 import { apiGet } from '@/lib/api';
+import { getPublicConfig } from '@/lib/public-config';
 import { currentSession, destinationFor } from '@/lib/session';
 import { one, safeReturnPath, type SearchParamsInput } from '@/lib/url';
 import { seoMetadata } from '@/lib/seo';
@@ -35,10 +36,12 @@ export default async function LoginPage({
     if (session) redirect(destinationFor(session));
   }
 
-  const [providers, widget] = await Promise.all([
+  const [providers, widget, config] = await Promise.all([
     apiGet<AuthProvidersResponse>('/v1/auth/providers', { revalidate: false }),
     signInWidget(),
+    getPublicConfig(),
   ]);
+  const whatsappOtp = config.whatsappOtpEnabled;
 
   const dealerReturnTo = requested ? safeReturnPath(requested, '/dealer') : null;
   const googleHref = dealerReturnTo
@@ -51,7 +54,13 @@ export default async function LoginPage({
         <AuthHeading title={LOGIN_TEXT.title} visuallyHidden />
         <LoginTabs
           initial={audience}
-          customer={<CustomerLogin widget={widget} returnTo={safeReturnPath(requested, '/')} />}
+          customer={
+            <CustomerLogin
+              widget={widget}
+              returnTo={safeReturnPath(requested, '/')}
+              whatsappOtp={whatsappOtp}
+            />
+          }
           dealer={
             <DealerLogin
               widget={widget}
@@ -62,6 +71,7 @@ export default async function LoginPage({
               }}
               returnTo={dealerReturnTo}
               error={error}
+              whatsappOtp={whatsappOtp}
             />
           }
         />

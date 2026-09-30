@@ -103,6 +103,22 @@ describe('publicConfig', () => {
       vehicleReportEnabled: false,
     });
   });
+
+  it('carries the WhatsApp OTP switch, off by default', async () => {
+    const on = createConfigService({ config: config({ 'otp.whatsappEnabled': true }) });
+    const off = createConfigService({ config: config() });
+
+    expect((await on.publicConfig()).whatsappOtpEnabled).toBe(true);
+    expect((await off.publicConfig()).whatsappOtpEnabled).toBe(false);
+  });
+
+  it('puts nothing but the boolean on the public document for the WhatsApp switch', async () => {
+    const body = JSON.stringify(
+      await createConfigService({ config: config({ 'otp.whatsappEnabled': true }) }).publicConfig(),
+    );
+
+    expect(body).not.toMatch(/msg91|authkey|templateId|widgetId|secret/i);
+  });
 });
 
 /**
