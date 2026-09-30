@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   LISTING_TRANSITIONS,
+  REACTIVATION_SOURCES,
   RELEASING_STATUSES,
   assertTransition,
   nextStatus,
@@ -40,11 +41,9 @@ const ALLOWED: [ListingStatus, ListingEvent, ListingActorType, ListingStatus][] 
   ['ACTIVE', 'markSold', 'DEALER', 'SOLD'],
   ['ACTIVE', 'withdraw', 'DEALER', 'WITHDRAWN'],
   ['ACTIVE', 'withdraw', 'ADMIN', 'WITHDRAWN'],
-  ['RESERVED', 'reactivate', 'DEALER', 'ACTIVE'],
+  ['RESERVED', 'reactivate', 'ADMIN', 'ACTIVE'],
   ['RESERVED', 'markSold', 'DEALER', 'SOLD'],
-  ['RESERVED', 'withdraw', 'DEALER', 'WITHDRAWN'],
-  ['RESERVED', 'withdraw', 'ADMIN', 'WITHDRAWN'],
-  ['WITHDRAWN', 'relist', 'DEALER', 'ACTIVE'],
+  ['WITHDRAWN', 'relist', 'ADMIN', 'ACTIVE'],
 ];
 
 describe('the transition table', () => {
@@ -84,9 +83,29 @@ describe('the transition table', () => {
     }
   });
 
-  it('lets only the dealership reserve, reactivate or relist its own car', () => {
-    for (const event of ['reserve', 'reactivate', 'relist', 'markSold'] as const) {
+  it('lets only the dealership reserve or sell its own car', () => {
+    for (const event of ['reserve', 'markSold'] as const) {
       for (const status of STATUSES) expect(nextStatus(status, event, 'ADMIN')).toBeNull();
+    }
+  });
+
+  it('never lets a dealer put a reserved or withdrawn car back on sale itself', () => {
+    for (const event of EVENTS) {
+      expect(nextStatus('RESERVED', event, 'DEALER'), event).not.toBe('ACTIVE');
+      expect(nextStatus('WITHDRAWN', event, 'DEALER'), event).not.toBe('ACTIVE');
+    }
+    expect(() => assertTransition('RESERVED', 'reactivate', 'DEALER')).toThrow(
+      expect.objectContaining({ status: 403, code: 'LISTING_ACTOR_FORBIDDEN' }),
+    );
+    expect(() => assertTransition('WITHDRAWN', 'relist', 'DEALER')).toThrow(
+      expect.objectContaining({ status: 403, code: 'LISTING_ACTOR_FORBIDDEN' }),
+    );
+  });
+
+  it('offers a withdrawn car no move but an admin relist', () => {
+    for (const event of EVENTS) {
+      const to = nextStatus('WITHDRAWN', event, 'DEALER');
+      expect(to, event).toBeNull();
     }
   });
 
@@ -104,6 +123,10 @@ describe('the transition table', () => {
 
   it('matches the moves the console offers, one for one (contracts LISTING_LIFECYCLE_FROM)', () => {
     for (const action of ListingLifecycleAction.options) {
+      if (action === 'requestReactivation') {
+        expect([...LISTING_LIFECYCLE_FROM[action]]).toEqual([...REACTIVATION_SOURCES]);
+        continue;
+      }
       const allowed = STATUSES.filter((status) => nextStatus(status, action, 'DEALER') !== null);
       expect(allowed, action).toEqual([...LISTING_LIFECYCLE_FROM[action]]);
     }
@@ -134,10 +157,10 @@ describe('assertTransition', () => {
     expect(() => assertTransition('RESERVED', 'reserve', 'DEALER')).toThrow(
       expect.objectContaining({ code: 'LISTING_NOT_RESERVABLE' }),
     );
-    expect(() => assertTransition('ACTIVE', 'reactivate', 'DEALER')).toThrow(
+    expect(() => assertTransition('ACTIVE', 'reactivate', 'ADMIN')).toThrow(
       expect.objectContaining({ code: 'LISTING_NOT_RESERVED' }),
     );
-    expect(() => assertTransition('SOLD', 'relist', 'DEALER')).toThrow(
+    expect(() => assertTransition('SOLD', 'relist', 'ADMIN')).toThrow(
       expect.objectContaining({ code: 'LISTING_NOT_RELISTABLE', status: 409 }),
     );
   });
@@ -179,13 +202,15 @@ function fakeTx(count = 1) {
   const vehicleUpdate = vi.fn(async () => ({}));
   const findUniqueOrThrow = vi.fn(async () => listing('ACTIVE'));
   const clearChecks = vi.fn(async () => ({ count: 0 }));
+  const cancelRequests = vi.fn(async () => ({ count: 0 }));
   const tx = {
     listing: { updateMany, findUniqueOrThrow },
     vehicle: { update: vehicleUpdate },
     listingCheck: { deleteMany: clearChecks },
+    listingReactivationRequest: { updateMany: cancelRequests },
   } as unknown as Tx;
   const audit = { record: vi.fn(async () => undefined), recordDetached: vi.fn() };
-  return { tx, audit, updateMany, vehicleUpdate, clearChecks };
+  return { tx, audit, updateMany, vehicleUpdate, clearChecks, cancelRequests };
 }
 
 const NOW = new Date('2026-09-26T10:00:00Z');
@@ -333,7 +358,7 @@ describe('transition', () => {
       back.audit,
       listing('RESERVED', { reservedAt: NOW }),
       'reactivate',
-      DEALER,
+      ADMIN,
     );
     expect(back.updateMany.mock.calls[0]?.[0]).toEqual({
       where: { id: 'listing-1', status: 'RESERVED' },
@@ -341,7 +366,7 @@ describe('transition', () => {
     });
   });
 
-  it('does not treat a dealer putting a car back on sale as a moderator decision', async () => {
+  it('does not treat putting a car back on sale as a moderation decision', async () => {
     const first = new Date('2026-01-01T00:00:00Z');
     const { tx, audit, updateMany } = fakeTx();
     await transition(
@@ -349,7 +374,7 @@ describe('transition', () => {
       audit,
       listing('WITHDRAWN', { publishedAt: first, decidedBy: 'admin-1', decidedAt: first }),
       'relist',
-      DEALER,
+      ADMIN,
       { now: NOW },
     );
     const data = updateMany.mock.calls[0]?.[0];
@@ -396,7 +421,7 @@ describe('transition', () => {
 
   it('stores no note when the dealer leaves it blank', async () => {
     const { tx, audit, updateMany } = fakeTx();
-    await transition(tx, audit, listing('RESERVED'), 'withdraw', DEALER, {
+    await transition(tx, audit, listing('ACTIVE'), 'withdraw', DEALER, {
       withdrawal: { reason: 'OTHER', note: '   ' },
     });
     expect(updateMany.mock.calls[0]?.[0]).toMatchObject({ data: { withdrawalNote: null } });
@@ -424,8 +449,23 @@ describe('transition', () => {
     ['WITHDRAWN', 'relist', 'listing.relisted'],
   ] as const)('audits %s --%s--> as %s', async (status, event, action) => {
     const { tx, audit } = fakeTx();
-    await transition(tx, audit, listing(status), event, DEALER);
+    await transition(tx, audit, listing(status), event, ADMIN);
     expect(audit.record).toHaveBeenCalledWith(tx, expect.objectContaining({ action }));
+  });
+
+  it('closes a pending reactivation request when a reserved car is sold', async () => {
+    const { tx, audit, cancelRequests } = fakeTx();
+    await transition(tx, audit, listing('RESERVED'), 'markSold', DEALER, { now: NOW });
+    expect(cancelRequests).toHaveBeenCalledWith({
+      where: { listingId: 'listing-1', status: 'PENDING' },
+      data: { status: 'CANCELLED', reviewedAt: NOW },
+    });
+  });
+
+  it('touches no reactivation request on a move out of any other state', async () => {
+    const { tx, audit, cancelRequests } = fakeTx();
+    await transition(tx, audit, listing('ACTIVE'), 'reserve', DEALER);
+    expect(cancelRequests).not.toHaveBeenCalled();
   });
 
   it('does not release the plate on a non-terminal move', async () => {

@@ -83,7 +83,7 @@ export const LISTING_TRANSITIONS: Record<ListingEvent, TransitionRule> = {
   reactivate: {
     from: ['RESERVED'],
     to: 'ACTIVE',
-    actors: ['DEALER'],
+    actors: ['ADMIN'],
     action: 'listing.reactivated',
     needsReason: false,
   },
@@ -95,7 +95,7 @@ export const LISTING_TRANSITIONS: Record<ListingEvent, TransitionRule> = {
     needsReason: false,
   },
   withdraw: {
-    from: ['ACTIVE', 'RESERVED'],
+    from: ['ACTIVE'],
     to: 'WITHDRAWN',
     actors: ['DEALER', 'ADMIN'],
     action: 'listing.withdrawn',
@@ -104,13 +104,15 @@ export const LISTING_TRANSITIONS: Record<ListingEvent, TransitionRule> = {
   relist: {
     from: ['WITHDRAWN'],
     to: 'ACTIVE',
-    actors: ['DEALER'],
+    actors: ['ADMIN'],
     action: 'listing.relisted',
     needsReason: false,
   },
 };
 
 export const RELEASING_STATUSES: readonly ListingStatus[] = ['REJECTED', 'SOLD'];
+
+export const REACTIVATION_SOURCES: readonly ListingStatus[] = ['RESERVED', 'WITHDRAWN'];
 
 export function nextStatus(
   status: ListingStatus,
@@ -221,6 +223,13 @@ export async function transition(
 
   if (to === 'PENDING_REVIEW') {
     await tx.listingCheck.deleteMany({ where: { listingId: listing.id } });
+  }
+
+  if (REACTIVATION_SOURCES.includes(listing.status)) {
+    await tx.listingReactivationRequest.updateMany({
+      where: { listingId: listing.id, status: 'PENDING' },
+      data: { status: 'CANCELLED', reviewedAt: now },
+    });
   }
 
   if (RELEASING_STATUSES.includes(to)) {

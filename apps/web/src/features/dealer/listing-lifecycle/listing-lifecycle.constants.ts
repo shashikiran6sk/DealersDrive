@@ -8,26 +8,18 @@ import type { LifecycleMove } from './listing-lifecycle.types';
 
 export const LIFECYCLE_PATHS: Record<ListingLifecycleAction, string> = {
   reserve: 'reserve',
-  reactivate: 'reactivate',
   markSold: 'mark-sold',
   withdraw: 'withdraw',
-  relist: 'relist',
+  requestReactivation: 'request-reactivation',
 };
 
 export const LIFECYCLE_MOVES: Record<ListingLifecycleAction, LifecycleMove> = {
   reserve: {
-    label: 'Reserve',
+    label: 'Mark reserved',
     title: 'Reserve this vehicle?',
     description:
-      'The listing will remain visible but customers will not be able to open or enquire about it.',
+      'The listing will remain visible but customers will not be able to open or enquire about it. Putting it back on sale needs Dealers Drive’s approval.',
     confirm: 'Reserve vehicle',
-    tone: 'primary',
-  },
-  reactivate: {
-    label: 'Make active',
-    title: 'Put this vehicle back on sale?',
-    description: 'Customers will be able to open the listing and enquire about it again.',
-    confirm: 'Make active',
     tone: 'primary',
   },
   markSold: {
@@ -41,16 +33,17 @@ export const LIFECYCLE_MOVES: Record<ListingLifecycleAction, LifecycleMove> = {
   withdraw: {
     label: 'Withdraw',
     title: 'Withdraw this listing?',
-    description: 'It will be removed from public listings. You can relist it later.',
+    description:
+      'It will be removed from public listings. To put it back on sale later, request reactivation — Dealers Drive reviews every request.',
     confirm: 'Withdraw listing',
     tone: 'danger',
   },
-  relist: {
-    label: 'Relist',
-    title: 'Relist this vehicle?',
+  requestReactivation: {
+    label: 'Request reactivation',
+    title: 'Ask to put this vehicle back on sale?',
     description:
-      'It goes straight back on the marketplace, with the same photographs and details as before.',
-    confirm: 'Relist',
+      'Dealers Drive reviews every request. The listing stays as it is until an admin approves it, then goes back on the marketplace with the same photographs and details.',
+    confirm: 'Send request',
     tone: 'primary',
   },
 };
@@ -61,6 +54,8 @@ export const WITHDRAWAL_REASON_OPTIONS = WithdrawalReason.options.map((value) =>
 }));
 
 export const WITHDRAWAL_NOTE_MAX = 500;
+
+export const REACTIVATION_REASON_MAX = 500;
 
 export const LIFECYCLE_TEXT = {
   groupLabel: (title: string) => `Change the listing status of ${title}`,
@@ -75,6 +70,11 @@ export const LIFECYCLE_TEXT = {
   unavailable: 'The API is unavailable. Try again shortly.',
   withdrawnReason: 'Reason:',
   withdrawnNote: 'Your note:',
+  reactivationPending: 'Reactivation pending approval',
+  reactivationReasonLabel: 'Note for the reviewer',
+  reactivationReasonHint: 'Optional — for example, why the car is available again',
+  reactivationDeclined: 'Reactivation declined:',
+  reactivationNoNote: 'No reason given.',
   viewOnSite: 'View on site',
   listingHeading: 'On the marketplace',
 } as const;

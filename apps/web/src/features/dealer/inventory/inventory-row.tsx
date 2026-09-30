@@ -38,6 +38,7 @@ export function InventoryRow({ row }: { row: DealerInventoryRow }) {
             vehicleId={row.id}
             vehicleTitle={row.title}
             actions={row.actions}
+            reactivationPending={row.reactivationPending}
             size="sm"
           />
           <Link href={vehicleHref(row)} className="btn btn-ghost text-[12px]">

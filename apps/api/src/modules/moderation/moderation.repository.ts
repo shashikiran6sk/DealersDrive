@@ -1,4 +1,10 @@
-import type { Listing, ListingStatus, Prisma, PrismaClient } from '@prisma/client';
+import type {
+  Listing,
+  ListingStatus,
+  Prisma,
+  PrismaClient,
+  ReactivationRequestStatus,
+} from '@prisma/client';
 
 import type { Tx } from '../../platform/db/prisma.js';
 import type { ApprovalState } from './moderation.approval.js';
@@ -27,6 +33,29 @@ export const detailInclude = {
 } satisfies Prisma.ListingInclude;
 
 export type DetailRow = Prisma.ListingGetPayload<{ include: typeof detailInclude }>;
+
+export const reactivationInclude = {
+  listing: { include: { vehicle: true } },
+  dealer: { select: { id: true, brandName: true, slug: true } },
+} satisfies Prisma.ListingReactivationRequestInclude;
+
+export type ReactivationRow = Prisma.ListingReactivationRequestGetPayload<{
+  include: typeof reactivationInclude;
+}>;
+
+export interface ReactivationFilter {
+  status: ReactivationRequestStatus;
+  after?: Date;
+  take: number;
+}
+
+export function reactivationSortKeyOf(row: {
+  status: ReactivationRequestStatus;
+  requestedAt: Date;
+  reviewedAt: Date | null;
+}): Date {
+  return row.status === 'PENDING' ? row.requestedAt : (row.reviewedAt ?? row.requestedAt);
+}
 
 export interface HistoryRow {
   action: string;
@@ -91,6 +120,41 @@ export function createModerationRepository(prisma: PrismaClient) {
         orderBy: { id: 'asc' },
         select: { action: true, actorType: true, after: true, createdAt: true },
       });
+    },
+
+    async reactivations(filter: ReactivationFilter): Promise<ReactivationRow[]> {
+      const oldestFirst = filter.status === 'PENDING';
+      const key = oldestFirst ? 'requestedAt' : 'reviewedAt';
+      return prisma.listingReactivationRequest.findMany({
+        where: {
+          status: filter.status,
+          ...(filter.after
+            ? { [key]: oldestFirst ? { gt: filter.after } : { lt: filter.after } }
+            : {}),
+        },
+        orderBy: [{ [key]: oldestFirst ? 'asc' : 'desc' }, { id: 'asc' }],
+        take: filter.take,
+        include: reactivationInclude,
+      });
+    },
+
+    async reactivation(id: string): Promise<ReactivationRow | null> {
+      return prisma.listingReactivationRequest.findUnique({
+        where: { id },
+        include: reactivationInclude,
+      });
+    },
+
+    async reactivationCounts(): Promise<{ status: ReactivationRequestStatus; count: number }[]> {
+      const grouped = await prisma.listingReactivationRequest.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      });
+      return grouped.map((row) => ({ status: row.status, count: row._count._all }));
+    },
+
+    async pendingReactivations(): Promise<number> {
+      return prisma.listingReactivationRequest.count({ where: { status: 'PENDING' } });
     },
 
     async statusCounts(): Promise<{ status: ListingStatus; count: number }[]> {

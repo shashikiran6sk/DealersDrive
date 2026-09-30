@@ -3,6 +3,7 @@
 import {
   IdParam,
   ListingLifecycleAction,
+  RequestReactivationInput,
   WithdrawListingInput,
   type DealerVehicle,
 } from '@dealers-drive/contracts';
@@ -20,17 +21,28 @@ import {
 } from './listing-lifecycle.constants';
 import type { LifecycleResult } from './listing-lifecycle.types';
 
+function bodyOf(action: ListingLifecycleAction, payload: unknown) {
+  if (action === 'withdraw') return WithdrawListingInput.safeParse(payload);
+  if (action === 'requestReactivation') return RequestReactivationInput.safeParse(payload ?? {});
+  return null;
+}
+
 export async function listingLifecycleAction(
   vehicleId: string,
   action: string,
-  withdrawal?: unknown,
+  payload?: unknown,
 ): Promise<LifecycleResult> {
   const id = IdParam.safeParse({ id: vehicleId });
   const move = ListingLifecycleAction.safeParse(action);
   if (!id.success || !move.success) return { ok: false, message: LIFECYCLE_TEXT.invalid };
 
-  const body = move.data === 'withdraw' ? WithdrawListingInput.safeParse(withdrawal) : null;
-  if (body && !body.success) return { ok: false, message: LIFECYCLE_TEXT.reasonRequired };
+  const body = bodyOf(move.data, payload);
+  if (body && !body.success) {
+    return {
+      ok: false,
+      message: move.data === 'withdraw' ? LIFECYCLE_TEXT.reasonRequired : LIFECYCLE_TEXT.invalid,
+    };
+  }
 
   let vehicle: DealerVehicle;
   try {

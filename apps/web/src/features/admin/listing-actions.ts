@@ -1,20 +1,23 @@
 'use server';
 
 import {
+  IdParam,
   ListingCheckKey,
   ListingImageParam,
+  NoteInput,
   ReasonInput,
   ReorderImagesInput,
   SetPhotographyInput,
   VehicleImagePresignInput,
   type AdminListingDetail,
+  type AdminReactivationRow,
   type AdminVehicleImages,
   type PresignResponse,
 } from '@dealers-drive/contracts';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
-import { revalidatePublicDealer, revalidatePublicVehicles } from '@/lib/cache-tags';
+import { revalidatePublicDealer, revalidatePublicVehicles, vehicleTag } from '@/lib/cache-tags';
 
 export interface ListingActionResult {
   ok: boolean;
@@ -25,6 +28,8 @@ export type ImagePresignResult =
   { ok: true; upload: PresignResponse } | { ok: false; message: string };
 
 const UNAVAILABLE = 'The API is unavailable. Try again shortly.';
+
+const REACTIVATION_INVALID = 'That request could not be decided. Reload the page and try again.';
 
 const IMAGE_REFUSED = 'Only JPEG, PNG or WebP images up to 10 MB can be uploaded.';
 
@@ -126,6 +131,52 @@ export async function setPhotographyAction(formData: FormData): Promise<void> {
     if (!(error instanceof ApiError)) throw new Error(UNAVAILABLE, { cause: error });
   }
   revalidatePath(reviewPath(listingId));
+}
+
+async function decideReactivation(
+  requestId: string,
+  decision: 'approve' | 'reject',
+  note: string,
+): Promise<ListingActionResult> {
+  const id = IdParam.safeParse({ id: requestId });
+  const body = NoteInput.safeParse(note.trim() ? { note: note.trim() } : {});
+  if (!id.success || !body.success) {
+    return { ok: false, message: body.error?.issues[0]?.message ?? REACTIVATION_INVALID };
+  }
+
+  let decided: AdminReactivationRow;
+  try {
+    decided = await apiSend<AdminReactivationRow>(
+      'POST',
+      `/v1/admin/reactivation-requests/${id.data.id}/${decision}`,
+      body.data,
+    );
+  } catch (error) {
+    return failure(error);
+  }
+
+  revalidatePath('/admin/listings');
+  revalidatePath(reviewPath(decided.listing.id));
+  if (decision === 'approve') {
+    revalidatePublicVehicles();
+    revalidatePublicDealer(decided.dealer.slug);
+    if (decided.listing.slug) revalidateTag(vehicleTag(decided.listing.slug));
+  }
+  return { ok: true };
+}
+
+export async function approveReactivationAction(
+  requestId: string,
+  note: string,
+): Promise<ListingActionResult> {
+  return decideReactivation(requestId, 'approve', note);
+}
+
+export async function rejectReactivationAction(
+  requestId: string,
+  note: string,
+): Promise<ListingActionResult> {
+  return decideReactivation(requestId, 'reject', note);
 }
 
 function failure(error: unknown): { ok: false; message: string } {

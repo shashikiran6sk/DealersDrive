@@ -111,3 +111,19 @@ export async function approveListingAction(_listingId: string): Promise<ListingA
   await new Promise((resolve) => setTimeout(resolve, 600));
   return { ok: true };
 }
+
+export async function approveReactivationAction(
+  _requestId: string,
+  _note: string,
+): Promise<ListingActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  return { ok: true };
+}
+
+export async function rejectReactivationAction(
+  _requestId: string,
+  _note: string,
+): Promise<ListingActionResult> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  return { ok: true };
+}

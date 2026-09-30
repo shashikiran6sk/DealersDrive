@@ -8,6 +8,8 @@ import {
   listingStatusLabel,
   listingStatusTone,
   formatRupees,
+  REACTIVATION_STATUS_LABELS,
+  REACTIVATION_STATUS_TONES,
   vehicleIssues,
   vehicleSummary,
   vehicleTitle,
@@ -15,11 +17,12 @@ import {
   type DealerInventoryRow,
   type DealerListing,
   type DealerVehicle,
+  type ListingReactivation,
   type VehicleCompletenessInput,
 } from '@dealers-drive/contracts';
-import type { Listing, Vehicle } from '@prisma/client';
+import type { ListingReactivationRequest, Vehicle } from '@prisma/client';
 
-import type { VehicleRow } from './vehicles.repository.js';
+import type { ListingRow, VehicleRow } from './vehicles.repository.js';
 
 export function isoDate(value: Date | null): string | null {
   return value ? value.toISOString().slice(0, 10) : null;
@@ -44,7 +47,27 @@ export function completenessOf(row: Vehicle): VehicleCompletenessInput {
   };
 }
 
-export function toDealerListing(listing: Listing, complete: boolean): DealerListing {
+export function reactivationOf(
+  listing: ListingRow,
+  request: ListingReactivationRequest | undefined,
+): ListingReactivation | null {
+  if (!request) return null;
+  if (request.status !== 'PENDING' && request.fromStatus !== listing.status) return null;
+  return {
+    id: request.id,
+    status: request.status,
+    statusLabel: REACTIVATION_STATUS_LABELS[request.status],
+    statusTone: REACTIVATION_STATUS_TONES[request.status],
+    fromStatus: request.fromStatus,
+    reason: request.reason,
+    requestedAt: request.requestedAt.toISOString(),
+    reviewedAt: request.reviewedAt?.toISOString() ?? null,
+    adminNote: request.adminNote,
+  };
+}
+
+export function toDealerListing(listing: ListingRow, complete: boolean): DealerListing {
+  const reactivation = reactivationOf(listing, listing.reactivations?.[0]);
   return {
     id: listing.id,
     status: listing.status,
@@ -71,7 +94,10 @@ export function toDealerListing(listing: Listing, complete: boolean): DealerList
     canEdit: isListingEditable(listing.status),
     canSubmit: complete && isListingSubmittable(listing.status),
     canDelete: isListingDeletable(listing.status),
-    actions: lifecycleActionsOf(listing.status),
+    actions: lifecycleActionsOf(listing.status, {
+      reactivationPending: reactivation?.status === 'PENDING',
+    }),
+    reactivation,
   };
 }
 
@@ -127,6 +153,7 @@ export function toInventoryRow(row: VehicleRow): DealerInventoryRow {
     complete: vehicle.complete,
     slug: vehicle.listing.slug,
     actions: vehicle.listing.actions,
+    reactivationPending: vehicle.listing.reactivation?.status === 'PENDING',
     updatedAt: row.updatedAt.toISOString(),
     updatedLabel: formatDate(row.updatedAt),
   };

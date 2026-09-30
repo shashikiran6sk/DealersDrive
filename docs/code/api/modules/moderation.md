@@ -126,6 +126,20 @@ a reject, serialise; the loser gets `409 LISTING_STATE_CHANGED` or
 config behind a cache, and a config read inside a row lock only lengthens
 the lock.
 
+### `async reactivations(query)` · `async approveReactivation(admin, requestId, note)` · `async rejectReactivation(admin, requestId, note)`
+
+The reactivation queue lives beside the listing queue because it is the same
+job — deciding what goes on the marketplace — and the admin console shows it as
+one more tab of `/admin/listings`. Pending requests are oldest first, the order
+they are worked in; decided ones most recently decided first. The decision is
+keyed by the request's id, not the listing's, so an admin acting on an old
+screen decides exactly the request they were shown and never a newer one. The
+work itself is `decideReactivationRequest` in the listings module; this service
+only locks, maps a registration clash to its 409, and answers with the row.
+
+`listings()` carries `reactivationPending` so the tab can show its count without
+a second request.
+
 ## `apps/api/src/modules/moderation/moderation.approval.ts`
 
 ### `export function approvalBlockers(state: ApprovalState): ApprovalBlocker[]`

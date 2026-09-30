@@ -1,6 +1,7 @@
 import type {
   DealerListing,
   ListingLifecycleAction,
+  RequestReactivationInput,
   WithdrawListingInput,
 } from '@dealers-drive/contracts';
 
@@ -14,16 +15,19 @@ export interface LifecycleMove {
 
 export type LifecycleResult = { ok: true } | { ok: false; message: string };
 
+export type LifecycleBody = WithdrawListingInput | RequestReactivationInput;
+
 export type LifecycleSubmit = (
   vehicleId: string,
   action: ListingLifecycleAction,
-  withdrawal?: WithdrawListingInput,
+  body?: LifecycleBody,
 ) => Promise<LifecycleResult>;
 
 export interface ListingLifecycleActionsProps {
   vehicleId: string;
   vehicleTitle: string;
   actions: readonly ListingLifecycleAction[];
+  reactivationPending?: boolean;
   size?: 'sm' | 'default';
   submit?: LifecycleSubmit;
 }

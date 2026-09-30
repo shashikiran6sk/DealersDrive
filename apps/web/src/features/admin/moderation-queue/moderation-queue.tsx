@@ -6,7 +6,8 @@ import { EmptyState } from '@/components/ui/primitives';
 import { Table, type TableColumn } from '@/components/ui/table';
 import { qs } from '@/lib/api';
 
-import { MODERATION_PATH, MODERATION_TABS, MODERATION_TEXT } from './moderation-queue.constants';
+import { MODERATION_PATH, MODERATION_TEXT } from './moderation-queue.constants';
+import { ModerationTabs } from './moderation-tabs';
 import { QueueRow } from './queue-row';
 
 const COLUMNS: TableColumn[] = [
@@ -36,22 +37,12 @@ export function ModerationQueue({ listings, q }: { listings: AdminListingsRespon
         </span>
       </div>
 
-      <nav aria-label={MODERATION_TEXT.tabsLabel} className="overflow-x-auto">
-        <div className="seg">
-          {MODERATION_TABS.map((tab) => (
-            <Link
-              key={tab.value}
-              href={href({ status: tab.value === 'PENDING_REVIEW' ? undefined : tab.value, q })}
-              aria-current={status === tab.value ? 'page' : undefined}
-              aria-selected={status === tab.value}
-              className="seg-opt whitespace-nowrap no-underline"
-            >
-              {tab.label}
-              <span className="tnum ink-subtle">{listings.counts[tab.value] ?? 0}</span>
-            </Link>
-          ))}
-        </div>
-      </nav>
+      <ModerationTabs
+        active={status}
+        counts={listings.counts}
+        reactivationPending={listings.reactivationPending}
+        q={q}
+      />
 
       <form
         method="get"

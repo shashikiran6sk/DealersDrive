@@ -46,6 +46,7 @@ const COMPLETE: DealerVehicle = {
     withdrawnAt: null,
     withdrawal: null,
     actions: [],
+    reactivation: null,
   },
   createdAt: '2026-09-01T00:00:00.000Z',
   updatedAt: '2026-09-01T00:00:00.000Z',

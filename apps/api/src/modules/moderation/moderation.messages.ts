@@ -8,7 +8,10 @@ export const HISTORY_LABELS: Record<string, string> = {
   'listing.reactivated': 'Back on sale after a reservation',
   'listing.marked_sold': 'Marked sold',
   'listing.withdrawn': 'Withdrawn by the dealer',
-  'listing.relisted': 'Relisted by the dealer',
+  'listing.relisted': 'Relisted',
+  'listing.reactivation_requested': 'Dealer asked to put it back on sale',
+  'listing.reactivation_approved': 'Reactivation approved',
+  'listing.reactivation_rejected': 'Reactivation declined',
   'listing.removed': 'Removed from the marketplace',
 };
 
@@ -39,3 +42,6 @@ export const BLOCKER_MESSAGES = {
     `${count} of the ${min} images needed ${count === 1 ? 'is' : 'are'} uploaded.`,
   NO_PRIMARY_IMAGE: 'No primary image is chosen.',
 } as const;
+
+export const REACTIVATION_REGISTRATION_TAKEN =
+  'Another dealership has listed this registration since, so this car cannot go back on sale.';

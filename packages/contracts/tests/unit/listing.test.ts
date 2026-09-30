@@ -10,6 +10,11 @@ import {
   isListingPubliclyVisible,
   publicAvailabilityOf,
   WithdrawListingInput,
+  REACTIVATION_STATUS_LABELS,
+  REACTIVATION_STATUS_TONES,
+  ReactivationRequestStatus,
+  RequestReactivationInput,
+  isListingReactivatable,
   displayStatusOf,
   lifecycleActionsOf,
   withdrawalReasonLabel,
@@ -88,11 +93,45 @@ describe('the lifecycle a dealership drives once a listing has been live (R69)',
       PENDING_REVIEW: [],
       CHANGES_REQUESTED: [],
       ACTIVE: ['reserve', 'markSold', 'withdraw'],
-      RESERVED: ['reactivate', 'markSold', 'withdraw'],
+      RESERVED: ['markSold', 'requestReactivation'],
       REJECTED: [],
       SOLD: [],
-      WITHDRAWN: ['relist'],
+      WITHDRAWN: ['requestReactivation'],
     });
+  });
+
+  it('never offers a dealer a direct move back to sale — only a request for one', () => {
+    expect(ListingLifecycleAction.options).not.toContain('reactivate');
+    expect(ListingLifecycleAction.options).not.toContain('relist');
+    expect(ListingStatus.options.filter(isListingReactivatable)).toEqual(['RESERVED', 'WITHDRAWN']);
+  });
+
+  it('offers no second request while one is waiting', () => {
+    expect(lifecycleActionsOf('RESERVED', { reactivationPending: true })).toEqual(['markSold']);
+    expect(lifecycleActionsOf('WITHDRAWN', { reactivationPending: true })).toEqual([]);
+    expect(lifecycleActionsOf('ACTIVE', { reactivationPending: true })).toEqual([
+      'reserve',
+      'markSold',
+      'withdraw',
+    ]);
+  });
+
+  it('labels and tones every reactivation request status', () => {
+    for (const status of ReactivationRequestStatus.options) {
+      expect(REACTIVATION_STATUS_LABELS[status]).toBeTruthy();
+      expect(REACTIVATION_STATUS_TONES[status]).toBeTruthy();
+    }
+    expect(REACTIVATION_STATUS_LABELS.PENDING).toBe('Reactivation pending approval');
+  });
+
+  it('takes an optional reason for a reactivation request, and nothing else', () => {
+    expect(RequestReactivationInput.parse({})).toEqual({});
+    expect(RequestReactivationInput.parse({ reason: '  Buyer backed out. ' })).toEqual({
+      reason: 'Buyer backed out.',
+    });
+    expect(RequestReactivationInput.safeParse({ reason: 'x'.repeat(501) }).success).toBe(false);
+    expect(RequestReactivationInput.safeParse({ status: 'ACTIVE' }).success).toBe(false);
+    expect(RequestReactivationInput.safeParse({ dealerId: 'x' }).success).toBe(false);
   });
 
   it('has no way back from SOLD', () => {

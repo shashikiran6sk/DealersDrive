@@ -7,8 +7,7 @@ import { getVehicles } from './routes/get-vehicles.js';
 import { patchVehicle } from './routes/patch-vehicle.js';
 import { postVehicle } from './routes/post-vehicle.js';
 import { postVehicleMarkSold } from './routes/post-vehicle-mark-sold.js';
-import { postVehicleReactivate } from './routes/post-vehicle-reactivate.js';
-import { postVehicleRelist } from './routes/post-vehicle-relist.js';
+import { postVehicleRequestReactivation } from './routes/post-vehicle-request-reactivation.js';
 import { postVehicleReserve } from './routes/post-vehicle-reserve.js';
 import { postVehicleSubmit } from './routes/post-vehicle-submit.js';
 import { postVehicleWithdraw } from './routes/post-vehicle-withdraw.js';
@@ -24,10 +23,9 @@ const ROUTES: VehiclesRoute[] = [
   deleteVehicle,
   postVehicleSubmit,
   postVehicleReserve,
-  postVehicleReactivate,
   postVehicleMarkSold,
   postVehicleWithdraw,
-  postVehicleRelist,
+  postVehicleRequestReactivation,
 ];
 
 export function createVehiclesRouter(service: VehiclesService): Router {
