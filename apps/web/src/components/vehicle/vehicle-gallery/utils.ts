@@ -34,3 +34,14 @@ export function stripEdges({ scrollLeft, clientWidth, scrollWidth }: StripMetric
 export function railNumber(index: number): string {
   return String(index + 1).padStart(RAIL_NUMBER_DIGITS, '0');
 }
+
+export interface Span {
+  left: number;
+  right: number;
+}
+
+export function revealOffset(track: Span, thumb: Span): number {
+  if (thumb.left < track.left) return thumb.left - track.left;
+  if (thumb.right > track.right) return thumb.right - track.right;
+  return 0;
+}

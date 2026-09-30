@@ -7,6 +7,7 @@ import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
 import {
   arrowStep,
   railNumber,
+  revealOffset,
   startIndex,
   stripEdges,
   wrapIndex,
@@ -98,6 +99,10 @@ describe('the gallery on the page', () => {
     await user.tab();
     expect(screen.getByRole('button', { name: /^View all/ })).toHaveFocus();
     await user.tab();
+    expect(screen.getByRole('button', { name: 'Previous image' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Next image' })).toHaveFocus();
+    await user.tab();
     expect(screen.getByRole('button', { name: 'Open photo 1 of 2' })).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('button', { name: 'Open photo 2 of 2' })).toHaveFocus();
@@ -120,6 +125,164 @@ describe('the gallery on the page', () => {
       'src',
       'https://media.test/by-media/m0/1024.webp',
     );
+  });
+});
+
+function hero() {
+  return gallery().getByRole('button', { name: /^View all|^View the photo/ });
+}
+
+function heroSrc(): string | null {
+  return within(hero()).getByRole('img').getAttribute('src');
+}
+
+function src(index: number): string {
+  return `https://media.test/by-media/m${index}/1024.webp`;
+}
+
+function selectedThumb(): string | null {
+  const current = gallery()
+    .getAllByRole('button', { name: /^Open photo/ })
+    .filter((thumb) => thumb.getAttribute('aria-current') === 'true');
+  expect(current).toHaveLength(1);
+  return current[0]?.getAttribute('aria-label') ?? null;
+}
+
+describe('the hero arrows — one image state for hero, strip and viewer', () => {
+  it('shows Previous image and Next image over the hero when there are several photos', () => {
+    render(<VehicleGallery title={TITLE} images={images(5)} primaryIndex={0} />);
+    const previous = gallery().getByRole('button', { name: 'Previous image' });
+    const next = gallery().getByRole('button', { name: 'Next image' });
+    expect(previous.tagName).toBe('BUTTON');
+    expect(next).toHaveAttribute('type', 'button');
+    expect(previous).toHaveClass('dd-arrow');
+    expect(previous).toBeEnabled();
+    expect(next).toBeEnabled();
+    expect(hero()).not.toContainElement(previous);
+    expect(hero().parentElement).toContainElement(next);
+  });
+
+  it('shows no arrows over the hero for a single photograph', () => {
+    render(<VehicleGallery title={TITLE} images={images(1)} primaryIndex={0} />);
+    expect(screen.queryByRole('button', { name: /Previous image|Next image/ })).toBeNull();
+    expect(heroSrc()).toBe(src(0));
+  });
+
+  it('advances and goes back through the photographs from the hero', async () => {
+    const user = userEvent.setup();
+    render(<VehicleGallery title={TITLE} images={images(5)} primaryIndex={2} />);
+    expect(heroSrc()).toBe(src(2));
+
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(heroSrc()).toBe(src(3));
+    expect(within(hero()).getByRole('img')).toHaveAttribute('alt', `${TITLE}, photograph 4 of 5`);
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    expect(heroSrc()).toBe(src(1));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('wraps at both ends, as the viewer does', async () => {
+    const user = userEvent.setup();
+    render(<VehicleGallery title={TITLE} images={images(3)} primaryIndex={0} />);
+
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    expect(heroSrc()).toBe(src(2));
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(heroSrc()).toBe(src(0));
+  });
+
+  it('moves the selected thumbnail with the hero', async () => {
+    const user = userEvent.setup();
+    render(<VehicleGallery title={TITLE} images={images(4)} primaryIndex={0} />);
+    expect(selectedThumb()).toBe('Open photo 1 of 4');
+
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(selectedThumb()).toBe('Open photo 2 of 4');
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    await user.click(screen.getByRole('button', { name: 'Previous image' }));
+    expect(selectedThumb()).toBe('Open photo 4 of 4');
+  });
+
+  it('can be driven from the keyboard', async () => {
+    const user = userEvent.setup();
+    render(<VehicleGallery title={TITLE} images={images(4)} primaryIndex={0} />);
+    screen.getByRole('button', { name: 'Next image' }).focus();
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
+    expect(heroSrc()).toBe(src(2));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens the viewer on the photograph the hero is showing', async () => {
+    const user = userEvent.setup();
+    render(<VehicleGallery title={TITLE} images={images(9)} primaryIndex={0} />);
+    for (let press = 0; press < 4; press += 1) {
+      await user.click(screen.getByRole('button', { name: 'Next image' }));
+    }
+
+    const dialog = await openViewer(user, /^View all/);
+    expect(within(dialog).getByText('5 / 9')).toBeInTheDocument();
+    expect(within(dialog).getByRole('img', { name: `${TITLE}, photograph 5 of 9` })).toBeVisible();
+  });
+
+  it('shows on the hero the photograph a thumbnail opened, once the viewer closes', async () => {
+    const user = userEvent.setup();
+    render(<VehicleGallery title={TITLE} images={images(9)} primaryIndex={0} />);
+
+    const dialog = await openViewer(user, 'Open photo 7 of 9');
+    expect(within(dialog).getByText('7 / 9')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    expect(heroSrc()).toBe(src(6));
+    expect(selectedThumb()).toBe('Open photo 7 of 9');
+    const again = await openViewer(user, /^View all/);
+    expect(within(again).getByText('7 / 9')).toBeInTheDocument();
+  });
+
+  it('keeps the hero where the viewer was left', async () => {
+    const user = userEvent.setup();
+    render(<VehicleGallery title={TITLE} images={images(9)} primaryIndex={0} />);
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+
+    const dialog = await openViewer(user, /^View all/);
+    expect(within(dialog).getByText('2 / 9')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Next photo' }));
+    await user.click(
+      within(within(dialog).getByRole('navigation', { name: 'All photos' })).getByRole('button', {
+        name: 'Photo 7 of 9',
+      }),
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    expect(heroSrc()).toBe(src(6));
+    expect(selectedThumb()).toBe('Open photo 7 of 9');
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(heroSrc()).toBe(src(7));
+  });
+
+  it('scrolls the strip to keep the selected thumbnail in view, and only when it is not', async () => {
+    const user = userEvent.setup();
+    render(<VehicleGallery title={TITLE} images={images(12)} primaryIndex={0} />);
+    const track = document.querySelector('.dd-strip');
+    if (!(track instanceof HTMLElement)) throw new Error('no strip');
+    const scrollBy = vi.fn();
+    track.scrollBy = scrollBy;
+    track.getBoundingClientRect = () => DOMRect.fromRect({ x: 100, width: 400, height: 80 });
+    const thumbs = gallery().getAllByRole('button', { name: /^Open photo/ });
+    thumbs.forEach((thumb, at) => {
+      thumb.getBoundingClientRect = () =>
+        DOMRect.fromRect({ x: 100 + at * 116, width: 108, height: 80 });
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(scrollBy).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(scrollBy).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(scrollBy).toHaveBeenLastCalledWith({ left: 56, behavior: 'smooth' });
   });
 });
 
@@ -285,6 +448,13 @@ describe('the helpers', () => {
       atStart: true,
       atEnd: true,
     });
+  });
+
+  it('says how far to scroll to reveal a thumbnail, and nothing when it is in view', () => {
+    const track = { left: 100, right: 500 };
+    expect(revealOffset(track, { left: 200, right: 300 })).toBe(0);
+    expect(revealOffset(track, { left: 460, right: 568 })).toBe(68);
+    expect(revealOffset(track, { left: 40, right: 148 })).toBe(-60);
   });
 
   it('numbers the rail with two digits', () => {
