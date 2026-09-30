@@ -98,3 +98,22 @@ should not be shown.
 Who is selling, and a way to see the rest of their yard. No phone number and no
 Call or Enquire button: the reveal route (rule 7) and enquiries are deferred,
 and a button that cannot work is worse than none.
+
+## `apps/web/src/components/vehicle/vehicle-name/vehicle-name.tsx`
+
+### `export function VehicleName({ title, year })`
+
+The card and the vehicle page both put the year in a plate beside the title, so
+the visible title drops it (R88): the plate says 2022, the heading says Maruti
+Suzuki Brezza ZXi. Only the visible text changes. The year is still in the
+heading as screen-reader text, because the plate is a separate element and a
+link read out of context ("Maruti Suzuki Brezza ZXi") would lose it, and
+`vehicle.title` itself is unchanged in the API, the page `<title>`, image alt
+text, the save button's label, breadcrumbs and structured data.
+
+`titleWithoutYear` lives in contracts beside `vehicleTitle`, whose inverse it
+is. It only removes a leading year that equals `year`; anything else — no year,
+a different year, a registration-number title, a title that is only the year —
+is drawn exactly as it came. The space between the hidden year and the name is
+its own text node, because the accessible-name algorithm trims each element's
+text and a space inside the hidden span would be lost.

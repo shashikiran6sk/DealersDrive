@@ -135,6 +135,11 @@ describe('/car/[slug]', () => {
       screen.getByRole('heading', { level: 1, name: '2023 Hyundai Creta SX(O)' }),
     ).toBeInTheDocument();
     expect(screen.getByText('2023', { selector: '.dd-plate' })).toBeInTheDocument();
+    const heading = screen.getByRole('heading', { level: 1 });
+    expect(heading.querySelector('[data-slot="vehicle-name"]')).toHaveTextContent(
+      /^Hyundai Creta SX\(O\)$/,
+    );
+    expect(heading.querySelector('.sr-only')).toHaveTextContent('2023');
     expect(screen.getByText('₹14,50,000')).toBeInTheDocument();
     expect(screen.getByText('Single owner, full service history.')).toBeInTheDocument();
     const specs = within(screen.getByRole('region', { name: 'Specifications' }));
