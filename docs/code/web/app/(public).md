@@ -37,6 +37,19 @@ no reason.
 
 ## `apps/web/src/app/(public)/page.tsx`
 
+### The page is `HOME_FLOW`, in order (R83)
+
+Below the hero, car rows and informational sections take turns — Recently
+added, the journey, SUVs, why Dealers-Drive, automatic cars, built for both
+sides, under ₹10 lakh — rather than every explainer waiting at the bottom. The
+order is data (`HOME_FLOW` in `home.constants.ts`), so the page is one map and
+a test can hold the sequence. Moving a section is moving a line.
+
+The rows are still the four `loadHomeInventory()` reads, fetched once, in
+parallel, and looked up by id; composition never adds a read. A row with no cars
+renders nothing at all (`DiscoveryBand`), padding included, so an empty row
+closes up rather than leaving a gap between two explainers.
+
 ### The hero search is `CarSearchBox` (R79)
 
 The homepage search is the `/cars` search box, not a second search. It used to

@@ -252,6 +252,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R80 — A stale cached read is asked for again, not shown as an error · revises R22 · `apiGetParsed` refetches once with `no-store` when a cached payload fails its contract; a live mismatch still throws · [#205](https://github.com/shashikiran6sk/DealersDrive/pull/205)
 - [~] R81 — The UI revamp: production behaviour, the revamped prototype's look · neutral tokens, Manrope, header/footer/cards/login/console re-skinned; directory cards drop the tagline; `/contact` with admin-configurable `support.*` contacts; a single hero banner whose photograph is admin-configurable (`home.heroImage*`)
 - [x] R82 — A reserved or withdrawn car goes back on sale only on an admin's approval · revises R69/R70/R77 · ⚠️ new table `listing_reactivation_requests` · `reactivate`/`relist` admin-only; `POST /v1/dealer/vehicles/:id/request-reactivation` replaces the dealer's `reactivate`/`relist`; `GET /v1/admin/reactivation-requests` + `/:id/approve`·`/reject`; one pending request per listing (partial unique index); a sale closes a pending request; a reserved car is no longer withdrawable
+- [x] R83 — Cars and information take turns down the homepage · revises R72/R81 · `HOME_FLOW` order: Recently added → journey → SUVs → why Dealers-Drive → automatic → built for both sides → under ₹10 lakh; the explainers become `JourneySection`/`TrustSection`/`AudienceSection`; `DiscoveryBand` leaves no gap for an empty row; same four reads
 
 ---
 

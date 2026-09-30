@@ -1,2 +1,3 @@
+export { DiscoveryBand } from './discovery-band';
 export { DiscoveryRow } from './discovery-row';
-export type { DiscoveryRowProps } from './discovery-row.types';
+export type { DiscoveryBandProps, DiscoveryRowProps } from './discovery-row.types';

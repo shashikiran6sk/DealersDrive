@@ -77,3 +77,19 @@ next homepage render uses it.
 
 The URL must point at an image already hosted somewhere reachable by browsers;
 uploading the file from the admin screen is not part of this.
+
+## `apps/web/src/features/home/discovery-row/discovery-band.tsx`
+
+### `export function DiscoveryBand(props)`
+
+The page-width band a row sits in on the homepage. It exists so the empty case
+is decided in one place: `DiscoveryRow` already renders nothing when it has no
+cars, but the band's own padding would still have drawn an empty stripe between
+two informational sections.
+
+## `journey-section/` · `trust-section/` · `audience-section/`
+
+The homepage's three explainers, lifted out of `page.tsx` unchanged (R83) so
+the page can interleave them with the car rows. Each heading carries an id the
+section is labelled by, so each is a named region — which is what the order
+tests find them by.
