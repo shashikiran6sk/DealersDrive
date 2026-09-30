@@ -87,6 +87,26 @@ describe('VehicleCard', () => {
     expect(within(article).getByText('Verified')).toBeInTheDocument();
   });
 
+  it('shows the year once, in the plate — never again in the visible title', () => {
+    render(<VehicleCard vehicle={card()} />);
+
+    const article = screen.getByRole('article');
+    const heading = within(article).getByRole('heading', { level: 3 });
+    const visible = heading.querySelector('[data-slot="vehicle-name"]');
+    expect(visible).toHaveTextContent(/^Hyundai Creta SX\(O\)$/);
+    expect(within(article).getByText('2023', { selector: '.dd-plate' })).toBeVisible();
+    expect(heading.querySelector('.sr-only')).toHaveTextContent('2023');
+    expect(within(article).getByRole('link')).toHaveAccessibleName('2023 Hyundai Creta SX(O)');
+  });
+
+  it('keeps the whole title where there is no year plate to carry the year', () => {
+    render(<VehicleCard vehicle={card({ year: null, title: 'Hyundai Creta SX(O)' })} />);
+    expect(screen.queryByText('2023', { selector: '.dd-plate' })).toBeNull();
+    expect(
+      screen.getByRole('heading', { level: 3 }).querySelector('[data-slot="vehicle-name"]'),
+    ).toHaveTextContent(/^Hyundai Creta SX\(O\)$/);
+  });
+
   it('shows the primary photograph', () => {
     render(<VehicleCard vehicle={card()} />);
     expect(

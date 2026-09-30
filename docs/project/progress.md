@@ -257,6 +257,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R85 — Dealer Login in the customer's account menu · revises R76 · a `Link` to `/dealer` between separators, after My enquiries and before Logout; no auth logic of its own
 - [x] R86 — The login's Customer/Dealer switch is aligned to the left of the form · layout only (`justify-end` → `justify-start` on the tablist); no auth change
 - [x] R87 — Previous / next arrows on the vehicle page's main photograph · revises R49 · one gallery `index` drives the hero, the strip's current thumbnail and the lightbox; the hero arrows reuse the lightbox's wrapping `step`; none for a single photo
+- [x] R88 — The card and vehicle-page titles no longer repeat the year the plate shows · `VehicleName` + contracts `titleWithoutYear`; the year stays in the accessible name; `title` unchanged everywhere else (SEO, alt, console)
 
 ---
 

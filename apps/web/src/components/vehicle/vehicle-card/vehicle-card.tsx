@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Plate } from '@/components/ui/primitives';
 import { SaveButton } from '@/components/vehicle/save-button';
+import { VehicleName } from '@/components/vehicle/vehicle-name';
 import { cn } from '@/lib/cn';
 
 import { DealerStrip } from './dealer-strip';
@@ -66,7 +67,7 @@ export function VehicleCard({
         <h3 className="line-clamp-2 min-h-[2.5em] font-heading text-[14px] font-extrabold leading-[1.25] tracking-[-0.015em]">
           {unavailable ? (
             <span>
-              {vehicle.title}
+              <VehicleName title={vehicle.title} year={vehicle.year} />
               <span className="sr-only">
                 {' — '}
                 {availabilityNote(vehicle.availability)}
@@ -77,7 +78,7 @@ export function VehicleCard({
               href={vehicleHref(vehicle.slug)}
               className="after:absolute after:inset-0 focus-visible:outline-none"
             >
-              {vehicle.title}
+              <VehicleName title={vehicle.title} year={vehicle.year} />
             </Link>
           )}
         </h3>

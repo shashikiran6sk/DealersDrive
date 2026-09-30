@@ -2258,6 +2258,21 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'admin-moderationqueue',
   },
+  {
+    id: 'C118',
+    name: 'VehicleName',
+    source: 'apps/web/src/components/vehicle/vehicle-name/vehicle-name.tsx',
+    category: 'Vehicle',
+    ownership: 'Shared',
+    purpose:
+      'A vehicle’s visible name where a year plate already shows the year (R88): the card title and the vehicle page h1 draw “Maruti Suzuki Brezza ZXi”, not “2022 Maruti Suzuki Brezza ZXi”. The year stays in the accessible name (sr-only), and a title that does not start with the year is drawn as it is. `titleWithoutYear` in contracts decides.',
+    aliases: ['VehicleTitle', 'CarName', 'TitleWithoutYear', 'vehicle-name'],
+    features: ['R88'],
+    props: ['title', 'year'],
+    states: ['with a year plate beside it', 'no year', 'registration only'],
+    reusable: true,
+    storyId: 'vehicle-vehiclename',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {
