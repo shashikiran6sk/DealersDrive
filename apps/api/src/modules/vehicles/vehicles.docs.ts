@@ -181,7 +181,9 @@ export const vehiclesDocs: ModuleDocs = {
       summary: 'Reserve a car for a buyer',
       description:
         'Moves the listing from `ACTIVE` to `RESERVED` (**R69**). A reserved car stays on the ' +
-        'marketplace, marked Reserved, but cannot be opened from a card or enquired about.\n\n' +
+        'marketplace, marked Reserved, but cannot be opened from a card or enquired about. The ' +
+        'dealership can still mark it sold; putting it back on sale takes an admin\u2019s ' +
+        'approval of a `request-reactivation`.\n\n' +
         'Any other state is a `409 LISTING_NOT_RESERVABLE` carrying `listingStatus`. The listing ' +
         'row is locked and the new state is written with the old one in the `WHERE`, so two ' +
         'moves racing on one car land one and refuse the other with `409 LISTING_STATE_CHANGED`.',
@@ -200,28 +202,6 @@ export const vehiclesDocs: ModuleDocs = {
     },
     {
       method: 'post',
-      path: '/v1/dealer/vehicles/:id/reactivate',
-      operationId: 'reactivateDealerVehicle',
-      tag: DOC_TAGS.vehicles,
-      summary: 'Put a reserved car back on sale',
-      description:
-        'Moves the listing from `RESERVED` back to `ACTIVE` (**R69**): the buyer did not ' +
-        'proceed. Anything but a reserved car is a `409 LISTING_NOT_RESERVED`.',
-      audience: 'dealer',
-      permission: 'listing:submit',
-      requiresActiveDealer: true,
-      params: 'IdParam',
-      responses: [
-        {
-          status: 200,
-          description: 'The vehicle, with its listing now `ACTIVE`.',
-          schema: 'DealerVehicle',
-        },
-      ],
-      errors: [400, 401, 403, 404, 409],
-    },
-    {
-      method: 'post',
       path: '/v1/dealer/vehicles/:id/mark-sold',
       operationId: 'markDealerVehicleSold',
       tag: DOC_TAGS.vehicles,
@@ -232,7 +212,8 @@ export const vehiclesDocs: ModuleDocs = {
         'and its audit trail are kept. The registration is released, so the same car can be ' +
         'listed again by whoever sells it next.\n\n' +
         '**There is no way back.** No route moves a listing out of `SOLD`; a sale recorded by ' +
-        'mistake is an administrative correction. Anything but an active or reserved car is a ' +
+        'mistake is an administrative correction. A reactivation request still waiting on a ' +
+        'reserved car is closed (`CANCELLED`) by the sale. Anything but an active or reserved car is a ' +
         '`409 LISTING_NOT_SELLABLE`.',
       audience: 'dealer',
       permission: 'listing:submit',
@@ -254,12 +235,12 @@ export const vehiclesDocs: ModuleDocs = {
       tag: DOC_TAGS.vehicles,
       summary: 'Withdraw a listing without selling it',
       description:
-        'Moves the listing from `ACTIVE` or `RESERVED` to `WITHDRAWN` (**R69**): off the ' +
-        'marketplace, not sold, and relistable. The dealership keeps holding the registration ' +
-        'while it is withdrawn.\n\n' +
+        'Moves the listing from `ACTIVE` to `WITHDRAWN` (**R69**): off the marketplace and not ' +
+        'sold. The dealership keeps holding the registration while it is withdrawn, and can ' +
+        'ask for it to go back on sale with `request-reactivation` — an admin decides.\n\n' +
         '`reason` is one of five and is required; `note` is optional, at most 500 characters. ' +
         'Both are the dealership’s own record and appear in no public response. Anything but an ' +
-        'active or reserved car is a `409 LISTING_NOT_WITHDRAWABLE`.',
+        'active car is a `409 LISTING_NOT_WITHDRAWABLE`.',
       audience: 'dealer',
       permission: 'listing:submit',
       requiresActiveDealer: true,
@@ -279,26 +260,32 @@ export const vehiclesDocs: ModuleDocs = {
     },
     {
       method: 'post',
-      path: '/v1/dealer/vehicles/:id/relist',
-      operationId: 'relistDealerVehicle',
+      path: '/v1/dealer/vehicles/:id/request-reactivation',
+      operationId: 'requestDealerVehicleReactivation',
       tag: DOC_TAGS.vehicles,
-      summary: 'Put a withdrawn listing back on sale',
+      summary: 'Ask to put a reserved or withdrawn car back on sale',
       description:
-        'Moves the listing from `WITHDRAWN` straight back to `ACTIVE` (**R69**) — the car was ' +
-        'reviewed and photographed before, and nothing about it can have been edited since. The ' +
-        'withdrawal reason and note are cleared; the audit log keeps them.\n\n' +
-        'A listing withdrawn before R69 may have released its registration; relisting reclaims ' +
-        'it, and if another dealership has claimed the same car since, this is a ' +
-        '`409 DUPLICATE_REGISTRATION` that does not say which. Anything but a withdrawn listing ' +
-        'is a `409 LISTING_NOT_RELISTABLE`.',
+        'A dealership cannot move a listing from `RESERVED` or `WITHDRAWN` back to `ACTIVE` ' +
+        'itself: that is an admin decision. This files a reactivation request an admin approves ' +
+        'or rejects; the listing does not move until then, and `listing.reactivation` on the ' +
+        'response says where the request stands.\n\n' +
+        '`reason` is optional, at most 500 characters, and is read only by the reviewer. The ' +
+        'body is required as a JSON object, so an empty request is `{}`.\n\n' +
+        'Anything but a reserved or withdrawn car is a `409 LISTING_NOT_REACTIVATABLE`; a ' +
+        'request already waiting on the same listing is a `409 REACTIVATION_ALREADY_PENDING` ' +
+        '(one pending request per listing is also a database constraint).',
       audience: 'dealer',
       permission: 'listing:submit',
       requiresActiveDealer: true,
       params: 'IdParam',
+      requestBody: {
+        schema: 'RequestReactivationInput',
+        example: { reason: 'The buyer backed out; the car is available again.' },
+      },
       responses: [
         {
           status: 200,
-          description: 'The vehicle, with its listing now `ACTIVE`.',
+          description: 'The vehicle, its listing unchanged, with a pending `reactivation`.',
           schema: 'DealerVehicle',
         },
       ],

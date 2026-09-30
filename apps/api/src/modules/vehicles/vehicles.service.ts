@@ -8,6 +8,7 @@ import {
   type DealerInventoryResponse,
   type DealerVehicle,
   type ListingLifecycleAction,
+  type RequestReactivationInput,
   type UpdateVehicleInput,
   type VehicleSuggestQuery,
   type VehicleSuggestions,
@@ -22,6 +23,7 @@ import { ConflictError, DomainError, NotFoundError, errorCode } from '../../plat
 import {
   assertTransition,
   createDraftListing,
+  fileReactivationRequest,
   lockListingForVehicle,
   transition,
 } from '../listings/listings.facade.js';
@@ -49,6 +51,8 @@ export interface VehiclesDeps {
 }
 
 export const SUGGESTION_LIMIT = 8;
+
+export type DirectLifecycleAction = Exclude<ListingLifecycleAction, 'requestReactivation'>;
 
 function duplicate(): ConflictError {
   return new ConflictError('DUPLICATE_REGISTRATION', DUPLICATE_REGISTRATION, {
@@ -323,39 +327,54 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
     async lifecycle(
       actor: VehicleActor,
       vehicleId: string,
-      action: ListingLifecycleAction,
+      action: DirectLifecycleAction,
       withdrawal?: WithdrawListingInput,
     ): Promise<DealerVehicle> {
       await requireOwned(actor.dealerId, vehicleId);
 
-      try {
-        const moved = await withTransaction(prisma, async (tx) => {
-          const listing = await lockListingForVehicle(tx, vehicleId);
-          const vehicle = await repo.findOwned(actor.dealerId, vehicleId, tx);
-          if (!listing || !vehicle) throw notFound();
+      const moved = await withTransaction(prisma, async (tx) => {
+        const listing = await lockListingForVehicle(tx, vehicleId);
+        const vehicle = await repo.findOwned(actor.dealerId, vehicleId, tx);
+        if (!listing || !vehicle) throw notFound();
 
-          assertTransition(listing.status, action, 'DEALER');
-          if (action === 'relist' && vehicle.releasedAt) {
-            await repo.updateOwned(actor.dealerId, vehicleId, { releasedAt: null }, tx);
-          }
+        await transition(
+          tx,
+          audit,
+          listing,
+          action,
+          { type: 'DEALER', id: actor.userId },
+          withdrawal ? { withdrawal: { reason: withdrawal.reason, note: withdrawal.note } } : {},
+        );
+        const row = await repo.findOwned(actor.dealerId, vehicleId, tx);
+        if (!row) throw notFound();
+        return row;
+      });
+      return toDealerVehicle(moved);
+    },
 
-          await transition(
-            tx,
-            audit,
-            listing,
-            action,
-            { type: 'DEALER', id: actor.userId },
-            withdrawal ? { withdrawal: { reason: withdrawal.reason, note: withdrawal.note } } : {},
-          );
-          const row = await repo.findOwned(actor.dealerId, vehicleId, tx);
-          if (!row) throw notFound();
-          return row;
-        });
-        return toDealerVehicle(moved);
-      } catch (error) {
-        if (errorCode(error) === 'P2002') throw alreadyListed();
-        throw error;
-      }
+    async requestReactivation(
+      actor: VehicleActor,
+      vehicleId: string,
+      input: RequestReactivationInput,
+    ): Promise<DealerVehicle> {
+      await requireOwned(actor.dealerId, vehicleId);
+
+      const requested = await withTransaction(prisma, async (tx) => {
+        const listing = await lockListingForVehicle(tx, vehicleId);
+        if (!listing || listing.dealerId !== actor.dealerId) throw notFound();
+
+        await fileReactivationRequest(
+          tx,
+          audit,
+          listing,
+          { type: 'DEALER', id: actor.userId },
+          input.reason,
+        );
+        const row = await repo.findOwned(actor.dealerId, vehicleId, tx);
+        if (!row) throw notFound();
+        return row;
+      });
+      return toDealerVehicle(requested);
     },
 
     async suggestions(query: VehicleSuggestQuery): Promise<VehicleSuggestions> {

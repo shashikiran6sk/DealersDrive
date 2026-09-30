@@ -5,8 +5,9 @@ import { COMPLETE_VEHICLE, marketplaceFixtures, type Dealership } from './market
 
 /**
  * R69 — the lifecycle a dealership drives once a car has been live: reserve,
- * put back on sale, mark sold, withdraw and relist, each through its own route
- * and each through `transition()`.
+ * mark sold and withdraw, each through its own route and each through
+ * `transition()`. Putting a reserved or withdrawn car back on sale is an admin
+ * decision; `listing-reactivation.test.ts` covers that request and review.
  *
  * The car is taken live the way approval leaves it (ACTIVE, a slug, a
  * publication date, a claimed registration) by writing the row directly:
@@ -79,7 +80,8 @@ describe('reserving', () => {
       status: 'RESERVED',
       statusLabel: 'Reserved',
       statusTone: 'warn',
-      actions: ['reactivate', 'markSold', 'withdraw'],
+      actions: ['markSold', 'requestReactivation'],
+      reactivation: null,
       withdrawal: null,
       canEdit: false,
     });
@@ -91,28 +93,15 @@ describe('reserving', () => {
     expect(await trail(listing.id)).toContain('listing.reserved');
   });
 
-  it('puts a reserved car back on sale, clearing the reservation', async () => {
-    const { id, publishedAt, slug } = await liveCar();
+  it('has no direct way back on sale for the dealership: the old routes are gone', async () => {
+    const { id } = await liveCar();
     await post(a, id, 'reserve').expect(200);
-    const res = await post(a, id, 'reactivate').expect(200);
-
-    expect(res.body.listing).toMatchObject({
-      status: 'ACTIVE',
-      reservedAt: null,
-      slug,
-      actions: ['reserve', 'markSold', 'withdraw'],
-    });
-    const { listing } = await stored(id);
-    expect(listing.publishedAt).toEqual(publishedAt);
-    expect(listing.decidedBy).toBeNull();
-    expect(await trail(listing.id)).toEqual(
-      expect.arrayContaining(['listing.reserved', 'listing.reactivated']),
-    );
+    await post(a, id, 'reactivate').expect(404);
+    expect((await stored(id)).listing.status).toBe('RESERVED');
   });
 
-  it('refuses to reserve a reserved car, or reactivate one that is not reserved', async () => {
+  it('refuses to reserve a reserved car', async () => {
     const { id } = await liveCar();
-    await post(a, id, 'reactivate').expect(409, /LISTING_NOT_RESERVED/);
     await post(a, id, 'reserve').expect(200);
     const again = await post(a, id, 'reserve').expect(409);
     expect(again.body).toMatchObject({
@@ -146,15 +135,14 @@ describe('marking sold', () => {
 
     const refusals: [string, string][] = [
       ['reserve', 'LISTING_NOT_RESERVABLE'],
-      ['reactivate', 'LISTING_NOT_RESERVED'],
       ['mark-sold', 'LISTING_NOT_SELLABLE'],
-      ['relist', 'LISTING_NOT_RELISTABLE'],
     ];
     for (const [action, code] of refusals) {
       const res = await post(a, id, action).expect(409);
       expect(res.body.code, action).toBe(code);
     }
     await post(a, id, 'withdraw', { reason: 'OTHER' }).expect(409, /LISTING_NOT_WITHDRAWABLE/);
+    await post(a, id, 'request-reactivation', {}).expect(409, /LISTING_NOT_REACTIVATABLE/);
     expect((await stored(id)).listing.status).toBe('SOLD');
   });
 
@@ -173,7 +161,7 @@ describe('marking sold', () => {
   });
 });
 
-describe('withdrawing and relisting', () => {
+describe('withdrawing', () => {
   it('withdraws with a reason and a note the dealership sees, and keeps the registration', async () => {
     const registrationNumber = nextPlate();
     const { id } = await liveCar(a, registrationNumber);
@@ -185,7 +173,7 @@ describe('withdrawing and relisting', () => {
     expect(res.body.listing).toMatchObject({
       status: 'WITHDRAWN',
       statusLabel: 'Withdrawn',
-      actions: ['relist'],
+      actions: ['requestReactivation'],
       withdrawal: {
         reason: 'DOCUMENT_ISSUE',
         reasonLabel: 'Issue with the documents',
@@ -209,68 +197,21 @@ describe('withdrawing and relisting', () => {
     expect(duplicate.body.code).toBe('DUPLICATE_REGISTRATION');
   });
 
-  it('withdraws a reserved car too', async () => {
+  it('does not withdraw a reserved car: it can only be sold or asked back on sale', async () => {
     const { id } = await liveCar();
     await post(a, id, 'reserve').expect(200);
-    await post(a, id, 'withdraw', { reason: 'TEMPORARILY_PAUSED' }).expect(200);
-    expect((await stored(id)).listing.status).toBe('WITHDRAWN');
-  });
-
-  it('relists straight to ACTIVE, keeping the slug and first publication, clearing the reason', async () => {
-    const { id, publishedAt, slug } = await liveCar();
-    await post(a, id, 'withdraw', { reason: 'TEMPORARILY_PAUSED', note: 'Service.' }).expect(200);
-
-    const res = await post(a, id, 'relist').expect(200);
-    expect(res.body.listing).toMatchObject({
-      status: 'ACTIVE',
-      slug,
-      withdrawal: null,
-      withdrawnAt: null,
-      actions: ['reserve', 'markSold', 'withdraw'],
-    });
-
-    const { listing } = await stored(id);
-    expect(listing).toMatchObject({
-      status: 'ACTIVE',
-      publishedAt,
-      withdrawalReason: null,
-      withdrawalNote: null,
-    });
-    expect(await trail(listing.id)).toEqual(
-      expect.arrayContaining(['listing.withdrawn', 'listing.relisted']),
+    await post(a, id, 'withdraw', { reason: 'TEMPORARILY_PAUSED' }).expect(
+      409,
+      /LISTING_NOT_WITHDRAWABLE/,
     );
-    const withdrawn = await h.prisma.auditLog.findFirstOrThrow({
-      where: { entityId: listing.id, action: 'listing.withdrawn' },
-    });
-    expect(withdrawn.after).toMatchObject({ withdrawalReason: 'TEMPORARILY_PAUSED' });
+    expect((await stored(id)).listing.status).toBe('RESERVED');
   });
 
-  it('reclaims a registration a pre-R69 withdrawal released', async () => {
+  it('has no direct relist for the dealership', async () => {
     const { id } = await liveCar();
     await post(a, id, 'withdraw', { reason: 'OTHER' }).expect(200);
-    await h.prisma.vehicle.update({ where: { id }, data: { releasedAt: new Date() } });
-
-    await post(a, id, 'relist').expect(200);
-    expect((await stored(id)).vehicle.releasedAt).toBeNull();
-  });
-
-  it('refuses to relist a car another dealership has claimed since, and leaves it withdrawn', async () => {
-    const registrationNumber = nextPlate();
-    const { id } = await liveCar(a, registrationNumber);
-    await post(a, id, 'withdraw', { reason: 'NO_LONGER_FOR_SALE' }).expect(200);
-    await h.prisma.vehicle.update({ where: { id }, data: { releasedAt: new Date() } });
-    await liveCar(b, registrationNumber);
-
-    const res = await post(a, id, 'relist').expect(409);
-    expect(res.body.code).toBe('DUPLICATE_REGISTRATION');
-    const { listing, vehicle } = await stored(id);
-    expect(listing.status).toBe('WITHDRAWN');
-    expect(vehicle.releasedAt).toBeInstanceOf(Date);
-  });
-
-  it('refuses to relist a car that is not withdrawn', async () => {
-    const { id } = await liveCar();
-    await post(a, id, 'relist').expect(409, /LISTING_NOT_RELISTABLE/);
+    await post(a, id, 'relist').expect(404);
+    expect((await stored(id)).listing.status).toBe('WITHDRAWN');
   });
 });
 
@@ -298,11 +239,18 @@ describe('what a withdrawal accepts', () => {
 describe('whose car it is', () => {
   it('answers another dealership’s car with a 404 and moves nothing', async () => {
     const { id } = await liveCar(a);
-    for (const action of ['reserve', 'reactivate', 'mark-sold', 'relist']) {
+    for (const action of ['reserve', 'mark-sold']) {
       await post(b, id, action).expect(404);
     }
     await post(b, id, 'withdraw', { reason: 'OTHER' }).expect(404);
-    expect((await stored(id)).listing.status).toBe('ACTIVE');
+    await post(a, id, 'reserve').expect(200);
+    await post(b, id, 'request-reactivation', {}).expect(404);
+    await expect(
+      h.prisma.listingReactivationRequest.count({ where: { listing: { vehicleId: id } } }),
+    ).resolves.toBe(0);
+    expect((await stored(id)).listing.status).toBe('RESERVED');
+    await post(a, id, 'mark-sold').expect(200);
+    expect((await stored(id)).listing.status).toBe('SOLD');
   });
 
   it('refuses the signed-out', async () => {

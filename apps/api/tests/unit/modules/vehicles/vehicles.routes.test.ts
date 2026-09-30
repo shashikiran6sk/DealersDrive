@@ -22,11 +22,16 @@ describe('the surface', () => {
       'DELETE /vehicles/:id',
       'POST /vehicles/:id/submit',
       'POST /vehicles/:id/reserve',
-      'POST /vehicles/:id/reactivate',
       'POST /vehicles/:id/mark-sold',
       'POST /vehicles/:id/withdraw',
-      'POST /vehicles/:id/relist',
+      'POST /vehicles/:id/request-reactivation',
     ]);
+  });
+
+  it('has no route by which a dealer puts a car back on sale itself', () => {
+    const paths = signaturesOf(router);
+    expect(paths).not.toContain('POST /vehicles/:id/reactivate');
+    expect(paths).not.toContain('POST /vehicles/:id/relist');
   });
 
   it('mounts the suggestions route before /:id would swallow it', () => {
@@ -47,10 +52,9 @@ describe('permissions', () => {
     ['DELETE /vehicles/:id', 'vehicle:delete'],
     ['POST /vehicles/:id/submit', 'listing:submit'],
     ['POST /vehicles/:id/reserve', 'listing:submit'],
-    ['POST /vehicles/:id/reactivate', 'listing:submit'],
     ['POST /vehicles/:id/mark-sold', 'listing:submit'],
     ['POST /vehicles/:id/withdraw', 'listing:submit'],
-    ['POST /vehicles/:id/relist', 'listing:submit'],
+    ['POST /vehicles/:id/request-reactivation', 'listing:submit'],
   ])('guards %s with %s', (signature, permission) => {
     expect(permissionsOn(routeFor(router, signature) as never)).toEqual([permission]);
   });
@@ -65,12 +69,14 @@ describe('validation', () => {
     }
   });
 
-  it.each(['POST /vehicles', 'PATCH /vehicles/:id', 'POST /vehicles/:id/withdraw'])(
-    'parses the body of %s',
-    (signature) => {
-      expect(validatedSources(routeFor(router, signature) as never)).toContain('body');
-    },
-  );
+  it.each([
+    'POST /vehicles',
+    'PATCH /vehicles/:id',
+    'POST /vehicles/:id/withdraw',
+    'POST /vehicles/:id/request-reactivation',
+  ])('parses the body of %s', (signature) => {
+    expect(validatedSources(routeFor(router, signature) as never)).toContain('body');
+  });
 
   it('parses the inventory query', () => {
     expect(validatedSources(routeFor(router, 'GET /vehicles') as never)).toContain('query');

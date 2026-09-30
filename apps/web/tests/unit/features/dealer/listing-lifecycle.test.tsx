@@ -11,17 +11,19 @@ import {
 /**
  * The dealer's lifecycle controls (**R70**): only the moves the server says
  * this listing offers, each behind a confirmation, and a withdrawal that cannot
- * be sent without a reason.
+ * be sent without a reason. A reserved or withdrawn car is never put back on
+ * sale from here — the dealer requests it, and an admin decides.
  */
 const ID = '11111111-1111-4111-8111-111111111111';
 const TITLE = '2023 Hyundai Creta SX(O)';
 
-function actions(list: DealerListing['actions'], submit?: LifecycleSubmit) {
+function actions(list: DealerListing['actions'], submit?: LifecycleSubmit, pending = false) {
   return render(
     <ListingLifecycleActions
       vehicleId={ID}
       vehicleTitle={TITLE}
       actions={list}
+      reactivationPending={pending}
       {...(submit ? { submit } : {})}
     />,
   );
@@ -38,13 +40,13 @@ describe('which moves are offered', () => {
   it.each([
     [
       ['reserve', 'markSold', 'withdraw'],
-      ['Reserve', 'Mark sold', 'Withdraw'],
+      ['Mark reserved', 'Mark sold', 'Withdraw'],
     ],
     [
-      ['reactivate', 'markSold', 'withdraw'],
-      ['Make active', 'Mark sold', 'Withdraw'],
+      ['markSold', 'requestReactivation'],
+      ['Mark sold', 'Request reactivation'],
     ],
-    [['relist'], ['Relist']],
+    [['requestReactivation'], ['Request reactivation']],
   ] as const)('offers %j as %j', (list, labels) => {
     actions([...list]);
     expect(buttons()).toEqual(labels);
@@ -54,6 +56,24 @@ describe('which moves are offered', () => {
     const { container } = actions([]);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('never offers a direct way back on sale', () => {
+    actions(['markSold', 'requestReactivation']);
+    expect(screen.queryByRole('button', { name: /make active|relist/i })).not.toBeInTheDocument();
+  });
+
+  it('says a request is pending, and offers no second one', () => {
+    actions(['markSold'], undefined, true);
+    const group = screen.getByRole('group', { name: `Change the listing status of ${TITLE}` });
+    expect(within(group).getByText('Reactivation pending approval')).toBeInTheDocument();
+    expect(buttons()).toEqual(['Mark sold']);
+  });
+
+  it('shows the pending state on a withdrawn car with no other move', () => {
+    actions([], undefined, true);
+    expect(screen.getByText('Reactivation pending approval')).toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
 });
 
 describe('confirming a move', () => {
@@ -61,7 +81,7 @@ describe('confirming a move', () => {
     const submit = vi.fn<LifecycleSubmit>(() => Promise.resolve({ ok: true }));
     actions(['reserve', 'markSold', 'withdraw'], submit);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reserve' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mark reserved' }));
     const dialog = await screen.findByRole('dialog', { name: 'Reserve this vehicle?' });
     expect(dialog).toHaveTextContent(
       'The listing will remain visible but customers will not be able to open or enquire about it.',
@@ -83,9 +103,11 @@ describe('confirming a move', () => {
 
   it('sends nothing when cancelled', async () => {
     const submit = vi.fn<LifecycleSubmit>(() => Promise.resolve({ ok: true }));
-    actions(['relist'], submit);
-    fireEvent.click(screen.getByRole('button', { name: 'Relist' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Relist this vehicle?' });
+    actions(['requestReactivation'], submit);
+    fireEvent.click(screen.getByRole('button', { name: 'Request reactivation' }));
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Ask to put this vehicle back on sale?',
+    });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(submit).not.toHaveBeenCalled();
@@ -95,13 +117,45 @@ describe('confirming a move', () => {
     const submit = vi.fn<LifecycleSubmit>(() =>
       Promise.resolve({ ok: false, message: 'This listing changed while you were looking at it.' }),
     );
-    actions(['reactivate'], submit);
-    fireEvent.click(screen.getByRole('button', { name: 'Make active' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Put this vehicle back on sale?' });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Make active' }));
+    actions(['requestReactivation'], submit);
+    fireEvent.click(screen.getByRole('button', { name: 'Request reactivation' }));
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Ask to put this vehicle back on sale?',
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send request' }));
 
     expect(await within(dialog).findByText(/changed while you were looking/)).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+});
+
+describe('requesting reactivation', () => {
+  it('explains an admin decides, and sends the trimmed note', async () => {
+    const submit = vi.fn<LifecycleSubmit>(() => Promise.resolve({ ok: true }));
+    actions(['requestReactivation'], submit);
+    fireEvent.click(screen.getByRole('button', { name: 'Request reactivation' }));
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Ask to put this vehicle back on sale?',
+    });
+    expect(dialog).toHaveTextContent('until an admin approves it');
+    fireEvent.change(within(dialog).getByLabelText(/Note for the reviewer/), {
+      target: { value: '  Buyer backed out.  ' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send request' }));
+    await waitFor(() =>
+      expect(submit).toHaveBeenCalledWith(ID, 'requestReactivation', {
+        reason: 'Buyer backed out.',
+      }),
+    );
+  });
+
+  it('sends an empty request when no note was written', async () => {
+    const submit = vi.fn<LifecycleSubmit>(() => Promise.resolve({ ok: true }));
+    actions(['requestReactivation'], submit);
+    fireEvent.click(screen.getByRole('button', { name: 'Request reactivation' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send request' }));
+    await waitFor(() => expect(submit).toHaveBeenCalledWith(ID, 'requestReactivation', {}));
   });
 });
 
@@ -113,7 +167,7 @@ describe('withdrawing', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Withdraw' }));
     const dialog = await screen.findByRole('dialog', { name: 'Withdraw this listing?' });
     expect(dialog).toHaveTextContent(
-      'It will be removed from public listings. You can relist it later.',
+      'It will be removed from public listings. To put it back on sale later, request reactivation',
     );
     const confirm = within(dialog).getByRole('button', { name: 'Withdraw listing' });
     expect(confirm).toBeDisabled();
@@ -163,6 +217,18 @@ describe('withdrawing', () => {
   });
 });
 
+const REQUEST: NonNullable<DealerListing['reactivation']> = {
+  id: '44444444-4444-4444-8444-444444444444',
+  status: 'PENDING',
+  statusLabel: 'Reactivation pending approval',
+  statusTone: 'warn',
+  fromStatus: 'WITHDRAWN',
+  reason: null,
+  requestedAt: '2026-09-28T10:00:00.000Z',
+  reviewedAt: null,
+  adminNote: null,
+};
+
 function listing(overrides: Partial<DealerListing>): DealerListing {
   return {
     id: '33333333-3333-4333-8333-333333333333',
@@ -181,6 +247,7 @@ function listing(overrides: Partial<DealerListing>): DealerListing {
     canSubmit: false,
     canDelete: false,
     actions: ['reserve', 'markSold', 'withdraw'],
+    reactivation: null,
     ...overrides,
   };
 }
@@ -192,17 +259,17 @@ describe('ListingLifecyclePanel', () => {
       'href',
       '/car/2023-hyundai-creta-katpadi-abc',
     );
-    expect(screen.getByRole('button', { name: 'Reserve' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark reserved' })).toBeInTheDocument();
   });
 
-  it('shows a withdrawn listing’s reason and note, and offers only Relist', () => {
+  it('shows a withdrawn listing’s reason and note, and offers only a reactivation request', () => {
     render(
       <ListingLifecyclePanel
         vehicleId={ID}
         vehicleTitle={TITLE}
         listing={listing({
           status: 'WITHDRAWN',
-          actions: ['relist'],
+          actions: ['requestReactivation'],
           withdrawal: {
             reason: 'DOCUMENT_ISSUE',
             reasonLabel: 'Issue with the documents',
@@ -213,8 +280,45 @@ describe('ListingLifecyclePanel', () => {
     );
     expect(screen.getByText('Issue with the documents')).toBeInTheDocument();
     expect(screen.getByText('RC is with the bank.')).toBeInTheDocument();
-    expect(buttons()).toEqual(['Relist']);
+    expect(buttons()).toEqual(['Request reactivation']);
     expect(screen.queryByRole('link', { name: 'View on site' })).not.toBeInTheDocument();
+  });
+
+  it('shows a pending request on a withdrawn car', () => {
+    render(
+      <ListingLifecyclePanel
+        vehicleId={ID}
+        vehicleTitle={TITLE}
+        listing={listing({ status: 'WITHDRAWN', actions: [], reactivation: REQUEST })}
+      />,
+    );
+    expect(screen.getByText('Reactivation pending approval')).toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('shows why a request was declined, and lets the dealer ask again', () => {
+    render(
+      <ListingLifecyclePanel
+        vehicleId={ID}
+        vehicleTitle={TITLE}
+        listing={listing({
+          status: 'RESERVED',
+          actions: ['markSold', 'requestReactivation'],
+          reactivation: {
+            ...REQUEST,
+            status: 'REJECTED',
+            statusLabel: 'Reactivation declined',
+            statusTone: 'err',
+            fromStatus: 'RESERVED',
+            reviewedAt: '2026-09-29T10:00:00.000Z',
+            adminNote: 'Still with the buyer’s bank.',
+          },
+        })}
+      />,
+    );
+    expect(screen.getByText('Reactivation declined:')).toBeInTheDocument();
+    expect(screen.getByText('Still with the buyer’s bank.')).toBeInTheDocument();
+    expect(buttons()).toEqual(['Mark sold', 'Request reactivation']);
   });
 
   it('renders nothing for a sold car', () => {

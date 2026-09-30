@@ -9,6 +9,8 @@ import {
   PHOTOGRAPHY_STATUS_LABELS,
   PHOTOGRAPHY_STATUS_TONES,
   NEGOTIABILITY_LABELS,
+  REACTIVATION_STATUS_LABELS,
+  REACTIVATION_STATUS_TONES,
   TRANSMISSION_LABELS,
   VEHICLE_COLOR_LABELS,
   VEHICLE_FIELD_LABELS,
@@ -26,6 +28,7 @@ import {
   vehicleTitle,
   type AdminListingDetail,
   type AdminListingRow,
+  type AdminReactivationRow,
   type AdminVehicleImages,
   type PhotographyDto,
   type PhotographyStatus,
@@ -34,7 +37,7 @@ import {
 import { completenessOf } from '../vehicles/vehicles.facade.js';
 import { approvalBlockers } from './moderation.approval.js';
 import { ACTOR_LABELS, HISTORY_LABELS, SECTION_TITLES } from './moderation.messages.js';
-import type { DetailRow, HistoryRow, QueueRow } from './moderation.repository.js';
+import type { DetailRow, HistoryRow, QueueRow, ReactivationRow } from './moderation.repository.js';
 
 export function locationOf(dealer: {
   city: string | null;
@@ -79,6 +82,38 @@ export function toAdminListingRow(row: QueueRow, now: Date = new Date()): AdminL
     resubmission: row.submissionCount > 1,
     photography: photographyOf(vehicle.photography),
     imageCount: vehicle._count.images,
+  };
+}
+
+export function toAdminReactivationRow(request: ReactivationRow): AdminReactivationRow {
+  const listing = request.listing;
+  const vehicle = listing.vehicle;
+  return {
+    id: request.id,
+    status: request.status,
+    statusLabel: REACTIVATION_STATUS_LABELS[request.status],
+    statusTone: REACTIVATION_STATUS_TONES[request.status],
+    fromStatus: request.fromStatus,
+    fromStatusLabel: listingStatusLabel(request.fromStatus),
+    toStatus: 'ACTIVE',
+    toStatusLabel: listingStatusLabel('ACTIVE'),
+    reason: request.reason,
+    requestedAt: request.requestedAt.toISOString(),
+    requestedLabel: formatDate(request.requestedAt),
+    reviewedAt: request.reviewedAt?.toISOString() ?? null,
+    adminNote: request.adminNote,
+    listing: {
+      id: listing.id,
+      vehicleId: vehicle.id,
+      title: vehicleTitle(vehicle) || formatRegistration(vehicle.registrationNumber),
+      registrationDisplay: formatRegistration(vehicle.registrationNumber),
+      status: listing.status,
+      statusLabel: listingStatusLabel(listing.status),
+      statusTone: listingStatusTone(listing.status),
+      slug: listing.slug,
+    },
+    dealer: { id: request.dealer.id, name: request.dealer.brandName, slug: request.dealer.slug },
+    current: listing.status === request.fromStatus,
   };
 }
 

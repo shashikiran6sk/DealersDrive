@@ -208,7 +208,15 @@ describe('enquiries — enforced by the server, not by a hidden button', () => {
     const agent = await customer();
     await agent.post('/v1/enquiries').send({ listingSlug: car.slug }).expect(409);
 
-    await a.agent.post(`/v1/dealer/vehicles/${car.vehicleId}/reactivate`).expect(200);
+    const requested = await a.agent
+      .post(`/v1/dealer/vehicles/${car.vehicleId}/request-reactivation`)
+      .send({})
+      .expect(200);
+    await agent.post('/v1/enquiries').send({ listingSlug: car.slug }).expect(409);
+    await admin
+      .post(`/v1/admin/reactivation-requests/${requested.body.listing.reactivation.id}/approve`)
+      .send({})
+      .expect(200);
     await agent.post('/v1/enquiries').send({ listingSlug: car.slug }).expect(201);
   });
 

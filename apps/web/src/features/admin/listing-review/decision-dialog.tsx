@@ -18,6 +18,11 @@ export interface DecisionDialogProps {
   description: string;
   confirmLabel: string;
   destructive?: boolean;
+  primary?: boolean;
+  optional?: boolean;
+  reasonLabel?: string;
+  reasonHint?: string;
+  size?: 'sm' | 'md';
   submit: (reason: string) => Promise<ListingActionResult>;
 }
 
@@ -28,13 +33,18 @@ export function DecisionDialog({
   description,
   confirmLabel,
   destructive = false,
+  primary = false,
+  optional = false,
+  reasonLabel = LISTING_REVIEW_TEXT.reasonLabel,
+  reasonHint = LISTING_REVIEW_TEXT.reasonHint,
+  size = 'md',
   submit,
 }: DecisionDialogProps) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState<string>();
   const [pending, startTransition] = useTransition();
-  const ready = reason.trim().length >= MIN_REASON;
+  const ready = optional || reason.trim().length >= MIN_REASON;
 
   function confirm() {
     startTransition(async () => {
@@ -56,7 +66,10 @@ export function DecisionDialog({
       title={title}
       description={description}
       trigger={
-        <Button variant={destructive ? 'destructive' : 'secondary'} size="md">
+        <Button
+          variant={destructive ? 'destructive' : primary ? 'primary' : 'secondary'}
+          size={size}
+        >
           {triggerLabel}
         </Button>
       }
@@ -78,11 +91,7 @@ export function DecisionDialog({
     >
       <div className="flex flex-col gap-3">
         {message ? <Banner tone="err">{message}</Banner> : null}
-        <Field
-          id={id}
-          label={LISTING_REVIEW_TEXT.reasonLabel}
-          hint={LISTING_REVIEW_TEXT.reasonHint}
-        >
+        <Field id={id} label={reasonLabel} hint={reasonHint}>
           <Textarea
             id={id}
             value={reason}

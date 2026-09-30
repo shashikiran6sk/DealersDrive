@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { CursorPage } from './common.js';
 import { IMAGE_MAX_BYTES, IMAGE_MIME_TYPES } from './dealer.js';
 import { ListingStatus, StatusTone } from './enums.js';
+import { ReactivationRequestStatus } from './listing.js';
 
 /**
  * The admin side of a listing (**F069**, **F070**, as revised by **R45**).
@@ -99,8 +100,66 @@ export const AdminListingsResponse = z.object({
   data: z.array(AdminListingRow),
   page: CursorPage,
   counts: z.record(z.string(), z.number().int()),
+  /** Reactivation requests waiting for a decision, for the queue's tab. */
+  reactivationPending: z.number().int(),
 });
 export type AdminListingsResponse = z.infer<typeof AdminListingsResponse>;
+
+// ─────────── reactivation requests ───────────────────────────────────────
+
+/**
+ * A dealer's request to put a RESERVED or WITHDRAWN car back on sale. The
+ * dealer cannot make that move; an admin approves (the listing goes ACTIVE) or
+ * rejects (it stays where it is). Pending requests are worked oldest first;
+ * decided ones are listed most recently decided first.
+ */
+export const AdminReactivationQuery = z
+  .object({
+    status: ReactivationRequestStatus.optional(),
+    cursor: z.string().max(500).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .strict();
+export type AdminReactivationQuery = z.infer<typeof AdminReactivationQuery>;
+
+export const AdminReactivationRow = z.object({
+  id: z.string().uuid(),
+  status: ReactivationRequestStatus,
+  statusLabel: z.string(),
+  statusTone: StatusTone,
+  fromStatus: ListingStatus,
+  fromStatusLabel: z.string(),
+  toStatus: ListingStatus,
+  toStatusLabel: z.string(),
+  /** The dealer's own words, if they gave any. */
+  reason: z.string().nullable(),
+  requestedAt: z.string(),
+  requestedLabel: z.string(),
+  reviewedAt: z.string().nullable(),
+  adminNote: z.string().nullable(),
+  listing: z.object({
+    id: z.string().uuid(),
+    vehicleId: z.string().uuid(),
+    title: z.string(),
+    registrationDisplay: z.string(),
+    status: ListingStatus,
+    statusLabel: z.string(),
+    statusTone: StatusTone,
+    slug: z.string().nullable(),
+  }),
+  dealer: z.object({ id: z.string().uuid(), name: z.string(), slug: z.string() }),
+  /** Whether the listing is still in the state the request was filed from. */
+  current: z.boolean(),
+});
+export type AdminReactivationRow = z.infer<typeof AdminReactivationRow>;
+
+export const AdminReactivationsResponse = z.object({
+  status: ReactivationRequestStatus,
+  data: z.array(AdminReactivationRow),
+  page: CursorPage,
+  counts: z.record(z.string(), z.number().int()),
+});
+export type AdminReactivationsResponse = z.infer<typeof AdminReactivationsResponse>;
 
 // ─────────── review (F070) ─────────────────────────────────────────────────
 

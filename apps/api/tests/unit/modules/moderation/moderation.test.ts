@@ -157,9 +157,17 @@ describe('the service', () => {
     const repo = {
       queue: vi.fn(async () => [queueRow(), queueRow({ id: 'listing-2' })]),
       statusCounts: vi.fn(async () => [{ status: 'PENDING_REVIEW' as const, count: 2 }]),
+      pendingReactivations: vi.fn(async () => 3),
     };
     const service = createModerationService({
-      repo: { ...repo, detail: vi.fn(), history: vi.fn() },
+      repo: {
+        ...repo,
+        detail: vi.fn(),
+        history: vi.fn(),
+        reactivations: vi.fn(),
+        reactivation: vi.fn(),
+        reactivationCounts: vi.fn(),
+      },
       prisma: {} as never,
       audit: { record: vi.fn(), recordDetached: vi.fn() },
       images: { images: vi.fn(), minimum: vi.fn() },
@@ -174,6 +182,7 @@ describe('the service', () => {
       Buffer.from(SUBMITTED.toISOString()).toString('base64url'),
     );
     expect(response.counts).toEqual({ PENDING_REVIEW: 2 });
+    expect(response.reactivationPending).toBe(3);
   });
 });
 
@@ -189,6 +198,9 @@ describe('the router', () => {
       'POST /listings/:id/request-changes',
       'POST /listings/:id/reject',
       'POST /listings/:id/approve',
+      'GET /reactivation-requests',
+      'POST /reactivation-requests/:id/reject',
+      'POST /reactivation-requests/:id/approve',
     ]);
   });
 
@@ -200,18 +212,23 @@ describe('the router', () => {
     'POST /listings/:id/request-changes',
     'POST /listings/:id/reject',
     'POST /listings/:id/approve',
+    'GET /reactivation-requests',
+    'POST /reactivation-requests/:id/reject',
+    'POST /reactivation-requests/:id/approve',
   ])('guards %s with the moderation permission', (signature) => {
     expect(permissionsOn(routeFor(router, signature) as never)).toEqual(['admin:listing:moderate']);
   });
 
-  it.each(['POST /listings/:id/request-changes', 'POST /listings/:id/reject'])(
-    'parses the id and the reason on %s',
-    (signature) => {
-      expect(validatedSources(routeFor(router, signature) as never)).toEqual(
-        expect.arrayContaining(['params', 'body']),
-      );
-    },
-  );
+  it.each([
+    'POST /listings/:id/request-changes',
+    'POST /listings/:id/reject',
+    'POST /reactivation-requests/:id/reject',
+    'POST /reactivation-requests/:id/approve',
+  ])('parses the id and the reason on %s', (signature) => {
+    expect(validatedSources(routeFor(router, signature) as never)).toEqual(
+      expect.arrayContaining(['params', 'body']),
+    );
+  });
 
   it('parses what each route reads', () => {
     expect(validatedSources(routeFor(router, 'GET /listings') as never)).toContain('query');

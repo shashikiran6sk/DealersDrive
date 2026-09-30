@@ -387,6 +387,8 @@ export const DealerInventoryRow = z.object({
   slug: z.string().nullable(),
   /** The lifecycle moves this row offers now (**R69**). */
   actions: z.array(ListingLifecycleAction),
+  /** A request to put this car back on sale is waiting for an admin. */
+  reactivationPending: z.boolean(),
   updatedAt: z.string(),
   updatedLabel: z.string(),
 });

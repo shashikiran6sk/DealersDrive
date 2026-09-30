@@ -269,6 +269,7 @@ model Dealer {
   vehicles      Vehicle[]
   listings      Listing[]
   enquiries     Enquiry[]
+  reactivations ListingReactivationRequest[]
   // ledger      CreditTransaction[]    ← returns with F050
   // orders      Order[]                ← returns with F051
   // payments    Payment[]              ← returns with F052
@@ -598,11 +599,12 @@ model Listing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  dealer    Dealer         @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  checks    ListingCheck[]
-  enquiries Enquiry[]
-  savedBy   SavedVehicle[]
+  vehicle       Vehicle                      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealer        Dealer                       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  checks        ListingCheck[]
+  enquiries     Enquiry[]
+  savedBy       SavedVehicle[]
+  reactivations ListingReactivationRequest[]
 
   /// A dealership's inventory filtered by status, most recently touched first.
   @@index([dealerId, status, updatedAt])
@@ -611,6 +613,60 @@ model Listing {
   /// Public reads: ACTIVE, newest first.
   @@index([status, publishedAt])
   @@map("listings")
+}
+
+/// A dealer's request to put a RESERVED or WITHDRAWN listing back on sale.
+///
+/// A dealership cannot make that move itself: `reactivate` and `relist` are
+/// admin events in `listing.state.ts`. The dealer files one of these, an admin
+/// approves (the listing goes ACTIVE, in the same transaction, through
+/// `transition()`) or rejects (the listing is untouched). A request the listing
+/// outran — the reserved car was sold while it waited — is CANCELLED by the
+/// transition that moved the listing, so a stale request can never be approved.
+///
+/// `dealerId` is the listing's, copied on write and never accepted from a
+/// request (rule 1).
+model ListingReactivationRequest {
+  id          String                    @id @default(uuid()) @db.Uuid
+  listingId   String                    @db.Uuid
+  dealerId    String                    @db.Uuid
+  /// The listing's status when the request was filed: RESERVED or WITHDRAWN
+  /// (a CHECK constraint). Approval refuses unless the listing is still in it.
+  fromStatus  ListingStatus
+  status      ReactivationRequestStatus @default(PENDING)
+  /// The dealer's own words to the reviewer. Internal, never public.
+  reason      String?
+  requestedBy String?                   @db.Uuid
+  requestedAt DateTime                  @default(now())
+  reviewedBy  String?                   @db.Uuid
+  reviewedAt  DateTime?
+  /// The reviewer's note on a decision, shown to the dealer verbatim.
+  adminNote   String?
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  dealer  Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  /// ⚠️ There is a **partial unique index** Prisma cannot express:
+  ///
+  ///     UNIQUE (listingId) WHERE status = 'PENDING'
+  ///
+  /// At most one request waits per listing, whatever two tabs race to file.
+  /// See `migrations/20260930120000_listing_reactivation_requests`.
+  ///
+  /// The review queue, oldest first.
+  @@index([status, requestedAt])
+  /// A listing's own requests, newest first.
+  @@index([listingId, requestedAt])
+  @@index([dealerId])
+  @@map("listing_reactivation_requests")
+}
+
+/// Mirrors `ReactivationRequestStatus` in contracts.
+enum ReactivationRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
 }
 
 /// Where Dealers-Drive's own photography of a vehicle has got to (**R45**).

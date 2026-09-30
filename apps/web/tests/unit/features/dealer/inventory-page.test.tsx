@@ -28,6 +28,7 @@ function inventory(overrides: Partial<DealerInventoryResponse> = {}): DealerInve
         complete: true,
         slug: null,
         actions: [],
+        reactivationPending: false,
         updatedAt: '2026-09-20T00:00:00.000Z',
         updatedLabel: '20 Sep 2026',
       },
@@ -44,6 +45,7 @@ function inventory(overrides: Partial<DealerInventoryResponse> = {}): DealerInve
         complete: true,
         slug: null,
         actions: [],
+        reactivationPending: false,
         updatedAt: '2026-09-19T00:00:00.000Z',
         updatedLabel: '19 Sep 2026',
       },
@@ -136,7 +138,8 @@ describe('/dealer/inventory', () => {
             status: 'RESERVED',
             statusLabel: 'Reserved',
             statusTone: 'warn',
-            actions: ['reactivate', 'markSold', 'withdraw'],
+            actions: ['markSold'],
+            reactivationPending: true,
           },
           { ...base, status: 'SOLD', statusLabel: 'Sold', statusTone: 'accent', actions: [] },
         ],
@@ -149,8 +152,19 @@ describe('/dealer/inventory', () => {
       within(within(table).getByRole('group', { name: `Change the listing status of ${title}` }))
         .getAllByRole('button')
         .map((button) => button.textContent);
-    expect(labels('2020 Maruti Suzuki Swift VXi')).toEqual(['Reserve', 'Mark sold', 'Withdraw']);
-    expect(labels('2019 Honda City VX')).toEqual(['Make active', 'Mark sold', 'Withdraw']);
+    expect(labels('2020 Maruti Suzuki Swift VXi')).toEqual([
+      'Mark reserved',
+      'Mark sold',
+      'Withdraw',
+    ]);
+    expect(labels('2019 Honda City VX')).toEqual(['Mark sold']);
+    expect(
+      within(
+        within(table).getByRole('group', {
+          name: 'Change the listing status of 2019 Honda City VX',
+        }),
+      ).getByText('Reactivation pending approval'),
+    ).toBeInTheDocument();
     expect(
       within(table).queryByRole('group', {
         name: 'Change the listing status of 2023 Hyundai Creta SX(O)',

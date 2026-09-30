@@ -50,6 +50,7 @@ function vehicle(overrides: Partial<DealerVehicle> = {}): DealerVehicle {
       withdrawnAt: null,
       withdrawal: null,
       actions: [],
+      reactivation: null,
     },
     createdAt: '2026-09-01T00:00:00.000Z',
     updatedAt: '2026-09-01T00:00:00.000Z',
@@ -263,7 +264,7 @@ describe('what the listing allows (F064)', () => {
             canDelete: false,
             slug: '2023-hyundai-creta-katpadi-abc',
             reservedAt: '2026-09-25T10:00:00.000Z',
-            actions: ['reactivate', 'markSold', 'withdraw'],
+            actions: ['markSold', 'requestReactivation'],
           },
         })}
       />,
@@ -276,7 +277,7 @@ describe('what the listing allows (F064)', () => {
       within(group)
         .getAllByRole('button')
         .map((button) => button.textContent),
-    ).toEqual(['Make active', 'Mark sold', 'Withdraw']);
+    ).toEqual(['Mark sold', 'Request reactivation']);
   });
 
   it('shows why a vehicle was not approved', () => {

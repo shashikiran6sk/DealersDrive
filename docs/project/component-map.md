@@ -1306,11 +1306,17 @@ refuse — each as a `LifecycleDialog` on the `Dialog` primitive calling the
 and a private note. `ListingLifecyclePanel` sits under the read-only review on
 a live vehicle's page.
 
-| Component                 | Props                                                      | States                                                                      |
-| ------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `ListingLifecycleActions` | `vehicleId`, `vehicleTitle`, `actions`, `size?`, `submit?` | active · reserved · withdrawn · sold (renders nothing) · row size · refused |
-| `LifecycleDialog`         | `vehicleId`, `action`, `size`, `submit`                    | open · withdraw without a reason · pending · refused                        |
-| `ListingLifecyclePanel`   | `vehicleId`, `vehicleTitle`, `listing`                     | live (View on site) · withdrawn with reason and note · sold                 |
+**Revised by the reactivation review.** The moves are Mark reserved, Mark sold,
+Withdraw and Request reactivation; there is no Make active or Relist, because a
+reserved or withdrawn car goes back on sale only on an admin's approval.
+`reactivationPending` replaces a second request with a _Reactivation pending
+approval_ tag, and the panel shows a declined request with the admin's note.
+
+| Component                 | Props                                                                              | States                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `ListingLifecycleActions` | `vehicleId`, `vehicleTitle`, `actions`, `reactivationPending?`, `size?`, `submit?` | active · reserved · withdrawn · reactivation pending · sold (renders nothing) · row size · refused |
+| `LifecycleDialog`         | `vehicleId`, `action`, `size`, `submit`                                            | open · withdraw without a reason · reactivation note · pending · refused                           |
+| `ListingLifecyclePanel`   | `vehicleId`, `vehicleTitle`, `listing`                                             | live (View on site) · withdrawn with reason and note · reactivation pending / declined · sold      |
 
 **Changed:** `InventoryRow` and `InventoryCard` render the actions (the card is
 no longer one link — the link is its upper part, so the buttons are not nested
@@ -1320,6 +1326,30 @@ in an anchor); `VehicleWizard`'s locked view renders the panel. **Reuses**
 `listing-lifecycle-actions.test.ts`, `inventory-page.test.tsx`. **Sandbox**
 `Dealer/ListingLifecycleActions`, `Dealer/InventoryView`; the Server Action is
 stubbed by `apps/sandbox/src/mocks/listing-lifecycle-actions.ts`.
+
+### C112 — `ReactivationQueue` · C113 — `ModerationTabs`
+
+**New with the reactivation review** (`features/admin/moderation-queue/`). A
+dealer's request to put a reserved or withdrawn car back on sale is decided on
+a tab of `/admin/listings` (`?view=reactivation`): vehicle (linked to its review
+screen), dealer (linked), where the listing stands now, the move asked for
+(`Reserved → Active`), when, and the dealer's note. A pending row offers Approve
+and Decline, each a `DecisionDialog` in its new `optional` mode (an optional note
+to the dealer, no six-character floor); a decided row shows the outcome and the
+note. `ModerationTabs` is the status tab bar, lifted out of `ModerationQueue` so
+both views share it, with the Reactivation requests tab and its count.
+
+| Component           | Props                                              | States                                   |
+| ------------------- | -------------------------------------------------- | ---------------------------------------- |
+| `ReactivationQueue` | `requests`, `listingCounts`, `approve?`, `reject?` | waiting · declined · nothing waiting     |
+| `ModerationTabs`    | `active`, `counts`, `reactivationPending`, `q?`    | a listing status · reactivation requests |
+
+**Changed:** `DecisionDialog` gains `optional`, `primary`, `reasonLabel`,
+`reasonHint` and `size` (the listing review's uses are unchanged by default);
+`ModerationQueue` renders `ModerationTabs`. **Tests**
+`apps/web/tests/unit/features/admin/reactivation-queue.test.tsx`,
+`listings-page.test.tsx`. **Sandbox** `Admin/ReactivationQueue`; the Server
+Actions are stubbed by `apps/sandbox/src/mocks/listing-actions.ts`.
 
 ### C099 — `AvailabilityBadge` · C100 — `AvailabilityNotice`
 

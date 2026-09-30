@@ -1,4 +1,4 @@
-import type { AdminListingsResponse } from '@dealers-drive/contracts';
+import type { AdminListingsResponse, AdminReactivationsResponse } from '@dealers-drive/contracts';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -42,6 +42,7 @@ function listings(overrides: Partial<AdminListingsResponse> = {}): AdminListings
     ],
     page: { nextCursor: null, hasMore: false },
     counts: { PENDING_REVIEW: 4, ACTIVE: 12 },
+    reactivationPending: 2,
     ...overrides,
   };
 }
@@ -115,5 +116,116 @@ describe('/admin/listings', () => {
     apiGetParsed.mockResolvedValue(listings({ data: [] }));
     render(await page({ q: 'zzz' }));
     expect(screen.getByText('Nothing here')).toBeInTheDocument();
+  });
+
+  it('offers a reactivation requests tab with the number waiting', async () => {
+    apiGetParsed.mockResolvedValue(listings());
+    render(await page());
+    const tabs = within(screen.getByRole('navigation', { name: 'Filter by status' }));
+    const tab = tabs.getByRole('link', { name: /Reactivation requests/ });
+    expect(tab).toHaveAttribute('href', '/admin/listings?view=reactivation');
+    expect(tab).toHaveTextContent('2');
+  });
+});
+
+function requests(overrides: Partial<AdminReactivationsResponse> = {}): AdminReactivationsResponse {
+  return {
+    status: 'PENDING',
+    data: [
+      {
+        id: '55555555-5555-4555-8555-555555555555',
+        status: 'PENDING',
+        statusLabel: 'Reactivation pending approval',
+        statusTone: 'warn',
+        fromStatus: 'WITHDRAWN',
+        fromStatusLabel: 'Withdrawn',
+        toStatus: 'ACTIVE',
+        toStatusLabel: 'Active',
+        reason: 'Documents are back.',
+        requestedAt: '2026-09-29T09:00:00.000Z',
+        requestedLabel: '29 Sep 2026',
+        reviewedAt: null,
+        adminNote: null,
+        listing: {
+          id: '11111111-1111-4111-8111-111111111111',
+          vehicleId: '22222222-2222-4222-8222-222222222222',
+          title: '2023 Hyundai Creta SX(O)',
+          registrationDisplay: 'KA 01 AB 1234',
+          status: 'WITHDRAWN',
+          statusLabel: 'Withdrawn',
+          statusTone: 'neutral',
+          slug: '2023-hyundai-creta-abc',
+        },
+        dealer: {
+          id: '33333333-3333-4333-8333-333333333333',
+          name: 'Sri Lakshmi Motors',
+          slug: 'sri',
+        },
+        current: true,
+      },
+    ],
+    page: { nextCursor: null, hasMore: false },
+    counts: { PENDING: 1, REJECTED: 3 },
+    ...overrides,
+  };
+}
+
+describe('/admin/listings?view=reactivation', () => {
+  it('reads the requests and the listing counts uncached, forwarding only a known status', async () => {
+    apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+      Promise.resolve(path.startsWith('/v1/admin/reactivation-requests') ? requests() : listings()),
+    );
+    render(await page({ view: 'reactivation', status: 'REJECTED' }));
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/admin/reactivation-requests?status=REJECTED',
+      { revalidate: false },
+    );
+    render(await page({ view: 'reactivation', status: 'MAYBE' }));
+    expect(apiGetParsed).toHaveBeenCalledWith(
+      expect.anything(),
+      '/v1/admin/reactivation-requests',
+      { revalidate: false },
+    );
+  });
+
+  it('shows the car, the dealer, where the listing stands, the move asked for and the note', async () => {
+    apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+      Promise.resolve(path.startsWith('/v1/admin/reactivation-requests') ? requests() : listings()),
+    );
+    render(await page({ view: 'reactivation' }));
+
+    expect(screen.getByRole('heading', { name: 'Reactivation requests' })).toBeInTheDocument();
+    const table = within(screen.getByRole('table'));
+    expect(table.getByRole('link', { name: '2023 Hyundai Creta SX(O)' })).toHaveAttribute(
+      'href',
+      '/admin/listings/11111111-1111-4111-8111-111111111111',
+    );
+    expect(table.getByRole('link', { name: 'Sri Lakshmi Motors' })).toHaveAttribute(
+      'href',
+      '/admin/dealers/33333333-3333-4333-8333-333333333333',
+    );
+    expect(table.getByText('Withdrawn → Active')).toBeInTheDocument();
+    expect(table.getByText('29 Sep 2026')).toBeInTheDocument();
+    expect(table.getByText('Documents are back.')).toBeInTheDocument();
+    expect(table.getByRole('button', { name: 'Approve' })).toBeInTheDocument();
+    expect(table.getByRole('button', { name: 'Decline' })).toBeInTheDocument();
+    const tabs = within(screen.getByRole('navigation', { name: 'Filter by status' }));
+    expect(tabs.getByRole('link', { name: /Reactivation requests/ })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it('says nothing is waiting when the pending tab is empty', async () => {
+    apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+      Promise.resolve(
+        path.startsWith('/v1/admin/reactivation-requests')
+          ? requests({ data: [], counts: {} })
+          : listings(),
+      ),
+    );
+    render(await page({ view: 'reactivation' }));
+    expect(screen.getByText('Nothing waiting')).toBeInTheDocument();
   });
 });

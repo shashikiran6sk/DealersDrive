@@ -251,6 +251,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R79 — One search bar on the homepage, the same as `/cars` · revises R72/F081 · `CarSearchBox` replaces District/Brand/Model/Budget; suggestions open `/cars`, Enter opens `/cars?q=`; `HeroSearch` removed · [#203](https://github.com/shashikiran6sk/DealersDrive/pull/203)
 - [x] R80 — A stale cached read is asked for again, not shown as an error · revises R22 · `apiGetParsed` refetches once with `no-store` when a cached payload fails its contract; a live mismatch still throws · [#205](https://github.com/shashikiran6sk/DealersDrive/pull/205)
 - [~] R81 — The UI revamp: production behaviour, the revamped prototype's look · neutral tokens, Manrope, header/footer/cards/login/console re-skinned; directory cards drop the tagline; `/contact` with admin-configurable `support.*` contacts; a single hero banner whose photograph is admin-configurable (`home.heroImage*`)
+- [x] R82 — A reserved or withdrawn car goes back on sale only on an admin's approval · revises R69/R70/R77 · ⚠️ new table `listing_reactivation_requests` · `reactivate`/`relist` admin-only; `POST /v1/dealer/vehicles/:id/request-reactivation` replaces the dealer's `reactivate`/`relist`; `GET /v1/admin/reactivation-requests` + `/:id/approve`·`/reject`; one pending request per listing (partial unique index); a sale closes a pending request; a reserved car is no longer withdrawable
 
 ---
 

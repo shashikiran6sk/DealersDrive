@@ -190,3 +190,23 @@ the footer are (**R44**) — and those pages hold the payload for ten
 minutes. Clearing the tag unconditionally rather than only for the keys
 that are public: the set of public keys is a fact about the API, and a
 second copy of it here would be wrong the first time one is added.
+
+### `approveReactivationAction(requestId, note)` · `rejectReactivationAction(requestId, note)`
+
+`listing-actions.ts`. The admin's decision on a dealer's request to put a
+reserved or withdrawn car back on sale. The note is optional either way, and an
+approval redraws the public lists, the dealership's page and the car's own page,
+because the car has just come back onto all three. A refusal — most usefully a
+`409 REACTIVATION_STALE` or `REACTIVATION_NOT_PENDING` when the dealer sold the
+car meanwhile — keeps the dialog open with the API's sentence.
+
+## `apps/web/src/features/admin/moderation-queue/reactivation-queue.tsx`
+
+### `export function ReactivationQueue(props)`
+
+A tab of `/admin/listings` (`?view=reactivation`) rather than a page of its own,
+so reactivation reads as part of listing moderation. `ModerationTabs` is shared
+with the listing queue for the same reason. `approve` and `reject` default to
+the Server Actions and are props only so tests and the sandbox can pass stubs.
+Each decision reuses `DecisionDialog` in its `optional` mode — the listing
+review's reason dialog, without the six-character floor.

@@ -100,7 +100,8 @@ export const VEHICLE_WIZARD_TEXT = {
     RESERVED: 'It is reserved for a buyer, and still shown on the marketplace.',
     REJECTED: 'It was not approved for the marketplace.',
     SOLD: 'It has been marked sold.',
-    WITHDRAWN: 'You have withdrawn it from the marketplace. Relist it when it is for sale again.',
+    WITHDRAWN:
+      'You have withdrawn it from the marketplace. Request reactivation when it is for sale again.',
   },
   changesRequestedTitle: 'Our team asked for changes',
   rejectedTitle: 'Not approved',

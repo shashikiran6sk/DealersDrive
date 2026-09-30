@@ -12,14 +12,16 @@ import { Banner } from '@/components/ui/primitives';
 import {
   LIFECYCLE_MOVES,
   LIFECYCLE_TEXT,
+  REACTIVATION_REASON_MAX,
   WITHDRAWAL_NOTE_MAX,
   WITHDRAWAL_REASON_OPTIONS,
 } from './listing-lifecycle.constants';
-import type { LifecycleDialogProps } from './listing-lifecycle.types';
+import type { LifecycleBody, LifecycleDialogProps } from './listing-lifecycle.types';
 
 export function LifecycleDialog({ vehicleId, action, size, submit }: LifecycleDialogProps) {
   const move = LIFECYCLE_MOVES[action];
   const withdrawing = action === 'withdraw';
+  const requesting = action === 'requestReactivation';
   const ids = useId();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
@@ -38,15 +40,18 @@ export function LifecycleDialog({ vehicleId, action, size, submit }: LifecycleDi
     }
   }
 
+  function bodyOf(): LifecycleBody | undefined {
+    const trimmed = note.trim();
+    if (withdrawing && parsedReason.success) {
+      return { reason: parsedReason.data, ...(trimmed ? { note: trimmed } : {}) };
+    }
+    if (requesting) return trimmed ? { reason: trimmed } : {};
+    return undefined;
+  }
+
   function confirm() {
     startTransition(async () => {
-      const result = await submit(
-        vehicleId,
-        action,
-        withdrawing && parsedReason.success
-          ? { reason: parsedReason.data, ...(note.trim() ? { note: note.trim() } : {}) }
-          : undefined,
-      );
+      const result = await submit(vehicleId, action, bodyOf());
       if (result.ok) reset(false);
       else setMessage(result.message);
     });
@@ -117,6 +122,21 @@ export function LifecycleDialog({ vehicleId, action, size, submit }: LifecycleDi
               />
             </Field>
           </>
+        ) : null}
+        {requesting ? (
+          <Field
+            id={`${ids}-note`}
+            label={LIFECYCLE_TEXT.reactivationReasonLabel}
+            hint={LIFECYCLE_TEXT.reactivationReasonHint}
+          >
+            <Textarea
+              id={`${ids}-note`}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              rows={3}
+              maxLength={REACTIVATION_REASON_MAX}
+            />
+          </Field>
         ) : null}
       </div>
     </Dialog>

@@ -2,6 +2,9 @@ import type {
   AdminListingDetail,
   AdminListingQuery,
   AdminListingsResponse,
+  AdminReactivationQuery,
+  AdminReactivationRow,
+  AdminReactivationsResponse,
   ListingCheckKey,
   SetPhotographyInput,
 } from '@dealers-drive/contracts';
@@ -9,14 +12,16 @@ import type { PrismaClient } from '@prisma/client';
 
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
-import { ConflictError, NotFoundError } from '../../platform/errors.js';
+import { ConflictError, NotFoundError, errorCode } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
 import type { VehicleImagesService } from '../vehicle-images/vehicle-images.facade.js';
 import {
   LISTING_NOT_FOUND,
+  REACTIVATION_NOT_FOUND,
   TRANSITION_REFUSALS,
   assertTransition,
+  decideReactivationRequest,
   listingSlug,
   lockListing,
   transition,
@@ -26,10 +31,20 @@ import {
   PHOTOGRAPHY_OPEN_STATUSES,
   toAdminListingDetail,
   toAdminListingRow,
+  toAdminReactivationRow,
 } from './moderation.mapper.js';
-import { APPROVAL_BLOCKED, PHOTOGRAPHY_CLOSED } from './moderation.messages.js';
+import {
+  APPROVAL_BLOCKED,
+  PHOTOGRAPHY_CLOSED,
+  REACTIVATION_REGISTRATION_TAKEN,
+} from './moderation.messages.js';
 import { HISTORY_LABELS } from './moderation.messages.js';
-import { approvalStateOf, sortKeyOf, type ModerationRepository } from './moderation.repository.js';
+import {
+  approvalStateOf,
+  reactivationSortKeyOf,
+  sortKeyOf,
+  type ModerationRepository,
+} from './moderation.repository.js';
 
 export interface ModerationDeps {
   prisma: PrismaClient;
@@ -40,6 +55,10 @@ export interface ModerationDeps {
 
 function notFound(): NotFoundError {
   return new NotFoundError(LISTING_NOT_FOUND, { code: 'LISTING_NOT_FOUND' });
+}
+
+function reactivationNotFound(): NotFoundError {
+  return new NotFoundError(REACTIVATION_NOT_FOUND, { code: 'REACTIVATION_NOT_FOUND' });
 }
 
 export function createModerationService({ prisma, repo, audit, images }: ModerationDeps) {
@@ -67,8 +86,85 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
     return detail(listingId);
   }
 
+  async function reactivationRow(requestId: string): Promise<AdminReactivationRow> {
+    const row = await repo.reactivation(requestId);
+    if (!row) throw reactivationNotFound();
+    return toAdminReactivationRow(row);
+  }
+
+  async function decideReactivation(
+    admin: AdminPrincipal,
+    requestId: string,
+    decision: 'approve' | 'reject',
+    note: string | undefined,
+  ): Promise<AdminReactivationRow> {
+    try {
+      await withTransaction(prisma, async (tx) => {
+        const found = await tx.listingReactivationRequest.findUnique({
+          where: { id: requestId },
+          select: { listingId: true },
+        });
+        if (!found) throw reactivationNotFound();
+        const listing = await lockListing(tx, found.listingId);
+        const request = await tx.listingReactivationRequest.findUnique({
+          where: { id: requestId },
+        });
+        if (!listing || !request) throw reactivationNotFound();
+        await decideReactivationRequest(
+          tx,
+          audit,
+          request,
+          listing,
+          decision,
+          { type: 'ADMIN', id: admin.userId },
+          note,
+        );
+      });
+    } catch (error) {
+      if (errorCode(error) === 'P2002') {
+        throw new ConflictError('DUPLICATE_REGISTRATION', REACTIVATION_REGISTRATION_TAKEN);
+      }
+      throw error;
+    }
+    return reactivationRow(requestId);
+  }
+
   return {
     detail,
+
+    async reactivations(query: AdminReactivationQuery): Promise<AdminReactivationsResponse> {
+      const status = query.status ?? 'PENDING';
+      const [rows, counts] = await Promise.all([
+        repo.reactivations({
+          status,
+          ...(query.cursor ? { after: decodeCursor(query.cursor) } : {}),
+          take: query.limit + 1,
+        }),
+        repo.reactivationCounts(),
+      ]);
+
+      const hasMore = rows.length > query.limit;
+      const page = hasMore ? rows.slice(0, query.limit) : rows;
+      const last = page[page.length - 1];
+
+      return {
+        status,
+        data: page.map(toAdminReactivationRow),
+        page: {
+          nextCursor: hasMore && last ? encodeCursor(reactivationSortKeyOf(last)) : null,
+          hasMore,
+        },
+        counts: Object.fromEntries(counts.map((row) => [row.status, row.count])),
+      };
+    },
+
+    async approveReactivation(admin: AdminPrincipal, requestId: string, note?: string) {
+      return decideReactivation(admin, requestId, 'approve', note);
+    },
+
+    async rejectReactivation(admin: AdminPrincipal, requestId: string, note?: string) {
+      return decideReactivation(admin, requestId, 'reject', note);
+    },
 
     async setPhotography(
       admin: AdminPrincipal,
@@ -195,7 +291,7 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
 
     async listings(query: AdminListingQuery): Promise<AdminListingsResponse> {
       const status = query.status ?? 'PENDING_REVIEW';
-      const [rows, counts] = await Promise.all([
+      const [rows, counts, reactivationPending] = await Promise.all([
         repo.queue({
           status,
           ...(query.q ? { q: query.q } : {}),
@@ -203,6 +299,7 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
           take: query.limit + 1,
         }),
         repo.statusCounts(),
+        repo.pendingReactivations(),
       ]);
 
       const hasMore = rows.length > query.limit;
@@ -215,6 +312,7 @@ export function createModerationService({ prisma, repo, audit, images }: Moderat
         data: page.map((row) => toAdminListingRow(row, now)),
         page: { nextCursor: hasMore && last ? encodeCursor(sortKeyOf(last)) : null, hasMore },
         counts: Object.fromEntries(counts.map((row) => [row.status, row.count])),
+        reactivationPending,
       };
     },
   };
