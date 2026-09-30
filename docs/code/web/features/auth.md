@@ -184,9 +184,16 @@ handling come from the dependency the product already uses for its other
 floating panels.
 
 The menu semantics sit inside it. The list is `role="menu"`, and ↑/↓ (wrapping)
-and Home/End move between the three items, because a popover alone gives a
+and Home/End move between the items, because a popover alone gives a
 keyboard user Tab and nothing else. Opening focuses the first item, and
 choosing one closes the menu.
+
+**Dealer Login** (R85) sits between two separators, apart from the customer's
+own pages above it and Logout below. It is a plain `Link` to `/dealer` and
+nothing more: `/dealer` already decides everything about dealer sign-in —
+Google, phone OTP, onboarding and resume, and where an already signed-in dealer
+lands — so the menu duplicates none of it. A guest has no menu; their header
+`Login` goes to `/login`, whose Dealer tab is their way in.
 
 The number is masked on the server (`customerAccountAction` → `phoneMasked`),
 so the full number is never in the browser's memory for a header that only

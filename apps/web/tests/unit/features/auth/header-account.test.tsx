@@ -18,7 +18,8 @@ import { maskIndianMobile, personInitials } from '@/lib/person';
  * public pages are static, so the header cannot know who is signed in while
  * it renders; it shows Login, then asks once in the browser. A signed-in
  * customer sees a round avatar with their initials, which opens a menu:
- * their name and masked number, Saved cars, My enquiries, Logout.
+ * their name and masked number, Saved cars, My enquiries, Dealer Login, Logout.
+ * Dealer Login is only a link to `/dealer`: the dealer route owns sign-in.
  */
 vi.mock('@/features/auth/customer-account-actions', () => ({
   customerAccountAction: vi.fn(),
@@ -73,14 +74,19 @@ describe('HeaderAccount', () => {
     expect(screen.queryByRole('link', { name: 'Login' })).toBeNull();
   });
 
-  it('opens a menu with the name, the masked number, Saved cars, My enquiries and Logout', async () => {
+  it('opens a menu with the name, the masked number, Saved cars, My enquiries, Dealer Login and Logout', async () => {
     const { trigger, menu } = await openMenu();
 
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText('Asha Menon')).toBeInTheDocument();
     expect(screen.getByText('+91 98XXXXXX12')).toBeInTheDocument();
     const items = within(menu).getAllByRole('menuitem');
-    expect(items.map((item) => item.textContent)).toEqual(['Saved cars', 'My enquiries', 'Logout']);
+    expect(items.map((item) => item.textContent)).toEqual([
+      'Saved cars',
+      'My enquiries',
+      'Dealer Login',
+      'Logout',
+    ]);
     expect(within(menu).getByRole('menuitem', { name: 'Saved cars' })).toHaveAttribute(
       'href',
       '/saved',
@@ -93,11 +99,17 @@ describe('HeaderAccount', () => {
 
   it('puts focus on the first item, moves with the arrow keys, Home and End, and wraps', async () => {
     const { user, menu } = await openMenu();
-    const [saved, enquiries, logout] = within(menu).getAllByRole('menuitem');
+    const [saved, enquiries, dealer, logout] = within(menu).getAllByRole('menuitem');
 
     await waitFor(() => expect(saved).toHaveFocus());
     await user.keyboard('{ArrowDown}');
     expect(enquiries).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(dealer).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(logout).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
+    expect(dealer).toHaveFocus();
     await user.keyboard('{End}');
     expect(logout).toHaveFocus();
     await user.keyboard('{ArrowDown}');
@@ -124,6 +136,43 @@ describe('HeaderAccount', () => {
   it('closes when a destination is chosen', async () => {
     const { user, menu } = await openMenu();
     await user.click(within(menu).getByRole('menuitem', { name: 'Saved cars' }));
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+  });
+
+  it('offers Dealer Login as a link to /dealer, set apart between separators', async () => {
+    const { menu } = await openMenu();
+    const dealer = within(menu).getByRole('menuitem', { name: 'Dealer Login' });
+
+    expect(dealer.tagName).toBe('A');
+    expect(dealer).toHaveAttribute('href', '/dealer');
+    expect(dealer.className).toBe(
+      within(menu).getByRole('menuitem', { name: 'Saved cars' }).className,
+    );
+    const previous = dealer.previousElementSibling;
+    const next = dealer.nextElementSibling;
+    expect(previous).toHaveAttribute('role', 'separator');
+    expect(next).toHaveAttribute('role', 'separator');
+  });
+
+  it('closes when Dealer Login is chosen, and does no sign-in work of its own', async () => {
+    const { user, menu } = await openMenu();
+    await user.click(within(menu).getByRole('menuitem', { name: 'Dealer Login' }));
+
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    expect(customerLogoutAction).not.toHaveBeenCalled();
+    expect(navigationState.refreshed).toBe(0);
+    expect(screen.getByRole('button', { name: 'Account menu for Asha Menon' })).toBeInTheDocument();
+  });
+
+  it('reaches Dealer Login from the keyboard and opens it with Enter', async () => {
+    const { user, menu } = await openMenu();
+    const dealer = within(menu).getByRole('menuitem', { name: 'Dealer Login' });
+    await waitFor(() =>
+      expect(within(menu).getByRole('menuitem', { name: 'Saved cars' })).toHaveFocus(),
+    );
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    expect(dealer).toHaveFocus();
+    await user.keyboard('{Enter}');
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
   });
 

@@ -1455,10 +1455,10 @@ a single **36px round avatar** with their initials, at every width.
   returns focus to the avatar. A click outside closes it, and choosing a
   destination closes it.
 
-| Component       | Props                               | States                                    |
-| --------------- | ----------------------------------- | ----------------------------------------- |
-| `AccountMenu`   | `account`, `onLogout`, `loggingOut` | closed · open · logging out · phone width |
-| `HeaderAccount` | —                                   | signed out (Login) · signed in (avatar)   |
+| Component       | Props                               | States                                                                                        |
+| --------------- | ----------------------------------- | --------------------------------------------------------------------------------------------- |
+| `AccountMenu`   | `account`, `onLogout`, `loggingOut` | closed · open (Saved cars · My enquiries · Dealer Login · Logout) · logging out · phone width |
+| `HeaderAccount` | —                                   | signed out (Login) · signed in (avatar)                                                       |
 
 `CustomerAccount` gains `phoneMasked`; the raw number never reaches the
 browser. `firstNameOf` is gone with the greeting. **Tests**

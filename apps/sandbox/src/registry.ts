@@ -2147,9 +2147,9 @@ export const registry: RegistryEntry[] = [
     category: 'Layout',
     ownership: 'Feature-specific',
     purpose:
-      'The signed-in customer’s menu (R76): a 40px round avatar with their initials opens a Radix Popover holding their name, masked mobile number, Saved cars, My enquiries and Logout — a role="menu" with arrow keys, Home/End, Escape and outside click.',
+      'The signed-in customer’s menu (R76): a 40px round avatar with their initials opens a Radix Popover holding their name, masked mobile number, Saved cars, My enquiries, Dealer Login (a link to /dealer, R85) and Logout — a role="menu" with arrow keys, Home/End, Escape and outside click.',
     aliases: ['AvatarMenu', 'UserDropdown', 'ProfileMenu', 'account-menu'],
-    features: ['R76'],
+    features: ['R76', 'R85'],
     props: ['account', 'onLogout', 'loggingOut'],
     states: ['closed', 'open', 'logging out', 'phone width'],
     reusable: false,
