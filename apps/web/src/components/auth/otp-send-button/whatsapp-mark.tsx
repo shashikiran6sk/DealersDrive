@@ -2,7 +2,7 @@ import { WHATSAPP_GREEN } from './otp-send-button.constants';
 
 export function WhatsAppMark() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path
         fill={WHATSAPP_GREEN}
         d="M.057 24l1.687-6.163A11.867 11.867 0 0 1 .157 11.892C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 0 1 8.413 3.488 11.824 11.824 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24Z"

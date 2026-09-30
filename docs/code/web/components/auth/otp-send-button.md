@@ -22,27 +22,27 @@ provider setting or credential rides on it.
 It decides the logo and nothing else: the label is the caller's, the flow is
 unchanged, and delivery is still whatever the OTP driver does.
 
-### `<span data-slot="whatsapp-icon" className="grid h-[26px] w-[26px] … rounded-full bg-white">`
+### `<span data-slot="whatsapp-icon" className="inline-flex flex-none">`
 
-Drawn the way `GoogleSignInButton` draws the Google mark: a 26px white disc on
-the dark button, holding the logo in its own colours. The monochrome
-`SocialIcon` glyph was too small and took the button's text colour, so it read
-as a decoration rather than as WhatsApp.
+The logo on its own, in its own colours, straight on the dark button, with no
+disc or badge behind it. The monochrome `SocialIcon` glyph it replaced was too
+small and took the button's text colour, so it read as a decoration rather than
+as WhatsApp.
 
 The mark is `aria-hidden`. Its meaning is given to assistive technology by the
 `sr-only` "on WhatsApp" after the label instead, so the accessible name is
 "Send OTP on WhatsApp" while the logo shows and "Send OTP" while it does not.
-
-## `apps/web/src/components/auth/otp-send-button/whatsapp-mark.tsx`
-
-### `export function WhatsAppMark()`
-
-The WhatsApp logo at 20px: a bubble in WhatsApp green (`WHATSAPP_GREEN`,
-`#25D366`) with the handset in white. It is drawn as two shapes, the solid
-bubble and then the white handset, so it needs no background of its own.
 
 ### `{' '}`
 
 A separate text node rather than a leading space inside the `sr-only` span:
 the accessible-name computation trims each element's text, and a space inside
 the span would be lost, reading "Send OTPon WhatsApp".
+
+## `apps/web/src/components/auth/otp-send-button/whatsapp-mark.tsx`
+
+### `export function WhatsAppMark()`
+
+The WhatsApp logo at 24px: a bubble in WhatsApp green (`WHATSAPP_GREEN`,
+`#25D366`) with the handset in white. It is drawn as two shapes, the solid
+bubble and then the white handset, so it needs no background of its own.

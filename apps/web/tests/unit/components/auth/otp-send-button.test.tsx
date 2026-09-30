@@ -40,13 +40,13 @@ describe('OtpSendButton', () => {
     expect(icon?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('draws the logo in WhatsApp green on a white disc, like the Google mark', () => {
+  it('draws the logo alone, in WhatsApp green, with no background behind it', () => {
     render(<OtpSendButton whatsapp>Send OTP</OtpSendButton>);
 
     const icon = logo();
-    expect(icon?.className).toContain('rounded-full');
-    expect(icon?.className).toContain('bg-white');
-    expect(icon?.querySelector('svg')).toHaveAttribute('width', '20');
+    expect(icon?.className).not.toContain('bg-white');
+    expect(icon?.className).not.toContain('rounded-full');
+    expect(icon?.querySelector('svg')).toHaveAttribute('width', '24');
     expect(icon?.querySelector(`path[fill="${WHATSAPP_GREEN}"]`)).not.toBeNull();
   });
 

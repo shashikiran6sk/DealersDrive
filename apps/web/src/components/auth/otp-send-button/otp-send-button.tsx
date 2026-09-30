@@ -20,10 +20,7 @@ export function OtpSendButton({
       {...button}
     >
       {whatsapp ? (
-        <span
-          data-slot="whatsapp-icon"
-          className="grid h-[26px] w-[26px] flex-none place-items-center rounded-full bg-white"
-        >
+        <span data-slot="whatsapp-icon" className="inline-flex flex-none">
           <WhatsAppMark />
         </span>
       ) : null}
