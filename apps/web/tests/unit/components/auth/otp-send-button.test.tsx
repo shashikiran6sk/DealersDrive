@@ -2,7 +2,7 @@ import type { PhoneOtpWidget } from '@dealers-drive/contracts';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { OtpSendButton } from '@/components/auth/otp-send-button';
+import { OtpSendButton, WHATSAPP_GREEN } from '@/components/auth/otp-send-button';
 import { PhoneSignIn } from '@/features/auth/phone-sign-in';
 import { PhoneVerification } from '@/features/auth/phone-verification';
 
@@ -38,6 +38,16 @@ describe('OtpSendButton', () => {
     expect(icon).not.toBeNull();
     expect(button).toContainElement(icon instanceof HTMLElement ? icon : null);
     expect(icon?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('draws the logo in WhatsApp green on a white disc, like the Google mark', () => {
+    render(<OtpSendButton whatsapp>Send OTP</OtpSendButton>);
+
+    const icon = logo();
+    expect(icon?.className).toContain('rounded-full');
+    expect(icon?.className).toContain('bg-white');
+    expect(icon?.querySelector('svg')).toHaveAttribute('width', '20');
+    expect(icon?.querySelector(`path[fill="${WHATSAPP_GREEN}"]`)).not.toBeNull();
   });
 
   it('carries no logo when off, and keeps its plain name', () => {

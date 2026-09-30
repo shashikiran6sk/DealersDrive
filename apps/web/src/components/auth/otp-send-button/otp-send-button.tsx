@@ -1,15 +1,30 @@
-import { SocialIcon } from '@/components/layout/social-icons';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/cn';
 
 import { OTP_SEND_TEXT } from './otp-send-button.constants';
 import type { OtpSendButtonProps } from './otp-send-button.types';
+import { WhatsAppMark } from './whatsapp-mark';
 
-export function OtpSendButton({ whatsapp = false, children, ...button }: OtpSendButtonProps) {
+export function OtpSendButton({
+  whatsapp = false,
+  children,
+  className,
+  ...button
+}: OtpSendButtonProps) {
   return (
-    <Button variant="primary" size="md" block {...button}>
+    <Button
+      variant="primary"
+      size="md"
+      block
+      className={cn(whatsapp && 'gap-[12px]', className)}
+      {...button}
+    >
       {whatsapp ? (
-        <span data-slot="whatsapp-icon" className="inline-flex">
-          <SocialIcon network="whatsapp" />
+        <span
+          data-slot="whatsapp-icon"
+          className="grid h-[26px] w-[26px] flex-none place-items-center rounded-full bg-white"
+        >
+          <WhatsAppMark />
         </span>
       ) : null}
       {children}

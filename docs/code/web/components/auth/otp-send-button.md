@@ -22,12 +22,24 @@ provider setting or credential rides on it.
 It decides the logo and nothing else: the label is the caller's, the flow is
 unchanged, and delivery is still whatever the OTP driver does.
 
-### `<span data-slot="whatsapp-icon" className="inline-flex">`
+### `<span data-slot="whatsapp-icon" className="grid h-[26px] w-[26px] … rounded-full bg-white">`
 
-The mark is `SocialIcon`'s WhatsApp glyph, which is `aria-hidden`. Its meaning
-is given to assistive technology by the `sr-only` "on WhatsApp" after the label
-instead, so the accessible name is "Send OTP on WhatsApp" while the logo shows
-and "Send OTP" while it does not.
+Drawn the way `GoogleSignInButton` draws the Google mark: a 26px white disc on
+the dark button, holding the logo in its own colours. The monochrome
+`SocialIcon` glyph was too small and took the button's text colour, so it read
+as a decoration rather than as WhatsApp.
+
+The mark is `aria-hidden`. Its meaning is given to assistive technology by the
+`sr-only` "on WhatsApp" after the label instead, so the accessible name is
+"Send OTP on WhatsApp" while the logo shows and "Send OTP" while it does not.
+
+## `apps/web/src/components/auth/otp-send-button/whatsapp-mark.tsx`
+
+### `export function WhatsAppMark()`
+
+The WhatsApp logo at 20px: a bubble in WhatsApp green (`WHATSAPP_GREEN`,
+`#25D366`) with the handset in white. It is drawn as two shapes, the solid
+bubble and then the white handset, so it needs no background of its own.
 
 ### `{' '}`
 
