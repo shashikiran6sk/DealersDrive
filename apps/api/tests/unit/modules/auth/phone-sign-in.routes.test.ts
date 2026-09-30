@@ -22,14 +22,16 @@ import { createMemoryCache } from '../../../../src/platform/cache/memory.adapter
  */
 function phoneSignIn(): PhoneSignInService {
   return {
-    widget: () => ({
-      enabled: true,
-      driver: 'fake' as const,
-      widgetId: null,
-      tokenAuth: null,
-      devCode: '123456',
-      reason: null,
-    }),
+    widget: () =>
+      Promise.resolve({
+        enabled: true,
+        driver: 'fake' as const,
+        widgetId: null,
+        tokenAuth: null,
+        devCode: '123456',
+        reason: null,
+        channel: 'sms' as const,
+      }),
     signInDealer: () =>
       Promise.resolve({
         token: 'token',

@@ -3,7 +3,7 @@
 import { formatPhone } from '@dealers-drive/contracts';
 import { useEffect, useId, useRef, useState, useTransition } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { GetOtpButton } from '@/components/auth/get-otp-button';
 import { checkPhoneAvailabilityAction, verifyPhoneAction } from '@/features/auth/phone-actions';
 import { phoneOtpToken, sendPhoneOtp } from '@/lib/phone-otp';
 
@@ -146,10 +146,8 @@ export function PhoneVerification({
             {failure}
           </p>
         ) : null}
-        <Button
-          variant="primary"
-          size="md"
-          block
+        <GetOtpButton
+          channel={widget?.channel ?? 'sms'}
           loading={pending}
           onClick={(event) => {
             const form = event.currentTarget.form;
@@ -157,9 +155,7 @@ export function PhoneVerification({
               await send(form, false);
             });
           }}
-        >
-          {PHONE_TEXT.sendOtp}
-        </Button>
+        />
       </>
     );
   }

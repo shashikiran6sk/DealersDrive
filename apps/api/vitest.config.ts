@@ -81,6 +81,8 @@ const ENV = {
    */
   MSG91_WIDGET_ID: '',
   MSG91_WIDGET_TOKEN: '',
+  MSG91_WHATSAPP_WIDGET_ID: '',
+  MSG91_WHATSAPP_WIDGET_TOKEN: '',
 };
 
 /**

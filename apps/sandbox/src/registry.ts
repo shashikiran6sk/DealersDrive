@@ -1688,7 +1688,7 @@ export const registry: RegistryEntry[] = [
     category: 'Forms',
     ownership: 'Feature-shared',
     purpose:
-      'Sign in with a mobile number: the number, Send OTP, then the code panel PhoneVerification uses. NEW at R63 — shared by the Customer and Dealer tabs; the caller decides what a proved number means.',
+      'Sign in with a mobile number: the number, Get OTP (with the WhatsApp mark when the server says WhatsApp), then the code panel PhoneVerification uses. NEW at R63 — shared by the Customer and Dealer tabs; the caller decides what a proved number means.',
     aliases: [
       'OtpLogin',
       'PhoneLogin',
@@ -2272,6 +2272,21 @@ export const registry: RegistryEntry[] = [
     states: ['with a year plate beside it', 'no year', 'registration only'],
     reusable: true,
     storyId: 'vehicle-vehiclename',
+  },
+  {
+    id: 'C119',
+    name: 'GetOtpButton',
+    source: 'apps/web/src/components/auth/get-otp-button/get-otp-button.tsx',
+    category: 'Forms',
+    ownership: 'Shared',
+    purpose:
+      'The one “Get OTP” button every phone flow uses — Customer and Dealer login (PhoneSignIn) and onboarding step 1 (PhoneVerification). It carries the WhatsApp mark (SocialIcon) only when the server’s PhoneOtpWidget.channel is `whatsapp`, which follows the admin setting `otp.whatsappEnabled`; `sms` draws the label alone. The accessible name adds “on WhatsApp”.',
+    aliases: ['SendOtpButton', 'OtpButton', 'WhatsAppOtp', 'get-otp-button'],
+    features: ['R89'],
+    props: ['channel', 'loading', 'onClick', 'type'],
+    states: ['whatsapp', 'sms', 'sending'],
+    reusable: true,
+    storyId: 'auth-getotpbutton',
   },
 ];
 

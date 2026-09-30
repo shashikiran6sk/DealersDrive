@@ -13,19 +13,20 @@ import { ConflictError, errorCode } from '../../platform/errors.js';
 import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import { ALREADY_REGISTERED } from '../../platform/messages.js';
-import { createPhoneProofService } from './phone-proof.service.js';
+import { createPhoneProofService, type OtpChannelConfig } from './phone-proof.service.js';
 
 export interface PhoneServiceDeps {
   prisma: PrismaClient;
   otp: PhoneOtpPort;
   cache: CachePort;
+  config: OtpChannelConfig;
 }
 
-export function createPhoneService({ prisma, otp, cache }: PhoneServiceDeps) {
-  const proof = createPhoneProofService({ otp, cache });
+export function createPhoneService({ prisma, otp, cache, config }: PhoneServiceDeps) {
+  const proof = createPhoneProofService({ otp, cache, config });
 
   return {
-    widget(): PhoneOtpWidget {
+    widget(): Promise<PhoneOtpWidget> {
       return proof.widget();
     },
 

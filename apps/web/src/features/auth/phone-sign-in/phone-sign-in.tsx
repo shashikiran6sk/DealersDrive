@@ -4,7 +4,7 @@ import { formatPhone, isIndianMobile } from '@dealers-drive/contracts';
 import { useEffect, useId, useRef, useState, useTransition } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
-import { Button } from '@/components/ui/button';
+import { GetOtpButton } from '@/components/auth/get-otp-button';
 import {
   Captcha,
   isServiceFailure,
@@ -150,9 +150,7 @@ export function PhoneSignIn({
           />
         </Field>
         <Captcha id={captchaId} />
-        <Button type="submit" variant="primary" size="md" block loading={pending}>
-          {PHONE_SIGN_IN_TEXT.sendOtp}
-        </Button>
+        <GetOtpButton type="submit" channel={ready.channel} loading={pending} />
       </form>
     );
   }

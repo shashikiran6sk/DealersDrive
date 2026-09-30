@@ -218,3 +218,17 @@ below it start on. It used to sit at the right (`justify-end`), which left it
 floating away from the form it controls. Only the alignment moved: the order
 (Customer, switch, Dealer), the tabs' roles, the roving `tabindex`, arrow keys,
 Home/End and the switch's click are exactly as they were.
+
+## `apps/web/src/components/auth/get-otp-button/get-otp-button.tsx`
+
+### `export function GetOtpButton({ channel, ...button })`
+
+The one "Get OTP" button (R89), shared by the Customer and Dealer phone sign-in
+and onboarding step 1, so the label and the WhatsApp mark are decided once. The
+mark is drawn only when `channel` — the server's `PhoneOtpWidget.channel`, which
+follows the admin's `otp.whatsappEnabled` — is `whatsapp`; no component reads a
+flag or an environment variable of its own. The icon is the footer's
+`SocialIcon` WhatsApp mark rather than a new asset, and it is `aria-hidden`: the
+accessible name says "Get OTP on WhatsApp" instead. Resend keeps its "Resend
+code" label, and the fake-driver hint and the wrong-code message no longer say
+"SMS", since the code may not have come by SMS.

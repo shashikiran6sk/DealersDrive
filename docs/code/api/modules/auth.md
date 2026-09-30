@@ -1096,9 +1096,30 @@ that cannot rule out a replay would mint a session for whoever captured a
 token, so the answer is the same `503` a provider outage gets: try again in a
 moment, rather than a wrong code.
 
-### `widget(): PhoneOtpWidget`
+### `async widget(): Promise<PhoneOtpWidget>`
 
 What the browser needs to initialise the widget — and nothing else.
+
+**Which widget is the OTP channel (R89).** The MSG91 widget both generates the
+code and delivers it, from the browser; the server only ever verifies the access
+token it produces. So "send the OTP on WhatsApp" is not a second login flow or a
+second verifier — it is handing the browser a different widget: the one
+configured on the MSG91 dashboard to deliver by WhatsApp
+(`MSG91_WHATSAPP_WIDGET_ID`/`_TOKEN`) instead of the SMS one. The choice is the
+admin's `otp.whatsappEnabled` platform setting, read here on every request
+(the platform config is cached, and versioned across tasks), so toggling it on
+the Configuration page takes effect without a deploy, and `channel` tells the
+screen which one it got so the button can say so. This is the only place the
+decision is made.
+
+It falls back to SMS — and says `channel: 'sms'` — when the setting is off,
+when it cannot be read (a config outage must not stop sign-in), and when it is
+on but no WhatsApp widget is configured, which also logs
+`phone.otp.whatsapp_unconfigured` so the misconfiguration is visible rather
+than silent. The `fake` driver keeps sending nothing and accepting the dev
+code; it reports the admin's channel only so the button can be seen both ways
+locally. `prove` never looks at the channel: a token is verified by MSG91's
+`verifyAccessToken`, whichever widget issued it.
 
 `MSG91_AUTH_KEY` is conspicuously absent. It is the credential that can
 spend the account's balance and the reason `prove` below is a
@@ -1169,7 +1190,7 @@ The proof itself — the provider call, the number comparison and the replay
 guard — is `phone-proof.service.ts` since **R58**. What is left here is what
 is specific to this flow: who may claim a number, and the write.
 
-### `widget(): PhoneOtpWidget`
+### `widget(): Promise<PhoneOtpWidget>`
 
 Served behind `requireSignedIn`, so an SMS can only be provoked by somebody
 who has already completed a Google sign-in, not by the open internet. The

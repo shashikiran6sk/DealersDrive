@@ -10,6 +10,7 @@ const FAKE_WIDGET: PhoneOtpWidget = {
   tokenAuth: null,
   devCode: '123456',
   reason: null,
+  channel: 'sms',
 };
 
 const meta = {

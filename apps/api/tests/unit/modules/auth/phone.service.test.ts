@@ -45,21 +45,29 @@ beforeEach(() => {
 
 const VERIFIED: PhoneOtpVerdict = { status: 'VERIFIED', identifier: '919840012345' };
 
+const SMS_ONLY = { boolean: () => Promise.resolve(false) };
+
 describe('the widget configuration', () => {
   function widget(driver: PhoneOtpPort['driver'] = 'fake') {
     return createPhoneService({
       prisma: prismaWith(null),
       otp: { ...otpAnswering(VERIFIED), driver },
       cache,
+      config: SMS_ONLY,
     }).widget();
   }
 
-  it('never hands the auth key to the browser', () => {
-    expect(JSON.stringify(widget())).not.toContain('authkey');
+  it('never hands the auth key to the browser', async () => {
+    expect(JSON.stringify(await widget())).not.toContain('authkey');
   });
 
-  it('tells the screen which code the development driver accepts', () => {
-    expect(widget()).toMatchObject({ enabled: true, driver: 'fake', devCode: '123456' });
+  it('tells the screen which code the development driver accepts', async () => {
+    await expect(widget()).resolves.toMatchObject({
+      enabled: true,
+      driver: 'fake',
+      devCode: '123456',
+      channel: 'sms',
+    });
   });
 
   /**
@@ -68,8 +76,8 @@ describe('the widget configuration', () => {
    * that renders an explanation beats one that renders a 500, which is the
    * same shape `GET /v1/auth/providers` takes for a missing Google client.
    */
-  it('explains itself rather than throwing when the widget is not configured', () => {
-    expect(widget('msg91')).toMatchObject({
+  it('explains itself rather than throwing when the widget is not configured', async () => {
+    await expect(widget('msg91')).resolves.toMatchObject({
       enabled: false,
       driver: 'msg91',
       widgetId: null,
@@ -86,10 +94,11 @@ describe('the widget configuration', () => {
 
     const { createPhoneService: build } =
       await import('../../../../src/modules/auth/phone.service.js');
-    const configured = build({
+    const configured = await build({
       prisma: prismaWith(null),
       otp: { ...otpAnswering(VERIFIED), driver: 'msg91' },
       cache,
+      config: SMS_ONLY,
     }).widget();
 
     expect(configured).toEqual({
@@ -99,6 +108,7 @@ describe('the widget configuration', () => {
       tokenAuth: 'token-1',
       devCode: null,
       reason: null,
+      channel: 'sms',
     });
     // The one credential that must never cross this boundary.
     expect(JSON.stringify(configured)).not.toContain('the-secret-auth-key');
@@ -110,7 +120,7 @@ describe('the widget configuration', () => {
 
 describe('asking whether a number is free', () => {
   function service(prisma = prismaWith(null)) {
-    return createPhoneService({ prisma, otp: otpAnswering(VERIFIED), cache });
+    return createPhoneService({ prisma, otp: otpAnswering(VERIFIED), cache, config: SMS_ONLY });
   }
 
   it('passes a number nobody holds', async () => {
@@ -150,7 +160,12 @@ describe('asking whether a number is free', () => {
   /** It costs no provider call: the whole point is to run before one. */
   it('does not touch the provider', async () => {
     const otp = otpAnswering(VERIFIED);
-    await createPhoneService({ prisma: prismaWith(null), otp, cache }).assertAvailable(USER, {
+    await createPhoneService({
+      prisma: prismaWith(null),
+      otp,
+      cache,
+      config: SMS_ONLY,
+    }).assertAvailable(USER, {
       phone: '9840012345',
     });
 
@@ -160,7 +175,7 @@ describe('asking whether a number is free', () => {
 
 describe('verifying a number', () => {
   function service(otp: PhoneOtpPort, prisma = prismaWith(null)) {
-    return createPhoneService({ prisma, otp, cache });
+    return createPhoneService({ prisma, otp, cache, config: SMS_ONLY });
   }
 
   it('records the number when the provider names it', async () => {

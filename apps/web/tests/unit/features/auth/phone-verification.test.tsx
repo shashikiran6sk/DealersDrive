@@ -32,6 +32,7 @@ const FAKE: PhoneOtpWidget = {
   tokenAuth: null,
   devCode: '123456',
   reason: null,
+  channel: 'sms',
 };
 
 function renderPanel(overrides: Partial<Parameters<typeof PhoneVerification>[0]> = {}) {
@@ -58,7 +59,7 @@ function renderPanel(overrides: Partial<Parameters<typeof PhoneVerification>[0]>
  * the render that follows rather than for the click to return.
  */
 async function sendAndEnter(user: ReturnType<typeof userEvent.setup>, code: string) {
-  await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+  await user.click(screen.getByRole('button', { name: 'Get OTP' }));
   const first = (await screen.findAllByLabelText(/^Digit /))[0]!;
   /*
    * The boxes render before the send's transition has settled, and they are
@@ -88,8 +89,21 @@ describe('PhoneVerification', () => {
   it('opens on the step’s forward action, not on a code box', () => {
     renderPanel();
 
-    expect(screen.getByRole('button', { name: 'Send OTP' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Get OTP' })).toBeInTheDocument();
     expect(screen.queryAllByLabelText(/^Digit /)).toHaveLength(0);
+  });
+
+  it('shows the WhatsApp mark on onboarding’s Get OTP when the server says WhatsApp', () => {
+    renderPanel({ widget: { ...FAKE, channel: 'whatsapp' } });
+    const button = screen.getByRole('button', { name: 'Get OTP on WhatsApp' });
+    expect(button.querySelector('[data-slot="whatsapp-icon"]')).not.toBeNull();
+  });
+
+  it('shows no WhatsApp mark when the server says SMS', () => {
+    renderPanel();
+    expect(
+      screen.getByRole('button', { name: 'Get OTP' }).querySelector('[data-slot="whatsapp-icon"]'),
+    ).toBeNull();
   });
 
   /**
@@ -101,7 +115,7 @@ describe('PhoneVerification', () => {
     const user = userEvent.setup();
     const props = renderPanel({ onBeforeSend: vi.fn(() => false) });
 
-    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await user.click(screen.getByRole('button', { name: 'Get OTP' }));
 
     // Waited for rather than read on the next tick: the send runs inside a
     // transition, so "no boxes yet" and "no boxes, ever" look the same until
@@ -116,9 +130,9 @@ describe('PhoneVerification', () => {
     const user = userEvent.setup();
     renderPanel();
 
-    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await user.click(screen.getByRole('button', { name: 'Get OTP' }));
 
-    expect(await screen.findByText(/No SMS is sent in this environment/)).toBeInTheDocument();
+    expect(await screen.findByText(/No code is sent in this environment/)).toBeInTheDocument();
     expect(screen.getByText('123456')).toBeInTheDocument();
     expect(screen.getAllByLabelText(/^Digit /)).toHaveLength(6);
   });
@@ -230,19 +244,20 @@ describe('PhoneVerification', () => {
         tokenAuth: null,
         devCode: null,
         reason: 'Set MSG91_WIDGET_ID and MSG91_WIDGET_TOKEN to verify mobile numbers.',
+        channel: 'sms',
       },
     });
 
     expect(screen.getByText('Mobile verification is unavailable')).toBeInTheDocument();
     expect(screen.getByText(/MSG91_WIDGET_ID/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Send OTP' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Get OTP' })).toBeNull();
   });
 
   it('says the same when the API could not be reached at all', () => {
     renderPanel({ widget: null });
 
     expect(screen.getByText('Mobile verification is unavailable')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Send OTP' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Get OTP' })).toBeNull();
   });
 
   /**
@@ -254,7 +269,7 @@ describe('PhoneVerification', () => {
     const user = userEvent.setup();
     renderPanel();
 
-    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await user.click(screen.getByRole('button', { name: 'Get OTP' }));
     await screen.findAllByLabelText(/^Digit /);
 
     expect(checkPhoneAvailabilityAction).toHaveBeenCalledWith('9840012345');
@@ -267,7 +282,7 @@ describe('PhoneVerification', () => {
     });
     const props = renderPanel();
 
-    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await user.click(screen.getByRole('button', { name: 'Get OTP' }));
 
     /*
      * Reported to the step, which owns the input the refusal is about — and
@@ -292,7 +307,7 @@ describe('PhoneVerification', () => {
     });
     renderPanel({ onRefused: undefined });
 
-    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await user.click(screen.getByRole('button', { name: 'Get OTP' }));
 
     expect(await screen.findByText(/already registered to another dealership/)).toBeInTheDocument();
   });

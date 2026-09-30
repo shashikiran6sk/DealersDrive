@@ -32,6 +32,7 @@ const FAKE_WIDGET = {
   tokenAuth: null,
   devCode: '123456',
   reason: null,
+  channel: 'sms',
 } as const;
 
 /** CI runs every workspace concurrently; leave React transitions room to settle under load. */
@@ -196,7 +197,7 @@ function dealerProfile(overrides: Record<string, unknown> = {}) {
  * Leaves the Account step the way a dealer does (**R39**).
  *
  * There is no "Continue" on step 1 any more, and that is the feature: the
- * forward action is *Send OTP* until the number has been proved, and *Continue
+ * forward action is *Get OTP* until the number has been proved, and *Continue
  * to business details* once it has. Every test that only wants to be on step 2
  * goes through here, so the shape of the round trip lives in one place rather
  * than in fifteen.
@@ -208,7 +209,7 @@ async function leaveAccount(user: ReturnType<typeof userEvent.setup>): Promise<v
     return;
   }
 
-  await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+  await user.click(screen.getByRole('button', { name: 'Get OTP' }));
 
   /*
    * The press settles inside a transition, and it has two outcomes: the panel

@@ -8,7 +8,7 @@ import type { PhoneOtpPort } from '../../platform/phone-otp/phone-otp.port.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import { ACCOUNT_SUSPENDED, DEALERSHIP_SUSPENDED } from './auth.messages.js';
 import { createIdentityService } from './identity.service.js';
-import { createPhoneProofService } from './phone-proof.service.js';
+import { createPhoneProofService, type OtpChannelConfig } from './phone-proof.service.js';
 import { resolveDealerPostAuthDestination } from './post-auth.js';
 import { ensureSeat, isSeatSuspended } from './roles.js';
 import type { SessionService } from './session.service.js';
@@ -18,6 +18,7 @@ export interface PhoneSignInDeps {
   sessions: SessionService;
   otp: PhoneOtpPort;
   cache: CachePort;
+  config: OtpChannelConfig;
   audit: AuditService;
 }
 
@@ -31,8 +32,15 @@ export interface SignInContext {
   userAgent?: string | undefined;
 }
 
-export function createPhoneSignInService({ prisma, sessions, otp, cache, audit }: PhoneSignInDeps) {
-  const proof = createPhoneProofService({ otp, cache });
+export function createPhoneSignInService({
+  prisma,
+  sessions,
+  otp,
+  cache,
+  audit,
+  config,
+}: PhoneSignInDeps) {
+  const proof = createPhoneProofService({ otp, cache, config });
   const identities = createIdentityService({ prisma, audit });
 
   return {

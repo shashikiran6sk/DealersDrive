@@ -33,6 +33,7 @@ const WIDGET = {
   tokenAuth: null,
   devCode: '123456',
   reason: null,
+  channel: 'sms',
 } as const;
 
 const GOOGLE = {
@@ -51,7 +52,7 @@ beforeEach(() => {
 
 async function proveNumber(user: ReturnType<typeof userEvent.setup>, phone = '9840012345') {
   await user.type(screen.getByLabelText(/Mobile number/), phone);
-  await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+  await user.click(screen.getByRole('button', { name: 'Get OTP' }));
   const first = (await screen.findAllByLabelText(/^Digit /))[0]!;
   await waitFor(() => {
     expect(first).toBeEnabled();
@@ -163,6 +164,67 @@ describe('LoginTabs', () => {
   });
 });
 
+describe('the OTP button, from the server’s channel', () => {
+  it('shows the WhatsApp mark on Get OTP when the server says WhatsApp', () => {
+    render(<CustomerLogin widget={{ ...WIDGET, channel: 'whatsapp' }} returnTo="/" />);
+    const button = screen.getByRole('button', { name: 'Get OTP on WhatsApp' });
+    expect(button.querySelector('[data-slot="whatsapp-icon"]')).not.toBeNull();
+  });
+
+  it('shows Get OTP with no WhatsApp mark when the server says SMS', () => {
+    render(<CustomerLogin widget={WIDGET} returnTo="/" />);
+    const button = screen.getByRole('button', { name: 'Get OTP' });
+    expect(button.querySelector('[data-slot="whatsapp-icon"]')).toBeNull();
+  });
+
+  it.each(['sms', 'whatsapp'] as const)(
+    'proves the number the same way when the code goes by %s',
+    async (channel) => {
+      const user = userEvent.setup();
+      vi.mocked(customerPhoneSignInAction).mockResolvedValue({
+        status: 'SIGNED_IN',
+        fullName: 'Ravi',
+        phoneDisplay: '+91 98400 12345',
+      });
+      render(<CustomerLogin widget={{ ...WIDGET, channel }} returnTo="/" />);
+
+      await user.type(screen.getByLabelText(/Mobile number/), '9840012345');
+      await user.click(screen.getByRole('button', { name: /^Get OTP/ }));
+      const first = (await screen.findAllByLabelText(/^Digit /))[0]!;
+      await waitFor(() => {
+        expect(first).toBeEnabled();
+      });
+      await user.type(first, '123456');
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Verify and sign in' })).toBeEnabled();
+      });
+      await user.click(screen.getByRole('button', { name: 'Verify and sign in' }));
+
+      await waitFor(() => {
+        expect(customerPhoneSignInAction).toHaveBeenCalledWith(
+          '9840012345',
+          expect.stringMatching(/^dev-otp:919840012345:123456:/),
+        );
+      });
+    },
+    FLOW_TIMEOUT,
+  );
+
+  it('does the same on the Dealer tab', async () => {
+    const user = userEvent.setup();
+    render(
+      <DealerLogin
+        widget={{ ...WIDGET, channel: 'whatsapp' }}
+        google={GOOGLE}
+        returnTo={null}
+        error={null}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Use mobile number instead' }));
+    expect(screen.getByRole('button', { name: 'Get OTP on WhatsApp' })).toBeVisible();
+  });
+});
+
 describe('CustomerLogin', () => {
   it(
     'asks a new customer only for a name, then returns them where they were',
@@ -261,7 +323,7 @@ describe('CustomerLogin', () => {
     render(<CustomerLogin widget={WIDGET} returnTo="/" />);
 
     await user.type(screen.getByLabelText(/Mobile number/), '0416224889');
-    await user.click(screen.getByRole('button', { name: 'Send OTP' }));
+    await user.click(screen.getByRole('button', { name: 'Get OTP' }));
 
     expect(await screen.findByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
     expect(screen.queryByLabelText('6-digit verification code')).toBeNull();
@@ -283,7 +345,7 @@ describe('CustomerLogin', () => {
       />,
     );
     expect(screen.getByText(/Set MSG91_WIDGET_ID\./)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Send OTP' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Get OTP' })).toBeNull();
   });
 });
 

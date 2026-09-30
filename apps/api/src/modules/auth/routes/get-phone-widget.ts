@@ -5,9 +5,9 @@ export const getPhoneWidget: SessionAuthRoute = (router, { phone, rateLimit }) =
   router.get(
     '/phone/widget',
     rateLimit('auth.phone.widget', phoneOtpLimit(30, 3600)),
-    (_req, res) => {
+    (_req, res, next) => {
       res.set('Cache-Control', 'no-store');
-      res.json(phone.widget());
+      phone.widget().then((widget) => res.json(widget), next);
     },
   );
 };

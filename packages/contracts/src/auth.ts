@@ -335,6 +335,16 @@ export type AuthSession = z.infer<typeof AuthSession>;
  * MSG91's per-number limits and widget captcha, and the limits on the sign-in
  * that spends the token, are.
  */
+/**
+ * How the one-time code reaches the handset. `whatsapp` when an admin has
+ * turned on `otp.whatsappEnabled` and this deployment has a WhatsApp-configured
+ * MSG91 widget; `sms` otherwise — the fallback is always the channel that
+ * already worked. Delivery only: the code is verified the same way whichever
+ * channel carried it.
+ */
+export const OtpChannel = z.enum(['sms', 'whatsapp']);
+export type OtpChannel = z.infer<typeof OtpChannel>;
+
 export const PhoneOtpWidget = z.object({
   /** False when this deployment cannot verify a number at all; `reason` says why. */
   enabled: z.boolean(),
@@ -354,6 +364,12 @@ export const PhoneOtpWidget = z.object({
   devCode: z.string().nullable(),
   /** What a developer must configure, when `enabled` is false. */
   reason: z.string().nullable(),
+  /**
+   * The channel the code will be sent on, decided by the server from the
+   * admin's configuration — the only thing the screen needs to know to label
+   * its button. No provider credential rides on it.
+   */
+  channel: OtpChannel,
 });
 export type PhoneOtpWidget = z.infer<typeof PhoneOtpWidget>;
 

@@ -298,6 +298,11 @@ export const authDocs: ModuleDocs = {
         '`POST /v1/auth/phone/verify` a server-to-server call.\n\n' +
         '`driver: "fake"` is the local and test configuration — no widget script, no SMS, and ' +
         '`devCode` is the code that will be accepted. `env.ts` refuses it in production.\n\n' +
+        '`channel` is how the code will arrive: `whatsapp` when an admin has turned on the ' +
+        '`otp.whatsappEnabled` platform setting and `MSG91_WHATSAPP_WIDGET_ID`/`_TOKEN` are ' +
+        'set — the WhatsApp-configured widget is then the one handed over — and `sms` ' +
+        'otherwise, including when WhatsApp is on but unconfigured. Read on every request, so ' +
+        'a toggle takes effect without a deploy. Verification is the same either way.\n\n' +
         '`Cache-Control: no-store`. Rate-limited to 30 an hour per session, because each call ' +
         'is a licence to send messages.',
       audience: 'dealer',
@@ -448,6 +453,8 @@ export const authDocs: ModuleDocs = {
         'and, on the API side, the rate limits on the sign-in that spends the token. The API ' +
         'still cannot count sends — only an API-side send endpoint could, and that is a ' +
         'different integration.\n\n' +
+        '`channel` says whether the code will arrive on WhatsApp or by SMS, from the admin\u2019s ' +
+        '`otp.whatsappEnabled` setting, exactly as on `GET /v1/auth/phone/widget`.\n\n' +
         '`MSG91_AUTH_KEY` is never here. `Cache-Control: no-store`.',
       audience: 'public',
       responses: [

@@ -54,6 +54,20 @@ export const Boolean_: Story = {
   },
 };
 
+export const WhatsAppOtp: Story = {
+  name: 'WhatsApp OTP (boolean)',
+  args: {
+    entry: entry({
+      key: 'otp.whatsappEnabled',
+      label: 'Send OTPs on WhatsApp (off: SMS)',
+      type: 'boolean',
+      value: false,
+      readBy:
+        'GET /v1/auth/phone/widget and /v1/auth/sign-in/phone/widget — the channel an OTP is sent on',
+    }),
+  },
+};
+
 export const StringList: Story = {
   args: {
     entry: entry({
