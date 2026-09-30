@@ -553,7 +553,11 @@
       border-color 120ms ease-out,
       color 120ms ease-out;
   }
-  .dd-chip:hover:not(:disabled) {
+  .dd-chip:hover:not(:disabled):not(
+      [aria-pressed='true'],
+      [aria-current='true'],
+      [aria-current='page']
+    ) {
     border-color: var(--color-neutral-400);
     color: var(--color-ink);
   }
@@ -563,6 +567,12 @@
     background: var(--color-accent);
     border-color: var(--color-accent);
     color: #fff;
+  }
+  .dd-chip:is([aria-pressed='true'], [aria-current='true'], [aria-current='page']):hover:not(
+      :disabled
+    ) {
+    background: var(--color-neutral-800);
+    border-color: var(--color-neutral-800);
   }
 
   .table {
