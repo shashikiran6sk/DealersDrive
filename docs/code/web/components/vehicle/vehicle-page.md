@@ -12,9 +12,20 @@ tag, the 108px thumbnail strip under it, and the fullscreen lightbox. R48 had
 replaced the strip and the rail with arrows on the main image; R49 puts the
 spec's gallery back, because that is what the product is meant to look like.
 
-The main image is the admin's primary photograph, not the first in order, and
-falls back to the first when the index is out of range. It opens the lightbox
-on itself; a thumbnail opens it on that thumbnail.
+The gallery starts on the admin's primary photograph, not the first in order,
+and falls back to the first when the index is out of range. It opens the
+lightbox on itself; a thumbnail opens it on that thumbnail.
+
+**One `index`, for everything (R87).** The main image shows `images[index]`,
+not a fixed primary, and its Previous image / Next image arrows call the same
+`step` the lightbox's arrows and ←/→ keys call — so they wrap exactly as the
+lightbox does, because they are the same function. The strip marks
+`images[index]` (`aria-current`, the accent ring), the lightbox opens on it, and
+whatever the lightbox is left on is what the page shows when it closes. There is
+no second index anywhere to drift out of step. The arrows are siblings of the
+main image's button, not children — a button inside a button is invalid, and a
+click on an arrow must never open the lightbox — and they are drawn only when
+there is more than one photograph, as the lightbox's are.
 
 Several controls open one dialog, so none of them can be its Radix trigger.
 The gallery remembers which one was pressed and hands focus back to it in
@@ -22,7 +33,7 @@ The gallery remembers which one was pressed and hands focus back to it in
 
 ## `apps/web/src/components/vehicle/vehicle-gallery/gallery-strip.tsx`
 
-### `export function GalleryStrip({ images, onOpen }: GalleryStripProps)`
+### `export function GalleryStrip({ images, index, onOpen }: GalleryStripProps)`
 
 §2.9's strip. The track is `.dd-strip` — it scrolls on its own, with no
 scrollbar, and `min-width: 0` keeps it inside the column so the page never
@@ -30,6 +41,13 @@ scrolls sideways. The ‹ › arrows scroll it ±240px and disable at either end
 measured on scroll and on resize. They are 30px from 768 up and 44px below,
 the touch minimum §4.15 sets; the strip's side padding grows with them. Thumbs
 are 108px, 88px on a phone.
+
+When `index` moves (R87), the strip scrolls the current thumbnail into view —
+horizontally only, by `revealOffset` in `utils.ts`, with the same `scrollBy` its
+arrows use. `scrollIntoView` would also have scrolled the page to reach a strip
+below the fold, which is not what pressing an arrow on the image above it
+asked for. It does nothing on first render or when the thumbnail is already in
+view.
 
 ## `apps/web/src/components/vehicle/vehicle-gallery/gallery-viewer.tsx`
 

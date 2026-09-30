@@ -16,6 +16,8 @@ export const VEHICLE_GALLERY_TEXT = {
   scrollRight: 'Scroll photos right',
   previous: 'Previous photo',
   next: 'Next photo',
+  heroPrevious: 'Previous image',
+  heroNext: 'Next image',
   close: 'Close',
   brand: 'DD',
   railLabel: 'All photos',

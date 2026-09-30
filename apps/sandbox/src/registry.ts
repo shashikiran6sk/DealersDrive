@@ -1413,9 +1413,9 @@ export const registry: RegistryEntry[] = [
     category: 'Vehicle',
     ownership: 'Feature-specific',
     purpose:
-      'The VDP gallery, DESIGN-SPEC §2.9/§2.10 (F082, F083, R49): a blueprint main image (the admin-chosen primary) with an "N photos · view all" tag, the 108px thumbnail strip with ‹ › that scroll ±240px and disable at the ends, and a fullscreen lightbox (Dialog fullscreen) with the DD chip, title, counter, Close ✕, a numbered rail, a 4:3 stage, ←/→ with wrap, Escape, focus trap, focus returned to the exact opener, and the page locked.',
+      'The VDP gallery, DESIGN-SPEC §2.9/§2.10 (F082, F083, R49): a blueprint main image (starting on the admin-chosen primary) with an "N photos · view all" tag and Previous image / Next image arrows over it (R87, several photos only, wrapping), the 108px thumbnail strip marking the current photo with ‹ › that scroll ±240px and disable at the ends, and a fullscreen lightbox (Dialog fullscreen) with the DD chip, title, counter, Close ✕, a numbered rail, a 4:3 stage, ←/→ with wrap, Escape, focus trap, focus returned to the exact opener, and the page locked.',
     aliases: ['Gallery', 'PhotoStrip', 'Carousel', 'ImageViewer', 'Thumbnails'],
-    features: ['F082', 'F083', 'R45', 'R48', 'R49'],
+    features: ['F082', 'F083', 'R45', 'R48', 'R49', 'R87'],
     props: ['title', 'images', 'primaryIndex'],
     states: [
       'primary first',
@@ -1426,6 +1426,7 @@ export const registry: RegistryEntry[] = [
       'phone width (44px arrows, 88px thumbs, 84px rail)',
       'lightbox open at index n',
       'lightbox first / last (wrap)',
+      'hero stepped with its arrows (strip and lightbox follow)',
       'portrait photograph (pillarboxed)',
     ],
     reusable: false,

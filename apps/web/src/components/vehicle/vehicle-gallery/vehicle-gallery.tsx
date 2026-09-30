@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import { Corners, ImageSlot, Tag } from '@/components/ui/primitives';
 
+import { GalleryArrow } from './gallery-arrow';
 import { GalleryStrip } from './gallery-strip';
 import { GalleryViewer } from './gallery-viewer';
 import { VEHICLE_GALLERY_TEXT } from './vehicle-gallery.constants';
@@ -39,7 +40,7 @@ export function VehicleGallery({ title, images, primaryIndex }: VehicleGalleryPr
     openerRef.current?.focus();
   }, []);
 
-  const main = images[primary];
+  const main = images[index] ?? images[primary];
   if (!main) {
     return (
       <div className="blueprint aspect-[4/3]">
@@ -51,26 +52,45 @@ export function VehicleGallery({ title, images, primaryIndex }: VehicleGalleryPr
 
   return (
     <section aria-label={VEHICLE_GALLERY_TEXT.label} className="min-w-0">
-      <button
-        type="button"
-        onClick={(event) => openAt(primary, event.currentTarget)}
-        aria-label={VEHICLE_GALLERY_TEXT.openAll(title, total)}
-        className="blueprint block aspect-[4/3] w-full cursor-zoom-in bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
-      >
-        <Corners />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={main.url}
-          alt={main.alt}
-          fetchPriority="high"
-          className="h-full w-full object-cover"
-        />
-        <Tag className="absolute right-[10px] bottom-[10px] z-[3] bg-white text-[11px] tnum">
-          {VEHICLE_GALLERY_TEXT.viewAll(total)}
-        </Tag>
-      </button>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={(event) => openAt(index, event.currentTarget)}
+          aria-label={VEHICLE_GALLERY_TEXT.openAll(title, total)}
+          className="blueprint block aspect-[4/3] w-full cursor-zoom-in bg-(--color-surface) p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+        >
+          <Corners />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={main.url}
+            alt={main.alt}
+            fetchPriority="high"
+            className="h-full w-full object-cover"
+          />
+          <Tag className="absolute right-[10px] bottom-[10px] z-[3] bg-white text-[11px] tnum">
+            {VEHICLE_GALLERY_TEXT.viewAll(total)}
+          </Tag>
+        </button>
 
-      {total > 1 ? <GalleryStrip images={images} onOpen={openAt} /> : null}
+        {total > 1 ? (
+          <>
+            <GalleryArrow
+              direction="previous"
+              placement="stage"
+              label={VEHICLE_GALLERY_TEXT.heroPrevious}
+              onClick={() => step(-1)}
+            />
+            <GalleryArrow
+              direction="next"
+              placement="stage"
+              label={VEHICLE_GALLERY_TEXT.heroNext}
+              onClick={() => step(1)}
+            />
+          </>
+        ) : null}
+      </div>
+
+      {total > 1 ? <GalleryStrip images={images} index={index} onOpen={openAt} /> : null}
 
       <GalleryViewer
         title={title}
