@@ -4,7 +4,7 @@ import { formatPhone, isIndianMobile } from '@dealers-drive/contracts';
 import { useEffect, useId, useRef, useState, useTransition } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
-import { Button } from '@/components/ui/button';
+import { OtpSendButton } from '@/components/auth/otp-send-button';
 import {
   Captcha,
   isServiceFailure,
@@ -27,6 +27,7 @@ export function PhoneSignIn({
   verifyLabel = PHONE_SIGN_IN_TEXT.verify,
   initialStage = 'number',
   initialPhone = '',
+  whatsappOtp = false,
 }: PhoneSignInProps) {
   const captchaId = useId();
   const phoneId = `${idPrefix}-phone`;
@@ -150,9 +151,9 @@ export function PhoneSignIn({
           />
         </Field>
         <Captcha id={captchaId} />
-        <Button type="submit" variant="primary" size="md" block loading={pending}>
+        <OtpSendButton type="submit" loading={pending} whatsapp={whatsappOtp}>
           {PHONE_SIGN_IN_TEXT.sendOtp}
-        </Button>
+        </OtpSendButton>
       </form>
     );
   }

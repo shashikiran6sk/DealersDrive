@@ -21,6 +21,7 @@ export const NO_PUBLIC_CONFIG: PublicConfig = {
     whatsappHref: null,
   },
   heroImage: null,
+  whatsappOtpEnabled: false,
 };
 
 export async function getPublicConfig(): Promise<PublicConfig> {

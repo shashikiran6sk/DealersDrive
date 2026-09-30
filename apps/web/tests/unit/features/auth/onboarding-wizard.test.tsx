@@ -11,6 +11,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { navigationState } from '../../../setup';
 
 import type * as ApiModule from '@/lib/api';
+import type * as PublicConfigModule from '@/lib/public-config';
 import { ONBOARDING_STEPS, OnboardingWizard } from '@/features/auth/onboarding-wizard';
 
 /**
@@ -24,6 +25,11 @@ vi.mock('@/features/auth/phone-actions', () => ({
   checkPhoneAvailabilityAction: vi.fn(() => Promise.resolve({})),
   verifyPhoneAction: vi.fn((phone: string) => Promise.resolve({ verified: true, phone })),
 }));
+
+vi.mock('@/lib/public-config', async (importOriginal) => {
+  const actual = await importOriginal<typeof PublicConfigModule>();
+  return { ...actual, getPublicConfig: vi.fn(() => Promise.resolve(actual.NO_PUBLIC_CONFIG)) };
+});
 
 const FAKE_WIDGET = {
   enabled: true,

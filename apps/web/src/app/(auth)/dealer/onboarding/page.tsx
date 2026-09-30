@@ -13,6 +13,7 @@ import { redirect } from 'next/navigation';
 import { AuthShell } from '@/components/auth/auth-shell';
 import { OnboardingWizard, type OnboardingStep } from '@/features/auth/onboarding-wizard';
 import { ApiError, apiGet } from '@/lib/api';
+import { getPublicConfig } from '@/lib/public-config';
 import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ export default async function OnboardingPage({
     redirect('/dealer');
   }
 
-  const [documents, dealer, completeness, yardPhoto, phoneWidget, googleLinkUrl] =
+  const [documents, dealer, completeness, yardPhoto, phoneWidget, googleLinkUrl, config] =
     await Promise.all([
       session.dealer
         ? apiGet<DealerDocumentsResponse>('/v1/dealer/documents', { revalidate: false })
@@ -51,6 +52,7 @@ export default async function OnboardingPage({
         : Promise.resolve(null),
       phoneWidgetOrNull(),
       session.identity ? Promise.resolve(null) : googleLinkUrlOrNull(),
+      getPublicConfig(),
     ]);
 
   const params = await searchParams;
@@ -73,6 +75,7 @@ export default async function OnboardingPage({
         phoneWidget={phoneWidget}
         googleLinkUrl={googleLinkUrl}
         linkError={params.error ?? null}
+        whatsappOtp={config.whatsappOtpEnabled}
       />
     </AuthShell>
   );

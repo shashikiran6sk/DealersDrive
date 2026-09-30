@@ -9,4 +9,5 @@ export interface PhoneSignInProps {
   verifyLabel?: string;
   initialStage?: PhoneSignInStage;
   initialPhone?: string;
+  whatsappOtp?: boolean;
 }

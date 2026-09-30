@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
+import type * as PublicConfigModule from '@/lib/public-config';
 
 vi.mock('@/lib/api', async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
@@ -12,6 +13,18 @@ vi.mock('@/lib/session', () => ({
   currentSession: vi.fn(() => Promise.resolve(null)),
   destinationFor: () => '/dealer',
 }));
+
+const whatsappSwitch = vi.hoisted(() => ({ on: false }));
+
+vi.mock('@/lib/public-config', async (importOriginal) => {
+  const actual = await importOriginal<typeof PublicConfigModule>();
+  return {
+    ...actual,
+    getPublicConfig: vi.fn(() =>
+      Promise.resolve({ ...actual.NO_PUBLIC_CONFIG, whatsappOtpEnabled: whatsappSwitch.on }),
+    ),
+  };
+});
 
 vi.mock('@/features/auth/sign-in-actions', () => ({
   customerPhoneSignInAction: vi.fn(),
@@ -54,6 +67,35 @@ async function page(params: Record<string, string>) {
 
 beforeEach(() => {
   vi.resetModules();
+  whatsappSwitch.on = false;
+});
+
+function whatsappLogos(): Element[] {
+  return Array.from(document.querySelectorAll('[data-slot="whatsapp-icon"]'));
+}
+
+describe('/login — the WhatsApp OTP switch', () => {
+  it('shows the WhatsApp logo on the customer OTP button when the switch is on', async () => {
+    whatsappSwitch.on = true;
+    await page({});
+
+    const send = screen.getByRole('button', { name: 'Send OTP on WhatsApp' });
+    expect(send.querySelector('[data-slot="whatsapp-icon"] svg')).not.toBeNull();
+  });
+
+  it('shows no WhatsApp logo when the switch is off', async () => {
+    await page({});
+
+    expect(screen.getAllByRole('button', { name: 'Send OTP' }).length).toBeGreaterThan(0);
+    expect(whatsappLogos()).toEqual([]);
+  });
+
+  it('carries the switch to the dealer tab as well', async () => {
+    whatsappSwitch.on = true;
+    await page({ as: 'dealer' });
+
+    expect(whatsappLogos()).toHaveLength(2);
+  });
 });
 
 describe('/login', () => {

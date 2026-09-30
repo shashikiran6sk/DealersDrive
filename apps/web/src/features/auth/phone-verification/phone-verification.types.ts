@@ -12,4 +12,5 @@ export interface PhoneVerificationProps {
   onBeforeSend: (form: HTMLFormElement | null) => boolean;
   onRefused?: (message: string) => void;
   initialStage?: PhoneStage;
+  whatsappOtp?: boolean;
 }
