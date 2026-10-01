@@ -74,7 +74,7 @@ describe('HeaderAccount', () => {
     expect(screen.queryByRole('link', { name: 'Login' })).toBeNull();
   });
 
-  it('opens a menu with the name, the masked number, Saved cars, My enquiries, Dealer Login and Logout', async () => {
+  it('opens a menu with the name, the masked number, Saved cars, My enquiries, Support requests, Dealer Login and Logout', async () => {
     const { trigger, menu } = await openMenu();
 
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
@@ -84,6 +84,7 @@ describe('HeaderAccount', () => {
     expect(items.map((item) => item.textContent)).toEqual([
       'Saved cars',
       'My enquiries',
+      'Support requests',
       'Dealer Login',
       'Logout',
     ]);
@@ -95,15 +96,21 @@ describe('HeaderAccount', () => {
       'href',
       '/enquiries',
     );
+    expect(within(menu).getByRole('menuitem', { name: 'Support requests' })).toHaveAttribute(
+      'href',
+      '/support-requests',
+    );
   });
 
   it('puts focus on the first item, moves with the arrow keys, Home and End, and wraps', async () => {
     const { user, menu } = await openMenu();
-    const [saved, enquiries, dealer, logout] = within(menu).getAllByRole('menuitem');
+    const [saved, enquiries, support, dealer, logout] = within(menu).getAllByRole('menuitem');
 
     await waitFor(() => expect(saved).toHaveFocus());
     await user.keyboard('{ArrowDown}');
     expect(enquiries).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(support).toHaveFocus();
     await user.keyboard('{ArrowDown}');
     expect(dealer).toHaveFocus();
     await user.keyboard('{ArrowDown}');
@@ -170,7 +177,7 @@ describe('HeaderAccount', () => {
     await waitFor(() =>
       expect(within(menu).getByRole('menuitem', { name: 'Saved cars' })).toHaveFocus(),
     );
-    await user.keyboard('{ArrowDown}{ArrowDown}');
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
     expect(dealer).toHaveFocus();
     await user.keyboard('{Enter}');
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());

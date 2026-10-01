@@ -50,6 +50,9 @@ model User {
   enquiries     Enquiry[]
   savedVehicles SavedVehicle[]
 
+  supportTickets  SupportTicket[]        @relation("SupportTicketCustomer")
+  supportMessages SupportTicketMessage[] @relation("SupportMessageAuthor")
+
   @@map("users")
 }
 
@@ -796,6 +799,8 @@ model Enquiry {
   dealer   Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
   listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
+  supportTickets SupportTicket[]
+
   /// The dealer's inbox: one status tab, newest first (R66).
   @@index([dealerId, status, createdAt])
   /// "Has this customer enquired about this car recently?" — the duplicate guard.
@@ -806,6 +811,107 @@ model Enquiry {
   @@index([createdAt])
   @@index([status, createdAt])
   @@map("enquiries")
+}
+
+/// A customer asking Dealers-Drive for help (**R90**).
+///
+/// A domain of its own, not an enquiry: an enquiry is a customer talking to a
+/// dealership; this is a customer talking to us. The two meet only through
+/// `enquiryId`, an optional reference to one of the customer's **own**
+/// enquiries, through which the dealership and the car are reached rather
+/// than copied onto the ticket.
+///
+/// `number` is the human reference, shown as `DD-1042`. It comes from a
+/// Postgres sequence (started at 1001 by the migration), so two requests
+/// created at the same instant can never be given the same one — there is no
+/// `count + 1` anywhere. The row id stays a UUID and is never the reference.
+///
+/// `description` is the customer's opening message and is stored here once;
+/// the replies that follow are `SupportTicketMessage` rows.
+model SupportTicket {
+  id          String                @id @default(uuid()) @db.Uuid
+  number      Int                   @unique @default(autoincrement())
+  customerId  String                @db.Uuid
+  category    SupportTicketCategory
+  subject     String
+  description String
+  status      SupportTicketStatus   @default(OPEN)
+  /// Support's own triage. A customer never sets it and is never shown it.
+  priority    SupportTicketPriority @default(NORMAL)
+  /// Optional, and checked on write to be the customer's own enquiry.
+  /// `SetNull`: an enquiry is never deleted by the lifecycle, but a ticket
+  /// must outlive one that is removed by hand.
+  enquiryId   String?               @db.Uuid
+  createdAt   DateTime              @default(now())
+  /// Last activity: set by every message as well as every change, so the
+  /// lists sort by what last happened on the ticket.
+  updatedAt   DateTime              @updatedAt
+  resolvedAt  DateTime?
+  closedAt    DateTime?
+
+  customer User                   @relation("SupportTicketCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  enquiry  Enquiry?               @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+  messages SupportTicketMessage[]
+
+  /// The customer's own list, most recently active first.
+  @@index([customerId, updatedAt])
+  /// "Tickets about this enquiry" — and the FK's own lookup on SetNull.
+  @@index([enquiryId])
+  @@map("support_tickets")
+}
+
+/// One message in a ticket's public conversation (**R90**).
+///
+/// `authorType` is set by the route that wrote it — the customer's route
+/// writes `CUSTOMER`, the console's writes `SUPPORT` — never by a field in a
+/// request, so neither side can write as the other. `authorId` is the person;
+/// `SetNull` keeps the conversation when an account is removed.
+model SupportTicketMessage {
+  id         String               @id @default(uuid()) @db.Uuid
+  ticketId   String               @db.Uuid
+  authorType SupportMessageAuthor
+  authorId   String?              @db.Uuid
+  body       String
+  createdAt  DateTime             @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User?         @relation("SupportMessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  /// A ticket's conversation in order.
+  @@index([ticketId, createdAt])
+  @@map("support_ticket_messages")
+}
+
+enum SupportTicketCategory {
+  DEALER_ISSUE
+  VEHICLE_LISTING_ISSUE
+  ENQUIRY_ISSUE
+  ACCOUNT_ISSUE
+  TECHNICAL_ISSUE
+  GENERAL_QUESTION
+  OTHER
+}
+
+/// The allowed moves between these live in `SUPPORT_TICKET_TRANSITIONS`
+/// (contracts), the one table both the API and the console read.
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum SupportMessageAuthor {
+  CUSTOMER
+  SUPPORT
 }
 
 /// A car a signed-in customer has saved (**R74**, revises F087).

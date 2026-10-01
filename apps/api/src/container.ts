@@ -18,6 +18,7 @@ import {
   createEnquiriesService,
   type EnquiriesService,
 } from './modules/enquiries/enquiries.service.js';
+import { createSupportService, type SupportService } from './modules/support/support.service.js';
 import {
   createSavedVehiclesService,
   type SavedVehiclesService,
@@ -108,6 +109,7 @@ export interface Container {
   readonly enquiries: EnquiriesService;
   readonly adminEnquiries: AdminEnquiriesService;
   readonly savedVehicles: SavedVehiclesService;
+  readonly support: SupportService;
   readonly customers: CustomerAuthService;
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
@@ -238,6 +240,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     vehicleImages,
     enquiries,
     adminEnquiries: createAdminEnquiriesService({ prisma }),
+    support: createSupportService({ prisma, audit }),
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };

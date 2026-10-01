@@ -1351,6 +1351,36 @@ both views share it, with the Reactivation requests tab and its count.
 `listings-page.test.tsx`. **Sandbox** `Admin/ReactivationQueue`; the Server
 Actions are stubbed by `apps/sandbox/src/mocks/listing-actions.ts`.
 
+### C122 — `SupportRequestList` · C123 — `SupportRequestForm` · C124 — `SupportRequestDetail` · C125 — `SupportRequestCallout`
+
+**New at R90** (`features/support/support-requests/`, `features/support/support-page/`).
+A customer's support requests, in one area. `SupportRequestList` is
+`/support-requests`: a card per request (reference, subject, status, topic, last
+updated), Create support request, and an empty state. `SupportRequestForm` is
+`/support-requests/new`: topic, the customer's own enquiry for the topics it
+helps, subject and description; field errors beside their fields, one request per
+press. `SupportRequestDetail` is `/support-requests/[id]`: the request, its
+enquiry, the conversation (`SupportMessageBubble`) and `SupportReplyForm`, or a
+pointer to a new request once closed. `SupportRequestCallout` leads `/contact`.
+
+| Component               | Props                                                           | States                                                 |
+| ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| `SupportRequestList`    | `tickets`                                                       | requests · none yet · with more                        |
+| `SupportRequestForm`    | `enquiries`, `initialCategory?`, `initialEnquiryId?`, `submit?` | empty · about an enquiry · no enquiries yet · refused  |
+| `SupportRequestDetail`  | `ticket`                                                        | awaiting your reply · just created · resolved · closed |
+| `SupportRequestCallout` | —                                                               | default                                                |
+
+**Changed:** `SupportPage` leads with `SupportRequestCallout` and heads the
+contact cards "Other ways to reach us"; `AccountMenu` gains Support requests after
+My enquiries; `CustomerEnquiryCard` gains Get help with this enquiry. **Reuses**
+`Field`, `Select`, `Input`, `Textarea`, `Button`, `ButtonLink`, `StatusTag`,
+`EmptyState`, `SkeletonLines`. **Tests**
+`apps/web/tests/unit/features/support/support-requests.test.tsx`,
+`support-page.test.tsx`, `header-account.test.tsx`, `my-enquiries-page.test.tsx`.
+**Sandbox** `Support/SupportRequestList`, `Support/SupportRequestForm`,
+`Support/SupportRequestDetail`, `Layout/SupportPage`; the Server Actions are
+stubbed by `apps/sandbox/src/mocks/support-actions.ts`.
+
 ### C119 — `EnquiryOversight` · C120 — `EnquiryDetail` · C121 — `AdminListLoading`
 
 **New at R89** (`features/admin/enquiry-oversight/`, `features/admin/enquiry-detail/`,

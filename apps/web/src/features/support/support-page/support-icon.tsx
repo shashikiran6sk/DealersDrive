@@ -4,6 +4,7 @@ const PATHS: Record<SupportIconName, string> = {
   customer: 'M4 6h16v12H4z M4 7l8 6 8-6',
   dealer: 'M3 10l9-6 9 6 M5 9v10h14V9 M10 19v-5h4v5',
   chat: 'M4 5h16v11H9l-5 4z',
+  request: 'M6 3h9l4 4v14H6z M15 3v4h4 M9 12h7 M9 16h5',
 };
 
 export function SupportIcon({ name }: { name: SupportIconName }) {

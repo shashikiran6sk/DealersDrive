@@ -7,6 +7,8 @@ export const HEADER_ACCOUNT_TEXT = {
   myEnquiriesHref: '/enquiries',
   savedCars: 'Saved cars',
   savedCarsHref: '/saved',
+  supportRequests: 'Support requests',
+  supportRequestsHref: '/support-requests',
   dealerLogin: 'Dealer Login',
   dealerLoginHref: '/dealer',
   menuLabel: (name: string) => `Account menu for ${name}`,
