@@ -35,14 +35,9 @@ export async function ensureSeat(
   db: Db,
   input: { userId: string; role: PlatformRole; grantedBy?: string | null },
 ): Promise<void> {
-  await db.userRole.upsert({
-    where: { userId_role: { userId: input.userId, role: input.role } },
-    create: {
-      userId: input.userId,
-      role: input.role,
-      grantedBy: input.grantedBy ?? null,
-    },
-    update: {},
+  await db.userRole.createMany({
+    data: [{ userId: input.userId, role: input.role, grantedBy: input.grantedBy ?? null }],
+    skipDuplicates: true,
   });
 }
 

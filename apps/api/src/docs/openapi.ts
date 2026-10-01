@@ -13,6 +13,7 @@ import { searchDocs } from '../modules/search/search.docs.js';
 import { vehicleImagesDocs } from '../modules/vehicle-images/vehicle-images.docs.js';
 import { enquiriesDocs } from '../modules/enquiries/enquiries.docs.js';
 import { savedVehiclesDocs } from '../modules/saved-vehicles/saved-vehicles.docs.js';
+import { supportAdminDocs } from '../modules/support/support.admin.docs.js';
 import { supportDocs } from '../modules/support/support.docs.js';
 import { vehiclesDocs } from '../modules/vehicles/vehicles.docs.js';
 import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
@@ -33,6 +34,7 @@ const MODULES: ModuleDocs[] = [
   supportDocs,
   adminDocs,
   moderationDocs,
+  supportAdminDocs,
   vehicleImagesDocs,
   healthDocs,
   storageDocs,
@@ -328,6 +330,8 @@ check below runs exactly the same way.
 | \`admin:config:write\` | ✓ | | |
 | \`admin:audit:read\` | ✓ | ✓ | ✓ |
 | \`admin:metrics:read\` | ✓ | ✓ | ✓ |
+| \`admin:enquiry:read\` | ✓ | ✓ | ✓ |
+| \`admin:support:manage\` | ✓ | ✓ | ✓ |
 `.trim();
 
 const DESCRIPTION = `

@@ -75,6 +75,16 @@ const ENQUIRY: AdminEnquiryDetail = {
       atLabel: '30 Sep 2026, 15:30',
     },
   ],
+  supportTickets: [
+    {
+      id: '99999999-9999-4999-8999-999999999999',
+      reference: 'DD-1042',
+      subject: 'The dealer has not called me back',
+      statusLabel: 'Open',
+      statusTone: 'accent',
+      createdLabel: '30 Sep 2026, 16:05',
+    },
+  ],
 };
 
 const meta = {
@@ -100,6 +110,7 @@ export const NothingOnFile: Story = {
       message: null,
       contactedLabel: null,
       history: [],
+      supportTickets: [],
       customer: { ...ENQUIRY.customer, phone: null, phoneDisplay: null, phoneVerified: false },
       dealer: { ...ENQUIRY.dealer, location: null, phoneDisplay: null },
       vehicle: { ...ENQUIRY.vehicle, image: null, publicHref: '/car/2021-honda-city-vx' },

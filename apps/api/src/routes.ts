@@ -11,6 +11,7 @@ import {
 import { createAdminEnquiriesRouter } from './modules/enquiries/enquiries.admin.routes.js';
 import { createDealerEnquiriesRouter } from './modules/enquiries/enquiries.dealer.routes.js';
 import { createEnquiriesRouter } from './modules/enquiries/enquiries.routes.js';
+import { createAdminSupportRouter } from './modules/support/support.admin.routes.js';
 import { createSupportRouter } from './modules/support/support.routes.js';
 import { createSavedVehiclesRouter } from './modules/saved-vehicles/saved-vehicles.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
@@ -93,6 +94,7 @@ export function createRoutes(container: Container): Router {
   admin.use(createModerationRouter(container.moderation));
   admin.use(createVehicleImagesRouter(container.vehicleImages));
   admin.use(createAdminEnquiriesRouter(container.adminEnquiries));
+  admin.use(createAdminSupportRouter(container.adminSupport));
   v1.use('/admin', admin);
 
   router.use('/v1', v1);

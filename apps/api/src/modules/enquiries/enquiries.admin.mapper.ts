@@ -1,4 +1,7 @@
 import {
+  SUPPORT_STATUS_LABELS,
+  SUPPORT_STATUS_TONES,
+  supportTicketReference,
   CUSTOMER_ENQUIRY_STATUS_LABELS,
   DEALER_STATUS_LABELS,
   DEALER_STATUS_TONES,
@@ -174,9 +177,18 @@ function publicHrefOf(listing: AdminDetailSource['listing']): string | null {
   return live && listing.slug ? `/car/${listing.slug}` : null;
 }
 
+export interface EnquiryTicketSource {
+  id: string;
+  number: number;
+  subject: string;
+  status: keyof typeof SUPPORT_STATUS_LABELS;
+  createdAt: Date;
+}
+
 export function toAdminEnquiryDetail(
   row: AdminDetailSource,
   history: EnquiryHistorySource[],
+  tickets: EnquiryTicketSource[] = [],
 ): AdminEnquiryDetail {
   const name = customerName(row.customer.fullName);
   const vehicle = vehicleOf(row.listing);
@@ -223,5 +235,13 @@ export function toAdminEnquiryDetail(
       adminHref: `/admin/listings/${row.listing.id}`,
     },
     history: enquiryHistoryOf(history),
+    supportTickets: tickets.map((ticket) => ({
+      id: ticket.id,
+      reference: supportTicketReference(ticket.number),
+      subject: ticket.subject,
+      statusLabel: SUPPORT_STATUS_LABELS[ticket.status],
+      statusTone: SUPPORT_STATUS_TONES[ticket.status],
+      createdLabel: formatDateTime(ticket.createdAt),
+    })),
   };
 }

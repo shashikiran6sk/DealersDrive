@@ -1351,6 +1351,33 @@ both views share it, with the Reactivation requests tab and its count.
 `listings-page.test.tsx`. **Sandbox** `Admin/ReactivationQueue`; the Server
 Actions are stubbed by `apps/sandbox/src/mocks/listing-actions.ts`.
 
+### C126 — `SupportQueue` · C127 — `SupportTicketWorkspace`
+
+**New at R91** (`features/admin/support-queue/`, `features/admin/support-ticket/`).
+`SupportQueue` is `/admin/support`: status tabs, search and category / priority /
+assignee / created-day filters, a ticket table and keyset paging.
+`SupportTicketWorkspace` is `/admin/support/[id]`: conversation
+(`TicketConversation`), composer (`TicketComposer`, Reply to customer vs an amber
+Internal note), internal notes (`TicketNotes`), history (`TicketHistory`), ticket
+controls (`TicketControls`: status limited to allowed moves, priority, assignee,
+Assign to me), customer, related enquiry, car and dealer.
+
+| Component                | Props                | States                                         |
+| ------------------------ | -------------------- | ---------------------------------------------- |
+| `SupportQueue`           | `tickets`, `filters` | queue · filtered · none at all · none matching |
+| `SupportTicketWorkspace` | `ticket`, `viewerId` | working · unassigned · no enquiry · closed     |
+
+**Changed:** `AdminNav` gains Support Tickets above Configuration;
+`EnquiryDetail` gains `EnquiryTickets` (the tickets referencing the enquiry);
+`SupportMessageBubble` gains `side`, so the console can put support on the right.
+**Reuses** `Table`, `StatusTag`, `EmptyState`, `Input`, `Select`, `Textarea`,
+`Button`, `DetailRow`, `EnquiryVehicleCard`, `AdminListLoading`. **Tests**
+`apps/web/tests/unit/features/admin/support-tickets.test.tsx`,
+`enquiry-oversight.test.tsx`, `dashboard-page.test.tsx`. **Sandbox**
+`Admin/SupportQueue`, `Admin/SupportTicketWorkspace`, `Admin/EnquiryDetail`,
+`Admin/AdminNav`; the Server Actions are stubbed by
+`apps/sandbox/src/mocks/admin-support-actions.ts`.
+
 ### C122 — `SupportRequestList` · C123 — `SupportRequestForm` · C124 — `SupportRequestDetail` · C125 — `SupportRequestCallout`
 
 **New at R90** (`features/support/support-requests/`, `features/support/support-page/`).

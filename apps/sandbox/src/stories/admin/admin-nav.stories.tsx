@@ -48,6 +48,10 @@ export const Enquiries: Story = {
   },
 };
 
+export const SupportTickets: Story = {
+  parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/admin/support' } } },
+};
+
 export const Configuration: Story = {
   parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/admin/config' } } },
 };

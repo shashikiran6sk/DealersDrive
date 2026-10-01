@@ -52,6 +52,8 @@ model User {
 
   supportTickets  SupportTicket[]        @relation("SupportTicketCustomer")
   supportMessages SupportTicketMessage[] @relation("SupportMessageAuthor")
+  assignedTickets SupportTicket[]        @relation("SupportTicketAssignee")
+  supportNotes    SupportTicketNote[]    @relation("SupportNoteAuthor")
 
   @@map("users")
 }
@@ -829,34 +831,46 @@ model Enquiry {
 /// `description` is the customer's opening message and is stored here once;
 /// the replies that follow are `SupportTicketMessage` rows.
 model SupportTicket {
-  id          String                @id @default(uuid()) @db.Uuid
-  number      Int                   @unique @default(autoincrement())
-  customerId  String                @db.Uuid
-  category    SupportTicketCategory
-  subject     String
-  description String
-  status      SupportTicketStatus   @default(OPEN)
+  id              String                @id @default(uuid()) @db.Uuid
+  number          Int                   @unique @default(autoincrement())
+  customerId      String                @db.Uuid
+  category        SupportTicketCategory
+  subject         String
+  description     String
+  status          SupportTicketStatus   @default(OPEN)
   /// Support's own triage. A customer never sets it and is never shown it.
-  priority    SupportTicketPriority @default(NORMAL)
+  priority        SupportTicketPriority @default(NORMAL)
   /// Optional, and checked on write to be the customer's own enquiry.
   /// `SetNull`: an enquiry is never deleted by the lifecycle, but a ticket
   /// must outlive one that is removed by hand.
-  enquiryId   String?               @db.Uuid
-  createdAt   DateTime              @default(now())
+  enquiryId       String?               @db.Uuid
+  /// The operator working the ticket (**R91**) — a platform admin, checked on
+  /// write. NULL is unassigned. `SetNull`: a removed account leaves the
+  /// ticket unassigned rather than taking it with it.
+  assignedAdminId String?               @db.Uuid
+  createdAt       DateTime              @default(now())
   /// Last activity: set by every message as well as every change, so the
   /// lists sort by what last happened on the ticket.
-  updatedAt   DateTime              @updatedAt
-  resolvedAt  DateTime?
-  closedAt    DateTime?
+  updatedAt       DateTime              @updatedAt
+  resolvedAt      DateTime?
+  closedAt        DateTime?
 
   customer User                   @relation("SupportTicketCustomer", fields: [customerId], references: [id], onDelete: Cascade)
   enquiry  Enquiry?               @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+  assignee User?                  @relation("SupportTicketAssignee", fields: [assignedAdminId], references: [id], onDelete: SetNull)
   messages SupportTicketMessage[]
+  notes    SupportTicketNote[]
 
   /// The customer's own list, most recently active first.
   @@index([customerId, updatedAt])
   /// "Tickets about this enquiry" — and the FK's own lookup on SetNull.
   @@index([enquiryId])
+  /// The admin queue (R91): every ticket, most recently active first, and
+  /// one status tab of it.
+  @@index([updatedAt])
+  @@index([status, updatedAt])
+  /// "Assigned to me" / to one operator, by status.
+  @@index([assignedAdminId, status])
   @@map("support_tickets")
 }
 
@@ -880,6 +894,24 @@ model SupportTicketMessage {
   /// A ticket's conversation in order.
   @@index([ticketId, createdAt])
   @@map("support_ticket_messages")
+}
+
+/// A private note on a ticket (**R91**). Support's own working record —
+/// "called the dealer at 14:32" — and **never** part of the conversation:
+/// a separate table, read only by the console's routes, so no customer query
+/// can select it by accident.
+model SupportTicketNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  ticketId  String   @db.Uuid
+  authorId  String?  @db.Uuid
+  body      String
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User?         @relation("SupportNoteAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId, createdAt])
+  @@map("support_ticket_notes")
 }
 
 enum SupportTicketCategory {

@@ -1538,3 +1538,16 @@ The uniqueness refusal moved with it. A number another user holds can never
 become this user's verified number, so `PHONE_ALREADY_REGISTERED` is raised
 where the claim is made — on step 1, against the box the dealer typed into —
 rather than two steps later when the dealership is created.
+
+## `apps/api/src/modules/auth/roles.ts` — `ensureSeat`
+
+### `db.userRole.createMany({ data: [...], skipDuplicates: true })`
+
+Insert-or-nothing in one statement (`INSERT … ON CONFLICT DO NOTHING`). It was
+a Prisma `upsert` with an empty `update`, which Prisma runs on the compound
+`(userId, role)` key as a read followed by an insert. Two sign-ups for one
+number arriving together — a double tap, two devices — both read "no seat",
+both inserted, and the loser hit `user_roles_userId_role_key` and answered 500.
+It surfaced intermittently as `customer-auth.test.ts`'s race test failing in
+CI; `tests/user-seats.test.ts` reproduces it deterministically. Behaviour is
+otherwise unchanged: an existing seat, open or closed, is never touched.

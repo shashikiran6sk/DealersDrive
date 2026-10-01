@@ -138,17 +138,24 @@ describe('permissionsForAdminRole', () => {
 
   /**
    * Support answers tickets: they read payments, audits, metrics and every
-   * enquiry (R89), and write nothing.
+   * enquiry (R89), and work support tickets (R91) — replying, noting and
+   * moving them — which is the one thing the role exists to write.
    */
-  it('limits SUPPORT to read-only permissions', () => {
+  it('limits SUPPORT to reading, plus working support tickets', () => {
     expect(permissionsForAdminRole('SUPPORT').sort()).toEqual(
-      ['admin:audit:read', 'admin:enquiry:read', 'admin:metrics:read', 'admin:payment:read'].sort(),
+      [
+        'admin:audit:read',
+        'admin:enquiry:read',
+        'admin:metrics:read',
+        'admin:payment:read',
+        'admin:support:manage',
+      ].sort(),
     );
   });
 
-  it('gives SUPPORT no permission whose name implies a write', () => {
+  it('gives SUPPORT no write outside the support desk', () => {
     for (const permission of permissionsForAdminRole('SUPPORT')) {
-      expect(permission).toMatch(/:read$/);
+      expect(permission).toMatch(/:read$|^admin:support:manage$/);
     }
   });
 
