@@ -66,6 +66,10 @@ const config: StorybookConfig = {
         replacement: new URL('../src/mocks/saved-actions.ts', import.meta.url).pathname,
       },
       {
+        find: '@/features/support/support-actions',
+        replacement: new URL('../src/mocks/support-actions.ts', import.meta.url).pathname,
+      },
+      {
         find: '@/features/dealer/listing-lifecycle/actions',
         replacement: new URL('../src/mocks/listing-lifecycle-actions.ts', import.meta.url).pathname,
       },

@@ -92,6 +92,14 @@ export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps)
             >
               {HEADER_ACCOUNT_TEXT.myEnquiries}
             </Link>
+            <Link
+              role="menuitem"
+              href={HEADER_ACCOUNT_TEXT.supportRequestsHref}
+              className={ITEM}
+              onClick={() => setOpen(false)}
+            >
+              {HEADER_ACCOUNT_TEXT.supportRequests}
+            </Link>
             <div role="separator" className={SEPARATOR} />
             <Link
               role="menuitem"

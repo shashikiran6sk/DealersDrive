@@ -1,4 +1,5 @@
 import { ContactLines } from './contact-lines';
+import { SupportRequestCallout } from './support-request-callout';
 import { SupportCard } from './support-card';
 import { SUPPORT_TEXT } from './support-page.constants';
 import type { SupportPageProps } from './support-page.types';
@@ -11,7 +12,12 @@ export function SupportPage({ support }: SupportPageProps) {
       <h1 className="mt-[10px] text-[30px] sm:text-[34px]">{SUPPORT_TEXT.title}</h1>
       <p className="mt-[10px] max-w-[68ch] text-[15px] ink-muted">{SUPPORT_TEXT.intro}</p>
 
-      <div className="mt-[28px] grid grid-cols-1 gap-4 md:grid-cols-3">
+      <SupportRequestCallout />
+
+      <h2 id="support-other-ways" className="mt-[36px] text-[20px]">
+        {SUPPORT_TEXT.otherWays}
+      </h2>
+      <div className="mt-[14px] grid grid-cols-1 gap-4 md:grid-cols-3">
         <SupportCard
           icon="customer"
           headingId="support-customer"
