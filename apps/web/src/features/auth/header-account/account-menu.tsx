@@ -7,12 +7,9 @@ import { useRef, useState, type KeyboardEvent } from 'react';
 import { personInitials } from '@/lib/person';
 
 import { HEADER_ACCOUNT_TEXT } from './header-account.constants';
+import { MENU_ITEM, MENU_SEPARATOR } from './header-account.styles';
 import type { AccountMenuProps } from './header-account.types';
-
-const ITEM =
-  'flex min-h-[44px] w-full items-center rounded-[8px] px-[12px] text-left text-[14px] font-bold text-(--color-ink) no-underline outline-none hover:bg-(--color-neutral-100) focus-visible:bg-(--color-neutral-150) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--color-focus) disabled:opacity-45';
-
-const SEPARATOR = 'my-[4px] border-t border-(--color-divider)';
+import { WorkspaceItems } from './workspace-items';
 
 function moveFocus(menu: HTMLElement | null, key: string): boolean {
   const items = Array.from(menu?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
@@ -33,7 +30,13 @@ function moveFocus(menu: HTMLElement | null, key: string): boolean {
   return true;
 }
 
-export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps) {
+export function AccountMenu({
+  account,
+  onLogout,
+  loggingOut,
+  onEnterWorkspace,
+  enteringWorkspace = null,
+}: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const menu = useRef<HTMLDivElement>(null);
   const initials = personInitials(account.fullName);
@@ -79,7 +82,7 @@ export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps)
             <Link
               role="menuitem"
               href={HEADER_ACCOUNT_TEXT.savedCarsHref}
-              className={ITEM}
+              className={MENU_ITEM}
               onClick={() => setOpen(false)}
             >
               {HEADER_ACCOUNT_TEXT.savedCars}
@@ -87,7 +90,7 @@ export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps)
             <Link
               role="menuitem"
               href={HEADER_ACCOUNT_TEXT.myEnquiriesHref}
-              className={ITEM}
+              className={MENU_ITEM}
               onClick={() => setOpen(false)}
             >
               {HEADER_ACCOUNT_TEXT.myEnquiries}
@@ -95,26 +98,24 @@ export function AccountMenu({ account, onLogout, loggingOut }: AccountMenuProps)
             <Link
               role="menuitem"
               href={HEADER_ACCOUNT_TEXT.supportRequestsHref}
-              className={ITEM}
+              className={MENU_ITEM}
               onClick={() => setOpen(false)}
             >
               {HEADER_ACCOUNT_TEXT.supportRequests}
             </Link>
-            <div role="separator" className={SEPARATOR} />
-            <Link
-              role="menuitem"
-              href={HEADER_ACCOUNT_TEXT.dealerLoginHref}
-              className={ITEM}
-              onClick={() => setOpen(false)}
-            >
-              {HEADER_ACCOUNT_TEXT.dealerLogin}
-            </Link>
-            <div role="separator" className={SEPARATOR} />
+            <div role="separator" className={MENU_SEPARATOR} />
+            <WorkspaceItems
+              workspaces={account.workspaces ?? []}
+              entering={enteringWorkspace}
+              onEnter={(membershipId) => onEnterWorkspace?.(membershipId)}
+              onNavigate={() => setOpen(false)}
+            />
+            <div role="separator" className={MENU_SEPARATOR} />
             <button
               role="menuitem"
               type="button"
               disabled={loggingOut}
-              className={ITEM}
+              className={MENU_ITEM}
               onClick={() => {
                 onLogout();
               }}

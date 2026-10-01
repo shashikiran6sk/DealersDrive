@@ -40,6 +40,7 @@ import {
   type PhoneSignInService,
 } from './modules/auth/phone-sign-in.service.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
+import { createWorkspaceService, type WorkspaceService } from './modules/auth/workspace.service.js';
 import {
   createDealersPublicService,
   type DealersPublicService,
@@ -116,6 +117,7 @@ export interface Container {
   readonly support: SupportService;
   readonly adminSupport: AdminSupportService;
   readonly customers: CustomerAuthService;
+  readonly workspaces: WorkspaceService;
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
   readonly admin: AdminService;
@@ -187,6 +189,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     cache,
     audit,
   });
+  const workspaces = createWorkspaceService({ prisma, sessions: sessionStore, audit });
   const phoneSignIn = createPhoneSignInService({
     prisma,
     sessions: sessionStore,
@@ -235,6 +238,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     phone,
     phoneSignIn,
     customers,
+    workspaces,
     dealers,
     dealersPublic,
     admin,

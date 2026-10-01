@@ -120,19 +120,25 @@ enum UserRoleStatus {
 }
 
 model Session {
-  id        String       @id @default(uuid()) @db.Uuid
-  userId    String       @db.Uuid
-  tokenHash String       @unique
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @db.Uuid
+  tokenHash      String       @unique
   /// A dealer session can never satisfy `requireAdmin`, and an admin session can
   /// never satisfy `requireDealer` — even when one human holds both seats.
-  scope     SessionScope @default(DEALER)
-  expiresAt DateTime
-  revokedAt DateTime?
-  ip        String?
-  userAgent String?
-  createdAt DateTime     @default(now())
+  scope          SessionScope @default(DEALER)
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  ip             String?
+  userAgent      String?
+  /// The dealership this session is working in (**R93**), for a person who
+  /// belongs to more than one. A preference, never a grant: the membership is
+  /// re-read on every request, and a dealership this person can no longer
+  /// enter is skipped as if this were NULL.
+  activeDealerId String?      @db.Uuid
+  createdAt      DateTime     @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeDealer Dealer? @relation(fields: [activeDealerId], references: [id], onDelete: SetNull)
 
   @@index([userId, revokedAt])
   @@index([expiresAt])
@@ -271,6 +277,7 @@ model Dealer {
   createdAt          DateTime     @default(now())
 
   members       DealerMember[]
+  sessions      Session[]
   documents     DealerDocument[]
   profileEdits  DealerProfileChange[]
   notifications NotificationDelivery[]

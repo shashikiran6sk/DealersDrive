@@ -4,4 +4,11 @@ export interface AccountMenuProps {
   account: CustomerAccount;
   onLogout: () => void;
   loggingOut: boolean;
+  onEnterWorkspace?: (membershipId: string) => void;
+  enteringWorkspace?: string | null;
+}
+
+export interface HeaderAccountProps {
+  initialAccount?: CustomerAccount | null;
+  afterLogoutHref?: string;
 }

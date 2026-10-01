@@ -7,6 +7,7 @@ import {
   createCustomerAuthRouter,
   createPublicAuthRouter,
   createSessionAuthRouter,
+  createWorkspacesRouter,
 } from './modules/auth/auth.routes.js';
 import { createAdminEnquiriesRouter } from './modules/enquiries/enquiries.admin.routes.js';
 import { createDealerEnquiriesRouter } from './modules/enquiries/enquiries.dealer.routes.js';
@@ -59,6 +60,11 @@ export function createRoutes(container: Container): Router {
     '/auth/customer',
     container.guards.requireCustomer,
     createCustomerAuthRouter(container.customers),
+  );
+  v1.use(
+    '/auth/workspaces',
+    container.guards.requireCustomer,
+    createWorkspacesRouter(container.workspaces),
   );
   v1.use(
     '/enquiries',

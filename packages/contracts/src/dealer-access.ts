@@ -1,4 +1,7 @@
-import type { DealerRole, EnquiryStatus } from './enums.js';
+import { z } from 'zod';
+
+import { Uuid } from './common.js';
+import { DealerRole, DealerStatus, type EnquiryStatus } from './enums.js';
 
 /**
  * ── R92 · what each member of a dealership may do ──────────────────────────
@@ -99,3 +102,36 @@ export const DEALER_ROLE_LABELS: Record<DealerRole, string> = {
   MANAGER: 'Manager',
   STAFF: 'Staff',
 };
+
+/**
+ * ── R93 · one account, several contexts ─────────────────────────────────────
+ *
+ * A signed-in person is a customer, and also a member of zero or more
+ * dealerships. Entering a dealership's console is a choice among the person's
+ * own memberships, made with the session they already have — never a second
+ * sign-in, and never a second session.
+ */
+export const DealerWorkspace = z.object({
+  /** What `PUT /v1/auth/workspaces/current` takes — never a dealer id (rule 1). */
+  membershipId: Uuid,
+  dealer: z.object({
+    id: Uuid,
+    slug: z.string(),
+    brandName: z.string(),
+    status: DealerStatus,
+  }),
+  role: DealerRole,
+  roleLabel: z.string(),
+  /** False while the dealership is suspended: listed, so the person knows why, but closed. */
+  enterable: z.boolean(),
+  /** The dealership `/dealer` opens for this session. */
+  current: z.boolean(),
+});
+export type DealerWorkspace = z.infer<typeof DealerWorkspace>;
+
+export const DealerWorkspacesResponse = z.object({ data: z.array(DealerWorkspace) });
+export type DealerWorkspacesResponse = z.infer<typeof DealerWorkspacesResponse>;
+
+/** Choose which of the person's own dealerships this session works in. */
+export const SelectWorkspaceInput = z.object({ membershipId: Uuid }).strict();
+export type SelectWorkspaceInput = z.infer<typeof SelectWorkspaceInput>;

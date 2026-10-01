@@ -13,12 +13,18 @@ import {
 } from '@/components/dealer/console-nav';
 import { ButtonLink } from '@/components/ui/button';
 import { Blueprint, Plate, StatusTag } from '@/components/ui/primitives';
+import { customerAccountAction } from '@/features/auth/customer-account-actions';
+import { HeaderAccount } from '@/features/auth/header-account';
 import { SignOutButton } from '@/features/auth/sign-out';
 import { apiGet } from '@/lib/api';
-import { currentSession } from '@/lib/session';
+import { currentSession, hasSession } from '@/lib/session';
 import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+const HOME_HREF = '/';
+const DEALER_LOGIN_HREF = '/login?as=dealer';
+const SESSION_EXPIRED_HREF = '/dealer/login?error=session_expired';
 
 export const metadata: Metadata = {
   title: { default: 'Dealer console', template: '%s · Dealer console' },
@@ -27,6 +33,7 @@ export const metadata: Metadata = {
 
 export default async function DealerLayout({ children }: { children: ReactNode }) {
   const dealer = await requireDealer();
+  const account = await customerAccountAction();
 
   return (
     <div className="flex min-h-dvh bg-white">
@@ -70,7 +77,11 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="max-md:hidden">
             {ADD_VEHICLE_LABEL}
           </ButtonLink>
-          <SignOutButton />
+          {account ? (
+            <HeaderAccount initialAccount={account} afterLogoutHref={HOME_HREF} />
+          ) : (
+            <SignOutButton />
+          )}
         </header>
 
         <main className="min-w-0 flex-1 pb-[60px] md:pb-0">{children}</main>
@@ -83,7 +94,9 @@ export default async function DealerLayout({ children }: { children: ReactNode }
 
 async function requireDealer(): Promise<DealerProfile> {
   const session = await currentSession();
-  if (!session) redirect('/dealer/login?error=session_expired');
+  if (!session) {
+    redirect((await hasSession()) ? DEALER_LOGIN_HREF : SESSION_EXPIRED_HREF);
+  }
   if (session.next === 'ONBOARDING') redirect('/dealer/onboarding');
 
   return apiGet<DealerProfile>('/v1/dealer', { revalidate: false });

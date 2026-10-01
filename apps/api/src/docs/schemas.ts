@@ -65,6 +65,7 @@ const INPUT_SCHEMA_NAMES = [
   'SitemapQuery',
   'DealerVehicleQuery',
   'VehicleSlugParam',
+  'SelectWorkspaceInput',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

@@ -25,6 +25,17 @@ A dealer whose account has a proved number and a name counts as that customer
 (R62), so a dealer browsing the marketplace sees their own name here, and
 Logout ends that one session.
 
+**R93.** The person's dealerships come back with the account, from
+`GET /v1/auth/workspaces`, in the same round trip. A failure there is an empty
+list rather than a failed account: the menu falls back to Dealer Login, which
+is still correct for everyone it could be wrong about.
+
+### `export async function enterWorkspaceAction(membershipId: string): Promise<void>`
+
+Enters a dealership with the session the person already has (**R93**):
+`PUT /v1/auth/workspaces/current` with the membership, then the console. No
+OTP, no Google, no new cookie — the whole of "one login".
+
 ### `export async function customerLogoutAction(): Promise<void>`
 
 `POST /v1/auth/customer/logout` revokes the session row, then the cookie is
@@ -52,3 +63,20 @@ that link.
 
 "Hi, Asha" rather than "Hi, Asha Menon": the header is a greeting, not an
 account label, and a long name would crowd the district chip.
+
+## `apps/web/src/features/auth/header-account/workspace-items.tsx`
+
+### `export function WorkspaceItems(`
+
+The menu's dealerships (**R93**). One item per enterable membership — the
+dealership's name, then "Dealer dashboard · role" — and the one this session is
+working in marked `aria-current`. A suspended dealership is listed as text, not
+as an item: the person should see why it is missing, but there is nothing to
+press. Somebody with no dealership sees Dealer Login instead, which goes to the
+Dealer tab of `/login` rather than through `/dealer` and its "session expired"
+error.
+
+The same menu is in the dealer console's top bar, given the account by the
+server layout (`initialAccount`), so the personal links and the other
+dealerships are one click away from inside the console, and Logout there goes
+home rather than to a login screen.
