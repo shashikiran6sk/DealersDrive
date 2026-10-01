@@ -16,15 +16,14 @@ export function EnquiryStatusActions({
   permissions,
 }: EnquiryStatusActionsProps) {
   const [pending, startTransition] = useTransition();
+  const [moving, setMoving] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const moves = ENQUIRY_MOVES[status].filter(
     (move) =>
       permissions === undefined ||
       canDealer(permissions, enquiryTransitionPermission(status, move.to)),
   );
   if (moves.length === 0) return null;
-
-  const [moving, setMoving] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="ml-auto flex flex-col items-end gap-[4px]">
