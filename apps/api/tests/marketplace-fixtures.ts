@@ -90,6 +90,33 @@ export function marketplaceFixtures(h: AuthHarness, label: string) {
     return { agent, dealerId, userId: member.userId, slug: created.body.dealer.slug as string };
   }
 
+  /**
+   * A second person in an existing dealership (**R92**), signed in through the
+   * real dealer phone sign-in. The membership row is written directly — the
+   * invitation flow that produces it in production has its own suite.
+   */
+  async function member(of: Dealership, role: 'OWNER' | 'MANAGER' | 'STAFF'): Promise<Dealership> {
+    const n = next();
+    const phone = `96${String(Date.now()).slice(-5)}${String(100 + n).slice(-3)}`;
+    const agent = h.agent();
+    await agent
+      .post('/v1/auth/sign-in/phone/dealer')
+      .send({
+        phone,
+        accessToken: `dev-otp:91${phone}:${env.PHONE_OTP_DEV_CODE}:${label}-member-${String(n)}`,
+      })
+      .expect(200);
+    const user = await h.prisma.user.findUniqueOrThrow({ where: { phone: `+91${phone}` } });
+    await h.prisma.user.update({
+      where: { id: user.id },
+      data: { fullName: `${role[0]}${role.slice(1).toLowerCase()} ${String(n)}` },
+    });
+    await h.prisma.dealerMember.create({
+      data: { dealerId: of.dealerId, userId: user.id, role, permissions: [] },
+    });
+    return { agent, dealerId: of.dealerId, userId: user.id, slug: of.slug };
+  }
+
   async function moderator(): Promise<request.Agent> {
     const n = next();
     h.google.claims = {
@@ -103,5 +130,5 @@ export function marketplaceFixtures(h: AuthHarness, label: string) {
     return agent;
   }
 
-  return { dealership, moderator };
+  return { dealership, member, moderator };
 }

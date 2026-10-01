@@ -188,7 +188,7 @@ export const vehiclesDocs: ModuleDocs = {
         'row is locked and the new state is written with the old one in the `WHERE`, so two ' +
         'moves racing on one car land one and refuse the other with `409 LISTING_STATE_CHANGED`.',
       audience: 'dealer',
-      permission: 'listing:submit',
+      permission: 'listing:reserve',
       requiresActiveDealer: true,
       params: 'IdParam',
       responses: [
@@ -216,7 +216,7 @@ export const vehiclesDocs: ModuleDocs = {
         'reserved car is closed (`CANCELLED`) by the sale. Anything but an active or reserved car is a ' +
         '`409 LISTING_NOT_SELLABLE`.',
       audience: 'dealer',
-      permission: 'listing:submit',
+      permission: 'listing:sell',
       requiresActiveDealer: true,
       params: 'IdParam',
       responses: [
@@ -242,7 +242,7 @@ export const vehiclesDocs: ModuleDocs = {
         'Both are the dealership’s own record and appear in no public response. Anything but an ' +
         'active car is a `409 LISTING_NOT_WITHDRAWABLE`.',
       audience: 'dealer',
-      permission: 'listing:submit',
+      permission: 'listing:withdraw',
       requiresActiveDealer: true,
       params: 'IdParam',
       requestBody: {
@@ -275,7 +275,7 @@ export const vehiclesDocs: ModuleDocs = {
         'request already waiting on the same listing is a `409 REACTIVATION_ALREADY_PENDING` ' +
         '(one pending request per listing is also a database constraint).',
       audience: 'dealer',
-      permission: 'listing:submit',
+      permission: 'listing:reactivate',
       requiresActiveDealer: true,
       params: 'IdParam',
       requestBody: {

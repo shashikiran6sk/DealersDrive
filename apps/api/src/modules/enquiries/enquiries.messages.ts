@@ -16,6 +16,9 @@ export const ENQUIRY_RATE_LIMITED =
 
 export const ENQUIRY_NOT_FOUND = 'That enquiry is not in your inbox.';
 
+export const ENQUIRY_TRANSITION_FORBIDDEN =
+  'Your role can mark a new enquiry as contacted, but closing or reopening one is for a manager or the owner.';
+
 export const ADMIN_ENQUIRY_NOT_FOUND = 'There is no enquiry with that id.';
 
 export const ENQUIRY_HISTORY_LABELS: Record<string, string> = {

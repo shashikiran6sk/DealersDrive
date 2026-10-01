@@ -573,17 +573,14 @@ held by the same person is resolved by `resolveAdmin` below, against its
 
 own seat, and is unaffected by whatever happened to this one.
 
-### `if (membership.dealer.status === 'SUSPENDED') return null`
+### `const { membership, suspended } = await findWorkspaceMembership(prisma, session.userId)`
 
-Account status is the primary block, and this dealer-status check is the
-
-### `if (membership.dealer.status === 'SUSPENDED') return null`
-
-backstop if a legacy or manually changed row was suspended before its
-
-### `if (membership.dealer.status === 'SUSPENDED') return null`
-
-member account was updated.
+Which dealership this person is working in (**R92**). The first active
+membership whose dealership is not suspended, oldest first — so a person in
+two dealerships keeps working in the other when one is suspended. If every
+membership they hold is in a suspended dealership, the answer is null rather
+than PENDING: a suspended dealer is not a dealer mid-onboarding, and must not
+be offered the wizard.
 
 ### `async resolveAdmin(req): Promise<AdminPrincipal | null>`
 
@@ -1263,11 +1260,28 @@ needs: the dealership lookup, the suspension refusal and the return path.
 a path or nothing — and ignored entirely while the dealer still belongs in
 onboarding.
 
-### `if (membership?.dealer.status === 'SUSPENDED')`
+### `if (suspended)`
 
-The seat check each caller makes first handles suspensions performed by the
-current admin workflow. This dealer-status guard also blocks legacy or
-manually suspended rows whose member seat was never closed.
+Since **R92** this is the suspension check, not a backstop: the admin workflow
+no longer closes member seats, so the dealership's own status is what refuses
+a sign-in. Refused only when _every_ dealership the person belongs to is
+suspended; a person in two keeps the other.
+
+## `apps/api/src/modules/auth/membership.ts`
+
+### `export async function findWorkspaceMembership(`
+
+The one answer to "which dealership is this person working in", shared by the
+session resolver and the post-sign-in destination so the two cannot disagree
+(**R92**). Oldest membership first, by `createdAt` and then `id`, so the
+choice is deterministic; the `(userId, status)` index makes it one indexed
+read per dealer request.
+
+### `export function isEnterable(membership: MembershipWithDealer): boolean`
+
+An ACTIVE membership in a dealership that is not SUSPENDED. A REMOVED or
+INVITED row never qualifies, so removing a member shuts the dealership to
+them on their next request without touching their session.
 
 ## `apps/api/src/modules/auth/roles.ts`
 

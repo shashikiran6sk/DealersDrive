@@ -66,8 +66,8 @@ describe('the exported surface', () => {
   });
 
   it('derives permissions from a role rather than accepting a list', () => {
-    expect(auth.permissionsForRole('SALES')).toContain('vehicle:read');
-    expect(auth.permissionsForRole('SALES')).not.toContain('billing:purchase');
+    expect(auth.permissionsForRole('STAFF')).toContain('vehicle:read');
+    expect(auth.permissionsForRole('STAFF')).not.toContain('billing:purchase');
   });
 });
 

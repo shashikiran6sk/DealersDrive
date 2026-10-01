@@ -14,7 +14,7 @@ import { handle, type VehiclesRoute } from './route.js';
 export const postVehicleRequestReactivation: VehiclesRoute = (router, service) => {
   router.post(
     '/vehicles/:id/request-reactivation',
-    requirePermission('listing:submit'),
+    requirePermission('listing:reactivate'),
     requireDealerActive,
     validate({ params: IdParam, body: RequestReactivationInput }),
     handle((req) =>

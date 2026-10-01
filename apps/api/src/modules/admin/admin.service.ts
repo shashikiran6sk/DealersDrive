@@ -708,20 +708,13 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
         const listings = 0;
 
-        if (memberUserIds.length > 0) {
+        if (status === 'ACTIVE' && memberUserIds.length > 0) {
           await setSeatStatus(tx, {
             userIds: memberUserIds,
             role: 'DEALER',
-            status: status === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE',
+            status: 'ACTIVE',
             reason,
           });
-
-          if (status === 'SUSPENDED') {
-            await tx.session.updateMany({
-              where: { userId: { in: memberUserIds }, scope: 'DEALER', revokedAt: null },
-              data: { revokedAt: new Date() },
-            });
-          }
         }
 
         await audit.record(tx, {

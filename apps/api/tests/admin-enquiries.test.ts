@@ -248,7 +248,17 @@ describe('filters and search', () => {
 
   it('ignores a blank search, and does not read two digits as a phone number', async () => {
     expect(ids(await list('?q=%20%20'))).toEqual(expect.arrayContaining([meeraOnA, arjunOnB]));
-    const twoDigits = await list(`?q=${meera.phone.slice(-2)}&dealer=${a.slug}`);
+    // Two digits that are in Meera's number but nowhere else on the row. The
+    // fixture dealership's name carries a timestamp, and a pair that happened
+    // to occur in it would match by name and prove nothing about the phone.
+    const dealer = await h.prisma.dealer.findUniqueOrThrow({ where: { id: a.dealerId } });
+    const elsewhere = `${dealer.brandName} ${dealer.slug} ${carA.plate} 2021`;
+    const pair =
+      [...Array(meera.phone.length - 1).keys()]
+        .map((at) => meera.phone.slice(at, at + 2))
+        .find((candidate) => /^\d\d$/.test(candidate) && !elsewhere.includes(candidate)) ??
+      meera.phone.slice(-2);
+    const twoDigits = await list(`?q=${pair}&dealer=${a.slug}`);
     expect(ids(twoDigits)).not.toContain(meeraOnA);
   });
 

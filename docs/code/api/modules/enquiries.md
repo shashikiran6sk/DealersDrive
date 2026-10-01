@@ -56,6 +56,22 @@ listing, serialises exactly that pair for the length of the transaction —
 so the second press sees the first enquiry and is refused — without making
 unrelated enquiries wait for each other.
 
+### `const needed = enquiryTransitionPermission(current.status, input.status)`
+
+**R92.** Checked inside the transaction, after the row is locked and found to
+be this dealership's, because the permission depends on the status the
+enquiry _has_: STAFF may move NEW to CONTACTED, but pulling a closed enquiry
+back to CONTACTED undoes a manager's decision and needs `enquiry:close`. The
+route's own `requirePermission('enquiry:contact')` is the floor; this is the
+rest. Another dealership's enquiry is a 404 before this line is reached, so a
+403 never confirms that an id is real.
+
+### `function stampsFor(`
+
+`contactedById` is written with `contactedAt` — the first time, and kept
+after — and `closedById` with `closedAt`, cleared on reopening. The audit log
+still records every move; these two columns are what the inbox shows.
+
 ### `export const BLOCKING_STATUSES = ['NEW', 'CONTACTED', 'SPAM']`
 
 **One open enquiry per customer per car (R68)**, replacing R64's 24-hour

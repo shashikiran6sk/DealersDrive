@@ -44,7 +44,7 @@ interface DealerRow {
   id: string;
   slug: string;
   status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
-  members: { userId: string; role: 'OWNER' | 'MANAGER' | 'SALES' }[];
+  members: { userId: string; role: 'OWNER' | 'MANAGER' | 'STAFF' }[];
 }
 
 interface UserRow {

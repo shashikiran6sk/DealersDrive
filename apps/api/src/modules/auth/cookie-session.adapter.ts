@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 import type { Request } from 'express';
 
 import { isAllowlistedAdmin } from './admin-allowlist.js';
+import { findWorkspaceMembership } from './membership.js';
 import { hasGrantedSeat, isSeatSuspended } from './roles.js';
 import { readSessionToken } from './session.cookie.js';
 import type { SessionService } from './session.service.js';
@@ -24,11 +25,8 @@ export function createCookieSessionResolver(
 
     if (isSeatSuspended(session.user.roles, 'DEALER')) return null;
 
-    const membership = await prisma.dealerMember.findFirst({
-      where: { userId: session.userId, status: 'ACTIVE' },
-      include: { dealer: true },
-      orderBy: { id: 'asc' },
-    });
+    const { membership, suspended } = await findWorkspaceMembership(prisma, session.userId);
+    if (suspended) return null;
 
     if (!membership) {
       return {
@@ -41,8 +39,6 @@ export function createCookieSessionResolver(
         permissions: [],
       };
     }
-
-    if (membership.dealer.status === 'SUSPENDED') return null;
 
     return {
       kind: 'DEALER',

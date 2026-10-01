@@ -274,21 +274,22 @@ describe('one dealership cannot reach another’s vehicle', () => {
 });
 
 describe('seats', () => {
-  it('lets a salesperson read but not write', async () => {
-    const sales = await fixtures.dealership();
-    const { id } = await draft(sales);
+  /** R92: STAFF prepare drafts; throwing one away is a manager's call. */
+  it('lets STAFF read, create and edit drafts, but not delete them', async () => {
+    const staff = await fixtures.dealership();
+    const { id } = await draft(staff);
     await h.prisma.dealerMember.updateMany({
-      where: { dealerId: sales.dealerId },
-      data: { role: 'SALES' },
+      where: { dealerId: staff.dealerId },
+      data: { role: 'STAFF' },
     });
 
-    await sales.agent.get(`/v1/dealer/vehicles/${id}`).expect(200);
-    await sales.agent.patch(`/v1/dealer/vehicles/${id}`).send({ make: 'Tata' }).expect(403);
-    await sales.agent
+    await staff.agent.get(`/v1/dealer/vehicles/${id}`).expect(200);
+    await staff.agent.patch(`/v1/dealer/vehicles/${id}`).send({ make: 'Tata' }).expect(200);
+    await staff.agent
       .post('/v1/dealer/vehicles')
       .send({ registrationNumber: nextPlate() })
-      .expect(403);
-    await sales.agent.delete(`/v1/dealer/vehicles/${id}`).expect(403);
+      .expect(201);
+    await staff.agent.delete(`/v1/dealer/vehicles/${id}`).expect(403);
   });
 });
 
