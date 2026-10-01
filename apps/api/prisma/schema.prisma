@@ -802,6 +802,9 @@ model Enquiry {
   @@index([customerId, listingId, createdAt])
   /// The listing's own enquiries, and the cascade when a listing goes.
   @@index([listingId])
+  /// Admin oversight (R89): every enquiry newest first, and one status tab.
+  @@index([createdAt])
+  @@index([status, createdAt])
   @@map("enquiries")
 }
 

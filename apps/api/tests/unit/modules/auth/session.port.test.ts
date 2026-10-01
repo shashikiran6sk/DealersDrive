@@ -136,10 +136,13 @@ describe('permissionsForAdminRole', () => {
     expect(moderator).not.toContain('admin:payment:refund');
   });
 
-  /** Support answers tickets: they read payments, audits and metrics, and write nothing. */
+  /**
+   * Support answers tickets: they read payments, audits, metrics and every
+   * enquiry (R89), and write nothing.
+   */
   it('limits SUPPORT to read-only permissions', () => {
     expect(permissionsForAdminRole('SUPPORT').sort()).toEqual(
-      ['admin:audit:read', 'admin:metrics:read', 'admin:payment:read'].sort(),
+      ['admin:audit:read', 'admin:enquiry:read', 'admin:metrics:read', 'admin:payment:read'].sort(),
     );
   });
 

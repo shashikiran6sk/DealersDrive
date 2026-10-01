@@ -5,6 +5,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: '/admin/listings', label: 'Listings' },
   { href: '/admin/dealers', label: 'Dealers' },
   { href: '/admin/payments', label: 'Payments' },
+  { href: '/admin/enquiries', label: 'Enquiries' },
   { href: '/admin/config', label: 'Configuration' },
 ];
 

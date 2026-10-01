@@ -8,6 +8,7 @@ import {
   createPublicAuthRouter,
   createSessionAuthRouter,
 } from './modules/auth/auth.routes.js';
+import { createAdminEnquiriesRouter } from './modules/enquiries/enquiries.admin.routes.js';
 import { createDealerEnquiriesRouter } from './modules/enquiries/enquiries.dealer.routes.js';
 import { createEnquiriesRouter } from './modules/enquiries/enquiries.routes.js';
 import { createSavedVehiclesRouter } from './modules/saved-vehicles/saved-vehicles.routes.js';
@@ -85,6 +86,7 @@ export function createRoutes(container: Container): Router {
   admin.use(createAdminRouter(container.admin));
   admin.use(createModerationRouter(container.moderation));
   admin.use(createVehicleImagesRouter(container.vehicleImages));
+  admin.use(createAdminEnquiriesRouter(container.adminEnquiries));
   v1.use('/admin', admin);
 
   router.use('/v1', v1);

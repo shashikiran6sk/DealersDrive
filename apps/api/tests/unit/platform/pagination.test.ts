@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   decodeCursor,
+  decodeKeysetCursor,
   decodeSeqCursor,
   encodeCursor,
+  encodeKeysetCursor,
   encodeSeqCursor,
 } from '../../../src/platform/pagination.js';
 import { ConflictError } from '../../../src/platform/errors.js';
@@ -81,5 +83,26 @@ describe('encodeSeqCursor / decodeSeqCursor', () => {
     const cursor = Buffer.from('1 OR 1=1').toString('base64url');
 
     expect(() => decodeSeqCursor(cursor)).toThrow(/not valid/i);
+  });
+});
+
+describe('encodeKeysetCursor / decodeKeysetCursor', () => {
+  const id = '6f1c2a3b-4d5e-4f60-8a71-92b3c4d5e6f7';
+
+  it('round-trips a moment and the id that breaks a tie on it', () => {
+    const at = new Date('2026-09-26T09:00:00.123Z');
+    expect(decodeKeysetCursor(encodeKeysetCursor(at, id))).toEqual({ at, id });
+  });
+
+  it.each([
+    ['plain garbage', 'not-a-cursor'],
+    ['a date with no id', Buffer.from('2026-09-26T09:00:00.000Z').toString('base64url')],
+    [
+      'an id that is not one',
+      Buffer.from('2026-09-26T09:00:00.000Z|1 OR 1=1').toString('base64url'),
+    ],
+    ['an id with no date', Buffer.from(`|${id}`).toString('base64url')],
+  ])('refuses %s', (_label, cursor) => {
+    expect(() => decodeKeysetCursor(cursor)).toThrow(ConflictError);
   });
 });

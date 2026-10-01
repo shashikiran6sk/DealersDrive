@@ -150,12 +150,16 @@ describe('the admin nav', () => {
     expect(LANDED_ADMIN_NAV.map((item) => item.href)).not.toContain('/admin/payments');
   });
 
-  /** **F048.** The first item finally points at a page. */
-  it('offers the dashboard, the listings queue, the dealers list and the settings screen', () => {
+  /**
+   * **F048.** The first item finally points at a page. **R89** adds Enquiries,
+   * immediately above Configuration.
+   */
+  it('offers the dashboard, the listings queue, the dealers list, enquiries and the settings screen', () => {
     expect(LANDED_ADMIN_NAV.map((item) => item.href)).toEqual([
       '/admin',
       '/admin/listings',
       '/admin/dealers',
+      '/admin/enquiries',
       '/admin/config',
     ]);
   });

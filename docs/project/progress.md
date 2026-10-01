@@ -258,6 +258,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R86 — The login's Customer/Dealer switch is aligned to the left of the form · layout only (`justify-end` → `justify-start` on the tablist); no auth change
 - [x] R87 — Previous / next arrows on the vehicle page's main photograph · revises R49 · one gallery `index` drives the hero, the strip's current thumbnail and the lightbox; the hero arrows reuse the lightbox's wrapping `step`; none for a single photo
 - [x] R88 — The card and vehicle-page titles no longer repeat the year the plate shows · `VehicleName` + contracts `titleWithoutYear`; the year stays in the accessible name; `title` unchanged everywhere else (SEO, alt, console)
+- [~] R89 — Admins see every enquiry, read-only · revises R64/R66/R68 · `GET /v1/admin/enquiries` (status tabs, search by customer/mobile/dealer/car/plate, dealer, IST day range, keyset paging) + `/:id` (customer, dealer, car, audit-trail history); `admin:enquiry:read`; two indexes; `/admin/enquiries` + detail; no admin write, the dealer's inbox stays the only place status moves
 
 ---
 
