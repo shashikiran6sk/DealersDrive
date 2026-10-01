@@ -81,7 +81,7 @@ async function completeDraft(by: Dealership): Promise<string> {
 
 async function customer(): Promise<request.Agent> {
   counter += 1;
-  const phone = `98466${String(10000 + counter).slice(-5)}`;
+  const phone = `94377${String(10000 + counter).slice(-5)}`;
   const agent = h.agent();
   const proved = await agent
     .post('/v1/auth/sign-in/phone/customer')

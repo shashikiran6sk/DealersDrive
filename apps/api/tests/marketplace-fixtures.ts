@@ -97,7 +97,7 @@ export function marketplaceFixtures(h: AuthHarness, label: string) {
    */
   async function member(of: Dealership, role: 'OWNER' | 'MANAGER' | 'STAFF'): Promise<Dealership> {
     const n = next();
-    const phone = `96${String(Date.now()).slice(-5)}${String(100 + n).slice(-3)}`;
+    const phone = `93${String(Date.now()).slice(-5)}${String(100 + n).slice(-3)}`;
     const agent = h.agent();
     await agent
       .post('/v1/auth/sign-in/phone/dealer')
