@@ -17,6 +17,9 @@ export const HEADER_ACCOUNT_TEXT = {
   workspaceSuspended: 'Suspended — dealer access is closed',
   workspacesLabel: 'Your dealerships',
   opening: 'Opening…',
+  invitations: (count: number) =>
+    count === 1 ? 'Dealership invitation · 1' : `Dealership invitations · ${String(count)}`,
+  invitationsHref: '/invitations',
   menuLabel: (name: string) => `Account menu for ${name}`,
   menuItemsLabel: 'Account',
 } as const;

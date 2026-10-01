@@ -277,6 +277,7 @@ model Dealer {
   createdAt          DateTime     @default(now())
 
   members       DealerMember[]
+  invitations   DealerInvitation[]
   sessions      Session[]
   documents     DealerDocument[]
   profileEdits  DealerProfileChange[]
@@ -330,6 +331,14 @@ model DealerMember {
   role        DealerRole
   permissions String[]
   status      MemberStatus @default(ACTIVE)
+  /// Who brought them in (**R94**): the owner whose invitation they accepted.
+  /// NULL for an OWNER created by onboarding.
+  invitedBy   String?      @db.Uuid
+  /// Set when an owner removes them. The row stays — the audit trail and the
+  /// `contactedBy` of enquiries they worked still point at a person — and an
+  /// invitation accepted later reactivates it rather than adding a second.
+  removedAt   DateTime?
+  removedBy   String?      @db.Uuid
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now()) @updatedAt
 
@@ -344,6 +353,56 @@ model DealerMember {
   /// The team list.
   @@index([dealerId, status])
   @@map("dealer_members")
+}
+
+/// An owner's invitation to a mobile number (**R94**).
+///
+/// Held against the **number**, not an account: whoever next proves that number
+/// with the ordinary sign-in may accept it, whether they have used Dealers-Drive
+/// before or not. There is no token, so nothing can be forwarded or replayed;
+/// acceptance compares this number with the session's verified one.
+///
+/// ⚠️ A **partial unique index** not expressible here keeps one invitation
+/// waiting per number per dealership:
+///
+///     UNIQUE (dealerId, phone) WHERE status = 'PENDING'
+///
+/// Inviting a number again amends that row — a new role, a fresh expiry —
+/// rather than adding a second. See `migrations/20261002110000_dealer_invitations`.
+model DealerInvitation {
+  id          String           @id @default(uuid()) @db.Uuid
+  dealerId    String           @db.Uuid
+  /// Canonical `+91…`, the form `users.phone` holds.
+  phone       String
+  role        DealerRole
+  status      InvitationStatus @default(PENDING)
+  invitedBy   String?          @db.Uuid
+  expiresAt   DateTime
+  /// The person who accepted or declined it.
+  respondedBy String?          @db.Uuid
+  respondedAt DateTime?
+  revokedBy   String?          @db.Uuid
+  revokedAt   DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @default(now()) @updatedAt
+
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  /// "Invitations waiting for this number" — read when a person signs in.
+  @@index([phone, status])
+  /// The Team page.
+  @@index([dealerId, status, createdAt])
+  @@map("dealer_invitations")
+}
+
+/// EXPIRED is written lazily: a PENDING row past `expiresAt` is treated as
+/// expired by every read, and stored as such the next time it is touched.
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+  EXPIRED
 }
 
 // ─────────── KYC DOCUMENTS (onboarding step 3) ───────────────────────────

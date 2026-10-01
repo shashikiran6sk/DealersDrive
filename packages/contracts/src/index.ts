@@ -20,6 +20,7 @@ export * from './common.js';
 export * from './enums.js';
 export * from './auth.js';
 export * from './dealer-access.js';
+export * from './team.js';
 export * from './public.js';
 export * from './dealer.js';
 export * from './listing.js';
