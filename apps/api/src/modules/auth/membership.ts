@@ -21,13 +21,26 @@ export async function activeMemberships(db: Db, userId: string): Promise<Members
   });
 }
 
+export function chooseWorkspace(
+  memberships: readonly MembershipWithDealer[],
+  preferredDealerId?: string | null,
+): MembershipWithDealer | null {
+  const enterable = memberships.filter(isEnterable);
+  return (
+    enterable.find((membership) => membership.dealerId === preferredDealerId) ??
+    enterable[0] ??
+    null
+  );
+}
+
 export async function findWorkspaceMembership(
   db: Db,
   userId: string,
+  preferredDealerId?: string | null,
 ): Promise<WorkspaceMembership> {
   const memberships = await activeMemberships(db, userId);
   return {
-    membership: memberships.find(isEnterable) ?? null,
+    membership: chooseWorkspace(memberships, preferredDealerId),
     suspended: memberships.length > 0 && !memberships.some(isEnterable),
   };
 }

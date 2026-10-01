@@ -9,6 +9,7 @@ import { CustomerHeader } from '@/components/layout/customer-header';
 import {
   customerAccountAction,
   customerLogoutAction,
+  enterWorkspaceAction,
 } from '@/features/auth/customer-account-actions';
 import { HeaderAccount } from '@/features/auth/header-account';
 import { maskIndianMobile, personInitials } from '@/lib/person';
@@ -19,11 +20,14 @@ import { maskIndianMobile, personInitials } from '@/lib/person';
  * it renders; it shows Login, then asks once in the browser. A signed-in
  * customer sees a round avatar with their initials, which opens a menu:
  * their name and masked number, Saved cars, My enquiries, Dealer Login, Logout.
- * Dealer Login is only a link to `/dealer`: the dealer route owns sign-in.
+ * Dealer Login is only a link to the Dealer tab of `/login` (**R93**) for a
+ * customer who belongs to no dealership; a member sees their dealerships
+ * instead, and enters one with the session they already have.
  */
 vi.mock('@/features/auth/customer-account-actions', () => ({
   customerAccountAction: vi.fn(),
   customerLogoutAction: vi.fn(),
+  enterWorkspaceAction: vi.fn(),
 }));
 
 const LOCATIONS: PublicLocations = {
@@ -146,12 +150,12 @@ describe('HeaderAccount', () => {
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
   });
 
-  it('offers Dealer Login as a link to /dealer, set apart between separators', async () => {
+  it('offers Dealer Login as a link to the Dealer tab, set apart between separators', async () => {
     const { menu } = await openMenu();
     const dealer = within(menu).getByRole('menuitem', { name: 'Dealer Login' });
 
     expect(dealer.tagName).toBe('A');
-    expect(dealer).toHaveAttribute('href', '/dealer');
+    expect(dealer).toHaveAttribute('href', '/login?as=dealer');
     expect(dealer.className).toBe(
       within(menu).getByRole('menuitem', { name: 'Saved cars' }).className,
     );
@@ -202,6 +206,93 @@ describe('HeaderAccount', () => {
       expect(customerAccountAction).toHaveBeenCalled();
     });
     expect(screen.getByRole('link', { name: 'Login' })).toBeInTheDocument();
+  });
+});
+
+describe('a member’s dealerships (R93)', () => {
+  const ARUN = {
+    fullName: 'Arun Kumar',
+    phoneMasked: '+91 98XXXXXX45',
+    workspaces: [
+      {
+        membershipId: 'm-abc',
+        brandName: 'ABC Motors',
+        roleLabel: 'Manager',
+        enterable: true,
+        current: true,
+      },
+      {
+        membershipId: 'm-xyz',
+        brandName: 'XYZ Cars',
+        roleLabel: 'Staff',
+        enterable: true,
+        current: false,
+      },
+      {
+        membershipId: 'm-old',
+        brandName: 'Old Yard',
+        roleLabel: 'Staff',
+        enterable: false,
+        current: false,
+      },
+    ],
+  };
+
+  async function openArun() {
+    const user = userEvent.setup();
+    vi.mocked(customerAccountAction).mockResolvedValue(ARUN);
+    render(<HeaderAccount />);
+    await user.click(await screen.findByRole('button', { name: 'Account menu for Arun Kumar' }));
+    return { user, menu: await screen.findByRole('menu', { name: 'Account' }) };
+  }
+
+  it('lists each enterable dealership with the role, instead of Dealer Login', async () => {
+    const { menu } = await openArun();
+    const names = within(menu)
+      .getAllByRole('menuitem')
+      .map((item) => item.textContent);
+    expect(names).toEqual([
+      'Saved cars',
+      'My enquiries',
+      'Support requests',
+      'ABC MotorsCurrentDealer dashboard · Manager',
+      'XYZ CarsDealer dashboard · Staff',
+      'Logout',
+    ]);
+    expect(within(menu).queryByRole('menuitem', { name: 'Dealer Login' })).toBeNull();
+    expect(within(menu).getByRole('menuitem', { name: /ABC Motors/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+  });
+
+  it('shows a suspended dealership as closed, not as something to press', async () => {
+    const { menu } = await openArun();
+    expect(within(menu).getByText('Old Yard')).toBeInTheDocument();
+    expect(within(menu).getByText('Suspended — dealer access is closed')).toBeInTheDocument();
+    expect(within(menu).queryByRole('menuitem', { name: /Old Yard/ })).toBeNull();
+  });
+
+  it('enters a dealership through the session it already has — no sign-in, no logout', async () => {
+    vi.mocked(enterWorkspaceAction).mockResolvedValue();
+    const { user, menu } = await openArun();
+    await user.click(within(menu).getByRole('menuitem', { name: /XYZ Cars/ }));
+
+    expect(enterWorkspaceAction).toHaveBeenCalledWith('m-xyz');
+    expect(customerLogoutAction).not.toHaveBeenCalled();
+  });
+
+  it('uses an account it is given without asking for one, and goes home after logout', async () => {
+    vi.mocked(customerLogoutAction).mockResolvedValue();
+    const user = userEvent.setup();
+    render(<HeaderAccount initialAccount={ARUN} afterLogoutHref="/" />);
+    await user.click(screen.getByRole('button', { name: 'Account menu for Arun Kumar' }));
+    await user.click(
+      within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'Logout' }),
+    );
+
+    expect(customerAccountAction).not.toHaveBeenCalled();
+    await waitFor(() => expect(navigationState.pushed).toContain('/'));
   });
 });
 

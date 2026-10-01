@@ -573,7 +573,7 @@ held by the same person is resolved by `resolveAdmin` below, against its
 
 own seat, and is unaffected by whatever happened to this one.
 
-### `const { membership, suspended } = await findWorkspaceMembership(prisma, session.userId)`
+### `const { membership, suspended } = await findWorkspaceMembership(`
 
 Which dealership this person is working in (**R92**). The first active
 membership whose dealership is not suspended, oldest first — so a person in
@@ -581,6 +581,17 @@ two dealerships keeps working in the other when one is suspended. If every
 membership they hold is in a suspended dealership, the answer is null rather
 than PENDING: a suspended dealer is not a dealer mid-onboarding, and must not
 be offered the wizard.
+
+The session's `activeDealerId` (**R93**) is the preference passed in: the
+dealership the person last chose. It is skipped, exactly as if it were NULL,
+when that membership has been removed or that dealership suspended.
+
+### `if (session.scope !== 'DEALER') return null`
+
+**R93 — one login.** A customer session belonging to a dealership became a
+dealer principal above. One belonging to none is refused here rather than read
+as PENDING: PENDING is a dealer mid-onboarding, and a customer is not one. They
+start onboarding from the Dealer tab, as before.
 
 ### `async resolveAdmin(req): Promise<AdminPrincipal | null>`
 
@@ -661,10 +672,11 @@ reached the name screen both end up signed in to one user.
 
 ### `export function createCustomerResolver(sessions: SessionService): CustomerResolver`
 
-Who counts as a customer (**R62**), which is deliberately separate from who
-counts as a dealer: `resolveSignedIn` reads `DEALER`-scope sessions only, so a
-customer session is never mistaken for a dealer mid-onboarding and never
-opens the console.
+Who counts as a customer (**R62**). Since **R93** this and `resolveSignedIn`
+read the same sessions (`resolvePerson`), and what separates a customer from a
+dealer is a membership, not how they signed in: a customer session opens the
+console of a dealership the person belongs to, and is refused — not offered
+onboarding — when they belong to none.
 
 A customer is a `CUSTOMER` session, **or** a `DEALER` session whose account
 has a proved phone and a name. The second is the brief's §40 — a dealer
@@ -1277,6 +1289,12 @@ session resolver and the post-sign-in destination so the two cannot disagree
 choice is deterministic; the `(userId, status)` index makes it one indexed
 read per dealer request.
 
+### `export function chooseWorkspace(`
+
+The session's chosen dealership when it can still be entered, otherwise the
+oldest one that can (**R93**). Shared by the resolver and the workspace list,
+so `current` in the menu is always the dealership `/v1/dealer` will act on.
+
 ### `export function isEnterable(membership: MembershipWithDealer): boolean`
 
 An ACTIVE membership in a dealership that is not SUSPENDED. A REMOVED or
@@ -1515,6 +1533,21 @@ request — a closed DEALER seat has to stop answering on the next click,
 the way a revoked session does — and pulling them here costs nothing: it
 is the same round trip that was already fetching the user.
 
+### `async resolvePerson(token: string | undefined)`
+
+**R93.** The session a _person_ holds — `DEALER` or `CUSTOMER` scope, never
+`ADMIN` — in one query. The two scopes are how the person signed in, not what
+they may do: since R93 both reach the customer routes and both reach a
+dealership the person belongs to. `ADMIN` stays apart; an operations session is
+a different door with a 12-hour life and its own allow-list.
+
+### `async setActiveDealer(sessionId: string, dealerId: string): Promise<void>`
+
+Which dealership this session is working in, for a person with more than one
+(**R93**). Written only by `PUT /v1/auth/workspaces/current`, after the
+membership is checked; a preference the resolver re-checks on every request,
+never a grant.
+
 ### `async revoke(token: string | undefined): Promise<void>`
 
 Idempotent: signing out twice is not an error, and must not be.
@@ -1565,3 +1598,22 @@ both inserted, and the loser hit `user_roles_userId_role_key` and answered 500.
 It surfaced intermittently as `customer-auth.test.ts`'s race test failing in
 CI; `tests/user-seats.test.ts` reproduces it deterministically. Behaviour is
 otherwise unchanged: an existing seat, open or closed, is never touched.
+
+## `apps/api/src/modules/auth/workspace.service.ts`
+
+### `export function createWorkspaceService({ prisma, sessions, audit }: WorkspaceDeps)`
+
+**R93 — one account, several contexts.** The dealerships a signed-in person
+belongs to, and the choice of which one this session works in.
+
+The choice names a **membership**, never a dealership: `dealerId` is accepted
+in no request body (rule 1), and a membership id can only be one the person
+holds. Anything else — someone else's, a removed one, one in a suspended
+dealership — is the same 404, so the endpoint says nothing about other people's
+memberships.
+
+Choosing writes `sessions.activeDealerId` on the session already in hand. No
+session is issued and no cookie changes, which is the point: moving between
+the marketplace and a dealership, or between two dealerships, is never a
+sign-in. A change is audited as `auth.workspace.selected`; choosing the one
+already current writes nothing.

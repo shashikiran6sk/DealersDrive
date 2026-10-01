@@ -20,15 +20,20 @@ export function createCookieSessionResolver(
   sessions: SessionService,
 ): SessionResolver {
   async function signedIn(req: Request): Promise<DealerPrincipal | PendingPrincipal | null> {
-    const session = await sessions.resolve(readSessionToken(req), 'DEALER');
+    const session = await sessions.resolvePerson(readSessionToken(req));
     if (!session || session.user.status !== 'ACTIVE') return null;
 
     if (isSeatSuspended(session.user.roles, 'DEALER')) return null;
 
-    const { membership, suspended } = await findWorkspaceMembership(prisma, session.userId);
+    const { membership, suspended } = await findWorkspaceMembership(
+      prisma,
+      session.userId,
+      session.activeDealerId,
+    );
     if (suspended) return null;
 
     if (!membership) {
+      if (session.scope !== 'DEALER') return null;
       return {
         kind: 'PENDING',
         userId: session.userId,

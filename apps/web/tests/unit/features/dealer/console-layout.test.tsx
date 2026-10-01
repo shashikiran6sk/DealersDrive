@@ -43,9 +43,19 @@ const DEALER = {
 };
 
 const currentSession = vi.fn<() => Promise<AuthSession | null>>();
+const hasSession = vi.fn<() => Promise<boolean>>(() => Promise.resolve(false));
+const customerAccount = vi.fn<() => Promise<unknown>>(() => Promise.resolve(null));
 const apiGet = vi.fn();
 
-vi.mock('@/lib/session', () => ({ currentSession: () => currentSession() }));
+vi.mock('@/lib/session', () => ({
+  currentSession: () => currentSession(),
+  hasSession: () => hasSession(),
+}));
+vi.mock('@/features/auth/customer-account-actions', () => ({
+  customerAccountAction: () => customerAccount(),
+  customerLogoutAction: vi.fn(),
+  enterWorkspaceAction: vi.fn(),
+}));
 vi.mock('@/lib/api', async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
   apiGet: (path: string) => apiGet(path) as unknown,
@@ -71,6 +81,18 @@ describe('the console guard', () => {
 
     expect(await redirectOf(layout())).toBe('/dealer/login?error=session_expired');
     // And nothing was fetched with a session that does not exist.
+    expect(apiGet).not.toHaveBeenCalled();
+  });
+
+  /**
+   * **R93.** Signed in, but as a customer who belongs to no dealership: there is
+   * no session to have expired, so the Dealer tab is offered without an error.
+   */
+  it('sends a signed-in customer with no dealership to the Dealer tab, without an error', async () => {
+    currentSession.mockResolvedValue(null);
+    hasSession.mockResolvedValueOnce(true);
+
+    expect(await redirectOf(layout())).toBe('/login?as=dealer');
     expect(apiGet).not.toHaveBeenCalled();
   });
 
@@ -109,6 +131,28 @@ describe('the console shell', () => {
     expect(screen.getByText('14 credits')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
     expect(screen.getByText('the profile screen')).toBeInTheDocument();
+  });
+
+  /**
+   * **R93.** The same account menu as the marketplace header: the personal
+   * links, the person's dealerships and Logout — one account, two contexts,
+   * and no second sign-in in either direction.
+   */
+  it('puts the person’s own account menu in the top bar when there is one', async () => {
+    currentSession.mockResolvedValue(session('DASHBOARD'));
+    apiGet.mockResolvedValue(DEALER);
+    customerAccount.mockResolvedValueOnce({
+      fullName: 'Ramesh Kumar',
+      phoneMasked: '+91 98XXXXXX45',
+      workspaces: [],
+    });
+
+    render(await layout());
+
+    expect(
+      screen.getByRole('button', { name: 'Account menu for Ramesh Kumar' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sign out' })).toBeNull();
   });
 
   /**

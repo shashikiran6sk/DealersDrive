@@ -1841,6 +1841,21 @@ describe('dashboard', () => {
     expect(dashboard.greeting).toMatch(/^Good (morning|afternoon|evening), Kumar$/);
   });
 
+  /** R93 — a dealership has more than one person in it now; greet the one looking. */
+  it('greets the member who is signed in, not the owner', async () => {
+    const h = setup({
+      dealer: {
+        members: [
+          { userId: 'user-1', role: 'OWNER', user: { fullName: 'Ramesh Kumar', phone: '9' } },
+          { userId: 'user-2', role: 'STAFF', user: { fullName: 'Priya Devi', phone: '8' } },
+        ],
+      },
+    });
+
+    expect((await h.service.dashboard('dealer-1', 'user-2')).greeting).toMatch(/, Devi$/);
+    expect((await h.service.dashboard('dealer-1', 'nobody')).greeting).toMatch(/, Kumar$/);
+  });
+
   it('falls back to the brand name when no owner name is on file', async () => {
     const h = setup({
       dealer: {

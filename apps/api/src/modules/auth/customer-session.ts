@@ -9,9 +9,7 @@ export type CustomerResolver = (req: Request) => Promise<CustomerPrincipal | nul
 
 export function createCustomerResolver(sessions: SessionService): CustomerResolver {
   return async function resolveCustomer(req) {
-    const token = readSessionToken(req);
-    const session =
-      (await sessions.resolve(token, 'CUSTOMER')) ?? (await sessions.resolve(token, 'DEALER'));
+    const session = await sessions.resolvePerson(readSessionToken(req));
     const user = session?.user;
 
     if (!session || user?.status !== 'ACTIVE') return null;
