@@ -17,6 +17,8 @@ function enquiry(n: number, overrides: Partial<DealerEnquiry> = {}): DealerEnqui
     timeAgoLabel: '18 min ago',
     contactedAt: null,
     closedAt: null,
+    contactedBy: null,
+    closedBy: null,
     customer: {
       name: 'Ravi Kumar',
       initials: 'RK',
@@ -106,6 +108,22 @@ export const Contacted: Story = {
         statusTone: 'ok',
         contactedAt: '2026-09-28T11:00:00.000Z',
         message: 'Can I take it for a test drive?',
+      }),
+    ]),
+  },
+};
+
+export const StaffView: Story = {
+  args: {
+    permissions: ['enquiry:read', 'enquiry:contact'],
+    inbox: inbox([
+      enquiry(7, { message: 'Is the car still available?' }),
+      enquiry(8, {
+        status: 'CONTACTED',
+        statusLabel: 'Contacted',
+        statusTone: 'ok',
+        contactedAt: '2026-10-01T11:12:00.000Z',
+        contactedBy: { name: 'Priya Devi', atLabel: '01 Oct 2026, 16:42' },
       }),
     ]),
   },

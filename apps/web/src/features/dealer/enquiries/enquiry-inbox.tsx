@@ -7,7 +7,7 @@ import type { EnquiryInboxProps } from './enquiries.types';
 import { EnquiryCard } from './enquiry-card';
 import { enquiriesHref } from './utils';
 
-export function EnquiryInbox({ inbox, status }: EnquiryInboxProps) {
+export function EnquiryInbox({ inbox, status, permissions }: EnquiryInboxProps) {
   return (
     <div className="flex flex-col gap-[18px]">
       <div>
@@ -43,7 +43,7 @@ export function EnquiryInbox({ inbox, status }: EnquiryInboxProps) {
           className="m-0 flex list-none flex-col gap-[10px] p-0"
         >
           {inbox.data.map((enquiry) => (
-            <EnquiryCard key={enquiry.id} enquiry={enquiry} />
+            <EnquiryCard key={enquiry.id} enquiry={enquiry} permissions={permissions} />
           ))}
         </ul>
       )}

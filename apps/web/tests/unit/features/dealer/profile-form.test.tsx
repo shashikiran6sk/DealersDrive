@@ -565,3 +565,16 @@ describe('an edit waiting for review', () => {
     expect(await screen.findByText(/go to us for a quick check/i)).toBeInTheDocument();
   });
 });
+
+describe('a member who is not the owner (R95)', () => {
+  it('sees the profile, with nothing to type into and no Save', () => {
+    render(<DealerProfileForm dealer={DEALER} readOnly />);
+
+    expect(
+      screen.getByText(/Only the owner can change the dealership’s profile/),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /save/i })).toBeNull();
+    expect(screen.getByLabelText(/One line about your dealership/)).toBeDisabled();
+    expect(screen.getByLabelText(/established/i)).toBeDisabled();
+  });
+});

@@ -116,6 +116,13 @@ export const DealerEnquiry = z.object({
   timeAgoLabel: z.string(),
   contactedAt: z.string().nullable(),
   closedAt: z.string().nullable(),
+  /**
+   * Who in the dealership moved it (**R95**), now that more than one person
+   * can: the member's name and when, for "Contacted by Priya · 1 Oct, 4:42 pm".
+   * NULL before anyone did, and on enquiries moved before R92.
+   */
+  contactedBy: z.object({ name: z.string(), atLabel: z.string() }).nullable(),
+  closedBy: z.object({ name: z.string(), atLabel: z.string() }).nullable(),
   customer: z.object({
     name: z.string(),
     initials: z.string(),

@@ -42,6 +42,7 @@ import type { VehicleRow, VehicleWrite, VehiclesRepository } from './vehicles.re
 export interface VehicleActor {
   dealerId: string;
   userId: string;
+  permissions?: readonly string[];
 }
 
 export interface VehiclesDeps {
@@ -173,7 +174,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           });
           return { ...row, listing };
         });
-        return toDealerVehicle(created);
+        return toDealerVehicle(created, actor.permissions);
       } catch (error) {
         if (errorCode(error) === 'P2002') throw duplicate();
         throw error;
@@ -183,6 +184,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
     async inventory(
       dealerId: string,
       query: DealerInventoryQuery,
+      permissions?: readonly string[],
     ): Promise<DealerInventoryResponse> {
       const [rows, counts] = await Promise.all([
         repo.inventory(dealerId, {
@@ -199,7 +201,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       const last = page[page.length - 1];
 
       return {
-        data: page.map(toInventoryRow),
+        data: page.map((row) => toInventoryRow(row, permissions)),
         page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
         counts: {
           ALL: counts.reduce((sum, row) => sum + row.count, 0),
@@ -208,8 +210,12 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       };
     },
 
-    async get(dealerId: string, vehicleId: string): Promise<DealerVehicle> {
-      return toDealerVehicle(await requireOwned(dealerId, vehicleId));
+    async get(
+      dealerId: string,
+      vehicleId: string,
+      permissions?: readonly string[],
+    ): Promise<DealerVehicle> {
+      return toDealerVehicle(await requireOwned(dealerId, vehicleId), permissions);
     },
 
     async update(
@@ -234,7 +240,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
 
       const data = await writeOf(input);
       const fields = Object.keys(data).filter((field) => field !== 'rtoCode');
-      if (fields.length === 0) return toDealerVehicle(current);
+      if (fields.length === 0) return toDealerVehicle(current, actor.permissions);
 
       try {
         const updated = await withTransaction(prisma, async (tx) => {
@@ -252,7 +258,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           });
           return row;
         });
-        return toDealerVehicle(updated);
+        return toDealerVehicle(updated, actor.permissions);
       } catch (error) {
         if (errorCode(error) === 'P2002') throw duplicate();
         throw error;
@@ -317,7 +323,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           });
           return { ...vehicle, claimedAt, listing: moved };
         });
-        return toDealerVehicle(submitted);
+        return toDealerVehicle(submitted, actor.permissions);
       } catch (error) {
         if (errorCode(error) === 'P2002') throw alreadyListed();
         throw error;
@@ -349,7 +355,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         if (!row) throw notFound();
         return row;
       });
-      return toDealerVehicle(moved);
+      return toDealerVehicle(moved, actor.permissions);
     },
 
     async requestReactivation(
@@ -374,7 +380,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         if (!row) throw notFound();
         return row;
       });
-      return toDealerVehicle(requested);
+      return toDealerVehicle(requested, actor.permissions);
     },
 
     async suggestions(query: VehicleSuggestQuery): Promise<VehicleSuggestions> {

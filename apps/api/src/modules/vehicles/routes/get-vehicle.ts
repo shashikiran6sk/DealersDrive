@@ -11,7 +11,11 @@ export const getVehicle: VehiclesRoute = (router, service) => {
     requirePermission('vehicle:read'),
     validate({ params: IdParam }),
     handle((req) =>
-      service.get(dealerPrincipal(req).dealerId, validated<IdParamType>(req, 'params').id),
+      service.get(
+        dealerPrincipal(req).dealerId,
+        validated<IdParamType>(req, 'params').id,
+        dealerPrincipal(req).permissions,
+      ),
     ),
   );
 };

@@ -371,3 +371,18 @@ describe('submitting (F065)', () => {
     );
   });
 });
+
+describe('a member who may not publish (R95)', () => {
+  it('saves the draft but offers no Submit, and says who sends it for review', () => {
+    render(<VehicleWizard step="review" vehicle={vehicle()} mayPublish={false} />);
+
+    expect(screen.queryByRole('button', { name: /submit for review/i })).toBeNull();
+    expect(screen.getByText(/A manager or the owner sends it for review/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Finish later' })).toBeInTheDocument();
+  });
+
+  it('offers Submit to a member who may', () => {
+    render(<VehicleWizard step="review" vehicle={vehicle()} />);
+    expect(screen.getByRole('button', { name: /submit for review/i })).toBeEnabled();
+  });
+});

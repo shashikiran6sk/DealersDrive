@@ -6,6 +6,7 @@ import {
   ENQUIRY_STATUS_LABELS,
   ENQUIRY_STATUS_TONES,
   formatDate,
+  formatDateTime,
   formatPhone,
   formatRegistration,
   initialsOf,
@@ -16,7 +17,7 @@ import {
 } from '@dealers-drive/contracts';
 import type { Prisma } from '@prisma/client';
 
-import { UNNAMED_CUSTOMER } from '../../platform/messages.js';
+import { UNNAMED_CUSTOMER, UNNAMED_MEMBER } from '../../platform/messages.js';
 
 export const INBOX_SELECT = {
   id: true,
@@ -25,6 +26,8 @@ export const INBOX_SELECT = {
   createdAt: true,
   contactedAt: true,
   closedAt: true,
+  contactedBy: { select: { fullName: true } },
+  closedBy: { select: { fullName: true } },
   customer: { select: { fullName: true, phone: true } },
   listing: {
     select: {
@@ -54,6 +57,14 @@ function publicHref(
   return live && listing.slug ? `/car/${listing.slug}` : null;
 }
 
+function movedBy(
+  member: { fullName: string | null } | null,
+  at: Date | null,
+): DealerEnquiry['contactedBy'] {
+  if (!member || !at) return null;
+  return { name: member.fullName?.trim() || UNNAMED_MEMBER, atLabel: formatDateTime(at) };
+}
+
 export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEnquiry {
   const name = row.customer.fullName?.trim() || UNNAMED_CUSTOMER;
   const phone = row.customer.phone;
@@ -71,6 +82,8 @@ export function toDealerEnquiry(row: InboxRow, now: Date = new Date()): DealerEn
     timeAgoLabel: timeAgo(row.createdAt, now),
     contactedAt: row.contactedAt?.toISOString() ?? null,
     closedAt: row.closedAt?.toISOString() ?? null,
+    contactedBy: movedBy(row.contactedBy, row.contactedAt),
+    closedBy: movedBy(row.closedBy, row.closedAt),
     customer: {
       name,
       initials: initialsOf(name),

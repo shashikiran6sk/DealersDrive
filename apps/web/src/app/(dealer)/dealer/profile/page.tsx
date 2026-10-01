@@ -60,7 +60,10 @@ export default async function DealerProfilePage() {
         ) : null}
       </div>
 
-      <DealerProfileForm dealer={dealer} />
+      <DealerProfileForm
+        dealer={dealer}
+        readOnly={!canDealer(session?.permissions, 'dealer:update')}
+      />
     </div>
   );
 }

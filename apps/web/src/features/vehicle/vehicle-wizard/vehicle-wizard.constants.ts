@@ -88,6 +88,7 @@ export const VEHICLE_WIZARD_TEXT = {
   resubmit: 'Resubmit for review',
   notSubmitted: 'That vehicle could not be submitted.',
   submitBlocked: 'Fill in the missing details to submit.',
+  submitByManager: 'Your changes are saved as a draft. A manager or the owner sends it for review.',
   submittedTag: 'Pending review',
   submittedTitle: 'Submitted for review',
   submittedBody:

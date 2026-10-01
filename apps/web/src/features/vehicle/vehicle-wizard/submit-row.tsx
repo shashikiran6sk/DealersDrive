@@ -23,7 +23,15 @@ function SubmitButton({ label, disabled }: { label: string; disabled: boolean })
   );
 }
 
-export function SubmitRow({ vehicle, cancelHref }: { vehicle: DealerVehicle; cancelHref: string }) {
+export function SubmitRow({
+  vehicle,
+  cancelHref,
+  mayPublish = true,
+}: {
+  vehicle: DealerVehicle;
+  cancelHref: string;
+  mayPublish?: boolean;
+}) {
   const [state, formAction] = useActionState(submitVehicleAction, EMPTY);
   const resubmit = vehicle.listing.status === 'CHANGES_REQUESTED';
 
@@ -38,12 +46,16 @@ export function SubmitRow({ vehicle, cancelHref }: { vehicle: DealerVehicle; can
         <ButtonLink href={cancelHref} variant="secondary" className="ml-auto max-[480px]:ml-0">
           {VEHICLE_WIZARD_TEXT.saveAndExit}
         </ButtonLink>
-        <SubmitButton
-          label={resubmit ? VEHICLE_WIZARD_TEXT.resubmit : VEHICLE_WIZARD_TEXT.submit}
-          disabled={!vehicle.listing.canSubmit}
-        />
+        {mayPublish ? (
+          <SubmitButton
+            label={resubmit ? VEHICLE_WIZARD_TEXT.resubmit : VEHICLE_WIZARD_TEXT.submit}
+            disabled={!vehicle.listing.canSubmit}
+          />
+        ) : null}
       </div>
-      {vehicle.listing.canSubmit ? null : (
+      {!mayPublish ? (
+        <p className="text-[12px] ink-subtle">{VEHICLE_WIZARD_TEXT.submitByManager}</p>
+      ) : vehicle.listing.canSubmit ? null : (
         <p className="text-[12px] ink-subtle">{VEHICLE_WIZARD_TEXT.submitBlocked}</p>
       )}
     </form>

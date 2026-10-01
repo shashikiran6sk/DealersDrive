@@ -10,7 +10,7 @@ import {
 } from '@dealers-drive/contracts';
 import type { Dealer, DealerInvitation, DealerMember, User } from '@prisma/client';
 
-import { UNNAMED_MEMBER } from './team.messages.js';
+import { UNNAMED_MEMBER } from '../../platform/messages.js';
 
 export const INVITATION_STATUS_LABELS: Record<InvitationStatus, string> = {
   PENDING: 'Waiting for sign-in',

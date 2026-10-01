@@ -87,6 +87,17 @@ the description, not writing an empty one.
 
 ## `apps/api/src/modules/vehicles/vehicles.mapper.ts`
 
+### `export function toDealerListing(`
+
+**R95.** `actions`, `canSubmit` and `canDelete` are the console's buttons, and
+they are now narrowed by the member's permissions as well as by the listing's
+status — through `LIFECYCLE_ACTION_PERMISSION` in contracts, the same table the
+routes enforce. A STAFF member's inventory therefore has no Reserve, Sell or
+Withdraw, and their review step no Submit: the console shows what the API will
+allow, and the API still refuses the rest (R92). `canEdit` is not narrowed —
+every member may edit a draft. Callers that pass no permissions (the service's
+unit tests, an admin read) get the status-only answer, as before.
+
 ### `export function toDealerVehicle(row: VehicleRow): DealerVehicle`
 
 The dealer DTO, and the only way a vehicle row leaves this module towards a

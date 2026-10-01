@@ -21,5 +21,3 @@ export const DEALERSHIP_NOT_ACCEPTING =
   'That dealership is not taking new members right now. Ask them, or contact support.';
 
 export const ALREADY_IN_DEALERSHIP = 'You are already a member of this dealership.';
-
-export const UNNAMED_MEMBER = 'Name not given yet';

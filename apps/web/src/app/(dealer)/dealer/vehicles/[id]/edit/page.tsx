@@ -1,4 +1,4 @@
-import { DealerVehicle } from '@dealers-drive/contracts';
+import { canDealer, DealerVehicle } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -8,6 +8,7 @@ import {
   isWizardStep,
 } from '@/features/vehicle/vehicle-wizard';
 import { ApiError, apiGetParsed } from '@/lib/api';
+import { currentSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,7 @@ export default async function EditVehiclePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ step?: string; saved?: string; submitted?: string }>;
 }) {
-  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const [{ id }, query, session] = await Promise.all([params, searchParams, currentSession()]);
 
   let vehicle: DealerVehicle;
   try {
@@ -48,6 +49,7 @@ export default async function EditVehiclePage({
         vehicle={vehicle}
         saved={query.saved === '1'}
         submitted={query.submitted === '1'}
+        mayPublish={canDealer(session?.permissions, 'listing:submit')}
       />
     </div>
   );
