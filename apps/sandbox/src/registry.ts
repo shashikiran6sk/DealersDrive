@@ -2521,6 +2521,43 @@ export const registry: RegistryEntry[] = [
     reusable: false,
     storyId: 'admin-supportticketworkspace',
   },
+  {
+    id: 'C128',
+    name: 'TeamPanel',
+    source: 'apps/web/src/features/dealer/team/team-panel.tsx',
+    category: 'Dealer',
+    ownership: 'Feature-specific',
+    purpose:
+      'The owner’s Team page at `/dealer/team` (R94): members as cards — the owner first with no controls, everyone else with a role Select and Remove behind a confirmation Dialog (`MemberCard`) — then the invitations waiting, each with Withdraw (`InvitationCard`), and Invite member (`InviteMemberDialog`: mobile number and a Manager / Staff radio with what each may do). OWNER only; the server page 404s for anyone else.',
+    aliases: [
+      'TeamPage',
+      'MemberCard',
+      'InvitationCard',
+      'InviteMemberDialog',
+      'MembersList',
+      'team',
+    ],
+    features: ['R94'],
+    props: ['team'],
+    states: ['owner with team', 'just the owner', 'invite refused', 'expired invitation', 'mobile'],
+    reusable: false,
+    storyId: 'dealer-team',
+  },
+  {
+    id: 'C129',
+    name: 'InvitationList',
+    source: 'apps/web/src/features/invitations/invitation-list.tsx',
+    category: 'Dealer',
+    ownership: 'Feature-specific',
+    purpose:
+      'The invited person’s side at `/invitations` (R94): the dealerships that invited their verified number, each (`InvitationItem`) with the role, who invited them and until when, and Accept and open dealer dashboard / Decline. Accepting enters the dealership with the session they already have.',
+    aliases: ['InvitationItem', 'MyInvitations', 'JoinDealership', 'invitations'],
+    features: ['R94'],
+    props: ['invitations'],
+    states: ['waiting', 'nothing', 'refused (expired)', 'mobile'],
+    reusable: false,
+    storyId: 'dealer-invitations',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

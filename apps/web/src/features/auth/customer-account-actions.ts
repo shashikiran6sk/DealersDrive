@@ -3,6 +3,7 @@
 import {
   CustomerSession,
   DealerWorkspacesResponse,
+  MyInvitationsResponse,
   type DealerWorkspace,
 } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
@@ -25,6 +26,7 @@ export interface CustomerAccount {
   fullName: string;
   phoneMasked: string;
   workspaces?: AccountWorkspace[];
+  invitations?: number;
 }
 
 function toWorkspace(workspace: DealerWorkspace): AccountWorkspace {
@@ -48,17 +50,30 @@ async function workspacesOf(): Promise<AccountWorkspace[]> {
   }
 }
 
+async function invitationCount(): Promise<number> {
+  try {
+    const list = await apiGetParsed(MyInvitationsResponse, CUSTOMER_ACCOUNT_PATHS.invitations, {
+      revalidate: false,
+    });
+    return list.data.length;
+  } catch {
+    return 0;
+  }
+}
+
 export async function customerAccountAction(): Promise<CustomerAccount | null> {
   if (!(await cookies()).get(SESSION_COOKIE)?.value) return null;
   try {
-    const [session, workspaces] = await Promise.all([
+    const [session, workspaces, invitations] = await Promise.all([
       apiGetParsed(CustomerSession, CUSTOMER_ACCOUNT_PATHS.me, { revalidate: false }),
       workspacesOf(),
+      invitationCount(),
     ]);
     return {
       fullName: session.customer.fullName,
       phoneMasked: maskIndianMobile(session.customer.phone),
       workspaces,
+      invitations,
     };
   } catch {
     return null;

@@ -106,6 +106,7 @@ export function AccountMenu({
             <div role="separator" className={MENU_SEPARATOR} />
             <WorkspaceItems
               workspaces={account.workspaces ?? []}
+              invitations={account.invitations ?? 0}
               entering={enteringWorkspace}
               onEnter={(membershipId) => onEnterWorkspace?.(membershipId)}
               onNavigate={() => setOpen(false)}

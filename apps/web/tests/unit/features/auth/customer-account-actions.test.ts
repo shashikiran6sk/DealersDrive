@@ -60,6 +60,7 @@ describe('customerAccountAction', () => {
       fullName: 'Asha Menon',
       phoneMasked: '+91 98XXXXXX45',
       workspaces: [],
+      invitations: 0,
     });
     expect(urls).toEqual(
       expect.arrayContaining([
@@ -85,32 +86,46 @@ describe('the dealerships in the account (R93)', () => {
     cookieJar.set('dd_session', 'session-token');
     globalThis.fetch = vi.fn((url: string) => {
       urls.push(url);
-      const body = url.endsWith('/workspaces')
+      const body = url.endsWith('/invitations')
         ? {
             data: [
               {
-                membershipId: '00000000-0000-4000-8000-0000000000a1',
-                dealer: {
-                  id: '00000000-0000-4000-8000-0000000000d1',
-                  slug: 'abc-motors',
-                  brandName: 'ABC Motors',
-                  status: 'ACTIVE',
-                },
-                role: 'MANAGER',
-                roleLabel: 'Manager',
-                enterable: true,
-                current: true,
+                id: '00000000-0000-4000-8000-0000000000b1',
+                dealer: { brandName: 'XYZ Cars', city: 'Vellore' },
+                role: 'STAFF',
+                roleLabel: 'Staff',
+                invitedByName: 'Ravi',
+                expiresAt: '2026-10-09T09:30:00.000Z',
+                expiresLabel: '9 Oct 2026',
               },
             ],
           }
-        : {
-            customer: {
-              id: '00000000-0000-4000-8000-000000000001',
-              fullName: 'Arun Kumar',
-              phone: '+919840012345',
-              phoneDisplay: '+91 98400 12345',
-            },
-          };
+        : url.endsWith('/workspaces')
+          ? {
+              data: [
+                {
+                  membershipId: '00000000-0000-4000-8000-0000000000a1',
+                  dealer: {
+                    id: '00000000-0000-4000-8000-0000000000d1',
+                    slug: 'abc-motors',
+                    brandName: 'ABC Motors',
+                    status: 'ACTIVE',
+                  },
+                  role: 'MANAGER',
+                  roleLabel: 'Manager',
+                  enterable: true,
+                  current: true,
+                },
+              ],
+            }
+          : {
+              customer: {
+                id: '00000000-0000-4000-8000-000000000001',
+                fullName: 'Arun Kumar',
+                phone: '+919840012345',
+                phoneDisplay: '+91 98400 12345',
+              },
+            };
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -129,7 +144,8 @@ describe('the dealerships in the account (R93)', () => {
         current: true,
       },
     ]);
-    expect(urls).toHaveLength(2);
+    expect(account?.invitations).toBe(1);
+    expect(urls).toHaveLength(3);
   });
 
   it('chooses a dealership by membership and opens the console', async () => {

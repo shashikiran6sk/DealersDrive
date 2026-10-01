@@ -1,18 +1,22 @@
-import type { CompletenessResponse, DealerProfile } from '@dealers-drive/contracts';
+import { canDealer, type CompletenessResponse, type DealerProfile } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 
+import { TEAM_NAV_ITEM } from '@/components/dealer/console-nav';
+import { ButtonLink } from '@/components/ui/button';
 import { StatusTag } from '@/components/ui/primitives';
 import { DealerProfileForm } from '@/features/dealer/profile-form';
 import { apiGet } from '@/lib/api';
+import { currentSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Dealer profile' };
 
 export default async function DealerProfilePage() {
-  const [dealer, completeness] = await Promise.all([
+  const [dealer, completeness, session] = await Promise.all([
     apiGet<DealerProfile>('/v1/dealer', { revalidate: false }),
     apiGet<CompletenessResponse>('/v1/dealer/completeness', { revalidate: false }),
+    currentSession(),
   ]);
 
   return (
@@ -22,6 +26,11 @@ export default async function DealerProfilePage() {
         <StatusTag tone={dealer.status === 'ACTIVE' ? 'ok' : 'warn'}>
           {dealer.statusLabel}
         </StatusTag>
+        {canDealer(session?.permissions, 'member:manage') ? (
+          <ButtonLink href={TEAM_NAV_ITEM.href} variant="secondary" className="ml-auto md:hidden">
+            {TEAM_NAV_ITEM.label}
+          </ButtonLink>
+        ) : null}
       </div>
 
       <div className="card gap-2 p-[14px]">

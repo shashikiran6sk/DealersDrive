@@ -10,12 +10,33 @@ import { MENU_ITEM } from './header-account.styles';
 
 export interface WorkspaceItemsProps {
   workspaces: readonly AccountWorkspace[];
+  invitations: number;
   entering: string | null;
   onEnter: (membershipId: string) => void;
   onNavigate: () => void;
 }
 
-export function WorkspaceItems({ workspaces, entering, onEnter, onNavigate }: WorkspaceItemsProps) {
+export function WorkspaceItems({
+  workspaces,
+  invitations,
+  entering,
+  onEnter,
+  onNavigate,
+}: WorkspaceItemsProps) {
+  const invitationItem =
+    invitations > 0 ? (
+      <Link
+        role="menuitem"
+        href={HEADER_ACCOUNT_TEXT.invitationsHref}
+        className={MENU_ITEM}
+        onClick={onNavigate}
+      >
+        {HEADER_ACCOUNT_TEXT.invitations(invitations)}
+      </Link>
+    ) : null;
+
+  if (workspaces.length === 0 && invitationItem) return invitationItem;
+
   if (workspaces.length === 0) {
     return (
       <Link
@@ -31,6 +52,7 @@ export function WorkspaceItems({ workspaces, entering, onEnter, onNavigate }: Wo
 
   return (
     <div role="group" aria-label={HEADER_ACCOUNT_TEXT.workspacesLabel} className="flex flex-col">
+      {invitationItem}
       {workspaces.map((workspace) =>
         workspace.enterable ? (
           <button

@@ -41,6 +41,11 @@ import {
 } from './modules/auth/phone-sign-in.service.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
 import { createWorkspaceService, type WorkspaceService } from './modules/auth/workspace.service.js';
+import { createTeamService, type TeamService } from './modules/team/team.service.js';
+import {
+  createInvitationsService,
+  type InvitationsService,
+} from './modules/team/invitations.service.js';
 import {
   createDealersPublicService,
   type DealersPublicService,
@@ -118,6 +123,8 @@ export interface Container {
   readonly adminSupport: AdminSupportService;
   readonly customers: CustomerAuthService;
   readonly workspaces: WorkspaceService;
+  readonly team: TeamService;
+  readonly invitations: InvitationsService;
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
   readonly admin: AdminService;
@@ -190,6 +197,8 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     audit,
   });
   const workspaces = createWorkspaceService({ prisma, sessions: sessionStore, audit });
+  const team = createTeamService({ prisma, audit });
+  const invitations = createInvitationsService({ prisma, audit });
   const phoneSignIn = createPhoneSignInService({
     prisma,
     sessions: sessionStore,
@@ -239,6 +248,8 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     phoneSignIn,
     customers,
     workspaces,
+    team,
+    invitations,
     dealers,
     dealersPublic,
     admin,

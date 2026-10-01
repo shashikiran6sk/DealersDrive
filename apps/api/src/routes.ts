@@ -14,6 +14,8 @@ import { createDealerEnquiriesRouter } from './modules/enquiries/enquiries.deale
 import { createEnquiriesRouter } from './modules/enquiries/enquiries.routes.js';
 import { createAdminSupportRouter } from './modules/support/support.admin.routes.js';
 import { createSupportRouter } from './modules/support/support.routes.js';
+import { createInvitationsRouter } from './modules/team/invitations.routes.js';
+import { createTeamRouter } from './modules/team/team.routes.js';
 import { createSavedVehiclesRouter } from './modules/saved-vehicles/saved-vehicles.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
@@ -67,6 +69,11 @@ export function createRoutes(container: Container): Router {
     createWorkspacesRouter(container.workspaces),
   );
   v1.use(
+    '/invitations',
+    container.guards.requireCustomer,
+    createInvitationsRouter(container.invitations),
+  );
+  v1.use(
     '/enquiries',
     container.guards.requireCustomer,
     createEnquiriesRouter(container.enquiries, container.rateLimit),
@@ -92,6 +99,7 @@ export function createRoutes(container: Container): Router {
   dealer.use(createDealersRouter(container.dealers));
   dealer.use(createVehiclesRouter(container.vehicles));
   dealer.use(createDealerEnquiriesRouter(container.enquiries));
+  dealer.use(createTeamRouter(container.team));
   v1.use('/dealer', dealer);
 
   const admin = Router();
