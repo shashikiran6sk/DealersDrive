@@ -74,6 +74,7 @@ export const ADMIN_PERMISSIONS = {
   'admin:access:manage': ['SUPER_ADMIN'],
   'admin:audit:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
   'admin:metrics:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
+  'admin:enquiry:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
 } as const satisfies Record<string, readonly AdminRole[]>;
 
 export type DealerPermission = keyof typeof PERMISSIONS;

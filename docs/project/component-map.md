@@ -1351,6 +1351,32 @@ both views share it, with the Reactivation requests tab and its count.
 `listings-page.test.tsx`. **Sandbox** `Admin/ReactivationQueue`; the Server
 Actions are stubbed by `apps/sandbox/src/mocks/listing-actions.ts`.
 
+### C119 — `EnquiryOversight` · C120 — `EnquiryDetail` · C121 — `AdminListLoading`
+
+**New at R89** (`features/admin/enquiry-oversight/`, `features/admin/enquiry-detail/`,
+`components/admin/admin-list-loading/`). The admin's read-only view of every
+customer enquiry. `EnquiryOversight` is `/admin/enquiries`: status tabs with
+counts, a GET search form with a sent-from/to day range, a removable dealer chip,
+a narrow table (customer + verified mobile, vehicle + plate + listing status when
+not active, dealer — which filters to that dealership — a truncated message
+preview hidden below `xl`, status, received time) and keyset Show more.
+`EnquiryDetail` is `/admin/enquiries/[id]`: message and status (with what the
+customer sees), customer, dealership, the car (`EnquiryVehicleCard`) and the
+audit-trail history (`EnquiryHistory`), with no control that changes the
+enquiry. `AdminListLoading`/`AdminDetailLoading` are the routes' `loading.tsx`.
+
+| Component          | Props                  | States                                                                       |
+| ------------------ | ---------------------- | ---------------------------------------------------------------------------- |
+| `EnquiryOversight` | `enquiries`, `filters` | list · filtered by dealer and search · unknown dealer · none · none matching |
+| `EnquiryDetail`    | `enquiry`              | spam, sold car, photograph · nothing on file                                 |
+| `AdminListLoading` | —                      | list · detail (`AdminDetailLoading`)                                         |
+
+**Changed:** `AdminNav` gains Enquiries above Configuration. **Reuses** `Table`,
+`StatusTag`, `EmptyState`, `Input`, `SkeletonLines`, the `seg` tabs and
+`dd-chip`. **Tests** `apps/web/tests/unit/features/admin/enquiry-oversight.test.tsx`,
+`dashboard-page.test.tsx`. **Sandbox** `Admin/EnquiryOversight`,
+`Admin/EnquiryDetail`, `Admin/AdminListLoading`, `Admin/AdminNav` (Enquiries).
+
 ### C099 — `AvailabilityBadge` · C100 — `AvailabilityNotice`
 
 **New at R71.** `AvailabilityBadge` (`components/vehicle/vehicle-card/`) is the

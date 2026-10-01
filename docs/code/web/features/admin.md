@@ -210,3 +210,40 @@ with the listing queue for the same reason. `approve` and `reject` default to
 the Server Actions and are props only so tests and the sandbox can pass stubs.
 Each decision reuses `DecisionDialog` in its `optional` mode — the listing
 review's reason dialog, without the six-character floor.
+
+## `apps/web/src/features/admin/enquiry-oversight/enquiry-oversight.tsx`
+
+### `export function EnquiryOversight({ enquiries, filters })`
+
+**R89.** The listings queue's shape — `seg` tabs with counts, a GET search form,
+the shared `Table`, keyset Show more — so the new page reads as part of the same
+console. Every filter lives in the URL; the form is a plain GET, and the tabs,
+the dealer chip and Show more each keep the others. There is no client state and
+no client component: the page is a server component reading uncached.
+
+The table is kept narrow on purpose. The message is a one-line preview that the
+API has already cut, and its column hides below `xl`; the whole message belongs
+to the detail. On a phone the table scrolls sideways inside its own rounded
+container, as every admin table does, rather than stacking seven columns into a
+page-long card per enquiry.
+
+Two empty states, because they mean different things: _no enquiries found_ is
+the platform having none, _none match these filters_ is the operator's search.
+
+### `EnquiryOversightRow` — the dealer link
+
+Clicking the dealership filters the list to it (`?dealer=<slug>`), which is the
+question an operator usually has next. The dealership's own admin page is one
+click further, on the detail.
+
+## `apps/web/src/features/admin/enquiry-detail/enquiry-detail.tsx`
+
+### `export function EnquiryDetail({ enquiry })`
+
+The listing review screen's layout — back link, header with the status, cards
+in two auto-fitting columns — so an operator moving between a listing and an
+enquiry about it is on familiar ground. It renders no control that changes the
+enquiry, and says so in a line under the header: oversight, not a takeover of
+the dealership's leads.
+
+All times are IST, stated once at the foot of the enquiry card.

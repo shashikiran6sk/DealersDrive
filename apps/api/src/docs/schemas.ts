@@ -39,6 +39,7 @@ const INPUT_SCHEMA_NAMES = [
   'SavedVehiclesQuery',
   'DealerEnquiryQuery',
   'UpdateEnquiryInput',
+  'AdminEnquiryQuery',
   'CreateVehicleInput',
   'UpdateVehicleInput',
   'WithdrawListingInput',

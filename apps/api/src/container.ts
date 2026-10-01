@@ -11,6 +11,10 @@ import { createConfigService, type ConfigService } from './modules/config/config
 import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
 import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
 import {
+  createAdminEnquiriesService,
+  type AdminEnquiriesService,
+} from './modules/enquiries/enquiries.admin.service.js';
+import {
   createEnquiriesService,
   type EnquiriesService,
 } from './modules/enquiries/enquiries.service.js';
@@ -102,6 +106,7 @@ export interface Container {
   readonly phone: PhoneService;
   readonly phoneSignIn: PhoneSignInService;
   readonly enquiries: EnquiriesService;
+  readonly adminEnquiries: AdminEnquiriesService;
   readonly savedVehicles: SavedVehiclesService;
   readonly customers: CustomerAuthService;
   readonly dealers: DealersService;
@@ -232,6 +237,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     moderation,
     vehicleImages,
     enquiries,
+    adminEnquiries: createAdminEnquiriesService({ prisma }),
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };

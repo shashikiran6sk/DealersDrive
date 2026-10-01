@@ -175,3 +175,82 @@ Mounted inside the dealer router, so `requireDealer` has already run;
 `enquiry:read` and `enquiry:update` are the permissions every seat in the
 baseline's role table already held. `/enquiries/counts` is registered before
 `/enquiries/:id`. Every answer is `no-store` — it carries customers' numbers.
+
+## `apps/api/src/modules/enquiries/enquiries.admin.service.ts`
+
+### `export function createAdminEnquiriesService({ prisma }: { prisma: PrismaClient })`
+
+**R89** — admin oversight of enquiries, and the reason it is a second service
+rather than more methods on the first. The customer's and the dealership's
+reads are each scoped by the session: one by `customerId`, the other by
+`dealerId`. This one is scoped by nothing but the admin guard, and keeping it
+apart means no method of the scoped service can ever grow an "or every
+dealership" branch. It reads the **same rows** — there is no admin copy of an
+enquiry — and it writes nothing. An admin cannot change an enquiry's status;
+the dealership's inbox stays the only place it moves, so the workflow and its
+semantics are exactly what R66 made them.
+
+A page view is not audited. Oversight is read-only and frequent, and an audit
+row per look would bury the rows that record something happening.
+
+### `const scope: Prisma.EnquiryWhereInput = { AND: filters }`
+
+Every filter except `status`. The list reads `scope` plus the status and the
+cursor; the tab counts group `scope` by status. So the tabs always describe the
+enquiries being looked at — a search for one customer shows how many of _their_
+enquiries are in each tab — and switching tab never empties the bar.
+
+### `OR: [{ createdAt: { lt: cursor.at } }, { createdAt: cursor.at, id: { lt: cursor.id } }]`
+
+A keyset on `(createdAt, id)`, not the bare `createdAt` cursor the dealer inbox
+uses. Across every dealership two enquiries sent in the same millisecond are
+plausible, and a cursor on the timestamp alone would skip the second. The
+order is `createdAt desc, id desc`, matched exactly by the predicate.
+
+### `export function enquirySearch(raw: string | undefined)`
+
+One box for the questions support actually asks: _which enquiry was Meera's_,
+_what did 98400 send_, _what has Sri Lakshmi received_, _who asked about
+TN 09 BX 0001_. The mobile number is matched only from three digits, so a
+search for a model year or a two-digit fragment does not drag in every number
+containing it. The plate is matched in the stored, separator-free form, as the
+moderation queue matches it.
+
+### `export function enquiryWindow(from, to)`
+
+The two dates are IST calendar days — what the operator sees on the wall — and
+both are inclusive: `to` becomes the first instant of the next IST day,
+exclusive.
+
+### `prisma.auditLog.findMany({ where: { entityType: 'Enquiry', … } })`
+
+**The history is the audit trail.** Every enquiry has written
+`enquiry.created` since R64, and every status change has written one of
+`enquiry.contacted`, `.closed`, `.spam` or `.reopened`, with the actor and the
+status before and after (R66). That is already the status-event log the
+oversight page needs, so there is no second table to keep in step with it and
+nothing to backfill. An enquiry the trail has nothing on shows no history; it
+is never given one reconstructed from its timestamps.
+
+## `apps/api/src/modules/enquiries/enquiries.admin.mapper.ts`
+
+### `function previewOf(message: string | null)`
+
+The list shows the first non-blank line, cut at 120 characters, so a customer
+who wrote a paragraph does not make every row a paragraph tall or ship a
+thousand characters per row to a page that shows forty of them. The whole
+message is on the detail.
+
+### `customerStatusLabel`
+
+What the customer's own page says, beside what the dealership set. They differ
+for spam, which the customer sees as Closed (R68). In a dispute — "the dealer
+never answered" — an operator needs to know both what happened and what the
+customer was shown.
+
+### `adminHref` · `publicHref`
+
+A listing is never deleted by the lifecycle, so the review screen link always
+resolves. The public page exists only while the car is on the marketplace; for
+a sold, withdrawn or suspended car it is null, and the console says so rather
+than linking to a 404.
