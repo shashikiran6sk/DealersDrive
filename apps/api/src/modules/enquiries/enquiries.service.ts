@@ -1,4 +1,5 @@
 import {
+  enquiryTransitionPermission,
   formatRegistration,
   vehicleTitle,
   type CreateEnquiryInput,
@@ -17,7 +18,12 @@ import type { Prisma, PrismaClient } from '@prisma/client';
 import type { CustomerPrincipal } from '../auth/auth.facade.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
-import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import {
@@ -33,6 +39,7 @@ import {
 import {
   ALREADY_OPEN,
   ENQUIRY_NOT_FOUND,
+  ENQUIRY_TRANSITION_FORBIDDEN,
   LISTING_NOT_AVAILABLE,
   LISTING_NOT_FOUND,
   LISTING_RESERVED,
@@ -53,6 +60,7 @@ export const BLOCKING_STATUSES = [
 export interface EnquiryActor {
   dealerId: string;
   userId: string;
+  permissions: readonly string[];
 }
 
 const STATUS_AUDIT_ACTIONS: Record<EnquiryStatus, string> = {
@@ -67,14 +75,18 @@ function notFound(): NotFoundError {
 }
 
 function stampsFor(
-  current: { contactedAt: Date | null },
+  current: { contactedAt: Date | null; contactedById: string | null },
   status: EnquiryStatus,
   now: Date,
-): Prisma.EnquiryUpdateInput {
+  actorId: string,
+): Prisma.EnquiryUncheckedUpdateInput {
+  const firstContact = status === 'CONTACTED' && current.contactedAt === null;
   return {
     status,
-    contactedAt: status === 'CONTACTED' ? (current.contactedAt ?? now) : current.contactedAt,
+    contactedAt: firstContact ? now : current.contactedAt,
+    contactedById: firstContact ? actorId : current.contactedById,
     closedAt: status === 'CLOSED' ? now : null,
+    closedById: status === 'CLOSED' ? actorId : null,
   };
 }
 
@@ -164,7 +176,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
 
         const current = await tx.enquiry.findUniqueOrThrow({
           where: { id: enquiryId },
-          select: { status: true, contactedAt: true },
+          select: { status: true, contactedAt: true, contactedById: true },
         });
         if (current.status === input.status) {
           return toDealerEnquiry(
@@ -172,9 +184,17 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           );
         }
 
+        const needed = enquiryTransitionPermission(current.status, input.status);
+        if (!actor.permissions.includes(needed)) {
+          throw new ForbiddenError(ENQUIRY_TRANSITION_FORBIDDEN, {
+            code: 'ENQUIRY_ACTION_FORBIDDEN',
+            extra: { enquiryStatus: current.status, permission: needed },
+          });
+        }
+
         const updated = await tx.enquiry.update({
           where: { id: enquiryId },
-          data: stampsFor(current, input.status, new Date()),
+          data: stampsFor(current, input.status, new Date(), actor.userId),
           select: INBOX_SELECT,
         });
 

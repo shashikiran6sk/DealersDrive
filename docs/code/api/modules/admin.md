@@ -461,45 +461,27 @@ the union below is narrowed so the old path cannot be walked by accident.
 
 which is why this reads zero rather than being left out of the shape.
 
-### `await setSeatStatus(tx`
+### `if (status === 'ACTIVE' && memberUserIds.length > 0)`
 
-The **dealer seat**, not the account (**R41**).
+**R92 — suspension is a fact about the dealership, and touches no person.**
 
-### `await setSeatStatus(tx`
+R41 moved suspension off `users.status` onto each member's DEALER seat, and
+revoked their DEALER sessions. Both were right while a person could belong to
+one dealership and their dealer session was only a dealer session. Neither is
+true after R92: one person may be a member of several dealerships, and the one
+session they hold is also their customer account. Closing their seat because
+ABC Motors was suspended would lock them out of XYZ Cars; revoking their
+session would sign them out of Saved cars and My enquiries.
 
-This used to write `users.status`, which is the whole person: a
+So suspension writes `dealers.status` and nothing else. The members lose the
+dealership on their very next request, because `findWorkspaceMembership`
+(`auth/membership.ts`) skips a suspended dealership every time a dealer
+principal is built; the public catalogue drops the cars at once, because
+`PUBLIC_VISIBLE_LISTING_WHERE` requires `dealer.status = ACTIVE`.
 
-### `await setSeatStatus(tx`
-
-member who also moderates the platform lost the admin console
-
-### `await setSeatStatus(tx`
-
-because a dealership in Vellore was suspended. The seat is the
-
-### `await setSeatStatus(tx`
-
-right unit — it closes the door this decision is about and leaves
-
-### `await setSeatStatus(tx`
-
-every other one alone.
-
-### `await tx.session.updateMany(`
-
-Scoped to DEALER for the same reason. An admin session held by
-
-### `await tx.session.updateMany(`
-
-one of these people survives; their dealer console does not.
-
-### `await tx.session.updateMany(`
-
-Reinstatement never un-revokes these rows — the person signs in
-
-### `await tx.session.updateMany(`
-
-again, which is how the seat check runs afresh.
+Reinstatement still reopens the members' DEALER seats. Nothing closes one any
+more, but a seat closed by a suspension made before R92 would otherwise stay
+closed after the dealership it was about came back.
 
 ### `...(status === 'SUSPENDED' ? { reason } : {})`
 

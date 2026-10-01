@@ -147,7 +147,13 @@ export const enquiriesDocs: ModuleDocs = {
       summary: 'Move an enquiry to another tab',
       description:
         'Mark contacted, close, mark as spam, or reopen as new. Any status may follow any ' +
-        'other, so a mistaken Close is undone by choosing the right one. `contactedAt` is set ' +
+        'other, so a mistaken Close is undone by choosing the right one.\n\n' +
+        '**By role (R92).** Every member may move a new enquiry to CONTACTED ' +
+        '(`enquiry:contact`). Closing, marking spam, reopening, or moving a closed enquiry back ' +
+        'needs `enquiry:close` — OWNER and MANAGER — and STAFF get a 403 ' +
+        '`ENQUIRY_ACTION_FORBIDDEN`. Another dealership’s enquiry is a 404 whatever the role. ' +
+        'The member who first marks it contacted and the member who closes it are recorded.\n\n' +
+        '`contactedAt` is set ' +
         'the first time an enquiry is marked contacted and kept after; `closedAt` is set on ' +
         'close and cleared when it is reopened.\n\n' +
         'Setting the status it already has changes nothing and records nothing. A change is ' +
@@ -156,7 +162,7 @@ export const enquiriesDocs: ModuleDocs = {
         'Only `status` is accepted — the body is `.strict()`, so a customer’s name, number or ' +
         'message cannot be edited here.',
       audience: 'dealer',
-      permission: 'enquiry:update',
+      permission: 'enquiry:contact',
       params: 'IdParam',
       requestBody: { schema: 'UpdateEnquiryInput', example: { status: 'CONTACTED' } },
       responses: [{ status: 200, description: 'The enquiry, moved.', schema: 'DealerEnquiry' }],

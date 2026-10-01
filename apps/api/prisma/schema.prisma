@@ -50,6 +50,9 @@ model User {
   enquiries     Enquiry[]
   savedVehicles SavedVehicle[]
 
+  enquiriesContacted Enquiry[] @relation("EnquiryContactedBy")
+  enquiriesClosed    Enquiry[] @relation("EnquiryClosedBy")
+
   supportTickets  SupportTicket[]        @relation("SupportTicketCustomer")
   supportMessages SupportTicketMessage[] @relation("SupportMessageAuthor")
   assignedTickets SupportTicket[]        @relation("SupportTicketAssignee")
@@ -100,7 +103,7 @@ model UserRole {
 }
 
 /// The two seats a person can hold. Deliberately **not** `DealerRole`, which is
-/// a rank *within* one dealership (OWNER/MANAGER/SALES), nor `AdminRole`, which
+/// a rank *within* one dealership (OWNER/MANAGER/STAFF), nor `AdminRole`, which
 /// is a rank within the console. This is which console you may enter at all.
 enum PlatformRole {
   DEALER
@@ -308,6 +311,11 @@ model Dealer {
   @@map("dealers")
 }
 
+/// One person's place in one dealership (**R92**). A person may hold several,
+/// one per dealership; there is deliberately no `users.dealerId`.
+///
+/// What the role allows is `DEALER_PERMISSIONS` in contracts — a fixed table,
+/// not this row. `permissions` is a baseline column nothing reads or writes.
 model DealerMember {
   id          String       @id @default(uuid()) @db.Uuid
   dealerId    String       @db.Uuid
@@ -315,12 +323,19 @@ model DealerMember {
   role        DealerRole
   permissions String[]
   status      MemberStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
 
   dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  /// One row per person per dealership, whatever its status — a removed member
+  /// who is invited back gets their old row reactivated, never a second one.
   @@unique([dealerId, userId])
-  @@index([userId])
+  /// "Which dealerships may this person enter" — read on every dealer request.
+  @@index([userId, status])
+  /// The team list.
+  @@index([dealerId, status])
   @@map("dealer_members")
 }
 
@@ -434,10 +449,11 @@ enum DealerStatus {
   CLOSED
 }
 
+/// R92 renamed `SALES` to `STAFF` in place (`ALTER TYPE … RENAME VALUE`).
 enum DealerRole {
   OWNER
   MANAGER
-  SALES
+  STAFF
 }
 
 enum MemberStatus {
@@ -785,21 +801,27 @@ enum ListingCheckKey {
 /// `dealerId` is the listing's, copied on write and never accepted from a
 /// request — it is the tenant key every dealer read filters on (rule 1).
 model Enquiry {
-  id          String        @id @default(uuid()) @db.Uuid
-  customerId  String        @db.Uuid
-  dealerId    String        @db.Uuid
-  listingId   String        @db.Uuid
+  id            String        @id @default(uuid()) @db.Uuid
+  customerId    String        @db.Uuid
+  dealerId      String        @db.Uuid
+  listingId     String        @db.Uuid
   /// Optional. A customer who only wants a call back sends no text at all.
-  message     String?
-  status      EnquiryStatus @default(NEW)
-  contactedAt DateTime?
-  closedAt    DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  message       String?
+  status        EnquiryStatus @default(NEW)
+  contactedAt   DateTime?
+  closedAt      DateTime?
+  /// The member who marked it CONTACTED, and who closed it (**R92**). NULL on
+  /// rows from before R92, and when that person's account is deleted.
+  contactedById String?       @db.Uuid
+  closedById    String?       @db.Uuid
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  customer User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  dealer   Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
-  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  customer    User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  contactedBy User?   @relation("EnquiryContactedBy", fields: [contactedById], references: [id], onDelete: SetNull)
+  closedBy    User?   @relation("EnquiryClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  dealer      Dealer  @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  listing     Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   supportTickets SupportTicket[]
 

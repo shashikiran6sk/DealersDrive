@@ -111,7 +111,7 @@ export const DealerStatus = z.enum([
 ]);
 export type DealerStatus = z.infer<typeof DealerStatus>;
 
-export const DealerRole = z.enum(['OWNER', 'MANAGER', 'SALES']);
+export const DealerRole = z.enum(['OWNER', 'MANAGER', 'STAFF']);
 export type DealerRole = z.infer<typeof DealerRole>;
 
 export const AdminRole = z.enum(['SUPPORT', 'MODERATOR', 'SUPER_ADMIN']);

@@ -115,14 +115,14 @@ describe('who may submit', () => {
     expect(refused.body.code).toBe('DEALER_NOT_ACTIVE');
   });
 
-  it('refuses a salesperson', async () => {
-    const sales = await fixtures.dealership();
-    const id = await vehicle(sales);
+  it('refuses STAFF', async () => {
+    const staff = await fixtures.dealership();
+    const id = await vehicle(staff);
     await h.prisma.dealerMember.updateMany({
-      where: { dealerId: sales.dealerId },
-      data: { role: 'SALES' },
+      where: { dealerId: staff.dealerId },
+      data: { role: 'STAFF' },
     });
-    await sales.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(403);
+    await staff.agent.post(`/v1/dealer/vehicles/${id}/submit`).expect(403);
   });
 
   it('needs a session', async () => {

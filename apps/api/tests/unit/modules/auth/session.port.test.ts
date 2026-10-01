@@ -15,12 +15,12 @@ import {
  * can publish, and which can only look.
  *
  * The negative assertions matter more than the positive ones. A permission
- * wrongly *added* to SALES is a privilege escalation that no route-level test
+ * wrongly *added* to STAFF is a privilege escalation that no route-level test
  * would notice, because every route would still be doing exactly what it was
  * told.
  */
 
-const DEALER_ROLES: DealerRole[] = ['OWNER', 'MANAGER', 'SALES'];
+const DEALER_ROLES: DealerRole[] = ['OWNER', 'MANAGER', 'STAFF'];
 const ADMIN_ROLES: AdminRole[] = ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'];
 
 describe('permissionsForRole', () => {
@@ -34,7 +34,7 @@ describe('permissionsForRole', () => {
     (permission) => {
       expect(permissionsForRole('OWNER')).toContain(permission);
       expect(permissionsForRole('MANAGER')).not.toContain(permission);
-      expect(permissionsForRole('SALES')).not.toContain(permission);
+      expect(permissionsForRole('STAFF')).not.toContain(permission);
     },
   );
 
@@ -55,19 +55,25 @@ describe('permissionsForRole', () => {
     expect(manager).not.toContain('billing:purchase');
   });
 
-  /** A salesperson works leads. They cannot spend a credit or change a price. */
-  it('limits SALES to reading vehicles and working enquiries', () => {
-    expect(permissionsForRole('SALES').sort()).toEqual(
-      ['enquiry:read', 'enquiry:update', 'vehicle:read'].sort(),
+  /** R92: STAFF prepare drafts and work leads; they publish nothing and close nothing. */
+  it('limits STAFF to drafts and to marking leads contacted', () => {
+    expect(permissionsForRole('STAFF').sort()).toEqual(
+      ['enquiry:contact', 'enquiry:read', 'vehicle:read', 'vehicle:write'].sort(),
     );
   });
 
-  it.each(['vehicle:write', 'vehicle:delete', 'listing:submit', 'listing:renew'])(
-    'keeps %s away from SALES',
-    (permission) => {
-      expect(permissionsForRole('SALES')).not.toContain(permission);
-    },
-  );
+  it.each([
+    'vehicle:delete',
+    'listing:submit',
+    'listing:reserve',
+    'listing:sell',
+    'listing:withdraw',
+    'listing:reactivate',
+    'listing:renew',
+    'enquiry:close',
+  ])('keeps %s away from STAFF', (permission) => {
+    expect(permissionsForRole('STAFF')).not.toContain(permission);
+  });
 
   it('lets every role read the enquiries they are meant to work', () => {
     for (const role of DEALER_ROLES) {
@@ -81,11 +87,11 @@ describe('permissionsForRole', () => {
     }
   });
 
-  it('is a strict hierarchy — MANAGER ⊇ SALES and OWNER ⊇ MANAGER', () => {
+  it('is a strict hierarchy — MANAGER ⊇ STAFF and OWNER ⊇ MANAGER', () => {
     const owner = new Set(permissionsForRole('OWNER'));
     const manager = new Set(permissionsForRole('MANAGER'));
 
-    expect(permissionsForRole('SALES').every((p) => manager.has(p))).toBe(true);
+    expect(permissionsForRole('STAFF').every((p) => manager.has(p))).toBe(true);
     expect(permissionsForRole('MANAGER').every((p) => owner.has(p))).toBe(true);
   });
 
