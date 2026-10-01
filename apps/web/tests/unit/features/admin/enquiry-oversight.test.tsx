@@ -240,6 +240,7 @@ function detail(overrides: Partial<AdminEnquiryDetail> = {}): AdminEnquiryDetail
         atLabel: '26 Sep 2026, 15:30',
       },
     ],
+    supportTickets: [],
     ...overrides,
   };
 }
@@ -301,6 +302,35 @@ describe('/admin/enquiries/[id]', () => {
       'href',
       '/car/a-car',
     );
+  });
+
+  /** R91 — the customer's side of a dispute, one click from the dealer's. */
+  it('lists the support tickets that reference the enquiry, or says there are none', async () => {
+    apiGetParsed.mockResolvedValue(
+      detail({
+        supportTickets: [
+          {
+            id: '99999999-9999-4999-8999-999999999999',
+            reference: 'DD-1042',
+            subject: 'The dealer has not called me back',
+            statusLabel: 'Open',
+            statusTone: 'accent',
+            createdLabel: '27 Sep 2026, 10:00',
+          },
+        ],
+      }),
+    );
+    const { unmount } = render(await AdminEnquiryPage({ params: Promise.resolve({ id: ID }) }));
+    const tickets = screen.getByRole('region', { name: 'Support tickets' });
+    expect(within(tickets).getByRole('link', { name: /DD-1042/ })).toHaveAttribute(
+      'href',
+      '/admin/support/99999999-9999-4999-8999-999999999999',
+    );
+    unmount();
+
+    apiGetParsed.mockResolvedValue(detail());
+    render(await AdminEnquiryPage({ params: Promise.resolve({ id: ID }) }));
+    expect(screen.getByText('No support tickets reference this enquiry.')).toBeInTheDocument();
   });
 
   it('answers an unknown enquiry with the 404 page, and passes anything else on', async () => {

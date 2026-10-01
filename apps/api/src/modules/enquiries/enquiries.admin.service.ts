@@ -119,7 +119,7 @@ export function createAdminEnquiriesService({ prisma }: { prisma: PrismaClient }
     },
 
     async detail(enquiryId: string): Promise<AdminEnquiryDetail> {
-      const [row, history] = await Promise.all([
+      const [row, history, tickets] = await Promise.all([
         prisma.enquiry.findUnique({ where: { id: enquiryId }, select: ADMIN_DETAIL_SELECT }),
         prisma.auditLog.findMany({
           where: {
@@ -130,11 +130,16 @@ export function createAdminEnquiriesService({ prisma }: { prisma: PrismaClient }
           orderBy: { id: 'asc' },
           select: { action: true, actorType: true, before: true, after: true, createdAt: true },
         }),
+        prisma.supportTicket.findMany({
+          where: { enquiryId },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, number: true, subject: true, status: true, createdAt: true },
+        }),
       ]);
       if (!row) {
         throw new NotFoundError(ADMIN_ENQUIRY_NOT_FOUND, { code: 'ENQUIRY_NOT_FOUND' });
       }
-      return toAdminEnquiryDetail(row, history);
+      return toAdminEnquiryDetail(row, history, tickets);
     },
   };
 }

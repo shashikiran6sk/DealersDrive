@@ -356,5 +356,19 @@ export const AdminEnquiryDetail = z.object({
     adminHref: z.string(),
   }),
   history: z.array(AdminEnquiryHistoryEntry),
+  /**
+   * Support tickets that reference this enquiry (**R91**) — the customer's
+   * side of a dispute, one click from the dealer's.
+   */
+  supportTickets: z.array(
+    z.object({
+      id: Uuid,
+      reference: z.string(),
+      subject: z.string(),
+      statusLabel: z.string(),
+      statusTone: StatusTone,
+      createdLabel: z.string(),
+    }),
+  ),
 });
 export type AdminEnquiryDetail = z.infer<typeof AdminEnquiryDetail>;

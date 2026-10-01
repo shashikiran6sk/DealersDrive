@@ -9,12 +9,15 @@ export function SupportMessageBubble({
   createdAt,
   createdLabel,
   tag,
+  side,
 }: Pick<SupportMessage, 'author' | 'authorLabel' | 'body' | 'createdAt' | 'createdLabel'> & {
   tag?: string;
+  side?: 'start' | 'end';
 }) {
   const mine = author === 'CUSTOMER';
+  const end = side ? side === 'end' : mine;
   return (
-    <li className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
+    <li className={cn('flex', end ? 'justify-end' : 'justify-start')}>
       <article
         className={cn(
           'flex max-w-[min(100%,560px)] flex-col gap-[6px] rounded-[14px] border px-[14px] py-[12px]',

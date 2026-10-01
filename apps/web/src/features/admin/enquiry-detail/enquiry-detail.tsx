@@ -6,6 +6,7 @@ import { StatusTag } from '@/components/ui/primitives';
 import { DetailRow } from './detail-row';
 import { ENQUIRY_DETAIL_TEXT } from './enquiry-detail.constants';
 import { EnquiryHistory } from './enquiry-history';
+import { EnquiryTickets } from './enquiry-tickets';
 import { EnquiryVehicleCard } from './enquiry-vehicle-card';
 
 export function EnquiryDetail({ enquiry }: { enquiry: AdminEnquiryDetail }) {
@@ -132,6 +133,7 @@ export function EnquiryDetail({ enquiry }: { enquiry: AdminEnquiryDetail }) {
 
         <div className="flex min-w-0 flex-col gap-5">
           <EnquiryVehicleCard vehicle={enquiry.vehicle} />
+          <EnquiryTickets tickets={enquiry.supportTickets} />
           <EnquiryHistory history={enquiry.history} />
         </div>
       </div>

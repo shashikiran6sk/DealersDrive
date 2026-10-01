@@ -247,3 +247,38 @@ enquiry, and says so in a line under the header: oversight, not a takeover of
 the dealership's leads.
 
 All times are IST, stated once at the foot of the enquiry card.
+
+## `apps/web/src/features/admin/support-queue/support-queue.tsx`
+
+### `export function SupportQueue({ tickets, filters })`
+
+**R91.** The enquiry oversight list's shape — `seg` status tabs with counts, a
+GET filter form whose every value lives in the URL, the shared `Table`, keyset
+Show more, and two empty states — so the two pages under Enquiries and Support
+Tickets read as one console. "What it is about" (the car and dealership of the
+linked enquiry) is hidden below `xl` to keep the table narrow.
+
+## `apps/web/src/features/admin/support-ticket/support-ticket.tsx`
+
+### `export function SupportTicketWorkspace({ ticket, viewerId })`
+
+Two columns: the work (conversation, composer, internal notes, history) and the
+facts (ticket controls, customer, related enquiry, car, dealer). On a narrow
+screen the facts stack under the work.
+
+### `TicketComposer` — Reply to customer / Internal note
+
+The one place an operator could leak a note, so the two modes are made hard to
+confuse rather than merely labelled: the note mode turns the whole composer
+amber, says "Private. The customer never sees internal notes.", and has its own
+secondary "Add internal note" button; the reply mode keeps the primary "Send
+reply to customer". And they call different Server Actions and different API
+routes, so even a mislabelled button could not publish a note.
+
+### `TicketControls`
+
+The status select lists the current status and only the moves
+`SUPPORT_TICKET_TRANSITIONS` allows from it; a closed ticket's is disabled with
+the reason. Save sends only the fields that changed. Assign to me appears when
+the signed-in operator is assignable, matched by the email the console header
+already reads.

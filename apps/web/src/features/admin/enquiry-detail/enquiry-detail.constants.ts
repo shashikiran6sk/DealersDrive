@@ -40,4 +40,7 @@ export const ENQUIRY_DETAIL_TEXT = {
   transition: (from: string, to: string) => `${from} → ${to}`,
   by: (actor: string) => `by ${actor}`,
   timesInIst: 'All times IST.',
+  tickets: 'Support tickets',
+  ticketsIntro: 'Requests the customer raised with Dealers-Drive about this enquiry.',
+  noTickets: 'No support tickets reference this enquiry.',
 } as const;

@@ -88,3 +88,59 @@ which operator answered, and the operator's id is not in the response.
 Five new requests per customer per hour, and twenty per IP. Generous enough
 that a customer with several real problems is never stopped, tight enough that
 a script cannot fill the queue. Replies allow thirty an hour per customer.
+
+## `apps/api/src/modules/support/support.admin.service.ts`
+
+### `export function createAdminSupportService({ prisma, audit }: SupportDeps)`
+
+**R91** — the console's side of the same tickets. A second service rather than
+admin branches in the customer's, for the reason the enquiry oversight gave:
+the customer service is scoped by the session's user and nothing in it may ever
+grow an "every customer" path.
+
+Everything is behind `admin:support:manage`, which SUPPORT holds as well as
+MODERATOR and SUPER_ADMIN. It is the first write the SUPPORT role has — the
+role exists to answer tickets — and `session.port.test.ts` pins that it is the
+only one.
+
+### `async reply(admin, ticketId, input)` · `async note(admin, ticketId, input)`
+
+**A reply and an internal note are different routes and different tables**, not
+one route with a visibility flag. A flag is one wrong boolean away from
+publishing a note; two routes writing two tables means the customer's select
+(`CUSTOMER_TICKET_SELECT`) cannot reach a note even by mistake.
+
+A reply moves the ticket's `updatedAt` — the customer sees new activity. A note
+does not, and neither does a priority or assignment change (`updatedAt` is
+written back as it was): last-activity time is shown to the customer, and it
+must not move for something they cannot see.
+
+### `async update(admin, ticketId, input)`
+
+Status, priority and assignee in one transaction with the ticket locked
+`FOR UPDATE`, each change checked and audited separately, and nothing written
+when nothing changed. A status move is checked against
+`SUPPORT_TICKET_TRANSITIONS` — the same table the console's select is built
+from — so the API and the UI cannot disagree about what is allowed. Resolving
+stamps `resolvedAt`, closing stamps `closedAt`, reopening clears `resolvedAt`.
+
+### `async function assignableAdmins()`
+
+Assignment needs no new role model. An assignee is a user who could sign in to
+the console right now: `isPlatformAdmin`, an `adminRole`, `ACTIVE`, an
+operations seat that is not suspended (R41), and either on the allow-list or
+granted a seat (R42) — the same test `resolveAdmin` applies. A customer's id, a
+suspended operator or an unknown id is `422 SUPPORT_ASSIGNEE_INVALID`.
+
+### `prisma.auditLog.findMany({ where: { entityType: 'SupportTicket', … } })`
+
+History is the audit trail, as for listings and enquiries. Admin actors are
+named by looking their ids up; an operator whose account has since gone shows
+as "a former admin" rather than a raw id.
+
+### `export function supportSearch(raw)`
+
+One box: a reference in any spelling (`DD-1042`, `dd 1042`, `1042`), the
+subject, the customer's name or mobile (from three digits), and the dealership,
+make, model or plate of the enquiry the ticket is about — reached through the
+one `enquiryId`, never copied onto the ticket.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  AdminSupportTicketQuery,
   CreateSupportTicketInput,
   CUSTOMER_SUPPORT_STATUS_LABELS,
   ENQUIRY_RELATED_CATEGORIES,
@@ -11,6 +12,7 @@ import {
   SUPPORT_STATUS_TONES,
   SUPPORT_TICKET_TRANSITIONS,
   SupportMessageInput,
+  SupportNoteInput,
   SupportTicketCategory,
   SupportTicketPriority,
   SupportTicketStatus,
@@ -18,6 +20,7 @@ import {
   canTransitionSupportTicket,
   statusAfterCustomerReply,
   supportTicketReference,
+  UpdateSupportTicketInput,
 } from '../../src/support.js';
 
 /**
@@ -131,5 +134,36 @@ describe('SupportMessageInput', () => {
     expect(SupportMessageInput.safeParse({ message: 'x', authorType: 'SUPPORT' }).success).toBe(
       false,
     );
+  });
+});
+
+describe('admin inputs (R91)', () => {
+  const ID = '6f1c2a3b-4d5e-4f60-8a71-92b3c4d5e6f7';
+
+  it('UpdateSupportTicketInput needs at least one change, and takes null to unassign', () => {
+    expect(UpdateSupportTicketInput.safeParse({}).success).toBe(false);
+    expect(UpdateSupportTicketInput.parse({ assignedAdminId: null })).toEqual({
+      assignedAdminId: null,
+    });
+    expect(UpdateSupportTicketInput.parse({ status: 'RESOLVED', priority: 'HIGH' })).toEqual({
+      status: 'RESOLVED',
+      priority: 'HIGH',
+    });
+    expect(UpdateSupportTicketInput.safeParse({ priority: 'CRITICAL' }).success).toBe(false);
+    expect(UpdateSupportTicketInput.safeParse({ customerId: ID }).success).toBe(false);
+  });
+
+  it('AdminSupportTicketQuery takes me, unassigned or an admin id as the assignee', () => {
+    for (const assignee of ['me', 'unassigned', ID]) {
+      expect(AdminSupportTicketQuery.safeParse({ assignee }).success).toBe(true);
+    }
+    expect(AdminSupportTicketQuery.safeParse({ assignee: 'someone' }).success).toBe(false);
+    expect(AdminSupportTicketQuery.parse({}).limit).toBe(25);
+    expect(AdminSupportTicketQuery.safeParse({ from: '30-09-2026' }).success).toBe(false);
+  });
+
+  it('SupportNoteInput trims, and refuses an empty note', () => {
+    expect(SupportNoteInput.parse({ note: ' Called ' })).toEqual({ note: 'Called' });
+    expect(SupportNoteInput.safeParse({ note: '  ' }).success).toBe(false);
   });
 });
