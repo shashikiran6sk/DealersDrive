@@ -1,7 +1,7 @@
 import type { SupportContact, SupportContacts } from '@dealers-drive/contracts';
 import type { ReactNode } from 'react';
 
-export type SupportIconName = 'customer' | 'dealer' | 'chat';
+export type SupportIconName = 'customer' | 'dealer' | 'chat' | 'request';
 
 export interface SupportCardProps {
   icon: SupportIconName;

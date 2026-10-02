@@ -18,6 +18,15 @@ export const SUPPORT_TEXT = {
   whatsappUnavailable: 'WhatsApp chat is not available yet. Email or call us instead.',
   emailLabel: 'Email',
   phoneLabel: 'Phone',
+  requestTitle: 'Need help with a dealer, a car, an enquiry or your account?',
+  requestBody:
+    'Create a support request and our team will look into it. You can follow every reply from your account, and attach it to one of your enquiries so we can see the dealer and the car straight away.',
+  requestAction: 'Create support request',
+  requestHref: '/support-requests/new',
+  requestsLink: 'View my support requests',
+  requestsHref: '/support-requests',
+  requestSignIn: 'You will be asked to sign in with your mobile number first.',
+  otherWays: 'Other ways to reach us',
   help: 'Include your registered mobile number, and the car or listing you are asking about, so we can help faster.',
   externalArrow: '↗',
 } as const;

@@ -9,6 +9,7 @@ import { CustomerHeader } from '@/components/layout/customer-header';
 import {
   customerAccountAction,
   customerLogoutAction,
+  enterWorkspaceAction,
 } from '@/features/auth/customer-account-actions';
 import { HeaderAccount } from '@/features/auth/header-account';
 import { maskIndianMobile, personInitials } from '@/lib/person';
@@ -18,11 +19,15 @@ import { maskIndianMobile, personInitials } from '@/lib/person';
  * public pages are static, so the header cannot know who is signed in while
  * it renders; it shows Login, then asks once in the browser. A signed-in
  * customer sees a round avatar with their initials, which opens a menu:
- * their name and masked number, Saved cars, My enquiries, Logout.
+ * their name and masked number, Saved cars, My enquiries, Dealer Login, Logout.
+ * Dealer Login is only a link to the Dealer tab of `/login` (**R93**) for a
+ * customer who belongs to no dealership; a member sees their dealerships
+ * instead, and enters one with the session they already have.
  */
 vi.mock('@/features/auth/customer-account-actions', () => ({
   customerAccountAction: vi.fn(),
   customerLogoutAction: vi.fn(),
+  enterWorkspaceAction: vi.fn(),
 }));
 
 const LOCATIONS: PublicLocations = {
@@ -73,14 +78,20 @@ describe('HeaderAccount', () => {
     expect(screen.queryByRole('link', { name: 'Login' })).toBeNull();
   });
 
-  it('opens a menu with the name, the masked number, Saved cars, My enquiries and Logout', async () => {
+  it('opens a menu with the name, the masked number, Saved cars, My enquiries, Support requests, Dealer Login and Logout', async () => {
     const { trigger, menu } = await openMenu();
 
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText('Asha Menon')).toBeInTheDocument();
     expect(screen.getByText('+91 98XXXXXX12')).toBeInTheDocument();
     const items = within(menu).getAllByRole('menuitem');
-    expect(items.map((item) => item.textContent)).toEqual(['Saved cars', 'My enquiries', 'Logout']);
+    expect(items.map((item) => item.textContent)).toEqual([
+      'Saved cars',
+      'My enquiries',
+      'Support requests',
+      'Dealer Login',
+      'Logout',
+    ]);
     expect(within(menu).getByRole('menuitem', { name: 'Saved cars' })).toHaveAttribute(
       'href',
       '/saved',
@@ -89,15 +100,27 @@ describe('HeaderAccount', () => {
       'href',
       '/enquiries',
     );
+    expect(within(menu).getByRole('menuitem', { name: 'Support requests' })).toHaveAttribute(
+      'href',
+      '/support-requests',
+    );
   });
 
   it('puts focus on the first item, moves with the arrow keys, Home and End, and wraps', async () => {
     const { user, menu } = await openMenu();
-    const [saved, enquiries, logout] = within(menu).getAllByRole('menuitem');
+    const [saved, enquiries, support, dealer, logout] = within(menu).getAllByRole('menuitem');
 
     await waitFor(() => expect(saved).toHaveFocus());
     await user.keyboard('{ArrowDown}');
     expect(enquiries).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(support).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(dealer).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(logout).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
+    expect(dealer).toHaveFocus();
     await user.keyboard('{End}');
     expect(logout).toHaveFocus();
     await user.keyboard('{ArrowDown}');
@@ -127,6 +150,43 @@ describe('HeaderAccount', () => {
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
   });
 
+  it('offers Dealer Login as a link to the Dealer tab, set apart between separators', async () => {
+    const { menu } = await openMenu();
+    const dealer = within(menu).getByRole('menuitem', { name: 'Dealer Login' });
+
+    expect(dealer.tagName).toBe('A');
+    expect(dealer).toHaveAttribute('href', '/login?as=dealer');
+    expect(dealer.className).toBe(
+      within(menu).getByRole('menuitem', { name: 'Saved cars' }).className,
+    );
+    const previous = dealer.previousElementSibling;
+    const next = dealer.nextElementSibling;
+    expect(previous).toHaveAttribute('role', 'separator');
+    expect(next).toHaveAttribute('role', 'separator');
+  });
+
+  it('closes when Dealer Login is chosen, and does no sign-in work of its own', async () => {
+    const { user, menu } = await openMenu();
+    await user.click(within(menu).getByRole('menuitem', { name: 'Dealer Login' }));
+
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    expect(customerLogoutAction).not.toHaveBeenCalled();
+    expect(navigationState.refreshed).toBe(0);
+    expect(screen.getByRole('button', { name: 'Account menu for Asha Menon' })).toBeInTheDocument();
+  });
+
+  it('reaches Dealer Login from the keyboard and opens it with Enter', async () => {
+    const { user, menu } = await openMenu();
+    const dealer = within(menu).getByRole('menuitem', { name: 'Dealer Login' });
+    await waitFor(() =>
+      expect(within(menu).getByRole('menuitem', { name: 'Saved cars' })).toHaveFocus(),
+    );
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
+    expect(dealer).toHaveFocus();
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+  });
+
   it('logs out, shows Login again and refreshes the page', async () => {
     vi.mocked(customerLogoutAction).mockResolvedValue();
     const { user, menu } = await openMenu();
@@ -146,6 +206,93 @@ describe('HeaderAccount', () => {
       expect(customerAccountAction).toHaveBeenCalled();
     });
     expect(screen.getByRole('link', { name: 'Login' })).toBeInTheDocument();
+  });
+});
+
+describe('a member’s dealerships (R93)', () => {
+  const ARUN = {
+    fullName: 'Arun Kumar',
+    phoneMasked: '+91 98XXXXXX45',
+    workspaces: [
+      {
+        membershipId: 'm-abc',
+        brandName: 'ABC Motors',
+        roleLabel: 'Manager',
+        enterable: true,
+        current: true,
+      },
+      {
+        membershipId: 'm-xyz',
+        brandName: 'XYZ Cars',
+        roleLabel: 'Staff',
+        enterable: true,
+        current: false,
+      },
+      {
+        membershipId: 'm-old',
+        brandName: 'Old Yard',
+        roleLabel: 'Staff',
+        enterable: false,
+        current: false,
+      },
+    ],
+  };
+
+  async function openArun() {
+    const user = userEvent.setup();
+    vi.mocked(customerAccountAction).mockResolvedValue(ARUN);
+    render(<HeaderAccount />);
+    await user.click(await screen.findByRole('button', { name: 'Account menu for Arun Kumar' }));
+    return { user, menu: await screen.findByRole('menu', { name: 'Account' }) };
+  }
+
+  it('lists each enterable dealership with the role, instead of Dealer Login', async () => {
+    const { menu } = await openArun();
+    const names = within(menu)
+      .getAllByRole('menuitem')
+      .map((item) => item.textContent);
+    expect(names).toEqual([
+      'Saved cars',
+      'My enquiries',
+      'Support requests',
+      'ABC MotorsCurrentDealer dashboard · Manager',
+      'XYZ CarsDealer dashboard · Staff',
+      'Logout',
+    ]);
+    expect(within(menu).queryByRole('menuitem', { name: 'Dealer Login' })).toBeNull();
+    expect(within(menu).getByRole('menuitem', { name: /ABC Motors/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+  });
+
+  it('shows a suspended dealership as closed, not as something to press', async () => {
+    const { menu } = await openArun();
+    expect(within(menu).getByText('Old Yard')).toBeInTheDocument();
+    expect(within(menu).getByText('Suspended — dealer access is closed')).toBeInTheDocument();
+    expect(within(menu).queryByRole('menuitem', { name: /Old Yard/ })).toBeNull();
+  });
+
+  it('enters a dealership through the session it already has — no sign-in, no logout', async () => {
+    vi.mocked(enterWorkspaceAction).mockResolvedValue();
+    const { user, menu } = await openArun();
+    await user.click(within(menu).getByRole('menuitem', { name: /XYZ Cars/ }));
+
+    expect(enterWorkspaceAction).toHaveBeenCalledWith('m-xyz');
+    expect(customerLogoutAction).not.toHaveBeenCalled();
+  });
+
+  it('uses an account it is given without asking for one, and goes home after logout', async () => {
+    vi.mocked(customerLogoutAction).mockResolvedValue();
+    const user = userEvent.setup();
+    render(<HeaderAccount initialAccount={ARUN} afterLogoutHref="/" />);
+    await user.click(screen.getByRole('button', { name: 'Account menu for Arun Kumar' }));
+    await user.click(
+      within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'Logout' }),
+    );
+
+    expect(customerAccountAction).not.toHaveBeenCalled();
+    await waitFor(() => expect(navigationState.pushed).toContain('/'));
   });
 });
 

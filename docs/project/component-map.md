@@ -359,7 +359,7 @@ exactly what makes "which nav item is active" testable for the first time.
 
 ---
 
-### C112 — `JsonLd`
+### C130 — `JsonLd`
 
 `components/seo/json-ld/`. Props `nodes` (typed JSON-LD nodes from
 `lib/seo/schemas`). Renders one `<script type="application/ld+json">` holding
@@ -371,7 +371,7 @@ draws nothing; its output is asserted in `tests/unit/app/seo-routes.test.tsx`
 and the page tests. See `docs/seo.md`. (Numbered C100 when it landed with F095;
 C100 was already `AvailabilityNotice`.)
 
-### C113 — `StatusPage` · `NotFoundState`
+### C131 — `StatusPage` · `NotFoundState`
 
 `components/errors/status-page/`. Props `code`, `title`, `description`,
 `actions`, `reference`. The full-page 404 and error screen — eyebrow code, one
@@ -380,7 +380,7 @@ is the 404's copy and its two links (Go to homepage, Browse cars). Consumers:
 `app/not-found.tsx`, `app/(public)/not-found.tsx`, `RouteError`. **NEW at
 F093/F094.** **P1** — sandbox `Errors/StatusPage`.
 
-### C114 — `RouteError` · C115 — `SectionError` · C116 — `RetryButton` · C117 — `StatusShell`
+### C132 — `RouteError` · C133 — `SectionError` · C134 — `RetryButton` · C135 — `StatusShell`
 
 `components/errors/`. `RouteError` (`error`, `reset`, `description`, `homeHref`,
 `homeLabel`) is what every `error.tsx` renders: `StatusPage` with Try again and
@@ -1330,11 +1330,17 @@ refuse — each as a `LifecycleDialog` on the `Dialog` primitive calling the
 and a private note. `ListingLifecyclePanel` sits under the read-only review on
 a live vehicle's page.
 
-| Component                 | Props                                                      | States                                                                      |
-| ------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `ListingLifecycleActions` | `vehicleId`, `vehicleTitle`, `actions`, `size?`, `submit?` | active · reserved · withdrawn · sold (renders nothing) · row size · refused |
-| `LifecycleDialog`         | `vehicleId`, `action`, `size`, `submit`                    | open · withdraw without a reason · pending · refused                        |
-| `ListingLifecyclePanel`   | `vehicleId`, `vehicleTitle`, `listing`                     | live (View on site) · withdrawn with reason and note · sold                 |
+**Revised by the reactivation review.** The moves are Mark reserved, Mark sold,
+Withdraw and Request reactivation; there is no Make active or Relist, because a
+reserved or withdrawn car goes back on sale only on an admin's approval.
+`reactivationPending` replaces a second request with a _Reactivation pending
+approval_ tag, and the panel shows a declined request with the admin's note.
+
+| Component                 | Props                                                                              | States                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `ListingLifecycleActions` | `vehicleId`, `vehicleTitle`, `actions`, `reactivationPending?`, `size?`, `submit?` | active · reserved · withdrawn · reactivation pending · sold (renders nothing) · row size · refused |
+| `LifecycleDialog`         | `vehicleId`, `action`, `size`, `submit`                                            | open · withdraw without a reason · reactivation note · pending · refused                           |
+| `ListingLifecyclePanel`   | `vehicleId`, `vehicleTitle`, `listing`                                             | live (View on site) · withdrawn with reason and note · reactivation pending / declined · sold      |
 
 **Changed:** `InventoryRow` and `InventoryCard` render the actions (the card is
 no longer one link — the link is its upper part, so the buttons are not nested
@@ -1344,6 +1350,113 @@ in an anchor); `VehicleWizard`'s locked view renders the panel. **Reuses**
 `listing-lifecycle-actions.test.ts`, `inventory-page.test.tsx`. **Sandbox**
 `Dealer/ListingLifecycleActions`, `Dealer/InventoryView`; the Server Action is
 stubbed by `apps/sandbox/src/mocks/listing-lifecycle-actions.ts`.
+
+### C112 — `ReactivationQueue` · C113 — `ModerationTabs`
+
+**New with the reactivation review** (`features/admin/moderation-queue/`). A
+dealer's request to put a reserved or withdrawn car back on sale is decided on
+a tab of `/admin/listings` (`?view=reactivation`): vehicle (linked to its review
+screen), dealer (linked), where the listing stands now, the move asked for
+(`Reserved → Active`), when, and the dealer's note. A pending row offers Approve
+and Decline, each a `DecisionDialog` in its new `optional` mode (an optional note
+to the dealer, no six-character floor); a decided row shows the outcome and the
+note. `ModerationTabs` is the status tab bar, lifted out of `ModerationQueue` so
+both views share it, with the Reactivation requests tab and its count.
+
+| Component           | Props                                              | States                                   |
+| ------------------- | -------------------------------------------------- | ---------------------------------------- |
+| `ReactivationQueue` | `requests`, `listingCounts`, `approve?`, `reject?` | waiting · declined · nothing waiting     |
+| `ModerationTabs`    | `active`, `counts`, `reactivationPending`, `q?`    | a listing status · reactivation requests |
+
+**Changed:** `DecisionDialog` gains `optional`, `primary`, `reasonLabel`,
+`reasonHint` and `size` (the listing review's uses are unchanged by default);
+`ModerationQueue` renders `ModerationTabs`. **Tests**
+`apps/web/tests/unit/features/admin/reactivation-queue.test.tsx`,
+`listings-page.test.tsx`. **Sandbox** `Admin/ReactivationQueue`; the Server
+Actions are stubbed by `apps/sandbox/src/mocks/listing-actions.ts`.
+
+### C126 — `SupportQueue` · C127 — `SupportTicketWorkspace`
+
+**New at R91** (`features/admin/support-queue/`, `features/admin/support-ticket/`).
+`SupportQueue` is `/admin/support`: status tabs, search and category / priority /
+assignee / created-day filters, a ticket table and keyset paging.
+`SupportTicketWorkspace` is `/admin/support/[id]`: conversation
+(`TicketConversation`), composer (`TicketComposer`, Reply to customer vs an amber
+Internal note), internal notes (`TicketNotes`), history (`TicketHistory`), ticket
+controls (`TicketControls`: status limited to allowed moves, priority, assignee,
+Assign to me), customer, related enquiry, car and dealer.
+
+| Component                | Props                | States                                         |
+| ------------------------ | -------------------- | ---------------------------------------------- |
+| `SupportQueue`           | `tickets`, `filters` | queue · filtered · none at all · none matching |
+| `SupportTicketWorkspace` | `ticket`, `viewerId` | working · unassigned · no enquiry · closed     |
+
+**Changed:** `AdminNav` gains Support Tickets above Configuration;
+`EnquiryDetail` gains `EnquiryTickets` (the tickets referencing the enquiry);
+`SupportMessageBubble` gains `side`, so the console can put support on the right.
+**Reuses** `Table`, `StatusTag`, `EmptyState`, `Input`, `Select`, `Textarea`,
+`Button`, `DetailRow`, `EnquiryVehicleCard`, `AdminListLoading`. **Tests**
+`apps/web/tests/unit/features/admin/support-tickets.test.tsx`,
+`enquiry-oversight.test.tsx`, `dashboard-page.test.tsx`. **Sandbox**
+`Admin/SupportQueue`, `Admin/SupportTicketWorkspace`, `Admin/EnquiryDetail`,
+`Admin/AdminNav`; the Server Actions are stubbed by
+`apps/sandbox/src/mocks/admin-support-actions.ts`.
+
+### C122 — `SupportRequestList` · C123 — `SupportRequestForm` · C124 — `SupportRequestDetail` · C125 — `SupportRequestCallout`
+
+**New at R90** (`features/support/support-requests/`, `features/support/support-page/`).
+A customer's support requests, in one area. `SupportRequestList` is
+`/support-requests`: a card per request (reference, subject, status, topic, last
+updated), Create support request, and an empty state. `SupportRequestForm` is
+`/support-requests/new`: topic, the customer's own enquiry for the topics it
+helps, subject and description; field errors beside their fields, one request per
+press. `SupportRequestDetail` is `/support-requests/[id]`: the request, its
+enquiry, the conversation (`SupportMessageBubble`) and `SupportReplyForm`, or a
+pointer to a new request once closed. `SupportRequestCallout` leads `/contact`.
+
+| Component               | Props                                                           | States                                                 |
+| ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| `SupportRequestList`    | `tickets`                                                       | requests · none yet · with more                        |
+| `SupportRequestForm`    | `enquiries`, `initialCategory?`, `initialEnquiryId?`, `submit?` | empty · about an enquiry · no enquiries yet · refused  |
+| `SupportRequestDetail`  | `ticket`                                                        | awaiting your reply · just created · resolved · closed |
+| `SupportRequestCallout` | —                                                               | default                                                |
+
+**Changed:** `SupportPage` leads with `SupportRequestCallout` and heads the
+contact cards "Other ways to reach us"; `AccountMenu` gains Support requests after
+My enquiries; `CustomerEnquiryCard` gains Get help with this enquiry. **Reuses**
+`Field`, `Select`, `Input`, `Textarea`, `Button`, `ButtonLink`, `StatusTag`,
+`EmptyState`, `SkeletonLines`. **Tests**
+`apps/web/tests/unit/features/support/support-requests.test.tsx`,
+`support-page.test.tsx`, `header-account.test.tsx`, `my-enquiries-page.test.tsx`.
+**Sandbox** `Support/SupportRequestList`, `Support/SupportRequestForm`,
+`Support/SupportRequestDetail`, `Layout/SupportPage`; the Server Actions are
+stubbed by `apps/sandbox/src/mocks/support-actions.ts`.
+
+### C119 — `EnquiryOversight` · C120 — `EnquiryDetail` · C121 — `AdminListLoading`
+
+**New at R89** (`features/admin/enquiry-oversight/`, `features/admin/enquiry-detail/`,
+`components/admin/admin-list-loading/`). The admin's read-only view of every
+customer enquiry. `EnquiryOversight` is `/admin/enquiries`: status tabs with
+counts, a GET search form with a sent-from/to day range, a removable dealer chip,
+a narrow table (customer + verified mobile, vehicle + plate + listing status when
+not active, dealer — which filters to that dealership — a truncated message
+preview hidden below `xl`, status, received time) and keyset Show more.
+`EnquiryDetail` is `/admin/enquiries/[id]`: message and status (with what the
+customer sees), customer, dealership, the car (`EnquiryVehicleCard`) and the
+audit-trail history (`EnquiryHistory`), with no control that changes the
+enquiry. `AdminListLoading`/`AdminDetailLoading` are the routes' `loading.tsx`.
+
+| Component          | Props                  | States                                                                       |
+| ------------------ | ---------------------- | ---------------------------------------------------------------------------- |
+| `EnquiryOversight` | `enquiries`, `filters` | list · filtered by dealer and search · unknown dealer · none · none matching |
+| `EnquiryDetail`    | `enquiry`              | spam, sold car, photograph · nothing on file                                 |
+| `AdminListLoading` | —                      | list · detail (`AdminDetailLoading`)                                         |
+
+**Changed:** `AdminNav` gains Enquiries above Configuration. **Reuses** `Table`,
+`StatusTag`, `EmptyState`, `Input`, `SkeletonLines`, the `seg` tabs and
+`dd-chip`. **Tests** `apps/web/tests/unit/features/admin/enquiry-oversight.test.tsx`,
+`dashboard-page.test.tsx`. **Sandbox** `Admin/EnquiryOversight`,
+`Admin/EnquiryDetail`, `Admin/AdminListLoading`, `Admin/AdminNav` (Enquiries).
 
 ### C099 — `AvailabilityBadge` · C100 — `AvailabilityNotice`
 
@@ -1449,10 +1562,10 @@ a single **36px round avatar** with their initials, at every width.
   returns focus to the avatar. A click outside closes it, and choosing a
   destination closes it.
 
-| Component       | Props                               | States                                    |
-| --------------- | ----------------------------------- | ----------------------------------------- |
-| `AccountMenu`   | `account`, `onLogout`, `loggingOut` | closed · open · logging out · phone width |
-| `HeaderAccount` | —                                   | signed out (Login) · signed in (avatar)   |
+| Component       | Props                               | States                                                                                        |
+| --------------- | ----------------------------------- | --------------------------------------------------------------------------------------------- |
+| `AccountMenu`   | `account`, `onLogout`, `loggingOut` | closed · open (Saved cars · My enquiries · Dealer Login · Logout) · logging out · phone width |
+| `HeaderAccount` | —                                   | signed out (Login) · signed in (avatar)                                                       |
 
 `CustomerAccount` gains `phoneMasked`; the raw number never reaches the
 browser. `firstNameOf` is gone with the greeting. **Tests**

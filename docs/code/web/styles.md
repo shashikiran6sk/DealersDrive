@@ -266,3 +266,17 @@ utility takes a variant in Tailwind v4, and the rail only exists at `lg:`.
 
 The same offset for a column that is sticky but not a scroller — the vehicle
 page's summary.
+
+### `.dd-chip` — the selected chip keeps its white label on hover (R84)
+
+The selected chip (`aria-current='page'`, `aria-current='true'` or
+`aria-pressed='true'`) is white on the accent, which is near-black. The hover
+rule sets the label to ink, and it used to out-rank the selected rule
+(`:hover:not(:disabled)` is one pseudo-class more specific), so hovering the
+selected filter on the dealer inventory or the dealer enquiries drew ink on
+black and the label disappeared. The hover rule now excludes the selected
+states, and the selected chip's own hover only moves its ground to
+`--color-neutral-800` — the same step `.btn-primary` takes — so it still
+answers the pointer without touching the text. No `!important`, no page-level
+override: `DirectoryFilters` had worked around this with `text-white`, which is
+now redundant but harmless. `tests/unit/styles/dd-chip.test.tsx` pins the rule.

@@ -88,6 +88,7 @@ export const VEHICLE_WIZARD_TEXT = {
   resubmit: 'Resubmit for review',
   notSubmitted: 'That vehicle could not be submitted.',
   submitBlocked: 'Fill in the missing details to submit.',
+  submitByManager: 'Your changes are saved as a draft. A manager or the owner sends it for review.',
   submittedTag: 'Pending review',
   submittedTitle: 'Submitted for review',
   submittedBody:
@@ -100,7 +101,8 @@ export const VEHICLE_WIZARD_TEXT = {
     RESERVED: 'It is reserved for a buyer, and still shown on the marketplace.',
     REJECTED: 'It was not approved for the marketplace.',
     SOLD: 'It has been marked sold.',
-    WITHDRAWN: 'You have withdrawn it from the marketplace. Relist it when it is for sale again.',
+    WITHDRAWN:
+      'You have withdrawn it from the marketplace. Request reactivation when it is for sale again.',
   },
   changesRequestedTitle: 'Our team asked for changes',
   rejectedTitle: 'Not approved',

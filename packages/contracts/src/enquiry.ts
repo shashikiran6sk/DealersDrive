@@ -116,6 +116,13 @@ export const DealerEnquiry = z.object({
   timeAgoLabel: z.string(),
   contactedAt: z.string().nullable(),
   closedAt: z.string().nullable(),
+  /**
+   * Who in the dealership moved it (**R95**), now that more than one person
+   * can: the member's name and when, for "Contacted by Priya · 1 Oct, 4:42 pm".
+   * NULL before anyone did, and on enquiries moved before R92.
+   */
+  contactedBy: z.object({ name: z.string(), atLabel: z.string() }).nullable(),
+  closedBy: z.object({ name: z.string(), atLabel: z.string() }).nullable(),
   customer: z.object({
     name: z.string(),
     initials: z.string(),
@@ -214,3 +221,161 @@ export const CustomerEnquiriesResponse = z.object({
   page: CursorPage,
 });
 export type CustomerEnquiriesResponse = z.infer<typeof CustomerEnquiriesResponse>;
+
+/**
+ * ── R89 · admin oversight of enquiries ─────────────────────────────────────
+ *
+ * Read-only. The same `enquiries` rows the dealership and the customer see —
+ * never a copy — read across every dealership by an operator who needs to
+ * know what was asked, by whom, of whom, and what happened next. There is no
+ * admin write here: the dealership's inbox stays the only place an enquiry's
+ * status changes.
+ */
+
+/** A calendar day, `2026-09-26`, read as the IST day it names. */
+export const IstDay = z.iso.date('Enter a date as YYYY-MM-DD.');
+
+/**
+ * `GET /v1/admin/enquiries`.
+ *
+ * `q` matches the customer's name or mobile number, the dealership's name, or
+ * the car — make, model or plate. `dealer` narrows to one dealership by its
+ * public slug (the console links to it from a row and from the dealer page);
+ * `from` and `to` bound the day the enquiry was sent, both inclusive.
+ */
+export const AdminEnquiryQuery = z
+  .object({
+    status: EnquiryStatus.optional(),
+    q: z.string().trim().max(120).optional(),
+    dealer: z.string().trim().min(1).max(160).optional(),
+    from: IstDay.optional(),
+    to: IstDay.optional(),
+    cursor: z.string().max(500).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .strict();
+export type AdminEnquiryQuery = z.infer<typeof AdminEnquiryQuery>;
+
+/** The listing an enquiry was about, as the console shows it. */
+export const AdminEnquiryVehicle = z.object({
+  listingId: Uuid,
+  title: z.string(),
+  registrationDisplay: z.string(),
+  listingStatus: ListingStatus,
+  listingStatusLabel: z.string(),
+  listingStatusTone: StatusTone,
+});
+export type AdminEnquiryVehicle = z.infer<typeof AdminEnquiryVehicle>;
+
+/**
+ * One row of the oversight list. `messagePreview` is the first line of the
+ * message, cut short on the server so the list never carries a thousand
+ * characters per row; the whole message is on the detail.
+ */
+export const AdminEnquiryRow = z.object({
+  id: Uuid,
+  status: EnquiryStatus,
+  statusLabel: z.string(),
+  statusTone: StatusTone,
+  messagePreview: z.string().nullable(),
+  createdAt: z.string(),
+  createdLabel: z.string(),
+  customer: z.object({
+    id: Uuid,
+    name: z.string(),
+    phoneDisplay: z.string().nullable(),
+  }),
+  dealer: z.object({ id: Uuid, name: z.string(), slug: z.string() }),
+  vehicle: AdminEnquiryVehicle,
+});
+export type AdminEnquiryRow = z.infer<typeof AdminEnquiryRow>;
+
+/**
+ * `counts` is per status under every filter except `status` itself, so the
+ * tabs say how many of *these* enquiries are in each — switching tab never
+ * empties the bar. `dealer` echoes the dealership filter back with its name,
+ * or `name: null` when no dealership has that slug.
+ */
+export const AdminEnquiriesResponse = z.object({
+  data: z.array(AdminEnquiryRow),
+  page: CursorPage,
+  counts: DealerEnquiryCounts,
+  dealer: z.object({ slug: z.string(), name: z.string().nullable() }).nullable(),
+});
+export type AdminEnquiriesResponse = z.infer<typeof AdminEnquiriesResponse>;
+
+/**
+ * One recorded step in an enquiry's life, read from the audit trail that has
+ * been written since R64. Only what was recorded is shown: an enquiry is never
+ * given a history it did not have.
+ */
+export const AdminEnquiryHistoryEntry = z.object({
+  action: z.string(),
+  label: z.string(),
+  actor: z.string(),
+  fromStatus: EnquiryStatus.nullable(),
+  toStatus: EnquiryStatus.nullable(),
+  at: z.string(),
+  atLabel: z.string(),
+});
+export type AdminEnquiryHistoryEntry = z.infer<typeof AdminEnquiryHistoryEntry>;
+
+/**
+ * `GET /v1/admin/enquiries/:id` — everything an operator needs to understand
+ * one enquiry. `customerStatusLabel` is what the customer's own page shows,
+ * which differs from the dealer's for spam (R68); in a dispute the operator
+ * needs both. `vehicle.publicHref` is null once the car has left the
+ * marketplace — the listing itself is never deleted, so `adminHref` always
+ * resolves.
+ */
+export const AdminEnquiryDetail = z.object({
+  id: Uuid,
+  status: EnquiryStatus,
+  statusLabel: z.string(),
+  statusTone: StatusTone,
+  customerStatusLabel: z.string(),
+  message: z.string().nullable(),
+  createdAt: z.string(),
+  createdLabel: z.string(),
+  contactedLabel: z.string().nullable(),
+  closedLabel: z.string().nullable(),
+  customer: z.object({
+    id: Uuid,
+    name: z.string(),
+    phone: z.string().nullable(),
+    phoneDisplay: z.string().nullable(),
+    phoneVerified: z.boolean(),
+    memberSinceLabel: z.string(),
+  }),
+  dealer: z.object({
+    id: Uuid,
+    name: z.string(),
+    slug: z.string(),
+    statusLabel: z.string(),
+    statusTone: StatusTone,
+    location: z.string().nullable(),
+    phoneDisplay: z.string().nullable(),
+    adminHref: z.string(),
+  }),
+  vehicle: AdminEnquiryVehicle.extend({
+    image: z.object({ url: z.string(), alt: z.string() }).nullable(),
+    publicHref: z.string().nullable(),
+    adminHref: z.string(),
+  }),
+  history: z.array(AdminEnquiryHistoryEntry),
+  /**
+   * Support tickets that reference this enquiry (**R91**) — the customer's
+   * side of a dispute, one click from the dealer's.
+   */
+  supportTickets: z.array(
+    z.object({
+      id: Uuid,
+      reference: z.string(),
+      subject: z.string(),
+      statusLabel: z.string(),
+      statusTone: StatusTone,
+      createdLabel: z.string(),
+    }),
+  ),
+});
+export type AdminEnquiryDetail = z.infer<typeof AdminEnquiryDetail>;

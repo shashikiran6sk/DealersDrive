@@ -50,9 +50,7 @@ afterEach(() => {
 describe('listingLifecycleAction', () => {
   it.each([
     ['reserve', 'reserve'],
-    ['reactivate', 'reactivate'],
     ['markSold', 'mark-sold'],
-    ['relist', 'relist'],
   ])('posts %s to /%s with no fields', async (action, path) => {
     globalThis.fetch = respond(200, vehicle('2023-hyundai-creta-abc'));
 
@@ -61,6 +59,36 @@ describe('listingLifecycleAction', () => {
     expect(calls[0]?.url).toMatch(new RegExp(`/v1/dealer/vehicles/${ID}/${path}$`));
     expect(calls[0]?.init.method).toBe('POST');
     expect(sentBody()).toEqual({});
+  });
+
+  it('files a reactivation request, with the dealer’s note when there is one', async () => {
+    globalThis.fetch = respond(200, vehicle('2023-hyundai-creta-abc'));
+    await expect(listingLifecycleAction(ID, 'requestReactivation')).resolves.toEqual({
+      ok: true,
+    });
+    expect(calls[0]?.url).toMatch(new RegExp(`/v1/dealer/vehicles/${ID}/request-reactivation$`));
+    expect(sentBody()).toEqual({});
+
+    calls = [];
+    await listingLifecycleAction(ID, 'requestReactivation', { reason: 'Buyer backed out.' });
+    expect(sentBody()).toEqual({ reason: 'Buyer backed out.' });
+  });
+
+  it.each(['reactivate', 'relist'])(
+    'refuses the retired %s move without calling the API',
+    async (action) => {
+      globalThis.fetch = respond(200, vehicle('2023-hyundai-creta-abc'));
+      await expect(listingLifecycleAction(ID, action)).resolves.toMatchObject({ ok: false });
+      expect(calls).toHaveLength(0);
+    },
+  );
+
+  it('refuses a reactivation note that is too long without calling the API', async () => {
+    globalThis.fetch = respond(200, vehicle('2023-hyundai-creta-abc'));
+    await expect(
+      listingLifecycleAction(ID, 'requestReactivation', { reason: 'x'.repeat(501) }),
+    ).resolves.toMatchObject({ ok: false });
+    expect(calls).toHaveLength(0);
   });
 
   it('sends the withdrawal reason and note', async () => {
@@ -107,13 +135,13 @@ describe('listingLifecycleAction', () => {
       type: 'about:blank',
       title: 'Conflict',
       status: 409,
-      code: 'LISTING_NOT_RELISTABLE',
-      detail: 'Only a withdrawn listing can be relisted.',
+      code: 'REACTIVATION_ALREADY_PENDING',
+      detail: 'A request to put this car back on sale is already waiting for review.',
     });
 
-    await expect(listingLifecycleAction(ID, 'relist')).resolves.toEqual({
+    await expect(listingLifecycleAction(ID, 'requestReactivation')).resolves.toEqual({
       ok: false,
-      message: 'Only a withdrawn listing can be relisted.',
+      message: 'A request to put this car back on sale is already waiting for review.',
     });
     expect(revalidations.paths).toEqual([]);
   });

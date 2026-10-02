@@ -750,9 +750,11 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       await discardMedia(dealer.coverMediaId);
     },
 
-    async dashboard(dealerId: string): Promise<DashboardResponse> {
+    async dashboard(dealerId: string, viewerId?: string): Promise<DashboardResponse> {
       const dealer = await requireDealer(dealerId);
-      const owner = dealer.members.find((member) => member.role === 'OWNER');
+      const viewer =
+        dealer.members.find((member) => member.userId === viewerId) ??
+        dealer.members.find((member) => member.role === 'OWNER');
 
       const weekStart = startOfDayUtc(new Date(Date.now() - 6 * 86_400_000));
 
@@ -803,7 +805,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           ? null
           : Math.round(((weekTotal - previousTotalOrNull) / previousTotalOrNull) * 100);
 
-      const firstName = (owner?.user.fullName ?? dealer.brandName).split(' ').pop() ?? '';
+      const firstName = (viewer?.user.fullName ?? dealer.brandName).split(' ').pop() ?? '';
 
       return {
         greeting: `${greeting()}, ${firstName}`,

@@ -6,9 +6,9 @@ export const getDashboard: DealersRoute = (router, service) => {
   router.get('/dashboard', (req, res, next) => {
     void (async () => {
       try {
-        const { dealerId } = dealerPrincipal(req);
+        const { dealerId, userId } = dealerPrincipal(req);
         res.set('Cache-Control', 'no-store');
-        res.json(await service.dashboard(dealerId));
+        res.json(await service.dashboard(dealerId, userId));
       } catch (error) {
         next(error);
       }

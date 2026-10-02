@@ -7,6 +7,8 @@ export const EMPTY_VALUE = '—';
 export const MIN_YEAR = 1900;
 
 export const PROFILE_FORM_TEXT = {
+  ownerOnly:
+    'Only the owner can change the dealership’s profile, documents and team. You can see it here.',
   savedPending:
     'Saved. Your line and services go to us for a quick check before they appear on your public page — everything else is already live.',
   saved: 'Your profile has been saved.',

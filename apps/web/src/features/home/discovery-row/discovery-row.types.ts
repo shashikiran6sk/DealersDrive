@@ -6,3 +6,7 @@ export interface DiscoveryRowProps {
   href: string;
   cars: readonly VehicleCardDto[];
 }
+
+export interface DiscoveryBandProps {
+  row: DiscoveryRowProps | undefined;
+}

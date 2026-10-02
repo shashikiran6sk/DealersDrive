@@ -42,6 +42,16 @@ export const Payments: Story = {
   parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/admin/payments' } } },
 };
 
+export const Enquiries: Story = {
+  parameters: {
+    nextjs: { appDirectory: true, navigation: { pathname: '/admin/enquiries/3c8f2b10-2222' } },
+  },
+};
+
+export const SupportTickets: Story = {
+  parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/admin/support' } } },
+};
+
 export const Configuration: Story = {
   parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/admin/config' } } },
 };

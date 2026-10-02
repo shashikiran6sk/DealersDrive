@@ -7,3 +7,5 @@ export const DOCUMENT_NOT_FOUND = 'That document does not exist.';
 export const MALFORMED_REQUEST = 'The request did not match the expected shape.';
 
 export const UNNAMED_CUSTOMER = 'Customer';
+
+export const UNNAMED_MEMBER = 'Name not given yet';

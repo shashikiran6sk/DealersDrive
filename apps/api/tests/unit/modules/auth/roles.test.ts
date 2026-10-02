@@ -76,20 +76,24 @@ describe('seatSuspensionReason', () => {
 
 describe('ensureSeat', () => {
   /**
-   * The empty `update` is the assertion. A sign-in that reopened a closed seat
+   * Insert-or-nothing, never an update. A sign-in that reopened a closed seat
    * would make a suspension last exactly as long as it took the dealer to press
-   * the button again.
+   * the button again. And it is one `INSERT … ON CONFLICT DO NOTHING`, not a
+   * Prisma `upsert`, because Prisma runs an `upsert` with an empty `update` on
+   * a compound key as a read then an insert: two concurrent sign-ups for one
+   * number both inserted, and the second failed with P2002 as a 500.
    */
-  it('creates a seat without touching one that already exists', async () => {
+  it('creates a seat, skipping one that already exists, and never updates', async () => {
     const h = db();
 
     await ensureSeat(h.prisma, { userId: 'user-1', role: 'DEALER' });
 
-    expect(h.upsert).toHaveBeenCalledExactlyOnceWith({
-      where: { userId_role: { userId: 'user-1', role: 'DEALER' } },
-      create: { userId: 'user-1', role: 'DEALER', grantedBy: null },
-      update: {},
+    expect(h.createMany).toHaveBeenCalledExactlyOnceWith({
+      data: [{ userId: 'user-1', role: 'DEALER', grantedBy: null }],
+      skipDuplicates: true,
     });
+    expect(h.upsert).not.toHaveBeenCalled();
+    expect(h.updateMany).not.toHaveBeenCalled();
   });
 
   it('records the admin who granted the seat, where one did', async () => {
@@ -97,11 +101,10 @@ describe('ensureSeat', () => {
 
     await ensureSeat(h.prisma, { userId: 'user-2', role: 'ADMIN', grantedBy: 'admin-1' });
 
-    expect(h.upsert).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({
-        create: { userId: 'user-2', role: 'ADMIN', grantedBy: 'admin-1' },
-      }),
-    );
+    expect(h.createMany).toHaveBeenCalledExactlyOnceWith({
+      data: [{ userId: 'user-2', role: 'ADMIN', grantedBy: 'admin-1' }],
+      skipDuplicates: true,
+    });
   });
 });
 

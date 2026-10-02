@@ -235,6 +235,21 @@ export function vehicleTitle(vehicle: {
 }
 
 /**
+ * A vehicle's title without its leading year, for the surfaces that already
+ * show the year beside it in a year plate (the card and the vehicle page).
+ * `vehicleTitle` puts the year first, so this is its inverse and nothing more:
+ * a title that does not start with that year, or is only the year, comes back
+ * unchanged. The full title stays what every other reader uses — the page
+ * title, image alt text, structured data, the dealer console.
+ */
+export function titleWithoutYear(vehicle: { title: string; year: number | null }): string {
+  if (vehicle.year === null) return vehicle.title;
+  const prefix = `${String(vehicle.year)} `;
+  const rest = vehicle.title.startsWith(prefix) ? vehicle.title.slice(prefix.length).trim() : '';
+  return rest || vehicle.title;
+}
+
+/**
  * `Petrol · Automatic · 22,400 km` — the meta line under a vehicle's title, in
  * the order DESIGN-SPEC §2.8 gives it. Parts not yet entered are skipped.
  */
@@ -387,6 +402,8 @@ export const DealerInventoryRow = z.object({
   slug: z.string().nullable(),
   /** The lifecycle moves this row offers now (**R69**). */
   actions: z.array(ListingLifecycleAction),
+  /** A request to put this car back on sale is waiting for an admin. */
+  reactivationPending: z.boolean(),
   updatedAt: z.string(),
   updatedLabel: z.string(),
 });

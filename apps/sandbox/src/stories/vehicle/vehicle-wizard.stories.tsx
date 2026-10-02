@@ -46,6 +46,7 @@ const COMPLETE: DealerVehicle = {
     withdrawnAt: null,
     withdrawal: null,
     actions: [],
+    reactivation: null,
   },
   createdAt: '2026-09-01T00:00:00.000Z',
   updatedAt: '2026-09-01T00:00:00.000Z',
@@ -117,6 +118,10 @@ export const Pricing: Story = { args: { step: 'pricing', vehicle: COMPLETE } };
 export const DraftSaved: Story = { args: { step: 'details', vehicle: DRAFT, saved: true } };
 
 export const ReviewComplete: Story = { args: { step: 'review', vehicle: COMPLETE } };
+
+export const ReviewAsStaff: Story = {
+  args: { step: 'review', vehicle: COMPLETE, mayPublish: false },
+};
 
 export const ReviewIncomplete: Story = { args: { step: 'review', vehicle: DRAFT } };
 

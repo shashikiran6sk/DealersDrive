@@ -11,9 +11,18 @@ import { createConfigService, type ConfigService } from './modules/config/config
 import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
 import { createGoogleOAuthProvider } from './modules/auth/google.provider.js';
 import {
+  createAdminEnquiriesService,
+  type AdminEnquiriesService,
+} from './modules/enquiries/enquiries.admin.service.js';
+import {
   createEnquiriesService,
   type EnquiriesService,
 } from './modules/enquiries/enquiries.service.js';
+import {
+  createAdminSupportService,
+  type AdminSupportService,
+} from './modules/support/support.admin.service.js';
+import { createSupportService, type SupportService } from './modules/support/support.service.js';
 import {
   createSavedVehiclesService,
   type SavedVehiclesService,
@@ -31,6 +40,12 @@ import {
   type PhoneSignInService,
 } from './modules/auth/phone-sign-in.service.js';
 import { createSessionService, type SessionService } from './modules/auth/session.service.js';
+import { createWorkspaceService, type WorkspaceService } from './modules/auth/workspace.service.js';
+import { createTeamService, type TeamService } from './modules/team/team.service.js';
+import {
+  createInvitationsService,
+  type InvitationsService,
+} from './modules/team/invitations.service.js';
 import {
   createDealersPublicService,
   type DealersPublicService,
@@ -102,8 +117,14 @@ export interface Container {
   readonly phone: PhoneService;
   readonly phoneSignIn: PhoneSignInService;
   readonly enquiries: EnquiriesService;
+  readonly adminEnquiries: AdminEnquiriesService;
   readonly savedVehicles: SavedVehiclesService;
+  readonly support: SupportService;
+  readonly adminSupport: AdminSupportService;
   readonly customers: CustomerAuthService;
+  readonly workspaces: WorkspaceService;
+  readonly team: TeamService;
+  readonly invitations: InvitationsService;
   readonly dealers: DealersService;
   readonly dealersPublic: DealersPublicService;
   readonly admin: AdminService;
@@ -175,6 +196,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     cache,
     audit,
   });
+  const workspaces = createWorkspaceService({ prisma, sessions: sessionStore, audit });
+  const team = createTeamService({ prisma, audit });
+  const invitations = createInvitationsService({ prisma, audit });
   const phoneSignIn = createPhoneSignInService({
     prisma,
     sessions: sessionStore,
@@ -223,6 +247,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     phone,
     phoneSignIn,
     customers,
+    workspaces,
+    team,
+    invitations,
     dealers,
     dealersPublic,
     admin,
@@ -232,6 +259,9 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     moderation,
     vehicleImages,
     enquiries,
+    adminEnquiries: createAdminEnquiriesService({ prisma }),
+    support: createSupportService({ prisma, audit }),
+    adminSupport: createAdminSupportService({ prisma, audit }),
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };

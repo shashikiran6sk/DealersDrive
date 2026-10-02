@@ -164,7 +164,11 @@ function documentedRoutes(): Set<string> {
 
 describe('the OpenAPI document against the router', () => {
   it('documents every mounted route', () => {
-    const undocumented = [...mountedRoutes()].filter((route) => !documentedRoutes().has(route));
+    // Built once: `documentedRoutes()` assembles the whole document, and calling it
+    // inside the filter rebuilt it once per mounted route — quadratic, and past
+    // the 5s timeout on a CI runner once the API passed a hundred routes.
+    const documented = documentedRoutes();
+    const undocumented = [...mountedRoutes()].filter((route) => !documented.has(route));
 
     expect(
       undocumented,

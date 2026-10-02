@@ -47,3 +47,8 @@ handed `ADMIN_NAV` to draw the console as it will be.
 ### `export type AdminNavItem = NavItem`
 
 The admin sidebar's items. Structurally a `NavItem`; it carries no `short`.
+
+### Enquiries (**R89**)
+
+Immediately above Configuration, where the support work an operator does sits
+beside the settings rather than between Listings and Dealers.

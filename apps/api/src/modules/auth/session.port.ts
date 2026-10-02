@@ -1,3 +1,8 @@
+import {
+  DEALER_PERMISSIONS,
+  dealerPermissionsFor,
+  type DealerPermission,
+} from '@dealers-drive/contracts';
 import type { AdminRole, DealerRole, DealerStatus } from '@prisma/client';
 import type { Request } from 'express';
 
@@ -46,21 +51,7 @@ export interface SessionResolver {
   resolveSignedIn(req: Request): Promise<DealerPrincipal | PendingPrincipal | null>;
 }
 
-export const PERMISSIONS = {
-  'vehicle:read': ['OWNER', 'MANAGER', 'SALES'],
-  'vehicle:write': ['OWNER', 'MANAGER'],
-  'vehicle:delete': ['OWNER', 'MANAGER'],
-  'listing:submit': ['OWNER', 'MANAGER'],
-  'listing:renew': ['OWNER', 'MANAGER'],
-  'enquiry:read': ['OWNER', 'MANAGER', 'SALES'],
-  'enquiry:update': ['OWNER', 'MANAGER', 'SALES'],
-  'photo:request': ['OWNER', 'MANAGER'],
-  'dealer:update': ['OWNER'],
-  'document:upload': ['OWNER'],
-  'billing:read': ['OWNER', 'MANAGER'],
-  'billing:purchase': ['OWNER'],
-  'member:manage': ['OWNER'],
-} as const satisfies Record<string, readonly DealerRole[]>;
+export const PERMISSIONS = DEALER_PERMISSIONS;
 
 export const ADMIN_PERMISSIONS = {
   'admin:dealer:approve': ['MODERATOR', 'SUPER_ADMIN'],
@@ -74,15 +65,15 @@ export const ADMIN_PERMISSIONS = {
   'admin:access:manage': ['SUPER_ADMIN'],
   'admin:audit:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
   'admin:metrics:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
+  'admin:enquiry:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
+  'admin:support:manage': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
 } as const satisfies Record<string, readonly AdminRole[]>;
 
-export type DealerPermission = keyof typeof PERMISSIONS;
+export type { DealerPermission };
 export type AdminPermission = keyof typeof ADMIN_PERMISSIONS;
 
 export function permissionsForRole(role: DealerRole): string[] {
-  return Object.entries(PERMISSIONS)
-    .filter(([, roles]) => roles.some((candidate) => candidate === role))
-    .map(([permission]) => permission);
+  return dealerPermissionsFor(role);
 }
 
 export function permissionsForAdminRole(role: AdminRole): string[] {

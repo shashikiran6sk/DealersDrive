@@ -1,10 +1,21 @@
-import type { Listing, ListingStatus, Prisma, PrismaClient, Vehicle } from '@prisma/client';
+import type {
+  Listing,
+  ListingReactivationRequest,
+  ListingStatus,
+  Prisma,
+  PrismaClient,
+  Vehicle,
+} from '@prisma/client';
 
 import type { Tx } from '../../platform/db/prisma.js';
 
-export type VehicleRow = Vehicle & { listing: Listing | null };
+export type ListingRow = Listing & { reactivations?: ListingReactivationRequest[] };
 
-const withListing = { listing: true } as const;
+export type VehicleRow = Vehicle & { listing: ListingRow | null };
+
+const withListing = {
+  listing: { include: { reactivations: { orderBy: { requestedAt: 'desc' }, take: 1 } } },
+} satisfies Prisma.VehicleInclude;
 
 export type VehicleWrite = Omit<
   Prisma.VehicleUncheckedUpdateInput,

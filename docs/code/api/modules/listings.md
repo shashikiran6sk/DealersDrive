@@ -9,23 +9,26 @@ A listing is a vehicle's life on the marketplace (**F064**, as revised by
 **R47** and **R69**). There is one per vehicle, created with it as `DRAFT`.
 
 ```
-DRAFT ──submit──▶ PENDING_REVIEW ──approve──▶ ACTIVE ◀──reactivate── RESERVED
-                    │    ▲    │               │ │ │  ──reserve──────▶   │ │
-       request      │    │    └─reject─▶ REJECTED │ └─mark sold─▶ SOLD ◀──┘ │
-       changes      ▼    │ resubmit             │                          │
-               CHANGES_REQUESTED                └─withdraw─▶ WITHDRAWN ◀────┘
-                                                   ◀──relist──┘
+DRAFT ──submit──▶ PENDING_REVIEW ──approve──▶ ACTIVE ──reserve──▶ RESERVED
+                    │    ▲    │               │ │ ▲ ▲                 │
+       request      │    │    └─reject─▶ REJECTED │ │ └─reactivate*───┘ │
+       changes      ▼    │ resubmit             │ │                     │ mark
+               CHANGES_REQUESTED                │ └──relist*── WITHDRAWN │ sold
+                                                │ withdraw ─────▲        ▼
+                                                └──mark sold──────────▶ SOLD
+
+  * admin only — the dealer files a reactivation request, an admin approves it
 ```
 
 Once a car has been live, four states are the ones a buyer can tell apart
 (**R69**):
 
-| State       | Meaning                                         | Way out                           |
-| ----------- | ----------------------------------------------- | --------------------------------- |
-| `ACTIVE`    | On sale                                         | reserve, mark sold, withdraw      |
-| `RESERVED`  | Held for a buyer — on show, not available       | reactivate, mark sold, withdraw   |
-| `SOLD`      | Sold. History, never back on sale               | none                              |
-| `WITHDRAWN` | Taken off sale unsold (was `REMOVED` until R69) | relist, straight back to `ACTIVE` |
+| State       | Meaning                                         | Way out                                        |
+| ----------- | ----------------------------------------------- | ---------------------------------------------- |
+| `ACTIVE`    | On sale                                         | reserve, mark sold, withdraw                   |
+| `RESERVED`  | Held for a buyer — on show, not available       | mark sold; back on sale on an admin's approval |
+| `SOLD`      | Sold. History, never back on sale               | none                                           |
+| `WITHDRAWN` | Taken off sale unsold (was `REMOVED` until R69) | back on sale on an admin's approval            |
 
 ## `apps/api/src/modules/listings/listing.state.ts`
 
@@ -48,11 +51,18 @@ moderator's reason, rather than deleted — the history is the point. A sale
 recorded by mistake is an administrative correction, not a toggle, which is why
 no event leaves `SOLD`.
 
-Reserve, reactivate, mark sold and relist are the dealership's alone; withdraw
-may also be an admin's, as `remove` was before it. Only three moves reach
-`ACTIVE` — approve, reactivate and relist — and the last two start from a state
-that was itself reached from a reviewed, photographed listing whose data cannot
-be edited outside `DRAFT` and `CHANGES_REQUESTED`, so nothing unreviewed is ever
+Reserve and mark sold are the dealership's alone; withdraw may also be an
+admin's, as `remove` was before it, and only from `ACTIVE` — a reserved car is
+sold or asked back on sale, never withdrawn. **Reactivate and relist are the
+admin's alone.** A dealership cannot put a reserved or withdrawn car back on
+sale itself: it files a reactivation request (`listing-reactivation.ts`), and
+the admin's approval is what fires the event. Because the actor is part of the
+rule, a stale or hand-rolled client calling the state machine as a dealer gets a
+`403 LISTING_ACTOR_FORBIDDEN` whatever the listing's state, and there is no
+dealer route that reaches either event at all. Only three moves reach `ACTIVE` —
+approve, reactivate and relist — and the last two start from a state that was
+itself reached from a reviewed, photographed listing whose data cannot be edited
+outside `DRAFT` and `CHANGES_REQUESTED`, so nothing unreviewed is ever
 published. `listing.state.test.ts` pins that list, and holds the contracts'
 `LISTING_LIFECYCLE_FROM` — the console's copy of which moves exist — equal to
 this table.
@@ -108,3 +118,51 @@ eight random hex characters. Readable enough to be a good URL, and the suffix
 means two identical cars in one town never collide and nothing about the row
 can be guessed from it. It is the only identifier a buyer is given; a
 re-approval keeps the slug, so a shared link keeps working.
+
+### `export const REACTIVATION_SOURCES`
+
+The states a reactivation request can be filed from, and the ones whose pending
+request `transition()` closes. Any move out of `RESERVED` or `WITHDRAWN` other
+than the approval itself — in practice, a reserved car being sold — marks a
+`PENDING` request `CANCELLED` in the same transaction. That is what makes a
+stale request impossible to approve: by the time an admin opens it, it is no
+longer pending. The approval's own check that the listing is still in the
+request's `fromStatus` is the second line, for a row moved some other way.
+
+## `apps/api/src/modules/listings/listing-reactivation.ts`
+
+### `export async function fileReactivationRequest(tx, audit, listing, actor, reason)`
+
+Called with the listing already locked `FOR UPDATE`, so two requests racing
+from a double click serialise on the row: the second sees the first and is a
+`409 REACTIVATION_ALREADY_PENDING`. The partial unique index
+`listing_reactivation_requests_one_pending_per_listing` (`UNIQUE (listingId)
+WHERE status = 'PENDING'`) is the guarantee underneath, and its violation is
+answered with the same 409 rather than a 500. The listing does not move. The
+request copies `dealerId` from the listing, never from input (rule 1), and
+audits `listing.reactivation_requested` with the dealer's words as `reason`, so
+the review screen's history shows them.
+
+### `export async function decideReactivationRequest(tx, audit, request, listing, decision, actor, adminNote, now)`
+
+One transaction, under the listing's row lock (taken by the caller before the
+request is re-read, the same lock order the dealer's moves use):
+
+1. the request must still be `PENDING` — `409 REACTIVATION_NOT_PENDING`;
+2. for an approval, the listing must still be in the request's `fromStatus` —
+   `409 REACTIVATION_STALE`, and nothing is written;
+3. the request is decided with its status in the `WHERE`, so two admins
+   deciding at once land one;
+4. an approval moves the listing through `transition()` — `reactivate` from
+   `RESERVED`, `relist` from `WITHDRAWN` — so the stamps, the audit row and the
+   public read (which is evaluated from `listings.status` on every request)
+   follow exactly as for any other move. A withdrawn listing that released its
+   registration before R69 reclaims it here, and if another dealership has
+   claimed the plate since, the unique index refuses and the whole transaction
+   rolls back (`409 DUPLICATE_REGISTRATION`, the request still pending);
+5. `listing.reactivation_approved` or `listing.reactivation_rejected` is
+   audited, with the admin's note as `reason`.
+
+A rejection never touches the listing, which is what makes "declined" mean
+"nothing happened": the car stays reserved or withdrawn, and the dealer may ask
+again.

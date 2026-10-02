@@ -11,6 +11,9 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import HomePage from '@/app/(public)/page';
+import { AUDIENCE_TEXT } from '@/features/home/audience-section';
+import { JOURNEY_TEXT } from '@/features/home/journey-section';
+import { TRUST_TEXT } from '@/features/home/trust-section';
 import type * as ApiModule from '@/lib/api';
 import { NO_PUBLIC_CONFIG } from '@/lib/public-config';
 
@@ -158,6 +161,10 @@ describe('the homepage', () => {
     expect(region.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
     expect(region.queryByRole('article')).not.toBeInTheDocument();
     expect(document.body.textContent).not.toContain('down');
+    expect(screen.queryByRole('link', { name: /View all/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: JOURNEY_TEXT.title })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: TRUST_TEXT.title })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: AUDIENCE_TEXT.title })).toBeInTheDocument();
   });
 
   it('no longer claims search or enquiries are coming soon', async () => {
@@ -165,6 +172,77 @@ describe('the homepage', () => {
     render(await HomePage());
     expect(screen.queryByText(/(search|enquir|saved).*coming soon/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/next features/i)).not.toBeInTheDocument();
+  });
+});
+
+function precedes(first: HTMLElement, second: HTMLElement): boolean {
+  return Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
+}
+
+function sectionOrder(container: HTMLElement): string[] {
+  return Array.from(container.querySelectorAll<HTMLElement>('[data-home-section]')).map(
+    (element) => element.dataset.homeSection ?? '',
+  );
+}
+
+describe('the page rhythm — cars and information take turns', () => {
+  it('alternates a car row with an informational section, top to bottom', async () => {
+    serve((path) => response([card(path)]));
+    render(await HomePage());
+
+    const order = [
+      screen.getByRole('region', { name: 'Recently added' }),
+      screen.getByRole('region', { name: JOURNEY_TEXT.title }),
+      screen.getByRole('region', { name: 'SUVs' }),
+      screen.getByRole('region', { name: TRUST_TEXT.title }),
+      screen.getByRole('region', { name: 'Automatic cars' }),
+      screen.getByRole('region', { name: AUDIENCE_TEXT.title }),
+      screen.getByRole('region', { name: 'Under ₹10 lakh' }),
+    ];
+    for (let at = 1; at < order.length; at += 1) {
+      const [before, after] = [order[at - 1], order[at]];
+      if (!before || !after) throw new Error('missing section');
+      expect(precedes(before, after), `${String(at - 1)} before ${String(at)}`).toBe(true);
+    }
+  });
+
+  it('never groups the informational sections together at the bottom', async () => {
+    serve((path) => response([card(path)]));
+    const { container } = render(await HomePage());
+
+    expect(sectionOrder(container)).toEqual([
+      'home-recent',
+      'journey',
+      'home-suv',
+      'trust',
+      'home-automatic',
+      'audience',
+      'home-under-10-lakh',
+    ]);
+  });
+
+  it('closes up around a row with nothing in it rather than leaving an empty band', async () => {
+    serve((path) => (path.includes('bodyType=suv') ? response([]) : response([card(path)])));
+    const { container } = render(await HomePage());
+
+    expect(sectionOrder(container)).toEqual([
+      'home-recent',
+      'journey',
+      'trust',
+      'home-automatic',
+      'audience',
+      'home-under-10-lakh',
+    ]);
+  });
+
+  it('still asks for each row once, however the page is ordered', async () => {
+    serve((path) => response([card(path)]));
+    render(await HomePage());
+    const reads = apiGetParsed.mock.calls
+      .map((call) => String(call[1]))
+      .filter((path) => path.startsWith('/v1/vehicles'));
+    expect(reads).toHaveLength(4);
+    expect(new Set(reads).size).toBe(4);
   });
 });
 

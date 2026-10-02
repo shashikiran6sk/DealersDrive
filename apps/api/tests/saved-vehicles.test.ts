@@ -199,7 +199,7 @@ describe('the lifecycle never deletes a saved car', () => {
     ).resolves.toBe(1);
   });
 
-  it('shows a withdrawn car as no longer available, and back again once relisted', async () => {
+  it('shows a withdrawn car as no longer available, and back again once approved back on sale', async () => {
     const agent = await customer();
     const listed = await car();
     await agent.put(`/v1/saved-vehicles/${listed.slug}`).expect(200);
@@ -210,7 +210,15 @@ describe('the lifecycle never deletes a saved car', () => {
       .expect(200);
     expect(entry(await saved(agent), listed.slug)?.vehicle.availability).toBe('UNAVAILABLE');
 
-    await a.agent.post(`/v1/dealer/vehicles/${listed.vehicleId}/relist`).expect(200);
+    const requested = await a.agent
+      .post(`/v1/dealer/vehicles/${listed.vehicleId}/request-reactivation`)
+      .send({})
+      .expect(200);
+    expect(entry(await saved(agent), listed.slug)?.vehicle.availability).toBe('UNAVAILABLE');
+    await admin
+      .post(`/v1/admin/reactivation-requests/${requested.body.listing.reactivation.id}/approve`)
+      .send({})
+      .expect(200);
     expect(entry(await saved(agent), listed.slug)?.vehicle.availability).toBe('AVAILABLE');
   });
 

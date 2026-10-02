@@ -12,7 +12,11 @@ export const enquiriesDocs: ModuleDocs = {
     '**The dealership’s inbox** (**R66**, revises F091) reads and moves them. Every path is ' +
     'scoped to the dealership in the session — another dealership’s enquiry is a 404, never ' +
     'a 403 — and every response is `Cache-Control: no-store`, because it carries customers’ ' +
-    'phone numbers.',
+    'phone numbers.\n\n' +
+    '**Admin oversight** (**R89**) reads the same rows across every dealership, read-only. ' +
+    'An operator investigating a dispute sees the enquiry, the customer, the dealership, the ' +
+    'car and the recorded history; there is no admin route that changes an enquiry, so the ' +
+    'dealership’s inbox stays the only place its status moves.',
   operations: [
     {
       method: 'get',
@@ -143,7 +147,13 @@ export const enquiriesDocs: ModuleDocs = {
       summary: 'Move an enquiry to another tab',
       description:
         'Mark contacted, close, mark as spam, or reopen as new. Any status may follow any ' +
-        'other, so a mistaken Close is undone by choosing the right one. `contactedAt` is set ' +
+        'other, so a mistaken Close is undone by choosing the right one.\n\n' +
+        '**By role (R92).** Every member may move a new enquiry to CONTACTED ' +
+        '(`enquiry:contact`). Closing, marking spam, reopening, or moving a closed enquiry back ' +
+        'needs `enquiry:close` — OWNER and MANAGER — and STAFF get a 403 ' +
+        '`ENQUIRY_ACTION_FORBIDDEN`. Another dealership’s enquiry is a 404 whatever the role. ' +
+        'The member who first marks it contacted and the member who closes it are recorded.\n\n' +
+        '`contactedAt` is set ' +
         'the first time an enquiry is marked contacted and kept after; `closedAt` is set on ' +
         'close and cleared when it is reopened.\n\n' +
         'Setting the status it already has changes nothing and records nothing. A change is ' +
@@ -152,10 +162,55 @@ export const enquiriesDocs: ModuleDocs = {
         'Only `status` is accepted — the body is `.strict()`, so a customer’s name, number or ' +
         'message cannot be edited here.',
       audience: 'dealer',
-      permission: 'enquiry:update',
+      permission: 'enquiry:contact',
       params: 'IdParam',
       requestBody: { schema: 'UpdateEnquiryInput', example: { status: 'CONTACTED' } },
       responses: [{ status: 200, description: 'The enquiry, moved.', schema: 'DealerEnquiry' }],
+      errors: [400, 401, 403, 404],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/enquiries',
+      operationId: 'listAdminEnquiries',
+      tag: DOC_TAGS.enquiries,
+      summary: 'Every enquiry, for oversight',
+      description:
+        'Enquiries across every dealership, newest first, keyset-paginated on the time sent ' +
+        'and the id (**R89**). `status` picks one tab; `q` matches the customer’s name or ' +
+        'mobile number (three digits or more), the dealership’s name, or the car’s make, ' +
+        'model or plate; `dealer` narrows to one dealership by its slug; `from` and `to` bound ' +
+        'the IST day it was sent, both inclusive.\n\n' +
+        '`counts` is per status under every filter except `status`, so the tabs describe the ' +
+        'enquiries being looked at. `messagePreview` is the first line of the message, cut at ' +
+        '120 characters; the whole message is on the detail. Read-only — nothing here changes ' +
+        'an enquiry, and a page view writes no audit row.',
+      audience: 'admin',
+      permission: 'admin:enquiry:read',
+      query: 'AdminEnquiryQuery',
+      responses: [
+        { status: 200, description: 'A page of enquiries.', schema: 'AdminEnquiriesResponse' },
+      ],
+      errors: [400, 401, 403, 409],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/enquiries/:id',
+      operationId: 'getAdminEnquiry',
+      tag: DOC_TAGS.enquiries,
+      summary: 'One enquiry, with its context and history',
+      description:
+        'The enquiry, the customer (name and proved mobile), the dealership, the car — its ' +
+        'primary photograph, current listing status, the public page while it is on the ' +
+        'marketplace and the admin review screen always — and its history (**R89**).\n\n' +
+        '**History is the audit trail**, the `enquiry.*` rows written since R64 whenever an ' +
+        'enquiry is sent or its status moves, with who moved it and from what to what. Nothing ' +
+        'is inferred: an enquiry shows only the steps that were recorded. ' +
+        '`customerStatusLabel` is what the customer’s own page says, which reads Closed for ' +
+        'an enquiry the dealership marked as spam (R68).',
+      audience: 'admin',
+      permission: 'admin:enquiry:read',
+      params: 'IdParam',
+      responses: [{ status: 200, description: 'The enquiry.', schema: 'AdminEnquiryDetail' }],
       errors: [400, 401, 403, 404],
     },
   ],

@@ -416,7 +416,10 @@ describe('upstream failures', () => {
       method: 'GET',
       path: '/v1/vehicles',
     });
-    expect(JSON.stringify(logged()[0])).toContain('ECONNREFUSED');
+    expect(logged()[0]).toMatchObject({
+      error: { kind: 'network', cause: { name: 'TypeError', cause: { name: 'Error' } } },
+    });
+    expect(JSON.stringify(logged()[0])).not.toContain('ECONNREFUSED');
   });
 
   it('gives up on an API that does not answer in time', async () => {

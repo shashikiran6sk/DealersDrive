@@ -5,6 +5,8 @@ import type { PrismaClient, SessionScope } from '@prisma/client';
 export const DEALER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 export const ADMIN_SESSION_TTL_SECONDS = 12 * 60 * 60;
 
+export const PERSON_SCOPES = ['DEALER', 'CUSTOMER'] as const satisfies readonly SessionScope[];
+
 export interface IssuedSession {
   token: string;
   expiresAt: Date;
@@ -51,6 +53,24 @@ export function createSessionService(prisma: PrismaClient) {
         },
         include: { user: { include: { roles: true } } },
       });
+    },
+
+    async resolvePerson(token: string | undefined) {
+      if (!token) return null;
+
+      return prisma.session.findFirst({
+        where: {
+          tokenHash: hashToken(token),
+          scope: { in: [...PERSON_SCOPES] },
+          revokedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        include: { user: { include: { roles: true } } },
+      });
+    },
+
+    async setActiveDealer(sessionId: string, dealerId: string): Promise<void> {
+      await prisma.session.update({ where: { id: sessionId }, data: { activeDealerId: dealerId } });
     },
 
     async revoke(token: string | undefined): Promise<void> {

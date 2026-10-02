@@ -249,12 +249,14 @@ export const dealersDocs: ModuleDocs = {
       description:
         'All three required documents — GST certificate, PAN card, address proof — each with ' +
         'its status and rejection reason if it has one. Rows are returned for documents that ' +
-        'have not been uploaded yet, so the checklist is complete rather than growing.',
+        'have not been uploaded yet, so the checklist is complete rather than growing. ' +
+        'Verification is the owner’s business, so this needs `document:upload` (R92).',
       audience: 'dealer',
+      permission: 'document:upload',
       responses: [
         { status: 200, description: 'The document checklist.', schema: 'DealerDocumentsResponse' },
       ],
-      errors: [401, 404],
+      errors: [401, 403, 404],
     },
     {
       method: 'post',

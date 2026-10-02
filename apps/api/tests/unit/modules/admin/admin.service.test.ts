@@ -1152,14 +1152,16 @@ describe('setDealerStatus and its wrappers', () => {
   });
 
   /**
-   * R41 — the seat, not the account.
+   * R92 — the dealership, not the person.
    *
-   * This used to write `users.status`, and `users.status` is the whole person.
-   * A member who also moderates the platform lost the admin console because a
-   * dealership was suspended, which is a consequence nobody asked for and
-   * nobody could see. Both assertions below are about what is *not* touched.
+   * R41 moved suspension from `users.status` to the person's DEALER seat. R92
+   * moves it once more, onto the dealership alone: one person can now belong to
+   * several dealerships, and closing their seat because ABC Motors was
+   * suspended would also lock them out of XYZ Cars. Their sessions are not
+   * revoked either — the same session is their customer account. What denies
+   * them is the dealership's status, read on every dealer request.
    */
-  it('closes every member dealer seat and revokes their dealer sessions on suspension', async () => {
+  it('touches no person on suspension — no account, no seat, no session', async () => {
     const h = setup({
       dealer: dealerRow({
         status: 'ACTIVE',
@@ -1172,38 +1174,11 @@ describe('setDealerStatus and its wrappers', () => {
 
     await h.service.suspendDealer(admin, DEALER, 'GST expired.');
 
-    // The account itself is left alone.
     expect(h.userUpdates).toEqual([]);
-
-    // A member who has never signed in has no seat row yet, so the write is a
-    // create-then-update pair rather than an update.
-    expect(h.seatCreates).toEqual([
-      {
-        data: [
-          { userId: 'owner-1', role: 'DEALER' },
-          { userId: 'manager-1', role: 'DEALER' },
-        ],
-        skipDuplicates: true,
-      },
-    ]);
-    expect(h.seatUpdates).toEqual([
-      {
-        where: { userId: { in: ['owner-1', 'manager-1'] }, role: 'DEALER' },
-        data: { status: 'SUSPENDED', reason: 'GST expired.', suspendedAt: expect.any(Date) },
-      },
-    ]);
-
-    // Scoped. An admin session one of these people holds survives.
-    expect(h.sessionUpdates).toEqual([
-      {
-        where: {
-          userId: { in: ['owner-1', 'manager-1'] },
-          scope: 'DEALER',
-          revokedAt: null,
-        },
-        data: { revokedAt: expect.any(Date) },
-      },
-    ]);
+    expect(h.seatCreates).toEqual([]);
+    expect(h.seatUpdates).toEqual([]);
+    expect(h.sessionUpdates).toEqual([]);
+    expect(h.dealerUpdates[0]?.data).toMatchObject({ status: 'SUSPENDED' });
   });
 
   it('reopens the dealer seats on reinstatement, and revokes nothing', async () => {

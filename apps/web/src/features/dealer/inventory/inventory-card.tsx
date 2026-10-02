@@ -39,6 +39,7 @@ export function InventoryCard({ row }: { row: DealerInventoryRow }) {
         vehicleId={row.id}
         vehicleTitle={row.title}
         actions={row.actions}
+        reactivationPending={row.reactivationPending}
         size="sm"
       />
     </li>

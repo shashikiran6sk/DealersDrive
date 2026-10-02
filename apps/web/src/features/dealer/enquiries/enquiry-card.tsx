@@ -4,9 +4,10 @@ import { Avatar, StatusTag } from '@/components/ui/primitives';
 
 import { ENQUIRIES_TEXT } from './enquiries.constants';
 import type { EnquiryCardProps } from './enquiries.types';
+import { EnquiryHandledBy } from './enquiry-handled-by';
 import { EnquiryStatusActions } from './enquiry-status-actions';
 
-export function EnquiryCard({ enquiry }: EnquiryCardProps) {
+export function EnquiryCard({ enquiry, permissions }: EnquiryCardProps) {
   const { customer, vehicle } = enquiry;
 
   return (
@@ -50,6 +51,7 @@ export function EnquiryCard({ enquiry }: EnquiryCardProps) {
       <p className="m-0 text-[13px] whitespace-pre-line">
         {enquiry.message ?? <span className="ink-subtle">{ENQUIRIES_TEXT.noMessage}</span>}
       </p>
+      <EnquiryHandledBy enquiry={enquiry} />
 
       <div className="flex flex-wrap items-center justify-between gap-[8px] border-t border-(--color-divider) pt-[10px]">
         {customer.callHref && customer.phoneDisplay ? (
@@ -64,6 +66,7 @@ export function EnquiryCard({ enquiry }: EnquiryCardProps) {
           enquiryId={enquiry.id}
           status={enquiry.status}
           customerName={customer.name}
+          permissions={permissions}
         />
       </div>
     </li>

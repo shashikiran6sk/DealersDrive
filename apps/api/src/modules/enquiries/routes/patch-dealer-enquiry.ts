@@ -9,12 +9,12 @@ import { handle } from './handle.js';
 export const patchDealerEnquiry: DealerEnquiriesRoute = (router, service) => {
   router.patch(
     '/enquiries/:id',
-    requirePermission('enquiry:update'),
+    requirePermission('enquiry:contact'),
     validate({ params: IdParam, body: UpdateEnquiryInput }),
     handle((req) => {
-      const { dealerId, userId } = dealerPrincipal(req);
+      const { dealerId, userId, permissions } = dealerPrincipal(req);
       return service.setStatus(
-        { dealerId, userId },
+        { dealerId, userId, permissions },
         validated<IdParam>(req, 'params').id,
         validated<UpdateEnquiryInput>(req, 'body'),
       );

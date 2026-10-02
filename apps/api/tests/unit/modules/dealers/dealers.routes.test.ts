@@ -82,26 +82,29 @@ describe('permissions', () => {
     ['POST /yard-photo/presign', 'document:upload'],
     ['POST /yard-photo/commit', 'document:upload'],
     ['DELETE /yard-photo', 'document:upload'],
+    // R92 — the KYC checklist is verification, and verification is the owner's.
+    ['GET /documents', 'document:upload'],
   ])('guards %s with %s, which only OWNER holds', (signature, permission) => {
     expect(permissionsOn(routeFor(router, signature) as never)).toEqual([permission]);
   });
 
   /**
    * These carry no permission on purpose: `requireDealer` already ran, and a
-   * salesperson who cannot see their own dealership has a broken console. The
+   * member who cannot see their own dealership has a broken console. The
    * tenant scope still comes from the principal, so nothing here is unscoped.
    */
-  it.each(['GET /', 'GET /completeness', 'GET /documents', 'GET /dashboard'])(
+  it.each(['GET /', 'GET /completeness', 'GET /dashboard'])(
     'leaves %s open to any authenticated seat',
     (signature) => {
       expect(permissionsOn(routeFor(router, signature) as never)).toEqual([]);
     },
   );
 
-  it('guards every write, and only the writes', () => {
+  it('guards every write, and of the reads only the KYC checklist', () => {
     for (const route of routesOf(router)) {
       const guarded = permissionsOn(route).length > 0;
-      expect(guarded, `${route.method} ${route.path}`).toBe(route.method !== 'GET');
+      const signature = `${route.method} ${route.path}`;
+      expect(guarded, signature).toBe(route.method !== 'GET' || signature === 'GET /documents');
     }
   });
 });

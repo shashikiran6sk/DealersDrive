@@ -11,6 +11,11 @@ export const ENQUIRY_TABS: { value: EnquiryStatus; label: string }[] = [
   { value: 'SPAM', label: 'Spam' },
 ];
 
+export const HANDLED_BY_TEXT = {
+  contacted: (name: string, at: string) => `Contacted by ${name} · ${at}`,
+  closed: (name: string, at: string) => `Closed by ${name} · ${at}`,
+} as const;
+
 export const ENQUIRY_MOVES: Record<EnquiryStatus, { to: EnquiryStatus; label: string }[]> = {
   NEW: [
     { to: 'CONTACTED', label: 'Mark contacted' },

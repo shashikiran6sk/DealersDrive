@@ -42,6 +42,7 @@ const QUEUE: AdminListingsResponse = {
   ],
   page: { nextCursor: 'next', hasMore: true },
   counts: { PENDING_REVIEW: 14, CHANGES_REQUESTED: 3, ACTIVE: 208, REJECTED: 6, SOLD: 41 },
+  reactivationPending: 2,
 };
 
 const meta = {

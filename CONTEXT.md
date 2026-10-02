@@ -496,6 +496,9 @@ than offering one that could not keep its promise.
 
 ## 7e2. One person, two seats — and why `users.status` is not the switch (R41)
 
+> ⚠️ **Partly superseded by R92.** Suspending a dealership no longer closes seats
+> or revokes sessions; see §7o. The seat table and its veto rule still stand.
+
 `users.status` is an **account**: one flag for the whole person, every door.
 That is the right unit for exactly one thing — an account the platform is
 closing altogether — and it was the wrong unit for the one place that used it.
@@ -913,6 +916,69 @@ The browser-side cooldown and the three-attempt cap are courtesies on top of
 that, not controls — they are in a page anybody can edit. If the provider's
 limits prove too loose, the answer is an API-side send endpoint, which is a
 different integration rather than a tightening of this one.
+
+## 7o. One person, one session, many dealerships — membership is the switch (R92–R96)
+
+A dealership used to have exactly one person in it, so "the dealer" and "the
+signed-in user" could be read as the same thing. That stopped being true at
+R92. These are the facts that now hold, and they are easy to get wrong.
+
+**There is one session per person, and it carries no role.** A customer
+sign-in and a dealer sign-in produce the same kind of cookie. The dealer
+resolver reads DEALER and CUSTOMER sessions alike. On **every request** it
+works out, from `dealer_members`, which dealership the person is acting for and
+with what role. `sessions.activeDealerId` is a _preference_ for which
+dealership to open, and nothing more: it is never trusted on its own. A
+preference that has gone stale (the member was removed, or the dealership was
+suspended) falls through to the person's oldest remaining active membership,
+or to no dealer access at all.
+
+**Do not cache the membership, and do not fold it into the session read.**
+It is one indexed read (`dealer_members (userId, status)`). Caching it would
+mean a removed member, or one who was demoted, keeps their old powers until
+the cache expires. That is precisely the window R94's tests close: STAFF are
+refused _reserve_ until they are promoted, and allowed on the very next
+request. Folding it into the session query looks free, but it isn't: Prisma's
+`include` issues a second query anyway, because `relationJoins` is off.
+
+**Roles are a table, not a set of `if`s.** `DEALER_PERMISSIONS` lives in
+`packages/contracts`. The API enforces it, the web hides buttons with it, and
+the OpenAPI document prints it. An action the console offers is narrowed
+through `LIFECYCLE_ACTION_PERMISSION` and `enquiryTransitionPermission`, both of
+which sit beside the table. A role check written anywhere else is a second
+copy of the table.
+
+**Suspension belongs to the dealership.** This revises §7e2. Since R92,
+suspending a dealership closes no seat and revokes no session. Instead:
+
+- the resolver refuses a suspended dealership's membership;
+- the read model drops its listings through `dealer.status = 'ACTIVE'`;
+- the person keeps their customer account, and keeps any other dealership
+  they belong to.
+
+Reinstating the dealership restores everything on the next request. Seats
+(`user_roles`) are still re-opened on reinstatement, for rows R41 closed
+before this change.
+
+**Every team write locks the dealership row first** (`lockDealership`), and
+accepting an invitation locks the invitation and then the dealership. Counts
+and caps (`MAX_WAITING_INVITATIONS`) are evaluated under that lock. A partial
+unique index allows only one PENDING invitation per dealership + number, so
+two simultaneous invites become one row and not a 500.
+
+**Test suites that sign people in each own a phone prefix.** A suite that
+creates customers by phone number collides with any other suite that picks
+the same number, which shows up as a sign-up that unexpectedly finds an
+account. Each suite's `nextNumber()` uses its own five-digit
+prefix (`94388…`, `94399…`, `94411…`, `94422…`; `member()` in
+`marketplace-fixtures.ts` uses `93…`). Before choosing one,
+`grep -rn "944[0-9][0-9]" apps/api/tests`, and take a prefix nobody uses.
+
+**`openapi.test.ts` must stay linear.** It once called `documentedRoutes()`
+inside the loop over mounted routes, which is quadratic, and the suite timed
+out on CI once the router passed ~150 routes. Compute both sides once.
+
+---
 
 ## 8. Local development
 

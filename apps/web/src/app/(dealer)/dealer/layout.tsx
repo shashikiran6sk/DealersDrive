@@ -9,16 +9,22 @@ import {
   ADD_VEHICLE_LABEL,
   ConsoleNav,
   ConsoleTabBar,
-  LANDED_NAV,
+  consoleNavFor,
 } from '@/components/dealer/console-nav';
 import { ButtonLink } from '@/components/ui/button';
 import { Blueprint, Plate, StatusTag } from '@/components/ui/primitives';
+import { customerAccountAction } from '@/features/auth/customer-account-actions';
+import { HeaderAccount } from '@/features/auth/header-account';
 import { SignOutButton } from '@/features/auth/sign-out';
 import { apiGet } from '@/lib/api';
-import { currentSession } from '@/lib/session';
+import { currentSession, hasSession } from '@/lib/session';
 import { seoMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+const HOME_HREF = '/';
+const DEALER_LOGIN_HREF = '/login?as=dealer';
+const SESSION_EXPIRED_HREF = '/dealer/login?error=session_expired';
 
 export const metadata: Metadata = {
   title: { default: 'Dealer console', template: '%s · Dealer console' },
@@ -26,7 +32,9 @@ export const metadata: Metadata = {
 };
 
 export default async function DealerLayout({ children }: { children: ReactNode }) {
-  const dealer = await requireDealer();
+  const { dealer, permissions } = await requireDealer();
+  const account = await customerAccountAction();
+  const nav = consoleNavFor(permissions);
 
   return (
     <div className="flex min-h-dvh bg-white">
@@ -38,7 +46,7 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           </span>
         </Link>
 
-        <ConsoleNav items={LANDED_NAV} />
+        <ConsoleNav items={nav} />
 
         <Blueprint className="mt-auto rounded-[14px] bg-white p-4">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] ink-muted">
@@ -70,21 +78,28 @@ export default async function DealerLayout({ children }: { children: ReactNode }
           <ButtonLink href={ADD_VEHICLE_HREF} variant="primary" className="max-md:hidden">
             {ADD_VEHICLE_LABEL}
           </ButtonLink>
-          <SignOutButton />
+          {account ? (
+            <HeaderAccount initialAccount={account} afterLogoutHref={HOME_HREF} />
+          ) : (
+            <SignOutButton />
+          )}
         </header>
 
         <main className="min-w-0 flex-1 pb-[60px] md:pb-0">{children}</main>
       </div>
 
-      <ConsoleTabBar items={LANDED_NAV} />
+      <ConsoleTabBar items={nav} />
     </div>
   );
 }
 
-async function requireDealer(): Promise<DealerProfile> {
+async function requireDealer(): Promise<{ dealer: DealerProfile; permissions: string[] }> {
   const session = await currentSession();
-  if (!session) redirect('/dealer/login?error=session_expired');
+  if (!session) {
+    redirect((await hasSession()) ? DEALER_LOGIN_HREF : SESSION_EXPIRED_HREF);
+  }
   if (session.next === 'ONBOARDING') redirect('/dealer/onboarding');
 
-  return apiGet<DealerProfile>('/v1/dealer', { revalidate: false });
+  const dealer = await apiGet<DealerProfile>('/v1/dealer', { revalidate: false });
+  return { dealer, permissions: session.permissions };
 }

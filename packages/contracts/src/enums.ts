@@ -52,7 +52,8 @@ export type VehicleStatus = z.infer<typeof VehicleStatus>;
  * The state machine's own vocabulary (**F064**, as revised by **R47** and
  * **R69**): a listing is born DRAFT with its vehicle and goes through review;
  * once live it is ACTIVE (on sale), RESERVED (on show, not available), SOLD or
- * WITHDRAWN (taken off sale unsold, and relistable). There is no APPROVED (it
+ * WITHDRAWN (taken off sale unsold). A reserved or
+ * withdrawn car goes back on sale only on an admin's approval. There is no APPROVED (it
  * is spelled ACTIVE) and no EXPIRED until something expires a listing. Mirrors
  * the Prisma enum of the same name, in the same order.
  */
@@ -110,7 +111,7 @@ export const DealerStatus = z.enum([
 ]);
 export type DealerStatus = z.infer<typeof DealerStatus>;
 
-export const DealerRole = z.enum(['OWNER', 'MANAGER', 'SALES']);
+export const DealerRole = z.enum(['OWNER', 'MANAGER', 'STAFF']);
 export type DealerRole = z.infer<typeof DealerRole>;
 
 export const AdminRole = z.enum(['SUPPORT', 'MODERATOR', 'SUPER_ADMIN']);

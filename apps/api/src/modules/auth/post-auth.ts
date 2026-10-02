@@ -3,6 +3,7 @@ import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { ForbiddenError } from '../../platform/errors.js';
 import { DEALERSHIP_SUSPENDED } from './auth.messages.js';
+import { findWorkspaceMembership } from './membership.js';
 import { DEFAULT_RETURN_TO, safeReturnTo } from './oauth-transaction.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
@@ -19,13 +20,9 @@ export async function resolveDealerPostAuthDestination(
   userId: string,
   requested?: string,
 ): Promise<DealerDestination> {
-  const membership = await db.dealerMember.findFirst({
-    where: { userId, status: 'ACTIVE' },
-    include: { dealer: { select: { status: true } } },
-    orderBy: { id: 'asc' },
-  });
+  const { membership, suspended } = await findWorkspaceMembership(db, userId);
 
-  if (membership?.dealer.status === 'SUSPENDED') {
+  if (suspended) {
     throw new ForbiddenError(DEALERSHIP_SUSPENDED, { code: 'ACCOUNT_SUSPENDED' });
   }
 

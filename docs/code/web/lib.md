@@ -1035,7 +1035,7 @@ because a buyer's console is nobody's log.
 
 ### `export function describeError(error: unknown)`
 
-Name, message, stack, the cause chain, and the fields that identify a failure
+Name, cause categories, and the fields that identify a failure
 across the two tiers (`status`, `code`, `kind`, `digest`, `traceId`). Nothing
 else is copied off an error, so a request body or a header on some future
 error type is not logged by accident.
@@ -1070,3 +1070,7 @@ fallback.
 
 The layout, `generateMetadata` and the page all ask for these; `cache` makes it
 one wait per render if the API is slow, rather than one each.
+
+## Integration with current main
+
+The homepage preserves main’s interleaved discovery/information bands while showing the inline inventory failure notice. Error components use C131–C135; JsonLd is C130, so main’s current component IDs stay intact. Web diagnostics retain error categories/status and trace/digest correlation; arbitrary error messages, stacks, request bodies and URL query strings are excluded to avoid logging authentication proofs or private fields. Error causes are bounded against cycles.

@@ -38,7 +38,7 @@ export const TRANSITION_REFUSALS = {
   },
   withdraw: {
     code: 'LISTING_NOT_WITHDRAWABLE',
-    message: 'Only a car that is on sale or reserved can be withdrawn.',
+    message: 'Only a car that is on sale can be withdrawn.',
   },
   relist: {
     code: 'LISTING_NOT_RELISTABLE',
@@ -49,3 +49,18 @@ export const TRANSITION_REFUSALS = {
 export const REASON_REQUIRED = 'A reason is required for this decision.';
 
 export const WITHDRAWAL_REASON_REQUIRED = 'Choose why the listing is being withdrawn.';
+
+export const REACTIVATION_NOT_ALLOWED = {
+  code: 'LISTING_NOT_REACTIVATABLE',
+  message: 'Only a reserved or withdrawn car can be put back on sale.',
+} as const;
+
+export const REACTIVATION_ALREADY_PENDING =
+  'A request to put this car back on sale is already waiting for review.';
+
+export const REACTIVATION_NOT_FOUND = 'That reactivation request does not exist.';
+
+export const REACTIVATION_NOT_PENDING = 'That reactivation request has already been decided.';
+
+export const REACTIVATION_STALE =
+  'The listing has changed since this request was made, so it cannot be approved.';

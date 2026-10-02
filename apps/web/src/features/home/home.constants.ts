@@ -28,3 +28,22 @@ export const HOME_TEXT = {
   unavailableTitle: 'We couldn’t load these vehicles right now',
   unavailableMessage: 'Please try again, or browse every car on the marketplace.',
 } as const;
+
+export type HomeInfoSection = 'journey' | 'trust' | 'audience';
+
+export type HomeFlowItem =
+  { kind: 'cars'; key: DiscoverySection['key'] } | { kind: 'info'; key: HomeInfoSection };
+
+export const HOME_FLOW: readonly HomeFlowItem[] = [
+  { kind: 'cars', key: 'recent' },
+  { kind: 'info', key: 'journey' },
+  { kind: 'cars', key: 'suv' },
+  { kind: 'info', key: 'trust' },
+  { kind: 'cars', key: 'automatic' },
+  { kind: 'info', key: 'audience' },
+  { kind: 'cars', key: 'under-10-lakh' },
+];
+
+export function discoveryRowId(key: string): string {
+  return `home-${key}`;
+}

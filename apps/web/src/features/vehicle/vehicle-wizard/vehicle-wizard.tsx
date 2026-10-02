@@ -34,6 +34,7 @@ export interface VehicleWizardProps {
   saved?: boolean;
   submitted?: boolean;
   cancelHref?: string;
+  mayPublish?: boolean;
 }
 
 function lockedBody(status: DealerVehicle['listing']['status']): string {
@@ -48,6 +49,7 @@ export function VehicleWizard({
   saved = false,
   submitted = false,
   cancelHref = '/dealer',
+  mayPublish = true,
 }: VehicleWizardProps) {
   const [state, formAction] = useActionState(
     vehicle ? saveVehicleStepAction : createVehicleAction,
@@ -107,7 +109,7 @@ export function VehicleWizard({
         ) : step === 'review' && vehicle ? (
           <>
             <ReviewStep vehicle={vehicle} />
-            <SubmitRow vehicle={vehicle} cancelHref={cancelHref} />
+            <SubmitRow vehicle={vehicle} cancelHref={cancelHref} mayPublish={mayPublish} />
           </>
         ) : (
           <form action={formAction} className="flex flex-col gap-[16px]" noValidate>

@@ -7,9 +7,15 @@ import {
   createCustomerAuthRouter,
   createPublicAuthRouter,
   createSessionAuthRouter,
+  createWorkspacesRouter,
 } from './modules/auth/auth.routes.js';
+import { createAdminEnquiriesRouter } from './modules/enquiries/enquiries.admin.routes.js';
 import { createDealerEnquiriesRouter } from './modules/enquiries/enquiries.dealer.routes.js';
 import { createEnquiriesRouter } from './modules/enquiries/enquiries.routes.js';
+import { createAdminSupportRouter } from './modules/support/support.admin.routes.js';
+import { createSupportRouter } from './modules/support/support.routes.js';
+import { createInvitationsRouter } from './modules/team/invitations.routes.js';
+import { createTeamRouter } from './modules/team/team.routes.js';
 import { createSavedVehiclesRouter } from './modules/saved-vehicles/saved-vehicles.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createConfigRouter } from './modules/config/config.routes.js';
@@ -58,6 +64,16 @@ export function createRoutes(container: Container): Router {
     createCustomerAuthRouter(container.customers),
   );
   v1.use(
+    '/auth/workspaces',
+    container.guards.requireCustomer,
+    createWorkspacesRouter(container.workspaces),
+  );
+  v1.use(
+    '/invitations',
+    container.guards.requireCustomer,
+    createInvitationsRouter(container.invitations),
+  );
+  v1.use(
     '/enquiries',
     container.guards.requireCustomer,
     createEnquiriesRouter(container.enquiries, container.rateLimit),
@@ -66,6 +82,11 @@ export function createRoutes(container: Container): Router {
     '/saved-vehicles',
     container.guards.requireCustomer,
     createSavedVehiclesRouter(container.savedVehicles, container.rateLimit),
+  );
+  v1.use(
+    '/support',
+    container.guards.requireCustomer,
+    createSupportRouter(container.support, container.rateLimit),
   );
   v1.use(
     '/auth',
@@ -78,6 +99,7 @@ export function createRoutes(container: Container): Router {
   dealer.use(createDealersRouter(container.dealers));
   dealer.use(createVehiclesRouter(container.vehicles));
   dealer.use(createDealerEnquiriesRouter(container.enquiries));
+  dealer.use(createTeamRouter(container.team));
   v1.use('/dealer', dealer);
 
   const admin = Router();
@@ -85,6 +107,8 @@ export function createRoutes(container: Container): Router {
   admin.use(createAdminRouter(container.admin));
   admin.use(createModerationRouter(container.moderation));
   admin.use(createVehicleImagesRouter(container.vehicleImages));
+  admin.use(createAdminEnquiriesRouter(container.adminEnquiries));
+  admin.use(createAdminSupportRouter(container.adminSupport));
   v1.use('/admin', admin);
 
   router.use('/v1', v1);

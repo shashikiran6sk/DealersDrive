@@ -102,38 +102,104 @@ export function listingStatusTone(status: ListingStatus): StatusTone {
 }
 
 /**
- * The five moves a dealership makes on a listing once it has been live
- * (**R69**). Each is its own route — there is no "set status" — and each maps
- * one-for-one onto an event of the API's state machine, which is the authority;
- * this table is the console's copy of it, and a test in the API holds the two
- * together.
+ * The moves a dealership makes on a listing once it has been live (**R69**, as
+ * revised by the reactivation review). Each is its own route — there is no "set
+ * status" — and the first three map one-for-one onto an event of the API's
+ * state machine, which is the authority; this table is the console's copy of
+ * it, and a test in the API holds the two together.
+ *
+ * A dealer never puts a car back on sale directly. RESERVED → ACTIVE and
+ * WITHDRAWN → ACTIVE are admin decisions: the dealer's move is
+ * `requestReactivation`, which files a request an admin approves or rejects.
  *
  * There is deliberately no way back from SOLD: a sold car is history, and a
  * sale recorded by mistake is an administrative correction, not a toggle.
  */
 export const ListingLifecycleAction = z.enum([
   'reserve',
-  'reactivate',
   'markSold',
   'withdraw',
-  'relist',
+  'requestReactivation',
 ]);
 export type ListingLifecycleAction = z.infer<typeof ListingLifecycleAction>;
 
+/** The statuses a dealer may ask to have put back on sale. */
+export const REACTIVATABLE_STATUSES: readonly ListingStatus[] = ['RESERVED', 'WITHDRAWN'];
+
+export function isListingReactivatable(status: ListingStatus): boolean {
+  return REACTIVATABLE_STATUSES.includes(status);
+}
+
 export const LISTING_LIFECYCLE_FROM: Record<ListingLifecycleAction, readonly ListingStatus[]> = {
   reserve: ['ACTIVE'],
-  reactivate: ['RESERVED'],
   markSold: ['ACTIVE', 'RESERVED'],
-  withdraw: ['ACTIVE', 'RESERVED'],
-  relist: ['WITHDRAWN'],
+  withdraw: ['ACTIVE'],
+  requestReactivation: REACTIVATABLE_STATUSES,
 };
 
+export interface LifecycleActionOptions {
+  /** A reactivation request is already waiting, so another cannot be filed. */
+  reactivationPending?: boolean;
+}
+
 /** Which lifecycle moves a listing in `status` offers, in the order the console shows them. */
-export function lifecycleActionsOf(status: ListingStatus): ListingLifecycleAction[] {
-  return ListingLifecycleAction.options.filter((action) =>
-    LISTING_LIFECYCLE_FROM[action].includes(status),
+export function lifecycleActionsOf(
+  status: ListingStatus,
+  options: LifecycleActionOptions = {},
+): ListingLifecycleAction[] {
+  return ListingLifecycleAction.options.filter(
+    (action) =>
+      LISTING_LIFECYCLE_FROM[action].includes(status) &&
+      !(action === 'requestReactivation' && options.reactivationPending),
   );
 }
+
+/**
+ * Where a dealer's request to put a reserved or withdrawn car back on sale has
+ * got to. Mirrors the Prisma enum of the same name. CANCELLED is the request
+ * the listing outran: the dealer sold the reserved car before an admin decided,
+ * so there was nothing left to approve.
+ */
+export const ReactivationRequestStatus = z.enum(['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED']);
+export type ReactivationRequestStatus = z.infer<typeof ReactivationRequestStatus>;
+
+export const REACTIVATION_STATUS_LABELS: Record<ReactivationRequestStatus, string> = {
+  PENDING: 'Reactivation pending approval',
+  APPROVED: 'Reactivation approved',
+  REJECTED: 'Reactivation declined',
+  CANCELLED: 'Reactivation request closed',
+};
+
+export const REACTIVATION_STATUS_TONES: Record<ReactivationRequestStatus, StatusTone> = {
+  PENDING: 'warn',
+  APPROVED: 'ok',
+  REJECTED: 'err',
+  CANCELLED: 'neutral',
+};
+
+/**
+ * The body of `POST /v1/dealer/vehicles/:id/request-reactivation`. The reason
+ * is optional: the dealer's own words to the reviewer, never published.
+ */
+export const RequestReactivationInput = z
+  .object({ reason: z.string().trim().max(500).optional() })
+  .strict();
+export type RequestReactivationInput = z.infer<typeof RequestReactivationInput>;
+
+/** The listing's latest reactivation request, as its own dealership sees it. */
+export const ListingReactivation = z.object({
+  id: z.string().uuid(),
+  status: ReactivationRequestStatus,
+  statusLabel: z.string(),
+  statusTone: StatusTone,
+  fromStatus: ListingStatus,
+  reason: z.string().nullable(),
+  requestedAt: z.string(),
+  reviewedAt: z.string().nullable(),
+  /** The reviewer's note on a decision, shown to the dealer verbatim. */
+  adminNote: z.string().nullable(),
+});
+export type ListingReactivation = z.infer<typeof ListingReactivation>;
 
 export function withdrawalReasonLabel(reason: WithdrawalReason): string {
   return WITHDRAWAL_REASON_LABELS[reason];
@@ -186,5 +252,10 @@ export const DealerListing = z.object({
   canDelete: z.boolean(),
   /** The lifecycle moves this listing offers now (**R69**). */
   actions: z.array(ListingLifecycleAction),
+  /**
+   * The latest reactivation request while it still describes the listing: a
+   * pending one, or a decided one on a listing still reserved or withdrawn.
+   */
+  reactivation: ListingReactivation.nullable(),
 });
 export type DealerListing = z.infer<typeof DealerListing>;

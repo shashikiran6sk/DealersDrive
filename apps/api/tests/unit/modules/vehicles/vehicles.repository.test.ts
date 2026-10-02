@@ -3,6 +3,10 @@ import { describe, expect, it } from 'vitest';
 
 import { createVehiclesRepository } from '../../../../src/modules/vehicles/vehicles.repository.js';
 
+const WITH_LISTING = {
+  listing: { include: { reactivations: { orderBy: { requestedAt: 'desc' }, take: 1 } } },
+};
+
 interface Call {
   model: string;
   method: string;
@@ -44,7 +48,7 @@ describe('tenant scoping', () => {
     expect(calls[0]).toEqual({
       model: 'vehicle',
       method: 'findFirst',
-      args: { where: { id: VEHICLE, dealerId: DEALER }, include: { listing: true } },
+      args: { where: { id: VEHICLE, dealerId: DEALER }, include: WITH_LISTING },
     });
   });
 
@@ -95,7 +99,7 @@ describe('tenant scoping', () => {
     expect(calls[0]?.args).toEqual({
       where: { dealerId: DEALER },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      include: { listing: true },
+      include: WITH_LISTING,
     });
   });
 });

@@ -13,6 +13,7 @@ import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
 import { AvailabilityBadge, availabilityLabel } from '@/components/vehicle/vehicle-card';
 import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
+import { VehicleName } from '@/components/vehicle/vehicle-name';
 import { JsonLd } from '@/components/seo/json-ld';
 import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
 import { apiGetParsed } from '@/lib/api';
@@ -151,7 +152,7 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
               )}
             </div>
             <h1 className="text-[26px] leading-[1.15] tracking-[-0.035em] sm:text-[30px]">
-              {vehicle.title}
+              <VehicleName title={vehicle.title} year={vehicle.year} />
             </h1>
             {vehicle.summary ? (
               <p className="text-[13px] ink-secondary tnum">{vehicle.summary}</p>

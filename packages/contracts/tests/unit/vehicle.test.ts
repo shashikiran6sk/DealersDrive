@@ -13,6 +13,7 @@ import {
   normaliseVehicleText,
   vehicleIssues,
   vehicleSummary,
+  titleWithoutYear,
   vehicleTitle,
   type VehicleCompletenessInput,
 } from '../../src/vehicle.js';
@@ -143,6 +144,31 @@ describe('vehicleIssues', () => {
     for (const field of REQUIRED_VEHICLE_FIELDS) {
       expect(VEHICLE_FIELD_LABELS[field]).toBeTruthy();
     }
+  });
+});
+
+describe('titleWithoutYear', () => {
+  it('drops the leading year the plate beside it already shows', () => {
+    expect(titleWithoutYear({ title: '2022 Maruti Suzuki Brezza ZXi', year: 2022 })).toBe(
+      'Maruti Suzuki Brezza ZXi',
+    );
+  });
+
+  it('is the inverse of vehicleTitle', () => {
+    const vehicle = { manufacturingYear: 2023, make: 'Hyundai', model: 'Creta', variant: 'SX(O)' };
+    expect(titleWithoutYear({ title: vehicleTitle(vehicle), year: 2023 })).toBe(
+      'Hyundai Creta SX(O)',
+    );
+  });
+
+  it('leaves a title alone when there is no year, a different year, or nothing but the year', () => {
+    expect(titleWithoutYear({ title: 'Hyundai Creta', year: null })).toBe('Hyundai Creta');
+    expect(titleWithoutYear({ title: '2021 Hyundai Creta', year: 2022 })).toBe(
+      '2021 Hyundai Creta',
+    );
+    expect(titleWithoutYear({ title: '2022', year: 2022 })).toBe('2022');
+    expect(titleWithoutYear({ title: 'KA 01 AB 1234', year: 2022 })).toBe('KA 01 AB 1234');
+    expect(titleWithoutYear({ title: '2022 Series 3', year: 2022 })).toBe('Series 3');
   });
 });
 

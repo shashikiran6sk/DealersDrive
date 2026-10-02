@@ -22,7 +22,8 @@ export const moderationDocs: ModuleDocs = {
         'queue is **oldest submission first**, which is the order it is worked in; every ' +
         'other status is most recently changed first. Cursor-paginated.\n\n' +
         '`q` matches the plate (separators ignored), the make or model, or the dealership. ' +
-        '`counts` is per status across the platform and ignores `q`. `resubmission` marks a ' +
+        '`counts` is per status across the platform and ignores `q`; `reactivationPending` is ' +
+        'the number of reactivation requests waiting. `resubmission` marks a ' +
         'listing coming back after a request for changes.\n\n' +
         'There is deliberately no approve action on this list (**R45**): a listing cannot be ' +
         'approved until its photographs are uploaded and ordered on the review screen.',
@@ -172,6 +173,82 @@ export const moderationDocs: ModuleDocs = {
       params: 'IdParam',
       responses: [
         { status: 200, description: 'The listing, now ACTIVE.', schema: 'AdminListingDetail' },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'get',
+      path: '/v1/admin/reactivation-requests',
+      operationId: 'listReactivationRequests',
+      tag: DOC_TAGS.moderation,
+      summary: 'Requests to put a reserved or withdrawn car back on sale',
+      description:
+        'A dealership cannot move its own listing from `RESERVED` or `WITHDRAWN` back to ' +
+        '`ACTIVE`; it files a reactivation request, and these are they. `PENDING` when ' +
+        '`status` is omitted, **oldest first** because that is the order they are worked in; ' +
+        'decided requests are most recently decided first. Cursor-paginated. `counts` is per ' +
+        'request status across the platform.\n\n' +
+        '`current` says whether the listing is still in the status the request was filed from ' +
+        '\u2014 a pending request never outlives a move (a sale closes it as `CANCELLED`), so ' +
+        'on the pending tab it is always true.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      query: 'AdminReactivationQuery',
+      responses: [
+        {
+          status: 200,
+          description: 'A page of reactivation requests.',
+          schema: 'AdminReactivationsResponse',
+        },
+      ],
+      errors: [400, 401, 403, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/reactivation-requests/:id/reject',
+      operationId: 'rejectReactivationRequest',
+      tag: DOC_TAGS.moderation,
+      summary: 'Decline a reactivation request',
+      description:
+        'The request becomes `REJECTED` and the listing stays exactly where it was ' +
+        '(`RESERVED` or `WITHDRAWN`). `note` is optional, at most 500 characters, and is shown ' +
+        'to the dealership verbatim. A request already decided is `409 REACTIVATION_NOT_PENDING`. ' +
+        'Audited as `listing.reactivation_rejected`. `id` is the request id.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'NoteInput',
+        example: { note: 'The car still shows as reserved with the buyer’s bank.' },
+      },
+      responses: [
+        { status: 200, description: 'The request, declined.', schema: 'AdminReactivationRow' },
+      ],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/reactivation-requests/:id/approve',
+      operationId: 'approveReactivationRequest',
+      tag: DOC_TAGS.moderation,
+      summary: 'Approve a reactivation request and put the car back on sale',
+      description:
+        'In one transaction, under the listing\u2019s row lock: the request must still be ' +
+        '`PENDING` (`409 REACTIVATION_NOT_PENDING` otherwise) and the listing must still be in ' +
+        'the status it was filed from (`409 REACTIVATION_STALE` otherwise \u2014 a car sold ' +
+        'meanwhile is never reactivated). The request becomes `APPROVED` and the listing moves ' +
+        'to `ACTIVE` through the state machine (`listing.reactivated` from RESERVED, ' +
+        '`listing.relisted` from WITHDRAWN), so it is back on every public surface at once.\n\n' +
+        'A listing withdrawn before R69 may have released its registration; approval reclaims ' +
+        'it, and if another dealership has claimed the same car since, this is a ' +
+        '`409 DUPLICATE_REGISTRATION` and nothing moves. `note` is optional. Audited as ' +
+        '`listing.reactivation_approved`. `id` is the request id.',
+      audience: 'admin',
+      permission: 'admin:listing:moderate',
+      params: 'IdParam',
+      requestBody: { schema: 'NoteInput', example: {} },
+      responses: [
+        { status: 200, description: 'The request, approved.', schema: 'AdminReactivationRow' },
       ],
       errors: [400, 401, 403, 404, 409],
     },

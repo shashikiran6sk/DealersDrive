@@ -8,6 +8,7 @@ import {
   type DealerInventoryResponse,
   type DealerVehicle,
   type ListingLifecycleAction,
+  type RequestReactivationInput,
   type UpdateVehicleInput,
   type VehicleSuggestQuery,
   type VehicleSuggestions,
@@ -22,6 +23,7 @@ import { ConflictError, DomainError, NotFoundError, errorCode } from '../../plat
 import {
   assertTransition,
   createDraftListing,
+  fileReactivationRequest,
   lockListingForVehicle,
   transition,
 } from '../listings/listings.facade.js';
@@ -40,6 +42,7 @@ import type { VehicleRow, VehicleWrite, VehiclesRepository } from './vehicles.re
 export interface VehicleActor {
   dealerId: string;
   userId: string;
+  permissions?: readonly string[];
 }
 
 export interface VehiclesDeps {
@@ -49,6 +52,8 @@ export interface VehiclesDeps {
 }
 
 export const SUGGESTION_LIMIT = 8;
+
+export type DirectLifecycleAction = Exclude<ListingLifecycleAction, 'requestReactivation'>;
 
 function duplicate(): ConflictError {
   return new ConflictError('DUPLICATE_REGISTRATION', DUPLICATE_REGISTRATION, {
@@ -169,7 +174,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           });
           return { ...row, listing };
         });
-        return toDealerVehicle(created);
+        return toDealerVehicle(created, actor.permissions);
       } catch (error) {
         if (errorCode(error) === 'P2002') throw duplicate();
         throw error;
@@ -179,6 +184,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
     async inventory(
       dealerId: string,
       query: DealerInventoryQuery,
+      permissions?: readonly string[],
     ): Promise<DealerInventoryResponse> {
       const [rows, counts] = await Promise.all([
         repo.inventory(dealerId, {
@@ -195,7 +201,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       const last = page[page.length - 1];
 
       return {
-        data: page.map(toInventoryRow),
+        data: page.map((row) => toInventoryRow(row, permissions)),
         page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
         counts: {
           ALL: counts.reduce((sum, row) => sum + row.count, 0),
@@ -204,8 +210,12 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       };
     },
 
-    async get(dealerId: string, vehicleId: string): Promise<DealerVehicle> {
-      return toDealerVehicle(await requireOwned(dealerId, vehicleId));
+    async get(
+      dealerId: string,
+      vehicleId: string,
+      permissions?: readonly string[],
+    ): Promise<DealerVehicle> {
+      return toDealerVehicle(await requireOwned(dealerId, vehicleId), permissions);
     },
 
     async update(
@@ -230,7 +240,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
 
       const data = await writeOf(input);
       const fields = Object.keys(data).filter((field) => field !== 'rtoCode');
-      if (fields.length === 0) return toDealerVehicle(current);
+      if (fields.length === 0) return toDealerVehicle(current, actor.permissions);
 
       try {
         const updated = await withTransaction(prisma, async (tx) => {
@@ -248,7 +258,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           });
           return row;
         });
-        return toDealerVehicle(updated);
+        return toDealerVehicle(updated, actor.permissions);
       } catch (error) {
         if (errorCode(error) === 'P2002') throw duplicate();
         throw error;
@@ -313,7 +323,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           });
           return { ...vehicle, claimedAt, listing: moved };
         });
-        return toDealerVehicle(submitted);
+        return toDealerVehicle(submitted, actor.permissions);
       } catch (error) {
         if (errorCode(error) === 'P2002') throw alreadyListed();
         throw error;
@@ -323,39 +333,54 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
     async lifecycle(
       actor: VehicleActor,
       vehicleId: string,
-      action: ListingLifecycleAction,
+      action: DirectLifecycleAction,
       withdrawal?: WithdrawListingInput,
     ): Promise<DealerVehicle> {
       await requireOwned(actor.dealerId, vehicleId);
 
-      try {
-        const moved = await withTransaction(prisma, async (tx) => {
-          const listing = await lockListingForVehicle(tx, vehicleId);
-          const vehicle = await repo.findOwned(actor.dealerId, vehicleId, tx);
-          if (!listing || !vehicle) throw notFound();
+      const moved = await withTransaction(prisma, async (tx) => {
+        const listing = await lockListingForVehicle(tx, vehicleId);
+        const vehicle = await repo.findOwned(actor.dealerId, vehicleId, tx);
+        if (!listing || !vehicle) throw notFound();
 
-          assertTransition(listing.status, action, 'DEALER');
-          if (action === 'relist' && vehicle.releasedAt) {
-            await repo.updateOwned(actor.dealerId, vehicleId, { releasedAt: null }, tx);
-          }
+        await transition(
+          tx,
+          audit,
+          listing,
+          action,
+          { type: 'DEALER', id: actor.userId },
+          withdrawal ? { withdrawal: { reason: withdrawal.reason, note: withdrawal.note } } : {},
+        );
+        const row = await repo.findOwned(actor.dealerId, vehicleId, tx);
+        if (!row) throw notFound();
+        return row;
+      });
+      return toDealerVehicle(moved, actor.permissions);
+    },
 
-          await transition(
-            tx,
-            audit,
-            listing,
-            action,
-            { type: 'DEALER', id: actor.userId },
-            withdrawal ? { withdrawal: { reason: withdrawal.reason, note: withdrawal.note } } : {},
-          );
-          const row = await repo.findOwned(actor.dealerId, vehicleId, tx);
-          if (!row) throw notFound();
-          return row;
-        });
-        return toDealerVehicle(moved);
-      } catch (error) {
-        if (errorCode(error) === 'P2002') throw alreadyListed();
-        throw error;
-      }
+    async requestReactivation(
+      actor: VehicleActor,
+      vehicleId: string,
+      input: RequestReactivationInput,
+    ): Promise<DealerVehicle> {
+      await requireOwned(actor.dealerId, vehicleId);
+
+      const requested = await withTransaction(prisma, async (tx) => {
+        const listing = await lockListingForVehicle(tx, vehicleId);
+        if (!listing || listing.dealerId !== actor.dealerId) throw notFound();
+
+        await fileReactivationRequest(
+          tx,
+          audit,
+          listing,
+          { type: 'DEALER', id: actor.userId },
+          input.reason,
+        );
+        const row = await repo.findOwned(actor.dealerId, vehicleId, tx);
+        if (!row) throw notFound();
+        return row;
+      });
+      return toDealerVehicle(requested, actor.permissions);
     },
 
     async suggestions(query: VehicleSuggestQuery): Promise<VehicleSuggestions> {

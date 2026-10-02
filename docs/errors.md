@@ -149,15 +149,15 @@ for `src/**` (tests, stories, seeds and scripts are exempt). The web app logs
 through `lib/logger.ts`: one JSON line per event, errors to stderr, warnings to
 stdout, server-side only.
 
-| Event                                                | Level | Fields                                                                         |
-| ---------------------------------------------------- | ----- | ------------------------------------------------------------------------------ |
-| `api.request_failed`                                 | error | method, path, error (name, message, stack, status, code, kind, traceId, cause) |
-| `api.stale_contract_refetched`                       | warn  | path                                                                           |
-| `bff.unexpected_failure`                             | error | route, error                                                                   |
-| `home.inventory_unavailable`                         | warn  | error                                                                          |
-| `dealer.inventory_unavailable`                       | warn  | slug, error                                                                    |
-| `vehicle.similar_unavailable`                        | warn  | slug, error                                                                    |
-| `locations.unavailable`, `public_config.unavailable` | warn  | error                                                                          |
+| Event                                                | Level | Fields                                                                    |
+| ---------------------------------------------------- | ----- | ------------------------------------------------------------------------- |
+| `api.request_failed`                                 | error | method, path, error (name, status, code, kind, traceId, cause categories) |
+| `api.stale_contract_refetched`                       | warn  | path                                                                      |
+| `bff.unexpected_failure`                             | error | route, error                                                              |
+| `home.inventory_unavailable`                         | warn  | error                                                                     |
+| `dealer.inventory_unavailable`                       | warn  | slug, error                                                               |
+| `vehicle.similar_unavailable`                        | warn  | slug, error                                                               |
+| `locations.unavailable`, `public_config.unavailable` | warn  | error                                                                     |
 
 A 4xx is not logged by the web app (the API logs its own rejections). Nothing
 logs a body, a cookie or a header. The API's `traceId` appears in both the API's
@@ -183,3 +183,9 @@ With the API stopped, `/cars?brand=x`, `/dealers?q=x`, a car and a dealership
 the cache has not seen must answer **500** with the error page; `/car/nope`
 with the API running must answer **404**. `next dev` shows its own overlay for
 thrown errors and is not the acceptance test.
+
+## Integration with current main
+
+The homepage preserves main’s interleaved discovery/information bands while showing the inline inventory failure notice. Error components use C131–C135; JsonLd is C130, so main’s current component IDs stay intact. Web diagnostics retain error categories/status and trace/digest correlation; arbitrary error messages, stacks, request bodies and URL query strings are excluded to avoid logging authentication proofs or private fields. Error causes are bounded against cycles.
+
+Framework diagnostics are a separate sink: Next may inspect thrown upstream exceptions. BUG-NEW-001 records that remaining privacy gap; filtering the application logger does not establish that all server logs are free of private data.

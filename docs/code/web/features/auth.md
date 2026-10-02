@@ -184,9 +184,16 @@ handling come from the dependency the product already uses for its other
 floating panels.
 
 The menu semantics sit inside it. The list is `role="menu"`, and ↑/↓ (wrapping)
-and Home/End move between the three items, because a popover alone gives a
+and Home/End move between the items, because a popover alone gives a
 keyboard user Tab and nothing else. Opening focuses the first item, and
 choosing one closes the menu.
+
+**Dealer Login** (R85) sits between two separators, apart from the customer's
+own pages above it and Logout below. It is a plain `Link` to `/dealer` and
+nothing more: `/dealer` already decides everything about dealer sign-in —
+Google, phone OTP, onboarding and resume, and where an already signed-in dealer
+lands — so the menu duplicates none of it. A guest has no menu; their header
+`Login` goes to `/login`, whose Dealer tab is their way in.
 
 The number is masked on the server (`customerAccountAction` → `phoneMasked`),
 so the full number is never in the browser's memory for a header that only
@@ -200,3 +207,14 @@ A person's initials are the first and the last name: "Rahul" is R, and "Asha
 Mary Menon" is AM. That is deliberately not contracts' `initialsOf`, which
 makes a two-letter logo tile for a dealership and so turns a single word into
 two letters ("Velavan" → VE). A person with one name is one letter.
+
+## `apps/web/src/features/auth/login/login-tabs.tsx`
+
+### `export function LoginTabs({ initial, customer, dealer })`
+
+The Customer ⟷ Dealer switch starts at the left edge of the form
+(`justify-start`, R86), on the same line the heading, the fields and the button
+below it start on. It used to sit at the right (`justify-end`), which left it
+floating away from the form it controls. Only the alignment moved: the order
+(Customer, switch, Dealer), the tabs' roles, the roving `tabindex`, arrow keys,
+Home/End and the switch's click are exactly as they were.

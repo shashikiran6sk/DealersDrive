@@ -14,7 +14,7 @@ import { handle, type VehiclesRoute } from './route.js';
 export const postVehicleWithdraw: VehiclesRoute = (router, service) => {
   router.post(
     '/vehicles/:id/withdraw',
-    requirePermission('listing:submit'),
+    requirePermission('listing:withdraw'),
     requireDealerActive,
     validate({ params: IdParam, body: WithdrawListingInput }),
     handle((req) =>

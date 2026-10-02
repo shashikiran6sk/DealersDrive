@@ -95,4 +95,37 @@ export const SignedInCustomerMobile: Story = {
   },
 };
 
+export const SignedInMember: Story = {
+  args: { account: <HeaderAccount /> },
+  beforeEach: () => {
+    customerAccountStub.account = {
+      fullName: 'Arun Kumar',
+      phoneMasked: '+91 98XXXXXX45',
+      workspaces: [
+        {
+          membershipId: 'm-abc',
+          brandName: 'ABC Motors',
+          roleLabel: 'Manager',
+          enterable: true,
+          current: true,
+        },
+        {
+          membershipId: 'm-xyz',
+          brandName: 'XYZ Cars',
+          roleLabel: 'Staff',
+          enterable: true,
+          current: false,
+        },
+        {
+          membershipId: 'm-old',
+          brandName: 'Old Yard Motors',
+          roleLabel: 'Staff',
+          enterable: false,
+          current: false,
+        },
+      ],
+    };
+  },
+};
+
 export const SignedOutWithAccountSlot: Story = { args: { account: <HeaderAccount /> } };

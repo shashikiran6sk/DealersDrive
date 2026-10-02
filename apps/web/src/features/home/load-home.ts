@@ -5,7 +5,7 @@ import { VEHICLES_TAG } from '@/lib/cache-tags';
 import { logger } from '@/lib/logger';
 import { searchHref } from '@/lib/vehicle-search';
 
-import { DISCOVERY_CARD_COUNT, DISCOVERY_SECTIONS } from './home.constants';
+import { DISCOVERY_CARD_COUNT, DISCOVERY_SECTIONS, discoveryRowId } from './home.constants';
 import type { DiscoveryRowProps } from './discovery-row/discovery-row.types';
 
 export interface HomeInventory {
@@ -30,7 +30,7 @@ export async function loadHomeInventory(): Promise<HomeInventory> {
       rows: DISCOVERY_SECTIONS.map((section, index) => {
         const response = responses[index];
         return {
-          id: `home-${section.key}`,
+          id: discoveryRowId(section.key),
           title: section.title,
           href: searchHref('/cars', section.params),
           cars: (response?.data ?? []).filter((car) => car.availability === 'AVAILABLE'),
