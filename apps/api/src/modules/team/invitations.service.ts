@@ -93,8 +93,13 @@ export function createInvitationsService({ prisma, audit }: InvitationsDeps) {
       invitationId: string,
     ): Promise<AcceptInvitationResponse> {
       return withTransaction(prisma, async (tx) => {
+        const candidate = await tx.dealerInvitation.findFirst({
+          where: { id: invitationId, phone: customer.phone },
+          select: { dealerId: true },
+        });
+        if (!candidate) throw notFound();
+        await lockDealership(tx, candidate.dealerId);
         const invitation = await lockOwnPending(tx, customer, invitationId);
-        await lockDealership(tx, invitation.dealerId);
 
         if (invitation.dealer.status !== 'ACTIVE') {
           throw new ConflictError('DEALERSHIP_NOT_ACCEPTING', DEALERSHIP_NOT_ACCEPTING);

@@ -35,8 +35,8 @@
 name: CI
 
 on:
+  # Stacked fix PRs target the preceding feature branch. Verify every PR base.
   pull_request:
-    branches: [main]
 
 # One run per branch. A force-push mid-review should not leave two suites
 # racing, and the newer commit is the only one anybody cares about.

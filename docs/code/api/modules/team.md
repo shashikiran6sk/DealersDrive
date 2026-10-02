@@ -87,10 +87,15 @@ Joining is not onboarding. Verification belongs to the dealership, which has
 it, so the person is a member the moment this commits — with the role the
 owner chose, read from the invitation at acceptance, not when it was sent.
 
-Locks the invitation, then the dealership: two accepts of one invitation are
-serialised on the first lock and the second finds it ACCEPTED; an owner's
-removal or withdrawal racing an accept is serialised on the second. A
-dealership suspended since the invitation was sent refuses it.
+Reads only the dealership ID from an invitation scoped to the customer's proven
+phone, then locks the dealership before locking and re-reading the invitation.
+This is the same lock order the owner's invitation and membership mutations use,
+so acceptance racing withdrawal or renewal cannot form an inverse-lock deadlock.
+The scoped re-read checks phone, expiry, invitation status and current dealership
+status after the wait. Two accepts still produce one membership; the loser sees
+ACCEPTED. A withdrawal that commits first leaves no membership and acceptance
+returns INVITATION_CLOSED; a dealership suspended while acceptance waits refuses
+joining. Decline only locks the invitation and does not acquire the dealer lock.
 
 ### `async mine(customer: CustomerPrincipal): Promise<MyInvitationsResponse>`
 
