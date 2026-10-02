@@ -5822,5 +5822,654 @@
     "auth": null,
     "area": "priority",
     "at": "2026-10-02T04:03:32.755Z"
+  },
+  "NOTIFY-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "notifications are async via outbox→worker; delivery row may lag. Outbox event present (NOTIFY-003).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:03.494Z"
+  },
+  "NOTIFY-002": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "email is dispatched via the transactional outbox after commit; a mail failure cannot roll back or corrupt onboarding (dealer ACTIVE regardless)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:03.659Z"
+  },
+  "NOTIFY-003": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "notification_deliveries carries a dedupeKey; 0 duplicate deliveries → retries are idempotent, not destructive",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:03.665Z"
+  },
+  "NOTIFY-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "dev uses the console mail driver (no real send); env.ts refuses MAIL_DRIVER=console in production (must be resend) — intended non-production behaviour",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:03.665Z"
+  },
+  "NOTIFY-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "enquiry creation succeeds (201) with no enquiry-notification dependency (deliveries 523→523); listing/enquiry/complaint emails are not implemented and nothing assumes them",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:04.262Z"
+  },
+  "RECOVERY-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "with the API down the client receives no false 2xx (connection refused); graceful public UX is the web error boundary — verified in the browser campaign",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:04.265Z"
+  },
+  "RECOVERY-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "a listing save against an unreachable API cannot return a success code; the web form surfaces the error (browser dimension). No partial write occurs because nothing reaches the server.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:04.265Z"
+  },
+  "RECOVERY-003": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "enquiry retry is safe: one-open-per-car means a retried submit does not duplicate (1 row; retry → 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:04.920Z"
+  },
+  "RECOVERY-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "database outage → /health/ready 503, requests 500 (controlled). In production the 500 detail is suppressed (error-handler gates detail on env.isProduction); dev includes error.message by design.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:04.931Z"
+  },
+  "RECOVERY-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "a failed/absent storage write → commit 422; listing uncorrupted (PENDING_REVIEW)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:05.142Z"
+  },
+  "RECOVERY-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "a rejected OTP verdict creates no session and no user — no partial authentication",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:05.146Z"
+  },
+  "RECOVERY-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "OAuth failure handled (access_denied → 302, bad code/state → 302); recoverable, no crash. Full Google flow unreachable here (SIM).",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-GOOGLE",
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:05.151Z"
+  },
+  "RECOVERY-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "email dispatch is post-commit (outbox); a mail failure leaves onboarding/approval intact",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:05.328Z"
+  },
+  "RECOVERY-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "browser refresh during a critical flow recovers because server state is authoritative and reads are idempotent (draft persists, enquiry one-open-per-car). Visual recovery verified in the browser campaign.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:05.329Z"
+  },
+  "RECOVERY-010": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "re-submitting a lifecycle mutation (Back+resubmit) → second 409, status SOLD once",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:05.830Z"
+  },
+  "RECOVERY-011": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "CONCURRENCY"
+    ],
+    "note": "double-click reserve → RESERVED once (statuses 200/409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:06.351Z"
+  },
+  "RECOVERY-012": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "timeout+retry safe: concurrent identical enquiries → 1 row",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:06.855Z"
+  },
+  "RECOVERY-013": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "persisted state survives restarts (Postgres durable; the API was restarted during this session): 311 dealers, 584 listings, health 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:06.857Z"
+  },
+  "OBS-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "requests carry correlation IDs (x-request-id + x-trace-id: yh2Wu81g2V)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:06.903Z"
+  },
+  "OBS-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "auth failure → 401 with code NOT_AUTHENTICATED + traceId, no secret in body",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:06.904Z"
+  },
+  "OBS-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "authorization failure observable (→ 401 + traceId kILYDbhuRS)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:06.923Z"
+  },
+  "OBS-004": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "dealer suspension traceable (audit_logs dealer.suspended with actor + traceId)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:07.129Z"
+  },
+  "OBS-005": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "member permission changes traceable: member.invited, member.joined, member.role_changed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:07.335Z"
+  },
+  "OBS-006": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "listing lifecycle traceable: listing.check_set, listing.submitted, listing.marked_sold, listing.approved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:07.878Z"
+  },
+  "OBS-007": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "enquiry lifecycle traceable: enquiry.created, enquiry.contacted",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:08.444Z"
+  },
+  "OBS-008": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "admin actions traceable (20 recent ADMIN audit rows)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:08.445Z"
+  },
+  "OBS-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "5xx are captured: the error handler logs when status ≥ 500 (verified in code), DB-down request → 500",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:08.449Z"
+  },
+  "OBS-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "API log (one full campaign) contains no OTP tokens, session tokens, or passwords",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:08.514Z"
+  },
+  "OBS-011": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "health reflects service state: live 200, ready 200 healthy / 503 when DB down",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:08.520Z"
+  },
+  "OBS-012": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "workflows are traceable end-to-end: audit rows carry a traceId that matches the request x-trace-id",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "notify-recovery-obs",
+    "at": "2026-10-02T04:41:08.695Z"
+  },
+  "PROD-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "a correct production env (r2/msg91/resend/postgres/cookie) boots; local-only services are refused (see PROD-002..005)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:11.493Z"
+  },
+  "PROD-002": {
+    "status": "FAIL",
+    "layers": [
+      "API"
+    ],
+    "note": "Production accepts STORAGE_DRIVER=minio (S3_ENDPOINT defaults to http://localhost:9000) with no guard; only `local` is refused. A half-configured minio passes env validation. P3 hardening gap — requires explicit misconfiguration, not the default (default is `local`, which is blocked).",
+    "evidence": [],
+    "bug": "BUG-006",
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:11.725Z"
+  },
+  "PROD-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "production refuses PHONE_OTP_DRIVER=fake (must be msg91)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:11.835Z"
+  },
+  "PROD-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "production refuses MAIL_DRIVER=console (Mailpit/console) — must be resend",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:11.950Z"
+  },
+  "PROD-005": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "dev seed refuses to run with NODE_ENV=production (dev-guard throws even with full prod config)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:12.444Z"
+  },
+  "PROD-006": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "dev tooling is guarded (PROD-005) and production DATABASE_URL/storage are separate secrets (deploy/aws SSM); development cannot point at prod by default",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:12.445Z"
+  },
+  "PROD-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "production DATABASE_URL is required and read from the environment (SSM in deploy/aws), not a default",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:12.561Z"
+  },
+  "PROD-008": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "storage points to r2 in production; local filesystem refused (non-durable)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:12.782Z"
+  },
+  "PROD-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "Google OAuth client id/secret required in production; callback URL configurable (GOOGLE_CALLBACK_URL)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:12.907Z"
+  },
+  "PROD-010": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "MSG91 (WhatsApp/SMS OTP) auth key required in production when PHONE_OTP_DRIVER=msg91",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.021Z"
+  },
+  "PROD-011": {
+    "status": "PASS",
+    "layers": [
+      "SECURITY"
+    ],
+    "note": "no server secret values in the client bundle; no NEXT_PUBLIC_* secret vars (MSG91 widget id is a public client identifier, not the AUTH_KEY)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.037Z"
+  },
+  "PROD-012": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "/api/docs is behind DOCS_ENABLED (off in prod) and metrics behind METRICS_ENABLED + a scrape token",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.038Z"
+  },
+  "PROD-013": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "production refuses the default SESSION_SECRET. (UPLOAD_SIGNING_SECRET has NO equivalent guard — tracked as BUG-001/SEC-DISC-001.)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.164Z"
+  },
+  "DEPLOY-001": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "prisma migrate deploy applied 39 migrations cleanly on the cert DB (0 unfinished)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.194Z"
+  },
+  "DEPLOY-002": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "single-owner → OWNER membership holds: every ACTIVE dealer has an ACTIVE OWNER member",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.197Z"
+  },
+  "DEPLOY-003": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "migration/flows created no duplicate users or memberships",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.199Z"
+  },
+  "DEPLOY-004": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "listings/enquiries/documents preserved through all migrations (586/85/948)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.200Z"
+  },
+  "DEPLOY-005": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "39 timestamp-ordered migrations; prisma applies in order (deploy workflow runs migrate before serving)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.201Z"
+  },
+  "DEPLOY-006": {
+    "status": "PASS",
+    "layers": [
+      "DEPLOY"
+    ],
+    "note": "deployment runs migrations as a dedicated step (migrate taskdef); recovery strategy documented in deploy/aws. Prisma migrate deploy is forward-only — down-recovery is restore-from-backup (see DEPLOY-009 BLOCKED).",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.201Z"
+  },
+  "DEPLOY-007": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "seed scripts refuse to execute against NODE_ENV=production (dev-guard), even with full prod config",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.743Z"
+  },
+  "DEPLOY-008": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "indexes support critical queries: listing public visibility, enquiry dealer inbox, membership lookup, session by token, saved per customer (101 total)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.748Z"
+  },
+  "DEPLOY-009": {
+    "status": "BLOCKED",
+    "layers": [
+      "DEPLOY"
+    ],
+    "note": "Backup/restore of the production managed database cannot be exercised in this isolated container (no managed DB, no snapshot API). Recovery strategy is documented in deploy/aws. Requires a staging restore drill.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.748Z"
+  },
+  "DEPLOY-010": {
+    "status": "BLOCKED",
+    "layers": [
+      "DEPLOY"
+    ],
+    "note": "Verifying a restored DB preserves lifecycle/authorization relationships requires an actual restore (DEPLOY-009 BLOCKED). FK integrity on the live schema is green (DATA-005); a restore drill on staging is the remaining step.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "prod-deploy",
+    "at": "2026-10-02T04:45:13.748Z"
   }
 }
