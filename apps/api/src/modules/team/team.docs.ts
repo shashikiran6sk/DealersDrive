@@ -77,7 +77,9 @@ export const teamDocs: ModuleDocs = {
         'number that is already waiting renews that invitation with the new role rather than ' +
         'adding a second (a partial unique index makes that true under a race). A number that ' +
         'already belongs to an active member is a 409 `MEMBER_ALREADY_EXISTS`. The dealership ' +
-        'must be ACTIVE. Audited as `member.invited` or `member.invitation_renewed`; the number ' +
+        'must be ACTIVE, and may hold at most 25 unexpired invitations at once — the 26th is a ' +
+        '409 `TOO_MANY_INVITATIONS`, while renewing one already waiting always succeeds. ' +
+        'Audited as `member.invited` or `member.invitation_renewed`; the number ' +
         'itself is not written to the audit log.',
       audience: 'dealer',
       permission: 'member:manage',
