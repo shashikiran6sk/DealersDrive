@@ -1,162 +1,4 @@
 {
-  "SEC-DISC-001a": {
-    "status": "FAIL",
-    "layers": [
-      "SECURITY",
-      "API",
-      "STORAGE"
-    ],
-    "note": "Unauthenticated PUT /uploads signed with the committed default UPLOAD_SIGNING_SECRET overwrote the served object (original.jpg — the fallback served when variants are unprocessed, and the source any reprocessing reads) of a live listing's primary image; public /media route then served attacker bytes (before 11518B image → after 1040B attacker text).",
-    "evidence": [],
-    "bug": "BUG-001",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.140Z"
-  },
-  "SEC-DISC-001b": {
-    "status": "FAIL",
-    "layers": [
-      "SECURITY",
-      "API",
-      "STORAGE"
-    ],
-    "note": "Forged read signature returned a private KYC PDF with no session. Requires knowing the document UUID (not public), so the read path is constrained; the write path (001a) is not.",
-    "evidence": [],
-    "bug": "BUG-001",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.145Z"
-  },
-  "SEC-DISC-001c": {
-    "status": "FAIL",
-    "layers": [
-      "SECURITY",
-      "STORAGE"
-    ],
-    "note": "Unauthenticated forged PUT created an arbitrary object inside another dealership's private KYC prefix (12 MB per request, no rate limit).",
-    "evidence": [],
-    "bug": "BUG-001",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.147Z"
-  },
-  "LIFE-DISC-001a": {
-    "status": "FAIL",
-    "layers": [
-      "API",
-      "DATABASE"
-    ],
-    "note": "POST /v1/admin/dealers/:id/approve on a DRAFT dealer (completeness 25%, gstin=null, pan=null, 3 documents) → 200, status ACTIVE; the dealership then submitted a listing for moderation.",
-    "evidence": [],
-    "bug": "BUG-002",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.244Z"
-  },
-  "LIFE-DISC-001b": {
-    "status": "FAIL",
-    "layers": [
-      "API",
-      "DATABASE"
-    ],
-    "note": "approve on a SUSPENDED dealer → 200 ACTIVE (recorded as dealer.approved, not dealer.reinstated). Suspension can be lifted through the approval endpoint.",
-    "evidence": [],
-    "bug": "BUG-002",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.448Z"
-  },
-  "LIFE-DISC-002a": {
-    "status": "FAIL",
-    "layers": [
-      "API",
-      "DATABASE"
-    ],
-    "note": "reinstate on a never-approved PENDING_APPROVAL dealer (documents UPLOADED/UPLOADED/UPLOADED) → 200 ACTIVE with approvedAt set. Verification skipped entirely.",
-    "evidence": [],
-    "bug": "BUG-003",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.610Z"
-  },
-  "LIFE-DISC-002b": {
-    "status": "FAIL",
-    "layers": [
-      "API",
-      "DATABASE"
-    ],
-    "note": "DRAFT dealer: suspend → 200 SUSPENDED; reinstate → 200 ACTIVE with approvedAt. A dealership that never submitted is now verified.",
-    "evidence": [],
-    "bug": "BUG-003",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.665Z"
-  },
-  "LIFE-DISC-002c": {
-    "status": "FAIL",
-    "layers": [
-      "API"
-    ],
-    "note": "reinstate on an ACTIVE (never suspended) dealer → 200 and a dealer.reinstated audit row + DealerReinstated outbox event for a non-transition.",
-    "evidence": [],
-    "bug": "BUG-003",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.674Z"
-  },
-  "API-DISC-001": {
-    "status": "FAIL",
-    "layers": [
-      "API",
-      "DATABASE",
-      "STORAGE"
-    ],
-    "note": "ACTIVE dealer, VERIFIED GST certificate: POST /v1/dealer/documents/presign → 201. Merely asking for the URL reset the row to UPLOADING with a new id and DELETED the verified file from storage (on disk before=true, after=false). No upload needed to destroy verification evidence.",
-    "evidence": [],
-    "bug": "BUG-004",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.684Z"
-  },
-  "API-DISC-002": {
-    "status": "FAIL",
-    "layers": [
-      "API",
-      "DATABASE"
-    ],
-    "note": "ACTIVE dealer replaced its verified PAN card: document now UPLOADED, dealership still ACTIVE — no re-verification triggered, admin not notified.",
-    "evidence": [],
-    "bug": "BUG-004",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.703Z"
-  },
-  "API-DISC-003": {
-    "status": "FAIL",
-    "layers": [
-      "API",
-      "DATABASE",
-      "STORAGE"
-    ],
-    "note": "ACTIVE dealer: DELETE /v1/dealer/documents/ADDRESS_PROOF → 204; verified KYC row and file deleted, dealership remains ACTIVE.",
-    "evidence": [],
-    "bug": "BUG-004",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.711Z"
-  },
-  "API-DISC-004": {
-    "status": "FAIL",
-    "layers": [
-      "API"
-    ],
-    "note": "ACTIVE dealer replaced the public yard photograph with no moderation, while tagline/services edits on the same profile are held for review (R34). A public image is the unmoderated channel R34 closed for text.",
-    "evidence": [],
-    "bug": "BUG-005",
-    "auth": null,
-    "area": "priority",
-    "at": "2026-10-02T04:03:32.755Z"
-  },
   "PUBLIC-003": {
     "status": "PASS",
     "layers": [
@@ -5244,5 +5086,741 @@
     "auth": null,
     "area": "cross-search-data",
     "at": "2026-10-02T04:32:21.827Z"
+  },
+  "API-SEC-001": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "all protected routes unauthenticated → 401 (6 checked)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.401Z"
+  },
+  "API-SEC-002": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "customer cannot call dealer-only API (dashboard 401, inventory 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.409Z"
+  },
+  "API-SEC-003": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "STAFF cannot call MANAGER-only (mark-sold → 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.721Z"
+  },
+  "API-SEC-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "MANAGER cannot call OWNER-only (invite 403, profile 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.730Z"
+  },
+  "API-SEC-005": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "OWNER cannot call admin-only → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.733Z"
+  },
+  "API-SEC-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "Dealer A → Dealer B by id → all 404 (tenant-scoped, existence not leaked): {\"getVehicle\":404,\"patchVehicle\":404,\"sellVehicle\":404}",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.752Z"
+  },
+  "API-SEC-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "ticket create path n/a; enquiry/saved are session-scoped with no id param (see AUTH-014)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.756Z"
+  },
+  "API-SEC-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "invalid id → 400, missing → 404; no stack/SQL/Prisma in body",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.767Z"
+  },
+  "API-SEC-009": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "unknown privileged fields rejected by strict Zod (create 400, enquiry 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.776Z"
+  },
+  "API-SEC-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "mass assignment blocked: injected dealerId/status/createdByUserId do not reassign tenant or publish (vehicle stays A, listing stays DRAFT), role=OWNER tamper → 400",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.799Z"
+  },
+  "API-SEC-011": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "pagination/filter params validated (limit 400, page 400, sort 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.803Z"
+  },
+  "API-SEC-012": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "customer sign-in rate limited on the RL instance: 14/14 attempts → 429 (per-number cap 10/600s)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.859Z"
+  },
+  "API-SEC-013": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "revoked session token → 401 (no retained access)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.898Z"
+  },
+  "API-SEC-014": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "error responses carry structured JSON with no stack/SQL/secret/env leakage (sampled 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.899Z"
+  },
+  "STORAGE-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "presign restricts type/size (oversize 400, bad mime 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.908Z"
+  },
+  "STORAGE-002": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "committing another dealer's documentId → 404 (ownership validated)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.914Z"
+  },
+  "STORAGE-003": {
+    "status": "PASS",
+    "layers": [
+      "STORAGE",
+      "SECURITY"
+    ],
+    "note": "repointing a presigned URL to another key → 422 (signature binds the key). NOTE: a forged-from-default-secret signature is the separate BUG-001.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:06.924Z"
+  },
+  "STORAGE-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "STORAGE"
+    ],
+    "note": "removing an upload clears the slot (status→REQUIRED, mediaId null) and deletes the stored object (deleteDocument); cleanup policy followed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:07.050Z"
+  },
+  "STORAGE-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "missing media object → 404, does not crash the page",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:07.052Z"
+  },
+  "STORAGE-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "KYC docs are not publicly fetchable (unsigned /private → 400, not on public media route → 404). Signed access only; forged-signature caveat is BUG-001.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:07.056Z"
+  },
+  "STORAGE-007": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "public vehicle images are served only via /media/by-media/* (no direct bucket URLs)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:07.059Z"
+  },
+  "STORAGE-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "object keys/URLs in public payloads expose no bucket paths, raw originals, or KYC prefixes",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:07.063Z"
+  },
+  "ABUSE-001": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "OTP/sign-in abuse rate-limited (14/14 → 429)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:07.103Z"
+  },
+  "ABUSE-002": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "enquiry spam capped: 10 created then 4 → 429 (per-customer 10/hr)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:13.845Z"
+  },
+  "ABUSE-003": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "unverified dealer automated submit → 403 (requireDealerActive)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.001Z"
+  },
+  "ABUSE-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "role headers ignored; STAFF sell still → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.005Z"
+  },
+  "ABUSE-005": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "x-dealer-id header ignored; vehicle created under the session dealership (A)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.014Z"
+  },
+  "ABUSE-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "status/listingStatus in the body is rejected (400) and does not publish the draft (listing stays DRAFT); transitions only via the state machine",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.027Z"
+  },
+  "ABUSE-007": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "enquiry status in create body ignored/rejected (create 400); STAFF close still 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.339Z"
+  },
+  "ABUSE-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "invitation role=OWNER rejected by schema → 400 (only MANAGER/STAFF assignable)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.343Z"
+  },
+  "ABUSE-009": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "membership manipulation cannot remove/demote the final OWNER (remove 409, demote 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.356Z"
+  },
+  "ABUSE-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "suspended dealer cannot regain via client headers → 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.535Z"
+  },
+  "ABUSE-011": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "removed member's stale session/headers cannot regain access (401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.719Z"
+  },
+  "ABUSE-012": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "every \"hidden\" route is server-guarded regardless of UI (customer→admin 401, customer→dealer-team 401, staff→admin 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.727Z"
+  },
+  "CONCURRENCY-001": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "two staff editing one draft → one consistent row (km 22222)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:14.752Z"
+  },
+  "CONCURRENCY-002": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "two managers sell same car → SOLD once (statuses 200/409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:15.059Z"
+  },
+  "CONCURRENCY-003": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "reserve vs sold race → one valid state (SOLD)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:15.389Z"
+  },
+  "CONCURRENCY-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "approve vs dealer edit race → valid state (ACTIVE)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:15.830Z"
+  },
+  "CONCURRENCY-005": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "suspend vs submit → no invalid publication (listing PENDING_REVIEW, submit 200)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:16.029Z"
+  },
+  "CONCURRENCY-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "contacted vs closed race → valid transition (CONTACTED) under FOR UPDATE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:16.412Z"
+  },
+  "CONCURRENCY-007": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "member removal vs mutation → safe (enquiry CONTACTED, mutate 200)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:16.938Z"
+  },
+  "CONCURRENCY-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "concurrent admin approvals → ACTIVE once (statuses 200/200)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:17.091Z"
+  },
+  "CONCURRENCY-009": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "simultaneous legitimate enquiries both retained (2)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:17.878Z"
+  },
+  "CONCURRENCY-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "concurrent accept → one membership (1); statuses 200/409",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "security",
+    "at": "2026-10-02T04:37:18.056Z"
+  },
+  "SEC-DISC-001a": {
+    "status": "FAIL",
+    "layers": [
+      "SECURITY",
+      "API",
+      "STORAGE"
+    ],
+    "note": "Unauthenticated PUT /uploads signed with the committed default UPLOAD_SIGNING_SECRET overwrote the served object (original.jpg — the fallback served when variants are unprocessed, and the source any reprocessing reads) of a live listing's primary image; public /media route then served attacker bytes (before 11518B image → after 1040B attacker text).",
+    "evidence": [],
+    "bug": "BUG-001",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.140Z"
+  },
+  "SEC-DISC-001b": {
+    "status": "FAIL",
+    "layers": [
+      "SECURITY",
+      "API",
+      "STORAGE"
+    ],
+    "note": "Forged read signature returned a private KYC PDF with no session. Requires knowing the document UUID (not public), so the read path is constrained; the write path (001a) is not.",
+    "evidence": [],
+    "bug": "BUG-001",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.145Z"
+  },
+  "SEC-DISC-001c": {
+    "status": "FAIL",
+    "layers": [
+      "SECURITY",
+      "STORAGE"
+    ],
+    "note": "Unauthenticated forged PUT created an arbitrary object inside another dealership's private KYC prefix (12 MB per request, no rate limit).",
+    "evidence": [],
+    "bug": "BUG-001",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.147Z"
+  },
+  "LIFE-DISC-001a": {
+    "status": "FAIL",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "POST /v1/admin/dealers/:id/approve on a DRAFT dealer (completeness 25%, gstin=null, pan=null, 3 documents) → 200, status ACTIVE; the dealership then submitted a listing for moderation.",
+    "evidence": [],
+    "bug": "BUG-002",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.244Z"
+  },
+  "LIFE-DISC-001b": {
+    "status": "FAIL",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "approve on a SUSPENDED dealer → 200 ACTIVE (recorded as dealer.approved, not dealer.reinstated). Suspension can be lifted through the approval endpoint.",
+    "evidence": [],
+    "bug": "BUG-002",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.448Z"
+  },
+  "LIFE-DISC-002a": {
+    "status": "FAIL",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "reinstate on a never-approved PENDING_APPROVAL dealer (documents UPLOADED/UPLOADED/UPLOADED) → 200 ACTIVE with approvedAt set. Verification skipped entirely.",
+    "evidence": [],
+    "bug": "BUG-003",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.610Z"
+  },
+  "LIFE-DISC-002b": {
+    "status": "FAIL",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "DRAFT dealer: suspend → 200 SUSPENDED; reinstate → 200 ACTIVE with approvedAt. A dealership that never submitted is now verified.",
+    "evidence": [],
+    "bug": "BUG-003",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.665Z"
+  },
+  "LIFE-DISC-002c": {
+    "status": "FAIL",
+    "layers": [
+      "API"
+    ],
+    "note": "reinstate on an ACTIVE (never suspended) dealer → 200 and a dealer.reinstated audit row + DealerReinstated outbox event for a non-transition.",
+    "evidence": [],
+    "bug": "BUG-003",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.674Z"
+  },
+  "API-DISC-001": {
+    "status": "FAIL",
+    "layers": [
+      "API",
+      "DATABASE",
+      "STORAGE"
+    ],
+    "note": "ACTIVE dealer, VERIFIED GST certificate: POST /v1/dealer/documents/presign → 201. Merely asking for the URL reset the row to UPLOADING with a new id and DELETED the verified file from storage (on disk before=true, after=false). No upload needed to destroy verification evidence.",
+    "evidence": [],
+    "bug": "BUG-004",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.684Z"
+  },
+  "API-DISC-002": {
+    "status": "FAIL",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "ACTIVE dealer replaced its verified PAN card: document now UPLOADED, dealership still ACTIVE — no re-verification triggered, admin not notified.",
+    "evidence": [],
+    "bug": "BUG-004",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.703Z"
+  },
+  "API-DISC-003": {
+    "status": "FAIL",
+    "layers": [
+      "API",
+      "DATABASE",
+      "STORAGE"
+    ],
+    "note": "ACTIVE dealer: DELETE /v1/dealer/documents/ADDRESS_PROOF → 204; the verified KYC slot is reset to REQUIRED (mediaId cleared) and the stored object deleted, while the dealership stays ACTIVE. A dealer can erase verification evidence post-approval with no re-review.",
+    "evidence": [],
+    "bug": "BUG-004",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.711Z"
+  },
+  "API-DISC-004": {
+    "status": "FAIL",
+    "layers": [
+      "API"
+    ],
+    "note": "ACTIVE dealer replaced the public yard photograph with no moderation, while tagline/services edits on the same profile are held for review (R34). A public image is the unmoderated channel R34 closed for text.",
+    "evidence": [],
+    "bug": "BUG-005",
+    "auth": null,
+    "area": "priority",
+    "at": "2026-10-02T04:03:32.755Z"
   }
 }

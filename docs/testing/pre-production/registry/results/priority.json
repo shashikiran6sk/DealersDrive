@@ -138,7 +138,7 @@
       "DATABASE",
       "STORAGE"
     ],
-    "note": "ACTIVE dealer: DELETE /v1/dealer/documents/ADDRESS_PROOF → 204; verified KYC row and file deleted, dealership remains ACTIVE.",
+    "note": "ACTIVE dealer: DELETE /v1/dealer/documents/ADDRESS_PROOF → 204; the verified KYC slot is reset to REQUIRED (mediaId cleared) and the stored object deleted, while the dealership stays ACTIVE. A dealer can erase verification evidence post-approval with no re-review.",
     "evidence": [],
     "bug": "BUG-004",
     "auth": null,
