@@ -1,0 +1,188 @@
+[
+  {
+    "id": "DATA-DISC-001",
+    "status": "FAIL",
+    "scenario": "Customer enquiry cursor preserves rows with equal timestamps",
+    "evidence": [
+      {
+        "path": "evidence/security/api-probes.json",
+        "selector": {
+          "probe": "DATA-DISC-001"
+        }
+      }
+    ],
+    "bugs": ["BUG-003"],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "DATA-DISC-002",
+    "status": "FAIL",
+    "scenario": "Saved-car cursor preserves rows with equal timestamps",
+    "evidence": [
+      {
+        "path": "evidence/security/api-probes.json",
+        "selector": {
+          "probe": "DATA-DISC-002"
+        }
+      }
+    ],
+    "bugs": ["BUG-003"],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "SEC-DISC-002",
+    "status": "FAIL",
+    "scenario": "Suspended dealer cannot continue delivering listing media publicly",
+    "evidence": [
+      {
+        "path": "evidence/security/followup-probes.json",
+        "selector": {
+          "probe": "SEC-DISC-002"
+        }
+      }
+    ],
+    "bugs": ["BUG-004"],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "DATA-DISC-003",
+    "status": "FAIL",
+    "scenario": "Dealer enquiry pagination preserves records with equal timestamps",
+    "evidence": [
+      {
+        "path": "evidence/security/followup-probes.json",
+        "selector": {
+          "probe": "DATA-DISC-003"
+        }
+      }
+    ],
+    "bugs": ["BUG-003"],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "CONFIG-001",
+    "status": "PASS",
+    "scenario": "Production validation accepts the complete inert fixture",
+    "evidence": [
+      {
+        "path": "evidence/security/config-probes.json",
+        "selector": {
+          "probe": "CONFIG-001"
+        }
+      }
+    ],
+    "bugs": [],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "CONFIG-005",
+    "status": "PASS",
+    "scenario": "Production refuses the development session resolver",
+    "evidence": [
+      {
+        "path": "evidence/security/config-probes.json",
+        "selector": {
+          "probe": "CONFIG-005"
+        }
+      }
+    ],
+    "bugs": [],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "CONFIG-006",
+    "status": "PASS",
+    "scenario": "Production refuses local disk storage",
+    "evidence": [
+      {
+        "path": "evidence/security/config-probes.json",
+        "selector": {
+          "probe": "CONFIG-006"
+        }
+      }
+    ],
+    "bugs": [],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "CONFIG-007",
+    "status": "PASS",
+    "scenario": "Production refuses in-process rate limiting",
+    "evidence": [
+      {
+        "path": "evidence/security/config-probes.json",
+        "selector": {
+          "probe": "CONFIG-007"
+        }
+      }
+    ],
+    "bugs": [],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "CONFIG-008",
+    "status": "PASS",
+    "scenario": "Production refuses console email",
+    "evidence": [
+      {
+        "path": "evidence/security/config-probes.json",
+        "selector": {
+          "probe": "CONFIG-008"
+        }
+      }
+    ],
+    "bugs": [],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "ADD-RACE-001",
+    "status": "FAIL",
+    "scenario": "Invitation acceptance versus withdrawal returns an unhandled database conflict",
+    "evidence": [
+      {
+        "path": "evidence/ci/api-assertions.json",
+        "selector": {
+          "file": "apps/api/tests/dealer-tenancy-hardening.test.ts",
+          "assertion": "races never lets an accept outrun a withdrawal into a membership"
+        }
+      }
+    ],
+    "bugs": ["BUG-001"],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "ADD-AUDIT-001",
+    "status": "FAIL",
+    "scenario": "Dependency audit reports unresolved high-severity advisories",
+    "evidence": [
+      {
+        "path": "evidence/ci/dependency-advisories.json",
+        "selector": "advisories"
+      }
+    ],
+    "bugs": ["BUG-009"],
+    "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  }
+]

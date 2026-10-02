@@ -1,0 +1,157 @@
+{
+  "stage": "tablet",
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  },
+  "engine": "Chromium 151",
+  "rows": [
+    {
+      "id": "UAT-tablet-001",
+      "canonical": [],
+      "title": "Anonymous search journey by keyboard and navigation",
+      "status": "PASS",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "observed": {
+        "url": "http://localhost:3000/cars?q=Hyundai",
+        "screenshot": "evidence/tablet/search.png"
+      },
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-tablet-002",
+      "canonical": [],
+      "title": "Apply a filter, refresh, clear filters and use browser history",
+      "status": "PASS",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "observed": {
+        "screenshot": "evidence/tablet/filters-cleared.png"
+      },
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-tablet-003",
+      "canonical": [],
+      "title": "Open car, operate gallery arrows and fullscreen, cancel and reopen",
+      "status": "PASS",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "observed": {
+        "screenshot": "evidence/tablet/car-gallery.png"
+      },
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-tablet-004",
+      "canonical": [],
+      "title": "Normal customer login, account menu, saved cars and enquiry history",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "reason": "locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Mobile number').first()\u001b[22m\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-tablet-005",
+      "canonical": [],
+      "title": "Save, remove, save again and verify persistence after logout/login",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "reason": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /^Remove 2023 Hyundai/ }).first() to be visible\u001b[22m\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-tablet-006",
+      "canonical": [],
+      "title": "Open enquiry, inspect verified identity, cancel/reopen and submit",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "reason": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Interested in this vehicle?', exact: true }) to be visible\u001b[22m\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-tablet-007",
+      "canonical": [],
+      "title": "Dealer directory, dealer portfolio and branded not-found page",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "reason": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('main').first() to be visible\u001b[22m\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-tablet-008",
+      "canonical": [],
+      "title": "Resize and inspect page widths and named interactive controls",
+      "status": "PASS",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "observed": {
+        "measurements": [
+          {
+            "path": "/cars",
+            "width": 768,
+            "scrollWidth": 768
+          },
+          {
+            "path": "/car/2023-hyundai-creta-sx-o-katpadi-0e94c97e",
+            "width": 768,
+            "scrollWidth": 768
+          },
+          {
+            "path": "/saved",
+            "width": 768,
+            "scrollWidth": 768
+          },
+          {
+            "path": "/enquiries",
+            "width": 768,
+            "scrollWidth": 768
+          },
+          {
+            "path": "/dealers",
+            "width": 768,
+            "scrollWidth": 768
+          }
+        ],
+        "screenshot": "evidence/tablet/directory-responsive.png"
+      },
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    }
+  ],
+  "actions": [
+    {
+      "at": "2026-10-02T16:00:14.973Z",
+      "message": "Scrolled homepage through vehicle rows and footer; inspected available and empty states."
+    },
+    {
+      "at": "2026-10-02T16:00:15.815Z",
+      "message": "Selected Hyundai brand; checked the URL and refreshed with that filter."
+    },
+    {
+      "at": "2026-10-02T16:00:17.011Z",
+      "message": "Gallery controls, fullscreen close/reopen and Escape used; fixture images are solid colors, not vehicle photography."
+    }
+  ],
+  "pageErrors": []
+}

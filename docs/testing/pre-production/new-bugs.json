@@ -1,0 +1,26 @@
+[
+  {
+    "id": "BUG-NEW-001",
+    "severity": "P2",
+    "severity_provisional": true,
+    "title": "Framework diagnostics inspect raw upstream exceptions",
+    "reproduced": true,
+    "status": "OPEN",
+    "evidence": "../fixes/404/README.md",
+    "fix_pr": null,
+    "retest": "NOT_RUN"
+  },
+  {
+    "id": "BUG-NEW-002",
+    "severity": "P2",
+    "title": "Invitation acceptance uses stale dealer status after a lock wait",
+    "reproduced": true,
+    "status": "FIX_IMPLEMENTED",
+    "same_root_cause_as": "BUG-001",
+    "fix_sha": "455938b949fab5c116fd2e684f570ced929573d0",
+    "fix_branch": "fix/pre-production-01-invitation-race",
+    "fix_pr": null,
+    "retest": "AGENT_PASS_CI_PENDING",
+    "evidence": "../fixes/BUG-001/REPRODUCTION.md"
+  }
+]

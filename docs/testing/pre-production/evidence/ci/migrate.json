@@ -1,0 +1,9 @@
+{
+  "command": ["pnpm", "--filter", "@dealers-drive/api", "db:migrate"],
+  "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "start_utc": "2026-10-02T12:43:41.154077+00:00",
+  "end_utc": "2026-10-02T12:43:45.256381+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/migrate.log",
+  "cache": "TURBO_FORCE=true"
+}
