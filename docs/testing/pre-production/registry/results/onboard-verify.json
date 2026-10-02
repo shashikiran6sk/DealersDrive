@@ -1,0 +1,401 @@
+{
+  "ONBOARD-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "new eligible user (phone sign-in) → /me next=ONBOARDING",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:37.690Z"
+  },
+  "ONBOARD-002": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "repeated onboarding submit keeps one dealership per user (1); second attempt → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:37.874Z"
+  },
+  "ONBOARD-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "dealer phone verification works (phoneVerifiedAt set on sign-in)",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:37.889Z"
+  },
+  "ONBOARD-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "onboarding requires a linked Google identity (422 ONBOARDING_IDENTITY_INCOMPLETE until linked, then 201). Google link simulated (OAuth unreachable here).",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-GOOGLE",
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:37.930Z"
+  },
+  "ONBOARD-005": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE",
+      "IDENTITY"
+    ],
+    "note": "phone + Google attach to one user row (no duplicate human)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:37.943Z"
+  },
+  "ONBOARD-006": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "partial onboarding persists and resumes step by step (business step completes once GSTIN+PAN saved)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:38.009Z"
+  },
+  "ONBOARD-007": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "after upload, a fresh completeness GET shows documents complete — progress persisted server-side, survives refresh",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:38.186Z"
+  },
+  "ONBOARD-008": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "next ONBOARDING, dealer true",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:38.327Z"
+  },
+  "ONBOARD-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "required dealership fields cannot be skipped → 400 naming missing fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:38.345Z"
+  },
+  "ONBOARD-010": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "submit without documents → 422; dealership stays DRAFT",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:38.397Z"
+  },
+  "ONBOARD-011": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "oversize (400) and disallowed mime (400) rejected at presign",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:38.529Z"
+  },
+  "ONBOARD-012": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "all 3 documents carry the correct dealerId",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:38.650Z"
+  },
+  "ONBOARD-013": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "dealer A's documents list contains only A's; no id param exists to request B's",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:38.897Z"
+  },
+  "ONBOARD-014": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "completed onboarding + submit → PENDING_APPROVAL",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.024Z"
+  },
+  "ONBOARD-015": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "dealer cannot self-approve (admin route → 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.160Z"
+  },
+  "ONBOARD-016": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "direct submit with incomplete onboarding → 422 (server-side completeness gate)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.200Z"
+  },
+  "ONBOARD-017": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "unverified (PENDING_APPROVAL) dealer submit listing → 403 DEALER_NOT_ACTIVE (requireDealerActive)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.352Z"
+  },
+  "ONBOARD-018": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE",
+      "IDENTITY"
+    ],
+    "note": "one Google identity (provider+sub) cannot attach to two users — unique index refuses, linking never merges humans (R59)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.378Z"
+  },
+  "VERIFY-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin sees the submitted application in the PENDING_APPROVAL queue",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.524Z"
+  },
+  "VERIFY-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin detail shows dealer info + required documents",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.532Z"
+  },
+  "VERIFY-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin approves a valid (documents verified) dealership",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.559Z"
+  },
+  "VERIFY-004": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "approved dealership → ACTIVE with approvedAt",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.561Z"
+  },
+  "VERIFY-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "after approval the dealer can submit listings (capability gained post-approval)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.595Z"
+  },
+  "VERIFY-006": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "admin rejects a dealer → 200; reject is a purge (row deleted)",
+    "evidence": [],
+    "bug": null,
+    "auth": "SIM-SESSION",
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.770Z"
+  },
+  "VERIFY-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "rejected dealer: row purged/deleted; remediation path is a fresh onboarding (owner /me next=ONBOARDING). Reject=purge is the documented behaviour.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:39.912Z"
+  },
+  "VERIFY-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "rejected/purged dealer cannot reach dealer features (dashboard 401, create vehicle 401)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:40.075Z"
+  },
+  "VERIFY-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "request-changes → DRAFT with reason; dealer corrects and resubmits → 200",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:40.232Z"
+  },
+  "VERIFY-010": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "resubmission re-enters PENDING_APPROVAL",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:40.395Z"
+  },
+  "VERIFY-011": {
+    "status": "FAIL",
+    "layers": [
+      "API",
+      "DATABASE",
+      "SECURITY"
+    ],
+    "note": "DRAFT dealership (gstin=null, pan=null, no documents) approved via direct API → 200, now ACTIVE. The approve endpoint has no completeness/document precondition (LIFE-DISC-001).",
+    "evidence": [],
+    "bug": "BUG-002",
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:40.436Z"
+  },
+  "VERIFY-012": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "CONCURRENCY"
+    ],
+    "note": "concurrent approve vs request-changes → one valid final state (DRAFT), a=200 b=200. (Note: neither path locks the row; see LIFE-DISC-003 for the approve-vs-reject variant.)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:40.593Z"
+  },
+  "VERIFY-013": {
+    "status": "PASS",
+    "layers": [
+      "DATABASE"
+    ],
+    "note": "verification transitions audit-logged: dealer.onboarding.created, dealer.documents.viewed, dealer.approved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:40.595Z"
+  },
+  "VERIFY-014": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "verification change later: listing hidden while suspended (404), row preserved (ACTIVE), restored on reinstate (200) — no listing data destroyed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "onboard-verify",
+    "at": "2026-10-02T04:18:40.972Z"
+  }
+}
