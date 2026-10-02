@@ -1,0 +1,316 @@
+{
+  "PUBLIC-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "anonymous /cars data: 5 cars, no auth",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.050Z"
+  },
+  "PUBLIC-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "brand=74, fuel=diesel=65, minYear2022 all>=2022",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.100Z"
+  },
+  "PUBLIC-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "intersection brand∩fuel (36) ≤ brand (74)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.134Z"
+  },
+  "PUBLIC-006": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "clearing a filter widens results",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.171Z"
+  },
+  "PUBLIC-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "clear-all default returns 282",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.198Z"
+  },
+  "PUBLIC-008": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "district filter scopes by dealer district (vellore 46, ernakulam 16); 0 out-of-district rows",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.256Z"
+  },
+  "PUBLIC-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "ACTIVE vehicle opens public portfolio, availability AVAILABLE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.261Z"
+  },
+  "PUBLIC-010": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "RESERVED vehicle is visible (page + search) and labelled RESERVED (R71)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.390Z"
+  },
+  "PUBLIC-011": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "SOLD absent from public search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.475Z"
+  },
+  "PUBLIC-012": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "WITHDRAWN absent from public search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.573Z"
+  },
+  "PUBLIC-013": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "PENDING_REVIEW listing (slug none) not discoverable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.574Z"
+  },
+  "PUBLIC-014": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "DRAFT has no public listing; REJECTED (REJECTED) not discoverable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.575Z"
+  },
+  "PUBLIC-015": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "unknown slug → 404 JSON (VEHICLE_NOT_FOUND); SOLD page → 404",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.581Z"
+  },
+  "PUBLIC-016": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "dealer directory: 5+ dealers, anonymous",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.590Z"
+  },
+  "PUBLIC-017": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "active dealer portfolio opens",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.597Z"
+  },
+  "PUBLIC-018": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "public count (1) == ACTIVE available (1); RESERVED visible but not counted",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.613Z"
+  },
+  "PUBLIC-019": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "page 1 and 2 disjoint — no duplicates/omissions",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.634Z"
+  },
+  "PUBLIC-022": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "bad query → 400 VALIDATION_FAILED (structured), browser error UX in browser campaign",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.635Z"
+  },
+  "PUBLIC-024": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "public vehicle/dealer payloads expose no dealer phone, GSTIN or KYC ids",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.644Z"
+  },
+  "SEARCH-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "approved listing searchable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.743Z"
+  },
+  "SEARCH-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "SOLD removed from search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.832Z"
+  },
+  "SEARCH-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "WITHDRAWN removed from search",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:57.927Z"
+  },
+  "SEARCH-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "RESERVED shown in search (policy R71), card unlinked/badged",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:58.028Z"
+  },
+  "SEARCH-010": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "no filter combination surfaced a SOLD/WITHDRAWN listing",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:58.107Z"
+  },
+  "SEARCH-011": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "unknown query params (status, dealerStatus) → 400/400 via strict schema; visibility cannot be widened",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:58.110Z"
+  },
+  "SEARCH-012": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "dealer portfolio and search agree: SOLD/WITHDRAWN absent from both",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "public",
+    "at": "2026-10-02T04:07:58.118Z"
+  }
+}

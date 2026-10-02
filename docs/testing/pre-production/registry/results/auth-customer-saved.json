@@ -1,0 +1,433 @@
+{
+  "AUTH-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "new customer: prove → NAME_REQUIRED → sign-up → session; /me 200",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.014Z"
+  },
+  "AUTH-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "existing verified phone → SIGNED_IN directly",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.037Z"
+  },
+  "AUTH-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "wrong OTP code → 422 PHONE_VERIFICATION_FAILED, no session",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.040Z"
+  },
+  "AUTH-004": {
+    "status": "BLOCKED",
+    "layers": [
+      "AUTH"
+    ],
+    "note": "OTP expiry is enforced by the MSG91 widget/verifyAccessToken (the server trusts its verdict). Not reachable with PHONE_OTP_DRIVER=fake; verify against MSG91 staging. Server-side: a malformed/expired-shaped token is rejected (see AUTH-003).",
+    "evidence": [],
+    "bug": null,
+    "auth": "MSG91",
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.040Z"
+  },
+  "AUTH-005": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "server replay guard: same access token reused → 422 \"That code has been used\" (spent-token counter in CachePort)",
+    "evidence": [],
+    "bug": null,
+    "auth": "FAKE-OTP",
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.046Z"
+  },
+  "AUTH-006": {
+    "status": "BLOCKED",
+    "layers": [
+      "AUTH"
+    ],
+    "note": "OTP attempt cap is MSG91-side. The server adds a per-number sign-in rate limit, tested under ABUSE-001/API-SEC-427 on the rate-limited instance.",
+    "evidence": [],
+    "bug": null,
+    "auth": "MSG91",
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.047Z"
+  },
+  "AUTH-007": {
+    "status": "BLOCKED",
+    "layers": [
+      "AUTH"
+    ],
+    "note": "OTP resend cap is MSG91-side (widget). Not reachable with the fake driver.",
+    "evidence": [],
+    "bug": null,
+    "auth": "MSG91",
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.047Z"
+  },
+  "AUTH-008": {
+    "status": "BLOCKED",
+    "layers": [
+      "AUTH"
+    ],
+    "note": "OTP provider outage UX requires a real/forced MSG91 failure; see RECOVERY-448 for the server-side partial-session check with a rejected token.",
+    "evidence": [],
+    "bug": null,
+    "auth": "MSG91",
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.047Z"
+  },
+  "AUTH-009": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "prove step creates a sign-up ticket, not a user; a refresh before naming leaves no half-made account",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.055Z"
+  },
+  "AUTH-010": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "concurrent sign-in attempts for distinct numbers both resolve to their own ticket",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.065Z"
+  },
+  "AUTH-011": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "logout revokes the session (DB revokedAt set); /me → 401 afterwards",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.116Z"
+  },
+  "AUTH-012": {
+    "status": "NOT_APPLICABLE",
+    "layers": [
+      "AUTH"
+    ],
+    "note": "Logout-all is not a V1 requirement (product decision confirmed by owner). No route exists; revokeAllForUser is present but unused. Documented as a future consideration, not a defect.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.116Z"
+  },
+  "AUTH-013": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "expired session → 401 (graceful; web redirects to login)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.132Z"
+  },
+  "AUTH-014": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "cross-customer support ticket read → n/a; A's enquiry list excludes B's",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.735Z"
+  },
+  "AUTH-015": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "dd_session: HttpOnly ✓, SameSite=Lax ✓, Path=/ ✓, Expires ✓; Secure is set when NODE_ENV=production (code-verified: secure: env.isProduction). Dev response has no Secure, as expected.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.746Z"
+  },
+  "CUSTOMER-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "customer /me returns name \"Account Cust\" + masked phone for the account menu/avatar",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.760Z"
+  },
+  "CUSTOMER-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "Saved Cars endpoint reachable by customer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.764Z"
+  },
+  "CUSTOMER-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "My Enquiries endpoint reachable by customer",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.770Z"
+  },
+  "CUSTOMER-004": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "after logout: /me → 401, public browsing still 200 (public state restored)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:11.812Z"
+  },
+  "CUSTOMER-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "customer account and enquiry history stay usable after the enquiry's dealer is suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:12.356Z"
+  },
+  "CUSTOMER-006": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "IDENTITY"
+    ],
+    "note": "a customer who accepted a dealer invitation keeps full customer account access (one identity, two seats)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:12.556Z"
+  },
+  "CUSTOMER-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "after membership revocation the person's customer account still works",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:12.763Z"
+  },
+  "CUSTOMER-008": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE",
+      "IDENTITY"
+    ],
+    "note": "membership revoked: user ACTIVE, CUSTOMER seat untouched, but dealer console → 401 (dealer access gone, customer auth intact)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:12.768Z"
+  },
+  "CUSTOMER-009": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "IDENTITY"
+    ],
+    "note": "dealership suspended: member's customer account works (me 200), dealer console 401",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:12.963Z"
+  },
+  "CUSTOMER-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "IDENTITY"
+    ],
+    "note": "Customer and dealership authorization are independent seats, re-read per request; CUSTOMER-005/008/009 demonstrate each stays intact as the other changes.",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:12.963Z"
+  },
+  "SAVED-001": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "customer saves an ACTIVE car; it appears in the saved list",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.399Z"
+  },
+  "SAVED-002": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "unauthenticated save → 401; web wraps this as the login-and-return intent (browser dimension in Agent UAT)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.400Z"
+  },
+  "SAVED-003": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "unsave removes the car",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.408Z"
+  },
+  "SAVED-004": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "saving twice yields exactly one saved_vehicles row (idempotent PUT)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.421Z"
+  },
+  "SAVED-005": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "saved cars persist across logout/login (server-side storage)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.436Z"
+  },
+  "SAVED-006": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "a RESERVED car can be saved and shows in its reserved/unavailable group",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.449Z"
+  },
+  "SAVED-007": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "a SOLD saved car shows as no-longer-available without corrupting the saved list or history",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.463Z"
+  },
+  "SAVED-008": {
+    "status": "PASS",
+    "layers": [
+      "API"
+    ],
+    "note": "a WITHDRAWN saved car renders as unavailable without error",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.472Z"
+  },
+  "SAVED-009": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "DATABASE"
+    ],
+    "note": "a saved car whose listing is later withdrawn/removed does not break Saved Cars; saved_vehicles row preserved (R74 never-delete)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.813Z"
+  },
+  "SAVED-010": {
+    "status": "PASS",
+    "layers": [
+      "API",
+      "SECURITY"
+    ],
+    "note": "saved records are session-scoped (no id in path); another customer sees only their own",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "auth-customer-saved",
+    "at": "2026-10-02T04:12:14.827Z"
+  }
+}
