@@ -1,0 +1,12 @@
+{
+  "DISC-PROFILE-001": {
+    "status": "FAIL",
+    "severity": "P3",
+    "layers": [
+      "API"
+    ],
+    "note": "Doc/impl drift: schema + CLAUDE.md say a dealer editing their profile again amends the one PENDING dealer_profile_changes row; the service instead returns 409 PROFILE_EDIT_PENDING until the first edit is reviewed. Safe (no corruption), but the documented amend behaviour does not hold.",
+    "area": "member-identity-rbac",
+    "at": "2026-10-02T04:24:11.017Z"
+  }
+}
