@@ -1,0 +1,292 @@
+[
+  {
+    "req": "PUT /uploads?key=vehicles/feb773ee-a863-410c-af52-c61bc485409f/e39d2160-ffcf-4322-9186-55826a1f28eb/original.jpg&signature=<forged with default secret>",
+    "status": 200
+  },
+  {
+    "req": "GET /media/by-media/e39d2160-ffcf-4322-9186-55826a1f28eb/1024.webp (public)",
+    "before": "200 image/jpeg 11518B",
+    "after": "200 image/jpeg body starts \"ATTACKER-CONTROLLED-BYTES \""
+  },
+  {
+    "req": "GET /private?key=dealers/<slug>/documents/PAN_CARD/<documentId>&signature=<forged>",
+    "status": 200,
+    "body": "%PDF-1.4… (193 bytes, KYC PDF)"
+  },
+  {
+    "req": "GET /v1/dealer/completeness",
+    "status": 200,
+    "body": {
+      "isComplete": false,
+      "canSubmit": false,
+      "percent": 25,
+      "steps": [
+        {
+          "key": "account",
+          "label": "Account",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "business",
+          "label": "Business",
+          "complete": false,
+          "missing": [
+            "gstin",
+            "pan"
+          ]
+        },
+        {
+          "key": "documents",
+          "label": "Documents",
+          "complete": false,
+          "missing": [
+            "GST_CERTIFICATE",
+            "PAN_CARD",
+            "ADDRESS_PROOF",
+            "YARD_PHOTO"
+          ]
+        },
+        {
+          "key": "review",
+          "label": "Review",
+          "complete": false,
+          "missing": []
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/29d6abd3-adc3-4487-842b-9b81098eb499/approve",
+    "status": 200,
+    "body": {
+      "id": "29d6abd3-adc3-4487-842b-9b81098eb499",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:03:32.202Z"
+    }
+  },
+  {
+    "db_before": {
+      "status": "DRAFT",
+      "gstin": null,
+      "pan": null
+    },
+    "documents": 3,
+    "db_after": {
+      "status": "ACTIVE",
+      "approvedAt": {}
+    }
+  },
+  {
+    "step": "unverified dealership submits a listing",
+    "listingId": "dd02aee8-5dc3-43cc-912a-66bf8813c0a6"
+  },
+  {
+    "req": "POST /v1/admin/dealers/cab64d00-88f5-4e01-9753-f83fb51a2a59/suspend",
+    "status": 200,
+    "body": {
+      "id": "cab64d00-88f5-4e01-9753-f83fb51a2a59",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:03:32.438Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/cab64d00-88f5-4e01-9753-f83fb51a2a59/approve",
+    "status": 200,
+    "body": {
+      "id": "cab64d00-88f5-4e01-9753-f83fb51a2a59",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:03:32.445Z"
+    }
+  },
+  {
+    "db_after": {
+      "status": "ACTIVE"
+    },
+    "audit": [
+      "dealer.onboarding.created",
+      "dealer.approved",
+      "dealer.suspended",
+      "dealer.approved"
+    ]
+  },
+  {
+    "req": "POST /v1/admin/dealers/11e1faf4-74de-433c-8188-394515c8789c/reinstate",
+    "status": 200,
+    "body": {
+      "id": "11e1faf4-74de-433c-8188-394515c8789c",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:03:32.607Z"
+    }
+  },
+  {
+    "db_before": {
+      "status": "PENDING_APPROVAL"
+    },
+    "documents": [
+      "UPLOADED",
+      "UPLOADED",
+      "UPLOADED"
+    ],
+    "db_after": {
+      "status": "ACTIVE",
+      "approvedAt": {}
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/11e5c89e-9ba9-4b0b-af33-1920400c39d5/suspend",
+    "status": 200,
+    "body": {
+      "id": "11e5c89e-9ba9-4b0b-af33-1920400c39d5",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:03:32.651Z"
+    }
+  },
+  {
+    "db_after_suspend": {
+      "status": "SUSPENDED"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/11e5c89e-9ba9-4b0b-af33-1920400c39d5/reinstate",
+    "status": 200,
+    "body": {
+      "id": "11e5c89e-9ba9-4b0b-af33-1920400c39d5",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:03:32.663Z"
+    }
+  },
+  {
+    "db_after_reinstate": {
+      "status": "ACTIVE",
+      "approvedAt": {}
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/dd86ad9a-591d-4d8f-b699-800fc1e14517/reinstate",
+    "status": 200,
+    "body": {
+      "id": "dd86ad9a-591d-4d8f-b699-800fc1e14517",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-02T04:03:32.673Z"
+    }
+  },
+  {
+    "db_before": {
+      "dealer": "ACTIVE",
+      "document": "VERIFIED",
+      "verifiedFileOnDisk": true
+    }
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 201,
+    "body": {
+      "documentId": "839f5f9e-a7e0-4b14-a13a-4cb56b8b238c",
+      "uploadUrl": "<redacted>",
+      "method": "PUT",
+      "headers": {
+        "Content-Type": "application/pdf",
+        "Content-Length": "193"
+      },
+      "expiresInSeconds": 300
+    }
+  },
+  {
+    "db_after_presign": {
+      "id": "839f5f9e-a7e0-4b14-a13a-4cb56b8b238c",
+      "status": "UPLOADING"
+    },
+    "verifiedFileOnDiskAfterPresign": false
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 201,
+    "body": {
+      "documentId": "0c604e0b-c8e7-4a37-b33f-64f3da77782b",
+      "uploadUrl": "<redacted>",
+      "method": "PUT",
+      "headers": {
+        "Content-Type": "application/pdf",
+        "Content-Length": "193"
+      },
+      "expiresInSeconds": 300
+    }
+  },
+  {
+    "put": 200
+  },
+  {
+    "req": "POST /v1/dealer/documents/PAN_CARD/commit",
+    "status": 200,
+    "body": {
+      "id": "0c604e0b-c8e7-4a37-b33f-64f3da77782b",
+      "type": "PAN_CARD",
+      "label": "PAN card",
+      "status": "UPLOADED",
+      "statusLabel": "swapped.pdf · uploaded",
+      "fileName": "swapped.pdf",
+      "uploadedAt": "2026-10-02T04:03:31.558Z",
+      "rejectionReason": null,
+      "action": "Replace"
+    }
+  },
+  {
+    "db_after": {
+      "status": "UPLOADED",
+      "dealer": "ACTIVE"
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/documents/ADDRESS_PROOF",
+    "status": 204,
+    "body": null
+  },
+  {
+    "addressProofRows": 1,
+    "dealer": "ACTIVE"
+  },
+  {
+    "req": "POST /v1/dealer/yard-photo/commit",
+    "status": 200,
+    "body": {
+      "mediaId": "4c0e3cd7-176b-44c3-86db-f469ff6c657f",
+      "status": "READY",
+      "fileName": "yard.jpg",
+      "url": "<redacted>",
+      "uploadedAt": "2026-10-02T04:03:32.730Z"
+    }
+  },
+  {
+    "publicCoverBefore": "c9585173-b948-44e2-83af-dcce525c9286",
+    "publicCoverAfter": "4c0e3cd7-176b-44c3-86db-f469ff6c657f"
+  }
+]
