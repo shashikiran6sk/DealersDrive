@@ -4,6 +4,7 @@ import {
   isListingDeletable,
   isListingEditable,
   isListingSubmittable,
+  LIFECYCLE_ACTION_PERMISSION,
   lifecycleActionsOf,
   listingStatusLabel,
   listingStatusTone,
@@ -15,6 +16,7 @@ import {
   vehicleTitle,
   withdrawalReasonLabel,
   type DealerInventoryRow,
+  type DealerPermission,
   type DealerListing,
   type DealerVehicle,
   type ListingReactivation,
@@ -66,8 +68,14 @@ export function reactivationOf(
   };
 }
 
-export function toDealerListing(listing: ListingRow, complete: boolean): DealerListing {
+export function toDealerListing(
+  listing: ListingRow,
+  complete: boolean,
+  permissions?: readonly string[],
+): DealerListing {
   const reactivation = reactivationOf(listing, listing.reactivations?.[0]);
+  const may = (permission: DealerPermission) =>
+    permissions === undefined || permissions.includes(permission);
   return {
     id: listing.id,
     status: listing.status,
@@ -92,16 +100,16 @@ export function toDealerListing(listing: ListingRow, complete: boolean): DealerL
           }
         : null,
     canEdit: isListingEditable(listing.status),
-    canSubmit: complete && isListingSubmittable(listing.status),
-    canDelete: isListingDeletable(listing.status),
+    canSubmit: complete && isListingSubmittable(listing.status) && may('listing:submit'),
+    canDelete: isListingDeletable(listing.status) && may('vehicle:delete'),
     actions: lifecycleActionsOf(listing.status, {
       reactivationPending: reactivation?.status === 'PENDING',
-    }),
+    }).filter((action) => may(LIFECYCLE_ACTION_PERMISSION[action])),
     reactivation,
   };
 }
 
-export function toDealerVehicle(row: VehicleRow): DealerVehicle {
+export function toDealerVehicle(row: VehicleRow, permissions?: readonly string[]): DealerVehicle {
   if (!row.listing) throw new Error(`Vehicle ${row.id} has no listing.`);
   const issues = vehicleIssues(completenessOf(row));
   const pricePaise = row.pricePaise === null ? null : Number(row.pricePaise);
@@ -132,14 +140,17 @@ export function toDealerVehicle(row: VehicleRow): DealerVehicle {
     summary: vehicleSummary(row),
     issues,
     complete: issues.length === 0,
-    listing: toDealerListing(row.listing, issues.length === 0),
+    listing: toDealerListing(row.listing, issues.length === 0, permissions),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
 }
 
-export function toInventoryRow(row: VehicleRow): DealerInventoryRow {
-  const vehicle = toDealerVehicle(row);
+export function toInventoryRow(
+  row: VehicleRow,
+  permissions?: readonly string[],
+): DealerInventoryRow {
+  const vehicle = toDealerVehicle(row, permissions);
   return {
     id: vehicle.id,
     title: vehicle.title,

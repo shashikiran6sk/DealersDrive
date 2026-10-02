@@ -119,6 +119,10 @@ export const DraftSaved: Story = { args: { step: 'details', vehicle: DRAFT, save
 
 export const ReviewComplete: Story = { args: { step: 'review', vehicle: COMPLETE } };
 
+export const ReviewAsStaff: Story = {
+  args: { step: 'review', vehicle: COMPLETE, mayPublish: false },
+};
+
 export const ReviewIncomplete: Story = { args: { step: 'review', vehicle: DRAFT } };
 
 export const UnderReview: Story = {

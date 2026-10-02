@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { Uuid } from './common.js';
 import { DealerRole, DealerStatus, type EnquiryStatus } from './enums.js';
+import type { ListingLifecycleAction } from './listing.js';
 
 /**
  * ── R92 · what each member of a dealership may do ──────────────────────────
@@ -90,6 +91,19 @@ export function enquiryTransitionPermission(
   if (to === 'CONTACTED' && (from === 'NEW' || from === 'CONTACTED')) return 'enquiry:contact';
   return 'enquiry:close';
 }
+
+/**
+ * The permission each lifecycle move needs (**R95**). The API filters the
+ * moves it offers a member through this, so a STAFF member's inventory simply
+ * has no Reserve button — and the route enforces the same permission if one is
+ * called anyway.
+ */
+export const LIFECYCLE_ACTION_PERMISSION: Record<ListingLifecycleAction, DealerPermission> = {
+  reserve: 'listing:reserve',
+  markSold: 'listing:sell',
+  withdraw: 'listing:withdraw',
+  requestReactivation: 'listing:reactivate',
+};
 
 /** The roles an OWNER may hand out. OWNER is not one of them in V1. */
 export const ASSIGNABLE_DEALER_ROLES = [

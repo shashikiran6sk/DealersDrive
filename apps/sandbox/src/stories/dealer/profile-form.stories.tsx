@@ -78,6 +78,10 @@ export const Populated: Story = {
   decorators: [stub(900, SAVED)],
 };
 
+export const ReadOnlyForMembers: Story = {
+  args: { dealer: BASE, readOnly: true },
+};
+
 export const Sparse: Story = {
   args: {
     dealer: {
