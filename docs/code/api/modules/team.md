@@ -31,6 +31,24 @@ The audit row records the role and whether an account already holds the
 number, never the number itself: the invitation row is where the number lives,
 and the audit log is read far more widely than the team.
 
+### `export const MAX_WAITING_INVITATIONS = 25`
+
+An invitation is a row, and it costs nothing to make one. Without a ceiling a
+script, or an owner pasting a contact list, can fill `dealer_invitations` with
+thousands of rows for one dealership. That makes the Team page unreadable and
+turns every number into a standing claim for seven days.
+
+Twenty-five is well above any real dealership's staff. It counts only
+invitations that are both `PENDING` **and** unexpired, because an expired one
+can no longer be accepted, so it should not hold a slot.
+
+The count is taken **after** the dealership row is locked. Two invites sent at
+once therefore cannot both see 24 and both insert.
+
+Renewing a number that is already waiting skips the check. Changing the role on
+an existing invitation adds no row, so it must never be refused for the
+dealership being "full".
+
 ### `async function manageableMember(tx: Tx, actor: TeamActor, memberId: string)`
 
 The OWNER is fixed in V1 — it can be neither demoted nor removed, and an owner

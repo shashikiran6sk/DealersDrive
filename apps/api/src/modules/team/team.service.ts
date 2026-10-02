@@ -19,6 +19,7 @@ import {
   INVITATION_NOT_FOUND,
   MEMBER_NOT_FOUND,
   OWNER_LOCKED,
+  TOO_MANY_INVITATIONS,
 } from './team.messages.js';
 
 export interface TeamDeps {
@@ -32,6 +33,8 @@ export interface TeamActor {
 }
 
 export const INVITATION_TTL_MS = INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000;
+
+export const MAX_WAITING_INVITATIONS = 25;
 
 export async function lockDealership(tx: Tx, dealerId: string): Promise<void> {
   await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
@@ -95,6 +98,17 @@ export function createTeamService({ prisma, audit }: TeamDeps) {
         const waiting = await tx.dealerInvitation.findFirst({
           where: { dealerId: actor.dealerId, phone, status: 'PENDING' },
         });
+        if (!waiting) {
+          const open = await tx.dealerInvitation.count({
+            where: { dealerId: actor.dealerId, status: 'PENDING', expiresAt: { gt: now } },
+          });
+          if (open >= MAX_WAITING_INVITATIONS) {
+            throw new ConflictError(
+              'TOO_MANY_INVITATIONS',
+              TOO_MANY_INVITATIONS(MAX_WAITING_INVITATIONS),
+            );
+          }
+        }
         const row = waiting
           ? await tx.dealerInvitation.update({
               where: { id: waiting.id },
