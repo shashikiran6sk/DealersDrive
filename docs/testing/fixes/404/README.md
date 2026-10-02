@@ -10,6 +10,8 @@ Main was merged into the PR branch locally, with five conflicts resolved. The cu
 
 - Uncached repository lint and typecheck: PASS.
 - Full web suite: 99 files, 1,346 tests PASS.
+- Full accumulated repository suite at `77b4769b9db9768797a584fe9b46f22031967acb`: 2,586 API, 1,346 web and 420 contract tests PASS (4,352 total). API coverage gates PASS (branches 91.92%; lines 97.55%). The invitation race passed on this timing-dependent run; that does not close BUG-001 or overwrite its original baseline failure. A deterministic lock-controlled regression is required in the next layer.
+- Final repository lint at that exact SHA: PASS.
 - Targeted error suite: 138 tests PASS. The first run exposed an assertion expecting raw exception text; it was corrected to assert diagnostic categories and absence of raw text. Both logs are retained.
 - Production build: PASS with `pnpm build --env-mode=loose`, needed to pass this workspace’s proxy configuration through Turbo. The initial strict-environment build failed fetching Google Fonts; both logs are retained. No font or application source workaround was used.
 - Built-server Chromium UAT: unknown route, missing car and missing dealer at 1440, 768 and 390 pixels; HTTP 404, branded heading, noindex, working homepage link and no page overflow. PASS. Screenshots and `browser.json` retain each result.
