@@ -1,0 +1,3897 @@
+{
+  "expected": 556,
+  "scenarios": [
+    {
+      "number": 1,
+      "id": "PUBLIC-001",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Anonymous user opens homepage and all public content loads without authentication."
+    },
+    {
+      "number": 2,
+      "id": "PUBLIC-002",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Anonymous user searches from homepage and reaches `/cars` with correct search context."
+    },
+    {
+      "number": 3,
+      "id": "PUBLIC-003",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Anonymous user browses `/cars` without authentication."
+    },
+    {
+      "number": 4,
+      "id": "PUBLIC-004",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Every supported car filter works individually."
+    },
+    {
+      "number": 5,
+      "id": "PUBLIC-005",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Multiple filters return correct intersection."
+    },
+    {
+      "number": 6,
+      "id": "PUBLIC-006",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Individual filters can be cleared correctly."
+    },
+    {
+      "number": 7,
+      "id": "PUBLIC-007",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Clear-all returns default results."
+    },
+    {
+      "number": 8,
+      "id": "PUBLIC-008",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "District changes correctly reset/update location-dependent filters/results."
+    },
+    {
+      "number": 9,
+      "id": "PUBLIC-009",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "ACTIVE vehicle opens correct public portfolio."
+    },
+    {
+      "number": 10,
+      "id": "PUBLIC-010",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "RESERVED vehicle interaction/navigation follows defined behavior."
+    },
+    {
+      "number": 11,
+      "id": "PUBLIC-011",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "SOLD vehicle is absent from public search."
+    },
+    {
+      "number": 12,
+      "id": "PUBLIC-012",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "WITHDRAWN vehicle is absent from public search."
+    },
+    {
+      "number": 13,
+      "id": "PUBLIC-013",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Moderation-pending listing is not publicly discoverable."
+    },
+    {
+      "number": 14,
+      "id": "PUBLIC-014",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Draft/rejected listing is not publicly discoverable."
+    },
+    {
+      "number": 15,
+      "id": "PUBLIC-015",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Direct URL to non-public listing returns correct unavailable/not-found experience."
+    },
+    {
+      "number": 16,
+      "id": "PUBLIC-016",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Anonymous user can browse dealer directory."
+    },
+    {
+      "number": 17,
+      "id": "PUBLIC-017",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Active/verified dealer public portfolio opens correctly."
+    },
+    {
+      "number": 18,
+      "id": "PUBLIC-018",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Public dealer listing count matches publicly available inventory."
+    },
+    {
+      "number": 19,
+      "id": "PUBLIC-019",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Pagination/infinite scroll does not duplicate or omit vehicles."
+    },
+    {
+      "number": 20,
+      "id": "PUBLIC-020",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Refresh preserves intended search/filter state."
+    },
+    {
+      "number": 21,
+      "id": "PUBLIC-021",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Invalid public route displays custom Dealers-Drive 404."
+    },
+    {
+      "number": 22,
+      "id": "PUBLIC-022",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "API/server failure displays application error UX rather than raw error."
+    },
+    {
+      "number": 23,
+      "id": "PUBLIC-023",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Public pages work on mobile/tablet/desktop."
+    },
+    {
+      "number": 24,
+      "id": "PUBLIC-024",
+      "section": "PUBLIC",
+      "sectionTitle": "Public / Anonymous",
+      "text": "Public pages/API responses expose no private customer/dealer/Admin information."
+    },
+    {
+      "number": 25,
+      "id": "AUTH-001",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "New customer successfully authenticates using configured OTP channel."
+    },
+    {
+      "number": 26,
+      "id": "AUTH-002",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Existing customer logs in with verified phone."
+    },
+    {
+      "number": 27,
+      "id": "AUTH-003",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Incorrect OTP rejected."
+    },
+    {
+      "number": 28,
+      "id": "AUTH-004",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Expired OTP rejected."
+    },
+    {
+      "number": 29,
+      "id": "AUTH-005",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Used OTP cannot be replayed."
+    },
+    {
+      "number": 30,
+      "id": "AUTH-006",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "OTP attempt limits enforced."
+    },
+    {
+      "number": 31,
+      "id": "AUTH-007",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "OTP resend limits enforced."
+    },
+    {
+      "number": 32,
+      "id": "AUTH-008",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "OTP provider failure gives recoverable UX."
+    },
+    {
+      "number": 33,
+      "id": "AUTH-009",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Refresh during OTP does not corrupt account state."
+    },
+    {
+      "number": 34,
+      "id": "AUTH-010",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Concurrent OTP attempts cannot authenticate wrong session."
+    },
+    {
+      "number": 35,
+      "id": "AUTH-011",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Logout invalidates appropriate session."
+    },
+    {
+      "number": 36,
+      "id": "AUTH-012",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Logout-all invalidates applicable sessions."
+    },
+    {
+      "number": 37,
+      "id": "AUTH-013",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Expired session redirects gracefully."
+    },
+    {
+      "number": 38,
+      "id": "AUTH-014",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Customer cannot access another customer's resources by changing IDs."
+    },
+    {
+      "number": 39,
+      "id": "AUTH-015",
+      "section": "AUTH",
+      "sectionTitle": "Customer Authentication",
+      "text": "Authentication/session cookies use appropriate production security attributes."
+    },
+    {
+      "number": 40,
+      "id": "CUSTOMER-001",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Authenticated customer sees correct account menu/avatar."
+    },
+    {
+      "number": 41,
+      "id": "CUSTOMER-002",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Customer accesses Saved Cars."
+    },
+    {
+      "number": 42,
+      "id": "CUSTOMER-003",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Customer accesses My Enquiries."
+    },
+    {
+      "number": 43,
+      "id": "CUSTOMER-004",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Logout returns correct public state."
+    },
+    {
+      "number": 44,
+      "id": "CUSTOMER-005",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Customer account remains usable when an enquiry's dealer changes operational state."
+    },
+    {
+      "number": 45,
+      "id": "CUSTOMER-006",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Customer account remains usable if customer also becomes dealer member."
+    },
+    {
+      "number": 46,
+      "id": "CUSTOMER-007",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Customer account remains usable after dealer membership revocation."
+    },
+    {
+      "number": 47,
+      "id": "CUSTOMER-008",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Revoking dealer membership does not revoke customer authentication/account."
+    },
+    {
+      "number": 48,
+      "id": "CUSTOMER-009",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Suspending dealership does not suspend personal customer capabilities of its members."
+    },
+    {
+      "number": 49,
+      "id": "CUSTOMER-010",
+      "section": "CUSTOMER",
+      "sectionTitle": "Customer Account",
+      "text": "Customer and dealership authorization remain independent."
+    },
+    {
+      "number": 50,
+      "id": "SAVED-001",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "Customer saves ACTIVE car."
+    },
+    {
+      "number": 51,
+      "id": "SAVED-002",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "Anonymous save triggers intended authentication flow."
+    },
+    {
+      "number": 52,
+      "id": "SAVED-003",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "Customer unsaves car."
+    },
+    {
+      "number": 53,
+      "id": "SAVED-004",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "Duplicate save does not create duplicate records."
+    },
+    {
+      "number": 54,
+      "id": "SAVED-005",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "Saved cars persist through logout/login."
+    },
+    {
+      "number": 55,
+      "id": "SAVED-006",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "RESERVED saved car follows intended unavailable state."
+    },
+    {
+      "number": 56,
+      "id": "SAVED-007",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "SOLD saved car follows intended behavior without corrupting history."
+    },
+    {
+      "number": 57,
+      "id": "SAVED-008",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "WITHDRAWN saved car follows intended unavailable behavior."
+    },
+    {
+      "number": 58,
+      "id": "SAVED-009",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "Removed/moderated-down listing does not break Saved Cars."
+    },
+    {
+      "number": 59,
+      "id": "SAVED-010",
+      "section": "SAVED",
+      "sectionTitle": "Saved Cars",
+      "text": "Customer cannot access another customer's saved records."
+    },
+    {
+      "number": 60,
+      "id": "ENQ-CREATE-001",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Customer enquires about ACTIVE vehicle."
+    },
+    {
+      "number": 61,
+      "id": "ENQ-CREATE-002",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Anonymous Enquire initiates required authentication/phone verification."
+    },
+    {
+      "number": 62,
+      "id": "ENQ-CREATE-003",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Verified customer information prefills correctly."
+    },
+    {
+      "number": 63,
+      "id": "ENQ-CREATE-004",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Enquiry submits without optional description."
+    },
+    {
+      "number": 64,
+      "id": "ENQ-CREATE-005",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Enquiry submits with description."
+    },
+    {
+      "number": 65,
+      "id": "ENQ-CREATE-006",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Invalid enquiry input rejected server-side."
+    },
+    {
+      "number": 66,
+      "id": "ENQ-CREATE-007",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "SOLD vehicle cannot receive new enquiry."
+    },
+    {
+      "number": 67,
+      "id": "ENQ-CREATE-008",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "WITHDRAWN vehicle cannot receive new enquiry."
+    },
+    {
+      "number": 68,
+      "id": "ENQ-CREATE-009",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Non-public/moderation listing cannot receive enquiry."
+    },
+    {
+      "number": 69,
+      "id": "ENQ-CREATE-010",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "RESERVED vehicle enquiry follows defined behavior."
+    },
+    {
+      "number": 70,
+      "id": "ENQ-CREATE-011",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Vehicle becoming SOLD during enquiry submission is handled safely."
+    },
+    {
+      "number": 71,
+      "id": "ENQ-CREATE-012",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Rapid duplicate submissions do not create unintended duplicate leads."
+    },
+    {
+      "number": 72,
+      "id": "ENQ-CREATE-013",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Successful enquiry appears in My Enquiries."
+    },
+    {
+      "number": 73,
+      "id": "ENQ-CREATE-014",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Successful enquiry appears in correct dealer Enquiries."
+    },
+    {
+      "number": 74,
+      "id": "ENQ-CREATE-015",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Successful enquiry appears in Admin tracking."
+    },
+    {
+      "number": 75,
+      "id": "ENQ-CREATE-016",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Customer/dealer/Admin enquiry data remains consistent."
+    },
+    {
+      "number": 76,
+      "id": "ENQ-CREATE-017",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Dealer A cannot view Dealer B enquiries."
+    },
+    {
+      "number": 77,
+      "id": "ENQ-CREATE-018",
+      "section": "ENQ-CREATE",
+      "sectionTitle": "Customer Enquiry Creation",
+      "text": "Customer A cannot view Customer B enquiries."
+    },
+    {
+      "number": 78,
+      "id": "ENQ-LIFE-001",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "New enquiry begins in correct initial state."
+    },
+    {
+      "number": 79,
+      "id": "ENQ-LIFE-002",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "STAFF views dealership enquiries."
+    },
+    {
+      "number": 80,
+      "id": "ENQ-LIFE-003",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "STAFF can mark NEW → CONTACTED."
+    },
+    {
+      "number": 81,
+      "id": "ENQ-LIFE-004",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "STAFF cannot close enquiry."
+    },
+    {
+      "number": 82,
+      "id": "ENQ-LIFE-005",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "MANAGER can mark CONTACTED."
+    },
+    {
+      "number": 83,
+      "id": "ENQ-LIFE-006",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "MANAGER can close enquiry."
+    },
+    {
+      "number": 84,
+      "id": "ENQ-LIFE-007",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "OWNER can perform all intended transitions."
+    },
+    {
+      "number": 85,
+      "id": "ENQ-LIFE-008",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "CONTACTED records actor/time."
+    },
+    {
+      "number": 86,
+      "id": "ENQ-LIFE-009",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "CLOSED records actor/time."
+    },
+    {
+      "number": 87,
+      "id": "ENQ-LIFE-010",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Invalid transitions rejected server-side."
+    },
+    {
+      "number": 88,
+      "id": "ENQ-LIFE-011",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Direct API cannot bypass enquiry permissions."
+    },
+    {
+      "number": 89,
+      "id": "ENQ-LIFE-012",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Concurrent enquiry updates produce valid deterministic state."
+    },
+    {
+      "number": 90,
+      "id": "ENQ-LIFE-013",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Customer history survives CONTACTED."
+    },
+    {
+      "number": 91,
+      "id": "ENQ-LIFE-014",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Customer history survives CLOSED."
+    },
+    {
+      "number": 92,
+      "id": "ENQ-LIFE-015",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "History survives associated vehicle SOLD."
+    },
+    {
+      "number": 93,
+      "id": "ENQ-LIFE-016",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "History survives WITHDRAWN."
+    },
+    {
+      "number": 94,
+      "id": "ENQ-LIFE-017",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "History survives RESERVED."
+    },
+    {
+      "number": 95,
+      "id": "ENQ-LIFE-018",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Historical enquiry remains usable when listing is no longer public."
+    },
+    {
+      "number": 96,
+      "id": "ENQ-LIFE-019",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Dealer suspension does not delete enquiry history."
+    },
+    {
+      "number": 97,
+      "id": "ENQ-LIFE-020",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Member removal does not delete handled enquiries."
+    },
+    {
+      "number": 98,
+      "id": "ENQ-LIFE-021",
+      "section": "ENQ-LIFE",
+      "sectionTitle": "Enquiry Lifecycle",
+      "text": "Historical actor remains attributable after member removal."
+    },
+    {
+      "number": 99,
+      "id": "ONBOARD-001",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "New eligible user begins dealer onboarding."
+    },
+    {
+      "number": 100,
+      "id": "ONBOARD-002",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Repeated submissions do not create duplicate dealership."
+    },
+    {
+      "number": 101,
+      "id": "ONBOARD-003",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Dealer phone verification works."
+    },
+    {
+      "number": 102,
+      "id": "ONBOARD-004",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Google linking/authentication works according to current architecture."
+    },
+    {
+      "number": 103,
+      "id": "ONBOARD-005",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Phone/Google link to correct human rather than duplicate users."
+    },
+    {
+      "number": 104,
+      "id": "ONBOARD-006",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Incomplete onboarding can resume."
+    },
+    {
+      "number": 105,
+      "id": "ONBOARD-007",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Refresh preserves intended onboarding progress."
+    },
+    {
+      "number": 106,
+      "id": "ONBOARD-008",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Logout/login returns draft/review dealer to correct state."
+    },
+    {
+      "number": 107,
+      "id": "ONBOARD-009",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Required dealership fields cannot be skipped."
+    },
+    {
+      "number": 108,
+      "id": "ONBOARD-010",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Required dealer documents cannot be skipped."
+    },
+    {
+      "number": 109,
+      "id": "ONBOARD-011",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Invalid document type/size rejected."
+    },
+    {
+      "number": 110,
+      "id": "ONBOARD-012",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Documents remain associated with correct dealership."
+    },
+    {
+      "number": 111,
+      "id": "ONBOARD-013",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Dealer cannot retrieve another dealer's verification documents."
+    },
+    {
+      "number": 112,
+      "id": "ONBOARD-014",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Completed onboarding enters correct review state."
+    },
+    {
+      "number": 113,
+      "id": "ONBOARD-015",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Dealer cannot self-approve."
+    },
+    {
+      "number": 114,
+      "id": "ONBOARD-016",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Direct APIs cannot bypass onboarding requirements."
+    },
+    {
+      "number": 115,
+      "id": "ONBOARD-017",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Unverified dealer cannot publicly list vehicles."
+    },
+    {
+      "number": 116,
+      "id": "ONBOARD-018",
+      "section": "ONBOARD",
+      "sectionTitle": "Dealer Onboarding",
+      "text": "Duplicate identity handling follows intended linking rules."
+    },
+    {
+      "number": 117,
+      "id": "VERIFY-001",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Admin sees submitted dealer application."
+    },
+    {
+      "number": 118,
+      "id": "VERIFY-002",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Admin sees required dealer information/documents."
+    },
+    {
+      "number": 119,
+      "id": "VERIFY-003",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Admin approves valid dealership."
+    },
+    {
+      "number": 120,
+      "id": "VERIFY-004",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Approved dealership enters correct verified/active state."
+    },
+    {
+      "number": 121,
+      "id": "VERIFY-005",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Dealer gains intended capabilities only after approval."
+    },
+    {
+      "number": 122,
+      "id": "VERIFY-006",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Admin rejects dealer."
+    },
+    {
+      "number": 123,
+      "id": "VERIFY-007",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Rejected dealer gets correct state/remediation path."
+    },
+    {
+      "number": 124,
+      "id": "VERIFY-008",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Rejected dealer cannot access verified-only features."
+    },
+    {
+      "number": 125,
+      "id": "VERIFY-009",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Rejected dealer can correct/resubmit where supported."
+    },
+    {
+      "number": 126,
+      "id": "VERIFY-010",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Resubmission enters correct review state."
+    },
+    {
+      "number": 127,
+      "id": "VERIFY-011",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Incomplete dealer cannot be approved through direct API."
+    },
+    {
+      "number": 128,
+      "id": "VERIFY-012",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Concurrent Admin review cannot corrupt verification state."
+    },
+    {
+      "number": 129,
+      "id": "VERIFY-013",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Verification transitions are audit logged."
+    },
+    {
+      "number": 130,
+      "id": "VERIFY-014",
+      "section": "VERIFY",
+      "sectionTitle": "Dealer Verification",
+      "text": "Existing dealer data/listings behave correctly if verification status later changes."
+    },
+    {
+      "number": 131,
+      "id": "DEALER-LIFE-001",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "ACTIVE verified dealer operates normally."
+    },
+    {
+      "number": 132,
+      "id": "DEALER-LIFE-002",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Admin suspends ACTIVE dealer."
+    },
+    {
+      "number": 133,
+      "id": "DEALER-LIFE-003",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Suspended dealer immediately loses prohibited operations."
+    },
+    {
+      "number": 134,
+      "id": "DEALER-LIFE-004",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Existing session cannot bypass suspension."
+    },
+    {
+      "number": 135,
+      "id": "DEALER-LIFE-005",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Suspended dealer public profile follows defined policy."
+    },
+    {
+      "number": 136,
+      "id": "DEALER-LIFE-006",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "ACTIVE listings of suspended dealer follow explicitly defined visibility policy."
+    },
+    {
+      "number": 137,
+      "id": "DEALER-LIFE-007",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "RESERVED listings of suspended dealer remain consistent."
+    },
+    {
+      "number": 138,
+      "id": "DEALER-LIFE-008",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Existing enquiries survive suspension."
+    },
+    {
+      "number": 139,
+      "id": "DEALER-LIFE-009",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Customer enquiry history survives dealer suspension."
+    },
+    {
+      "number": 140,
+      "id": "DEALER-LIFE-010",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Saved cars from suspended dealer remain non-broken."
+    },
+    {
+      "number": 141,
+      "id": "DEALER-LIFE-011",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Dealer members cannot bypass suspension through valid membership."
+    },
+    {
+      "number": 142,
+      "id": "DEALER-LIFE-012",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Dealer members retain personal customer capabilities."
+    },
+    {
+      "number": 143,
+      "id": "DEALER-LIFE-013",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Reinstatement restores only intended dealer capabilities/data."
+    },
+    {
+      "number": 144,
+      "id": "DEALER-LIFE-014",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Reinstatement creates no duplicate listings/memberships/enquiries."
+    },
+    {
+      "number": 145,
+      "id": "DEALER-LIFE-015",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Hidden listings restore only according to defined lifecycle policy."
+    },
+    {
+      "number": 146,
+      "id": "DEALER-LIFE-016",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Suspension/reinstatement audit logged."
+    },
+    {
+      "number": 147,
+      "id": "DEALER-LIFE-017",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Permanent dealer deactivation preserves required historical data."
+    },
+    {
+      "number": 148,
+      "id": "DEALER-LIFE-018",
+      "section": "DEALER-LIFE",
+      "sectionTitle": "Dealer Lifecycle",
+      "text": "Direct API cannot bypass dealer lifecycle restrictions."
+    },
+    {
+      "number": 149,
+      "id": "LISTING-CREATE-001",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "OWNER creates draft."
+    },
+    {
+      "number": 150,
+      "id": "LISTING-CREATE-002",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "MANAGER creates draft."
+    },
+    {
+      "number": 151,
+      "id": "LISTING-CREATE-003",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "STAFF creates draft."
+    },
+    {
+      "number": 152,
+      "id": "LISTING-CREATE-004",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Draft belongs to dealership, not employee."
+    },
+    {
+      "number": 153,
+      "id": "LISTING-CREATE-005",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Draft records creating actor."
+    },
+    {
+      "number": 154,
+      "id": "LISTING-CREATE-006",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "STAFF edits permitted draft fields."
+    },
+    {
+      "number": 155,
+      "id": "LISTING-CREATE-007",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "MANAGER edits permitted draft fields."
+    },
+    {
+      "number": 156,
+      "id": "LISTING-CREATE-008",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "OWNER edits permitted draft fields."
+    },
+    {
+      "number": 157,
+      "id": "LISTING-CREATE-009",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Required fields validated server-side."
+    },
+    {
+      "number": 158,
+      "id": "LISTING-CREATE-010",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Invalid price/year/km/vehicle data rejected."
+    },
+    {
+      "number": 159,
+      "id": "LISTING-CREATE-011",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Listing cannot be assigned to another dealership via manipulated request."
+    },
+    {
+      "number": 160,
+      "id": "LISTING-CREATE-012",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Duplicate submissions do not create unintended duplicate listings."
+    },
+    {
+      "number": 161,
+      "id": "LISTING-CREATE-013",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Concurrent edits remain predictable."
+    },
+    {
+      "number": 162,
+      "id": "LISTING-CREATE-014",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Refresh/navigation does not lose persisted draft unexpectedly."
+    },
+    {
+      "number": 163,
+      "id": "LISTING-CREATE-015",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Admin/team media remains linked to correct vehicle."
+    },
+    {
+      "number": 164,
+      "id": "LISTING-CREATE-016",
+      "section": "LISTING-CREATE",
+      "sectionTitle": "Listing Creation",
+      "text": "Dealer cannot access another dealership's draft."
+    },
+    {
+      "number": 165,
+      "id": "MODERATION-001",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "STAFF cannot submit for moderation."
+    },
+    {
+      "number": 166,
+      "id": "MODERATION-002",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "STAFF direct API submission denied."
+    },
+    {
+      "number": 167,
+      "id": "MODERATION-003",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "MANAGER submits valid draft."
+    },
+    {
+      "number": 168,
+      "id": "MODERATION-004",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "OWNER submits valid draft."
+    },
+    {
+      "number": 169,
+      "id": "MODERATION-005",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Incomplete listing cannot submit."
+    },
+    {
+      "number": 170,
+      "id": "MODERATION-006",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Submitted listing enters correct moderation state."
+    },
+    {
+      "number": 171,
+      "id": "MODERATION-007",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Submitted listing remains non-public before approval."
+    },
+    {
+      "number": 172,
+      "id": "MODERATION-008",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Admin sees listing in moderation queue."
+    },
+    {
+      "number": 173,
+      "id": "MODERATION-009",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Admin sees correct dealer/listing/media information."
+    },
+    {
+      "number": 174,
+      "id": "MODERATION-010",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Admin approves valid listing."
+    },
+    {
+      "number": 175,
+      "id": "MODERATION-011",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Approved listing becomes publicly discoverable correctly."
+    },
+    {
+      "number": 176,
+      "id": "MODERATION-012",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Admin rejects listing."
+    },
+    {
+      "number": 177,
+      "id": "MODERATION-013",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Rejected listing remains non-public."
+    },
+    {
+      "number": 178,
+      "id": "MODERATION-014",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Dealer sees rejection state/reason where supported."
+    },
+    {
+      "number": 179,
+      "id": "MODERATION-015",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Dealer corrects and resubmits rejected listing."
+    },
+    {
+      "number": 180,
+      "id": "MODERATION-016",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Duplicate moderation action does not create invalid state."
+    },
+    {
+      "number": 181,
+      "id": "MODERATION-017",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Concurrent Admin approve/reject cannot corrupt lifecycle."
+    },
+    {
+      "number": 182,
+      "id": "MODERATION-018",
+      "section": "MODERATION",
+      "sectionTitle": "Listing Moderation",
+      "text": "Moderation actions audit logged."
+    },
+    {
+      "number": 183,
+      "id": "MEDIA-001",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Vehicle data can exist before Dealers-Drive photography is attached."
+    },
+    {
+      "number": 184,
+      "id": "MEDIA-002",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Correct StudioCar output links to correct listing."
+    },
+    {
+      "number": 185,
+      "id": "MEDIA-003",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Intended maximum image count works."
+    },
+    {
+      "number": 186,
+      "id": "MEDIA-004",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Image ordering works."
+    },
+    {
+      "number": 187,
+      "id": "MEDIA-005",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Invalid media rejected."
+    },
+    {
+      "number": 188,
+      "id": "MEDIA-006",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Replacement/removal does not create broken galleries."
+    },
+    {
+      "number": 189,
+      "id": "MEDIA-007",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Failed upload does not corrupt listing."
+    },
+    {
+      "number": 190,
+      "id": "MEDIA-008",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Public listing does not expose private/raw processing assets."
+    },
+    {
+      "number": 191,
+      "id": "MEDIA-009",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Card uses correct primary image."
+    },
+    {
+      "number": 192,
+      "id": "MEDIA-010",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Gallery arrows work."
+    },
+    {
+      "number": 193,
+      "id": "MEDIA-011",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Fullscreen gallery works."
+    },
+    {
+      "number": 194,
+      "id": "MEDIA-012",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Missing image uses intended fallback."
+    },
+    {
+      "number": 195,
+      "id": "MEDIA-013",
+      "section": "MEDIA",
+      "sectionTitle": "Listing Media",
+      "text": "Listing A cannot access/use Listing B media without authorization."
+    },
+    {
+      "number": 196,
+      "id": "LISTING-LIFE-001",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Approved listing enters ACTIVE correctly."
+    },
+    {
+      "number": 197,
+      "id": "LISTING-LIFE-002",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "ACTIVE appears `/cars`."
+    },
+    {
+      "number": 198,
+      "id": "LISTING-LIFE-003",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "ACTIVE appears dealer portfolio."
+    },
+    {
+      "number": 199,
+      "id": "LISTING-LIFE-004",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "ACTIVE contributes correct public dealer count."
+    },
+    {
+      "number": 200,
+      "id": "LISTING-LIFE-005",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "OWNER can transition eligible listing to RESERVED."
+    },
+    {
+      "number": 201,
+      "id": "LISTING-LIFE-006",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "MANAGER can transition eligible listing to RESERVED."
+    },
+    {
+      "number": 202,
+      "id": "LISTING-LIFE-007",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "STAFF cannot RESERVED."
+    },
+    {
+      "number": 203,
+      "id": "LISTING-LIFE-008",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "RESERVED visual state correct."
+    },
+    {
+      "number": 204,
+      "id": "LISTING-LIFE-009",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "RESERVED interaction/navigation follows defined behavior."
+    },
+    {
+      "number": 205,
+      "id": "LISTING-LIFE-010",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "RESERVED enquiry behavior correct."
+    },
+    {
+      "number": 206,
+      "id": "LISTING-LIFE-011",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "RESERVED → ACTIVE works if supported."
+    },
+    {
+      "number": 207,
+      "id": "LISTING-LIFE-012",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "OWNER can mark eligible vehicle SOLD."
+    },
+    {
+      "number": 208,
+      "id": "LISTING-LIFE-013",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "MANAGER can mark eligible vehicle SOLD."
+    },
+    {
+      "number": 209,
+      "id": "LISTING-LIFE-014",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "STAFF cannot SOLD."
+    },
+    {
+      "number": 210,
+      "id": "LISTING-LIFE-015",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "SOLD disappears public inventory."
+    },
+    {
+      "number": 211,
+      "id": "LISTING-LIFE-016",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "SOLD disappears dealer public available inventory."
+    },
+    {
+      "number": 212,
+      "id": "LISTING-LIFE-017",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "SOLD removed from active listing count."
+    },
+    {
+      "number": 213,
+      "id": "LISTING-LIFE-018",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "SOLD remains in dealer/Admin history."
+    },
+    {
+      "number": 214,
+      "id": "LISTING-LIFE-019",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Existing enquiries survive SOLD."
+    },
+    {
+      "number": 215,
+      "id": "LISTING-LIFE-020",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Customer enquiry history survives SOLD."
+    },
+    {
+      "number": 216,
+      "id": "LISTING-LIFE-021",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "OWNER can WITHDRAW."
+    },
+    {
+      "number": 217,
+      "id": "LISTING-LIFE-022",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "MANAGER can WITHDRAW."
+    },
+    {
+      "number": 218,
+      "id": "LISTING-LIFE-023",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "STAFF cannot WITHDRAW."
+    },
+    {
+      "number": 219,
+      "id": "LISTING-LIFE-024",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "WITHDRAWN disappears publicly."
+    },
+    {
+      "number": 220,
+      "id": "LISTING-LIFE-025",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "WITHDRAWN remains internal history."
+    },
+    {
+      "number": 221,
+      "id": "LISTING-LIFE-026",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Existing enquiries survive WITHDRAWN."
+    },
+    {
+      "number": 222,
+      "id": "LISTING-LIFE-027",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Invalid transitions rejected."
+    },
+    {
+      "number": 223,
+      "id": "LISTING-LIFE-028",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Direct API cannot bypass lifecycle."
+    },
+    {
+      "number": 224,
+      "id": "LISTING-LIFE-029",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Concurrent lifecycle mutations cannot produce impossible state."
+    },
+    {
+      "number": 225,
+      "id": "LISTING-LIFE-030",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Public search/read model stays synchronized."
+    },
+    {
+      "number": 226,
+      "id": "LISTING-LIFE-031",
+      "section": "LISTING-LIFE",
+      "sectionTitle": "Listing Lifecycle",
+      "text": "Lifecycle changes correctly update counts/search without stale exposure."
+    },
+    {
+      "number": 227,
+      "id": "MEMBER-001",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Existing owner becomes OWNER after migration."
+    },
+    {
+      "number": 228,
+      "id": "MEMBER-002",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "OWNER invites existing customer as MANAGER."
+    },
+    {
+      "number": 229,
+      "id": "MEMBER-003",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "OWNER invites existing customer as STAFF."
+    },
+    {
+      "number": 230,
+      "id": "MEMBER-004",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "OWNER invites unregistered phone."
+    },
+    {
+      "number": 231,
+      "id": "MEMBER-005",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Existing customer invitation creates no duplicate user."
+    },
+    {
+      "number": 232,
+      "id": "MEMBER-006",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "New member performs only required identity verification, not dealer verification."
+    },
+    {
+      "number": 233,
+      "id": "MEMBER-007",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Accepted invitation joins correct dealership."
+    },
+    {
+      "number": 234,
+      "id": "MEMBER-008",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Duplicate membership prevented."
+    },
+    {
+      "number": 235,
+      "id": "MEMBER-009",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Duplicate active invitation handled."
+    },
+    {
+      "number": 236,
+      "id": "MEMBER-010",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Expired invitation rejected."
+    },
+    {
+      "number": 237,
+      "id": "MEMBER-011",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Revoked invitation rejected."
+    },
+    {
+      "number": 238,
+      "id": "MEMBER-012",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Different authenticated person cannot accept invite."
+    },
+    {
+      "number": 239,
+      "id": "MEMBER-013",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Invitation replay prevented."
+    },
+    {
+      "number": 240,
+      "id": "MEMBER-014",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "OWNER changes MANAGER → STAFF."
+    },
+    {
+      "number": 241,
+      "id": "MEMBER-015",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "OWNER changes STAFF → MANAGER."
+    },
+    {
+      "number": 242,
+      "id": "MEMBER-016",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Permission changes apply without waiting for old dealer session expiration."
+    },
+    {
+      "number": 243,
+      "id": "MEMBER-017",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "OWNER revokes/removes member."
+    },
+    {
+      "number": 244,
+      "id": "MEMBER-018",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removed member immediately loses dealership access."
+    },
+    {
+      "number": 245,
+      "id": "MEMBER-019",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Existing session cannot retain dealership access."
+    },
+    {
+      "number": 246,
+      "id": "MEMBER-020",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removed member remains valid customer."
+    },
+    {
+      "number": 247,
+      "id": "MEMBER-021",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removed member can browse normally."
+    },
+    {
+      "number": 248,
+      "id": "MEMBER-022",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removed member retains personal saved cars."
+    },
+    {
+      "number": 249,
+      "id": "MEMBER-023",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removed member retains personal enquiries."
+    },
+    {
+      "number": 250,
+      "id": "MEMBER-024",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removed member cannot enter former dealer dashboard."
+    },
+    {
+      "number": 251,
+      "id": "MEMBER-025",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Historical actions remain attributed to removed member."
+    },
+    {
+      "number": 252,
+      "id": "MEMBER-026",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removing member does not delete listings they created."
+    },
+    {
+      "number": 253,
+      "id": "MEMBER-027",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removing member does not delete enquiries they handled."
+    },
+    {
+      "number": 254,
+      "id": "MEMBER-028",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Removing member does not mutate dealership-owned data."
+    },
+    {
+      "number": 255,
+      "id": "MEMBER-029",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "MANAGER cannot invite."
+    },
+    {
+      "number": 256,
+      "id": "MEMBER-030",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "MANAGER cannot change roles."
+    },
+    {
+      "number": 257,
+      "id": "MEMBER-031",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "MANAGER cannot remove members."
+    },
+    {
+      "number": 258,
+      "id": "MEMBER-032",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "STAFF cannot manage members."
+    },
+    {
+      "number": 259,
+      "id": "MEMBER-033",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Last OWNER cannot remove themselves."
+    },
+    {
+      "number": 260,
+      "id": "MEMBER-034",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Last OWNER cannot demote themselves."
+    },
+    {
+      "number": 261,
+      "id": "MEMBER-035",
+      "section": "MEMBER",
+      "sectionTitle": "Dealer Members / RBAC",
+      "text": "Direct API cannot bypass membership restrictions."
+    },
+    {
+      "number": 262,
+      "id": "IDENTITY-001",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "OWNER uses normal customer login and enters dealer dashboard without second login."
+    },
+    {
+      "number": 263,
+      "id": "IDENTITY-002",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "MANAGER does same."
+    },
+    {
+      "number": 264,
+      "id": "IDENTITY-003",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "STAFF does same."
+    },
+    {
+      "number": 265,
+      "id": "IDENTITY-004",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Customer without membership denied dealer dashboard."
+    },
+    {
+      "number": 266,
+      "id": "IDENTITY-005",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Personal → Dealer requires no OTP."
+    },
+    {
+      "number": 267,
+      "id": "IDENTITY-006",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Dealer → Personal requires no OTP."
+    },
+    {
+      "number": 268,
+      "id": "IDENTITY-007",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Switching does not create duplicate session/user."
+    },
+    {
+      "number": 269,
+      "id": "IDENTITY-008",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Personal customer actions remain human-owned rather than dealership-owned."
+    },
+    {
+      "number": 270,
+      "id": "IDENTITY-009",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Dealer actions associate dealership plus actor."
+    },
+    {
+      "number": 271,
+      "id": "IDENTITY-010",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Revocation while dealer context open denies subsequent dealer requests."
+    },
+    {
+      "number": 272,
+      "id": "IDENTITY-011",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Revocation does not terminate customer access."
+    },
+    {
+      "number": 273,
+      "id": "IDENTITY-012",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Dealer suspension blocks dealer operations but preserves personal customer access."
+    },
+    {
+      "number": 274,
+      "id": "IDENTITY-013",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "Multiple dealership membership resolves correct dealer context."
+    },
+    {
+      "number": 275,
+      "id": "IDENTITY-014",
+      "section": "IDENTITY",
+      "sectionTitle": "Unified Identity",
+      "text": "User cannot manipulate workspace/dealer IDs to access unauthorized dealership."
+    },
+    {
+      "number": 276,
+      "id": "OWNER-001",
+      "section": "OWNER",
+      "sectionTitle": "Owner RBAC",
+      "text": "OWNER accesses intended dashboard."
+    },
+    {
+      "number": 277,
+      "id": "OWNER-002",
+      "section": "OWNER",
+      "sectionTitle": "Owner RBAC",
+      "text": "OWNER manages listings."
+    },
+    {
+      "number": 278,
+      "id": "OWNER-003",
+      "section": "OWNER",
+      "sectionTitle": "Owner RBAC",
+      "text": "OWNER manages enquiries."
+    },
+    {
+      "number": 279,
+      "id": "OWNER-004",
+      "section": "OWNER",
+      "sectionTitle": "Owner RBAC",
+      "text": "OWNER edits dealership profile."
+    },
+    {
+      "number": 280,
+      "id": "OWNER-005",
+      "section": "OWNER",
+      "sectionTitle": "Owner RBAC",
+      "text": "OWNER manages permitted verification actions."
+    },
+    {
+      "number": 281,
+      "id": "OWNER-006",
+      "section": "OWNER",
+      "sectionTitle": "Owner RBAC",
+      "text": "OWNER manages Team."
+    },
+    {
+      "number": 282,
+      "id": "OWNER-007",
+      "section": "OWNER",
+      "sectionTitle": "Owner RBAC",
+      "text": "OWNER cannot access another dealer's resources."
+    },
+    {
+      "number": 283,
+      "id": "OWNER-008",
+      "section": "OWNER",
+      "sectionTitle": "Owner RBAC",
+      "text": "OWNER cannot perform Admin-only operations."
+    },
+    {
+      "number": 284,
+      "id": "MANAGER-001",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER accesses dealer dashboard."
+    },
+    {
+      "number": 285,
+      "id": "MANAGER-002",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER views inventory."
+    },
+    {
+      "number": 286,
+      "id": "MANAGER-003",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER creates/edits drafts."
+    },
+    {
+      "number": 287,
+      "id": "MANAGER-004",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER submits eligible listing."
+    },
+    {
+      "number": 288,
+      "id": "MANAGER-005",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER performs allowed listing lifecycle transitions."
+    },
+    {
+      "number": 289,
+      "id": "MANAGER-006",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER views enquiries."
+    },
+    {
+      "number": 290,
+      "id": "MANAGER-007",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER marks CONTACTED."
+    },
+    {
+      "number": 291,
+      "id": "MANAGER-008",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER closes enquiry."
+    },
+    {
+      "number": 292,
+      "id": "MANAGER-009",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER cannot edit protected dealer profile."
+    },
+    {
+      "number": 293,
+      "id": "MANAGER-010",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER cannot manage verification."
+    },
+    {
+      "number": 294,
+      "id": "MANAGER-011",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER cannot manage Team."
+    },
+    {
+      "number": 295,
+      "id": "MANAGER-012",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER cannot access Admin."
+    },
+    {
+      "number": 296,
+      "id": "MANAGER-013",
+      "section": "MANAGER",
+      "sectionTitle": "Manager RBAC",
+      "text": "MANAGER cannot access another dealer's resources."
+    },
+    {
+      "number": 297,
+      "id": "STAFF-001",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF accesses permitted dashboard."
+    },
+    {
+      "number": 298,
+      "id": "STAFF-002",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF views inventory."
+    },
+    {
+      "number": 299,
+      "id": "STAFF-003",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF creates draft."
+    },
+    {
+      "number": 300,
+      "id": "STAFF-004",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF edits permitted draft."
+    },
+    {
+      "number": 301,
+      "id": "STAFF-005",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot submit."
+    },
+    {
+      "number": 302,
+      "id": "STAFF-006",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot RESERVED."
+    },
+    {
+      "number": 303,
+      "id": "STAFF-007",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot SOLD."
+    },
+    {
+      "number": 304,
+      "id": "STAFF-008",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot WITHDRAW."
+    },
+    {
+      "number": 305,
+      "id": "STAFF-009",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF views enquiries."
+    },
+    {
+      "number": 306,
+      "id": "STAFF-010",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF views required enquiry contact details."
+    },
+    {
+      "number": 307,
+      "id": "STAFF-011",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF marks NEW → CONTACTED."
+    },
+    {
+      "number": 308,
+      "id": "STAFF-012",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot close."
+    },
+    {
+      "number": 309,
+      "id": "STAFF-013",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot edit protected dealer profile."
+    },
+    {
+      "number": 310,
+      "id": "STAFF-014",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot manage verification."
+    },
+    {
+      "number": 311,
+      "id": "STAFF-015",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot manage Team."
+    },
+    {
+      "number": 312,
+      "id": "STAFF-016",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot access Admin."
+    },
+    {
+      "number": 313,
+      "id": "STAFF-017",
+      "section": "STAFF",
+      "sectionTitle": "Staff RBAC",
+      "text": "STAFF cannot access another dealer's resources."
+    },
+    {
+      "number": 314,
+      "id": "PROFILE-001",
+      "section": "PROFILE",
+      "sectionTitle": "Dealer Profile",
+      "text": "OWNER updates permitted profile information."
+    },
+    {
+      "number": 315,
+      "id": "PROFILE-002",
+      "section": "PROFILE",
+      "sectionTitle": "Dealer Profile",
+      "text": "MANAGER cannot update owner-only profile fields."
+    },
+    {
+      "number": 316,
+      "id": "PROFILE-003",
+      "section": "PROFILE",
+      "sectionTitle": "Dealer Profile",
+      "text": "STAFF cannot update dealer profile."
+    },
+    {
+      "number": 317,
+      "id": "PROFILE-004",
+      "section": "PROFILE",
+      "sectionTitle": "Dealer Profile",
+      "text": "Public dealer profile reflects approved changes."
+    },
+    {
+      "number": 318,
+      "id": "PROFILE-005",
+      "section": "PROFILE",
+      "sectionTitle": "Dealer Profile",
+      "text": "Verification-sensitive fields cannot bypass re-verification policy."
+    },
+    {
+      "number": 319,
+      "id": "PROFILE-006",
+      "section": "PROFILE",
+      "sectionTitle": "Dealer Profile",
+      "text": "Invalid profile values rejected."
+    },
+    {
+      "number": 320,
+      "id": "PROFILE-007",
+      "section": "PROFILE",
+      "sectionTitle": "Dealer Profile",
+      "text": "Dealer media cannot expose another dealership's assets."
+    },
+    {
+      "number": 321,
+      "id": "PROFILE-008",
+      "section": "PROFILE",
+      "sectionTitle": "Dealer Profile",
+      "text": "Profile update audit logged."
+    },
+    {
+      "number": 322,
+      "id": "ADMIN-AUTH-001",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "Valid Admin authenticates."
+    },
+    {
+      "number": 323,
+      "id": "ADMIN-AUTH-002",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "Non-admin cannot access Admin UI."
+    },
+    {
+      "number": 324,
+      "id": "ADMIN-AUTH-003",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "OWNER cannot access Admin APIs."
+    },
+    {
+      "number": 325,
+      "id": "ADMIN-AUTH-004",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "MANAGER cannot access Admin APIs."
+    },
+    {
+      "number": 326,
+      "id": "ADMIN-AUTH-005",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "STAFF cannot access Admin APIs."
+    },
+    {
+      "number": 327,
+      "id": "ADMIN-AUTH-006",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "Customer cannot access Admin APIs."
+    },
+    {
+      "number": 328,
+      "id": "ADMIN-AUTH-007",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "Hidden Admin navigation backed by server authorization."
+    },
+    {
+      "number": 329,
+      "id": "ADMIN-AUTH-008",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "Admin session expiry safe."
+    },
+    {
+      "number": 330,
+      "id": "ADMIN-AUTH-009",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "Admin logout invalidates Admin access."
+    },
+    {
+      "number": 331,
+      "id": "ADMIN-AUTH-010",
+      "section": "ADMIN-AUTH",
+      "sectionTitle": "Admin Authorization",
+      "text": "Admin bootstrap cannot create unauthorized Admins."
+    },
+    {
+      "number": 332,
+      "id": "ADMIN-DEALER-001",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Authorized Admin user-management behavior works."
+    },
+    {
+      "number": 333,
+      "id": "ADMIN-DEALER-002",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Admin sees onboarding applications."
+    },
+    {
+      "number": 334,
+      "id": "ADMIN-DEALER-003",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Admin inspects verification data."
+    },
+    {
+      "number": 335,
+      "id": "ADMIN-DEALER-004",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Admin approves eligible dealer."
+    },
+    {
+      "number": 336,
+      "id": "ADMIN-DEALER-005",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Admin rejects dealer."
+    },
+    {
+      "number": 337,
+      "id": "ADMIN-DEALER-006",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Admin suspends active dealer."
+    },
+    {
+      "number": 338,
+      "id": "ADMIN-DEALER-007",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Admin reinstates eligible suspended dealer."
+    },
+    {
+      "number": 339,
+      "id": "ADMIN-DEALER-008",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Dealer state changes immediately affect authorization/public visibility according to policy."
+    },
+    {
+      "number": 340,
+      "id": "ADMIN-DEALER-009",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Admin dealer actions audit logged."
+    },
+    {
+      "number": 341,
+      "id": "ADMIN-DEALER-010",
+      "section": "ADMIN-DEALER",
+      "sectionTitle": "Admin Dealer Management",
+      "text": "Repeated Admin requests cannot create impossible dealer state."
+    },
+    {
+      "number": 342,
+      "id": "ADMIN-LISTING-001",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Admin sees moderation queue."
+    },
+    {
+      "number": 343,
+      "id": "ADMIN-LISTING-002",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Admin sees correct dealer/listing/media."
+    },
+    {
+      "number": 344,
+      "id": "ADMIN-LISTING-003",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Admin approves eligible listing."
+    },
+    {
+      "number": 345,
+      "id": "ADMIN-LISTING-004",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Admin rejects eligible listing."
+    },
+    {
+      "number": 346,
+      "id": "ADMIN-LISTING-005",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Approval reaches public read model."
+    },
+    {
+      "number": 347,
+      "id": "ADMIN-LISTING-006",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Rejected listing remains non-public."
+    },
+    {
+      "number": 348,
+      "id": "ADMIN-LISTING-007",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Ineligible/suspended dealer listing cannot be improperly approved."
+    },
+    {
+      "number": 349,
+      "id": "ADMIN-LISTING-008",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Dealer suspension during review remains consistent."
+    },
+    {
+      "number": 350,
+      "id": "ADMIN-LISTING-009",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Verification change during review remains consistent."
+    },
+    {
+      "number": 351,
+      "id": "ADMIN-LISTING-010",
+      "section": "ADMIN-LISTING",
+      "sectionTitle": "Admin Listings",
+      "text": "Admin listing actions audit logged."
+    },
+    {
+      "number": 352,
+      "id": "ADMIN-ENQ-001",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Admin sees cross-dealer enquiries."
+    },
+    {
+      "number": 353,
+      "id": "ADMIN-ENQ-002",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Correct customer name."
+    },
+    {
+      "number": 354,
+      "id": "ADMIN-ENQ-003",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Correct customer phone."
+    },
+    {
+      "number": 355,
+      "id": "ADMIN-ENQ-004",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Correct description."
+    },
+    {
+      "number": 356,
+      "id": "ADMIN-ENQ-005",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Correct dealership."
+    },
+    {
+      "number": 357,
+      "id": "ADMIN-ENQ-006",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Correct vehicle."
+    },
+    {
+      "number": 358,
+      "id": "ADMIN-ENQ-007",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Correct status."
+    },
+    {
+      "number": 359,
+      "id": "ADMIN-ENQ-008",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Dealer status changes do not erase history."
+    },
+    {
+      "number": 360,
+      "id": "ADMIN-ENQ-009",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Listing status changes do not erase history."
+    },
+    {
+      "number": 361,
+      "id": "ADMIN-ENQ-010",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Member removal does not erase actor/history."
+    },
+    {
+      "number": 362,
+      "id": "ADMIN-ENQ-011",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Filters/search/pagination correct."
+    },
+    {
+      "number": 363,
+      "id": "ADMIN-ENQ-012",
+      "section": "ADMIN-ENQ",
+      "sectionTitle": "Admin Enquiries",
+      "text": "Dealer members cannot access Admin enquiry aggregation APIs."
+    },
+    {
+      "number": 364,
+      "id": "CROSS-001",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "ACTIVE dealer + ACTIVE listing → suspension produces defined public behavior without deleting listing data."
+    },
+    {
+      "number": 365,
+      "id": "CROSS-002",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Suspended dealer + hidden ACTIVE listing → reinstatement follows defined restoration policy."
+    },
+    {
+      "number": 366,
+      "id": "CROSS-003",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Suspension while RESERVED remains consistent."
+    },
+    {
+      "number": 367,
+      "id": "CROSS-004",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Suspension while moderation pending follows explicit policy."
+    },
+    {
+      "number": 368,
+      "id": "CROSS-005",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Suspension during enquiry submission safely resolves."
+    },
+    {
+      "number": 369,
+      "id": "CROSS-006",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Suspension preserves existing enquiries."
+    },
+    {
+      "number": 370,
+      "id": "CROSS-007",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Dealer rejection with draft listings follows defined policy."
+    },
+    {
+      "number": 371,
+      "id": "CROSS-008",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "ACTIVE saved car → SOLD handles Saved Cars correctly."
+    },
+    {
+      "number": 372,
+      "id": "CROSS-009",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "ACTIVE enquiry → SOLD preserves history."
+    },
+    {
+      "number": 373,
+      "id": "CROSS-010",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "ACTIVE enquiry → WITHDRAWN preserves history."
+    },
+    {
+      "number": 374,
+      "id": "CROSS-011",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "ACTIVE enquiry → RESERVED preserves history."
+    },
+    {
+      "number": 375,
+      "id": "CROSS-012",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "RESERVED vehicle existing enquiry can continue historical workflow where intended."
+    },
+    {
+      "number": 376,
+      "id": "CROSS-013",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "SOLD → direct API reactivation rejected unless explicitly supported."
+    },
+    {
+      "number": 377,
+      "id": "CROSS-014",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "WITHDRAWN invalid transition rejected."
+    },
+    {
+      "number": 378,
+      "id": "CROSS-015",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "STAFF creates draft → STAFF removed → draft remains dealership-owned."
+    },
+    {
+      "number": 379,
+      "id": "CROSS-016",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "STAFF creates draft → promoted MANAGER → can submit if otherwise eligible."
+    },
+    {
+      "number": 380,
+      "id": "CROSS-017",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "MANAGER submits → demoted STAFF before approval → moderation remains valid."
+    },
+    {
+      "number": 381,
+      "id": "CROSS-018",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "MANAGER CONTACTED → removed → enquiry actor/history preserved."
+    },
+    {
+      "number": 382,
+      "id": "CROSS-019",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Member removed while mutation in flight remains safe."
+    },
+    {
+      "number": 383,
+      "id": "CROSS-020",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Member dashboard open → OWNER revokes → next protected request denied."
+    },
+    {
+      "number": 384,
+      "id": "CROSS-021",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Dealer dashboard open → Admin suspends → next prohibited operation denied."
+    },
+    {
+      "number": 385,
+      "id": "CROSS-022",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Dealer reinstated + valid membership restores appropriate access."
+    },
+    {
+      "number": 386,
+      "id": "CROSS-023",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Dealer reinstated + member revoked during suspension remains denied."
+    },
+    {
+      "number": 387,
+      "id": "CROSS-024",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Revoked member logs in as customer successfully but dealer access remains revoked."
+    },
+    {
+      "number": 388,
+      "id": "CROSS-025",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Revoked member opens old dealer bookmark → dealer denied without destroying customer session."
+    },
+    {
+      "number": 389,
+      "id": "CROSS-026",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Customer becomes dealer member while logged in without duplicate identity."
+    },
+    {
+      "number": 390,
+      "id": "CROSS-027",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Dealer member personally enquires with another dealership without employer contamination."
+    },
+    {
+      "number": 391,
+      "id": "CROSS-028",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Dealer member personally saves competitor car without employer visibility."
+    },
+    {
+      "number": 392,
+      "id": "CROSS-029",
+      "section": "CROSS",
+      "sectionTitle": "Cross-Lifecycle",
+      "text": "Employer suspension does not affect member's unrelated customer activity."
+    },
+    {
+      "number": 393,
+      "id": "SEARCH-001",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Approved listing becomes searchable."
+    },
+    {
+      "number": 394,
+      "id": "SEARCH-002",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "SOLD disappears search."
+    },
+    {
+      "number": 395,
+      "id": "SEARCH-003",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "WITHDRAWN disappears search."
+    },
+    {
+      "number": 396,
+      "id": "SEARCH-004",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "RESERVED search behavior follows policy."
+    },
+    {
+      "number": 397,
+      "id": "SEARCH-005",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Suspended dealer listings follow suspension visibility policy."
+    },
+    {
+      "number": 398,
+      "id": "SEARCH-006",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Reinstated dealer inventory returns according to policy."
+    },
+    {
+      "number": 399,
+      "id": "SEARCH-007",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Public dealer count updates after approval."
+    },
+    {
+      "number": 400,
+      "id": "SEARCH-008",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Count updates after SOLD."
+    },
+    {
+      "number": 401,
+      "id": "SEARCH-009",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Count updates after WITHDRAWN."
+    },
+    {
+      "number": 402,
+      "id": "SEARCH-010",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Filters never return non-public listing."
+    },
+    {
+      "number": 403,
+      "id": "SEARCH-011",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Crafted search parameters cannot expose private listings."
+    },
+    {
+      "number": 404,
+      "id": "SEARCH-012",
+      "section": "SEARCH",
+      "sectionTitle": "Search / Read Model",
+      "text": "Search and direct portfolio access enforce consistent visibility."
+    },
+    {
+      "number": 405,
+      "id": "DATA-001",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Membership revocation never cascades dealership listings."
+    },
+    {
+      "number": 406,
+      "id": "DATA-002",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Membership changes never delete enquiries."
+    },
+    {
+      "number": 407,
+      "id": "DATA-003",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Listing lifecycle changes never delete enquiry history."
+    },
+    {
+      "number": 408,
+      "id": "DATA-004",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Dealer suspension never destroys historical data."
+    },
+    {
+      "number": 409,
+      "id": "DATA-005",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Foreign keys remain valid across lifecycle transitions."
+    },
+    {
+      "number": 410,
+      "id": "DATA-006",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Mixed OTP/Google/invite flows do not create duplicate users."
+    },
+    {
+      "number": 411,
+      "id": "DATA-007",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Retry/races do not create duplicate dealerships."
+    },
+    {
+      "number": 412,
+      "id": "DATA-008",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Duplicate memberships prevented at DB level."
+    },
+    {
+      "number": 413,
+      "id": "DATA-009",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Duplicate lifecycle operations safely rejected/idempotent."
+    },
+    {
+      "number": 414,
+      "id": "DATA-010",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Audit records survive actor membership loss."
+    },
+    {
+      "number": 415,
+      "id": "DATA-011",
+      "section": "DATA",
+      "sectionTitle": "Data Integrity",
+      "text": "Public read model is not authoritative lifecycle source."
+    },
+    {
+      "number": 416,
+      "id": "API-SEC-001",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Unauthenticated protected API requests fail."
+    },
+    {
+      "number": 417,
+      "id": "API-SEC-002",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Customer cannot call dealer-only API."
+    },
+    {
+      "number": 418,
+      "id": "API-SEC-003",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "STAFF cannot call MANAGER-only API."
+    },
+    {
+      "number": 419,
+      "id": "API-SEC-004",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "MANAGER cannot call OWNER-only API."
+    },
+    {
+      "number": 420,
+      "id": "API-SEC-005",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "OWNER cannot call Admin-only API."
+    },
+    {
+      "number": 421,
+      "id": "API-SEC-006",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Dealer A cannot access Dealer B by changing IDs."
+    },
+    {
+      "number": 422,
+      "id": "API-SEC-007",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Customer A cannot access Customer B by changing IDs."
+    },
+    {
+      "number": 423,
+      "id": "API-SEC-008",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Invalid IDs do not leak internal errors."
+    },
+    {
+      "number": 424,
+      "id": "API-SEC-009",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Unexpected privileged fields rejected."
+    },
+    {
+      "number": 425,
+      "id": "API-SEC-010",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Mass assignment cannot change dealer/role/verification/lifecycle ownership."
+    },
+    {
+      "number": 426,
+      "id": "API-SEC-011",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Pagination/filter parameters validated."
+    },
+    {
+      "number": 427,
+      "id": "API-SEC-012",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Sensitive auth/public endpoints rate limited appropriately."
+    },
+    {
+      "number": 428,
+      "id": "API-SEC-013",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Revoked authentication/session tokens cannot retain prohibited access."
+    },
+    {
+      "number": 429,
+      "id": "API-SEC-014",
+      "section": "API-SEC",
+      "sectionTitle": "API Security",
+      "text": "Server errors do not leak stack traces/secrets/SQL/environment values."
+    },
+    {
+      "number": 430,
+      "id": "STORAGE-001",
+      "section": "STORAGE",
+      "sectionTitle": "Storage Security",
+      "text": "Presigned upload restricts intended file type/size."
+    },
+    {
+      "number": 431,
+      "id": "STORAGE-002",
+      "section": "STORAGE",
+      "sectionTitle": "Storage Security",
+      "text": "Upload authorization cannot be reused across unauthorized resources."
+    },
+    {
+      "number": 432,
+      "id": "STORAGE-003",
+      "section": "STORAGE",
+      "sectionTitle": "Storage Security",
+      "text": "Upload commit validates ownership."
+    },
+    {
+      "number": 433,
+      "id": "STORAGE-004",
+      "section": "STORAGE",
+      "sectionTitle": "Storage Security",
+      "text": "Removed uploads follow cleanup policy."
+    },
+    {
+      "number": 434,
+      "id": "STORAGE-005",
+      "section": "STORAGE",
+      "sectionTitle": "Storage Security",
+      "text": "Missing object does not crash pages."
+    },
+    {
+      "number": 435,
+      "id": "STORAGE-006",
+      "section": "STORAGE",
+      "sectionTitle": "Storage Security",
+      "text": "Private verification documents cannot be publicly fetched."
+    },
+    {
+      "number": 436,
+      "id": "STORAGE-007",
+      "section": "STORAGE",
+      "sectionTitle": "Storage Security",
+      "text": "Public vehicle media exposed only through intended mechanisms."
+    },
+    {
+      "number": 437,
+      "id": "STORAGE-008",
+      "section": "STORAGE",
+      "sectionTitle": "Storage Security",
+      "text": "Object keys/URLs do not expose sensitive information."
+    },
+    {
+      "number": 438,
+      "id": "NOTIFY-001",
+      "section": "NOTIFY",
+      "sectionTitle": "Email / Notification Regression",
+      "text": "Existing dealer-onboarding email works."
+    },
+    {
+      "number": 439,
+      "id": "NOTIFY-002",
+      "section": "NOTIFY",
+      "sectionTitle": "Email / Notification Regression",
+      "text": "Email outage does not corrupt onboarding."
+    },
+    {
+      "number": 440,
+      "id": "NOTIFY-003",
+      "section": "NOTIFY",
+      "sectionTitle": "Email / Notification Regression",
+      "text": "Retries do not cause destructive duplicate state."
+    },
+    {
+      "number": 441,
+      "id": "NOTIFY-004",
+      "section": "NOTIFY",
+      "sectionTitle": "Email / Notification Regression",
+      "text": "Missing email configuration follows intended non-production behavior."
+    },
+    {
+      "number": 442,
+      "id": "NOTIFY-005",
+      "section": "NOTIFY",
+      "sectionTitle": "Email / Notification Regression",
+      "text": "Unimplemented listing/enquiry/complaint notifications are not assumed by business logic."
+    },
+    {
+      "number": 443,
+      "id": "RECOVERY-001",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "API unavailable during public browsing gives graceful UX."
+    },
+    {
+      "number": 444,
+      "id": "RECOVERY-002",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "API unavailable during listing save does not falsely report success."
+    },
+    {
+      "number": 445,
+      "id": "RECOVERY-003",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "API unavailable during enquiry submission supports safe retry."
+    },
+    {
+      "number": 446,
+      "id": "RECOVERY-004",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Database outage produces controlled error."
+    },
+    {
+      "number": 447,
+      "id": "RECOVERY-005",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Storage outage does not corrupt listing."
+    },
+    {
+      "number": 448,
+      "id": "RECOVERY-006",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "OTP outage does not create partially authenticated session."
+    },
+    {
+      "number": 449,
+      "id": "RECOVERY-007",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Google OAuth failure is recoverable."
+    },
+    {
+      "number": 450,
+      "id": "RECOVERY-008",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Email failure does not corrupt onboarding."
+    },
+    {
+      "number": 451,
+      "id": "RECOVERY-009",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Browser refresh during critical flow recovers safely."
+    },
+    {
+      "number": 452,
+      "id": "RECOVERY-010",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Browser Back does not repeat lifecycle mutation."
+    },
+    {
+      "number": 453,
+      "id": "RECOVERY-011",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Double-click mutation does not duplicate operation."
+    },
+    {
+      "number": 454,
+      "id": "RECOVERY-012",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Network timeout + retry safe."
+    },
+    {
+      "number": 455,
+      "id": "RECOVERY-013",
+      "section": "RECOVERY",
+      "sectionTitle": "Failure / Recovery",
+      "text": "Server restart does not unexpectedly corrupt persisted business state."
+    },
+    {
+      "number": 456,
+      "id": "CONCURRENCY-001",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "Two staff editing same draft do not silently corrupt critical data."
+    },
+    {
+      "number": 457,
+      "id": "CONCURRENCY-002",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "Two managers SOLD same vehicle remains consistent."
+    },
+    {
+      "number": 458,
+      "id": "CONCURRENCY-003",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "RESERVED vs SOLD race results in valid state."
+    },
+    {
+      "number": 459,
+      "id": "CONCURRENCY-004",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "Admin approval vs dealer edit/submit remains valid."
+    },
+    {
+      "number": 460,
+      "id": "CONCURRENCY-005",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "Dealer suspension vs manager submit prevents invalid publication."
+    },
+    {
+      "number": 461,
+      "id": "CONCURRENCY-006",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "CONTACTED vs CLOSED race follows valid transition."
+    },
+    {
+      "number": 462,
+      "id": "CONCURRENCY-007",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "Member removal vs member mutation remains safe."
+    },
+    {
+      "number": 463,
+      "id": "CONCURRENCY-008",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "Concurrent Admin dealer verification actions remain valid."
+    },
+    {
+      "number": 464,
+      "id": "CONCURRENCY-009",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "Simultaneous legitimate customer enquiries retained."
+    },
+    {
+      "number": 465,
+      "id": "CONCURRENCY-010",
+      "section": "CONCURRENCY",
+      "sectionTitle": "Concurrency",
+      "text": "Concurrent invitation acceptance cannot duplicate membership."
+    },
+    {
+      "number": 466,
+      "id": "BROWSER-001",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Chrome desktop works."
+    },
+    {
+      "number": 467,
+      "id": "BROWSER-002",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Safari desktop works."
+    },
+    {
+      "number": 468,
+      "id": "BROWSER-003",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Firefox desktop works."
+    },
+    {
+      "number": 469,
+      "id": "BROWSER-004",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Edge desktop works."
+    },
+    {
+      "number": 470,
+      "id": "BROWSER-005",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Chrome Android/mobile works."
+    },
+    {
+      "number": 471,
+      "id": "BROWSER-006",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Safari iPhone/mobile works."
+    },
+    {
+      "number": 472,
+      "id": "BROWSER-007",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Tablet works."
+    },
+    {
+      "number": 473,
+      "id": "BROWSER-008",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Dealer dashboard usable mobile."
+    },
+    {
+      "number": 474,
+      "id": "BROWSER-009",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Admin dashboard usable at supported responsive sizes."
+    },
+    {
+      "number": 475,
+      "id": "BROWSER-010",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Dialogs usable with mobile keyboard."
+    },
+    {
+      "number": 476,
+      "id": "BROWSER-011",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "Browser back/forward preserves valid state."
+    },
+    {
+      "number": 477,
+      "id": "BROWSER-012",
+      "section": "BROWSER",
+      "sectionTitle": "Browser / Device",
+      "text": "New tabs do not break session/context."
+    },
+    {
+      "number": 478,
+      "id": "UX-001",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Public search keyboard accessible."
+    },
+    {
+      "number": 479,
+      "id": "UX-002",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Authentication keyboard accessible."
+    },
+    {
+      "number": 480,
+      "id": "UX-003",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Dealer forms keyboard accessible."
+    },
+    {
+      "number": 481,
+      "id": "UX-004",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Admin forms keyboard accessible."
+    },
+    {
+      "number": 482,
+      "id": "UX-005",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Fields have meaningful labels."
+    },
+    {
+      "number": 483,
+      "id": "UX-006",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Validation identifies affected field."
+    },
+    {
+      "number": 484,
+      "id": "UX-007",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Dialog focus handled correctly."
+    },
+    {
+      "number": 485,
+      "id": "UX-008",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Buttons have understandable accessible names."
+    },
+    {
+      "number": 486,
+      "id": "UX-009",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Loading states prevent accidental repeated actions."
+    },
+    {
+      "number": 487,
+      "id": "UX-010",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Empty states explain next action."
+    },
+    {
+      "number": 488,
+      "id": "UX-011",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Destructive actions have appropriate confirmation."
+    },
+    {
+      "number": 489,
+      "id": "UX-012",
+      "section": "UX",
+      "sectionTitle": "Accessibility / UX",
+      "text": "Permission denied does not appear as application crash."
+    },
+    {
+      "number": 490,
+      "id": "SEO-001",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "Homepage canonical/meta/structured data correct."
+    },
+    {
+      "number": 491,
+      "id": "SEO-002",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "`/cars` indexing behavior correct."
+    },
+    {
+      "number": 492,
+      "id": "SEO-003",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "Public car portfolio metadata/structured data correct."
+    },
+    {
+      "number": 493,
+      "id": "SEO-004",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "Dealer portfolio metadata correct."
+    },
+    {
+      "number": 494,
+      "id": "SEO-005",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "Sitemap includes only intended public resources."
+    },
+    {
+      "number": 495,
+      "id": "SEO-006",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "SOLD/WITHDRAWN/private resources handled correctly for indexing."
+    },
+    {
+      "number": 496,
+      "id": "SEO-007",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "robots.txt correct."
+    },
+    {
+      "number": 497,
+      "id": "SEO-008",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "Favicon/social metadata work."
+    },
+    {
+      "number": 498,
+      "id": "SEO-009",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "Invalid URLs use custom 404."
+    },
+    {
+      "number": 499,
+      "id": "SEO-010",
+      "section": "SEO",
+      "sectionTitle": "SEO / Public Production",
+      "text": "Server failures use custom error experience."
+    },
+    {
+      "number": 500,
+      "id": "PROD-001",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Production starts without local-only services."
+    },
+    {
+      "number": 501,
+      "id": "PROD-002",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Production cannot use MinIO accidentally."
+    },
+    {
+      "number": 502,
+      "id": "PROD-003",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Production cannot use dummy OTP accidentally."
+    },
+    {
+      "number": 503,
+      "id": "PROD-004",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Production cannot use Mailpit accidentally."
+    },
+    {
+      "number": 504,
+      "id": "PROD-005",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Production cannot use development seed data."
+    },
+    {
+      "number": 505,
+      "id": "PROD-006",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Development cannot mutate production resources."
+    },
+    {
+      "number": 506,
+      "id": "PROD-007",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Production DB points to intended DB."
+    },
+    {
+      "number": 507,
+      "id": "PROD-008",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Storage points to intended production resources."
+    },
+    {
+      "number": 508,
+      "id": "PROD-009",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Email sender configuration correct."
+    },
+    {
+      "number": 509,
+      "id": "PROD-010",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Google OAuth callbacks correct."
+    },
+    {
+      "number": 510,
+      "id": "PROD-011",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "MSG91/WhatsApp OTP production configuration works."
+    },
+    {
+      "number": 511,
+      "id": "PROD-012",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Secrets absent from client bundle/repository."
+    },
+    {
+      "number": 512,
+      "id": "PROD-013",
+      "section": "PROD",
+      "sectionTitle": "Production Configuration",
+      "text": "Debug/docs/internal endpoints follow production policy."
+    },
+    {
+      "number": 513,
+      "id": "DEPLOY-001",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Production migrations run on production-like DB."
+    },
+    {
+      "number": 514,
+      "id": "DEPLOY-002",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Single-owner → OWNER membership migration correct."
+    },
+    {
+      "number": 515,
+      "id": "DEPLOY-003",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Migration creates no duplicate users/dealers."
+    },
+    {
+      "number": 516,
+      "id": "DEPLOY-004",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Migration preserves listings/enquiries/documents."
+    },
+    {
+      "number": 517,
+      "id": "DEPLOY-005",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Deployment/migration ordering remains compatible."
+    },
+    {
+      "number": 518,
+      "id": "DEPLOY-006",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Failed migration has documented recovery strategy."
+    },
+    {
+      "number": 519,
+      "id": "DEPLOY-007",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Seed scripts cannot accidentally execute against production."
+    },
+    {
+      "number": 520,
+      "id": "DEPLOY-008",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "DB indexes support critical queries."
+    },
+    {
+      "number": 521,
+      "id": "DEPLOY-009",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Backup/restore procedure tested."
+    },
+    {
+      "number": 522,
+      "id": "DEPLOY-010",
+      "section": "DEPLOY",
+      "sectionTitle": "Database / Deployment",
+      "text": "Restored DB preserves lifecycle and authorization relationships."
+    },
+    {
+      "number": 523,
+      "id": "OBS-001",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Production requests have useful request/correlation IDs."
+    },
+    {
+      "number": 524,
+      "id": "OBS-002",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Authentication failures diagnosable without secrets."
+    },
+    {
+      "number": 525,
+      "id": "OBS-003",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Authorization failures observable."
+    },
+    {
+      "number": 526,
+      "id": "OBS-004",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Dealer suspension traceable."
+    },
+    {
+      "number": 527,
+      "id": "OBS-005",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Member permission changes traceable."
+    },
+    {
+      "number": 528,
+      "id": "OBS-006",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Listing lifecycle traceable."
+    },
+    {
+      "number": 529,
+      "id": "OBS-007",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Enquiry lifecycle traceable."
+    },
+    {
+      "number": 530,
+      "id": "OBS-008",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Admin actions traceable."
+    },
+    {
+      "number": 531,
+      "id": "OBS-009",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Unexpected 5xx captured."
+    },
+    {
+      "number": 532,
+      "id": "OBS-010",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Logs contain no OTP/token/password/private-document leakage."
+    },
+    {
+      "number": 533,
+      "id": "OBS-011",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Health endpoint reflects service health."
+    },
+    {
+      "number": 534,
+      "id": "OBS-012",
+      "section": "OBS",
+      "sectionTitle": "Observability",
+      "text": "Failed workflow can be traced end-to-end."
+    },
+    {
+      "number": 535,
+      "id": "ABUSE-001",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "OTP abuse rate-limited."
+    },
+    {
+      "number": 536,
+      "id": "ABUSE-002",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Enquiry spam appropriately protected."
+    },
+    {
+      "number": 537,
+      "id": "ABUSE-003",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Automated listing submission cannot bypass dealer verification."
+    },
+    {
+      "number": 538,
+      "id": "ABUSE-004",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Frontend role tampering cannot elevate privilege."
+    },
+    {
+      "number": 539,
+      "id": "ABUSE-005",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Dealer ID tampering cannot change tenant."
+    },
+    {
+      "number": 540,
+      "id": "ABUSE-006",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Listing status payload tampering cannot bypass transitions."
+    },
+    {
+      "number": 541,
+      "id": "ABUSE-007",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Enquiry status tampering cannot bypass transitions."
+    },
+    {
+      "number": 542,
+      "id": "ABUSE-008",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Invitation role manipulation cannot self-promote OWNER."
+    },
+    {
+      "number": 543,
+      "id": "ABUSE-009",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Membership manipulation cannot remove final OWNER."
+    },
+    {
+      "number": 544,
+      "id": "ABUSE-010",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Suspended dealer cannot regain functionality by changing client state."
+    },
+    {
+      "number": 545,
+      "id": "ABUSE-011",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Removed member cannot regain access using stale browser state."
+    },
+    {
+      "number": 546,
+      "id": "ABUSE-012",
+      "section": "ABUSE",
+      "sectionTitle": "Abuse / Negative",
+      "text": "Hidden UI routes remain server-protected."
+    },
+    {
+      "number": 547,
+      "id": "GOLDEN-001",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "Visitor → search → car → login/OTP → enquiry → dealer receives → STAFF contacts → MANAGER closes → Admin sees history."
+    },
+    {
+      "number": 548,
+      "id": "GOLDEN-002",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "Customer → save → logout → login → persistence → enquiry → history persists."
+    },
+    {
+      "number": 549,
+      "id": "GOLDEN-003",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "New dealer → onboarding → documents → Admin approval → listing → moderation → ACTIVE → enquiry → SOLD → history preserved."
+    },
+    {
+      "number": 550,
+      "id": "GOLDEN-004",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "OWNER → invite STAFF → existing customer accepts → dealer switch without re-login → draft → manager/owner submit → Admin approve."
+    },
+    {
+      "number": 551,
+      "id": "GOLDEN-005",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "OWNER → invite MANAGER → customer-context switch → submit listing → enquiry management → SOLD."
+    },
+    {
+      "number": 552,
+      "id": "GOLDEN-006",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "STAFF → draft → CONTACTED → privileged actions attempted → all denied."
+    },
+    {
+      "number": 553,
+      "id": "GOLDEN-007",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "OWNER → revoke STAFF → open dealer session loses access → customer remains functional."
+    },
+    {
+      "number": 554,
+      "id": "GOLDEN-008",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "Admin → suspend dealer with ACTIVE inventory/enquiries → defined behavior → reinstate → appropriate restoration."
+    },
+    {
+      "number": 555,
+      "id": "GOLDEN-009",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "Dealer member → personal customer context → enquiry with another dealer → employer/personal data remain isolated."
+    },
+    {
+      "number": 556,
+      "id": "GOLDEN-010",
+      "section": "GOLDEN",
+      "sectionTitle": "Golden-Path E2E",
+      "text": "Listing → ACTIVE → RESERVED → defined behavior → SOLD → public removal with history/audit preserved."
+    }
+  ]
+}
