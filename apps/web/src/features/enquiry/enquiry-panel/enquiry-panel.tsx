@@ -28,7 +28,15 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
 
   const open = useCallback(async () => {
     setStage('checking');
-    const signedIn = await enquiryCustomerAction();
+    setNotice(null);
+    let signedIn: EnquiryCustomer | null;
+    try {
+      signedIn = await enquiryCustomerAction();
+    } catch {
+      setNotice(ENQUIRY_PANEL_TEXT.openFailed);
+      setStage('idle');
+      return;
+    }
     if (!signedIn) {
       router.push(loginHref(pathname));
       return;
@@ -59,7 +67,12 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
   }, []);
 
   async function send(message: string): Promise<SendEnquiryState> {
-    const result = await sendEnquiryAction(listingSlug, message);
+    let result: SendEnquiryState;
+    try {
+      result = await sendEnquiryAction(listingSlug, message);
+    } catch {
+      return { status: 'refused', code: 'UNAVAILABLE', message: ENQUIRY_PANEL_TEXT.sendFailed };
+    }
     if (result.status === 'sent') {
       setStage('sent');
       if (autoOpen) router.replace(pathname, { scroll: false });
@@ -78,6 +91,12 @@ export function EnquiryPanel({ listingSlug, dealerName, autoOpen = false }: Enqu
 
   return (
     <div ref={panel} className="flex flex-col gap-[10px]" aria-live="polite">
+      {stage === 'idle' && notice ? (
+        <Banner tone="err" title={ENQUIRY_PANEL_TEXT.openFailedTitle}>
+          {notice}
+        </Banner>
+      ) : null}
+
       {stage === 'idle' || stage === 'checking' ? (
         <>
           <Button

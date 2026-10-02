@@ -1,9 +1,18 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
 import { cookieJar } from '../../setup.js';
 import { PublicLocations } from '@dealers-drive/contracts';
 
-import { ApiError, apiGet, apiGetParsed, apiSend, qs } from '../../../src/lib/api.js';
+import {
+  API_TIMEOUT_MS,
+  ApiError,
+  apiGet,
+  apiGetParsed,
+  apiSend,
+  qs,
+  SERVER_ERROR_MESSAGE,
+  UpstreamUnavailableError,
+} from '../../../src/lib/api.js';
 
 /**
  * The one place the web app talks to the API (Rule 8). Three behaviours here
@@ -324,7 +333,144 @@ describe('ApiError', () => {
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.status).toBe(502);
-    expect(error.code).toBe('INTERNAL');
+    expect(error.code).toBe('SERVICE_UNAVAILABLE');
+  });
+});
+
+/**
+ * The error model's input side: whatever came back, the caller receives one of
+ * two things — an `ApiError` whose status is the one on the response, or an
+ * `UpstreamUnavailableError` saying the API could not be reached, answered in
+ * time, or answered with something unreadable. Nothing an upstream wrote into a
+ * body it was not meant to reaches the problem the UI and the BFF read from.
+ */
+describe('upstream failures', () => {
+  let stderr: MockInstance<typeof process.stderr.write>;
+
+  beforeEach(() => {
+    stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function logged(): Record<string, unknown>[] {
+    return stderr.mock.calls.map(
+      (call: unknown[]) => JSON.parse(String(call[0])) as Record<string, unknown>,
+    );
+  }
+
+  it('reads an HTML error page as a synthesised problem rather than a parse failure', async () => {
+    globalThis.fetch = respondWith(undefined, {
+      status: 502,
+      text: '<html><body>Bad Gateway nginx/1.25</body></html>',
+    }) as unknown as typeof fetch;
+
+    const error = (await apiGet('/v1/vehicles').catch((caught: unknown) => caught)) as ApiError;
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(502);
+    expect(JSON.stringify(error.problem)).not.toContain('nginx');
+  });
+
+  it('keeps nothing from a body that is not a problem document', async () => {
+    globalThis.fetch = respondWith(
+      { error: "PrismaClientInitializationError: Can't reach database server at db.internal:5432" },
+      { status: 500 },
+    ) as unknown as typeof fetch;
+
+    const error = (await apiGet('/v1/vehicles').catch((caught: unknown) => caught)) as ApiError;
+
+    expect(error.problem).toEqual({
+      type: 'about:blank',
+      title: 'Request failed',
+      status: 500,
+      code: 'INTERNAL',
+    });
+    expect(error.userMessage()).toBe(SERVER_ERROR_MESSAGE);
+  });
+
+  it('takes the status from the response, never from the body', async () => {
+    globalThis.fetch = respondWith(
+      { type: 'x', title: 'Not found', status: 200, code: 'NOT_FOUND' },
+      { status: 404 },
+    ) as unknown as typeof fetch;
+
+    const error = (await apiGet('/v1/vehicles/x').catch((caught: unknown) => caught)) as ApiError;
+    expect(error.status).toBe(404);
+  });
+
+  it('calls an unreachable API unavailable, and logs why', async () => {
+    globalThis.fetch = vi.fn(() =>
+      Promise.reject(new TypeError('fetch failed', { cause: new Error('connect ECONNREFUSED') })),
+    );
+
+    const error = await apiGet('/v1/vehicles').catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(UpstreamUnavailableError);
+    expect((error as UpstreamUnavailableError).kind).toBe('network');
+    expect(logged()[0]).toMatchObject({
+      level: 'error',
+      event: 'api.request_failed',
+      method: 'GET',
+      path: '/v1/vehicles',
+    });
+    expect(logged()[0]).toMatchObject({
+      error: { kind: 'network', cause: { name: 'TypeError', cause: { name: 'Error' } } },
+    });
+    expect(JSON.stringify(logged()[0])).not.toContain('ECONNREFUSED');
+  });
+
+  it('gives up on an API that does not answer in time', async () => {
+    vi.useFakeTimers();
+    globalThis.fetch = vi.fn(() => new Promise<Response>(() => undefined));
+
+    const pending = apiGet('/v1/vehicles').catch((caught: unknown) => caught);
+    await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
+    const error = await pending;
+
+    expect(error).toBeInstanceOf(UpstreamUnavailableError);
+    expect((error as UpstreamUnavailableError).kind).toBe('timeout');
+  });
+
+  it('calls a 200 it cannot read malformed rather than returning half of it', async () => {
+    globalThis.fetch = respondWith(undefined, {
+      status: 200,
+      text: '{"data": [',
+    }) as unknown as typeof fetch;
+
+    const error = await apiGet('/v1/vehicles').catch((caught: unknown) => caught);
+    expect((error as UpstreamUnavailableError).kind).toBe('malformed');
+  });
+
+  it('logs a server failure with its trace id, and never a 4xx', async () => {
+    globalThis.fetch = respondWith(
+      { type: 'x', title: 'Internal server error', status: 500, code: 'INTERNAL', traceId: 'T1' },
+      { status: 500 },
+    ) as unknown as typeof fetch;
+    await apiGet('/v1/vehicles').catch(() => undefined);
+    expect(logged()[0]).toMatchObject({
+      error: { status: 500, code: 'INTERNAL', traceId: 'T1' },
+    });
+
+    stderr.mockClear();
+    globalThis.fetch = respondWith(
+      { type: 'x', title: 'Not found', status: 404, code: 'VEHICLE_NOT_FOUND' },
+      { status: 404 },
+    ) as unknown as typeof fetch;
+    await apiGet('/v1/vehicles/x').catch(() => undefined);
+    expect(stderr).not.toHaveBeenCalled();
+  });
+
+  it('lets a caller’s own abort through untouched and unlogged', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const abort = new DOMException('Aborted', 'AbortError');
+    globalThis.fetch = vi.fn(() => Promise.reject(abort));
+
+    await expect(apiGet('/v1/vehicles', { signal: controller.signal })).rejects.toBe(abort);
+    expect(stderr).not.toHaveBeenCalled();
   });
 });
 

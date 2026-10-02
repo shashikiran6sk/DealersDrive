@@ -961,3 +961,116 @@ Nothing is scheduled when the value has not actually moved. Without this,
 a parent re-render that happens to pass the same string restarts the
 timer, and a buyer typing steadily while something else re-renders around
 them would never see the request fire at all.
+
+## `apps/web/src/lib/api.ts` — the error model's input side
+
+[`docs/errors.md`](../../errors.md) is the operating note; these are the reasons
+behind the shapes.
+
+### `export class UpstreamUnavailableError extends Error`
+
+The failures that are not an answer: the connection failed (`network`), nothing
+came back in time (`timeout`), or a 2xx body was not JSON (`malformed`). A
+separate type rather than an `ApiError` with a made-up status, because an
+`ApiError` means "the API said this", and every caller that branches on
+`status === 404` must never be able to mistake an outage for that.
+
+### `export function problemFrom(payload, status)`
+
+The status is the response's, always. The body was cast to `ProblemDetails`
+before, so a proxy's `{ "error": "…" }` produced an `ApiError` whose `status` was
+`undefined` and whose `problem` carried whatever the proxy wrote — to the BFF,
+which forwarded it. Now a body is kept only if it has a `code` (the one field
+every API problem has), with the known fields; anything else is replaced by a
+problem synthesised from the status. `type`, `title` and a field error's `code`
+are filled when absent, so a lean problem from the API still reads the same.
+
+### `class Deadline` · `export const API_TIMEOUT_MS = 8_000`
+
+A race on the response rather than an `AbortSignal`: Next skips its request
+de-duplication for any `fetch` that carries a signal, and `generateMetadata` and
+the page fetching one car must stay one request. The loser of the race is left
+to finish in the background. 8 s because the error path renders metadata twice
+(see `docs/errors.md` §7), and 16 s is the most a page should hold a visitor.
+
+### `function reportFailure(method, path, error)`
+
+Logged here, once, for every 5xx, unreachable, timed-out, malformed and
+contract-mismatched call — the one place that sees all of them. A 4xx is an
+answer and is not logged; the API logs its own rejections.
+
+### `if (options.signal?.aborted) throw cause`
+
+A caller's own abort is not a failure of the API, and is neither wrapped nor
+logged.
+
+## `apps/web/src/lib/errors.ts`
+
+### `export function categoryOf(error: unknown): ErrorCategory`
+
+The one place a failure becomes a kind. 502/503/504 and every
+`UpstreamUnavailableError` are `SERVICE_UNAVAILABLE` (try again later); any other
+5xx and anything thrown that is not an API answer is `INTERNAL_ERROR`.
+
+### `export function isMissingResource(error, options)`
+
+The only question a page asks before `notFound()`. Narrow on purpose: a 404 the
+API answered, and a 400 only when the caller says a rejected identifier means
+there is no such thing (a car slug that fails the slug pattern).
+
+### `export function safeMessage(error: unknown): string`
+
+A sentence per category from `errors.constants.ts`. What a BFF route tells the
+browser; never the error's own message.
+
+## `apps/web/src/lib/logger.ts`
+
+### `export const logger`
+
+Production source has no `console` (ESLint `no-console`, `src/**`). One JSON line
+per event — level, time, event, fields — to stderr for errors and stdout
+otherwise, so a log shipper parses it without a pattern. Server-side only: in a
+browser there is no `process.stderr` and it writes nothing, which is right,
+because a buyer's console is nobody's log.
+
+### `export function describeError(error: unknown)`
+
+Name, cause categories, and the fields that identify a failure
+across the two tiers (`status`, `code`, `kind`, `digest`, `traceId`). Nothing
+else is copied off an error, so a request body or a header on some future
+error type is not logged by accident.
+
+## `apps/web/src/lib/bff.ts`
+
+### `export function problemResponse(error: unknown, route: string)`
+
+Every BFF route's `catch`. It replaced nine copies of "forward `error.problem`
+with its status", which sent a 500's body — in development, the API's own
+exception message — to the browser. A 4xx is the API's contract with its
+client and passes through field by field. A 5xx becomes 502 (the upstream
+failed, not this route), a 503 or 504 stays itself, a timeout is 504, an
+unreachable or unreadable API is 502, and a bug in the route is 500 and is
+logged, because nothing else would.
+
+## `apps/web/src/lib/fonts.ts`
+
+### `export const manrope`
+
+Out of the root layout so `app/global-error.tsx`, which replaces the root
+layout and brings its own `<html>`, draws in the same face.
+
+## `apps/web/src/lib/upload.ts` — `export class UploadFailure extends Error`
+
+`failureMessage` used to show any caught `Error`'s message, which in a browser
+includes `TypeError: Failed to fetch`. Only a sentence the upload flow threw
+itself, as an `UploadFailure`, is shown now; everything else is the uploader's
+fallback.
+
+## `apps/web/src/lib/locations.ts` · `public-config.ts` — `cache(…)`
+
+The layout, `generateMetadata` and the page all ask for these; `cache` makes it
+one wait per render if the API is slow, rather than one each.
+
+## Integration with current main
+
+The homepage preserves main’s interleaved discovery/information bands while showing the inline inventory failure notice. Error components use C131–C135; JsonLd is C130, so main’s current component IDs stay intact. Web diagnostics retain error categories/status and trace/digest correlation; arbitrary error messages, stacks, request bodies and URL query strings are excluded to avoid logging authentication proofs or private fields. Error causes are bounded against cycles.

@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as ApiModule from '@/lib/api';
-import { ApiError } from '@/lib/api';
+import { ApiError, UpstreamUnavailableError } from '@/lib/api';
 
 /**
  * `src/app/api/search/dealers/route.ts` (**R43**) — the BFF the typeahead calls.
@@ -110,7 +110,7 @@ describe('GET /api/search/dealers', () => {
   });
 
   it('answers 502 when the API cannot be reached at all', async () => {
-    apiGet.mockRejectedValue(new Error('connect ECONNREFUSED'));
+    apiGet.mockRejectedValue(new UpstreamUnavailableError('network', 'GET', '/v1/search/dealers'));
 
     // The box degrades to "Suggestions are unavailable just now"; the directory
     // behind it is untouched, because it was rendered from a different call.

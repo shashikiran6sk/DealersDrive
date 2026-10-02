@@ -2,7 +2,7 @@ import { PublicVehicleDetail, SimilarVehiclesResponse } from '@dealers-drive/con
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
+import { cache, Suspense } from 'react';
 
 import { Plate } from '@/components/ui/primitives';
 import { AvailabilityNotice } from '@/components/vehicle/availability-notice';
@@ -16,31 +16,34 @@ import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
 import { VehicleName } from '@/components/vehicle/vehicle-name';
 import { JsonLd } from '@/components/seo/json-ld';
 import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
-import { ApiError, apiGetParsed } from '@/lib/api';
+import { apiGetParsed } from '@/lib/api';
 import { VEHICLES_TAG, vehicleTag } from '@/lib/cache-tags';
+import { isMissingResource } from '@/lib/errors';
 import {
   BREADCRUMB_TEXT,
   breadcrumbSchema,
   pageMetadata,
+  seoMetadata,
   vehiclePath,
   vehicleSchema,
 } from '@/lib/seo';
+import { logger } from '@/lib/logger';
 
 import { VEHICLE_PAGE_TEXT } from './vehicle-page.constants';
 
 export const revalidate = 60;
 
-async function loadVehicle(slug: string): Promise<PublicVehicleDetail | null> {
+const loadVehicle = cache(async (slug: string): Promise<PublicVehicleDetail | null> => {
   try {
     return await apiGetParsed(PublicVehicleDetail, `/v1/vehicles/${encodeURIComponent(slug)}`, {
       revalidate: 60,
       tags: [VEHICLES_TAG, vehicleTag(slug)],
     });
   } catch (error) {
-    if (error instanceof ApiError && (error.status === 404 || error.status === 400)) return null;
+    if (isMissingResource(error, { invalidIdentifier: true })) return null;
     throw error;
   }
-}
+});
 
 async function loadSimilar(slug: string): Promise<SimilarVehiclesResponse['data']> {
   try {
@@ -51,7 +54,7 @@ async function loadSimilar(slug: string): Promise<SimilarVehiclesResponse['data'
     );
     return data;
   } catch (error) {
-    console.error('[vehicle] similar vehicles unavailable', error);
+    logger.warn('vehicle.similar_unavailable', { slug, error });
     return [];
   }
 }
@@ -62,7 +65,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const vehicle = await loadVehicle(slug);
+  const vehicle = await loadVehicle(slug).catch(() => undefined);
+  if (vehicle === undefined) return seoMetadata({ kind: 'noindex' });
   if (!vehicle) return { title: VEHICLE_PAGE_TEXT.notFoundTitle };
 
   const primary = vehicle.images[vehicle.primaryIndex] ?? vehicle.images[0];

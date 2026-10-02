@@ -269,7 +269,7 @@ describe('production', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'production' })).rejects.toThrow('process.exit');
@@ -284,7 +284,7 @@ describe('production', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'production' })).rejects.toThrow();
@@ -303,7 +303,7 @@ describe('production', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'production' })).rejects.toThrow();
@@ -340,7 +340,7 @@ describe('production', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(
@@ -403,7 +403,7 @@ describe('validation', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'development', [key]: value })).rejects.toThrow();
@@ -418,7 +418,7 @@ describe('validation', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'development', PORT: port })).rejects.toThrow();
@@ -433,7 +433,7 @@ describe('validation', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(
@@ -452,7 +452,7 @@ describe('validation', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'development', JOBS_ENABLED: '1' })).rejects.toThrow();
@@ -497,7 +497,7 @@ describe('configurations that must not boot', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv(vars)).rejects.toThrow('process.exit');

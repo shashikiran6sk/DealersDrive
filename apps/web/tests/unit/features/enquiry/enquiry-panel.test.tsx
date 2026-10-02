@@ -245,3 +245,46 @@ describe('coming back from sign-in', () => {
     expect(navigationState.replaced).toEqual(['/car/2023-hyundai-creta']);
   });
 });
+
+/**
+ * The account check or the send failing outright — the network, the server
+ * action itself — is not a crash and not a spinner that never stops: the panel
+ * says so in its own words and the button is there to press again.
+ */
+describe('when the service cannot be reached', () => {
+  it('says the form could not be opened, and lets the buyer try again', async () => {
+    const user = userEvent.setup();
+    vi.mocked(enquiryCustomerAction).mockResolvedValueOnce(null);
+    vi.mocked(enquiryCustomerAction).mockRejectedValueOnce(new Error('fetch failed ECONNREFUSED'));
+    panel();
+
+    await pressEnquire(user);
+
+    const alert = await screen.findByText('We couldn’t open the enquiry form');
+    expect(alert).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('ECONNREFUSED');
+    expect(screen.getAllByRole('button', { name: 'Enquire now' })[0]).toBeEnabled();
+
+    vi.mocked(enquiryCustomerAction).mockResolvedValueOnce(CUSTOMER);
+    await pressEnquire(user);
+    await waitFor(() => {
+      expect(screen.queryByText('We couldn’t open the enquiry form')).not.toBeInTheDocument();
+    });
+  });
+
+  it('keeps the form and says the enquiry was not sent when the send itself fails', async () => {
+    const user = userEvent.setup();
+    vi.mocked(enquiryCustomerAction).mockResolvedValue(CUSTOMER);
+    vi.mocked(sendEnquiryAction).mockRejectedValue(new Error('TypeError: fetch failed'));
+    panel();
+
+    await pressEnquire(user);
+    await user.click(await screen.findByRole('button', { name: 'Send enquiry' }));
+
+    expect(
+      await screen.findByText('We couldn’t send your enquiry right now. Please try again.'),
+    ).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('TypeError');
+    expect(screen.getByRole('button', { name: 'Send enquiry' })).toBeInTheDocument();
+  });
+});

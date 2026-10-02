@@ -359,7 +359,7 @@ exactly what makes "which nav item is active" testable for the first time.
 
 ---
 
-### C100 — `JsonLd`
+### C130 — `JsonLd`
 
 `components/seo/json-ld/`. Props `nodes` (typed JSON-LD nodes from
 `lib/seo/schemas`). Renders one `<script type="application/ld+json">` holding
@@ -368,7 +368,31 @@ the element; renders nothing for no nodes. Consumers: `/`, `/cars`,
 `/car/[slug]`, `/dealers`, `/dealers/[slug]`. Replaces the portfolio's private
 `DealerJsonLd`. **NEW with the SEO work (F095).** **No sandbox entry** — it
 draws nothing; its output is asserted in `tests/unit/app/seo-routes.test.tsx`
-and the page tests. See `docs/seo.md`.
+and the page tests. See `docs/seo.md`. (Numbered C100 when it landed with F095;
+C100 was already `AvailabilityNotice`.)
+
+### C131 — `StatusPage` · `NotFoundState`
+
+`components/errors/status-page/`. Props `code`, `title`, `description`,
+`actions`, `reference`. The full-page 404 and error screen — eyebrow code, one
+`<h1>`, one sentence, actions that stack full width on a phone. `NotFoundState`
+is the 404's copy and its two links (Go to homepage, Browse cars). Consumers:
+`app/not-found.tsx`, `app/(public)/not-found.tsx`, `RouteError`. **NEW at
+F093/F094.** **P1** — sandbox `Errors/StatusPage`.
+
+### C132 — `RouteError` · C133 — `SectionError` · C134 — `RetryButton` · C135 — `StatusShell`
+
+`components/errors/`. `RouteError` (`error`, `reset`, `description`, `homeHref`,
+`homeLabel`) is what every `error.tsx` renders: `StatusPage` with Try again and
+a way home, the digest as the reference, `<title>` and `noindex`, never the
+error's message. `SectionError` (`title`, `message`) is a section failing in
+place — the homepage rows, a dealer's inventory. `RetryButton` refreshes the
+route and runs an optional `onRetry` (a boundary's `reset`) in one transition.
+`StatusShell` is a logo-only frame for the root, global and dealer boundaries.
+**NEW at F093.** **P1** — sandbox `Errors/StatusPage`, `Errors/SectionError`.
+`PublicShell` (`components/layout/public-shell`) is the public layout's header,
+`<main>` and footer, extracted so the root `not-found.tsx` can use it; it is an
+async server component with no sandbox story. See `docs/errors.md`.
 
 ## Layer 4 — Search (`components/search/`)
 

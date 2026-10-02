@@ -5,7 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 import { StatusTag } from '@/components/ui/primitives';
-import { failureMessage, fileRejection, postJson, presign, putToStorage } from '@/lib/upload';
+import {
+  failureMessage,
+  fileRejection,
+  postJson,
+  presign,
+  putToStorage,
+  UploadFailure,
+} from '@/lib/upload';
 
 import {
   DOCUMENT_PATH,
@@ -41,12 +48,12 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
         bytes: file.size,
       });
       const documentId = signed.documentId;
-      if (!documentId) throw new Error(DOCUMENT_UPLOADER_TEXT.missingId);
+      if (!documentId) throw new UploadFailure(DOCUMENT_UPLOADER_TEXT.missingId);
 
       await putToStorage(signed, file);
 
       const commit = await postJson(DOCUMENT_PATH.commit(document.type), { documentId });
-      if (!commit.ok) throw new Error(DOCUMENT_UPLOADER_TEXT.commitFailed);
+      if (!commit.ok) throw new UploadFailure(DOCUMENT_UPLOADER_TEXT.commitFailed);
 
       router.refresh();
     } catch (caught) {
@@ -61,7 +68,7 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
     setBusy('delete');
     try {
       const response = await fetch(DOCUMENT_PATH.remove(document.type), { method: 'DELETE' });
-      if (!response.ok) throw new Error(DOCUMENT_UPLOADER_TEXT.removeFailed);
+      if (!response.ok) throw new UploadFailure(DOCUMENT_UPLOADER_TEXT.removeFailed);
       router.refresh();
     } catch (caught) {
       setError(failureMessage(caught, DOCUMENT_UPLOADER_TEXT.removeUnknown));
