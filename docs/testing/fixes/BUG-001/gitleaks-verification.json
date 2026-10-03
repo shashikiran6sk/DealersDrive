@@ -29,5 +29,8 @@
     "credential_like_value_in_same_report_file_still_detected": true
   },
   "archive_changed": false,
-  "remote_recheck": "PENDING"
+  "remote_recheck": "PASS",
+  "passed_remote_run": 37097513703,
+  "passed_remote_job": 111130366451,
+  "passed_head": "ad03fde5af761939633f337511e5b10e6c3d0702"
 }

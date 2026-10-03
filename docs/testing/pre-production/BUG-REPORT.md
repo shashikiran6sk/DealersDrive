@@ -1,11 +1,11 @@
 # Authorized fix campaign — current status
 
-2026-10-02 UTC. The original baseline report below is retained, including every FAIL and its evidence. Fixes are reviewed as a stack; no PR has been merged.
+2026-10-03 UTC. The original baseline report below is retained, including every FAIL and its evidence. Fixes are reviewed as a stack; no PR has been merged.
 
 | Finding                                              | Baseline                       | Fix branch / PR                                                         | Agent retest                                                             | Remote CI                                                        | Human UAT |
 | ---------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------- | --------- |
 | BUG-007 / PUBLIC-021 / SEO-009                       | FAIL                           | branded 404 #209; `claude/serene-thompson-yuft81`, head `107a462`       | PASS: nine built-server route/viewport checks                            | PASS: CI run 358, Security run 507                               | PENDING   |
-| BUG-001 / additional ADD-RACE-001                    | FAIL                           | `fix/pre-production-01-invitation-race`, implementation `455938b`; #231 | PASS: deterministic API/DB race, 65 adjacent tests and six browser cases | PENDING: PR #231 running                                         | PENDING   |
+| BUG-001 / additional ADD-RACE-001                    | FAIL                           | `fix/pre-production-01-invitation-race`, implementation `455938b`; #231 | PASS: deterministic API/DB race, 65 adjacent tests and six browser cases | PASS: `ad03fde`, CI 360 / Security 509                           | PENDING   |
 | BUG-002, BUG-003, BUG-004, BUG-005, BUG-006, BUG-008 | As recorded below              | Not fixed yet                                                           | NOT_RUN                                                                  | NOT_RUN                                                          | PENDING   |
 | BUG-009                                              | Provisional dependency finding | Awaiting reachability/upgrade assessment                                | NOT_RUN                                                                  | Existing critical-only audit passing does not close this finding | PENDING   |
 

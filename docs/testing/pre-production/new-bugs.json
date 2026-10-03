@@ -15,12 +15,12 @@
     "severity": "P2",
     "title": "Invitation acceptance uses stale dealer status after a lock wait",
     "reproduced": true,
-    "status": "FIX_IMPLEMENTED",
+    "status": "FIX_VERIFIED",
     "same_root_cause_as": "BUG-001",
     "fix_sha": "455938b949fab5c116fd2e684f570ced929573d0",
     "fix_branch": "fix/pre-production-01-invitation-race",
     "fix_pr": 231,
-    "retest": "AGENT_PASS_CI_PENDING",
+    "retest": "AGENT_PASS_CI_PASS",
     "evidence": "../fixes/BUG-001/REPRODUCTION.md"
   }
 ]

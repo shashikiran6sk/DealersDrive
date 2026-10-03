@@ -2,7 +2,7 @@
 
 Base: branded 404 PR #209, branch `claude/serene-thompson-yuft81`, head `107a46259f1e8ee13765e3a3559fe5b5bbc88c99` (remote CI and Security PASS).
 
-Fix branch: `fix/pre-production-01-invitation-race`. Implementation commit: `455938b949fab5c116fd2e684f570ced929573d0`. PR: #231. Remote main CI: PASS on `e5dd745` (run 359); Security run 508 failed on one confirmed metadata-keyword false positive. A narrowly scoped correction is awaiting remote recheck. No PR was merged.
+Fix branch: `fix/pre-production-01-invitation-race`. Implementation commit: `455938b949fab5c116fd2e684f570ced929573d0`. PR: #231. Remote CI and Security: **PASS** at `ad03fde` (CI run 360 / Security run 509), all five jobs successful. [Exact-head results](remote-ci.json). Initial Security run 508 remains recorded as FAIL on a confirmed metadata-keyword false positive; the correction passed actual remote recheck. No PR was merged.
 
 Acceptance used to lock the invitation before the dealership; owner mutations take the opposite order. This produced a real database deadlock and HTTP 500. Acceptance now reads only the scoped invitation's dealer ID, locks that dealership, then locks/re-reads the invitation before changing membership or audit state. The final invitation read still checks the proven phone, expiry and status. No API contract, schema, role matrix or UI change is needed.
 
