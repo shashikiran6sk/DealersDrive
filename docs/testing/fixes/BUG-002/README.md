@@ -2,7 +2,7 @@
 
 Canonical VERIFY-011. Baseline **FAIL** at `d6ae115`, retained unchanged. Reproduced **YES** at stacked base `1f38a1333fb2fa6f933c3a1972a3a4298a2d071e`. Fix branch `fix/pre-production-02-approval-gate`; PR base `fix/pre-production-01-invitation-race` (#231). No PR has been merged.
 
-Implementation: `4df14b4`, followed by `fc45269` for persistent legacy upload integrity. PR and actual remote CI: pending creation/verification.
+Implementation: `4df14b4`, followed by `fc45269` for persistent legacy upload integrity. PR: [#232](https://github.com/shashikiran6sk/DealersDrive/pull/232), base `fix/pre-production-01-invitation-race`. [Remote diff verification](pr-diff-verification.json) matches all 95 intended layer files at initial head `debfb6c`. **Actual CI and Security PASS** at `debfb6c`: CI run 362 / Security run 511, all five jobs successful. [Exact results](remote-ci.json).
 
 An authorized direct Admin request could activate an incomplete DRAFT dealer despite the UI disabling approval. Approval now locks and re-reads the dealer, requires PENDING_APPROVAL, locks its three documents, requires VERIFIED/fileName plus existing stored uploads, and applies the original submission completeness rules through that transaction. Only then do ACTIVE, the original approval timestamp, audit and approval event commit together. Missing prerequisites write none of them. Storage errors fail closed.
 

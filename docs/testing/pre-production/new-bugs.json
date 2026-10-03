@@ -28,26 +28,30 @@
     "severity": "P1",
     "title": "Admin document review invents VERIFIED state without a committed upload",
     "reproduced": true,
-    "status": "AGENT_VERIFIED_CI_PENDING",
+    "status": "FIX_VERIFIED",
     "directly_required_support_for": "BUG-002 activation gate",
     "fix_branch": "fix/pre-production-02-approval-gate",
-    "fix_pr": null,
-    "retest": "AGENT_PASS_CI_PENDING",
+    "fix_pr": 232,
+    "retest": "AGENT_PASS_CI_PASS",
     "evidence": "../fixes/BUG-002/evidence/ci/bug002-review-red.log",
-    "fix_sha": "fc452697337212dd300953030022ca15d5b3ac83"
+    "fix_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+    "ci_sha": "debfb6cfe2df0b98999aa018f0618293aeda9ece",
+    "ci_runs": [362, 511]
   },
   {
     "id": "BUG-NEW-004",
     "severity": "P1",
     "title": "Admin suspension/reinstatement permits unapproved DRAFT activation",
     "reproduced": true,
-    "status": "AGENT_VERIFIED_CI_PENDING",
+    "status": "FIX_VERIFIED",
     "directly_required_support_for": "BUG-002 activation gate",
     "fix_branch": "fix/pre-production-02-approval-gate",
-    "fix_pr": null,
-    "retest": "AGENT_PASS_CI_PENDING",
+    "fix_pr": 232,
+    "retest": "AGENT_PASS_CI_PASS",
     "evidence": "../fixes/BUG-002/evidence/ci/bug002-state-red.log",
-    "fix_sha": "fc452697337212dd300953030022ca15d5b3ac83"
+    "fix_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+    "ci_sha": "debfb6cfe2df0b98999aa018f0618293aeda9ece",
+    "ci_runs": [362, 511]
   },
   {
     "id": "BUG-NEW-005",
