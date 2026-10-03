@@ -1,0 +1,33 @@
+{
+  "image": "zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f",
+  "failed_remote_run": 37052297404,
+  "failed_remote_job": 110988401602,
+  "source_head": "e5dd745f1640bd5547a7e56ae884ef5f47944009",
+  "finding": {
+    "file": "docs/testing/pre-production/write-reports.py",
+    "line": 17,
+    "rule": "generic-api-key",
+    "actual_captured_text": "reproducibility=",
+    "entropy": 3.577819531114783,
+    "classification": "False positive: Python report metadata keyword assignment, not the assigned prose or a credential."
+  },
+  "correction": "Rule-specific secret allowlist anchored to exactly ^reproducibility=$; no path, history or value exclusions.",
+  "local_before": {
+    "exit_code": 1,
+    "findings": 1,
+    "commits_scanned": 212
+  },
+  "local_after": {
+    "exit_code": 0,
+    "findings": 0,
+    "commits_scanned": 212
+  },
+  "negative": {
+    "exit_code": 1,
+    "generic_api_key_findings": 2,
+    "invented_credentials_only": true,
+    "credential_like_value_in_same_report_file_still_detected": true
+  },
+  "archive_changed": false,
+  "remote_recheck": "PENDING"
+}

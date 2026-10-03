@@ -60,3 +60,15 @@ regexes = [
   # still caught, because this matches one exact string and nothing else.
   '''461234TTQ0dXNwMjY4OTY4NzQ1''',
 ]
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Baseline report metadata field, not a credential value"
+regexTarget = "secret"
+# The archived Python report puts prose ending in 'API' beside this keyword
+# assignment. The scanner captures the keyword itself (including '='); its
+# entropy is 3.57782. Preserve the archive and history. Match only that exact
+# captured text, never the assigned value, a filename or a whole finding.
+regexes = ['''^reproducibility=$''']

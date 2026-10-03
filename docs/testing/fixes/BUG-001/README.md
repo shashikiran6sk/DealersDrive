@@ -2,7 +2,7 @@
 
 Base: branded 404 PR #209, branch `claude/serene-thompson-yuft81`, head `107a46259f1e8ee13765e3a3559fe5b5bbc88c99` (remote CI and Security PASS).
 
-Fix branch: `fix/pre-production-01-invitation-race`. Implementation commit: `455938b949fab5c116fd2e684f570ced929573d0`. PR and remote CI: pending creation/verification. No PR was merged.
+Fix branch: `fix/pre-production-01-invitation-race`. Implementation commit: `455938b949fab5c116fd2e684f570ced929573d0`. PR: #231. Remote main CI: PASS on `e5dd745` (run 359); Security run 508 failed on one confirmed metadata-keyword false positive. A narrowly scoped correction is awaiting remote recheck. No PR was merged.
 
 Acceptance used to lock the invitation before the dealership; owner mutations take the opposite order. This produced a real database deadlock and HTTP 500. Acceptance now reads only the scoped invitation's dealer ID, locks that dealership, then locks/re-reads the invitation before changing membership or audit state. The final invitation read still checks the proven phone, expiry and status. No API contract, schema, role matrix or UI change is needed.
 
@@ -22,6 +22,8 @@ Tests for this layer prove the invitation lock-order behavior. The other baselin
 ## Required supporting changes
 
 CI and Security PR triggers previously filtered bases to `main`, skipping this intentionally stacked PR. Both now allow every PR base, preserving existing jobs, credentials policy, push/schedule behavior and permissions.
+
+Secret scanning initially failed on the archived Python metadata keyword `reproducibility=` beside prose ending in “API”. The captured value is the keyword assignment itself, not a credential. A rule-specific allowlist matches only that exact captured text. Local history scan now passes, and invented credential-like values in both a neighboring file and the same report file remain detected. No archive or history was rewritten, and no filename was excluded. [Scanner reproduction and negative evidence](gitleaks-verification.json).
 
 This first fix layer also introduces the original certification dossier under `docs/testing/pre-production/` because it had not been committed. `baseline-archive.json` verifies the 162 report/source/evidence files were copied byte-for-byte before current-status sections were appended to BUG-REPORT and RETEST-REPORT. [Archive verification](archive-verification.json) also validates all 556 scenarios against the uploaded source and 329 evidence references using the original baseline verifier at its required baseline commit. That historical verifier intentionally rejects a fixed branch; it is not a current application gate. Baseline registry statuses and all original failing evidence remain unchanged. This documentation is campaign traceability, not additional product fixes.
 
