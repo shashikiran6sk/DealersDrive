@@ -1,0 +1,2948 @@
+{
+  "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "total": 420,
+  "passed": 420,
+  "failed": 0,
+  "assertions": [
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the reason-carrying inputs requires a reason to reject or suspend",
+      "status": "passed",
+      "duration_ms": 15.48733500000003,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the reason-carrying inputs refuses a reason too short to act on",
+      "status": "passed",
+      "duration_ms": 2.2287739999999303,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the reason-carrying inputs bounds a reason so an audit row stays readable",
+      "status": "passed",
+      "duration_ms": 0.2863909999999805,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the reason-carrying inputs trims a reason, so whitespace does not pass as one",
+      "status": "passed",
+      "duration_ms": 0.13616500000000542,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the reason-carrying inputs lets a note be omitted entirely",
+      "status": "passed",
+      "duration_ms": 0.652170999999953,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the reason-carrying inputs refuses an onboarding grant by name until the ledger can honour it",
+      "status": "passed",
+      "duration_ms": 0.23430199999995693,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the console queries filters dealerships by status, city and free text",
+      "status": "passed",
+      "duration_ms": 0.7603249999999662,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the console queries refuses a dealer status outside the enum",
+      "status": "passed",
+      "duration_ms": 0.18196400000010726,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the console queries rejects a typo\u2019d filter rather than ignoring it",
+      "status": "passed",
+      "duration_ms": 0.19681600000012622,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the console queries defaults a page size, so an unbounded list cannot be asked for",
+      "status": "passed",
+      "duration_ms": 8.509565000000066,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the console queries coerces the limit a query string actually carries",
+      "status": "passed",
+      "duration_ms": 5.2568200000000616,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the console queries takes the city by name, in any case, within a bound",
+      "status": "passed",
+      "duration_ms": 0.6549059999999827,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/admin.test.ts",
+      "name": "the console queries takes no dealerId",
+      "status": "passed",
+      "duration_ms": 0.693552999999838,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "dealerSessionNext sends DRAFT where it always went",
+      "status": "passed",
+      "duration_ms": 2.887414999999919,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "dealerSessionNext sends PENDING_APPROVAL where it always went",
+      "status": "passed",
+      "duration_ms": 0.1798310000000356,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "dealerSessionNext sends ACTIVE where it always went",
+      "status": "passed",
+      "duration_ms": 0.08007100000008904,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "dealerSessionNext sends SUSPENDED where it always went",
+      "status": "passed",
+      "duration_ms": 0.15156799999999748,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "dealerSessionNext sends REJECTED where it always went",
+      "status": "passed",
+      "duration_ms": 0.10592900000006011,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "dealerSessionNext sends CLOSED where it always went",
+      "status": "passed",
+      "duration_ms": 0.05864899999994577,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "dealerSessionNext sends somebody with no dealership yet to onboarding",
+      "status": "passed",
+      "duration_ms": 0.09121799999991254,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "PhoneSignInInput takes a number, a token and an optional path",
+      "status": "passed",
+      "duration_ms": 6.2327490000000125,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "PhoneSignInInput refuses dealerId by name",
+      "status": "passed",
+      "duration_ms": 3.2089189999999235,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "PhoneSignInInput refuses userId by name",
+      "status": "passed",
+      "duration_ms": 0.33875000000000455,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "PhoneSignInInput refuses verified by name",
+      "status": "passed",
+      "duration_ms": 0.4288050000000112,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "PhoneSignInInput refuses a landline",
+      "status": "passed",
+      "duration_ms": 0.31475299999999606,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName accepts \"Ravi\"",
+      "status": "passed",
+      "duration_ms": 0.3947339999999713,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName accepts \"\u0cb6\u0cb6\u0cbf\u0c95\u0cbf\u0cb0\u0ca3\u0ccd\"",
+      "status": "passed",
+      "duration_ms": 0.421854000000053,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName accepts \"Nguy\u1ec5n Th\u1ecb Anh\"",
+      "status": "passed",
+      "duration_ms": 0.07362000000000535,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName accepts \"D'Souza\"",
+      "status": "passed",
+      "duration_ms": 0.1926100000000588,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName accepts \"Mary-Jane O Neil\"",
+      "status": "passed",
+      "duration_ms": 0.053751000000033855,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName trims what surrounds the name",
+      "status": "passed",
+      "duration_ms": 0.08987600000000384,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName refuses \"\"",
+      "status": "passed",
+      "duration_ms": 0.43696699999998145,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName refuses \"   \"",
+      "status": "passed",
+      "duration_ms": 0.13489300000003368,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName refuses \"R\"",
+      "status": "passed",
+      "duration_ms": 0.1571769999999333,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName refuses \"1234\"",
+      "status": "passed",
+      "duration_ms": 0.20750299999997424,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName refuses \"---\"",
+      "status": "passed",
+      "duration_ms": 0.6529120000000148,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName refuses \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"",
+      "status": "passed",
+      "duration_ms": 0.11333000000001903,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName refuses \"Ravi\\nKumar\"",
+      "status": "passed",
+      "duration_ms": 1.2211079999999583,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerName refuses \"Ra\\u0000vi\"",
+      "status": "passed",
+      "duration_ms": 0.10726199999999153,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerSignUpInput refuses phone by name",
+      "status": "passed",
+      "duration_ms": 0.7409750000000486,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerSignUpInput refuses email by name",
+      "status": "passed",
+      "duration_ms": 0.09764699999993809,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/auth.test.ts",
+      "name": "CustomerSignUpInput refuses password by name",
+      "status": "passed",
+      "duration_ms": 0.08501799999999093,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "money renders lakhs to exactly two decimals",
+      "status": "passed",
+      "duration_ms": 2.543186999999989,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "money switches to crores above a hundred lakh",
+      "status": "passed",
+      "duration_ms": 0.27501299999994444,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "money renders below a lakh in grouped rupees",
+      "status": "passed",
+      "duration_ms": 83.66117099999997,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "money renders exact amounts for invoices and packs",
+      "status": "passed",
+      "duration_ms": 1.3519340000000284,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "money accepts bigint paise, because the ledger stores bigint",
+      "status": "passed",
+      "duration_ms": 0.19731700000011188,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "money computes an indicative EMI from paise, in paise",
+      "status": "passed",
+      "duration_ms": 0.1569769999998698,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dates renders three-letter months, zero-padded days",
+      "status": "passed",
+      "duration_ms": 0.18428700000004028,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dates keeps September to three letters",
+      "status": "passed",
+      "duration_ms": 0.09973000000013599,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dates renders insurance validity as month and year",
+      "status": "passed",
+      "duration_ms": 0.13096700000005512,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dates renders the relative forms the design uses, and nothing else",
+      "status": "passed",
+      "duration_ms": 2.2871809999999186,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "numbers and identifiers groups kilometres in the Indian system",
+      "status": "passed",
+      "duration_ms": 0.3015139999999974,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "numbers and identifiers renders phone numbers as +91 98400 12345",
+      "status": "passed",
+      "duration_ms": 0.19030599999996411,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "numbers and identifiers normalises any Indian input to E.164",
+      "status": "passed",
+      "duration_ms": 0.25638600000002043,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "numbers and identifiers always produces two initials for the square avatar",
+      "status": "passed",
+      "duration_ms": 0.24991600000021208,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "numbers and identifiers slugifies to url-safe, bounded text",
+      "status": "passed",
+      "duration_ms": 1.3862260000000788,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dealerSlug puts the place after the name",
+      "status": "passed",
+      "duration_ms": 0.3064409999999498,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dealerSlug collapses a city that shares its district name",
+      "status": "passed",
+      "duration_ms": 0.16340600000012273,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dealerSlug drops the parts a dealership has not given yet",
+      "status": "passed",
+      "duration_ms": 0.13211900000010246,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dealerSlug keeps the place when the trading name is enormous",
+      "status": "passed",
+      "duration_ms": 0.3279939999999897,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "dealerSlug never yields an empty slug",
+      "status": "passed",
+      "duration_ms": 0.1047369999998864,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseLocality settles case and spacing so one town cannot become three",
+      "status": "passed",
+      "duration_ms": 0.801546000000144,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseLocality capitalises after a hyphen, an apostrophe and a full stop",
+      "status": "passed",
+      "duration_ms": 0.12349599999993188,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseLocality leaves non-Latin scripts alone rather than mangling them",
+      "status": "passed",
+      "duration_ms": 0.3806930000000648,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseLocality changes nothing else",
+      "status": "passed",
+      "duration_ms": 0.12300499999992098,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "distinctServices collapses entries that differ only in case or spacing",
+      "status": "passed",
+      "duration_ms": 1.0425189999998565,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "distinctServices keeps the first spelling and the dealer\u2019s order",
+      "status": "passed",
+      "duration_ms": 0.17168800000013107,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "distinctServices trims, and drops what trimming leaves empty",
+      "status": "passed",
+      "duration_ms": 0.11220899999989342,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "distinctServices does not merge synonyms, singularise or correct spelling",
+      "status": "passed",
+      "duration_ms": 0.09352100000000974,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "distinctServices is total on an empty list",
+      "status": "passed",
+      "duration_ms": 5.14723499999991,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the defensive fallbacks does not render the word \"undefined\" for an unparseable date",
+      "status": "passed",
+      "duration_ms": 0.2006619999999657,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the defensive fallbacks renders a single-word dealership with two letters",
+      "status": "passed",
+      "duration_ms": 0.0969159999999647,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the defensive fallbacks falls back to a placeholder rather than an empty avatar",
+      "status": "passed",
+      "duration_ms": 0.0903760000001057,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the defensive fallbacks handles a name with no letters at all",
+      "status": "passed",
+      "duration_ms": 0.07071699999983139,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the defensive fallbacks ignores punctuation when picking the letters",
+      "status": "passed",
+      "duration_ms": 0.1679829999998219,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the defensive fallbacks returns a single letter when that is all there is",
+      "status": "passed",
+      "duration_ms": 0.07330000000001746,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the Date-or-string arms formats a Date and its ISO string the same way",
+      "status": "passed",
+      "duration_ms": 0.09416200000009667,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the Date-or-string arms formats a month-year from either form the same way",
+      "status": "passed",
+      "duration_ms": 0.0758050000001731,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "the Date-or-string arms measures elapsed time from either form the same way",
+      "status": "passed",
+      "duration_ms": 0.26351599999998143,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "toE164 normalisation adds the +91 a bare ten-digit number omits",
+      "status": "passed",
+      "duration_ms": 0.13776700000016717,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "toE164 normalisation normalises a number already carrying its country code",
+      "status": "passed",
+      "duration_ms": 0.11974099999997634,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "toE164 normalisation passes an unexpected length through rather than guessing",
+      "status": "passed",
+      "duration_ms": 0.09863900000004833,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "toE164 normalisation strips every non-digit, whatever the separator",
+      "status": "passed",
+      "duration_ms": 0.06912400000010166,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "timeAgo across every unit says \"just now\" under a minute",
+      "status": "passed",
+      "duration_ms": 0.11277999999992971,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "timeAgo across every unit counts minutes up to an hour",
+      "status": "passed",
+      "duration_ms": 0.08493800000019291,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "timeAgo across every unit counts hours, singular and plural",
+      "status": "passed",
+      "duration_ms": 0.11162699999999859,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "timeAgo across every unit counts days, singular and plural",
+      "status": "passed",
+      "duration_ms": 0.08974499999999352,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "timeAgo across every unit falls back to an absolute date past 30 days",
+      "status": "passed",
+      "duration_ms": 0.15355099999987942,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "timeAgo across every unit never counts backwards for a clock skew into the future",
+      "status": "passed",
+      "duration_ms": 0.19206899999994675,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl accepts https://maps.app.goo.gl/8QwYh2v1kFqL3mNz9",
+      "status": "passed",
+      "duration_ms": 5.687858999999889,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl accepts https://goo.gl/maps/abc123",
+      "status": "passed",
+      "duration_ms": 0.30660200000011173,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl accepts https://www.google.com/maps/place/Sri+Lakshmi+Motors/@12.9,79.1,17z",
+      "status": "passed",
+      "duration_ms": 0.24758300000007694,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl accepts https://maps.google.com/?q=12.9,79.1",
+      "status": "passed",
+      "duration_ms": 0.0794189999999162,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl accepts https://www.google.co.in/maps/@12.9,79.1,17z",
+      "status": "passed",
+      "duration_ms": 0.07238899999993009,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl refuses \"https://evil.example.com/maps\"",
+      "status": "passed",
+      "duration_ms": 3.144461999999976,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl refuses \"https://maps.google.com.evil.example/place\"",
+      "status": "passed",
+      "duration_ms": 0.16365700000005745,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl refuses \"https://google.com.attacker.test/maps\"",
+      "status": "passed",
+      "duration_ms": 0.12440700000001925,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl refuses \"http://maps.app.goo.gl/8QwYh2v1kFqL3mNz9\"",
+      "status": "passed",
+      "duration_ms": 0.4481039999998302,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl refuses \"Sri Lakshmi Motors, Katpadi Road\"",
+      "status": "passed",
+      "duration_ms": 0.15672599999993508,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl refuses \"\"",
+      "status": "passed",
+      "duration_ms": 0.09480299999995623,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl trims what was pasted, and keeps the rest of the link untouched",
+      "status": "passed",
+      "duration_ms": 0.343255999999883,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl accepts an embed URL, which is the other thing the share panel gives",
+      "status": "passed",
+      "duration_ms": 0.11473200000000361,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl lifts the link out of a pasted <iframe>, and stores only the link",
+      "status": "passed",
+      "duration_ms": 0.3473220000000765,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl refuses an <iframe> whose src is not Google, and one with no src at all",
+      "status": "passed",
+      "duration_ms": 2.344357999999829,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "GoogleMapsUrl reads the src of an <iframe>, and leaves anything else exactly as it was",
+      "status": "passed",
+      "duration_ms": 0.2055489999997917,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile accepts \"9840012345\", however it was spaced",
+      "status": "passed",
+      "duration_ms": 0.1046880000001238,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile accepts \"98400 12345\", however it was spaced",
+      "status": "passed",
+      "duration_ms": 0.050244999999904394,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile accepts \"98400-12345\", however it was spaced",
+      "status": "passed",
+      "duration_ms": 0.04000999999993837,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile accepts \"+919840012345\", however it was spaced",
+      "status": "passed",
+      "duration_ms": 0.03811700000005658,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile accepts \"+91 98400 12345\", however it was spaced",
+      "status": "passed",
+      "duration_ms": 0.03649500000005901,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile accepts \"  9840012345  \", however it was spaced",
+      "status": "passed",
+      "duration_ms": 0.043926000000055865,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile accepts \"919840012345\", however it was spaced",
+      "status": "passed",
+      "duration_ms": 0.03640500000005886,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile refuses \"0416224889\"",
+      "status": "passed",
+      "duration_ms": 0.06397599999991144,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile refuses \"1234567890\"",
+      "status": "passed",
+      "duration_ms": 0.04405599999995502,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile refuses \"98400123\"",
+      "status": "passed",
+      "duration_ms": 0.034511999999949694,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile refuses \"98400123456\"",
+      "status": "passed",
+      "duration_ms": 0.03315000000020518,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile refuses \"nine eight four\"",
+      "status": "passed",
+      "duration_ms": 0.03469300000006115,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile refuses \"\"",
+      "status": "passed",
+      "duration_ms": 0.033390999999937776,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "isIndianMobile agrees with toE164 on everything it accepts",
+      "status": "passed",
+      "duration_ms": 0.16666100000020379,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"9840012345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.23471300000005613,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"98400 12345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.260721999999987,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"98400-12345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.04567899999983638,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"(984) 001-2345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.040931000000000495,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"98400.12345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.03743599999984326,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"+919840012345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.035704000000123415,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"+91 98400 12345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.03424199999994926,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"919840012345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.034161000000040076,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"0091 98400 12345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.03635499999995773,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"09840012345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.03481299999998555,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"0919840012345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.033820999999989,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"091 98400 12345\" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 0.03549399999997149,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile reduces \"  9840012345  \" to the one canonical form",
+      "status": "passed",
+      "duration_ms": 1.900820000000067,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile refuses \"0416224889\"",
+      "status": "passed",
+      "duration_ms": 0.1877830000000813,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile refuses \"1234567890\"",
+      "status": "passed",
+      "duration_ms": 0.09101699999996526,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile refuses \"98400123\"",
+      "status": "passed",
+      "duration_ms": 0.04361499999981788,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile refuses \"98400123456\"",
+      "status": "passed",
+      "duration_ms": 0.03651500000000851,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile refuses \"+1 98400 12345\"",
+      "status": "passed",
+      "duration_ms": 3.474779000000126,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile refuses \"98400abc12345\"",
+      "status": "passed",
+      "duration_ms": 0.059108999999807565,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile refuses \"nine eight four\"",
+      "status": "passed",
+      "duration_ms": 0.07334000000014385,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile refuses \"\"",
+      "status": "passed",
+      "duration_ms": 0.05746699999986049,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile does not mistake a number starting 91 for a country code",
+      "status": "passed",
+      "duration_ms": 37.76079200000004,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/common.test.ts",
+      "name": "normaliseIndianMobile is what isIndianMobile and toE164 are both defined by",
+      "status": "passed",
+      "duration_ms": 0.7885160000000724,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS vehicle:read \u2014 OWNER true, MANAGER true, STAFF true",
+      "status": "passed",
+      "duration_ms": 6.892311000000063,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS vehicle:write \u2014 OWNER true, MANAGER true, STAFF true",
+      "status": "passed",
+      "duration_ms": 0.3493759999998929,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS listing:submit \u2014 OWNER true, MANAGER true, STAFF false",
+      "status": "passed",
+      "duration_ms": 0.11553400000002512,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS listing:reserve \u2014 OWNER true, MANAGER true, STAFF false",
+      "status": "passed",
+      "duration_ms": 0.0894740000001093,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS listing:sell \u2014 OWNER true, MANAGER true, STAFF false",
+      "status": "passed",
+      "duration_ms": 0.10905400000001464,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS listing:withdraw \u2014 OWNER true, MANAGER true, STAFF false",
+      "status": "passed",
+      "duration_ms": 0.07965999999987616,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS listing:reactivate \u2014 OWNER true, MANAGER true, STAFF false",
+      "status": "passed",
+      "duration_ms": 0.5061319999999796,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS enquiry:read \u2014 OWNER true, MANAGER true, STAFF true",
+      "status": "passed",
+      "duration_ms": 0.3525609999999233,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS enquiry:contact \u2014 OWNER true, MANAGER true, STAFF true",
+      "status": "passed",
+      "duration_ms": 0.21189899999990303,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS enquiry:close \u2014 OWNER true, MANAGER true, STAFF false",
+      "status": "passed",
+      "duration_ms": 1.7691619999998238,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS dealer:update \u2014 OWNER true, MANAGER false, STAFF false",
+      "status": "passed",
+      "duration_ms": 0.20370600000001104,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS document:upload \u2014 OWNER true, MANAGER false, STAFF false",
+      "status": "passed",
+      "duration_ms": 0.07845799999995506,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS member:manage \u2014 OWNER true, MANAGER false, STAFF false",
+      "status": "passed",
+      "duration_ms": 0.06578899999999521,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS gives OWNER every permission",
+      "status": "passed",
+      "duration_ms": 11.38226799999984,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS is a strict hierarchy \u2014 OWNER \u2287 MANAGER \u2287 STAFF",
+      "status": "passed",
+      "duration_ms": 0.3069519999999102,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "DEALER_PERMISSIONS names only roles that exist",
+      "status": "passed",
+      "duration_ms": 1.6108440000000428,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "canDealer answers from the granted list",
+      "status": "passed",
+      "duration_ms": 0.1833560000000034,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "canDealer says no to a missing list",
+      "status": "passed",
+      "duration_ms": 0.10387599999990016,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "enquiryTransitionPermission lets anyone who works leads mark a new one contacted",
+      "status": "passed",
+      "duration_ms": 0.11332999999990534,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "enquiryTransitionPermission needs enquiry:close for NEW \u2192 CLOSED",
+      "status": "passed",
+      "duration_ms": 0.07439199999998891,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "enquiryTransitionPermission needs enquiry:close for CONTACTED \u2192 CLOSED",
+      "status": "passed",
+      "duration_ms": 0.0444159999999556,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "enquiryTransitionPermission needs enquiry:close for NEW \u2192 SPAM",
+      "status": "passed",
+      "duration_ms": 0.037295999999969354,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "enquiryTransitionPermission needs enquiry:close for CLOSED \u2192 NEW",
+      "status": "passed",
+      "duration_ms": 0.03506300000003648,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "enquiryTransitionPermission needs enquiry:close for CLOSED \u2192 CONTACTED",
+      "status": "passed",
+      "duration_ms": 0.03467200000000048,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "enquiryTransitionPermission needs enquiry:close for SPAM \u2192 CONTACTED",
+      "status": "passed",
+      "duration_ms": 0.03546299999993607,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "enquiryTransitionPermission is defined for every pair of statuses",
+      "status": "passed",
+      "duration_ms": 11.566325000000006,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "roles lets an owner hand out MANAGER and STAFF, never OWNER",
+      "status": "passed",
+      "duration_ms": 0.22590999999988526,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-access.test.ts",
+      "name": "roles labels every role",
+      "status": "passed",
+      "duration_ms": 0.1712680000000546,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "the service list says what is wrong in the dealer\u2019s own words answers a thirteenth service without mentioning arrays or items",
+      "status": "passed",
+      "duration_ms": 21.828947000000085,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "the service list says what is wrong in the dealer\u2019s own words answers an emptied list",
+      "status": "passed",
+      "duration_ms": 1.2586840000000166,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "the service list says what is wrong in the dealer\u2019s own words answers a service typed as a paragraph",
+      "status": "passed",
+      "duration_ms": 1.2106919999999946,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "the tagline says what is wrong in the dealer\u2019s own words answers a line too short and a line too long",
+      "status": "passed",
+      "duration_ms": 0.9464040000000296,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "established year explains invalid year 1899",
+      "status": "passed",
+      "duration_ms": 0.6029170000000477,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "established year explains invalid year 2000.5",
+      "status": "passed",
+      "duration_ms": 0.3937230000000227,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "established year explains invalid year 2090",
+      "status": "passed",
+      "duration_ms": 2.2822539999999663,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "established year explains invalid year 2400",
+      "status": "passed",
+      "duration_ms": 0.32564000000002125,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "established year accepts boundary year 1900",
+      "status": "passed",
+      "duration_ms": 0.26603099999999813,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "established year accepts boundary year 2026",
+      "status": "passed",
+      "duration_ms": 0.09052599999995437,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/dealer-messages.test.ts",
+      "name": "the two schemas answer identically gives the same sentence for the same mistake",
+      "status": "passed",
+      "duration_ms": 6.6120500000000675,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput takes a car and a message",
+      "status": "passed",
+      "duration_ms": 3.798234999999977,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput treats {} as no message",
+      "status": "passed",
+      "duration_ms": 0.33894999999995434,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput treats {\"message\":\"\"} as no message",
+      "status": "passed",
+      "duration_ms": 0.10541900000004034,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput treats {\"message\":\"  \\n \"} as no message",
+      "status": "passed",
+      "duration_ms": 0.08889399999998204,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput refuses customerPhone by name",
+      "status": "passed",
+      "duration_ms": 0.8724129999999946,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput refuses customerName by name",
+      "status": "passed",
+      "duration_ms": 0.15025600000001305,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput refuses dealerId by name",
+      "status": "passed",
+      "duration_ms": 0.0912270000000035,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput refuses customerId by name",
+      "status": "passed",
+      "duration_ms": 0.13069600000000037,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput refuses status by name",
+      "status": "passed",
+      "duration_ms": 0.11322999999998729,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "CreateEnquiryInput refuses a missing car and an essay",
+      "status": "passed",
+      "duration_ms": 0.46443900000002714,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "the dealership\u2019s inbox (R66) lists every tab by default, twenty-five at a time",
+      "status": "passed",
+      "duration_ms": 0.8485459999999989,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "the dealership\u2019s inbox (R66) refuses {\"status\":\"OPEN\"} as a query",
+      "status": "passed",
+      "duration_ms": 0.16445800000002464,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "the dealership\u2019s inbox (R66) refuses {\"dealerId\":\"x\"} as a query",
+      "status": "passed",
+      "duration_ms": 0.1293150000000196,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "the dealership\u2019s inbox (R66) refuses {\"limit\":\"0\"} as a query",
+      "status": "passed",
+      "duration_ms": 0.1535509999999931,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "the dealership\u2019s inbox (R66) refuses {\"limit\":\"101\"} as a query",
+      "status": "passed",
+      "duration_ms": 0.10082099999999627,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "the dealership\u2019s inbox (R66) moves an enquiry by status and nothing else",
+      "status": "passed",
+      "duration_ms": 0.3926710000000071,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "the dealership\u2019s inbox (R66) gives every status a label and a tone",
+      "status": "passed",
+      "duration_ms": 0.41143900000002986,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "a customer\u2019s own enquiries (R68) shows NEW to the customer as SENT",
+      "status": "passed",
+      "duration_ms": 0.12617999999997664,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "a customer\u2019s own enquiries (R68) shows CONTACTED to the customer as CONTACTED",
+      "status": "passed",
+      "duration_ms": 0.05159800000001269,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "a customer\u2019s own enquiries (R68) shows CLOSED to the customer as CLOSED",
+      "status": "passed",
+      "duration_ms": 0.04015999999995756,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "a customer\u2019s own enquiries (R68) shows SPAM to the customer as CLOSED",
+      "status": "passed",
+      "duration_ms": 0.035603000000037355,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "a customer\u2019s own enquiries (R68) never has a spam state a customer could be shown",
+      "status": "passed",
+      "duration_ms": 0.12515899999999647,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enquiry.test.ts",
+      "name": "a customer\u2019s own enquiries (R68) pages twenty at a time and refuses anything else in the query",
+      "status": "passed",
+      "duration_ms": 0.4542229999999563,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the enum set exports a substantial set of enums, not a stub",
+      "status": "passed",
+      "duration_ms": 2.581214999999929,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the enum set names every stored member in SCREAMING_SNAKE",
+      "status": "passed",
+      "duration_ms": 2.339721999999938,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the enum set keeps StatusTone as lower-case design tokens",
+      "status": "passed",
+      "duration_ms": 0.7314309999999296,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the enum set repeats no member within an enum",
+      "status": "passed",
+      "duration_ms": 0.9929439999999659,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the enum set leaves no enum empty",
+      "status": "passed",
+      "duration_ms": 0.40255600000000413,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the vehicle vocabulary lists the fuels Indian used cars actually come in",
+      "status": "passed",
+      "duration_ms": 0.24024199999996654,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the vehicle vocabulary has two transmissions and no third",
+      "status": "passed",
+      "duration_ms": 0.10220400000002883,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the vehicle vocabulary lists the five body types the homepage tiles render",
+      "status": "passed",
+      "duration_ms": 0.24525900000003276,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the vehicle vocabulary lets a price be slightly negotiable or fixed, and nothing vaguer",
+      "status": "passed",
+      "duration_ms": 0.534403999999995,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the vehicle vocabulary mirrors the four VehicleStatus values in the database",
+      "status": "passed",
+      "duration_ms": 0.18750199999999495,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "listing status and its display form keeps the two vocabularies separate",
+      "status": "passed",
+      "duration_ms": 0.23918000000003303,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "listing status and its display form has a display status for every moderation state a dealer can be in",
+      "status": "passed",
+      "duration_ms": 0.11057600000003731,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "listing status and its display form includes the three moderation outcomes",
+      "status": "passed",
+      "duration_ms": 1.3823600000000624,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "roles lists the three dealer seats",
+      "status": "passed",
+      "duration_ms": 0.13095799999996416,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "roles lists the three admin seats",
+      "status": "passed",
+      "duration_ms": 0.1031350000000657,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "roles shares no member between the two, so a role name is unambiguous",
+      "status": "passed",
+      "duration_ms": 0.11670600000002196,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the credit ledger vocabulary names each credit movement distinctly",
+      "status": "passed",
+      "duration_ms": 0.2406820000001062,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the credit ledger vocabulary includes a purchase reason, so bought credits are not indistinguishable from granted ones",
+      "status": "passed",
+      "duration_ms": 0.10311500000000251,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "enquiry vocabulary lists the four lead states a dealer works through",
+      "status": "passed",
+      "duration_ms": 0.10803199999998014,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "enquiry vocabulary lists the reasons a lead closes",
+      "status": "passed",
+      "duration_ms": 0.19671600000003764,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "enquiry vocabulary records the three places a lead can originate",
+      "status": "passed",
+      "duration_ms": 0.09311000000002423,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "parsing accepts a member",
+      "status": "passed",
+      "duration_ms": 0.2175480000000789,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "parsing rejects a non-member",
+      "status": "passed",
+      "duration_ms": 0.624168999999938,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "parsing rejects the lower-cased form",
+      "status": "passed",
+      "duration_ms": 0.11900900000000547,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "parsing rejects an empty string",
+      "status": "passed",
+      "duration_ms": 0.0942410000000109,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "parsing rejects a non-string",
+      "status": "passed",
+      "duration_ms": 0.11049599999989823,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "parsing accepts every declared member of every enum",
+      "status": "passed",
+      "duration_ms": 1.770984999999996,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps FUEL_LABELS has an entry for every member and no extras",
+      "status": "passed",
+      "duration_ms": 0.14053100000000995,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps TRANSMISSION_LABELS has an entry for every member and no extras",
+      "status": "passed",
+      "duration_ms": 0.060380000000009204,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps BODY_TYPE_LABELS has an entry for every member and no extras",
+      "status": "passed",
+      "duration_ms": 0.05236899999999878,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps DISPLAY_STATUS_LABELS has an entry for every member and no extras",
+      "status": "passed",
+      "duration_ms": 0.049083999999993466,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps DEALER_STATUS_LABELS has an entry for every member and no extras",
+      "status": "passed",
+      "duration_ms": 0.17129799999997886,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps WITHDRAWAL_REASON_LABELS has an entry for every member and no extras",
+      "status": "passed",
+      "duration_ms": 0.09652600000003986,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps FUEL_LABELS labels every member with a non-empty string",
+      "status": "passed",
+      "duration_ms": 0.6757370000000265,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps TRANSMISSION_LABELS labels every member with a non-empty string",
+      "status": "passed",
+      "duration_ms": 0.07966000000010354,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps BODY_TYPE_LABELS labels every member with a non-empty string",
+      "status": "passed",
+      "duration_ms": 0.21004599999992024,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps DISPLAY_STATUS_LABELS labels every member with a non-empty string",
+      "status": "passed",
+      "duration_ms": 0.21614599999998063,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps DEALER_STATUS_LABELS labels every member with a non-empty string",
+      "status": "passed",
+      "duration_ms": 0.9550270000000864,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps WITHDRAWAL_REASON_LABELS labels every member with a non-empty string",
+      "status": "passed",
+      "duration_ms": 0.41983200000004217,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps FUEL_LABELS writes labels in sentence case, not SCREAMING_SNAKE",
+      "status": "passed",
+      "duration_ms": 0.37397299999997813,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps TRANSMISSION_LABELS writes labels in sentence case, not SCREAMING_SNAKE",
+      "status": "passed",
+      "duration_ms": 0.1678430000000617,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps BODY_TYPE_LABELS writes labels in sentence case, not SCREAMING_SNAKE",
+      "status": "passed",
+      "duration_ms": 0.12914499999999407,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps DISPLAY_STATUS_LABELS writes labels in sentence case, not SCREAMING_SNAKE",
+      "status": "passed",
+      "duration_ms": 2.0450969999999415,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps DEALER_STATUS_LABELS writes labels in sentence case, not SCREAMING_SNAKE",
+      "status": "passed",
+      "duration_ms": 0.16181400000004942,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps WITHDRAWAL_REASON_LABELS writes labels in sentence case, not SCREAMING_SNAKE",
+      "status": "passed",
+      "duration_ms": 0.34308599999997114,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps gives every display status a badge tone",
+      "status": "passed",
+      "duration_ms": 0.16267500000003565,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps gives every dealer status a badge tone",
+      "status": "passed",
+      "duration_ms": 0.10185300000000552,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps uses only tones the palette defines",
+      "status": "passed",
+      "duration_ms": 0.2944529999999759,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "the label maps tones a rejection as an error and an active listing as ok",
+      "status": "passed",
+      "duration_ms": 0.11007600000004913,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "ownerLabel renders 1 as \"First owner\"",
+      "status": "passed",
+      "duration_ms": 0.0998499999999467,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "ownerLabel renders 2 as \"Second owner\"",
+      "status": "passed",
+      "duration_ms": 0.043424999999956526,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "ownerLabel renders 3 as \"Third owner\"",
+      "status": "passed",
+      "duration_ms": 0.03408200000001216,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "ownerLabel renders 4 as \"Fourth owner\"",
+      "status": "passed",
+      "duration_ms": 0.033631000000013955,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "ownerLabel renders 5 as \"Fifth owner\"",
+      "status": "passed",
+      "duration_ms": 0.03238899999996647,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "ownerLabel falls back to an ordinal past the spelled-out range",
+      "status": "passed",
+      "duration_ms": 0.07087699999999586,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/enums.test.ts",
+      "name": "ownerLabel never renders an empty word for a real owner count",
+      "status": "passed",
+      "duration_ms": 0.1849489999999605,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/index.test.ts",
+      "name": "the barrel re-exports every module",
+      "status": "passed",
+      "duration_ms": 12.057745000000068,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/index.test.ts",
+      "name": "the barrel exports a version other packages can report",
+      "status": "passed",
+      "duration_ms": 1.9347020000000157,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/index.test.ts",
+      "name": "the barrel exports the version as a string, not a schema",
+      "status": "passed",
+      "duration_ms": 0.32063300000004347,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/index.test.ts",
+      "name": "the barrel exports no name twice under different definitions",
+      "status": "passed",
+      "duration_ms": 0.24125299999991512,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "what a listing status means lets a dealer edit and submit only a draft or a listing sent back to them",
+      "status": "passed",
+      "duration_ms": 46.70530099999996,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "what a listing status means lets a dealer throw away only a draft that was never submitted",
+      "status": "passed",
+      "duration_ms": 0.37093800000002375,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "what a listing status means shows ACTIVE and RESERVED on the marketplace, and lets a buyer act only on ACTIVE (R71)",
+      "status": "passed",
+      "duration_ms": 0.2159049999997933,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "what a listing status means tells a buyer how every status stands, never naming an internal one",
+      "status": "passed",
+      "duration_ms": 2.4879229999999097,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "what a listing status means labels every status for a dealer, with the badge the design gives it",
+      "status": "passed",
+      "duration_ms": 2.3202009999999973,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "the lifecycle a dealership drives once a listing has been live (R69) offers exactly the moves the product names, for each status",
+      "status": "passed",
+      "duration_ms": 0.2854700000000321,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "the lifecycle a dealership drives once a listing has been live (R69) never offers a dealer a direct move back to sale \u2014 only a request for one",
+      "status": "passed",
+      "duration_ms": 9.076297000000068,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "the lifecycle a dealership drives once a listing has been live (R69) offers no second request while one is waiting",
+      "status": "passed",
+      "duration_ms": 0.30941600000005565,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "the lifecycle a dealership drives once a listing has been live (R69) labels and tones every reactivation request status",
+      "status": "passed",
+      "duration_ms": 0.31768800000008923,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "the lifecycle a dealership drives once a listing has been live (R69) takes an optional reason for a reactivation request, and nothing else",
+      "status": "passed",
+      "duration_ms": 2.4516590000000633,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "the lifecycle a dealership drives once a listing has been live (R69) has no way back from SOLD",
+      "status": "passed",
+      "duration_ms": 0.31500400000004447,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "the lifecycle a dealership drives once a listing has been live (R69) labels every withdrawal reason in sentence case",
+      "status": "passed",
+      "duration_ms": 5.703852999999981,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/listing.test.ts",
+      "name": "the lifecycle a dealership drives once a listing has been live (R69) takes a withdrawal reason and an optional note, and nothing else",
+      "status": "passed",
+      "duration_ms": 0.8264930000000277,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "the URL values for the three enums are the enums, lower-cased \u2014 one cannot gain a value the other lacks",
+      "status": "passed",
+      "duration_ms": 2.1712479999999914,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery defaults to the first page of 24, newest first",
+      "status": "passed",
+      "duration_ms": 7.17674999999997,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery reads a comma-separated list as OR, trimming blanks",
+      "status": "passed",
+      "duration_ms": 5.863342999999986,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery coerces the ranges from the strings a URL carries",
+      "status": "passed",
+      "duration_ms": 0.5716109999999617,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses a floor above its ceiling, naming the floor",
+      "status": "passed",
+      "duration_ms": 1.002668999999969,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses a floor above its ceiling, naming the floor",
+      "status": "passed",
+      "duration_ms": 3.5771330000000034,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses a floor above its ceiling, naming the floor",
+      "status": "passed",
+      "duration_ms": 0.20817399999998543,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery accepts a floor equal to its ceiling",
+      "status": "passed",
+      "duration_ms": 0.21228900000005524,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { fuel: 'kerosene' }",
+      "status": "passed",
+      "duration_ms": 0.5683849999999211,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { transmission: 'cvt' }",
+      "status": "passed",
+      "duration_ms": 0.19718699999998535,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { bodyType: 'coupe' }",
+      "status": "passed",
+      "duration_ms": 0.21527400000002217,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { owners: '0' }",
+      "status": "passed",
+      "duration_ms": 0.16126300000007632,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { brand: 'Hyundai' }",
+      "status": "passed",
+      "duration_ms": 1.41690200000005,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { brand: '' }",
+      "status": "passed",
+      "duration_ms": 0.42679199999997763,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { sort: 'cheapest' }",
+      "status": "passed",
+      "duration_ms": 0.19474300000001676,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { limit: '49' }",
+      "status": "passed",
+      "duration_ms": 6.25663499999996,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { page: '0' }",
+      "status": "passed",
+      "duration_ms": 0.314021999999909,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { minPrice: '-1' }",
+      "status": "passed",
+      "duration_ms": 0.21055599999999686,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { minYear: '1900' }",
+      "status": "passed",
+      "duration_ms": 0.16369600000007267,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "PublicVehicleQuery refuses { dealerId: 'x' }",
+      "status": "passed",
+      "duration_ms": 0.30786299999999756,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "DealerVehicleQuery takes every vehicle filter",
+      "status": "passed",
+      "duration_ms": 6.940184000000045,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "DealerVehicleQuery refuses district \u2014 the dealership decides it",
+      "status": "passed",
+      "duration_ms": 0.26535999999998694,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "DealerVehicleQuery refuses city \u2014 the dealership decides it",
+      "status": "passed",
+      "duration_ms": 0.19736699999998564,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "DealerVehicleQuery refuses dealer \u2014 the dealership decides it",
+      "status": "passed",
+      "duration_ms": 0.455304999999953,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "what the panel is built from labels every sort and every owner bucket",
+      "status": "passed",
+      "duration_ms": 0.44175399999994625,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "what the panel is built from has presets that climb, open at both ends",
+      "status": "passed",
+      "duration_ms": 0.35878999999999905,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "what the panel is built from has an empty facets payload that is a valid one",
+      "status": "passed",
+      "duration_ms": 44.836640999999986,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "CarSuggestQuery takes a search, a limit and the place, and reads the place like the marketplace",
+      "status": "passed",
+      "duration_ms": 1.8962430000000268,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/public.test.ts",
+      "name": "CarSuggestQuery refuses an empty search, a limit above ten and any filter it does not take",
+      "status": "passed",
+      "duration_ms": 0.6497269999999844,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the same plate, however it was typed KA 01 AB 1234 is KA01AB1234",
+      "status": "passed",
+      "duration_ms": 2.6049699999999802,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the same plate, however it was typed KA-01-AB-1234 is KA01AB1234",
+      "status": "passed",
+      "duration_ms": 0.40245600000002923,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the same plate, however it was typed ka01ab1234 is KA01AB1234",
+      "status": "passed",
+      "duration_ms": 0.1311279999999897,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the same plate, however it was typed  KA01 AB1234  is KA01AB1234",
+      "status": "passed",
+      "duration_ms": 0.10076199999991786,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the same plate, however it was typed KA.01.AB.1234 is KA01AB1234",
+      "status": "passed",
+      "duration_ms": 0.1266210000000001,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the same plate, however it was typed pads the RTO number and the plate number, so one car has one form",
+      "status": "passed",
+      "duration_ms": 0.24076300000001538,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the shapes India issues reads a one- and a three-letter series",
+      "status": "passed",
+      "duration_ms": 0.18983600000001388,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the shapes India issues joins a series split by a space \u2014 DL 3C AB is series CAB",
+      "status": "passed",
+      "duration_ms": 0.5765870000000177,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the shapes India issues reads a plate with no series letters",
+      "status": "passed",
+      "duration_ms": 0.22065199999997276,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the shapes India issues uses the separators a dealer typed to tell the RTO from the number",
+      "status": "passed",
+      "duration_ms": 0.10526900000002115,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the shapes India issues gives the RTO two digits when nothing separates it from the number",
+      "status": "passed",
+      "duration_ms": 0.12697100000002592,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the shapes India issues reads the Bharat series, which belongs to no RTO",
+      "status": "passed",
+      "duration_ms": 0.18499799999995048,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the shapes India issues reads a legacy three-letter series",
+      "status": "passed",
+      "duration_ms": 0.12687100000005103,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "the shapes India issues knows every state and union-territory code it lists",
+      "status": "passed",
+      "duration_ms": 0.9177610000000413,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says asks for a value when there is none",
+      "status": "passed",
+      "duration_ms": 0.14125300000000607,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses characters no plate carries",
+      "status": "passed",
+      "duration_ms": 0.08332599999994272,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says names an unknown state code",
+      "status": "passed",
+      "duration_ms": 0.08601900000007845,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses an all-zero plate number",
+      "status": "passed",
+      "duration_ms": 0.11681599999997161,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses a five-digit number",
+      "status": "passed",
+      "duration_ms": 0.10233400000004167,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses a four-letter series",
+      "status": "passed",
+      "duration_ms": 0.05735700000002453,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses a three-digit RTO",
+      "status": "passed",
+      "duration_ms": 0.04685099999994691,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses a number with no state",
+      "status": "passed",
+      "duration_ms": 0.04333500000007007,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses a state and nothing else",
+      "status": "passed",
+      "duration_ms": 0.04327499999999418,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses a state and a short number",
+      "status": "passed",
+      "duration_ms": 0.04293399999994563,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses a malformed BH number",
+      "status": "passed",
+      "duration_ms": 0.054250999999908345,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses BH with a three-letter tail",
+      "status": "passed",
+      "duration_ms": 0.04409599999996772,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses letters where the number should be",
+      "status": "passed",
+      "duration_ms": 0.04658000000006268,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "what it refuses, and what it says refuses a legacy series with a long number",
+      "status": "passed",
+      "duration_ms": 0.2612429999999222,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "formatRegistration formats a stored value for a person",
+      "status": "passed",
+      "duration_ms": 0.22951499999999214,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "formatRegistration leaves a value it cannot read exactly as stored",
+      "status": "passed",
+      "duration_ms": 0.09890900000004876,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "RegistrationNumber parses to the canonical form",
+      "status": "passed",
+      "duration_ms": 0.7224069999999756,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "RegistrationNumber carries the reason a value was refused",
+      "status": "passed",
+      "duration_ms": 0.6040689999999813,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/registration.test.ts",
+      "name": "RegistrationNumber refuses an absurdly long value before reading it",
+      "status": "passed",
+      "duration_ms": 0.2591499999999769,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "the status machine lets a closed ticket go nowhere, and nothing move to the status it already has",
+      "status": "passed",
+      "duration_ms": 11.213154000000031,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "the status machine lets every open state be resolved or closed",
+      "status": "passed",
+      "duration_ms": 0.2920290000000705,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "the status machine reopens a resolved ticket, but never a closed one",
+      "status": "passed",
+      "duration_ms": 0.14173299999993105,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "a customer reply leaves OPEN as OPEN",
+      "status": "passed",
+      "duration_ms": 0.16399700000010853,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "a customer reply leaves IN_PROGRESS as IN_PROGRESS",
+      "status": "passed",
+      "duration_ms": 0.8767789999999422,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "a customer reply leaves WAITING_FOR_CUSTOMER as IN_PROGRESS",
+      "status": "passed",
+      "duration_ms": 0.11660600000004706,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "a customer reply leaves RESOLVED as OPEN",
+      "status": "passed",
+      "duration_ms": 2.2253389999999627,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "a customer reply leaves CLOSED as null",
+      "status": "passed",
+      "duration_ms": 0.0926200000000108,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "a customer reply only ever lands on a status the machine allows from where it was",
+      "status": "passed",
+      "duration_ms": 0.1588289999999688,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "labels names every category, status and priority, for both audiences",
+      "status": "passed",
+      "duration_ms": 1.1753489999999829,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "labels formats the reference a customer quotes",
+      "status": "passed",
+      "duration_ms": 0.1332710000000361,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "CreateSupportTicketInput trims what it takes",
+      "status": "passed",
+      "duration_ms": 7.304010999999946,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "CreateSupportTicketInput refuses priority",
+      "status": "passed",
+      "duration_ms": 2.3835359999999355,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "CreateSupportTicketInput refuses status",
+      "status": "passed",
+      "duration_ms": 0.6853009999999813,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "CreateSupportTicketInput refuses customerId",
+      "status": "passed",
+      "duration_ms": 0.10860400000001391,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "CreateSupportTicketInput refuses dealerId",
+      "status": "passed",
+      "duration_ms": 0.08924500000000535,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "CreateSupportTicketInput refuses a subject or description that is only whitespace",
+      "status": "passed",
+      "duration_ms": 2.021382000000017,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "SupportMessageInput takes a message and nothing else",
+      "status": "passed",
+      "duration_ms": 0.5285249999999451,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "admin inputs (R91) UpdateSupportTicketInput needs at least one change, and takes null to unassign",
+      "status": "passed",
+      "duration_ms": 0.8096080000000256,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "admin inputs (R91) AdminSupportTicketQuery takes me, unassigned or an admin id as the assignee",
+      "status": "passed",
+      "duration_ms": 4.006919000000039,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/support.test.ts",
+      "name": "admin inputs (R91) SupportNoteInput trims, and refuses an empty note",
+      "status": "passed",
+      "duration_ms": 0.5547950000000128,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "the colour families are twelve, the last of them Other, each with a label",
+      "status": "passed",
+      "duration_ms": 7.110168999999928,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "the colour families name every family but Other by at least one word",
+      "status": "passed",
+      "duration_ms": 5.774980000000028,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "the colour families are what a vehicle may be saved with \u2014 and nothing else",
+      "status": "passed",
+      "duration_ms": 4.016775000000052,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Pearl White as WHITE",
+      "status": "passed",
+      "duration_ms": 0.4015349999999671,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Phantom Black as BLACK",
+      "status": "passed",
+      "duration_ms": 0.23617600000000039,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Magma Grey as GREY",
+      "status": "passed",
+      "duration_ms": 0.1666610000000901,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Titan Gray as GREY",
+      "status": "passed",
+      "duration_ms": 0.13223899999991318,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Silky Silver as SILVER",
+      "status": "passed",
+      "duration_ms": 2.242475000000013,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Fiery Red as RED",
+      "status": "passed",
+      "duration_ms": 0.11018599999999878,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Maroon as RED",
+      "status": "passed",
+      "duration_ms": 0.07133699999997134,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Midnight Blue as BLUE",
+      "status": "passed",
+      "duration_ms": 0.07028600000001006,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Navy Blue as BLUE",
+      "status": "passed",
+      "duration_ms": 0.11242899999990641,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Racing Green as GREEN",
+      "status": "passed",
+      "duration_ms": 0.07157799999993131,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Pearl Brown as BROWN",
+      "status": "passed",
+      "duration_ms": 0.06376599999998689,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Beige as BEIGE",
+      "status": "passed",
+      "duration_ms": 0.05187799999998788,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Yellow as YELLOW",
+      "status": "passed",
+      "duration_ms": 0.043915999999967426,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads Sunset Orange as ORANGE",
+      "status": "passed",
+      "duration_ms": 0.05600399999991623,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads white as WHITE",
+      "status": "passed",
+      "duration_ms": 0.04352500000004511,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads OTHER as OTHER",
+      "status": "passed",
+      "duration_ms": 0.04034100000001217,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed files Deep Forest under Other rather than guessing",
+      "status": "passed",
+      "duration_ms": 0.11145799999997053,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed files Red with black roof under Other rather than guessing",
+      "status": "passed",
+      "duration_ms": 0.06275500000003831,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed files Blackberry under Other rather than guessing",
+      "status": "passed",
+      "duration_ms": 0.05266899999992347,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed files Greyish under Other rather than guessing",
+      "status": "passed",
+      "duration_ms": 0.05135700000005272,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed files Champagne under Other rather than guessing",
+      "status": "passed",
+      "duration_ms": 0.051377000000002226,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle-color.test.ts",
+      "name": "reading a colour somebody typed reads blank as no colour",
+      "status": "passed",
+      "duration_ms": 0.11596400000007634,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "normaliseVehicleText trims and collapses whitespace",
+      "status": "passed",
+      "duration_ms": 8.889267000000018,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "normaliseVehicleText leaves case exactly as typed",
+      "status": "passed",
+      "duration_ms": 0.24058199999990393,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas normalises free text on the way in",
+      "status": "passed",
+      "duration_ms": 0.623689000000013,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas refuses an empty make once the whitespace is gone",
+      "status": "passed",
+      "duration_ms": 0.5910899999998946,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas refuses text over the limit",
+      "status": "passed",
+      "duration_ms": 0.43318199999998797,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas refuses a year before the floor and after next year",
+      "status": "passed",
+      "duration_ms": 6.899742999999944,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas refuses a negative or fractional odometer",
+      "status": "passed",
+      "duration_ms": 3.2651029999999537,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas refuses zero owners",
+      "status": "passed",
+      "duration_ms": 2.9632289999999557,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas keeps money in integer paise with a floor and a ceiling",
+      "status": "passed",
+      "duration_ms": 40.69395499999996,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas takes the insurance date as an ISO calendar date",
+      "status": "passed",
+      "duration_ms": 0.8473650000000816,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "VehicleFieldSchemas has no field for an image, a status or a dealer",
+      "status": "passed",
+      "duration_ms": 1.144172000000026,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleIssues finds nothing wrong with a complete vehicle",
+      "status": "passed",
+      "duration_ms": 7.860577999999805,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleIssues names every missing required field, in wizard order",
+      "status": "passed",
+      "duration_ms": 0.37217999999984386,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleIssues treats an empty string as missing",
+      "status": "passed",
+      "duration_ms": 0.1768259999998918,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleIssues refuses a registration before manufacture",
+      "status": "passed",
+      "duration_ms": 0.18267500000001746,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleIssues asks for the insurance date unless there is no insurance",
+      "status": "passed",
+      "duration_ms": 0.1305459999998675,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleIssues labels every required field",
+      "status": "passed",
+      "duration_ms": 0.20730200000002696,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "titleWithoutYear drops the leading year the plate beside it already shows",
+      "status": "passed",
+      "duration_ms": 11.821468000000095,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "titleWithoutYear is the inverse of vehicleTitle",
+      "status": "passed",
+      "duration_ms": 0.503498000000036,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "titleWithoutYear leaves a title alone when there is no year, a different year, or nothing but the year",
+      "status": "passed",
+      "duration_ms": 0.15688600000021324,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleTitle reads year, make, model and variant",
+      "status": "passed",
+      "duration_ms": 0.09261999999989712,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleTitle skips what has not been entered yet",
+      "status": "passed",
+      "duration_ms": 0.08474699999987934,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleSummary reads fuel, gearbox and odometer in that order",
+      "status": "passed",
+      "duration_ms": 80.73780199999987,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "vehicleSummary skips what is missing, and keeps a zero odometer",
+      "status": "passed",
+      "duration_ms": 0.24376699999993434,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs creates a draft from a registration number, canonicalised",
+      "status": "passed",
+      "duration_ms": 11.799424999999928,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs refuses a client-supplied status by name",
+      "status": "passed",
+      "duration_ms": 6.016753999999992,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs refuses a client-supplied dealerId by name",
+      "status": "passed",
+      "duration_ms": 0.21825799999987794,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs refuses a client-supplied mediaId by name",
+      "status": "passed",
+      "duration_ms": 0.12694099999998798,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs refuses a client-supplied imageUrl by name",
+      "status": "passed",
+      "duration_ms": 0.13335000000006403,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs refuses a client-supplied storageKey by name",
+      "status": "passed",
+      "duration_ms": 0.12747200000012526,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs refuses a client-supplied publishedAt by name",
+      "status": "passed",
+      "duration_ms": 0.09470299999998133,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs refuses a client-supplied verified by name",
+      "status": "passed",
+      "duration_ms": 0.0881130000000212,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs lets a field be cleared with null and left alone by omission",
+      "status": "passed",
+      "duration_ms": 0.1979879999998957,
+      "failures": []
+    },
+    {
+      "file": "packages/contracts/tests/unit/vehicle.test.ts",
+      "name": "the dealer inputs asks only for make or model suggestions",
+      "status": "passed",
+      "duration_ms": 0.5975690000000213,
+      "failures": []
+    }
+  ]
+}

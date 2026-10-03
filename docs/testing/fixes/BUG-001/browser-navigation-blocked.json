@@ -1,0 +1,6 @@
+{
+  "environment": "Built production Next.js :3004; current source API using local cert DB and fake providers; Chromium 151; private cookies outside repository",
+  "results": [],
+  "status": "BLOCKED",
+  "reason": "networkidle navigation timed out after UI logout and API fake-OTP login. Isolated fresh-session diagnostic returned 200, rendered the empty state and had no pending requests. The next run uses document readiness plus visible-state and authorization assertions, and retains navigation diagnostics."
+}

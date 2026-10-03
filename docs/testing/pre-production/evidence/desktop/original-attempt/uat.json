@@ -1,0 +1,133 @@
+{
+  "stage": "desktop",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "engine": "Chromium 151",
+  "rows": [
+    {
+      "id": "UAT-desktop-001",
+      "canonical": ["PUBLIC-001", "PUBLIC-002", "PUBLIC-003"],
+      "title": "Anonymous search journey by keyboard and navigation",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "reason": "The expression evaluated to a falsy value:\n\n  assert.ok(page.url().includes('hyundai'))\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-desktop-002",
+      "canonical": ["PUBLIC-006", "PUBLIC-007", "PUBLIC-020"],
+      "title": "Apply a filter, refresh, clear filters and use browser history",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "reason": "page.waitForLoadState: Timeout 10000ms exceeded.",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-desktop-003",
+      "canonical": ["PUBLIC-009", "MEDIA-010", "MEDIA-011"],
+      "title": "Open car, operate gallery arrows and fullscreen, cancel and reopen",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "reason": "page.waitForLoadState: Timeout 10000ms exceeded.",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-desktop-004",
+      "canonical": ["AUTH-001", "CUSTOMER-001", "CUSTOMER-002", "CUSTOMER-003"],
+      "title": "Normal customer login, account menu, saved cars and enquiry history",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "reason": "Expected values to be strictly equal:\n+ actual - expected\n\n+ '/saved'\n- '/enquiries'\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-desktop-005",
+      "canonical": ["SAVED-001", "SAVED-003", "SAVED-005"],
+      "title": "Save, remove, save again and verify persistence after logout/login",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "reason": "page.waitForLoadState: Timeout 10000ms exceeded.",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-desktop-006",
+      "canonical": ["ENQ-CREATE-003", "ENQ-CREATE-005", "ENQ-CREATE-013"],
+      "title": "Open enquiry, inspect verified identity, cancel/reopen and submit",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "reason": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Enquiry sent', exact: true }) to be visible\u001b[22m\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-desktop-007",
+      "canonical": ["PUBLIC-016", "PUBLIC-017", "PUBLIC-021", "SEO-009"],
+      "title": "Dealer directory, dealer portfolio and branded not-found page",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "reason": "The expression evaluated to a falsy value:\n\n  assert.ok(new URL(page.url()).pathname.startsWith('/dealers/'))\n",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    },
+    {
+      "id": "UAT-desktop-008",
+      "canonical": [],
+      "title": "Resize and inspect page widths and named interactive controls",
+      "status": "BLOCKED",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "reason": "page.waitForLoadState: Timeout 10000ms exceeded.",
+      "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08"
+    }
+  ],
+  "actions": [
+    {
+      "at": "2026-10-02T15:57:12.510Z",
+      "message": "Scrolled homepage through vehicle rows and footer; inspected available and empty states."
+    },
+    {
+      "at": "2026-10-02T15:57:13.759Z",
+      "message": "Selected Hyundai brand; checked the URL and refreshed with that filter."
+    },
+    {
+      "at": "2026-10-02T15:57:34.243Z",
+      "message": "Entered fictional phone identity through the customer login form."
+    },
+    {
+      "at": "2026-10-02T15:57:34.640Z",
+      "message": "Entered the configured local proof; no SMS sent and no proof saved in evidence."
+    },
+    {
+      "at": "2026-10-02T15:57:37.168Z",
+      "message": "Entered fictional phone identity through the customer login form."
+    },
+    {
+      "at": "2026-10-02T15:57:37.227Z",
+      "message": "Entered the configured local proof; no SMS sent and no proof saved in evidence."
+    }
+  ],
+  "pageErrors": []
+}
