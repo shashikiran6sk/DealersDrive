@@ -40,7 +40,9 @@ The response preserves its successful deletion count. The immutable audit record
 - **Final lint/format/docs, typecheck and production build PASS** on d5043b5; build uses loose environment passthrough for the environment proxy. Final source was committed before these checks.
 - **Four functional Chromium Agent UAT cases PASS** on the built web server: rejection at 1440/768/390 and stale Admin rejection after approval. Visible confirmations, decoded assets, previous signed file URLs 404 after purge, owner stale cookie/API 401 and refresh to onboarding, replay 404, exactly-one audit/rejection/cleanup record, actor and public visibility are verified against the API and PostgreSQL. [Browser results](browser.json). All screenshots were visually inspected.
 
-CI: PENDING until the actual PR head passes. Human UAT: PENDING. Final 556-case and live-provider/real-device certification: PENDING. Production certification: NO GO while remaining campaign defects and gates are unresolved.
+Actual remote CI: **PASS** at `31508115d7b97d1ea92535c7ffbf91aecb709905`, CI364 ([run](https://github.com/shashikiran6sk/DealersDrive/actions/runs/37132570766)) and Security513 ([run](https://github.com/shashikiran6sk/DealersDrive/actions/runs/37132570790)); all five jobs completed successfully. PR: [#233](https://github.com/shashikiran6sk/DealersDrive/pull/233), base BUG-002 branch. [Job evidence](remote-ci.json). The final evidence update must pass its own head CI before starting the next layer. Human UAT: PENDING. Final 556-case and live-provider/real-device certification: PENDING. Production certification: NO GO while remaining campaign defects and gates are unresolved.
+
+Additional [draft-stock Agent API/DB probe](draft-stock.json) PASS: a never-approved PENDING applicant can prepare DRAFT stock, cannot submit it (403), and valid rejection cascades that vehicle/listing while retaining the user and vehicle/rejection audits. Vehicle media uploads require a submitted reviewable listing, so the inspected Media→VehicleMedia restriction does not create a valid unapproved photo-upload path. No new FK defect was confirmed.
 
 ## Retained failed or blocked attempts
 

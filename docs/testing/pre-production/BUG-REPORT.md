@@ -12,7 +12,7 @@ Original baseline findings below remain unchanged. No PR has been merged. Human 
 | BUG-009 dependencies / BUG-NEW-001 log privacy  | Awaiting dedicated assessment/fix            | Provisional findings remain OPEN                                    |
 | BUG-NEW-006 onboarding mobile overflow          | Separate newly reproduced P2                 | OPEN: viewport390, scrollWidth518; no layout fix in rejection layer |
 
-[Rejection report](../fixes/BUG-NEW-005/README.md) retains both pre-fix failures, transaction/storage root cause, 15 layer-specific integration cases, 137 targeted integration/214 unit passes, 4,404 accumulated test passes, final lint/type/build passes, API/DB history and cleanup verification, and screenshot-reviewed functional UAT. Actual remote CI is still PENDING for this layer.
+[Rejection report](../fixes/BUG-NEW-005/README.md) retains both pre-fix failures, transaction/storage root cause, 15 layer-specific integration cases, 137 targeted integration/214 unit passes, 4,404 accumulated test passes, final lint/type/build passes, API/DB history and cleanup verification, and screenshot-reviewed functional UAT. Actual CI364 and Security513 PASS at3150811; the final evidence commit also requires passing head CI before the next layer.
 
 VERIFY-012 original baseline is BLOCKED and remains historical. Its campaign destructive-race reproduction is FAIL before NEW-005; current scoped Agent retest PASS does not rewrite baseline. BUG-008 mobile Admin overflow424 and newly discovered BUG-NEW-006 onboarding overflow518 remain FAIL at390px. Functional browser results do not certify layout.
 

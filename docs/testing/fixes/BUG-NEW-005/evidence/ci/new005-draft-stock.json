@@ -1,0 +1,16 @@
+{
+  "command": [
+    "pnpm",
+    "--filter",
+    "@dealers-drive/api",
+    "exec",
+    "tsx",
+    "../../docs/testing/fixes/BUG-NEW-005/draft-stock-probe.mts"
+  ],
+  "sha": "31508115d7b97d1ea92535c7ffbf91aecb709905",
+  "start_utc": "2026-10-03T15:22:04.267258+00:00",
+  "end_utc": "2026-10-03T15:22:06.134094+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/new005-draft-stock.log",
+  "cache": "TURBO_FORCE=true"
+}

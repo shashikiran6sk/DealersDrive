@@ -12,7 +12,14 @@
   "fullTests": 4404,
   "assertionEvidence": "evidence/ci/api-assertions.json",
   "browserEvidence": "browser.json",
-  "ci": "PENDING",
+  "ci": {
+    "result": "PASS",
+    "head": "31508115d7b97d1ea92535c7ffbf91aecb709905",
+    "CI": 364,
+    "Security": 513
+  },
   "humanUat": "PENDING",
-  "wholeRegistryCertification": "PENDING final stack validation; original 556-case baseline not rewritten"
+  "wholeRegistryCertification": "PENDING final stack validation; original 556-case baseline not rewritten",
+  "fixPr": 233,
+  "draftStockProbe": "draft-stock.json"
 }
