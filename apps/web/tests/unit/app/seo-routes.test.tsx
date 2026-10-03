@@ -155,7 +155,7 @@ describe('the root layout', () => {
   it('sets no robots default in production, and noindex everywhere else', () => {
     expect(rootMetadata()).not.toHaveProperty('robots');
 
-    vi.stubEnv('APP_ENV', 'preview');
+    vi.stubEnv('APP_ENV', 'development');
     expect(rootMetadata().robots).toEqual({ index: false, follow: false });
   });
 

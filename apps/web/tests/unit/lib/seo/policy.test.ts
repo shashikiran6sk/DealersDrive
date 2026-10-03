@@ -95,7 +95,7 @@ describe('seoMetadata', () => {
   });
 
   it('turns every page noindex outside production', () => {
-    vi.stubEnv('APP_ENV', 'dev');
+    vi.stubEnv('APP_ENV', 'development');
     expect(seoMetadata({ kind: 'resolved', canonical: '/', isIndexable: true }).robots).toEqual({
       index: false,
       follow: false,

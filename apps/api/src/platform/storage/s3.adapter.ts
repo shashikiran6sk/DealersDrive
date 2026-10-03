@@ -93,14 +93,19 @@ export function createS3Storage(client: S3Client = createS3Client()): StoragePor
 }
 
 export function createS3Client(): S3Client {
+  const local = env.STORAGE_DRIVER === 'minio' || env.isTest;
   return new S3Client({
-    endpoint: env.S3_ENDPOINT,
+    ...(local ? { endpoint: env.S3_ENDPOINT } : {}),
     region: env.S3_REGION,
-    forcePathStyle: env.S3_FORCE_PATH_STYLE,
-    credentials: {
-      accessKeyId: env.S3_ACCESS_KEY_ID ?? '',
-      secretAccessKey: env.S3_SECRET_ACCESS_KEY ?? '',
-    },
+    forcePathStyle: env.isTest ? env.S3_FORCE_PATH_STYLE : local,
+    ...(local
+      ? {
+          credentials: {
+            accessKeyId: env.S3_ACCESS_KEY_ID!,
+            secretAccessKey: env.S3_SECRET_ACCESS_KEY!,
+          },
+        }
+      : {}),
   });
 }
 

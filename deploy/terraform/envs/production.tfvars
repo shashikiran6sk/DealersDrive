@@ -8,6 +8,8 @@
 # ---------------------------------------------------------------------------
 environment       = "production"
 region            = "ap-south-1"
+s3_bucket         = "dd-media-prod"
+admin_allowlist   = "ops@dealers-drive.in"
 github_repository = "shashikiran6sk/dealers-drive"
 
 domain_name     = "www.dealers-drive.com"

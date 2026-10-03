@@ -12,6 +12,6 @@ export interface MailResult {
 }
 
 export interface MailerPort {
-  readonly driver: 'console' | 'resend';
+  readonly driver: 'console' | 'smtp' | 'resend';
   send(message: MailMessage): Promise<MailResult>;
 }

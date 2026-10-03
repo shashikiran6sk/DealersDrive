@@ -29,9 +29,9 @@ describe('serverConfig', () => {
   });
 
   it('reads the deployment environment', () => {
-    vi.stubEnv('APP_ENV', 'preview');
+    vi.stubEnv('APP_ENV', 'development');
 
-    expect(serverConfig().appEnv).toBe('preview');
+    expect(serverConfig().appEnv).toBe('development');
   });
 
   /** So `pnpm dev` works with no `.env` at all. */
@@ -58,7 +58,7 @@ describe('serverConfig', () => {
   it('treats an explicitly empty variable as a value, not as unset', () => {
     vi.stubEnv('API_BASE_URL', '');
 
-    expect(serverConfig().apiBaseUrl).toBe('');
+    expect(() => serverConfig()).toThrow();
   });
 
   /**
@@ -78,6 +78,13 @@ describe('serverConfig', () => {
     vi.stubEnv('NEXT_PUBLIC_API_BASE_URL', 'https://leaked-at-build-time.example');
 
     expect(serverConfig().apiBaseUrl).toBe('http://localhost:4000');
+  });
+
+  it('rejects localhost origins in production runtime', () => {
+    vi.stubEnv('APP_ENV', 'production');
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('API_BASE_URL', 'http://localhost:4000');
+    expect(() => serverConfig()).toThrow();
   });
 
   it('returns a plain object a server component can pass down as props', () => {

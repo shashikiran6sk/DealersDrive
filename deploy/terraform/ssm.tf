@@ -27,8 +27,7 @@ locals {
     "SESSION_SECRET",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
-    "S3_ACCESS_KEY_ID",
-    "S3_SECRET_ACCESS_KEY",
+    "METRICS_SCRAPE_TOKEN",
     # R40. Unlike the Firebase web values, this one *is* a credential: it can
     # send email as the verified domain, so it lives in Parameter Store and
     # never in a task definition.

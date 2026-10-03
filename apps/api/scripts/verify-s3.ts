@@ -24,7 +24,7 @@ async function main(): Promise<void> {
   );
 
   if (env.STORAGE_DRIVER === 'local') {
-    throw new Error('STORAGE_DRIVER is `local` — nothing here talks to AWS. Set it to `r2`.');
+    throw new Error('The disk storage adapter does not use S3.');
   }
 
   const client = createS3Client();

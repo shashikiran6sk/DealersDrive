@@ -50,7 +50,7 @@ describe('indexing', () => {
     expect(indexingEnabled()).toBe(true);
   });
 
-  it.each(['local', 'dev', 'preview'])('is off in %s, whatever the origin', (appEnv) => {
+  it.each(['local', 'development'])('is off in %s, whatever the origin', (appEnv) => {
     vi.stubEnv('APP_ENV', appEnv);
     vi.stubEnv('WEB_BASE_URL', PRODUCTION_ORIGIN);
     expect(indexingEnabled()).toBe(false);

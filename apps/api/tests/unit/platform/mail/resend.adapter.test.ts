@@ -137,7 +137,7 @@ describe('the console driver', () => {
 
 describe('the factory', () => {
   it('builds the driver the environment names', () => {
-    expect(createMailer().driver).toBe(env.MAIL_DRIVER === 'resend' ? 'resend' : 'console');
+    expect(createMailer().driver).toBe(env.MAIL_DRIVER);
   });
 });
 

@@ -1,5 +1,9 @@
 # Deploying Dealers-Drive to one EC2 box
 
+> This single-box demo guide is retained for historical reference. Its MinIO
+> storage path is incompatible with `APP_ENV=production`. Use AWS S3 and the
+> production configuration in the root README for any new deployment.
+
 > **This is the demo box, not the production pipeline.** It builds on the
 > server, which means there is no artifact to roll back to and every release
 > has a window where the site is down. It is documented, it works, and it is

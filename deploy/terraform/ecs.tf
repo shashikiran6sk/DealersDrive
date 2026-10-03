@@ -73,9 +73,9 @@ locals {
     { name = "SESSION_COOKIE_DOMAIN", value = "" },
     { name = "AUTH_MODE", value = "cookie" },
 
-    { name = "STORAGE_DRIVER", value = "r2" },
-    { name = "S3_REGION", value = "auto" },
-    { name = "S3_FORCE_PATH_STYLE", value = "true" },
+    { name = "AWS_REGION", value = var.region },
+    { name = "S3_BUCKET", value = var.s3_bucket },
+    { name = "ADMIN_ALLOWLIST", value = var.admin_allowlist },
 
     # Shared state, not process memory. With more than one task the in-process
     # counter permitted N times every rate limit and reported nothing; `env.ts`
@@ -96,12 +96,10 @@ locals {
 
     # R40. `env.ts` refuses `console` in production, so a deployment without a
     # Resend key fails at boot rather than silently telling nobody anything.
-    { name = "MAIL_DRIVER", value = var.mail_driver },
     # R39. `env.ts` refuses `fake` in production, so a deployment without the
     # widget credentials fails at boot rather than accepting a fixed code. The
     # two values below reach the browser through GET /v1/auth/phone/widget;
     # MSG91_AUTH_KEY does not, and is in Parameter Store.
-    { name = "PHONE_OTP_DRIVER", value = var.phone_otp_driver },
     { name = "MSG91_WIDGET_ID", value = var.msg91_widget_id },
     { name = "MSG91_WIDGET_TOKEN", value = var.msg91_widget_token },
     { name = "JOBS_ENABLED", value = "true" },
@@ -116,7 +114,6 @@ locals {
     # construction rather than by counting tasks.
     { name = "WORKER_INLINE", value = "false" },
     { name = "RATE_LIMIT_ENABLED", value = "true" },
-    { name = "DOCS_ENABLED", value = var.environment == "production" ? "false" : "true" },
   ]
 
   api_secrets = [
