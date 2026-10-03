@@ -1,0 +1,18 @@
+{
+  "canonicalTest": "VERIFY-012",
+  "baselineStatus": "BLOCKED",
+  "baselineCommit": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "campaignFailure": "FAIL: destructive rejection race and precommit file deletion on rollback",
+  "bug": "BUG-NEW-005",
+  "regressionTest": "apps/api/tests/dealer-rejection-atomicity.test.ts",
+  "sourceStateCommit": "d5043b5dd36d7733e9255c0c94615988585fcd0a",
+  "layerAgentRetest": "PASS",
+  "integrationCases": 15,
+  "broaderConcurrentDecisions": "BUG-002 serialized approve/request-changes/document-reject regressions also pass in full accumulated suite",
+  "fullTests": 4404,
+  "assertionEvidence": "evidence/ci/api-assertions.json",
+  "browserEvidence": "browser.json",
+  "ci": "PENDING",
+  "humanUat": "PENDING",
+  "wholeRegistryCertification": "PENDING final stack validation; original 556-case baseline not rewritten"
+}

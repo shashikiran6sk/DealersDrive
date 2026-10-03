@@ -1,20 +1,22 @@
 # Authorized fix campaign — current status
 
-2026-10-03 UTC. Original baseline findings and failing evidence below are unchanged. Every PR remains unmerged; Human UAT PENDING.
+Original baseline findings below remain unchanged. No PR has been merged. Human UAT PENDING. Production NO GO until remaining fixes and complete-stack certification pass.
 
-| Finding                                         | Baseline                       | Fix branch / PR                                                       | Agent retest                                                                         | Remote CI                                     |
-| ----------------------------------------------- | ------------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------- |
-| BUG-007 / PUBLIC-021 / SEO-009                  | FAIL                           | #209, `claude/serene-thompson-yuft81`, `107a462`                      | PASS: branded route checks                                                           | PASS: CI 358 / Security 507                   |
-| BUG-001 / ADD-RACE-001                          | FAIL                           | #231, `fix/pre-production-01-invitation-race`, final `1f38a13`        | PASS: controlled race, negative/adjacent, browser/DB                                 | PASS: final head CI 361 / Security 510        |
-| BUG-002 / VERIFY-011                            | FAIL                           | `fix/pre-production-02-approval-gate`, implementation `fc45269`; #232 | PASS: 159 targeted integration / 268 affected unit; four browser cases and DB checks | PASS: `debfb6c`, CI 362 / Security 511        |
-| BUG-003 / BUG-004 / BUG-005 / BUG-006 / BUG-008 | As originally recorded         | Not fixed yet                                                         | NOT_RUN                                                                              | NOT_RUN                                       |
-| BUG-009                                         | Provisional dependency finding | Awaiting reachability/upgrade assessment                              | NOT_RUN                                                                              | Critical-only audit passing does not close it |
+| Finding                                         | Fix branch / PR                              | Retest / CI                                                         |
+| ----------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
+| BUG-007 branded 404                             | #209 `claude/serene-thompson-yuft81`         | PASS; final107a462 CI358/Security507 PASS                           |
+| BUG-001 invitation race / NEW-002               | #231 `fix/pre-production-01-invitation-race` | PASS; final1f38a13 CI361/Security510 PASS                           |
+| BUG-002 activation / NEW-003 / NEW-004          | #232 `fix/pre-production-02-approval-gate`   | PASS; final3570dcf CI363/Security512 PASS                           |
+| BUG-NEW-005 rejection                           | `fix/pre-production-new-005-rejection-race`  | d5043b5 regression and browser PASS; PR/remote CI PENDING           |
+| BUG-003 / BUG-004 / BUG-005 / BUG-006 / BUG-008 | Not fixed yet                                | Original findings retained; NOT_RUN                                 |
+| BUG-009 dependencies / BUG-NEW-001 log privacy  | Awaiting dedicated assessment/fix            | Provisional findings remain OPEN                                    |
+| BUG-NEW-006 onboarding mobile overflow          | Separate newly reproduced P2                 | OPEN: viewport390, scrollWidth518; no layout fix in rejection layer |
 
-[BUG-002 evidence](../fixes/BUG-002/README.md) includes preserved red regressions, server-side activation prerequisites, valid upload pipeline, role/session/ID adversarial tests, lifecycle/audit/outbox checks and screenshot-reviewed browser evidence. Updated full suite: 4,379 PASS; typecheck/build PASS; lint/format/docs PASS; actual remote CI and Security PASS at `debfb6c` (CI 362 / Security 511).
+[Rejection report](../fixes/BUG-NEW-005/README.md) retains both pre-fix failures, transaction/storage root cause, 15 layer-specific integration cases, 137 targeted integration/214 unit passes, 4,404 accumulated test passes, final lint/type/build passes, API/DB history and cleanup verification, and screenshot-reviewed functional UAT. Actual remote CI is still PENDING for this layer.
 
-BUG-NEW-001 (P2 provisional, framework log privacy) remains OPEN. BUG-NEW-002 is verified with BUG-001. BUG-NEW-003 (P1, fabricated document verification) and BUG-NEW-004 (P1, unapproved reinstatement) are separately attributed required support in BUG-002; Agent retest and actual CI PASS with #232. BUG-NEW-005 (P1, destructive rejection versus approval) is separately reproduced and remains OPEN for the immediately following dedicated layer. VERIFY-012 is not certified PASS by its three passing non-destructive races. BUG-008's Admin mobile overflow remains FAIL at 390 pixels / scrollWidth 424.
+VERIFY-012 original baseline is BLOCKED and remains historical. Its campaign destructive-race reproduction is FAIL before NEW-005; current scoped Agent retest PASS does not rewrite baseline. BUG-008 mobile Admin overflow424 and newly discovered BUG-NEW-006 onboarding overflow518 remain FAIL at390px. Functional browser results do not certify layout.
 
-The original registry and bugs JSON remain historical snapshots. Overall launch recommendation remains NO GO while known defects, live-provider/deployment gates and Human UAT remain unresolved. See [STACK-MAP.md](STACK-MAP.md) and [new findings](new-bugs.json).
+See [STACK-MAP.md](STACK-MAP.md), [new findings](new-bugs.json) and individual fix reports. Live-provider, real-device and full registry/human gates remain unresolved.
 
 ---
 
