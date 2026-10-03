@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { setTimeout as pause } from 'node:timers/promises';
 
 import { Client } from 'pg';
@@ -355,6 +356,34 @@ describe('BUG-002 — complete application, capability and history regression', 
       .send({})
       .expect(422);
     expect(response.body.code).toBe('DOCUMENTS_NOT_VERIFIED');
+  });
+
+  it('refuses a legacy VERIFIED filename whose stored object is missing', async () => {
+    const f = await application();
+    await h.prisma.dealerDocument.update({
+      where: { id: f.documents[0] },
+      data: { id: randomUUID() },
+    });
+    const response = await f.admin.post(`/v1/admin/dealers/${f.dealer.dealerId}/approve`).send({});
+    const stored = await h.prisma.dealer.findUniqueOrThrow({ where: { id: f.dealer.dealerId } });
+    expect({
+      http: response.status,
+      status: stored.status,
+      approvedAt: stored.approvedAt,
+      auditCount: await h.prisma.auditLog.count({
+        where: { entityId: stored.id, action: 'dealer.approved' },
+      }),
+      events: await h.prisma.outboxEvent.count({
+        where: { aggregateId: stored.id, eventType: 'DealerApproved' },
+      }),
+    }).toEqual({
+      http: 422,
+      status: 'PENDING_APPROVAL',
+      approvedAt: null,
+      auditCount: 0,
+      events: 0,
+    });
+    expect(response.body.code).toBe('DOCUMENT_UPLOAD_MISSING');
   });
 
   it('requires fresh owner identity completeness', async () => {

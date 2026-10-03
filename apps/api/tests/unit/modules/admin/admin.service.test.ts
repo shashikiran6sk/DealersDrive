@@ -32,6 +32,7 @@ import type { AdminPrincipal } from '../../../../src/modules/auth/auth.facade.js
  */
 interface Options {
   applicationComplete?: boolean;
+  storageHeadFailure?: boolean;
   listingCounts?: Record<string, number>;
   oldestSubmission?: Date;
   dealers?: number;
@@ -283,6 +284,10 @@ function setup(options: Options = {}) {
   } as unknown as AuditService;
 
   const storage = {
+    head: () =>
+      options.storageHeadFailure
+        ? Promise.reject(new Error('Storage unavailable'))
+        : Promise.resolve({ bytes: 8, contentType: 'application/pdf' }),
     signedReadUrl: (key: string) => {
       signedUrls.push(key);
       return Promise.resolve(`https://storage.test/private/${key}?signed`);
@@ -388,6 +393,20 @@ const support: AdminPrincipal = {
 function statFor(overview: AdminOverview, key: string): AdminOverview['stats'][number] | undefined {
   return overview.stats.find((stat) => stat.key === key);
 }
+
+describe('approval storage integrity', () => {
+  it('fails closed before state, audit or outbox writes when upload storage is unavailable', async () => {
+    const h = setup({
+      dealer: { status: 'PENDING_APPROVAL' },
+      siblings: ALL_VERIFIED,
+      storageHeadFailure: true,
+    });
+    await expect(h.service.approveDealer(admin, DEALER, {})).rejects.toThrow('Storage unavailable');
+    expect(h.dealerUpdates).toEqual([]);
+    expect(h.auditRows).toEqual([]);
+    expect(h.outbox).toEqual([]);
+  });
+});
 
 describe('overview', () => {
   it('counts every dealership, and the ones waiting on a decision', async () => {

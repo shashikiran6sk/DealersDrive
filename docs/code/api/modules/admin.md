@@ -769,7 +769,7 @@ which is why this is a 422 at the door rather than a mystery in a report.
 
 ## Authoritative activation prerequisites
 
-Approval locks the dealer first, then its documents in ID order, and re-reads their state after waiting. It requires a submitted PENDING_APPROVAL application, three VERIFIED documents with committed file names, and the existing submission completeness rules. Completeness reads through the same transaction. ACTIVE, approval timestamp, audit and DealerApproved outbox event commit together; rejected attempts write none of them.
+Approval locks the dealer first, then its documents in ID order, and re-reads their state after waiting. It requires a submitted PENDING_APPROVAL application, three VERIFIED documents with committed file names and existing stored objects, and the existing submission completeness rules. Completeness reads through the same transaction. ACTIVE, approval timestamp, audit and DealerApproved outbox event commit together; rejected attempts write none of them.
 
 Document verification accepts only UPLOADED files. Review locks the dealer before the document so review, approval and request-changes decisions share the parent-before-child lock order. Suspension requires ACTIVE; reinstatement requires SUSPENDED and an existing approval timestamp. Reinstatement preserves that timestamp.
 

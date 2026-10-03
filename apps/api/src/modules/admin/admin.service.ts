@@ -459,6 +459,15 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             'Verify all three uploaded KYC documents before approving this dealership.',
           );
         }
+        const uploads = await Promise.all(
+          documents.map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
+        );
+        if (uploads.some((object) => object === null)) {
+          throw new DomainError(
+            'DOCUMENT_UPLOAD_MISSING',
+            'A verified document upload is missing. Request a replacement before approval.',
+          );
+        }
         const application = await dealers.completeness(dealerId, tx);
         if (!application.isComplete) {
           throw new DomainError('PROFILE_INCOMPLETE', 'Complete the application before approval.');
