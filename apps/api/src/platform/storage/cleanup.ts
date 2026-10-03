@@ -21,7 +21,7 @@ export function subscribeStorageCleanup(bus: EventBus, storage: StoragePort): vo
       const failures = results.filter((result) => result.status === 'rejected');
       if (failures.length > 0) {
         throw new AggregateError(
-          failures.map((failure) => failure.reason),
+          failures.map((failure): unknown => failure.reason),
           'Storage cleanup failed',
         );
       }

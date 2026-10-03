@@ -3,6 +3,7 @@ import { setTimeout as pause } from 'node:timers/promises';
 import { Client } from 'pg';
 import { afterAll, beforeAll, expect, it, vi, afterEach } from 'vitest';
 
+import type { createStorage } from '../src/platform/storage/factory.js';
 import { createLocalStorage } from '../src/platform/storage/local.adapter.js';
 import { documentKey } from '../src/modules/dealers/dealers.facade.js';
 
@@ -14,7 +15,7 @@ import { marketplaceFixtures } from './marketplace-fixtures.js';
 
 const blockedKeys = vi.hoisted(() => new Set<string>());
 vi.mock('../src/platform/storage/factory.js', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../src/platform/storage/factory.js')>();
+  const original = await importOriginal<{ createStorage: typeof createStorage }>();
   return {
     createStorage() {
       const storage = original.createStorage();
@@ -162,7 +163,11 @@ it('rejection must not purge a dealer after approval has passed upload checks', 
     ).toBe(true);
   } finally {
     await holder.query('ROLLBACK');
-    await Promise.allSettled([approving, rejecting].filter(Boolean));
+    await Promise.allSettled(
+      [approving, rejecting].filter(
+        (pending): pending is Promise<{ status: number }> => pending !== undefined,
+      ),
+    );
     await holder.end();
     await observer.end();
   }
@@ -265,7 +270,11 @@ it.each(['approve', 'reject'])('re-reads state when rejection wins against %s', 
     ).toBe(0);
   } finally {
     await holder.query('ROLLBACK');
-    await Promise.allSettled([rejecting, following].filter(Boolean));
+    await Promise.allSettled(
+      [rejecting, following].filter(
+        (pending): pending is Promise<{ status: number }> => pending !== undefined,
+      ),
+    );
     await holder.end();
     await observer.end();
   }
@@ -324,6 +333,16 @@ it('commits durable cleanup, retries provider failures, preserves the audit acto
       item.to === (audit.before as { recipientEmail: string }).recipientEmail,
   );
   expect(email).toHaveLength(1);
+  expect(
+    await h.prisma.notificationDelivery.count({
+      where: {
+        template: 'dealer.application.rejected',
+        recipient: (audit.before as { recipientEmail: string }).recipientEmail,
+        status: 'SENT',
+        dealerId: null,
+      },
+    }),
+  ).toBe(1);
   await dealer.agent.get('/v1/dealer').expect(401);
 });
 
