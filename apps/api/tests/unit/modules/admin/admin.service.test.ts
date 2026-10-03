@@ -31,6 +31,7 @@ import type { AdminPrincipal } from '../../../../src/modules/auth/auth.facade.js
  * ────────────────────────────────────────────────────────────────────────────
  */
 interface Options {
+  applicationComplete?: boolean;
   listingCounts?: Record<string, number>;
   oldestSubmission?: Date;
   dealers?: number;
@@ -130,6 +131,7 @@ function setup(options: Options = {}) {
     Promise.resolve(options.dealer === null ? null : dealerRow(options.dealer ?? {}));
 
   const tx = {
+    $queryRaw: () => Promise.resolve([]),
     dealerDocument: {
       findUnique: () =>
         Promise.resolve(options.document === undefined ? DOCUMENT : options.document),
@@ -304,6 +306,7 @@ function setup(options: Options = {}) {
    * write itself is right is `dealers.service`'s own test.
    */
   const dealers = {
+    completeness: () => Promise.resolve({ isComplete: options.applicationComplete ?? true }),
     update: (dealerId: string, input: unknown) => {
       dealerPatches.push({ dealerId, input });
       return Promise.resolve({ id: dealerId, legalName: 'Sri Lakshmi Motors Pvt Ltd' });
@@ -349,13 +352,14 @@ const DOCUMENT = {
   dealerId: 'dealer-1',
   type: 'GST_CERTIFICATE',
   status: 'UPLOADED',
+  fileName: 'verification.pdf',
 };
 
 /** Three rows, all verified — the only shape that makes `allVerified` true. */
 const ALL_VERIFIED = [
-  { type: 'GST_CERTIFICATE', status: 'VERIFIED' },
-  { type: 'PAN_CARD', status: 'VERIFIED' },
-  { type: 'ADDRESS_PROOF', status: 'VERIFIED' },
+  { type: 'GST_CERTIFICATE', status: 'VERIFIED', fileName: 'gst.pdf' },
+  { type: 'PAN_CARD', status: 'VERIFIED', fileName: 'pan.pdf' },
+  { type: 'ADDRESS_PROOF', status: 'VERIFIED', fileName: 'address.pdf' },
 ];
 
 const admin: AdminPrincipal = {
@@ -834,7 +838,7 @@ describe('dealers', () => {
     const all = setup({
       dealerRows: [
         dealerRow({
-          documents: [{ status: 'VERIFIED' }, { status: 'VERIFIED' }, { status: 'VERIFIED' }],
+          documents: ALL_VERIFIED,
         }),
       ],
     });
@@ -920,7 +924,13 @@ describe('dealerDetail', () => {
     const h = setup({
       dealer: dealerRow({
         documents: [
-          { id: 'doc-1', type: 'GST_CERTIFICATE', status: 'VERIFIED', createdAt: new Date() },
+          {
+            id: 'doc-1',
+            type: 'GST_CERTIFICATE',
+            status: 'VERIFIED',
+            fileName: 'verification.pdf',
+            createdAt: new Date(),
+          },
         ],
       }),
     });
@@ -993,9 +1003,27 @@ describe('dealerDetail', () => {
       dealer: dealerRow({
         status: 'PENDING_APPROVAL',
         documents: [
-          { id: 'a', type: 'GST_CERTIFICATE', status: 'VERIFIED', createdAt: new Date() },
-          { id: 'b', type: 'PAN_CARD', status: 'VERIFIED', createdAt: new Date() },
-          { id: 'c', type: 'ADDRESS_PROOF', status: 'VERIFIED', createdAt: new Date() },
+          {
+            id: 'a',
+            type: 'GST_CERTIFICATE',
+            status: 'VERIFIED',
+            fileName: 'verification.pdf',
+            createdAt: new Date(),
+          },
+          {
+            id: 'b',
+            type: 'PAN_CARD',
+            status: 'VERIFIED',
+            fileName: 'verification.pdf',
+            createdAt: new Date(),
+          },
+          {
+            id: 'c',
+            type: 'ADDRESS_PROOF',
+            status: 'VERIFIED',
+            fileName: 'verification.pdf',
+            createdAt: new Date(),
+          },
         ],
       }),
     });
@@ -1066,7 +1094,10 @@ describe('dealerDetail', () => {
 
 describe('approveDealer', () => {
   it('activates the dealership and clears any status reason', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL', statusReason: 'Waiting' }) });
+    const h = setup({
+      dealer: dealerRow({ status: 'PENDING_APPROVAL', statusReason: 'Waiting' }),
+      siblings: ALL_VERIFIED,
+    });
 
     const response = await h.service.approveDealer(admin, DEALER, {});
 
@@ -1084,7 +1115,7 @@ describe('approveDealer', () => {
    * ────────────────────────────────────────────────────────────────────────
    */
   it('grants nothing, and says so, until the ledger exists', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }), siblings: ALL_VERIFIED });
 
     const response = await h.service.approveDealer(admin, DEALER, { note: 'Launch offer' });
 
@@ -1111,7 +1142,7 @@ describe('approveDealer', () => {
   });
 
   it('audit-logs the before and after status', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }), siblings: ALL_VERIFIED });
 
     await h.service.approveDealer(admin, DEALER, {});
 
@@ -1126,7 +1157,7 @@ describe('approveDealer', () => {
   });
 
   it('publishes DealerApproved in the same transaction', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }), siblings: ALL_VERIFIED });
 
     await h.service.approveDealer(admin, DEALER, {});
 
@@ -1229,12 +1260,14 @@ describe('setDealerStatus and its wrappers', () => {
     expect(h.dealerUpdates[0]?.data.approvedAt).toBe(original);
   });
 
-  it('stamps an approval date when reinstating one that never had one', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'REJECTED', approvedAt: null }) });
-
-    await h.service.reinstateDealer(admin, DEALER);
-
-    expect(h.dealerUpdates[0]?.data.approvedAt).toBeInstanceOf(Date);
+  it('refuses to invent an approval date for a never-approved suspended dealer', async () => {
+    const h = setup({ dealer: dealerRow({ status: 'SUSPENDED', approvedAt: null }) });
+    await expect(h.service.reinstateDealer(admin, DEALER)).rejects.toMatchObject({
+      code: 'DEALER_NOT_APPROVED',
+    });
+    expect(h.dealerUpdates).toEqual([]);
+    expect(h.auditRows).toEqual([]);
+    expect(h.outbox).toEqual([]);
   });
 
   it('accepts a reinstatement with no note', async () => {
