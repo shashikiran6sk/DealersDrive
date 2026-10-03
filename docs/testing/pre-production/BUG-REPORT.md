@@ -2,15 +2,15 @@
 
 Original baseline findings below remain unchanged. No PR has been merged. Human UAT PENDING. Production NO GO until remaining fixes and complete-stack certification pass.
 
-| Finding                                         | Fix branch / PR                              | Retest / CI                                                         |
-| ----------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
-| BUG-007 branded 404                             | #209 `claude/serene-thompson-yuft81`         | PASS; final107a462 CI358/Security507 PASS                           |
-| BUG-001 invitation race / NEW-002               | #231 `fix/pre-production-01-invitation-race` | PASS; final1f38a13 CI361/Security510 PASS                           |
-| BUG-002 activation / NEW-003 / NEW-004          | #232 `fix/pre-production-02-approval-gate`   | PASS; final3570dcf CI363/Security512 PASS                           |
-| BUG-NEW-005 rejection                           | `fix/pre-production-new-005-rejection-race`  | d5043b5 regression and browser PASS; PR/remote CI PENDING           |
-| BUG-003 / BUG-004 / BUG-005 / BUG-006 / BUG-008 | Not fixed yet                                | Original findings retained; NOT_RUN                                 |
-| BUG-009 dependencies / BUG-NEW-001 log privacy  | Awaiting dedicated assessment/fix            | Provisional findings remain OPEN                                    |
-| BUG-NEW-006 onboarding mobile overflow          | Separate newly reproduced P2                 | OPEN: viewport390, scrollWidth518; no layout fix in rejection layer |
+| Finding                                         | Fix branch / PR                                  | Retest / CI                                                         |
+| ----------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| BUG-007 branded 404                             | #209 `claude/serene-thompson-yuft81`             | PASS; final107a462 CI358/Security507 PASS                           |
+| BUG-001 invitation race / NEW-002               | #231 `fix/pre-production-01-invitation-race`     | PASS; final1f38a13 CI361/Security510 PASS                           |
+| BUG-002 activation / NEW-003 / NEW-004          | #232 `fix/pre-production-02-approval-gate`       | PASS; final3570dcf CI363/Security512 PASS                           |
+| BUG-NEW-005 rejection                           | #233 `fix/pre-production-new-005-rejection-race` | d5043b5 regression/browser PASS;3150811 CI364/Security513 PASS      |
+| BUG-003 / BUG-004 / BUG-005 / BUG-006 / BUG-008 | Not fixed yet                                    | Original findings retained; NOT_RUN                                 |
+| BUG-009 dependencies / BUG-NEW-001 log privacy  | Awaiting dedicated assessment/fix                | Provisional findings remain OPEN                                    |
+| BUG-NEW-006 onboarding mobile overflow          | Separate newly reproduced P2                     | OPEN: viewport390, scrollWidth518; no layout fix in rejection layer |
 
 [Rejection report](../fixes/BUG-NEW-005/README.md) retains both pre-fix failures, transaction/storage root cause, 15 layer-specific integration cases, 137 targeted integration/214 unit passes, 4,404 accumulated test passes, final lint/type/build passes, API/DB history and cleanup verification, and screenshot-reviewed functional UAT. Actual CI364 and Security513 PASS at3150811; the final evidence commit also requires passing head CI before the next layer.
 
