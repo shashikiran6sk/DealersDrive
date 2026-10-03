@@ -766,3 +766,11 @@ which is why this is a 422 at the door rather than a mystery in a report.
 ### `function compactRupees(paise: number): string`
 
 ₹1.2 Cr rather than ₹12,00,00,000 — a stat tile has one line to work with.
+
+## Authoritative activation prerequisites
+
+Approval locks the dealer first, then its documents in ID order, and re-reads their state after waiting. It requires a submitted PENDING_APPROVAL application, three VERIFIED documents with committed file names and existing stored objects, and the existing submission completeness rules. Completeness reads through the same transaction. ACTIVE, approval timestamp, audit and DealerApproved outbox event commit together; rejected attempts write none of them.
+
+Document verification accepts only UPLOADED files. Review locks the dealer before the document so review, approval and request-changes decisions share the parent-before-child lock order. Suspension requires ACTIVE; reinstatement requires SUSPENDED and an existing approval timestamp. Reinstatement preserves that timestamp.
+
+Destructive application rejection remains a separate known race (BUG-NEW-005): its existing state check and storage removal precede its deletion transaction. That defect is attributed separately in the pre-production findings and requires its own stacked correction.

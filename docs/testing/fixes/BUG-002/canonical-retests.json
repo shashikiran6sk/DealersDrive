@@ -1,0 +1,297 @@
+{
+  "bug": "BUG-002",
+  "baseline_registry_unchanged": true,
+  "rows": [
+    {
+      "id": "VERIFY-011",
+      "scenario": "Incomplete dealer cannot be approved through direct API.",
+      "baseline_status": "FAIL",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 / VERIFY-011 \u2014 authoritative dealer approval prerequisites refuses an incomplete DRAFT dealer without membership, audit or outbox changes",
+          "status": "passed",
+          "durationMs": 132.62092200000006,
+          "failures": []
+        },
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 / VERIFY-011 \u2014 authoritative dealer approval prerequisites refuses an incomplete PENDING_APPROVAL dealer without membership, audit or outbox changes",
+          "status": "passed",
+          "durationMs": 90.37091299999997,
+          "failures": []
+        },
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses an otherwise verified application with missing gstin and a misleading status",
+          "status": "passed",
+          "durationMs": 308.58940299999995,
+          "failures": []
+        },
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses an otherwise verified application with missing pan and a misleading status",
+          "status": "passed",
+          "durationMs": 212.20942400000013,
+          "failures": []
+        },
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses an otherwise verified application with missing coverMediaId and a misleading status",
+          "status": "passed",
+          "durationMs": 250.65811600000006,
+          "failures": []
+        },
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses legacy VERIFIED rows that have no uploaded filename",
+          "status": "passed",
+          "durationMs": 217.9755779999996,
+          "failures": []
+        },
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses a legacy VERIFIED filename whose stored object is missing",
+          "status": "passed",
+          "durationMs": 201.97022400000014,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "VERIFY-003",
+      "scenario": "Admin approves valid dealership.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression approves a real uploaded/reviewed application once, preserving membership and audit actors",
+          "status": "passed",
+          "durationMs": 673.6608160000001,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "VERIFY-004",
+      "scenario": "Approved dealership enters correct verified/active state.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression approves a real uploaded/reviewed application once, preserving membership and audit actors",
+          "status": "passed",
+          "durationMs": 673.6608160000001,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "VERIFY-005",
+      "scenario": "Dealer gains intended capabilities only after approval.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression approves a real uploaded/reviewed application once, preserving membership and audit actors",
+          "status": "passed",
+          "durationMs": 673.6608160000001,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "VERIFY-013",
+      "scenario": "Verification transitions are audit logged.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression approves a real uploaded/reviewed application once, preserving membership and audit actors",
+          "status": "passed",
+          "durationMs": 673.6608160000001,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "ADMIN-DEALER-004",
+      "scenario": "Admin approves eligible dealer.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression approves a real uploaded/reviewed application once, preserving membership and audit actors",
+          "status": "passed",
+          "durationMs": 673.6608160000001,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "ADMIN-DEALER-006",
+      "scenario": "Admin suspends active dealer.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression keeps an approved dealer and its original approval history through suspension and reinstatement",
+          "status": "passed",
+          "durationMs": 287.6901969999999,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "ADMIN-DEALER-007",
+      "scenario": "Admin reinstates eligible suspended dealer.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 complete application, capability and history regression keeps an approved dealer and its original approval history through suspension and reinstatement",
+          "status": "passed",
+          "durationMs": 287.6901969999999,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "ADMIN-AUTH-003",
+      "scenario": "OWNER cannot access Admin APIs.",
+      "baseline_status": "PASS",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 adversarial Admin authorization denies anonymous, dealer and cross-dealer callers, forged fields and invalid IDs",
+          "status": "passed",
+          "durationMs": 371.10135399999945,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "ADMIN-AUTH-004",
+      "scenario": "MANAGER cannot access Admin APIs.",
+      "baseline_status": "PASS",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 adversarial Admin authorization denies anonymous, dealer and cross-dealer callers, forged fields and invalid IDs",
+          "status": "passed",
+          "durationMs": 371.10135399999945,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "ADMIN-AUTH-005",
+      "scenario": "STAFF cannot access Admin APIs.",
+      "baseline_status": "PASS",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 adversarial Admin authorization denies anonymous, dealer and cross-dealer callers, forged fields and invalid IDs",
+          "status": "passed",
+          "durationMs": 371.10135399999945,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "ADMIN-AUTH-009",
+      "scenario": "Admin logout invalidates Admin access.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "PASS",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+      "method": "INTEGRATION_API_DATABASE",
+      "assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 \u2014 adversarial Admin authorization honors a role downgrade, logout/login and seat revocation on an existing Admin cookie",
+          "status": "passed",
+          "durationMs": 435.27260000000024,
+          "failures": []
+        }
+      ],
+      "human_uat": "PENDING"
+    },
+    {
+      "id": "VERIFY-012",
+      "scenario": "Concurrent Admin review cannot corrupt verification state.",
+      "baseline_status": "BLOCKED",
+      "retest_status": "FAIL",
+      "scope": "Three serialized non-destructive decisions pass; destructive rejection race fails separately as BUG-NEW-005. Do not claim this whole scenario passes.",
+      "passing_assertions": [
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 / VERIFY-012 \u2014 serialized Admin decisions re-reads state after approval wins the dealer lock queue",
+          "status": "passed",
+          "durationMs": 265.519534,
+          "failures": []
+        },
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 / VERIFY-012 \u2014 serialized Admin decisions re-reads state after changes wins the dealer lock queue",
+          "status": "passed",
+          "durationMs": 345.8827389999997,
+          "failures": []
+        },
+        {
+          "file": "apps/api/tests/dealer-approval-gate.test.ts",
+          "name": "BUG-002 / VERIFY-012 \u2014 serialized Admin decisions re-reads state after document rejection wins the dealer lock queue",
+          "status": "passed",
+          "durationMs": 298.7542940000003,
+          "failures": []
+        }
+      ],
+      "failing_evidence": "evidence/ci/bug002-final-purge-red.log",
+      "human_uat": "PENDING",
+      "source_sha": "fc452697337212dd300953030022ca15d5b3ac83"
+    }
+  ]
+}

@@ -22,5 +22,68 @@
     "fix_pr": 231,
     "retest": "AGENT_PASS_CI_PASS",
     "evidence": "../fixes/BUG-001/REPRODUCTION.md"
+  },
+  {
+    "id": "BUG-NEW-003",
+    "severity": "P1",
+    "title": "Admin document review invents VERIFIED state without a committed upload",
+    "reproduced": true,
+    "status": "FIX_VERIFIED",
+    "directly_required_support_for": "BUG-002 activation gate",
+    "fix_branch": "fix/pre-production-02-approval-gate",
+    "fix_pr": 232,
+    "retest": "AGENT_PASS_CI_PASS",
+    "evidence": "../fixes/BUG-002/evidence/ci/bug002-review-red.log",
+    "fix_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+    "ci_sha": "debfb6cfe2df0b98999aa018f0618293aeda9ece",
+    "ci_runs": [362, 511]
+  },
+  {
+    "id": "BUG-NEW-004",
+    "severity": "P1",
+    "title": "Admin suspension/reinstatement permits unapproved DRAFT activation",
+    "reproduced": true,
+    "status": "FIX_VERIFIED",
+    "directly_required_support_for": "BUG-002 activation gate",
+    "fix_branch": "fix/pre-production-02-approval-gate",
+    "fix_pr": 232,
+    "retest": "AGENT_PASS_CI_PASS",
+    "evidence": "../fixes/BUG-002/evidence/ci/bug002-state-red.log",
+    "fix_sha": "fc452697337212dd300953030022ca15d5b3ac83",
+    "ci_sha": "debfb6cfe2df0b98999aa018f0618293aeda9ece",
+    "ci_runs": [362, 511]
+  },
+  {
+    "id": "BUG-NEW-005",
+    "severity": "P1",
+    "status": "OPEN",
+    "affectedArea": "Admin destructive application rejection / approval race",
+    "canonicalTest": "New controlled PostgreSQL regression; adjacent to VERIFY-011",
+    "reproduced": "YES",
+    "sourceBaseSha": "1f38a1333fb2fa6f933c3a1972a3a4298a2d071e",
+    "workingTree": "BUG-002 implementation applied; rejection unchanged",
+    "steps": [
+      "Complete real uploads, submission and document verification.",
+      "Hold the outbox table with an independent PostgreSQL transaction.",
+      "Start approval and observe it waiting to insert its event, after upload checks and ACTIVE update within its open transaction.",
+      "Start rejection; it reads the last committed PENDING_APPROVAL state, deletes storage, and queues its event insertion.",
+      "Release the outbox holder: approval commits, then stale rejection purges the approved dealer."
+    ],
+    "expected": "Approval wins: rejection returns 422 and preserves approved dealer, membership and assets.",
+    "actual": {
+      "approvalHttp": 200,
+      "rejectionHttp": 200,
+      "dealerExists": false,
+      "approvedAuditCount": 1,
+      "rejectedAuditCount": 1
+    },
+    "rootCause": "rejectDealer checks state and removes storage before its transaction; deletion has no locked fresh state check.",
+    "evidence": "../fixes/BUG-002/evidence/ci/bug002-purge-red.log",
+    "reproductionSource": "../fixes/BUG-002/evidence/diagnostics/purge-probe.ts",
+    "fixPr": null,
+    "retest": "NOT_RUN",
+    "plan": "Dedicated stacked fix immediately after BUG-002 remote CI passes; no purge changes bundled in BUG-002.",
+    "finalReproductionSha": "fc452697337212dd300953030022ca15d5b3ac83",
+    "finalEvidence": "../fixes/BUG-002/evidence/ci/bug002-final-purge-red.log"
   }
 ]

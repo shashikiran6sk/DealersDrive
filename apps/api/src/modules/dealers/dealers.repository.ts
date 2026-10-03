@@ -17,8 +17,8 @@ function placeSlug(value: string | null): string | null {
 
 export function createDealersRepository(prisma: PrismaClient) {
   return {
-    async findById(dealerId: string): Promise<DealerWithRelations | null> {
-      return prisma.dealer.findUnique({ where: { id: dealerId }, include: dealerInclude });
+    async findById(dealerId: string, tx?: Tx): Promise<DealerWithRelations | null> {
+      return (tx ?? prisma).dealer.findUnique({ where: { id: dealerId }, include: dealerInclude });
     },
 
     async findBySlug(slug: string): Promise<DealerWithRelations | null> {
@@ -74,8 +74,8 @@ export function createDealersRepository(prisma: PrismaClient) {
       });
     },
 
-    async documents(dealerId: string) {
-      return prisma.dealerDocument.findMany({
+    async documents(dealerId: string, tx?: Tx) {
+      return (tx ?? prisma).dealerDocument.findMany({
         where: { dealerId },
         orderBy: { type: 'asc' },
       });
