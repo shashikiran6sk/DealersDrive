@@ -10,13 +10,14 @@ Existing adjacent brand text, links and navigation remain unchanged.
 
 The final optimized PNGs are both 2048 × 2048:
 
-- [Black on white](../../apps/web/public/brand/dealers-drive-light.png), 20,211 bytes.
-- [White on black](../../apps/web/public/brand/dealers-drive-dark.png), 17,298 bytes.
+- [Black on white](../../apps/web/public/brand/dealers-drive-light.png), 62,551 bytes.
+- [White on black](../../apps/web/public/brand/dealers-drive-dark.png), 60,383 bytes.
 
 The corresponding SVG files contain the same traced path, with the background
 and foreground colors reversed. The app consumes the PNGs. Colors are pure
-black and white with antialiasing shades along the contour. CSS applies the
-reference's rounded tile in UI slots.
+black and white with antialiasing shades along the contour. Both exported variants now use a 32% corner radius and transparent outer
+corners, matching the shared component clipping. This follow-up rounds the
+background further at the user’s request without changing the DD contour.
 
 Built-in ImageGen editing was used for two candidates. The prompt intent was
 to reproduce only the supplied joined DD mark, remove the screenshot border,
@@ -129,3 +130,24 @@ Additional evidence: [768 px](../screens/branding/after-tablet.jpg),
   logo URL with 2048 dimensions. UI logos expose “Dealers Drive” alt text.
 - A final source search found no old platform DD text-logo consumer; residual
   DD identifiers and generic Plate/dealership identity APIs are unrelated.
+
+## Rounded-background follow-up
+
+The user requested softer black/white tile corners after reviewing PR #240.
+The background radius increased from 25% to 32% in shared UI, exported
+PNGs/SVGs, the social preview tile, favicon frames and regular app/touch/manifest
+icons. The glyph path is byte-identical to the previous revision. Maskable
+icons remain opaque with safe padding because the launcher applies their shape.
+
+Updated evidence: [desktop surfaces](../screens/branding/rounded-surfaces-desktop.jpg),
+[mobile surfaces](../screens/branding/rounded-surfaces-mobile.jpg),
+[mobile footer](../screens/branding/rounded-footer-375.jpg),
+[desktop gallery](../screens/branding/rounded-gallery-desktop.jpg),
+[mobile gallery](../screens/branding/rounded-gallery-mobile.jpg), and
+[icon sizes](../screens/branding/after-icon-sizes.png). Shared header, footer,
+authentication, coming-soon and status shells were inspected at desktop and
+mobile widths with loaded images and retained dimensions. Earlier screenshots
+above document the first revision; files prefixed `rounded-` show this follow-up.
+
+Web tests passed again: 99 files / 1,346 tests. Lint, type checks, production
+build and sandbox build also passed for this follow-up.

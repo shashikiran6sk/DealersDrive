@@ -5,7 +5,8 @@ Parent: [components](README.md)
 The square PNGs share one contour traced from the supplied reference. The
 component selects the background variant explicitly from the surrounding
 surface, sets width and height before loading, and keeps the reference's
-rounded tile at every size. It uses the public optimized PNG directly to
+rounded tile at every size. A user-requested follow-up uses a 32% radius,
+with transparent asset corners and an unchanged DD path. It uses the public optimized PNG directly to
 avoid an image-optimizer request for a small static mark.
 
 The default 30 px square replaces the old Plate mark. Admin navigation and

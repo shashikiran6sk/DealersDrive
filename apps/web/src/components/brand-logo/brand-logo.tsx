@@ -18,7 +18,7 @@ export function BrandLogo({ variant = 'light', size = 30, className }: BrandLogo
       width={size}
       height={size}
       unoptimized
-      className={cn('inline-block flex-none rounded-[25%] object-contain align-middle', className)}
+      className={cn('inline-block flex-none rounded-[32%] object-contain align-middle', className)}
     />
   );
 }

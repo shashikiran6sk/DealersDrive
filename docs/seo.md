@@ -93,7 +93,8 @@ this costs nothing measurable.
 
 **Icons.** `app/favicon.ico` (16/32/48), `app/icon.png` (512) and
 `app/apple-icon.png` (180, full-bleed) use a tighter crop of the reference's
-joined DD symbol, white on black. Next writes their `<link>` tags. The root
+joined DD symbol, white on black with 32% rounded transparent corners.
+The maskable icon stays opaque so the launcher can apply its own shape. Next writes their `<link>` tags. The root
 metadata has no `icons` key. `app/manifest.ts` declares matching 192/512 PNGs
 and a 512 maskable icon with the reference's safe internal padding. The
 Organization logo uses the public 2048 px `/brand/dealers-drive-light.png`
