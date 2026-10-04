@@ -1,6 +1,0 @@
-
-> dealers-drive@0.0.0 format:check /workspace/DealersDrive-fixes
-> prettier --check "**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}"
-
-Checking formatting...
-All matched files use Prettier code style!

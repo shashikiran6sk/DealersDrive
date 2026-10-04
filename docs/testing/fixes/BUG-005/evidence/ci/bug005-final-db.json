@@ -1,9 +1,0 @@
-{
-  "command": ["node", "docs/testing/fixes/BUG-005/evidence/diagnostics/final-db-check.mjs"],
-  "sha": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
-  "start_utc": "2026-10-04T07:39:54.043533+00:00",
-  "end_utc": "2026-10-04T07:39:54.206942+00:00",
-  "exit_code": 0,
-  "log": "evidence/ci/bug005-final-db.log",
-  "cache": "TURBO_FORCE=true"
-}

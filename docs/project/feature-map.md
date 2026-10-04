@@ -2489,7 +2489,7 @@ Five Next.js error boundaries — root, global, and one per route group.
 
 - **Status** implemented · **Confidence** HIGH · **Depends on** F012
 - **Frontend** `app/{error,global-error}.tsx`, `app/({public,dealer,admin})/error.tsx`, `app/(public)/{cars,car/[slug],dealers,dealers/[slug]}/error.tsx`, `lib/{errors,logger,bff}.ts`, the error model in `lib/api.ts`
-- **Components — New** `StatusPage`, `RouteError`, `SectionError`, `RetryButton`, `StatusShell` (C113–C117) · **Reused** `ErrorState`, `ButtonLink`, `Button`, `Plate`
+- **Components — New** `StatusPage`, `RouteError`, `SectionError`, `RetryButton`, `StatusShell` (C131–C135) · **Reused** `ErrorState`, `ButtonLink`, `Button`, `Plate`
 - **Sandbox** `Errors/StatusPage` — not found / server error / route message / phone width; `Errors/SectionError` — homepage rows / dealer inventory / retry
 - ⚠️ **Not a port.** The baseline is unreachable from this repository's remotes; the design is `docs/errors.md`.
 - ⚠️ **No `console` in production source.** `no-console` is an error for `src/**`; the web app logs through `lib/logger.ts`.

@@ -1,9 +1,0 @@
-{
-  "command": ["node", "docs/testing/fixes/BUG-008/browser-uat.mjs"],
-  "sha": "4eac27d0982487943b6204f5ec03b7fbf511e221",
-  "start_utc": "2026-10-04T10:59:10.805850+00:00",
-  "end_utc": "2026-10-04T10:59:27.334223+00:00",
-  "exit_code": 0,
-  "log": "evidence/ci/bug008-browser-uat.log",
-  "cache": "TURBO_FORCE=true"
-}

@@ -1,9 +1,0 @@
-{
-  "command": ["pnpm", "lint"],
-  "sha": "87b462709969d2d75c9ba005435eed8975d18567",
-  "start_utc": "2026-10-04T11:19:21.376366+00:00",
-  "end_utc": "2026-10-04T11:20:38.810803+00:00",
-  "exit_code": 0,
-  "log": "evidence/ci/bug008-final-lint.log",
-  "cache": "TURBO_FORCE=true"
-}

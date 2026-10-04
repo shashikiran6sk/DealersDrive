@@ -1,9 +1,0 @@
-{
-  "command": ["pnpm", "build", "--env-mode=loose"],
-  "sha": "1030a4a8d005ca4ab2979360e47ec672fe070073",
-  "start_utc": "2026-10-04T11:01:28.411532+00:00",
-  "end_utc": "2026-10-04T11:01:58.567939+00:00",
-  "exit_code": 0,
-  "log": "evidence/ci/bug008-final-layout-build.log",
-  "cache": "TURBO_FORCE=true"
-}
