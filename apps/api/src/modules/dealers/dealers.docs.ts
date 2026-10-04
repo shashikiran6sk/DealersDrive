@@ -272,6 +272,9 @@ export const dealersDocs: ModuleDocs = {
         'advisory.\n\n' +
         'Then `PUT` the bytes to `uploadUrl` with the returned `headers`, and finish with ' +
         '`POST /v1/dealer/documents/{type}/commit`.\n\n' +
+        'Outside `DRAFT` a document that is `UPLOADED` (under review) or `VERIFIED` is ' +
+        'locked: the call is a 409 `DOCUMENT_LOCKED` and nothing changes. An empty, ' +
+        '`REJECTED` or `UPLOADING` slot can still be filled.\n\n' +
         'Accepts PDF, JPEG and PNG up to 5 MB. OWNER only (`document:upload`).',
       audience: 'dealer',
       permission: 'document:upload',
@@ -292,7 +295,7 @@ export const dealersDocs: ModuleDocs = {
           schema: 'PresignResponse',
         },
       ],
-      errors: [400, 401, 403, 404, 422],
+      errors: [400, 401, 403, 404, 409, 422],
     },
     {
       method: 'post',
@@ -304,6 +307,9 @@ export const dealersDocs: ModuleDocs = {
         'Step 2 of 2. Verifies the object actually landed in storage before marking the ' +
         'document uploaded — a presign that was never followed by a `PUT` must not leave a ' +
         'document looking complete. A missing object is a 422 `UPLOAD_MISSING`.\n\n' +
+        'Outside `DRAFT` a document that is `UPLOADED` (under review) or `VERIFIED` is ' +
+        'locked: the call is a 409 `DOCUMENT_LOCKED` and nothing changes. An empty, ' +
+        '`REJECTED` or `UPLOADING` slot can still be filled.\n\n' +
         '`type` in the path must match the type the document was presigned as.',
       audience: 'dealer',
       permission: 'document:upload',
@@ -320,7 +326,7 @@ export const dealersDocs: ModuleDocs = {
           schema: 'DealerDocumentDto',
         },
       ],
-      errors: [400, 401, 403, 404, 422],
+      errors: [400, 401, 403, 404, 409, 422],
     },
     {
       method: 'delete',
@@ -329,13 +335,16 @@ export const dealersDocs: ModuleDocs = {
       tag: DOC_TAGS.dealerAccount,
       summary: 'Remove a KYC document',
       description:
-        'Deletes the row and the stored object, so a wrong file can be replaced. OWNER only ' +
-        '(`document:upload`).',
+        'Deletes the row and the stored object, so a wrong file can be replaced.\n\n' +
+        'Outside `DRAFT` a document that is `UPLOADED` (under review) or `VERIFIED` is ' +
+        'locked: the call is a 409 `DOCUMENT_LOCKED` and nothing changes. An empty, ' +
+        '`REJECTED` or `UPLOADING` slot can still be filled.\n\n' +
+        'OWNER only (`document:upload`).',
       audience: 'dealer',
       permission: 'document:upload',
       params: 'DocTypeParam',
       responses: [{ status: 204, description: 'Deleted.' }],
-      errors: [400, 401, 403, 404],
+      errors: [400, 401, 403, 404, 409],
     },
     {
       method: 'get',

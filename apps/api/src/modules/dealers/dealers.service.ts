@@ -29,7 +29,7 @@ import {
   type YardPhotoDto,
   type YardPhotoPresignInput,
 } from '@dealers-drive/contracts';
-import type { DealerDocType, PrismaClient } from '@prisma/client';
+import type { DealerDocType, DealerStatus, DocStatus, PrismaClient } from '@prisma/client';
 
 import { toMediaStatus } from '../media/media.facade.js';
 import { randomUUID } from 'node:crypto';
@@ -44,6 +44,7 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
+import { DOCUMENT_LOCKED } from './dealers.messages.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 import {
   ALREADY_REGISTERED,
@@ -64,6 +65,17 @@ export interface DealersDeps {
 const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'];
 
 const YARD_PHOTO_URL_TTL_SECONDS = 300;
+
+const DOC_EDITABLE_OUTSIDE_DRAFT: readonly DocStatus[] = ['REQUIRED', 'REJECTED', 'UPLOADING'];
+
+function assertDocumentEditable(
+  dealerStatus: DealerStatus | null,
+  document: { status: DocStatus } | null,
+): void {
+  if (dealerStatus === 'DRAFT') return;
+  if (!document || DOC_EDITABLE_OUTSIDE_DRAFT.includes(document.status)) return;
+  throw new ConflictError('DOCUMENT_LOCKED', DOCUMENT_LOCKED);
+}
 
 function sameServices(a: readonly string[], b: readonly string[]): boolean {
   if (a.length !== b.length) return false;
@@ -610,16 +622,26 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const documentId = randomUUID();
       const key = documentKey(slug, input.type, documentId);
 
-      const previous = await repo.documentByType(dealerId, input.type);
-      if (previous) await storage.delete(documentKey(slug, input.type, previous.id));
+      const previous = await withTransaction(prisma, async (tx) => {
+        const dealerStatus = await repo.lockStatus(dealerId, tx);
+        const existing = await repo.documentByType(dealerId, input.type, tx);
+        assertDocumentEditable(dealerStatus, existing);
 
-      await repo.upsertDocument(dealerId, input.type, {
-        id: documentId,
-        status: 'UPLOADING',
-        fileName: input.fileName,
-        mediaId: null,
-        rejectionReason: null,
+        await repo.upsertDocument(
+          dealerId,
+          input.type,
+          {
+            id: documentId,
+            status: 'UPLOADING',
+            fileName: input.fileName,
+            mediaId: null,
+            rejectionReason: null,
+          },
+          tx,
+        );
+        return existing;
       });
+      if (previous) await storage.delete(documentKey(slug, input.type, previous.id));
 
       const presigned = await storage.presignPut({
         key,
@@ -637,29 +659,37 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     },
 
     async commitDocument(dealerId: string, type: DealerDocType, input: DocumentCommitInput) {
-      const doc = await repo.documentById(input.documentId);
-      if (!doc || doc.dealerId !== dealerId || doc.type !== type) {
-        throw new NotFoundError(DOCUMENT_NOT_FOUND);
-      }
+      const slug = await requireSlug(dealerId);
+      const object = await storage.head(documentKey(slug, type, input.documentId));
 
-      const object = await storage.head(
-        documentKey(await requireSlug(dealerId), type, input.documentId),
-      );
-      if (!object) {
-        throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
-      }
+      await withTransaction(prisma, async (tx) => {
+        const dealerStatus = await repo.lockStatus(dealerId, tx);
+        const doc = await repo.documentById(input.documentId, tx);
+        if (!doc || doc.dealerId !== dealerId || doc.type !== type) {
+          throw new NotFoundError(DOCUMENT_NOT_FOUND);
+        }
+        assertDocumentEditable(dealerStatus, doc);
+        if (!object) {
+          throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
+        }
 
-      await repo.upsertDocument(dealerId, type, { status: 'UPLOADED', mediaId: null });
+        await repo.upsertDocument(dealerId, type, { status: 'UPLOADED', mediaId: null }, tx);
+      });
       const response = await this.documents(dealerId);
       return response.data.find((row) => row.type === type);
     },
 
     async deleteDocument(dealerId: string, type: DealerDocType): Promise<void> {
       const slug = await requireSlug(dealerId);
-      const existing = await repo.documentByType(dealerId, type);
-      if (!existing) throw new NotFoundError(DOCUMENT_NOT_FOUND);
+      const existing = await withTransaction(prisma, async (tx) => {
+        const dealerStatus = await repo.lockStatus(dealerId, tx);
+        const doc = await repo.documentByType(dealerId, type, tx);
+        if (!doc) throw new NotFoundError(DOCUMENT_NOT_FOUND);
+        assertDocumentEditable(dealerStatus, doc);
 
-      await repo.deleteDocument(dealerId, type);
+        await repo.deleteDocument(dealerId, type, tx);
+        return doc;
+      });
       await storage.delete(documentKey(slug, type, existing.id));
     },
 

@@ -9,7 +9,7 @@ import type {
 } from '../../../../src/modules/dealers/dealers.repository.js';
 import { createDealersService } from '../../../../src/modules/dealers/dealers.service.js';
 import type { AuditService } from '../../../../src/platform/audit/audit.service.js';
-import { DomainError, NotFoundError } from '../../../../src/platform/errors.js';
+import { ConflictError, DomainError, NotFoundError } from '../../../../src/platform/errors.js';
 import type { MapsPort } from '../../../../src/platform/maps/maps-link.js';
 import type { StoragePort } from '../../../../src/platform/storage/storage.port.js';
 
@@ -192,6 +192,7 @@ function setup(options: Options = {}) {
       return Promise.resolve(dealer({ ...(options.dealer ?? {}), ...data }));
     },
     documents: () => Promise.resolve(options.documents ?? []),
+    lockStatus: () => Promise.resolve(row?.status ?? null),
     documentById: () => Promise.resolve(options.documentById ?? null),
     upsertDocument: (_dealerId: string, type: string, data: Record<string, unknown>) => {
       upserts.push({ type, data });
@@ -973,7 +974,12 @@ describe('presignDocument', () => {
 });
 
 describe('commitDocument', () => {
-  const stored = { id: 'doc-1', dealerId: 'dealer-1', type: 'GST_CERTIFICATE' };
+  const stored = {
+    id: 'doc-1',
+    dealerId: 'dealer-1',
+    type: 'GST_CERTIFICATE',
+    status: 'UPLOADING',
+  };
 
   it('marks the document uploaded once the object is there', async () => {
     const h = setup({
@@ -1027,6 +1033,68 @@ describe('commitDocument', () => {
       h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
     ).rejects.toThrow(/did not complete/);
     expect(h.upserts).toEqual([]);
+  });
+});
+
+describe('ORIG-BUG-004 — a reviewed document is locked outside DRAFT', () => {
+  const input = {
+    type: 'PAN_CARD' as const,
+    fileName: 'pan.pdf',
+    mimeType: 'application/pdf' as const,
+    bytes: 1024,
+  };
+
+  it.each(['ACTIVE', 'PENDING_APPROVAL', 'SUSPENDED'])(
+    'refuses to presign over a VERIFIED document of a %s dealer and deletes nothing',
+    async (status) => {
+      const h = setup({ dealer: { status }, documentByType: doc({ status: 'VERIFIED' }) });
+
+      await expect(h.service.presignDocument('dealer-1', input)).rejects.toThrow(ConflictError);
+      expect(h.upserts).toEqual([]);
+      expect(h.deletes).toEqual([]);
+    },
+  );
+
+  it.each(['UPLOADED', 'VERIFIED'])(
+    'refuses to delete an %s document of an ACTIVE dealer and deletes nothing',
+    async (status) => {
+      const h = setup({ documentByType: doc({ status }) });
+
+      await expect(h.service.deleteDocument('dealer-1', 'PAN_CARD')).rejects.toThrow(ConflictError);
+      expect(h.deletes).toEqual([]);
+    },
+  );
+
+  it('refuses to commit a VERIFIED document of an ACTIVE dealer', async () => {
+    const h = setup({
+      documentById: { id: 'doc-1', dealerId: 'dealer-1', type: 'PAN_CARD', status: 'VERIFIED' },
+      head: { bytes: 1024, contentType: 'application/pdf' },
+    });
+
+    await expect(
+      h.service.commitDocument('dealer-1', 'PAN_CARD', { documentId: 'doc-1' }),
+    ).rejects.toThrow(ConflictError);
+    expect(h.upserts).toEqual([]);
+  });
+
+  it.each(['REQUIRED', 'REJECTED', 'UPLOADING'])(
+    'lets an ACTIVE dealer fill a %s slot',
+    async (status) => {
+      const h = setup({ documentByType: doc({ status }) });
+
+      await h.service.presignDocument('dealer-1', input);
+
+      expect(h.upserts[0]).toMatchObject({ data: { status: 'UPLOADING' } });
+    },
+  );
+
+  it('lets a DRAFT dealer replace a VERIFIED document, removing the old object after the row moves', async () => {
+    const h = setup({ dealer: { status: 'DRAFT' }, documentByType: doc({ status: 'VERIFIED' }) });
+
+    await h.service.presignDocument('dealer-1', input);
+
+    expect(h.upserts[0]).toMatchObject({ data: { status: 'UPLOADING' } });
+    expect(h.deletes).toHaveLength(1);
   });
 });
 

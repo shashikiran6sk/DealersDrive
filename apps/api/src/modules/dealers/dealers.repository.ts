@@ -1,5 +1,5 @@
 import { initialsOf, slugify } from '@dealers-drive/contracts';
-import type { ListingStatus, Prisma, PrismaClient } from '@prisma/client';
+import type { DealerStatus, ListingStatus, Prisma, PrismaClient } from '@prisma/client';
 
 import type { Tx } from '../../platform/db/prisma.js';
 
@@ -81,23 +81,33 @@ export function createDealersRepository(prisma: PrismaClient) {
       });
     },
 
-    async documentById(documentId: string) {
-      return prisma.dealerDocument.findUnique({ where: { id: documentId } });
+    async lockStatus(dealerId: string, tx: Tx): Promise<DealerStatus | null> {
+      const rows = await tx.$queryRaw<{ status: DealerStatus }[]>`
+        SELECT "status" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
+      return rows[0]?.status ?? null;
+    },
+
+    async documentById(documentId: string, tx?: Tx) {
+      return (tx ?? prisma).dealerDocument.findUnique({ where: { id: documentId } });
     },
 
     async documentByType(
       dealerId: string,
       type: Prisma.DealerDocumentUncheckedCreateInput['type'],
+      tx?: Tx,
     ) {
-      return prisma.dealerDocument.findUnique({ where: { dealerId_type: { dealerId, type } } });
+      return (tx ?? prisma).dealerDocument.findUnique({
+        where: { dealerId_type: { dealerId, type } },
+      });
     },
 
     async upsertDocument(
       dealerId: string,
       type: Prisma.DealerDocumentUncheckedCreateInput['type'],
       data: Omit<Prisma.DealerDocumentUncheckedUpdateInput, 'dealerId' | 'type'>,
+      tx?: Tx,
     ) {
-      return prisma.dealerDocument.upsert({
+      return (tx ?? prisma).dealerDocument.upsert({
         where: { dealerId_type: { dealerId, type } },
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
         create: { ...(data as Prisma.DealerDocumentUncheckedCreateInput), dealerId, type },
@@ -108,8 +118,9 @@ export function createDealersRepository(prisma: PrismaClient) {
     async deleteDocument(
       dealerId: string,
       type: Prisma.DealerDocumentUncheckedCreateInput['type'],
+      tx?: Tx,
     ) {
-      const result = await prisma.dealerDocument.updateMany({
+      const result = await (tx ?? prisma).dealerDocument.updateMany({
         where: { dealerId, type },
         data: { status: 'REQUIRED', mediaId: null, fileName: null, rejectionReason: null },
       });
