@@ -294,6 +294,14 @@ Prisma's P2002. Duck-typed, so a test can throw one without the client.
 
 ## `apps/api/src/modules/notifications/templates.ts`
 
+### `case 'dealer.application.closed':`
+
+Its own message rather than the rejection's (ORIG-GAP-CLOSE): it says the
+application is closed and will not be reviewed further, quotes the reason, and
+says plainly that nothing was deleted. The dealership still exists, so the
+recipient is found the ordinary way — unlike a rejection, which has to snapshot
+its recipient before the purge.
+
 ### `export type TemplateName =`
 
 Transactional messages, as data (**R40**).

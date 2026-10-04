@@ -1297,6 +1297,14 @@ so `current` in the menu is always the dealership `/v1/dealer` will act on.
 
 ### `export function isEnterable(membership: MembershipWithDealer): boolean`
 
+**A CLOSED dealership is shut the same way a SUSPENDED one is (ORIG-GAP-CLOSE).**
+Its members keep their membership rows — the record is preserved — but cannot
+enter it: an open session stops resolving, dealer writes are a 401 through
+`authorizeDealerWrite`, and sign-in is a 403. `findWorkspaceMembership` reports
+`closed` when every membership left is a closed application, so the refusal
+says `APPLICATION_CLOSED` instead of telling somebody their dealership was
+suspended when it was not.
+
 An ACTIVE membership in a dealership that is not SUSPENDED. A REMOVED or
 INVITED row never qualifies, so removing a member shuts the dealership to
 them on their next request without touching their session.

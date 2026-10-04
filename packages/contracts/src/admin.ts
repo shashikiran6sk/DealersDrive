@@ -318,6 +318,7 @@ export const AdminDealerDetail = z.object({
      * first with the second costs a real business every field they typed.
      */
     canRequestChanges: z.boolean(),
+    canClose: z.boolean(),
     canSuspend: z.boolean(),
     canReinstate: z.boolean(),
     canGrantCredits: z.boolean(),

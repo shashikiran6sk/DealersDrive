@@ -156,6 +156,27 @@ export async function requestDealerChangesAction(
   }
 }
 
+export async function closeDealerAction(
+  dealerId: string,
+  input: unknown,
+  slug?: string,
+): Promise<AdminResult<DealerModerationResponse>> {
+  const parsed = ReasonInput.safeParse(input);
+  if (!parsed.success) return { ok: false, message: 'Closing an application needs a reason.' };
+
+  try {
+    const data = await apiSend<DealerModerationResponse>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/close`,
+      parsed.data,
+    );
+    refreshAdmin(slug);
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not close that application.');
+  }
+}
+
 export async function updateDealerAction(
   dealerId: string,
   input: unknown,

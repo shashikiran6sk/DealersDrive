@@ -289,6 +289,20 @@ describe('the notification rules', () => {
     expect(mailer.sent[0]?.text).toContain('GST registration has expired.');
   });
 
+  /** ORIG-GAP-CLOSE. Its own message: a closed application was not rejected. */
+  it('emails the dealer a dedicated message when the application is closed', async () => {
+    const { service, mailer } = setup();
+    const bus = createEventBus();
+    service.subscribe(bus);
+    await service.work();
+
+    await bus.publish(event('DealerApplicationClosed', { reason: 'Duplicate application.' }));
+
+    expect(mailer.sent.map((message) => message.tag)).toEqual(['dealer.application.closed']);
+    expect(mailer.sent[0]?.text).toContain('Duplicate application.');
+    expect(mailer.sent[0]?.subject).not.toMatch(/reject/i);
+  });
+
   it('emails the dealer when the dealership is reinstated', async () => {
     await expect(templatesFor('DealerReinstated')).resolves.toEqual(['dealer.account.reinstated']);
   });

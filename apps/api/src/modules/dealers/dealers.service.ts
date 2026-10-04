@@ -44,7 +44,12 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
-import { DOCUMENT_LOCKED, YARD_PHOTO_LOCKED } from './dealers.messages.js';
+import {
+  ALREADY_SUBMITTED,
+  APPLICATION_CLOSED,
+  DOCUMENT_LOCKED,
+  YARD_PHOTO_LOCKED,
+} from './dealers.messages.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 import {
   ALREADY_REGISTERED,
@@ -75,6 +80,12 @@ function assertDocumentEditable(
   if (dealerStatus === 'DRAFT') return;
   if (!document || DOC_EDITABLE_OUTSIDE_DRAFT.includes(document.status)) return;
   throw new ConflictError('DOCUMENT_LOCKED', DOCUMENT_LOCKED);
+}
+
+function assertSubmittable(dealerStatus: DealerStatus | null): void {
+  if (dealerStatus === 'DRAFT') return;
+  if (dealerStatus === 'CLOSED') throw new DomainError('APPLICATION_CLOSED', APPLICATION_CLOSED);
+  throw new DomainError('ALREADY_SUBMITTED', ALREADY_SUBMITTED);
 }
 
 function assertYardPhotoEditable(dealerStatus: DealerStatus | null): void {
@@ -544,12 +555,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
     async submitForVerification(dealerId: string): Promise<DealerSubmitResponse> {
       const dealer = await requireDealer(dealerId);
-      if (dealer.status !== 'DRAFT') {
-        throw new DomainError(
-          'ALREADY_SUBMITTED',
-          'This dealership has already been submitted for verification.',
-        );
-      }
+      assertSubmittable(dealer.status);
 
       const state = await this.completeness(dealerId);
       if (!state.isComplete) {
@@ -567,6 +573,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const submittedAt = new Date();
       const resubmitted = Boolean(dealer.statusReason);
       await withTransaction(prisma, async (tx) => {
+        assertSubmittable(await repo.lockStatus(dealerId, tx));
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await enqueueOutbox(tx, {
           type: 'DealerApplied',

@@ -772,12 +772,14 @@ export const registry: RegistryEntry[] = [
     category: 'Admin',
     ownership: 'Feature-specific',
     purpose:
-      'Approve, request changes, reject or suspend a dealership. The API says which is offered, not this.',
+      'Approve, request changes, close, reject or suspend a dealership. The API says which is offered, not this.',
     aliases: [
       'DealerActions',
       'AdminDealerActions',
       'ApproveDealer',
       'SuspendDealer',
+      'CloseApplication',
+      'CloseDealer',
       'dealer-actions',
     ],
     features: ['F045'],
@@ -789,6 +791,7 @@ export const registry: RegistryEntry[] = [
       'active',
       'suspended',
       'draft',
+      'closed',
       'in flight',
       'server error',
     ],

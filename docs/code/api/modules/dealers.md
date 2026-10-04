@@ -1375,6 +1375,13 @@ ready to be reviewed.
 
 ### `async submitForVerification(dealerId: string): Promise<DealerSubmitResponse>`
 
+**The DRAFT check is repeated under the dealer row lock.** The first read is
+outside any transaction, so a submit that passed it could wait on the row
+while an Admin closed the application, then write PENDING_APPROVAL over
+CLOSED. `assertSubmittable(await repo.lockStatus(…))` re-reads the status after
+the lock — the same lock close, approve and request-changes take — and a
+closed application answers `APPLICATION_CLOSED`.
+
 C4. DRAFT → PENDING_APPROVAL. No body; the state machine decides.
 
 ### `const resubmitted = Boolean(dealer.statusReason)`

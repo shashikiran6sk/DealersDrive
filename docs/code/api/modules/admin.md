@@ -391,6 +391,28 @@ notification handler reads what it needs.
 
 `dealer_documents` and `dealer_members` are `onDelete: Cascade`.
 
+### `async closeDealer(admin: AdminPrincipal, dealerId: string, reason: string): Promise<DealerModerationResponse>`
+
+ORIG-GAP-CLOSE. Before this an application that would never be finished had
+two fates: wait in DRAFT or PENDING_APPROVAL for ever, or be rejected — which
+purges the dealership, its documents and its owner membership. Close is the
+non-destructive third: DRAFT or PENDING_APPROVAL → CLOSED with a mandatory
+reason, and nothing deleted. The dealership row, memberships, KYC rows and
+files, the yard photograph and the audit trail all stay; the reason is in
+`statusReason`, in a `dealer.closed` audit row, and in a dedicated email
+(`DealerApplicationClosed` → `dealer.application.closed`). The rejection email
+is deliberately not reused: "we are not able to verify you" is the wrong thing
+to tell somebody whose duplicate application was tidied away.
+
+It takes the dealer lock first, like every other dealer decision, so it
+serialises with approve, reject, request-changes and the dealer's own submit.
+ACTIVE and SUSPENDED are refused: an approved dealership is suspended, which is
+reversible. Admin only for V1 — there is no dealer Withdraw.
+
+`rejectDealer` refuses a CLOSED dealership (`CLOSED_NOT_REJECTABLE`): the point
+of closing is that the record is kept, and the console never offers Reject on
+it (`canReject` is DRAFT or PENDING only).
+
 ### `async requestChanges`
 
 D4 request changes — the reversible refusal, and the one a moderator
