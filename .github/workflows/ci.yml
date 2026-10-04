@@ -139,12 +139,15 @@ jobs:
   # to a human running it against the environment they are changing.
   # ---------------------------------------------------------------------------
   terraform:
-    name: terraform fmt / validate
+    name: terraform fmt / validate (${{ matrix.directory }})
+    strategy:
+      matrix:
+        directory: [deploy/terraform, deploy/launch/terraform]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: deploy/terraform
+        working-directory: ${{ matrix.directory }}
     steps:
       - uses: actions/checkout@v7
 
@@ -162,6 +165,14 @@ jobs:
 
       - name: Validate
         run: terraform validate
+
+      - name: Account-independent launch plan tests
+        if: matrix.directory == 'deploy/launch/terraform'
+        run: terraform test
+
+      - name: Host recovery tests
+        if: matrix.directory == 'deploy/launch/terraform'
+        run: python3 -m unittest discover -s ../tests
 
   audit:
     name: dependency audit

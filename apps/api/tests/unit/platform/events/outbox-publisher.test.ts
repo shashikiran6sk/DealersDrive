@@ -42,6 +42,7 @@ function harness(rows: Row[]) {
   const queries: string[] = [];
 
   const prisma = {
+    $transaction: (fn: (tx: unknown) => unknown) => fn(prisma),
     $queryRaw: (strings: TemplateStringsArray) => {
       queries.push(strings.join('?'));
       return Promise.resolve(rows);
@@ -123,6 +124,7 @@ describe('createOutboxPublisher', () => {
       const updates: Update[] = [];
       let first = true;
       const prisma = {
+        $transaction: (fn: (tx: unknown) => unknown) => fn(prisma),
         $queryRaw: () => Promise.resolve([{ id: 9n, payload: event('half') }]),
         outboxEvent: {
           update: (args: Update) => {
@@ -196,7 +198,7 @@ describe('createOutboxPublisher', () => {
       publisher.start();
       await vi.advanceTimersByTimeAsync(2_000);
       await vi.advanceTimersByTimeAsync(2_000);
-      publisher.stop();
+      void publisher.stop();
 
       expect(h.queries).toHaveLength(2);
     });
@@ -208,7 +210,7 @@ describe('createOutboxPublisher', () => {
       publisher.start();
       publisher.start();
       await vi.advanceTimersByTimeAsync(2_000);
-      publisher.stop();
+      void publisher.stop();
 
       expect(h.queries).toHaveLength(1);
     });
@@ -217,9 +219,9 @@ describe('createOutboxPublisher', () => {
       const h = harness([]);
       const publisher = createOutboxPublisher(h.prisma, h.bus);
 
-      publisher.stop();
+      void publisher.stop();
       publisher.start();
-      publisher.stop();
+      void publisher.stop();
       await vi.advanceTimersByTimeAsync(10_000);
 
       expect(h.queries).toEqual([]);
@@ -230,10 +232,10 @@ describe('createOutboxPublisher', () => {
       const publisher = createOutboxPublisher(h.prisma, h.bus);
 
       publisher.start();
-      publisher.stop();
+      void publisher.stop();
       publisher.start();
       await vi.advanceTimersByTimeAsync(2_000);
-      publisher.stop();
+      void publisher.stop();
 
       expect(h.queries).toHaveLength(1);
     });
@@ -242,6 +244,7 @@ describe('createOutboxPublisher', () => {
       let release: (() => void) | undefined;
       let started = 0;
       const prisma = {
+        $transaction: (fn: (tx: unknown) => unknown) => fn(prisma),
         $queryRaw: () => {
           started += 1;
           return new Promise((resolve) => {
@@ -266,12 +269,13 @@ describe('createOutboxPublisher', () => {
       expect(started).toBe(1);
 
       release?.();
-      publisher.stop();
+      void publisher.stop();
     });
 
     it('survives a drain that rejects, and keeps polling', async () => {
       let calls = 0;
       const prisma = {
+        $transaction: (fn: (tx: unknown) => unknown) => fn(prisma),
         $queryRaw: () => {
           calls += 1;
           return calls === 1 ? Promise.reject(new Error('connection lost')) : Promise.resolve([]);
@@ -287,7 +291,7 @@ describe('createOutboxPublisher', () => {
       publisher.start();
       await vi.advanceTimersByTimeAsync(2_000);
       await vi.advanceTimersByTimeAsync(2_000);
-      publisher.stop();
+      void publisher.stop();
 
       // A dropped connection must not kill the poller for the life of the process.
       expect(calls).toBe(2);
@@ -305,7 +309,7 @@ describe('createOutboxPublisher', () => {
 
       expect(unref).toHaveBeenCalledTimes(1);
       spy.mockRestore();
-      publisher.stop();
+      void publisher.stop();
     });
   });
 });

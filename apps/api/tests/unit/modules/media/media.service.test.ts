@@ -1,3 +1,4 @@
+import { JPEG } from '../../../image-fixture.js';
 import type { PrismaClient } from '@prisma/client';
 import { describe, expect, it } from 'vitest';
 
@@ -32,7 +33,7 @@ function mediaRow(overrides: Partial<Row> = {}): Row {
     storageKey: 'vehicles/vehicle-1/media-1/original.jpg',
     mimeType: 'image/jpeg',
     status: 'READY',
-    variants: {},
+    variants: { '640': 'derivatives/test/640.webp' },
     attachment: { vehicle: { listing: { status: 'ACTIVE' } } },
     ...overrides,
   };
@@ -47,11 +48,17 @@ function setup(options: Fakes = {}) {
   const row = options.media === null ? null : mediaRow(options.media ?? {});
 
   const prisma = {
-    media: { findUnique: () => Promise.resolve(row) },
+    media: { findUnique: () => Promise.resolve(row), update: () => Promise.resolve(row) },
+    dealer: { findUnique: () => Promise.resolve({ status: 'ACTIVE', coverMediaId: 'media-1' }) },
   } as unknown as PrismaClient;
 
+  const objects = new Map<string, Buffer>();
   const storage = {
-    get: () => Promise.resolve(options.objectBody ?? null),
+    get: (key: string) => Promise.resolve(objects.get(key) ?? options.objectBody ?? null),
+    put: (key: string, body: Buffer) => {
+      objects.set(key, body);
+      return Promise.resolve();
+    },
   } as unknown as StoragePort;
 
   return { service: createMediaService({ prisma, storage }) };
@@ -70,9 +77,9 @@ describe('serve', () => {
     expect(served?.body.toString()).toBe('webp-bytes');
   });
 
-  it('falls back down the ladder when the requested width was never written', async () => {
+  it('generates the exact width when the requested rendition is missing', async () => {
     const h = setup({
-      objectBody: Buffer.from('x'),
+      objectBody: JPEG,
       media: { status: 'READY', variants: { '1024': 'vehicles/v/m/1024.webp' } },
     });
 
@@ -80,13 +87,13 @@ describe('serve', () => {
     await expect(h.service.serve('media-1', 1600)).resolves.toBeTruthy();
   });
 
-  it('falls back to the original, reporting its own mime type', async () => {
+  it('converts a legacy original into WebP', async () => {
     const h = setup({
-      objectBody: Buffer.from('jpeg-bytes'),
+      objectBody: JPEG,
       media: { status: 'READY', variants: {}, mimeType: 'image/jpeg' },
     });
 
-    expect((await h.service.serve('media-1', 640))?.contentType).toBe('image/jpeg');
+    expect((await h.service.serve('media-1', 640))?.contentType).toBe('image/webp');
   });
 
   it('refuses to serve anything that is not READY', async () => {

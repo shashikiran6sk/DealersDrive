@@ -6,8 +6,8 @@ export const storageDocs: ModuleDocs = {
   description:
     'The local stand-ins for object storage. `PUT /uploads` terminates a presigned upload; ' +
     '`GET /private` answers a signed read URL; `GET /media/…` serves published images. All ' +
-    'three are replaced by R2 and the Cloudflare ' +
-    'Images origin in every deployed environment, which is why they live outside `/v1` and ' +
+    'uploads and private reads use presigned S3-compatible URLs in deployed environments. ' +
+    'Published derivatives remain behind the API visibility check and a CDN, and ' +
     'take no session.',
   operations: [
     {
@@ -133,8 +133,8 @@ export const storageDocs: ModuleDocs = {
         'same handler. **A vehicle image is served only while its listing is `ACTIVE` or `RESERVED`** ' +
         '(**R45**): before approval, after a sale or a removal it is a 404, and a moderator ' +
         'previews it through a signed read URL instead. A new upload is a new id and therefore a new URL, ' +
-        'so a cache never has to be invalidated — hence ' +
-        '`Cache-Control: public, max-age=31536000, immutable`.\n\n' +
+        'but publication can change, so public cache lifetime is bounded to 60 seconds: ' +
+        '`Cache-Control: public, max-age=60, s-maxage=60, must-revalidate`.\n\n' +
         'Available widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the ' +
         'JSON API this route sends `Cross-Origin-Resource-Policy: cross-origin`, because a ' +
         'media origin is a different host from the web app in every environment and the ' +
@@ -150,8 +150,11 @@ export const storageDocs: ModuleDocs = {
           inlineSchema: { type: 'string', format: 'binary' },
           headers: {
             'Cache-Control': {
-              description: 'Immutable for a year.',
-              schema: { type: 'string', example: 'public, max-age=31536000, immutable' },
+              description: 'Visibility must be rechecked within 60 seconds.',
+              schema: {
+                type: 'string',
+                example: 'public, max-age=60, s-maxage=60, must-revalidate',
+              },
             },
             'Cross-Origin-Resource-Policy': {
               description: 'What a public media origin sends.',

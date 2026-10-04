@@ -72,7 +72,15 @@ export function createS3Storage(client: S3Client = createS3Client()): StoragePor
 
     async put(key, body, contentType): Promise<void> {
       await client.send(
-        new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }),
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: key,
+          Body: body,
+          ContentType: contentType,
+          CacheControl: key.startsWith('derivatives/')
+            ? 'private, max-age=31536000, immutable'
+            : 'private, no-store',
+        }),
       );
     },
 
@@ -97,10 +105,14 @@ export function createS3Client(): S3Client {
     endpoint: env.S3_ENDPOINT,
     region: env.S3_REGION,
     forcePathStyle: env.S3_FORCE_PATH_STYLE,
-    credentials: {
-      accessKeyId: env.S3_ACCESS_KEY_ID ?? '',
-      secretAccessKey: env.S3_SECRET_ACCESS_KEY ?? '',
-    },
+    ...(env.STORAGE_DRIVER === 's3'
+      ? {}
+      : {
+          credentials: {
+            accessKeyId: env.S3_ACCESS_KEY_ID ?? '',
+            secretAccessKey: env.S3_SECRET_ACCESS_KEY ?? '',
+          },
+        }),
   });
 }
 
@@ -109,7 +121,8 @@ export async function ensureBucket(client: S3Client = createS3Client()): Promise
 
   try {
     await client.send(new HeadBucketCommand({ Bucket: env.S3_BUCKET }));
-  } catch {
+  } catch (error) {
+    if (env.STORAGE_DRIVER === 's3' || awsStatusCode(error) !== 404) throw error;
     await client.send(new CreateBucketCommand({ Bucket: env.S3_BUCKET }));
   }
 }

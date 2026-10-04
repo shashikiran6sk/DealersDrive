@@ -308,7 +308,7 @@ export async function startWorker(container: Container): Promise<void> {
 }
 
 export async function closeContainer(container: Container): Promise<void> {
-  container.outbox.stop();
+  await container.outbox.stop();
   try {
     await container.queue.stop();
   } catch (error) {

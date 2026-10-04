@@ -16,7 +16,7 @@ export const getMediaImage: StorageRoute = (router, { service }) => {
         const image = await service.serve(parsed.data.mediaId, parsed.data.width);
         if (!image) throw new NotFoundError('No such image.');
 
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60, must-revalidate');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
         res.type(image.contentType).send(image.body);
       } catch (error) {

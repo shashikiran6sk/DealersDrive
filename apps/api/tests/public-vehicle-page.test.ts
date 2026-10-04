@@ -1,3 +1,4 @@
+import { JPEG } from './image-fixture.js';
 import { PublicVehicleDetail } from '@dealers-drive/contracts';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -160,7 +161,7 @@ describe('everything else is a 404', () => {
     const car = await kit.published(a, nextPlate());
     const media = await h.prisma.media.findUniqueOrThrow({ where: { id: car.mediaIds[0]! } });
     const { createLocalStorage } = await import('../src/platform/storage/local.adapter.js');
-    await createLocalStorage().put(media.storageKey, Buffer.from([0xff, 0xd8, 0xff]), 'image/jpeg');
+    await createLocalStorage().put(media.storageKey, JPEG, 'image/jpeg');
     const path = `/media/by-media/${car.mediaIds[0]!}/1024.webp`;
 
     await h.agent().get(path).expect(200);

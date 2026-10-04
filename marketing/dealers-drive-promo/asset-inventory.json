@@ -1,0 +1,482 @@
+[
+  {
+    "path": "assets/vehicles/brezza/dashboard.png",
+    "sha256": "6253b5e8e1fa06483179abbbc2786d9b8613cb9ba2bbc74d59bca91d6a760f38",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2066670,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-aa6a8442-ca93-4c6e-9cbe-772f969356d1.png"
+  },
+  {
+    "path": "assets/vehicles/brezza/hero.png",
+    "sha256": "54f426d7d61426f9da0fea3d691e4a53ef0033541ee4ba7d3ee2159ae94b3d7b",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1236591,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-794eaa28-c811-4c24-8883-d0a916ba7bc1.png"
+  },
+  {
+    "path": "assets/vehicles/brezza/rear.png",
+    "sha256": "cdef5b05fe6e221b13149f2bce8fc50ca8798aa705942c14c04fd8c43a020c62",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1365093,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-3300cee2-1dae-4c33-9de9-29d2e162198e.png"
+  },
+  {
+    "path": "assets/vehicles/carens/dashboard.png",
+    "sha256": "b4a31069f3d6ff133a7656294dc488365763bc3b8c63f939c5c90c4fc6b00c8e",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1936296,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-3f500e7c-c414-4916-84cd-4c6f10f6eeae.png"
+  },
+  {
+    "path": "assets/vehicles/carens/hero.png",
+    "sha256": "a3a77a98e971d62e1c9275c676c0467371938fe28c87388f54ee2ce657b69838",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1411098,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-83bdef9a-cd84-4a9d-9cbd-344451395eb8.png"
+  },
+  {
+    "path": "assets/vehicles/carens/rear.png",
+    "sha256": "fdb39f6848f13e17a7cc5548802631b398c7391718f6d9c5ca4820218d397f75",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1423949,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-184e00ce-027f-4d32-8f44-0d902df366e6.png"
+  },
+  {
+    "path": "assets/vehicles/city/dashboard.png",
+    "sha256": "caa3ec425b81c05881d62a27e61658cc57dd65a8433cadf2304ac5f3fc68c624",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1962958,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-3093e5b9-2f41-42ba-8605-d10ca24fe173.png"
+  },
+  {
+    "path": "assets/vehicles/city/hero.png",
+    "sha256": "35ccada3055c550f7af89c63c4c0f06f6b725fda41524617e82c4b5288d18b18",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1345817,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-d70b2f78-a752-471e-99a3-b284eb2d5ee5.png"
+  },
+  {
+    "path": "assets/vehicles/city/rear.png",
+    "sha256": "d55defa1df29ac26f0a5f2702640243c46b52e52579e1d7883151a70e6640d89",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1435322,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-e05f16fa-9bea-4104-8fe4-3a054a1d4731.png"
+  },
+  {
+    "path": "assets/vehicles/elevate/boot.png",
+    "sha256": "a875eb80a90e6f52a57e800cd1167a21acb3b0f59e494832724ddc58a627115c",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1427094,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing black Honda Elevate boot photograph. Preserve exact car identity, body design, black paint, wheel design, proportions, open tailgate and dark carpeted cargo compartment. Replace all surrounding environment and floor with seamless pure WHITE studio cyclorama, matte white floor, no horizon. Realistic soft grey contact shadows under tyres/chassis, neutral broad studio lighting. Remove all trees, buildings, outdoor reflections and replace with clean white studio reflections. Preserve dark interior surfaces and real material textures. No scenery, tiles, logos, added text or watermark. Wide 16:9.",
+    "generationReference": "exec-1c7353e0-209c-4fbc-bb00-25638f3b38cc.png"
+  },
+  {
+    "path": "assets/vehicles/elevate/dashboard.png",
+    "sha256": "72cbe5b9ce0e9d108622ef5fe041b76b871095a6042515297bdb917d884eb34c",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1860468,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-a9c42e04-7576-44c4-acbd-91a9a79e4a56.png"
+  },
+  {
+    "path": "assets/vehicles/elevate/front-seats.png",
+    "sha256": "54e622600c52b49ebb17682cd9fe9eba09ff8027622c032b3422ba1ec3d08b85",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2073939,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-a12f061c-0fa3-4af8-b495-a2747c7dc327.png"
+  },
+  {
+    "path": "assets/vehicles/elevate/hero.png",
+    "sha256": "1e506a07a29a2531431fd0bf2996de44a55289436f80efe80b7b52bb9b0302a7",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1376299,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-3e8a1398-66eb-4749-b72f-7cf49db2bb54.png"
+  },
+  {
+    "path": "assets/vehicles/elevate/rear-seats.png",
+    "sha256": "e0d93fca46852aacd3fa1f2472995fc4820389ad7e68b37fe3dfb18f022589d6",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2093483,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-3b1cf34c-9e87-4503-84c3-9b475b0e65ad.png"
+  },
+  {
+    "path": "assets/vehicles/elevate/rear.png",
+    "sha256": "6ac97c72032d07f110384a88d2dc4579521c456f8e2008690d09bda8e1582cb9",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1341011,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-8c266f4b-8d6f-4b10-86b7-743511407725.png"
+  },
+  {
+    "path": "assets/vehicles/elevate/side.png",
+    "sha256": "7a3f4f18b3d0636191157bdae26da377bd99e14585a29141a0d72b4cf85b7518",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1308725,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing black Honda Elevate side photograph. Preserve exact car identity, body design, black paint, wheel design, proportions, full side-profile camera angle. Replace all surrounding environment and floor with seamless pure WHITE studio cyclorama, matte white floor, no horizon. Realistic soft grey contact shadows under tyres/chassis, neutral broad studio lighting. Remove all trees, buildings, outdoor reflections and replace with clean white studio reflections. Preserve dark interior surfaces and real material textures. No scenery, tiles, logos, added text or watermark. Wide 16:9.",
+    "generationReference": "exec-6af8aa22-7461-4970-9f7b-72ae45df6880.png"
+  },
+  {
+    "path": "assets/vehicles/elevate/wheel.png",
+    "sha256": "997a1e7a8eb3b815e9c4bca3a681893b3ae59f52d1dae7eada8f2daa800d373b",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1670092,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing black Honda Elevate wheel photograph. Preserve exact car identity, body design, black paint, wheel design, proportions, close-up wheel and headlamp camera angle. Replace all surrounding environment and floor with seamless pure WHITE studio cyclorama, matte white floor, no horizon. Realistic soft grey contact shadows under tyres/chassis, neutral broad studio lighting. Remove all trees, buildings, outdoor reflections and replace with clean white studio reflections. Preserve dark interior surfaces and real material textures. No scenery, tiles, logos, added text or watermark. Wide 16:9.",
+    "generationReference": "exec-17602af0-5a15-417a-af3c-234aad64eca3.png"
+  },
+  {
+    "path": "assets/vehicles/fortuner/dashboard.png",
+    "sha256": "a0d2445182d075ddd8a4b81a68a9a743ebeda6a4871532b5ddce850aa22d9597",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1916174,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-b9b4412f-0470-417c-bdec-d5218e12bdfb.png"
+  },
+  {
+    "path": "assets/vehicles/fortuner/hero.png",
+    "sha256": "61688a8e137e51a27a45120f8a149be6d837f15beb1aae42277605b9646cb8d8",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1170272,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-276d72a2-d902-4173-b359-0ebcb2bcffbf.png"
+  },
+  {
+    "path": "assets/vehicles/fortuner/rear.png",
+    "sha256": "82d8c173984f4c0196daeecfd6099a4d8d730bbe79f208a1256deb4581f4cefe",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1514271,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-ca88a272-9e56-4fd5-aa59-bec779a93fa5.png"
+  },
+  {
+    "path": "assets/vehicles/hyryder/dashboard.png",
+    "sha256": "8d7d3665649bd5acfc060018c6c09113292c3e717373cc8a618cd313b3360de8",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1909261,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-de7b652c-0378-47c8-ba23-cffb10fafb7c.png"
+  },
+  {
+    "path": "assets/vehicles/hyryder/hero.png",
+    "sha256": "49eef3274b7722e6e5c608bd5fc04dda26d219832569a26aad7b549d9c0107a1",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1392058,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-f2d6fe45-b635-44a5-9cc3-331595f996f4.png"
+  },
+  {
+    "path": "assets/vehicles/hyryder/rear.png",
+    "sha256": "e56b2cca390b1cb70ec8bc8cc1a5c2a401eda72a1118a4b7554036f20d834ac1",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1432376,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-4b69baed-f2e8-486e-be7a-262a8f7fb117.png"
+  },
+  {
+    "path": "assets/vehicles/innova/dashboard.png",
+    "sha256": "90495fd44bb93dc5470f88080d4f4faab601479f13da9674a4c11304214d06a6",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1951742,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-8db9b5e3-dfee-46c7-bd4d-0bb40dd9a69f.png"
+  },
+  {
+    "path": "assets/vehicles/innova/hero.png",
+    "sha256": "5b71d9242c446305c37d164b5abf9a91c85f9905a3aa3d87ea8d5a36467eabfc",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1171256,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-a0160864-889b-4881-a089-9d262ce22e0f.png"
+  },
+  {
+    "path": "assets/vehicles/innova/rear.png",
+    "sha256": "fc71b5c6472490968389a77563e0039c65e055ba14fad91b0a7834f40facdb58",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1523405,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-806b71f5-bb8e-4fda-a900-eadd2d60c8ce.png"
+  },
+  {
+    "path": "assets/vehicles/kushaq/dashboard.png",
+    "sha256": "774c34a5d3524d22e0e1c03cc8f3be4208082f02e1faea717b1474a6f35a5a33",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2040664,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-17a1a28b-031a-4e8e-a326-42b46caa48f2.png"
+  },
+  {
+    "path": "assets/vehicles/kushaq/hero.png",
+    "sha256": "92926f00c11802a80bd09729a643783458fbda9eff42e55d688a239ba605bf59",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1144829,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-b78d0484-2a6c-45d1-9606-75a8288635a3.png"
+  },
+  {
+    "path": "assets/vehicles/kushaq/rear.png",
+    "sha256": "7b28c3fdf8ae7caf4d721565250b275d306d4b09ee9b4bec000c6d1ad9c02388",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1361019,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-1a455b7f-d8eb-4ec2-9c07-99107f4a81af.png"
+  },
+  {
+    "path": "assets/vehicles/nexon/dashboard.png",
+    "sha256": "da67f672972b1bd967c8b892864164025ef9927fda9a71a2ad09f8d41ee1617f",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2052191,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-02cc706b-1361-4aba-aa4f-21347a13a2f0.png"
+  },
+  {
+    "path": "assets/vehicles/nexon/hero.png",
+    "sha256": "619221e4b45997493fa4a06db25d61d29e9fee0340f2bab99c89bcf4b6fc3484",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1407915,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-aca436d9-f82d-4a3f-b456-b67e9143d6b2.png"
+  },
+  {
+    "path": "assets/vehicles/nexon/rear.png",
+    "sha256": "e4af89158710bdc0d8dd4d3c65bab578f58eff9c4945af2329be6f011da72b18",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1461227,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-d2d987c9-175d-4962-83bd-e9ee2f306814.png"
+  },
+  {
+    "path": "assets/vehicles/thar/dashboard.png",
+    "sha256": "f9305dcb95c8cd272afeadcc570d2c671685410097d8e5e47f4ec51c39992318",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1930831,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-ae4b9876-a627-4cc6-944c-319cf215165d.png"
+  },
+  {
+    "path": "assets/vehicles/thar/hero.png",
+    "sha256": "1807beac71facdee76dcb3517560e84d5c8c9d70c49004d3f94ce38a9c03054f",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1267880,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-2b7849d4-86e3-4da8-89f5-8161f3eb3be5.png"
+  },
+  {
+    "path": "assets/vehicles/thar/rear.png",
+    "sha256": "ad5dee99e2b77dd32ac0bc0efceef194e1ed84384b68303d56627ab9750871cb",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1581280,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-837acc72-6fa8-46fd-85fd-e8f26a1f38d0.png"
+  },
+  {
+    "path": "assets/vehicles/tiago/dashboard.png",
+    "sha256": "882878cb80a7ed7b8591e7e6b1917b22bf74804efa33aaff1726d57d28f45a92",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2141224,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-70af7f89-08f4-4ed6-a42c-bd2ec3ec498d.png"
+  },
+  {
+    "path": "assets/vehicles/tiago/hero.png",
+    "sha256": "ebcaa36de4a0bd98f6e1c0b44402a0c21add629ca733d283a6abea3896585635",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1259380,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-ab36f07a-3695-4112-90b1-d6a27a62881a.png"
+  },
+  {
+    "path": "assets/vehicles/tiago/rear.png",
+    "sha256": "682e2d34d2b7810a4bbf992c66a9e2ff442c835d206c738fbe4b3820c7cc9cb9",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1455977,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-0b0167e3-5eaa-4b21-9ad9-db7807915a68.png"
+  },
+  {
+    "path": "assets/vehicles/wagon/dashboard.png",
+    "sha256": "1140dabdad0add631344f3f6542080a285ae1ea4e0eda1fb9aa358e7fa867da5",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1988996,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing automotive interior photograph ONLY to move its surroundings to a pure white studio. Preserve exact camera composition, right-hand-drive layout, dashboard, gearshift, pedals, upholstery colours, seat stitching and cabin details. All scenery visible through windscreen, side/rear windows, open doors, glass and mirrors must become seamless pure WHITE studio surroundings. Remove every tree, building and outdoor reflection from glass and visible paint; substitute clean white softbox reflections. Retain natural cabin shadows, realistic glass and broad diffused studio illumination, neutral white balance. No redesign of vehicle, no additional text, logos or watermark. Wide 16:9 professional marketplace photography.",
+    "generationReference": "exec-80d74777-c7d2-4e97-a8b4-05df4dbc35a4.png"
+  },
+  {
+    "path": "assets/vehicles/wagon/hero.png",
+    "sha256": "af69a2898e366bec4bb5ebbab298a99199e7401bc7682f194fe28efd00909b38",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1161982,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Keep this exact photograph's vehicle unchanged: same shape, paint, wheels, upright right-facing front three-quarter 45-degree angle, white studio background and soft floor shadow. Change ONLY framing: zoom camera OUT so the full vehicle occupies exactly 65% of the image width, leaving at least 17.5% pure white empty margin on BOTH left and right. Vehicle centered horizontally and vertically, generous pure WHITE canvas above and below, shadow retained. This photograph must survive a centered 4:3 crop without any part of the car being clipped. Wide 16:9 output. Do not enlarge car to fill image. Preserve details; no new text, logos, scenery, props or watermarks.",
+    "generationReference": "exec-a731b7c9-0908-4e24-8221-c46d23f1f02a.png"
+  },
+  {
+    "path": "assets/vehicles/wagon/rear.png",
+    "sha256": "16b8dec5ab991999e8ff394b656c1808c97de26435a3ce7fa8ddd29587fe30be",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1382213,
+    "origin": "Original OpenAI image generation; white studio edit, 2026-09-30",
+    "prompt": "Use case: precise-object-edit. Edit this existing used-car rear photograph. Preserve exactly its car identity, paint colour, trim, wheels, rear body design, proportions and current rear three-quarter camera angle. Replace all surroundings with a seamless pure WHITE (#ffffff) studio cyclorama and matte white floor without horizon. Soft realistic grey contact shadows beneath tyres/chassis, broad diffused premium studio lighting, clean white reflections replacing trees/buildings. Keep full vehicle upright and centred with ample white margin, realistic 50mm automotive photography. No scenery, buildings, tiles, props, text, logos or watermark. Plain blank white number plate. Wide 16:9.",
+    "generationReference": "exec-1375e37d-f7ac-4bae-bdf5-ffa995d27922.png"
+  },
+  {
+    "path": "assets/dealers/dealer-1.png",
+    "sha256": "2c12bd22bad4adcd14d7e5d23320b298ee42d619faad07ac00f6a04f35b1f41d",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2660305,
+    "origin": "Original OpenAI image generation, 2026-09-29",
+    "prompt": "Use case: photorealistic-natural. Original high-end editorial photograph of a welcoming independent multi-brand used-car yard in Vellore, Tamil Nadu, modest cream single-storey office with deep veranda and charcoal canopy on left, spacious paved forecourt, black compact SUV, grey sedan, white tall hatchback parked separately on right; graceful palm trees and bougainvillea, warm morning sunlight. Cinematic wide establishing shot with clear dark facade space on left for later editorial titles. Authentic South Indian small business, realistic architecture, realistic right-hand-drive cars and accurate wheels, no people. Wide 16:9 composition. No text anywhere, no signs with letters, no logos or manufacturer emblems, blank number plates, no watermarks, no Cars24 or Spinny branding. Natural photographic colour, believable reflections and shadows.",
+    "generationReference": "exec-880c9bcf-65f5-40ab-b26d-1bac8e8d4052.png"
+  },
+  {
+    "path": "assets/dealers/dealer-2.png",
+    "sha256": "29bb33abfde84717ef0b126da7bd35695e4ffd6bdb7aabeece4d2433051df127",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2186186,
+    "origin": "Original OpenAI image generation, 2026-09-29",
+    "prompt": "Use case: photorealistic-natural. Original high-end editorial photograph of a contemporary independent used-car showroom frontage in Vellore, Tamil Nadu, concrete and glass facade, large shaded parking apron with a bronze MPV, silver compact SUV and white sedan, tropical planters, subdued overcast light. Authentic South Indian small business, realistic architecture, realistic right-hand-drive cars and accurate wheels, no people. Wide 16:9 composition. No text anywhere, no signs with letters, no logos or manufacturer emblems, blank number plates, no watermarks, no Cars24 or Spinny branding. Natural photographic colour, believable reflections and shadows.",
+    "generationReference": "exec-ffec9ff6-d248-40ba-8800-e3cb9e67ed2c.png"
+  },
+  {
+    "path": "assets/dealers/dealer-3.png",
+    "sha256": "92d44ab9d72e951bb44189bae74e72ccde61e23bfc188dc321ed3bad601dbb1c",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2678385,
+    "origin": "Original OpenAI image generation, 2026-09-29",
+    "prompt": "Use case: photorealistic-natural. Original high-end editorial photograph of a compact urban independent used-car dealership in Vellore, Tamil Nadu, modest two-storey cream Indian commercial building and paved street edge, four neatly parked hatchbacks and blue off-road SUV, terracotta planters, realistic neighbourhood buildings, daylight. Authentic South Indian small business, realistic architecture, realistic right-hand-drive cars and accurate wheels, no people. Wide 16:9 composition. No text anywhere, no signs with letters, no logos or manufacturer emblems, blank number plates, no watermarks, no Cars24 or Spinny branding. Natural photographic colour, believable reflections and shadows.",
+    "generationReference": "exec-c3be09bf-bb3e-47e6-a6f8-13154fbc3ded.png"
+  },
+  {
+    "path": "assets/dealers/dealer-4.png",
+    "sha256": "ed7a26c3fd4e3d6d67a802dd080f2bc139db3e5435e04442c23fd0b2fd24473d",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2767929,
+    "origin": "Original OpenAI image generation, 2026-09-29",
+    "prompt": "Use case: photorealistic-natural. Original high-end editorial photograph of a premium independent multi-brand used-car dealership in Vellore, Tamil Nadu, understated stone and glass reception with large covered yard, silver premium SUV and red MPV and white sedan, tidy Indian urban road, palms, afternoon sunlight. Authentic South Indian small business, realistic architecture, realistic right-hand-drive cars and accurate wheels, no people. Wide 16:9 composition. No text anywhere, no signs with letters, no logos or manufacturer emblems, blank number plates, no watermarks, no Cars24 or Spinny branding. Natural photographic colour, believable reflections and shadows.",
+    "generationReference": "exec-08534427-245f-404e-b7d7-b241cd005b14.png"
+  },
+  {
+    "path": "assets/dealers/dealer-5.png",
+    "sha256": "b9fcda257c276a2261ee5b1fee63feda2fd8658d487d653772a37484e76a2b97",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2646708,
+    "origin": "Original OpenAI image generation, 2026-09-29",
+    "prompt": "Use case: photorealistic-natural. Original high-end editorial photograph of an open multi-brand used-car lot in Katpadi, Tamil Nadu, low white perimeter wall, metal shade structure, grey compact SUV, black hybrid SUV and grey MPV neatly spaced, coconut trees, modest Indian town architecture behind, soft morning light. Authentic South Indian small business, realistic architecture, realistic right-hand-drive cars and accurate wheels, no people. Wide 16:9 composition. No text anywhere, no signs with letters, no logos or manufacturer emblems, blank number plates, no watermarks, no Cars24 or Spinny branding. Natural photographic colour, believable reflections and shadows.",
+    "generationReference": "exec-a925ff70-2fa4-42ab-a635-c14a5d6c487a.png"
+  },
+  {
+    "path": "assets/dealers/dealer-6.png",
+    "sha256": "abaa8cc2787380a660c44fc65805e56028d390bd27af3476e671c202b8b8bfea",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2583206,
+    "origin": "Original OpenAI image generation, 2026-09-29",
+    "prompt": "Use case: photorealistic-natural. Original high-end editorial photograph of a small independent dealership office and vehicle yard in Katpadi, Tamil Nadu, warm terracotta facade with pale concrete frames, white compact SUV and beige MPV, broad tropical leaves, clean interlocking stone paving, soft natural daylight. Authentic South Indian small business, realistic architecture, realistic right-hand-drive cars and accurate wheels, no people. Wide 16:9 composition. No text anywhere, no signs with letters, no logos or manufacturer emblems, blank number plates, no watermarks, no Cars24 or Spinny branding. Natural photographic colour, believable reflections and shadows.",
+    "generationReference": "exec-9d59cae8-bbac-46dc-91a0-961d002c8774.png"
+  },
+  {
+    "path": "assets/brand/opening-car.png",
+    "sha256": "f0e017f6030c0c39803f3c24ce4021431554bd323124112bd80190af4274a830",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2163997,
+    "origin": "Original OpenAI image generation, 2026-09-29",
+    "prompt": "Original black 2024 Honda Elevate VX front three-quarter dealership photography; right-hand-drive Indian-market vehicle, realistic daylight, blank plate, no watermark.",
+    "generationReference": "exec-75c5a156-fe87-48fd-bccb-d8cf73a1ee0f.png"
+  }
+]

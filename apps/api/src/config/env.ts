@@ -47,6 +47,9 @@ const envSchema = z.object({
   API_BASE_URL: required('http://localhost:4000'),
 
   DATABASE_URL: required('postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive'),
+  DB_POOL_MAX: z.coerce.number().int().min(1).max(50).default(5),
+  DB_SSL_CA_FILE: optional(z.string().min(1)),
+  JOBS_POOL_MAX: z.coerce.number().int().min(1).max(20).default(3),
 
   DB_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
   DB_TRANSACTION_MAX_WAIT_MS: z.coerce.number().int().positive().default(10_000),
@@ -64,7 +67,7 @@ const envSchema = z.object({
   SESSION_SECRET: z.string().min(16).default('dealers-drive-local-session-secret'),
   SESSION_COOKIE_DOMAIN: optional(z.string().min(1)),
 
-  STORAGE_DRIVER: z.enum(['local', 'minio', 'r2']).default('local'),
+  STORAGE_DRIVER: z.enum(['local', 'minio', 'r2', 's3']).default('local'),
   STORAGE_LOCAL_DIR: z.string().min(1).default('.storage'),
 
   S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
@@ -81,6 +84,7 @@ const envSchema = z.object({
 
   MAIL_DRIVER: z.enum(['console', 'smtp', 'resend']).default('console'),
   RESEND_API_KEY: optional(z.string().min(1)),
+  MAIL_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
   MSG91_AUTH_KEY: optional(z.string().min(1)),
 
   PHONE_OTP_DRIVER: z.enum(['fake', 'msg91']).default('fake'),
@@ -140,7 +144,7 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     require('AUTH_MODE', 'must be `cookie` in production — `dev` bypasses identity verification.');
   }
 
-  if (value.STORAGE_DRIVER !== 'local') {
+  if (value.STORAGE_DRIVER !== 'local' && value.STORAGE_DRIVER !== 's3') {
     if (!value.S3_ACCESS_KEY_ID) {
       require('S3_ACCESS_KEY_ID', `is required when STORAGE_DRIVER=${value.STORAGE_DRIVER}.`);
     }
@@ -225,7 +229,7 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
   }
 
   if (value.STORAGE_DRIVER === 'local') {
-    require('STORAGE_DRIVER', 'must be `r2` in production — container filesystems are not durable.');
+    require('STORAGE_DRIVER', 'must be `s3` or `r2` in production — container filesystems are not durable.');
   }
 
   if (value.CACHE_DRIVER === 'memory') {

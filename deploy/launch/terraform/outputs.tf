@@ -1,0 +1,10 @@
+output "deploy_role_arn" { value = aws_iam_role.deploy.arn }
+output "api_repository" { value = aws_ecr_repository.image["api"].repository_url }
+output "migrator_repository" { value = aws_ecr_repository.image["migrator"].repository_url }
+output "db_endpoint" { value = aws_db_instance.this.address }
+output "db_master_secret_arn" { value = aws_db_instance.this.master_user_secret[0].secret_arn }
+output "media_bucket" { value = aws_s3_bucket.media.id }
+output "media_distribution" { value = aws_cloudfront_distribution.media.id }
+output "api_url" { value = "https://${var.api_domain}" }
+output "media_url" { value = "https://${var.media_domain}" }
+output "dashboard_url" { value = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=${aws_cloudwatch_dashboard.health.dashboard_name}" }

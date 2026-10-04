@@ -21,6 +21,7 @@ import { defineConfig } from 'vitest/config';
  */
 const ENV = {
   NODE_ENV: 'test',
+  APP_ENV: 'local',
   DATABASE_URL: 'postgresql://dealersdrive:dealersdrive@localhost:5432/dealersdrive_test',
   // pg-boss off: the suite drives handlers directly where it needs them, and a
   // background poller against the test database is just noise.
@@ -127,7 +128,7 @@ export default defineConfig({
        * `include` subsumes it.)
        */
       include: ['src/**/*.ts'],
-      exclude: ['src/types/**', 'src/index.ts', 'src/worker.ts'],
+      exclude: ['src/types/**', 'src/index.ts', 'src/worker.ts', 'src/operations.ts'],
       reporter: ['text-summary', 'html', 'json-summary'],
       reportsDirectory: './coverage',
       thresholds: {

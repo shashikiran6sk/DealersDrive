@@ -1,0 +1,86 @@
+name: Launch production
+on:
+  workflow_dispatch:
+concurrency:
+  group: launch-production
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: dealersdrive
+          POSTGRES_PASSWORD: dealersdrive
+          POSTGRES_DB: dealersdrive
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U dealersdrive -d dealersdrive"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.15.9 }
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @dealers-drive/api db:generate
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+  deploy:
+    needs: verify
+    runs-on: ubuntu-24.04-arm
+    environment: Production
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.LAUNCH_DEPLOY_ROLE_ARN }}
+          aws-region: ap-south-1
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: runner
+          platforms: linux/arm64
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/dealers-drive-launch-api:sha-${{ github.sha }}
+          build-args: GIT_SHA=${{ github.sha }}
+          cache-from: type=gha,scope=launch-api
+          cache-to: type=gha,scope=launch-api,mode=max
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: migrator
+          platforms: linux/arm64
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/dealers-drive-launch-migrator:sha-${{ github.sha }}
+          cache-from: type=gha,scope=launch-api
+      - uses: actions/setup-python@v6
+        with: { python-version: '3.12' }
+      - run: pip install boto3==1.40.50
+      - name: Migrate once, deploy, verify SHA, recover on failure
+        env:
+          GIT_SHA: ${{ github.sha }}
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+          AWS_REGION: ap-south-1
+        run: python deploy/launch/deploy-release.py
+      - name: Verify public HTTPS readiness
+        run: python deploy/launch/smoke.py --api https://api.dealers-drive.com --sha "$GITHUB_SHA"

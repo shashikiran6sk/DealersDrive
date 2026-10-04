@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
+import type { Tx } from '../db/prisma.js';
 
 import { logger } from '../telemetry/logger.js';
 import type { DomainEvent, EventBus } from './bus.js';
@@ -9,16 +10,21 @@ const MAX_ATTEMPTS = 10;
 
 export interface OutboxPublisher {
   start(): void;
-  stop(): void;
+  stop(): void | Promise<void>;
   drain(): Promise<number>;
 }
 
 export function createOutboxPublisher(prisma: PrismaClient, bus: EventBus): OutboxPublisher {
   let timer: NodeJS.Timeout | undefined;
   let running = false;
+  let inFlight: Promise<void> | undefined;
 
   async function drain(): Promise<number> {
-    const rows = await prisma.$queryRaw<
+    return prisma.$transaction((tx) => drainTransaction(tx), { timeout: 20_000 });
+  }
+
+  async function drainTransaction(tx: Tx): Promise<number> {
+    const rows = await tx.$queryRaw<
       { id: bigint; payload: unknown }[]
     >`SELECT id, payload FROM outbox_events
         WHERE "publishedAt" IS NULL AND attempts < ${MAX_ATTEMPTS}
@@ -31,13 +37,13 @@ export function createOutboxPublisher(prisma: PrismaClient, bus: EventBus): Outb
       const event = row.payload as DomainEvent;
       try {
         await bus.publish(event);
-        await prisma.outboxEvent.update({
+        await tx.outboxEvent.update({
           where: { id: row.id },
           data: { publishedAt: new Date() },
         });
       } catch (error) {
         logger.error({ err: error, outboxId: String(row.id) }, 'outbox publish failed');
-        await prisma.outboxEvent.update({
+        await tx.outboxEvent.update({
           where: { id: row.id },
           data: { attempts: { increment: 1 } },
         });
@@ -62,12 +68,15 @@ export function createOutboxPublisher(prisma: PrismaClient, bus: EventBus): Outb
   return {
     start() {
       if (timer) return;
-      timer = setInterval(() => void tick(), POLL_INTERVAL_MS);
+      timer = setInterval(() => {
+        if (!running) inFlight = tick();
+      }, POLL_INTERVAL_MS);
       timer.unref();
     },
-    stop() {
+    async stop() {
       if (timer) clearInterval(timer);
       timer = undefined;
+      await inFlight;
     },
     drain,
   };

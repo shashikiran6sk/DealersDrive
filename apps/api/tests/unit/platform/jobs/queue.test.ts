@@ -53,7 +53,11 @@ vi.mock('pg-boss', () => ({
       return Promise.resolve('job-id');
     }
 
-    work(name: string, handler: (jobs: { data: Record<string, unknown> }[]) => Promise<void>) {
+    work(
+      name: string,
+      _options: unknown,
+      handler: (jobs: { data: Record<string, unknown> }[]) => Promise<void>,
+    ) {
       boss.workers.push({ name, handler });
       return Promise.resolve('worker-id');
     }
@@ -169,7 +173,10 @@ describe('createQueue with JOBS_ENABLED=true', () => {
     await queue.start();
 
     expect(boss.starts).toBe(1);
-    expect(boss.created).toEqual([...JOB_NAMES]);
+    expect(boss.created).toEqual([
+      'notification.email-dead-letter',
+      ...JOB_NAMES.filter((name) => name !== 'notification.email-dead-letter'),
+    ]);
   });
 
   it('defers handlers registered before start, then attaches them all', async () => {
@@ -221,10 +228,10 @@ describe('createQueue with JOBS_ENABLED=true', () => {
     expect(seen).toEqual([{ mediaId: 'a' }, { mediaId: 'b' }]);
   });
 
-  it('drops a send issued before start rather than losing it in pg-boss', async () => {
+  it('rejects a send issued before start so the outbox can retry', async () => {
     const { queue } = await pgBossQueue();
 
-    await queue.send('media.process', { mediaId: 'a' });
+    await expect(queue.send('media.process', { mediaId: 'a' })).rejects.toThrow('not started');
 
     // Sending into an unstarted boss throws inside pg-boss; the guard turns a
     // boot-order mistake into a no-op instead of a crash on the first request.

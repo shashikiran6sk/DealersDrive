@@ -170,6 +170,10 @@ interface Options {
   listingCounts?: Record<string, number>;
 }
 
+vi.mock('../../../../src/platform/media/derivatives.js', () => ({
+  writeDerivatives: () => Promise.resolve({ '640': 'derivatives/test/640.webp' }),
+}));
+
 function setup(options: Options = {}) {
   const updates: { dealerId: string; data: Record<string, unknown> }[] = [];
   const upserts: { type: string; data: Record<string, unknown> }[] = [];
@@ -257,6 +261,7 @@ function setup(options: Options = {}) {
   };
 
   const prisma = {
+    media: { update: () => Promise.resolve({}) },
     /*
      * The verified-number read in front of a phone change (**R39**).
      *
@@ -290,6 +295,8 @@ function setup(options: Options = {}) {
       expiresInSeconds: 300,
     }),
     head: () => Promise.resolve(options.head ?? null),
+    get: () => Promise.resolve(Buffer.alloc(184_210)),
+    put: () => Promise.resolve(),
     delete: (key: string) => {
       deletes.push(key);
       return Promise.resolve();

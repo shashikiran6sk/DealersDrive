@@ -64,16 +64,20 @@ export function createEventBus(): EventBus {
 
     async publish(event) {
       const subscribers = handlers.get(event.type) ?? [];
+      const failures: unknown[] = [];
       for (const handler of subscribers) {
         try {
           await handler(event);
         } catch (error) {
+          failures.push(error);
           logger.error(
             { err: error, eventType: event.type, eventId: event.id },
             'event subscriber failed',
           );
         }
       }
+      if (failures.length)
+        throw new AggregateError(failures, 'Event delivery failed; retry the outbox event.');
     },
   };
 }

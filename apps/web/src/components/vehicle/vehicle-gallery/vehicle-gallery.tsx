@@ -4,6 +4,7 @@ import type { PublicVehicleImage } from '@dealers-drive/contracts';
 import { useCallback, useRef, useState } from 'react';
 
 import { Corners, ImageSlot, Tag } from '@/components/ui/primitives';
+import { responsiveImage } from '@/lib/media-images';
 
 import { GalleryArrow } from './gallery-arrow';
 import { GalleryStrip } from './gallery-strip';
@@ -63,6 +64,8 @@ export function VehicleGallery({ title, images, primaryIndex }: VehicleGalleryPr
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={main.url}
+            srcSet={responsiveImage(main.url)}
+            sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1279px) 65vw, 820px"
             alt={main.alt}
             fetchPriority="high"
             className="h-full w-full object-cover"

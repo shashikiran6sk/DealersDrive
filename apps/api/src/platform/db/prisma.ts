@@ -3,13 +3,19 @@ import { PrismaClient } from '@prisma/client';
 
 import { env } from '../../config/env.js';
 import { instrumentDbOperation } from '../telemetry/metrics.js';
+import { databaseConnection } from './connection.js';
 
 export type Db = PrismaClient;
 
 export type Tx = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$use' | '$extends'>;
 
 export function createPrisma(): PrismaClient {
-  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
+  const adapter = new PrismaPg({
+    ...databaseConnection(),
+    max: env.DB_POOL_MAX,
+    connectionTimeoutMillis: 5_000,
+    idleTimeoutMillis: 30_000,
+  });
   const client = new PrismaClient({
     adapter,
     log: env.isDevelopment ? ['warn', 'error'] : ['error'],

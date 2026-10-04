@@ -397,7 +397,7 @@ describe('validation', () => {
     ['NODE_ENV', 'staging'],
     ['APP_ENV', 'uat'],
     ['LOG_LEVEL', 'verbose'],
-    ['STORAGE_DRIVER', 's3'],
+    ['STORAGE_DRIVER', 'gcs'],
     ['MAIL_DRIVER', 'sendgrid'],
   ])('refuses a %s outside its enum', async (key, value) => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {

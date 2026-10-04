@@ -1,3 +1,4 @@
+import { JPEG } from './image-fixture.js';
 import { ListingCheckKey } from '@dealers-drive/contracts';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -108,11 +109,7 @@ describe('approving a listing that is ready', () => {
     const { listingId, mediaIds } = await ready();
     const path = `/media/by-media/${mediaIds[0]!}/640.webp`;
     const media = await h.prisma.media.findUniqueOrThrow({ where: { id: mediaIds[0]! } });
-    await createLocalStorage().put(
-      media.storageKey,
-      Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
-      'image/jpeg',
-    );
+    await createLocalStorage().put(media.storageKey, JPEG, 'image/jpeg');
 
     await h.agent().get(path).expect(404);
     await admin.post(`/v1/admin/listings/${listingId}/approve`).expect(200);

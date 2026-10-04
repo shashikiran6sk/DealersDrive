@@ -20,6 +20,7 @@ import {
   type SniffedImageType,
 } from '../../platform/media/sniff.js';
 import { UPLOAD_INCOMPLETE, UPLOAD_NOT_FOUND } from '../../platform/messages.js';
+import { writeDerivatives } from '../../platform/media/derivatives.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import type { AdminPrincipal } from '../auth/auth.facade.js';
 import { LISTING_NOT_FOUND, lockListing } from '../listings/listings.facade.js';
@@ -206,11 +207,12 @@ export function createVehicleImagesService({ prisma, storage, audit, config }: V
         throw new DomainError('UPLOAD_NOT_IMAGE', UPLOAD_NOT_IMAGE);
       }
 
+      const variants = await writeDerivatives(media.id, body, storage);
       const status = await withTransaction(prisma, async (tx) => {
         const locked = await lockedOpen(tx, listingId);
         const claimed = await tx.media.updateMany({
           where: { id: media.id, status: 'PENDING' },
-          data: { status: 'READY' },
+          data: { status: 'READY', variants },
         });
         if (claimed.count === 0) return locked.status;
 

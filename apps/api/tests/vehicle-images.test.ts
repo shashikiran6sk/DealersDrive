@@ -1,3 +1,4 @@
+import { JPEG, PNG } from './image-fixture.js';
 import { VEHICLE_IMAGE_MAX } from '@dealers-drive/contracts';
 import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -17,11 +18,6 @@ let a: Dealership;
 let b: Dealership;
 let plate = 7000;
 
-const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from('a car')]);
-const PNG = Buffer.concat([
-  Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-  Buffer.from('a car'),
-]);
 const NOT_AN_IMAGE = Buffer.from('#!/bin/sh\necho definitely a jpeg\n');
 
 interface Submitted {
@@ -460,7 +456,12 @@ describe('who may see an image', () => {
 
     await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'ACTIVE' } });
     const served = await h.agent().get(path).expect(200);
-    expect(Buffer.from(served.body as Buffer).equals(JPEG)).toBe(true);
+    expect(served.headers['content-type']).toContain('image/webp');
+    expect(
+      Buffer.from(served.body as Buffer)
+        .subarray(8, 12)
+        .toString(),
+    ).toBe('WEBP');
 
     await h.prisma.listing.update({ where: { id: listingId }, data: { status: 'WITHDRAWN' } });
     await h.agent().get(path).expect(404);

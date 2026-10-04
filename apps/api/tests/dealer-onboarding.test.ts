@@ -1,3 +1,4 @@
+import { JPEG } from './image-fixture.js';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -857,7 +858,6 @@ describe('one dealership, one GSTIN', () => {
  */
 describe('email notifications', () => {
   /** Enough bytes for the yard-photo pipeline to accept as an image. */
-  const JPEG = Buffer.from('\xff\xd8\xff a photograph of a yard', 'binary');
 
   async function moderator() {
     subjectCounter += 1;
@@ -1410,8 +1410,6 @@ describe('KYC documents — replace and remove', () => {
  * submitted, which is what ties this to the completeness read below it.
  */
 describe('the yard photograph', () => {
-  const JPEG = Buffer.from('\xff\xd8\xff a photograph of a yard', 'binary');
-
   async function uploadYardPhoto(agent: ReturnType<AuthHarness['agent']>) {
     const presigned = await agent
       .post('/v1/dealer/yard-photo/presign')

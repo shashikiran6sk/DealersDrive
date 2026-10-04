@@ -1,0 +1,50 @@
+[
+  {
+    "id": "01-opening",
+    "seconds": 4.8
+  },
+  {
+    "id": "02-discover",
+    "seconds": 8.425
+  },
+  {
+    "id": "03-search",
+    "seconds": 7.95
+  },
+  {
+    "id": "04-portfolio",
+    "seconds": 8.7
+  },
+  {
+    "id": "05-dealers",
+    "seconds": 7.425
+  },
+  {
+    "id": "06-enquiry",
+    "seconds": 6.825
+  },
+  {
+    "id": "07-onboarding",
+    "seconds": 8.975
+  },
+  {
+    "id": "08-profile",
+    "seconds": 7.7
+  },
+  {
+    "id": "09-inventory",
+    "seconds": 10.9
+  },
+  {
+    "id": "10-inbox",
+    "seconds": 7.7
+  },
+  {
+    "id": "11-montage",
+    "seconds": 5.075
+  },
+  {
+    "id": "12-close",
+    "seconds": 4.3
+  }
+]

@@ -2,6 +2,7 @@ import type { DealerCard as DealerCardDto } from '@dealers-drive/contracts';
 
 import { ImageSlot } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
+import { responsiveImage } from '@/lib/media-images';
 
 import { COVER_HEIGHT, DEALER_CARD_TEXT } from './dealer-card.constants';
 
@@ -16,7 +17,15 @@ export function DealerCardCover({ dealer }: { dealer: DealerCardDto }) {
       {dealer.coverUrl ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={dealer.coverUrl} alt="" className="h-full w-full object-cover" />
+          <img
+            src={dealer.coverUrl}
+            srcSet={responsiveImage(dealer.coverUrl)}
+            sizes="(max-width: 639px) calc(100vw - 32px), (max-width: 1023px) 45vw, 400px"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"

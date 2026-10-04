@@ -1,0 +1,86 @@
+[
+  {
+    "file": "4k",
+    "width": 3840,
+    "height": 2160,
+    "fps": 30,
+    "seconds": 111.02000000000001,
+    "bytes": 16947453,
+    "decode": "pass",
+    "audio": {
+      "input_i": "-16.13",
+      "input_tp": "-3.80",
+      "input_lra": "6.50",
+      "input_thresh": "-27.70",
+      "output_i": "-16.07",
+      "output_tp": "-3.50",
+      "output_lra": "6.70",
+      "output_thresh": "-27.59",
+      "normalization_type": "dynamic",
+      "target_offset": "0.07"
+    }
+  },
+  {
+    "file": "1080p",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "seconds": 111.03,
+    "bytes": 10746320,
+    "decode": "pass",
+    "audio": {
+      "input_i": "-16.13",
+      "input_tp": "-3.80",
+      "input_lra": "6.50",
+      "input_thresh": "-27.70",
+      "output_i": "-16.07",
+      "output_tp": "-3.50",
+      "output_lra": "6.70",
+      "output_thresh": "-27.59",
+      "normalization_type": "dynamic",
+      "target_offset": "0.07"
+    }
+  },
+  {
+    "file": "vertical-9x16",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "seconds": 111.02000000000001,
+    "bytes": 9731935,
+    "decode": "pass",
+    "audio": {
+      "input_i": "-16.13",
+      "input_tp": "-3.80",
+      "input_lra": "6.50",
+      "input_thresh": "-27.70",
+      "output_i": "-16.07",
+      "output_tp": "-3.50",
+      "output_lra": "6.70",
+      "output_thresh": "-27.59",
+      "normalization_type": "dynamic",
+      "target_offset": "0.07"
+    }
+  },
+  {
+    "file": "social-4x5",
+    "width": 1080,
+    "height": 1350,
+    "fps": 30,
+    "seconds": 111.02000000000001,
+    "bytes": 8260742,
+    "decode": "pass",
+    "audio": {
+      "input_i": "-16.13",
+      "input_tp": "-3.80",
+      "input_lra": "6.50",
+      "input_thresh": "-27.70",
+      "output_i": "-16.07",
+      "output_tp": "-3.50",
+      "output_lra": "6.70",
+      "output_thresh": "-27.59",
+      "normalization_type": "dynamic",
+      "target_offset": "0.07"
+    }
+  }
+]

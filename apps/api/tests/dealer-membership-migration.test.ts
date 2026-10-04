@@ -43,6 +43,7 @@ beforeAll(async () => {
     connectionString: `postgresql://dealersdrive:dealersdrive@localhost:5432/${DATABASE}`,
   });
   await db.connect();
+  await db.query("SET TIME ZONE 'UTC'");
 
   const before = readdirSync(MIGRATIONS)
     .filter((name) => /^\d{14}_/.test(name) && name < R92)
@@ -98,11 +99,11 @@ describe(`migration ${R92}`, () => {
   });
 
   it('dates an existing membership from its dealership, not from the deploy', async () => {
-    const { rows } = await db.query<{ createdAt: Date }>(
-      `SELECT "createdAt" FROM "dealer_members" WHERE "userId" = $1`,
+    const { rows } = await db.query<{ createdAt: string }>(
+      `SELECT to_char("createdAt", 'YYYY-MM-DD"T"HH24:MI:SS') AS "createdAt" FROM "dealer_members" WHERE "userId" = $1`,
       [OWNER],
     );
-    expect(rows[0]?.createdAt.toISOString()).toBe('2026-01-15T10:00:00.000Z');
+    expect(rows[0]?.createdAt).toBe('2026-01-15T10:00:00');
   });
 
   it('leaves every dealership with an active OWNER', async () => {

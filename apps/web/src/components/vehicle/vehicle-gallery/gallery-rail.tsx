@@ -4,6 +4,7 @@ import type { PublicVehicleImage } from '@dealers-drive/contracts';
 import { useEffect, useRef } from 'react';
 
 import { cn } from '@/lib/cn';
+import { imageAtWidth } from '@/lib/media-images';
 
 import { VEHICLE_GALLERY_TEXT } from './vehicle-gallery.constants';
 import { railNumber } from './utils';
@@ -43,7 +44,13 @@ export function GalleryRail({ images, index, onSelect }: GalleryRailProps) {
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+            <img
+              src={imageAtWidth(image.url, 320)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
             <span
               aria-hidden="true"
               className="absolute bottom-0 left-0 z-[3] bg-[rgba(13,16,23,0.75)] px-[5px] py-px font-mono text-[10px] text-white"

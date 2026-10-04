@@ -22,6 +22,7 @@ export function createResendMailer(fetchImpl: typeof fetch = fetch): MailerPort 
       try {
         response = await fetchImpl(ENDPOINT, {
           method: 'POST',
+          signal: AbortSignal.timeout(env.MAIL_TIMEOUT_MS),
           headers: {
             Authorization: `Bearer ${env.RESEND_API_KEY ?? ''}`,
             'Content-Type': 'application/json',
@@ -51,7 +52,11 @@ export function createResendMailer(fetchImpl: typeof fetch = fetch): MailerPort 
           'resend rejected the message',
         );
 
-        if (response.status >= 400 && response.status < 500) {
+        if (
+          response.status >= 400 &&
+          response.status < 500 &&
+          ![408, 429].includes(response.status)
+        ) {
           throw new PermanentMailError(`Resend refused it (${String(response.status)}): ${detail}`);
         }
         throw new UpstreamUnavailableError(

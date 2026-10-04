@@ -1,0 +1,92 @@
+name: dealers-drive-production
+
+x-runtime: &runtime
+  image: ${API_IMAGE:?immutable API_IMAGE required}
+  env_file: /opt/dealers-drive/runtime.env
+  restart: unless-stopped
+  init: true
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  stop_grace_period: 40s
+  volumes:
+    - /opt/dealers-drive/rds-ca.pem:/run/rds-ca.pem:ro
+    - /opt/dealers-drive/aws:/run/aws:ro
+  logging:
+    driver: awslogs
+    options:
+      awslogs-region: ${AWS_REGION:?region required}
+      awslogs-group: /dealers-drive/production/application
+      awslogs-stream: ${INSTANCE_ID:?instance required}
+      awslogs-create-stream: 'true'
+      tag: '{{.Name}}'
+
+services:
+  api:
+    <<: *runtime
+    environment:
+      AWS_CONFIG_FILE: /run/aws/config
+      AWS_PROFILE: runtime
+      AWS_EC2_METADATA_DISABLED: 'true'
+      WORKER_INLINE: 'false'
+      DB_POOL_MAX: '5'
+      JOBS_POOL_MAX: '3'
+      NODE_OPTIONS: --max-old-space-size=512
+    ports: ['127.0.0.1:4000:4000']
+    mem_limit: 896m
+    cpus: 1.5
+
+  worker:
+    <<: *runtime
+    command: [node, apps/api/dist/worker.js]
+    environment:
+      AWS_CONFIG_FILE: /run/aws/config
+      AWS_PROFILE: runtime
+      AWS_EC2_METADATA_DISABLED: 'true'
+      WORKER_INLINE: 'false'
+      DB_POOL_MAX: '3'
+      JOBS_POOL_MAX: '3'
+      NODE_OPTIONS: --max-old-space-size=192
+    healthcheck:
+      disable: true
+    mem_limit: 384m
+    cpus: 0.5
+
+  proxy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?domain required}
+      TLS_EMAIL: ${TLS_EMAIL:?email required}
+    volumes:
+      - /opt/dealers-drive/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    logging:
+      driver: local
+      options: { max-size: 10m, max-file: '2' }
+
+  migrate:
+    profiles: [tools]
+    image: ${MIGRATOR_IMAGE:?immutable MIGRATOR_IMAGE required}
+    env_file: /opt/dealers-drive/migration.env
+    volumes:
+      - /opt/dealers-drive/rds-ca.pem:/run/rds-ca.pem:ro
+    restart: 'no'
+    mem_limit: 512m
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_REGION:?region required}
+        awslogs-group: /dealers-drive/production/application
+        awslogs-stream: ${INSTANCE_ID}-migrate
+
+volumes:
+  caddy-data:
+  caddy-config:

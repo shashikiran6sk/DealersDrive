@@ -9,6 +9,7 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { ApiError, apiGet, apiGetParsed, qs } from '@/lib/api';
 import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
+import { responsiveImage } from '@/lib/media-images';
 import {
   BREADCRUMB_TEXT,
   breadcrumbSchema,
@@ -166,6 +167,9 @@ export default async function DealerPortfolioPage({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={dealer.coverUrl}
+                srcSet={responsiveImage(dealer.coverUrl)}
+                sizes="(max-width: 1279px) calc(100vw - 32px), 1232px"
+                fetchPriority="high"
                 alt={DEALER_PAGE_TEXT.coverAlt(dealer.brandName)}
                 className="h-full w-full object-cover"
               />

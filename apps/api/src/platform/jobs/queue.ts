@@ -2,6 +2,7 @@ import { PgBoss } from 'pg-boss';
 
 import { env } from '../../config/env.js';
 import { logger } from '../telemetry/logger.js';
+import { databaseConnection } from '../db/connection.js';
 
 export interface Queue {
   send(
@@ -26,6 +27,7 @@ export const JOB_NAMES = [
   'notification.dealer-reviewed',
   'notification.invoice',
   'notification.email',
+  'notification.email-dead-letter',
   'listings.expire-sweep',
   'counters.reconcile',
   'cache.sweep-counters',
@@ -49,7 +51,8 @@ export function createQueue(): Queue {
   if (!env.JOBS_ENABLED) return createInlineQueue();
 
   const boss = new PgBoss({
-    connectionString: env.DATABASE_URL,
+    ...databaseConnection(),
+    max: env.JOBS_POOL_MAX,
     schema: 'pgboss',
   });
 
@@ -63,16 +66,20 @@ export function createQueue(): Queue {
     name: JobName,
     handler: (data: Record<string, unknown>) => Promise<void>,
   ): Promise<void> {
-    await boss.work<Record<string, unknown>>(name, async (jobs) => {
-      for (const job of jobs) {
-        await handler(job.data);
-      }
-    });
+    await boss.work<Record<string, unknown>>(
+      name,
+      { batchSize: 1, localConcurrency: 1, pollingIntervalSeconds: 2 },
+      async (jobs) => {
+        for (const job of jobs) {
+          await handler(job.data);
+        }
+      },
+    );
   }
 
   return {
     async send(name, data, options) {
-      if (!started) return;
+      if (!started) throw new Error('Queue is not started; job was not accepted.');
       await boss.send(name, data, {
         priority: options?.priority ?? PRIORITIES[name] ?? 0,
         retryLimit: RETRY[name]?.retryLimit ?? 3,
@@ -92,8 +99,20 @@ export function createQueue(): Queue {
 
     async start() {
       await boss.start();
+      await boss.createQueue('notification.email-dead-letter', {
+        retentionSeconds: 14 * 86_400,
+        deleteAfterSeconds: 14 * 86_400,
+      });
       for (const name of JOB_NAMES) {
-        await boss.createQueue(name);
+        if (name === 'notification.email-dead-letter') continue;
+        await boss.createQueue(name, {
+          expireInSeconds: 120,
+          retentionSeconds: 7 * 86_400,
+          deleteAfterSeconds: 7 * 86_400,
+          ...(name === 'notification.email'
+            ? { deadLetter: 'notification.email-dead-letter' }
+            : {}),
+        });
       }
       started = true;
       for (const entry of pending) await attach(entry.name, entry.handler);

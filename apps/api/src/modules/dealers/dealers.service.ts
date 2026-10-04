@@ -38,6 +38,7 @@ import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { mapKindFor, type MapsPort } from '../../platform/maps/maps-link.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
+import { writeDerivatives } from '../../platform/media/derivatives.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
@@ -735,6 +736,18 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       }
 
       const displaced = dealer.coverMediaId;
+      if (media.status === 'PENDING') {
+        const body = await storage.get(media.storageKey);
+        if (!body || body.length !== media.bytes)
+          throw new DomainError(
+            'UPLOAD_MISMATCH',
+            'The uploaded photograph does not match its declared size.',
+          );
+        const variants = await writeDerivatives(media.id, body, storage);
+        await prisma.media.update({ where: { id: media.id }, data: { variants } });
+      } else if (media.status !== 'READY') {
+        throw new NotFoundError(UPLOAD_NOT_FOUND);
+      }
       await repo.markMediaReady(media.id);
       await repo.update(dealerId, { coverMediaId: media.id });
       if (displaced && displaced !== media.id) await discardMedia(displaced);

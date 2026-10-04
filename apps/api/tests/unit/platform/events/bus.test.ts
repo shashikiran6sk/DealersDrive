@@ -75,7 +75,7 @@ describe('createEventBus', () => {
     await expect(bus.publish(event({ type: 'PhotoRequestCompleted' }))).resolves.toBeUndefined();
   });
 
-  it('swallows a subscriber failure so the publisher is never rolled back', async () => {
+  it('reports a subscriber failure after delivering remaining subscribers', async () => {
     const bus = createEventBus();
     const afterTheFailure = vi.fn().mockResolvedValue(undefined);
 
@@ -85,7 +85,7 @@ describe('createEventBus', () => {
     // Rule 1: this must not reject, and it must not stop the remaining
     // subscribers. An approval that rolls back because indexing failed would
     // leave the credit consumed and the listing unpublished.
-    await expect(bus.publish(event())).resolves.toBeUndefined();
+    await expect(bus.publish(event())).rejects.toBeInstanceOf(AggregateError);
     expect(afterTheFailure).toHaveBeenCalledTimes(1);
   });
 

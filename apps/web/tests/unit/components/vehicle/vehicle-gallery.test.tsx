@@ -56,7 +56,7 @@ describe('the gallery on the page', () => {
     ]);
     expect(thumbs[2]!.querySelector('img')).toHaveAttribute(
       'src',
-      'https://media.test/by-media/m2/1024.webp',
+      'https://media.test/by-media/m2/320.webp',
     );
   });
 

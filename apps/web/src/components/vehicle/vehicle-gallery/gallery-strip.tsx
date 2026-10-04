@@ -4,6 +4,7 @@ import type { PublicVehicleImage } from '@dealers-drive/contracts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { imageAtWidth } from '@/lib/media-images';
 
 import { GalleryArrow } from './gallery-arrow';
 import { STRIP_SCROLL_PX, VEHICLE_GALLERY_TEXT } from './vehicle-gallery.constants';
@@ -74,7 +75,13 @@ export function GalleryStrip({ images, index, onOpen }: GalleryStripProps) {
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+            <img
+              src={imageAtWidth(image.url, 320)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
           </button>
         ))}
       </div>

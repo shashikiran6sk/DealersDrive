@@ -1,0 +1,19 @@
+{
+    email {$TLS_EMAIL}
+    admin off
+}
+
+{$API_DOMAIN} {
+    encode zstd gzip
+    @internal path /internal/* /api/docs* /uploads* /private*
+    respond @internal 404
+    reverse_proxy api:4000 {
+        # Replace caller-controlled forwarding headers at the trusted boundary.
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    log {
+        output stdout
+        format json
+    }
+}

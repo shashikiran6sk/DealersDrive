@@ -90,6 +90,14 @@ describe('a message Resend accepts', () => {
 });
 
 describe('when Resend refuses', () => {
+  it.each([408, 429])(
+    'retries transient HTTP %d instead of marking permanent failure',
+    async (status) => {
+      await expect(createResendMailer(respond(status)).send(MESSAGE)).rejects.toMatchObject({
+        code: 'MAIL_PROVIDER_UNAVAILABLE',
+      });
+    },
+  );
   it.each([[400], [401], [403], [422]])('treats %d as permanent', async (status) => {
     const mailer = createResendMailer(respond(status, {}, 'The domain is not verified.'));
 
