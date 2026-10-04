@@ -2,7 +2,7 @@
 
 Canonical BROWSER-009 retains its original baseline FAIL. On healthy exact parentc9dfc4d (#237 CI374/Security523 PASS), the real browser regression failed all three original routes at390 pixels and the adjacent320-pixel cases: document425 versus viewport390/320. [Reproduction/root trace](REPRODUCTION.md), baseline geometry and original red logs remain preserved.
 
-Branch `fix/pre-production-08-admin-mobile` targets `fix/pre-production-06-production-storage` (#237). PR and actual final-head CI PENDING. Final layout1030a4a; supporting browser/DB automation87b4627. No PR merged.
+Branch `fix/pre-production-08-admin-mobile` targets `fix/pre-production-06-production-storage` (#237). PR #238; actual final-head CI PENDING. Final layout1030a4a; supporting browser/DB automation87b4627. No PR merged.
 
 The fixed-height, nowrap shared header had a425px content minimum. Below the small breakpoint it now grows with its content: Operations above a bounded account section, the review badge on its own row, and a wide email column beside Sign out. Long valid operator emails break visibly without losing controls. Desktop/tablet header and sidebar behavior remain intact. At320px dealer status tabs were also wider than the page; they now scroll within a page-width bound with intact labels. Existing listing/enquiry tabs and table scroll containers are preserved. No document-overflow hiding, API/authorization/schema/infrastructure changes or unrelated onboarding fix is included.
 
@@ -18,4 +18,4 @@ Two initial fixture commands used the wrong relative output path and failed befo
 
 ## Stack and launch limits
 
-#209 → #231 → #232 → #233 → #234 → #235 → #236 → #237 → BUG-008. BUG-006 final CI proof/diff/baseline preservation are carried into this layer. Additional confirmed NEW006–013 remain OPEN for later dedicated stacked PRs, including NEW012P1. NEW001 and BUG009 remain provisional assessments. User directs handoff after BUG006/008 PRs and final verification. Full556/provider/deployment/human certification is not established by this scope. Human UAT PENDING; production NO GO while remaining defects/gates are unresolved.
+#209 → #231 → #232 → #233 → #234 → #235 → #236 → #237 → #238 (BUG-008). BUG-006 final CI proof/diff/baseline preservation are carried into this layer. Additional confirmed NEW006–013 remain OPEN for later dedicated stacked PRs, including NEW012P1. NEW001 and BUG009 remain provisional assessments. User directs handoff after BUG006/008 PRs and final verification. Full556/provider/deployment/human certification is not established by this scope. Human UAT PENDING; production NO GO while remaining defects/gates are unresolved.

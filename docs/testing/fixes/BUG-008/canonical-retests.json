@@ -14,7 +14,7 @@
   "campaignRedCommit": "c9dfc4d0f47c015059e10915029051f282fe499d",
   "fixBranch": "fix/pre-production-08-admin-mobile",
   "baseBranch": "fix/pre-production-06-production-storage",
-  "fixPr": null,
+  "fixPr": 238,
   "productCommit": "1030a4a8d005ca4ab2979360e47ec672fe070073",
   "automationCommit": "87b4627",
   "regressionTest": "browser-regression.mjs",
@@ -45,5 +45,6 @@
     "typecheck": "PASS",
     "freshBuild": "PASS29.765s at final layout1030a4a; apps/packages unchanged later",
     "historyScan": "PASS243 commits atacb4e3e"
-  }
+  },
+  "fixPrUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/238"
 }

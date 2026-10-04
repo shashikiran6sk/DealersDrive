@@ -16,7 +16,7 @@ Stack dependency/merge order:
 6. #235 BUG004: `fix/pre-production-04-suspended-media` →BUG003,adeb847, CI370/Security519 PASS.
 7. #236 BUG005: `fix/pre-production-05-membership-commit-guard` →BUG004,e80d124, CI372/Security521 PASS.
 8. #237 BUG006: `fix/pre-production-06-production-storage` →BUG005,c9dfc4d0f47c015059e10915029051f282fe499d, CI374/Security523 PASS.
-9. BUG008 top PR: `fix/pre-production-08-admin-mobile` →BUG006. Final layout1030a4a8d005ca4ab2979360e47ec672fe070073; test automation87b462709969d2d75c9ba005435eed8975d18567. PR/final-head CI details must be read from final checkpoint.
+9. #238 BUG008 top PR: `fix/pre-production-08-admin-mobile` →BUG006. Final layout1030a4a8d005ca4ab2979360e47ec672fe070073; test automation87b462709969d2d75c9ba005435eed8975d18567. PR #238; final-head CI details must be read from final checkpoint.
 
 All are OPEN/unmerged at the time of the completed layer reviews. Do not merge, force-push, rebase/history-rewrite, push main, change protection or deploy. Once the user authorizes merges later, review any necessary base retargeting and rerun CI; merging a child into its still-existing feature base is not the same as landing it on main.
 
