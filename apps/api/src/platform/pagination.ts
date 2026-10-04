@@ -43,3 +43,12 @@ export function decodeKeysetCursor(cursor: string): Keyset {
   }
   return { at, id };
 }
+
+export function decodeKeysetOrDateCursor(cursor: string): { at: Date; id: string | null } {
+  const fields = Buffer.from(cursor, 'base64url').toString('utf8').split('|');
+  if (fields.length === 1) return { at: decodeCursor(cursor), id: null };
+  if (fields.length !== 2) {
+    throw new ConflictError('MALFORMED_CURSOR', 'That page cursor is not valid.');
+  }
+  return decodeKeysetCursor(cursor);
+}

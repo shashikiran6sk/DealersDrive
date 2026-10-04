@@ -11,7 +11,7 @@ import type { CustomerPrincipal } from '../auth/auth.facade.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { ConflictError, NotFoundError } from '../../platform/errors.js';
-import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import { decodeKeysetOrDateCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import { PUBLIC_VISIBLE_LISTING_WHERE } from '../search/search.facade.js';
 import { savedInclude, toSavedVehicle } from './saved-vehicles.mapper.js';
 import { LISTING_NOT_FOUND, LISTING_NOT_SAVEABLE } from './saved-vehicles.messages.js';
@@ -36,11 +36,18 @@ export function createSavedVehiclesService({ prisma, audit }: SavedVehiclesDeps)
       customer: CustomerPrincipal,
       query: SavedVehiclesQuery,
     ): Promise<SavedVehiclesResponse> {
-      const before = query.cursor ? decodeCursor(query.cursor) : null;
+      const cursor = query.cursor ? decodeKeysetOrDateCursor(query.cursor) : null;
       const rows = await prisma.savedVehicle.findMany({
         where: {
           customerId: customer.userId,
-          ...(before ? { createdAt: { lt: before } } : {}),
+          ...(cursor
+            ? {
+                OR: [
+                  { createdAt: { lt: cursor.at } },
+                  ...(cursor.id ? [{ createdAt: cursor.at, id: { lt: cursor.id } }] : []),
+                ],
+              }
+            : {}),
         },
         include: savedInclude,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -52,7 +59,10 @@ export function createSavedVehiclesService({ prisma, audit }: SavedVehiclesDeps)
       const last = page[page.length - 1];
       return {
         data: page.map(toSavedVehicle),
-        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+        page: {
+          nextCursor: hasMore && last ? encodeKeysetCursor(last.createdAt, last.id) : null,
+          hasMore,
+        },
       };
     },
 

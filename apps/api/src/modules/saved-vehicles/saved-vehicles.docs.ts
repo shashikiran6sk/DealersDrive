@@ -22,7 +22,9 @@ export const savedVehiclesDocs: ModuleDocs = {
       tag: DOC_TAGS.savedVehicles,
       summary: 'Your saved cars',
       description:
-        'The customer’s saved cars, most recently saved first, cursor-paginated. Each entry is ' +
+        'The customer’s saved cars, most recently saved first, cursor-paginated by `(createdAt, id)` ' +
+        'so timestamp ties are retained. Legacy date-only cursors keep their strict-before-date ' +
+        'behavior; refresh the list to receive the new boundary. Each entry is ' +
         '`savedAt` and the same `VehicleCardDto` the marketplace uses, with `availability` ' +
         'telling the page whether the car can still be opened.',
       audience: 'customer',

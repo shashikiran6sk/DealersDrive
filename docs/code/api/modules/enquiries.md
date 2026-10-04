@@ -97,6 +97,8 @@ session's user id, never an id in the request. Every status is listed,
 including spam, because the customer should see every enquiry they sent; how
 each is shown is the mapper's job.
 
+The cursor now includes createdAt and id, matching the descending order and retaining equal-time rows. The boundary OR remains scoped to the session's customerId. Existing date-only cursors retain their strict-date behavior; refresh the list to receive a complete keyset. Pagination does not change the enquiry or its recorded history.
+
 ## `apps/api/src/modules/enquiries/enquiries.mapper.ts` — the customer's view
 
 ### `export function toCustomerEnquiry(row: CustomerRow): CustomerEnquiry`
@@ -154,8 +156,9 @@ row's "18 min ago" is measured from the same instant.
 ### `async inbox(dealerId: string, query: DealerEnquiryQuery)`
 
 `dealerId` is the session's, never a parameter a client names (rule 1), and it
-is the first term of every `where` here. Newest first, cursor on `createdAt`
-like the inventory. The counts come from the same `groupBy` the counts route
+is the first term of every `where` here. Newest first, cursor on `(createdAt, id)`
+to retain timestamp ties. Ownership and status remain required alongside the boundary OR.
+The counts come from the same `groupBy` the counts route
 uses and ignore the tab, so switching tab never empties the bar.
 
 ### `async setStatus(actor: EnquiryActor, enquiryId: string, input: UpdateEnquiryInput)`
@@ -218,8 +221,8 @@ enquiries are in each tab — and switching tab never empties the bar.
 
 ### `OR: [{ createdAt: { lt: cursor.at } }, { createdAt: cursor.at, id: { lt: cursor.id } }]`
 
-A keyset on `(createdAt, id)`, not the bare `createdAt` cursor the dealer inbox
-uses. Across every dealership two enquiries sent in the same millisecond are
+A keyset on `(createdAt, id)`, also used by customer history and the dealer inbox
+after BUG-003. Across every dealership two enquiries sent in the same millisecond are
 plausible, and a cursor on the timestamp alone would skip the second. The
 order is `createdAt desc, id desc`, matched exactly by the predicate.
 
