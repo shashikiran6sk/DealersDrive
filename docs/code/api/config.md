@@ -176,6 +176,10 @@ r2 — S3-compatible, at Cloudflare. Production.
 `minio` and `r2` are the _same adapter_: only S3_ENDPOINT and the keys
 differ, which is the whole claim this seam has to keep true (§12.1).
 
+When NODE_ENV is production, boot validation requires `r2` and refuses both
+`local` and `minio`, regardless of the APP_ENV deployment label. Development
+and test runtimes retain all three drivers and the existing credential checks.
+
 ### `S3_FORCE_PATH_STYLE: z`
 
 MinIO needs path-style addressing (`endpoint/bucket/key`); R2 accepts it
