@@ -92,10 +92,13 @@ client. Each `generateMetadata` awaits the same memoised fetch as its page, so
 this costs nothing measurable.
 
 **Icons.** `app/favicon.ico` (16/32/48), `app/icon.png` (512) and
-`app/apple-icon.png` (180, full-bleed) are the only icon declarations; Next
-writes their `<link>` tags. The root metadata has no `icons` key, so there is
-nothing to disagree with. All three are the current header mark: the `#0c0c0b`
-rounded tile with `DD` in Manrope 800.
+`app/apple-icon.png` (180, full-bleed) use a tighter crop of the reference's
+joined DD symbol, white on black. Next writes their `<link>` tags. The root
+metadata has no `icons` key. `app/manifest.ts` declares matching 192/512 PNGs
+and a 512 maskable icon with the reference's safe internal padding. The
+Organization logo uses the public 2048 px `/brand/dealers-drive-light.png`
+asset through the existing absolute-URL helper. The shared 1200 × 630 social
+preview retains its copy and layout, with the dark logo replacing the old tile.
 
 ## 4. Faceted navigation — `/cars` and `/dealers`
 

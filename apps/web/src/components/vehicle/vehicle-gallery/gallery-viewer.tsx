@@ -3,6 +3,7 @@
 import type { PublicVehicleImage } from '@dealers-drive/contracts';
 import { useEffect } from 'react';
 
+import { BrandLogo } from '@/components/brand-logo';
 import { Dialog, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
 import { GalleryArrow } from './gallery-arrow';
@@ -56,12 +57,7 @@ export function GalleryViewer({
       closeLabel={VEHICLE_GALLERY_TEXT.close}
       header={
         <div className="flex min-w-0 items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="flex-none border border-white/40 px-[7px] py-[2px] font-mono text-[11px]"
-          >
-            {VEHICLE_GALLERY_TEXT.brand}
-          </span>
+          <BrandLogo variant="dark" size={23} className="h-[23px] w-[29px]" />
           <DialogTitle className="truncate text-[15px] text-white">{title}</DialogTitle>
           <DialogDescription tone="inverse" className="mt-0 flex-none text-[12px] tnum">
             {VEHICLE_GALLERY_TEXT.count(index, images.length)}

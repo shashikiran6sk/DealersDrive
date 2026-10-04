@@ -92,6 +92,18 @@ decorators.** They are the correct first slice of sandbox work.
 | **Sandbox priority** | **P0** — DESIGN-SPEC §4.4 names "a `.blueprint` missing a corner" as the one defect it calls out by name. A sandbox entry is how that stays true.         |
 | **Confidence**       | HIGH                                                                                                                                                      |
 
+### BrandLogo — reference monogram
+
+|                      |                                                                                                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Location**         | `apps/web/src/components/brand-logo/brand-logo.tsx`                                                                                                                                                |
+| **Props / defaults** | `variant: 'light' \| 'dark' = 'light'`, `size: number = 30`, `className?: string`                                                                                                                  |
+| **Consumers**        | CustomerHeader, CustomerFooter, AuthShell (customer/dealer/admin sign-in and onboarding), StatusShell (errors and missing pages), ComingSoon, dealer sidebar, admin navigation, GalleryViewer      |
+| **States**           | Light backgrounds use black on white; admin navigation and the photo viewer use white on black. Header remains white when sticky. Dealer sidebar stays hidden on mobile.                           |
+| **Compatibility**    | Plate and dealer LogoTile APIs stay intact; links, adjacent text, responsive behavior and logo footprints stay intact. Dark badges retain their 29 × 23 px footprint with a centered square image. |
+| **Sandbox**          | Primitives/BrandLogo: Light, Dark, Surfaces; Layout/ComingSoon: Playground; existing header/footer/auth/gallery stories                                                                            |
+| **Validation**       | Existing header/footer/auth/gallery/console and SEO tests; desktop/mobile visual inspection recorded in `docs/branding/README.md`                                                                  |
+
 ### C005 — `Plate`
 
 |                      |                                                                                          |

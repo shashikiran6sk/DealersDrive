@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import { redirect } from 'next/navigation';
 
+import { BrandLogo } from '@/components/brand-logo';
 import { AdminNav } from '@/components/admin/admin-nav';
 import { StatusTag } from '@/components/ui/primitives';
 import { SignOutButton } from '@/features/auth/sign-out';
@@ -25,9 +26,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="flex min-h-dvh bg-(--color-neutral-100) max-md:flex-col">
       <aside className="flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3">
         <Link href="/admin" className="flex items-center gap-[9px] no-underline">
-          <span className="border border-white/40 px-[7px] py-[2px] font-mono text-[11px] text-white">
-            DD
-          </span>
+          <BrandLogo variant="dark" size={23} className="h-[23px] w-[29px]" />
           <span className="font-heading text-[15px] font-extrabold text-white">Admin console</span>
         </Link>
 

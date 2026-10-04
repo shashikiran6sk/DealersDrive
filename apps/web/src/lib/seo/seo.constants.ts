@@ -18,9 +18,9 @@ export const DEFAULT_SOCIAL_IMAGE = {
   alt: 'Dealers-Drive — used cars from verified independent dealers',
 } as const;
 
-export const LOGO_PATH = '/icon.png';
+export const LOGO_PATH = '/brand/dealers-drive-light.png';
 
-export const LOGO_SIZE = 512;
+export const LOGO_SIZE = 2048;
 
 export const DEFAULT_ORIGIN = 'http://localhost:3000';
 

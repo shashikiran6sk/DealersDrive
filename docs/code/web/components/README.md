@@ -2,6 +2,8 @@
 
 Parent: [web](../README.md)
 
+- [BrandLogo](brand-logo.md)
+
 ## Sections
 
 - [admin](admin/README.md)

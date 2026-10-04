@@ -292,7 +292,10 @@ describe('the fullscreen viewer', () => {
     render(<VehicleGallery title={TITLE} images={images(11)} primaryIndex={1} />);
 
     const dialog = await openViewer(user, /^View all/);
-    expect(within(dialog).getByText('DD')).toBeInTheDocument();
+    expect(within(dialog).getByRole('img', { name: 'Dealers Drive' })).toHaveAttribute(
+      'src',
+      '/brand/dealers-drive-dark.png',
+    );
     expect(within(dialog).getByRole('heading', { name: TITLE })).toBeInTheDocument();
     const counter = within(dialog).getByText('2 / 11');
     expect(counter).toHaveClass('text-white/60');
