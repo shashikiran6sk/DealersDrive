@@ -63,13 +63,13 @@ export default async function AdminDealersPage({
     <div className="flex flex-col gap-4 p-5">
       <h1 className="text-[26px]">Dealers</h1>
 
-      <div className="seg self-start">
+      <div className="seg max-w-full self-start overflow-x-auto">
         {STATUS_TABS.map((tab) => (
           <Link
             key={tab.label}
             href={tabHref(tab.value)}
             aria-selected={status === tab.value}
-            className={cn('seg-opt no-underline')}
+            className={cn('seg-opt shrink-0 whitespace-nowrap no-underline')}
           >
             <span className="tnum">
               {tab.label}
