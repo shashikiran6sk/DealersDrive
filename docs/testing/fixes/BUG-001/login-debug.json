@@ -1,0 +1,358 @@
+{
+  "signInStatus": 200,
+  "cookies": [
+    {
+      "name": "dd_session",
+      "domain": "localhost",
+      "path": "/",
+      "secure": false,
+      "httpOnly": true
+    }
+  ],
+  "status": 200,
+  "emptyStateVisible": true,
+  "url": "http://localhost:3004/invitations",
+  "pending": [],
+  "events": [
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/invitations"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/invitations"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/media/4c9affa5bc8f420e-s.p.woff2"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/css/3e314444883e6cf4.css"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/webpack-345ea33413bc883e.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/59e6d32d-1c33d95f5a7d278c.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/8671-6c7c25978d89eba4.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/main-app-7ab45e2f067100a4.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/7213-d8071d3cffb8ac57.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/9641-10844c984271336d.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/3992-220b75064f1180c5.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/app/error-2cd77b310af3d554.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/app/global-error-c134824322854a22.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/5378-ca08ceacf20d059a.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/9998-ff651316fd745224.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/3284-4dd4bb37e971ad82.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/2960-405c0ae81c791ba5.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/1138-3ad177a18b93d879.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/app/(public)/layout-d0446527b519fb4f.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/6816-7075721964b6b7aa.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/8176-600da26fe5fa097e.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/5705-c4f0967618ec7faa.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/app/(public)/page-dd4e2c8e96f1b076.js"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/app/(public)/error-760a541bca20b0b6.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/media/4c9affa5bc8f420e-s.p.woff2"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/css/3e314444883e6cf4.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/webpack-345ea33413bc883e.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/main-app-7ab45e2f067100a4.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/59e6d32d-1c33d95f5a7d278c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/7213-d8071d3cffb8ac57.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/3992-220b75064f1180c5.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/app/error-2cd77b310af3d554.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/9641-10844c984271336d.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/app/global-error-c134824322854a22.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/8671-6c7c25978d89eba4.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/app/(public)/layout-d0446527b519fb4f.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/5378-ca08ceacf20d059a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/1138-3ad177a18b93d879.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/2960-405c0ae81c791ba5.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/9998-ff651316fd745224.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/3284-4dd4bb37e971ad82.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/6816-7075721964b6b7aa.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/app/(public)/error-760a541bca20b0b6.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/app/(public)/page-dd4e2c8e96f1b076.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/8176-600da26fe5fa097e.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/5705-c4f0967618ec7faa.js"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "http://localhost:3004/invitations"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/cars"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/dealers"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/login"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/saved"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/cars"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/dealers"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/login"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/saved"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/contact"
+    },
+    {
+      "type": "failed",
+      "url": "http://localhost:3004/cars",
+      "reason": "net::ERR_ABORTED"
+    },
+    {
+      "type": "failed",
+      "url": "http://localhost:3004/dealers",
+      "reason": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/contact"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "http://localhost:3004/_next/static/chunks/app/(public)/contact/page-752f28c7446e2e37.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/_next/static/chunks/app/(public)/contact/page-752f28c7446e2e37.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/invitations"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "http://localhost:3004/invitations"
+    },
+    {
+      "type": "failed",
+      "url": "http://localhost:3004/invitations",
+      "reason": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "http://localhost:3004/invitations"
+    },
+    {
+      "type": "failed",
+      "url": "http://localhost:3004/invitations",
+      "reason": "net::ERR_ABORTED"
+    }
+  ]
+}

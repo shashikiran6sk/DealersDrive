@@ -10,10 +10,12 @@ per-fix READMEs and retest reports) was copied here **before** it was removed
 from the bug-fix PR it arrived in. Permanent automated tests stayed in the
 product PRs.
 
-| Folder      | Came from                                                                    | Product PR |
-| ----------- | ---------------------------------------------------------------------------- | ---------- |
-| `404/`      | `claude/serene-thompson-yuft81` @ `107a46259f1e8ee13765e3a3559fe5b5bbc88c99` | #209       |
-| `_handoff/` | Agent 2's final handoff and machine-readable checkpoint (supplied by owner)  | —          |
+| Folder                                                                | Came from                                                                            | Product PR |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
+| `404/`                                                                | `claude/serene-thompson-yuft81` @ `107a46259f1e8ee13765e3a3559fe5b5bbc88c99`         | #209       |
+| `BUG-001/`                                                            | `fix/pre-production-01-invitation-race` @ `1f38a1333fb2fa6f933c3a1972a3a4298a2d071e` | #231       |
+| `../pre-production/` (Agent 2's original 556-case dossier, 162 files) | `fix/pre-production-01-invitation-race` @ `1f38a13`, updated by later layers         | #231–#238  |
+| `_handoff/`                                                           | Agent 2's final handoff and machine-readable checkpoint (supplied by owner)          | —          |
 
 Paths are preserved exactly as they were on the source branch, so a link of the
 form `docs/testing/fixes/<bug>/…` in an older PR description resolves here.
