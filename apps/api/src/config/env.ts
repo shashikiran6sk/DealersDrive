@@ -129,6 +129,39 @@ const envSchema = z.object({
 
 const LOCAL_SESSION_SECRET = 'dealers-drive-local-session-secret';
 
+const NON_PUBLIC_IPV4 = [
+  /^0\./,
+  /^10\./,
+  /^127\./,
+  /^169\.254\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./,
+];
+
+function isPublicHost(hostname: string): boolean {
+  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  if (host.includes(':')) {
+    return !(host === '::' || host === '::1' || /^f[cd]/.test(host) || /^fe[89ab]/.test(host));
+  }
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    return !NON_PUBLIC_IPV4.some((range) => range.test(host));
+  }
+  if (!host.includes('.')) return false;
+  return !['localhost', 'local', 'internal'].some(
+    (suffix) => host === suffix || host.endsWith(`.${suffix}`),
+  );
+}
+
+function isPublicHttpsUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'https:' && isPublicHost(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
   const require = (path: string, message: string) => {
     ctx.addIssue({ code: 'custom', path: [path], message });
@@ -226,6 +259,10 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
 
   if (value.STORAGE_DRIVER !== 'r2') {
     require('STORAGE_DRIVER', 'must be `r2` in production — `local` and `minio` are development adapters.');
+  }
+
+  if (value.STORAGE_DRIVER === 'r2' && !isPublicHttpsUrl(value.S3_ENDPOINT)) {
+    require('S3_ENDPOINT', 'must be the public HTTPS endpoint of the R2 account in production — the default is a local MinIO address.');
   }
 
   if (value.CACHE_DRIVER === 'memory') {

@@ -330,6 +330,7 @@ describe('unknown throwables', () => {
     vi.stubEnv('GOOGLE_CLIENT_ID', 'client.apps.googleusercontent.com');
     vi.stubEnv('GOOGLE_CLIENT_SECRET', 'google-secret');
     vi.stubEnv('STORAGE_DRIVER', 'r2');
+    vi.stubEnv('S3_ENDPOINT', 'https://example-account-id.r2.cloudflarestorage.com');
     vi.stubEnv('S3_ACCESS_KEY_ID', 'r2-key');
     vi.stubEnv('S3_SECRET_ACCESS_KEY', 'r2-secret');
     vi.stubEnv('SESSION_SECRET', 'a-real-production-session-secret');
