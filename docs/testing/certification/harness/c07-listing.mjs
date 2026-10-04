@@ -266,9 +266,23 @@ await h.check(r, 'MODERATION-007', async () => {
     : { status: 'FAIL', note: `vdp ${vdp.status}` };
 });
 await h.check(r, 'MODERATION-008', async () => {
-  const queue = await admin.get('/v1/admin/listings?status=PENDING_REVIEW&limit=48');
-  const seen = (queue.json.data ?? []).some((l) => l.id === modListingId);
-  r.ev({ queueCount: queue.json.data?.length, seesListing: seen });
+  // Walk every page: the shared certification DB accumulates more pending
+  // listings than one page (48) holds, and the queue is oldest-first.
+  let queue;
+  let cursor = null;
+  let pages = 0;
+  let seen = false;
+  let count = 0;
+  do {
+    queue = await admin.get(
+      `/v1/admin/listings?status=PENDING_REVIEW&limit=48${cursor ? `&cursor=${cursor}` : ''}`,
+    );
+    count += queue.json.data?.length ?? 0;
+    seen = seen || (queue.json.data ?? []).some((l) => l.id === modListingId);
+    cursor = queue.json.page?.nextCursor ?? null;
+    pages += 1;
+  } while (cursor && !seen && pages < 20);
+  r.ev({ queueCount: count, pages, seesListing: seen });
   return queue.status === 200 && seen
     ? { note: 'admin sees the listing in the moderation queue' }
     : { status: 'FAIL', note: 'not in queue' };

@@ -1,0 +1,782 @@
+{
+  "LISTING-CREATE-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER creates draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.005Z"
+  },
+  "LISTING-CREATE-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER creates draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.021Z"
+  },
+  "LISTING-CREATE-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF creates draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.038Z"
+  },
+  "LISTING-CREATE-004": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "draft belongs to the dealership, not the employee",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.039Z"
+  },
+  "LISTING-CREATE-005": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "draft creation records the creating actor (audit vehicle.created)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.042Z"
+  },
+  "LISTING-CREATE-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "STAFF edits permitted draft fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.066Z"
+  },
+  "LISTING-CREATE-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER edits permitted draft fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.105Z"
+  },
+  "LISTING-CREATE-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER edits permitted draft fields",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.141Z"
+  },
+  "LISTING-CREATE-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "submit with required fields missing → 422 (server-side completeness)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.171Z"
+  },
+  "LISTING-CREATE-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid price/year/km/owners rejected → 400 (Zod bounds)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.186Z"
+  },
+  "LISTING-CREATE-011": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "injected dealerId does not reassign the vehicle (create 400, stays with A); strict schema path",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.196Z"
+  },
+  "LISTING-CREATE-012": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "two concurrent submits → one listing row (1)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.266Z"
+  },
+  "LISTING-CREATE-013": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "concurrent edits → one deterministic value (20000), no corruption",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.307Z"
+  },
+  "LISTING-CREATE-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "persisted draft survives reload (server-side)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.344Z"
+  },
+  "LISTING-CREATE-015": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "uploaded image is linked to the correct vehicle",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.443Z"
+  },
+  "LISTING-CREATE-016": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealer A cannot access B's draft (GET 404, PATCH 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.494Z"
+  },
+  "MODERATION-001": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot submit for moderation → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.542Z"
+  },
+  "MODERATION-002": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF direct submit API → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.590Z"
+  },
+  "MODERATION-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER submits a valid draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.657Z"
+  },
+  "MODERATION-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER submits a valid draft",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.705Z"
+  },
+  "MODERATION-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "incomplete listing cannot submit → 422",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.732Z"
+  },
+  "MODERATION-006": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "submitted listing → PENDING_REVIEW",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.732Z"
+  },
+  "MODERATION-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "submitted listing is not public before approval",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.736Z"
+  },
+  "MODERATION-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees the listing in the moderation queue",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.792Z"
+  },
+  "MODERATION-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin sees dealer/listing/media detail",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:27.802Z"
+  },
+  "MODERATION-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin approves a valid listing → ACTIVE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:28.206Z"
+  },
+  "MODERATION-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "approved listing becomes publicly discoverable",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:28.210Z"
+  },
+  "MODERATION-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "admin rejects a listing → REJECTED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:28.272Z"
+  },
+  "MODERATION-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "rejected listing remains non-public",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:28.273Z"
+  },
+  "MODERATION-014": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "dealer sees the rejection state/reason",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:28.280Z"
+  },
+  "MODERATION-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "changes-requested → dealer corrects → resubmit → PENDING_REVIEW (REJECTED is terminal; correction path is CHANGES_REQUESTED)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:28.370Z"
+  },
+  "MODERATION-016": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "double approve → first 200, second 409; status ACTIVE, no invalid state",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:28.939Z"
+  },
+  "MODERATION-017": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "concurrent approve vs reject → one valid final state (ACTIVE)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:29.380Z"
+  },
+  "MODERATION-018": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "moderation actions audit-logged: listing.check_set, listing.submitted, listing.approved",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:29.382Z"
+  },
+  "MEDIA-001": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "vehicle data exists before photography is attached (draft without images)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:29.394Z"
+  },
+  "MEDIA-002": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "studio output links to the correct listing/vehicle",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:29.473Z"
+  },
+  "MEDIA-003": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "image count capped/handled: 14 rows after 14 attempts (last presign 201, commit 200)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.059Z"
+  },
+  "MEDIA-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "image ordering endpoint responds (400); empty order rejected or no-op",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.198Z"
+  },
+  "MEDIA-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid media rejected (oversize 400, bad mime 400)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.255Z"
+  },
+  "MEDIA-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "image removal works (200), gallery intact (0 left)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.361Z"
+  },
+  "MEDIA-007": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "commit without upload → 422; listing uncorrupted (PENDING_REVIEW)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.417Z"
+  },
+  "MEDIA-008": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "public VDP references only /media/by-media/* URLs; no raw storage keys or original paths",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.422Z"
+  },
+  "MEDIA-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "card/VDP uses a primary image",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.427Z"
+  },
+  "MEDIA-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "VDP returns a gallery (6 images); arrows/fullscreen are browser UX (Agent UAT)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.431Z"
+  },
+  "MEDIA-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "cards always carry an image slot (fallback handled); sample imageCount=6",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.468Z"
+  },
+  "MEDIA-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "API supplies the ordered gallery; arrow/fullscreen interaction is checked in the browser campaign (MEDIA-012/013 UX)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.468Z"
+  },
+  "MEDIA-013": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "dealer cannot touch another listing's media via admin routes (401/401); photography is admin-only",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.556Z"
+  },
+  "LISTING-LIFE-001": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "approved listing → ACTIVE",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.903Z"
+  },
+  "LISTING-LIFE-002": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE appears on /cars",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.922Z"
+  },
+  "LISTING-LIFE-003": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE appears in dealer portfolio",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.934Z"
+  },
+  "LISTING-LIFE-004": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "ACTIVE contributes to the public dealer count (available ACTIVE=4)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.945Z"
+  },
+  "LISTING-LIFE-005": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER → RESERVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:30.962Z"
+  },
+  "LISTING-LIFE-006": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER → RESERVED",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:31.332Z"
+  },
+  "LISTING-LIFE-007": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot RESERVE → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:31.720Z"
+  },
+  "LISTING-LIFE-008": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED visual state (availability=RESERVED) correct",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:31.724Z"
+  },
+  "LISTING-LIFE-009": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED car still shown (availability RESERVED), card behaviour per R71",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:31.738Z"
+  },
+  "LISTING-LIFE-010": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED enquiry → 409 LISTING_RESERVED (defined)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:31.759Z"
+  },
+  "LISTING-LIFE-011": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "RESERVED → ACTIVE via dealer request + admin approval (R82)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:31.787Z"
+  },
+  "LISTING-LIFE-012": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER marks eligible vehicle SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:32.227Z"
+  },
+  "LISTING-LIFE-013": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER marks SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:32.655Z"
+  },
+  "LISTING-LIFE-014": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot mark SOLD → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:33.076Z"
+  },
+  "LISTING-LIFE-015": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "SOLD disappears from public inventory (search + VDP 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:33.603Z"
+  },
+  "LISTING-LIFE-016": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "SOLD disappears from dealer public available inventory",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:33.620Z"
+  },
+  "LISTING-LIFE-017": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE"],
+    "note": "SOLD removed from active listing count (count reads ACTIVE available=6)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:33.629Z"
+  },
+  "LISTING-LIFE-018": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "SOLD remains in dealer/admin history (row present, status SOLD)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:33.637Z"
+  },
+  "LISTING-LIFE-019": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "existing enquiries survive SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:34.170Z"
+  },
+  "LISTING-LIFE-020": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "customer enquiry history survives SOLD",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:34.637Z"
+  },
+  "LISTING-LIFE-021": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "OWNER withdraws",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:35.095Z"
+  },
+  "LISTING-LIFE-022": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "MANAGER withdraws",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:35.570Z"
+  },
+  "LISTING-LIFE-023": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "STAFF cannot WITHDRAW → 403",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:36.030Z"
+  },
+  "LISTING-LIFE-024": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "WITHDRAWN disappears publicly (search + VDP 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:36.495Z"
+  },
+  "LISTING-LIFE-025": {
+    "status": "PASS",
+    "layers": ["DATABASE"],
+    "note": "WITHDRAWN remains in internal history",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:36.495Z"
+  },
+  "LISTING-LIFE-026": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "existing enquiries survive WITHDRAWN",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:36.955Z"
+  },
+  "LISTING-LIFE-027": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "invalid transitions from SOLD rejected (reserve 409, withdraw 409)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:36.981Z"
+  },
+  "LISTING-LIFE-028": {
+    "status": "PASS",
+    "layers": ["API", "SECURITY"],
+    "note": "direct API cannot bypass lifecycle permission (STAFF sell → 403)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:37.417Z"
+  },
+  "LISTING-LIFE-029": {
+    "status": "PASS",
+    "layers": ["API", "DATABASE", "CONCURRENCY"],
+    "note": "reserve vs sold race → one valid state (SOLD)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:37.835Z"
+  },
+  "LISTING-LIFE-030": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "read model is synchronous with lifecycle (visible→200, sold→404 on next read)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:38.219Z"
+  },
+  "LISTING-LIFE-031": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "withdrawn car leaves search immediately — no stale exposure",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "listing",
+    "at": "2026-10-04T13:56:38.610Z"
+  }
+}
