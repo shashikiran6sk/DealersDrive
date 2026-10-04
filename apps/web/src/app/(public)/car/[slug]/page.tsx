@@ -17,6 +17,7 @@ import { VehicleName } from '@/components/vehicle/vehicle-name';
 import { JsonLd } from '@/components/seo/json-ld';
 import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
 import { apiGetParsed } from '@/lib/api';
+import { cachedLookup } from '@/lib/cached-lookup';
 import { VEHICLES_TAG, vehicleTag } from '@/lib/cache-tags';
 import { isMissingResource } from '@/lib/errors';
 import {
@@ -33,17 +34,29 @@ import { VEHICLE_PAGE_TEXT } from './vehicle-page.constants';
 
 export const revalidate = 60;
 
-const loadVehicle = cache(async (slug: string): Promise<PublicVehicleDetail | null> => {
-  try {
-    return await apiGetParsed(PublicVehicleDetail, `/v1/vehicles/${encodeURIComponent(slug)}`, {
-      revalidate: 60,
-      tags: [VEHICLES_TAG, vehicleTag(slug)],
-    });
-  } catch (error) {
-    if (isMissingResource(error, { invalidIdentifier: true })) return null;
-    throw error;
-  }
+const VEHICLE_CACHE = (slug: string) => ({
+  revalidate: 60,
+  tags: [VEHICLES_TAG, vehicleTag(slug)],
 });
+
+const loadVehicle = cache((slug: string): Promise<PublicVehicleDetail | null> =>
+  cachedLookup(
+    ['public-vehicle', slug],
+    async () => {
+      try {
+        return await apiGetParsed(
+          PublicVehicleDetail,
+          `/v1/vehicles/${encodeURIComponent(slug)}`,
+          VEHICLE_CACHE(slug),
+        );
+      } catch (error) {
+        if (isMissingResource(error, { invalidIdentifier: true })) return null;
+        throw error;
+      }
+    },
+    VEHICLE_CACHE(slug),
+  ),
+);
 
 async function loadSimilar(slug: string): Promise<SimilarVehiclesResponse['data']> {
   try {
