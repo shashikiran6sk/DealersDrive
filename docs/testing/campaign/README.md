@@ -10,7 +10,7 @@ and a concise summary; the detail lives here.
 | --- | ------------------ | ----------------------------------------------------------- | ---- | ------- | --------- |
 | 1   | `01-p0-storage/`   | ORIG-BUG-001 (P0) forged storage upload/private-read links  | #241 | MERGED  | `b571525` |
 | 2   | `02-p1-kyc-lock/`  | ORIG-BUG-004 (P1) verified KYC replace/delete while ACTIVE  | #242 | MERGED | `370f9d3` |
-| 3   | `03-p1-cache/`     | BUG-NEW-010 (P1) cached car page public after suspension    |      | OPEN    |           |
+| 3   | `03-p1-cache/`     | BUG-NEW-010 (P1) cached car page public after suspension    | #243 | MERGED | `cdf297b` |
 | 4   | `04-enquiry-auth/` | BUG-NEW-012 (P2) enquiry commit-time authorization race     |      | OPEN    |           |
 | 5   | `05-yard-photo/`   | ORIG-BUG-005 + BUG-NEW-009 yard-photo moderation/visibility |      | OPEN    |           |
 | 6   | `06-r2-endpoint/`  | BUG-NEW-013 production R2 endpoint validation               |      | OPEN    |           |
