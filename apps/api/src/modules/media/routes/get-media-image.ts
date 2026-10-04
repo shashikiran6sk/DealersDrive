@@ -5,6 +5,7 @@ import { MediaPath } from './schemas.js';
 
 export const getMediaImage: StorageRoute = (router, { service }) => {
   router.get('/media/by-media/:mediaId/:width.webp', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
     void (async () => {
       try {
         const parsed = MediaPath.safeParse({
@@ -16,7 +17,6 @@ export const getMediaImage: StorageRoute = (router, { service }) => {
         const image = await service.serve(parsed.data.mediaId, parsed.data.width);
         if (!image) throw new NotFoundError('No such image.');
 
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
         res.type(image.contentType).send(image.body);
       } catch (error) {

@@ -59,20 +59,18 @@ vehicle media at all.
 
 ### `async serve`
 
-Resolves a delivery request to stored bytes. Content-addressed, immutable.
+Resolves a delivery request to stored bytes. A new upload has a new id, but authorization and readiness remain mutable.
 
 **A vehicle image is public only while its listing is visible — `ACTIVE`, or
 `RESERVED` since R71, because a reserved car's card and page are still shown
-(R45, R71).** The rule is contracts' `isListingPubliclyVisible`, the same one the
+(R45, R71), and its dealership is `ACTIVE`.** The rules are contracts' `isListingPubliclyVisible` and the shared search `PUBLIC_DEALER_STATUS`, the same ones the
 search's visible predicate spells. The media row is read with its
 `vehicle_media` attachment, the vehicle and the listing, and anything else — a
 pending review, changes requested, rejected, sold, withdrawn, or an image
 attached to nothing — is the same 404 as an id that does not exist. A moderator previews unpublished images through a signed read
 URL instead. Other owner types (a yard photograph) are unaffected.
 
-The response stays `immutable` for a year: once an image has been public its
-bytes cannot be unpublished from a cache anyway, and the gate exists to keep
-images of a car that was never approved from being fetched at all.
+The derivative route sets `Cache-Control: no-store` before validation and delivery, including denials. A READY image may become unavailable after suspension or a listing decision; an unchanged URL must consult the current state again. This also prevents a cached denial from outliving reinstatement. Private signed previews retain their existing authority and private/no-store behavior. Requested derivatives, larger fallbacks and original MIME types are unchanged. Previously retained client/CDN bytes cannot be recalled by this header; deployment must account for caches populated under the old year-long policy.
 
 ### `export function toMediaStatus(status: string): 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'`
 
