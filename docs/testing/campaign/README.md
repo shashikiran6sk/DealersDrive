@@ -15,7 +15,7 @@ and a concise summary; the detail lives here.
 | 5   | `05-yard-photo/`   | ORIG-BUG-005 + BUG-NEW-009 yard-photo moderation/visibility | #245 | MERGED | `7743f9a` |
 | 6   | `06-r2-endpoint/`  | BUG-NEW-013 production R2 endpoint validation               | #246 | MERGED | `b533586` |
 | 7   | `07-pagination/`   | BUG-NEW-007 dealer inventory stable pagination              | #247 | MERGED | `8c64330` |
-| 8   | `08-mobile/`       | BUG-NEW-006 + ADMIN-MOBILE-DETAIL-001 mobile overflow       |      | OPEN    |           |
+| 8   | `08-mobile/`       | BUG-NEW-006 + ADMIN-MOBILE-DETAIL-001 mobile overflow       | #248 | MERGED | `0cd9a70` |
 | 9   | `09-dealer-close/` | ORIG-GAP-CLOSE admin Close application flow                 |      | OPEN    |           |
 | 10  | `10-p3-cleanup/`   | remaining P3 batch (where grouping is safe)                 |      | OPEN    |           |
 

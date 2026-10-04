@@ -1,0 +1,14 @@
+{
+  "before": "PENDING_APPROVAL",
+  "after": "CLOSED",
+  "reasonKept": true,
+  "activeMembersKept": 1,
+  "uploadedDocumentsKept": 3,
+  "closeAuditRows": 1,
+  "ownerSessionBefore": 200,
+  "ownerSessionAfter": 401,
+  "ownerSignIn": {
+    "status": 403,
+    "code": "APPLICATION_CLOSED"
+  }
+}
