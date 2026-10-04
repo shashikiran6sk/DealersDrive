@@ -1,0 +1,23 @@
+CONFIG-001 FAIL rejected
+CONFIG-002 FAIL rejected
+CONFIG-003 FAIL rejected
+CONFIG-004 FAIL rejected
+CONFIG-005 FAIL rejected
+CONFIG-006 FAIL rejected
+CONFIG-007 FAIL rejected
+CONFIG-008 FAIL rejected
+BUG006-MINIO-local FAIL rejected
+BUG006-MINIO-preview FAIL rejected
+BUG006-MINIO-dev FAIL rejected
+BUG006-MINIO-production FAIL rejected
+BUG006-development-local FAIL rejected
+BUG006-development-minio FAIL rejected
+BUG006-development-r2 FAIL rejected
+BUG006-test-local FAIL rejected
+BUG006-test-minio FAIL rejected
+BUG006-test-r2 FAIL rejected
+BUG006-missing-S3_ACCESS_KEY_ID FAIL rejected
+BUG006-missing-S3_SECRET_ACCESS_KEY FAIL rejected
+BUG006-driver-omitted FAIL rejected
+BUG006-unknown-driver FAIL rejected
+{"PASS": 0, "FAIL": 22}

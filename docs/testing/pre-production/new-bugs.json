@@ -285,10 +285,20 @@
     },
     "rootCause": "Enquiry service waits for its resource row and then trusts the request-entry actor permission snapshot; no current membership/role/session check at its transaction boundary",
     "sourceSha256": "0576693aefdfe9142652842762a5afd22f9c97684e1517680b4d79a55ca4af30",
-    "disposition": "Separate high-priority stacked PR after current BUG005 final CI; no enquiry authorization implementation change in BUG005",
+    "disposition": "OPEN P1; user-directed deferral to next-session dedicated stacked PR after BUG006/008; no enquiry implementation changes in this session",
     "id": "BUG-NEW-012",
     "fixPr": null,
     "retest": "NOT_RUN",
     "evidence": "../fixes/BUG-005/evidence/enquiry-revocation-finding.json"
+  },
+  {
+    "id": "BUG-NEW-013",
+    "severity": "P2",
+    "status": "OPEN",
+    "reproduced": true,
+    "title": "Production R2 accepts missing endpoint and uses localhost MinIO default",
+    "evidence": "../fixes/BUG-NEW-013/evidence/endpoint-probe.json",
+    "scope": "Configuration acceptance confirmed; no actual provider calls",
+    "disposition": "Separate later PR; no endpoint changes included in BUG006"
   }
 ]
