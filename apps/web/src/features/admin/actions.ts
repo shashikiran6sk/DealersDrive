@@ -14,7 +14,7 @@ import {
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
-import { revalidatePublicDealer } from '@/lib/cache-tags';
+import { revalidatePublicDealer, revalidatePublicVehicles } from '@/lib/cache-tags';
 
 export interface AdminResult<T = undefined> {
   ok: boolean;
@@ -32,6 +32,7 @@ function fail(error: unknown, fallback: string): AdminResult<never> {
 function refreshAdmin(slug?: string): void {
   revalidatePath('/admin', 'layout');
   revalidatePublicDealer(slug);
+  revalidatePublicVehicles();
 }
 
 export async function approveDealerAction(
