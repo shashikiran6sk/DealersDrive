@@ -34,7 +34,7 @@ export type SpelledField = 'make' | 'model';
 export interface InventoryFilter {
   status?: ListingStatus;
   q?: string;
-  before?: Date;
+  before?: { at: Date; id: string | null };
   take: number;
 }
 
@@ -116,7 +116,20 @@ export function createVehiclesRepository(prisma: PrismaClient) {
           dealerId,
           ...(filter.status ? { listing: { is: { status: filter.status } } } : {}),
           ...(filter.q ? searchOf(filter.q) : {}),
-          ...(filter.before ? { createdAt: { lt: filter.before } } : {}),
+          ...(filter.before
+            ? {
+                AND: [
+                  {
+                    OR: [
+                      { createdAt: { lt: filter.before.at } },
+                      ...(filter.before.id
+                        ? [{ createdAt: filter.before.at, id: { lt: filter.before.id } }]
+                        : []),
+                    ],
+                  },
+                ],
+              }
+            : {}),
         },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: filter.take,

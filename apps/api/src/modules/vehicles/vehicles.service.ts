@@ -30,7 +30,7 @@ import {
   lockListingForVehicle,
   transition,
 } from '../listings/listings.facade.js';
-import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import { decodeKeysetOrDateCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import { completenessOf, toDealerVehicle, toInventoryRow } from './vehicles.mapper.js';
 import {
   DUPLICATE_REGISTRATION,
@@ -194,7 +194,7 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
         repo.inventory(dealerId, {
           ...(query.status ? { status: query.status } : {}),
           ...(query.q ? { q: query.q } : {}),
-          ...(query.cursor ? { before: decodeCursor(query.cursor) } : {}),
+          ...(query.cursor ? { before: decodeKeysetOrDateCursor(query.cursor) } : {}),
           take: query.limit + 1,
         }),
         repo.statusCounts(dealerId),
@@ -206,7 +206,10 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
 
       return {
         data: page.map((row) => toInventoryRow(row, permissions)),
-        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+        page: {
+          nextCursor: hasMore && last ? encodeKeysetCursor(last.createdAt, last.id) : null,
+          hasMore,
+        },
         counts: {
           ALL: counts.reduce((sum, row) => sum + row.count, 0),
           ...Object.fromEntries(counts.map((row) => [row.status, row.count])),

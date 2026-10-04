@@ -145,7 +145,19 @@ approved can prepare drafts but not submit them.
 The dealer's inventory (**F066**): newest first, filtered by listing status and
 by a search that matches the plate with separators stripped (`ka-01-ab` finds
 `KA01AB1234`) or the make or model case-insensitively. Cursor-paginated on
-`createdAt`, as the admin lists are.
+`(createdAt, id)`, the order it already sorts by.
+
+**BUG-NEW-007.** The cursor used to carry `createdAt` alone with a strict `<`
+boundary, so every vehicle sharing the last row's timestamp was skipped — five
+tied rows in pages of two came back as two. A bulk import, or any two rows
+written in the same millisecond, ties. The cursor is now the same
+`encodeKeysetCursor` BUG-003 gave the other lists, and the boundary is
+"older, or equally old with a smaller id". A date-only cursor issued before the
+change is still honoured through `decodeKeysetOrDateCursor`.
+
+The boundary sits under `AND` rather than beside the search, because the
+search is itself an `OR` and a second `OR` key at the same level would replace
+it.
 
 `counts` is a `groupBy` over the dealership's listings, deliberately unaffected
 by the filter and the search: the tabs show how many vehicles are in each state,
