@@ -42,9 +42,16 @@
     "typecheck": "PASS",
     "freshBuild": "PASS",
     "testedCommit": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
-    "historyScan": "PENDING"
+    "historyScan": "PASS233 commits with reviewed working configuration; final-head repeat pending"
   },
   "humanUat": "PENDING",
   "openRelatedFinding": "BUG-NEW-012 P1 queued enquiry revocation; separate next layer",
-  "finalDbEvidence": "evidence/final-db.json"
+  "finalDbEvidence": "evidence/final-db.json",
+  "secretScanFindings": {
+    "count": 4,
+    "classification": "Independently recomputed screenshot checksum assignments",
+    "exactAssignmentAllowlist": true,
+    "negativeControl": "PASS two different inert values still detected",
+    "evidence": "evidence/history-checksum-findings.json"
+  }
 }
