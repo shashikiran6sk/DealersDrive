@@ -26,6 +26,8 @@ export const enquiriesDocs: ModuleDocs = {
       summary: 'Your enquiries',
       description:
         'The signed-in customer’s own enquiries, newest first, cursor-paginated (**R68**). ' +
+        'New cursors include `(createdAt, id)` to retain timestamp ties. Legacy date-only cursors ' +
+        'remain accepted with strict-before-date behavior; refresh to receive the new boundary. ' +
         'Read-only and the current state only: `SENT` until the dealership acts, `CONTACTED` ' +
         'once they have called, `CLOSED` once they are done. **An enquiry the dealership ' +
         'marked as spam is `CLOSED` here** — the customer is never told, and `SPAM` appears in ' +
@@ -100,7 +102,9 @@ export const enquiriesDocs: ModuleDocs = {
       summary: 'Your enquiries',
       description:
         'The dealership’s enquiries, newest first. `status` filters to one inbox tab ' +
-        '(`NEW`, `CONTACTED`, `CLOSED`, `SPAM`); without it, all of them. Cursor-paginated.\n\n' +
+        '(`NEW`, `CONTACTED`, `CLOSED`, `SPAM`); without it, all of them. Cursor-paginated by ' +
+        '`(createdAt, id)` so equal-time enquiries are retained. Legacy date-only cursors keep ' +
+        'strict-before-date behavior; refresh to receive the new boundary.\n\n' +
         'Each carries the customer’s **current name and proved mobile**, read from their ' +
         'account as the inbox renders — never text somebody typed — with a `tel:` link, and ' +
         'the car with a link to its public page while it is on the marketplace.\n\n' +

@@ -24,7 +24,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../../platform/errors.js';
-import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import { decodeKeysetOrDateCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import {
   PUBLIC_AVAILABLE_LISTING_WHERE,
@@ -115,10 +115,18 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       customer: CustomerPrincipal,
       query: CustomerEnquiryQuery,
     ): Promise<CustomerEnquiriesResponse> {
+      const cursor = query.cursor ? decodeKeysetOrDateCursor(query.cursor) : null;
       const rows = await prisma.enquiry.findMany({
         where: {
           customerId: customer.userId,
-          ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
+          ...(cursor
+            ? {
+                OR: [
+                  { createdAt: { lt: cursor.at } },
+                  ...(cursor.id ? [{ createdAt: cursor.at, id: { lt: cursor.id } }] : []),
+                ],
+              }
+            : {}),
         },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: query.limit + 1,
@@ -131,17 +139,28 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
 
       return {
         data: page.map(toCustomerEnquiry),
-        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+        page: {
+          nextCursor: hasMore && last ? encodeKeysetCursor(last.createdAt, last.id) : null,
+          hasMore,
+        },
       };
     },
 
     async inbox(dealerId: string, query: DealerEnquiryQuery): Promise<DealerEnquiriesResponse> {
+      const cursor = query.cursor ? decodeKeysetOrDateCursor(query.cursor) : null;
       const [rows, tabs] = await Promise.all([
         prisma.enquiry.findMany({
           where: {
             dealerId,
             ...(query.status ? { status: query.status } : {}),
-            ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
+            ...(cursor
+              ? {
+                  OR: [
+                    { createdAt: { lt: cursor.at } },
+                    ...(cursor.id ? [{ createdAt: cursor.at, id: { lt: cursor.id } }] : []),
+                  ],
+                }
+              : {}),
           },
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           take: query.limit + 1,
@@ -157,7 +176,10 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
 
       return {
         data: page.map((row) => toDealerEnquiry(row, now)),
-        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+        page: {
+          nextCursor: hasMore && last ? encodeKeysetCursor(last.createdAt, last.id) : null,
+          hasMore,
+        },
         counts: tabs,
       };
     },

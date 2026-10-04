@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   decodeCursor,
   decodeKeysetCursor,
+  decodeKeysetOrDateCursor,
   decodeSeqCursor,
   encodeCursor,
   encodeKeysetCursor,
@@ -54,6 +55,34 @@ describe('encodeCursor / decodeCursor', () => {
       expect((error as ConflictError).code).toBe('MALFORMED_CURSOR');
       expect((error as ConflictError).status).toBe(409);
     }
+  });
+});
+
+describe('decodeKeysetOrDateCursor', () => {
+  const at = new Date('2026-10-01T09:00:00.123Z');
+  const id = '6f1c2a3b-4d5e-4f60-8a71-92b3c4d5e6f7';
+
+  it('retains both parts of a new cursor at database millisecond precision', () => {
+    expect(decodeKeysetOrDateCursor(encodeKeysetCursor(at, id))).toEqual({ at, id });
+  });
+
+  it('accepts a legacy date with an explicit missing secondary key', () => {
+    expect(decodeKeysetOrDateCursor(encodeCursor(at))).toEqual({ at, id: null });
+    expect(() => decodeKeysetCursor(encodeCursor(at))).toThrow(ConflictError);
+  });
+
+  it.each([
+    'garbage',
+    '',
+    `${at.toISOString()}|`,
+    `|${id}`,
+    `${at.toISOString()}|invalid`,
+    `${at.toISOString()}|${id}|extra`,
+    `invalid|${id}`,
+  ])('rejects malformed cursor payload %j', (payload) => {
+    expect(() => decodeKeysetOrDateCursor(Buffer.from(payload).toString('base64url'))).toThrow(
+      ConflictError,
+    );
   });
 });
 
