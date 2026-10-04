@@ -2,7 +2,7 @@
 
 DATA-DISC-001/002/003 retain their original baseline FAIL. The unchanged stacked parent `d29d9b960a1835d61a89e80b03de63430adc1bdc` reproduced all three failures before implementation: three database rows yielded pages 1+0. The built browser reproduced Saved Cars 50+0, customer enquiries 20+0 and dealer inbox 25+0 against 51 database rows. [Reproduction and root cause](REPRODUCTION.md), [baseline browser result](browser-baseline.json) and sanitized `evidence/ci/bug003-baseline-red.log` preserve the red evidence.
 
-Branch: `fix/pre-production-03-stable-pagination`. Required PR base: `fix/pre-production-new-005-rejection-race` (#233). PR creation and remote CI: PENDING. No merges. Product commit: `c0d8e3acd98510120a4401479eb959bcc9711942`. Full-suite and final browser tested commit: `20c1b39efeab1b5885bb42774b2b594e5f4fffd2`.
+Branch: `fix/pre-production-03-stable-pagination`. Required PR base: `fix/pre-production-new-005-rejection-race` (#233). [PR #234](https://github.com/shashikiran6sk/DealersDrive/pull/234) is open; remote CI PENDING. No merges. Product commit: `c0d8e3acd98510120a4401479eb959bcc9711942`. Full-suite and final browser tested commit: `20c1b39efeab1b5885bb42774b2b594e5f4fffd2`.
 
 ## Correction
 
@@ -20,7 +20,7 @@ The accumulated fixture exposed an existing Admin pagination test oracle that co
 - Authorization coverage: an existing manager session after STAFF role change, actual membership removal and stale-cookie denial; customer logout, stale-cookie denial and fresh sign-in retaining complete owned history.
 - Targeted integration: 157 PASS across seven affected/adjacent suites. Pagination/Saved/Enquiry unit coverage: 41 PASS. Early targeted-run metadata records parent HEAD while the implementation was still uncommitted; the subsequent complete suite and browser proof run against committed `20c1b39`.
 - Full accumulated suite at `20c1b39`: **4,428 PASS** — API 2,662 (129 files), web 1,346 (99 files), contracts 420 (14 files). API coverage: statements 96.97%, branches 92.32%, functions 98.36%, lines 97.81%; repository thresholds PASS. [Complete API assertions](evidence/ci/api-assertions.json), [web](evidence/ci/web-assertions.json), [contracts](evidence/ci/contracts-assertions.json), and `bug003-full-tests-green.log` retain exact results.
-- Final root lint, typecheck and fresh production build: PASS at `20c1b39`; Turbo cache bypassed. Exact local history secret scan: pending evidence commit.
+- Final root lint, typecheck and fresh production build: PASS at `20c1b39`; Turbo cache bypassed. Local full-history secret scan: PASS at evidence commit `e6c6ae3`, 227 commits scanned with the actual cached CI image; [metadata](evidence/ci/bug003-history-secret-scan.json).
 
 ## Browser and evidence
 
