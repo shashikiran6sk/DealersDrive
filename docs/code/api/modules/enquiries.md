@@ -174,6 +174,18 @@ choosing the right one; there is no state machine to argue with. A move to the
 status an enquiry already has returns it unchanged and audits nothing, so a
 double press leaves one record.
 
+**Authority is read after the lock, not before (BUG-NEW-012).** The
+permissions on the request principal were read when the request arrived. A
+request queued behind another write on the same enquiry could wait while the
+owner removed the member or an Admin suspended the dealership — and then commit
+on the strength of that earlier read. `authorizeDealerWrite` re-reads the
+dealer, member, user, seat and session rows inside this transaction, after the
+enquiry row is held, the same order the vehicle writes use; the transition
+check then uses the permissions it returns rather than `actor.permissions`.
+A removal or suspension that lands while the write waits is a 401 with no
+change and no audit row; one that arrives after authorisation serialises
+behind it on the shared row locks.
+
 ### `function stampsFor(current, status, now)`
 
 `contactedAt` is the **first** contact and is kept through a close and a
