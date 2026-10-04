@@ -2,7 +2,7 @@
 
 DATA-DISC-001/002/003 retain their original baseline FAIL. The unchanged stacked parent `d29d9b960a1835d61a89e80b03de63430adc1bdc` reproduced all three failures before implementation: three database rows yielded pages 1+0. The built browser reproduced Saved Cars 50+0, customer enquiries 20+0 and dealer inbox 25+0 against 51 database rows. [Reproduction and root cause](REPRODUCTION.md), [baseline browser result](browser-baseline.json) and sanitized `evidence/ci/bug003-baseline-red.log` preserve the red evidence.
 
-Branch: `fix/pre-production-03-stable-pagination`. Required PR base: `fix/pre-production-new-005-rejection-race` (#233). [PR #234](https://github.com/shashikiran6sk/DealersDrive/pull/234) is open; remote CI PENDING. No merges. Product commit: `c0d8e3acd98510120a4401479eb959bcc9711942`. Full-suite and final browser tested commit: `20c1b39efeab1b5885bb42774b2b594e5f4fffd2`.
+Branch: `fix/pre-production-03-stable-pagination`. Required PR base: `fix/pre-production-new-005-rejection-race` (#233). [PR #234](https://github.com/shashikiran6sk/DealersDrive/pull/234) is open; final-head CI368/Security517 PASS at `62b1491`, all five jobs. No merges. Product commit: `c0d8e3acd98510120a4401479eb959bcc9711942`. Full-suite and final browser tested commit: `20c1b39efeab1b5885bb42774b2b594e5f4fffd2`.
 
 ## Correction
 
@@ -36,4 +36,4 @@ Sanitized failed attempts remain available. Expanded-test failures came from ass
 
 BUG-NEW-007 (P2) is independently reproduced in dealer inventory: 51 tied vehicle rows yield pages 1+0. [Diagnostic report](evidence/inventory-pagination-finding.json) and its script preserve the finding; the script restores all fixture timestamps in finally and verifies restoration. Inventory source is unchanged. It requires a dedicated later stacked PR. A narrow dealer-header avatar appearance in long fixture branding remains an unconfirmed visual lead, not a silently fixed or confirmed bug.
 
-[Canonical traceability](canonical-retests.json) keeps baseline FAIL separate from scoped Agent PASS. Entire 556-case certification, final complete-stack regression, live-provider/deployment gates and Human UAT remain pending. Production GO has not been established.
+[Traceability](canonical-retests.json) identifies DATA-DISC as additional baseline probes with FAIL→scoped PASS and retains related canonical rows with their own original classifications. Final-head CI368/Security517 at `62b1491` passed all five jobs, including 4,428 tests and a fresh build; this status is carried forward in the next stacked layer. Entire 556-case certification, final complete-stack regression, live-provider/deployment gates and Human UAT remain pending. Production GO has not been established.
