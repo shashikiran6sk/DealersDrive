@@ -1,0 +1,53 @@
+{
+  "bug": "BUG-003",
+  "baselineCommit": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "campaignRedCommit": "d29d9b960a1835d61a89e80b03de63430adc1bdc",
+  "fixBranch": "fix/pre-production-03-stable-pagination",
+  "baseBranch": "fix/pre-production-new-005-rejection-race",
+  "fixPr": 234,
+  "productCommit": "c0d8e3acd98510120a4401479eb959bcc9711942",
+  "testedCommit": "20c1b39efeab1b5885bb42774b2b594e5f4fffd2",
+  "regressionTest": "apps/api/tests/stable-pagination.test.ts",
+  "canonicalTests": [
+    {
+      "id": "DATA-DISC-001",
+      "baseline": "FAIL",
+      "campaignRed": "FAIL",
+      "agentRetest": "PASS"
+    },
+    {
+      "id": "DATA-DISC-002",
+      "baseline": "FAIL",
+      "campaignRed": "FAIL",
+      "agentRetest": "PASS"
+    },
+    {
+      "id": "DATA-DISC-003",
+      "baseline": "FAIL",
+      "campaignRed": "FAIL",
+      "agentRetest": "PASS"
+    }
+  ],
+  "integrationCases": 15,
+  "targetedIntegrationPass": 157,
+  "affectedUnitPass": 41,
+  "fullTests": 4428,
+  "browserCases": 9,
+  "refresh": "PASS",
+  "browserBack": "PASS",
+  "assertionEvidence": "evidence/ci/api-assertions.json",
+  "browserEvidence": "browser-fixed.json",
+  "ci": {
+    "result": "PENDING"
+  },
+  "humanUat": "PENDING",
+  "wholeRegistryCertification": "PENDING final stack validation; original baseline unchanged",
+  "localGates": {
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "build": "PASS",
+    "testedCommit": "20c1b39efeab1b5885bb42774b2b594e5f4fffd2",
+    "historySecretScan": "PASS at e6c6ae3 /227 commits"
+  },
+  "fixUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/234"
+}

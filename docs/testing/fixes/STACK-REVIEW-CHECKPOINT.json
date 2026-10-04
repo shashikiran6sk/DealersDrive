@@ -38,9 +38,17 @@
       "ci": "run 385 PASS",
       "security": "run 37204502859 PASS",
       "merge": "38c5122a7f726bbc4e660b6ed76de73e70456dfe"
+    },
+    "233": {
+      "state": "MERGED",
+      "finalHead": "6901a8caea0c1223ac66c98cd230a89ad64b47d8",
+      "ci": "run 37205206647 PASS",
+      "security": "run 37205206610 PASS",
+      "merge": "43ef2ff5ea863e249a6e2d4cabff34608f6b2b8c",
+      "redOnParent": "5/15 fail"
     }
   },
-  "nextPR": 233,
+  "nextPR": 234,
   "originalChecklist": {
     "ORIG-BUG-001 P0 forged upload/read links (default UPLOAD_SIGNING_SECRET)": "OPEN",
     "ORIG-BUG-002 P0/P1 admin approve bypasses verification": "FIXED - VERIFIED BY PR #232",
@@ -54,8 +62,10 @@
     "ORIG-DISC-PROFILE-001 P3 second profile edit 409": "OPEN"
   },
   "newFindings": {
-    "BUG-NEW-001": "CONFIRMED P3 (Next.js logs upstream problem detail; API redacts 5xx detail in prod)"
+    "BUG-NEW-001": "CONFIRMED P3 (Next.js logs upstream problem detail; API redacts 5xx detail in prod)",
+    "BUG-NEW-005": "FIXED - VERIFIED BY PR #233 (Agent 2 finding)",
+    "OBS-OUTBOX-RETRY": "P3 observation: outbox retries 10x ~2s apart then abandons; storage cleanup can orphan keys silently"
   },
-  "updatedAt": "2026-10-04T13:14:25Z",
-  "mainSha": "38c5122a7f726bbc4e660b6ed76de73e70456dfe"
+  "updatedAt": "2026-10-04T13:26:13Z",
+  "mainSha": "43ef2ff5ea863e249a6e2d4cabff34608f6b2b8c"
 }

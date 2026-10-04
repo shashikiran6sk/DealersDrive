@@ -16,6 +16,7 @@ product PRs.
 | `BUG-001/`                                                            | `fix/pre-production-01-invitation-race` @ `1f38a1333fb2fa6f933c3a1972a3a4298a2d071e`     | #231       |
 | `BUG-002/`                                                            | `fix/pre-production-02-approval-gate` @ `3570dcf5dcffb85235315eaed8e69c54bab1f87a`       | #232       |
 | `BUG-NEW-005/`                                                        | `fix/pre-production-new-005-rejection-race` @ `d29d9b960a1835d61a89e80b03de63430adc1bdc` | #233       |
+| `BUG-003/`                                                            | `fix/pre-production-03-stable-pagination` @ `62b14915dec43118994b11f88f8a00191d2e55d8`   | #234       |
 | `../pre-production/` (Agent 2's original 556-case dossier, 162 files) | `fix/pre-production-01-invitation-race` @ `1f38a13`, updated by later layers             | #231–#238  |
 | `_handoff/`                                                           | Agent 2's final handoff and machine-readable checkpoint (supplied by owner)              | —          |
 
