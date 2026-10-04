@@ -1,0 +1,44 @@
+
+ RUN  v5.0.0 /workspace/DealersDrive-fixes/apps/api
+
+ ❯ |unit| tests/unit/modules/auth/auth.facade.test.ts (5 tests | 1 failed) 15ms
+   ❯ the exported surface (3)
+     × exposes only the permission helpers, the seat writers and the allow-list check 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/modules/auth/auth.facade.test.ts > the exported surface > exposes only the permission helpers, the seat writers and the allow-list check
+AssertionError: expected [ 'assertPhoneVerified', …(9) ] to deeply equal [ 'assertPhoneVerified', …(8) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,8 @@
+  [
+    "assertPhoneVerified",
++   "authorizeDealerWrite",
+    "ensureSeat",
+    "grantSeat",
+    "hasGrantedSeat",
+    "isAllowlistedAdmin",
+    "isSeatSuspended",
+
+ ❯ tests/unit/modules/auth/auth.facade.test.ts:43:38
+     41|    */
+     42|   it('exposes only the permission helpers, the seat writers and the al…
+     43|     expect(Object.keys(auth).sort()).toEqual(
+       |                                      ^
+     44|       [
+     45|         'assertPhoneVerified',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 18 passed (19)
+      Tests  1 failed | 334 passed (335)
+   Start at  07:05:38
+   Duration  5.02s (import 51%, tests 37%, transform 10%, worker 2%)
+
+undefined
+/workspace/DealersDrive-fixes/apps/api:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run --project unit tests/unit/modules/auth tests/unit/modules/vehicles tests/unit/middleware/auth.test.ts tests/unit/platform/db/tenant-tx.test.ts

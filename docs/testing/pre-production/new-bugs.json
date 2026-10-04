@@ -229,5 +229,66 @@
     "fixPr": null,
     "retest": "NOT_RUN",
     "plan": "Dedicated later stacked layer; no yard visibility or frontend cache invalidation implementation in BUG-004."
+  },
+  {
+    "severity": "P3",
+    "status": "OPEN",
+    "reproduced": true,
+    "affectedArea": "Media OpenAPI width documentation",
+    "head": "adeb847c19a0740270929a014594d1ce6c73a567",
+    "environment": "isolated local certification API; inert fixture",
+    "expected": "OpenAPI accurately describes existing integer1..4000 acceptance with derivative fallback",
+    "actual": "OpenAPI says widths320/640/1024/1600 only and anything else404; real widths500/4000 return200",
+    "results": [
+      {
+        "width": 500,
+        "status": 200,
+        "contentType": "image/jpeg",
+        "byteCount": 4677
+      },
+      {
+        "width": 4000,
+        "status": 200,
+        "contentType": "image/jpeg",
+        "byteCount": 4677
+      },
+      {
+        "width": 4001,
+        "status": 404,
+        "contentType": "application/problem+json; charset=utf-8",
+        "byteCount": 154
+      }
+    ],
+    "rootCause": "Pre-existing OpenAPI prose diverges from MediaPath schema and service fallback",
+    "disposition": "Separate documentation correction after primary bug layers; no media validation behavior changed in BUG004",
+    "id": "BUG-NEW-011",
+    "fixPr": null,
+    "retest": "NOT_RUN",
+    "evidence": "../fixes/BUG-005/evidence/media-width-finding.json"
+  },
+  {
+    "severity": "P1",
+    "status": "OPEN",
+    "reproduced": true,
+    "environment": "isolated certification DB; actual cookie API; fake providers; current BUG005 vehicle guard applied but enquiry source unchanged from parentadeb847",
+    "expected": "A revoked member cannot commit a queued privileged enquiry close",
+    "actual": {
+      "lockWaitProven": true,
+      "before": "NEW",
+      "revocationHttp": 204,
+      "membership": "REMOVED",
+      "queuedEnquiryHttp": 200,
+      "after": "CLOSED",
+      "closedByRemovedActor": true,
+      "actorAuditCount": 1,
+      "nextDealerRequest": 401
+    },
+    "rootCause": "Enquiry service waits for its resource row and then trusts the request-entry actor permission snapshot; no current membership/role/session check at its transaction boundary",
+    "sourceSha256": "0576693aefdfe9142652842762a5afd22f9c97684e1517680b4d79a55ca4af30",
+    "disposition": "Separate high-priority stacked PR after current BUG005 final CI; no enquiry authorization implementation change in BUG005",
+    "id": "BUG-NEW-012",
+    "fixPr": null,
+    "retest": "NOT_RUN",
+    "evidence": "../fixes/BUG-005/evidence/enquiry-revocation-finding.json"
   }
 ]

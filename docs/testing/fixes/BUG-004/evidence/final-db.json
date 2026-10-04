@@ -1,0 +1,32 @@
+{
+  "bug": "BUG-004",
+  "head": "adeb847c19a0740270929a014594d1ce6c73a567",
+  "environment": "isolated certification PostgreSQL16; inert marked fixtures",
+  "result": "PASS",
+  "constraints": {
+    "total": 33,
+    "unvalidated": 0
+  },
+  "dealerStates": [
+    {
+      "status": "ACTIVE",
+      "count": 3
+    }
+  ],
+  "listingStates": [
+    {
+      "status": "ACTIVE",
+      "count": 3
+    },
+    {
+      "status": "RESERVED",
+      "count": 3
+    }
+  ],
+  "listingVehicleDealerMismatches": 0,
+  "history": {
+    "enquiries": 6,
+    "saved": 6
+  },
+  "scope": "Read-only actual database integrity after browser suspend/reinstate; lifecycle snapshots and actor audits separately retained in tests/browser report"
+}

@@ -122,8 +122,11 @@
   "browserCases": 3,
   "browserEvidence": "browser-fixed.json",
   "ci": {
-    "result": "PENDING",
-    "initialAttempt": "CI369 FAIL formatting of three copied evidence JSON files; Security518 PASS; correction on same branch"
+    "result": "PASS",
+    "head": "adeb847c19a0740270929a014594d1ce6c73a567",
+    "ciRun": 37183233655,
+    "securityRun": 37183233673,
+    "evidence": "evidence/final-ci.json"
   },
   "localGates": {
     "lint": "PASS",
