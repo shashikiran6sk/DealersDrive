@@ -24,7 +24,7 @@ export function CustomerHeader({ locations, account }: CustomerHeaderProps) {
     <header className="sticky top-0 z-20 border-b border-(--color-divider) bg-white">
       <div className="mx-auto flex h-(--header-height) max-w-[1440px] items-center gap-3 px-4 sm:gap-4 sm:px-6 md:gap-7 lg:px-10">
         <Link href="/" className="flex flex-none items-center gap-[10px]">
-          <BrandLogo />
+          <BrandLogo variant="dark" />
           <span className="font-heading text-[17px] font-extrabold tracking-[-0.02em] max-sm:sr-only">
             {HEADER_TEXT.brand}
           </span>
