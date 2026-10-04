@@ -1,9 +1,0 @@
-
-> @dealers-drive/api@0.0.0 typecheck /workspace/DealersDrive-fixes/apps/api
-> tsc -p tsconfig.json
-
-tests/stable-pagination.test.ts(183,13): error TS7022: 'response' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
-tests/stable-pagination.test.ts(187,13): error TS7022: 'page' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
-/workspace/DealersDrive-fixes/apps/api:
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dealers-drive/api@0.0.0 typecheck: `tsc -p tsconfig.json`
-Exit status 2

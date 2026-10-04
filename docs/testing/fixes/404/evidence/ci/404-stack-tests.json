@@ -1,9 +1,0 @@
-{
-  "command": ["pnpm", "test", "--env-mode=loose"],
-  "sha": "77b4769b9db9768797a584fe9b46f22031967acb",
-  "start_utc": "2026-10-02T18:23:21.964794+00:00",
-  "end_utc": "2026-10-02T18:23:22.265226+00:00",
-  "exit_code": 1,
-  "log": "evidence/ci/404-stack-tests.log",
-  "cache": "TURBO_FORCE=true"
-}
