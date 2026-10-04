@@ -1,9 +1,0 @@
-{
-  "command": ["node", "/tmp/dd-new005-refresh.mjs"],
-  "sha": "d5043b5dd36d7733e9255c0c94615988585fcd0a",
-  "start_utc": "2026-10-03T15:11:22.944489+00:00",
-  "end_utc": "2026-10-03T15:11:25.200793+00:00",
-  "exit_code": 0,
-  "log": "evidence/ci/new005-active-screenshot.log",
-  "cache": "TURBO_FORCE=true"
-}

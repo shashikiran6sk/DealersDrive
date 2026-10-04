@@ -20,8 +20,8 @@
 name: Security
 
 on:
-  # Stacked fix PRs target the preceding feature branch. Verify every PR base.
   pull_request:
+    branches: [main]
   push:
     branches: [main]
   schedule:
