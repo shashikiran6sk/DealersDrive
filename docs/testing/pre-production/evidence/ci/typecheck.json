@@ -1,7 +1,0 @@
-{
-  "command": ["pnpm", "typecheck"],
-  "sha": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
-  "exit_code": 0,
-  "cache": "TURBO_FORCE=true",
-  "log": "evidence/ci/typecheck.log"
-}

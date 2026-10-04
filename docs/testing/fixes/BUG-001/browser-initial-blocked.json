@@ -1,6 +1,0 @@
-{
-  "environment": "Built production Next.js :3004; current source API using local cert DB and fake providers; Chromium 151; private cookies outside repository",
-  "results": [],
-  "status": "BLOCKED",
-  "reason": "Harness expected a different withdrawal banner sentence; corrected to the actual domain message after source inspection."
-}
