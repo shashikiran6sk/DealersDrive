@@ -71,6 +71,13 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         });
       });
 
+      bus.on('DealerApplicationClosed', async (event) => {
+        await enqueue({
+          ...base(event, 'dealer.application.closed', 'dealer'),
+          reason: reasonOf(event),
+        });
+      });
+
       bus.on('DealerSuspended', async (event) => {
         await enqueue({
           ...base(event, 'dealer.account.suspended', 'dealer'),

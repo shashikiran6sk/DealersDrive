@@ -11,6 +11,7 @@ import { getProfileChanges } from './routes/get-profile-changes.js';
 import { patchDealer } from './routes/patch-dealer.js';
 import { postAccess } from './routes/post-access.js';
 import { postDealerApprove } from './routes/post-dealer-approve.js';
+import { postDealerClose } from './routes/post-dealer-close.js';
 import { postDealerReinstate } from './routes/post-dealer-reinstate.js';
 import { postDealerReject } from './routes/post-dealer-reject.js';
 import { postDealerRequestChanges } from './routes/post-dealer-request-changes.js';
@@ -30,6 +31,7 @@ const ROUTES: AdminRoute[] = [
   patchDealer,
   postDealerReject,
   postDealerRequestChanges,
+  postDealerClose,
   postDealerSuspend,
   postDealerReinstate,
   getProfileChanges,

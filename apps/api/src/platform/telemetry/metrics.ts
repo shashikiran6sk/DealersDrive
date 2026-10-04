@@ -242,6 +242,7 @@ export type OAuthReason =
   | 'identity_unverified'
   | 'account_link_required'
   | 'account_suspended'
+  | 'application_closed'
   | 'not_authorised'
   | 'identity_already_linked'
   | 'link_session_mismatch'

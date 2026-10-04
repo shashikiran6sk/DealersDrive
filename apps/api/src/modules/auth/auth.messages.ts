@@ -22,6 +22,8 @@ export const PHONE_HELD_UNVERIFIED =
 
 export const DEALERSHIP_SUSPENDED = 'This dealership has been suspended. Contact support.';
 
+export const DEALERSHIP_CLOSED = 'This dealership application has been closed. Contact support.';
+
 export const ACCOUNT_SUSPENDED = 'This account has been suspended. Contact support.';
 
 export const LINK_SESSION_MISMATCH =

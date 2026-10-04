@@ -34,6 +34,7 @@ const PRODUCTION_REQUIRED = {
   GOOGLE_CLIENT_ID: 'client.apps.googleusercontent.com',
   GOOGLE_CLIENT_SECRET: 'google-secret',
   STORAGE_DRIVER: 'r2',
+  S3_ENDPOINT: 'https://example-account-id.r2.cloudflarestorage.com',
   S3_ACCESS_KEY_ID: 'r2-key',
   S3_SECRET_ACCESS_KEY: 'r2-secret',
   SESSION_SECRET: 'a-real-production-session-secret',
@@ -575,6 +576,53 @@ describe('configurations that must not boot', () => {
     },
   );
 
+  /**
+   * BUG-NEW-013. `S3_ENDPOINT` defaults to the local MinIO address, so a
+   * production task that forgot it booted against `http://localhost:9000` and
+   * failed only when the first upload did. Under r2 in production the endpoint
+   * must be stated, and it must be a public HTTPS host.
+   */
+  it('BUG-NEW-013 refuses r2 in production when S3_ENDPOINT is omitted', async () => {
+    const { S3_ENDPOINT: _omitted, ...rest } = PRODUCTION_REQUIRED;
+
+    const message = await refuses({ NODE_ENV: 'production', ...rest });
+
+    expect(message).toContain('S3_ENDPOINT');
+  });
+
+  it.each([
+    'http://localhost:9000',
+    'https://localhost:9000',
+    'https://127.0.0.1:9000',
+    'https://[::1]:9000',
+    'https://0.0.0.0',
+    'https://10.0.0.5',
+    'https://172.20.0.3',
+    'https://192.168.1.10',
+    'https://169.254.169.254',
+    'http://minio:9000',
+    'https://minio',
+    'http://example-account-id.r2.cloudflarestorage.com',
+  ])('BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=%s', async (endpoint) => {
+    const message = await refuses({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      S3_ENDPOINT: endpoint,
+    });
+
+    expect(message).toContain('S3_ENDPOINT');
+  });
+
+  it('still lets a local r2 or minio setup point at a loopback endpoint outside production', async () => {
+    const loaded = await loadEnv({
+      STORAGE_DRIVER: 'minio',
+      S3_ACCESS_KEY_ID: 'minio',
+      S3_SECRET_ACCESS_KEY: 'minio-secret',
+    });
+
+    expect(loaded.S3_ENDPOINT).toBe('http://localhost:9000');
+  });
+
   it('refuses production still carrying the local development secrets', async () => {
     const message = await refuses({
       NODE_ENV: 'production',
@@ -598,6 +646,7 @@ describe('configurations that must not boot', () => {
 
   it('accepts a complete production configuration', async () => {
     const loaded = await loadEnv({ NODE_ENV: 'production', ...PRODUCTION_REQUIRED });
+    expect(loaded.S3_ENDPOINT).toBe('https://example-account-id.r2.cloudflarestorage.com');
 
     expect(loaded.STORAGE_DRIVER).toBe('r2');
     expect(loaded.AUTH_MODE).toBe('cookie');

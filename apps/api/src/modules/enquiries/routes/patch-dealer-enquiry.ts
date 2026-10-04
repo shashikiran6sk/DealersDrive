@@ -12,9 +12,9 @@ export const patchDealerEnquiry: DealerEnquiriesRoute = (router, service) => {
     requirePermission('enquiry:contact'),
     validate({ params: IdParam, body: UpdateEnquiryInput }),
     handle((req) => {
-      const { dealerId, userId, permissions } = dealerPrincipal(req);
+      const { dealerId, userId, permissions, sessionId } = dealerPrincipal(req);
       return service.setStatus(
-        { dealerId, userId, permissions },
+        { dealerId, userId, permissions, ...(sessionId ? { sessionId } : {}) },
         validated<IdParam>(req, 'params').id,
         validated<UpdateEnquiryInput>(req, 'body'),
       );

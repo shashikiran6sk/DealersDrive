@@ -7,10 +7,13 @@ export type MembershipWithDealer = DealerMember & { dealer: Dealer };
 export interface WorkspaceMembership {
   membership: MembershipWithDealer | null;
   suspended: boolean;
+  closed: boolean;
 }
 
+const SHUT_DEALER_STATUSES: readonly Dealer['status'][] = ['SUSPENDED', 'CLOSED'];
+
 export function isEnterable(membership: MembershipWithDealer): boolean {
-  return membership.status === 'ACTIVE' && membership.dealer.status !== 'SUSPENDED';
+  return membership.status === 'ACTIVE' && !SHUT_DEALER_STATUSES.includes(membership.dealer.status);
 }
 
 export async function activeMemberships(db: Db, userId: string): Promise<MembershipWithDealer[]> {
@@ -39,8 +42,10 @@ export async function findWorkspaceMembership(
   preferredDealerId?: string | null,
 ): Promise<WorkspaceMembership> {
   const memberships = await activeMemberships(db, userId);
+  const shut = memberships.length > 0 && !memberships.some(isEnterable);
   return {
     membership: chooseWorkspace(memberships, preferredDealerId),
-    suspended: memberships.length > 0 && !memberships.some(isEnterable),
+    suspended: shut,
+    closed: shut && memberships.every((membership) => membership.dealer.status === 'CLOSED'),
   };
 }

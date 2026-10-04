@@ -62,6 +62,25 @@ is the write that takes a dealership off the marketplace — and the portfolio
 went on being served from Next's cache for up to ten minutes afterwards. A
 dealership suspended for cause staying up for ten minutes is not untidiness.
 
+**The car pages are part of that half (BUG-NEW-010).** A car page is cached
+under `vehicles` and `vehicle:<slug>`, not under the dealership's tags, so
+clearing `dealers` and `dealer:<slug>` left every one of the suspended
+dealership's cars public. And it did not age out: Next's data cache stores a
+fetch only when it answers 200, so once the API answered 404 the background
+refresh after the 60-second window was thrown away and the warmed 200 kept
+being served — 4.4 minutes later in the certification run, and with no upper
+bound. Only a tag revalidation replaces that entry, which is why
+`revalidatePublicVehicles()` is here rather than left to `revalidate: 60`.
+
+It clears every car page, not just this dealership's: the console does not
+know the dealership's listing slugs, the decisions are rare, and an
+over-broad refresh costs one re-render per page while a missed one costs a
+suspended dealership staying on the marketplace.
+
+The same property means any **future** write that removes a car from public
+view outside a web action — the reserved `listings.expire-sweep` job, for one
+— has to reach a tag revalidation too, or it will stay up indefinitely.
+
 `slug` is passed in rather than read off the response because
 `DealerModerationResponse` carries an id and no slug, and every caller is a
 screen already rendering `AdminDealerDetail`. Omitting it still clears the

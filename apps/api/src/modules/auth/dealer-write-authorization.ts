@@ -31,7 +31,9 @@ export async function authorizeDealerWrite(
     Prisma.sql`SELECT "status" FROM "dealers" WHERE "id"=${actor.dealerId}::uuid FOR SHARE SKIP LOCKED`,
     Prisma.sql`SELECT "id" FROM "dealers" WHERE "id"=${actor.dealerId}::uuid`,
   );
-  if (!dealer || dealer.status === 'SUSPENDED') throw new UnauthorizedError();
+  if (!dealer || dealer.status === 'SUSPENDED' || dealer.status === 'CLOSED') {
+    throw new UnauthorizedError();
+  }
 
   const member = await lockedRow<{ status: MemberStatus; role: DealerRole }>(
     tx,

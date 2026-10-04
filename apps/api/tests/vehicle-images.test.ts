@@ -246,14 +246,20 @@ describe('what an upload must be', () => {
 
   it('will not attach a yard photograph as a vehicle image', async () => {
     const { listingId } = await submitted();
-    const yard = await a.agent
-      .post('/v1/dealer/yard-photo/presign')
-      .send({ fileName: 'yard.jpg', mimeType: 'image/jpeg', bytes: JPEG.length })
-      .expect(201);
+    const yard = await h.prisma.media.create({
+      data: {
+        dealerId: a.dealerId,
+        ownerType: 'DEALER_COVER',
+        storageKey: `dealers/${a.slug}/yard/fixture-${listingId}`,
+        mimeType: 'image/jpeg',
+        bytes: JPEG.length,
+        fileName: 'yard.jpg',
+        warnings: [],
+        status: 'PENDING',
+      },
+    });
 
-    await admin
-      .post(`/v1/admin/listings/${listingId}/images/${yard.body.mediaId}/commit`)
-      .expect(404);
+    await admin.post(`/v1/admin/listings/${listingId}/images/${yard.id}/commit`).expect(404);
   });
 
   it(`stops at ${String(VEHICLE_IMAGE_MAX)} images`, async () => {

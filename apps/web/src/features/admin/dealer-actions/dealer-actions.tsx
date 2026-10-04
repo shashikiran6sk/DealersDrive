@@ -8,6 +8,7 @@ import { Banner } from '@/components/ui/primitives';
 import type { ActionResult } from '@/types';
 
 import { ApproveBlock } from './approve-block';
+import { CloseBlock } from './close-block';
 import { DEALER_ACTIONS_TEXT } from './dealer-actions.constants';
 import { ReinstateBlock } from './reinstate-block';
 import { RejectBlock } from './reject-block';
@@ -25,6 +26,7 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
   const [suspendReason, setSuspendReason] = useState('');
   const [reinstateNote, setReinstateNote] = useState('');
   const [changesReason, setChangesReason] = useState('');
+  const [closeReason, setCloseReason] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [rejectConfirm, setRejectConfirm] = useState('');
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -75,6 +77,16 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
         />
       ) : null}
 
+      {dealer.actions.canClose ? (
+        <CloseBlock
+          dealer={dealer}
+          pending={pending}
+          run={run}
+          reason={closeReason}
+          onReasonChange={setCloseReason}
+        />
+      ) : null}
+
       {dealer.actions.canReinstate ? (
         <ReinstateBlock
           dealer={dealer}
@@ -110,6 +122,7 @@ export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
       ) : null}
 
       {!awaitingDecision &&
+      !dealer.actions.canClose &&
       !dealer.actions.canSuspend &&
       !dealer.actions.canReinstate &&
       !dealer.actions.canReject ? (

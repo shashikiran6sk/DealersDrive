@@ -43,6 +43,7 @@ const BASE: AdminDealerDetail = {
     canApprove: false,
     canReject: false,
     canRequestChanges: false,
+    canClose: false,
     canSuspend: true,
     canReinstate: false,
     canGrantCredits: false,
@@ -81,7 +82,13 @@ type Story = StoryObj<typeof meta>;
 export const PendingAndReadyToApprove: Story = {
   args: {
     dealer: dealer(
-      { canApprove: true, canReject: true, canRequestChanges: true, canSuspend: false },
+      {
+        canApprove: true,
+        canReject: true,
+        canRequestChanges: true,
+        canClose: true,
+        canSuspend: false,
+      },
       { status: 'PENDING_APPROVAL', statusLabel: 'Pending verification', statusTone: 'warn' },
     ),
   },
@@ -90,7 +97,13 @@ export const PendingAndReadyToApprove: Story = {
 export const PendingWithDocumentsOutstanding: Story = {
   args: {
     dealer: dealer(
-      { canApprove: false, canReject: true, canRequestChanges: true, canSuspend: false },
+      {
+        canApprove: false,
+        canReject: true,
+        canRequestChanges: true,
+        canClose: true,
+        canSuspend: false,
+      },
       {
         status: 'PENDING_APPROVAL',
         statusLabel: 'Pending verification',
@@ -128,8 +141,28 @@ export const Suspended: Story = {
 export const DraftAndIncomplete: Story = {
   args: {
     dealer: dealer(
-      { canApprove: false, canReject: true, canRequestChanges: false, canSuspend: false },
+      {
+        canApprove: false,
+        canReject: true,
+        canRequestChanges: false,
+        canClose: true,
+        canSuspend: false,
+      },
       { status: 'DRAFT', statusLabel: 'Draft', statusTone: 'neutral' },
+    ),
+  },
+};
+
+export const Closed: Story = {
+  args: {
+    dealer: dealer(
+      { canSuspend: false, canClose: false },
+      {
+        status: 'CLOSED',
+        statusLabel: 'Closed',
+        statusTone: 'neutral',
+        statusReason: 'Duplicate of an application already under review for this group.',
+      },
     ),
   },
 };

@@ -315,7 +315,7 @@ it('rejects ID/width manipulation, unattached and non-ready images without chang
 });
 
 it('preserves private yard/KYC previews without exposing originals through public paths', async () => {
-  const dealer = await marketplaceFixtures(h, 'media-private').dealership();
+  const dealer = await marketplaceFixtures(h, 'media-private').dealership('DRAFT');
   const jpeg = await readFile(new URL('./fixtures/media/browser-yard.jpg', import.meta.url));
   const yard = await dealer.agent
     .post('/v1/dealer/yard-photo/presign')
@@ -332,6 +332,10 @@ it('preserves private yard/KYC previews without exposing originals through publi
     .post('/v1/dealer/yard-photo/commit')
     .send({ mediaId: yard.body.mediaId })
     .expect(200);
+  await h.prisma.dealer.update({
+    where: { id: dealer.dealerId },
+    data: { status: 'ACTIVE', approvedAt: new Date() },
+  });
   const preview = new URL(String(committed.body.url));
   const first = await h
     .agent()

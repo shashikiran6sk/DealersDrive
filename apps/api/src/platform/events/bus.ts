@@ -26,6 +26,7 @@ export type DomainEventType =
   | 'DealerReinstated'
   | 'DealerApplied'
   | 'DealerChangesRequested'
+  | 'DealerApplicationClosed'
   | 'DealerProfileChangeSubmitted'
   | 'DealerProfileChangeDecided'
   | 'VehicleCreated'

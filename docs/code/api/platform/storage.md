@@ -26,6 +26,17 @@ runtimes; the factory and shared S3 adapter do not change with this boot rule.
 
 ## `apps/api/src/platform/storage/local.adapter.ts`
 
+### `export function sniffContentType(body: Buffer): string | null`
+
+BUG-NEW-008. `contentTypeOf` reads the key's extension, and a KYC key has
+none — `dealers/<slug>/documents/<type>/<id>` — so every signed read of a PDF
+on the local driver answered `image/jpeg` and the browser would not render
+the document a moderator had opened. The private-read stand-in now asks the
+bytes first (PDF, PNG, JPEG and WebP by their magic numbers) and falls back
+to the extension only for bytes it does not recognise. It reads only what is
+already in memory, and only on the local driver; an S3 presigned read carries
+the content type the upload was signed with.
+
 ### `export interface LocalStorageSignature`
 
 R2 stood in with the local filesystem.

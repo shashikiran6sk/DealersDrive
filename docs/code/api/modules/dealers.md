@@ -1375,6 +1375,13 @@ ready to be reviewed.
 
 ### `async submitForVerification(dealerId: string): Promise<DealerSubmitResponse>`
 
+**The DRAFT check is repeated under the dealer row lock.** The first read is
+outside any transaction, so a submit that passed it could wait on the row
+while an Admin closed the application, then write PENDING_APPROVAL over
+CLOSED. `assertSubmittable(await repo.lockStatus(…))` re-reads the status after
+the lock — the same lock close, approve and request-changes take — and a
+closed application answers `APPLICATION_CLOSED`.
+
 C4. DRAFT → PENDING_APPROVAL. No body; the state machine decides.
 
 ### `const resubmitted = Boolean(dealer.statusReason)`
@@ -1427,7 +1434,7 @@ with three differences: a private prefix, **no public delivery route**,
 and no derivatives. The promise that buyers never see them is enforced by
 there being no route that could serve them, not by a flag (§26.6).
 
-### `const previous = await repo.documentByType(dealerId, input.type)`
+### `const previous = await withTransaction(prisma, async (tx) => …)`
 
 Replacing removes what was there.
 
@@ -1438,6 +1445,40 @@ a KYC document sitting in storage that nothing references and nothing
 will ever delete, which for scans of PAN cards is a retention problem
 rather than a housekeeping one.
 
+The object is deleted **after** the row has moved, not before. Deleting
+first meant a refused or failed upsert left a row pointing at a file
+that no longer existed — and once the lock below can refuse, that is
+the ordinary path rather than a crash.
+
+### `function assertDocumentEditable(dealerStatus: DealerStatus | null, document: { status: DocStatus } | null): void`
+
+ORIG-BUG-004. Outside `DRAFT` the documents are the evidence an
+approval rests on, so a dealer may only fill a slot that is empty,
+rejected by an admin, or mid-upload — never one that is `UPLOADED`
+(awaiting review) or `VERIFIED`.
+
+Before this, an `ACTIVE` dealer could ask for an upload URL and the
+verified PAN scan was deleted and the row reset to `UPLOADING`, or
+`DELETE` reset it to `REQUIRED` — and the dealership stayed `ACTIVE`,
+publicly verified, on documents nobody had looked at. Under review it
+was a time-of-check problem instead: the file an admin opened was not
+necessarily the file the admin then verified.
+
+`REJECTED` stays open for a non-DRAFT dealer because an admin can reject
+a single document of an `ACTIVE` dealership, and the only way back is a
+fresh upload. `DRAFT` stays fully open because nothing there has been
+relied on yet — a returned application keeps its `VERIFIED` rows, and
+replacing one simply puts it back in the queue.
+
+The UI never offered any of this outside `DRAFT` — the onboarding page
+redirects an `ACTIVE` dealer away and floors a pending one at the review
+step — so this closes a direct-API path, not a button.
+
+The check runs under `repo.lockStatus`, the dealer row `FOR UPDATE`,
+which is the lock admin review and approval take first. A document
+change and an approval or rejection of the same dealership therefore
+serialise in one order and cannot deadlock.
+
 ### `async deleteDocument(dealerId: string, type: DealerDocType): Promise<void>`
 
 C5 delete. The row survives as `REQUIRED` — the checklist has three rows
@@ -1447,6 +1488,10 @@ The row is read before it is reset, because the stored object's key ends
 in the row's id. The baseline deleted `kyc/{dealerId}/{type}`, which is
 the _prefix_ the object lives under rather than the object itself, so
 every removed document stayed in storage. That is fixed here.
+
+Outside `DRAFT` a document under review or verified cannot be deleted —
+see `assertDocumentEditable` — and the bytes go only after the row has
+been reset, for the same reason as a replacement.
 
 ### `async yardPhoto(dealerId: string): Promise<YardPhotoDto>`
 
@@ -1486,7 +1531,30 @@ that is never followed by a `PUT` leaves the dealership's existing yard
 photograph exactly where it was, which is what a dealer who changed their
 mind halfway through picking a file expects.
 
-### `const displaced = dealer.coverMediaId`
+### `function assertYardPhotoEditable(dealerStatus: DealerStatus | null): void`
+
+ORIG-BUG-005. The yard photograph is part of the application — completeness
+requires it, and the moderator looks at it before approving — and it fronts
+the public portfolio. Once the application has been submitted it is locked:
+presign, commit and delete are a 409 `YARD_PHOTO_LOCKED`.
+
+Before this an `ACTIVE` dealer could replace the photograph through the API
+and the new image went public at once, with no review, while a one-line
+tagline edit waits for a moderator. The UI never offered it — the uploader
+lives only in the onboarding wizard, which an approved dealer cannot reach —
+so this closes a direct-API path rather than removing a button.
+
+A **moderated** replacement for an approved dealership, through the
+profile-change queue the tagline uses, is the eventual shape of this. It
+needs a column, a contract and a review screen, and until a product decision
+asks for it, an approved photograph changes only by sending the application
+back (`request changes` returns a pending one to DRAFT).
+
+Commit and delete take the dealer row lock and read `coverMediaId` under it,
+so a submission or an approval cannot interleave with a swap; the displaced
+object is discarded after the transaction.
+
+### `const displaced = await withTransaction(prisma, async (tx) => …)`
 
 READY, here, at commit.
 

@@ -115,7 +115,7 @@ export const authDocs: ModuleDocs = {
         'has no dealership yet, or to the requested path when it has. Every failure redirects ' +
         'to `/dealer/login?error=…` instead, so the person sees the sign-in screen rather than ' +
         'a JSON body: `sign_in_failed`, `identity_unverified`, `google_declined`, ' +
-        '`account_link_required`, `account_suspended`, `invalid_callback`.\n\n' +
+        '`account_link_required`, `account_suspended`, `application_closed`, `invalid_callback`.\n\n' +
         '**Both consoles come back through this one path.** The sealed cookie says which, and ' +
         'an admin round trip is answered differently in two ways: the address must be on ' +
         '`ADMIN_ALLOWLIST` — `not_authorised` if it is not — and the session it sets has ' +
@@ -490,7 +490,8 @@ export const authDocs: ModuleDocs = {
         'the phone verified and no Google account yet, sent to `/dealer/onboarding`, where step ' +
         '1 asks for Google before anything else can be saved. A number held, unverified, by a ' +
         'legacy account is `409 IDENTITY_ALREADY_LINKED` rather than taken over. ' +
-        '`403 ACCOUNT_SUSPENDED` for a suspended account or dealership. ' +
+        '`403 ACCOUNT_SUSPENDED` for a suspended account or dealership; ' +
+        '`403 APPLICATION_CLOSED` when the only dealership is a closed application. ' +
         '`503 PHONE_OTP_UNAVAILABLE` when MSG91, or the replay guard, cannot answer — a ' +
         'sign-in that cannot rule out a replayed token is refused rather than allowed.\n\n' +
         'Rate-limited to 20 attempts in 10 minutes per IP and 10 per number.',

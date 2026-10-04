@@ -606,6 +606,36 @@ describe('OnboardingWizard — the Account step', () => {
   });
 
   /**
+   * BUG-NEW-006. A `<fieldset>` is sized to its min-content by default, and the
+   * Google address is `truncate` (no wrapping), so a long address widened the
+   * whole step — 472 px past a 320 px screen. `min-w-0` lets the fieldset
+   * shrink to the column and the address truncate as intended. jsdom cannot
+   * measure layout; the browser geometry check is in the campaign evidence.
+   */
+  it('lets the Account step shrink below a long Google address (BUG-NEW-006)', () => {
+    const { container } = render(
+      <OnboardingWizard
+        step={0}
+        session={session({
+          identity: { email: 'a.very.long.dealer.mailbox.name@example-dealership-group.test' },
+        })}
+        documents={[]}
+        dealer={null}
+        completeness={null}
+        yardPhoto={null}
+        phoneWidget={FAKE_WIDGET}
+      />,
+    );
+
+    const fieldsets = [...container.querySelectorAll('fieldset')];
+    expect(fieldsets.length).toBeGreaterThan(0);
+    expect(fieldsets.every((fieldset) => fieldset.classList.contains('min-w-0'))).toBe(true);
+    expect(
+      screen.getByText('a.very.long.dealer.mailbox.name@example-dealership-group.test'),
+    ).toHaveClass('truncate');
+  });
+
+  /**
    * **R61** replaced the fallback this used to pin. A session with no linked
    * Google identity used to show `user.email` in the Google block, as if it were
    * verified; that state is now a dealer who started with their phone, and the

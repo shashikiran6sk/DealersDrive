@@ -15,7 +15,7 @@ import {
 } from '@dealers-drive/contracts';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
-import type { CustomerPrincipal } from '../auth/auth.facade.js';
+import { authorizeDealerWrite, type CustomerPrincipal } from '../auth/auth.facade.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import {
@@ -61,6 +61,7 @@ export interface EnquiryActor {
   dealerId: string;
   userId: string;
   permissions: readonly string[];
+  sessionId?: string;
 }
 
 const STATUS_AUDIT_ACTIONS: Record<EnquiryStatus, string> = {
@@ -195,6 +196,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           WHERE "id" = ${enquiryId}::uuid AND "dealerId" = ${actor.dealerId}::uuid
           FOR UPDATE`;
         if (locked.length === 0) throw notFound();
+        const permissions = await authorizeDealerWrite(tx, actor, 'enquiry:contact');
 
         const current = await tx.enquiry.findUniqueOrThrow({
           where: { id: enquiryId },
@@ -207,7 +209,7 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
         }
 
         const needed = enquiryTransitionPermission(current.status, input.status);
-        if (!actor.permissions.includes(needed)) {
+        if (!permissions.includes(needed)) {
           throw new ForbiddenError(ENQUIRY_TRANSITION_FORBIDDEN, {
             code: 'ENQUIRY_ACTION_FORBIDDEN',
             extra: { enquiryStatus: current.status, permission: needed },

@@ -161,7 +161,8 @@ export const adminDocs: ModuleDocs = {
         'correction, and answering it with this endpoint costs a real business every field ' +
         'they typed.\n\n' +
         'Only a DRAFT or PENDING_APPROVAL dealership can be rejected — an approved one is ' +
-        'suspended, which is reversible, and a 422 says so. Eligibility is rechecked under the dealer lock; previously approved accounts cannot be purged. Failed storage deletions are retained for durable retry. The reason is required, at least ' +
+        'suspended, which is reversible, and a 422 says so. A CLOSED application is kept on ' +
+        'record and is a 422 too. Eligibility is rechecked under the dealer lock; previously approved accounts cannot be purged. Failed storage deletions are retained for durable retry. The reason is required, at least ' +
         'six characters, and is what the dealer is told.\n\n' +
         'The audit row survives the dealership: `audit_logs.dealerId` is a column rather than ' +
         'a foreign key, so what was removed, by whom and why is still answerable afterwards.',
@@ -189,6 +190,41 @@ export const adminDocs: ModuleDocs = {
         },
       ],
       errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
+      path: '/v1/admin/dealers/:id/close',
+      operationId: 'closeDealer',
+      tag: DOC_TAGS.admin,
+      summary: 'Close an application without deleting it',
+      description:
+        'DRAFT or PENDING_APPROVAL → CLOSED, for an application that will not go any further — ' +
+        'abandoned, a duplicate, a dealer who changed their mind. **Nothing is deleted**: the ' +
+        'dealership row, its memberships, its KYC documents and their files, the yard ' +
+        'photograph and the audit trail all stay.\n\n' +
+        'It is the non-destructive alternative to `reject`, which purges, and is kept for fraud, ' +
+        'abuse and applications that are not a dealership. An ACTIVE or SUSPENDED dealership ' +
+        'is suspended, not closed, and any other state is a 422 `INVALID_DEALER_TRANSITION`.\n\n' +
+        'Once closed the members cannot enter the dealership: an open session answers 401 and ' +
+        'signing in is a 403 `APPLICATION_CLOSED`. A closed application cannot be approved, ' +
+        'rejected or submitted. The reason is required, at least six characters, recorded in ' +
+        'the audit row and sent to the owner in a dedicated email.',
+      audience: 'admin',
+      permission: 'admin:dealer:approve',
+      params: 'IdParam',
+      requestBody: {
+        schema: 'ReasonInput',
+        description: 'Why. Shown to the dealer. Minimum six characters.',
+        example: { reason: 'Duplicate of an application already under review for this group.' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'Closed. Nothing removed.',
+          schema: 'DealerModerationResponse',
+        },
+      ],
+      errors: [400, 401, 403, 404, 422],
     },
     {
       method: 'post',

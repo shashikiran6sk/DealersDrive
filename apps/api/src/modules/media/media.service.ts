@@ -1,8 +1,16 @@
 import { isListingPubliclyVisible } from '@dealers-drive/contracts';
-import type { PrismaClient } from '@prisma/client';
+import type { DealerStatus, ListingStatus, MediaOwner, PrismaClient } from '@prisma/client';
 
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { PUBLIC_DEALER_STATUS } from '../search/search.facade.js';
+
+interface ServableMedia {
+  id: string;
+  ownerType: MediaOwner;
+  attachment: {
+    vehicle: { listing: { status: ListingStatus; dealer: { status: DealerStatus } } | null };
+  } | null;
+}
 
 export interface MediaDeps {
   prisma: PrismaClient;
@@ -10,6 +18,24 @@ export interface MediaDeps {
 }
 
 export function createMediaService({ prisma, storage }: MediaDeps) {
+  async function isPubliclyServable(media: ServableMedia): Promise<boolean> {
+    if (media.ownerType === 'VEHICLE') {
+      const listing = media.attachment?.vehicle.listing;
+      return Boolean(
+        listing &&
+        isListingPubliclyVisible(listing.status) &&
+        listing.dealer.status === PUBLIC_DEALER_STATUS,
+      );
+    }
+    if (media.ownerType === 'DEALER_COVER') {
+      const owners = await prisma.dealer.count({
+        where: { coverMediaId: media.id, status: PUBLIC_DEALER_STATUS },
+      });
+      return owners > 0;
+    }
+    return false;
+  }
+
   return {
     async serve(
       mediaId: string,
@@ -28,17 +54,7 @@ export function createMediaService({ prisma, storage }: MediaDeps) {
         },
       });
       if (!media || media.status !== 'READY') return null;
-      const listing = media.attachment?.vehicle.listing;
-      if (
-        media.ownerType === 'VEHICLE' &&
-        !(
-          listing &&
-          isListingPubliclyVisible(listing.status) &&
-          listing.dealer.status === PUBLIC_DEALER_STATUS
-        )
-      ) {
-        return null;
-      }
+      if (!(await isPubliclyServable(media))) return null;
 
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
       const variants = media.variants as Record<string, string>;
