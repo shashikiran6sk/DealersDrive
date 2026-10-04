@@ -47,6 +47,7 @@ export function createCookieSessionResolver(
 
     return {
       kind: 'DEALER',
+      sessionId: session.id,
       userId: session.userId,
       dealerId: membership.dealerId,
       dealerSlug: membership.dealer.slug,

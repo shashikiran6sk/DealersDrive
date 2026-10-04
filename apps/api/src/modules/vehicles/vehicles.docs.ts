@@ -14,6 +14,12 @@ export const vehiclesDocs: ModuleDocs = {
     'field.\n\n' +
     '**Tenant scope.** Every path is looked up as `{ id, dealerId }` with the dealer id taken ' +
     'from the session, so another dealership’s vehicle is a 404, never a 403.\n\n' +
+    '**Write authorization.** After acquiring an existing listing lock, writes recheck ' +
+    'the current membership, role, dealership, account and cookie session inside the transaction. ' +
+    'Revoked access is `401`; a role that lost the required permission is `403`. ' +
+    'An authorization row held by another operation returns `409 AUTHORIZATION_BUSY` without ' +
+    'changing stock; retry the request after that operation completes. Draft preparation ' +
+    'remains available before dealer approval, while lifecycle moves require an ACTIVE dealer.\n\n' +
     'Every response here is `Cache-Control: no-store`.',
   operations: [
     {
@@ -138,7 +144,7 @@ export const vehiclesDocs: ModuleDocs = {
       permission: 'vehicle:delete',
       params: 'IdParam',
       responses: [{ status: 204, description: 'Deleted.' }],
-      errors: [400, 401, 403, 404],
+      errors: [400, 401, 403, 404, 409],
     },
     {
       method: 'post',
