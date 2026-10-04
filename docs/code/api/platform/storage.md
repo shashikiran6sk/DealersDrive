@@ -158,3 +158,9 @@ Public delivery URL. Never called for KYC documents — they have no route.
 
 Short-lived signed read. The only way a KYC document is ever served, and
 every issue of one is audit-logged (§26.6).
+
+## `apps/api/src/platform/storage/cleanup.ts`
+
+Destructive application rejection commits a StorageObjectsDelete event containing the precise object keys in the same transaction as the purge and its audit. The container always registers the required cleanup subscriber, including in the separate worker process. The HTTP request attempts deletions only after commit and reports successful deletions in objectsDeleted; the persisted event handles crashes and transient provider failures. Repeated deletion is safe for local storage and S3. No email address or applicant identity is added to the rejection event.
+
+Cleanup uses the existing outbox retry policy: failures leave publishedAt null and increment attempts; after ten failed deliveries the row remains parked for investigation and replay after recovery. The audit records objectsDeleteRequested rather than claiming an uncommitted provider result. Previously published audit records are unchanged.

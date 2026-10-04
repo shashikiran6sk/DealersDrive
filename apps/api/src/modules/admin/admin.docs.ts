@@ -152,7 +152,7 @@ export const adminDocs: ModuleDocs = {
       summary: 'Reject a dealership — and destroy the application',
       description:
         '**This is destructive and it is not reversible.** Rejecting deletes the three KYC ' +
-        'scans and the yard photograph from object storage, then deletes the `dealers` row ' +
+        'scans and the yard photograph from object storage after committing deletion of the `dealers` row ' +
         'with its documents and its OWNER membership. The applicant keeps their verified ' +
         'Google account and nothing else: signing in again finds no dealership and starts ' +
         'onboarding from step one, as a first-time applicant.\n\n' +
@@ -161,7 +161,7 @@ export const adminDocs: ModuleDocs = {
         'correction, and answering it with this endpoint costs a real business every field ' +
         'they typed.\n\n' +
         'Only a DRAFT or PENDING_APPROVAL dealership can be rejected — an approved one is ' +
-        'suspended, which is reversible, and a 409 says so. The reason is required, at least ' +
+        'suspended, which is reversible, and a 422 says so. Eligibility is rechecked under the dealer lock; previously approved accounts cannot be purged. Failed storage deletions are retained for durable retry. The reason is required, at least ' +
         'six characters, and is what the dealer is told.\n\n' +
         'The audit row survives the dealership: `audit_logs.dealerId` is a column rather than ' +
         'a foreign key, so what was removed, by whom and why is still answerable afterwards.',

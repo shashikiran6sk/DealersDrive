@@ -1,3 +1,4 @@
+import { subscribeStorageCleanup } from './platform/storage/cleanup.js';
 import type { PrismaClient } from '@prisma/client';
 import type { RequestHandler } from 'express';
 
@@ -161,6 +162,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
   const bus = createEventBus();
   const outbox = createOutboxPublisher(prisma, bus);
   const storage = overrides.storage ?? createStorage();
+  subscribeStorageCleanup(bus, storage);
   const maps = overrides.maps ?? createMapsResolver();
   const mailer = overrides.mailer ?? createMailer();
 

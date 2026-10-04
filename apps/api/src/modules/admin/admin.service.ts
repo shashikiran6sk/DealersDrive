@@ -50,6 +50,7 @@ import {
   NotFoundError,
 } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import {
   grantSeat,
@@ -520,36 +521,38 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     ): Promise<DealerPurgeResponse> {
       assertPermission(admin, 'admin:dealer:approve');
 
-      const dealer = await prisma.dealer.findUnique({
-        where: { id: dealerId },
-        include: {
-          documents: true,
-          members: {
-            where: { role: 'OWNER', status: 'ACTIVE' },
-            take: 1,
-            select: { user: { select: { email: true, fullName: true } } },
+      const purge = await withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
+        const dealer = await tx.dealer.findUnique({
+          where: { id: dealerId },
+          include: {
+            documents: true,
+            members: {
+              where: { role: 'OWNER', status: 'ACTIVE' },
+              take: 1,
+              select: { user: { select: { email: true, fullName: true } } },
+            },
           },
-        },
-      });
-      if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
-      if (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED') {
-        throw new DomainError(
-          'DEALER_ALREADY_APPROVED',
-          'An approved dealership is suspended, not rejected. Suspension is reversible; this is not.',
-        );
-      }
+        });
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
+        if (
+          dealer.status === 'ACTIVE' ||
+          dealer.status === 'SUSPENDED' ||
+          dealer.approvedAt !== null
+        ) {
+          throw new DomainError(
+            'DEALER_ALREADY_APPROVED',
+            'An approved dealership is suspended, not rejected. Suspension is reversible; this is not.',
+          );
+        }
 
-      const media = await prisma.media.findMany({ where: { dealerId } });
-      const keys = [
-        ...dealer.documents.map((doc) => documentKey(dealer.slug, doc.type, doc.id)),
-        ...media.map((row) => row.storageKey),
-      ];
+        const media = await tx.media.findMany({ where: { dealerId } });
+        const keys = [
+          ...dealer.documents.map((doc) => documentKey(dealer.slug, doc.type, doc.id)),
+          ...media.map((row) => row.storageKey),
+        ];
 
-      const removals = await Promise.allSettled(keys.map((key) => storage.delete(key)));
-      const objectsDeleted = removals.filter((result) => result.status === 'fulfilled').length;
-
-      const purgedAt = new Date();
-      await withTransaction(prisma, async (tx) => {
+        const purgedAt = new Date();
         const owner = dealer.members[0]?.user;
         await audit.record(tx, {
           actorType: 'ADMIN',
@@ -573,7 +576,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             recipientName: owner?.fullName ?? null,
             documents: dealer.documents.map((doc) => ({ type: doc.type, status: doc.status })),
           },
-          after: { purged: true, reason, objectsDeleted },
+          after: { purged: true, reason, objectsDeleteRequested: keys.length },
         });
 
         await enqueueOutbox(tx, {
@@ -586,17 +589,31 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           payload: { dealerId, reason },
         });
 
+        await enqueueOutbox(tx, {
+          type: 'StorageObjectsDelete',
+          aggregateType: 'Dealer',
+          aggregateId: dealerId,
+          dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'dealer-reject',
+          payload: { keys },
+        });
+
         await tx.media.deleteMany({ where: { dealerId } });
         await tx.dealer.delete({ where: { id: dealerId } });
+        return { dealer, keys, purgedAt };
       });
+
+      const removals = await deleteStorageObjects(storage, purge.keys);
+      const objectsDeleted = removals.filter((result) => result.status === 'fulfilled').length;
 
       return {
         id: dealerId,
-        brandName: dealer.brandName,
-        documentsDeleted: dealer.documents.length,
+        brandName: purge.dealer.brandName,
+        documentsDeleted: purge.dealer.documents.length,
         objectsDeleted,
         reason,
-        purgedAt: purgedAt.toISOString(),
+        purgedAt: purge.purgedAt.toISOString(),
       };
     },
 

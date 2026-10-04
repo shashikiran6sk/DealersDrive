@@ -334,11 +334,7 @@ Three things make the destruction safe to reason about:
 column, not a foreign key, so the record of who rejected what, when
 and why survives the row it refers to. It is written before the
 delete for the same reason.
-· **Storage is emptied before the rows are.** The row is the only thing
-that knows where the bytes are — a KYC scan's key ends in its
-document id. Delete the row first and the scan of somebody's PAN card
-stays in the bucket with nothing left pointing at it, which is a
-retention problem rather than a housekeeping one.
+· **Cleanup is committed with the purge.** The transaction preserves all storage keys in a durable StorageObjectsDelete outbox event. Only after commit does the request attempt deletion; the required cleanup subscriber retries provider failures. Database rollback preserves all uploads.
 · **Only an unapproved application can be rejected.** `canReject` is
 DRAFT or PENDING_APPROVAL, so there is never a listing, a payment or
 a buyer's enquiry hanging off the row being removed. An ACTIVE
@@ -358,7 +354,7 @@ photograph, and a logo if one was ever uploaded — which carry their own
 A key that is already gone — a document row whose upload never
 completed — must not abort the purge and leave the dealership
 half-destroyed. What matters is that the rows are removed; an object
-left behind is reconcilable from the audit row, and a `dealers` row
+left behind is reconcilable from the committed cleanup event, and a `dealers` row
 left behind is a dealership the applicant can still sign into.
 
 ### `await audit.record(tx`
@@ -773,4 +769,4 @@ Approval locks the dealer first, then its documents in ID order, and re-reads th
 
 Document verification accepts only UPLOADED files. Review locks the dealer before the document so review, approval and request-changes decisions share the parent-before-child lock order. Suspension requires ACTIVE; reinstatement requires SUSPENDED and an existing approval timestamp. Reinstatement preserves that timestamp.
 
-Destructive application rejection remains a separate known race (BUG-NEW-005): its existing state check and storage removal precede its deletion transaction. That defect is attributed separately in the pre-production findings and requires its own stacked correction.
+BUG-NEW-005 serializes destructive rejection with approval on the dealer row, re-reads status and approval history inside the transaction, and commits storage cleanup keys atomically with the purge. It preserves uploads on transaction rollback and retries provider failures after commit. The response retains the actual successful deletion count; the immutable audit records objectsDeleteRequested without claiming an external operation has completed.

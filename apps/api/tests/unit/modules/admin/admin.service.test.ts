@@ -86,7 +86,9 @@ function dealerRow(overrides: Record<string, unknown> = {}) {
     contactEmail: 'contact@sri-lakshmi-motors.in',
     creditBalance: 39,
     creditsHeld: 2,
-    approvedAt: new Date('2026-01-05T00:00:00.000Z'),
+    approvedAt: ['DRAFT', 'PENDING_APPROVAL', 'REJECTED'].includes(String(overrides.status))
+      ? null
+      : new Date('2026-01-05T00:00:00.000Z'),
     createdAt: new Date('2025-12-01T00:00:00.000Z'),
     city: 'Vellore',
     district: 'Vellore',
@@ -156,6 +158,7 @@ function setup(options: Options = {}) {
       },
     },
     media: {
+      findMany: () => Promise.resolve(options.media ?? []),
       deleteMany: (args: unknown) => {
         deletedMedia.push(args);
         return Promise.resolve({ count: (options.media ?? []).length });
