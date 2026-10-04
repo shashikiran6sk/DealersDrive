@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import * as h from './lib.mjs';
 
 const r = h.recorder('prod-deploy');
-const ROOT = resolve(h.CERT, '..', '..', '..');
+const ROOT = h.REPO;
 const NODE = process.execPath;
 const ENV_JS = resolve(ROOT, 'apps/api/dist/config/env.js');
 
@@ -22,6 +22,8 @@ const PROD_BASE = {
   GOOGLE_CLIENT_SECRET: 'y',
   SESSION_SECRET: 'a-very-long-production-session-secret-value-123',
   STORAGE_DRIVER: 'r2',
+  // Required under r2 in production since #246 (BUG-NEW-013).
+  S3_ENDPOINT: 'https://example-account-id.r2.cloudflarestorage.com',
   S3_ACCESS_KEY_ID: 'k',
   S3_SECRET_ACCESS_KEY: 's',
   MAIL_DRIVER: 'resend',

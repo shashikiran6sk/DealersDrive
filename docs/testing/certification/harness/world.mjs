@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 
 import * as h from './lib.mjs';
 
-const requireApi = createRequire(resolve(h.CERT, '../../../apps/api/package.json'));
+const requireApi = createRequire(resolve(h.REPO, 'apps/api/package.json'));
 const sharp = requireApi('sharp');
 
 export const PDF = Buffer.from(

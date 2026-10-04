@@ -17,14 +17,14 @@ and a concise summary; the detail lives here.
 | 7   | `07-pagination/`   | BUG-NEW-007 dealer inventory stable pagination              | #247 | MERGED | `8c64330` |
 | 8   | `08-mobile/`       | BUG-NEW-006 + ADMIN-MOBILE-DETAIL-001 mobile overflow       | #248 | MERGED | `0cd9a70` |
 | 9   | `09-dealer-close/` | ORIG-GAP-CLOSE admin Close application flow                 | #249 | MERGED | `f5e35b1` |
-| 10  | `10-p3-cleanup/`   | remaining P3 batch (where grouping is safe)                 |      | OPEN    |           |
+| 10  | `10-p3-cleanup/`   | remaining P3 batch (where grouping is safe)                 | #250 | MERGED | `bab6796` |
 
 ## New observations raised during the campaign
 
 | ID                | Sev | Found in | Note                                                                                                                                                                                                                                                                      |
 | ----------------- | --- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OBS-SUBMIT-NOLOCK | P3  | fix 2    | `submitForVerification` reads completeness without the dealer row lock; a DRAFT document replace racing a submit can leave a PENDING application with an UPLOADING slot. Not approvable (verify refuses UPLOADING), so no integrity hole; the admin must request changes. |
-| OBS-STALE-404 | P3 | fix 3 | Next caches only 200s, so a car removed from public view by anything other than a web action stays cached until a tag revalidation. No such path exists today (`listings.expire-sweep` is reserved, unimplemented). |
+| OBS-STALE-404 → BUG-NEW-010 residual | P1 residual (final pass) | fix 3 / final pass | Next caches only 200s, so a car removed from public view by anything other than a web action stays cached until a tag revalidation. No such path exists today (`listings.expire-sweep` is reserved, unimplemented). |
 
 ## P3 triage for the cleanup batch (item 10)
 
@@ -41,3 +41,15 @@ and a concise summary; the detail lives here.
 | OBS-SUBMIT-NOLOCK | **Fixed by #249** | Submit now re-checks DRAFT under the dealer lock |
 | OBS-STALE-404 | Open (P3) | No current out-of-band visibility writer; documented for the future expiry sweep |
 | BUG-009 dependency advisories | Deferred | No production-reachable high; hygiene upgrade |
+
+## Added during the final pass
+
+| #  | Folder | Finding | PR | Status |
+| -- | ------ | ------- | -- | ------ |
+| 11 | `11-stale-404/` | BUG-NEW-010 residual: warmed car/dealer pages stay 200 after a suspension made outside the web console (Next caches only 200s) | (this PR) | OPEN |
+| —  | `../branding/` | PR #240 (user request) — R97 DD monogram branding; evidence moved off the product PR | #240 | MERGED `a8bef12` |
+
+`11-stale-404/probe-fix-branch*.json`: direct-API suspension, car page 200 → 404 after 70 s,
+dealer portfolio after 612 s (600 s window). On main the same probe saw the car page
+still 200 after 65 s (final-pass dry run of `retest-findings`), and certification
+recorded 200 at 4.4 minutes.

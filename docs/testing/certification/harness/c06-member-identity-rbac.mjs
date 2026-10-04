@@ -1099,7 +1099,7 @@ await h.check(r, 'PROFILE-006', async () => {
 });
 await h.check(r, 'PROFILE-007', async () => {
   // Dealer media cannot expose another dealership's assets: yard photo key is scoped to the dealer slug.
-  const y = await w.uploadYard(owner);
+  // The cover was uploaded during onboarding; an ACTIVE dealer can no longer replace it (#245).
   const media = await h.one(
     `SELECT "dealerId", "storageKey" FROM media WHERE "dealerId"=$1 AND "ownerType"='DEALER_COVER' ORDER BY "createdAt" DESC LIMIT 1`,
     [A.dealerId],

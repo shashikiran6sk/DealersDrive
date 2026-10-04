@@ -302,7 +302,9 @@ await h.check(r, 'STORAGE-002', async () => {
 await h.check(r, 'STORAGE-003', async () => {
   // Upload authorization is bound to the signed key: a presigned PUT URL cannot be re-pointed at a different key.
   // (The HMAC covers key+type+length+expiry; changing the key invalidates the signature.)
-  const presign = await owner.post('/v1/dealer/documents/presign', {
+  // A DRAFT applicant: an ACTIVE dealer's verified documents are locked since #242.
+  const applicant = await w.onboard('StorageTamper', { submit: false });
+  const presign = await applicant.post('/v1/dealer/documents/presign', {
     type: 'ADDRESS_PROOF',
     fileName: 'x.pdf',
     mimeType: 'application/pdf',

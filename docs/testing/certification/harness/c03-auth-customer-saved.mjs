@@ -195,7 +195,7 @@ await h.check(r, 'AUTH-015', async () => {
   });
   const raw = up.setCookie.find((c) => c.startsWith('dd_session='));
   const src = readFileSync(
-    resolve(h.CERT, '../../../apps/api/src/modules/auth/session.cookie.ts'),
+    resolve(h.REPO, 'apps/api/src/modules/auth/session.cookie.ts'),
     'utf8',
   );
   r.ev({ setCookie: raw?.replace(/dd_session=[^;]+/, 'dd_session=<redacted>') });

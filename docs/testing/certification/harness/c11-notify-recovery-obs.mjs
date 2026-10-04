@@ -9,7 +9,7 @@ const r = h.recorder('notify-recovery-obs');
 const admin = await h.admin();
 const DBDOWN = 'http://localhost:4002';
 const errHandler = readFileSync(
-  resolve(h.CERT, '../../../apps/api/src/middleware/error-handler.ts'),
+  resolve(h.REPO, 'apps/api/src/middleware/error-handler.ts'),
   'utf8',
 );
 
@@ -65,7 +65,7 @@ await h.check(r, 'NOTIFY-003', async () => {
 });
 await h.check(r, 'NOTIFY-004', async () => {
   // Missing email config → non-production behavior: console driver (dev), env.ts forces resend in prod.
-  const env = readFileSync(resolve(h.CERT, '../../../apps/api/src/config/env.ts'), 'utf8');
+  const env = readFileSync(resolve(h.REPO, 'apps/api/src/config/env.ts'), 'utf8');
   const guards =
     env.includes("MAIL_DRIVER') must") || env.includes('must be `resend` in production');
   r.ev({ consoleDriverInUse: true, prodRequiresResend: guards });

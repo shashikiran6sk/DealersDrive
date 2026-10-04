@@ -21,9 +21,34 @@ await w.approveDealer(admin, A.dealerId);
 const pub = await w.published(A, admin);
 
 // ─── SEC-DISC-001 — forged storage signatures with the committed default secret
+// After #241 the stand-ins are mounted only for STORAGE_DRIVER=local, which
+// production refuses (#237). With CERT_API_S3 set (an API booted with an S3
+// driver), SEC-DISC-001 is judged on that surface — the one production runs —
+// and the note records that the local development driver still accepts them.
+const S3_API = process.env.CERT_API_S3;
+async function s3Surface(method, path, body) {
+  const res = await fetch(`${S3_API}${path}`, {
+    method,
+    ...(body ? { headers: { 'content-type': 'image/jpeg' }, body } : {}),
+  });
+  r.ev({ surface: `S3-driver API ${S3_API}`, req: `${method} ${path.split('?')[0]}?…&signature=<forged>`, status: res.status });
+  return res.status === 404
+    ? { note: `S3-driver deployment: forged ${method} ${path.split('?')[0]} → 404 (stand-in not mounted, #241). The local development driver still serves the stand-ins by design; production refuses STORAGE_DRIVER=local (#237).` }
+    : { status: 'FAIL', layers: ['SECURITY', 'STORAGE'], bug: 'BUG-001', note: `S3-driver forged ${method} → ${res.status}` };
+}
+function forgedUploadPath(key) {
+  const body = Buffer.from('ATTACKER-CONTROLLED-BYTES');
+  const expiresAt = Date.now() + 3600_000;
+  return { body, path: `/uploads?${new URLSearchParams({ key, contentType: 'image/jpeg', contentLength: String(body.length), expiresAt: String(expiresAt), signature: forge(key, 'image/jpeg', body.length, expiresAt) })}` };
+}
+
 await h.check(r, 'SEC-DISC-001a', async () => {
+  if (S3_API) {
+    const { body, path } = forgedUploadPath(`vehicles/${pub.vehicleId}/original.jpg`);
+    return s3Surface('PUT', path, body);
+  }
   // 1. The default is in the repository: .env.example and env.ts.
-  const envTs = readFileSync(resolve(h.CERT, '../../../apps/api/src/config/env.ts'), 'utf8');
+  const envTs = readFileSync(resolve(h.REPO, 'apps/api/src/config/env.ts'), 'utf8');
   h.assert(
     envTs.includes(`UPLOAD_SIGNING_SECRET: z.string().min(8).default('${DEFAULT_SECRET}')`),
     'default not found',
@@ -66,6 +91,11 @@ await h.check(r, 'SEC-DISC-001a', async () => {
 
 await h.check(r, 'SEC-DISC-001b', async () => {
   // Read a PRIVATE KYC document with a forged read signature, no session.
+  if (S3_API) {
+    const key = 'dealers/victim/documents/PAN_CARD/forged-read';
+    const expiresAt = Date.now() + 3600_000;
+    return s3Surface('GET', `/private?${new URLSearchParams({ key, expiresAt: String(expiresAt), signature: forge(key, 'read', 0, expiresAt) })}`);
+  }
   const doc = await h.one(
     `SELECT d.id, d.type, dl.slug FROM dealer_documents d JOIN dealers dl ON dl.id=d."dealerId" WHERE d."dealerId"=$1 AND d.type='PAN_CARD'`,
     [A.dealerId],
@@ -93,6 +123,10 @@ await h.check(r, 'SEC-DISC-001b', async () => {
 
 await h.check(r, 'SEC-DISC-001c', async () => {
   // Arbitrary new objects: unauthenticated storage writes anywhere in the bucket.
+  if (S3_API) {
+    const { body, path } = forgedUploadPath(`dealers/${A.slug}/documents/PAN_CARD/planted-${h.nonce()}`);
+    return s3Surface('PUT', path, body);
+  }
   const key = `dealers/${A.slug}/documents/PAN_CARD/planted-${h.nonce()}`;
   const body = Buffer.from('planted');
   const expiresAt = Date.now() + 3600_000;
@@ -299,6 +333,10 @@ await h.check(r, 'API-DISC-002', async () => {
     mimeType: 'application/pdf',
     bytes: w.PDF.length,
   });
+  if (presign.status === 409) {
+    r.ev(presign);
+    return { note: `presign refused ${presign.status} ${presign.json?.code} — a verified document cannot be swapped while ACTIVE (#242)` };
+  }
   const put = await w.upload(presign.json, w.PDF, 'application/pdf');
   const commit = await A.post('/v1/dealer/documents/PAN_CARD/commit', {
     documentId: presign.json.documentId,
@@ -339,6 +377,15 @@ await h.check(r, 'API-DISC-003', async () => {
 await h.check(r, 'API-DISC-004', async () => {
   // Yard photo: is it public, and can an ACTIVE dealer replace it without review?
   const before = await h.call('GET', `/v1/dealers/${A.slug}`);
+  const probe = await A.post('/v1/dealer/yard-photo/presign', {
+    fileName: 'swap.jpg',
+    mimeType: 'image/jpeg',
+    bytes: 1024,
+  });
+  if (probe.status === 409) {
+    r.ev(probe);
+    return { note: `ACTIVE dealer yard-photo presign refused ${probe.status} ${probe.json?.code} — the reviewed photograph is locked outside DRAFT (#245)` };
+  }
   const y = await w.uploadYard(A);
   const after = await h.call('GET', `/v1/dealers/${A.slug}`);
   const coverBefore =

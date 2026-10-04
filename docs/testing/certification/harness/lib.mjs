@@ -12,7 +12,9 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..', '..', '..', '..');
-const requireApi = createRequire(resolve(ROOT, 'apps/api/package.json'));
+/** The application checkout under test; defaults to the tree this harness sits in. */
+export const REPO = process.env.CERT_REPO_ROOT ?? ROOT;
+const requireApi = createRequire(resolve(REPO, 'apps/api/package.json'));
 const pg = requireApi('pg');
 
 export const CERT = resolve(here, '..');
