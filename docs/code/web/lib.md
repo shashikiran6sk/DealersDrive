@@ -255,6 +255,33 @@ Called from the admin config action. Without it a corrected social link waits
 out the ten-minute window on a page the operator is looking at while they fix
 it, which reads as the save not having worked.
 
+## `apps/web/src/lib/cached-lookup.ts`
+
+### `export function cachedLookup<T>(keyParts, load, options): Promise<T | null>`
+
+BUG-NEW-010, the residual after #243. Next's fetch cache stores a response
+**only when it answers 200**. A car page or dealer portfolio warmed before the
+API stopped serving it — a suspension, a removal — therefore stayed public
+indefinitely: every background refresh came back 404 and was thrown away. A
+web action revalidating the tag (which #243 added to every Admin console
+decision) clears it, but anything that changes visibility without passing
+through the web — an Admin calling the API directly, and later the
+`listings.expire-sweep` job — never would.
+
+`unstable_cache` stores what the loader _returns_, `null` included, so a
+lookup that maps a 404 to `null` inside it gets a "gone" answer cached like
+any other value: the first refresh after the window replaces the stale page.
+Measured on a production build with a direct-API suspension: the car page went
+from 200 to 404 70 s later (60 s window), where before it stayed 200 for as
+long as anybody watched. The dealer portfolio is bounded by its own 600 s
+window the same way.
+
+The fetch inside keeps its options, but Next treats a fetch inside
+`unstable_cache` as uncached, so the wrapper is the only cache for these two
+reads; tags are passed to it so a tag revalidation still clears them at once.
+Both routes were already rendered per request (`ƒ`), so nothing about how the
+pages are rendered changes — only how their data is cached.
+
 ## `apps/web/src/lib/cn.ts`
 
 ### `export function cn(...inputs: ClassValue[]): string`

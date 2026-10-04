@@ -10,6 +10,7 @@ import { SectionError } from '@/components/errors/section-error';
 import { JsonLd } from '@/components/seo/json-ld';
 import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { apiGet, apiGetParsed, qs } from '@/lib/api';
+import { cachedLookup } from '@/lib/cached-lookup';
 import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
 import { isMissingResource, isServerFailure } from '@/lib/errors';
 import { logger } from '@/lib/logger';
@@ -31,17 +32,25 @@ import { DEALER_PAGE_TEXT } from './dealer-page.constants';
 
 export const revalidate = 600;
 
-const loadDealer = cache(async (slug: string): Promise<DealerPublicProfile | null> => {
-  try {
-    return await apiGet<DealerPublicProfile>(`/v1/dealers/${encodeURIComponent(slug)}`, {
-      revalidate: 600,
-      tags: [dealerTag(slug), DEALERS_TAG],
-    });
-  } catch (error) {
-    if (isMissingResource(error)) return null;
-    throw error;
-  }
-});
+const DEALER_CACHE = (slug: string) => ({ revalidate: 600, tags: [dealerTag(slug), DEALERS_TAG] });
+
+const loadDealer = cache((slug: string): Promise<DealerPublicProfile | null> =>
+  cachedLookup(
+    ['public-dealer', slug],
+    async () => {
+      try {
+        return await apiGet<DealerPublicProfile>(
+          `/v1/dealers/${encodeURIComponent(slug)}`,
+          DEALER_CACHE(slug),
+        );
+      } catch (error) {
+        if (isMissingResource(error)) return null;
+        throw error;
+      }
+    },
+    DEALER_CACHE(slug),
+  ),
+);
 
 type InventoryResult =
   | { status: 'ready'; inventory: PublicVehiclesResponse }
