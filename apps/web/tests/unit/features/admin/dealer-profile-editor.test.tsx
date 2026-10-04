@@ -166,3 +166,23 @@ describe('the review screen’s business card', () => {
     expect(await screen.findByText(/60 characters at most/)).toBeInTheDocument();
   });
 });
+
+/**
+ * ADMIN-MOBILE-DETAIL-001. A Maps link or an email has no break opportunity,
+ * and the value column of the detail list had no permission to shrink, so a
+ * long one pushed the page 593 px past a 320 px screen. jsdom cannot measure
+ * layout; the browser geometry check is in the campaign evidence.
+ */
+describe('the review screen’s detail list on a phone', () => {
+  it('lets a long unbroken value wrap instead of widening the page', () => {
+    const longUrl =
+      'https://www.google.com/maps/place/Overflow+Motors+Yard/@12.9715987,79.1588,17z/data=!3m1!4b1';
+    editor({ mapsUrl: longUrl, contactEmail: 'a.very.long.mailbox@example-dealership-group.test' });
+
+    for (const value of [longUrl, 'a.very.long.mailbox@example-dealership-group.test']) {
+      const cell = screen.getByText(value);
+      expect(cell.tagName).toBe('DD');
+      expect(cell).toHaveClass('min-w-0', '[overflow-wrap:anywhere]');
+    }
+  });
+});

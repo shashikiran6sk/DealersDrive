@@ -7,6 +7,16 @@ declaration the note sat above.
 
 ## `apps/web/src/features/auth/onboarding-wizard/account-step.tsx`
 
+### `<fieldset hidden={hidden} className="m-0 min-w-0 border-0 p-0">`
+
+BUG-NEW-006. A `<fieldset>` is sized to its min-content by default — a
+browser rule, not a Tailwind one — and the Google address below is
+`truncate`, which forbids wrapping, so a long address set the step's minimum
+width: 472 px past a 320 px screen. `min-w-0` lets the fieldset shrink to its
+column, and the address then truncates as it was always meant to. The
+Business step's fieldset carries the same class, because it is the same
+element with the same default.
+
 ### `phoneVerified: boolean`
 
 Whether the number in the box is the one this account proved (**R39**).
