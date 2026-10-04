@@ -12,7 +12,8 @@ import {
   consoleNavFor,
 } from '@/components/dealer/console-nav';
 import { ButtonLink } from '@/components/ui/button';
-import { Blueprint, Plate, StatusTag } from '@/components/ui/primitives';
+import { BrandLogo } from '@/components/brand-logo';
+import { Blueprint, StatusTag } from '@/components/ui/primitives';
 import { customerAccountAction } from '@/features/auth/customer-account-actions';
 import { HeaderAccount } from '@/features/auth/header-account';
 import { SignOutButton } from '@/features/auth/sign-out';
@@ -40,7 +41,7 @@ export default async function DealerLayout({ children }: { children: ReactNode }
     <div className="flex min-h-dvh bg-white">
       <aside className="sticky top-0 hidden h-dvh w-[224px] flex-none flex-col gap-[28px] border-r border-(--color-divider) bg-(--color-sidebar) px-4 pt-[24px] pb-[20px] md:flex">
         <Link href="/" className="flex h-[30px] items-center gap-[10px] px-1 no-underline">
-          <Plate size="logo">DD</Plate>
+          <BrandLogo />
           <span className="font-heading text-[16px] font-extrabold tracking-[-0.02em]">
             Dealer console
           </span>

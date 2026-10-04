@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { RouteError } from '@/components/errors/route-error';
 import { NotFoundState, StatusPage } from '@/components/errors/status-page';
+import { StatusShell } from '@/components/errors/status-shell';
 import { ButtonLink } from '@/components/ui/button';
 
 const meta = {
@@ -49,4 +50,12 @@ export const RouteSpecificMessage: Story = {
 export const PhoneWidth: Story = {
   render: () => <NotFoundState />,
   parameters: { viewport: { defaultViewport: 'mobile1' } },
+};
+
+export const Shell: Story = {
+  render: () => (
+    <StatusShell>
+      <NotFoundState />
+    </StatusShell>
+  ),
 };

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
-import { Blueprint, Plate } from '@/components/ui/primitives';
+import { BrandLogo } from '@/components/brand-logo';
+import { Blueprint } from '@/components/ui/primitives';
 
 interface ComingSoonProps {
   eyebrow: string;
@@ -34,7 +35,7 @@ export function ComingSoon({ eyebrow, title, description }: ComingSoonProps) {
 
         <div className="flex min-h-[260px] items-center justify-center border-t border-(--color-divider) bg-(--color-accent-100) p-8 md:min-h-[430px] md:border-l md:border-t-0">
           <div className="text-center">
-            <Plate size="logo">DD</Plate>
+            <BrandLogo />
             <div className="mt-5 font-heading text-[26px] font-extrabold text-(--color-accent-900)">
               Coming soon
             </div>

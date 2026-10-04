@@ -268,24 +268,6 @@
     white-space: nowrap;
   }
 
-  .dd-brand-mark {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    min-width: 30px;
-    height: 30px;
-    padding: 0 6px;
-    border-radius: 9px;
-    background: var(--color-accent);
-    color: #fff;
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1;
-  }
-
   .tag {
     display: inline-flex;
     align-items: center;
