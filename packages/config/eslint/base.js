@@ -64,7 +64,13 @@ export function baseConfig({ tsconfigRootDir }) {
         '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
         '@typescript-eslint/no-misused-promises': 'error',
         '@typescript-eslint/switch-exhaustiveness-check': 'error',
-        'no-console': ['error', { allow: ['warn', 'error'] }],
+        /*
+         * Production source never writes to the console. The web app logs
+         * through `lib/logger.ts` (structured, server-side) and the API through
+         * pino; a stray console call is either a leak of something a user
+         * should not see or a diagnostic nobody will find.
+         */
+        'no-console': 'error',
         eqeqeq: ['error', 'always', { null: 'ignore' }],
       },
     },
@@ -76,7 +82,7 @@ export function baseConfig({ tsconfigRootDir }) {
      */
     {
       files: ['**/tests/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.stories.{ts,tsx}'],
-      rules: { '@typescript-eslint/consistent-type-assertions': 'off' },
+      rules: { '@typescript-eslint/consistent-type-assertions': 'off', 'no-console': 'off' },
     },
     // Config files are linted without type information.
     {

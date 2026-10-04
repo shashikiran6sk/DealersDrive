@@ -1,7 +1,8 @@
 import { DealerDocType } from '@dealers-drive/contracts';
 import { NextResponse } from 'next/server';
 
-import { ApiError, apiSend } from '@/lib/api';
+import { apiSend } from '@/lib/api';
+import { problemResponse } from '@/lib/bff';
 
 export async function DELETE(
   _request: Request,
@@ -16,12 +17,6 @@ export async function DELETE(
     await apiSend('DELETE', `/v1/dealer/documents/${type.data}`);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    if (error instanceof ApiError) {
-      return NextResponse.json(error.problem, {
-        status: error.status,
-        headers: { 'Content-Type': 'application/problem+json' },
-      });
-    }
-    return NextResponse.json({ error: 'Upstream unavailable.' }, { status: 502 });
+    return problemResponse(error, '/api/dealer/documents/[type]');
   }
 }

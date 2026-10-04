@@ -1,6 +1,7 @@
 import type { DealerDirectoryResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { cache } from 'react';
 
 import { DirectoryCard } from '@/components/dealers/dealer-card';
 import { DirectoryFilters } from '@/components/dealers/directory-filters';
@@ -42,12 +43,16 @@ function cityParam(city: string[]): string | undefined {
   return city.length > 0 ? [...city].sort().join(',') : undefined;
 }
 
+const fetchDirectory = cache((query: string) =>
+  apiGet<DealerDirectoryResponse>(`/v1/dealers${query}`, {
+    revalidate: 600,
+    tags: [DEALERS_TAG],
+  }),
+);
+
 function loadDirectory(params: ReturnType<typeof readParams>): Promise<DealerDirectoryResponse> {
   const { city, district, q, page } = params;
-  return apiGet<DealerDirectoryResponse>(
-    `/v1/dealers${qs({ city: cityParam(city), district, q, page })}`,
-    { revalidate: 600, tags: [DEALERS_TAG] },
-  );
+  return fetchDirectory(qs({ city: cityParam(city), district, q, page }));
 }
 
 export async function generateMetadata({

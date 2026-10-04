@@ -328,9 +328,11 @@ know until a dealer could not finish signing up.
 
 `ADMIN_ALLOWLIST`, split and lower-cased. Half the admin authorization model — see R42 for the other.
 
-### `console.error(`\nInvalid environment configuration:\n${details}\n`)`
+### `process.stderr.write(`\nInvalid environment configuration:\n${details}…`)`
 
-The logger depends on env, so this one message cannot go through pino.
+The logger depends on env, so this one message cannot go through pino. It is
+written to stderr directly rather than through `console`, which production
+source does not use (`no-console`).
 
 ### `adminAllowlist: value.ADMIN_ALLOWLIST.split(',')`
 

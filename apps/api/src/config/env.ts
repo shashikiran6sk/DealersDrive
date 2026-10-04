@@ -257,8 +257,10 @@ function loadEnv(): Env {
       .map((issue) => `  - ${issue.path.join('.') || '(root)'}: ${issue.message}`)
       .join('\n');
 
-    console.error(`\nInvalid environment configuration:\n${details}\n`);
-    console.error('Copy .env.example to .env at the repo root and fill in the missing values.\n');
+    process.stderr.write(
+      `\nInvalid environment configuration:\n${details}\n\n` +
+        'Copy .env.example to .env at the repo root and fill in the missing values.\n\n',
+    );
     process.exit(1);
   }
 

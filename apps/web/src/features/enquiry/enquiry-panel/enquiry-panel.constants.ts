@@ -23,6 +23,9 @@ export const ENQUIRY_PANEL_TEXT = {
   track: 'Track it in My enquiries',
   unavailableTitle: 'This car is no longer available',
   loading: 'Checking your account…',
+  openFailedTitle: 'We couldn’t open the enquiry form',
+  openFailed: 'This service is temporarily unavailable. Please try again.',
+  sendFailed: 'We couldn’t send your enquiry right now. Please try again.',
 } as const;
 
 export const MY_ENQUIRIES_HREF = '/enquiries';

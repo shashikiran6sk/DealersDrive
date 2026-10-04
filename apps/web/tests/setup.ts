@@ -161,6 +161,9 @@ beforeEach(() => {
   navigationState.refreshed = 0;
   navigationState.back = 0;
 
+  vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
   requestHeaders.clear();
   cookieJar.clear();
   revalidations.paths.length = 0;

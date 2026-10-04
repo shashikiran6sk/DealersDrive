@@ -59,3 +59,30 @@ uses; there is no older logo anywhere in the repository to reuse.
 
 Placeholder route. `next build` needs at least one page, and the homepage is
 F081 — so this holds the slot without pretending to be the product.
+
+## `apps/web/src/app/not-found.tsx`
+
+### `export default function NotFound()`
+
+Unmatched URLs. It draws the real public shell rather than a bare page: a
+mistyped link should land somewhere a visitor can carry on from. The public
+group's own `not-found.tsx` handles `notFound()` from its pages, inside its
+layout.
+
+## `apps/web/src/app/error.tsx` · `apps/web/src/app/global-error.tsx`
+
+### `<StatusShell>`
+
+A logo and nothing that fetches: these catch failures above the route groups,
+where the thing that failed may be a layout, so they must not depend on one.
+`global-error.tsx` replaces the root layout and so renders its own `<html>` and
+`<body>` and imports the stylesheet and the font itself.
+
+## `apps/web/src/app/(dealer)/error.tsx`
+
+### `export default function DealerConsoleError(props)`
+
+At the group, above the dealer layout, so a failure of the layout itself is
+caught too — which is why it brings `StatusShell` rather than assuming the
+console's navigation rendered. "Back to the dashboard" rather than the
+marketplace homepage.
