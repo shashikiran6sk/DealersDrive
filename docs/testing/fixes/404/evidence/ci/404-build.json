@@ -1,9 +1,0 @@
-{
-  "command": ["pnpm", "build"],
-  "sha": "389babb3a04488afe30ab8898419fe3920c8aa78",
-  "start_utc": "2026-10-02T18:04:57.018765+00:00",
-  "end_utc": "2026-10-02T18:05:28.536300+00:00",
-  "exit_code": 1,
-  "log": "evidence/ci/404-build.log",
-  "cache": "TURBO_FORCE=true"
-}

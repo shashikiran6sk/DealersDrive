@@ -72,3 +72,13 @@ regexTarget = "secret"
 # entropy is 3.57782. Preserve the archive and history. Match only that exact
 # captured text, never the assigned value, a filename or a whole finding.
 regexes = ['''^reproducibility=$''']
+
+[[rules.allowlists]]
+description = "Four exact independently recomputed BUG-005 screenshot checksum assignments; no filename or other value is allowed"
+regexTarget = "match"
+regexes = [
+  '''^baseline\-refreshed\-access\-1440\.png": "ed812bc17b7629ce05b6cb72ff06b7b9efcef2ce0e365b686bc935a38364860f"$''',
+  '''^fixed\-refreshed\-access\-1440\.png": "310131fbfec15a7763eaca70874811e8035c80a5e7f60832d723eeb3c1cf0e59"$''',
+  '''^fixed\-refreshed\-access\-390\.png": "d9bdf8750fbc08860432e8b1712207766e0175975198fa987896b15267a62e4f"$''',
+  '''^fixed\-refreshed\-access\-768\.png": "c3d6af9712ed04dc6213902be6a2670632f0a55aca3ec428083bd7c31bfd01c5"$''',
+]

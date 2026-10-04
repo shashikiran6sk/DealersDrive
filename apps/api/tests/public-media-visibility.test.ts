@@ -32,7 +32,7 @@ async function photographed(dealer: Dealership = owner) {
   const car = await kit.published(dealer, `KL41PM${String(plate)}`);
   const first = await h.prisma.media.findUniqueOrThrow({ where: { id: car.mediaIds[0] } });
   const bytes = await readFile(
-    new URL('../../../docs/testing/fixes/BUG-002/browser-yard.jpg', import.meta.url),
+    new URL('./fixtures/media/browser-yard.jpg', import.meta.url),
   );
   await storage.put(first.storageKey, bytes, 'image/jpeg');
   const media = await h.prisma.media.update({
@@ -95,7 +95,7 @@ it('checks all derivative widths, HEAD and conditional requests after suspension
   const dealer = await marketplaceFixtures(h, 'media-width').dealership();
   const car = await photographed(dealer);
   const webp = await readFile(
-    new URL('../../../docs/testing/fixes/BUG-004/browser-car.webp', import.meta.url),
+    new URL('./fixtures/media/browser-car.webp', import.meta.url),
   );
   const variants = Object.fromEntries(
     [320, 640, 1024, 1600].map((width) => [
@@ -321,7 +321,7 @@ it('rejects ID/width manipulation, unattached and non-ready images without chang
 it('preserves private yard/KYC previews without exposing originals through public paths', async () => {
   const dealer = await marketplaceFixtures(h, 'media-private').dealership();
   const jpeg = await readFile(
-    new URL('../../../docs/testing/fixes/BUG-002/browser-yard.jpg', import.meta.url),
+    new URL('./fixtures/media/browser-yard.jpg', import.meta.url),
   );
   const yard = await dealer.agent
     .post('/v1/dealer/yard-photo/presign')
@@ -349,7 +349,7 @@ it('preserves private yard/KYC previews without exposing originals through publi
     .get(`/media/by-media/${String(yard.body.mediaId)}/640.webp`)
     .expect(200);
   const pdf = await readFile(
-    new URL('../../../docs/testing/fixes/BUG-002/browser-document.pdf', import.meta.url),
+    new URL('./fixtures/media/browser-document.pdf', import.meta.url),
   );
   const doc = await dealer.agent
     .post('/v1/dealer/documents/presign')

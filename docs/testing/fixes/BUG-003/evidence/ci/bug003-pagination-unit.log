@@ -1,8 +1,0 @@
-
- RUN  v5.0.0 /workspace/DealersDrive-fixes/apps/api
-
-
- Test Files  3 passed (3)
-      Tests  41 passed (41)
-   Start at  15:55:17
-   Duration  974ms (transform 49%, import 45%, tests 4%, worker 2%)
