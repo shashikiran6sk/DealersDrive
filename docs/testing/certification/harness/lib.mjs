@@ -152,7 +152,7 @@ export async function mintSession(userId, scope, ttlSeconds = scope === 'ADMIN' 
   );
   return `dd_session=${token}`;
 }
-export async function admin(email = 'shashikiran6.sk@gmail.com') {
+export async function admin(email = process.env.CERT_ADMIN_EMAIL) {
   const u = await one('SELECT id FROM users WHERE email = $1', [email]);
   return actor(`admin<${email}>`, await mintSession(u.id, 'ADMIN'), {
     userId: u.id,

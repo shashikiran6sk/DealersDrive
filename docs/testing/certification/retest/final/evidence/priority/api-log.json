@@ -1,0 +1,265 @@
+[
+  {
+    "req": "PUT /uploads?key=vehicles/ea54504f-07ae-4826-8448-2ba5681d74df/23ff0b8d-02da-45cd-b70b-21e6e2c4c9ae/original.jpg&signature=<forged with default secret>",
+    "status": 200
+  },
+  {
+    "req": "GET /media/by-media/23ff0b8d-02da-45cd-b70b-21e6e2c4c9ae/1024.webp (public)",
+    "before": "200 image/jpeg 11518B",
+    "after": "200 image/jpeg body starts \"ATTACKER-CONTROLLED-BYTES \""
+  },
+  {
+    "req": "GET /private?key=dealers/<slug>/documents/PAN_CARD/<documentId>&signature=<forged>",
+    "status": 200,
+    "body": "%PDF-1.4… (193 bytes, KYC PDF)"
+  },
+  {
+    "req": "GET /v1/dealer/completeness",
+    "status": 200,
+    "body": {
+      "isComplete": false,
+      "canSubmit": false,
+      "percent": 25,
+      "steps": [
+        {
+          "key": "account",
+          "label": "Account",
+          "complete": true,
+          "missing": []
+        },
+        {
+          "key": "business",
+          "label": "Business",
+          "complete": false,
+          "missing": ["gstin", "pan"]
+        },
+        {
+          "key": "documents",
+          "label": "Documents",
+          "complete": false,
+          "missing": ["GST_CERTIFICATE", "PAN_CARD", "ADDRESS_PROOF", "YARD_PHOTO"]
+        },
+        {
+          "key": "review",
+          "label": "Review",
+          "complete": false,
+          "missing": []
+        }
+      ]
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/febce14e-7c71-42ad-bb65-d1457532aef4/approve",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-under-review",
+      "title": "Not under review",
+      "status": 422,
+      "code": "NOT_UNDER_REVIEW",
+      "traceId": "ORx6kY01KX",
+      "detail": "Only a submitted application can be approved."
+    }
+  },
+  {
+    "db_before": {
+      "status": "DRAFT",
+      "gstin": null,
+      "pan": null
+    },
+    "documents": 3,
+    "db_after": {
+      "status": "DRAFT",
+      "approvedAt": null
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/b334e646-dc84-4bff-92c3-7ec09cfa0e27/suspend",
+    "status": 200,
+    "body": {
+      "id": "b334e646-dc84-4bff-92c3-7ec09cfa0e27",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T14:38:17.671Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/b334e646-dc84-4bff-92c3-7ec09cfa0e27/approve",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-under-review",
+      "title": "Not under review",
+      "status": 422,
+      "code": "NOT_UNDER_REVIEW",
+      "traceId": "2UrtTRG_Qc",
+      "detail": "Only a submitted application can be approved."
+    }
+  },
+  {
+    "db_after": {
+      "status": "SUSPENDED"
+    },
+    "audit": ["dealer.onboarding.created", "dealer.approved", "dealer.suspended"]
+  },
+  {
+    "req": "POST /v1/admin/dealers/0400d67d-5902-4444-9f8b-98a1251762a8/reinstate",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "C-b9i0uzzS",
+      "detail": "Only a suspended dealership can be reinstated."
+    }
+  },
+  {
+    "db_before": {
+      "status": "PENDING_APPROVAL"
+    },
+    "documents": ["UPLOADED", "UPLOADED", "UPLOADED"],
+    "db_after": {
+      "status": "PENDING_APPROVAL",
+      "approvedAt": null
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/10d69a83-b2ba-4553-bd74-2c921376db5b/suspend",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "JSBRg0Sx69",
+      "detail": "Only an active dealership can be suspended."
+    }
+  },
+  {
+    "db_after_suspend": {
+      "status": "DRAFT"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/10d69a83-b2ba-4553-bd74-2c921376db5b/reinstate",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "2OWjfOgNgA",
+      "detail": "Only a suspended dealership can be reinstated."
+    }
+  },
+  {
+    "db_after_reinstate": {
+      "status": "DRAFT",
+      "approvedAt": null
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/382765db-4ea8-4e0f-8497-b7b5806d37e3/reinstate",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "nomwFBu4Bl",
+      "detail": "Only a suspended dealership can be reinstated."
+    }
+  },
+  {
+    "db_before": {
+      "dealer": "ACTIVE",
+      "document": "VERIFIED",
+      "verifiedFileOnDisk": true
+    }
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 201,
+    "body": {
+      "documentId": "cf558357-ab7e-4b65-bbce-179689571cd6",
+      "uploadUrl": "<redacted>",
+      "method": "PUT",
+      "headers": {
+        "Content-Type": "application/pdf",
+        "Content-Length": "193"
+      },
+      "expiresInSeconds": 300
+    }
+  },
+  {
+    "db_after_presign": {
+      "id": "cf558357-ab7e-4b65-bbce-179689571cd6",
+      "status": "UPLOADING"
+    },
+    "verifiedFileOnDiskAfterPresign": false
+  },
+  {
+    "req": "POST /v1/dealer/documents/presign",
+    "status": 201,
+    "body": {
+      "documentId": "066bf5ec-6122-4aea-842c-e2b83018dcef",
+      "uploadUrl": "<redacted>",
+      "method": "PUT",
+      "headers": {
+        "Content-Type": "application/pdf",
+        "Content-Length": "193"
+      },
+      "expiresInSeconds": 300
+    }
+  },
+  {
+    "put": 200
+  },
+  {
+    "req": "POST /v1/dealer/documents/PAN_CARD/commit",
+    "status": 200,
+    "body": {
+      "id": "066bf5ec-6122-4aea-842c-e2b83018dcef",
+      "type": "PAN_CARD",
+      "label": "PAN card",
+      "status": "UPLOADED",
+      "statusLabel": "swapped.pdf · uploaded",
+      "fileName": "swapped.pdf",
+      "uploadedAt": "2026-10-04T14:38:16.625Z",
+      "rejectionReason": null,
+      "action": "Replace"
+    }
+  },
+  {
+    "db_after": {
+      "status": "UPLOADED",
+      "dealer": "ACTIVE"
+    }
+  },
+  {
+    "req": "DELETE /v1/dealer/documents/ADDRESS_PROOF",
+    "status": 204,
+    "body": null
+  },
+  {
+    "addressProofRows": 1,
+    "dealer": "ACTIVE"
+  },
+  {
+    "req": "POST /v1/dealer/yard-photo/commit",
+    "status": 200,
+    "body": {
+      "mediaId": "bfc053d1-714a-4c88-bd12-1e592db83337",
+      "status": "READY",
+      "fileName": "yard.jpg",
+      "url": "<redacted>",
+      "uploadedAt": "2026-10-04T14:38:17.985Z"
+    }
+  },
+  {
+    "publicCoverBefore": "77407607-73c1-4d71-ba6e-c18c29ff4dd6",
+    "publicCoverAfter": "bfc053d1-714a-4c88-bd12-1e592db83337"
+  }
+]

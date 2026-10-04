@@ -689,7 +689,9 @@ await h.check(r, 'CONCURRENCY-005', async () => {
   ]);
   const listing = await h.one(`SELECT status FROM listings WHERE "vehicleId"=$1`, [v.json.id]);
   r.ev(suspend, submit, { listing: listing?.status ?? 'none' });
-  const safe = !listing || listing.status === 'PENDING_REVIEW'; // never ACTIVE/public without approval
+  // Safe = never ACTIVE/public without approval. DRAFT (submit refused because the
+  // suspension committed first) and PENDING_REVIEW (submit won) are both safe outcomes.
+  const safe = !listing || ['DRAFT', 'PENDING_REVIEW'].includes(listing.status);
   return safe
     ? {
         layers: ['API', 'DATABASE', 'CONCURRENCY'],

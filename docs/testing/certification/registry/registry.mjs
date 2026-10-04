@@ -21,7 +21,9 @@ const STATUSES = ['PASS', 'FAIL', 'BLOCKED', 'NOT_APPLICABLE'];
 const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = resolve(here, 'canonical-scenarios.txt');
 const REGISTRY_JSON = resolve(here, 'registry.json');
-const RESULTS_JSON = resolve(here, 'results.json');
+const RESULTS_JSON = process.env.CERT_RESULTS_JSON
+  ? resolve(process.env.CERT_RESULTS_JSON)
+  : resolve(here, 'results.json');
 const REGISTRY_MD = resolve(here, '..', 'CANONICAL-TEST-REGISTRY.md');
 
 function parse() {

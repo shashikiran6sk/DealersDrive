@@ -81,7 +81,7 @@ await h.check(r, 'ADMIN-AUTH-007', async () => {
 });
 await h.check(r, 'ADMIN-AUTH-008', async () => {
   // Admin session expiry safe.
-  const u = await h.one(`SELECT id FROM users WHERE email=$1`, ['shashikiran6.sk@gmail.com']);
+  const u = await h.one(`SELECT id FROM users WHERE email=$1`, [process.env.CERT_ADMIN_EMAIL]);
   const expired = await h.mintSession(u.id, 'ADMIN', -3600);
   const a2 = h.actor('expired-admin', expired);
   const res = await a2.get('/v1/admin/dealers');
@@ -96,7 +96,7 @@ await h.check(r, 'ADMIN-AUTH-009', async () => {
   r.ev(out, after);
   // refresh admin session for the rest of the run
   admin.cookie = await h.mintSession(
-    (await h.one(`SELECT id FROM users WHERE email=$1`, ['shashikiran6.sk@gmail.com'])).id,
+    (await h.one(`SELECT id FROM users WHERE email=$1`, [process.env.CERT_ADMIN_EMAIL])).id,
     'ADMIN',
   );
   return (out.status === 204 || out.status === 200) && after.status === 401
