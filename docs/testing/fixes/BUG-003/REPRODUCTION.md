@@ -1,6 +1,6 @@
 # BUG-003 reproduction and root cause
 
-Canonical tests: DATA-DISC-001, DATA-DISC-002, DATA-DISC-003. Original certification baseline FAIL remains preserved. Campaign reproduction: YES / FAIL before code changes on parent `d29d9b960a1835d61a89e80b03de63430adc1bdc`, branch `fix/pre-production-03-stable-pagination`.
+Additional baseline data probes: DATA-DISC-001, DATA-DISC-002, DATA-DISC-003 (`additional-tests.json`). These are separate from the 556 canonical rows. Original certification baseline FAIL remains preserved. Campaign reproduction: YES / FAIL before code changes on parent `d29d9b960a1835d61a89e80b03de63430adc1bdc`, branch `fix/pre-production-03-stable-pagination`.
 
 Environment: isolated local Linux, Node24.19.0, pnpm9.15.9, PostgreSQL16.14, built Next.js15.5.25 and Chromium. Integration uses migrated dealersdrive_test; browser uses dealersdrive_cert, fake providers, real cookie authorization and explicitly inert fixtures. No production connections or live messages.
 

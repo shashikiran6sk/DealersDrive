@@ -46,9 +46,17 @@
       "security": "run 37205206610 PASS",
       "merge": "43ef2ff5ea863e249a6e2d4cabff34608f6b2b8c",
       "redOnParent": "5/15 fail"
+    },
+    "234": {
+      "state": "MERGED",
+      "finalHead": "153e75ea5e791cc15b34ac302d05bfe8338772cb",
+      "ci": "run 37205919941 PASS",
+      "security": "run 37205919978 PASS",
+      "merge": "9f291177b6b64e93416765e3bf582790426f03de",
+      "redOnParent": "15/15 fail"
     }
   },
-  "nextPR": 234,
+  "nextPR": 235,
   "originalChecklist": {
     "ORIG-BUG-001 P0 forged upload/read links (default UPLOAD_SIGNING_SECRET)": "OPEN",
     "ORIG-BUG-002 P0/P1 admin approve bypasses verification": "FIXED - VERIFIED BY PR #232",
@@ -64,8 +72,10 @@
   "newFindings": {
     "BUG-NEW-001": "CONFIRMED P3 (Next.js logs upstream problem detail; API redacts 5xx detail in prod)",
     "BUG-NEW-005": "FIXED - VERIFIED BY PR #233 (Agent 2 finding)",
-    "OBS-OUTBOX-RETRY": "P3 observation: outbox retries 10x ~2s apart then abandons; storage cleanup can orphan keys silently"
+    "OBS-OUTBOX-RETRY": "P3 observation: outbox retries 10x ~2s apart then abandons; storage cleanup can orphan keys silently",
+    "BUG-003": "FIXED - VERIFIED BY PR #234 (Agent 2 finding)",
+    "BUG-NEW-007": "CONFIRMED P2 independently (dealer inventory 2 of 5 tied rows)"
   },
-  "updatedAt": "2026-10-04T13:26:13Z",
-  "mainSha": "43ef2ff5ea863e249a6e2d4cabff34608f6b2b8c"
+  "updatedAt": "2026-10-04T13:38:14Z",
+  "mainSha": "9f291177b6b64e93416765e3bf582790426f03de"
 }
