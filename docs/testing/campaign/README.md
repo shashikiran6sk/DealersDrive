@@ -12,7 +12,7 @@ and a concise summary; the detail lives here.
 | 2   | `02-p1-kyc-lock/`  | ORIG-BUG-004 (P1) verified KYC replace/delete while ACTIVE  | #242 | MERGED | `370f9d3` |
 | 3   | `03-p1-cache/`     | BUG-NEW-010 (P1) cached car page public after suspension    | #243 | MERGED | `cdf297b` |
 | 4   | `04-enquiry-auth/` | BUG-NEW-012 (P2) enquiry commit-time authorization race     | #244 | MERGED | `c80d1b2` |
-| 5   | `05-yard-photo/`   | ORIG-BUG-005 + BUG-NEW-009 yard-photo moderation/visibility |      | OPEN    |           |
+| 5   | `05-yard-photo/`   | ORIG-BUG-005 + BUG-NEW-009 yard-photo moderation/visibility | #245 | MERGED | `7743f9a` |
 | 6   | `06-r2-endpoint/`  | BUG-NEW-013 production R2 endpoint validation               |      | OPEN    |           |
 | 7   | `07-pagination/`   | BUG-NEW-007 dealer inventory stable pagination              |      | OPEN    |           |
 | 8   | `08-mobile/`       | BUG-NEW-006 + ADMIN-MOBILE-DETAIL-001 mobile overflow       |      | OPEN    |           |
