@@ -1,6 +1,6 @@
 # BUG-004 — public media after suspension
 
-Additional baseline security probe: SEC-DISC-002 (`additional-tests.json`), separate from the 556 canonical rows. Original baseline FAIL preserved. Campaign reproduction: YES, before production code changes, at parent `62b14915dec43118994b11f88f8a00191d2e55d8` (#234). Branch `fix/pre-production-04-suspended-media`; future PR must target `fix/pre-production-03-stable-pagination`.
+Additional baseline security probe: SEC-DISC-002 (`additional-tests.json`), separate from the 556 canonical rows. Original baseline FAIL preserved. Campaign reproduction: YES, before production code changes, at parent `62b14915dec43118994b11f88f8a00191d2e55d8` (#234). Branch `fix/pre-production-04-suspended-media`; PR #235 targets `fix/pre-production-03-stable-pagination`.
 
 Environment: local Node24/pnpm9/PostgreSQL16, real API and cookie guards with fake OAuth, disabled jobs, local storage and inert marked JPEG bytes. No production connections or messages.
 
@@ -12,4 +12,4 @@ Smallest correction: include current listing dealer status in vehicle media auth
 
 Previously downloaded or cached bytes cannot be retroactively withdrawn by an origin code change. Existing deployed cache entries would require an explicit operational invalidation/migration check; no live CDN or production deployment was inspected or modified here. The actual Terraform origin maps media to the API; old documentation describing all deployed routes as replaced by Cloudflare is not sufficient deployment evidence.
 
-Fix committed at `3aa48c4`. Agent vehicle-media retest PASS: nine expanded HTTP/DB regressions, 4440 full tests and three browser widths. Final local gates and remote CI pending. Adjacent cached public page and yard visibility remain FAIL under separate NEW-010/NEW-009 findings. Human UAT: PENDING.
+Fix committed at `3aa48c4`. Agent vehicle-media retest PASS: nine expanded HTTP/DB regressions, 4440 full tests and three browser widths. Final local lint/typecheck/fresh build and history scan PASS. PR #235 remote CI pending. Adjacent cached public page and yard visibility remain FAIL under separate NEW-010/NEW-009 findings. Human UAT: PENDING.

@@ -4,7 +4,7 @@
   "campaignRedCommit": "62b14915dec43118994b11f88f8a00191d2e55d8",
   "fixBranch": "fix/pre-production-04-suspended-media",
   "baseBranch": "fix/pre-production-03-stable-pagination",
-  "fixPr": null,
+  "fixPr": 235,
   "productCommit": "3aa48c47ee6992169f2d2e56e543fbf9c5d2767e",
   "testedCommit": "3aa48c47ee6992169f2d2e56e543fbf9c5d2767e",
   "additionalTests": [
@@ -122,16 +122,18 @@
   "browserCases": 3,
   "browserEvidence": "browser-fixed.json",
   "ci": {
-    "result": "PENDING"
+    "result": "PENDING",
+    "initialAttempt": "CI369 FAIL formatting of three copied evidence JSON files; Security518 PASS; correction on same branch"
   },
   "localGates": {
     "lint": "PASS",
     "typecheck": "PASS",
     "build": "PASS",
-    "historySecretScan": "PENDING",
+    "historySecretScan": "PASS at69fb74e /230 commits",
     "testedCommit": "3aa48c47ee6992169f2d2e56e543fbf9c5d2767e"
   },
   "newFindings": ["BUG-NEW-008", "BUG-NEW-009", "BUG-NEW-010"],
   "humanUat": "PENDING",
-  "wholeRegistryCertification": "PENDING; original baseline classifications unchanged"
+  "wholeRegistryCertification": "PENDING; original baseline classifications unchanged",
+  "fixUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/235"
 }

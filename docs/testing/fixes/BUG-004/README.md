@@ -2,7 +2,7 @@
 
 Additional baseline probe SEC-DISC-002 retains its original FAIL. It is separate from the 556 canonical rows. Before code changes, two regressions at unchanged parent `62b14915dec43118994b11f88f8a00191d2e55d8` reproduced an image HTTP200 after actual Admin suspension, while the listing returned404 and the authoritative dealer was SUSPENDED. Successful images also declared immutable caching for a year. [Reproduction](REPRODUCTION.md) and `evidence/ci/bug004-baseline-red.log` retain the failures.
 
-Branch `fix/pre-production-04-suspended-media` must target `fix/pre-production-03-stable-pagination` (#234). Product/test commit `3aa48c47ee6992169f2d2e56e543fbf9c5d2767e`. PR creation and actual remote CI are pending. No merges.
+Branch `fix/pre-production-04-suspended-media` must target `fix/pre-production-03-stable-pagination` (#234). Product/test commit `3aa48c47ee6992169f2d2e56e543fbf9c5d2767e`. [PR #235](https://github.com/shashikiran6sk/DealersDrive/pull/235) is open with the correct base; actual final-head remote CI is pending. No merges.
 
 ## Root correction
 
@@ -17,7 +17,7 @@ Previously downloaded bytes cannot be withdrawn. Existing deployed cache entries
 - Real owner yard and PAN_CARD upload/commit/private-preview flows verify private authority, ownership, UPLOADED state, exact bytes and tampered-link denial. Existing signed private links retain their limited validity after suspension; protected owner endpoints return401. These checks do not certify the separately recorded private PDF MIME defect.
 - Targeted lifecycle suites: 160 PASS; final expanded security suite: nine PASS. Affected units: 117 PASS across ten files. Early metadata records parent HEAD with uncommitted implementation; committed full-suite and browser runs use `3aa48c4`.
 - Full accumulated suite: **4,440 PASS** at `3aa48c4`: API2674/130 files, web1346/99, contracts420/14. Coverage statements96.97%, branches92.32%, functions98.36%, lines97.81%; thresholds PASS. Complete sanitized [API assertions](evidence/ci/api-assertions.json), [web assertions](evidence/ci/web-assertions.json), [contract assertions](evidence/ci/contracts-assertions.json) and `bug004-full-tests.log` are retained.
-- Final root lint, typecheck and fresh production build: PASS at `3aa48c4`, all Turbo tasks forced. History secret scan: PENDING. Actual final-head remote CI: PENDING.
+- Final root lint, typecheck and fresh production build: PASS at `3aa48c4`, all Turbo tasks forced. Full-history secret scan: PASS at evidence commit `69fb74e`,230 commits scanned with the actual CI image. Actual final-head remote CI: PENDING.
 
 ## Browser evidence
 
@@ -32,3 +32,5 @@ BUG-NEW-008 (P2): actual local PAN_CARD PDF upload/commit/read returns exact PDF
 Retained failed attempts include a portfolio oracle expecting200 where existing suspended policy returns404, guessed KYC enum/path corrected to the actual PAN_CARD/storage contract, and a diagnostic module-resolution failure before any write corrected using the API dependency context. Actual schema accepts integer widths1..4000, with derivative fallback; negatives use invalid/out-of-range widths rather than inventing a four-width-only validation rule. The original diagnostic logger uses a legacy canonical field name for SEC-DISC-002; the traceability report correctly classifies it as an additional probe. Original baseline evidence remains unchanged.
 
 [Traceability](canonical-retests.json) distinguishes additional baseline FAIL from each related canonical row's original status. Fresh API visibility checks pass, but warmed browser visibility remains FAIL under NEW-010. Full556 certification and complete-stack/provider/deployment gates remain pending. Production GO has not been established.
+
+Initial remote CI369 failed formatting of three newly copied evidence metadata JSON files. Security518, dependency audit and Terraform passed; remaining verify steps were skipped. Same-branch formatting correction retains metadata values; final remote CI must pass before advancing.
