@@ -1,0 +1,46 @@
+{
+  "label": "main",
+  "results": [
+    {
+      "page": "onboarding",
+      "width": 320,
+      "overflow": 472
+    },
+    {
+      "page": "admin-detail",
+      "width": 320,
+      "overflow": 593
+    },
+    {
+      "page": "onboarding",
+      "width": 360,
+      "overflow": 432
+    },
+    {
+      "page": "admin-detail",
+      "width": 360,
+      "overflow": 553
+    },
+    {
+      "page": "onboarding",
+      "width": 390,
+      "overflow": 402
+    },
+    {
+      "page": "admin-detail",
+      "width": 390,
+      "overflow": 523
+    },
+    {
+      "page": "onboarding",
+      "width": 768,
+      "overflow": 140
+    },
+    {
+      "page": "admin-detail",
+      "width": 768,
+      "overflow": 351
+    }
+  ],
+  "verdict": "FAIL"
+}

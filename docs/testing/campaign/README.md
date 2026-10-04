@@ -13,7 +13,7 @@ and a concise summary; the detail lives here.
 | 3   | `03-p1-cache/`     | BUG-NEW-010 (P1) cached car page public after suspension    | #243 | MERGED | `cdf297b` |
 | 4   | `04-enquiry-auth/` | BUG-NEW-012 (P2) enquiry commit-time authorization race     | #244 | MERGED | `c80d1b2` |
 | 5   | `05-yard-photo/`   | ORIG-BUG-005 + BUG-NEW-009 yard-photo moderation/visibility | #245 | MERGED | `7743f9a` |
-| 6   | `06-r2-endpoint/`  | BUG-NEW-013 production R2 endpoint validation               |      | OPEN    |           |
+| 6   | `06-r2-endpoint/`  | BUG-NEW-013 production R2 endpoint validation               | #246 | MERGED | `b533586` |
 | 7   | `07-pagination/`   | BUG-NEW-007 dealer inventory stable pagination              |      | OPEN    |           |
 | 8   | `08-mobile/`       | BUG-NEW-006 + ADMIN-MOBILE-DETAIL-001 mobile overflow       |      | OPEN    |           |
 | 9   | `09-dealer-close/` | ORIG-GAP-CLOSE admin Close application flow                 |      | OPEN    |           |
