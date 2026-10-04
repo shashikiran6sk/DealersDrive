@@ -90,9 +90,10 @@ marketplace homepage.
 ## `apps/web/src/app/(admin)/admin/layout.tsx`
 
 The Admin header keeps its desktop row. Below the small breakpoint it grows
-with its contents, places Operations above a width-bounded account row, and
+with its contents, places Operations above a width-bounded account section, and
 lets the operator email break while preserving the review link and Sign out.
-The server metrics request and Admin authorization remain authoritative.
+On narrow screens the review badge occupies its own row, giving the email
+and Sign out the remaining two columns. The server metrics request and Admin authorization remain authoritative.
 
 ## `apps/web/src/app/(admin)/admin/dealers/page.tsx`
 

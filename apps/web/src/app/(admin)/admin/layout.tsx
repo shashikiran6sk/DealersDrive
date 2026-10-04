@@ -48,13 +48,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <header className="sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5 max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:py-3">
           <span className="text-[14px] font-semibold">Operations</span>
 
-          <div className="ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap">
+          <div className="ml-auto flex min-w-0 items-center gap-3 max-sm:ml-0 max-sm:grid max-sm:w-full max-sm:grid-cols-[minmax(0,1fr)_auto]">
             {overview.headerBadge.count > 0 ? (
-              <Link href="/admin/listings" className="no-underline">
+              <Link
+                href="/admin/listings"
+                className="no-underline max-sm:col-span-2 max-sm:justify-self-start"
+              >
                 <StatusTag tone={overview.headerBadge.tone}>{overview.headerBadge.label}</StatusTag>
               </Link>
             ) : null}
-            <span className="min-w-0 text-[12px] break-all ink-muted max-sm:flex-1">
+            <span className="min-w-0 text-[12px] break-all ink-muted">
               {overview.operator.email}
             </span>
             <SignOutButton scope="admin" />
