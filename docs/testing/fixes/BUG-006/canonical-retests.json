@@ -5,7 +5,7 @@
   "campaignRedCommit": "e80d124ff0d7cfdb7bc39a97757484eb7d6b931a",
   "fixBranch": "fix/pre-production-06-production-storage",
   "baseBranch": "fix/pre-production-05-membership-commit-guard",
-  "fixPr": null,
+  "fixPr": 237,
   "productCommit": "1ab00270c3490977ca1d7a1b339d38896cd22851",
   "testedCommit": "1ab00270c3490977ca1d7a1b339d38896cd22851",
   "canonicalTests": [
@@ -42,5 +42,6 @@
   },
   "humanUat": "PENDING",
   "providerVerification": "PENDING no live providers used",
-  "browserUat": "NOT_APPLICABLE process boot gate; real subprocess/entrypoint evidence provided"
+  "browserUat": "NOT_APPLICABLE process boot gate; real subprocess/entrypoint evidence provided",
+  "fixPrUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/237"
 }
