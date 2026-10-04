@@ -38,7 +38,7 @@
     "lint": "PASS",
     "typecheck": "PASS",
     "freshBuild": "PASS32.768s",
-    "historyScan": "PENDING"
+    "historyScan": "PASS237 commits at045ca8d"
   },
   "humanUat": "PENDING",
   "providerVerification": "PENDING no live providers used",
