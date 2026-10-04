@@ -1,0 +1,45 @@
+[
+  {
+    "id": "outage-http503-car",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-http503-cars",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-http503-dealer",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex, nofollow", "noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-http503-dealers",
+    "ok": true,
+    "status": 500,
+    "h1": "Something went wrong",
+    "robots": ["noindex"],
+    "leak": false
+  },
+  {
+    "id": "outage-http503-home",
+    "ok": true,
+    "status": 200
+  },
+  {
+    "id": "outage-http503-bff",
+    "ok": true,
+    "status": 503,
+    "body": "{\"type\":\"about:blank\",\"title\":\"Service unavailable\",\"status\":503,\"code\":\"SERVICE_UNAVAILABLE\",\"detail\":\"This service is temporarily unavailable. Please try again.\"}"
+  }
+]
