@@ -99,6 +99,12 @@ create media rows, so this changes no current response — it means a future
 owner type is private until a rule for it is written, rather than public
 because nobody thought to write one.
 
+**Widths (BUG-NEW-011).** Any whole number from 1 to 4000 passes `MediaPath`.
+A width the processor wrote (320, 640, 1024, 1600) gets that derivative; any
+other gets the largest one there is, then the original. The reference used to
+say every other width was a 404, which a client could have coded around; it
+now describes the route as it behaves.
+
 The derivative route sets `Cache-Control: no-store` before validation and delivery, including denials. A READY image may become unavailable after suspension or a listing decision; an unchanged URL must consult the current state again. This also prevents a cached denial from outliving reinstatement. Private signed previews retain their existing authority and private/no-store behavior. Requested derivatives, larger fallbacks and original MIME types are unchanged. Previously retained client/CDN bytes cannot be recalled by this header; deployment must account for caches populated under the old year-long policy.
 
 ### `export function toMediaStatus(status: string): 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'`

@@ -2,7 +2,11 @@ import { type z } from 'zod';
 
 import { validate, validated } from '../../../middleware/validate.js';
 import { NotFoundError } from '../../../platform/errors.js';
-import { contentTypeOf, verifySignature } from '../../../platform/storage/local.adapter.js';
+import {
+  contentTypeOf,
+  sniffContentType,
+  verifySignature,
+} from '../../../platform/storage/local.adapter.js';
 
 import type { StorageRoute } from './route.js';
 import { PrivateReadQuery } from './schemas.js';
@@ -25,7 +29,7 @@ export const getPrivate: StorageRoute = (router, { storage }) => {
 
         res.setHeader('Cache-Control', 'private, no-store');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.type(contentTypeOf(query.key)).send(body);
+        res.type(sniffContentType(body) ?? contentTypeOf(query.key)).send(body);
       } catch (error) {
         next(error);
       }

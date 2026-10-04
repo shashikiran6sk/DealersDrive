@@ -143,7 +143,10 @@ export const storageDocs: ModuleDocs = {
         'here. Media readiness and public visibility can ' +
         'change while the id stays the same. Both successful responses and denials send ' +
         '`Cache-Control: no-store`, so future requests observe suspension, removal and reinstatement.\n\n' +
-        'Available widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the ' +
+        'Any whole-number width from 1 to 4000 is accepted. The processor writes 320, 640, 1024 ' +
+        'and 1600: asking for one of those returns it, and any other width returns the largest ' +
+        'derivative there is (the original while none has been written). A width outside 1 to ' +
+        '4000, or one that is not a whole number, is a 404. Unlike the ' +
         'JSON API this route sends `Cross-Origin-Resource-Policy: cross-origin`, because a ' +
         'media origin is a different host from the web app in every environment and the ' +
         'strict default would stop the browser embedding the image.\n\n' +
