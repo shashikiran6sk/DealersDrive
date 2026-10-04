@@ -8,7 +8,11 @@ export const storageDocs: ModuleDocs = {
     '`GET /private` answers a signed read URL; `GET /media/…` serves published images. All ' +
     'three are replaced by R2 and the Cloudflare ' +
     'Images origin in every deployed environment, which is why they live outside `/v1` and ' +
-    'take no session.',
+    'take no session.\n\n' +
+    '`PUT /uploads` and `GET /private` are mounted **only when `STORAGE_DRIVER=local`**. Behind ' +
+    'minio or r2 the adapter issues real presigned URLs, so these routes have no caller and ' +
+    'answer 404 — their only authority is an HMAC, and a stand-in that forwarded a request to ' +
+    'the bucket would make that HMAC the bucket\u2019s password.',
   operations: [
     {
       method: 'put',
