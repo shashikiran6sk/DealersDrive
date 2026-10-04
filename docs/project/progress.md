@@ -267,7 +267,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R95 — The console shows each member only what their role can do · `actions`/`canSubmit`/`canDelete` narrowed by the member's permissions (`LIFECYCLE_ACTION_PERMISSION`); the inbox offers STAFF only Mark contacted; `DealerEnquiry.contactedBy/closedBy` ("Contacted by Priya · 01 Oct, 16:42"); STAFF review step has no Submit; Dealer profile read-only for MANAGER and STAFF
 - [~] R96 — Multi-member dealerships, hardened · a cross-tenant sweep of every id-taking dealer route by OWNER, MANAGER and STAFF (403/404, nothing changed); the races run for real (simultaneous enquiry moves, sold vs withdrawn, role change vs removal, accept vs withdraw); at most 25 unexpired invitations waiting per dealership (409 `TOO_MANY_INVITATIONS`, a renewal never counts); CONTEXT §7o records the model
 
-- [x] R97 — User-requested reference DD branding · revises F008/F014/F018/F073/R81 · paired 2048 px PNGs, shared BrandLogo across all platform logo surfaces, white-on-black favicon/touch/manifest icons, shared social preview and absolute Organization logo URL; desktop/mobile evidence in `docs/branding/README.md`
+- [x] R97 — User-requested reference DD branding · revises F008/F014/F018/F073/R81 · paired 2048 px PNGs, shared BrandLogo across all platform logo surfaces, white-on-black favicon/touch/manifest icons, shared social preview and absolute Organization logo URL; desktop/mobile evidence on the `testing_evidence` branch
 
 ---
 

@@ -102,7 +102,7 @@ decorators.** They are the correct first slice of sandbox work.
 | **States**           | Light backgrounds use black on white; admin navigation and the photo viewer use white on black. Header remains white when sticky. Dealer sidebar stays hidden on mobile.                           |
 | **Compatibility**    | Plate and dealer LogoTile APIs stay intact; links, adjacent text, responsive behavior and logo footprints stay intact. Dark badges retain their 29 × 23 px footprint with a centered square image. |
 | **Sandbox**          | Primitives/BrandLogo: Light, Dark, Surfaces; Layout/ComingSoon: Playground; existing header/footer/auth/gallery stories                                                                            |
-| **Validation**       | Existing header/footer/auth/gallery/console and SEO tests; desktop/mobile visual inspection recorded in `docs/branding/README.md`                                                                  |
+| **Validation**       | Existing header/footer/auth/gallery/console and SEO tests; desktop/mobile visual inspection recorded on the `testing_evidence` branch                                                              |
 
 ### C005 — `Plate`
 
