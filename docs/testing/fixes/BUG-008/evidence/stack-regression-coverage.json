@@ -1,0 +1,2096 @@
+{
+  "sha": "87b462709969d2d75c9ba005435eed8975d18567",
+  "result": "PASS",
+  "source": "Full accumulated API test assertions, not a separate invented run",
+  "selectedTests": 485,
+  "suites": [
+    {
+      "file": "apps/api/tests/admin-enquiries.test.ts",
+      "result": "PASS",
+      "tests": 26,
+      "assertions": [
+        {
+          "name": "who may look refuses a visitor with no session",
+          "status": "passed"
+        },
+        {
+          "name": "who may look refuses a signed-in customer, even about their own enquiry",
+          "status": "passed"
+        },
+        {
+          "name": "who may look refuses a dealer, even about an enquiry in their own inbox",
+          "status": "passed"
+        },
+        {
+          "name": "who may look offers an operator no way to change an enquiry",
+          "status": "passed"
+        },
+        {
+          "name": "the list shows every dealership\u2019s enquiries, newest first, uncached",
+          "status": "passed"
+        },
+        {
+          "name": "the list is the very enquiry the dealership sees, not a copy",
+          "status": "passed"
+        },
+        {
+          "name": "the list cuts a long message short in the list, keeping the whole one for the detail",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search narrows to one status, with counts across every status under the other filters",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search narrows to one dealership by slug, and says when no dealership has it",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search finds an enquiry by the customer\u2019s name",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search finds an enquiry by the customer\u2019s mobile number",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search finds an enquiry by the car\u2019s model",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search finds an enquiry by the plate, however it is spaced",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search finds every enquiry at a dealership by its name",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search ignores a blank search, and does not read two digits as a phone number",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search bounds the IST day it was sent, both ends inclusive",
+          "status": "passed"
+        },
+        {
+          "name": "filters and search refuses a parameter it does not know, and a date that is not one",
+          "status": "passed"
+        },
+        {
+          "name": "paging walks every enquiry once, by keyset, without repeating or skipping",
+          "status": "passed"
+        },
+        {
+          "name": "paging breaks a tie on the time sent by id",
+          "status": "passed"
+        },
+        {
+          "name": "paging refuses a cursor it did not issue",
+          "status": "passed"
+        },
+        {
+          "name": "one enquiry shows the customer, the dealership, the car and the recorded history",
+          "status": "passed"
+        },
+        {
+          "name": "one enquiry shows spam as the dealer marked it, and closed as the customer sees it",
+          "status": "passed"
+        },
+        {
+          "name": "one enquiry keeps the enquiry, and its history, after the car is sold",
+          "status": "passed"
+        },
+        {
+          "name": "one enquiry shows the primary photograph when the car has one",
+          "status": "passed"
+        },
+        {
+          "name": "one enquiry never invents history for an enquiry the trail has nothing on",
+          "status": "passed"
+        },
+        {
+          "name": "one enquiry answers 404 for an enquiry that does not exist, and 400 for an id that is not one",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/admin-support.test.ts",
+      "result": "PASS",
+      "tests": 23,
+      "assertions": [
+        {
+          "name": "who may work a ticket refuses no session, a customer and a dealer, on every route",
+          "status": "passed"
+        },
+        {
+          "name": "who may work a ticket does not show support tickets to the dealership the enquiry was sent to",
+          "status": "passed"
+        },
+        {
+          "name": "the queue lists every customer\u2019s tickets, newest activity first, with who and what they are about",
+          "status": "passed"
+        },
+        {
+          "name": "the queue finds a ticket by the reference",
+          "status": "passed"
+        },
+        {
+          "name": "the queue finds a ticket by the bare number",
+          "status": "passed"
+        },
+        {
+          "name": "the queue finds a ticket by the customer\u2019s name",
+          "status": "passed"
+        },
+        {
+          "name": "the queue finds a ticket by the subject",
+          "status": "passed"
+        },
+        {
+          "name": "the queue finds tickets by the car or the dealership of the enquiry they are about",
+          "status": "passed"
+        },
+        {
+          "name": "the queue filters by status, category, priority, assignee and day, counting under the other filters",
+          "status": "passed"
+        },
+        {
+          "name": "the queue pages by keyset, and refuses what it does not know",
+          "status": "passed"
+        },
+        {
+          "name": "the workspace shows the customer, the enquiry, the dealer and the car, read through the one reference",
+          "status": "passed"
+        },
+        {
+          "name": "the workspace keeps the context when the car is withdrawn, with no public link",
+          "status": "passed"
+        },
+        {
+          "name": "the workspace lists the ticket on the enquiry\u2019s own admin page",
+          "status": "passed"
+        },
+        {
+          "name": "the workspace answers 404 for a ticket that does not exist",
+          "status": "passed"
+        },
+        {
+          "name": "reply and internal note sends a reply the customer sees as Dealers-Drive support",
+          "status": "passed"
+        },
+        {
+          "name": "reply and internal note keeps an internal note away from the customer, and from the activity time they see",
+          "status": "passed"
+        },
+        {
+          "name": "reply and internal note refuses an empty reply or note, and a reply posing as the customer",
+          "status": "passed"
+        },
+        {
+          "name": "status, priority and assignment moves status as the table allows, stamping and auditing each move",
+          "status": "passed"
+        },
+        {
+          "name": "status, priority and assignment refuses a move the table does not allow, and changes nothing",
+          "status": "passed"
+        },
+        {
+          "name": "status, priority and assignment sets priority without moving the activity time the customer sees, and audits it",
+          "status": "passed"
+        },
+        {
+          "name": "status, priority and assignment assigns to an active admin, reassigns and unassigns, and refuses anybody else",
+          "status": "passed"
+        },
+        {
+          "name": "status, priority and assignment refuses an empty change and a field it does not know",
+          "status": "passed"
+        },
+        {
+          "name": "status, priority and assignment records nothing when the change is no change",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/auth.test.ts",
+      "result": "PASS",
+      "tests": 48,
+      "assertions": [
+        {
+          "name": "the authorization request sends the browser to Google with state, nonce and a PKCE verifier",
+          "status": "passed"
+        },
+        {
+          "name": "the authorization request seals the transaction into an HttpOnly cookie",
+          "status": "passed"
+        },
+        {
+          "name": "the authorization request gives every sign-in a different state",
+          "status": "passed"
+        },
+        {
+          "name": "the authorization request refuses to bounce the browser anywhere but a same-site path",
+          "status": "passed"
+        },
+        {
+          "name": "a first sign-in creates the user and the identity, and lands on onboarding",
+          "status": "passed"
+        },
+        {
+          "name": "a first sign-in reports the verified Google account so onboarding need not ask for it",
+          "status": "passed"
+        },
+        {
+          "name": "a first sign-in stores only a hash of the session token",
+          "status": "passed"
+        },
+        {
+          "name": "a first sign-in refuses everything a dealer can do until onboarding is finished",
+          "status": "passed"
+        },
+        {
+          "name": "onboarding creates the dealership, the OWNER seat and the KYC placeholders",
+          "status": "passed"
+        },
+        {
+          "name": "onboarding turns the pending session into a dealer session, with no new sign-in",
+          "status": "passed"
+        },
+        {
+          "name": "onboarding refuses a second dealership on the same account",
+          "status": "passed"
+        },
+        {
+          "name": "onboarding refuses to prove a phone number another dealership already uses",
+          "status": "passed"
+        },
+        {
+          "name": "onboarding refuses a dealership built around an unproved number",
+          "status": "passed"
+        },
+        {
+          "name": "onboarding accepts a city the platform has never seen, and refuses an empty one",
+          "status": "passed"
+        },
+        {
+          "name": "onboarding rejects an attempt to send a dealerId, a status or an email",
+          "status": "passed"
+        },
+        {
+          "name": "onboarding needs a session at all",
+          "status": "passed"
+        },
+        {
+          "name": "a returning dealer is recognised by provider subject and goes straight to the console",
+          "status": "passed"
+        },
+        {
+          "name": "a returning dealer sends a dealer with an unfinished dealership back to onboarding",
+          "status": "passed"
+        },
+        {
+          "name": "a returning dealer creates no second user when the same account signs in twice",
+          "status": "passed"
+        },
+        {
+          "name": "a returning dealer follows the account when the Google email changes",
+          "status": "passed"
+        },
+        {
+          "name": "a suspended dealership account blocks dealer access and Google sign-in, touches no seat or session, and reinstates in place",
+          "status": "passed"
+        },
+        {
+          "name": "a suspended dealership account blocks a legacy dealer-status-only suspension as a backstop",
+          "status": "passed"
+        },
+        {
+          "name": "a suspended dealership account shuts the dealer door of a member who is also an admin, and leaves their console open",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does refuses a callback whose state does not match the cookie",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does refuses a callback with no transaction cookie at all",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does refuses a code Google will not exchange",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does refuses an identity token that fails verification",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does passes Google's own refusal back as a declined sign-in",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does refuses a callback with no code",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does spends the transaction cookie, so a callback cannot be replayed",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does refuses to adopt an existing account by email alone",
+          "status": "passed"
+        },
+        {
+          "name": "what a bad round trip does refuses a suspended account",
+          "status": "passed"
+        },
+        {
+          "name": "sessions and sign-out revokes the row, not just the cookie",
+          "status": "passed"
+        },
+        {
+          "name": "sessions and sign-out stops honouring a session revoked out of band",
+          "status": "passed"
+        },
+        {
+          "name": "sessions and sign-out stops honouring an expired session",
+          "status": "passed"
+        },
+        {
+          "name": "sessions and sign-out ignores a forged cookie",
+          "status": "passed"
+        },
+        {
+          "name": "sessions and sign-out is not a lookup by anything the client controls",
+          "status": "passed"
+        },
+        {
+          "name": "the admin console signs an allow-listed Google account in to the console",
+          "status": "passed"
+        },
+        {
+          "name": "the admin console links onto the account that already exists rather than creating a second one",
+          "status": "passed"
+        },
+        {
+          "name": "the admin console refuses every other Google account, however verified",
+          "status": "passed"
+        },
+        {
+          "name": "the admin console refuses a dealer address, which is not on the list",
+          "status": "passed"
+        },
+        {
+          "name": "the admin console does not grant the console to a dealer-scope sign-in by the same address",
+          "status": "passed"
+        },
+        {
+          "name": "the admin console publishes the admin start URL alongside the dealer one",
+          "status": "passed"
+        },
+        {
+          "name": "the admin console signs out",
+          "status": "passed"
+        },
+        {
+          "name": "the boundary between the two consoles does not let a dealer session reach an admin route",
+          "status": "passed"
+        },
+        {
+          "name": "the boundary between the two consoles does not let an admin session reach a dealer route",
+          "status": "passed"
+        },
+        {
+          "name": "the boundary between the two consoles issues admin sessions with the shorter lifetime",
+          "status": "passed"
+        },
+        {
+          "name": "the providers endpoint reports whether this deployment can perform a Google sign-in",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/customer-auth.test.ts",
+      "result": "PASS",
+      "tests": 29,
+      "assertions": [
+        {
+          "name": "a new customer is asked only for a name once the number is proved, and nothing exists yet",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer gives a name, and has an account and a session",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer takes \"\u0cb6\u0cb6\u0cbf\u0c95\u0cbf\u0cb0\u0ca3\u0ccd\" as a name",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer takes \"Nguy\u1ec5n Th\u1ecb Anh\" as a name",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer takes \"D'Souza\" as a name",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer takes \"Mohammed Ali\" as a name",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses \"\" (empty)",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses \"   \" (blank)",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses \"1234\" (no letter)",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses \"a\" (too short)",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" (too long)",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses \"Ravi\\u0007\" (a control character)",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses a email at sign-up, by name",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses a phone at sign-up, by name",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses a password at sign-up, by name",
+          "status": "passed"
+        },
+        {
+          "name": "a new customer refuses a address at sign-up, by name",
+          "status": "passed"
+        },
+        {
+          "name": "the sign-up ticket is spent on first use",
+          "status": "passed"
+        },
+        {
+          "name": "the sign-up ticket cannot be edited to name another number",
+          "status": "passed"
+        },
+        {
+          "name": "the sign-up ticket makes one account when two tickets for one number race",
+          "status": "passed"
+        },
+        {
+          "name": "an existing customer signs straight in after the code \u2014 no name screen",
+          "status": "passed"
+        },
+        {
+          "name": "an existing customer is refused while their customer seat is closed",
+          "status": "passed"
+        },
+        {
+          "name": "what a sign-in refuses, before anything is revealed a wrong code",
+          "status": "passed"
+        },
+        {
+          "name": "what a sign-in refuses, before anything is revealed a token presented twice",
+          "status": "passed"
+        },
+        {
+          "name": "what a sign-in refuses, before anything is revealed a number that is not an Indian mobile, before any provider call",
+          "status": "passed"
+        },
+        {
+          "name": "one person, one account signs a dealer in as a customer on the same user",
+          "status": "passed"
+        },
+        {
+          "name": "the customer session opens nothing in the dealer console",
+          "status": "passed"
+        },
+        {
+          "name": "the customer session is refused to nobody-in-particular",
+          "status": "passed"
+        },
+        {
+          "name": "the customer session ends with the same revocation every sign-out uses",
+          "status": "passed"
+        },
+        {
+          "name": "the customer session records the sign-up in the audit log",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/dealer-approval-gate.test.ts",
+      "result": "PASS",
+      "tests": 21,
+      "assertions": [
+        {
+          "name": "BUG-NEW-003 \u2014 document review cannot invent a committed upload refuses to verify a REQUIRED document without changing its review state",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-NEW-003 \u2014 document review cannot invent a committed upload refuses to verify a UPLOADING document without changing its review state",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 / VERIFY-011 \u2014 authoritative dealer approval prerequisites refuses an incomplete DRAFT dealer without membership, audit or outbox changes",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 / VERIFY-011 \u2014 authoritative dealer approval prerequisites refuses an incomplete PENDING_APPROVAL dealer without membership, audit or outbox changes",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-NEW-004 \u2014 suspension and reinstatement cannot bypass approval refuses suspend of an unapproved DRAFT dealer",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-NEW-004 \u2014 suspension and reinstatement cannot bypass approval refuses reinstate of an unapproved DRAFT dealer",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-NEW-004 \u2014 suspension and reinstatement cannot bypass approval refuses a historically suspended dealer that was never approved",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression approves a real uploaded/reviewed application once, preserving membership and audit actors",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses uploaded documents that an Admin has not verified",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses an otherwise verified application with missing gstin and a misleading status",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses an otherwise verified application with missing pan and a misleading status",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses an otherwise verified application with missing coverMediaId and a misleading status",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses legacy VERIFIED rows that have no uploaded filename",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression refuses a legacy VERIFIED filename whose stored object is missing",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression requires fresh owner identity completeness",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 complete application, capability and history regression keeps an approved dealer and its original approval history through suspension and reinstatement",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 / VERIFY-012 \u2014 serialized Admin decisions re-reads state after approval wins the dealer lock queue",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 / VERIFY-012 \u2014 serialized Admin decisions re-reads state after changes wins the dealer lock queue",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 / VERIFY-012 \u2014 serialized Admin decisions re-reads state after document rejection wins the dealer lock queue",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 adversarial Admin authorization denies anonymous, dealer and cross-dealer callers, forged fields and invalid IDs",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-002 \u2014 adversarial Admin authorization honors a role downgrade, logout/login and seat revocation on an existing Admin cookie",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/dealer-enquiries.test.ts",
+      "result": "PASS",
+      "tests": 26,
+      "assertions": [
+        {
+          "name": "who may read an inbox refuses nobody-in-particular",
+          "status": "passed"
+        },
+        {
+          "name": "who may read an inbox refuses a customer session \u2014 a customer has no inbox",
+          "status": "passed"
+        },
+        {
+          "name": "what the dealership sees lists its enquiries newest first, with the customer read from their account",
+          "status": "passed"
+        },
+        {
+          "name": "what the dealership sees shows the customer\u2019s current name, not the one they had when they enquired",
+          "status": "passed"
+        },
+        {
+          "name": "what the dealership sees drops the public link once the car is no longer on the marketplace",
+          "status": "passed"
+        },
+        {
+          "name": "what the dealership sees pages with a cursor, newest first, without repeating a row",
+          "status": "passed"
+        },
+        {
+          "name": "what the dealership sees filters to one tab without changing the counts",
+          "status": "passed"
+        },
+        {
+          "name": "what the dealership sees refuses an unknown status in the query",
+          "status": "passed"
+        },
+        {
+          "name": "what the dealership sees refuses a dealerId in the query",
+          "status": "passed"
+        },
+        {
+          "name": "what the dealership sees refuses a malformed cursor in the query",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership never sees another\u2019s lists only its own enquiries, and counts only its own",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership never sees another\u2019s answers 404 for another dealership\u2019s enquiry, and leaves it untouched",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership never sees another\u2019s answers the same 404 for an id that was never an enquiry",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs marks it contacted, stamps when, and audits it against the dealership",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs closes it, and reopening clears the close but keeps the first contact",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs marks it as spam",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs changes nothing and records nothing when the status is the one it has",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs serialises two simultaneous changes to one enquiry",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs refuses message in the body, by name \u2014 only the status moves",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs refuses customerName in the body, by name \u2014 only the status moves",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs refuses customerPhone in the body, by name \u2014 only the status moves",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs refuses dealerId in the body, by name \u2014 only the status moves",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs refuses listingId in the body, by name \u2014 only the status moves",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs refuses an unknown status",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs refuses no status",
+          "status": "passed"
+        },
+        {
+          "name": "moving an enquiry between tabs refuses an id that is not a uuid",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/dealer-invitation-locking.test.ts",
+      "result": "PASS",
+      "tests": 5,
+      "assertions": [
+        {
+          "name": "BUG-001 / ADD-RACE-001 \u2014 deterministic invitation lock order settles withdrawal queued first without a deadlock",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-001 / ADD-RACE-001 \u2014 deterministic invitation lock order settles acceptance queued first without a deadlock",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-001 / ADD-RACE-001 \u2014 deterministic invitation lock order accepts the current role when owner renewal was queued first",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-001 / ADD-RACE-001 \u2014 deterministic invitation lock order settles acceptance versus decline in one final state with matching membership",
+          "status": "passed"
+        },
+        {
+          "name": "BUG-001 / ADD-RACE-001 \u2014 deterministic invitation lock order reads suspension committed while acceptance waits on the dealership lock",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/dealer-listing-lifecycle.test.ts",
+      "result": "PASS",
+      "tests": 21,
+      "assertions": [
+        {
+          "name": "reserving moves ACTIVE to RESERVED, stamps it, audits it and offers the reserved moves",
+          "status": "passed"
+        },
+        {
+          "name": "reserving has no direct way back on sale for the dealership: the old routes are gone",
+          "status": "passed"
+        },
+        {
+          "name": "reserving refuses to reserve a reserved car",
+          "status": "passed"
+        },
+        {
+          "name": "marking sold sells a ACTIVE car, releases the registration and keeps the record",
+          "status": "passed"
+        },
+        {
+          "name": "marking sold sells a RESERVED car, releases the registration and keeps the record",
+          "status": "passed"
+        },
+        {
+          "name": "marking sold never goes back: every move out of SOLD is refused and the car stays sold",
+          "status": "passed"
+        },
+        {
+          "name": "marking sold keeps every enquiry the car had",
+          "status": "passed"
+        },
+        {
+          "name": "withdrawing withdraws with a reason and a note the dealership sees, and keeps the registration",
+          "status": "passed"
+        },
+        {
+          "name": "withdrawing does not withdraw a reserved car: it can only be sold or asked back on sale",
+          "status": "passed"
+        },
+        {
+          "name": "withdrawing has no direct relist for the dealership",
+          "status": "passed"
+        },
+        {
+          "name": "what a withdrawal accepts refuses no body with a 400",
+          "status": "passed"
+        },
+        {
+          "name": "what a withdrawal accepts refuses no reason with a 400",
+          "status": "passed"
+        },
+        {
+          "name": "what a withdrawal accepts refuses an unknown reason with a 400",
+          "status": "passed"
+        },
+        {
+          "name": "what a withdrawal accepts refuses a note that is too long with a 400",
+          "status": "passed"
+        },
+        {
+          "name": "what a withdrawal accepts refuses a status with a 400",
+          "status": "passed"
+        },
+        {
+          "name": "what a withdrawal accepts refuses a dealer id with a 400",
+          "status": "passed"
+        },
+        {
+          "name": "what a withdrawal accepts takes no body on the other moves",
+          "status": "passed"
+        },
+        {
+          "name": "whose car it is answers another dealership\u2019s car with a 404 and moves nothing",
+          "status": "passed"
+        },
+        {
+          "name": "whose car it is refuses the signed-out",
+          "status": "passed"
+        },
+        {
+          "name": "whose car it is refuses a draft or a car still in review",
+          "status": "passed"
+        },
+        {
+          "name": "two moves at once lands exactly one of a reservation and a sale racing on one car",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/dealer-membership-migration.test.ts",
+      "result": "PASS",
+      "tests": 6,
+      "assertions": [
+        {
+          "name": "migration 20261002090000_dealer_membership_rbac keeps the owner as OWNER, and turns SALES into STAFF in place",
+          "status": "passed"
+        },
+        {
+          "name": "migration 20261002090000_dealer_membership_rbac leaves no SALES value in the enum",
+          "status": "passed"
+        },
+        {
+          "name": "migration 20261002090000_dealer_membership_rbac dates an existing membership from its dealership, not from the deploy",
+          "status": "passed"
+        },
+        {
+          "name": "migration 20261002090000_dealer_membership_rbac leaves every dealership with an active OWNER",
+          "status": "passed"
+        },
+        {
+          "name": "migration 20261002090000_dealer_membership_rbac keeps the profile, documents, listing, enquiry and session exactly as they were",
+          "status": "passed"
+        },
+        {
+          "name": "migration 20261002090000_dealer_membership_rbac indexes membership by person and status",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/dealer-onboarding.test.ts",
+      "result": "PASS",
+      "tests": 101,
+      "assertions": [
+        {
+          "name": "one name per city refuses a second dealership under the same name in the same city",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city allows the same name in a different city",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city refuses it whatever the casing of the name or the city",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city stores the city, district and state in one normalised form",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city requires a district, and normalises a rename of one",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city mirrors the registered name onto the display name, and refuses a second one",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city renames a dealership through PATCH, mirror and all",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city refuses a rename onto a name another dealership in the same city holds",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city allows a rename onto a name only held in another city",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city checks a rename against the city the same request moves to",
+          "status": "passed"
+        },
+        {
+          "name": "one name per city lets a dealership keep its own name",
+          "status": "passed"
+        },
+        {
+          "name": "the yard on a map stores the share link exactly as it was pasted",
+          "status": "passed"
+        },
+        {
+          "name": "the yard on a map refuses a link to somewhere else entirely",
+          "status": "passed"
+        },
+        {
+          "name": "the yard on a map refuses a host that merely contains a Google one",
+          "status": "passed"
+        },
+        {
+          "name": "the yard on a map refuses the same link over http",
+          "status": "passed"
+        },
+        {
+          "name": "the yard on a map refuses an address typed into the wrong box",
+          "status": "passed"
+        },
+        {
+          "name": "the yard on a map is required, and a dealership without one cannot be submitted",
+          "status": "passed"
+        },
+        {
+          "name": "the yard on a map names the missing link when a dealership predates the question",
+          "status": "passed"
+        },
+        {
+          "name": "the yard on a map can be replaced through PATCH when the dealer moves the pin",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description is stored from onboarding and read back on the profile",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description is required, and onboarding without a tagline is refused",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description is required, and onboarding without a service is refused",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description refuses the `about` paragraph it replaced",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description refuses a single evasive word",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description accepts a short but real line",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description names the missing line and services when a dealership predates the question",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description does not appear as outstanding once it has been written",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description can be rewritten through PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description cannot be emptied through PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "the dealership description refuses a line longer than the column is meant to hold",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses legalName on the dealer's own PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses gstin on the dealer's own PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses pan on the dealer's own PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses about on the dealer's own PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses contact on the dealer's own PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses address on the dealer's own PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses address on the dealer's own PATCH",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves writes the year, and holds the two sentences for review",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves writes nothing at all when one field in the payload is locked",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves lets a DRAFT dealership still change its name and address",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses the onboarding route once the dealership is PENDING_APPROVAL",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses the onboarding route once the dealership is ACTIVE",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses the onboarding route once the dealership is REJECTED",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves refuses the onboarding route once the dealership is CLOSED",
+          "status": "passed"
+        },
+        {
+          "name": "what a dealer may change about themselves makes every dealer route unauthorized once the dealership is suspended",
+          "status": "passed"
+        },
+        {
+          "name": "the contact number, after onboarding publishes a new number once it has been proved",
+          "status": "passed"
+        },
+        {
+          "name": "the contact number, after onboarding refuses a number this account has not proved",
+          "status": "passed"
+        },
+        {
+          "name": "the contact number, after onboarding refuses to prove a number another dealership already holds",
+          "status": "passed"
+        },
+        {
+          "name": "the contact number, after onboarding lets a dealership re-save its own number",
+          "status": "passed"
+        },
+        {
+          "name": "the contact number, after onboarding refuses something that is not an Indian mobile number",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one GSTIN refuses a GSTIN another dealership already registered",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one GSTIN lets any number of dealerships have no GSTIN at all",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one GSTIN lets a dealership re-save its own GSTIN",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications emails the dealer and the admins when an application is submitted",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications emails the dealer on approval",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications emails the dealer when changes are requested, carrying the reason",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications uses new dealer and admin messages after requested changes are resubmitted",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications emails the dealer after a rejected application has been purged",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications emails the dealer when suspended and when reinstated",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications emails the admins when a profile change is submitted",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications emails the dealer when a profile change is approved",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications emails the dealer when a profile change is refused, carrying the reason",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications answers the request before any email exists",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications sends one email however many times the outbox is drained",
+          "status": "passed"
+        },
+        {
+          "name": "email notifications records the delivery against the dealership",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one PAN refuses a PAN another dealership already registered",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one PAN refuses it however the second dealer typed it",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one PAN lets any number of dealerships have no PAN at all",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one PAN lets a dealership re-save its own PAN",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one PAN lets a dealership edit its profile without tripping on its own PAN",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one PAN accepts a PAN no other dealership has",
+          "status": "passed"
+        },
+        {
+          "name": "one dealership, one PAN names the GSTIN when both collide",
+          "status": "passed"
+        },
+        {
+          "name": "KYC documents \u2014 replace and remove records an uploaded document against the checklist",
+          "status": "passed"
+        },
+        {
+          "name": "KYC documents \u2014 replace and remove resets the row and removes the stored object on delete",
+          "status": "passed"
+        },
+        {
+          "name": "KYC documents \u2014 replace and remove accepts a delete for a document that was never uploaded",
+          "status": "passed"
+        },
+        {
+          "name": "the yard photograph reads empty before anything is uploaded",
+          "status": "passed"
+        },
+        {
+          "name": "the yard photograph adopts an upload onto the dealership as its cover image",
+          "status": "passed"
+        },
+        {
+          "name": "the yard photograph replaces one photograph with another, and takes the first away",
+          "status": "passed"
+        },
+        {
+          "name": "the yard photograph removes it, and the dealership reads as incomplete again",
+          "status": "passed"
+        },
+        {
+          "name": "the yard photograph 404s a delete when there is nothing to remove",
+          "status": "passed"
+        },
+        {
+          "name": "the yard photograph is required before a dealership can be submitted",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words does not publish the tagline until it is approved",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words leaves the live words untouched when it is refused, and says why",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words refuses a second edit while one is already waiting",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words still writes the established year while a change is waiting",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words withdraws the request when the dealer cancels it",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words audits a withdrawal",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words answers 404 when there is nothing to cancel",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words queues nothing when the save proposes what is already live",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words queues nothing when the services come back in a different order",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words publishes the established year without asking anybody",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words writes straight through while the dealership is still a draft",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words refuses a second decision on the same request",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words approves a services-only edit without touching the tagline",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words stops reporting the edit once it is live",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words flags the dealership in the admin list, and filters on it",
+          "status": "passed"
+        },
+        {
+          "name": "a dealer editing their own public words audits the submission and the decision",
+          "status": "passed"
+        },
+        {
+          "name": "the dealer dashboard answers about the dealership on the session",
+          "status": "passed"
+        },
+        {
+          "name": "the dealer dashboard cannot be pointed at another dealership",
+          "status": "passed"
+        },
+        {
+          "name": "the dealer dashboard refuses a caller with no session",
+          "status": "passed"
+        },
+        {
+          "name": "the dealer dashboard is never cached",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/dealer-rejection-atomicity.test.ts",
+      "result": "PASS",
+      "tests": 15,
+      "assertions": [
+        {
+          "name": "rejection must not purge a dealer after approval has passed upload checks",
+          "status": "passed"
+        },
+        {
+          "name": "a rolled-back rejection retains all stored uploads and produces no rejection history",
+          "status": "passed"
+        },
+        {
+          "name": "re-reads state when rejection wins against approve",
+          "status": "passed"
+        },
+        {
+          "name": "re-reads state when rejection wins against reject",
+          "status": "passed"
+        },
+        {
+          "name": "commits durable cleanup, retries provider failures, preserves the audit actor and sends one rejection email",
+          "status": "passed"
+        },
+        {
+          "name": "protects ACTIVE dealer history with ACTIVE stock from rejection",
+          "status": "passed"
+        },
+        {
+          "name": "protects ACTIVE dealer history with RESERVED stock from rejection",
+          "status": "passed"
+        },
+        {
+          "name": "protects ACTIVE dealer history with SOLD stock from rejection",
+          "status": "passed"
+        },
+        {
+          "name": "protects ACTIVE dealer history with WITHDRAWN stock from rejection",
+          "status": "passed"
+        },
+        {
+          "name": "protects SUSPENDED dealer history with ACTIVE stock from rejection",
+          "status": "passed"
+        },
+        {
+          "name": "protects SUSPENDED dealer history with RESERVED stock from rejection",
+          "status": "passed"
+        },
+        {
+          "name": "protects SUSPENDED dealer history with SOLD stock from rejection",
+          "status": "passed"
+        },
+        {
+          "name": "protects SUSPENDED dealer history with WITHDRAWN stock from rejection",
+          "status": "passed"
+        },
+        {
+          "name": "denies direct anonymous, owner and cross-dealer rejection and rejects forged fields and malformed IDs",
+          "status": "passed"
+        },
+        {
+          "name": "honors a role downgrade, logout/login and seat revocation on an existing Admin cookie",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/enquiries.test.ts",
+      "result": "PASS",
+      "tests": 47,
+      "assertions": [
+        {
+          "name": "who may enquire refuses nobody-in-particular",
+          "status": "passed"
+        },
+        {
+          "name": "who may enquire takes an enquiry from a signed-in customer",
+          "status": "passed"
+        },
+        {
+          "name": "who may enquire takes one from a dealer browsing someone else\u2019s car, as the same person",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries derives the customer from the session and the dealership from the listing",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries accepts no message at all, and stores none",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries accepts an empty message, and stores none",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries accepts a whitespace-only message, and stores none",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries refuses customerPhone in the body, by name",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries refuses customerName in the body, by name",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries refuses dealerId in the body, by name",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries refuses customerId in the body, by name",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries refuses phone in the body, by name",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries refuses name in the body, by name",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries refuses status in the body, by name",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries refuses a message past its limit",
+          "status": "passed"
+        },
+        {
+          "name": "what an enquiry carries records the enquiry in the audit log, against the dealership",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a SOLD listing",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a WITHDRAWN listing",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a REJECTED listing",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a PENDING_REVIEW listing",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a DRAFT listing",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a CHANGES_REQUESTED listing",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a live listing on a suspended dealership",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a car that sold between opening its page and pressing Send",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now answers 404 for a slug that was never a listing",
+          "status": "passed"
+        },
+        {
+          "name": "only a car on the marketplace right now refuses a dealer enquiring about their own dealership\u2019s car",
+          "status": "passed"
+        },
+        {
+          "name": "one open enquiry per car (R68) refuses a second enquiry about the same car while the first is open",
+          "status": "passed"
+        },
+        {
+          "name": "one open enquiry per car (R68) still refuses it days later, while the dealership has not closed it",
+          "status": "passed"
+        },
+        {
+          "name": "one open enquiry per car (R68) refuses it while the dealership has marked the first contacted",
+          "status": "passed"
+        },
+        {
+          "name": "one open enquiry per car (R68) allows a new enquiry once the dealership has closed the first",
+          "status": "passed"
+        },
+        {
+          "name": "one open enquiry per car (R68) keeps refusing after the first was marked as spam",
+          "status": "passed"
+        },
+        {
+          "name": "one open enquiry per car (R68) lets only one of five simultaneous enquiries through",
+          "status": "passed"
+        },
+        {
+          "name": "one open enquiry per car (R68) does not stop the same customer asking about a different car",
+          "status": "passed"
+        },
+        {
+          "name": "one open enquiry per car (R68) does not stop a different customer asking about the same car",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) refuses nobody-in-particular",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) lists only their own, newest first, with the dealership and the car",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) shows a NEW enquiry as SENT, and never says spam",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) shows a CONTACTED enquiry as CONTACTED, and never says spam",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) shows a CLOSED enquiry as CLOSED, and never says spam",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) shows a SPAM enquiry as CLOSED, and never says spam",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) drops the link once the car is off the marketplace",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) pages with a cursor",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) refuses customerId in the query",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) refuses status in the query",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) refuses dealerId in the query",
+          "status": "passed"
+        },
+        {
+          "name": "a customer\u2019s own enquiries (R68) lists a dealer\u2019s own enquiries as a customer, and none of their inbox",
+          "status": "passed"
+        },
+        {
+          "name": "the customer\u2019s number stays private never appears on the public vehicle page",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/listing-lifecycle.test.ts",
+      "result": "PASS",
+      "tests": 7,
+      "assertions": [
+        {
+          "name": "a listing is born with its vehicle is DRAFT, with nothing stamped",
+          "status": "passed"
+        },
+        {
+          "name": "a listing is born with its vehicle goes when its vehicle goes",
+          "status": "passed"
+        },
+        {
+          "name": "a listing is born with its vehicle is one per vehicle",
+          "status": "passed"
+        },
+        {
+          "name": "the whole happy path, audited walks DRAFT \u2192 PENDING_REVIEW \u2192 CHANGES_REQUESTED \u2192 PENDING_REVIEW \u2192 ACTIVE \u2192 SOLD",
+          "status": "passed"
+        },
+        {
+          "name": "the whole happy path, audited keeps a rejected vehicle, and its reason, rather than deleting it",
+          "status": "passed"
+        },
+        {
+          "name": "racing decisions lets exactly one of two simultaneous decisions win",
+          "status": "passed"
+        },
+        {
+          "name": "racing decisions refuses a stale second submit rather than counting it twice",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/membership-commit-guard.test.ts",
+      "result": "PASS",
+      "tests": 38,
+      "assertions": [
+        {
+          "name": "denies a queued listing submission when the owner removes its manager before the listing lock is released (BUG-005)",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued patch after actual membership removal without changing history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued delete after actual membership removal without changing history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued submit after actual membership removal without changing history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued reserve after actual membership removal without changing history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued mark-sold after actual membership removal without changing history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued withdraw after actual membership removal without changing history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued request-reactivation after actual membership removal without changing history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued delete when the manager is downgraded to STAFF",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued submit when the manager is downgraded to STAFF",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued reserve when the manager is downgraded to STAFF",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued mark-sold when the manager is downgraded to STAFF",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued withdraw when the manager is downgraded to STAFF",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued request-reactivation when the manager is downgraded to STAFF",
+          "status": "passed"
+        },
+        {
+          "name": "retains a permitted queued STAFF draft edit and returns freshly restricted capabilities",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued patch after actual dealer suspension and preserves its related history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued submit after actual dealer suspension and preserves its related history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued mark-sold after actual dealer suspension and preserves its related history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks queued request-reactivation after actual dealer suspension and preserves its related history",
+          "status": "passed"
+        },
+        {
+          "name": "blocks the old queued session after logout and permits a fresh login with intact membership",
+          "status": "passed"
+        },
+        {
+          "name": "blocks a queued submission after persistent account authority changes",
+          "status": "passed"
+        },
+        {
+          "name": "blocks a queued submission after persistent seat authority changes",
+          "status": "passed"
+        },
+        {
+          "name": "blocks a queued submission after persistent expiry authority changes",
+          "status": "passed"
+        },
+        {
+          "name": "fails closed with a retryable conflict while the dealer authority row is held",
+          "status": "passed"
+        },
+        {
+          "name": "fails closed with a retryable conflict while the member authority row is held",
+          "status": "passed"
+        },
+        {
+          "name": "fails closed with a retryable conflict while the user authority row is held",
+          "status": "passed"
+        },
+        {
+          "name": "fails closed with a retryable conflict while the seat authority row is held",
+          "status": "passed"
+        },
+        {
+          "name": "fails closed with a retryable conflict while the session authority row is held",
+          "status": "passed"
+        },
+        {
+          "name": "preserves permitted draft preparation for a DRAFT dealer",
+          "status": "passed"
+        },
+        {
+          "name": "preserves permitted draft preparation for a PENDING_APPROVAL dealer",
+          "status": "passed"
+        },
+        {
+          "name": "keeps personal customer authority and foreign-dealer isolation after membership removal",
+          "status": "passed"
+        },
+        {
+          "name": "preserves existing neutral absent-seat semantics for a member using a real customer session",
+          "status": "passed"
+        },
+        {
+          "name": "serializes removal after an already authorized submit and records the correct actor",
+          "status": "passed"
+        },
+        {
+          "name": "serializes removal after an already authorized patch and records the correct actor",
+          "status": "passed"
+        },
+        {
+          "name": "does not deadlock an authorized-resource guard against actual destructive dealer rejection",
+          "status": "passed"
+        },
+        {
+          "name": "does not create stock or audit while the dealership authority is locked by another operation",
+          "status": "passed"
+        },
+        {
+          "name": "does not transfer a queued write to a different workspace after its exact membership is removed",
+          "status": "passed"
+        },
+        {
+          "name": "holds absent-seat authorization through commit so a new suspended seat cannot race its authority check",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/moderation-decisions.test.ts",
+      "result": "PASS",
+      "tests": 8,
+      "assertions": [
+        {
+          "name": "requesting changes sends the listing back with the reason, and the dealer sees it, edits and resubmits",
+          "status": "passed"
+        },
+        {
+          "name": "requesting changes needs a meaningful reason",
+          "status": "passed"
+        },
+        {
+          "name": "requesting changes refuses a listing that is not waiting for review",
+          "status": "passed"
+        },
+        {
+          "name": "rejecting rejects with a reason, keeps the vehicle as history and releases the plate",
+          "status": "passed"
+        },
+        {
+          "name": "rejecting is final",
+          "status": "passed"
+        },
+        {
+          "name": "two moderators at once lets exactly one decision through and records only that one",
+          "status": "passed"
+        },
+        {
+          "name": "who may decide refuses a dealer session, even on its own listing",
+          "status": "passed"
+        },
+        {
+          "name": "who may decide answers an unknown listing with a 404",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/moderation-photography.test.ts",
+      "result": "PASS",
+      "tests": 5,
+      "assertions": [
+        {
+          "name": "photography progress starts as not photographed, and moves as the team records it",
+          "status": "passed"
+        },
+        {
+          "name": "photography progress clears the note when asked to, and keeps the note internal",
+          "status": "passed"
+        },
+        {
+          "name": "photography progress refuses an unknown status or a StudioCar id nobody issued",
+          "status": "passed"
+        },
+        {
+          "name": "photography progress is closed once the listing has left review",
+          "status": "passed"
+        },
+        {
+          "name": "photography progress is an admin decision, never a dealer\u2019s",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/moderation-queue.test.ts",
+      "result": "PASS",
+      "tests": 10,
+      "assertions": [
+        {
+          "name": "the review queue lists what is waiting, oldest submission first, with who, where and since when",
+          "status": "passed"
+        },
+        {
+          "name": "the review queue never shows a draft to a moderator",
+          "status": "passed"
+        },
+        {
+          "name": "the review queue searches by plate and by dealership",
+          "status": "passed"
+        },
+        {
+          "name": "the review queue marks a resubmission",
+          "status": "passed"
+        },
+        {
+          "name": "the review queue lists another status on request",
+          "status": "passed"
+        },
+        {
+          "name": "the review queue pages oldest first with a cursor",
+          "status": "passed"
+        },
+        {
+          "name": "who may see the queue refuses a dealer session outright",
+          "status": "passed"
+        },
+        {
+          "name": "who may see the queue refuses no session",
+          "status": "passed"
+        },
+        {
+          "name": "who may see the queue refuses an admin without the moderation permission",
+          "status": "passed"
+        },
+        {
+          "name": "the operations overview counts the same queue reports the waiting listings and the badge",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/moderation-review.test.ts",
+      "result": "PASS",
+      "tests": 7,
+      "assertions": [
+        {
+          "name": "the review screen shows the dealership, the data in sections, the checklist and what may be decided",
+          "status": "passed"
+        },
+        {
+          "name": "the review screen answers an unknown listing with a 404",
+          "status": "passed"
+        },
+        {
+          "name": "the review screen is not reachable from a dealer session, even for the dealer\u2019s own listing",
+          "status": "passed"
+        },
+        {
+          "name": "the checklist ticks and unticks one check at a time, idempotently, and audits each",
+          "status": "passed"
+        },
+        {
+          "name": "the checklist refuses an unknown check or a malformed body",
+          "status": "passed"
+        },
+        {
+          "name": "the checklist refuses to verify a listing that is not waiting for review",
+          "status": "passed"
+        },
+        {
+          "name": "the checklist is cleared when the dealer resubmits, so a check never outlives the data it checked",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/public-media-visibility.test.ts",
+      "result": "PASS",
+      "tests": 9,
+      "assertions": [
+        {
+          "name": "refuses a previously public vehicle image immediately after dealer suspension (BUG-004)",
+          "status": "passed"
+        },
+        {
+          "name": "does not permit reusable cached vehicle responses to bypass mutable visibility",
+          "status": "passed"
+        },
+        {
+          "name": "checks all derivative widths, HEAD and conditional requests after suspension and reinstatement",
+          "status": "passed"
+        },
+        {
+          "name": "preserves ACTIVE stock, customer history and audits through suspension and reinstatement",
+          "status": "passed"
+        },
+        {
+          "name": "preserves RESERVED stock, customer history and audits through suspension and reinstatement",
+          "status": "passed"
+        },
+        {
+          "name": "preserves SOLD stock, customer history and audits through suspension and reinstatement",
+          "status": "passed"
+        },
+        {
+          "name": "preserves WITHDRAWN stock, customer history and audits through suspension and reinstatement",
+          "status": "passed"
+        },
+        {
+          "name": "rejects ID/width manipulation, unattached and non-ready images without changing another dealer",
+          "status": "passed"
+        },
+        {
+          "name": "preserves private yard/KYC previews without exposing originals through public paths",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/saved-vehicles.test.ts",
+      "result": "PASS",
+      "tests": 18,
+      "assertions": [
+        {
+          "name": "who may keep a list refuses GET /v1/saved-vehicles signed out",
+          "status": "passed"
+        },
+        {
+          "name": "who may keep a list refuses GET /v1/saved-vehicles/slugs signed out",
+          "status": "passed"
+        },
+        {
+          "name": "who may keep a list refuses PUT /v1/saved-vehicles/any-car signed out",
+          "status": "passed"
+        },
+        {
+          "name": "who may keep a list refuses DELETE /v1/saved-vehicles/any-car signed out",
+          "status": "passed"
+        },
+        {
+          "name": "who may keep a list keeps each customer\u2019s list to themselves",
+          "status": "passed"
+        },
+        {
+          "name": "who may keep a list takes no customer from the request \u2014 there is nowhere to put one",
+          "status": "passed"
+        },
+        {
+          "name": "saving saves an available car and lists it with its card, photograph and time",
+          "status": "passed"
+        },
+        {
+          "name": "saving saves once however many times it is pressed, even all at once",
+          "status": "passed"
+        },
+        {
+          "name": "saving saves a reserved car \u2014 it is still on show \u2014 and says it is reserved",
+          "status": "passed"
+        },
+        {
+          "name": "saving refuses to newly save a car after mark-sold",
+          "status": "passed"
+        },
+        {
+          "name": "saving refuses to newly save a car after withdraw",
+          "status": "passed"
+        },
+        {
+          "name": "saving answers a slug that never existed with a 404, and one that is not a slug with a 400",
+          "status": "passed"
+        },
+        {
+          "name": "the lifecycle never deletes a saved car keeps it through a reservation, a sale and says what became of it",
+          "status": "passed"
+        },
+        {
+          "name": "the lifecycle never deletes a saved car shows a withdrawn car as no longer available, and back again once approved back on sale",
+          "status": "passed"
+        },
+        {
+          "name": "the lifecycle never deletes a saved car shows every car of a suspended dealership as no longer available",
+          "status": "passed"
+        },
+        {
+          "name": "removing removes a saved car, idempotently, whatever state it is in",
+          "status": "passed"
+        },
+        {
+          "name": "the list is newest first, and pages by cursor",
+          "status": "passed"
+        },
+        {
+          "name": "the list refuses a query it does not know",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "apps/api/tests/stable-pagination.test.ts",
+      "result": "PASS",
+      "tests": 15,
+      "assertions": [
+        {
+          "name": "visits every equal-time row once in the saved collection (BUG-003)",
+          "status": "passed"
+        },
+        {
+          "name": "visits every equal-time row once in the customer collection (BUG-003)",
+          "status": "passed"
+        },
+        {
+          "name": "visits every equal-time row once in the inbox collection (BUG-003)",
+          "status": "passed"
+        },
+        {
+          "name": "handles page sizes, replay and legacy cursors in saved",
+          "status": "passed"
+        },
+        {
+          "name": "handles page sizes, replay and legacy cursors in customer",
+          "status": "passed"
+        },
+        {
+          "name": "handles page sizes, replay and legacy cursors in inbox",
+          "status": "passed"
+        },
+        {
+          "name": "preserves mixed-time order and continues after a deleted anchor in saved",
+          "status": "passed"
+        },
+        {
+          "name": "preserves mixed-time order and continues after a deleted anchor in customer",
+          "status": "passed"
+        },
+        {
+          "name": "preserves mixed-time order and continues after a deleted anchor in inbox",
+          "status": "passed"
+        },
+        {
+          "name": "keeps foreign cursor IDs scoped and rejects malformed or forged queries in saved",
+          "status": "passed"
+        },
+        {
+          "name": "keeps foreign cursor IDs scoped and rejects malformed or forged queries in customer",
+          "status": "passed"
+        },
+        {
+          "name": "keeps foreign cursor IDs scoped and rejects malformed or forged queries in inbox",
+          "status": "passed"
+        },
+        {
+          "name": "paginates tied historical rows across listing/enquiry lifecycle with a ACTIVE dealer",
+          "status": "passed"
+        },
+        {
+          "name": "paginates tied historical rows across listing/enquiry lifecycle with a SUSPENDED dealer",
+          "status": "passed"
+        },
+        {
+          "name": "enforces current membership and logout on a cursor obtained in an existing dealer session",
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "scope": "Existing automated lifecycle/RBAC/primary-layer regressions; does not close additional known open bugs"
+}

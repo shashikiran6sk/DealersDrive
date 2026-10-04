@@ -1,0 +1,438 @@
+{
+  "bug": "BUG-008",
+  "mode": "baseline",
+  "sha": "c9dfc4d0f47c015059e10915029051f282fe499d",
+  "environment": "Built Next.js/Chromium; real ADMIN cookie session; isolated PostgreSQL cert fixtures",
+  "rows": [
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/dealers",
+      "width": 390,
+      "http": 200,
+      "result": "FAIL",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 425,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 425,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex items-center gap-3",
+            "left": 106,
+            "right": 425,
+            "width": 319,
+            "scrollWidth": 319,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 106,
+            "right": 219,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 106,
+            "right": 219,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "text-[12px] ink-muted",
+            "left": 231,
+            "right": 347,
+            "width": 115,
+            "scrollWidth": 115,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 359,
+            "right": 425,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg self-start",
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "scrollWidth": 348,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 863,
+              "width": 842,
+              "scrollWidth": 842,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 370,
+              "width": 350,
+              "scrollWidth": 842,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": "evidence/screenshots/baseline-dealers-390.png",
+      "sha": "c9dfc4d0f47c015059e10915029051f282fe499d"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/listings",
+      "width": 390,
+      "http": 200,
+      "result": "FAIL",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 425,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 425,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex items-center gap-3",
+            "left": 106,
+            "right": 425,
+            "width": 319,
+            "scrollWidth": 319,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 106,
+            "right": 219,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 106,
+            "right": 219,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "text-[12px] ink-muted",
+            "left": 231,
+            "right": 347,
+            "width": 115,
+            "scrollWidth": 115,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 359,
+            "right": 425,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 20,
+            "right": 999,
+            "width": 979,
+            "scrollWidth": 977,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 889,
+              "width": 868,
+              "scrollWidth": 868,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 370,
+              "width": 350,
+              "scrollWidth": 868,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": "evidence/screenshots/baseline-listings-390.png",
+      "sha": "c9dfc4d0f47c015059e10915029051f282fe499d"
+    },
+    {
+      "canonical": ["BROWSER-009"],
+      "path": "/admin/enquiries",
+      "width": 390,
+      "http": 200,
+      "result": "FAIL",
+      "geometry": {
+        "viewport": 390,
+        "documentWidth": 425,
+        "header": {
+          "tag": "HEADER",
+          "classes": "sticky top-0 z-[15] flex h-[54px] flex-none items-center gap-3 border-b border-(--color-divider) bg-white px-5",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 425,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "headerChildren": [
+          {
+            "tag": "SPAN",
+            "classes": "text-[14px] font-semibold",
+            "left": 20,
+            "right": 94,
+            "width": 74,
+            "scrollWidth": 74,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "DIV",
+            "classes": "ml-auto flex items-center gap-3",
+            "left": 106,
+            "right": 425,
+            "width": 319,
+            "scrollWidth": 319,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "A",
+            "classes": "no-underline",
+            "left": 106,
+            "right": 219,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "tag tag-warn",
+            "left": 106,
+            "right": 219,
+            "width": 113,
+            "scrollWidth": 113,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          },
+          {
+            "tag": "SPAN",
+            "classes": "text-[12px] ink-muted",
+            "left": 231,
+            "right": 347,
+            "width": 115,
+            "scrollWidth": 115,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "auto"
+          },
+          {
+            "tag": "BUTTON",
+            "classes": "btn btn-ghost text-[12px]",
+            "left": 359,
+            "right": 425,
+            "width": 66,
+            "scrollWidth": 64,
+            "overflowX": "visible",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "aside": {
+          "tag": "ASIDE",
+          "classes": "flex w-[206px] flex-none flex-col gap-4 bg-(--color-accent-900) px-[10px] py-[18px] text-white max-md:w-full max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-3",
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "scrollWidth": 390,
+          "overflowX": "visible",
+          "flexWrap": "nowrap",
+          "minWidth": "auto"
+        },
+        "segmentedControls": [
+          {
+            "tag": "DIV",
+            "classes": "seg",
+            "left": 20,
+            "right": 414,
+            "width": 394,
+            "scrollWidth": 392,
+            "overflowX": "hidden",
+            "flexWrap": "nowrap",
+            "minWidth": "0px"
+          }
+        ],
+        "tables": [
+          {
+            "table": {
+              "tag": "TABLE",
+              "classes": "table",
+              "left": 21,
+              "right": 809,
+              "width": 788,
+              "scrollWidth": 788,
+              "overflowX": "visible",
+              "flexWrap": "nowrap",
+              "minWidth": "0px"
+            },
+            "container": {
+              "tag": "DIV",
+              "classes": "overflow-x-auto rounded-[14px] border border-(--color-divider) bg-white",
+              "left": 20,
+              "right": 370,
+              "width": 350,
+              "scrollWidth": 788,
+              "overflowX": "auto",
+              "flexWrap": "nowrap",
+              "minWidth": "auto"
+            }
+          }
+        ]
+      },
+      "screenshot": "evidence/screenshots/baseline-enquiries-390.png",
+      "sha": "c9dfc4d0f47c015059e10915029051f282fe499d"
+    }
+  ],
+  "counts": {
+    "pass": 0,
+    "fail": 3
+  }
+}

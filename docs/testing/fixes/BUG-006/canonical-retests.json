@@ -32,7 +32,11 @@
     "coverage": [97.02, 92.29, 98.37, 97.82]
   },
   "ci": {
-    "result": "PENDING"
+    "result": "PASS",
+    "head": "c9dfc4d0f47c015059e10915029051f282fe499d",
+    "ciRun": 37196042611,
+    "securityRun": 37196042576,
+    "evidence": "evidence/final-ci.json"
   },
   "localFinalGates": {
     "lint": "PASS",

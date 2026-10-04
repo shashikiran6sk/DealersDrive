@@ -1,0 +1,21 @@
+/admin/dealers 390 FAIL 425
+/admin/listings 390 FAIL 425
+/admin/enquiries 390 FAIL 425
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Admin document exceeds supported viewport
+
+3 !== 0
+
+    at file:///workspace/DealersDrive-fixes/docs/testing/fixes/BUG-008/browser-regression.mjs:42:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 3,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

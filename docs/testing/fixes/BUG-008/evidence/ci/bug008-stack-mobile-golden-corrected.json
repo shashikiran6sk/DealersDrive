@@ -1,0 +1,9 @@
+{
+  "command": ["node", "docs/testing/fixes/BUG-008/stack-mobile-golden.mjs"],
+  "sha": "1030a4a8d005ca4ab2979360e47ec672fe070073",
+  "start_utc": "2026-10-04T11:09:00.658637+00:00",
+  "end_utc": "2026-10-04T11:09:20.990580+00:00",
+  "exit_code": 1,
+  "log": "evidence/ci/bug008-stack-mobile-golden-corrected.log",
+  "cache": "TURBO_FORCE=true"
+}

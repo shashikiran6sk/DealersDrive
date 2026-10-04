@@ -1,0 +1,49 @@
+{
+  "bug": "BUG-008",
+  "severity": "P2",
+  "canonicalTests": [
+    {
+      "id": "BROWSER-009",
+      "baseline": "FAIL",
+      "campaignRed": "FAIL six original/adjacent viewport cases atc9dfc4d",
+      "agentRetest": "PASS30 browser geometry/13 functional scenarios",
+      "humanRetest": "PENDING"
+    }
+  ],
+  "baselineCommit": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "campaignRedCommit": "c9dfc4d0f47c015059e10915029051f282fe499d",
+  "fixBranch": "fix/pre-production-08-admin-mobile",
+  "baseBranch": "fix/pre-production-06-production-storage",
+  "fixPr": null,
+  "productCommit": "1030a4a8d005ca4ab2979360e47ec672fe070073",
+  "automationCommit": "87b4627",
+  "regressionTest": "browser-regression.mjs",
+  "agentUat": "PASS scoped Admin layout/functional/authorization; full556/provider certification pending",
+  "browserGeometryPass": 30,
+  "functionalUatPass": 13,
+  "negativeApiChecks": 20,
+  "adjacentWebUnitsPass": 138,
+  "adjacentApiIntegrationPass": 107,
+  "mobileGoldenPass": 7,
+  "databaseVerification": "PASS read-only preservation and subsequent authorized golden actors/history",
+  "fullTests": {
+    "result": "PASS",
+    "head": "87b462709969d2d75c9ba005435eed8975d18567",
+    "api": 2750,
+    "web": 1346,
+    "contracts": 420,
+    "total": 4516,
+    "apiCoverage": [97.02, 92.4, 98.37, 97.82],
+    "coverageThresholds": "PASS"
+  },
+  "ci": {
+    "result": "PENDING"
+  },
+  "humanUat": "PENDING",
+  "localFinalGates": {
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "freshBuild": "PASS29.765s at final layout1030a4a; apps/packages unchanged later",
+    "historyScan": "PENDING"
+  }
+}
