@@ -1,0 +1,22 @@
+{
+  "R235-vehicle-image-follows-dealer-status": {
+    "status": "PASS",
+    "layers": ["API"],
+    "note": "vehicle image 200 → (suspend) 404 → (reinstate) 200, Cache-Control no-store throughout; car API 404, dealer API 404 while suspended",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-235-media",
+    "at": "2026-10-04T13:39:51.981Z"
+  },
+  "R235-yard-photo-while-suspended (BUG-NEW-009, not in #235 scope)": {
+    "status": "FAIL",
+    "layers": ["API"],
+    "note": "suspended dealer's yard photo still served 200 (dealer profile API 404) — BUG-NEW-009 confirmed",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-235-media",
+    "at": "2026-10-04T13:39:51.982Z"
+  }
+}
