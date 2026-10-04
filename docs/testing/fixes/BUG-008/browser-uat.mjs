@@ -108,6 +108,7 @@ try {
     const page = await context.newPage();
     await page.goto('http://localhost:3009/admin/enquiries');
     await page.getByRole('navigation', { name: 'Admin console', exact: true }).waitFor();
+    await page.getByRole('heading', { name: 'Enquiries', exact: true }).waitFor();
     const geometry = await fitted(page);
     const signOut = await page.getByRole('button', { name: 'Sign out', exact: true }).boundingBox();
     assert.ok(signOut.x >= 0 && signOut.x + signOut.width <= width + 1);
