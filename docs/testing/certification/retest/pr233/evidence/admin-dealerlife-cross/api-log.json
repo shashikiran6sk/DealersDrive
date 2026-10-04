@@ -1,0 +1,1921 @@
+[
+  {
+    "req": "GET /v1/admin/dealers?limit=5",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "bc9461b6-fd68-43c5-b432-0e9c24b4ee56",
+          "slug": "r232pend-motors-8146931ca05-vellore-tamil-nadu",
+          "brandName": "R232Pend Motors 8146931ca05",
+          "initials": "RM",
+          "city": "Vellore",
+          "district": "Vellore",
+          "state": "Tamil Nadu",
+          "status": "PENDING_APPROVAL",
+          "statusLabel": "Pending",
+          "statusTone": "warn",
+          "vehicleCount": 0,
+          "activeCount": 0,
+          "joinedAt": "2026-10-04T13:04:42.083Z",
+          "joinedLabel": "04 Oct 2026",
+          "creditBalance": 0,
+          "documentsVerified": false,
+          "hasPendingProfileEdit": false
+        },
+        {
+          "id": "75d0107e-054f-4c3d-8fb1-9bf1af973057",
+          "slug": "r232valid-motors-814651ae38b-vellore-tamil-nadu",
+          "brandName": "R232Valid Motors 814651ae38b",
+          "initials": "RM",
+          "city": "Vellore",
+          "district": "Vellore",
+          "state": "Tamil Nadu",
+          "status": "ACTIVE",
+          "statusLabel": "Active",
+          "statusTone": "ok",
+          "vehicleCount": 0,
+          "activeCount": 0,
+          "joinedAt": "2026-10-04T13:04:41.706Z",
+          "joinedLabel": "04 Oct 2026",
+          "creditBalance": 0,
+          "documentsVerified": true,
+          "hasPendingProfileEdit": false
+        },
+        {
+          "id": "f3e9756b-9343-47eb-ac6f-17f39b2d07ff",
+          "slug": "draftsusp-6090740b457-vellore-tamil-nadu",
+          "brandName": "DraftSusp 6090740b457",
+          "initials": "DB",
+          "city": "Vellore",
+          "district": "Vellore",
+          "state": "Tamil Nadu",
+          "status": "DRAFT",
+          "statusLabel": "Draft",
+          "statusTone": "neutral",
+          "vehicleCount": 0,
+          "activeCount": 0,
+          "joinedAt": "2026-10-04T13:04:23.510Z",
+          "joinedLabel": "04 Oct 2026",
+          "creditBalance": 0,
+          "documentsVerified": false,
+          "hasPendingProfileEdit": false
+        },
+        {
+          "id": "751523a5-5609-4f18-9cc1-63acd35d9c52",
+          "slug": "pendreinstate-motors-609030a5a53-vellore-tamil-nadu",
+          "brandName": "PendReinstate Motors 609030a5a53",
+          "initials": "PM",
+          "city": "Vellore",
+          "district": "Vellore",
+          "state": "Tamil Nadu",
+          "status": "PENDING_APPROVAL",
+          "statusLabel": "Pending",
+          "statusTone": "warn",
+          "vehicleCount": 0,
+          "activeCount": 0,
+          "joinedAt": "2026-10-04T13:04:23.256Z",
+          "joinedLabel": "04 Oct 2026",
+          "creditBalance": 0,
+          "documentsVerified": false,
+          "hasPendingProfileEdit": false
+        },
+        {
+          "id": "659b0ae8-c890-4cf7-af68-59d0a16d5c21",
+          "slug": "suspapprove-motors-60899c51232-vellore-tamil-nadu",
+          "brandName": "SuspApprove Motors 60899c51232",
+          "initials": "SM",
+          "city": "Vellore",
+          "district": "Vellore",
+          "state": "Tamil Nadu",
+          "status": "SUSPENDED",
+          "statusLabel": "Suspended",
+          "statusTone": "err",
+          "vehicleCount": 0,
+          "activeCount": 0,
+          "joinedAt": "2026-10-04T13:04:22.807Z",
+          "joinedLabel": "04 Oct 2026",
+          "creditBalance": 0,
+          "documentsVerified": true,
+          "hasPendingProfileEdit": false
+        }
+      ],
+      "page": {
+        "nextCursor": "MjAyNi0xMC0wNFQxMzowNDoyMi44MDda",
+        "hasMore": true
+      },
+      "counts": {
+        "SUSPENDED": 36,
+        "DRAFT": 29,
+        "PENDING_APPROVAL": 20,
+        "ACTIVE": 253
+      },
+      "facets": {
+        "cities": ["Adoni", "Aluva", "Ambur", "Anekal", "Arakkonam"],
+        "districts": ["Belagavi", "Bengaluru Urban", "Ernakulam", "Guntur", "Kozhikode"],
+        "states": ["Andhra Pradesh", "Karnataka", "Kerala", "Tamil Nadu"]
+      }
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "D7Q77jg_Q8",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "4uoXz3GTPr",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "8jEKbba9ga",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "A7SXNLK46l",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "cMaq6jXRCS",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/metrics/overview",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "0D-t0yQEMT",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/8574cb30-88fe-4f09-b7dc-4fdac8409f36/suspend",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "AiKAe-QGZE",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "tNZykIESym",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/auth/admin/logout",
+    "status": 204,
+    "body": null
+  },
+  {
+    "req": "GET /v1/admin/dealers",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "tZz13-NtWS",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/admin/access",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "Zzz6ObJPM-",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "POST /v1/admin/access",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "szYNbnZhX_",
+      "detail": "Sign in to the admin console to do that."
+    }
+  },
+  {
+    "req": "GET /v1/admin/access",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "userId": "d5d2f7a9-bd1a-4ddb-a245-05bd9b113dec",
+          "email": "shashikiran6.sk@gmail.com",
+          "fullName": "Dealers-Drive Operations",
+          "adminRole": "SUPER_ADMIN",
+          "source": "ALLOWLIST",
+          "sourceLabel": "Allow-listed",
+          "grantedByEmail": null,
+          "grantedAt": null,
+          "lastLoginLabel": "Never",
+          "canRevoke": false,
+          "revokeBlockedReason": "Set in ADMIN_ALLOWLIST"
+        }
+      ],
+      "currentUserId": "d5d2f7a9-bd1a-4ddb-a245-05bd9b113dec"
+    }
+  },
+  {
+    "sees": true
+  },
+  {
+    "req": "GET /v1/admin/dealers/885e28d7-20b6-422e-9638-69d4b2c0b992",
+    "status": 200,
+    "body": {
+      "id": "885e28d7-20b6-422e-9638-69d4b2c0b992",
+      "slug": "admininspects-motors-7205917f11e6-vellore-tamil-nadu",
+      "brandName": "AdminInspects Motors 7205917f11e6",
+      "legalName": "AdminInspects Motors 7205917f11e6",
+      "initials": "AM",
+      "status": "PENDING_APPROVAL",
+      "statusLabel": "Pending",
+      "statusTone": "warn",
+      "statusReason": null,
+      "gstin": "33KYLCR1526X1Z3",
+      "pan": "KYLCR1526X",
+      "city": "Vellore",
+      "district": "Vellore",
+      "state": "Tamil Nadu",
+      "addressLine": "12 Main Road",
+      "pincode": "632001",
+      "mapsUrl": "<redacted>",
+      "contactName": "AdminInspects Owner",
+      "contactPhone": "+919600720580",
+      "contactPhoneDisplay": "+91 96007 20580",
+      "contactEmail": "admininspects.72058936f5d7@example.test",
+      "landline": null,
+      "tagline": "Quality used cars from AdminInspects",
+      "specialities": ["SUVs", "Sedans"],
+      "joinedLabel": "04 Oct 2026",
+      "creditBalance": 0,
+      "creditsHeld": 0,
+      "counts": {
+        "vehicles": 0,
+        "active": 0,
+        "pending": 0,
+        "enquiries": 0
+      },
+      "documents": [
+        {
+          "id": "2430331b-bbec-425f-a914-2f80041a1f16",
+          "type": "GST_CERTIFICATE",
+          "label": "GST certificate",
+          "status": "UPLOADED",
+          "fileName": "gst_certificate.pdf",
+          "bytes": null,
+          "uploadedAt": "2026-10-04T13:15:21.846Z",
+          "viewUrl": "<redacted>",
+          "viewUrlExpiresAt": "<redacted>",
+          "rejectionReason": null
+        },
+        {
+          "id": "3f065a90-20f3-4023-989b-5f9cc1767a7e",
+          "type": "PAN_CARD",
+          "label": "PAN card",
+          "status": "UPLOADED",
+          "fileName": "pan_card.pdf",
+          "bytes": null,
+          "uploadedAt": "2026-10-04T13:15:21.846Z",
+          "viewUrl": "<redacted>",
+          "viewUrlExpiresAt": "<redacted>",
+          "rejectionReason": null
+        },
+        {
+          "id": "82a9d046-d0c0-4dbe-aa34-5a7bdfe12513",
+          "type": "ADDRESS_PROOF",
+          "label": "Address proof",
+          "status": "UPLOADED",
+          "fileName": "address_proof.pdf",
+          "bytes": null,
+          "uploadedAt": "2026-10-04T13:15:21.846Z",
+          "viewUrl": "<redacted>",
+          "viewUrlExpiresAt": "<redacted>",
+          "rejectionReason": null
+        }
+      ],
+      "allDocumentsVerified": false,
+      "profileChange": null,
+      "yardPhotoUrl": "<redacted>",
+      "recentLedger": [],
+      "actions": {
+        "canApprove": false,
+        "canReject": true,
+        "canRequestChanges": true,
+        "canSuspend": false,
+        "canReinstate": false,
+        "canGrantCredits": true,
+        "canEdit": true
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/08c0d771-657b-4ff5-bb25-3cb1af0a28e1/approve",
+    "status": 200,
+    "body": {
+      "id": "08c0d771-657b-4ff5-bb25-3cb1af0a28e1",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:15:22.259Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/2a486d48-eb4d-4ebc-a124-b94afb6f3ea9/reject",
+    "status": 200,
+    "body": {
+      "id": "2a486d48-eb4d-4ebc-a124-b94afb6f3ea9",
+      "brandName": "AdminRejects Motors 720599032102",
+      "documentsDeleted": 3,
+      "objectsDeleted": 4,
+      "reason": "Documents do not match, rejecting",
+      "purgedAt": "2026-10-04T13:15:22.471Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/809a3f1a-7ca6-467a-b70e-6ba147c7d161/suspend",
+    "status": 200,
+    "body": {
+      "id": "809a3f1a-7ca6-467a-b70e-6ba147c7d161",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:15:22.713Z"
+    }
+  },
+  {
+    "status": "SUSPENDED"
+  },
+  {
+    "req": "POST /v1/admin/dealers/579ef899-ba04-4cbb-95e3-f4062025ded8/reinstate",
+    "status": 200,
+    "body": {
+      "id": "579ef899-ba04-4cbb-95e3-f4062025ded8",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:15:22.935Z"
+    }
+  },
+  {
+    "status": "ACTIVE"
+  },
+  {
+    "listingBefore": 200,
+    "listingAfterSuspend": 404,
+    "dealerDashboard": 401
+  },
+  {
+    "actions": ["dealer.approved", "dealer.suspended", "dealer.onboarding.created"]
+  },
+  {
+    "req": "POST /v1/admin/dealers/d3532dd3-a917-4159-a45f-3979c5c949c4/suspend",
+    "status": 200,
+    "body": {
+      "id": "d3532dd3-a917-4159-a45f-3979c5c949c4",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:15:24.141Z"
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/d3532dd3-a917-4159-a45f-3979c5c949c4/suspend",
+    "status": 422,
+    "body": {
+      "type": "https://dealers-drive.com/errors/invalid-dealer-transition",
+      "title": "Invalid dealer transition",
+      "status": 422,
+      "code": "INVALID_DEALER_TRANSITION",
+      "traceId": "yis6gMAWYH",
+      "detail": "Only an active dealership can be suspended."
+    }
+  },
+  {
+    "status": "SUSPENDED"
+  },
+  {
+    "req": "GET /v1/admin/listings?status=PENDING_REVIEW&limit=48",
+    "status": 200,
+    "body": {
+      "status": "PENDING_REVIEW",
+      "data": [
+        {
+          "id": "290b15b2-8064-5efe-9197-74b697091b32",
+          "vehicleId": "d689cc7f-e94c-50e5-a0f9-a01414429f94",
+          "title": "2024 Mahindra XUV 3XO MX3",
+          "registrationDisplay": "TN 73 DD 1057",
+          "summary": "Diesel · Manual · 19,100 km",
+          "priceLabel": "₹12,20,000",
+          "status": "PENDING_REVIEW",
+          "statusLabel": "Pending review",
+          "statusTone": "warn",
+          "dealer": {
+            "id": "b781313d-0f69-4ff9-a9b0-f3afaedb1286",
+            "name": "SIPCOT Car Bazaar",
+            "slug": "sipcot-car-bazaar-llp-ranipet-tamil-nadu"
+          },
+          "location": "Ranipet",
+          "submittedAt": "2026-06-24T09:00:00.000Z",
+          "submittedLabel": "24 Jun 2026",
+          "waitingLabel": "24 Jun 2026",
+          "resubmission": false,
+          "photography": {
+            "status": "NOT_STARTED",
+            "label": "Not photographed",
+            "tone": "neutral"
+          },
+          "imageCount": 0
+        },
+        {
+          "id": "c9cac541-9c0b-5ed2-9b38-8459ec168c80",
+          "vehicleId": "1c9dd193-cdab-5804-999e-ecc64b3050dd",
+          "title": "2023 Tata Harrier Smart",
+          "registrationDisplay": "TN 73 DD 1076",
+          "summary": "Diesel · Manual · 42,800 km",
+          "priceLabel": "₹16,30,000",
+          "status": "PENDING_REVIEW",
+          "statusLabel": "Pending review",
+          "statusTone": "warn",
+          "dealer": {
+            "id": "aff53afa-ac80-41da-a0fd-29c7024d8b65",
+            "name": "Thakkolam Road Cars",
+            "slug": "thakkolam-road-cars-enterprises-arakkonam-ranipet-tamil-nadu"
+          },
+          "location": "Arakkonam, Ranipet",
+          "submittedAt": "2026-06-29T09:00:00.000Z",
+          "submittedLabel": "29 Jun 2026",
+          "waitingLabel": "29 Jun 2026",
+          "resubmission": false,
+          "photography": {
+            "status": "NOT_STARTED",
+            "label": "Not photographed",
+            "tone": "neutral"
+          },
+          "imageCount": 0
+        },
+        {
+          "id": "42f60f42-8a16-5af1-8542-142151c1cbba",
+          "vehicleId": "dbe8aa1d-20d3-5911-a259-8590058df3ab",
+          "title": "2024 Honda Elevate VX",
+          "registrationDisplay": "TN 73 DD 1063",
+          "summary": "Petrol · Manual · 21,100 km",
+          "priceLabel": "₹13,25,000",
+          "status": "PENDING_REVIEW",
+          "statusLabel": "Pending review",
+          "statusTone": "warn",
+          "dealer": {
+            "id": "a189779c-5f99-4d78-a199-9f22236ecffc",
+            "name": "Palar Valley Autos",
+            "slug": "palar-valley-autos-enterprises-arcot-ranipet-tamil-nadu"
+          },
+          "location": "Arcot, Ranipet",
+          "submittedAt": "2026-07-14T09:00:00.000Z",
+          "submittedLabel": "14 Jul 2026",
+          "waitingLabel": "14 Jul 2026",
+          "resubmission": false,
+          "photography": {
+            "status": "NOT_STARTED",
+            "label": "Not photographed",
+            "tone": "neutral"
+          },
+          "imageCount": 0
+        },
+        {
+          "id": "98f45ee2-2a9c-5474-9e21-9103e2b53381",
+          "vehicleId": "6227c3d2-b98b-5666-ac0f-1e1291c15ac5",
+          "title": "2018 Hyundai Creta SX",
+          "registrationDisplay": "TN 73 DD 1051",
+          "summary": "Petrol · Manual · 73,400 km",
+          "priceLabel": "₹6,15,000",
+          "status": "PENDING_REVIEW",
+          "statusLabel": "Pending review",
+          "statusTone": "warn",
+          "dealer": {
+            "id": "91b873d2-8c95-49e9-9948-1cb970d899ae",
+            "name": "Walaja Highway Cars",
+            "slug": "walaja-highway-cars-enterprises-ranipet-tamil-nadu"
+          },
+          "location": "Ranipet",
+          "submittedAt": "2026-07-16T09:00:00.000Z",
+          "submittedLabel": "16 Jul 2026",
+          "waitingLabel": "16 Jul 2026",
+          "resubmission": false,
+          "photography": {
+            "status": "NOT_STARTED",
+            "label": "Not photographed",
+            "tone": "neutral"
+          },
+          "imageCount": 0
+        },
+        {
+          "id": "607e1181-18de-5863-9868-4f5aaf07e2da",
+          "vehicleId": "ebaa5813-16d6-58a0-9e46-ce569b24ceaf",
+          "title": "2022 Tata Altroz XZ+",
+          "registrationDisplay": "TN 73 DD 1069",
+          "summary": "CNG · Manual · 56,600 km",
+          "priceLabel": "₹7,00,000",
+          "status": "PENDING_REVIEW",
+          "statusLabel": "Pending review",
+          "statusTone": "warn",
+          "dealer": {
+            "id": "6791a05a-005d-4596-a53e-050237a00a9e",
+            "name": "Arcot City Cars",
+            "slug": "arcot-city-cars-llp-arcot-ranipet-tamil-nadu"
+          },
+          "location": "Arcot, Ranipet",
+          "submittedAt": "2026-07-27T09:00:00.000Z",
+          "submittedLabel": "27 Jul 2026",
+          "waitingLabel": "27 Jul 2026",
+          "resubmission": false,
+          "photography": {
+            "status": "NOT_STARTED",
+            "label": "Not photographed",
+            "tone": "neutral"
+          },
+          "imageCount": 0
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      },
+      "counts": {
+        "DRAFT": 59,
+        "WITHDRAWN": 23,
+        "PENDING_REVIEW": 48,
+        "SOLD": 41,
+        "RESERVED": 30,
+        "CHANGES_REQUESTED": 6,
+        "ACTIVE": 381,
+        "REJECTED": 14
+      },
+      "reactivationPending": 2
+    }
+  },
+  {
+    "req": "GET /v1/admin/listings/52d9bc56-5ae0-42b0-aaf8-281bd929cdb9",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "52d9bc56-5ae0-42b0-aaf8-281bd929cdb9",
+        "vehicleId": "cae65ff0-f074-44d1-9466-cfc5612da4bd",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 29 KW 5566",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "dealer": {
+          "id": "02c97984-fc5c-4ade-9be6-2c107ff3e5fd",
+          "name": "AdmListDealer Motors 72062341ce1a",
+          "slug": "admlistdealer-motors-72062341ce1a-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-04T13:15:24.369Z",
+        "submittedLabel": "04 Oct 2026",
+        "waitingLabel": "just now",
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 0,
+        "reason": null,
+        "submissionCount": 1,
+        "publishedAt": null
+      },
+      "dealer": {
+        "id": "02c97984-fc5c-4ade-9be6-2c107ff3e5fd",
+        "name": "AdmListDealer Motors 72062341ce1a",
+        "slug": "admlistdealer-motors-72062341ce1a-vellore-tamil-nadu",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "location": "Vellore",
+        "phoneDisplay": "+91 96007 20588"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 29 KW 5566"
+            },
+            {
+              "label": "RTO",
+              "value": "TN29"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Comprehensive"
+            },
+            {
+              "label": "Insurance valid until",
+              "value": "31 Mar 2027"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": true
+      },
+      "images": {
+        "items": [],
+        "min": 6,
+        "max": 20,
+        "canEdit": true
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": false,
+          "checkedAt": null
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-04T13:15:24.371Z",
+          "atLabel": "04 Oct 2026"
+        }
+      ],
+      "blockers": [
+        {
+          "code": "CHECKS_INCOMPLETE",
+          "message": "7 verification checks are still unticked."
+        },
+        {
+          "code": "TOO_FEW_IMAGES",
+          "message": "0 of the 6 images needed are uploaded."
+        },
+        {
+          "code": "NO_PRIMARY_IMAGE",
+          "message": "No primary image is chosen."
+        }
+      ],
+      "actions": {
+        "canVerify": true,
+        "canRequestChanges": true,
+        "canReject": true,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "status": "ACTIVE"
+  },
+  {
+    "req": "POST /v1/admin/listings/c675994a-da13-4991-8765-922e434b3ca5/reject",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "c675994a-da13-4991-8765-922e434b3ca5",
+        "vehicleId": "5070913e-e064-4650-8c67-c16712fead5d",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 85 RV 6820",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "REJECTED",
+        "statusLabel": "Rejected",
+        "statusTone": "err",
+        "dealer": {
+          "id": "02c97984-fc5c-4ade-9be6-2c107ff3e5fd",
+          "name": "AdmListDealer Motors 72062341ce1a",
+          "slug": "admlistdealer-motors-72062341ce1a-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-04T13:15:24.811Z",
+        "submittedLabel": "04 Oct 2026",
+        "waitingLabel": null,
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 0,
+        "reason": "Rejecting this listing for the test",
+        "submissionCount": 1,
+        "publishedAt": null
+      },
+      "dealer": {
+        "id": "02c97984-fc5c-4ade-9be6-2c107ff3e5fd",
+        "name": "AdmListDealer Motors 72062341ce1a",
+        "slug": "admlistdealer-motors-72062341ce1a-vellore-tamil-nadu",
+        "status": "ACTIVE",
+        "statusLabel": "Active",
+        "statusTone": "ok",
+        "location": "Vellore",
+        "phoneDisplay": "+91 96007 20588"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 85 RV 6820"
+            },
+            {
+              "label": "RTO",
+              "value": "TN85"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Comprehensive"
+            },
+            {
+              "label": "Insurance valid until",
+              "value": "31 Mar 2027"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": false
+      },
+      "images": {
+        "items": [],
+        "min": 6,
+        "max": 20,
+        "canEdit": false
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": false,
+          "checkedAt": null
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-04T13:15:24.813Z",
+          "atLabel": "04 Oct 2026"
+        },
+        {
+          "action": "listing.rejected",
+          "label": "Rejected",
+          "actor": "Dealers-Drive",
+          "reason": "Rejecting this listing for the test",
+          "at": "2026-10-04T13:15:24.822Z",
+          "atLabel": "04 Oct 2026"
+        }
+      ],
+      "blockers": [],
+      "actions": {
+        "canVerify": false,
+        "canRequestChanges": false,
+        "canReject": false,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "status": "REJECTED"
+  },
+  {
+    "req": "GET /v1/vehicles/2023-hyundai-creta-sx-o-vellore-fbe0f1ac",
+    "status": 200,
+    "body": {
+      "slug": "2023-hyundai-creta-sx-o-vellore-fbe0f1ac",
+      "availability": "AVAILABLE",
+      "title": "2023 Hyundai Creta SX(O)",
+      "year": 2023,
+      "priceLabel": "₹14,50,000",
+      "negotiabilityLabel": "Fixed price, no hidden charges",
+      "summary": "Petrol · Automatic · 22,400 km",
+      "description": "Single owner, certification fixture.",
+      "specs": [
+        {
+          "label": "Make",
+          "value": "Hyundai"
+        },
+        {
+          "label": "Model",
+          "value": "Creta"
+        },
+        {
+          "label": "Variant",
+          "value": "SX(O)"
+        },
+        {
+          "label": "Manufacturing year",
+          "value": "2023"
+        },
+        {
+          "label": "Registration year",
+          "value": "2023"
+        }
+      ],
+      "images": [
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 1 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 2 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 3 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 4 of 6"
+        },
+        {
+          "url": "<redacted>",
+          "alt": "2023 Hyundai Creta SX(O), photograph 5 of 6"
+        }
+      ],
+      "primaryIndex": 0,
+      "publishedLabel": "Listed 04 Oct 2026",
+      "facts": {
+        "make": "Hyundai",
+        "model": "Creta",
+        "variant": "SX(O)",
+        "bodyType": "SUV",
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "color": "White",
+        "kilometersDriven": 22400,
+        "ownerCount": 1,
+        "pricePaise": 145000000
+      },
+      "dealer": {
+        "name": "AdmListDealer Motors 72062341ce1a",
+        "slug": "admlistdealer-motors-72062341ce1a-vellore-tamil-nadu",
+        "initials": "AM",
+        "isVerified": true,
+        "location": "Vellore",
+        "city": "Vellore",
+        "district": "Vellore",
+        "state": "Tamil Nadu"
+      }
+    }
+  },
+  {
+    "vdp": 404
+  },
+  {
+    "req": "POST /v1/admin/listings/9cc08f63-9ea5-4838-9421-6d33392b65e2/approve",
+    "status": 409,
+    "body": {
+      "type": "https://dealers-drive.com/errors/listing-not-ready",
+      "title": "Listing not ready",
+      "status": 409,
+      "code": "LISTING_NOT_READY",
+      "traceId": "xE-Wtso7U7",
+      "detail": "This listing is not ready to approve yet.",
+      "blockers": [
+        {
+          "code": "DEALER_NOT_ACTIVE",
+          "message": "The dealership is not active, so nothing of theirs can go live."
+        }
+      ]
+    }
+  },
+  {
+    "listingStatus": "PENDING_REVIEW",
+    "publicVdp": 404
+  },
+  {
+    "req": "GET /v1/admin/listings/a06fe3a4-4807-445b-8411-cf9cc3722552",
+    "status": 200,
+    "body": {
+      "listing": {
+        "id": "a06fe3a4-4807-445b-8411-cf9cc3722552",
+        "vehicleId": "0afcbc2d-9692-47c0-ae77-0de07def68c1",
+        "title": "2023 Hyundai Creta SX(O)",
+        "registrationDisplay": "TN 42 DF 1183",
+        "summary": "Petrol · Automatic · 22,400 km",
+        "priceLabel": "₹14,50,000",
+        "status": "PENDING_REVIEW",
+        "statusLabel": "Pending review",
+        "statusTone": "warn",
+        "dealer": {
+          "id": "816990b5-a85b-454c-ada9-df3f83b5108f",
+          "name": "AdmListReview Motors 720631a3dbe4",
+          "slug": "admlistreview-motors-720631a3dbe4-vellore-tamil-nadu"
+        },
+        "location": "Vellore",
+        "submittedAt": "2026-10-04T13:15:26.244Z",
+        "submittedLabel": "04 Oct 2026",
+        "waitingLabel": "just now",
+        "resubmission": false,
+        "photography": {
+          "status": "NOT_STARTED",
+          "label": "Not photographed",
+          "tone": "neutral"
+        },
+        "imageCount": 0,
+        "reason": null,
+        "submissionCount": 1,
+        "publishedAt": null
+      },
+      "dealer": {
+        "id": "816990b5-a85b-454c-ada9-df3f83b5108f",
+        "name": "AdmListReview Motors 720631a3dbe4",
+        "slug": "admlistreview-motors-720631a3dbe4-vellore-tamil-nadu",
+        "status": "SUSPENDED",
+        "statusLabel": "Suspended",
+        "statusTone": "err",
+        "location": "Vellore",
+        "phoneDisplay": "+91 96007 20590"
+      },
+      "sections": [
+        {
+          "key": "registration",
+          "title": "Registration",
+          "rows": [
+            {
+              "label": "Registration number",
+              "value": "TN 42 DF 1183"
+            },
+            {
+              "label": "RTO",
+              "value": "TN42"
+            },
+            {
+              "label": "Registration year",
+              "value": "2023"
+            }
+          ]
+        },
+        {
+          "key": "basics",
+          "title": "Vehicle basics",
+          "rows": [
+            {
+              "label": "Make",
+              "value": "Hyundai"
+            },
+            {
+              "label": "Model",
+              "value": "Creta"
+            },
+            {
+              "label": "Variant",
+              "value": "SX(O)"
+            },
+            {
+              "label": "Manufacturing year",
+              "value": "2023"
+            },
+            {
+              "label": "Fuel",
+              "value": "Petrol"
+            }
+          ]
+        },
+        {
+          "key": "details",
+          "title": "Vehicle details",
+          "rows": [
+            {
+              "label": "Kilometres driven",
+              "value": "22,400 km"
+            },
+            {
+              "label": "Owners",
+              "value": "First owner"
+            },
+            {
+              "label": "Colour",
+              "value": "White"
+            },
+            {
+              "label": "Insurance",
+              "value": "Comprehensive"
+            },
+            {
+              "label": "Insurance valid until",
+              "value": "31 Mar 2027"
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "title": "Pricing",
+          "rows": [
+            {
+              "label": "Price",
+              "value": "₹14,50,000"
+            },
+            {
+              "label": "Negotiable",
+              "value": "Fixed price, no hidden charges"
+            }
+          ]
+        }
+      ],
+      "description": "Single owner, certification fixture.",
+      "issues": [],
+      "photography": {
+        "status": "NOT_STARTED",
+        "label": "Not photographed",
+        "tone": "neutral",
+        "note": null,
+        "updatedAt": null,
+        "canUpdate": true
+      },
+      "images": {
+        "items": [],
+        "min": 6,
+        "max": 20,
+        "canEdit": true
+      },
+      "checks": [
+        {
+          "key": "REGISTRATION",
+          "label": "Registration checked",
+          "hint": "The plate on the car matches the number entered and the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "MAKE_MODEL",
+          "label": "Make and model checked",
+          "hint": "The car is the make and model entered.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "VARIANT",
+          "label": "Variant checked",
+          "hint": "The trim on the car matches, or none was entered and none is claimed.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "YEAR",
+          "label": "Year checked",
+          "hint": "Manufacturing and registration years match the RC.",
+          "checked": false,
+          "checkedAt": null
+        },
+        {
+          "key": "ODOMETER",
+          "label": "Odometer checked",
+          "hint": "The reading on the dashboard matches the kilometres entered.",
+          "checked": false,
+          "checkedAt": null
+        }
+      ],
+      "history": [
+        {
+          "action": "listing.submitted",
+          "label": "Submitted for review",
+          "actor": "Dealer",
+          "reason": null,
+          "at": "2026-10-04T13:15:26.245Z",
+          "atLabel": "04 Oct 2026"
+        }
+      ],
+      "blockers": [
+        {
+          "code": "DEALER_NOT_ACTIVE",
+          "message": "The dealership is not active, so nothing of theirs can go live."
+        },
+        {
+          "code": "CHECKS_INCOMPLETE",
+          "message": "7 verification checks are still unticked."
+        },
+        {
+          "code": "TOO_FEW_IMAGES",
+          "message": "0 of the 6 images needed are uploaded."
+        },
+        {
+          "code": "NO_PRIMARY_IMAGE",
+          "message": "No primary image is chosen."
+        }
+      ],
+      "actions": {
+        "canVerify": true,
+        "canRequestChanges": true,
+        "canReject": true,
+        "canApprove": false
+      }
+    }
+  },
+  {
+    "listingStatus": "PENDING_REVIEW"
+  },
+  {
+    "listingStatus": "PENDING_REVIEW"
+  },
+  {
+    "actions": ["listing.check_set", "listing.submitted", "listing.approved"]
+  },
+  {
+    "req": "POST /v1/admin/dealers/53874ffc-1889-49cf-ae87-14952a941aaf/suspend",
+    "status": 200,
+    "body": {
+      "id": "53874ffc-1889-49cf-ae87-14952a941aaf",
+      "status": "SUSPENDED",
+      "statusLabel": "Suspended",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:15:28.112Z"
+    }
+  },
+  {
+    "status": "SUSPENDED"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "VPhN3eop3E",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "U9OV786tgo",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "POST /v1/dealer/vehicles",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "6-rcQNda0F",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/dealers/dealerlife-motors-720639c03ccf-vellore-tamil-nadu",
+    "status": 404,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-found",
+      "title": "Not found",
+      "status": 404,
+      "code": "NOT_FOUND",
+      "traceId": "y8bAx3dBWj",
+      "detail": "That dealership is not listed."
+    }
+  },
+  {
+    "publicVdp": 404,
+    "listingRow": "ACTIVE"
+  },
+  {
+    "reservedRow": "RESERVED"
+  },
+  {
+    "enquiryExists": true
+  },
+  {
+    "inHistory": true
+  },
+  {
+    "req": "GET /v1/saved-vehicles",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "savedAt": "2026-10-04T13:15:28.064Z",
+          "vehicle": {
+            "slug": "2023-hyundai-creta-sx-o-vellore-6ffa5bcf",
+            "availability": "UNAVAILABLE",
+            "title": "2023 Hyundai Creta SX(O)",
+            "year": 2023,
+            "priceLabel": "₹14,50,000",
+            "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+            "image": null,
+            "imageCount": 6,
+            "dealer": {
+              "name": "DealerLife Motors 720639c03ccf",
+              "slug": "dealerlife-motors-720639c03ccf-vellore-tamil-nadu",
+              "initials": "DM",
+              "isVerified": true
+            }
+          }
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+  },
+  {
+    "req": "GET /v1/dealer/dashboard",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "VVs4EdAfSn",
+      "detail": "You must be signed in to do that."
+    }
+  },
+  {
+    "req": "GET /v1/auth/customer/me",
+    "status": 200,
+    "body": {
+      "customer": {
+        "id": "2cad7def-6b48-40bb-9b8f-d6cbb26e5716",
+        "fullName": "DL Staff",
+        "phone": "+••••••••0594",
+        "phoneDisplay": "+91 96007 20594"
+      }
+    }
+  },
+  {
+    "req": "GET /v1/vehicles?limit=5",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-5f6939ca",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "AdmListDealer Motors 72062341ce1a",
+            "slug": "admlistdealer-motors-72062341ce1a-vellore-tamil-nadu",
+            "initials": "AM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-fbe0f1ac",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "AdmListDealer Motors 72062341ce1a",
+            "slug": "admlistdealer-motors-72062341ce1a-vellore-tamil-nadu",
+            "initials": "AM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-70aa97cc",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "AdmListDealer Motors 72062341ce1a",
+            "slug": "admlistdealer-motors-72062341ce1a-vellore-tamil-nadu",
+            "initials": "AM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-b1f8252f",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "PrioA Motors 60890fbeafc",
+            "slug": "prioa-motors-60890fbeafc-vellore-tamil-nadu",
+            "initials": "PM",
+            "isVerified": true
+          }
+        },
+        {
+          "slug": "2023-hyundai-creta-sx-o-vellore-93def69d",
+          "availability": "AVAILABLE",
+          "title": "2023 Hyundai Creta SX(O)",
+          "year": 2023,
+          "priceLabel": "₹14,50,000",
+          "metaLabel": "22,400 km · Petrol · Automatic · Vellore",
+          "image": {
+            "url": "<redacted>",
+            "alt": "2023 Hyundai Creta SX(O), the primary photograph"
+          },
+          "imageCount": 6,
+          "dealer": {
+            "name": "DealerLife Motors 152988b3300a",
+            "slug": "dealerlife-motors-152988b3300a-vellore-tamil-nadu",
+            "initials": "DM",
+            "isVerified": true
+          }
+        }
+      ],
+      "page": {
+        "page": 1,
+        "limit": 5,
+        "total": 402,
+        "totalPages": 81
+      },
+      "available": 373,
+      "facets": {
+        "cities": [],
+        "brands": [
+          {
+            "value": "hyundai",
+            "label": "Hyundai",
+            "count": 158
+          },
+          {
+            "value": "maruti-suzuki",
+            "label": "Maruti Suzuki",
+            "count": 70
+          },
+          {
+            "value": "tata",
+            "label": "Tata",
+            "count": 29
+          },
+          {
+            "value": "toyota",
+            "label": "Toyota",
+            "count": 24
+          },
+          {
+            "value": "honda",
+            "label": "Honda",
+            "count": 21
+          }
+        ],
+        "models": [],
+        "fuelTypes": [
+          {
+            "value": "petrol",
+            "label": "Petrol",
+            "count": 249
+          },
+          {
+            "value": "diesel",
+            "label": "Diesel",
+            "count": 62
+          },
+          {
+            "value": "cng",
+            "label": "CNG",
+            "count": 48
+          },
+          {
+            "value": "hybrid",
+            "label": "Hybrid",
+            "count": 9
+          },
+          {
+            "value": "electric",
+            "label": "Electric",
+            "count": 5
+          }
+        ],
+        "transmissions": [
+          {
+            "value": "automatic",
+            "label": "Automatic",
+            "count": 247
+          },
+          {
+            "value": "manual",
+            "label": "Manual",
+            "count": 126
+          }
+        ],
+        "bodyTypes": [
+          {
+            "value": "suv",
+            "label": "SUV",
+            "count": 220
+          },
+          {
+            "value": "hatchback",
+            "label": "Hatchback",
+            "count": 80
+          },
+          {
+            "value": "muv",
+            "label": "MUV",
+            "count": 34
+          },
+          {
+            "value": "sedan",
+            "label": "Sedan",
+            "count": 28
+          },
+          {
+            "value": "luxury",
+            "label": "Luxury",
+            "count": 11
+          }
+        ],
+        "colors": [
+          {
+            "value": "black",
+            "label": "Black",
+            "count": 19
+          },
+          {
+            "value": "white",
+            "label": "White",
+            "count": 167
+          },
+          {
+            "value": "grey",
+            "label": "Grey",
+            "count": 34
+          },
+          {
+            "value": "silver",
+            "label": "Silver",
+            "count": 37
+          },
+          {
+            "value": "red",
+            "label": "Red",
+            "count": 26
+          }
+        ],
+        "ownerCounts": [
+          {
+            "value": "1",
+            "label": "First owner",
+            "count": 230
+          },
+          {
+            "value": "2",
+            "label": "Second owner",
+            "count": 69
+          },
+          {
+            "value": "3",
+            "label": "Third owner",
+            "count": 41
+          },
+          {
+            "value": "4",
+            "label": "Fourth owner or more",
+            "count": 33
+          }
+        ],
+        "dealers": [],
+        "years": [
+          {
+            "value": "2024",
+            "label": "2024",
+            "count": 31
+          },
+          {
+            "value": "2023",
+            "label": "2023",
+            "count": 163
+          },
+          {
+            "value": "2022",
+            "label": "2022",
+            "count": 42
+          },
+          {
+            "value": "2021",
+            "label": "2021",
+            "count": 34
+          },
+          {
+            "value": "2020",
+            "label": "2020",
+            "count": 25
+          }
+        ],
+        "price": [
+          {
+            "min": null,
+            "max": 50000000,
+            "label": "Under ₹5 lakh",
+            "count": 72
+          },
+          {
+            "min": 50000000,
+            "max": 100000000,
+            "label": "₹5–10 lakh",
+            "count": 113
+          },
+          {
+            "min": 100000000,
+            "max": 150000000,
+            "label": "₹10–15 lakh",
+            "count": 171
+          },
+          {
+            "min": 150000000,
+            "max": 200000000,
+            "label": "₹15–20 lakh",
+            "count": 13
+          },
+          {
+            "min": 200000000,
+            "max": null,
+            "label": "₹20 lakh+",
+            "count": 6
+          }
+        ],
+        "kilometers": [
+          {
+            "min": null,
+            "max": 20000,
+            "label": "Under 20,000 km",
+            "count": 19
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "label": "20,000–40,000 km",
+            "count": 190
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "label": "40,000–60,000 km",
+            "count": 78
+          },
+          {
+            "min": 60000,
+            "max": 100000,
+            "label": "60,000–1,00,000 km",
+            "count": 64
+          },
+          {
+            "min": 100000,
+            "max": null,
+            "label": "1,00,000+ km",
+            "count": 22
+          }
+        ]
+      }
+    }
+  },
+  {
+    "req": "POST /v1/admin/dealers/53874ffc-1889-49cf-ae87-14952a941aaf/reinstate",
+    "status": 200,
+    "body": {
+      "id": "53874ffc-1889-49cf-ae87-14952a941aaf",
+      "status": "ACTIVE",
+      "statusLabel": "Active",
+      "creditsGranted": 0,
+      "creditBalance": 0,
+      "listingsAffected": 0,
+      "notifiedAt": "2026-10-04T13:15:28.248Z"
+    }
+  },
+  {
+    "status": "ACTIVE",
+    "ownerDashboard": 200
+  },
+  {
+    "before": {
+      "listings": 3,
+      "enquiries": 1,
+      "members": 3
+    },
+    "after": {
+      "listings": 3,
+      "enquiries": 1,
+      "members": 3
+    }
+  },
+  {
+    "activeVdpAfterReinstate": 200,
+    "reservedRow": "RESERVED"
+  },
+  {
+    "actions": ["dealer.suspended", "dealer.reinstated"]
+  },
+  {
+    "note": "CLOSED enum exists; no code path sets it in V1"
+  },
+  {
+    "req": "POST /v1/dealer/vehicles/f4d6fdcd-7e52-4a7f-b118-e4667e279402/submit",
+    "status": 401,
+    "body": {
+      "type": "https://dealers-drive.com/errors/not-authenticated",
+      "title": "Authentication required",
+      "status": 401,
+      "code": "NOT_AUTHENTICATED",
+      "traceId": "T8uO7wQqWm",
+      "detail": "You must be signed in to do that."
+    }
+  }
+]
