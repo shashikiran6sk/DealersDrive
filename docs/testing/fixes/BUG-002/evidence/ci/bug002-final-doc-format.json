@@ -1,0 +1,9 @@
+{
+  "command": ["pnpm", "format:check"],
+  "sha": "debfb6cfe2df0b98999aa018f0618293aeda9ece",
+  "start_utc": "2026-10-03T10:18:11.276131+00:00",
+  "end_utc": "2026-10-03T10:18:35.510354+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug002-final-doc-format.log",
+  "cache": "TURBO_FORCE=true"
+}

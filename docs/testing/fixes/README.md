@@ -14,6 +14,7 @@ product PRs.
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
 | `404/`                                                                | `claude/serene-thompson-yuft81` @ `107a46259f1e8ee13765e3a3559fe5b5bbc88c99`         | #209       |
 | `BUG-001/`                                                            | `fix/pre-production-01-invitation-race` @ `1f38a1333fb2fa6f933c3a1972a3a4298a2d071e` | #231       |
+| `BUG-002/`                                                            | `fix/pre-production-02-approval-gate` @ `3570dcf5dcffb85235315eaed8e69c54bab1f87a`   | #232       |
 | `../pre-production/` (Agent 2's original 556-case dossier, 162 files) | `fix/pre-production-01-invitation-race` @ `1f38a13`, updated by later layers         | #231–#238  |
 | `_handoff/`                                                           | Agent 2's final handoff and machine-readable checkpoint (supplied by owner)          | —          |
 
