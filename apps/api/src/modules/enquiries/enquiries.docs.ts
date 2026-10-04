@@ -164,13 +164,17 @@ export const enquiriesDocs: ModuleDocs = {
         'audited as `enquiry.contacted`, `enquiry.closed`, `enquiry.spam` or ' +
         '`enquiry.reopened`, against the dealership, with the status before and after.\n\n' +
         'Only `status` is accepted — the body is `.strict()`, so a customer’s name, number or ' +
-        'message cannot be edited here.',
+        'message cannot be edited here.\n\n' +
+        '**Authorised at commit time.** Membership, role and dealership status are re-read ' +
+        'inside the write, after the enquiry row is locked: a member removed or a dealership ' +
+        'suspended while the request was waiting gets a 401 and nothing changes. An authority ' +
+        'row held by another operation returns `409 AUTHORIZATION_BUSY`.',
       audience: 'dealer',
       permission: 'enquiry:contact',
       params: 'IdParam',
       requestBody: { schema: 'UpdateEnquiryInput', example: { status: 'CONTACTED' } },
       responses: [{ status: 200, description: 'The enquiry, moved.', schema: 'DealerEnquiry' }],
-      errors: [400, 401, 403, 404],
+      errors: [400, 401, 403, 404, 409],
     },
     {
       method: 'get',
