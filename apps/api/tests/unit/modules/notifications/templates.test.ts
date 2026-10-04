@@ -23,6 +23,7 @@ const ALL: TemplateName[] = [
   'dealer.application.approved',
   'dealer.application.rejected',
   'dealer.application.changes-requested',
+  'dealer.application.closed',
   'dealer.account.suspended',
   'dealer.account.reinstated',
   'admin.profile-change.submitted',

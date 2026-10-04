@@ -80,6 +80,10 @@ export const getGoogleCallback: PublicAuthRoute = (router, { service }) => {
           back('account_suspended');
           return;
         }
+        if (code === 'APPLICATION_CLOSED') {
+          back('application_closed');
+          return;
+        }
         if (code === 'ADMIN_NOT_ALLOWLISTED' || code === 'ADMIN_ACCESS_REVOKED') {
           back('not_authorised');
           return;

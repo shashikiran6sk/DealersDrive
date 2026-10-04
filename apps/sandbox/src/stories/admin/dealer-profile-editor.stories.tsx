@@ -45,6 +45,7 @@ const BASE: AdminDealerDetail = {
     canRequestChanges: true,
     canSuspend: false,
     canReinstate: false,
+    canClose: false,
     canGrantCredits: false,
     canEdit: true,
   },

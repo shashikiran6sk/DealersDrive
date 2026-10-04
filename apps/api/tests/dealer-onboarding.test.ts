@@ -678,7 +678,7 @@ describe('what a dealer may change about themselves', () => {
     expect((await agent.get('/v1/dealer').expect(200)).body.address.city).toBe('Chennai');
   });
 
-  it.each(['PENDING_APPROVAL', 'ACTIVE', 'REJECTED', 'CLOSED'] as const)(
+  it.each(['PENDING_APPROVAL', 'ACTIVE', 'REJECTED'] as const)(
     'refuses the onboarding route once the dealership is %s',
     async (status) => {
       const { agent, dealerId } = await dealership();
@@ -694,16 +694,24 @@ describe('what a dealer may change about themselves', () => {
     },
   );
 
-  it('makes every dealer route unauthorized once the dealership is suspended', async () => {
-    const { agent, dealerId } = await dealership();
-    await h.prisma.dealer.update({ where: { id: dealerId }, data: { status: 'SUSPENDED' } });
+  /**
+   * A closed application (ORIG-GAP-CLOSE) is shut the way a suspended
+   * dealership is: its members cannot enter it at all, so the onboarding
+   * route answers 401 rather than PROFILE_LOCKED.
+   */
+  it.each(['SUSPENDED', 'CLOSED'] as const)(
+    'makes every dealer route unauthorized once the dealership is %s',
+    async (status) => {
+      const { agent, dealerId } = await dealership();
+      await h.prisma.dealer.update({ where: { id: dealerId }, data: { status } });
 
-    await agent
-      .patch('/v1/dealer/onboarding')
-      .send({ address: { city: 'Chennai' } })
-      .expect(401);
-    await agent.get('/v1/dealer').expect(401);
-  });
+      await agent
+        .patch('/v1/dealer/onboarding')
+        .send({ address: { city: 'Chennai' } })
+        .expect(401);
+      await agent.get('/v1/dealer').expect(401);
+    },
+  );
 });
 
 describe('the contact number, after onboarding', () => {

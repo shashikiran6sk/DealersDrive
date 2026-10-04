@@ -60,7 +60,7 @@ import {
 } from '../auth/auth.facade.js';
 import { documentKey, type DealersService } from '../dealers/dealers.facade.js';
 import { DOCUMENT_NOT_FOUND } from '../../platform/messages.js';
-import { DEALER_NOT_FOUND } from './admin.messages.js';
+import { CLOSED_NOT_REJECTABLE, DEALER_NOT_CLOSABLE, DEALER_NOT_FOUND } from './admin.messages.js';
 
 export interface AdminDeps {
   prisma: PrismaClient;
@@ -422,6 +422,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           canApprove: dealer.status === 'PENDING_APPROVAL' && allVerified && application.isComplete,
           canReject: dealer.status === 'PENDING_APPROVAL' || dealer.status === 'DRAFT',
           canRequestChanges: dealer.status === 'PENDING_APPROVAL',
+          canClose: dealer.status === 'DRAFT' || dealer.status === 'PENDING_APPROVAL',
           canSuspend: dealer.status === 'ACTIVE',
           canReinstate: dealer.status === 'SUSPENDED',
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
@@ -535,6 +536,9 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           },
         });
         if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
+        if (dealer.status === 'CLOSED') {
+          throw new DomainError('INVALID_DEALER_TRANSITION', CLOSED_NOT_REJECTABLE);
+        }
         if (
           dealer.status === 'ACTIVE' ||
           dealer.status === 'SUSPENDED' ||
@@ -658,6 +662,59 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           dealerId,
           actor: { type: 'ADMIN', id: admin.userId },
           traceId: getContext()?.traceId ?? 'dealer-request-changes',
+          payload: { dealerId, reason },
+        });
+
+        return {
+          id: updated.id,
+          status: updated.status,
+          statusLabel: DEALER_STATUS_LABELS[updated.status],
+          creditsGranted: 0,
+          creditBalance: updated.creditBalance,
+          listingsAffected: 0,
+          notifiedAt: new Date().toISOString(),
+        };
+      });
+    },
+
+    async closeDealer(
+      admin: AdminPrincipal,
+      dealerId: string,
+      reason: string,
+    ): Promise<DealerModerationResponse> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      return withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
+        const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
+        if (dealer.status !== 'DRAFT' && dealer.status !== 'PENDING_APPROVAL') {
+          throw new DomainError('INVALID_DEALER_TRANSITION', DEALER_NOT_CLOSABLE);
+        }
+
+        const updated = await tx.dealer.update({
+          where: { id: dealerId },
+          data: { status: 'CLOSED', statusReason: reason },
+        });
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId,
+          action: 'dealer.closed',
+          entityType: 'Dealer',
+          entityId: dealerId,
+          before: { status: dealer.status },
+          after: { status: 'CLOSED', reason },
+        });
+
+        await enqueueOutbox(tx, {
+          type: 'DealerApplicationClosed',
+          aggregateType: 'Dealer',
+          aggregateId: dealerId,
+          dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'dealer-close',
           payload: { dealerId, reason },
         });
 

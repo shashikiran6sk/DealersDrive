@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { revalidations } from '../../../setup.js';
 import {
   approveDealerAction,
+  closeDealerAction,
   reinstateDealerAction,
   rejectDocumentAction,
   suspendDealerAction,
@@ -73,6 +74,24 @@ describe('a decision that changes public visibility', () => {
 
     expect(result.ok).toBe(true);
     expect(revalidations.tags).toContain('vehicles');
+  });
+
+  it('closes an application through the API and refreshes the console (ORIG-GAP-CLOSE)', async () => {
+    const result = await closeDealerAction(DEALER, { reason: 'Duplicate application.' }, SLUG);
+
+    expect(result.ok).toBe(true);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining(`/v1/admin/dealers/${DEALER}/close`),
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(revalidations.paths).toContain('/admin');
+  });
+
+  it('refuses to close without a reason, before calling the API', async () => {
+    const result = await closeDealerAction(DEALER, { reason: '' }, SLUG);
+
+    expect(result).toEqual({ ok: false, message: 'Closing an application needs a reason.' });
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it('puts an approved dealership in front of buyers at once', async () => {
