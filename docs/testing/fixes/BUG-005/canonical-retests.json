@@ -5,7 +5,7 @@
   "campaignRedCommit": "adeb847c19a0740270929a014594d1ce6c73a567",
   "fixBranch": "fix/pre-production-05-membership-commit-guard",
   "baseBranch": "fix/pre-production-04-suspended-media",
-  "fixPr": null,
+  "fixPr": 236,
   "productCommit": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
   "testedCommit": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
   "regressionTest": "apps/api/tests/membership-commit-guard.test.ts",
@@ -42,7 +42,7 @@
     "typecheck": "PASS",
     "freshBuild": "PASS",
     "testedCommit": "69cfc0d1bd95d10ff1fbab66fbbaaaf8b6d42aed",
-    "historyScan": "PASS233 commits with reviewed working configuration; final-head repeat pending"
+    "historyScan": "PASS234 commits atceaf232; final PR-metadata head repeat pending"
   },
   "humanUat": "PENDING",
   "openRelatedFinding": "BUG-NEW-012 P1 queued enquiry revocation; separate next layer",
