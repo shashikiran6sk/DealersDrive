@@ -1,0 +1,12 @@
+{
+  "R238-admin-no-horizontal-overflow": {
+    "status": "FAIL",
+    "layers": ["BROWSER"],
+    "note": "16/40 overflow or fail: [\"/admin@320:200:431/320\",\"/admin/dealers@320:200:431/320\",\"/admin/dealers/:id@320:200:431/320\",\"/admin/listings@320:200:431/320\",\"/admin/listings/:id@320:200:431/320\",\"/admin/enquiries@320:200:431/320\",\"/admin/support@320:200:431/320\",\"/admin/config@320:200:431/320\",\"/admin@390:200:431/390\",\"/admin/dealers@390:200:431/390\",\"/admin/dealers/:id@390:200:431/390\",\"/admin/listings@390:200:431/390\",\"/admin/listings/:id@390:200:431/390\",\"/admin/enquiries@390:200:431/390\",\"/admin/support@390:200:431/390\",\"/admin/config@390:200:431/390\"]",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "retest-238-red-on-main",
+    "at": "2026-10-04T14:22:36.100Z"
+  }
+}

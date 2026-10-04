@@ -71,16 +71,24 @@
       "security": "run 37207669068 PASS",
       "merge": "73fc42f246e82ba868d7d108d56950bc52973a29",
       "redOnParent": "34/38 fail"
+    },
+    "237": {
+      "state": "MERGED",
+      "finalHead": "91be6efa3425103bfbfcae71d4991c779ac6192e",
+      "ci": "run 37208455912 PASS",
+      "security": "run 37208455972 PASS",
+      "merge": "1831386fdbb2a68e46f65af01efb17fdf91b75ea",
+      "redOnParent": "4/61 fail"
     }
   },
-  "nextPR": 237,
+  "nextPR": 238,
   "originalChecklist": {
     "ORIG-BUG-001 P0 forged upload/read links (default UPLOAD_SIGNING_SECRET)": "OPEN - /uploads and /private mounted for every driver and backed by the configured StoragePort (R2 in production); default secret not refused in production",
     "ORIG-BUG-002 P0/P1 admin approve bypasses verification": "FIXED - VERIFIED BY PR #232",
     "ORIG-BUG-003 P1 suspend/reinstate state validation": "FIXED - VERIFIED BY PR #232",
     "ORIG-BUG-004 P1 presign/replace/delete verified KYC while ACTIVE": "OPEN",
     "ORIG-BUG-005 P2 yard photo unmoderated replacement": "OPEN",
-    "ORIG-BUG-006 P2 production accepts MinIO/localhost storage": "OPEN (#237 pending)",
+    "ORIG-BUG-006 P2 production accepts MinIO/localhost storage": "PARTIALLY FIXED BY PR #237 (minio refused; localhost/omitted r2 endpoint still accepted = BUG-NEW-013)",
     "ORIG-GAP-CLOSE P2 no dealership closure flow (product decision)": "OPEN",
     "ORIG-BUG-007 P3 default Next.js 404": "FIXED - VERIFIED BY PR #209",
     "ORIG-OBS-ROBOTS P3 robots.txt only disallows /api/ /v1/": "OPEN (observation)",
@@ -97,8 +105,10 @@
     "OBS-MEDIA-NOSTORE": "P3 performance: all media no-store; no CDN/browser caching",
     "BUG-005": "FIXED - VERIFIED BY PR #236 (Agent 2 finding)",
     "BUG-NEW-012": "CONFIRMED independently; my severity P2 (Agent 2: P1)",
-    "OBS-AUTH-BUSY": "P3 operational: concurrent authority-row updates yield retryable 409"
+    "OBS-AUTH-BUSY": "P3 operational: concurrent authority-row updates yield retryable 409",
+    "BUG-006": "FIXED - VERIFIED BY PR #237 (Agent 2 finding)",
+    "BUG-NEW-013": "CONFIRMED P2 independently"
   },
-  "updatedAt": "2026-10-04T14:07:55Z",
-  "mainSha": "73fc42f246e82ba868d7d108d56950bc52973a29"
+  "updatedAt": "2026-10-04T14:20:54Z",
+  "mainSha": "1831386fdbb2a68e46f65af01efb17fdf91b75ea"
 }
