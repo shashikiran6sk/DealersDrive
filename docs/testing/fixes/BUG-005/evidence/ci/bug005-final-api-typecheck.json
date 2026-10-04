@@ -1,9 +1,0 @@
-{
-  "command": ["pnpm", "--filter", "@dealers-drive/api", "typecheck"],
-  "sha": "adeb847c19a0740270929a014594d1ce6c73a567",
-  "start_utc": "2026-10-04T07:13:39.314184+00:00",
-  "end_utc": "2026-10-04T07:13:42.092996+00:00",
-  "exit_code": 0,
-  "log": "evidence/ci/bug005-final-api-typecheck.log",
-  "cache": "TURBO_FORCE=true"
-}

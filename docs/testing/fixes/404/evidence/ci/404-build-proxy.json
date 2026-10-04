@@ -1,9 +1,0 @@
-{
-  "command": ["pnpm", "build", "--env-mode=loose"],
-  "sha": "389babb3a04488afe30ab8898419fe3920c8aa78",
-  "start_utc": "2026-10-02T18:15:19.771810+00:00",
-  "end_utc": "2026-10-02T18:15:50.938586+00:00",
-  "exit_code": 0,
-  "log": "evidence/ci/404-build-proxy.log",
-  "cache": "TURBO_FORCE=true"
-}

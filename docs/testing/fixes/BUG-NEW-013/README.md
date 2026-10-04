@@ -1,7 +1,0 @@
-# BUG-NEW-013 — production R2 endpoint defaults to localhost
-
-P2, OPEN. Separate configuration defect discovered while tracing BUG-006. At committed1ab0027, an isolated real production validator with otherwise complete inert credentials accepts omitted S3_ENDPOINT, chooses `http://localhost:9000`, and also accepts an explicitly loopback endpoint. The S3 adapter passes that endpoint directly to S3Client. API/worker can therefore pass boot validation with production uploads targeting the local MinIO development address. ECS normally supplies an explicit endpoint; no deployed misconfiguration or live provider failure is claimed.
-
-Expected: production storage requires an explicit usable provider endpoint. Actual: both omitted/default and explicit loopback endpoints are accepted. No database or provider calls occur in the diagnostic. Credentials are generated in memory and never recorded. [Evidence](evidence/endpoint-probe.json) and deterministic [diagnostic](evidence/endpoint-probe.py) retain this finding.
-
-Root: `apps/api/src/config/env.ts` defines the localhost endpoint default globally and has no production endpoint constraint; `apps/api/src/platform/storage/s3.adapter.ts` consumes it unchanged. A separate PR should design deployment-compatible endpoint validation, reproduce red, and cover accepted R2 URLs plus missing/loopback endpoints while preserving development MinIO. Do not hardcode account identifiers or bundle endpoint-policy changes into BUG-006’s adapter-enum correction. User scope defers additional defects to the next session.

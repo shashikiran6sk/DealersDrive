@@ -1,3 +1,0 @@
-
-> @dealers-drive/api@0.0.0 typecheck /workspace/DealersDrive-fixes/apps/api
-> tsc -p tsconfig.json
