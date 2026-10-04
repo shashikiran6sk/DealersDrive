@@ -282,7 +282,15 @@ describe('filters and search', () => {
 
 describe('paging', () => {
   it('walks every enquiry once, by keyset, without repeating or skipping', async () => {
-    const all = ids(await list('?limit=100'));
+    const all = (
+      await h.prisma.enquiry.findMany({
+        select: { id: true },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      })
+    ).map((row) => row.id);
+    const first = await list('?limit=100');
+    expect(ids(first)).toEqual(all.slice(0, 100));
+    expect(first.page.hasMore).toBe(all.length > 100);
     const seen: string[] = [];
     let cursor: string | null = null;
     do {
@@ -290,6 +298,7 @@ describe('paging', () => {
         `?limit=1${cursor ? `&cursor=${cursor}` : ''}`,
       );
       seen.push(...ids(page));
+      expect(seen.length).toBeLessThanOrEqual(all.length);
       expect(page.page.hasMore).toBe(page.page.nextCursor !== null);
       cursor = page.page.nextCursor;
     } while (cursor);
