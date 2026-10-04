@@ -1,6 +1,0 @@
-{
-  "environment": "Built production Next.js :3004; current source API using local cert DB and fake providers; Chromium 151; private cookies outside repository",
-  "results": [],
-  "status": "BLOCKED",
-  "reason": "Harness expected EmptyState title to have a heading role; StatePanel renders it as a div. This is a locator error, not a product failure."
-}

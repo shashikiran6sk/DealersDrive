@@ -1,9 +1,0 @@
-{
-  "command": ["pnpm", "exec", "node", "docs/testing/fixes/BUG-NEW-005/browser-uat.mjs"],
-  "sha": "d5043b5dd36d7733e9255c0c94615988585fcd0a",
-  "start_utc": "2026-10-03T15:07:40.145277+00:00",
-  "end_utc": "2026-10-03T15:07:50.026192+00:00",
-  "exit_code": 0,
-  "log": "evidence/ci/new005-browser-fixed.log",
-  "cache": "TURBO_FORCE=true"
-}
