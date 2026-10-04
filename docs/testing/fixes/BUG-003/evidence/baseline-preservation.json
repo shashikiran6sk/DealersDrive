@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "baselineCommit": "d6ae115359c4d0ae7ab0fd5115336291666cbb08",
+  "baselineFilesChecked": 162,
+  "canonicalCases": 556,
+  "counts": {
+    "PASS": 244,
+    "FAIL": 7,
+    "BLOCKED": 305
+  },
+  "originalFailRowsPreserved": true,
+  "humanUat": "PENDING"
+}

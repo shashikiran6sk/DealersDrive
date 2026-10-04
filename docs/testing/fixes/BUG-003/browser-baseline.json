@@ -1,0 +1,62 @@
+{
+  "mode": "baseline",
+  "result": "FAIL reproduced",
+  "environment": "built Next.js / Chromium / real cookies and API / PostgreSQL / inert fixtures",
+  "results": [
+    {
+      "collection": "saved",
+      "width": 1440,
+      "expectedRows": 51,
+      "visitedRows": 50,
+      "pages": [50, 0],
+      "orderAndUniqueness": "FAIL",
+      "layouts": [
+        {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        }
+      ]
+    },
+    {
+      "collection": "customer",
+      "width": 1440,
+      "expectedRows": 51,
+      "visitedRows": 20,
+      "pages": [20, 0],
+      "orderAndUniqueness": "FAIL",
+      "layouts": [
+        {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        }
+      ]
+    },
+    {
+      "collection": "inbox",
+      "width": 1440,
+      "expectedRows": 51,
+      "visitedRows": 25,
+      "pages": [25, 0],
+      "orderAndUniqueness": "FAIL",
+      "layouts": [
+        {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        }
+      ]
+    }
+  ],
+  "humanUat": "PENDING"
+}

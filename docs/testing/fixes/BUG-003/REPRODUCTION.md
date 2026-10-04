@@ -1,0 +1,17 @@
+# BUG-003 reproduction and root cause
+
+Canonical tests: DATA-DISC-001, DATA-DISC-002, DATA-DISC-003. Original certification baseline FAIL remains preserved. Campaign reproduction: YES / FAIL before code changes on parent `d29d9b960a1835d61a89e80b03de63430adc1bdc`, branch `fix/pre-production-03-stable-pagination`.
+
+Environment: isolated local Linux, Node24.19.0, pnpm9.15.9, PostgreSQL16.14, built Next.js15.5.25 and Chromium. Integration uses migrated dealersdrive_test; browser uses dealersdrive_cert, fake providers, real cookie authorization and explicitly inert fixtures. No production connections or live messages.
+
+The integration fixture publishes three cars through the actual vehicle submission, moderation and approval pipeline, signs in a real customer through the fake phone provider, saves and enquires through the real endpoints, then sets those collection rows to the same timestamp ending .123 milliseconds. Every collection is read with limit1 and its returned nextCursor is followed.
+
+Expected: all three authoritative database rows appear once in descending createdAt/id order. Actual: one row, hasMore true, followed by an empty page and hasMore false. All three regression tests FAIL with expected-versus-visited IDs/slugs in sanitized bug003-baseline-red.log.
+
+The browser fixture publishes51 cars, saves/enquires through the real API, and assigns all collection rows the same createdAt. Click Show more on Saved Cars, My enquiries and dealer Enquiries. Expected51 rows across pages; actual Saved50+0, customer20+0, inbox25+0. browser-baseline.json and six baseline screenshots record the failure. The initial browser capture had a fixture MEDIA_BASE_URL pointing to the old API port and broken card images; it is retained separately under evidence/diagnostics/initial-media-base. After correcting the fixture port, actual JPEGs decode and the same three pagination failures reproduce. The fixture now asserts media/API origins agree.
+
+Entry points are GET /v1/saved-vehicles, GET /v1/enquiries and GET /v1/dealer/enquiries. Cookie guards derive customer/dealer ownership and strict query schemas accept only documented fields. The Saved service list and Enquiries service mine/inbox already sort createdAt DESC,id DESC, but encode only the date and filter subsequent pages with createdAt < cursor. Every remaining row tied at that date is excluded. The database migrations use TIMESTAMP(3); ties are valid persistent state, not fixture-only invalid input. Mappers, status presentation and aggregate inbox counts do not cause the omission. These reads make no lifecycle state changes.
+
+Design: reuse existing timestamp/UUID keyset encoding and apply the same lexicographic boundary as Admin enquiries: createdAt < at OR (createdAt = at AND id < id). Ownership and status filters remain outside that OR. A dedicated decoder for these three collections also accepts old date-only cursors using their existing strict-before-date semantics; old tokens cannot recover a missing row ID and require refreshing the collection to receive the corrected boundary. Existing global date/sequence/Admin cursor APIs remain unchanged. No schema or frontend rewrite is required.
+
+Implementation and scoped automated/API/DB/browser retests: PASS; see [current report](README.md) for exact commits, retained failed attempts and remaining CI gates. Human UAT: PENDING. This reproduction does not certify unrelated timestamp-only collections. Inventory was separately reproduced as BUG-NEW-007; no inventory fix is included here.

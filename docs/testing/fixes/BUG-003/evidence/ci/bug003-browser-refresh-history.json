@@ -1,0 +1,9 @@
+{
+  "command": ["pnpm", "exec", "node", "docs/testing/fixes/BUG-003/browser-uat.mjs"],
+  "sha": "20c1b39efeab1b5885bb42774b2b594e5f4fffd2",
+  "start_utc": "2026-10-04T05:17:42.976229+00:00",
+  "end_utc": "2026-10-04T05:18:16.492468+00:00",
+  "exit_code": 1,
+  "log": "evidence/ci/bug003-browser-refresh-history.log",
+  "cache": "TURBO_FORCE=true"
+}

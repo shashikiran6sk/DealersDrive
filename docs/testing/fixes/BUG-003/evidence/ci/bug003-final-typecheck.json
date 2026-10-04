@@ -1,0 +1,9 @@
+{
+  "command": ["pnpm", "typecheck"],
+  "sha": "20c1b39efeab1b5885bb42774b2b594e5f4fffd2",
+  "start_utc": "2026-10-04T05:29:22.173364+00:00",
+  "end_utc": "2026-10-04T05:29:30.389688+00:00",
+  "exit_code": 0,
+  "log": "evidence/ci/bug003-final-typecheck.log",
+  "cache": "TURBO_FORCE=true"
+}

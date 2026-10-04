@@ -87,7 +87,7 @@
     "finalEvidence": "../fixes/BUG-002/evidence/ci/bug002-final-purge-red.log",
     "fixBranch": "fix/pre-production-new-005-rejection-race",
     "implementationSha": "d5043b5dd36d7733e9255c0c94615988585fcd0a",
-    "ci": "PASS at3150811: CI364/Security513",
+    "ci": "PASS at d29d9b9: CI366 attempt2 / Security515; first font-loader failure retained separately",
     "canonicalRetestTest": "VERIFY-012",
     "baselineCanonicalStatus": "BLOCKED",
     "regressionTest": "apps/api/tests/dealer-rejection-atomicity.test.ts",
@@ -101,8 +101,8 @@
       "evidence": "../fixes/BUG-NEW-005/evidence/ci/new005-baseline-red.log"
     },
     "fixUrl": "https://github.com/shashikiran6sk/DealersDrive/pull/233",
-    "ciSha": "31508115d7b97d1ea92535c7ffbf91aecb709905",
-    "ci_runs": [364, 513]
+    "ciSha": "d29d9b960a1835d61a89e80b03de63430adc1bdc",
+    "ci_runs": [366, 515]
   },
   {
     "id": "BUG-NEW-006",
@@ -129,5 +129,31 @@
     "fixPr": null,
     "retest": "NOT_RUN",
     "plan": "Dedicated mobile onboarding layer after primary BUG-008; no unrelated layout changes in rejection PR."
+  },
+  {
+    "id": "BUG-NEW-007",
+    "severity": "P2",
+    "status": "OPEN",
+    "title": "Dealer inventory skips equal-time vehicles after its first page",
+    "reproduced": true,
+    "affectedArea": "dealer inventory",
+    "sourceSha": "c0d8e3acd98510120a4401479eb959bcc9711942",
+    "steps": [
+      "In isolated published-stock fixture set 51 vehicle createdAt values to the same valid millisecond timestamp.",
+      "GET /v1/dealer/vehicles?limit=1 using a real owner cookie, then follow page.nextCursor.",
+      "Compare visited IDs with authoritative dealer-scoped database rows; restore original fixture timestamps."
+    ],
+    "expected": "All 51 rows visited once in createdAt/id order.",
+    "actual": {
+      "databaseRows": 51,
+      "visitedRows": 1,
+      "pages": [1, 0]
+    },
+    "rootCause": "inventory uses timestamp-only cursor and strictly earlier-date filter despite createdAt/id sorting",
+    "evidence": "../fixes/BUG-003/evidence/inventory-pagination-finding.json",
+    "reproductionSource": "../fixes/BUG-003/evidence/diagnostics/inventory-pagination-probe.mjs",
+    "fixPr": null,
+    "retest": "NOT_RUN",
+    "plan": "Dedicated layer after the primary bug stack; no inventory source changes included in BUG003."
   }
 ]
