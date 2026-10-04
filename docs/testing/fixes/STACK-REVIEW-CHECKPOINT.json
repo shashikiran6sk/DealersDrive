@@ -63,11 +63,19 @@
       "merge": "508b58a5781d007c7921aad4a4140cde579c1d36",
       "redOnParent": "6/9 fail",
       "notes": "3 inert fixtures relocated to apps/api/tests/fixtures/media"
+    },
+    "236": {
+      "state": "MERGED",
+      "finalHead": "899c41975bc9971e4c4025d3a2df6ebb07e6b920",
+      "ci": "run 37207669059 PASS",
+      "security": "run 37207669068 PASS",
+      "merge": "73fc42f246e82ba868d7d108d56950bc52973a29",
+      "redOnParent": "34/38 fail"
     }
   },
-  "nextPR": 236,
+  "nextPR": 237,
   "originalChecklist": {
-    "ORIG-BUG-001 P0 forged upload/read links (default UPLOAD_SIGNING_SECRET)": "OPEN",
+    "ORIG-BUG-001 P0 forged upload/read links (default UPLOAD_SIGNING_SECRET)": "OPEN - /uploads and /private mounted for every driver and backed by the configured StoragePort (R2 in production); default secret not refused in production",
     "ORIG-BUG-002 P0/P1 admin approve bypasses verification": "FIXED - VERIFIED BY PR #232",
     "ORIG-BUG-003 P1 suspend/reinstate state validation": "FIXED - VERIFIED BY PR #232",
     "ORIG-BUG-004 P1 presign/replace/delete verified KYC while ACTIVE": "OPEN",
@@ -86,8 +94,11 @@
     "BUG-NEW-007": "CONFIRMED P2 independently (dealer inventory 2 of 5 tied rows)",
     "BUG-004": "FIXED - VERIFIED BY PR #235 (Agent 2 finding)",
     "BUG-NEW-009": "CONFIRMED P2 independently (yard photo 200 while suspended)",
-    "OBS-MEDIA-NOSTORE": "P3 performance: all media no-store; no CDN/browser caching"
+    "OBS-MEDIA-NOSTORE": "P3 performance: all media no-store; no CDN/browser caching",
+    "BUG-005": "FIXED - VERIFIED BY PR #236 (Agent 2 finding)",
+    "BUG-NEW-012": "CONFIRMED independently; my severity P2 (Agent 2: P1)",
+    "OBS-AUTH-BUSY": "P3 operational: concurrent authority-row updates yield retryable 409"
   },
-  "updatedAt": "2026-10-04T13:54:59Z",
-  "mainSha": "508b58a5781d007c7921aad4a4140cde579c1d36"
+  "updatedAt": "2026-10-04T14:07:55Z",
+  "mainSha": "73fc42f246e82ba868d7d108d56950bc52973a29"
 }

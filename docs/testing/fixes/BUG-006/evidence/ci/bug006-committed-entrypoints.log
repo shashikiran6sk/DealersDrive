@@ -1,0 +1,27 @@
+CONFIG-001 PASS accepted
+CONFIG-002 PASS rejected
+CONFIG-003 PASS rejected
+CONFIG-004 PASS rejected
+CONFIG-005 PASS rejected
+CONFIG-006 PASS rejected
+CONFIG-007 PASS rejected
+CONFIG-008 PASS rejected
+BUG006-MINIO-local PASS rejected
+BUG006-MINIO-preview PASS rejected
+BUG006-MINIO-dev PASS rejected
+BUG006-MINIO-production PASS rejected
+BUG006-development-local PASS accepted
+BUG006-development-minio PASS accepted
+BUG006-development-r2 PASS accepted
+BUG006-test-local PASS accepted
+BUG006-test-minio PASS accepted
+BUG006-test-r2 PASS accepted
+BUG006-missing-S3_ACCESS_KEY_ID PASS rejected
+BUG006-missing-S3_SECRET_ACCESS_KEY PASS rejected
+BUG006-driver-omitted PASS rejected
+BUG006-unknown-driver PASS rejected
+BUG006-boot-index-local PASS rejected
+BUG006-boot-index-minio PASS rejected
+BUG006-boot-worker-local PASS rejected
+BUG006-boot-worker-minio PASS rejected
+{"PASS": 26, "FAIL": 0}
