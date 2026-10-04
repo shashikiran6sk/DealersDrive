@@ -25,37 +25,33 @@ await h.check(r, 'ADMIN-AUTH-002', async () => {
   return [401, 403].includes(anon.status) ? { layers: ['API', 'SECURITY'], note: `unauthenticated → ${anon.status}; admin UI is server-guarded (hidden nav is not the control)` } : { status: 'FAIL', note: `status ${anon.status}` };
 });
 await h.check(r, 'ADMIN-AUTH-003', async () => {
-  const asCust = await custForAdmin.get('/v1/admin/metrics/overview');
-  r.ev(asCust);
-  return [401, 403].includes(asCust.status) ? { layers: ['API', 'SECURITY'], note: `non-admin (customer) cannot reach admin UI data → ${asCust.status}` } : { status: 'FAIL', note: `status ${asCust.status}` };
-});
-await h.check(r, 'ADMIN-AUTH-004', async () => {
   const res = await ownerForAdmin.get('/v1/admin/dealers');
   r.ev(res);
   return [401, 403].includes(res.status) ? { layers: ['API', 'SECURITY'], note: `OWNER cannot call admin APIs → ${res.status}` } : { status: 'FAIL', note: `status ${res.status}` };
 });
-await h.check(r, 'ADMIN-AUTH-005', async () => {
+await h.check(r, 'ADMIN-AUTH-004', async () => {
   const res = await mgrForAdmin.get('/v1/admin/dealers');
   r.ev(res);
   return [401, 403].includes(res.status) ? { layers: ['API', 'SECURITY'], note: `MANAGER cannot call admin APIs → ${res.status}` } : { status: 'FAIL', note: `status ${res.status}` };
 });
-await h.check(r, 'ADMIN-AUTH-006', async () => {
+await h.check(r, 'ADMIN-AUTH-005', async () => {
   const res = await staffForAdmin.get('/v1/admin/dealers');
   r.ev(res);
   return [401, 403].includes(res.status) ? { layers: ['API', 'SECURITY'], note: `STAFF cannot call admin APIs → ${res.status}` } : { status: 'FAIL', note: `status ${res.status}` };
 });
-await h.check(r, 'ADMIN-AUTH-007', async () => {
+await h.check(r, 'ADMIN-AUTH-006', async () => {
   const res = await custForAdmin.get('/v1/admin/dealers');
-  r.ev(res);
-  return [401, 403].includes(res.status) ? { layers: ['API', 'SECURITY'], note: `customer cannot call admin APIs → ${res.status}` } : { status: 'FAIL', note: `status ${res.status}` };
+  const metrics = await custForAdmin.get('/v1/admin/metrics/overview');
+  r.ev(res, metrics);
+  return [401, 403].includes(res.status) && [401, 403].includes(metrics.status) ? { layers: ['API', 'SECURITY'], note: `customer cannot call admin APIs (dealers ${res.status}, metrics ${metrics.status})` } : { status: 'FAIL', note: `status ${res.status}` };
 });
-await h.check(r, 'ADMIN-AUTH-008', async () => {
+await h.check(r, 'ADMIN-AUTH-007', async () => {
   // Hidden admin navigation backed by server authorization: a dealer session hitting an admin write route.
   const res = await ownerForAdmin.post(`/v1/admin/dealers/${dealerForAdmin.dealerId}/suspend`, { reason: 'dealer trying admin action' });
   r.ev(res);
   return [401, 403].includes(res.status) ? { layers: ['API', 'SECURITY'], note: `admin write route refuses a dealer session → ${res.status} (server-side, not nav hiding)` } : { status: 'FAIL', note: `status ${res.status}` };
 });
-await h.check(r, 'ADMIN-AUTH-009', async () => {
+await h.check(r, 'ADMIN-AUTH-008', async () => {
   // Admin session expiry safe.
   const u = await h.one(`SELECT id FROM users WHERE email=$1`, ['shashikiran6.sk@gmail.com']);
   const expired = await h.mintSession(u.id, 'ADMIN', -3600);
@@ -64,7 +60,7 @@ await h.check(r, 'ADMIN-AUTH-009', async () => {
   r.ev(res);
   return res.status === 401 ? { layers: ['API', 'SECURITY'], note: 'expired admin session → 401' } : { status: 'FAIL', note: `status ${res.status}` };
 });
-await h.check(r, 'ADMIN-AUTH-010', async () => {
+await h.check(r, 'ADMIN-AUTH-009', async () => {
   const out = await admin.post('/v1/auth/admin/logout');
   const after = await admin.get('/v1/admin/dealers');
   r.ev(out, after);
@@ -72,12 +68,12 @@ await h.check(r, 'ADMIN-AUTH-010', async () => {
   admin.cookie = await h.mintSession((await h.one(`SELECT id FROM users WHERE email=$1`, ['shashikiran6.sk@gmail.com'])).id, 'ADMIN');
   return (out.status === 204 || out.status === 200) && after.status === 401 ? { note: 'admin logout invalidates admin access (→ 401)' } : { status: 'FAIL', note: `out ${out.status} after ${after.status}` };
 });
-await h.check(r, 'ADMIN-AUTH-011-bootstrap', async () => {
-  // ADMIN-AUTH-010 is logout; the registry's 10th is "bootstrap cannot create unauthorized admins".
-  // Non-SUPER_ADMIN / dealer cannot grant admin access.
+await h.check(r, 'ADMIN-AUTH-010', async () => {
+  // Admin bootstrap cannot create unauthorized admins: a dealer/non-SUPER_ADMIN cannot grant admin access.
   const grant = await ownerForAdmin.post('/v1/admin/access', { email: `rogue.${h.nonce()}@example.test`, adminRole: 'SUPER_ADMIN' });
-  r.ev(grant);
-  return [401, 403].includes(grant.status) ? { note: `bootstrap/grant guarded: dealer cannot create admins → ${grant.status}` } : { status: 'FAIL', note: `status ${grant.status}` };
+  const anonGrant = await h.call('POST', '/v1/admin/access', { body: { email: `rogue2.${h.nonce()}@example.test`, adminRole: 'SUPER_ADMIN' } });
+  r.ev(grant, anonGrant);
+  return [401, 403].includes(grant.status) && [401, 403].includes(anonGrant.status) ? { layers: ['API', 'SECURITY'], note: `admin bootstrap/grant guarded: dealer → ${grant.status}, anonymous → ${anonGrant.status}; only an authorized admin can grant admin access` } : { status: 'FAIL', note: `dealer ${grant.status} anon ${anonGrant.status}` };
 });
 
 // ─── ADMIN DEALER MANAGEMENT ─────────────────────────────────────────────────

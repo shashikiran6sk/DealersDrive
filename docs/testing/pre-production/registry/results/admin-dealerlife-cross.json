@@ -9,7 +9,7 @@
     "bug": null,
     "auth": "SIM-SESSION",
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:32.698Z"
+    "at": "2026-10-04T05:02:34.258Z"
   },
   "ADMIN-AUTH-002": {
     "status": "PASS",
@@ -22,22 +22,9 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.004Z"
+    "at": "2026-10-04T05:02:34.989Z"
   },
   "ADMIN-AUTH-003": {
-    "status": "PASS",
-    "layers": [
-      "API",
-      "SECURITY"
-    ],
-    "note": "non-admin (customer) cannot reach admin UI data → 401",
-    "evidence": [],
-    "bug": null,
-    "auth": null,
-    "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.007Z"
-  },
-  "ADMIN-AUTH-004": {
     "status": "PASS",
     "layers": [
       "API",
@@ -48,9 +35,9 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.010Z"
+    "at": "2026-10-04T05:02:34.994Z"
   },
-  "ADMIN-AUTH-005": {
+  "ADMIN-AUTH-004": {
     "status": "PASS",
     "layers": [
       "API",
@@ -61,9 +48,9 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.013Z"
+    "at": "2026-10-04T05:02:34.998Z"
   },
-  "ADMIN-AUTH-006": {
+  "ADMIN-AUTH-005": {
     "status": "PASS",
     "layers": [
       "API",
@@ -74,22 +61,22 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.017Z"
+    "at": "2026-10-04T05:02:35.002Z"
   },
-  "ADMIN-AUTH-007": {
+  "ADMIN-AUTH-006": {
     "status": "PASS",
     "layers": [
       "API",
       "SECURITY"
     ],
-    "note": "customer cannot call admin APIs → 401",
+    "note": "customer cannot call admin APIs (dealers 401, metrics 401)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.020Z"
+    "at": "2026-10-04T05:02:35.009Z"
   },
-  "ADMIN-AUTH-008": {
+  "ADMIN-AUTH-007": {
     "status": "PASS",
     "layers": [
       "API",
@@ -100,9 +87,9 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.023Z"
+    "at": "2026-10-04T05:02:35.013Z"
   },
-  "ADMIN-AUTH-009": {
+  "ADMIN-AUTH-008": {
     "status": "PASS",
     "layers": [
       "API",
@@ -113,9 +100,9 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.028Z"
+    "at": "2026-10-04T05:02:35.018Z"
   },
-  "ADMIN-AUTH-010": {
+  "ADMIN-AUTH-009": {
     "status": "PASS",
     "layers": [
       "API"
@@ -125,19 +112,20 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.035Z"
+    "at": "2026-10-04T05:02:35.029Z"
   },
-  "ADMIN-AUTH-011-bootstrap": {
+  "ADMIN-AUTH-010": {
     "status": "PASS",
     "layers": [
-      "API"
+      "API",
+      "SECURITY"
     ],
-    "note": "bootstrap/grant guarded: dealer cannot create admins → 401",
+    "note": "admin bootstrap/grant guarded: dealer → 401, anonymous → 401; only an authorized admin can grant admin access",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.039Z"
+    "at": "2026-10-04T05:02:35.034Z"
   },
   "ADMIN-DEALER-001": {
     "status": "PASS",
@@ -149,7 +137,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.045Z"
+    "at": "2026-10-04T05:02:35.043Z"
   },
   "ADMIN-DEALER-002": {
     "status": "PASS",
@@ -161,7 +149,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.213Z"
+    "at": "2026-10-04T05:02:35.292Z"
   },
   "ADMIN-DEALER-003": {
     "status": "PASS",
@@ -173,7 +161,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.375Z"
+    "at": "2026-10-04T05:02:35.476Z"
   },
   "ADMIN-DEALER-004": {
     "status": "PASS",
@@ -185,7 +173,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.542Z"
+    "at": "2026-10-04T05:02:35.710Z"
   },
   "ADMIN-DEALER-005": {
     "status": "PASS",
@@ -197,7 +185,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.696Z"
+    "at": "2026-10-04T05:02:35.913Z"
   },
   "ADMIN-DEALER-006": {
     "status": "PASS",
@@ -209,7 +197,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:33.878Z"
+    "at": "2026-10-04T05:02:36.096Z"
   },
   "ADMIN-DEALER-007": {
     "status": "PASS",
@@ -221,7 +209,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:34.069Z"
+    "at": "2026-10-04T05:02:36.318Z"
   },
   "ADMIN-DEALER-008": {
     "status": "PASS",
@@ -233,19 +221,19 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:34.603Z"
+    "at": "2026-10-04T05:02:37.439Z"
   },
   "ADMIN-DEALER-009": {
     "status": "PASS",
     "layers": [
       "DATABASE"
     ],
-    "note": "admin dealer actions audit-logged: dealer.approved, dealer.suspended, dealer.onboarding.created",
+    "note": "admin dealer actions audit-logged: dealer.onboarding.created, dealer.approved, dealer.suspended",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:34.789Z"
+    "at": "2026-10-04T05:02:37.748Z"
   },
   "ADMIN-DEALER-010": {
     "status": "PASS",
@@ -258,7 +246,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:34.963Z"
+    "at": "2026-10-04T05:02:37.945Z"
   },
   "ADMIN-LISTING-001": {
     "status": "PASS",
@@ -270,7 +258,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:34.978Z"
+    "at": "2026-10-04T05:02:37.963Z"
   },
   "ADMIN-LISTING-002": {
     "status": "PASS",
@@ -282,7 +270,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:35.194Z"
+    "at": "2026-10-04T05:02:38.169Z"
   },
   "ADMIN-LISTING-003": {
     "status": "PASS",
@@ -294,7 +282,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:35.537Z"
+    "at": "2026-10-04T05:02:38.609Z"
   },
   "ADMIN-LISTING-004": {
     "status": "PASS",
@@ -306,7 +294,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:35.590Z"
+    "at": "2026-10-04T05:02:38.675Z"
   },
   "ADMIN-LISTING-005": {
     "status": "PASS",
@@ -318,7 +306,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:35.931Z"
+    "at": "2026-10-04T05:02:39.021Z"
   },
   "ADMIN-LISTING-006": {
     "status": "PASS",
@@ -330,7 +318,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:35.979Z"
+    "at": "2026-10-04T05:02:39.066Z"
   },
   "ADMIN-LISTING-007": {
     "status": "PASS",
@@ -343,7 +331,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:36.503Z"
+    "at": "2026-10-04T05:02:39.556Z"
   },
   "ADMIN-LISTING-008": {
     "status": "PASS",
@@ -355,7 +343,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:36.716Z"
+    "at": "2026-10-04T05:02:39.753Z"
   },
   "ADMIN-LISTING-009": {
     "status": "PASS",
@@ -367,7 +355,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:36.921Z"
+    "at": "2026-10-04T05:02:39.958Z"
   },
   "ADMIN-LISTING-010": {
     "status": "PASS",
@@ -379,7 +367,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:37.255Z"
+    "at": "2026-10-04T05:02:40.274Z"
   },
   "DEALER-LIFE-001": {
     "status": "PASS",
@@ -391,7 +379,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.282Z"
+    "at": "2026-10-04T05:02:41.332Z"
   },
   "DEALER-LIFE-002": {
     "status": "PASS",
@@ -403,7 +391,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.293Z"
+    "at": "2026-10-04T05:02:41.348Z"
   },
   "DEALER-LIFE-003": {
     "status": "PASS",
@@ -416,7 +404,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.301Z"
+    "at": "2026-10-04T05:02:41.360Z"
   },
   "DEALER-LIFE-004": {
     "status": "PASS",
@@ -429,19 +417,19 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.306Z"
+    "at": "2026-10-04T05:02:41.365Z"
   },
   "DEALER-LIFE-005": {
     "status": "PASS",
     "layers": [
       "API"
     ],
-    "note": "suspended dealer public profile policy: /v1/dealers/dealerlife-motors-372639505068-vellore-tamil-nadu → 404 (dealer not in public ACTIVE set → 404)",
+    "note": "suspended dealer public profile policy: /v1/dealers/dealerlife-motors-152988b3300a-vellore-tamil-nadu → 404 (dealer not in public ACTIVE set → 404)",
     "evidence": [],
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.309Z"
+    "at": "2026-10-04T05:02:41.372Z"
   },
   "DEALER-LIFE-006": {
     "status": "PASS",
@@ -454,7 +442,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.313Z"
+    "at": "2026-10-04T05:02:41.376Z"
   },
   "DEALER-LIFE-007": {
     "status": "PASS",
@@ -466,7 +454,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.313Z"
+    "at": "2026-10-04T05:02:41.377Z"
   },
   "DEALER-LIFE-008": {
     "status": "PASS",
@@ -478,7 +466,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.314Z"
+    "at": "2026-10-04T05:02:41.377Z"
   },
   "DEALER-LIFE-009": {
     "status": "PASS",
@@ -490,7 +478,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.318Z"
+    "at": "2026-10-04T05:02:41.384Z"
   },
   "DEALER-LIFE-010": {
     "status": "PASS",
@@ -502,7 +490,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.323Z"
+    "at": "2026-10-04T05:02:41.393Z"
   },
   "DEALER-LIFE-011": {
     "status": "PASS",
@@ -515,7 +503,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.327Z"
+    "at": "2026-10-04T05:02:41.398Z"
   },
   "DEALER-LIFE-012": {
     "status": "PASS",
@@ -528,7 +516,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.356Z"
+    "at": "2026-10-04T05:02:41.474Z"
   },
   "DEALER-LIFE-013": {
     "status": "PASS",
@@ -540,7 +528,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.379Z"
+    "at": "2026-10-04T05:02:41.500Z"
   },
   "DEALER-LIFE-014": {
     "status": "PASS",
@@ -552,7 +540,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.380Z"
+    "at": "2026-10-04T05:02:41.501Z"
   },
   "DEALER-LIFE-015": {
     "status": "PASS",
@@ -564,7 +552,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.386Z"
+    "at": "2026-10-04T05:02:41.508Z"
   },
   "DEALER-LIFE-016": {
     "status": "PASS",
@@ -576,7 +564,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.387Z"
+    "at": "2026-10-04T05:02:41.509Z"
   },
   "DEALER-LIFE-017": {
     "status": "NOT_APPLICABLE",
@@ -588,7 +576,7 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.387Z"
+    "at": "2026-10-04T05:02:41.510Z"
   },
   "DEALER-LIFE-018": {
     "status": "PASS",
@@ -601,6 +589,6 @@
     "bug": null,
     "auth": null,
     "area": "admin-dealerlife-cross",
-    "at": "2026-10-02T04:29:38.607Z"
+    "at": "2026-10-04T05:02:41.727Z"
   }
 }
