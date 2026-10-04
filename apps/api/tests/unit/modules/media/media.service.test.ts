@@ -21,7 +21,9 @@ interface Row {
   mimeType: string;
   status: string;
   variants: unknown;
-  attachment: { vehicle: { listing: { status: string } | null } } | null;
+  attachment: {
+    vehicle: { listing: { status: string; dealer: { status: string } } | null };
+  } | null;
 }
 
 function mediaRow(overrides: Partial<Row> = {}): Row {
@@ -33,7 +35,7 @@ function mediaRow(overrides: Partial<Row> = {}): Row {
     mimeType: 'image/jpeg',
     status: 'READY',
     variants: {},
-    attachment: { vehicle: { listing: { status: 'ACTIVE' } } },
+    attachment: { vehicle: { listing: { status: 'ACTIVE', dealer: { status: 'ACTIVE' } } } },
     ...overrides,
   };
 }
@@ -116,7 +118,7 @@ describe('serve, for a vehicle image (R45)', () => {
     async (status) => {
       const h = setup({
         objectBody: Buffer.from('x'),
-        media: { attachment: { vehicle: { listing: { status } } } },
+        media: { attachment: { vehicle: { listing: { status, dealer: { status: 'ACTIVE' } } } } },
       });
 
       expect(await h.service.serve('media-1', 640)).toBeNull();
@@ -143,10 +145,25 @@ describe('serve, for a vehicle image (R45)', () => {
     async (status) => {
       const h = setup({
         objectBody: Buffer.from('x'),
-        media: { attachment: { vehicle: { listing: { status } } } },
+        media: { attachment: { vehicle: { listing: { status, dealer: { status: 'ACTIVE' } } } } },
       });
 
       expect(await h.service.serve('media-1', 640)).toBeTruthy();
+    },
+  );
+
+  it.each(['DRAFT', 'PENDING_APPROVAL', 'SUSPENDED'])(
+    'refuses a visible listing image whose dealer is %s (BUG-004)',
+    async (dealerStatus) => {
+      const h = setup({
+        objectBody: Buffer.from('x'),
+        media: {
+          attachment: {
+            vehicle: { listing: { status: 'ACTIVE', dealer: { status: dealerStatus } } },
+          },
+        },
+      });
+      expect(await h.service.serve('media-1', 640)).toBeNull();
     },
   );
 

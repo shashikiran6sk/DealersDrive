@@ -130,11 +130,12 @@ export const storageDocs: ModuleDocs = {
       description:
         'Content-addressed image delivery for every kind of image the product stores — a ' +
         'vehicle photograph and a dealership yard photograph are the same bytes behind the ' +
-        'same handler. **A vehicle image is served only while its listing is `ACTIVE` or `RESERVED`** ' +
+        'same handler. **A vehicle image is served only while its listing is `ACTIVE` or `RESERVED` ' +
+        'and its dealership is `ACTIVE`** ' +
         '(**R45**): before approval, after a sale or a removal it is a 404, and a moderator ' +
-        'previews it through a signed read URL instead. A new upload is a new id and therefore a new URL, ' +
-        'so a cache never has to be invalidated — hence ' +
-        '`Cache-Control: public, max-age=31536000, immutable`.\n\n' +
+        'previews it through a signed read URL instead. Media readiness and public visibility can ' +
+        'change while the id stays the same. Both successful responses and denials send ' +
+        '`Cache-Control: no-store`, so future requests observe suspension, removal and reinstatement.\n\n' +
         'Available widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the ' +
         'JSON API this route sends `Cross-Origin-Resource-Policy: cross-origin`, because a ' +
         'media origin is a different host from the web app in every environment and the ' +
@@ -150,8 +151,8 @@ export const storageDocs: ModuleDocs = {
           inlineSchema: { type: 'string', format: 'binary' },
           headers: {
             'Cache-Control': {
-              description: 'Immutable for a year.',
-              schema: { type: 'string', example: 'public, max-age=31536000, immutable' },
+              description: 'Do not retain a response across mutable visibility decisions.',
+              schema: { type: 'string', example: 'no-store' },
             },
             'Cross-Origin-Resource-Policy': {
               description: 'What a public media origin sends.',
