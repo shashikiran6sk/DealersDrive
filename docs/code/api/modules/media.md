@@ -33,9 +33,20 @@ leave this module.
 
 ## `apps/api/src/modules/media/media.routes.ts`
 
-### `const STORAGE_ROUTES: StorageRoute[] = [putUploads, getPrivate, getMediaImage]`
+### `export function storageRoutesFor(driver: Env['STORAGE_DRIVER']): StorageRoute[]`
 
-The endpoints that stand in for R2 locally.
+The endpoints that stand in for R2 locally — mounted **only for the local
+driver**. Behind minio or r2 the adapter's `presignPut()` and
+`signedReadUrl()` return real S3 presigned URLs, so `PUT /uploads` and
+`GET /private` have no caller there. Mounted anyway, they forwarded any
+request carrying a valid HMAC straight to the bucket through the configured
+`StoragePort`, and `UPLOAD_SIGNING_SECRET` has a committed default: anyone
+could overwrite a live vehicle image, plant objects in another dealership's
+KYC prefix, or read a private document by key (ORIG-BUG-001). The public
+`GET /media/by-media/:mediaId/:width.webp` stays for every driver; it is gated
+by listing and dealer visibility, not by a signature. `createStorageRouter`
+takes the driver as a parameter (defaulting to `env.STORAGE_DRIVER`) so the
+choice is testable without reloading configuration.
 
 `PUT /uploads` terminates the presigned upload: it verifies the HMAC, the
 expiry, the declared content-type and the declared content-length before a
