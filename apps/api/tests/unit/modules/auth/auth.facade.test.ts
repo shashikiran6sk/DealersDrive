@@ -39,10 +39,11 @@ describe('the exported surface', () => {
    * and a role, and none returns or builds a principal. `isAllowlistedAdmin`
    * answers a question about an address and hands out nothing at all.
    */
-  it('exposes only the permission helpers, the seat writers and the allow-list check', () => {
+  it('exposes the approved permission, transaction authorization, seat and allow-list surface', () => {
     expect(Object.keys(auth).sort()).toEqual(
       [
         'assertPhoneVerified',
+        'authorizeDealerWrite',
         'ensureSeat',
         'grantSeat',
         'hasGrantedSeat',

@@ -175,3 +175,7 @@ car since, the index refuses with `P2002` and the move is answered as
 `409 DUPLICATE_REGISTRATION`, the same sentence `submit` uses and for the same
 reason — it does not say who has it. The transaction rolls back, so the listing
 stays `WITHDRAWN`.
+
+## Transaction authorization after resource waits
+
+All vehicle/listing writes use the auth facade's authorizeDealerWrite inside their existing transaction. Existing-stock writes acquire the listing resource before fresh authority checks, allowing member removal or suspension to commit while a queued request is still waiting. Create has no existing listing resource and checks authority before insert. Authorization row locks remain until commit; a later removal serializes behind an already authorized write. A competing locked authority returns409 AUTHORIZATION_BUSY with no stock/audit/outbox write. Revocation401, role loss403 and non-ACTIVE lifecycle403 retain the route's business rules. DRAFT/PENDING draft create/edit/delete remains permitted for authorized roles. Returned capabilities use the fresh permission set rather than the earlier request snapshot. Empty patches remain read-only and produce no audit.

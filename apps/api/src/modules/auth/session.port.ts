@@ -8,6 +8,7 @@ import type { Request } from 'express';
 
 export interface DealerPrincipal {
   kind: 'DEALER';
+  sessionId?: string;
   userId: string;
   dealerId: string;
   dealerSlug: string;

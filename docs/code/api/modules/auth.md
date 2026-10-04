@@ -1617,3 +1617,13 @@ session is issued and no cookie changes, which is the point: moving between
 the marketplace and a dealership, or between two dealerships, is never a
 sign-in. A change is audited as `auth.workspace.selected`; choosing the one
 already current writes nothing.
+
+## `apps/api/src/modules/auth/dealer-write-authorization.ts`
+
+### `export async function authorizeDealerWrite(`
+
+Transaction authority for dealer writes. The caller first obtains its existing resource lock, then rereads and holds the current dealer, exact membership, user/seat and actual cookie-session rows through commit. Permissions are calculated from the fresh role, never the request's earlier permission array. Suspended/missing membership, dealer, account/seat or revoked/expired session denies401; lost permission denies403. ACTIVE is required only where the caller's business rule already required it. Real cookie principals carry the internal session id; dev identities retain membership/account checks without a cookie session. No session id is added to a public API response or accepted from request input.
+
+### `async function lockedRow<T>(`
+
+Shared row locks protect authority until commit. SKIP LOCKED plus a nonlocking existence check distinguishes absence from a conflicting operation and fails closed with409 AUTHORIZATION_BUSY. It does not wait while holding a listing resource, because rejection can hold the dealer and wait for that resource during its deletion cascade. This prevents a new lock cycle rather than retrying an unhandled database deadlock. An absent legacy dealer seat keeps its existing neutral semantics; an exclusive user lock and second seat read protect concurrent seat insertion via its foreign key. The transaction must contain no nontransactional effects before authorization succeeds.
