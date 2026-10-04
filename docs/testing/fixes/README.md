@@ -10,13 +10,14 @@ per-fix READMEs and retest reports) was copied here **before** it was removed
 from the bug-fix PR it arrived in. Permanent automated tests stayed in the
 product PRs.
 
-| Folder                                                                | Came from                                                                            | Product PR |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
-| `404/`                                                                | `claude/serene-thompson-yuft81` @ `107a46259f1e8ee13765e3a3559fe5b5bbc88c99`         | #209       |
-| `BUG-001/`                                                            | `fix/pre-production-01-invitation-race` @ `1f38a1333fb2fa6f933c3a1972a3a4298a2d071e` | #231       |
-| `BUG-002/`                                                            | `fix/pre-production-02-approval-gate` @ `3570dcf5dcffb85235315eaed8e69c54bab1f87a`   | #232       |
-| `../pre-production/` (Agent 2's original 556-case dossier, 162 files) | `fix/pre-production-01-invitation-race` @ `1f38a13`, updated by later layers         | #231–#238  |
-| `_handoff/`                                                           | Agent 2's final handoff and machine-readable checkpoint (supplied by owner)          | —          |
+| Folder                                                                | Came from                                                                                | Product PR |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------- |
+| `404/`                                                                | `claude/serene-thompson-yuft81` @ `107a46259f1e8ee13765e3a3559fe5b5bbc88c99`             | #209       |
+| `BUG-001/`                                                            | `fix/pre-production-01-invitation-race` @ `1f38a1333fb2fa6f933c3a1972a3a4298a2d071e`     | #231       |
+| `BUG-002/`                                                            | `fix/pre-production-02-approval-gate` @ `3570dcf5dcffb85235315eaed8e69c54bab1f87a`       | #232       |
+| `BUG-NEW-005/`                                                        | `fix/pre-production-new-005-rejection-race` @ `d29d9b960a1835d61a89e80b03de63430adc1bdc` | #233       |
+| `../pre-production/` (Agent 2's original 556-case dossier, 162 files) | `fix/pre-production-01-invitation-race` @ `1f38a13`, updated by later layers             | #231–#238  |
+| `_handoff/`                                                           | Agent 2's final handoff and machine-readable checkpoint (supplied by owner)              | —          |
 
 Paths are preserved exactly as they were on the source branch, so a link of the
 form `docs/testing/fixes/<bug>/…` in an older PR description resolves here.

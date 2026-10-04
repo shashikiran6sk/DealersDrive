@@ -1,0 +1,61 @@
+{
+  "purpose": "Restartable checkpoint for the sequential review/merge of the pre-production fix stack (#209, #231-#238) and the certification that follows.",
+  "evidencePR": "https://github.com/shashikiran6sk/DealersDrive/pull/239 (draft, never merge)",
+  "mergeMethod": "squash (repository convention), expectedHeadSha pinned, after exact-head CI + Security PASS",
+  "syncMethod": "merge origin/main into the layer branch; product files = diff(original parent tip, layer tip) minus docs/testing, .github/workflows, .gitleaks.toml; verify patch vs main is byte-identical to the original layer patch",
+  "originalTips": {
+    "209": "107a46259f1e8ee13765e3a3559fe5b5bbc88c99",
+    "231": "1f38a1333fb2fa6f933c3a1972a3a4298a2d071e",
+    "232": "3570dcf5dcffb85235315eaed8e69c54bab1f87a",
+    "233": "d29d9b960a1835d61a89e80b03de63430adc1bdc",
+    "234": "62b14915dec43118994b11f88f8a00191d2e55d8",
+    "235": "adeb847c19a0740270929a014594d1ce6c73a567",
+    "236": "e80d124ff0d7cfdb7bc39a97757484eb7d6b931a",
+    "237": "c9dfc4d0f47c015059e10915029051f282fe499d",
+    "238": "adc52647467e54994ee33460cac9e1142348d5b8"
+  },
+  "ledger": {
+    "209": {
+      "state": "MERGED",
+      "finalHead": "1ba2fdb87a5f1793f3f2c9c161c1e66c16a4eb28",
+      "ci": "run 381 PASS",
+      "security": "run 37202728142 PASS",
+      "merge": "e0c451834410c19bdc037da6f107dcee50226556",
+      "notes": "evidence moved; gitleaks allowlists ported (repo-wide scan)"
+    },
+    "231": {
+      "state": "MERGED",
+      "finalHead": "a808dad167e186b4f8be73f133de9b290bf1e375",
+      "ci": "run 383 PASS",
+      "security": "run 37203706092 PASS",
+      "merge": "a3660b2ba3804e03f100428cbe0fb358c2e81139",
+      "redOnParent": "3/5 fail (40P01 deadlock, suspended join)"
+    },
+    "232": {
+      "state": "MERGED",
+      "finalHead": "70b44e51f2394d3be96903e5d772ae342040d62d",
+      "redOnParent": "17/21 fail",
+      "ci": "run 385 PASS",
+      "security": "run 37204502859 PASS",
+      "merge": "38c5122a7f726bbc4e660b6ed76de73e70456dfe"
+    }
+  },
+  "nextPR": 233,
+  "originalChecklist": {
+    "ORIG-BUG-001 P0 forged upload/read links (default UPLOAD_SIGNING_SECRET)": "OPEN",
+    "ORIG-BUG-002 P0/P1 admin approve bypasses verification": "FIXED - VERIFIED BY PR #232",
+    "ORIG-BUG-003 P1 suspend/reinstate state validation": "FIXED - VERIFIED BY PR #232",
+    "ORIG-BUG-004 P1 presign/replace/delete verified KYC while ACTIVE": "OPEN",
+    "ORIG-BUG-005 P2 yard photo unmoderated replacement": "OPEN",
+    "ORIG-BUG-006 P2 production accepts MinIO/localhost storage": "OPEN (#237 pending)",
+    "ORIG-GAP-CLOSE P2 no dealership closure flow (product decision)": "OPEN",
+    "ORIG-BUG-007 P3 default Next.js 404": "FIXED - VERIFIED BY PR #209",
+    "ORIG-OBS-ROBOTS P3 robots.txt only disallows /api/ /v1/": "OPEN (observation)",
+    "ORIG-DISC-PROFILE-001 P3 second profile edit 409": "OPEN"
+  },
+  "newFindings": {
+    "BUG-NEW-001": "CONFIRMED P3 (Next.js logs upstream problem detail; API redacts 5xx detail in prod)"
+  },
+  "updatedAt": "2026-10-04T13:14:25Z",
+  "mainSha": "38c5122a7f726bbc4e660b6ed76de73e70456dfe"
+}
