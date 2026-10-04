@@ -36,6 +36,7 @@ import { randomUUID } from 'node:crypto';
 
 import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import type { Tx } from '../../platform/db/prisma.js';
 import { mapKindFor, type MapsPort } from '../../platform/maps/maps-link.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
@@ -148,8 +149,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     };
   }
 
-  async function requireDealer(dealerId: string): Promise<DealerWithRelations> {
-    const dealer = await repo.findById(dealerId);
+  async function requireDealer(dealerId: string, tx?: Tx): Promise<DealerWithRelations> {
+    const dealer = await repo.findById(dealerId, tx);
     if (!dealer) throw new NotFoundError('That dealership no longer exists.');
     return dealer;
   }
@@ -458,10 +459,10 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       return toProfile(updated);
     },
 
-    async completeness(dealerId: string): Promise<CompletenessResponse> {
-      const dealer = await requireDealer(dealerId);
+    async completeness(dealerId: string, tx?: Tx): Promise<CompletenessResponse> {
+      const dealer = await requireDealer(dealerId, tx);
       const owner = dealer.members.find((member) => member.role === 'OWNER');
-      const documents = await repo.documents(dealerId);
+      const documents = await repo.documents(dealerId, tx);
 
       const accountMissing: string[] = [];
       if (!owner?.user.fullName) accountMissing.push('fullName');
