@@ -379,7 +379,11 @@ export const dealersDocs: ModuleDocs = {
         'use \u2014 different prefix, different destiny. Accepts JPEG, PNG and WebP up to 10 MB.\n\n' +
         'Presigning does **not** displace the photograph already on the record. Nothing is ' +
         'replaced until commit, so a dealer who changes their mind halfway through picking a ' +
-        'file still has the one they had before. OWNER only (`document:upload`).',
+        'file still has the one they had before.\n\n' +
+        '**DRAFT only.** The yard photograph is reviewed with the application and fronts the ' +
+        'public portfolio, so once the dealership has been submitted it is locked: this call is ' +
+        'a 409 `YARD_PHOTO_LOCKED` and nothing changes.\n\n' +
+        'OWNER only (`document:upload`).',
       audience: 'dealer',
       permission: 'document:upload',
       requestBody: {
@@ -394,7 +398,7 @@ export const dealersDocs: ModuleDocs = {
           schema: 'PresignResponse',
         },
       ],
-      errors: [400, 401, 403, 404, 422],
+      errors: [400, 401, 403, 404, 409, 422],
     },
     {
       method: 'post',
@@ -407,7 +411,9 @@ export const dealersDocs: ModuleDocs = {
         '`PUT` must not leave the dealership looking like it has a hero image. A missing ' +
         'object is a 422 `UPLOAD_MISSING`.\n\n' +
         'This is where a replacement takes effect: the photograph being displaced is marked ' +
-        'ORPHAN and its bytes are deleted in the same call.',
+        'ORPHAN and its bytes are deleted in the same call.\n\n' +
+        '**DRAFT only.** Once the dealership has been submitted the photograph is locked: ' +
+        'this call is a 409 `YARD_PHOTO_LOCKED` and the reviewed photograph stays.',
       audience: 'dealer',
       permission: 'document:upload',
       requestBody: {
@@ -422,7 +428,7 @@ export const dealersDocs: ModuleDocs = {
           schema: 'YardPhotoDto',
         },
       ],
-      errors: [400, 401, 403, 404, 422],
+      errors: [400, 401, 403, 404, 409, 422],
     },
     {
       method: 'delete',
@@ -433,12 +439,13 @@ export const dealersDocs: ModuleDocs = {
       description:
         'Clears `coverMediaId` and deletes the stored object. The dealership then reads as ' +
         'incomplete again \u2014 `GET /v1/dealer/completeness` lists `YARD_PHOTO` as missing, ' +
-        'and `POST /v1/dealer/submit` refuses until one is uploaded. OWNER only ' +
-        '(`document:upload`).',
+        'and `POST /v1/dealer/submit` refuses until one is uploaded.\n\n' +
+        '**DRAFT only.** Once the dealership has been submitted this is a 409 ' +
+        '`YARD_PHOTO_LOCKED`. OWNER only (`document:upload`).',
       audience: 'dealer',
       permission: 'document:upload',
       responses: [{ status: 204, description: 'Removed.' }],
-      errors: [401, 403, 404],
+      errors: [401, 403, 404, 409],
     },
     {
       method: 'get',

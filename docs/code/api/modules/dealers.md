@@ -1524,7 +1524,30 @@ that is never followed by a `PUT` leaves the dealership's existing yard
 photograph exactly where it was, which is what a dealer who changed their
 mind halfway through picking a file expects.
 
-### `const displaced = dealer.coverMediaId`
+### `function assertYardPhotoEditable(dealerStatus: DealerStatus | null): void`
+
+ORIG-BUG-005. The yard photograph is part of the application — completeness
+requires it, and the moderator looks at it before approving — and it fronts
+the public portfolio. Once the application has been submitted it is locked:
+presign, commit and delete are a 409 `YARD_PHOTO_LOCKED`.
+
+Before this an `ACTIVE` dealer could replace the photograph through the API
+and the new image went public at once, with no review, while a one-line
+tagline edit waits for a moderator. The UI never offered it — the uploader
+lives only in the onboarding wizard, which an approved dealer cannot reach —
+so this closes a direct-API path rather than removing a button.
+
+A **moderated** replacement for an approved dealership, through the
+profile-change queue the tagline uses, is the eventual shape of this. It
+needs a column, a contract and a review screen, and until a product decision
+asks for it, an approved photograph changes only by sending the application
+back (`request changes` returns a pending one to DRAFT).
+
+Commit and delete take the dealer row lock and read `coverMediaId` under it,
+so a submission or an approval cannot interleave with a swap; the displaced
+object is discarded after the transaction.
+
+### `const displaced = await withTransaction(prisma, async (tx) => …)`
 
 READY, here, at commit.
 

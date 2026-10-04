@@ -184,8 +184,8 @@ export function createDealersRepository(prisma: PrismaClient) {
       return new Set(rows.map((row) => row.id));
     },
 
-    async markMediaReady(mediaId: string) {
-      return prisma.media.update({ where: { id: mediaId }, data: { status: 'READY' } });
+    async markMediaReady(mediaId: string, tx?: Tx) {
+      return (tx ?? prisma).media.update({ where: { id: mediaId }, data: { status: 'READY' } });
     },
 
     async orphanMedia(mediaId: string) {

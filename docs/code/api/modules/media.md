@@ -79,7 +79,25 @@ search's visible predicate spells. The media row is read with its
 `vehicle_media` attachment, the vehicle and the listing, and anything else — a
 pending review, changes requested, rejected, sold, withdrawn, or an image
 attached to nothing — is the same 404 as an id that does not exist. A moderator previews unpublished images through a signed read
-URL instead. Other owner types (a yard photograph) are unaffected.
+URL instead.
+
+### `async function isPubliclyServable(media: ServableMedia): Promise<boolean>`
+
+**A yard photograph is public only while it is the cover of an `ACTIVE`
+dealership (BUG-NEW-009).** It used to be served whatever happened to its
+dealership: during a suspension the vehicle images went 404 while the yard
+photograph — the image that fronts the portfolio — stayed 200, and a DRAFT or
+pending applicant's photograph was public by id before anyone had approved it.
+The rule is one `count` of dealers whose `coverMediaId` is this row and whose
+status is `PUBLIC_DEALER_STATUS`, so a replaced photograph stops being served
+too. The dealer and the moderator see it through a signed read URL, which is
+unaffected.
+
+**Every other owner type is refused.** Only vehicle images and yard photographs
+are ever delivered here. A logo has no upload path and KYC documents do not
+create media rows, so this changes no current response — it means a future
+owner type is private until a rule for it is written, rather than public
+because nobody thought to write one.
 
 The derivative route sets `Cache-Control: no-store` before validation and delivery, including denials. A READY image may become unavailable after suspension or a listing decision; an unchanged URL must consult the current state again. This also prevents a cached denial from outliving reinstatement. Private signed previews retain their existing authority and private/no-store behavior. Requested derivatives, larger fallbacks and original MIME types are unchanged. Previously retained client/CDN bytes cannot be recalled by this header; deployment must account for caches populated under the old year-long policy.
 
