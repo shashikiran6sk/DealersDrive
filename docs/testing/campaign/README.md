@@ -9,7 +9,7 @@ and a concise summary; the detail lives here.
 | #   | Folder             | Finding                                                     | PR   | Status  | Merge SHA |
 | --- | ------------------ | ----------------------------------------------------------- | ---- | ------- | --------- |
 | 1   | `01-p0-storage/`   | ORIG-BUG-001 (P0) forged storage upload/private-read links  | #241 | MERGED  | `b571525` |
-| 2   | `02-p1-kyc-lock/`  | ORIG-BUG-004 (P1) verified KYC replace/delete while ACTIVE  | #242 | PR OPEN |           |
+| 2   | `02-p1-kyc-lock/`  | ORIG-BUG-004 (P1) verified KYC replace/delete while ACTIVE  | #242 | MERGED | `370f9d3` |
 | 3   | `03-p1-cache/`     | BUG-NEW-010 (P1) cached car page public after suspension    |      | OPEN    |           |
 | 4   | `04-enquiry-auth/` | BUG-NEW-012 (P2) enquiry commit-time authorization race     |      | OPEN    |           |
 | 5   | `05-yard-photo/`   | ORIG-BUG-005 + BUG-NEW-009 yard-photo moderation/visibility |      | OPEN    |           |
@@ -24,3 +24,4 @@ and a concise summary; the detail lives here.
 | ID                | Sev | Found in | Note                                                                                                                                                                                                                                                                      |
 | ----------------- | --- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OBS-SUBMIT-NOLOCK | P3  | fix 2    | `submitForVerification` reads completeness without the dealer row lock; a DRAFT document replace racing a submit can leave a PENDING application with an UPLOADING slot. Not approvable (verify refuses UPLOADING), so no integrity hole; the admin must request changes. |
+| OBS-STALE-404 | P3 | fix 3 | Next caches only 200s, so a car removed from public view by anything other than a web action stays cached until a tag revalidation. No such path exists today (`listings.expire-sweep` is reserved, unimplemented). |
