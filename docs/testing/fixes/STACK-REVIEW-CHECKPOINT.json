@@ -54,9 +54,18 @@
       "security": "run 37205919978 PASS",
       "merge": "9f291177b6b64e93416765e3bf582790426f03de",
       "redOnParent": "15/15 fail"
+    },
+    "235": {
+      "state": "MERGED",
+      "finalHead": "d41eb72018a7c9cb4ce16aa9eaeae3080e218b18",
+      "ci": "run 394 PASS",
+      "security": "run 37206716655 PASS",
+      "merge": "508b58a5781d007c7921aad4a4140cde579c1d36",
+      "redOnParent": "6/9 fail",
+      "notes": "3 inert fixtures relocated to apps/api/tests/fixtures/media"
     }
   },
-  "nextPR": 235,
+  "nextPR": 236,
   "originalChecklist": {
     "ORIG-BUG-001 P0 forged upload/read links (default UPLOAD_SIGNING_SECRET)": "OPEN",
     "ORIG-BUG-002 P0/P1 admin approve bypasses verification": "FIXED - VERIFIED BY PR #232",
@@ -74,8 +83,11 @@
     "BUG-NEW-005": "FIXED - VERIFIED BY PR #233 (Agent 2 finding)",
     "OBS-OUTBOX-RETRY": "P3 observation: outbox retries 10x ~2s apart then abandons; storage cleanup can orphan keys silently",
     "BUG-003": "FIXED - VERIFIED BY PR #234 (Agent 2 finding)",
-    "BUG-NEW-007": "CONFIRMED P2 independently (dealer inventory 2 of 5 tied rows)"
+    "BUG-NEW-007": "CONFIRMED P2 independently (dealer inventory 2 of 5 tied rows)",
+    "BUG-004": "FIXED - VERIFIED BY PR #235 (Agent 2 finding)",
+    "BUG-NEW-009": "CONFIRMED P2 independently (yard photo 200 while suspended)",
+    "OBS-MEDIA-NOSTORE": "P3 performance: all media no-store; no CDN/browser caching"
   },
-  "updatedAt": "2026-10-04T13:38:14Z",
-  "mainSha": "9f291177b6b64e93416765e3bf582790426f03de"
+  "updatedAt": "2026-10-04T13:54:59Z",
+  "mainSha": "508b58a5781d007c7921aad4a4140cde579c1d36"
 }

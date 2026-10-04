@@ -1,0 +1,22 @@
+{
+  "bug": "BUG-NEW-012",
+  "severity": "P1",
+  "status": "OPEN",
+  "reproduced": true,
+  "environment": "isolated certification DB; actual cookie API; fake providers; current BUG005 vehicle guard applied but enquiry source unchanged from parentadeb847",
+  "expected": "A revoked member cannot commit a queued privileged enquiry close",
+  "actual": {
+    "lockWaitProven": true,
+    "before": "NEW",
+    "revocationHttp": 204,
+    "membership": "REMOVED",
+    "queuedEnquiryHttp": 200,
+    "after": "CLOSED",
+    "closedByRemovedActor": true,
+    "actorAuditCount": 1,
+    "nextDealerRequest": 401
+  },
+  "rootCause": "Enquiry service waits for its resource row and then trusts the request-entry actor permission snapshot; no current membership/role/session check at its transaction boundary",
+  "sourceSha256": "0576693aefdfe9142652842762a5afd22f9c97684e1517680b4d79a55ca4af30",
+  "disposition": "Separate high-priority stacked PR after current BUG005 final CI; no enquiry authorization implementation change in BUG005"
+}
