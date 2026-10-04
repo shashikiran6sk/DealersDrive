@@ -560,6 +560,21 @@ describe('configurations that must not boot', () => {
     expect(message).toContain('STORAGE_DRIVER');
   });
 
+  it.each(['local', 'preview', 'dev', 'production'])(
+    'BUG-006 refuses MinIO under NODE_ENV=production with APP_ENV=%s',
+    async (appEnv) => {
+      const message = await refuses({
+        NODE_ENV: 'production',
+        ...PRODUCTION_REQUIRED,
+        APP_ENV: appEnv,
+        STORAGE_DRIVER: 'minio',
+      });
+
+      expect(message).toContain('STORAGE_DRIVER');
+      expect(message).toContain('r2');
+    },
+  );
+
   it('refuses production still carrying the local development secrets', async () => {
     const message = await refuses({
       NODE_ENV: 'production',
@@ -587,6 +602,25 @@ describe('configurations that must not boot', () => {
     expect(loaded.STORAGE_DRIVER).toBe('r2');
     expect(loaded.AUTH_MODE).toBe('cookie');
     expect(loaded.PHONE_OTP_DRIVER).toBe('msg91');
+  });
+
+  it.each([
+    ['development', 'local'],
+    ['development', 'minio'],
+    ['development', 'r2'],
+    ['test', 'local'],
+    ['test', 'minio'],
+    ['test', 'r2'],
+  ])('BUG-006 preserves NODE_ENV=%s with STORAGE_DRIVER=%s', async (nodeEnv, driver) => {
+    const loaded = await loadEnv({
+      ...PRODUCTION_REQUIRED,
+      NODE_ENV: nodeEnv,
+      APP_ENV: 'local',
+      STORAGE_DRIVER: driver,
+    });
+
+    expect(loaded.STORAGE_DRIVER).toBe(driver);
+    expect(loaded.isProduction).toBe(false);
   });
 
   it('refuses a metrics endpoint without a strong scrape token', async () => {
