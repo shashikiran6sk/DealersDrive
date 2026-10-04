@@ -224,8 +224,8 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
   }
 
-  if (value.STORAGE_DRIVER === 'local') {
-    require('STORAGE_DRIVER', 'must be `r2` in production — container filesystems are not durable.');
+  if (value.STORAGE_DRIVER !== 'r2') {
+    require('STORAGE_DRIVER', 'must be `r2` in production — `local` and `minio` are development adapters.');
   }
 
   if (value.CACHE_DRIVER === 'memory') {

@@ -20,6 +20,10 @@ local — the filesystem. No container needed; what the test suite uses.
 minio — S3-compatible, on localhost:9000.
 r2 — S3-compatible, at Cloudflare. Production.
 
+The validated environment requires `r2` under NODE_ENV production before API
+or worker startup. `local` and `minio` remain available to development and test
+runtimes; the factory and shared S3 adapter do not change with this boot rule.
+
 ## `apps/api/src/platform/storage/local.adapter.ts`
 
 ### `export interface LocalStorageSignature`

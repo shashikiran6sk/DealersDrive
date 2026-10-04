@@ -86,3 +86,18 @@ At the group, above the dealer layout, so a failure of the layout itself is
 caught too — which is why it brings `StatusShell` rather than assuming the
 console's navigation rendered. "Back to the dashboard" rather than the
 marketplace homepage.
+
+## `apps/web/src/app/(admin)/admin/layout.tsx`
+
+The Admin header keeps its desktop row. Below the small breakpoint it grows
+with its contents, places Operations above a width-bounded account section, and
+lets the operator email break while preserving the review link and Sign out.
+On narrow screens the review badge occupies its own row, giving the email
+and Sign out the remaining two columns. The server metrics request and Admin authorization remain authoritative.
+
+## `apps/web/src/app/(admin)/admin/dealers/page.tsx`
+
+Dealer status tabs have a page-width bound and local horizontal scrolling.
+Their labels keep their width so narrow screens can reach every status
+without creating horizontal document overflow. Wide tables retain their
+existing scroll containers.
