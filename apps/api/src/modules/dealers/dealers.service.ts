@@ -44,7 +44,7 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
-import { DOCUMENT_LOCKED } from './dealers.messages.js';
+import { DOCUMENT_LOCKED, YARD_PHOTO_LOCKED } from './dealers.messages.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 import {
   ALREADY_REGISTERED,
@@ -75,6 +75,10 @@ function assertDocumentEditable(
   if (dealerStatus === 'DRAFT') return;
   if (!document || DOC_EDITABLE_OUTSIDE_DRAFT.includes(document.status)) return;
   throw new ConflictError('DOCUMENT_LOCKED', DOCUMENT_LOCKED);
+}
+
+function assertYardPhotoEditable(dealerStatus: DealerStatus | null): void {
+  if (dealerStatus !== 'DRAFT') throw new ConflictError('YARD_PHOTO_LOCKED', YARD_PHOTO_LOCKED);
 }
 
 function sameServices(a: readonly string[], b: readonly string[]): boolean {
@@ -718,6 +722,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       input: YardPhotoPresignInput,
     ): Promise<PresignResponse> {
       const dealer = await requireDealer(dealerId);
+      assertYardPhotoEditable(dealer.status);
 
       const mediaId = randomUUID();
       const key = yardPhotoKey(dealer.slug, mediaId);
@@ -753,7 +758,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     },
 
     async commitYardPhoto(dealerId: string, input: YardPhotoCommitInput): Promise<YardPhotoDto> {
-      const dealer = await requireDealer(dealerId);
+      await requireDealer(dealerId);
 
       const media = await repo.mediaById(input.mediaId);
       if (!media || media.dealerId !== dealerId || media.ownerType !== 'DEALER_COVER') {
@@ -765,20 +770,30 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
       }
 
-      const displaced = dealer.coverMediaId;
-      await repo.markMediaReady(media.id);
-      await repo.update(dealerId, { coverMediaId: media.id });
+      const displaced = await withTransaction(prisma, async (tx) => {
+        assertYardPhotoEditable(await repo.lockStatus(dealerId, tx));
+        const current = await repo.findById(dealerId, tx);
+        await repo.markMediaReady(media.id, tx);
+        await repo.update(dealerId, { coverMediaId: media.id }, tx);
+        return current?.coverMediaId ?? null;
+      });
       if (displaced && displaced !== media.id) await discardMedia(displaced);
 
       return this.yardPhoto(dealerId);
     },
 
     async deleteYardPhoto(dealerId: string): Promise<void> {
-      const dealer = await requireDealer(dealerId);
-      if (!dealer.coverMediaId) throw new NotFoundError('There is no yard photograph to remove.');
-
-      await repo.update(dealerId, { coverMediaId: null });
-      await discardMedia(dealer.coverMediaId);
+      await requireDealer(dealerId);
+      const removed = await withTransaction(prisma, async (tx) => {
+        assertYardPhotoEditable(await repo.lockStatus(dealerId, tx));
+        const current = await repo.findById(dealerId, tx);
+        if (!current?.coverMediaId) {
+          throw new NotFoundError('There is no yard photograph to remove.');
+        }
+        await repo.update(dealerId, { coverMediaId: null }, tx);
+        return current.coverMediaId;
+      });
+      await discardMedia(removed);
     },
 
     async dashboard(dealerId: string, viewerId?: string): Promise<DashboardResponse> {

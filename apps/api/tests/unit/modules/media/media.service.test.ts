@@ -43,6 +43,7 @@ function mediaRow(overrides: Partial<Row> = {}): Row {
 interface Fakes {
   media?: Partial<Row> | null;
   objectBody?: Buffer | null;
+  activeCoverOwners?: number;
 }
 
 function setup(options: Fakes = {}) {
@@ -50,6 +51,7 @@ function setup(options: Fakes = {}) {
 
   const prisma = {
     media: { findUnique: () => Promise.resolve(row) },
+    dealer: { count: () => Promise.resolve(options.activeCoverOwners ?? 1) },
   } as unknown as PrismaClient;
 
   const storage = {
@@ -175,6 +177,25 @@ describe('serve, for a vehicle image (R45)', () => {
 
     expect(await h.service.serve('media-1', 640)).toBeTruthy();
   });
+
+  it('does not serve a yard photograph no ACTIVE dealership has as its cover (BUG-NEW-009)', async () => {
+    const h = setup({
+      objectBody: Buffer.from('x'),
+      media: { ownerType: 'DEALER_COVER', attachment: null },
+      activeCoverOwners: 0,
+    });
+
+    expect(await h.service.serve('media-1', 640)).toBeNull();
+  });
+
+  it.each(['DEALER_LOGO', 'DEALER_DOCUMENT'])(
+    'serves no %s media on the public path',
+    async (ownerType) => {
+      const h = setup({ objectBody: Buffer.from('x'), media: { ownerType, attachment: null } });
+
+      expect(await h.service.serve('media-1', 640)).toBeNull();
+    },
+  );
 });
 
 describe('toMediaStatus', () => {

@@ -1666,9 +1666,44 @@ describe('yardPhoto', () => {
   });
 });
 
+/**
+ * The yard photograph can be changed only while the application is a DRAFT
+ * (ORIG-BUG-005), so these cases run against a DRAFT dealership; the lock
+ * itself is covered below and in `tests/yard-photo-moderation.test.ts`.
+ */
+function draftSetup(options: Options = {}) {
+  return setup({ ...options, dealer: { status: 'DRAFT', ...(options.dealer ?? {}) } });
+}
+
+describe('ORIG-BUG-005 — the yard photograph is locked outside DRAFT', () => {
+  it.each(['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED'])(
+    'refuses to presign, commit or delete for a %s dealer',
+    async (status) => {
+      const h = setup({
+        dealer: { status },
+        media: media(),
+        head: { bytes: 1, contentType: 'image/jpeg' },
+      });
+
+      await expect(
+        h.service.presignYardPhoto('dealer-1', {
+          fileName: 'y.jpg',
+          mimeType: 'image/jpeg',
+          bytes: 1,
+        }),
+      ).rejects.toThrow(ConflictError);
+      await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
+        ConflictError,
+      );
+      await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(ConflictError);
+      expect([h.updates, h.deletes]).toEqual([[], []]);
+    },
+  );
+});
+
 describe('presignYardPhoto', () => {
   it('keys the image under the dealership, beside its documents', async () => {
-    const h = setup();
+    const h = draftSetup();
 
     const presigned = await h.service.presignYardPhoto('dealer-1', {
       fileName: 'yard.jpg',
@@ -1689,7 +1724,7 @@ describe('presignYardPhoto', () => {
 
   /** Presigning displaces nothing — that is what makes an abandoned pick safe. */
   it('leaves the photograph already on the record alone', async () => {
-    const h = setup({ media: media() });
+    const h = draftSetup({ media: media() });
 
     await h.service.presignYardPhoto('dealer-1', {
       fileName: 'new.jpg',
@@ -1705,7 +1740,7 @@ describe('presignYardPhoto', () => {
 
 describe('commitYardPhoto', () => {
   it('refuses an upload that never landed in storage', async () => {
-    const h = setup({ media: media({ id: 'media-2' }), head: null });
+    const h = draftSetup({ media: media({ id: 'media-2' }), head: null });
 
     await expect(
       h.service.commitYardPhoto('dealer-1', { mediaId: 'media-2' }),
@@ -1714,7 +1749,7 @@ describe('commitYardPhoto', () => {
   });
 
   it('refuses a media row belonging to another dealership', async () => {
-    const h = setup({ media: media({ dealerId: 'dealer-2' }) });
+    const h = draftSetup({ media: media({ dealerId: 'dealer-2' }) });
 
     await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
       NotFoundError,
@@ -1722,7 +1757,7 @@ describe('commitYardPhoto', () => {
   });
 
   it('refuses a media row that is not a cover image', async () => {
-    const h = setup({ media: media({ ownerType: 'VEHICLE' }) });
+    const h = draftSetup({ media: media({ ownerType: 'VEHICLE' }) });
 
     await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
       NotFoundError,
@@ -1730,7 +1765,7 @@ describe('commitYardPhoto', () => {
   });
 
   it('adopts the upload onto the dealership', async () => {
-    const h = setup({
+    const h = draftSetup({
       dealer: { coverMediaId: null },
       media: media(),
       head: { bytes: 184_210, contentType: 'image/jpeg' },
@@ -1756,7 +1791,7 @@ describe('commitYardPhoto', () => {
    * line does not change when it lands.
    */
   it('marks the upload servable, because nothing else will', async () => {
-    const h = setup({
+    const h = draftSetup({
       dealer: { coverMediaId: null },
       media: media({ status: 'PENDING' }),
       head: { bytes: 184_210, contentType: 'image/jpeg' },
@@ -1769,7 +1804,7 @@ describe('commitYardPhoto', () => {
 
   /** A commit that never gets past the HEAD promotes nothing. */
   it('leaves an incomplete upload where it is', async () => {
-    const h = setup({ dealer: { coverMediaId: null }, media: media(), head: null });
+    const h = draftSetup({ dealer: { coverMediaId: null }, media: media(), head: null });
 
     await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
       DomainError,
@@ -1784,7 +1819,7 @@ describe('commitYardPhoto', () => {
    * and a sweeper reconciles orphans against storage.
    */
   it('discards the photograph it displaces', async () => {
-    const h = setup({
+    const h = draftSetup({
       dealer: { coverMediaId: 'media-old' },
       media: [
         media({ id: 'media-old', storageKey: `${DEALER_ROOT}/yard/media-old` }),
@@ -1806,7 +1841,7 @@ describe('commitYardPhoto', () => {
    * just adopted.
    */
   it('does not discard the photograph it is re-committing', async () => {
-    const h = setup({
+    const h = draftSetup({
       dealer: { coverMediaId: 'media-1' },
       media: media(),
       head: { bytes: 1, contentType: 'image/jpeg' },
@@ -1821,7 +1856,7 @@ describe('commitYardPhoto', () => {
 
 describe('deleteYardPhoto', () => {
   it('clears the record and removes the bytes', async () => {
-    const h = setup({ media: media() });
+    const h = draftSetup({ media: media() });
 
     await h.service.deleteYardPhoto('dealer-1');
 
@@ -1831,7 +1866,7 @@ describe('deleteYardPhoto', () => {
   });
 
   it('404s when there is no photograph to remove', async () => {
-    const h = setup({ dealer: { coverMediaId: null } });
+    const h = draftSetup({ dealer: { coverMediaId: null } });
 
     await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(NotFoundError);
     expect(h.updates).toEqual([]);
@@ -1839,7 +1874,7 @@ describe('deleteYardPhoto', () => {
 
   /** A dangling cover id still clears; there is simply nothing to delete. */
   it('clears a cover id whose media row has vanished', async () => {
-    const h = setup({ media: null });
+    const h = draftSetup({ media: null });
 
     await h.service.deleteYardPhoto('dealer-1');
 

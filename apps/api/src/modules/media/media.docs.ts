@@ -137,7 +137,10 @@ export const storageDocs: ModuleDocs = {
         'same handler. **A vehicle image is served only while its listing is `ACTIVE` or `RESERVED` ' +
         'and its dealership is `ACTIVE`** ' +
         '(**R45**): before approval, after a sale or a removal it is a 404, and a moderator ' +
-        'previews it through a signed read URL instead. Media readiness and public visibility can ' +
+        'previews it through a signed read URL instead. **A yard photograph is served only ' +
+        'while it is the cover of an `ACTIVE` dealership** — before approval, during a ' +
+        'suspension or once replaced it is a 404. Any other kind of media is never served ' +
+        'here. Media readiness and public visibility can ' +
         'change while the id stays the same. Both successful responses and denials send ' +
         '`Cache-Control: no-store`, so future requests observe suspension, removal and reinstatement.\n\n' +
         'Available widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the ' +
