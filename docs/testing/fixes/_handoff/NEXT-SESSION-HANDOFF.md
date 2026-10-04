@@ -12,17 +12,17 @@ Production NO GO. Remaining confirmed: P0=0 confirmed, P1=1, P2=6, P3=1; two pro
 
 Exact machine-readable checkpoint: `/workspace/dd-fix-evidence/FINAL-CAMPAIGN-CHECKPOINT.json`. Final CI proof: `/workspace/dd-fix-evidence/BUG-008-FINAL-CI.json`. Diff proof: `/workspace/dd-fix-evidence/BUG-008-FINAL-DIFF.json`. Baseline proof: `/workspace/dd-fix-evidence/BUG-008-BASELINE-PRESERVATION.json`.
 
-| Bug / PR | Branch | Base | Final CI |
-| --- | --- | --- | --- |
-| BUG-007 / branded 404 / [#209](https://github.com/shashikiran6sk/DealersDrive/pull/209) | `claude/serene-thompson-yuft81` | `main` | PASS (Security 507, CI 358) |
-| BUG-001 / [#231](https://github.com/shashikiran6sk/DealersDrive/pull/231) | `fix/pre-production-01-invitation-race` | `claude/serene-thompson-yuft81` | PASS (CI 361, Security 510) |
-| BUG-002 / [#232](https://github.com/shashikiran6sk/DealersDrive/pull/232) | `fix/pre-production-02-approval-gate` | `fix/pre-production-01-invitation-race` | PASS (Security 512, CI 363) |
-| BUG-NEW-005 / [#233](https://github.com/shashikiran6sk/DealersDrive/pull/233) | `fix/pre-production-new-005-rejection-race` | `fix/pre-production-02-approval-gate` | PASS (CI 366, Security 515) |
-| BUG-003 / [#234](https://github.com/shashikiran6sk/DealersDrive/pull/234) | `fix/pre-production-03-stable-pagination` | `fix/pre-production-new-005-rejection-race` | PASS (Security 517, CI 368) |
-| BUG-004 / [#235](https://github.com/shashikiran6sk/DealersDrive/pull/235) | `fix/pre-production-04-suspended-media` | `fix/pre-production-03-stable-pagination` | PASS (Security 519, CI 370) |
-| BUG-005 / [#236](https://github.com/shashikiran6sk/DealersDrive/pull/236) | `fix/pre-production-05-membership-commit-guard` | `fix/pre-production-04-suspended-media` | PASS (CI 372, Security 521) |
-| BUG-006 / [#237](https://github.com/shashikiran6sk/DealersDrive/pull/237) | `fix/pre-production-06-production-storage` | `fix/pre-production-05-membership-commit-guard` | PASS (Security 523, CI 374) |
-| BUG-008 / [#238](https://github.com/shashikiran6sk/DealersDrive/pull/238) | `fix/pre-production-08-admin-mobile` | `fix/pre-production-06-production-storage` | PASS (Security 526, CI 377) |
+| Bug / PR                                                                                | Branch                                          | Base                                            | Final CI                    |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- | --------------------------- |
+| BUG-007 / branded 404 / [#209](https://github.com/shashikiran6sk/DealersDrive/pull/209) | `claude/serene-thompson-yuft81`                 | `main`                                          | PASS (Security 507, CI 358) |
+| BUG-001 / [#231](https://github.com/shashikiran6sk/DealersDrive/pull/231)               | `fix/pre-production-01-invitation-race`         | `claude/serene-thompson-yuft81`                 | PASS (CI 361, Security 510) |
+| BUG-002 / [#232](https://github.com/shashikiran6sk/DealersDrive/pull/232)               | `fix/pre-production-02-approval-gate`           | `fix/pre-production-01-invitation-race`         | PASS (Security 512, CI 363) |
+| BUG-NEW-005 / [#233](https://github.com/shashikiran6sk/DealersDrive/pull/233)           | `fix/pre-production-new-005-rejection-race`     | `fix/pre-production-02-approval-gate`           | PASS (CI 366, Security 515) |
+| BUG-003 / [#234](https://github.com/shashikiran6sk/DealersDrive/pull/234)               | `fix/pre-production-03-stable-pagination`       | `fix/pre-production-new-005-rejection-race`     | PASS (Security 517, CI 368) |
+| BUG-004 / [#235](https://github.com/shashikiran6sk/DealersDrive/pull/235)               | `fix/pre-production-04-suspended-media`         | `fix/pre-production-03-stable-pagination`       | PASS (Security 519, CI 370) |
+| BUG-005 / [#236](https://github.com/shashikiran6sk/DealersDrive/pull/236)               | `fix/pre-production-05-membership-commit-guard` | `fix/pre-production-04-suspended-media`         | PASS (CI 372, Security 521) |
+| BUG-006 / [#237](https://github.com/shashikiran6sk/DealersDrive/pull/237)               | `fix/pre-production-06-production-storage`      | `fix/pre-production-05-membership-commit-guard` | PASS (Security 523, CI 374) |
+| BUG-008 / [#238](https://github.com/shashikiran6sk/DealersDrive/pull/238)               | `fix/pre-production-08-admin-mobile`            | `fix/pre-production-06-production-storage`      | PASS (Security 526, CI 377) |
 
 ---
 
