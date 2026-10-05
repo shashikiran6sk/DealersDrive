@@ -6,6 +6,12 @@ Parent: [web](../../README.md)
 
 ### `export default async function VehiclePage(...)`
 
+**R100 — the similar cars no longer wait for the car.** Both requests start
+together; the similar cars are asked for again only when the API answered with a
+different canonical slug. `loadSimilar` never rejects (a failure is an empty
+row), so a `notFound()` on the car leaves no unhandled promise behind. Measured
+on cold pages at 150 ms per API call: 377–408 ms → 204–315 ms.
+
 The vehicle page (**F082** as scoped by **R45**). The API answers 404 for
 anything not public, and 400 for a slug no slug could be; both render the
 not-found page, so a car in review or taken down is indistinguishable from one

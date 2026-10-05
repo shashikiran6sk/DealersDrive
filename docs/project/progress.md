@@ -270,6 +270,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R97 — User-requested reference DD branding · revises F008/F014/F018/F073/R81 · paired 2048 px PNGs, shared BrandLogo across all platform logo surfaces, white-on-black favicon/touch/manifest icons, shared social preview and absolute Organization logo URL; desktop/mobile evidence on the `testing_evidence` branch
 - [x] R98 — The API's database pool cannot wait forever · `DB_POOL_MAX`, `DB_CONNECT_TIMEOUT_MS`, `DB_STATEMENT_TIMEOUT_MS`, `DB_IDLE_IN_TRANSACTION_TIMEOUT_MS` (10 / 5 s / 15 s / 30 s) and TCP keepalive on the `pg` pool; the connection string (TLS) is passed through unchanged
 - [x] R99 — A slow request can be traced from the web log to the API log · the API's request line carries `dbMs`/`dbOps` beside `durationMs` and `traceId`; the web logs `api.slow_request` (≥1 s) with the API's trace id; mutations send `x-request-id`, reads never do (Next keys its data cache and fetch dedupe on headers)
+- [x] R100 — Two server-side waterfalls removed · the vehicle page asks for its similar cars alongside the car (cold page 377–408 → 204–315 ms); the console layout asks for the account alongside the guard (350–672 → 222–371 ms); the guard's session-before-dealership order is kept
 
 ---
 
