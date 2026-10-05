@@ -275,6 +275,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R102 — A slow request no longer freezes every link · React 19 entangles async transitions with `<Link>` navigations; mutations run through `useNavigationSafeAction` / `useNavigationSafeFormAction` (24 `useTransition` sites, the vehicle wizard, submit and profile forms), which follow `redirect()` themselves and let the last click win (nav during a 12 s create 7.2 s → 0.4 s)
 - [x] R103 — No Login flash for a signed-in customer · a readable `dd_auth` hint (written on sign-in, sign-out and every lookup) and a pre-paint script choose Login or a 40 px placeholder before first paint; the lookup is `GET /api/account` (cancellable, not queued behind Server Actions), skipped for signed-out visitors; the home page stays ISR
 - [x] R104 — Logout clears the saved hearts, and a signed-out visit asks nothing · `SavedVehiclesProvider` follows the `dd_auth` hint: no saved-slugs Server Action for a signed-out visitor, and every heart on the page empties the moment Logout succeeds (previously the last account's hearts stayed filled until a reload)
+- [x] R105 — The web tier's functions run in Mumbai · `apps/web/vercel.json` `regions: ["bom1"]`, beside the ap-south-1 API and database, instead of Vercel's default `iad1` (~200 ms per API round trip saved)
 
 ---
 

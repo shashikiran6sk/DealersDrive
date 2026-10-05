@@ -422,6 +422,14 @@ would count the entire internet as one bucket. `apps/web/src/lib/api.ts` has a
 yet. **This must land before F088–F092**, and `app.set('trust proxy', 1)` in
 `apps/api/src/server.ts` needs revisiting for the extra hop.
 
+**The functions run in `bom1`, beside the API (R105).** The API and RDS are in
+ap-south-1. Vercel's default function region is `iad1`, which puts every server
+render, Server Action and API call on an India → US → Mumbai round trip (~200 ms,
+~600 ms with a fresh TLS handshake). `apps/web/vercel.json` pins `regions` to
+`bom1`, Vercel's Mumbai region on AWS ap-south-1; a test keeps it there. Verify a
+deploy with `curl -sI https://www.dealers-drive.com/ | grep -i x-vercel-id` — the
+middle segment is the function region.
+
 **Nothing is deployed automatically today.** Neither target exists yet — no
 Vercel project, no AWS account — so `deploy-dev` in `release.yml` is commented
 out and every merge to `main` builds the two images and stops. The block carries
