@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import {
   customerAccountAction,
   customerLogoutAction,
@@ -40,9 +41,9 @@ export function HeaderAccount({ initialAccount, afterLogoutHref }: HeaderAccount
     return (
       <Link
         href={HEADER_ACCOUNT_TEXT.loginHref}
-        className="btn btn-primary min-h-[40px] rounded-full px-[18px]"
+        className="relative btn btn-primary min-h-[40px] rounded-full px-[18px]"
       >
-        {HEADER_ACCOUNT_TEXT.login}
+        <LinkPendingLabel>{HEADER_ACCOUNT_TEXT.login}</LinkPendingLabel>
       </Link>
     );
   }

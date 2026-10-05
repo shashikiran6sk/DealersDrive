@@ -6,6 +6,7 @@ import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 
 import { VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 
 export function WizardFooter({ first, cancelHref }: { first: boolean; cancelHref: string }) {
   const { pending } = useFormStatus();
@@ -13,8 +14,8 @@ export function WizardFooter({ first, cancelHref }: { first: boolean; cancelHref
   return (
     <div className="flex flex-wrap items-center gap-[9px] border-t border-(--color-divider) pt-[16px] max-[480px]:[&>*]:w-full">
       {first ? (
-        <Link href={cancelHref} className="btn btn-secondary">
-          {VEHICLE_WIZARD_TEXT.cancel}
+        <Link href={cancelHref} className="relative btn btn-secondary">
+          <LinkPendingLabel>{VEHICLE_WIZARD_TEXT.cancel}</LinkPendingLabel>
         </Link>
       ) : (
         <Button type="submit" name="intent" value="back" variant="secondary" disabled={pending}>

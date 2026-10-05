@@ -1,6 +1,7 @@
 import type { AdminListingRow } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 
 import { MODERATION_TEXT } from './moderation-queue.constants';
@@ -41,8 +42,8 @@ export function QueueRow({ row }: { row: AdminListingRow }) {
         </div>
       </td>
       <td className="text-right">
-        <Link href={`/admin/listings/${row.id}`} className="btn btn-secondary text-[12px]">
-          {MODERATION_TEXT.review}
+        <Link href={`/admin/listings/${row.id}`} className="relative btn btn-secondary text-[12px]">
+          <LinkPendingLabel>{MODERATION_TEXT.review}</LinkPendingLabel>
         </Link>
       </td>
     </tr>

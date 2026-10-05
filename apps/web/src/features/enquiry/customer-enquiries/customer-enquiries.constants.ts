@@ -19,3 +19,8 @@ export const CUSTOMER_ENQUIRIES_TEXT = {
 export function loginToSee(): string {
   return `/login?returnTo=${encodeURIComponent(MY_ENQUIRIES_PATH)}`;
 }
+
+export const CUSTOMER_ENQUIRIES_LOADING = {
+  label: 'Loading your enquiries',
+  rows: 3,
+} as const;

@@ -9,6 +9,7 @@ import {
   SearchResultsRegion,
 } from '@/components/search/search-navigation';
 import { SearchToolbar } from '@/components/search/search-toolbar';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import {
@@ -132,9 +133,11 @@ export function DealerInventory({
                   action={
                     <Link
                       href={`${searchHref(basePath, clearFilters(params))}#${INVENTORY_ANCHOR}`}
-                      className="btn btn-primary"
+                      className="relative btn btn-primary"
                     >
-                      {DEALER_INVENTORY_TEXT.emptyFilteredAction}
+                      <LinkPendingLabel>
+                        {DEALER_INVENTORY_TEXT.emptyFilteredAction}
+                      </LinkPendingLabel>
                     </Link>
                   }
                 />
@@ -143,8 +146,8 @@ export function DealerInventory({
                   title={DEALER_INVENTORY_TEXT.emptyTitle}
                   message={DEALER_INVENTORY_TEXT.emptyMessage(brandName)}
                   action={
-                    <Link href="/cars" className="btn btn-primary">
-                      {DEALER_INVENTORY_TEXT.emptyAction}
+                    <Link href="/cars" className="relative btn btn-primary">
+                      <LinkPendingLabel>{DEALER_INVENTORY_TEXT.emptyAction}</LinkPendingLabel>
                     </Link>
                   }
                 />
@@ -159,9 +162,9 @@ export function DealerInventory({
                     <Link
                       href={pageHref(dealerSlug, params, page.page - 1)}
                       rel="prev"
-                      className="btn btn-secondary"
+                      className="relative btn btn-secondary"
                     >
-                      {DEALER_INVENTORY_TEXT.previous}
+                      <LinkPendingLabel>{DEALER_INVENTORY_TEXT.previous}</LinkPendingLabel>
                     </Link>
                   ) : (
                     <span />
@@ -173,9 +176,9 @@ export function DealerInventory({
                     <Link
                       href={pageHref(dealerSlug, params, page.page + 1)}
                       rel="next"
-                      className="btn btn-secondary"
+                      className="relative btn btn-secondary"
                     >
-                      {DEALER_INVENTORY_TEXT.next}
+                      <LinkPendingLabel>{DEALER_INVENTORY_TEXT.next}</LinkPendingLabel>
                     </Link>
                   ) : (
                     <span />

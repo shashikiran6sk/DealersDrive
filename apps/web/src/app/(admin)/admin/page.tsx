@@ -2,6 +2,7 @@ import type { AdminOverview } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { apiGet } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -47,8 +48,11 @@ export default async function AdminDashboardPage() {
       <section className="border border-(--color-divider) bg-white p-4">
         <div className="flex items-baseline gap-3">
           <h2 className="text-[19px]">Moderation queue</h2>
-          <Link href={overview.moderationQueue.href} className="btn btn-ghost ml-auto text-[12px]">
-            Open queue →
+          <Link
+            href={overview.moderationQueue.href}
+            className="relative btn btn-ghost ml-auto text-[12px]"
+          >
+            <LinkPendingLabel>Open queue →</LinkPendingLabel>
           </Link>
         </div>
         <p className="mt-2 text-[13px] ink-muted tnum">

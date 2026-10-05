@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 
 import { ENQUIRIES_TEXT, ENQUIRY_TABS } from './enquiries.constants';
@@ -23,10 +24,12 @@ export function EnquiryInbox({ inbox, status, permissions }: EnquiryInboxProps) 
               href={enquiriesHref({ status: tab.value })}
               aria-current={status === tab.value ? 'page' : undefined}
               aria-selected={status === tab.value}
-              className="dd-chip no-underline"
+              className="relative dd-chip no-underline"
             >
-              {tab.label}
-              <span className="tnum opacity-70">{inbox.counts[tab.value]}</span>
+              <LinkPendingLabel>
+                {tab.label}
+                <span className="tnum opacity-70">{inbox.counts[tab.value]}</span>
+              </LinkPendingLabel>
             </Link>
           ))}
         </div>
@@ -51,9 +54,9 @@ export function EnquiryInbox({ inbox, status, permissions }: EnquiryInboxProps) 
       {inbox.page.nextCursor ? (
         <Link
           href={enquiriesHref({ status, cursor: inbox.page.nextCursor })}
-          className="btn btn-secondary self-center"
+          className="relative btn btn-secondary self-center"
         >
-          {ENQUIRIES_TEXT.more}
+          <LinkPendingLabel>{ENQUIRIES_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
     </div>

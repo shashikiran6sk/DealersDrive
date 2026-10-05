@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 import { EnquiryVehicleCard } from '@/features/admin/enquiry-detail';
 
@@ -15,8 +16,8 @@ import { TicketNotes } from './ticket-notes';
 export function SupportTicketWorkspace({ ticket, viewerId }: SupportTicketWorkspaceProps) {
   return (
     <div className="mx-auto flex max-w-[1180px] flex-col gap-5 p-5">
-      <Link href="/admin/support" className="btn btn-ghost self-start">
-        {SUPPORT_TICKET_TEXT.back}
+      <Link href="/admin/support" className="relative btn btn-ghost self-start">
+        <LinkPendingLabel>{SUPPORT_TICKET_TEXT.back}</LinkPendingLabel>
       </Link>
 
       <header className="flex flex-wrap items-start gap-3">

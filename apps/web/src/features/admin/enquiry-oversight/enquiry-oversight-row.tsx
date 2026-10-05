@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 
 import { ENQUIRY_OVERSIGHT_PATH, ENQUIRY_OVERSIGHT_TEXT } from './enquiry-oversight.constants';
@@ -56,9 +57,9 @@ export function EnquiryOversightRow({ row, filters }: EnquiryOversightRowProps) 
         <Link
           href={`${ENQUIRY_OVERSIGHT_PATH}/${row.id}`}
           aria-label={ENQUIRY_OVERSIGHT_TEXT.viewLabel(customer.name)}
-          className="btn btn-secondary text-[12px]"
+          className="relative btn btn-secondary text-[12px]"
         >
-          {ENQUIRY_OVERSIGHT_TEXT.view}
+          <LinkPendingLabel>{ENQUIRY_OVERSIGHT_TEXT.view}</LinkPendingLabel>
         </Link>
       </td>
     </tr>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { Table, type TableColumn } from '@/components/ui/table';
 
@@ -61,9 +62,9 @@ export function EnquiryOversight({ enquiries, filters }: EnquiryOversightProps) 
       {enquiries.page.nextCursor ? (
         <Link
           href={oversightHref({ ...filters, cursor: enquiries.page.nextCursor })}
-          className="btn btn-secondary self-center"
+          className="relative btn btn-secondary self-center"
         >
-          {ENQUIRY_OVERSIGHT_TEXT.more}
+          <LinkPendingLabel>{ENQUIRY_OVERSIGHT_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
     </div>

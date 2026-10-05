@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache, Suspense } from 'react';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Plate } from '@/components/ui/primitives';
 import { AvailabilityNotice } from '@/components/vehicle/availability-notice';
 import { PriceBlock } from '@/components/vehicle/price-block';
@@ -123,8 +124,8 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           ]),
         ]}
       />
-      <Link href="/cars" className="btn btn-ghost mb-[14px]">
-        {VEHICLE_PAGE_TEXT.back}
+      <Link href="/cars" className="relative btn btn-ghost mb-[14px]">
+        <LinkPendingLabel>{VEHICLE_PAGE_TEXT.back}</LinkPendingLabel>
       </Link>
 
       <div className="grid gap-[30px] lg:grid-cols-[1.35fr_1fr]">

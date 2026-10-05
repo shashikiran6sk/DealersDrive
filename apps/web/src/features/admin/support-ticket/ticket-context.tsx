@@ -1,6 +1,7 @@
 import type { AdminSupportTicketDetail } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 import { DetailRow } from '@/features/admin/enquiry-detail';
 
@@ -58,8 +59,11 @@ export function TicketEnquiry({ enquiry }: { enquiry: AdminSupportTicketDetail['
               )}
             </p>
           </div>
-          <Link href={enquiry.adminHref} className="btn btn-secondary self-start text-[12px]">
-            {SUPPORT_TICKET_TEXT.openEnquiry}
+          <Link
+            href={enquiry.adminHref}
+            className="relative btn btn-secondary self-start text-[12px]"
+          >
+            <LinkPendingLabel>{SUPPORT_TICKET_TEXT.openEnquiry}</LinkPendingLabel>
           </Link>
         </>
       ) : (
@@ -92,8 +96,8 @@ export function TicketDealer({
           )}
         </DetailRow>
       </dl>
-      <Link href={dealer.adminHref} className="btn btn-secondary self-start text-[12px]">
-        {SUPPORT_TICKET_TEXT.openDealer}
+      <Link href={dealer.adminHref} className="relative btn btn-secondary self-start text-[12px]">
+        <LinkPendingLabel>{SUPPORT_TICKET_TEXT.openDealer}</LinkPendingLabel>
       </Link>
     </section>
   );

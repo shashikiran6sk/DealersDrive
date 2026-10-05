@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ADD_VEHICLE_HREF } from '@/components/dealer/console-nav';
 import { ButtonLink } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { Table, type TableColumn } from '@/components/ui/table';
 
@@ -50,10 +51,12 @@ export function InventoryView({ inventory, status, q }: InventoryViewProps) {
               href={inventoryHref({ status: tab.value, q })}
               aria-current={status === tab.value ? 'page' : undefined}
               aria-selected={status === tab.value}
-              className="dd-chip no-underline"
+              className="relative dd-chip no-underline"
             >
-              {tab.label}
-              <span className="tnum opacity-70">{inventory.counts[tab.value ?? 'ALL'] ?? 0}</span>
+              <LinkPendingLabel>
+                {tab.label}
+                <span className="tnum opacity-70">{inventory.counts[tab.value ?? 'ALL'] ?? 0}</span>
+              </LinkPendingLabel>
             </Link>
           ))}
         </div>
@@ -81,8 +84,8 @@ export function InventoryView({ inventory, status, q }: InventoryViewProps) {
           {INVENTORY_TEXT.search}
         </button>
         {q ? (
-          <Link href={inventoryHref({ status })} className="btn btn-ghost text-[12px]">
-            {INVENTORY_TEXT.clear}
+          <Link href={inventoryHref({ status })} className="relative btn btn-ghost text-[12px]">
+            <LinkPendingLabel>{INVENTORY_TEXT.clear}</LinkPendingLabel>
           </Link>
         ) : null}
       </form>
@@ -119,9 +122,9 @@ export function InventoryView({ inventory, status, q }: InventoryViewProps) {
       {inventory.page.nextCursor ? (
         <Link
           href={inventoryHref({ status, q, cursor: inventory.page.nextCursor })}
-          className="btn btn-secondary self-center"
+          className="relative btn btn-secondary self-center"
         >
-          {INVENTORY_TEXT.more}
+          <LinkPendingLabel>{INVENTORY_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
     </div>

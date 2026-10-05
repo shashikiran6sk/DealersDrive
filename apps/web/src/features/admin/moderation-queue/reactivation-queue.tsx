@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { Table, type TableColumn } from '@/components/ui/table';
 import {
@@ -97,9 +98,9 @@ export function ReactivationQueue({
             status: status === 'PENDING' ? undefined : status,
             cursor: requests.page.nextCursor,
           })}
-          className="btn btn-secondary self-center"
+          className="relative btn btn-secondary self-center"
         >
-          {REACTIVATION_TEXT.more}
+          <LinkPendingLabel>{REACTIVATION_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
     </div>

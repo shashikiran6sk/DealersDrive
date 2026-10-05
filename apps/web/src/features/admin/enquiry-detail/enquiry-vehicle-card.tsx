@@ -1,6 +1,7 @@
 import type { AdminEnquiryDetail } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 
 import { DetailRow } from './detail-row';
@@ -44,12 +45,12 @@ export function EnquiryVehicleCard({ vehicle }: { vehicle: AdminEnquiryDetail['v
         </DetailRow>
       </dl>
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={vehicle.adminHref} className="btn btn-secondary text-[12px]">
-          {ENQUIRY_DETAIL_TEXT.openListing}
+        <Link href={vehicle.adminHref} className="relative btn btn-secondary text-[12px]">
+          <LinkPendingLabel>{ENQUIRY_DETAIL_TEXT.openListing}</LinkPendingLabel>
         </Link>
         {vehicle.publicHref ? (
-          <Link href={vehicle.publicHref} className="btn btn-ghost text-[12px]">
-            {ENQUIRY_DETAIL_TEXT.openPublic}
+          <Link href={vehicle.publicHref} className="relative btn btn-ghost text-[12px]">
+            <LinkPendingLabel>{ENQUIRY_DETAIL_TEXT.openPublic}</LinkPendingLabel>
           </Link>
         ) : (
           <span className="text-[12px] ink-subtle">{ENQUIRY_DETAIL_TEXT.notPublic}</span>

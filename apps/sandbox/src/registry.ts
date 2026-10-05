@@ -2683,6 +2683,49 @@ export const registry: RegistryEntry[] = [
     reusable: true,
     storyId: 'errors-sectionerror--retry-only',
   },
+  {
+    id: 'C135',
+    name: 'LinkPendingIndicator',
+    source: 'apps/web/src/components/ui/link-pending/link-pending-indicator.tsx',
+    category: 'Primitives',
+    ownership: 'Shared',
+    purpose:
+      'R101: the Button spinner, shown inside a <Link> while its navigation is pending (useLinkStatus), faded in after 120ms so a prefetched instant navigation does not flicker. LinkPendingLabel is the button-shaped variant: the label stays, invisible, under a centred spinner so the button keeps its width.',
+    aliases: ['LinkPendingLabel', 'NavSpinner', 'PendingLink', 'useLinkStatus', 'link-pending'],
+    features: ['R101'],
+    props: ['className', 'reserve'],
+    states: [
+      'idle',
+      'idle with reserved space',
+      'pending nav item',
+      'pending card',
+      'pending button link',
+    ],
+    reusable: true,
+    storyId: 'primitives-linkpending',
+  },
+  {
+    id: 'C136',
+    name: 'ConsolePageLoading',
+    source: 'apps/web/src/components/dealer/console-page-loading/console-page-loading.tsx',
+    category: 'Primitives',
+    ownership: 'Shared',
+    purpose:
+      "R101: the loading.tsx skeletons — the console page, a car (VehiclePageLoading), a dealership (DealerPageLoading), My enquiries (CustomerEnquiriesLoading) and Saved cars (SavedListLoading). Each sits on its page's own grid and is a role=status.",
+    aliases: [
+      'VehiclePageLoading',
+      'DealerPageLoading',
+      'CustomerEnquiriesLoading',
+      'SavedListLoading',
+      'loading.tsx',
+      'PageSkeleton',
+    ],
+    features: ['R101'],
+    props: [],
+    states: ['console', 'vehicle', 'dealership', 'my enquiries', 'saved cars'],
+    reusable: true,
+    storyId: 'primitives-pageloading',
+  },
 ];
 
 export function findComponent(query: string): RegistryEntry[] {

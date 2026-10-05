@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { ButtonLink } from '@/components/ui/button';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 
 import { CUSTOMER_ENQUIRIES_TEXT } from './customer-enquiries.constants';
@@ -40,9 +41,9 @@ export function CustomerEnquiryList({ enquiries }: CustomerEnquiryListProps) {
       {enquiries.page.nextCursor ? (
         <Link
           href={myEnquiriesHref(enquiries.page.nextCursor)}
-          className="btn btn-secondary self-center"
+          className="relative btn btn-secondary self-center"
         >
-          {CUSTOMER_ENQUIRIES_TEXT.more}
+          <LinkPendingLabel>{CUSTOMER_ENQUIRIES_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
     </div>
