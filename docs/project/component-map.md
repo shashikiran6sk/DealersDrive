@@ -1660,6 +1660,15 @@ The vehicle wizard's and the dealer profile's forms submit through
 `useFormStatus` to read: `WizardFooter`, `SubmitRow`'s button and `SaveRow` take
 `pending` as a prop. No visual change.
 
+### R103 — C093 `HeaderAccount`: an avatar-sized placeholder, never Login while unknown
+
+`HeaderAccount` renders an avatar-sized `[data-auth-placeholder]` (40×40, the
+avatar's own size) alongside Login with `auth-in-only` / `auth-out-only`
+classes, so the pre-paint `dd_auth` hint picks one before first paint. New
+optional prop `loadAccount` (the `GET /api/account` client by default). States:
+signed out (Login), signed in (avatar), unknown (placeholder). No sandbox change:
+the avatar and Login are unchanged and the placeholder is a plain circle.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

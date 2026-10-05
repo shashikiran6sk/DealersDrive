@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
+import { forgetAuthHint } from '@/lib/use-auth-hint';
 
 import { LOGIN_AUDIENCES, LOGIN_TEXT } from './login.constants';
 import type { LoginAudience } from './login.types';
@@ -16,6 +17,10 @@ export interface LoginTabsProps {
 export function LoginTabs({ initial, customer, dealer }: LoginTabsProps) {
   const [active, setActive] = useState<LoginAudience>(initial);
   const tabs = useRef<Partial<Record<LoginAudience, HTMLButtonElement | null>>>({});
+
+  useEffect(() => {
+    forgetAuthHint();
+  }, []);
 
   function select(next: LoginAudience): void {
     setActive(next);

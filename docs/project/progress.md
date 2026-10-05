@@ -273,6 +273,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R100 — Two server-side waterfalls removed · the vehicle page asks for its similar cars alongside the car (cold page 377–408 → 204–315 ms); the console layout asks for the account alongside the guard (350–672 → 222–371 ms); the guard's session-before-dealership order is kept
 - [x] R101 — Every click on a server-rendered page answers at once · `useLinkStatus` spinner (the `Button` spinner) in the console sidebar and tab bar, the header links, vehicle and dealer cards, `ButtonLink` and every `btn`/`dd-chip` link; `loading.tsx` skeletons for the console, `/car/[slug]`, `/dealers/[slug]`, `/enquiries`, `/saved` (console tab feedback 228–404 → 30–63 ms; home car card 900 → 40–75 ms)
 - [x] R102 — A slow request no longer freezes every link · React 19 entangles async transitions with `<Link>` navigations; mutations run through `useNavigationSafeAction` / `useNavigationSafeFormAction` (24 `useTransition` sites, the vehicle wizard, submit and profile forms), which follow `redirect()` themselves and let the last click win (nav during a 12 s create 7.2 s → 0.4 s)
+- [x] R103 — No Login flash for a signed-in customer · a readable `dd_auth` hint (written on sign-in, sign-out and every lookup) and a pre-paint script choose Login or a 40 px placeholder before first paint; the lookup is `GET /api/account` (cancellable, not queued behind Server Actions), skipped for signed-out visitors; the home page stays ISR
 
 ---
 

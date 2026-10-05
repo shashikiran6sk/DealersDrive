@@ -11,6 +11,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { ApiError, apiSend, SESSION_COOKIE } from '@/lib/api';
+import { writeAuthHint } from '@/lib/auth-hint-cookie';
 import { servicesOf } from '@/lib/services';
 
 export interface ActionState {
@@ -131,6 +132,7 @@ export async function signOutAction(scope: 'dealer' | 'admin' = 'dealer'): Promi
   await apiSend<void>('POST', path).catch(() => undefined);
 
   (await cookies()).delete(SESSION_COOKIE);
+  await writeAuthHint(false);
   redirect(scope === 'admin' ? '/admin/login' : '/dealer/login');
 }
 
