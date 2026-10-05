@@ -1098,7 +1098,7 @@ fallback.
 The layout, `generateMetadata` and the page all ask for these; `cache` makes it
 one wait per render if the API is slow, rather than one each.
 
-## `apps/web/src/lib/api.ts` — slow upstream calls (R98)
+## `apps/web/src/lib/api.ts` — slow upstream calls (R99)
 
 ### `export const API_SLOW_MS = 1_000`
 

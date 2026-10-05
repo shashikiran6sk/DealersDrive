@@ -785,7 +785,7 @@ describe('apiGetParsed', () => {
 });
 
 /**
- * R98 — what a slow page can be traced by.
+ * R99 — what a slow page can be traced by.
  *
  * A call that takes a second or more logs `api.slow_request` with the trace id
  * the API logged it under, so a slow render in the web log can be found next to
@@ -794,7 +794,7 @@ describe('apiGetParsed', () => {
  * per-render fetch dedupe on the request headers, and a random header on a GET
  * would make every cached read a miss.
  */
-describe('request ids and slow calls (R98)', () => {
+describe('request ids and slow calls (R99)', () => {
   function headersOf(call: Captured | undefined): Record<string, string> {
     return (call?.init.headers ?? {}) as Record<string, string>;
   }
