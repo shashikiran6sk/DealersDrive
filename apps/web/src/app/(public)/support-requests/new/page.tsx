@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import {
   NEW_SUPPORT_REQUEST_PATH,
   SUPPORT_FORM_TEXT,
@@ -51,8 +52,8 @@ export default async function NewSupportRequestPage({
 
   return (
     <div className="mx-auto flex w-full max-w-[760px] flex-col gap-[16px] px-4 pt-[22px] pb-[60px] sm:px-6">
-      <Link href={SUPPORT_REQUESTS_PATH} className="btn btn-ghost self-start">
-        {SUPPORT_FORM_TEXT.back}
+      <Link href={SUPPORT_REQUESTS_PATH} className="relative btn btn-ghost self-start">
+        <LinkPendingLabel>{SUPPORT_FORM_TEXT.back}</LinkPendingLabel>
       </Link>
       <div>
         <h1 className="text-[26px] sm:text-[30px]">{SUPPORT_FORM_TEXT.title}</h1>

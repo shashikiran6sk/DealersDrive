@@ -13,6 +13,7 @@ import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/input';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { createSupportRequestAction } from '@/features/support/support-actions';
 import {
   SUPPORT_CATEGORY_OPTIONS,
@@ -200,8 +201,8 @@ export function SupportRequestForm({
         >
           {SUPPORT_FORM_TEXT.submit}
         </Button>
-        <Link href={SUPPORT_REQUESTS_PATH} className="btn btn-ghost max-sm:w-full">
-          {SUPPORT_FORM_TEXT.cancel}
+        <Link href={SUPPORT_REQUESTS_PATH} className="relative btn btn-ghost max-sm:w-full">
+          <LinkPendingLabel>{SUPPORT_FORM_TEXT.cancel}</LinkPendingLabel>
         </Link>
       </div>
       {pending ? (

@@ -6,6 +6,7 @@ import { cache } from 'react';
 import { DirectoryCard } from '@/components/dealers/dealer-card';
 import { DirectoryFilters } from '@/components/dealers/directory-filters';
 import { JsonLd } from '@/components/seo/json-ld';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { apiGet, qs } from '@/lib/api';
 import { DEALERS_TAG } from '@/lib/cache-tags';
@@ -157,8 +158,8 @@ export default async function DealerDirectoryPage({
               : 'No verified dealerships have listed cars in this area yet.'
           }
           action={
-            <Link href="/dealers" className="btn btn-primary">
-              Show all dealers
+            <Link href="/dealers" className="relative btn btn-primary">
+              <LinkPendingLabel>Show all dealers</LinkPendingLabel>
             </Link>
           }
         />
@@ -188,9 +189,9 @@ function Pagination({
         <Link
           href={`/dealers${qs({ city, district, q, page: page.page - 1 })}`}
           rel="prev"
-          className="btn btn-secondary"
+          className="relative btn btn-secondary"
         >
-          ← Previous
+          <LinkPendingLabel>← Previous</LinkPendingLabel>
         </Link>
       ) : (
         <span />
@@ -202,9 +203,9 @@ function Pagination({
         <Link
           href={`/dealers${qs({ city, district, q, page: page.page + 1 })}`}
           rel="next"
-          className="btn btn-secondary"
+          className="relative btn btn-secondary"
         >
-          Next →
+          <LinkPendingLabel>Next →</LinkPendingLabel>
         </Link>
       ) : (
         <span />

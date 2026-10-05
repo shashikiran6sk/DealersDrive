@@ -1,6 +1,7 @@
 import type { AdminEnquiryDetail } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 
 import { DetailRow } from './detail-row';
@@ -14,8 +15,8 @@ export function EnquiryDetail({ enquiry }: { enquiry: AdminEnquiryDetail }) {
 
   return (
     <div className="mx-auto flex max-w-[1000px] flex-col gap-5 p-5">
-      <Link href="/admin/enquiries" className="btn btn-ghost self-start">
-        {ENQUIRY_DETAIL_TEXT.back}
+      <Link href="/admin/enquiries" className="relative btn btn-ghost self-start">
+        <LinkPendingLabel>{ENQUIRY_DETAIL_TEXT.back}</LinkPendingLabel>
       </Link>
 
       <header className="flex flex-wrap items-start gap-3">
@@ -118,14 +119,14 @@ export function EnquiryDetail({ enquiry }: { enquiry: AdminEnquiryDetail }) {
               </DetailRow>
             </dl>
             <div className="flex flex-wrap gap-2">
-              <Link href={dealer.adminHref} className="btn btn-secondary text-[12px]">
-                {ENQUIRY_DETAIL_TEXT.openDealer}
+              <Link href={dealer.adminHref} className="relative btn btn-secondary text-[12px]">
+                <LinkPendingLabel>{ENQUIRY_DETAIL_TEXT.openDealer}</LinkPendingLabel>
               </Link>
               <Link
                 href={`/admin/enquiries?dealer=${encodeURIComponent(dealer.slug)}`}
-                className="btn btn-ghost text-[12px]"
+                className="relative btn btn-ghost text-[12px]"
               >
-                {ENQUIRY_DETAIL_TEXT.dealerEnquiries}
+                <LinkPendingLabel>{ENQUIRY_DETAIL_TEXT.dealerEnquiries}</LinkPendingLabel>
               </Link>
             </div>
           </section>

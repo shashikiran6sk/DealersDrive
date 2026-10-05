@@ -2,6 +2,7 @@ import type { SavedVehiclesResponse } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
 import { ButtonLink } from '@/components/ui/button';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 
@@ -61,8 +62,11 @@ export function SavedList({ saved }: SavedListProps) {
       )}
 
       {saved.page.nextCursor ? (
-        <Link href={savedHref(saved.page.nextCursor)} className="btn btn-secondary self-center">
-          {SAVED_LIST_TEXT.more}
+        <Link
+          href={savedHref(saved.page.nextCursor)}
+          className="relative btn btn-secondary self-center"
+        >
+          <LinkPendingLabel>{SAVED_LIST_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
     </div>

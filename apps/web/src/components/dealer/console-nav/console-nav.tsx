@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { LinkPendingIndicator } from '@/components/ui/link-pending';
 import { isCurrentPath } from '@/lib/nav';
 import type { NavItem } from '@/types';
 
@@ -20,7 +21,8 @@ export function ConsoleNav({ items }: { items: NavItem[] }) {
           className="dd-nav-item"
           aria-current={isCurrentPath(pathname, item.href, DEALER_ROOT_HREF) ? 'true' : undefined}
         >
-          {item.label}
+          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          <LinkPendingIndicator reserve />
         </Link>
       ))}
     </nav>

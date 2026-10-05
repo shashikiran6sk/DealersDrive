@@ -42,3 +42,8 @@ export const SAVED_PAGE_LIMIT = 50;
 export function savedHref(cursor?: string): string {
   return cursor ? `/saved?cursor=${encodeURIComponent(cursor)}` : '/saved';
 }
+
+export const SAVED_LIST_LOADING = {
+  label: 'Loading your saved cars',
+  cards: 4,
+} as const;

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { ButtonLink } from '@/components/ui/button';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 
 import { NEW_SUPPORT_REQUEST_PATH, SUPPORT_REQUESTS_TEXT } from './support-requests.constants';
@@ -49,9 +50,9 @@ export function SupportRequestList({ tickets }: SupportRequestListProps) {
       {tickets.page.nextCursor ? (
         <Link
           href={supportRequestsHref(tickets.page.nextCursor)}
-          className="btn btn-secondary self-center"
+          className="relative btn btn-secondary self-center"
         >
-          {SUPPORT_REQUESTS_TEXT.more}
+          <LinkPendingLabel>{SUPPORT_REQUESTS_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
 

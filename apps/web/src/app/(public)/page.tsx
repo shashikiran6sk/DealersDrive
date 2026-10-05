@@ -4,6 +4,7 @@ import type { ComponentType } from 'react';
 
 import { SectionError } from '@/components/errors/section-error';
 import { CarSearchBox } from '@/components/search/car-search-box';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { AudienceSection } from '@/features/home/audience-section';
 import { DiscoveryBand } from '@/features/home/discovery-row';
 import { HeroBanner, heroImageFrom } from '@/features/home/hero-banner';
@@ -71,11 +72,11 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <Link href="/cars" className="dd-chip">
-            {HOME_TEXT.browseAll}
+          <Link href="/cars" className="relative dd-chip">
+            <LinkPendingLabel>{HOME_TEXT.browseAll}</LinkPendingLabel>
           </Link>
-          <Link href="/dealers" className="dd-chip">
-            {HOME_TEXT.browseDealers}
+          <Link href="/dealers" className="relative dd-chip">
+            <LinkPendingLabel>{HOME_TEXT.browseDealers}</LinkPendingLabel>
           </Link>
         </div>
       </HeroBanner>

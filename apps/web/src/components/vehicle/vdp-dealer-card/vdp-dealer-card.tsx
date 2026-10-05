@@ -1,6 +1,7 @@
 import type { PublicVehicleDetail } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { LogoTile, Plate } from '@/components/ui/primitives';
 
 import { VDP_DEALER_TEXT } from './vdp-dealer-card.constants';
@@ -24,9 +25,9 @@ export function VdpDealerCard({ dealer }: { dealer: PublicVehicleDetail['dealer'
         {dealer.isVerified ? <Plate size="chip">{VDP_DEALER_TEXT.verified}</Plate> : <span />}
         <Link
           href={`/dealers/${encodeURIComponent(dealer.slug)}`}
-          className="btn btn-ghost text-[13px]"
+          className="relative btn btn-ghost text-[13px]"
         >
-          {VDP_DEALER_TEXT.view}
+          <LinkPendingLabel>{VDP_DEALER_TEXT.view}</LinkPendingLabel>
         </Link>
       </div>
       <p className="text-[12px] ink-subtle">{VDP_DEALER_TEXT.trust}</p>

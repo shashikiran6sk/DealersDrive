@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { HOME_TEXT } from '@/features/home/home.constants';
 
@@ -14,8 +15,8 @@ export function DiscoveryRow({ id, title, href, cars }: DiscoveryRowProps) {
         <h2 id={`${id}-heading`} className="text-[22px] sm:text-[24px]">
           {title}
         </h2>
-        <Link href={href} className="btn btn-ghost text-[13px]">
-          {HOME_TEXT.viewAll}
+        <Link href={href} className="relative btn btn-ghost text-[13px]">
+          <LinkPendingLabel>{HOME_TEXT.viewAll}</LinkPendingLabel>
         </Link>
       </div>
       <div className="grid items-stretch gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(262px,1fr))]">

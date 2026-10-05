@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { BrandLogo } from '@/components/brand-logo';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Blueprint } from '@/components/ui/primitives';
 
 interface ComingSoonProps {
@@ -24,11 +25,11 @@ export function ComingSoon({ eyebrow, title, description }: ComingSoonProps) {
           <p className="mt-5 max-w-[58ch] text-[15px] leading-[1.7] ink-secondary">{description}</p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/dealers" className="btn btn-primary px-5 py-[10px]">
-              Explore verified dealers
+            <Link href="/dealers" className="relative btn btn-primary px-5 py-[10px]">
+              <LinkPendingLabel>Explore verified dealers</LinkPendingLabel>
             </Link>
-            <Link href="/" className="btn btn-secondary px-5 py-[10px]">
-              Back to home
+            <Link href="/" className="relative btn btn-secondary px-5 py-[10px]">
+              <LinkPendingLabel>Back to home</LinkPendingLabel>
             </Link>
           </div>
         </div>

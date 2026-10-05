@@ -113,7 +113,10 @@ vi.mock('next/cache', () => ({
  * navigation, neither of which a unit test observes — but the `href` is
  * exactly what these tests assert on, so it has to survive.
  */
+export const linkStatus = { pending: false };
+
 vi.mock('next/link', () => ({
+  useLinkStatus: () => ({ pending: linkStatus.pending }),
   default: ({
     children,
     href,
@@ -151,6 +154,7 @@ vi.mock('next/image', () => ({
 
 /** jsdom implements neither, and the gallery calls both. */
 beforeEach(() => {
+  linkStatus.pending = false;
   Element.prototype.scrollIntoView = vi.fn();
   Element.prototype.scrollTo = vi.fn();
 
