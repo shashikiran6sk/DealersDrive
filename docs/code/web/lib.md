@@ -65,10 +65,9 @@ Public pages cache; anything behind a session must not (§18).
 
 ### `headers?: Record<string, string>`
 
-Extra request headers. Used by Server Actions to forward the buyer's IP:
-without it every reveal and every enquiry would arrive from the Next
-server's single address and the per-IP limits protecting dealer phone
-numbers would count one bucket for the whole internet (ARCHITECTURE §14.1).
+Extra request headers for a single call. The buyer's IP is not forwarded
+through this option any more — `request()` does that itself (R107, below), so
+no action can forget it.
 
 ### `async function sessionCookie(): Promise<string | undefined>`
 
@@ -77,6 +76,28 @@ The session token, or undefined outside a request scope.
 `cookies()` throws during static generation — the sitemap and the cached
 public pages are rendered with no request at all — and that is a legitimate
 state, not an error: those pages have no session to forward.
+
+### `async function clientIpHeaders(): Promise<Record<string, string>>`
+
+**R107.** Without it every reveal, enquiry and sign-in would reach the API from
+the web tier's address, and the per-IP limits protecting dealer phone numbers
+would count one bucket for the whole internet (ARCHITECTURE §14.1).
+
+It adds `x-dd-client-ip` (the visitor's address: `x-real-ip`, else the first
+`x-forwarded-for` entry — both set by Vercel's edge, which overwrites any value
+the client sent) and `x-dd-forward-secret` (`CLIENT_IP_FORWARD_SECRET`). The API
+believes the address only when the secret matches — see
+`apps/api/src/middleware/trusted-client-ip.ts`.
+
+It runs only on the uncached path, beside the session cookie, for the same
+reason the cookie does: Next keys its data cache on request headers, so a
+per-visitor header on a cached read would split one shared entry into one per
+visitor. No secret configured, or no address known, sends neither header — the
+secret is never sent on its own.
+
+The secret is read from `process.env` here and nowhere else. It is not part of
+`serverConfig()`, whose result is a plain object a server component may pass
+down as props.
 
 ### `export function apiGet<T>(path: string, options?: RequestOptions): Promise<T>`
 

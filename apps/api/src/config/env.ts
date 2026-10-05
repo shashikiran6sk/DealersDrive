@@ -114,6 +114,8 @@ const envSchema = z.object({
     .default('true')
     .transform((value) => value === 'true'),
 
+  CLIENT_IP_FORWARD_SECRET: optional(z.string().min(32)),
+
   CACHE_DRIVER: z.enum(['memory', 'postgres']).default(isProduction ? 'postgres' : 'memory'),
 
   CONFIG_VERSION_POLL_MS: z.coerce.number().int().positive().default(10_000),

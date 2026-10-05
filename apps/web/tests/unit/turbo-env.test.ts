@@ -13,11 +13,13 @@ import { describe, expect, it } from 'vitest';
  * OAuth rewrite — until the build was switched to `--env-mode=loose`.
  *
  * This walks the web app for `process.env.X` and checks each is declared in
- * `apps/web/turbo.json`, except the two that are read only at request time
- * (the health route's version) and `NODE_ENV` (Next sets it; root `globalEnv`).
+ * `apps/web/turbo.json`, except those read only at request time (the health
+ * route's version; R107's `CLIENT_IP_FORWARD_SECRET`, which `api.ts` reads per
+ * call and which must not enter the build) and `NODE_ENV` (Next sets it; root
+ * `globalEnv`).
  */
 const WEB = resolve(__dirname, '../..');
-const REQUEST_TIME_ONLY = new Set(['GIT_SHA', 'VERCEL_GIT_COMMIT_SHA']);
+const REQUEST_TIME_ONLY = new Set(['GIT_SHA', 'VERCEL_GIT_COMMIT_SHA', 'CLIENT_IP_FORWARD_SECRET']);
 const SET_BY_NEXT = new Set(['NODE_ENV']);
 
 function sourceFiles(dir: string): string[] {

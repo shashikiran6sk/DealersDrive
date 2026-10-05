@@ -84,6 +84,7 @@ const SCHEMA_KEYS = [
   'DB_CONNECT_TIMEOUT_MS',
   'DB_STATEMENT_TIMEOUT_MS',
   'DB_IDLE_IN_TRANSACTION_TIMEOUT_MS',
+  'CLIENT_IP_FORWARD_SECRET',
   'GRAFANA_CLOUD_LOGS_ENABLED',
   'GRAFANA_CLOUD_LOKI_URL',
   'GRAFANA_CLOUD_LOKI_USER',
@@ -513,6 +514,24 @@ describe('validation', () => {
     expect(tuned.DB_STATEMENT_TIMEOUT_MS).toBe(9_000);
     expect(tuned.DB_IDLE_IN_TRANSACTION_TIMEOUT_MS).toBe(12_000);
   });
+
+  /**
+   * R107. Without a secret the API believes no forwarded client address, which is
+   * the behaviour before R107. An empty value is the same as unset, so a blank
+   * line in a .env file does not fail the boot.
+   */
+  it('reads the client-IP forwarding secret, and treats an empty one as unset', async () => {
+    expect((await loadEnv({ NODE_ENV: 'development' })).CLIENT_IP_FORWARD_SECRET).toBeUndefined();
+    expect(
+      (await loadEnv({ NODE_ENV: 'development', CLIENT_IP_FORWARD_SECRET: '' }))
+        .CLIENT_IP_FORWARD_SECRET,
+    ).toBeUndefined();
+    const secret = 'x'.repeat(32);
+    expect(
+      (await loadEnv({ NODE_ENV: 'development', CLIENT_IP_FORWARD_SECRET: secret }))
+        .CLIENT_IP_FORWARD_SECRET,
+    ).toBe(secret);
+  });
 });
 
 /**
@@ -559,6 +578,13 @@ describe('configurations that must not boot', () => {
     expect(message).toContain('MSG91_AUTH_KEY');
     expect(message).toContain('MSG91_WIDGET_ID');
     expect(message).toContain('MSG91_WIDGET_TOKEN');
+  });
+
+  /** R107. A guessable secret would let anyone choose the address the limiters count. */
+  it('refuses a client-IP forwarding secret shorter than 32 characters', async () => {
+    const message = await refuses({ CLIENT_IP_FORWARD_SECRET: 'too-short' });
+
+    expect(message).toContain('CLIENT_IP_FORWARD_SECRET');
   });
 
   /** A fixed code proves nothing about who is holding the handset. */
