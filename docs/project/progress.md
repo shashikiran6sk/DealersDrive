@@ -276,6 +276,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R103 — No Login flash for a signed-in customer · a readable `dd_auth` hint (written on sign-in, sign-out and every lookup) and a pre-paint script choose Login or a 40 px placeholder before first paint; the lookup is `GET /api/account` (cancellable, not queued behind Server Actions), skipped for signed-out visitors; the home page stays ISR
 - [x] R104 — Logout clears the saved hearts, and a signed-out visit asks nothing · `SavedVehiclesProvider` follows the `dd_auth` hint: no saved-slugs Server Action for a signed-out visitor, and every heart on the page empties the moment Logout succeeds (previously the last account's hearts stayed filled until a reload)
 - [x] R105 — The web tier's functions run in Mumbai · `apps/web/vercel.json` `regions: ["bom1"]`, beside the ap-south-1 API and database, instead of Vercel's default `iad1` (~200 ms per API round trip saved)
+- [x] R106 — The web build sees its variables without loose env mode · `apps/web/turbo.json` declares `APP_ENV`, `API_BASE_URL`, `API_ORIGIN`, `WEB_BASE_URL` for `build`; a test checks every build-time `process.env` read is declared; Vercel's `--env-mode=loose` workaround can go
 
 ---
 
