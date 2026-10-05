@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import SavedCarsPage from '@/app/(public)/saved/page';
 import { SaveButton } from '@/components/vehicle/save-button';
+import { announceAuthHint } from '@/lib/use-auth-hint';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import {
   SavedVehiclesProvider,
@@ -72,9 +73,40 @@ async function withProvider(
 
 afterEach(() => {
   apiGetParsed.mockReset();
+  document.cookie = 'dd_auth=; Path=/; Max-Age=0';
 });
 
 describe('the heart', () => {
+  it('asks nothing when this browser was last seen signed out', async () => {
+    document.cookie = 'dd_auth=0; Path=/';
+    const loadSlugs = customer(['a']);
+    await withProvider(<VehicleCard vehicle={card('a')} />, loadSlugs);
+
+    expect(loadSlugs).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Save 2022 Hyundai Creta a' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  it('forgets every saved heart the moment the account signs out', async () => {
+    await withProvider(<VehicleCard vehicle={card('a')} />, customer(['a']));
+    expect(screen.getByRole('button', { name: /Remove 2022 Hyundai Creta a/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    act(() => {
+      document.cookie = 'dd_auth=0; Path=/';
+      announceAuthHint();
+    });
+
+    expect(screen.getByRole('button', { name: 'Save 2022 Hyundai Creta a' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
   it('is absent without the provider, so a card outside the public pages has none', () => {
     render(<VehicleCard vehicle={card('a')} />);
     expect(screen.queryByRole('button', { name: /Save/ })).not.toBeInTheDocument();
