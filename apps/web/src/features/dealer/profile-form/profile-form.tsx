@@ -1,13 +1,14 @@
 'use client';
 
 import { DealerSelfUpdateInput, type DealerProfile } from '@dealers-drive/contracts';
-import { useActionState, useState } from 'react';
+import { useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Input } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
 import { ServiceInput } from '@/components/ui/service-input';
 import { saveDealerProfileAction } from '@/features/dealer/profile-actions';
+import { useNavigationSafeFormAction } from '@/lib/use-navigation-safe-action';
 
 import { LockedField } from './locked-field';
 import { LockedNote } from './locked-note';
@@ -23,7 +24,10 @@ export function DealerProfileForm({
   dealer: DealerProfile;
   readOnly?: boolean;
 }) {
-  const [state, formAction] = useActionState(saveDealerProfileAction, EMPTY_FORM_STATE);
+  const [state, onSubmit, pending] = useNavigationSafeFormAction(
+    saveDealerProfileAction,
+    EMPTY_FORM_STATE,
+  );
   const errors = state.fieldErrors;
   const [yearError, setYearError] = useState<string>();
   const establishedYearError = yearError ?? errors.establishedYear;
@@ -35,7 +39,7 @@ export function DealerProfileForm({
     waiting && waiting.specialities.length > 0 ? waiting.specialities : dealer.specialities;
 
   return (
-    <form action={formAction} className="flex flex-col gap-[18px]">
+    <form onSubmit={onSubmit} className="flex flex-col gap-[18px]">
       {state.status === 'saved' ? (
         <Banner tone="ok">
           {dealer.profileChange?.status === 'PENDING'
@@ -171,7 +175,7 @@ export function DealerProfileForm({
         </div>
       </section>
 
-      {readOnly ? null : <SaveRow />}
+      {readOnly ? null : <SaveRow pending={pending} />}
     </form>
   );
 }

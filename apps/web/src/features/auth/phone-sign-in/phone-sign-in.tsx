@@ -1,7 +1,7 @@
 'use client';
 
 import { formatPhone, isIndianMobile } from '@dealers-drive/contracts';
-import { useEffect, useId, useRef, useState, useTransition } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import {
   RESEND_SECONDS,
 } from '@/features/auth/phone-verification';
 import { phoneOtpToken, sendPhoneOtp } from '@/lib/phone-otp';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { PHONE_SIGN_IN_TEXT } from './phone-sign-in.constants';
 import type { PhoneSignInProps, PhoneSignInStage } from './phone-sign-in.types';
@@ -38,7 +39,7 @@ export function PhoneSignIn({
   const [attemptsLeft, setAttemptsLeft] = useState(LOCAL_ATTEMPTS);
   const [resendAt, setResendAt] = useState(0);
   const [remaining, setRemaining] = useState(0);
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const busy = useRef(false);
 
   useEffect(() => {

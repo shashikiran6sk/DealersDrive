@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { DEFAULT_INVITE_ROLE, ROLE_DESCRIPTIONS, ROLE_OPTIONS, TEAM_TEXT } from './team.constants';
 import type { InviteMemberDialogProps } from './team.types';
@@ -19,7 +20,7 @@ export function InviteMemberDialog({ onInvite }: InviteMemberDialogProps) {
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<string>(DEFAULT_INVITE_ROLE);
   const [message, setMessage] = useState<string>();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
 
   function reset(next: boolean) {
     setOpen(next);

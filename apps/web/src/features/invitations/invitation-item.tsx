@@ -1,11 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Banner, StatusTag } from '@/components/ui/primitives';
 import { acceptInvitationAction, declineInvitationAction } from '@/features/invitations/actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { INVITATIONS_TEXT } from './invitations.constants';
 import type { InvitationItemProps } from './invitations.types';
@@ -13,8 +14,8 @@ import type { InvitationItemProps } from './invitations.types';
 export function InvitationItem({ invitation }: InvitationItemProps) {
   const router = useRouter();
   const [message, setMessage] = useState<string>();
-  const [accepting, startAccepting] = useTransition();
-  const [declining, startDeclining] = useTransition();
+  const [accepting, startAccepting] = useNavigationSafeAction();
+  const [declining, startDeclining] = useNavigationSafeAction();
   const busy = accepting || declining;
 
   return (

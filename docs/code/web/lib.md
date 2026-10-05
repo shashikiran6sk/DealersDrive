@@ -1116,6 +1116,46 @@ per-render fetch dedupe on the request headers, so a random header on a `GET`
 would make every cached read a miss. A read's trace id is taken from the API's
 response header instead.
 
+## `apps/web/src/lib/redirect-target.ts`
+
+### `export function redirectTargetOf(error: unknown): RedirectTarget | null`
+
+Reads where a Server Action's `redirect()` was going from the error Next rejects
+the action's promise with (`digest: NEXT_REDIRECT;<push|replace>;<url>;<status>;`).
+It is the one place that depends on that shape, and it is tested.
+
+## `apps/web/src/lib/use-navigation-safe-action.ts`
+
+### `export function useNavigationSafeAction(): [boolean, SafeActionStart]`
+
+Why a slow request could freeze every link in the console (**R102**).
+
+React 19 entangles transitions: while an async transition is pending —
+`startTransition(async () => await someServerAction())`, or a `<form action>` —
+every other transition is given the same lane and cannot commit until it
+settles. A `<Link>` navigation is a transition. So for as long as one mutation
+was in flight, no link anywhere on the page would navigate: the recording's
+"Continue" spinner at 04:13 held the sidebar for 43 seconds until a reload.
+Measured locally with a 12s create: 7.2s to navigate before, 0.4s after.
+
+This hook has `useTransition`'s shape — `[pending, start]` — and runs the work
+outside a transition. Two things a transition used to do for free it does itself:
+
+- **A `redirect()` from the action** rejects the promise with Next's redirect
+  error, which a transition hands to the `RedirectBoundary`. Here it is caught,
+  and the router is pushed (or replaced) to the target — unless the page has
+  changed since the work started, in which case the person has already gone
+  somewhere else and their click wins.
+- **Any other failure** is rethrown during render, so it reaches the nearest
+  error boundary exactly as before.
+
+### `export function useNavigationSafeFormAction(action, initial)`
+
+The same for a `useActionState` form: an `onSubmit` that builds the `FormData`
+with the submit button that was pressed (`intent=back|draft|continue`) and keeps
+the returned state. Pending comes back as a value, not from `useFormStatus`,
+because there is no form action for `useFormStatus` to observe.
+
 ## Integration with current main
 
 The homepage preserves main’s interleaved discovery/information bands while showing the inline inventory failure notice. Error components use C131–C135; JsonLd is C130, so main’s current component IDs stay intact. Web diagnostics retain error categories/status and trace/digest correlation; arbitrary error messages, stacks, request bodies and URL query strings are excluded to avoid logging authentication proofs or private fields. Error causes are bounded against cycles.

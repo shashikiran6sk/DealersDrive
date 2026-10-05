@@ -2,11 +2,12 @@
 
 import type { AdminDealerDetail } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Banner } from '@/components/ui/primitives';
 import { updateDealerAction } from '@/features/admin/actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { DealerDetailForm } from './dealer-detail-form';
 import { DealerDetailList } from './dealer-detail-list';
@@ -16,7 +17,7 @@ import { initialValues, patchOf } from './utils';
 
 export function DealerProfileEditor({ dealer }: { dealer: AdminDealerDetail }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [editing, setEditing] = useState(false);
   const [values, setValues] = useState<Values>(() => initialValues(dealer));
   const [errors, setErrors] = useState<Record<string, string>>({});

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Banner } from '@/components/ui/primitives';
 import {
@@ -11,6 +11,7 @@ import {
   revokeInvitationAction,
   type TeamActionResult,
 } from '@/features/dealer/team-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { InvitationCard } from './invitation-card';
 import { InviteMemberDialog } from './invite-member-dialog';
@@ -20,7 +21,7 @@ import type { TeamPanelProps } from './team.types';
 
 export function TeamPanel({ team }: TeamPanelProps) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 

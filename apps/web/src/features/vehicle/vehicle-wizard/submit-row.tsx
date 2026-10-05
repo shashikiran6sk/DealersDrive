@@ -1,12 +1,11 @@
 'use client';
 
 import type { DealerVehicle } from '@dealers-drive/contracts';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
 
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Banner } from '@/components/ui/primitives';
 import { submitVehicleAction } from '@/features/vehicle/actions';
+import { useNavigationSafeFormAction } from '@/lib/use-navigation-safe-action';
 
 import { VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
 import type { WizardState } from './vehicle-wizard.types';
@@ -14,8 +13,15 @@ import { editPath } from './utils';
 
 const EMPTY: WizardState = {};
 
-function SubmitButton({ label, disabled }: { label: string; disabled: boolean }) {
-  const { pending } = useFormStatus();
+function SubmitButton({
+  label,
+  disabled,
+  pending,
+}: {
+  label: string;
+  disabled: boolean;
+  pending: boolean;
+}) {
   return (
     <Button type="submit" variant="primary" loading={pending} disabled={disabled || pending}>
       {label}
@@ -32,11 +38,11 @@ export function SubmitRow({
   cancelHref: string;
   mayPublish?: boolean;
 }) {
-  const [state, formAction] = useActionState(submitVehicleAction, EMPTY);
+  const [state, onSubmit, pending] = useNavigationSafeFormAction(submitVehicleAction, EMPTY);
   const resubmit = vehicle.listing.status === 'CHANGES_REQUESTED';
 
   return (
-    <form action={formAction} className="flex flex-col gap-[12px]">
+    <form onSubmit={onSubmit} className="flex flex-col gap-[12px]">
       <input type="hidden" name="vehicleId" value={vehicle.id} />
       {state.message ? <Banner tone="err">{state.message}</Banner> : null}
       <div className="flex flex-wrap items-center gap-[9px] border-t border-(--color-divider) pt-[16px] max-[480px]:[&>*]:w-full">
@@ -50,6 +56,7 @@ export function SubmitRow({
           <SubmitButton
             label={resubmit ? VEHICLE_WIZARD_TEXT.resubmit : VEHICLE_WIZARD_TEXT.submit}
             disabled={!vehicle.listing.canSubmit}
+            pending={pending}
           />
         ) : null}
       </div>

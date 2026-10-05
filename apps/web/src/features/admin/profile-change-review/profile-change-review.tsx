@@ -2,7 +2,7 @@
 
 import type { AdminProfileChange } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Banner, Tag } from '@/components/ui/primitives';
 import { approveProfileChangeAction, rejectProfileChangeAction } from '@/features/admin/actions';
 import type { ActionResult } from '@/types';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { Comparison } from './comparison';
 import {
@@ -21,7 +22,7 @@ import { ReviewRow } from './review-row';
 
 export function ProfileChangeReview({ change }: { change: AdminProfileChange }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [reason, setReason] = useState('');
   const [refusing, setRefusing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);

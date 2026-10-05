@@ -1653,6 +1653,13 @@ grid, built from `.skeleton`, `SkeletonLines` and `VehicleCardSkeleton`.
 (label wrapped, reserved indicator box). `Spinner` is now exported from the
 button barrel. Sandbox: `Primitives/LinkPending`, `Primitives/PageLoading`.
 
+### R102 — `WizardFooter` and `SaveRow` take `pending`
+
+The vehicle wizard's and the dealer profile's forms submit through
+`useNavigationSafeFormAction`, not a form action, so there is no form status for
+`useFormStatus` to read: `WizardFooter`, `SubmitRow`'s button and `SaveRow` take
+`pending` as a prop. No visual change.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,
