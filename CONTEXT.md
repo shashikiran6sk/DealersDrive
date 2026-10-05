@@ -980,6 +980,24 @@ out on CI once the router passed ~150 routes. Compute both sides once.
 
 ---
 
+## 7p. One slow mutation froze every link on the page (R102)
+
+React 19 entangles transitions. While any async transition is pending —
+`startTransition(async () => await action())`, or a `<form action>` /
+`useActionState` submission — every other transition is put in the same lane
+and cannot commit until it settles. A `<Link>` navigation is a transition. So a
+Server Action that took 40 seconds made every link on the page dead for 40
+seconds; the production recording shows exactly that (the vehicle wizard's
+Continue, then the sidebar ignoring clicks until a reload). Locally, with a 12 s
+create: 7.2 s to navigate before, 0.4 s after.
+
+**Rule:** a mutation that can be slow is run with `useNavigationSafeAction` (same
+`[pending, start]` shape as `useTransition`) or, for a form,
+`useNavigationSafeFormAction` — not inside a transition. They follow a
+`redirect()` themselves, drop it if the person has already navigated elsewhere,
+and rethrow anything else into the error boundary. `useTransition` stays right for
+synchronous work (`startTransition(() => router.push(…))`).
+
 ## 8. Local development
 
 ```bash

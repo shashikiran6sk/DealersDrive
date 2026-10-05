@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import {
@@ -11,6 +11,7 @@ import {
   enterWorkspaceAction,
   type CustomerAccount,
 } from '@/features/auth/customer-account-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { AccountMenu } from './account-menu';
 import { HEADER_ACCOUNT_TEXT } from './header-account.constants';
@@ -19,8 +20,8 @@ import type { HeaderAccountProps } from './header-account.types';
 export function HeaderAccount({ initialAccount, afterLogoutHref }: HeaderAccountProps = {}) {
   const router = useRouter();
   const [account, setAccount] = useState<CustomerAccount | null>(initialAccount ?? null);
-  const [pending, startTransition] = useTransition();
-  const [, startEntering] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
+  const [, startEntering] = useNavigationSafeAction();
   const [entering, setEntering] = useState<string | null>(null);
   const known = initialAccount !== undefined;
 

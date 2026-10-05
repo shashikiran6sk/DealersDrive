@@ -1,10 +1,11 @@
 'use client';
 
 import { canDealer, enquiryTransitionPermission } from '@dealers-drive/contracts';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { setEnquiryStatusAction } from '@/features/dealer/enquiry-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { ENQUIRIES_TEXT, ENQUIRY_MOVES } from './enquiries.constants';
 import type { EnquiryStatusActionsProps } from './enquiries.types';
@@ -15,7 +16,7 @@ export function EnquiryStatusActions({
   customerName,
   permissions,
 }: EnquiryStatusActionsProps) {
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [moving, setMoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const moves = ENQUIRY_MOVES[status].filter(

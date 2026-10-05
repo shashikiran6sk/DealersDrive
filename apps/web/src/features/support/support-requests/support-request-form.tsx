@@ -7,7 +7,7 @@ import {
 } from '@dealers-drive/contracts';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useId, useRef, useState, useTransition } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { Input, Select, Textarea } from '@/components/ui/input';
 
 import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { createSupportRequestAction } from '@/features/support/support-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 import {
   SUPPORT_CATEGORY_OPTIONS,
   SUPPORT_FORM_TEXT,
@@ -39,7 +40,7 @@ export function SupportRequestForm({
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const inFlight = useRef(false);
 
   const asksForEnquiry = category !== '' && ENQUIRY_RELATED_CATEGORIES.includes(category);

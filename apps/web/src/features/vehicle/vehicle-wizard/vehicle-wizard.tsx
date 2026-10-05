@@ -1,12 +1,12 @@
 'use client';
 
 import type { DealerVehicle } from '@dealers-drive/contracts';
-import { useActionState } from 'react';
 
 import { ButtonLink } from '@/components/ui/button';
 import { Banner, Stepper } from '@/components/ui/primitives';
 import { ListingLifecyclePanel } from '@/features/dealer/listing-lifecycle';
 import { createVehicleAction, saveVehicleStepAction } from '@/features/vehicle/actions';
+import { useNavigationSafeFormAction } from '@/lib/use-navigation-safe-action';
 
 import { BasicsStep } from './basics-step';
 import { DetailsStep } from './details-step';
@@ -51,7 +51,7 @@ export function VehicleWizard({
   cancelHref = '/dealer',
   mayPublish = true,
 }: VehicleWizardProps) {
-  const [state, formAction] = useActionState(
+  const [state, onSubmit, pending] = useNavigationSafeFormAction(
     vehicle ? saveVehicleStepAction : createVehicleAction,
     EMPTY,
   );
@@ -112,7 +112,7 @@ export function VehicleWizard({
             <SubmitRow vehicle={vehicle} cancelHref={cancelHref} mayPublish={mayPublish} />
           </>
         ) : (
-          <form action={formAction} className="flex flex-col gap-[16px]" noValidate>
+          <form onSubmit={onSubmit} className="flex flex-col gap-[16px]" noValidate>
             {vehicle ? (
               <>
                 <input type="hidden" name="vehicleId" value={vehicle.id} />
@@ -133,7 +133,7 @@ export function VehicleWizard({
               <PricingStep vehicle={vehicle} errors={errors} values={values} />
             ) : null}
 
-            <WizardFooter first={vehicle === null} cancelHref={cancelHref} />
+            <WizardFooter first={vehicle === null} cancelHref={cancelHref} pending={pending} />
           </form>
         )}
       </section>

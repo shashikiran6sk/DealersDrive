@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
 import type { ListingActionResult } from '@/features/admin/listing-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { LISTING_REVIEW_TEXT, MIN_REASON } from './listing-review.constants';
 
@@ -43,7 +44,7 @@ export function DecisionDialog({
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState<string>();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const ready = optional || reason.trim().length >= MIN_REASON;
 
   function confirm() {

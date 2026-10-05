@@ -6,11 +6,12 @@ import {
   SupportTicketStatus,
 } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useId, useRef, useState, useTransition } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/input';
 import { updateTicketAction, type TicketChanges } from '@/features/admin/support-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { SUPPORT_PRIORITY_OPTIONS, SUPPORT_TICKET_TEXT } from './support-ticket.constants';
 import type { TicketControlsProps } from './support-ticket.types';
@@ -26,7 +27,7 @@ export function TicketControls({
   const [priority, setPriority] = useState(ticket.priority);
   const [assignee, setAssignee] = useState(ticket.assignee?.id ?? '');
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const inFlight = useRef(false);
 
   const viewerAssignable =

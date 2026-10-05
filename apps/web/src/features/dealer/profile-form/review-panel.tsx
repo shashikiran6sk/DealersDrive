@@ -1,16 +1,17 @@
 'use client';
 
 import type { DealerProfileChange } from '@dealers-drive/contracts';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Banner, Tag } from '@/components/ui/primitives';
 import { withdrawProfileChangeAction } from '@/features/dealer/profile-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { PROFILE_FORM_TEXT } from './profile-form.constants';
 
 export function ReviewPanel({ change }: { change: DealerProfileChange | null }) {
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [error, setError] = useState<string | null>(null);
 
   if (!change) return null;

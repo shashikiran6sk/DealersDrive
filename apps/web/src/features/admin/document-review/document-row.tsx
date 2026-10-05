@@ -1,13 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusTag } from '@/components/ui/primitives';
 import { rejectDocumentAction, verifyDocumentAction } from '@/features/admin/actions';
 import type { ActionResult } from '@/types';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { DOC_TONE, DOCUMENT_REVIEW_TEXT, MIN_REJECTION_REASON } from './document-review.constants';
 import type { AdminDocument } from './document-review.types';
@@ -20,7 +21,7 @@ export interface DocumentRowProps {
 
 export function DocumentRow({ document, dealerSlug, onError }: DocumentRowProps) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [reason, setReason] = useState('');
   const [rejecting, setRejecting] = useState(false);
 
