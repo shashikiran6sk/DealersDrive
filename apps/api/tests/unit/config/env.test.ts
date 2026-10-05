@@ -80,6 +80,10 @@ const SCHEMA_KEYS = [
   'METRICS_ENABLED',
   'METRICS_SCRAPE_TOKEN',
   'DB_SLOW_OPERATION_MS',
+  'DB_POOL_MAX',
+  'DB_CONNECT_TIMEOUT_MS',
+  'DB_STATEMENT_TIMEOUT_MS',
+  'DB_IDLE_IN_TRANSACTION_TIMEOUT_MS',
   'GRAFANA_CLOUD_LOGS_ENABLED',
   'GRAFANA_CLOUD_LOKI_URL',
   'GRAFANA_CLOUD_LOKI_USER',
@@ -482,6 +486,32 @@ describe('validation', () => {
     expect(loaded.METRICS_ENABLED).toBe(false);
     expect(loaded.GRAFANA_CLOUD_LOGS_ENABLED).toBe(false);
     expect(loaded.DB_SLOW_OPERATION_MS).toBe(500);
+  });
+
+  /**
+   * R98. The pool used to take pg's defaults — wait for a connection forever, run
+   * a statement forever, hold an idle transaction's locks forever — so one stuck
+   * connection could hold a request open indefinitely. Every one of these has a
+   * bounded default, and each can be tuned per environment.
+   */
+  it('bounds the database pool by default, and lets each bound be tuned', async () => {
+    const defaults = await loadEnv({ NODE_ENV: 'development' });
+    expect(defaults.DB_POOL_MAX).toBe(10);
+    expect(defaults.DB_CONNECT_TIMEOUT_MS).toBe(5_000);
+    expect(defaults.DB_STATEMENT_TIMEOUT_MS).toBe(15_000);
+    expect(defaults.DB_IDLE_IN_TRANSACTION_TIMEOUT_MS).toBe(30_000);
+
+    const tuned = await loadEnv({
+      NODE_ENV: 'development',
+      DB_POOL_MAX: '4',
+      DB_CONNECT_TIMEOUT_MS: '2000',
+      DB_STATEMENT_TIMEOUT_MS: '9000',
+      DB_IDLE_IN_TRANSACTION_TIMEOUT_MS: '12000',
+    });
+    expect(tuned.DB_POOL_MAX).toBe(4);
+    expect(tuned.DB_CONNECT_TIMEOUT_MS).toBe(2_000);
+    expect(tuned.DB_STATEMENT_TIMEOUT_MS).toBe(9_000);
+    expect(tuned.DB_IDLE_IN_TRANSACTION_TIMEOUT_MS).toBe(12_000);
   });
 });
 

@@ -268,6 +268,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R96 — Multi-member dealerships, hardened · a cross-tenant sweep of every id-taking dealer route by OWNER, MANAGER and STAFF (403/404, nothing changed); the races run for real (simultaneous enquiry moves, sold vs withdrawn, role change vs removal, accept vs withdraw); at most 25 unexpired invitations waiting per dealership (409 `TOO_MANY_INVITATIONS`, a renewal never counts); CONTEXT §7o records the model
 
 - [x] R97 — User-requested reference DD branding · revises F008/F014/F018/F073/R81 · paired 2048 px PNGs, shared BrandLogo across all platform logo surfaces, white-on-black favicon/touch/manifest icons, shared social preview and absolute Organization logo URL; desktop/mobile evidence on the `testing_evidence` branch
+- [x] R98 — The API's database pool cannot wait forever · `DB_POOL_MAX`, `DB_CONNECT_TIMEOUT_MS`, `DB_STATEMENT_TIMEOUT_MS`, `DB_IDLE_IN_TRANSACTION_TIMEOUT_MS` (10 / 5 s / 15 s / 30 s) and TCP keepalive on the `pg` pool; the connection string (TLS) is passed through unchanged
 
 ---
 

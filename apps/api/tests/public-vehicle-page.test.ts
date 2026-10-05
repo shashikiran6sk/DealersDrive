@@ -13,6 +13,13 @@ import { marketplaceFixtures, type Dealership } from './marketplace-fixtures.js'
 let h: AuthHarness;
 let admin: request.Agent;
 let a: Dealership;
+/**
+ * A whole number, never a prefix of one: the body carries random hex (media
+ * ids in image URLs, the slug's suffix), and a five-digit prefix such as
+ * `98400` turns up inside random hex often enough to fail a run at random.
+ */
+const SEEDED_OWNER_PHONE = '+919840012345';
+
 let kit: ReturnType<typeof createApprovalKit>;
 let live: Published;
 let plate = 200;
@@ -111,7 +118,14 @@ describe('an approved car', () => {
     expect(text).not.toContain(a.dealerId);
     expect(text).not.toMatch(/TN23VD|TN 23 VD/);
     expect(text).not.toMatch(/vehicles\/|storageKey|bucket|decision|audit|photography|check/i);
-    expect(text).not.toMatch(/\+91|98400/);
+    expect(text).not.toMatch(/\+91/);
+    const { contactPhone } = await h.prisma.dealer.findUniqueOrThrow({
+      where: { id: a.dealerId },
+      select: { contactPhone: true },
+    });
+    for (const phone of [contactPhone, SEEDED_OWNER_PHONE]) {
+      if (phone) expect(text).not.toContain(phone.slice(-10));
+    }
   });
 });
 
