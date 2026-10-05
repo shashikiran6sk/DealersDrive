@@ -107,6 +107,27 @@ now describes the route as it behaves.
 
 The derivative route sets `Cache-Control: no-store` before validation and delivery, including denials. A READY image may become unavailable after suspension or a listing decision; an unchanged URL must consult the current state again. This also prevents a cached denial from outliving reinstatement. Private signed previews retain their existing authority and private/no-store behavior. Requested derivatives, larger fallbacks and original MIME types are unchanged. Previously retained client/CDN bytes cannot be recalled by this header; deployment must account for caches populated under the old year-long policy.
 
+**Revalidate, do not re-download (R108).** `no-store` on a successful response
+meant a browser never kept an image, so every view of every gallery streamed the
+bytes from S3 through the API again — on the t4g.small that serves the whole
+API. A successful response now sends `Cache-Control: no-cache` and a strong
+`ETag`. `no-cache` lets the browser keep the bytes but forbids reusing them
+without asking, so the property above still holds: every reuse is a
+conditional request, and `locate()` runs the same READY and visibility checks
+on it as on a first view. Still public → `304`, and `read()` (the S3 download)
+is skipped. No longer public → `404` with `no-store`. Nothing is ever served
+from a cache without the current state being consulted, and the public listing
+APIs stay the source of truth for what is visible.
+
+The ETag is `sha256(mediaId:key)` rather than a hash of the bytes, so it can be
+known before the download. That is sound because an object's bytes never change
+under its key: every key embeds the media id, a random UUID minted for one
+upload, and a replacement image is a new media row. The `m1-` prefix versions
+the derivation. No `max-age` or `immutable`: a bounded lifetime would let a
+browser show a suspended dealer's car without asking. Private reads
+(`GET /private`, KYC documents, yard previews) are unchanged — `private,
+no-store` — and KYC documents never reach this route at all.
+
 ### `export function toMediaStatus(status: string): 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'`
 
 `ORPHAN` is a storage-lifecycle state, not something a dealer can act on —

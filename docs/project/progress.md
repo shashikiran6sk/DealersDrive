@@ -278,6 +278,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R105 — The web tier's functions run in Mumbai · `apps/web/vercel.json` `regions: ["bom1"]`, beside the ap-south-1 API and database, instead of Vercel's default `iad1` (~200 ms per API round trip saved)
 - [x] R106 — The web build sees its variables without loose env mode · `apps/web/turbo.json` declares `APP_ENV`, `API_BASE_URL`, `API_ORIGIN`, `WEB_BASE_URL` for `build`; a test checks every build-time `process.env` read is declared; Vercel's `--env-mode=loose` workaround can go
 - [x] R107 — Per-IP rate limits count the visitor, not the web tier · the web forwards the visitor's address with a shared secret (`CLIENT_IP_FORWARD_SECRET`) on uncached calls; the API sets `req.ip` from it only when the secret matches (timing-safe) and the value is one IP address; otherwise `req.ip` is unchanged; both headers are stripped before anything else runs
+- [x] R108 — Public images are revalidated, not re-downloaded · `/media/by-media/:id/:width.webp` sends `Cache-Control: no-cache` and a strong ETag (`sha256(mediaId:key)`); a matching `If-None-Match` runs the full visibility check and answers 304 without reading S3; denials stay `no-store`; private reads unchanged
 
 ---
 

@@ -75,6 +75,12 @@ it('refuses a previously public vehicle image immediately after dealer suspensio
   await h.agent().get(`/v1/vehicles/${car.slug}`).expect(200);
 });
 
+/**
+ * R108. A served image may be stored, but never reused without asking: `no-cache`
+ * makes every reuse a conditional request, and that request runs the same
+ * visibility check as a first view — so a suspension or a listing decision still
+ * takes effect on the next view. Only the S3 download is saved, by the 304.
+ */
 it('does not permit reusable cached vehicle responses to bypass mutable visibility', async () => {
   const dealer = await marketplaceFixtures(h, 'media-cache').dealership();
   const car = await photographed(dealer);
@@ -86,7 +92,27 @@ it('does not permit reusable cached vehicle responses to bypass mutable visibili
       cacheControl: image.headers['cache-control'],
     }),
   );
-  expect(image.headers['cache-control']).toBe('no-store');
+  expect(image.headers['cache-control']).toBe('no-cache');
+  expect(image.headers['cache-control']).not.toMatch(/max-age|immutable/);
+});
+
+it('answers a revalidation with 304 while visible, and 404 the moment the dealer is suspended', async () => {
+  const dealer = await marketplaceFixtures(h, 'media-revalidate').dealership();
+  const car = await photographed(dealer);
+  const first = await h.agent().get(car.path).expect(200);
+  const etag = String(first.headers.etag);
+
+  const again = await h.agent().get(car.path).set('If-None-Match', etag).expect(304);
+  expect(again.headers.etag).toBe(etag);
+  expect(again.headers['cache-control']).toBe('no-cache');
+
+  await admin
+    .post(`/v1/admin/dealers/${dealer.dealerId}/suspend`)
+    .send({ reason: 'Revalidation after suspension' })
+    .expect(200);
+  const denied = await h.agent().get(car.path).set('If-None-Match', etag).expect(404);
+  expect(denied.headers['cache-control']).toBe('no-store');
+  expect(denied.headers.etag).not.toBe(etag);
 });
 
 it('checks all derivative widths, HEAD and conditional requests after suspension and reinstatement', async () => {
@@ -125,7 +151,7 @@ it('checks all derivative widths, HEAD and conditional requests after suspension
       .get(`/media/by-media/${car.media.id}/${String(width)}.webp`)
       .expect(200);
     expect(image.headers['content-type']).toContain('image/webp');
-    expect(image.headers['cache-control']).toBe('no-store');
+    expect(image.headers['cache-control']).toBe('no-cache');
     expect(Buffer.from(image.body as Buffer)).toEqual(webp);
   }
   const head = await h.agent().head(car.path).expect(200);

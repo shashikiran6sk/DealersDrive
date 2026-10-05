@@ -141,8 +141,12 @@ export const storageDocs: ModuleDocs = {
         'while it is the cover of an `ACTIVE` dealership** — before approval, during a ' +
         'suspension or once replaced it is a 404. Any other kind of media is never served ' +
         'here. Media readiness and public visibility can ' +
-        'change while the id stays the same. Both successful responses and denials send ' +
-        '`Cache-Control: no-store`, so future requests observe suspension, removal and reinstatement.\n\n' +
+        'change while the id stays the same, so an image is never reused without asking: a ' +
+        'successful response sends `Cache-Control: no-cache` with a strong `ETag`, and every ' +
+        'reuse is a conditional request that runs the same visibility check as a first view. ' +
+        'While the image is still public and unchanged the answer is a `304` with no body; ' +
+        'once it is not, the answer is a `404`. Denials send `Cache-Control: no-store`, so a ' +
+        'denial never outlives a reinstatement (**R108**).\n\n' +
         'Any whole-number width from 1 to 4000 is accepted. The processor writes 320, 640, 1024 ' +
         'and 1600: asking for one of those returns it, and any other width returns the largest ' +
         'derivative there is (the original while none has been written). A width outside 1 to ' +
@@ -161,14 +165,24 @@ export const storageDocs: ModuleDocs = {
           inlineSchema: { type: 'string', format: 'binary' },
           headers: {
             'Cache-Control': {
-              description: 'Do not retain a response across mutable visibility decisions.',
-              schema: { type: 'string', example: 'no-store' },
+              description: 'Keep the bytes, but revalidate before every reuse.',
+              schema: { type: 'string', example: 'no-cache' },
+            },
+            ETag: {
+              description: 'A strong validator for this image at this width.',
+              schema: { type: 'string', example: '"m1-3q2v…"' },
             },
             'Cross-Origin-Resource-Policy': {
               description: 'What a public media origin sends.',
               schema: { type: 'string', example: 'cross-origin' },
             },
           },
+        },
+        {
+          status: 304,
+          description:
+            '`If-None-Match` matched and the image is still public. No body; the image is not ' +
+            'read from storage.',
         },
       ],
       errors: [404],
