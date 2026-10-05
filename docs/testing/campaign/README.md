@@ -46,10 +46,12 @@ and a concise summary; the detail lives here.
 
 | #  | Folder | Finding | PR | Status |
 | -- | ------ | ------- | -- | ------ |
-| 11 | `11-stale-404/` | BUG-NEW-010 residual: warmed car/dealer pages stay 200 after a suspension made outside the web console (Next caches only 200s) | (this PR) | OPEN |
+| 11 | `11-stale-404/` | BUG-NEW-010 residual: warmed car/dealer pages stay 200 after a suspension made outside the web console (Next caches only 200s) | #251 | MERGED `8436820` |
 | —  | `../branding/` | PR #240 (user request) — R97 DD monogram branding; evidence moved off the product PR | #240 | MERGED `a8bef12` |
 
 `11-stale-404/probe-fix-branch*.json`: direct-API suspension, car page 200 → 404 after 70 s,
 dealer portfolio after 612 s (600 s window). On main the same probe saw the car page
 still 200 after 65 s (final-pass dry run of `retest-findings`), and certification
 recorded 200 at 4.4 minutes.
+
+| —  | final pass | OBS-COVER-LOOKUP (P3, perf): public cover check counts dealers by unindexed `coverMediaId`; negligible at launch scale, can use `media.dealerId` (PK) | — | OPEN (P3) |

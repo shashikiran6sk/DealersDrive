@@ -556,11 +556,37 @@ await h.check(r, 'DEALER-LIFE-016', async () => {
     : { status: 'FAIL', note: 'missing audit' };
 });
 await h.check(r, 'DEALER-LIFE-017', async () => {
-  r.ev({ note: 'CLOSED enum exists; no code path sets it in V1' });
-  return {
-    status: 'NOT_APPLICABLE',
-    note: 'Permanent dealer deactivation (CLOSED lifecycle) is not implemented in V1 (product decision confirmed by owner). CLOSED enum present but unreachable. Historical-data preservation under suspension is covered by DEALER-LIFE-008/014. Documented as a future consideration.',
+  // Permanent deactivation is Close (#249): DRAFT/PENDING → CLOSED, nothing deleted.
+  // ACTIVE dealerships remain suspend-only in V1 (owner decision).
+  const d = await w.onboard('DLClose');
+  const before = {
+    members: await h.one(`SELECT count(*)::int n FROM dealer_members WHERE "dealerId"=$1`, [d.dealerId]),
+    docs: await h.one(`SELECT count(*)::int n FROM dealer_documents WHERE "dealerId"=$1 AND status='UPLOADED'`, [d.dealerId]),
+    audit: await h.one(`SELECT count(*)::int n FROM audit_logs WHERE "dealerId"=$1`, [d.dealerId]),
   };
+  const close = await admin.post(`/v1/admin/dealers/${d.dealerId}/close`, {
+    reason: 'Permanent deactivation history check',
+  });
+  const row = await h.one(`SELECT status, "statusReason" FROM dealers WHERE id=$1`, [d.dealerId]);
+  const after = {
+    members: await h.one(`SELECT count(*)::int n FROM dealer_members WHERE "dealerId"=$1`, [d.dealerId]),
+    docs: await h.one(`SELECT count(*)::int n FROM dealer_documents WHERE "dealerId"=$1 AND status='UPLOADED'`, [d.dealerId]),
+    audit: await h.one(`SELECT count(*)::int n FROM audit_logs WHERE "dealerId"=$1`, [d.dealerId]),
+  };
+  r.ev(close, { before, after, status: row.status });
+  const kept =
+    close.status === 200 &&
+    row.status === 'CLOSED' &&
+    row.statusReason !== null &&
+    after.members.n === before.members.n &&
+    after.docs.n === before.docs.n &&
+    after.audit.n === before.audit.n + 1;
+  return kept
+    ? {
+        layers: ['API', 'DATABASE'],
+        note: `Close (#249): PENDING → CLOSED with reason; members ${after.members.n}, uploaded documents ${after.docs.n} kept; audit rows ${before.audit.n} → ${after.audit.n} (+dealer.closed). ACTIVE dealerships remain suspend-only (V1 owner decision).`,
+      }
+    : { status: 'FAIL', note: JSON.stringify({ close: close.status, row, before, after }) };
 });
 await h.check(r, 'DEALER-LIFE-018', async () => {
   // Direct API cannot bypass dealer lifecycle restrictions (suspended dealer direct submit).

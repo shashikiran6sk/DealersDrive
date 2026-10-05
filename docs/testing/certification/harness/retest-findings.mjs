@@ -20,6 +20,12 @@ await h.check(r, 'ORIG-DISC-PROFILE-001 second profile edit', async () => {
     .q(`SELECT status FROM dealer_profile_changes WHERE "dealerId"=$1`, [D.dealerId])
     .catch(() => []);
   r.ev(first, second, { pending: pending.map((x) => x.status) });
+  const doc = JSON.stringify((await h.call('GET', '/api/docs/openapi.json')).json ?? {});
+  if (second.status === 409 && second.json?.code === 'PROFILE_EDIT_PENDING' && doc.includes('PROFILE_EDIT_PENDING')) {
+    return {
+      note: `second edit while pending → 409 PROFILE_EDIT_PENDING, as the API reference documents ("One request at a time … a 409, not a merge"). Reclassified NOT A BUG in the campaign triage.`,
+    };
+  }
   return second.status === 409
     ? {
         status: 'FAIL',
@@ -56,7 +62,13 @@ await h.check(r, 'ORIG-GAP-CLOSE no closure path for DRAFT/in-review dealerships
     (p) => /close|deactivat/i.test(p) && /admin\/dealers|dealer\b/.test(p),
   );
   const closed = await h.one(`SELECT count(*)::int n FROM dealers WHERE status='CLOSED'`);
-  r.ev(suspend, close, { closeRoutes, closedDealers: closed.n });
+  const row = await h.one(`SELECT status, "statusReason" FROM dealers WHERE id=$1`, [id]);
+  r.ev(suspend, close, { closeRoutes, closedDealers: closed.n, dealer: row?.status });
+  if (close.status === 200 && row?.status === 'CLOSED') {
+    return {
+      note: `DRAFT dealership: suspend → ${suspend.status} (suspend-only once ACTIVE), close → 200, record kept as CLOSED with its reason (#249). Documented in OpenAPI (${closeRoutes.length} close path).`,
+    };
+  }
   return {
     status: 'FAIL',
     note: `DRAFT dealership: suspend → ${suspend.status} ${suspend.json?.code ?? ''} (correctly refused since #232), no close route (${close.status}; OpenAPI dealer close/deactivate paths: ${closeRoutes.length}); CLOSED dealers in DB: ${closed.n}. The only way to drop a draft/in-review application is reject = permanent purge. Product gap vs owner expectation (close while DRAFT/PENDING; suspend only once ACTIVE). P2 product decision.`,
@@ -138,6 +150,12 @@ await h.check(r, 'BUG-NEW-010 warmed car page survives dealer suspension', async
   const later2 = (await page4.goto(`${b.WEB}/car/${car.slug}`, { waitUntil: 'load' })).status();
   await ctx.close();
   r.ev(sus, { api, webImmediately: after, webAfter65s: later, webAfter65sSecond: later2 });
+  if (api === 404 && (later === 404 || later2 === 404)) {
+    return {
+      layers: ['BROWSER', 'API'],
+      note: `direct-API suspension (no web action): API ${api}; warmed car page ${after} immediately (inside the 60 s window), then ${later}/${later2} after 65 s — the stale page is replaced once the window passes (#251). A console suspension clears it at once (#243).`,
+    };
+  }
   return after === 200 && api === 404
     ? {
         status: 'FAIL',
@@ -159,7 +177,7 @@ await h.check(r, 'BUG-NEW-011 media width contract vs documentation', async () =
       '/media/by-media/{mediaId}/{width}.webp'
     ] ?? {},
   );
-  const docSaysFixed = /320, 640, 1024 and 1600/.test(doc);
+  const docSaysFixed = /anything else is a 404/.test(doc);
   r.ev({ widths, docSaysFixed });
   return widths[500] === 200 && docSaysFixed
     ? {

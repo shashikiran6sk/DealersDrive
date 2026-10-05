@@ -1,0 +1,192 @@
+{
+  "PUBLIC-001": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER"
+    ],
+    "note": "anonymous homepage 200 without redirect; h1 \"Find your next car\"; 16 car links render; no session cookie",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:11:12.168Z"
+  },
+  "PUBLIC-002": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER"
+    ],
+    "note": "homepage search \"Creta\" + Enter → /cars?q=Creta; 24 results; search box keeps \"Creta\"",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:11:13.592Z"
+  },
+  "PUBLIC-020": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER"
+    ],
+    "note": "refresh keeps ?q=Creta&fuel=PETROL and the same 24 results (state lives in the URL)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:11:44.360Z"
+  },
+  "PUBLIC-021": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER"
+    ],
+    "note": "unknown route → HTTP 404, branded \"Page not found\" with site header, Home/Browse links, noindex (fixed by #209; baseline: default Next.js 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:11:45.222Z"
+  },
+  "PUBLIC-023": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER"
+    ],
+    "note": "15 page×viewport cases (desktop 1440, tablet 820, mobile 390 emulated): 200, header, no horizontal overflow",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:11:59.421Z"
+  },
+  "SEO-001": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO"
+    ],
+    "note": "canonical https://www.dealers-drive.com/; robots index, follow, max-image-preview:large; title \"Dealers-Drive | Used Cars from Verified Independent Dealers\"; JSON-LD Organization/WebSite; og:title present=true",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:00.336Z"
+  },
+  "SEO-002": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO"
+    ],
+    "note": "/cars index,follow canonical /cars; /cars?q=… noindex,follow canonical /cars; /cars?page=2 → 200 index, follow, max-image-preview:large",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:03.537Z"
+  },
+  "SEO-003": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO"
+    ],
+    "note": "ACTIVE car: canonical, index, og:image, JSON-LD Car/BreadcrumbList",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:04.412Z"
+  },
+  "SEO-004": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO"
+    ],
+    "note": "dealer portfolio: title \"SeoMotors Motors 266573f99510 — Used Car Dealer in Vellore | Dealers-Drive\", canonical, index, description",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:05.295Z"
+  },
+  "SEO-005": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO",
+      "DATABASE"
+    ],
+    "note": "1092 URLs, all on https://www.dealers-drive.com; 714 cars all ACTIVE/RESERVED of ACTIVE dealers; 350 dealers all ACTIVE; no private routes. Sitemap source (/v1/sitemap) includes the fresh ACTIVE car and excludes the SOLD and WITHDRAWN ones; the web sitemap is cached (revalidate) so a car published seconds earlier appears after the window",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:05.368Z"
+  },
+  "SEO-006": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO"
+    ],
+    "note": "SOLD car → 404 + noindex (public visibility is ACTIVE/RESERVED only, so a sold car leaves the marketplace — matches GOLDEN-010); WITHDRAWN car → 404 noindex; /login /saved /enquiries /dealer /admin all noindex",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:11.095Z"
+  },
+  "SEO-007": {
+    "status": "PASS",
+    "layers": [
+      "SEO"
+    ],
+    "note": "production: Allow / ; Disallow /api/ /v1/ ; Sitemap absolute. Non-production: Disallow /. Private pages are not robots-blocked by design — they carry noindex (SEO-006), which crawlers can only see if not blocked",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:11.109Z"
+  },
+  "SEO-008": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO"
+    ],
+    "note": "favicon/icon/apple-icon 200; og:title on home and car; car og:image set (fetch via local API → 200; production media host not reachable here)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:12.918Z"
+  },
+  "SEO-009": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO"
+    ],
+    "note": "invalid URL in production config → 404 branded page, noindex (fixed by #209)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:13.734Z"
+  },
+  "SEO-010": {
+    "status": "PASS",
+    "layers": [
+      "BROWSER",
+      "SEO"
+    ],
+    "note": "API unreachable: car page → 500 branded \"Something went wrong\" with retry, noindex, no internals leaked (never a fake 404)",
+    "evidence": [],
+    "bug": null,
+    "auth": null,
+    "area": "browser-public-seo",
+    "at": "2026-10-05T02:12:15.041Z"
+  }
+}

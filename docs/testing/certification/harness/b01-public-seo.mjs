@@ -427,8 +427,13 @@ await h.check(r, 'SEO-009', async () => {
 });
 
 await h.check(r, 'SEO-010', async () => {
+  // A car no other instance has requested: the local web instances share one
+  // .next cache, and since #251 a car warmed through the healthy instance is
+  // (correctly) served from that cache during an outage. The outage path is
+  // only exercised by a cold page.
+  const cold = await w.published(D, admin);
   const ctx = await b.context();
-  const { page, status } = await b.open(ctx, `/car/${live.slug}`, b.WEB_DOWN);
+  const { page, status } = await b.open(ctx, `/car/${cold.slug}`, b.WEB_DOWN);
   const f = await b.facts(page);
   const shot = await b.shot(page, 'SEO-010-outage');
   await ctx.close();
