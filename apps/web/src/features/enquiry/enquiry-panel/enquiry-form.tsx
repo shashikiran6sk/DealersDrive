@@ -1,9 +1,10 @@
 'use client';
 
-import { useId, useRef, useState, useTransition } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { StatusTag } from '@/components/ui/primitives';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { ENQUIRY_MESSAGE_MAX, ENQUIRY_PANEL_TEXT } from './enquiry-panel.constants';
 import type { EnquiryFormProps } from './enquiry-panel.types';
@@ -12,7 +13,7 @@ export function EnquiryForm({ customer, dealerName, onSend, onCancel }: EnquiryF
   const id = useId();
   const [message, setMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const inFlight = useRef(false);
 
   return (

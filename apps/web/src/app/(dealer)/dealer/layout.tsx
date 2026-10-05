@@ -33,8 +33,10 @@ export const metadata: Metadata = {
 };
 
 export default async function DealerLayout({ children }: { children: ReactNode }) {
-  const { dealer, permissions } = await requireDealer();
-  const account = await customerAccountAction();
+  const [{ dealer, permissions }, account] = await Promise.all([
+    requireDealer(),
+    customerAccountAction(),
+  ]);
   const nav = consoleNavFor(permissions);
 
   return (

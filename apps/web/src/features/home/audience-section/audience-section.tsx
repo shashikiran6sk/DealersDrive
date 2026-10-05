@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { AUDIENCE_CARDS, AUDIENCE_TEXT } from './audience-section.constants';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 
 export function AudienceSection() {
   return (
@@ -29,9 +30,9 @@ export function AudienceSection() {
               <p className="mt-3 text-[13px] leading-[1.65] ink-secondary">{card.body}</p>
               <Link
                 href={card.href}
-                className="btn btn-ghost mt-6 -ml-2 whitespace-normal text-left"
+                className="relative btn btn-ghost mt-6 -ml-2 whitespace-normal text-left"
               >
-                {card.link}
+                <LinkPendingLabel>{card.link}</LinkPendingLabel>
               </Link>
             </div>
           ))}

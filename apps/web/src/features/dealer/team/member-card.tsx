@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/input';
 import { Avatar, Banner, StatusTag } from '@/components/ui/primitives';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { ROLE_OPTIONS, TEAM_TEXT } from './team.constants';
 import type { MemberCardProps } from './team.types';
@@ -13,7 +14,7 @@ import type { MemberCardProps } from './team.types';
 export function MemberCard({ member, pending, onChangeRole, onRemove }: MemberCardProps) {
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<string>();
-  const [removing, startRemoving] = useTransition();
+  const [removing, startRemoving] = useNavigationSafeAction();
   const roleId = `member-role-${member.id}`;
 
   return (

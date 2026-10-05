@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ENQUIRY_OVERSIGHT_TEXT } from './enquiry-oversight.constants';
 import type { EnquiryOversightFilters as Filters } from './enquiry-oversight.types';
 import { isFiltered, oversightHref } from './utils';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 
 export function EnquiryOversightFilters({
   filters,
@@ -61,9 +62,9 @@ export function EnquiryOversightFilters({
         {isFiltered(filters) ? (
           <Link
             href={oversightHref({ status: filters.status })}
-            className="btn btn-ghost text-[12px]"
+            className="relative btn btn-ghost text-[12px]"
           >
-            {ENQUIRY_OVERSIGHT_TEXT.clear}
+            <LinkPendingLabel>{ENQUIRY_OVERSIGHT_TEXT.clear}</LinkPendingLabel>
           </Link>
         ) : null}
       </form>
@@ -74,11 +75,13 @@ export function EnquiryOversightFilters({
           <Link
             href={oversightHref({ ...filters, dealer: undefined })}
             aria-label={ENQUIRY_OVERSIGHT_TEXT.removeDealer(dealerName ?? filters.dealer)}
-            className="dd-chip no-underline"
+            className="relative dd-chip no-underline"
             aria-current="true"
           >
-            {dealerName ?? ENQUIRY_OVERSIGHT_TEXT.unknownDealer(filters.dealer)}
-            <span aria-hidden="true">×</span>
+            <LinkPendingLabel>
+              {dealerName ?? ENQUIRY_OVERSIGHT_TEXT.unknownDealer(filters.dealer)}
+              <span aria-hidden="true">×</span>
+            </LinkPendingLabel>
           </Link>
         </div>
       ) : null}

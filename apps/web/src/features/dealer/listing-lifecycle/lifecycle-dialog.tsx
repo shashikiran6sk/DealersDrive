@@ -1,13 +1,14 @@
 'use client';
 
 import { WithdrawalReason } from '@dealers-drive/contracts';
-import { useId, useState, useTransition } from 'react';
+import { useId, useState } from 'react';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Select, Textarea } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import {
   LIFECYCLE_MOVES,
@@ -27,7 +28,7 @@ export function LifecycleDialog({ vehicleId, action, size, submit }: LifecycleDi
   const [reason, setReason] = useState('');
   const [note, setNote] = useState('');
   const [message, setMessage] = useState<string>();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const parsedReason = WithdrawalReason.safeParse(reason);
   const ready = !withdrawing || parsedReason.success;
 

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Banner } from '@/components/ui/primitives';
 import { customerSignUpAction } from '@/features/auth/sign-in-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { LOGIN_TEXT } from './login.constants';
 
@@ -19,7 +20,7 @@ export function CustomerNameStep({ phoneDisplay, onCreated, onRestart }: Custome
   const [name, setName] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
 
   return (
     <form

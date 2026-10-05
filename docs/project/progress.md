@@ -268,6 +268,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [~] R96 — Multi-member dealerships, hardened · a cross-tenant sweep of every id-taking dealer route by OWNER, MANAGER and STAFF (403/404, nothing changed); the races run for real (simultaneous enquiry moves, sold vs withdrawn, role change vs removal, accept vs withdraw); at most 25 unexpired invitations waiting per dealership (409 `TOO_MANY_INVITATIONS`, a renewal never counts); CONTEXT §7o records the model
 
 - [x] R97 — User-requested reference DD branding · revises F008/F014/F018/F073/R81 · paired 2048 px PNGs, shared BrandLogo across all platform logo surfaces, white-on-black favicon/touch/manifest icons, shared social preview and absolute Organization logo URL; desktop/mobile evidence on the `testing_evidence` branch
+- [~] R98 — Production performance: no Login flash, feedback on every click, no frozen links · revises R67/R76/R93/F047 · `dd_auth` hint + pre-paint script + avatar placeholder; `GET /api/account` replaces the header's Server Action; `useLinkStatus` spinner in the console sidebar/tab bar, header, cards and every button-styled link; `loading.tsx` for the console, `/car/[slug]`, `/dealers/[slug]`, `/enquiries`, `/saved`; `useNavigationSafeAction` replaces async `useTransition`/`useActionState` so a slow mutation no longer holds every navigation; saved hearts clear on logout; DB pool/statement/idle-in-transaction bounds; `dbMs`/`dbOps` on the API request line, `api.slow_request` on the web
 
 ---
 

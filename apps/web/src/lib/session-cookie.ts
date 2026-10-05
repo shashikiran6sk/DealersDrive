@@ -3,6 +3,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 
 import { SESSION_COOKIE } from './api';
+import { writeAuthHint } from './auth-hint-cookie';
 
 export interface RelayedCookie {
   value: string;
@@ -48,5 +49,6 @@ export async function relaySessionCookie(setCookies: readonly string[]): Promise
     ...(relayed.expires ? { expires: relayed.expires } : {}),
     ...(relayed.domain ? { domain: relayed.domain } : {}),
   });
+  await writeAuthHint(true, relayed.expires);
   return true;
 }

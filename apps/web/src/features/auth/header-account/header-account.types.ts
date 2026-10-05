@@ -1,5 +1,7 @@
 import type { CustomerAccount } from '@/features/auth/customer-account-actions';
 
+import type { AccountLoader } from './account-client';
+
 export interface AccountMenuProps {
   account: CustomerAccount;
   onLogout: () => void;
@@ -11,4 +13,5 @@ export interface AccountMenuProps {
 export interface HeaderAccountProps {
   initialAccount?: CustomerAccount | null;
   afterLogoutHref?: string;
+  loadAccount?: AccountLoader;
 }

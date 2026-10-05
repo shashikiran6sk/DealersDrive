@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useId, useRef, useState, useTransition } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 
 import { replySupportRequestAction } from '@/features/support/support-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 import {
   SUPPORT_DETAIL_TEXT,
   SUPPORT_LIMITS,
@@ -24,7 +25,7 @@ export function SupportReplyForm({
   const router = useRouter();
   const [message, setMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const inFlight = useRef(false);
 
   return (

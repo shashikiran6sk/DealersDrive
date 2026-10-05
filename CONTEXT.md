@@ -980,6 +980,38 @@ out on CI once the router passed ~150 routes. Compute both sides once.
 
 ---
 
+## 7p. One slow mutation froze every link on the page (R98)
+
+React 19 entangles transitions. While any async transition is pending —
+`startTransition(async () => await action())`, or a `<form action>` /
+`useActionState` submission — every other transition is put in the same lane
+and cannot commit until it settles. A `<Link>` navigation is a transition. So a
+Server Action that took 40 seconds made every link on the page dead for 40
+seconds; the production recording shows exactly that (the vehicle wizard's
+Continue, then the sidebar ignoring clicks until a reload). Locally, with a 12s
+create: 7.2s to navigate before, 0.4s after.
+
+**Rule:** a mutation that can be slow is run with `useNavigationSafeAction` (same
+`[pending, start]` shape as `useTransition`) or, for a form,
+`useNavigationSafeFormAction` — not inside a transition. They follow a
+`redirect()` themselves, drop it if the person has already navigated elsewhere,
+and rethrow anything else into the error boundary. `useTransition` stays right for
+synchronous work (`startTransition(() => router.push(…))`).
+
+**And the API now refuses to wait forever.** The pool had no acquire timeout and
+no statement timeout, so a stuck connection or lock held a request open
+indefinitely — the 25s and 43s pending requests in the recording were the web
+tier's 8s timeouts chaining on top of that. `DB_CONNECT_TIMEOUT_MS`,
+`DB_STATEMENT_TIMEOUT_MS` and `DB_IDLE_IN_TRANSACTION_TIMEOUT_MS` bound it
+(`docs/code/api/platform/db.md`), and the request log's `dbMs`/`dbOps` say which
+it was the next time.
+
+**Two smaller facts worth keeping.** A `loading.tsx` costs ~300ms on a fast
+response — React throttles the reveal of content that replaces a fallback — and
+nothing on a slow one. And a random header on a server-side `GET` (a request id,
+a timestamp) silently disables Next's data cache and fetch dedupe, because both
+key on the headers.
+
 ## 8. Local development
 
 ```bash

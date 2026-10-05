@@ -658,6 +658,15 @@
   }
 }
 
+@keyframes dd-pending-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes dd-dialog-fade {
   from {
     opacity: 0;
@@ -668,6 +677,15 @@
 }
 
 @layer utilities {
+  html:not([data-auth='out']) .auth-out-only,
+  html[data-auth='out'] .auth-in-only {
+    display: none;
+  }
+
+  .dd-pending {
+    animation: dd-pending-in 120ms ease-out 120ms both;
+  }
+
   .tnum {
     font-variant-numeric: tabular-nums;
   }

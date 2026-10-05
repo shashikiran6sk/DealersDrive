@@ -10,6 +10,7 @@ import {
 } from './support-queue.constants';
 import type { SupportQueueFilters as Filters } from './support-queue.types';
 import { isQueueFiltered, supportQueueHref } from './utils';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 
 const LABEL = 'flex flex-col gap-[4px] text-[11px] uppercase tracking-[0.08em] ink-subtle';
 const CONTROL = 'text-[13px] normal-case tracking-normal';
@@ -104,9 +105,9 @@ export function SupportQueueFilters({
       {isQueueFiltered(filters) ? (
         <Link
           href={supportQueueHref({ status: filters.status })}
-          className="btn btn-ghost text-[12px]"
+          className="relative btn btn-ghost text-[12px]"
         >
-          {SUPPORT_QUEUE_TEXT.clear}
+          <LinkPendingLabel>{SUPPORT_QUEUE_TEXT.clear}</LinkPendingLabel>
         </Link>
       ) : null}
     </form>

@@ -1,6 +1,7 @@
 import type { DealerInventoryRow } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 import { ListingLifecycleActions } from '@/features/dealer/listing-lifecycle';
 
@@ -41,10 +42,12 @@ export function InventoryRow({ row }: { row: DealerInventoryRow }) {
             reactivationPending={row.reactivationPending}
             size="sm"
           />
-          <Link href={vehicleHref(row)} className="btn btn-ghost text-[12px]">
-            {row.status === 'DRAFT' || row.status === 'CHANGES_REQUESTED'
-              ? INVENTORY_TEXT.edit
-              : INVENTORY_TEXT.open}
+          <Link href={vehicleHref(row)} className="relative btn btn-ghost text-[12px]">
+            <LinkPendingLabel>
+              {row.status === 'DRAFT' || row.status === 'CHANGES_REQUESTED'
+                ? INVENTORY_TEXT.edit
+                : INVENTORY_TEXT.open}
+            </LinkPendingLabel>
           </Link>
         </div>
       </td>

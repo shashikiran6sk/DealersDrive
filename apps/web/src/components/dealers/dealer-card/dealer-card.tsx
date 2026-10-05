@@ -1,6 +1,7 @@
 import type { DealerCard as DealerCardDto } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingIndicator } from '@/components/ui/link-pending';
 import { LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
@@ -39,6 +40,7 @@ export function DirectoryCard({ dealer }: { dealer: DealerCardDto }) {
             className="after:absolute after:inset-0 focus-visible:outline-none"
           >
             {dealer.brandName}
+            <LinkPendingIndicator className="absolute top-[12px] left-[12px] z-[3] size-[26px] rounded-full bg-white shadow-sm" />
           </Link>
         </h3>
         <div className="mt-[3px] truncate text-[12px] ink-muted tnum">{dealer.yearsLabel}</div>

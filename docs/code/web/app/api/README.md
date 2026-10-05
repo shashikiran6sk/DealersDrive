@@ -9,4 +9,5 @@ Parent: [web/app](../README.md)
 
 ## Pages
 
+- [account](account.md)
 - [health](health.md)

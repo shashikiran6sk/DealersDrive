@@ -1629,6 +1629,34 @@ and falls back to `SUPPORT_EMAIL` / `SUPPORT_PHONE`. **Tests**
 `apps/api/tests/unit/modules/config/config.service.test.ts`. **Sandbox**
 `Layout/SupportPage`, `Auth/EntryShell`.
 
+### R98 — C135 `LinkPendingIndicator` · `LinkPendingLabel` · C136 `ConsolePageLoading` and the page skeletons
+
+**C135 `LinkPendingIndicator`** (`components/ui/link-pending/`) — the `Button`
+spinner inside a `<Link>` while its navigation is pending (`useLinkStatus`),
+faded in after 120ms. Props: `className` (a complete box, `size-[..]` included),
+`reserve` (keep a 14px box while idle). States: idle, idle-reserved, pending.
+Consumers: `ConsoleNav`, `ConsoleTabBar`, `HeaderLink`, `VehicleCard`,
+`DirectoryCard`.
+
+**`LinkPendingLabel`** — the button-shaped variant: the label stays, invisible,
+under a centred spinner, so the button keeps its width. Consumers: `ButtonLink`
+(so every `ButtonLink` gets it), and every `<Link className="btn …">` /
+`.dd-chip` link across the public pages, the console and admin, including
+`HeaderAccount`'s Login.
+
+**C136 `ConsolePageLoading`** and its siblings `VehiclePageLoading`,
+`DealerPageLoading`, `CustomerEnquiriesLoading`, `SavedListLoading` — the
+`loading.tsx` skeletons for the console, `/car/[slug]`, `/dealers/[slug]`,
+`/enquiries` and `/saved`. No props; each is a `role="status"` on its page's own
+grid, built from `.skeleton`, `SkeletonLines` and `VehicleCardSkeleton`.
+
+**Changed:** `ButtonLink` (adds `relative` + `LinkPendingLabel`), `ConsoleNav`
+(label wrapped, reserved indicator box), `HeaderAccount` (C093: an avatar-sized
+`[data-auth-placeholder]` and pre-paint `auth-in-only`/`auth-out-only` variants;
+new optional `loadAccount` prop), `WizardFooter` and `SaveRow` (take `pending`
+as a prop instead of `useFormStatus`). `Spinner` is now exported from the button
+barrel. Sandbox: `Primitives/LinkPending`, `Primitives/PageLoading`.
+
 ## D1 impact — components affected by removing the catalogue
 
 `feature-map.md` §D1 removes the `Make`/`Model`/`Variant`/`Color`/`Rto` models,

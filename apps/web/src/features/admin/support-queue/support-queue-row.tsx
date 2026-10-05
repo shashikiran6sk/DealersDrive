@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { StatusTag } from '@/components/ui/primitives';
 
 import { SUPPORT_QUEUE_PATH, SUPPORT_QUEUE_TEXT } from './support-queue.constants';
@@ -55,9 +56,9 @@ export function SupportQueueRow({ row }: SupportQueueRowProps) {
         <Link
           href={`${SUPPORT_QUEUE_PATH}/${row.id}`}
           aria-label={SUPPORT_QUEUE_TEXT.viewLabel(row.reference)}
-          className="btn btn-secondary text-[12px]"
+          className="relative btn btn-secondary text-[12px]"
         >
-          {SUPPORT_QUEUE_TEXT.view}
+          <LinkPendingLabel>{SUPPORT_QUEUE_TEXT.view}</LinkPendingLabel>
         </Link>
       </td>
     </tr>

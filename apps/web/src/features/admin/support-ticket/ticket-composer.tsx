@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useId, useRef, useState, useTransition } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 import { addTicketNoteAction, replyToTicketAction } from '@/features/admin/support-actions';
 import { cn } from '@/lib/cn';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { SUPPORT_TICKET_TEXT } from './support-ticket.constants';
 import type { TicketComposerProps } from './support-ticket.types';
@@ -24,7 +25,7 @@ export function TicketComposer({
   const [mode, setMode] = useState<Mode>(canReply ? 'reply' : 'note');
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const inFlight = useRef(false);
   const isNote = mode === 'note';
 

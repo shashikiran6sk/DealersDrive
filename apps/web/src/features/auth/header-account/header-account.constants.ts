@@ -23,3 +23,7 @@ export const HEADER_ACCOUNT_TEXT = {
   menuLabel: (name: string) => `Account menu for ${name}`,
   menuItemsLabel: 'Account',
 } as const;
+
+export const ACCOUNT_ENDPOINT = '/api/account';
+
+export const ACCOUNT_TIMEOUT_MS = 10_000;

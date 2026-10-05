@@ -18,6 +18,7 @@ import {
   type SavedVehiclesContextValue,
 } from '@/components/vehicle/save-button';
 import { savedSlugsAction, setSavedAction } from '@/features/saved/actions';
+import { useAuthHint } from '@/lib/use-auth-hint';
 
 import { SaveFromUrl } from './save-from-url';
 import { SAVED_PATH, saveLoginHref } from './saved.constants';
@@ -53,6 +54,9 @@ export function SavedVehiclesProvider({
   const [pending, setPending] = useState<SlugSet>(new Set());
   const [message, setMessage] = useState('');
   const saved = useRef<SlugSet>(slugs);
+  const loaded = useRef(false);
+  const request = useRef<{ live: boolean } | null>(null);
+  const hint = useAuthHint();
   saved.current = slugs;
 
   const signIn = useCallback(
@@ -94,19 +98,38 @@ export function SavedVehiclesProvider({
     [write],
   );
 
+  useEffect(
+    () => () => {
+      if (request.current) request.current.live = false;
+      request.current = null;
+      loaded.current = false;
+    },
+    [],
+  );
+
   useEffect(() => {
-    let live = true;
+    if (hint === 'out') {
+      if (request.current) request.current.live = false;
+      request.current = null;
+      loaded.current = false;
+      setAccount('anonymous');
+      setSlugs((current) => (current.size === 0 ? current : new Set()));
+      return;
+    }
+    if (loaded.current) return;
+    loaded.current = true;
+    const ticket = { live: true };
+    request.current = ticket;
     loadSlugs()
       .then((state) => {
-        if (!live) return;
+        if (!ticket.live) return;
         setAccount(state.status);
         if (state.status === 'customer') setSlugs(new Set(state.slugs));
       })
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
-  }, [loadSlugs]);
+      .catch(() => {
+        if (ticket.live) loaded.current = false;
+      });
+  }, [hint, loadSlugs]);
 
   const value = useMemo<SavedVehiclesContextValue>(
     () => ({

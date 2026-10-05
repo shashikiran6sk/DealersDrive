@@ -2,6 +2,7 @@ import type { AdminDealersResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState, StatusTag } from '@/components/ui/primitives';
 import { NumericCell, Table, type TableColumn } from '@/components/ui/table';
 import { apiGet, qs } from '@/lib/api';
@@ -101,9 +102,9 @@ export default async function AdminDealersPage({
         {state || district || city ? (
           <Link
             href={`/admin/dealers${qs({ status, pendingEdits })}`}
-            className="btn btn-ghost h-[36px] px-[12px] text-[12px]"
+            className="relative btn btn-ghost h-[36px] px-[12px] text-[12px]"
           >
-            Clear
+            <LinkPendingLabel>Clear</LinkPendingLabel>
           </Link>
         ) : null}
 
@@ -153,8 +154,11 @@ export default async function AdminDealersPage({
               <NumericCell>{dealer.creditBalance}</NumericCell>
               <NumericCell className="whitespace-nowrap">{dealer.joinedLabel}</NumericCell>
               <td className="whitespace-nowrap text-right">
-                <Link href={`/admin/dealers/${dealer.id}`} className="btn btn-ghost text-[12px]">
-                  Manage
+                <Link
+                  href={`/admin/dealers/${dealer.id}`}
+                  className="relative btn btn-ghost text-[12px]"
+                >
+                  <LinkPendingLabel>Manage</LinkPendingLabel>
                 </Link>
               </td>
             </tr>

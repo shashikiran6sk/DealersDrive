@@ -2,10 +2,11 @@
 
 import type { AdminDealerDetail } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Banner } from '@/components/ui/primitives';
 import type { ActionResult } from '@/types';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { ApproveBlock } from './approve-block';
 import { CloseBlock } from './close-block';
@@ -17,7 +18,7 @@ import { SuspendBlock } from './suspend-block';
 
 export function DealerAdminActions({ dealer }: { dealer: AdminDealerDetail }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 

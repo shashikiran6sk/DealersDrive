@@ -37,6 +37,15 @@ It lives in its own `Suspense` because `useSearchParams` in the layout would
 otherwise make every public page render on the client. The provider itself
 reads the URL only when a heart is tapped, through `window.location.search`.
 
+**Signed out means no request, and logout clears the hearts (R98).** The provider
+reads the `dd_auth` hint ([lib](../lib.md#appswebsrclibuse-auth-hintts)). When it
+says signed out, nothing is asked — most visitors never send the action at all —
+and the set is emptied. The header announces the hint the moment Logout
+succeeds, so every heart on the page drops at once; before R98 a logged-out page
+kept showing the last account's saved cars until a full reload (the recording,
+02:50–03:00). A hint that flips from unknown to signed in mid-request does not
+cancel and re-ask: only unmount or a sign-out abandons a request in flight.
+
 ## `apps/web/src/components/vehicle/save-button/saved-vehicles-context.ts`
 
 ### `export const NO_SAVED_VEHICLES`

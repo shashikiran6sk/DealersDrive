@@ -794,7 +794,18 @@ The same question for the admin console, whose sessions are a separate scope.
 
 Where a signed-in dealer belongs, given what the API says about them.
 
+### `export const currentSession = cache(async () => …)`
+
+Wrapped in React's per-request `cache` (**R98**). The console layout and most
+console pages both ask, and a full load used to call `GET /v1/auth/me` twice in
+the one render. `cache` is scoped to the request, so one person's session is
+never seen by another.
+
 ## `apps/web/src/lib/session-cookie.ts`
+
+**R98.** A relayed session also writes the `dd_auth` hint as signed in, with the
+session's own expiry, so the very next page paints the account corner without
+asking first.
 
 ### `export async function relaySessionCookie(setCookies: readonly string[]): Promise<boolean>`
 
@@ -1097,6 +1108,116 @@ fallback.
 
 The layout, `generateMetadata` and the page all ask for these; `cache` makes it
 one wait per render if the API is slow, rather than one each.
+
+## `apps/web/src/lib/api.ts` — slow upstream calls (R98)
+
+### `export const API_SLOW_MS = 1_000`
+
+A call that takes a second or more logs `api.slow_request` with the method, the
+path (query string stripped by the logger), the status, `durationMs` and the
+`traceId` — so a slow page in the web log can be found in the API's log, where
+the same id carries `durationMs`, `dbMs` and `dbOps`. Nothing about the request
+body, headers or cookies is logged.
+
+### `const requestId = method === 'GET' ? undefined : crypto.randomUUID()`
+
+Mutations send their own `x-request-id`, which the API adopts as its trace id.
+Reads do not, and that is deliberate: Next keys both its data cache and its
+per-render fetch dedupe on the request headers, so a random header on a `GET`
+would make every cached read a miss. A read's trace id is taken from the API's
+response header instead.
+
+## `apps/web/src/lib/auth-hint.ts`
+
+### `export const AUTH_HINT_COOKIE = 'dd_auth'`
+
+Why the header no longer flashes Login at a signed-in customer (**R98**).
+
+The public pages are static (the home page is ISR), so the server cannot know
+who is signed in while it renders them, and `dd_session` is `httpOnly`, so the
+browser cannot read it either. The header used to draw Login and ask after
+hydration — the "Login, then the avatar two seconds later" in the recording.
+
+`dd_auth` is a readable hint, `1` or `0`: what the last definite answer about
+this browser was. It is not a credential and decides nothing — every check is
+still made against `dd_session` — it only chooses what to draw before the
+answer arrives. It is written by the server on sign-in (`relaySessionCookie`),
+sign-out, and every `/api/account` answer, and by the browser when the console
+renders an account it was handed.
+
+### `export function authHintFrom(cookieHeader: string): AuthHint`
+
+Anything but an exact `1` or `0` is `unknown`, never `out`: the header must
+never treat "do not know" as "signed out".
+
+### `export const AUTH_HINT_SCRIPT`
+
+Inlined at the top of `<body>` by the root layout, before any of the page has
+painted. It copies the hint onto `<html data-auth>`, and two CSS rules
+(`.auth-out-only`, `.auth-in-only`) pick between the Login button and an
+avatar-sized placeholder that the server rendered side by side. So the very first
+paint is right — Login for a signed-out visitor, a quiet 40px circle for a
+signed-in one — with no layout shift when the avatar replaces the circle.
+`suppressHydrationWarning` on `<html>` is for that one attribute.
+
+## `apps/web/src/lib/auth-hint-cookie.ts`
+
+### `export async function writeAuthHint(signedIn: boolean, expires?: Date)`
+
+Server-side writer. `httpOnly: false` is the point of the cookie; `SameSite=Lax`
+and `Secure` in production as for every other cookie.
+
+## `apps/web/src/lib/use-auth-hint.ts`
+
+### `export function useAuthHint(): AuthHint`
+
+`useSyncExternalStore` over `document.cookie`, with `unknown` as the server
+snapshot so hydration always matches the server's both-variants markup.
+`announceAuthHint()` re-reads the cookie after a request that changed it and
+updates `<html data-auth>`; `rememberAuthHint()` writes it from the browser;
+`forgetAuthHint()` (the login page) drops it, so an OAuth sign-in — whose cookie
+the API sets through a rewrite, out of this app's reach — is always followed by a
+real lookup rather than a stale "signed out".
+
+## `apps/web/src/lib/redirect-target.ts`
+
+### `export function redirectTargetOf(error: unknown): RedirectTarget | null`
+
+Reads where a Server Action's `redirect()` was going from the error Next rejects
+the action's promise with (`digest: NEXT_REDIRECT;<push|replace>;<url>;<status>;`).
+It is the one place that depends on that shape, and it is tested.
+
+## `apps/web/src/lib/use-navigation-safe-action.ts`
+
+### `export function useNavigationSafeAction(): [boolean, SafeActionStart]`
+
+Why a slow request could freeze every link in the console (**R98**).
+
+React 19 entangles transitions: while an async transition is pending —
+`startTransition(async () => await someServerAction())`, or a `<form action>` —
+every other transition is given the same lane and cannot commit until it
+settles. A `<Link>` navigation is a transition. So for as long as one mutation
+was in flight, no link anywhere on the page would navigate: the recording's
+"Continue" spinner at 04:13 held the sidebar for 43 seconds until a reload.
+Measured locally with a 12s create: 7.2s to navigate before, 0.4s after.
+
+This hook has `useTransition`'s shape — `[pending, start]` — and runs the work
+outside a transition. Two things a transition used to do for free it does itself:
+
+- **A `redirect()` from the action** rejects the promise with Next's redirect
+  error, which a transition hands to the `RedirectBoundary`. Here it is caught,
+  and the router is pushed (or replaced) to the target — unless the page has
+  changed since the work started, in which case the person has already gone
+  somewhere else and their click wins.
+- **Any other failure** is rethrown during render, so it reaches the nearest
+  error boundary exactly as before.
+
+### `export function useNavigationSafeFormAction(action, initial)`
+
+The same for a `useActionState` form: an `onSubmit` that builds the `FormData`
+with the submit button that was pressed (`intent=back|draft|continue`) and keeps
+the returned state. Pending comes back as a value, not from `useFormStatus`,
+because there is no form action for `useFormStatus` to observe.
 
 ## Integration with current main
 

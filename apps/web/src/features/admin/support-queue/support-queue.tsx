@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { Table, type TableColumn } from '@/components/ui/table';
 
@@ -61,9 +62,9 @@ export function SupportQueue({ tickets, filters }: SupportQueueProps) {
       {tickets.page.nextCursor ? (
         <Link
           href={supportQueueHref({ ...filters, cursor: tickets.page.nextCursor })}
-          className="btn btn-secondary self-center"
+          className="relative btn btn-secondary self-center"
         >
-          {SUPPORT_QUEUE_TEXT.more}
+          <LinkPendingLabel>{SUPPORT_QUEUE_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
     </div>

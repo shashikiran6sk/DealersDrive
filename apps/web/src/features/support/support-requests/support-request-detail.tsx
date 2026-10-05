@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { ButtonLink } from '@/components/ui/button';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState, StatusTag } from '@/components/ui/primitives';
 
 import {
@@ -21,8 +22,8 @@ function replyHint(status: SupportRequestDetailProps['ticket']['status']): strin
 export function SupportRequestDetail({ ticket }: SupportRequestDetailProps) {
   return (
     <div className="flex flex-col gap-[18px]">
-      <Link href={SUPPORT_REQUESTS_PATH} className="btn btn-ghost self-start">
-        {SUPPORT_DETAIL_TEXT.back}
+      <Link href={SUPPORT_REQUESTS_PATH} className="relative btn btn-ghost self-start">
+        <LinkPendingLabel>{SUPPORT_DETAIL_TEXT.back}</LinkPendingLabel>
       </Link>
 
       <header className="flex flex-col gap-[8px]">

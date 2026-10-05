@@ -11,6 +11,7 @@ import { BrandLogo } from '@/components/brand-logo';
 import { HEADER_NAV, HEADER_TEXT } from './customer-header.constants';
 import { HeaderLink } from './header-link';
 import { LocationChipFallback } from './location-chip-fallback';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 
 export interface CustomerHeaderProps {
   locations: PublicLocations;
@@ -49,9 +50,9 @@ export function CustomerHeader({ locations, account }: CustomerHeaderProps) {
           {account ?? (
             <Link
               href={HEADER_NAV.login}
-              className="btn btn-primary min-h-[40px] rounded-full px-[18px]"
+              className="relative btn btn-primary min-h-[40px] rounded-full px-[18px]"
             >
-              {HEADER_TEXT.login}
+              <LinkPendingLabel>{HEADER_TEXT.login}</LinkPendingLabel>
             </Link>
           )}
         </div>

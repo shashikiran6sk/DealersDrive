@@ -50,6 +50,10 @@ const envSchema = z.object({
 
   DB_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
   DB_TRANSACTION_MAX_WAIT_MS: z.coerce.number().int().positive().default(10_000),
+  DB_POOL_MAX: z.coerce.number().int().positive().default(10),
+  DB_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(5_000),
+  DB_STATEMENT_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+  DB_IDLE_IN_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
 
   AUTH_MODE: z.enum(['cookie', 'dev']).default('cookie'),
 

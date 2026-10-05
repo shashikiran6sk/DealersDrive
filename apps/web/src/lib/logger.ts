@@ -13,6 +13,7 @@ const LOG_FIELDS = new Set([
   'kind',
   'digest',
   'traceId',
+  'durationMs',
   'error',
 ]);
 

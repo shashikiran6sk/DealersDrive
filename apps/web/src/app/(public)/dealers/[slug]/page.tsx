@@ -8,6 +8,7 @@ import { DealerInventory, placeOf } from '@/components/dealers/dealer-inventory'
 import { LocationCard } from '@/components/dealers/location-card';
 import { SectionError } from '@/components/errors/section-error';
 import { JsonLd } from '@/components/seo/json-ld';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
 import { apiGet, apiGetParsed, qs } from '@/lib/api';
 import { cachedLookup } from '@/lib/cached-lookup';
@@ -150,8 +151,8 @@ export default async function DealerPortfolioPage({
 
       <div className="border-b border-(--color-divider) bg-white">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pt-[22px]">
-          <Link href="/dealers" className="btn btn-ghost mb-[14px]">
-            ← Back to dealers
+          <Link href="/dealers" className="relative btn btn-ghost mb-[14px]">
+            <LinkPendingLabel>← Back to dealers</LinkPendingLabel>
           </Link>
         </div>
 
