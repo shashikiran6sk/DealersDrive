@@ -156,6 +156,30 @@ describe('the console shell', () => {
   });
 
   /**
+   * R100. The account behind the top bar's menu does not depend on the guard,
+   * so it is asked for while the guard runs rather than after the dealership
+   * has come back — one round trip fewer on every full console load. The guard
+   * itself stays in order: no dealership is asked for without a session.
+   */
+  it('asks for the account while the guard is still running', async () => {
+    let answerSession: (value: AuthSession) => void = () => undefined;
+    currentSession.mockReturnValue(
+      new Promise((resolve) => {
+        answerSession = resolve;
+      }),
+    );
+    apiGet.mockResolvedValue(DEALER);
+
+    const shell = layout();
+    await vi.waitFor(() => expect(customerAccount).toHaveBeenCalled());
+    expect(apiGet).not.toHaveBeenCalled();
+
+    answerSession(session('DASHBOARD'));
+    render(await shell);
+    expect(screen.getByText('Sri Lakshmi Motors')).toBeInTheDocument();
+  });
+
+  /**
    * The dealership id is never in a URL below this layout and never in a
    * request from it — the API resolves it from the session (rule 1). Asserted
    * because the shell is the one place tempted to pass it down.
