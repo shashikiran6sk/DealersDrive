@@ -1098,6 +1098,24 @@ fallback.
 The layout, `generateMetadata` and the page all ask for these; `cache` makes it
 one wait per render if the API is slow, rather than one each.
 
+## `apps/web/src/lib/api.ts` — slow upstream calls (R99)
+
+### `export const API_SLOW_MS = 1_000`
+
+A call that takes a second or more logs `api.slow_request` with the method, the
+path (query string stripped by the logger), the status, `durationMs` and the
+`traceId` — so a slow page in the web log can be found in the API's log, where
+the same id carries `durationMs`, `dbMs` and `dbOps`. Nothing about the request
+body, headers or cookies is logged.
+
+### `const requestId = method === 'GET' ? undefined : crypto.randomUUID()`
+
+Mutations send their own `x-request-id`, which the API adopts as its trace id.
+Reads do not, and that is deliberate: Next keys both its data cache and its
+per-render fetch dedupe on the request headers, so a random header on a `GET`
+would make every cached read a miss. A read's trace id is taken from the API's
+response header instead.
+
 ## Integration with current main
 
 The homepage preserves main’s interleaved discovery/information bands while showing the inline inventory failure notice. Error components use C131–C135; JsonLd is C130, so main’s current component IDs stay intact. Web diagnostics retain error categories/status and trace/digest correlation; arbitrary error messages, stacks, request bodies and URL query strings are excluded to avoid logging authentication proofs or private fields. Error causes are bounded against cycles.
