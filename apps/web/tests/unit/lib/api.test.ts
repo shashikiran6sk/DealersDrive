@@ -13,6 +13,7 @@ import {
   SERVER_ERROR_MESSAGE,
   UpstreamUnavailableError,
 } from '../../../src/lib/api.js';
+import { logger } from '../../../src/lib/logger.js';
 
 /**
  * The one place the web app talks to the API (Rule 8). Three behaviours here
@@ -780,5 +781,74 @@ describe('apiGetParsed', () => {
       ).rejects.toThrow(/districts\.0\.state/);
       expect(calls).toHaveLength(1);
     });
+  });
+});
+
+/**
+ * R98 — what a slow page can be traced by.
+ *
+ * A call that takes a second or more logs `api.slow_request` with the trace id
+ * the API logged it under, so a slow render in the web log can be found next to
+ * its `durationMs` / `dbMs` in the API's. Mutations send their own
+ * `x-request-id`; reads never do, because Next keys its data cache and its
+ * per-render fetch dedupe on the request headers, and a random header on a GET
+ * would make every cached read a miss.
+ */
+describe('request ids and slow calls (R98)', () => {
+  function headersOf(call: Captured | undefined): Record<string, string> {
+    return (call?.init.headers ?? {}) as Record<string, string>;
+  }
+
+  it('sends no request id on a read, so cached and deduped reads keep their keys', async () => {
+    globalThis.fetch = respondWith({}) as unknown as typeof fetch;
+    await apiGet('/v1/cities', { revalidate: 60 });
+
+    expect(headersOf(calls[0])['x-request-id']).toBeUndefined();
+  });
+
+  it('sends a fresh request id on every mutation', async () => {
+    globalThis.fetch = respondWith({}) as unknown as typeof fetch;
+    await apiSend('POST', '/v1/dealer/vehicles', { registrationNumber: 'TN23AJ1245' });
+    await apiSend('POST', '/v1/dealer/vehicles', { registrationNumber: 'TN23AJ1245' });
+
+    const [first, second] = calls.map((call) => headersOf(call)['x-request-id']);
+    expect(first).toMatch(/^[0-9a-f-]{36}$/);
+    expect(second).toMatch(/^[0-9a-f-]{36}$/);
+    expect(first).not.toBe(second);
+  });
+
+  it('logs a call of a second or more with its route, status, duration and trace id — nothing else', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    const clock = vi.spyOn(performance, 'now').mockReturnValueOnce(0).mockReturnValue(1_450);
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'x-request-id': 'trace-abc' }),
+        text: () => Promise.resolve('{}'),
+      } as Response),
+    );
+
+    await apiGet('/v1/dealer/enquiries?status=NEW', { revalidate: false });
+
+    expect(warn).toHaveBeenCalledWith('api.slow_request', {
+      method: 'GET',
+      path: '/v1/dealer/enquiries?status=NEW',
+      status: 200,
+      durationMs: 1_450,
+      traceId: 'trace-abc',
+    });
+    warn.mockRestore();
+    clock.mockRestore();
+  });
+
+  it('says nothing about a fast call', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    globalThis.fetch = respondWith({}) as unknown as typeof fetch;
+
+    await apiGet('/v1/cities', { revalidate: 60 });
+
+    expect(warn).not.toHaveBeenCalledWith('api.slow_request', expect.anything());
+    warn.mockRestore();
   });
 });

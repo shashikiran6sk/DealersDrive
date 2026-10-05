@@ -275,6 +275,14 @@ Health probes fire every few seconds; they log at debug so dev output stays read
 One line per completed request. traceId is attached by the logger mixin, so
 this line and every line the handler emitted share the same id.
 
+**R98.** The line also carries `dbMs` and `dbOps`: the time and the number of
+Prisma operations the request spent, from the request context the Prisma
+extension fills. `dbMs` is a **sum** of operation durations (pool wait
+included), so a request that runs queries concurrently can show more database
+time than wall time — 19 parallel queries of 40ms read `dbMs ≈ 760` against
+`durationMs ≈ 50`. Read together they separate "the database was slow" from "the
+handler was slow" from "the pool was saturated".
+
 ### `const path = req.path`
 
 Captured now: Express rewrites req.url while routing into a mounted

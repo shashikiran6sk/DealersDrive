@@ -55,6 +55,10 @@ export class UpstreamUnavailableError extends Error {
 
 export const API_TIMEOUT_MS = 8_000;
 
+export const API_SLOW_MS = 1_000;
+
+const REQUEST_ID_HEADER = 'x-request-id';
+
 const LOOSE_PROBLEM = z
   .object({
     type: z.string().optional(),
@@ -169,11 +173,14 @@ async function request<T>(
   bypassCache = false,
 ): Promise<T> {
   const url = `${serverConfig().apiBaseUrl}${path}`;
+  const requestId = method === 'GET' ? undefined : crypto.randomUUID();
+  const startedAt = performance.now();
 
   const init: RequestInit & { next?: { revalidate?: number; tags?: string[] } } = {
     method,
     headers: {
       Accept: 'application/json',
+      ...(requestId ? { [REQUEST_ID_HEADER]: requestId } : {}),
       ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,
     },
@@ -220,6 +227,16 @@ async function request<T>(
   }
 
   const { response, text } = settled;
+  const durationMs = Math.round(performance.now() - startedAt);
+  if (durationMs >= API_SLOW_MS) {
+    logger.warn('api.slow_request', {
+      method,
+      path,
+      status: response.status,
+      durationMs,
+      traceId: response.headers.get(REQUEST_ID_HEADER) ?? requestId,
+    });
+  }
   options.onSetCookie?.(response.headers.getSetCookie());
 
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- a 204 has no body to parse
