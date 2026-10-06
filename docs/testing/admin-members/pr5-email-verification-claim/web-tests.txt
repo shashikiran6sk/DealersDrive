@@ -1,0 +1,15 @@
+ ✓ tests/unit/features/claim/claim-actions.test.ts > confirmClaimEmailAction > refuses a malformed token without calling the API 8ms
+ ✓ tests/unit/features/claim/claim-actions.test.ts > confirmClaimEmailAction > returns the new state, or the API’s words 7ms
+ ✓ tests/unit/features/claim/claim-actions.test.ts > claimDealershipAction > relays the new session cookie and returns where to go 3ms
+ ✓ tests/unit/features/claim/claim-actions.test.ts > claimDealershipAction > answers a refusal without setting a cookie 2ms
+ ✓ tests/unit/features/sales/email-verification-panel.test.tsx > EmailVerificationPanel > says where the link went, and resends on request 229ms
+ ✓ tests/unit/features/sales/email-verification-panel.test.tsx > EmailVerificationPanel > holds the button during the cooldown 15ms
+ ✓ tests/unit/features/sales/email-verification-panel.test.tsx > EmailVerificationPanel > flags an expired link, and stops once the dealer has claimed 8ms
+ ✓ tests/unit/features/claim/claim-dealership.test.tsx > ClaimDealership > asks for the email first, showing only the masked address 268ms
+ ✓ tests/unit/features/claim/claim-dealership.test.tsx > ClaimDealership > shows the API’s refusal when the email cannot be confirmed 22ms
+ ✓ tests/unit/features/claim/claim-dealership.test.tsx > ClaimDealership > will not send a code to a number that is not the dealership’s 83ms
+ ✓ tests/unit/features/claim/claim-dealership.test.tsx > ClaimDealership > claims with the OTP and opens the dealership 208ms
+ ✓ tests/unit/features/claim/claim-dealership.test.tsx > ClaimDealership > explains a CLAIMED link and offers no form 5ms
+ ✓ tests/unit/features/claim/claim-dealership.test.tsx > ClaimDealership > explains a EXPIRED link and offers no form 4ms
+ ✓ tests/unit/features/claim/claim-dealership.test.tsx > ClaimDealership > explains a SUPERSEDED link and offers no form 3ms
+      Tests  14 passed (14)
