@@ -44,9 +44,13 @@ function phoneService(): PhoneService {
     assertAvailable: () => Promise.resolve(),
     verify: () =>
       Promise.resolve({
-        phone: '+919840012345',
-        phoneDisplay: '+91 98400 12345',
-        verifiedAt: new Date().toISOString(),
+        response: {
+          phone: '+919840012345',
+          phoneDisplay: '+91 98400 12345',
+          verifiedAt: new Date().toISOString(),
+          accountsLinked: false,
+        },
+        session: null,
       }),
   };
 }

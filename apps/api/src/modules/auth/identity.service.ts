@@ -11,6 +11,7 @@ import {
   OTHER_GOOGLE_ALREADY_LINKED,
   PHONE_HELD_UNVERIFIED,
 } from './auth.messages.js';
+import { mergeAccounts } from './account-merge.js';
 import type { OAuthClaims } from './oauth.port.js';
 import type { ProvenPhone } from './phone-proof.service.js';
 
@@ -147,6 +148,25 @@ export function createIdentityService({ prisma, audit }: IdentityDeps) {
         });
 
         return user.id;
+      });
+    },
+
+    async absorbGoogleHolder(userId: string, claims: OAuthClaims): Promise<{ merged: boolean }> {
+      const held = await prisma.oAuthIdentity.findUnique({
+        where: {
+          provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject },
+        },
+        select: { userId: true },
+      });
+      if (!held || held.userId === userId) return { merged: false };
+
+      return withTransaction(prisma, async (tx) => {
+        const outcome = await mergeAccounts(tx, audit, {
+          survivorId: userId,
+          absorbedId: held.userId,
+          proof: 'GOOGLE_OAUTH',
+        });
+        return { merged: outcome.merged };
       });
     },
 

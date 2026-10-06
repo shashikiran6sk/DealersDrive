@@ -416,10 +416,11 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     sessionToken: string | undefined,
   ): Promise<CallbackResult> {
     const userId = await assertLinkSession(transaction, sessionToken);
+    const { merged } = await identities.absorbGoogleHolder(userId, claims);
     const { linked } = await identities.linkGoogle(userId, claims);
 
     logger.info(
-      { event: 'auth.identity.linked', provider: 'GOOGLE', userId, linked },
+      { event: 'auth.identity.linked', provider: 'GOOGLE', userId, linked, merged },
       'google account linked',
     );
 

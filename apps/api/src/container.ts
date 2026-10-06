@@ -190,7 +190,13 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     maps,
   });
   const phoneOtp = overrides.phoneOtp ?? createPhoneOtp();
-  const phone = createPhoneService({ prisma, otp: phoneOtp, cache });
+  const phone = createPhoneService({
+    prisma,
+    otp: phoneOtp,
+    cache,
+    audit,
+    sessions: sessionStore,
+  });
   const customers = createCustomerAuthService({
     prisma,
     sessions: sessionStore,

@@ -293,13 +293,20 @@ describe('onboarding', () => {
    * the dealer asks for a code, on the step that owns the field.
    */
   it('refuses to prove a phone number another dealership already uses', async () => {
+    h.google.claims = { ...h.google.claims, subject: 'holder-sub', email: 'holder@example.com' };
+    const holder = h.agent();
+    await h.signIn(holder);
+    await h.proveNumber(holder, '9840077777');
+
+    h.google.claims = { ...h.google.claims, subject: 'second-sub', email: 'second@example.com' };
     const agent = h.agent();
     await h.signIn(agent);
 
-    // +919840012345 belongs to the seeded Sri Lakshmi Motors owner.
+    // The number belongs to a complete account — its own Google identity and
+    // the proved phone — so this is a second person, and it is refused.
     const conflict = await agent
       .post('/v1/auth/phone/verify')
-      .send({ phone: '9840012345', accessToken: 'dev-otp:919840012345:123456:seeded' })
+      .send({ phone: '9840077777', accessToken: 'dev-otp:919840077777:123456:second' })
       .expect(409);
 
     expect(conflict.body.code).toBe('PHONE_ALREADY_REGISTERED');

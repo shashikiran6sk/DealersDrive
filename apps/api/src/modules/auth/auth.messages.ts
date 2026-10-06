@@ -38,3 +38,12 @@ export const SIGN_UP_EXPIRED =
 export const CUSTOMER_SUSPENDED = 'This account has been suspended. Contact support.';
 
 export const WORKSPACE_NOT_FOUND = 'You are not a member of that dealership.';
+
+export const MERGE_REFUSED_STAFF =
+  'This mobile number belongs to an account that cannot be linked automatically. Contact support.';
+
+export const MERGE_REFUSED_CONFLICTING =
+  'This account already has a different mobile number. Contact support to move it.';
+
+export const MERGE_REFUSED_UNAVAILABLE =
+  'This mobile number is already on another account that cannot be linked. Contact support.';

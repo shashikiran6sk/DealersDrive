@@ -404,6 +404,7 @@ export const VerifyPhoneResponse = z.object({
   phone: z.string(),
   phoneDisplay: z.string(),
   verifiedAt: z.string(),
+  accountsLinked: z.boolean(),
 });
 export type VerifyPhoneResponse = z.infer<typeof VerifyPhoneResponse>;
 
