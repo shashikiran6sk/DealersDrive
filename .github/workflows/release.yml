@@ -66,7 +66,7 @@ jobs:
 
       - name: Assume the CI role
         if: vars.AWS_DEPLOY_ENABLED == 'true'
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           # Push-only, to the ECR repositories, and nothing else. It cannot
           # deploy — that is a separate role, held by the environments.
