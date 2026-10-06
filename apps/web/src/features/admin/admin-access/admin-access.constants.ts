@@ -1,14 +1,11 @@
-import type { AdminAccessEntry } from '@dealers-drive/contracts';
+import { ADMIN_ROLE_LABELS, type AdminAccessEntry } from '@dealers-drive/contracts';
 
-export const ROLE_LABELS: Record<AdminAccessEntry['adminRole'], string> = {
-  SUPPORT: 'Support',
-  MODERATOR: 'Moderator',
-  SUPER_ADMIN: 'Super admin',
-};
+export const ROLE_LABELS: Readonly<Record<AdminAccessEntry['adminRole'], string>> =
+  ADMIN_ROLE_LABELS;
 
 export const ROLE_OPTIONS: { value: AdminAccessEntry['adminRole']; label: string }[] = [
   { value: 'SUPPORT', label: 'Support — read only' },
-  { value: 'MODERATOR', label: 'Moderator — review and decide' },
+  { value: 'MODERATOR', label: 'Operations — review and decide' },
   { value: 'SUPER_ADMIN', label: 'Super admin — everything' },
 ];
 

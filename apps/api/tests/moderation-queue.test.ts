@@ -136,12 +136,18 @@ describe('who may see the queue', () => {
 
   it('refuses an admin without the moderation permission', async () => {
     const email = env.adminAllowlist[0] ?? '';
-    await h.prisma.user.updateMany({ where: { email }, data: { adminRole: 'SUPPORT' } });
+    await h.prisma.adminMember.updateMany({
+      where: { user: { email } },
+      data: { role: 'SUPPORT' },
+    });
     try {
       const refused = await admin.get('/v1/admin/listings').expect(403);
       expect(refused.body.detail).toContain('admin:listing:moderate');
     } finally {
-      await h.prisma.user.updateMany({ where: { email }, data: { adminRole: 'SUPER_ADMIN' } });
+      await h.prisma.adminMember.updateMany({
+        where: { user: { email } },
+        data: { role: 'SUPER_ADMIN' },
+      });
     }
   });
 });

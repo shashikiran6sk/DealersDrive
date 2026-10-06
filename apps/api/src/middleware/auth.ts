@@ -100,7 +100,10 @@ export const requireDealerActive: RequestHandler = (req, _res, next) => {
   next();
 };
 
-export function requirePermission(permission: string): RequestHandler {
+export function requirePermission(
+  permission: string,
+  refusal?: { code: string; message: string },
+): RequestHandler {
   return (req, _res, next) => {
     const principal = req.principal;
     if (!principal) {
@@ -108,7 +111,14 @@ export function requirePermission(permission: string): RequestHandler {
       return;
     }
     if (!principal.permissions.includes(permission)) {
-      next(new ForbiddenError(`This action needs the ${permission} permission.`));
+      next(
+        refusal
+          ? new ForbiddenError(refusal.message, {
+              code: refusal.code,
+              extra: { permission },
+            })
+          : new ForbiddenError(`This action needs the ${permission} permission.`),
+      );
       return;
     }
     next();

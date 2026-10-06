@@ -50,6 +50,7 @@ model User {
   mergedInto User?  @relation("UserMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
   absorbed   User[] @relation("UserMerge")
 
+  adminMember   AdminMember?
   sessions      Session[]
   memberships   DealerMember[]
   identities    OAuthIdentity[]
@@ -197,10 +198,61 @@ enum OAuthProvider {
   GOOGLE
 }
 
+/// `MODERATOR` is the Operations reviewer; `SALES_REP` works the Sales
+/// workspace only and holds no console permission at all.
 enum AdminRole {
   SUPPORT
   MODERATOR
   SUPER_ADMIN
+  SALES_REP
+}
+
+/// An internal team member: one named person, one role, one lifecycle.
+///
+/// This row is the authorization. Google proves who signed in; whether that
+/// person may enter the console, and as what, is read from here on every
+/// request — so a role change applies to the next request and a disabled
+/// member's sessions stop working at once.
+///
+/// `users.isPlatformAdmin`, `users.adminRole` and the ADMIN `user_roles` seat
+/// are still written alongside it so an application rollback keeps the same
+/// answers; nothing reads them for authorization any more.
+model AdminMember {
+  id     String            @id @default(uuid()) @db.Uuid
+  userId String            @unique @db.Uuid
+  role   AdminRole
+  status AdminMemberStatus @default(INVITED)
+  /// BOOTSTRAP members exist because their address is on ADMIN_ALLOWLIST and
+  /// are admitted only while it still is. INVITED members were added by a
+  /// Super admin and are admitted while ACTIVE.
+  source AdminMemberSource @default(INVITED)
+
+  invitedBy      String?   @db.Uuid
+  invitedAt      DateTime  @default(now())
+  activatedAt    DateTime?
+  lastLoginAt    DateTime?
+  disabledAt     DateTime?
+  disabledBy     String?   @db.Uuid
+  disabledReason String?
+  roleChangedAt  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, role])
+  @@map("admin_members")
+}
+
+enum AdminMemberStatus {
+  INVITED
+  ACTIVE
+  DISABLED
+}
+
+enum AdminMemberSource {
+  BOOTSTRAP
+  INVITED
 }
 
 // ─────────── DEALERS (the tenant) ────────────────────────────────────────

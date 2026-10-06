@@ -3,6 +3,8 @@ import { Router } from 'express';
 import { env } from './config/env.js';
 import type { Container } from './container.js';
 import { createDocsRouter } from './docs/docs.routes.js';
+import { requirePermission } from './middleware/auth.js';
+import { ADMIN_CONSOLE_REFUSAL } from './platform/messages.js';
 import {
   createCustomerAuthRouter,
   createPublicAuthRouter,
@@ -104,6 +106,7 @@ export function createRoutes(container: Container): Router {
 
   const admin = Router();
   admin.use(container.guards.requireAdmin);
+  admin.use(requirePermission('admin:console', ADMIN_CONSOLE_REFUSAL));
   admin.use(createAdminRouter(container.admin));
   admin.use(createModerationRouter(container.moderation));
   admin.use(createVehicleImagesRouter(container.vehicleImages));

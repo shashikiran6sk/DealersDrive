@@ -1,4 +1,6 @@
 import {
+  ADMIN_PERMISSIONS,
+  type AdminPermission,
   SUPPORT_STATUS_LABELS,
   canTransitionSupportTicket,
   istDayStart,
@@ -12,14 +14,9 @@ import {
   type SupportTicketStatus,
   type UpdateSupportTicketInput,
 } from '@dealers-drive/contracts';
-import type { Prisma } from '@prisma/client';
+import type { AdminRole, Prisma } from '@prisma/client';
 
-import {
-  hasGrantedSeat,
-  isAllowlistedAdmin,
-  isSeatSuspended,
-  type AdminPrincipal,
-} from '../auth/auth.facade.js';
+import { isAdmitted, type AdminPrincipal } from '../auth/auth.facade.js';
 import type { Tx } from '../../platform/db/prisma.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
@@ -115,23 +112,35 @@ async function lockTicket(tx: Tx, ticketId: string) {
   });
 }
 
+function rolesHolding(permission: AdminPermission): AdminRole[] {
+  return [...ADMIN_PERMISSIONS[permission]];
+}
+
 export function createAdminSupportService({ prisma, audit }: SupportDeps) {
   async function assignableAdmins(): Promise<Person[]> {
-    const users = await prisma.user.findMany({
-      where: { isPlatformAdmin: true, status: 'ACTIVE', adminRole: { not: null } },
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        roles: { where: { role: 'ADMIN' }, select: { role: true, status: true, grantedBy: true } },
+    const members = await prisma.adminMember.findMany({
+      where: {
+        status: 'ACTIVE',
+        role: { in: rolesHolding('admin:support:manage') },
+        user: { status: 'ACTIVE' },
       },
-      orderBy: { email: 'asc' },
+      select: {
+        source: true,
+        role: true,
+        status: true,
+        user: { select: { id: true, fullName: true, email: true, status: true } },
+      },
+      orderBy: { user: { email: 'asc' } },
     });
-    return users.filter(
-      (user) =>
-        !isSeatSuspended(user.roles, 'ADMIN') &&
-        (isAllowlistedAdmin(user.email) || hasGrantedSeat(user.roles, 'ADMIN')),
-    );
+    return members
+      .filter((member) =>
+        isAdmitted({ email: member.user.email, status: member.user.status, member }),
+      )
+      .map((member) => ({
+        id: member.user.id,
+        fullName: member.user.fullName,
+        email: member.user.email,
+      }));
   }
 
   async function assignees(): Promise<SupportAssignee[]> {

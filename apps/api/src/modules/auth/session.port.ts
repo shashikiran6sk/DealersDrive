@@ -1,6 +1,9 @@
 import {
+  ADMIN_PERMISSIONS as ADMIN_PERMISSION_TABLE,
   DEALER_PERMISSIONS,
+  adminPermissionsFor,
   dealerPermissionsFor,
+  type AdminPermission,
   type DealerPermission,
 } from '@dealers-drive/contracts';
 import type { AdminRole, DealerRole, DealerStatus } from '@prisma/client';
@@ -30,6 +33,7 @@ export interface PendingPrincipal {
 export interface AdminPrincipal {
   kind: 'ADMIN';
   userId: string;
+  memberId?: string;
   email: string;
   adminRole: AdminRole;
   permissions: readonly string[];
@@ -54,31 +58,15 @@ export interface SessionResolver {
 
 export const PERMISSIONS = DEALER_PERMISSIONS;
 
-export const ADMIN_PERMISSIONS = {
-  'admin:dealer:approve': ['MODERATOR', 'SUPER_ADMIN'],
-  'admin:document:review': ['MODERATOR', 'SUPER_ADMIN'],
-  'admin:listing:moderate': ['MODERATOR', 'SUPER_ADMIN'],
-  'admin:media:upload': ['MODERATOR', 'SUPER_ADMIN'],
-  'admin:credit:grant': ['SUPER_ADMIN'],
-  'admin:payment:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
-  'admin:payment:refund': ['SUPER_ADMIN'],
-  'admin:config:write': ['SUPER_ADMIN'],
-  'admin:access:manage': ['SUPER_ADMIN'],
-  'admin:audit:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
-  'admin:metrics:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
-  'admin:enquiry:read': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
-  'admin:support:manage': ['SUPPORT', 'MODERATOR', 'SUPER_ADMIN'],
-} as const satisfies Record<string, readonly AdminRole[]>;
+export const ADMIN_PERMISSIONS = ADMIN_PERMISSION_TABLE;
 
 export type { DealerPermission };
-export type AdminPermission = keyof typeof ADMIN_PERMISSIONS;
+export type { AdminPermission };
 
 export function permissionsForRole(role: DealerRole): string[] {
   return dealerPermissionsFor(role);
 }
 
 export function permissionsForAdminRole(role: AdminRole): string[] {
-  return Object.entries(ADMIN_PERMISSIONS)
-    .filter(([, roles]) => roles.some((candidate) => candidate === role))
-    .map(([permission]) => permission);
+  return adminPermissionsFor(role);
 }

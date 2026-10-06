@@ -45,13 +45,18 @@ describe('the exported surface', () => {
         'assertPhoneVerified',
         'authorizeDealerWrite',
         'ensureSeat',
+        'findMemberByUser',
         'grantSeat',
         'hasGrantedSeat',
+        'isAdmitted',
         'isAllowlistedAdmin',
         'isSeatSuspended',
         'permissionsForAdminRole',
+        'permissionsForMember',
         'permissionsForRole',
+        'revokeAdminSessions',
         'setSeatStatus',
+        'syncLegacyAdminColumns',
       ].sort(),
     );
   });

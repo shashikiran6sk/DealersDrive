@@ -1,4 +1,5 @@
 import {
+  adminHomeFor,
   dealerSlug,
   formatPhone,
   normaliseLocality,
@@ -23,6 +24,7 @@ import {
 import { logger } from '../../platform/telemetry/logger.js';
 import type { DealersService } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
+import { isAdmitted, syncLegacyAdminColumns } from './admin-member.js';
 import {
   ACCOUNT_SUSPENDED,
   DEALERSHIP_SUSPENDED,
@@ -445,48 +447,48 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
     input: { ip?: string | undefined; userAgent?: string | undefined },
   ): Promise<CallbackResult> {
     const email = claims.email.trim().toLowerCase();
+    const allowlisted = isAllowlistedAdmin(email);
 
-    const granted = await prisma.user.findFirst({
-      where: {
-        email,
-        isPlatformAdmin: true,
-        roles: { some: { role: 'ADMIN', status: 'ACTIVE', grantedBy: { not: null } } },
-      },
-      select: { id: true },
+    const identity = await prisma.oAuthIdentity.findUnique({
+      where: { provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject } },
+      include: { user: { include: { adminMember: true } } },
     });
+    const byEmail = identity
+      ? null
+      : await prisma.user.findUnique({ where: { email }, include: { adminMember: true } });
+    const known = identity?.user ?? byEmail;
+    const member = known?.adminMember ?? null;
 
-    if (!isAllowlistedAdmin(email) && !granted) {
-      logger.warn(
-        { event: 'admin.login.failure', reason: 'not-allowlisted' },
-        'admin sign-in refused',
-      );
+    const disabled = member?.status === 'DISABLED';
+    const invited = member?.source === 'INVITED' && !disabled;
+    if (!claims.emailVerified || disabled || (!allowlisted && !invited)) {
+      const reason = !claims.emailVerified
+        ? 'EMAIL_UNVERIFIED'
+        : disabled
+          ? 'MEMBER_DISABLED'
+          : 'NOT_A_MEMBER';
+      logger.warn({ event: 'admin.login.failure', reason }, 'admin sign-in refused');
       await audit.recordDetached({
         actorType: 'SYSTEM',
         action: 'admin.login.failure',
         entityType: 'User',
-        entityId: 'unknown',
-        after: { email, reason: 'NOT_ALLOWLISTED' },
+        entityId: known?.id ?? 'unknown',
+        after: { email, reason },
       });
+      if (reason === 'MEMBER_DISABLED') {
+        throw new ForbiddenError('Your admin access has been withdrawn.', {
+          code: 'ADMIN_ACCESS_REVOKED',
+        });
+      }
       throw new ForbiddenError(
         'That Google account is not authorised for the Dealers-Drive admin console.',
         { code: 'ADMIN_NOT_ALLOWLISTED' },
       );
     }
 
-    const identity = await prisma.oAuthIdentity.findUnique({
-      where: { provider_providerSubject: { provider: 'GOOGLE', providerSubject: claims.subject } },
-      include: { user: { include: { roles: true } } },
-    });
-
-    if (identity && identity.user.status !== 'ACTIVE') {
+    if (known && known.status !== 'ACTIVE') {
       throw new ForbiddenError('This account has been suspended. Contact support.', {
         code: 'ACCOUNT_SUSPENDED',
-      });
-    }
-
-    if (identity && isSeatSuspended(identity.user.roles, 'ADMIN')) {
-      throw new ForbiddenError('Your admin access has been withdrawn.', {
-        code: 'ADMIN_ACCESS_REVOKED',
       });
     }
 
@@ -494,17 +496,14 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
     const admin = await withTransaction(prisma, async (tx) => {
       const user =
-        identity?.user ??
-        (await tx.user.findUnique({ where: { email } })) ??
+        known ??
         (await tx.user.create({
           data: { email, emailVerifiedAt: now, fullName: claims.name ?? null },
         }));
 
-      const updated = await tx.user.update({
+      await tx.user.update({
         where: { id: user.id },
         data: {
-          isPlatformAdmin: true,
-          adminRole: user.adminRole ?? 'SUPER_ADMIN',
           emailVerifiedAt: user.emailVerifiedAt ?? now,
           fullName: user.fullName ?? claims.name ?? null,
           lastLoginAt: now,
@@ -525,7 +524,7 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       } else {
         await tx.oAuthIdentity.create({
           data: {
-            userId: updated.id,
+            userId: user.id,
             provider: 'GOOGLE',
             providerSubject: claims.subject,
             email: claims.email,
@@ -537,25 +536,78 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
         });
       }
 
-      await ensureSeat(tx, { userId: updated.id, role: 'ADMIN' });
+      const current = await tx.adminMember.findUnique({ where: { userId: user.id } });
+      const bootstrap = allowlisted && (!current || current.source === 'BOOTSTRAP');
+      const activating =
+        current?.status === 'INVITED' || (bootstrap && current?.status !== 'ACTIVE');
 
-      return updated;
+      const saved = current
+        ? await tx.adminMember.update({
+            where: { id: current.id },
+            data: {
+              ...(bootstrap ? { role: 'SUPER_ADMIN', status: 'ACTIVE' } : {}),
+              ...(activating ? { status: 'ACTIVE', activatedAt: now } : {}),
+              lastLoginAt: now,
+            },
+          })
+        : await tx.adminMember.create({
+            data: {
+              userId: user.id,
+              role: 'SUPER_ADMIN',
+              status: 'ACTIVE',
+              source: 'BOOTSTRAP',
+              activatedAt: now,
+              lastLoginAt: now,
+            },
+          });
+
+      await syncLegacyAdminColumns(tx, {
+        userId: user.id,
+        role: saved.role,
+        status: saved.status,
+        grantedBy: saved.invitedBy,
+      });
+
+      if (activating) {
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: user.id,
+          action: 'admin_member.activated',
+          entityType: 'AdminMember',
+          entityId: saved.id,
+          before: { status: current?.status ?? null },
+          after: { status: 'ACTIVE', role: saved.role, via: 'FIRST_SIGN_IN' },
+        });
+      }
+
+      return { user, member: saved };
     });
 
+    if (!isAdmitted({ email, status: 'ACTIVE', member: admin.member })) {
+      throw new ForbiddenError(
+        'That Google account is not authorised for the Dealers-Drive admin console.',
+        { code: 'ADMIN_NOT_ALLOWLISTED' },
+      );
+    }
+
     const session = await sessions.issue({
-      userId: admin.id,
+      userId: admin.user.id,
       scope: 'ADMIN',
       ip: input.ip,
       userAgent: input.userAgent,
     });
 
-    logger.info({ event: 'admin.login.success', userId: admin.id }, 'admin signed in');
+    logger.info(
+      { event: 'admin.login.success', userId: admin.user.id, adminMemberId: admin.member.id },
+      'admin signed in',
+    );
     await audit.recordDetached({
       actorType: 'ADMIN',
-      actorId: admin.id,
+      actorId: admin.user.id,
       action: 'admin.login.success',
       entityType: 'User',
-      entityId: admin.id,
+      entityId: admin.user.id,
+      after: { adminMemberId: admin.member.id, role: admin.member.role },
     });
 
     return {
@@ -563,7 +615,10 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
       expiresAt: session.expiresAt,
       audience: 'ADMIN',
       next: 'DASHBOARD',
-      returnTo: transaction.returnTo,
+      returnTo:
+        transaction.returnTo === DEFAULT_RETURN_TO.ADMIN
+          ? adminHomeFor(admin.member.role)
+          : transaction.returnTo,
     };
   }
 

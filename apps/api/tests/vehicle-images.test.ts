@@ -436,7 +436,10 @@ describe('who may upload', () => {
   it('refuses an admin without the upload permission', async () => {
     const { listingId } = await submitted();
     const email = env.adminAllowlist[0] ?? '';
-    await h.prisma.user.updateMany({ where: { email }, data: { adminRole: 'SUPPORT' } });
+    await h.prisma.adminMember.updateMany({
+      where: { user: { email } },
+      data: { role: 'SUPPORT' },
+    });
     try {
       const refused = await admin
         .post(`/v1/admin/listings/${listingId}/images/presign`)
@@ -444,7 +447,10 @@ describe('who may upload', () => {
         .expect(403);
       expect(refused.body.detail).toContain('admin:media:upload');
     } finally {
-      await h.prisma.user.updateMany({ where: { email }, data: { adminRole: 'SUPER_ADMIN' } });
+      await h.prisma.adminMember.updateMany({
+        where: { user: { email } },
+        data: { role: 'SUPER_ADMIN' },
+      });
     }
   });
 

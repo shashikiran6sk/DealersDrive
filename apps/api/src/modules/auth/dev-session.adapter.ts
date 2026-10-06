@@ -53,21 +53,19 @@ export function createDevSessionResolver(prisma: PrismaClient): SessionResolver 
       if (!email) return null;
 
       const user = await prisma.user.findFirst({
-        where: {
-          email,
-          isPlatformAdmin: true,
-          roles: { none: { role: 'ADMIN', status: 'SUSPENDED' } },
-        },
+        where: { email, adminMember: { status: 'ACTIVE' } },
+        include: { adminMember: true },
       });
 
-      if (!user?.adminRole) return null;
+      if (!user?.adminMember) return null;
 
       return {
         kind: 'ADMIN',
         userId: user.id,
+        memberId: user.adminMember.id,
         email: user.email ?? email,
-        adminRole: user.adminRole,
-        permissions: permissionsForAdminRole(user.adminRole),
+        adminRole: user.adminMember.role,
+        permissions: permissionsForAdminRole(user.adminMember.role),
       };
     },
   };

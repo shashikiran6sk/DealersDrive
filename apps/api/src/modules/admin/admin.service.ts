@@ -53,9 +53,10 @@ import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
 import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import {
-  grantSeat,
   isAllowlistedAdmin,
+  revokeAdminSessions,
   setSeatStatus,
+  syncLegacyAdminColumns,
   type AdminPrincipal,
 } from '../auth/auth.facade.js';
 import { documentKey, type DealersService } from '../dealers/dealers.facade.js';
@@ -1152,20 +1153,13 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     async adminAccess(admin: AdminPrincipal): Promise<AdminAccessResponse> {
       assertPermission(admin, 'admin:access:manage');
 
-      const users = await prisma.user.findMany({
-        where: {
-          OR: [{ isPlatformAdmin: true }, { roles: { some: { role: 'ADMIN' } } }],
-        },
-        include: { roles: { where: { role: 'ADMIN' } } },
-        orderBy: { email: 'asc' },
+      const members = await prisma.adminMember.findMany({
+        where: { status: { not: 'DISABLED' } },
+        include: { user: { select: { email: true, fullName: true, lastLoginAt: true } } },
       });
 
       const granterIds = [
-        ...new Set(
-          users
-            .map((user) => user.roles[0]?.grantedBy)
-            .filter((id): id is string => typeof id === 'string'),
-        ),
+        ...new Set(members.map((m) => m.invitedBy).filter((id): id is string => id !== null)),
       ];
       const granters = granterIds.length
         ? await prisma.user.findMany({
@@ -1178,30 +1172,26 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       const seen = new Set<string>();
       const data: AdminAccessEntry[] = [];
 
-      for (const user of users) {
-        const email = (user.email ?? '').toLowerCase();
-        const seat = user.roles[0];
-        const allowlisted = isAllowlistedAdmin(user.email);
-        const granted = seat?.status === 'ACTIVE' && seat.grantedBy !== null;
-
-        if (!allowlisted && !granted) continue;
-
+      for (const member of members) {
+        const email = (member.user.email ?? '').toLowerCase();
+        const allowlisted = isAllowlistedAdmin(member.user.email);
+        if (member.source === 'BOOTSTRAP' && !allowlisted) continue;
         if (email) seen.add(email);
 
         data.push({
-          userId: user.id,
-          email: user.email ?? '',
-          fullName: user.fullName,
-          adminRole: user.adminRole ?? 'SUPPORT',
+          userId: member.userId,
+          email: member.user.email ?? '',
+          fullName: member.user.fullName,
+          adminRole: member.role,
           source: allowlisted ? 'ALLOWLIST' : 'GRANT',
           sourceLabel: allowlisted ? 'Allow-listed' : 'Granted',
-          grantedByEmail: seat?.grantedBy ? (granterEmail.get(seat.grantedBy) ?? null) : null,
-          grantedAt: granted && seat ? seat.grantedAt.toISOString() : null,
-          lastLoginLabel: user.lastLoginAt ? timeAgo(user.lastLoginAt) : 'Never',
-          canRevoke: !allowlisted && granted && user.id !== admin.userId,
+          grantedByEmail: member.invitedBy ? (granterEmail.get(member.invitedBy) ?? null) : null,
+          grantedAt: member.source === 'INVITED' ? member.invitedAt.toISOString() : null,
+          lastLoginLabel: member.lastLoginAt ? timeAgo(member.lastLoginAt) : 'Never',
+          canRevoke: !allowlisted && member.userId !== admin.userId,
           revokeBlockedReason: allowlisted
             ? 'Set in ADMIN_ALLOWLIST'
-            : user.id === admin.userId
+            : member.userId === admin.userId
               ? 'This is you'
               : null,
         });
@@ -1236,31 +1226,56 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       assertPermission(admin, 'admin:access:manage');
 
       const email = input.email;
+      const now = new Date();
 
       return withTransaction(prisma, async (tx) => {
-        const existing = await tx.user.findUnique({ where: { email } });
-        const user = existing
-          ? await tx.user.update({
+        const user =
+          (await tx.user.findUnique({ where: { email } })) ??
+          (await tx.user.create({ data: { email } }));
+
+        const existing = await tx.adminMember.findUnique({ where: { userId: user.id } });
+        const status = existing?.activatedAt ? 'ACTIVE' : 'INVITED';
+        const member = existing
+          ? await tx.adminMember.update({
               where: { id: existing.id },
-              data: { isPlatformAdmin: true, adminRole: input.adminRole },
+              data: {
+                role: input.adminRole,
+                status,
+                source: 'INVITED',
+                invitedBy: admin.userId,
+                invitedAt: now,
+                disabledAt: null,
+                disabledBy: null,
+                disabledReason: null,
+                ...(existing.role === input.adminRole ? {} : { roleChangedAt: now }),
+              },
             })
-          : await tx.user.create({
-              data: { email, isPlatformAdmin: true, adminRole: input.adminRole },
+          : await tx.adminMember.create({
+              data: {
+                userId: user.id,
+                role: input.adminRole,
+                status,
+                source: 'INVITED',
+                invitedBy: admin.userId,
+                invitedAt: now,
+              },
             });
 
-        const seat = await grantSeat(tx, {
+        await syncLegacyAdminColumns(tx, {
           userId: user.id,
-          role: 'ADMIN',
+          role: member.role,
+          status: member.status,
           grantedBy: admin.userId,
         });
 
         await audit.record(tx, {
           actorType: 'ADMIN',
           actorId: admin.userId,
-          action: 'admin.access.granted',
-          entityType: 'User',
-          entityId: user.id,
-          after: { email, adminRole: input.adminRole },
+          action: existing ? 'admin_member.role_changed' : 'admin_member.invited',
+          entityType: 'AdminMember',
+          entityId: member.id,
+          before: existing ? { role: existing.role, status: existing.status } : null,
+          after: { email, role: member.role, status: member.status },
         });
 
         return {
@@ -1271,8 +1286,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           source: 'GRANT' as const,
           sourceLabel: 'Granted',
           grantedByEmail: admin.email,
-          grantedAt: seat.grantedAt.toISOString(),
-          lastLoginLabel: user.lastLoginAt ? timeAgo(user.lastLoginAt) : 'Never',
+          grantedAt: member.invitedAt.toISOString(),
+          lastLoginLabel: member.lastLoginAt ? timeAgo(member.lastLoginAt) : 'Never',
           canRevoke: user.id !== admin.userId,
           revokeBlockedReason: user.id === admin.userId ? 'This is you' : null,
         };
@@ -1290,7 +1305,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        include: { roles: { where: { role: 'ADMIN' } } },
+        include: { adminMember: true },
       });
       if (!user) throw new NotFoundError('That operator does not exist.');
 
@@ -1301,29 +1316,32 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         );
       }
 
-      const seat = user.roles[0];
-      if (!seat || seat.grantedBy === null) {
+      const member = user.adminMember;
+      if (!member || member.source !== 'INVITED' || member.status === 'DISABLED') {
         throw new NotFoundError('That operator does not hold a granted seat.');
       }
 
       await withTransaction(prisma, async (tx) => {
-        await tx.userRole.delete({ where: { id: seat.id } });
-        await tx.user.update({
-          where: { id: user.id },
-          data: { isPlatformAdmin: false, adminRole: null },
+        await tx.adminMember.update({
+          where: { id: member.id },
+          data: { status: 'DISABLED', disabledAt: new Date(), disabledBy: admin.userId },
         });
-        await tx.session.updateMany({
-          where: { userId: user.id, scope: 'ADMIN', revokedAt: null },
-          data: { revokedAt: new Date() },
+        await syncLegacyAdminColumns(tx, {
+          userId: user.id,
+          role: member.role,
+          status: 'DISABLED',
+          grantedBy: null,
         });
+        const sessionsRevoked = await revokeAdminSessions(tx, user.id);
 
         await audit.record(tx, {
           actorType: 'ADMIN',
           actorId: admin.userId,
-          action: 'admin.access.revoked',
-          entityType: 'User',
-          entityId: user.id,
-          before: { email: user.email, adminRole: user.adminRole },
+          action: 'admin_member.disabled',
+          entityType: 'AdminMember',
+          entityId: member.id,
+          before: { email: user.email, role: member.role, status: member.status },
+          after: { status: 'DISABLED', sessionsRevoked },
         });
       });
     },
