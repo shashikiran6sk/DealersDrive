@@ -1,5 +1,5 @@
 import type { ProblemDetails } from '@dealers-drive/contracts';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { z, type ZodError, type ZodType } from 'zod';
 
 import { serverConfig } from './config';
@@ -58,6 +58,10 @@ export const API_TIMEOUT_MS = 8_000;
 export const API_SLOW_MS = 1_000;
 
 const REQUEST_ID_HEADER = 'x-request-id';
+
+export const CLIENT_IP_HEADER = 'x-dd-client-ip';
+
+export const CLIENT_IP_SECRET_HEADER = 'x-dd-forward-secret';
 
 const LOOSE_PROBLEM = z
   .object({
@@ -196,6 +200,7 @@ async function request<T>(
     if (session) {
       init.headers = { ...init.headers, Cookie: `${SESSION_COOKIE}=${session}` };
     }
+    init.headers = { ...init.headers, ...(await clientIpHeaders()) };
   } else if (bypassCache) {
     init.cache = 'no-store';
   } else if (typeof options.revalidate === 'number') {
@@ -265,6 +270,23 @@ async function sessionCookie(): Promise<string | undefined> {
     return (await cookies()).get(SESSION_COOKIE)?.value;
   } catch {
     return undefined;
+  }
+}
+
+function firstValue(value: string | null | undefined): string | undefined {
+  const trimmed = value?.split(',')[0]?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+async function clientIpHeaders(): Promise<Record<string, string>> {
+  const secret = process.env.CLIENT_IP_FORWARD_SECRET;
+  if (!secret) return {};
+  try {
+    const incoming = await headers();
+    const ip = firstValue(incoming.get('x-real-ip')) ?? firstValue(incoming.get('x-forwarded-for'));
+    return ip ? { [CLIENT_IP_HEADER]: ip, [CLIENT_IP_SECRET_HEADER]: secret } : {};
+  } catch {
+    return {};
   }
 }
 

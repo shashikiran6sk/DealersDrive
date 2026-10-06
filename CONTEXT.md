@@ -415,12 +415,21 @@ value at build time and break the Docker path, which sets `GIT_SHA` on the
 runtime image rather than during `next build`. The deploy workflow passes it
 with `vercel deploy --env GIT_SHA=…`.
 
-**Per-IP rate limiting is currently wrong, and known to be.** Every API request
-now originates from Vercel's egress, so the reveal-contact and enquiry limiters
-would count the entire internet as one bucket. `apps/web/src/lib/api.ts` has a
-`headers` option reserved for forwarding the buyer's IP and nothing uses it
-yet. **This must land before F088–F092**, and `app.set('trust proxy', 1)` in
-`apps/api/src/server.ts` needs revisiting for the extra hop.
+**Per-IP rate limits count the visitor, not Vercel (R107).** Every API call
+from the web leaves Vercel's egress, so the limiters would otherwise count the
+entire internet as one bucket. `apps/web/src/lib/api.ts` forwards the visitor's
+address (`x-dd-client-ip`) with a shared secret (`x-dd-forward-secret`) on every
+uncached call, and `apps/api/src/middleware/trusted-client-ip.ts` sets `req.ip`
+from it only when the secret matches. **`CLIENT_IP_FORWARD_SECRET` must be set,
+to the same value of at least 32 characters, on the Vercel project and on the
+API** — while either side lacks it nothing is forwarded or believed, which is
+the old one-bucket behaviour, not an outage. `trust proxy 1` stays right: there
+is one proxy (the reverse proxy on the instance) between the API and whoever
+called it, and for a web-tier call that caller is Vercel. Cached public reads
+are still counted against Vercel's address — they are fetched once for
+everyone, and a per-visitor header would split Next's data cache. The secret is
+read at request time only, so it is set on Vercel as a runtime variable and is
+deliberately absent from `apps/web/turbo.json` (R106).
 
 **The functions run in `bom1`, beside the API (R105).** The API and RDS are in
 ap-south-1. Vercel's default function region is `iad1`, which puts every server

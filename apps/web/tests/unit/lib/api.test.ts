@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
-import { cookieJar } from '../../setup.js';
+import { cookieJar, requestHeaders } from '../../setup.js';
 import { PublicLocations } from '@dealers-drive/contracts';
 
 import {
@@ -641,6 +641,77 @@ describe('forwarding the session', () => {
     await apiGet('/v1/dealer', { revalidate: false });
 
     expect((calls[0]?.init.headers as Record<string, string>).Cookie).toBeUndefined();
+  });
+});
+
+/**
+ * R107 — the visitor's address, for the API's per-IP limits.
+ *
+ * Every API call leaves from the web tier, so without this the reveal, enquiry
+ * and sign-in limiters would count the whole internet as one visitor. The
+ * address travels with the shared secret, which is how the API knows the claim
+ * came from the web tier and not from someone on the internet. It is sent
+ * exactly where the session is: never on a cached read, because Next keys its
+ * data cache on request headers and a per-visitor header would split the
+ * cache into one entry per visitor.
+ */
+describe('forwarding the visitor address', () => {
+  const SECRET = 'a-shared-secret-of-at-least-thirty-two-chars';
+  const sent = (index = 0) => calls[index]?.init.headers as Record<string, string>;
+
+  beforeEach(() => {
+    vi.stubEnv('CLIENT_IP_FORWARD_SECRET', SECRET);
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('sends the address and the secret on a mutation', async () => {
+    requestHeaders.set('x-real-ip', '203.0.113.42');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiSend('POST', '/v1/enquiries', { listingSlug: 'a-car' });
+
+    expect(sent()['x-dd-client-ip']).toBe('203.0.113.42');
+    expect(sent()['x-dd-forward-secret']).toBe(SECRET);
+  });
+
+  it('falls back to the first x-forwarded-for entry', async () => {
+    requestHeaders.set('x-forwarded-for', '203.0.113.7, 10.0.0.2');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiGet('/v1/dealer', { revalidate: false });
+
+    expect(sent()['x-dd-client-ip']).toBe('203.0.113.7');
+  });
+
+  it('never sends either on a cached read', async () => {
+    requestHeaders.set('x-real-ip', '203.0.113.42');
+    globalThis.fetch = respondWith({ data: [] }) as unknown as typeof fetch;
+
+    await apiGet('/v1/vehicles', { revalidate: 60 });
+
+    expect(sent()['x-dd-client-ip']).toBeUndefined();
+    expect(sent()['x-dd-forward-secret']).toBeUndefined();
+  });
+
+  it('sends neither when the web tier has no secret', async () => {
+    vi.stubEnv('CLIENT_IP_FORWARD_SECRET', '');
+    requestHeaders.set('x-real-ip', '203.0.113.42');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiSend('POST', '/v1/enquiries', {});
+
+    expect(sent()['x-dd-client-ip']).toBeUndefined();
+    expect(sent()['x-dd-forward-secret']).toBeUndefined();
+  });
+
+  it('does not send the secret alone when the visitor address is unknown', async () => {
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiSend('POST', '/v1/enquiries', {});
+
+    expect(sent()['x-dd-forward-secret']).toBeUndefined();
   });
 });
 
