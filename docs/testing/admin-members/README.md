@@ -6,3 +6,4 @@ at most one concise screenshot; everything detailed lives here.
 | Folder | PR |
 | --- | --- |
 | `pr1-identity-linking/` | [#269](https://github.com/shashikiran6sk/DealersDrive/pull/269) — customer ↔ dealer identity linking |
+| `pr2-rbac/` | [#270](https://github.com/shashikiran6sk/DealersDrive/pull/270) — Admin Members & least-privilege RBAC |

@@ -1,0 +1,15 @@
+ ✓ |integration| tests/admin-member-rbac.test.ts > the bootstrap Super admin > is an ACTIVE BOOTSTRAP member, admitted by the allow-list 42ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > the bootstrap Super admin > is refused once the address is no longer on the allow-list 38ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > a Sales Representative > is activated by their first sign-in, and that is audited 3ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > a Sales Representative > is refused every admin console route, by API, with a 403 237ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > a Sales Representative > cannot approve, reject, suspend or reinstate a dealership, or touch configuration 44ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > a Sales Representative > cannot read a dealership’s private documents through the console 6ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > a Sales Representative > is not offered as a support assignee 18ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > a Sales Representative > gains the console on the very next request when re-roled, without signing in again 63ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > disabling a member > ends their console session at once, and refuses their next sign-in 73ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > disabling a member > can be undone by inviting the address again 83ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > who Google cannot make an operator > refuses an address that is neither allow-listed nor invited 10ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > who Google cannot make an operator > refuses an invited address whose Google email is not verified 24ms
+ ✓ |integration| tests/admin-member-rbac.test.ts > who Google cannot make an operator > does not let a dealer session into either console 35ms
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
