@@ -1,0 +1,11 @@
+ ✓ |integration| tests/sales-assisted-listings.test.ts > drafts > can be prepared before the dealership is approved, attributed to the member 189ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > drafts > cannot be submitted until the dealership is approved 111ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > drafts > refuses an incomplete vehicle, and a duplicate registration 75ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > drafts > refuses a dealerId, a status or unknown fields in the body 83ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > scope > hides another representative’s dealership and drafts behind a 404 103ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > scope > never shows the dealer’s own inventory to Sales 65ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > scope > keeps console roles out, and stops new drafts for a suspended dealership 56ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > review > enters the ordinary queue as a Sales submission, with the reviewer told who 289ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > review > lets the representative fix and resubmit after changes are requested 159ms
+ ✓ |integration| tests/sales-assisted-listings.test.ts > review > refuses every decision to the member who prepared it, even after a re-role 295ms
+      Tests  10 passed (10)
