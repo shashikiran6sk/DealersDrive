@@ -2,6 +2,7 @@ import type { AdminListingsResponse } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
 import { Input } from '@/components/ui/input';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { Table, type TableColumn } from '@/components/ui/table';
 import { qs } from '@/lib/api';
@@ -68,9 +69,9 @@ export function ModerationQueue({ listings, q }: { listings: AdminListingsRespon
         {q ? (
           <Link
             href={href({ status: status === 'PENDING_REVIEW' ? undefined : status })}
-            className="btn btn-ghost text-[12px]"
+            className="relative btn btn-ghost text-[12px]"
           >
-            {MODERATION_TEXT.clear}
+            <LinkPendingLabel>{MODERATION_TEXT.clear}</LinkPendingLabel>
           </Link>
         ) : null}
       </form>
@@ -99,9 +100,9 @@ export function ModerationQueue({ listings, q }: { listings: AdminListingsRespon
             q,
             cursor: listings.page.nextCursor,
           })}
-          className="btn btn-secondary self-center"
+          className="relative btn btn-secondary self-center"
         >
-          {MODERATION_TEXT.more}
+          <LinkPendingLabel>{MODERATION_TEXT.more}</LinkPendingLabel>
         </Link>
       ) : null}
     </div>

@@ -1,3 +1,3 @@
 import { lifecycleRoute } from './lifecycle.js';
 
-export const postVehicleReserve = lifecycleRoute('reserve', 'reserve');
+export const postVehicleReserve = lifecycleRoute('reserve', 'reserve', 'listing:reserve');

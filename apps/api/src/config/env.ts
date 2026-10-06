@@ -50,6 +50,10 @@ const envSchema = z.object({
 
   DB_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
   DB_TRANSACTION_MAX_WAIT_MS: z.coerce.number().int().positive().default(10_000),
+  DB_POOL_MAX: z.coerce.number().int().positive().default(10),
+  DB_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(5_000),
+  DB_STATEMENT_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+  DB_IDLE_IN_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
 
   AUTH_MODE: z.enum(['cookie', 'dev']).default('cookie'),
 
@@ -110,6 +114,8 @@ const envSchema = z.object({
     .default('true')
     .transform((value) => value === 'true'),
 
+  CLIENT_IP_FORWARD_SECRET: optional(z.string().min(32)),
+
   CACHE_DRIVER: z.enum(['memory', 'postgres']).default(isProduction ? 'postgres' : 'memory'),
 
   CONFIG_VERSION_POLL_MS: z.coerce.number().int().positive().default(10_000),
@@ -128,6 +134,39 @@ const envSchema = z.object({
 });
 
 const LOCAL_SESSION_SECRET = 'dealers-drive-local-session-secret';
+
+const NON_PUBLIC_IPV4 = [
+  /^0\./,
+  /^10\./,
+  /^127\./,
+  /^169\.254\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./,
+];
+
+function isPublicHost(hostname: string): boolean {
+  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  if (host.includes(':')) {
+    return !(host === '::' || host === '::1' || /^f[cd]/.test(host) || /^fe[89ab]/.test(host));
+  }
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    return !NON_PUBLIC_IPV4.some((range) => range.test(host));
+  }
+  if (!host.includes('.')) return false;
+  return !['localhost', 'local', 'internal'].some(
+    (suffix) => host === suffix || host.endsWith(`.${suffix}`),
+  );
+}
+
+function isPublicHttpsUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'https:' && isPublicHost(url.hostname);
+  } catch {
+    return false;
+  }
+}
 
 const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
   const require = (path: string, message: string) => {
@@ -224,8 +263,12 @@ const checkedEnvSchema = envSchema.superRefine((value, ctx) => {
     }
   }
 
-  if (value.STORAGE_DRIVER === 'local') {
-    require('STORAGE_DRIVER', 'must be `r2` in production — container filesystems are not durable.');
+  if (value.STORAGE_DRIVER !== 'r2') {
+    require('STORAGE_DRIVER', 'must be `r2` in production — `local` and `minio` are development adapters.');
+  }
+
+  if (value.STORAGE_DRIVER === 'r2' && !isPublicHttpsUrl(value.S3_ENDPOINT)) {
+    require('S3_ENDPOINT', 'must be the public HTTPS endpoint of the R2 account in production — the default is a local MinIO address.');
   }
 
   if (value.CACHE_DRIVER === 'memory') {
@@ -257,8 +300,10 @@ function loadEnv(): Env {
       .map((issue) => `  - ${issue.path.join('.') || '(root)'}: ${issue.message}`)
       .join('\n');
 
-    console.error(`\nInvalid environment configuration:\n${details}\n`);
-    console.error('Copy .env.example to .env at the repo root and fill in the missing values.\n');
+    process.stderr.write(
+      `\nInvalid environment configuration:\n${details}\n\n` +
+        'Copy .env.example to .env at the repo root and fill in the missing values.\n\n',
+    );
     process.exit(1);
   }
 

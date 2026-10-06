@@ -3,6 +3,7 @@ import { EventEmitter } from 'node:events';
 import type { NextFunction, Request, Response } from 'express';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { runWithContext } from '../../../src/middleware/request-context.js';
 import { requestLogger } from '../../../src/middleware/request-logger.js';
 import { logger } from '../../../src/platform/telemetry/logger.js';
 
@@ -101,6 +102,20 @@ describe('requestLogger', () => {
     const { durationMs } = info.mock.calls[0]?.[0] as { durationMs: number };
     expect(durationMs).toBeGreaterThanOrEqual(0);
     expect(Number(durationMs.toFixed(2))).toBe(durationMs);
+  });
+
+  it('carries the database time and operation count the request spent', () => {
+    const res = fakeRes();
+    const context = { traceId: 't-1', ip: '127.0.0.1', dbDurationSeconds: 0, dbOperationCount: 0 };
+
+    runWithContext(context, () => {
+      requestLogger(fakeReq(), res, vi.fn());
+    });
+    context.dbDurationSeconds = 0.123456;
+    context.dbOperationCount = 3;
+    res.emit('finish');
+
+    expect(info.mock.calls[0]?.[0]).toMatchObject({ dbMs: 123.46, dbOps: 3 });
   });
 
   /** Probes fire every few seconds; at info they would drown the dev log. */

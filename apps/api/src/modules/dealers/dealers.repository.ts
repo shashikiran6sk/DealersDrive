@@ -1,5 +1,5 @@
 import { initialsOf, slugify } from '@dealers-drive/contracts';
-import type { ListingStatus, Prisma, PrismaClient } from '@prisma/client';
+import type { DealerStatus, ListingStatus, Prisma, PrismaClient } from '@prisma/client';
 
 import type { Tx } from '../../platform/db/prisma.js';
 
@@ -17,8 +17,8 @@ function placeSlug(value: string | null): string | null {
 
 export function createDealersRepository(prisma: PrismaClient) {
   return {
-    async findById(dealerId: string): Promise<DealerWithRelations | null> {
-      return prisma.dealer.findUnique({ where: { id: dealerId }, include: dealerInclude });
+    async findById(dealerId: string, tx?: Tx): Promise<DealerWithRelations | null> {
+      return (tx ?? prisma).dealer.findUnique({ where: { id: dealerId }, include: dealerInclude });
     },
 
     async findBySlug(slug: string): Promise<DealerWithRelations | null> {
@@ -74,30 +74,40 @@ export function createDealersRepository(prisma: PrismaClient) {
       });
     },
 
-    async documents(dealerId: string) {
-      return prisma.dealerDocument.findMany({
+    async documents(dealerId: string, tx?: Tx) {
+      return (tx ?? prisma).dealerDocument.findMany({
         where: { dealerId },
         orderBy: { type: 'asc' },
       });
     },
 
-    async documentById(documentId: string) {
-      return prisma.dealerDocument.findUnique({ where: { id: documentId } });
+    async lockStatus(dealerId: string, tx: Tx): Promise<DealerStatus | null> {
+      const rows = await tx.$queryRaw<{ status: DealerStatus }[]>`
+        SELECT "status" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
+      return rows[0]?.status ?? null;
+    },
+
+    async documentById(documentId: string, tx?: Tx) {
+      return (tx ?? prisma).dealerDocument.findUnique({ where: { id: documentId } });
     },
 
     async documentByType(
       dealerId: string,
       type: Prisma.DealerDocumentUncheckedCreateInput['type'],
+      tx?: Tx,
     ) {
-      return prisma.dealerDocument.findUnique({ where: { dealerId_type: { dealerId, type } } });
+      return (tx ?? prisma).dealerDocument.findUnique({
+        where: { dealerId_type: { dealerId, type } },
+      });
     },
 
     async upsertDocument(
       dealerId: string,
       type: Prisma.DealerDocumentUncheckedCreateInput['type'],
       data: Omit<Prisma.DealerDocumentUncheckedUpdateInput, 'dealerId' | 'type'>,
+      tx?: Tx,
     ) {
-      return prisma.dealerDocument.upsert({
+      return (tx ?? prisma).dealerDocument.upsert({
         where: { dealerId_type: { dealerId, type } },
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Prisma types a Json column as JsonValue
         create: { ...(data as Prisma.DealerDocumentUncheckedCreateInput), dealerId, type },
@@ -108,8 +118,9 @@ export function createDealersRepository(prisma: PrismaClient) {
     async deleteDocument(
       dealerId: string,
       type: Prisma.DealerDocumentUncheckedCreateInput['type'],
+      tx?: Tx,
     ) {
-      const result = await prisma.dealerDocument.updateMany({
+      const result = await (tx ?? prisma).dealerDocument.updateMany({
         where: { dealerId, type },
         data: { status: 'REQUIRED', mediaId: null, fileName: null, rejectionReason: null },
       });
@@ -173,8 +184,8 @@ export function createDealersRepository(prisma: PrismaClient) {
       return new Set(rows.map((row) => row.id));
     },
 
-    async markMediaReady(mediaId: string) {
-      return prisma.media.update({ where: { id: mediaId }, data: { status: 'READY' } });
+    async markMediaReady(mediaId: string, tx?: Tx) {
+      return (tx ?? prisma).media.update({ where: { id: mediaId }, data: { status: 'READY' } });
     },
 
     async orphanMedia(mediaId: string) {

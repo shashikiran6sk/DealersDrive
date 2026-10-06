@@ -20,7 +20,22 @@ local — the filesystem. No container needed; what the test suite uses.
 minio — S3-compatible, on localhost:9000.
 r2 — S3-compatible, at Cloudflare. Production.
 
+The validated environment requires `r2` under NODE_ENV production before API
+or worker startup. `local` and `minio` remain available to development and test
+runtimes; the factory and shared S3 adapter do not change with this boot rule.
+
 ## `apps/api/src/platform/storage/local.adapter.ts`
+
+### `export function sniffContentType(body: Buffer): string | null`
+
+BUG-NEW-008. `contentTypeOf` reads the key's extension, and a KYC key has
+none — `dealers/<slug>/documents/<type>/<id>` — so every signed read of a PDF
+on the local driver answered `image/jpeg` and the browser would not render
+the document a moderator had opened. The private-read stand-in now asks the
+bytes first (PDF, PNG, JPEG and WebP by their magic numbers) and falls back
+to the extension only for bytes it does not recognise. It reads only what is
+already in memory, and only on the local driver; an S3 presigned read carries
+the content type the upload was signed with.
 
 ### `export interface LocalStorageSignature`
 
@@ -158,3 +173,9 @@ Public delivery URL. Never called for KYC documents — they have no route.
 
 Short-lived signed read. The only way a KYC document is ever served, and
 every issue of one is audit-logged (§26.6).
+
+## `apps/api/src/platform/storage/cleanup.ts`
+
+Destructive application rejection commits a StorageObjectsDelete event containing the precise object keys in the same transaction as the purge and its audit. The container always registers the required cleanup subscriber, including in the separate worker process. The HTTP request attempts deletions only after commit and reports successful deletions in objectsDeleted; the persisted event handles crashes and transient provider failures. Repeated deletion is safe for local storage and S3. No email address or applicant identity is added to the rejection event.
+
+Cleanup uses the existing outbox retry policy: failures leave publishedAt null and increment attempts; after ten failed deliveries the row remains parked for investigation and replay after recovery. The audit records objectsDeleteRequested rather than claiming an uncommitted provider result. Previously published audit records are unchanged.

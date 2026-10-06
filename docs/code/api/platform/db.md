@@ -11,6 +11,26 @@ declaration the note sat above.
 
 The one PrismaClient for the process.
 
+**Bounded, so nothing waits forever (R98).** The pool used to be built from the
+connection string alone, which leaves `pg`'s defaults: acquiring a connection
+waits indefinitely, a statement may run indefinitely, and a transaction left
+open holds its locks indefinitely. The production recording showed requests
+pending for 25 and 43 seconds — chains of the web tier's 8-second timeouts — and
+nothing on this side would ever have given up. Four bounds, each an env var:
+
+| Variable                            | Default | Bounds                                              |
+| ----------------------------------- | ------- | --------------------------------------------------- |
+| `DB_POOL_MAX`                       | 10      | connections per process (pg's own default)          |
+| `DB_CONNECT_TIMEOUT_MS`             | 5000    | waiting for a pooled connection or a new one        |
+| `DB_STATEMENT_TIMEOUT_MS`           | 15000   | any one statement, lock waits included              |
+| `DB_IDLE_IN_TRANSACTION_TIMEOUT_MS` | 30000   | a transaction left open and idle, holding its locks |
+
+`keepAlive` is on, so a connection silently dropped by a NAT or a failover is
+noticed rather than hung on. A request that hits a bound fails fast with a 5xx
+and a log line carrying its `traceId`, instead of looking like a frozen page.
+The interactive transaction's own `timeout` (20s) and `maxWait` (10s) are
+unchanged. Seeds build their own client and are not bounded.
+
 Rule 2 (ARCHITECTURE §5.5): only `*.repository.ts` imports this module.
 `grep -rn "platform/db/prisma" src/modules | grep -v repository` should
 return nothing, and ESLint enforces it.

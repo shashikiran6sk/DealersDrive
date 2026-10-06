@@ -1,4 +1,4 @@
-import type { Listing, ListingStatus, PrismaClient } from '@prisma/client';
+import type { Listing, ListingStatus, Prisma, PrismaClient } from '@prisma/client';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { VehicleRow } from '../../../../src/modules/vehicles/vehicles.repository.js';
@@ -84,7 +84,14 @@ function setup(
   };
   const audit = { record: vi.fn(async () => undefined), recordDetached: vi.fn() };
   const tx = {
-    $queryRaw: async () => (locked ? [{ id: listing().id }] : []),
+    $queryRaw: async (query: Prisma.Sql | TemplateStringsArray) => {
+      const sql = 'sql' in query ? query.sql : query.join('');
+      if (sql.includes('"dealer_members"')) return [{ status: 'ACTIVE', role: 'OWNER' }];
+      if (sql.includes('"dealers"') || sql.includes('"users"') || sql.includes('"user_roles"')) {
+        return [{ status: 'ACTIVE' }];
+      }
+      return locked ? [{ id: listing().id }] : [];
+    },
     listing: {
       create: async () => listing(),
       findUnique: async () => (locked ? listing(locked) : null),

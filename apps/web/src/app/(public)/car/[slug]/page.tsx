@@ -2,8 +2,9 @@ import { PublicVehicleDetail, SimilarVehiclesResponse } from '@dealers-drive/con
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
+import { cache, Suspense } from 'react';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Plate } from '@/components/ui/primitives';
 import { AvailabilityNotice } from '@/components/vehicle/availability-notice';
 import { PriceBlock } from '@/components/vehicle/price-block';
@@ -16,31 +17,47 @@ import { VehicleGallery } from '@/components/vehicle/vehicle-gallery';
 import { VehicleName } from '@/components/vehicle/vehicle-name';
 import { JsonLd } from '@/components/seo/json-ld';
 import { EnquireFromUrl, EnquiryPanel } from '@/features/enquiry/enquiry-panel';
-import { ApiError, apiGetParsed } from '@/lib/api';
+import { apiGetParsed } from '@/lib/api';
+import { cachedLookup } from '@/lib/cached-lookup';
 import { VEHICLES_TAG, vehicleTag } from '@/lib/cache-tags';
+import { isMissingResource } from '@/lib/errors';
 import {
   BREADCRUMB_TEXT,
   breadcrumbSchema,
   pageMetadata,
+  seoMetadata,
   vehiclePath,
   vehicleSchema,
 } from '@/lib/seo';
+import { logger } from '@/lib/logger';
 
 import { VEHICLE_PAGE_TEXT } from './vehicle-page.constants';
 
 export const revalidate = 60;
 
-async function loadVehicle(slug: string): Promise<PublicVehicleDetail | null> {
-  try {
-    return await apiGetParsed(PublicVehicleDetail, `/v1/vehicles/${encodeURIComponent(slug)}`, {
-      revalidate: 60,
-      tags: [VEHICLES_TAG, vehicleTag(slug)],
-    });
-  } catch (error) {
-    if (error instanceof ApiError && (error.status === 404 || error.status === 400)) return null;
-    throw error;
-  }
-}
+const VEHICLE_CACHE = (slug: string) => ({
+  revalidate: 60,
+  tags: [VEHICLES_TAG, vehicleTag(slug)],
+});
+
+const loadVehicle = cache((slug: string): Promise<PublicVehicleDetail | null> =>
+  cachedLookup(
+    ['public-vehicle', slug],
+    async () => {
+      try {
+        return await apiGetParsed(
+          PublicVehicleDetail,
+          `/v1/vehicles/${encodeURIComponent(slug)}`,
+          VEHICLE_CACHE(slug),
+        );
+      } catch (error) {
+        if (isMissingResource(error, { invalidIdentifier: true })) return null;
+        throw error;
+      }
+    },
+    VEHICLE_CACHE(slug),
+  ),
+);
 
 async function loadSimilar(slug: string): Promise<SimilarVehiclesResponse['data']> {
   try {
@@ -51,7 +68,7 @@ async function loadSimilar(slug: string): Promise<SimilarVehiclesResponse['data'
     );
     return data;
   } catch (error) {
-    console.error('[vehicle] similar vehicles unavailable', error);
+    logger.warn('vehicle.similar_unavailable', { slug, error });
     return [];
   }
 }
@@ -62,7 +79,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const vehicle = await loadVehicle(slug);
+  const vehicle = await loadVehicle(slug).catch(() => undefined);
+  if (vehicle === undefined) return seoMetadata({ kind: 'noindex' });
   if (!vehicle) return { title: VEHICLE_PAGE_TEXT.notFoundTitle };
 
   const primary = vehicle.images[vehicle.primaryIndex] ?? vehicle.images[0];
@@ -88,10 +106,11 @@ export async function generateMetadata({
 
 export default async function VehiclePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const similarForSlug = loadSimilar(slug);
   const vehicle = await loadVehicle(slug);
   if (!vehicle) notFound();
   const available = vehicle.availability === 'AVAILABLE';
-  const similar = await loadSimilar(vehicle.slug);
+  const similar = vehicle.slug === slug ? await similarForSlug : await loadSimilar(vehicle.slug);
 
   return (
     <div className="mx-auto max-w-[1280px] px-4 pt-[24px] pb-[88px] sm:px-6 lg:pb-[64px]">
@@ -105,8 +124,8 @@ export default async function VehiclePage({ params }: { params: Promise<{ slug: 
           ]),
         ]}
       />
-      <Link href="/cars" className="btn btn-ghost mb-[14px]">
-        {VEHICLE_PAGE_TEXT.back}
+      <Link href="/cars" className="relative btn btn-ghost mb-[14px]">
+        <LinkPendingLabel>{VEHICLE_PAGE_TEXT.back}</LinkPendingLabel>
       </Link>
 
       <div className="grid gap-[30px] lg:grid-cols-[1.35fr_1fr]">

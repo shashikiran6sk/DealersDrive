@@ -95,6 +95,18 @@ describe('/enquiries', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
+  /** R90 — a support request about this enquiry, with the enquiry already chosen. */
+  it('offers help with each enquiry, through a support request', async () => {
+    apiGetParsed.mockResolvedValue(enquiries());
+    render(await page());
+
+    const card = within(screen.getByRole('listitem'));
+    expect(card.getByRole('link', { name: 'Get help with this enquiry' })).toHaveAttribute(
+      'href',
+      `/support-requests/new?enquiry=${SENT.id}`,
+    );
+  });
+
   it.each([
     ['CONTACTED', 'Contacted', 'ok'],
     ['CLOSED', 'Closed', 'neutral'],

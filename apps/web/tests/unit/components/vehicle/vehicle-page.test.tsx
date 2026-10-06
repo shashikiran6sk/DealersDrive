@@ -7,6 +7,7 @@ import { PriceBlock } from '@/components/vehicle/price-block';
 import { SpecList } from '@/components/vehicle/spec-list';
 import { VdpDealerCard } from '@/components/vehicle/vdp-dealer-card';
 import type * as ApiModule from '@/lib/api';
+import { ApiError, UpstreamUnavailableError } from '@/lib/api';
 
 const apiGetParsed = vi.fn();
 
@@ -200,6 +201,54 @@ describe('/car/[slug]', () => {
     expect(screen.queryByRole('region', { name: 'Similar vehicles' })).not.toBeInTheDocument();
   });
 
+  /**
+   * R100. The similar cars used to be asked for only after the car had come
+   * back — two API round trips in a row on every cold page. Both now start
+   * together.
+   */
+  it('asks for the similar cars at the same time as the car, not after it', async () => {
+    let answerCar: (car: PublicVehicleDetail) => void = () => undefined;
+    apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+      path.endsWith('/similar')
+        ? Promise.resolve({ data: [] })
+        : new Promise((resolve) => {
+            answerCar = resolve;
+          }),
+    );
+
+    const page = VehiclePage({ params: Promise.resolve({ slug: SLUG }) });
+    await vi.waitFor(() =>
+      expect(apiGetParsed).toHaveBeenCalledWith(
+        expect.anything(),
+        `/v1/vehicles/${SLUG}/similar`,
+        expect.anything(),
+      ),
+    );
+    answerCar(detail());
+    render(await page);
+
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+
+  it('asks again by the canonical slug when the API answers with a different one', async () => {
+    const canonical = `${SLUG}-renamed`;
+    apiGetParsed.mockImplementation((_schema: unknown, path: string) =>
+      Promise.resolve(
+        path.endsWith(`/${canonical}/similar`)
+          ? { data: [similarCard('right')] }
+          : path.endsWith('/similar')
+            ? { data: [similarCard('wrong')] }
+            : detail({ slug: canonical }),
+      ),
+    );
+
+    render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
+
+    const section = within(screen.getByRole('region', { name: 'Similar vehicles' }));
+    expect(section.getByRole('link', { name: /right/ })).toBeInTheDocument();
+    expect(section.queryByRole('link', { name: /wrong/ })).toBeNull();
+  });
+
   it('leaves out the description section when the dealer wrote none', async () => {
     serve(detail({ description: null }));
     render(await VehiclePage({ params: Promise.resolve({ slug: SLUG }) }));
@@ -214,6 +263,25 @@ describe('/car/[slug]', () => {
     await expect(VehiclePage({ params: Promise.resolve({ slug: 'gone' }) })).rejects.toThrow(
       'NEXT_NOT_FOUND',
     );
+  });
+
+  /**
+   * The distinction the whole error model exists for: an API that is down, slow
+   * or broken says nothing about whether the car exists, so it is never a 404.
+   */
+  it.each([
+    ['unreachable', () => new UpstreamUnavailableError('network', 'GET', `/v1/vehicles/${SLUG}`)],
+    ['timed out', () => new UpstreamUnavailableError('timeout', 'GET', `/v1/vehicles/${SLUG}`)],
+    [
+      'a 503',
+      () => new ApiError({ type: 'x', title: 'Unavailable', status: 503, code: 'NOT_READY' }),
+    ],
+    ['a 500', () => new ApiError({ type: 'x', title: 'Internal', status: 500, code: 'INTERNAL' })],
+  ])('sends an API that is %s to the error page, never the 404', async (_label, failure) => {
+    const error = failure();
+    apiGetParsed.mockRejectedValue(error);
+
+    await expect(VehiclePage({ params: Promise.resolve({ slug: SLUG }) })).rejects.toBe(error);
   });
 
   it('lets any other failure through to the error page', async () => {

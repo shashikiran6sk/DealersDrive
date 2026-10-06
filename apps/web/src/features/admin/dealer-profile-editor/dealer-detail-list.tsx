@@ -21,7 +21,7 @@ export function DealerDetailList({ values, contactPhoneDisplay }: DealerDetailLi
             className="border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
           >
             <dt className="ink-muted">{field.label}</dt>
-            <dd className="mt-[4px] font-medium">
+            <dd className="mt-[4px] font-medium [overflow-wrap:anywhere]">
               {'list' in field ? (
                 servicesOf(values[field.key]).length > 0 ? (
                   <span className="flex flex-wrap gap-[6px]">
@@ -44,8 +44,10 @@ export function DealerDetailList({ values, contactPhoneDisplay }: DealerDetailLi
             key={field.key}
             className="flex justify-between gap-4 border-b border-(--color-divider) py-[9px] text-[13px] last:border-b-0"
           >
-            <dt className="ink-muted">{field.label}</dt>
-            <dd className={`text-right font-medium${field.mono ? ' font-mono' : ''}`}>
+            <dt className="shrink-0 ink-muted">{field.label}</dt>
+            <dd
+              className={`min-w-0 text-right font-medium [overflow-wrap:anywhere]${field.mono ? ' font-mono' : ''}`}
+            >
               {field.key === 'contactPhone'
                 ? (contactPhoneDisplay ?? EMPTY_VALUE)
                 : values[field.key] || EMPTY_VALUE}

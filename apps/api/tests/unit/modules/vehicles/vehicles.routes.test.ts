@@ -51,10 +51,10 @@ describe('permissions', () => {
     ['PATCH /vehicles/:id', 'vehicle:write'],
     ['DELETE /vehicles/:id', 'vehicle:delete'],
     ['POST /vehicles/:id/submit', 'listing:submit'],
-    ['POST /vehicles/:id/reserve', 'listing:submit'],
-    ['POST /vehicles/:id/mark-sold', 'listing:submit'],
-    ['POST /vehicles/:id/withdraw', 'listing:submit'],
-    ['POST /vehicles/:id/request-reactivation', 'listing:submit'],
+    ['POST /vehicles/:id/reserve', 'listing:reserve'],
+    ['POST /vehicles/:id/mark-sold', 'listing:sell'],
+    ['POST /vehicles/:id/withdraw', 'listing:withdraw'],
+    ['POST /vehicles/:id/request-reactivation', 'listing:reactivate'],
   ])('guards %s with %s', (signature, permission) => {
     expect(permissionsOn(routeFor(router, signature) as never)).toEqual([permission]);
   });

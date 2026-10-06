@@ -62,6 +62,25 @@ is the write that takes a dealership off the marketplace — and the portfolio
 went on being served from Next's cache for up to ten minutes afterwards. A
 dealership suspended for cause staying up for ten minutes is not untidiness.
 
+**The car pages are part of that half (BUG-NEW-010).** A car page is cached
+under `vehicles` and `vehicle:<slug>`, not under the dealership's tags, so
+clearing `dealers` and `dealer:<slug>` left every one of the suspended
+dealership's cars public. And it did not age out: Next's data cache stores a
+fetch only when it answers 200, so once the API answered 404 the background
+refresh after the 60-second window was thrown away and the warmed 200 kept
+being served — 4.4 minutes later in the certification run, and with no upper
+bound. Only a tag revalidation replaces that entry, which is why
+`revalidatePublicVehicles()` is here rather than left to `revalidate: 60`.
+
+It clears every car page, not just this dealership's: the console does not
+know the dealership's listing slugs, the decisions are rare, and an
+over-broad refresh costs one re-render per page while a missed one costs a
+suspended dealership staying on the marketplace.
+
+The same property means any **future** write that removes a car from public
+view outside a web action — the reserved `listings.expire-sweep` job, for one
+— has to reach a tag revalidation too, or it will stay up indefinitely.
+
 `slug` is passed in rather than read off the response because
 `DealerModerationResponse` carries an id and no slug, and every caller is a
 screen already rendering `AdminDealerDetail`. Omitting it still clears the
@@ -210,3 +229,75 @@ with the listing queue for the same reason. `approve` and `reject` default to
 the Server Actions and are props only so tests and the sandbox can pass stubs.
 Each decision reuses `DecisionDialog` in its `optional` mode — the listing
 review's reason dialog, without the six-character floor.
+
+## `apps/web/src/features/admin/enquiry-oversight/enquiry-oversight.tsx`
+
+### `export function EnquiryOversight({ enquiries, filters })`
+
+**R89.** The listings queue's shape — `seg` tabs with counts, a GET search form,
+the shared `Table`, keyset Show more — so the new page reads as part of the same
+console. Every filter lives in the URL; the form is a plain GET, and the tabs,
+the dealer chip and Show more each keep the others. There is no client state and
+no client component: the page is a server component reading uncached.
+
+The table is kept narrow on purpose. The message is a one-line preview that the
+API has already cut, and its column hides below `xl`; the whole message belongs
+to the detail. On a phone the table scrolls sideways inside its own rounded
+container, as every admin table does, rather than stacking seven columns into a
+page-long card per enquiry.
+
+Two empty states, because they mean different things: _no enquiries found_ is
+the platform having none, _none match these filters_ is the operator's search.
+
+### `EnquiryOversightRow` — the dealer link
+
+Clicking the dealership filters the list to it (`?dealer=<slug>`), which is the
+question an operator usually has next. The dealership's own admin page is one
+click further, on the detail.
+
+## `apps/web/src/features/admin/enquiry-detail/enquiry-detail.tsx`
+
+### `export function EnquiryDetail({ enquiry })`
+
+The listing review screen's layout — back link, header with the status, cards
+in two auto-fitting columns — so an operator moving between a listing and an
+enquiry about it is on familiar ground. It renders no control that changes the
+enquiry, and says so in a line under the header: oversight, not a takeover of
+the dealership's leads.
+
+All times are IST, stated once at the foot of the enquiry card.
+
+## `apps/web/src/features/admin/support-queue/support-queue.tsx`
+
+### `export function SupportQueue({ tickets, filters })`
+
+**R91.** The enquiry oversight list's shape — `seg` status tabs with counts, a
+GET filter form whose every value lives in the URL, the shared `Table`, keyset
+Show more, and two empty states — so the two pages under Enquiries and Support
+Tickets read as one console. "What it is about" (the car and dealership of the
+linked enquiry) is hidden below `xl` to keep the table narrow.
+
+## `apps/web/src/features/admin/support-ticket/support-ticket.tsx`
+
+### `export function SupportTicketWorkspace({ ticket, viewerId })`
+
+Two columns: the work (conversation, composer, internal notes, history) and the
+facts (ticket controls, customer, related enquiry, car, dealer). On a narrow
+screen the facts stack under the work.
+
+### `TicketComposer` — Reply to customer / Internal note
+
+The one place an operator could leak a note, so the two modes are made hard to
+confuse rather than merely labelled: the note mode turns the whole composer
+amber, says "Private. The customer never sees internal notes.", and has its own
+secondary "Add internal note" button; the reply mode keeps the primary "Send
+reply to customer". And they call different Server Actions and different API
+routes, so even a mislabelled button could not publish a note.
+
+### `TicketControls`
+
+The status select lists the current status and only the moves
+`SUPPORT_TICKET_TRANSITIONS` allows from it; a closed ticket's is disabled with
+the reason. Save sends only the fields that changed. Assign to me appears when
+the signed-in operator is assignable, matched by the email the console header
+already reads.

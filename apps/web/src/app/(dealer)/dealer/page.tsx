@@ -6,6 +6,7 @@ import { ADD_VEHICLE_HREF, ADD_VEHICLE_LABEL } from '@/components/dealer/console
 import { RecentEnquiries, ViewsChart } from '@/components/dealer/dashboard-panels';
 import { ListingStats } from '@/components/dealer/listing-stats';
 import { ButtonLink } from '@/components/ui/button';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Banner, StatCard } from '@/components/ui/primitives';
 import { apiGet } from '@/lib/api';
 
@@ -33,8 +34,8 @@ export default async function DealerDashboardPage() {
           key={alert.type}
           tone="warn"
           action={
-            <Link href={alert.href} className="btn btn-secondary text-[12px]">
-              Open
+            <Link href={alert.href} className="relative btn btn-secondary text-[12px]">
+              <LinkPendingLabel>Open</LinkPendingLabel>
             </Link>
           }
         >

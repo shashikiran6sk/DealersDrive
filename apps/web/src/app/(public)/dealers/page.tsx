@@ -1,10 +1,12 @@
 import type { DealerDirectoryResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { cache } from 'react';
 
 import { DirectoryCard } from '@/components/dealers/dealer-card';
 import { DirectoryFilters } from '@/components/dealers/directory-filters';
 import { JsonLd } from '@/components/seo/json-ld';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { apiGet, qs } from '@/lib/api';
 import { DEALERS_TAG } from '@/lib/cache-tags';
@@ -42,12 +44,16 @@ function cityParam(city: string[]): string | undefined {
   return city.length > 0 ? [...city].sort().join(',') : undefined;
 }
 
+const fetchDirectory = cache((query: string) =>
+  apiGet<DealerDirectoryResponse>(`/v1/dealers${query}`, {
+    revalidate: 600,
+    tags: [DEALERS_TAG],
+  }),
+);
+
 function loadDirectory(params: ReturnType<typeof readParams>): Promise<DealerDirectoryResponse> {
   const { city, district, q, page } = params;
-  return apiGet<DealerDirectoryResponse>(
-    `/v1/dealers${qs({ city: cityParam(city), district, q, page })}`,
-    { revalidate: 600, tags: [DEALERS_TAG] },
-  );
+  return fetchDirectory(qs({ city: cityParam(city), district, q, page }));
 }
 
 export async function generateMetadata({
@@ -152,8 +158,8 @@ export default async function DealerDirectoryPage({
               : 'No verified dealerships have listed cars in this area yet.'
           }
           action={
-            <Link href="/dealers" className="btn btn-primary">
-              Show all dealers
+            <Link href="/dealers" className="relative btn btn-primary">
+              <LinkPendingLabel>Show all dealers</LinkPendingLabel>
             </Link>
           }
         />
@@ -183,9 +189,9 @@ function Pagination({
         <Link
           href={`/dealers${qs({ city, district, q, page: page.page - 1 })}`}
           rel="prev"
-          className="btn btn-secondary"
+          className="relative btn btn-secondary"
         >
-          ← Previous
+          <LinkPendingLabel>← Previous</LinkPendingLabel>
         </Link>
       ) : (
         <span />
@@ -197,9 +203,9 @@ function Pagination({
         <Link
           href={`/dealers${qs({ city, district, q, page: page.page + 1 })}`}
           rel="next"
-          className="btn btn-secondary"
+          className="relative btn btn-secondary"
         >
-          Next →
+          <LinkPendingLabel>Next →</LinkPendingLabel>
         </Link>
       ) : (
         <span />

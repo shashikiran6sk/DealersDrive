@@ -87,6 +87,17 @@ the description, not writing an empty one.
 
 ## `apps/api/src/modules/vehicles/vehicles.mapper.ts`
 
+### `export function toDealerListing(`
+
+**R95.** `actions`, `canSubmit` and `canDelete` are the console's buttons, and
+they are now narrowed by the member's permissions as well as by the listing's
+status — through `LIFECYCLE_ACTION_PERMISSION` in contracts, the same table the
+routes enforce. A STAFF member's inventory therefore has no Reserve, Sell or
+Withdraw, and their review step no Submit: the console shows what the API will
+allow, and the API still refuses the rest (R92). `canEdit` is not narrowed —
+every member may edit a draft. Callers that pass no permissions (the service's
+unit tests, an admin read) get the status-only answer, as before.
+
 ### `export function toDealerVehicle(row: VehicleRow): DealerVehicle`
 
 The dealer DTO, and the only way a vehicle row leaves this module towards a
@@ -134,7 +145,19 @@ approved can prepare drafts but not submit them.
 The dealer's inventory (**F066**): newest first, filtered by listing status and
 by a search that matches the plate with separators stripped (`ka-01-ab` finds
 `KA01AB1234`) or the make or model case-insensitively. Cursor-paginated on
-`createdAt`, as the admin lists are.
+`(createdAt, id)`, the order it already sorts by.
+
+**BUG-NEW-007.** The cursor used to carry `createdAt` alone with a strict `<`
+boundary, so every vehicle sharing the last row's timestamp was skipped — five
+tied rows in pages of two came back as two. A bulk import, or any two rows
+written in the same millisecond, ties. The cursor is now the same
+`encodeKeysetCursor` BUG-003 gave the other lists, and the boundary is
+"older, or equally old with a smaller id". A date-only cursor issued before the
+change is still honoured through `decodeKeysetOrDateCursor`.
+
+The boundary sits under `AND` rather than beside the search, because the
+search is itself an `OR` and a second `OR` key at the same level would replace
+it.
 
 `counts` is a `groupBy` over the dealership's listings, deliberately unaffected
 by the filter and the search: the tabs show how many vehicles are in each state,
@@ -164,3 +187,7 @@ car since, the index refuses with `P2002` and the move is answered as
 `409 DUPLICATE_REGISTRATION`, the same sentence `submit` uses and for the same
 reason — it does not say who has it. The transaction rolls back, so the listing
 stays `WITHDRAWN`.
+
+## Transaction authorization after resource waits
+
+All vehicle/listing writes use the auth facade's authorizeDealerWrite inside their existing transaction. Existing-stock writes acquire the listing resource before fresh authority checks, allowing member removal or suspension to commit while a queued request is still waiting. Create has no existing listing resource and checks authority before insert. Authorization row locks remain until commit; a later removal serializes behind an already authorized write. A competing locked authority returns409 AUTHORIZATION_BUSY with no stock/audit/outbox write. Revocation401, role loss403 and non-ACTIVE lifecycle403 retain the route's business rules. DRAFT/PENDING draft create/edit/delete remains permitted for authorized roles. Returned capabilities use the fresh permission set rather than the earlier request snapshot. Empty patches remain read-only and produce no audit.

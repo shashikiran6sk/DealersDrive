@@ -1,6 +1,7 @@
 import type { VehicleCardDto } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingIndicator } from '@/components/ui/link-pending';
 import { Plate } from '@/components/ui/primitives';
 import { SaveButton } from '@/components/vehicle/save-button';
 import { VehicleName } from '@/components/vehicle/vehicle-name';
@@ -79,6 +80,7 @@ export function VehicleCard({
               className="after:absolute after:inset-0 focus-visible:outline-none"
             >
               <VehicleName title={vehicle.title} year={vehicle.year} />
+              <LinkPendingIndicator className="absolute top-[10px] left-1/2 z-[3] size-[28px] -translate-x-1/2 rounded-full bg-white shadow-sm" />
             </Link>
           )}
         </h3>

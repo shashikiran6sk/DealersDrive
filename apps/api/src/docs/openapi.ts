@@ -1,4 +1,8 @@
-import { CONTRACTS_VERSION } from '@dealers-drive/contracts';
+import {
+  CONTRACTS_VERSION,
+  DEALER_PERMISSION_NAMES,
+  DEALER_PERMISSIONS,
+} from '@dealers-drive/contracts';
 
 import { env } from '../config/env.js';
 import { authDocs } from '../modules/auth/auth.docs.js';
@@ -13,6 +17,9 @@ import { searchDocs } from '../modules/search/search.docs.js';
 import { vehicleImagesDocs } from '../modules/vehicle-images/vehicle-images.docs.js';
 import { enquiriesDocs } from '../modules/enquiries/enquiries.docs.js';
 import { savedVehiclesDocs } from '../modules/saved-vehicles/saved-vehicles.docs.js';
+import { supportAdminDocs } from '../modules/support/support.admin.docs.js';
+import { supportDocs } from '../modules/support/support.docs.js';
+import { teamDocs } from '../modules/team/team.docs.js';
 import { vehiclesDocs } from '../modules/vehicles/vehicles.docs.js';
 import { metricsDocs } from '../platform/telemetry/metrics.docs.js';
 import { ERROR_RESPONSE_BY_STATUS, ERROR_RESPONSES } from './errors.js';
@@ -28,9 +35,12 @@ const MODULES: ModuleDocs[] = [
   dealersDocs,
   vehiclesDocs,
   enquiriesDocs,
+  teamDocs,
   savedVehiclesDocs,
+  supportDocs,
   adminDocs,
   moderationDocs,
+  supportAdminDocs,
   vehicleImagesDocs,
   healthDocs,
   storageDocs,
@@ -255,6 +265,18 @@ function buildOperation(
   };
 }
 
+const DEALER_ROLES = ['OWNER', 'MANAGER', 'STAFF'] as const;
+
+const DEALER_PERMISSION_TABLE = [
+  `| Permission | ${DEALER_ROLES.join(' | ')} |`,
+  `| --- |${DEALER_ROLES.map(() => ' :-: |').join('')}`,
+  ...DEALER_PERMISSION_NAMES.map((permission) => {
+    const roles: readonly string[] = DEALER_PERMISSIONS[permission];
+    const cells = DEALER_ROLES.map((role) => (roles.includes(role) ? ' ✓ |' : ' |')).join('');
+    return `| \`${permission}\` |${cells}`;
+  }),
+].join('\n');
+
 const AUTH_DESCRIPTION = `
 Dealers-Drive resolves identity through a **session resolver** at the edge of the request
 (\`SessionResolver\`, \`src/modules/auth/session.port.js\`), and passes the resolved principal
@@ -294,23 +316,9 @@ check below runs exactly the same way.
 - \`requirePermission\` enforces the table below, and the service re-checks ownership inside
   the transaction that writes, so there is no gap between "you may" and "this row is yours".
 
-### Dealer permissions (§8.3)
+### Dealer permissions (R92)
 
-| Permission | OWNER | MANAGER | SALES |
-| --- | :-: | :-: | :-: |
-| \`vehicle:read\` | ✓ | ✓ | ✓ |
-| \`vehicle:write\` | ✓ | ✓ | |
-| \`vehicle:delete\` | ✓ | ✓ | |
-| \`listing:submit\` | ✓ | ✓ | |
-| \`listing:renew\` | ✓ | ✓ | |
-| \`enquiry:read\` | ✓ | ✓ | ✓ |
-| \`enquiry:update\` | ✓ | ✓ | ✓ |
-| \`photo:request\` | ✓ | ✓ | |
-| \`dealer:update\` | ✓ | | |
-| \`document:upload\` | ✓ | | |
-| \`billing:read\` | ✓ | ✓ | |
-| \`billing:purchase\` | ✓ | | |
-| \`member:manage\` | ✓ | | |
+${DEALER_PERMISSION_TABLE}
 
 ### Admin permissions
 
@@ -326,6 +334,8 @@ check below runs exactly the same way.
 | \`admin:config:write\` | ✓ | | |
 | \`admin:audit:read\` | ✓ | ✓ | ✓ |
 | \`admin:metrics:read\` | ✓ | ✓ | ✓ |
+| \`admin:enquiry:read\` | ✓ | ✓ | ✓ |
+| \`admin:support:manage\` | ✓ | ✓ | ✓ |
 `.trim();
 
 const DESCRIPTION = `

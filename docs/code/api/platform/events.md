@@ -33,11 +33,11 @@ to the dealer.
 
 ### `publish(event: DomainEvent): Promise<void>`
 
-Publishes to every subscriber. A failing subscriber never rolls the caller back.
+Publishes to every subscriber. Optional subscriber failures are logged and delivery continues. A subscriber registered with `{ required: true }` propagates failures to the outbox publisher, which increments attempts and retains the unpublished row for retry. Storage cleanup uses required delivery after the originating transaction commits.
 
 ### `logger.error`
 
-Rule: a subscriber never throws into the publisher.
+Optional subscribers retain the original failure isolation; required subscribers throw into the publisher to prevent acknowledging incomplete durable work.
 
 ### `export async function enqueueOutbox(tx: Tx, write: OutboxWrite): Promise<void>`
 

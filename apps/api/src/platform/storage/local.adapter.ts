@@ -108,6 +108,32 @@ export function storageRoot(): string {
   return ROOT;
 }
 
+const SIGNATURES: { type: string; matches: (body: Buffer) => boolean }[] = [
+  {
+    type: 'application/pdf',
+    matches: (body) => body.subarray(0, 5).toString('latin1') === '%PDF-',
+  },
+  {
+    type: 'image/png',
+    matches: (body) =>
+      body.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+  },
+  {
+    type: 'image/jpeg',
+    matches: (body) => body.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])),
+  },
+  {
+    type: 'image/webp',
+    matches: (body) =>
+      body.subarray(0, 4).toString('latin1') === 'RIFF' &&
+      body.subarray(8, 12).toString('latin1') === 'WEBP',
+  },
+];
+
+export function sniffContentType(body: Buffer): string | null {
+  return SIGNATURES.find((signature) => signature.matches(body))?.type ?? null;
+}
+
 export function contentTypeOf(key: string): string {
   if (key.endsWith('.webp')) return 'image/webp';
   if (key.endsWith('.png')) return 'image/png';

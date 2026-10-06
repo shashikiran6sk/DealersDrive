@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { canDealer, enquiryTransitionPermission } from '@dealers-drive/contracts';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { setEnquiryStatusAction } from '@/features/dealer/enquiry-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { ENQUIRIES_TEXT, ENQUIRY_MOVES } from './enquiries.constants';
 import type { EnquiryStatusActionsProps } from './enquiries.types';
@@ -12,10 +14,17 @@ export function EnquiryStatusActions({
   enquiryId,
   status,
   customerName,
+  permissions,
 }: EnquiryStatusActionsProps) {
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [moving, setMoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const moves = ENQUIRY_MOVES[status].filter(
+    (move) =>
+      permissions === undefined ||
+      canDealer(permissions, enquiryTransitionPermission(status, move.to)),
+  );
+  if (moves.length === 0) return null;
 
   return (
     <div className="ml-auto flex flex-col items-end gap-[4px]">
@@ -24,7 +33,7 @@ export function EnquiryStatusActions({
         aria-label={ENQUIRIES_TEXT.actionsLabel(customerName)}
         className="flex flex-wrap items-center justify-end gap-[6px]"
       >
-        {ENQUIRY_MOVES[status].map((move) => (
+        {moves.map((move) => (
           <Button
             key={move.to}
             variant="ghost"

@@ -15,3 +15,25 @@ export const ENQUIRY_RATE_LIMITED =
   'You have sent a lot of enquiries. Try again in a little while.';
 
 export const ENQUIRY_NOT_FOUND = 'That enquiry is not in your inbox.';
+
+export const ENQUIRY_TRANSITION_FORBIDDEN =
+  'Your role can mark a new enquiry as contacted, but closing or reopening one is for a manager or the owner.';
+
+export const ADMIN_ENQUIRY_NOT_FOUND = 'There is no enquiry with that id.';
+
+export const ENQUIRY_HISTORY_LABELS: Record<string, string> = {
+  'enquiry.created': 'Enquiry sent',
+  'enquiry.contacted': 'Marked contacted',
+  'enquiry.closed': 'Closed',
+  'enquiry.spam': 'Marked as spam',
+  'enquiry.reopened': 'Reopened',
+};
+
+export const ENQUIRY_ACTOR_LABELS: Record<string, string> = {
+  CUSTOMER: 'Customer',
+  DEALER: 'Dealer',
+  ADMIN: 'Dealers-Drive',
+  SYSTEM: 'System',
+};
+
+export const ENQUIRY_IMAGE_ALT = (title: string) => `Photograph of the ${title}`;

@@ -22,6 +22,10 @@ vi.mock('@/lib/api', async (importOriginal) => {
 
 vi.mock('@/features/dealer/enquiry-actions', () => ({ setEnquiryStatusAction: vi.fn() }));
 
+const OWNER_PERMISSIONS = ['enquiry:read', 'enquiry:contact', 'enquiry:close'];
+const currentSession = vi.fn(() => Promise.resolve({ permissions: OWNER_PERMISSIONS }));
+vi.mock('@/lib/session', () => ({ currentSession: () => currentSession() }));
+
 const RAVI: DealerEnquiry = {
   id: '11111111-1111-4111-8111-111111111111',
   status: 'NEW',
@@ -33,6 +37,8 @@ const RAVI: DealerEnquiry = {
   timeAgoLabel: '18 min ago',
   contactedAt: null,
   closedAt: null,
+  contactedBy: null,
+  closedBy: null,
   customer: {
     name: 'Ravi Kumar',
     initials: 'RK',

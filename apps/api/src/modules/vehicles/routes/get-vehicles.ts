@@ -17,6 +17,7 @@ export const getVehicles: VehiclesRoute = (router, service) => {
       service.inventory(
         dealerPrincipal(req).dealerId,
         validated<DealerInventoryQueryType>(req, 'query'),
+        dealerPrincipal(req).permissions,
       ),
     ),
   );

@@ -43,6 +43,7 @@ describe('the surface', () => {
         'PATCH /dealers/:id',
         'POST /dealers/:id/reject',
         'POST /dealers/:id/request-changes',
+        'POST /dealers/:id/close',
         'POST /dealers/:id/suspend',
         'POST /dealers/:id/reinstate',
         'POST /documents/:id/verify',
@@ -110,6 +111,7 @@ describe('validation', () => {
   it.each([
     'POST /dealers/:id/approve',
     'POST /dealers/:id/reject',
+    'POST /dealers/:id/close',
     'POST /dealers/:id/suspend',
     'POST /dealers/:id/reinstate',
   ])('parses the body on %s', (signature) => {

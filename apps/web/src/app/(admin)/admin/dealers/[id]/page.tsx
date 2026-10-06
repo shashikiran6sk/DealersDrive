@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { LogoTile, StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
 import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
@@ -28,8 +29,8 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
 
   return (
     <div className="mx-auto flex max-w-[1000px] flex-col gap-4 p-5">
-      <Link href="/admin/dealers" className="btn btn-ghost self-start">
-        ← Back to dealers
+      <Link href="/admin/dealers" className="relative btn btn-ghost self-start">
+        <LinkPendingLabel>← Back to dealers</LinkPendingLabel>
       </Link>
 
       <div className="flex flex-wrap items-center gap-3">

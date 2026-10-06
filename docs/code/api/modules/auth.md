@@ -573,17 +573,25 @@ held by the same person is resolved by `resolveAdmin` below, against its
 
 own seat, and is unaffected by whatever happened to this one.
 
-### `if (membership.dealer.status === 'SUSPENDED') return null`
+### `const { membership, suspended } = await findWorkspaceMembership(`
 
-Account status is the primary block, and this dealer-status check is the
+Which dealership this person is working in (**R92**). The first active
+membership whose dealership is not suspended, oldest first — so a person in
+two dealerships keeps working in the other when one is suspended. If every
+membership they hold is in a suspended dealership, the answer is null rather
+than PENDING: a suspended dealer is not a dealer mid-onboarding, and must not
+be offered the wizard.
 
-### `if (membership.dealer.status === 'SUSPENDED') return null`
+The session's `activeDealerId` (**R93**) is the preference passed in: the
+dealership the person last chose. It is skipped, exactly as if it were NULL,
+when that membership has been removed or that dealership suspended.
 
-backstop if a legacy or manually changed row was suspended before its
+### `if (session.scope !== 'DEALER') return null`
 
-### `if (membership.dealer.status === 'SUSPENDED') return null`
-
-member account was updated.
+**R93 — one login.** A customer session belonging to a dealership became a
+dealer principal above. One belonging to none is refused here rather than read
+as PENDING: PENDING is a dealer mid-onboarding, and a customer is not one. They
+start onboarding from the Dealer tab, as before.
 
 ### `async resolveAdmin(req): Promise<AdminPrincipal | null>`
 
@@ -664,10 +672,11 @@ reached the name screen both end up signed in to one user.
 
 ### `export function createCustomerResolver(sessions: SessionService): CustomerResolver`
 
-Who counts as a customer (**R62**), which is deliberately separate from who
-counts as a dealer: `resolveSignedIn` reads `DEALER`-scope sessions only, so a
-customer session is never mistaken for a dealer mid-onboarding and never
-opens the console.
+Who counts as a customer (**R62**). Since **R93** this and `resolveSignedIn`
+read the same sessions (`resolvePerson`), and what separates a customer from a
+dealer is a membership, not how they signed in: a customer session opens the
+console of a dealership the person belongs to, and is refused — not offered
+onboarding — when they belong to none.
 
 A customer is a `CUSTOMER` session, **or** a `DEALER` session whose account
 has a proved phone and a name. The second is the brief's §40 — a dealer
@@ -1263,11 +1272,42 @@ needs: the dealership lookup, the suspension refusal and the return path.
 a path or nothing — and ignored entirely while the dealer still belongs in
 onboarding.
 
-### `if (membership?.dealer.status === 'SUSPENDED')`
+### `if (suspended)`
 
-The seat check each caller makes first handles suspensions performed by the
-current admin workflow. This dealer-status guard also blocks legacy or
-manually suspended rows whose member seat was never closed.
+Since **R92** this is the suspension check, not a backstop: the admin workflow
+no longer closes member seats, so the dealership's own status is what refuses
+a sign-in. Refused only when _every_ dealership the person belongs to is
+suspended; a person in two keeps the other.
+
+## `apps/api/src/modules/auth/membership.ts`
+
+### `export async function findWorkspaceMembership(`
+
+The one answer to "which dealership is this person working in", shared by the
+session resolver and the post-sign-in destination so the two cannot disagree
+(**R92**). Oldest membership first, by `createdAt` and then `id`, so the
+choice is deterministic; the `(userId, status)` index makes it one indexed
+read per dealer request.
+
+### `export function chooseWorkspace(`
+
+The session's chosen dealership when it can still be entered, otherwise the
+oldest one that can (**R93**). Shared by the resolver and the workspace list,
+so `current` in the menu is always the dealership `/v1/dealer` will act on.
+
+### `export function isEnterable(membership: MembershipWithDealer): boolean`
+
+**A CLOSED dealership is shut the same way a SUSPENDED one is (ORIG-GAP-CLOSE).**
+Its members keep their membership rows — the record is preserved — but cannot
+enter it: an open session stops resolving, dealer writes are a 401 through
+`authorizeDealerWrite`, and sign-in is a 403. `findWorkspaceMembership` reports
+`closed` when every membership left is a closed application, so the refusal
+says `APPLICATION_CLOSED` instead of telling somebody their dealership was
+suspended when it was not.
+
+An ACTIVE membership in a dealership that is not SUSPENDED. A REMOVED or
+INVITED row never qualifies, so removing a member shuts the dealership to
+them on their next request without touching their session.
 
 ## `apps/api/src/modules/auth/roles.ts`
 
@@ -1501,6 +1541,21 @@ request — a closed DEALER seat has to stop answering on the next click,
 the way a revoked session does — and pulling them here costs nothing: it
 is the same round trip that was already fetching the user.
 
+### `async resolvePerson(token: string | undefined)`
+
+**R93.** The session a _person_ holds — `DEALER` or `CUSTOMER` scope, never
+`ADMIN` — in one query. The two scopes are how the person signed in, not what
+they may do: since R93 both reach the customer routes and both reach a
+dealership the person belongs to. `ADMIN` stays apart; an operations session is
+a different door with a 12-hour life and its own allow-list.
+
+### `async setActiveDealer(sessionId: string, dealerId: string): Promise<void>`
+
+Which dealership this session is working in, for a person with more than one
+(**R93**). Written only by `PUT /v1/auth/workspaces/current`, after the
+membership is checked; a preference the resolver re-checks on every request,
+never a grant.
+
 ### `async revoke(token: string | undefined): Promise<void>`
 
 Idempotent: signing out twice is not an error, and must not be.
@@ -1538,3 +1593,45 @@ The uniqueness refusal moved with it. A number another user holds can never
 become this user's verified number, so `PHONE_ALREADY_REGISTERED` is raised
 where the claim is made — on step 1, against the box the dealer typed into —
 rather than two steps later when the dealership is created.
+
+## `apps/api/src/modules/auth/roles.ts` — `ensureSeat`
+
+### `db.userRole.createMany({ data: [...], skipDuplicates: true })`
+
+Insert-or-nothing in one statement (`INSERT … ON CONFLICT DO NOTHING`). It was
+a Prisma `upsert` with an empty `update`, which Prisma runs on the compound
+`(userId, role)` key as a read followed by an insert. Two sign-ups for one
+number arriving together — a double tap, two devices — both read "no seat",
+both inserted, and the loser hit `user_roles_userId_role_key` and answered 500.
+It surfaced intermittently as `customer-auth.test.ts`'s race test failing in
+CI; `tests/user-seats.test.ts` reproduces it deterministically. Behaviour is
+otherwise unchanged: an existing seat, open or closed, is never touched.
+
+## `apps/api/src/modules/auth/workspace.service.ts`
+
+### `export function createWorkspaceService({ prisma, sessions, audit }: WorkspaceDeps)`
+
+**R93 — one account, several contexts.** The dealerships a signed-in person
+belongs to, and the choice of which one this session works in.
+
+The choice names a **membership**, never a dealership: `dealerId` is accepted
+in no request body (rule 1), and a membership id can only be one the person
+holds. Anything else — someone else's, a removed one, one in a suspended
+dealership — is the same 404, so the endpoint says nothing about other people's
+memberships.
+
+Choosing writes `sessions.activeDealerId` on the session already in hand. No
+session is issued and no cookie changes, which is the point: moving between
+the marketplace and a dealership, or between two dealerships, is never a
+sign-in. A change is audited as `auth.workspace.selected`; choosing the one
+already current writes nothing.
+
+## `apps/api/src/modules/auth/dealer-write-authorization.ts`
+
+### `export async function authorizeDealerWrite(`
+
+Transaction authority for dealer writes. The caller first obtains its existing resource lock, then rereads and holds the current dealer, exact membership, user/seat and actual cookie-session rows through commit. Permissions are calculated from the fresh role, never the request's earlier permission array. Suspended/missing membership, dealer, account/seat or revoked/expired session denies401; lost permission denies403. ACTIVE is required only where the caller's business rule already required it. Real cookie principals carry the internal session id; dev identities retain membership/account checks without a cookie session. No session id is added to a public API response or accepted from request input.
+
+### `async function lockedRow<T>(`
+
+Shared row locks protect authority until commit. SKIP LOCKED plus a nonlocking existence check distinguishes absence from a conflicting operation and fails closed with409 AUTHORIZATION_BUSY. It does not wait while holding a listing resource, because rejection can hold the dealer and wait for that resource during its deletion cascade. This prevents a new lock cycle rather than retrying an unhandled database deadlock. An absent legacy dealer seat keeps its existing neutral semantics; an exclusive user lock and second seat read protect concurrent seat insertion via its foreign key. The transaction must contain no nontransactional effects before authorization succeeds.

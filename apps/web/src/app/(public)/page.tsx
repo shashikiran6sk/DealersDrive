@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ComponentType } from 'react';
 
+import { SectionError } from '@/components/errors/section-error';
 import { CarSearchBox } from '@/components/search/car-search-box';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { AudienceSection } from '@/features/home/audience-section';
 import { DiscoveryBand } from '@/features/home/discovery-row';
 import { HeroBanner, heroImageFrom } from '@/features/home/hero-banner';
@@ -70,14 +72,24 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <Link href="/cars" className="dd-chip">
-            {HOME_TEXT.browseAll}
+          <Link href="/cars" className="relative dd-chip">
+            <LinkPendingLabel>{HOME_TEXT.browseAll}</LinkPendingLabel>
           </Link>
-          <Link href="/dealers" className="dd-chip">
-            {HOME_TEXT.browseDealers}
+          <Link href="/dealers" className="relative dd-chip">
+            <LinkPendingLabel>{HOME_TEXT.browseDealers}</LinkPendingLabel>
           </Link>
         </div>
       </HeroBanner>
+
+      {inventory.unavailable ? (
+        <div
+          aria-label={HOME_TEXT.discoveryLabel}
+          role="region"
+          className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10 lg:py-12"
+        >
+          <SectionError title={HOME_TEXT.unavailableTitle} message={HOME_TEXT.unavailableMessage} />
+        </div>
+      ) : null}
 
       {HOME_FLOW.map((item) => {
         if (item.kind === 'info') {

@@ -30,7 +30,7 @@ import {
   type UpdateDealerInput,
   type VerifyDocumentResponse,
 } from '@dealers-drive/contracts';
-import type { PrismaClient } from '@prisma/client';
+import type { DealerDocument, PrismaClient } from '@prisma/client';
 
 import { env } from '../../config/env.js';
 import { getContext } from '../../middleware/request-context.js';
@@ -41,6 +41,7 @@ import {
   type PlatformConfigService,
 } from '../../platform/config/platform-config.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import type { Tx } from '../../platform/db/prisma.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import {
   ConflictError,
@@ -49,6 +50,7 @@ import {
   NotFoundError,
 } from '../../platform/errors.js';
 import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import { deleteStorageObjects } from '../../platform/storage/cleanup.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import {
   grantSeat,
@@ -58,7 +60,7 @@ import {
 } from '../auth/auth.facade.js';
 import { documentKey, type DealersService } from '../dealers/dealers.facade.js';
 import { DOCUMENT_NOT_FOUND } from '../../platform/messages.js';
-import { DEALER_NOT_FOUND } from './admin.messages.js';
+import { CLOSED_NOT_REJECTABLE, DEALER_NOT_CLOSABLE, DEALER_NOT_FOUND } from './admin.messages.js';
 
 export interface AdminDeps {
   prisma: PrismaClient;
@@ -69,6 +71,17 @@ export interface AdminDeps {
 }
 
 const REQUIRED_DOCUMENTS = 3;
+
+function allDocumentsVerified(documents: Pick<DealerDocument, 'status' | 'fileName'>[]): boolean {
+  return (
+    documents.length === REQUIRED_DOCUMENTS &&
+    documents.every((doc) => doc.status === 'VERIFIED' && Boolean(doc.fileName))
+  );
+}
+
+async function lockDealer(tx: Tx, dealerId: string): Promise<void> {
+  await tx.$queryRaw`SELECT "id" FROM "dealers" WHERE "id" = ${dealerId}::uuid FOR UPDATE`;
+}
 
 function toAdminProfileChange(
   row: {
@@ -284,9 +297,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           joinedAt: dealer.createdAt.toISOString(),
           joinedLabel: formatDate(dealer.createdAt),
           creditBalance: dealer.creditBalance,
-          documentsVerified:
-            dealer.documents.length === REQUIRED_DOCUMENTS &&
-            dealer.documents.every((doc) => doc.status === 'VERIFIED'),
+          documentsVerified: allDocumentsVerified(dealer.documents),
           hasPendingProfileEdit: dealer.profileEdits.length > 0,
         })),
         page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
@@ -317,9 +328,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       }[] = [];
 
       const owner = dealer.members[0];
-      const allVerified =
-        dealer.documents.length === REQUIRED_DOCUMENTS &&
-        dealer.documents.every((d) => d.status === 'VERIFIED');
+      const allVerified = allDocumentsVerified(dealer.documents);
+      const application = await dealers.completeness(dealerId);
 
       const documents = await Promise.all(
         dealer.documents.map(async (doc) => {
@@ -409,9 +419,10 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           balanceAfter: row.balanceAfter,
         })),
         actions: {
-          canApprove: dealer.status === 'PENDING_APPROVAL' && allVerified,
+          canApprove: dealer.status === 'PENDING_APPROVAL' && allVerified && application.isComplete,
           canReject: dealer.status === 'PENDING_APPROVAL' || dealer.status === 'DRAFT',
           canRequestChanges: dealer.status === 'PENDING_APPROVAL',
+          canClose: dealer.status === 'DRAFT' || dealer.status === 'PENDING_APPROVAL',
           canSuspend: dealer.status === 'ACTIVE',
           canReinstate: dealer.status === 'SUSPENDED',
           canGrantCredits: admin.permissions.includes('admin:credit:grant'),
@@ -428,10 +439,40 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       assertPermission(admin, 'admin:dealer:approve');
 
       return withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
         const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
         if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
         if (dealer.status === 'ACTIVE') {
           throw new DomainError('ALREADY_ACTIVE', 'That dealership is already active.');
+        }
+        if (dealer.status !== 'PENDING_APPROVAL') {
+          throw new DomainError(
+            'NOT_UNDER_REVIEW',
+            'Only a submitted application can be approved.',
+          );
+        }
+        await tx.$queryRaw`
+          SELECT "id" FROM "dealer_documents" WHERE "dealerId" = ${dealerId}::uuid
+          ORDER BY "id" FOR UPDATE`;
+        const documents = await tx.dealerDocument.findMany({ where: { dealerId } });
+        if (!allDocumentsVerified(documents)) {
+          throw new DomainError(
+            'DOCUMENTS_NOT_VERIFIED',
+            'Verify all three uploaded KYC documents before approving this dealership.',
+          );
+        }
+        const uploads = await Promise.all(
+          documents.map((doc) => storage.head(documentKey(dealer.slug, doc.type, doc.id))),
+        );
+        if (uploads.some((object) => object === null)) {
+          throw new DomainError(
+            'DOCUMENT_UPLOAD_MISSING',
+            'A verified document upload is missing. Request a replacement before approval.',
+          );
+        }
+        const application = await dealers.completeness(dealerId, tx);
+        if (!application.isComplete) {
+          throw new DomainError('PROFILE_INCOMPLETE', 'Complete the application before approval.');
         }
 
         const updated = await tx.dealer.update({
@@ -481,36 +522,41 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     ): Promise<DealerPurgeResponse> {
       assertPermission(admin, 'admin:dealer:approve');
 
-      const dealer = await prisma.dealer.findUnique({
-        where: { id: dealerId },
-        include: {
-          documents: true,
-          members: {
-            where: { role: 'OWNER', status: 'ACTIVE' },
-            take: 1,
-            select: { user: { select: { email: true, fullName: true } } },
+      const purge = await withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
+        const dealer = await tx.dealer.findUnique({
+          where: { id: dealerId },
+          include: {
+            documents: true,
+            members: {
+              where: { role: 'OWNER', status: 'ACTIVE' },
+              take: 1,
+              select: { user: { select: { email: true, fullName: true } } },
+            },
           },
-        },
-      });
-      if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
-      if (dealer.status === 'ACTIVE' || dealer.status === 'SUSPENDED') {
-        throw new DomainError(
-          'DEALER_ALREADY_APPROVED',
-          'An approved dealership is suspended, not rejected. Suspension is reversible; this is not.',
-        );
-      }
+        });
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
+        if (dealer.status === 'CLOSED') {
+          throw new DomainError('INVALID_DEALER_TRANSITION', CLOSED_NOT_REJECTABLE);
+        }
+        if (
+          dealer.status === 'ACTIVE' ||
+          dealer.status === 'SUSPENDED' ||
+          dealer.approvedAt !== null
+        ) {
+          throw new DomainError(
+            'DEALER_ALREADY_APPROVED',
+            'An approved dealership is suspended, not rejected. Suspension is reversible; this is not.',
+          );
+        }
 
-      const media = await prisma.media.findMany({ where: { dealerId } });
-      const keys = [
-        ...dealer.documents.map((doc) => documentKey(dealer.slug, doc.type, doc.id)),
-        ...media.map((row) => row.storageKey),
-      ];
+        const media = await tx.media.findMany({ where: { dealerId } });
+        const keys = [
+          ...dealer.documents.map((doc) => documentKey(dealer.slug, doc.type, doc.id)),
+          ...media.map((row) => row.storageKey),
+        ];
 
-      const removals = await Promise.allSettled(keys.map((key) => storage.delete(key)));
-      const objectsDeleted = removals.filter((result) => result.status === 'fulfilled').length;
-
-      const purgedAt = new Date();
-      await withTransaction(prisma, async (tx) => {
+        const purgedAt = new Date();
         const owner = dealer.members[0]?.user;
         await audit.record(tx, {
           actorType: 'ADMIN',
@@ -534,7 +580,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             recipientName: owner?.fullName ?? null,
             documents: dealer.documents.map((doc) => ({ type: doc.type, status: doc.status })),
           },
-          after: { purged: true, reason, objectsDeleted },
+          after: { purged: true, reason, objectsDeleteRequested: keys.length },
         });
 
         await enqueueOutbox(tx, {
@@ -547,17 +593,31 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           payload: { dealerId, reason },
         });
 
+        await enqueueOutbox(tx, {
+          type: 'StorageObjectsDelete',
+          aggregateType: 'Dealer',
+          aggregateId: dealerId,
+          dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'dealer-reject',
+          payload: { keys },
+        });
+
         await tx.media.deleteMany({ where: { dealerId } });
         await tx.dealer.delete({ where: { id: dealerId } });
+        return { dealer, keys, purgedAt };
       });
+
+      const removals = await deleteStorageObjects(storage, purge.keys);
+      const objectsDeleted = removals.filter((result) => result.status === 'fulfilled').length;
 
       return {
         id: dealerId,
-        brandName: dealer.brandName,
-        documentsDeleted: dealer.documents.length,
+        brandName: purge.dealer.brandName,
+        documentsDeleted: purge.dealer.documents.length,
         objectsDeleted,
         reason,
-        purgedAt: purgedAt.toISOString(),
+        purgedAt: purge.purgedAt.toISOString(),
       };
     },
 
@@ -569,6 +629,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       assertPermission(admin, 'admin:dealer:approve');
 
       return withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
         const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
         if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
         if (dealer.status !== 'PENDING_APPROVAL') {
@@ -601,6 +662,59 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           dealerId,
           actor: { type: 'ADMIN', id: admin.userId },
           traceId: getContext()?.traceId ?? 'dealer-request-changes',
+          payload: { dealerId, reason },
+        });
+
+        return {
+          id: updated.id,
+          status: updated.status,
+          statusLabel: DEALER_STATUS_LABELS[updated.status],
+          creditsGranted: 0,
+          creditBalance: updated.creditBalance,
+          listingsAffected: 0,
+          notifiedAt: new Date().toISOString(),
+        };
+      });
+    },
+
+    async closeDealer(
+      admin: AdminPrincipal,
+      dealerId: string,
+      reason: string,
+    ): Promise<DealerModerationResponse> {
+      assertPermission(admin, 'admin:dealer:approve');
+
+      return withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
+        const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
+        if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
+        if (dealer.status !== 'DRAFT' && dealer.status !== 'PENDING_APPROVAL') {
+          throw new DomainError('INVALID_DEALER_TRANSITION', DEALER_NOT_CLOSABLE);
+        }
+
+        const updated = await tx.dealer.update({
+          where: { id: dealerId },
+          data: { status: 'CLOSED', statusReason: reason },
+        });
+
+        await audit.record(tx, {
+          actorType: 'ADMIN',
+          actorId: admin.userId,
+          dealerId,
+          action: 'dealer.closed',
+          entityType: 'Dealer',
+          entityId: dealerId,
+          before: { status: dealer.status },
+          after: { status: 'CLOSED', reason },
+        });
+
+        await enqueueOutbox(tx, {
+          type: 'DealerApplicationClosed',
+          aggregateType: 'Dealer',
+          aggregateId: dealerId,
+          dealerId,
+          actor: { type: 'ADMIN', id: admin.userId },
+          traceId: getContext()?.traceId ?? 'dealer-close',
           payload: { dealerId, reason },
         });
 
@@ -681,6 +795,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       action: string,
     ): Promise<DealerModerationResponse> {
       return withTransaction(prisma, async (tx) => {
+        await lockDealer(tx, dealerId);
         const dealer = await tx.dealer.findUnique({
           where: { id: dealerId },
           include: {
@@ -692,6 +807,22 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         });
         if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
 
+        const requiredStatus = status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED';
+        if (dealer.status !== requiredStatus) {
+          throw new DomainError(
+            'INVALID_DEALER_TRANSITION',
+            status === 'SUSPENDED'
+              ? 'Only an active dealership can be suspended.'
+              : 'Only a suspended dealership can be reinstated.',
+          );
+        }
+        if (status === 'ACTIVE' && dealer.approvedAt === null) {
+          throw new DomainError(
+            'DEALER_NOT_APPROVED',
+            'A dealership must have been approved before it can be reinstated.',
+          );
+        }
+
         const memberUserIds = [...new Set(dealer.members.map((member) => member.userId))];
 
         const updated = await tx.dealer.update({
@@ -700,28 +831,19 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             status,
             statusReason: reason,
             ...(status === 'SUSPENDED' ? { suspendedAt: new Date() } : {}),
-            ...(status === 'ACTIVE'
-              ? { suspendedAt: null, approvedAt: dealer.approvedAt ?? new Date() }
-              : {}),
+            ...(status === 'ACTIVE' ? { suspendedAt: null, approvedAt: dealer.approvedAt } : {}),
           },
         });
 
         const listings = 0;
 
-        if (memberUserIds.length > 0) {
+        if (status === 'ACTIVE' && memberUserIds.length > 0) {
           await setSeatStatus(tx, {
             userIds: memberUserIds,
             role: 'DEALER',
-            status: status === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE',
+            status: 'ACTIVE',
             reason,
           });
-
-          if (status === 'SUSPENDED') {
-            await tx.session.updateMany({
-              where: { userId: { in: memberUserIds }, scope: 'DEALER', revokedAt: null },
-              data: { revokedAt: new Date() },
-            });
-          }
         }
 
         await audit.record(tx, {
@@ -786,8 +908,19 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
       const rejecting = status === 'REJECTED';
 
       const outcome = await withTransaction(prisma, async (tx) => {
+        const candidate = await tx.dealerDocument.findUnique({ where: { id: documentId } });
+        if (!candidate) throw new NotFoundError(DOCUMENT_NOT_FOUND);
+        await lockDealer(tx, candidate.dealerId);
+        await tx.$queryRaw`
+          SELECT "id" FROM "dealer_documents" WHERE "id" = ${documentId}::uuid FOR UPDATE`;
         const doc = await tx.dealerDocument.findUnique({ where: { id: documentId } });
         if (!doc) throw new NotFoundError(DOCUMENT_NOT_FOUND);
+        if (!rejecting && (doc.status !== 'UPLOADED' || !doc.fileName)) {
+          throw new DomainError(
+            'DOCUMENT_NOT_UPLOADED',
+            'Only a committed uploaded document can be verified.',
+          );
+        }
 
         await tx.dealerDocument.update({
           where: { id: documentId },
@@ -801,8 +934,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         });
 
         const all = await tx.dealerDocument.findMany({ where: { dealerId: doc.dealerId } });
-        const allVerified =
-          all.length === REQUIRED_DOCUMENTS && all.every((row) => row.status === 'VERIFIED');
+        const allVerified = allDocumentsVerified(all);
 
         const dealer = await tx.dealer.findUnique({ where: { id: doc.dealerId } });
         const returnToDraft = rejecting && dealer?.status === 'PENDING_APPROVAL';

@@ -678,7 +678,7 @@ describe('what a dealer may change about themselves', () => {
     expect((await agent.get('/v1/dealer').expect(200)).body.address.city).toBe('Chennai');
   });
 
-  it.each(['PENDING_APPROVAL', 'ACTIVE', 'REJECTED', 'CLOSED'] as const)(
+  it.each(['PENDING_APPROVAL', 'ACTIVE', 'REJECTED'] as const)(
     'refuses the onboarding route once the dealership is %s',
     async (status) => {
       const { agent, dealerId } = await dealership();
@@ -694,16 +694,24 @@ describe('what a dealer may change about themselves', () => {
     },
   );
 
-  it('makes every dealer route unauthorized once the dealership is suspended', async () => {
-    const { agent, dealerId } = await dealership();
-    await h.prisma.dealer.update({ where: { id: dealerId }, data: { status: 'SUSPENDED' } });
+  /**
+   * A closed application (ORIG-GAP-CLOSE) is shut the way a suspended
+   * dealership is: its members cannot enter it at all, so the onboarding
+   * route answers 401 rather than PROFILE_LOCKED.
+   */
+  it.each(['SUSPENDED', 'CLOSED'] as const)(
+    'makes every dealer route unauthorized once the dealership is %s',
+    async (status) => {
+      const { agent, dealerId } = await dealership();
+      await h.prisma.dealer.update({ where: { id: dealerId }, data: { status } });
 
-    await agent
-      .patch('/v1/dealer/onboarding')
-      .send({ address: { city: 'Chennai' } })
-      .expect(401);
-    await agent.get('/v1/dealer').expect(401);
-  });
+      await agent
+        .patch('/v1/dealer/onboarding')
+        .send({ address: { city: 'Chennai' } })
+        .expect(401);
+      await agent.get('/v1/dealer').expect(401);
+    },
+  );
 });
 
 describe('the contact number, after onboarding', () => {
@@ -955,10 +963,21 @@ describe('email notifications', () => {
       .expect(200);
   }
 
+  async function readyForApproval() {
+    const made = await dealership();
+    await completeApplication(made.agent);
+    await made.agent.post('/v1/dealer/submit').expect(200);
+    const admin = await moderator();
+    const docs = await h.prisma.dealerDocument.findMany({ where: { dealerId: made.dealerId } });
+    for (const doc of docs) {
+      await admin.post(`/v1/admin/documents/${doc.id}/verify`).send({}).expect(200);
+    }
+    return { ...made, admin };
+  }
+
   /** **2 — approved.** */
   it('emails the dealer on approval', async () => {
-    const { dealerId } = await submitted();
-    const admin = await moderator();
+    const { dealerId, admin } = await readyForApproval();
 
     const emails = await emailsFrom(() =>
       admin.post(`/v1/admin/dealers/${dealerId}/approve`).send({}).expect(200),
@@ -1048,7 +1067,10 @@ describe('email notifications', () => {
 
   it('emails the dealer when suspended and when reinstated', async () => {
     const made = await dealership();
-    await h.prisma.dealer.update({ where: { id: made.dealerId }, data: { status: 'ACTIVE' } });
+    await h.prisma.dealer.update({
+      where: { id: made.dealerId },
+      data: { status: 'ACTIVE', approvedAt: new Date() },
+    });
     const admin = await moderator();
 
     const suspended = await emailsFrom(() =>
@@ -1140,8 +1162,7 @@ describe('email notifications', () => {
    * transaction. That is what makes the API's latency independent of Resend.
    */
   it('answers the request before any email exists', async () => {
-    const { dealerId } = await submitted();
-    const admin = await moderator();
+    const { dealerId, admin } = await readyForApproval();
     const before = h.mailer.sent.length;
 
     await admin.post(`/v1/admin/dealers/${dealerId}/approve`).send({}).expect(200);
@@ -1163,8 +1184,7 @@ describe('email notifications', () => {
    * memory, which is the only version of it that survives two workers.
    */
   it('sends one email however many times the outbox is drained', async () => {
-    const { dealerId } = await submitted();
-    const admin = await moderator();
+    const { dealerId, admin } = await readyForApproval();
 
     await admin.post(`/v1/admin/dealers/${dealerId}/approve`).send({}).expect(200);
 
@@ -1173,7 +1193,9 @@ describe('email notifications', () => {
 
     // The row is published now, so a second drain is a no-op; force the
     // handler to run again against the same event to prove the *claim* holds.
-    const rows = await h.prisma.notificationDelivery.findMany({ where: { dealerId } });
+    const rows = await h.prisma.notificationDelivery.findMany({
+      where: { dealerId, template: 'dealer.application.approved' },
+    });
     expect(rows).toHaveLength(1);
     expect(rows[0]?.status).toBe('SENT');
     expect(rows[0]?.providerMessageId).not.toBeNull();
@@ -1184,13 +1206,14 @@ describe('email notifications', () => {
 
   /** The trail support actually reads: who, which template, when, and by what id. */
   it('records the delivery against the dealership', async () => {
-    const { dealerId } = await submitted();
-    const admin = await moderator();
+    const { dealerId, admin } = await readyForApproval();
 
     await admin.post(`/v1/admin/dealers/${dealerId}/approve`).send({}).expect(200);
     await h.drainEmails();
 
-    const row = await h.prisma.notificationDelivery.findFirst({ where: { dealerId } });
+    const row = await h.prisma.notificationDelivery.findFirst({
+      where: { dealerId, template: 'dealer.application.approved' },
+    });
     expect(row).toMatchObject({ template: 'dealer.application.approved', status: 'SENT' });
     expect(row?.recipient).toContain('@');
     expect(row?.sentAt).not.toBeNull();

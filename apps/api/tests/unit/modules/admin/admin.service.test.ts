@@ -31,6 +31,8 @@ import type { AdminPrincipal } from '../../../../src/modules/auth/auth.facade.js
  * ────────────────────────────────────────────────────────────────────────────
  */
 interface Options {
+  applicationComplete?: boolean;
+  storageHeadFailure?: boolean;
   listingCounts?: Record<string, number>;
   oldestSubmission?: Date;
   dealers?: number;
@@ -84,7 +86,9 @@ function dealerRow(overrides: Record<string, unknown> = {}) {
     contactEmail: 'contact@sri-lakshmi-motors.in',
     creditBalance: 39,
     creditsHeld: 2,
-    approvedAt: new Date('2026-01-05T00:00:00.000Z'),
+    approvedAt: ['DRAFT', 'PENDING_APPROVAL', 'REJECTED'].includes(String(overrides.status))
+      ? null
+      : new Date('2026-01-05T00:00:00.000Z'),
     createdAt: new Date('2025-12-01T00:00:00.000Z'),
     city: 'Vellore',
     district: 'Vellore',
@@ -130,6 +134,7 @@ function setup(options: Options = {}) {
     Promise.resolve(options.dealer === null ? null : dealerRow(options.dealer ?? {}));
 
   const tx = {
+    $queryRaw: () => Promise.resolve([]),
     dealerDocument: {
       findUnique: () =>
         Promise.resolve(options.document === undefined ? DOCUMENT : options.document),
@@ -153,6 +158,7 @@ function setup(options: Options = {}) {
       },
     },
     media: {
+      findMany: () => Promise.resolve(options.media ?? []),
       deleteMany: (args: unknown) => {
         deletedMedia.push(args);
         return Promise.resolve({ count: (options.media ?? []).length });
@@ -281,6 +287,10 @@ function setup(options: Options = {}) {
   } as unknown as AuditService;
 
   const storage = {
+    head: () =>
+      options.storageHeadFailure
+        ? Promise.reject(new Error('Storage unavailable'))
+        : Promise.resolve({ bytes: 8, contentType: 'application/pdf' }),
     signedReadUrl: (key: string) => {
       signedUrls.push(key);
       return Promise.resolve(`https://storage.test/private/${key}?signed`);
@@ -304,6 +314,7 @@ function setup(options: Options = {}) {
    * write itself is right is `dealers.service`'s own test.
    */
   const dealers = {
+    completeness: () => Promise.resolve({ isComplete: options.applicationComplete ?? true }),
     update: (dealerId: string, input: unknown) => {
       dealerPatches.push({ dealerId, input });
       return Promise.resolve({ id: dealerId, legalName: 'Sri Lakshmi Motors Pvt Ltd' });
@@ -349,13 +360,14 @@ const DOCUMENT = {
   dealerId: 'dealer-1',
   type: 'GST_CERTIFICATE',
   status: 'UPLOADED',
+  fileName: 'verification.pdf',
 };
 
 /** Three rows, all verified — the only shape that makes `allVerified` true. */
 const ALL_VERIFIED = [
-  { type: 'GST_CERTIFICATE', status: 'VERIFIED' },
-  { type: 'PAN_CARD', status: 'VERIFIED' },
-  { type: 'ADDRESS_PROOF', status: 'VERIFIED' },
+  { type: 'GST_CERTIFICATE', status: 'VERIFIED', fileName: 'gst.pdf' },
+  { type: 'PAN_CARD', status: 'VERIFIED', fileName: 'pan.pdf' },
+  { type: 'ADDRESS_PROOF', status: 'VERIFIED', fileName: 'address.pdf' },
 ];
 
 const admin: AdminPrincipal = {
@@ -384,6 +396,20 @@ const support: AdminPrincipal = {
 function statFor(overview: AdminOverview, key: string): AdminOverview['stats'][number] | undefined {
   return overview.stats.find((stat) => stat.key === key);
 }
+
+describe('approval storage integrity', () => {
+  it('fails closed before state, audit or outbox writes when upload storage is unavailable', async () => {
+    const h = setup({
+      dealer: { status: 'PENDING_APPROVAL' },
+      siblings: ALL_VERIFIED,
+      storageHeadFailure: true,
+    });
+    await expect(h.service.approveDealer(admin, DEALER, {})).rejects.toThrow('Storage unavailable');
+    expect(h.dealerUpdates).toEqual([]);
+    expect(h.auditRows).toEqual([]);
+    expect(h.outbox).toEqual([]);
+  });
+});
 
 describe('overview', () => {
   it('counts every dealership, and the ones waiting on a decision', async () => {
@@ -834,7 +860,7 @@ describe('dealers', () => {
     const all = setup({
       dealerRows: [
         dealerRow({
-          documents: [{ status: 'VERIFIED' }, { status: 'VERIFIED' }, { status: 'VERIFIED' }],
+          documents: ALL_VERIFIED,
         }),
       ],
     });
@@ -920,7 +946,13 @@ describe('dealerDetail', () => {
     const h = setup({
       dealer: dealerRow({
         documents: [
-          { id: 'doc-1', type: 'GST_CERTIFICATE', status: 'VERIFIED', createdAt: new Date() },
+          {
+            id: 'doc-1',
+            type: 'GST_CERTIFICATE',
+            status: 'VERIFIED',
+            fileName: 'verification.pdf',
+            createdAt: new Date(),
+          },
         ],
       }),
     });
@@ -993,9 +1025,27 @@ describe('dealerDetail', () => {
       dealer: dealerRow({
         status: 'PENDING_APPROVAL',
         documents: [
-          { id: 'a', type: 'GST_CERTIFICATE', status: 'VERIFIED', createdAt: new Date() },
-          { id: 'b', type: 'PAN_CARD', status: 'VERIFIED', createdAt: new Date() },
-          { id: 'c', type: 'ADDRESS_PROOF', status: 'VERIFIED', createdAt: new Date() },
+          {
+            id: 'a',
+            type: 'GST_CERTIFICATE',
+            status: 'VERIFIED',
+            fileName: 'verification.pdf',
+            createdAt: new Date(),
+          },
+          {
+            id: 'b',
+            type: 'PAN_CARD',
+            status: 'VERIFIED',
+            fileName: 'verification.pdf',
+            createdAt: new Date(),
+          },
+          {
+            id: 'c',
+            type: 'ADDRESS_PROOF',
+            status: 'VERIFIED',
+            fileName: 'verification.pdf',
+            createdAt: new Date(),
+          },
         ],
       }),
     });
@@ -1066,7 +1116,10 @@ describe('dealerDetail', () => {
 
 describe('approveDealer', () => {
   it('activates the dealership and clears any status reason', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL', statusReason: 'Waiting' }) });
+    const h = setup({
+      dealer: dealerRow({ status: 'PENDING_APPROVAL', statusReason: 'Waiting' }),
+      siblings: ALL_VERIFIED,
+    });
 
     const response = await h.service.approveDealer(admin, DEALER, {});
 
@@ -1084,7 +1137,7 @@ describe('approveDealer', () => {
    * ────────────────────────────────────────────────────────────────────────
    */
   it('grants nothing, and says so, until the ledger exists', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }), siblings: ALL_VERIFIED });
 
     const response = await h.service.approveDealer(admin, DEALER, { note: 'Launch offer' });
 
@@ -1111,7 +1164,7 @@ describe('approveDealer', () => {
   });
 
   it('audit-logs the before and after status', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }), siblings: ALL_VERIFIED });
 
     await h.service.approveDealer(admin, DEALER, {});
 
@@ -1126,7 +1179,7 @@ describe('approveDealer', () => {
   });
 
   it('publishes DealerApproved in the same transaction', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }) });
+    const h = setup({ dealer: dealerRow({ status: 'PENDING_APPROVAL' }), siblings: ALL_VERIFIED });
 
     await h.service.approveDealer(admin, DEALER, {});
 
@@ -1152,14 +1205,16 @@ describe('setDealerStatus and its wrappers', () => {
   });
 
   /**
-   * R41 — the seat, not the account.
+   * R92 — the dealership, not the person.
    *
-   * This used to write `users.status`, and `users.status` is the whole person.
-   * A member who also moderates the platform lost the admin console because a
-   * dealership was suspended, which is a consequence nobody asked for and
-   * nobody could see. Both assertions below are about what is *not* touched.
+   * R41 moved suspension from `users.status` to the person's DEALER seat. R92
+   * moves it once more, onto the dealership alone: one person can now belong to
+   * several dealerships, and closing their seat because ABC Motors was
+   * suspended would also lock them out of XYZ Cars. Their sessions are not
+   * revoked either — the same session is their customer account. What denies
+   * them is the dealership's status, read on every dealer request.
    */
-  it('closes every member dealer seat and revokes their dealer sessions on suspension', async () => {
+  it('touches no person on suspension — no account, no seat, no session', async () => {
     const h = setup({
       dealer: dealerRow({
         status: 'ACTIVE',
@@ -1172,38 +1227,11 @@ describe('setDealerStatus and its wrappers', () => {
 
     await h.service.suspendDealer(admin, DEALER, 'GST expired.');
 
-    // The account itself is left alone.
     expect(h.userUpdates).toEqual([]);
-
-    // A member who has never signed in has no seat row yet, so the write is a
-    // create-then-update pair rather than an update.
-    expect(h.seatCreates).toEqual([
-      {
-        data: [
-          { userId: 'owner-1', role: 'DEALER' },
-          { userId: 'manager-1', role: 'DEALER' },
-        ],
-        skipDuplicates: true,
-      },
-    ]);
-    expect(h.seatUpdates).toEqual([
-      {
-        where: { userId: { in: ['owner-1', 'manager-1'] }, role: 'DEALER' },
-        data: { status: 'SUSPENDED', reason: 'GST expired.', suspendedAt: expect.any(Date) },
-      },
-    ]);
-
-    // Scoped. An admin session one of these people holds survives.
-    expect(h.sessionUpdates).toEqual([
-      {
-        where: {
-          userId: { in: ['owner-1', 'manager-1'] },
-          scope: 'DEALER',
-          revokedAt: null,
-        },
-        data: { revokedAt: expect.any(Date) },
-      },
-    ]);
+    expect(h.seatCreates).toEqual([]);
+    expect(h.seatUpdates).toEqual([]);
+    expect(h.sessionUpdates).toEqual([]);
+    expect(h.dealerUpdates[0]?.data).toMatchObject({ status: 'SUSPENDED' });
   });
 
   it('reopens the dealer seats on reinstatement, and revokes nothing', async () => {
@@ -1254,12 +1282,14 @@ describe('setDealerStatus and its wrappers', () => {
     expect(h.dealerUpdates[0]?.data.approvedAt).toBe(original);
   });
 
-  it('stamps an approval date when reinstating one that never had one', async () => {
-    const h = setup({ dealer: dealerRow({ status: 'REJECTED', approvedAt: null }) });
-
-    await h.service.reinstateDealer(admin, DEALER);
-
-    expect(h.dealerUpdates[0]?.data.approvedAt).toBeInstanceOf(Date);
+  it('refuses to invent an approval date for a never-approved suspended dealer', async () => {
+    const h = setup({ dealer: dealerRow({ status: 'SUSPENDED', approvedAt: null }) });
+    await expect(h.service.reinstateDealer(admin, DEALER)).rejects.toMatchObject({
+      code: 'DEALER_NOT_APPROVED',
+    });
+    expect(h.dealerUpdates).toEqual([]);
+    expect(h.auditRows).toEqual([]);
+    expect(h.outbox).toEqual([]);
   });
 
   it('accepts a reinstatement with no note', async () => {

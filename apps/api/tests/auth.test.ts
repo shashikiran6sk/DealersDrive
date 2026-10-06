@@ -441,7 +441,15 @@ describe('a returning dealer', () => {
 });
 
 describe('a suspended dealership account', () => {
-  it('blocks Google sign-in, invalidates every session, and requires sign-in after reinstatement', async () => {
+  /**
+   * **R92** — suspension is a fact about the dealership, read on every request.
+   *
+   * Before R92 it closed each member's DEALER seat and revoked their DEALER
+   * sessions. One person may now belong to several dealerships, and their one
+   * session is also their customer account, so neither is touched: what
+   * refuses them is the dealership's status, checked on every dealer request.
+   */
+  it('blocks dealer access and Google sign-in, touches no seat or session, and reinstates in place', async () => {
     const dealerClaims = { ...h.google.claims };
     const firstDevice = h.agent();
     await h.signIn(firstDevice);
@@ -461,11 +469,10 @@ describe('a suspended dealership account', () => {
         },
       },
     });
-    expect(
-      await h.prisma.session.count({
-        where: { userId: identity.userId, scope: 'DEALER', revokedAt: null },
-      }),
-    ).toBeGreaterThanOrEqual(2);
+    const liveSessions = await h.prisma.session.count({
+      where: { userId: identity.userId, scope: 'DEALER', revokedAt: null },
+    });
+    expect(liveSessions).toBeGreaterThanOrEqual(2);
 
     h.google.claims = {
       subject: `suspension-admin-${String(subjectCounter)}`,
@@ -480,13 +487,11 @@ describe('a suspended dealership account', () => {
       .send({ reason: 'GST registration has expired.' })
       .expect(200);
 
-    // R41 — the dealer **seat** closes; the account does not. The distinction
-    // is the whole of this change: `users.status` is every door this person has.
     expect(
       await h.prisma.userRole.findUniqueOrThrow({
         where: { userId_role: { userId: identity.userId, role: 'DEALER' } },
       }),
-    ).toMatchObject({ status: 'SUSPENDED', reason: 'GST registration has expired.' });
+    ).toMatchObject({ status: 'ACTIVE' });
     expect(await h.prisma.user.findUniqueOrThrow({ where: { id: identity.userId } })).toMatchObject(
       { status: 'ACTIVE' },
     );
@@ -494,9 +499,10 @@ describe('a suspended dealership account', () => {
       await h.prisma.session.count({
         where: { userId: identity.userId, scope: 'DEALER', revokedAt: null },
       }),
-    ).toBe(0);
+    ).toBe(liveSessions);
     await firstDevice.get('/v1/auth/me').expect(401);
     await secondDevice.get('/v1/auth/me').expect(401);
+    await firstDevice.get('/v1/dealer/vehicles').expect(401);
 
     // Google identifies the account by its stable subject, so changing the
     // address cannot walk around the suspension.
@@ -504,31 +510,19 @@ describe('a suspended dealership account', () => {
     const blocked = h.agent();
     const blockedSignIn = await h.signIn(blocked);
     expect(blockedSignIn.location).toContain('error=account_suspended');
-    expect(
-      await h.prisma.session.count({
-        where: { userId: identity.userId, scope: 'DEALER', revokedAt: null },
-      }),
-    ).toBe(0);
 
     await admin
       .post(`/v1/admin/dealers/${String(created.body.dealer.id)}/reinstate`)
       .send({ note: 'Registration renewed.' })
       .expect(200);
-    expect(
-      await h.prisma.userRole.findUniqueOrThrow({
-        where: { userId_role: { userId: identity.userId, role: 'DEALER' } },
-      }),
-    ).toMatchObject({ status: 'ACTIVE', reason: null, suspendedAt: null });
+
+    // Nothing was revoked, so reinstatement reopens the same devices.
+    await firstDevice.get('/v1/auth/me').expect(200);
+    await secondDevice.get('/v1/auth/me').expect(200);
 
     const restored = h.agent();
     const restoredSignIn = await h.signIn(restored);
     expect(restoredSignIn.location).toBe(`${env.WEB_BASE_URL}/dealer`);
-    await restored.get('/v1/auth/me').expect(200);
-
-    // Reinstatement restores the account, not a browser token that was
-    // explicitly revoked during suspension.
-    await firstDevice.get('/v1/auth/me').expect(401);
-    await secondDevice.get('/v1/auth/me').expect(401);
   });
 
   it('blocks a legacy dealer-status-only suspension as a backstop', async () => {
@@ -570,7 +564,7 @@ describe('a suspended dealership account', () => {
    * have operations suspend the dealership. The dealer door closes. The
    * operations door does not.
    */
-  it('closes the dealer seat of a member who is also an admin, and leaves their console open', async () => {
+  it('shuts the dealer door of a member who is also an admin, and leaves their console open', async () => {
     const dualSeat = newAccount({ email: DUAL_SEAT_ADMIN });
     const dealerDevice = h.agent();
     await h.signIn(dealerDevice);
@@ -607,13 +601,8 @@ describe('a suspended dealership account', () => {
       .send({ reason: 'GST registration has expired.' })
       .expect(200);
 
-    // The dealer console is shut, by the seat and by the session.
+    // The dealer console is shut, by the dealership's own status (R92).
     await dealerDevice.get('/v1/auth/me').expect(401);
-    expect(
-      await h.prisma.userRole.findUniqueOrThrow({
-        where: { userId_role: { userId: identity.userId, role: 'DEALER' } },
-      }),
-    ).toMatchObject({ status: 'SUSPENDED' });
 
     // The operations console is not. This is the assertion the whole revision
     // is for: the session was never revoked, and the seat was never closed.

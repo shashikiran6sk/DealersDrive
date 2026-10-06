@@ -91,3 +91,13 @@ review` tag and what happens next — the team checks the details and arranges a
 photo shoot. It is reached through `?submitted=1` on the same edit URL and only
 renders while the listing really is PENDING_REVIEW, so a stale or hand-typed
 link shows the vehicle as it is instead.
+
+## `apps/web/src/features/vehicle/vehicle-wizard/submit-row.tsx`
+
+### `mayPublish = true,`
+
+**R95.** STAFF prepare drafts; a manager or the owner sends them for review. For
+STAFF the review step offers no Submit and says who will — the API would refuse
+it, and `canSubmit` comes back false for them anyway, but without this the row
+would explain the missing button as "fill in the missing details", which is not
+the reason.

@@ -12,6 +12,11 @@ vi.mock('@/lib/api', async (importOriginal) => {
   return { ...actual, apiGetParsed: (...args: unknown[]) => apiGetParsed(...args) as unknown };
 });
 
+vi.mock('@/lib/session', () => ({
+  currentSession: () =>
+    Promise.resolve({ permissions: ['vehicle:read', 'vehicle:write', 'listing:submit'] }),
+}));
+
 const ID = '22222222-2222-4222-8222-222222222222';
 
 function stored() {

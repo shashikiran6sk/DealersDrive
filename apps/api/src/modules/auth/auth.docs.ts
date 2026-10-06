@@ -115,7 +115,7 @@ export const authDocs: ModuleDocs = {
         'has no dealership yet, or to the requested path when it has. Every failure redirects ' +
         'to `/dealer/login?error=…` instead, so the person sees the sign-in screen rather than ' +
         'a JSON body: `sign_in_failed`, `identity_unverified`, `google_declined`, ' +
-        '`account_link_required`, `account_suspended`, `invalid_callback`.\n\n' +
+        '`account_link_required`, `account_suspended`, `application_closed`, `invalid_callback`.\n\n' +
         '**Both consoles come back through this one path.** The sealed cookie says which, and ' +
         'an admin round trip is answered differently in two ways: the address must be on ' +
         '`ADMIN_ALLOWLIST` — `not_authorised` if it is not — and the session it sets has ' +
@@ -490,7 +490,8 @@ export const authDocs: ModuleDocs = {
         'the phone verified and no Google account yet, sent to `/dealer/onboarding`, where step ' +
         '1 asks for Google before anything else can be saved. A number held, unverified, by a ' +
         'legacy account is `409 IDENTITY_ALREADY_LINKED` rather than taken over. ' +
-        '`403 ACCOUNT_SUSPENDED` for a suspended account or dealership. ' +
+        '`403 ACCOUNT_SUSPENDED` for a suspended account or dealership; ' +
+        '`403 APPLICATION_CLOSED` when the only dealership is a closed application. ' +
         '`503 PHONE_OTP_UNAVAILABLE` when MSG91, or the replay guard, cannot answer — a ' +
         'sign-in that cannot rule out a replayed token is refused rather than allowed.\n\n' +
         'Rate-limited to 20 attempts in 10 minutes per IP and 10 per number.',
@@ -636,6 +637,72 @@ export const authDocs: ModuleDocs = {
           },
         },
       ],
+    },
+    {
+      method: 'get',
+      path: '/v1/auth/workspaces',
+      operationId: 'listDealerWorkspaces',
+      tag: DOC_TAGS.auth,
+      summary: 'The dealerships this person can work in',
+      description:
+        'One account, several contexts (**R93**). Every dealership the signed-in person is an ' +
+        'active member of, with their role, oldest first. A suspended dealership is listed with ' +
+        '`enterable: false`, so the menu can say why it is closed rather than hiding it. ' +
+        '`current` marks the one `/v1/dealer/*` acts on for this session. A customer with no ' +
+        'membership gets an empty list.\n\nAnswered for the same session the customer routes ' +
+        'accept — a customer sign-in reaches the dealer console with no second sign-in.\n\n' +
+        '`Cache-Control: no-store`.',
+      audience: 'customer',
+      responses: [
+        {
+          status: 200,
+          description: 'The person’s dealerships.',
+          schema: 'DealerWorkspacesResponse',
+          example: {
+            data: [
+              {
+                membershipId: '7d1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6',
+                dealer: {
+                  id: '3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f',
+                  slug: 'abc-motors-vellore-tamil-nadu',
+                  brandName: 'ABC Motors',
+                  status: 'ACTIVE',
+                },
+                role: 'MANAGER',
+                roleLabel: 'Manager',
+                enterable: true,
+                current: true,
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      method: 'put',
+      path: '/v1/auth/workspaces/current',
+      operationId: 'selectDealerWorkspace',
+      tag: DOC_TAGS.auth,
+      summary: 'Work in one of your dealerships',
+      description:
+        'Points this session at one of the person’s own memberships (**R93**). The body names ' +
+        'a membership, never a dealership — `dealerId` is accepted in no body (rule 1) — and a ' +
+        'membership that is not theirs, not active, or in a suspended dealership is a 404. No ' +
+        'session is issued and no cookie changes: the same session, now working elsewhere. The ' +
+        'choice is a preference, re-checked on every request.',
+      audience: 'customer',
+      requestBody: {
+        schema: 'SelectWorkspaceInput',
+        example: { membershipId: '7d1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6' },
+      },
+      responses: [
+        {
+          status: 200,
+          description: 'The person’s dealerships, with the chosen one current.',
+          schema: 'DealerWorkspacesResponse',
+        },
+      ],
+      errors: [400, 401, 404],
     },
   ],
 };

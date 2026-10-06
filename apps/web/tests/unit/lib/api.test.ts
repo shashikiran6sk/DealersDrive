@@ -1,9 +1,19 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
-import { cookieJar } from '../../setup.js';
+import { cookieJar, requestHeaders } from '../../setup.js';
 import { PublicLocations } from '@dealers-drive/contracts';
 
-import { ApiError, apiGet, apiGetParsed, apiSend, qs } from '../../../src/lib/api.js';
+import {
+  API_TIMEOUT_MS,
+  ApiError,
+  apiGet,
+  apiGetParsed,
+  apiSend,
+  qs,
+  SERVER_ERROR_MESSAGE,
+  UpstreamUnavailableError,
+} from '../../../src/lib/api.js';
+import { logger } from '../../../src/lib/logger.js';
 
 /**
  * The one place the web app talks to the API (Rule 8). Three behaviours here
@@ -324,7 +334,144 @@ describe('ApiError', () => {
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.status).toBe(502);
-    expect(error.code).toBe('INTERNAL');
+    expect(error.code).toBe('SERVICE_UNAVAILABLE');
+  });
+});
+
+/**
+ * The error model's input side: whatever came back, the caller receives one of
+ * two things — an `ApiError` whose status is the one on the response, or an
+ * `UpstreamUnavailableError` saying the API could not be reached, answered in
+ * time, or answered with something unreadable. Nothing an upstream wrote into a
+ * body it was not meant to reaches the problem the UI and the BFF read from.
+ */
+describe('upstream failures', () => {
+  let stderr: MockInstance<typeof process.stderr.write>;
+
+  beforeEach(() => {
+    stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function logged(): Record<string, unknown>[] {
+    return stderr.mock.calls.map(
+      (call: unknown[]) => JSON.parse(String(call[0])) as Record<string, unknown>,
+    );
+  }
+
+  it('reads an HTML error page as a synthesised problem rather than a parse failure', async () => {
+    globalThis.fetch = respondWith(undefined, {
+      status: 502,
+      text: '<html><body>Bad Gateway nginx/1.25</body></html>',
+    }) as unknown as typeof fetch;
+
+    const error = (await apiGet('/v1/vehicles').catch((caught: unknown) => caught)) as ApiError;
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(502);
+    expect(JSON.stringify(error.problem)).not.toContain('nginx');
+  });
+
+  it('keeps nothing from a body that is not a problem document', async () => {
+    globalThis.fetch = respondWith(
+      { error: "PrismaClientInitializationError: Can't reach database server at db.internal:5432" },
+      { status: 500 },
+    ) as unknown as typeof fetch;
+
+    const error = (await apiGet('/v1/vehicles').catch((caught: unknown) => caught)) as ApiError;
+
+    expect(error.problem).toEqual({
+      type: 'about:blank',
+      title: 'Request failed',
+      status: 500,
+      code: 'INTERNAL',
+    });
+    expect(error.userMessage()).toBe(SERVER_ERROR_MESSAGE);
+  });
+
+  it('takes the status from the response, never from the body', async () => {
+    globalThis.fetch = respondWith(
+      { type: 'x', title: 'Not found', status: 200, code: 'NOT_FOUND' },
+      { status: 404 },
+    ) as unknown as typeof fetch;
+
+    const error = (await apiGet('/v1/vehicles/x').catch((caught: unknown) => caught)) as ApiError;
+    expect(error.status).toBe(404);
+  });
+
+  it('calls an unreachable API unavailable, and logs why', async () => {
+    globalThis.fetch = vi.fn(() =>
+      Promise.reject(new TypeError('fetch failed', { cause: new Error('connect ECONNREFUSED') })),
+    );
+
+    const error = await apiGet('/v1/vehicles').catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(UpstreamUnavailableError);
+    expect((error as UpstreamUnavailableError).kind).toBe('network');
+    expect(logged()[0]).toMatchObject({
+      level: 'error',
+      event: 'api.request_failed',
+      method: 'GET',
+      path: '/v1/vehicles',
+    });
+    expect(logged()[0]).toMatchObject({
+      error: { kind: 'network', cause: { name: 'TypeError', cause: { name: 'Error' } } },
+    });
+    expect(JSON.stringify(logged()[0])).not.toContain('ECONNREFUSED');
+  });
+
+  it('gives up on an API that does not answer in time', async () => {
+    vi.useFakeTimers();
+    globalThis.fetch = vi.fn(() => new Promise<Response>(() => undefined));
+
+    const pending = apiGet('/v1/vehicles').catch((caught: unknown) => caught);
+    await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
+    const error = await pending;
+
+    expect(error).toBeInstanceOf(UpstreamUnavailableError);
+    expect((error as UpstreamUnavailableError).kind).toBe('timeout');
+  });
+
+  it('calls a 200 it cannot read malformed rather than returning half of it', async () => {
+    globalThis.fetch = respondWith(undefined, {
+      status: 200,
+      text: '{"data": [',
+    }) as unknown as typeof fetch;
+
+    const error = await apiGet('/v1/vehicles').catch((caught: unknown) => caught);
+    expect((error as UpstreamUnavailableError).kind).toBe('malformed');
+  });
+
+  it('logs a server failure with its trace id, and never a 4xx', async () => {
+    globalThis.fetch = respondWith(
+      { type: 'x', title: 'Internal server error', status: 500, code: 'INTERNAL', traceId: 'T1' },
+      { status: 500 },
+    ) as unknown as typeof fetch;
+    await apiGet('/v1/vehicles').catch(() => undefined);
+    expect(logged()[0]).toMatchObject({
+      error: { status: 500, code: 'INTERNAL', traceId: 'T1' },
+    });
+
+    stderr.mockClear();
+    globalThis.fetch = respondWith(
+      { type: 'x', title: 'Not found', status: 404, code: 'VEHICLE_NOT_FOUND' },
+      { status: 404 },
+    ) as unknown as typeof fetch;
+    await apiGet('/v1/vehicles/x').catch(() => undefined);
+    expect(stderr).not.toHaveBeenCalled();
+  });
+
+  it('lets a caller’s own abort through untouched and unlogged', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const abort = new DOMException('Aborted', 'AbortError');
+    globalThis.fetch = vi.fn(() => Promise.reject(abort));
+
+    await expect(apiGet('/v1/vehicles', { signal: controller.signal })).rejects.toBe(abort);
+    expect(stderr).not.toHaveBeenCalled();
   });
 });
 
@@ -498,6 +645,77 @@ describe('forwarding the session', () => {
 });
 
 /**
+ * R107 — the visitor's address, for the API's per-IP limits.
+ *
+ * Every API call leaves from the web tier, so without this the reveal, enquiry
+ * and sign-in limiters would count the whole internet as one visitor. The
+ * address travels with the shared secret, which is how the API knows the claim
+ * came from the web tier and not from someone on the internet. It is sent
+ * exactly where the session is: never on a cached read, because Next keys its
+ * data cache on request headers and a per-visitor header would split the
+ * cache into one entry per visitor.
+ */
+describe('forwarding the visitor address', () => {
+  const SECRET = 'a-shared-secret-of-at-least-thirty-two-chars';
+  const sent = (index = 0) => calls[index]?.init.headers as Record<string, string>;
+
+  beforeEach(() => {
+    vi.stubEnv('CLIENT_IP_FORWARD_SECRET', SECRET);
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('sends the address and the secret on a mutation', async () => {
+    requestHeaders.set('x-real-ip', '203.0.113.42');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiSend('POST', '/v1/enquiries', { listingSlug: 'a-car' });
+
+    expect(sent()['x-dd-client-ip']).toBe('203.0.113.42');
+    expect(sent()['x-dd-forward-secret']).toBe(SECRET);
+  });
+
+  it('falls back to the first x-forwarded-for entry', async () => {
+    requestHeaders.set('x-forwarded-for', '203.0.113.7, 10.0.0.2');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiGet('/v1/dealer', { revalidate: false });
+
+    expect(sent()['x-dd-client-ip']).toBe('203.0.113.7');
+  });
+
+  it('never sends either on a cached read', async () => {
+    requestHeaders.set('x-real-ip', '203.0.113.42');
+    globalThis.fetch = respondWith({ data: [] }) as unknown as typeof fetch;
+
+    await apiGet('/v1/vehicles', { revalidate: 60 });
+
+    expect(sent()['x-dd-client-ip']).toBeUndefined();
+    expect(sent()['x-dd-forward-secret']).toBeUndefined();
+  });
+
+  it('sends neither when the web tier has no secret', async () => {
+    vi.stubEnv('CLIENT_IP_FORWARD_SECRET', '');
+    requestHeaders.set('x-real-ip', '203.0.113.42');
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiSend('POST', '/v1/enquiries', {});
+
+    expect(sent()['x-dd-client-ip']).toBeUndefined();
+    expect(sent()['x-dd-forward-secret']).toBeUndefined();
+  });
+
+  it('does not send the secret alone when the visitor address is unknown', async () => {
+    globalThis.fetch = respondWith({ ok: true }) as unknown as typeof fetch;
+
+    await apiSend('POST', '/v1/enquiries', {});
+
+    expect(sent()['x-dd-forward-secret']).toBeUndefined();
+  });
+});
+
+/**
  * R22 — the read that is checked rather than asserted, and the incident it
  * came from.
  *
@@ -634,5 +852,74 @@ describe('apiGetParsed', () => {
       ).rejects.toThrow(/districts\.0\.state/);
       expect(calls).toHaveLength(1);
     });
+  });
+});
+
+/**
+ * R99 — what a slow page can be traced by.
+ *
+ * A call that takes a second or more logs `api.slow_request` with the trace id
+ * the API logged it under, so a slow render in the web log can be found next to
+ * its `durationMs` / `dbMs` in the API's. Mutations send their own
+ * `x-request-id`; reads never do, because Next keys its data cache and its
+ * per-render fetch dedupe on the request headers, and a random header on a GET
+ * would make every cached read a miss.
+ */
+describe('request ids and slow calls (R99)', () => {
+  function headersOf(call: Captured | undefined): Record<string, string> {
+    return (call?.init.headers ?? {}) as Record<string, string>;
+  }
+
+  it('sends no request id on a read, so cached and deduped reads keep their keys', async () => {
+    globalThis.fetch = respondWith({}) as unknown as typeof fetch;
+    await apiGet('/v1/cities', { revalidate: 60 });
+
+    expect(headersOf(calls[0])['x-request-id']).toBeUndefined();
+  });
+
+  it('sends a fresh request id on every mutation', async () => {
+    globalThis.fetch = respondWith({}) as unknown as typeof fetch;
+    await apiSend('POST', '/v1/dealer/vehicles', { registrationNumber: 'TN23AJ1245' });
+    await apiSend('POST', '/v1/dealer/vehicles', { registrationNumber: 'TN23AJ1245' });
+
+    const [first, second] = calls.map((call) => headersOf(call)['x-request-id']);
+    expect(first).toMatch(/^[0-9a-f-]{36}$/);
+    expect(second).toMatch(/^[0-9a-f-]{36}$/);
+    expect(first).not.toBe(second);
+  });
+
+  it('logs a call of a second or more with its route, status, duration and trace id — nothing else', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    const clock = vi.spyOn(performance, 'now').mockReturnValueOnce(0).mockReturnValue(1_450);
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'x-request-id': 'trace-abc' }),
+        text: () => Promise.resolve('{}'),
+      } as Response),
+    );
+
+    await apiGet('/v1/dealer/enquiries?status=NEW', { revalidate: false });
+
+    expect(warn).toHaveBeenCalledWith('api.slow_request', {
+      method: 'GET',
+      path: '/v1/dealer/enquiries?status=NEW',
+      status: 200,
+      durationMs: 1_450,
+      traceId: 'trace-abc',
+    });
+    warn.mockRestore();
+    clock.mockRestore();
+  });
+
+  it('says nothing about a fast call', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    globalThis.fetch = respondWith({}) as unknown as typeof fetch;
+
+    await apiGet('/v1/cities', { revalidate: 60 });
+
+    expect(warn).not.toHaveBeenCalledWith('api.slow_request', expect.anything());
+    warn.mockRestore();
   });
 });

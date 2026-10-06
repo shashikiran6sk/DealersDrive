@@ -10,6 +10,7 @@ import { notFound } from './middleware/not-found.js';
 import { requestContext } from './middleware/request-context.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { requestMetrics } from './middleware/request-metrics.js';
+import { createTrustedClientIp } from './middleware/trusted-client-ip.js';
 import { createRoutes } from './routes.js';
 
 export function createApp(container: Container): Express {
@@ -18,6 +19,7 @@ export function createApp(container: Container): Express {
   app.set('trust proxy', 1);
   app.disable('x-powered-by');
 
+  app.use(createTrustedClientIp(env.CLIENT_IP_FORWARD_SECRET));
   app.use(requestContext);
   app.use(requestMetrics);
 

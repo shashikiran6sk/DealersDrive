@@ -12,6 +12,7 @@ import {
 } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Banner, Blueprint } from '@/components/ui/primitives';
 
 import { FIELD_LABELS, STEP_LABELS, VEHICLE_WIZARD_TEXT } from './vehicle-wizard.constants';
@@ -114,10 +115,10 @@ export function ReviewStep({
               <li key={issue.field} className="flex flex-wrap items-baseline gap-2">
                 <span>{issue.message}</span>
                 <Link
-                  className="btn btn-ghost text-[12px]"
+                  className="relative btn btn-ghost text-[12px]"
                   href={editPath(vehicle.id, stepOfField(issue.field))}
                 >
-                  {VEHICLE_WIZARD_TEXT.fix}
+                  <LinkPendingLabel>{VEHICLE_WIZARD_TEXT.fix}</LinkPendingLabel>
                 </Link>
               </li>
             ))}
@@ -140,8 +141,11 @@ export function ReviewStep({
           <div className="flex items-center justify-between border-b border-(--color-divider) pb-[6px]">
             <h4 className="text-[14px] font-semibold">{STEP_LABELS[section.step]}</h4>
             {readOnly ? null : (
-              <Link className="btn btn-ghost text-[12px]" href={editPath(vehicle.id, section.step)}>
-                {VEHICLE_WIZARD_TEXT.edit}
+              <Link
+                className="relative btn btn-ghost text-[12px]"
+                href={editPath(vehicle.id, section.step)}
+              >
+                <LinkPendingLabel>{VEHICLE_WIZARD_TEXT.edit}</LinkPendingLabel>
               </Link>
             )}
           </div>

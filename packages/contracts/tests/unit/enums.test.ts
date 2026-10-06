@@ -119,7 +119,7 @@ describe('listing status and its display form', () => {
 describe('roles', () => {
   /** ARCHITECTURE §8.3's two role sets, kept separate so neither can grant the other. */
   it('lists the three dealer seats', () => {
-    expect(enums.DealerRole.options).toEqual(['OWNER', 'MANAGER', 'SALES']);
+    expect(enums.DealerRole.options).toEqual(['OWNER', 'MANAGER', 'STAFF']);
   });
 
   it('lists the three admin seats', () => {

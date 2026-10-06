@@ -37,8 +37,15 @@ const INPUT_SCHEMA_NAMES = [
   'CreateEnquiryInput',
   'CustomerEnquiryQuery',
   'SavedVehiclesQuery',
+  'CreateSupportTicketInput',
+  'SupportMessageInput',
+  'CustomerSupportTicketQuery',
+  'AdminSupportTicketQuery',
+  'UpdateSupportTicketInput',
+  'SupportNoteInput',
   'DealerEnquiryQuery',
   'UpdateEnquiryInput',
+  'AdminEnquiryQuery',
   'CreateVehicleInput',
   'UpdateVehicleInput',
   'WithdrawListingInput',
@@ -58,6 +65,9 @@ const INPUT_SCHEMA_NAMES = [
   'SitemapQuery',
   'DealerVehicleQuery',
   'VehicleSlugParam',
+  'SelectWorkspaceInput',
+  'InviteMemberInput',
+  'UpdateMemberInput',
 ] as const;
 
 export type InputSchemaName = (typeof INPUT_SCHEMA_NAMES)[number];

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 
-import { Blueprint, Plate } from '@/components/ui/primitives';
+import { BrandLogo } from '@/components/brand-logo';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
+import { Blueprint } from '@/components/ui/primitives';
 
 interface ComingSoonProps {
   eyebrow: string;
@@ -23,18 +25,18 @@ export function ComingSoon({ eyebrow, title, description }: ComingSoonProps) {
           <p className="mt-5 max-w-[58ch] text-[15px] leading-[1.7] ink-secondary">{description}</p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/dealers" className="btn btn-primary px-5 py-[10px]">
-              Explore verified dealers
+            <Link href="/dealers" className="relative btn btn-primary px-5 py-[10px]">
+              <LinkPendingLabel>Explore verified dealers</LinkPendingLabel>
             </Link>
-            <Link href="/" className="btn btn-secondary px-5 py-[10px]">
-              Back to home
+            <Link href="/" className="relative btn btn-secondary px-5 py-[10px]">
+              <LinkPendingLabel>Back to home</LinkPendingLabel>
             </Link>
           </div>
         </div>
 
         <div className="flex min-h-[260px] items-center justify-center border-t border-(--color-divider) bg-(--color-accent-100) p-8 md:min-h-[430px] md:border-l md:border-t-0">
           <div className="text-center">
-            <Plate size="logo">DD</Plate>
+            <BrandLogo />
             <div className="mt-5 font-heading text-[26px] font-extrabold text-(--color-accent-900)">
               Coming soon
             </div>

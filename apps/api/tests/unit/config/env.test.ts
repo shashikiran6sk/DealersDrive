@@ -34,6 +34,7 @@ const PRODUCTION_REQUIRED = {
   GOOGLE_CLIENT_ID: 'client.apps.googleusercontent.com',
   GOOGLE_CLIENT_SECRET: 'google-secret',
   STORAGE_DRIVER: 'r2',
+  S3_ENDPOINT: 'https://example-account-id.r2.cloudflarestorage.com',
   S3_ACCESS_KEY_ID: 'r2-key',
   S3_SECRET_ACCESS_KEY: 'r2-secret',
   SESSION_SECRET: 'a-real-production-session-secret',
@@ -79,6 +80,11 @@ const SCHEMA_KEYS = [
   'METRICS_ENABLED',
   'METRICS_SCRAPE_TOKEN',
   'DB_SLOW_OPERATION_MS',
+  'DB_POOL_MAX',
+  'DB_CONNECT_TIMEOUT_MS',
+  'DB_STATEMENT_TIMEOUT_MS',
+  'DB_IDLE_IN_TRANSACTION_TIMEOUT_MS',
+  'CLIENT_IP_FORWARD_SECRET',
   'GRAFANA_CLOUD_LOGS_ENABLED',
   'GRAFANA_CLOUD_LOKI_URL',
   'GRAFANA_CLOUD_LOKI_USER',
@@ -269,7 +275,7 @@ describe('production', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'production' })).rejects.toThrow('process.exit');
@@ -284,7 +290,7 @@ describe('production', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'production' })).rejects.toThrow();
@@ -303,7 +309,7 @@ describe('production', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'production' })).rejects.toThrow();
@@ -340,7 +346,7 @@ describe('production', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(
@@ -403,7 +409,7 @@ describe('validation', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'development', [key]: value })).rejects.toThrow();
@@ -418,7 +424,7 @@ describe('validation', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'development', PORT: port })).rejects.toThrow();
@@ -433,7 +439,7 @@ describe('validation', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(
@@ -452,7 +458,7 @@ describe('validation', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv({ NODE_ENV: 'development', JOBS_ENABLED: '1' })).rejects.toThrow();
@@ -482,6 +488,50 @@ describe('validation', () => {
     expect(loaded.GRAFANA_CLOUD_LOGS_ENABLED).toBe(false);
     expect(loaded.DB_SLOW_OPERATION_MS).toBe(500);
   });
+
+  /**
+   * R98. The pool used to take pg's defaults — wait for a connection forever, run
+   * a statement forever, hold an idle transaction's locks forever — so one stuck
+   * connection could hold a request open indefinitely. Every one of these has a
+   * bounded default, and each can be tuned per environment.
+   */
+  it('bounds the database pool by default, and lets each bound be tuned', async () => {
+    const defaults = await loadEnv({ NODE_ENV: 'development' });
+    expect(defaults.DB_POOL_MAX).toBe(10);
+    expect(defaults.DB_CONNECT_TIMEOUT_MS).toBe(5_000);
+    expect(defaults.DB_STATEMENT_TIMEOUT_MS).toBe(15_000);
+    expect(defaults.DB_IDLE_IN_TRANSACTION_TIMEOUT_MS).toBe(30_000);
+
+    const tuned = await loadEnv({
+      NODE_ENV: 'development',
+      DB_POOL_MAX: '4',
+      DB_CONNECT_TIMEOUT_MS: '2000',
+      DB_STATEMENT_TIMEOUT_MS: '9000',
+      DB_IDLE_IN_TRANSACTION_TIMEOUT_MS: '12000',
+    });
+    expect(tuned.DB_POOL_MAX).toBe(4);
+    expect(tuned.DB_CONNECT_TIMEOUT_MS).toBe(2_000);
+    expect(tuned.DB_STATEMENT_TIMEOUT_MS).toBe(9_000);
+    expect(tuned.DB_IDLE_IN_TRANSACTION_TIMEOUT_MS).toBe(12_000);
+  });
+
+  /**
+   * R107. Without a secret the API believes no forwarded client address, which is
+   * the behaviour before R107. An empty value is the same as unset, so a blank
+   * line in a .env file does not fail the boot.
+   */
+  it('reads the client-IP forwarding secret, and treats an empty one as unset', async () => {
+    expect((await loadEnv({ NODE_ENV: 'development' })).CLIENT_IP_FORWARD_SECRET).toBeUndefined();
+    expect(
+      (await loadEnv({ NODE_ENV: 'development', CLIENT_IP_FORWARD_SECRET: '' }))
+        .CLIENT_IP_FORWARD_SECRET,
+    ).toBeUndefined();
+    const secret = 'x'.repeat(32);
+    expect(
+      (await loadEnv({ NODE_ENV: 'development', CLIENT_IP_FORWARD_SECRET: secret }))
+        .CLIENT_IP_FORWARD_SECRET,
+    ).toBe(secret);
+  });
 });
 
 /**
@@ -497,7 +547,7 @@ describe('configurations that must not boot', () => {
     const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit');
     });
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
       await expect(loadEnv(vars)).rejects.toThrow('process.exit');
@@ -530,6 +580,13 @@ describe('configurations that must not boot', () => {
     expect(message).toContain('MSG91_WIDGET_TOKEN');
   });
 
+  /** R107. A guessable secret would let anyone choose the address the limiters count. */
+  it('refuses a client-IP forwarding secret shorter than 32 characters', async () => {
+    const message = await refuses({ CLIENT_IP_FORWARD_SECRET: 'too-short' });
+
+    expect(message).toContain('CLIENT_IP_FORWARD_SECRET');
+  });
+
   /** A fixed code proves nothing about who is holding the handset. */
   it('refuses the development OTP driver in production', async () => {
     const message = await refuses({
@@ -560,6 +617,68 @@ describe('configurations that must not boot', () => {
     expect(message).toContain('STORAGE_DRIVER');
   });
 
+  it.each(['local', 'preview', 'dev', 'production'])(
+    'BUG-006 refuses MinIO under NODE_ENV=production with APP_ENV=%s',
+    async (appEnv) => {
+      const message = await refuses({
+        NODE_ENV: 'production',
+        ...PRODUCTION_REQUIRED,
+        APP_ENV: appEnv,
+        STORAGE_DRIVER: 'minio',
+      });
+
+      expect(message).toContain('STORAGE_DRIVER');
+      expect(message).toContain('r2');
+    },
+  );
+
+  /**
+   * BUG-NEW-013. `S3_ENDPOINT` defaults to the local MinIO address, so a
+   * production task that forgot it booted against `http://localhost:9000` and
+   * failed only when the first upload did. Under r2 in production the endpoint
+   * must be stated, and it must be a public HTTPS host.
+   */
+  it('BUG-NEW-013 refuses r2 in production when S3_ENDPOINT is omitted', async () => {
+    const { S3_ENDPOINT: _omitted, ...rest } = PRODUCTION_REQUIRED;
+
+    const message = await refuses({ NODE_ENV: 'production', ...rest });
+
+    expect(message).toContain('S3_ENDPOINT');
+  });
+
+  it.each([
+    'http://localhost:9000',
+    'https://localhost:9000',
+    'https://127.0.0.1:9000',
+    'https://[::1]:9000',
+    'https://0.0.0.0',
+    'https://10.0.0.5',
+    'https://172.20.0.3',
+    'https://192.168.1.10',
+    'https://169.254.169.254',
+    'http://minio:9000',
+    'https://minio',
+    'http://example-account-id.r2.cloudflarestorage.com',
+  ])('BUG-NEW-013 refuses r2 in production with S3_ENDPOINT=%s', async (endpoint) => {
+    const message = await refuses({
+      NODE_ENV: 'production',
+      ...PRODUCTION_REQUIRED,
+      S3_ENDPOINT: endpoint,
+    });
+
+    expect(message).toContain('S3_ENDPOINT');
+  });
+
+  it('still lets a local r2 or minio setup point at a loopback endpoint outside production', async () => {
+    const loaded = await loadEnv({
+      STORAGE_DRIVER: 'minio',
+      S3_ACCESS_KEY_ID: 'minio',
+      S3_SECRET_ACCESS_KEY: 'minio-secret',
+    });
+
+    expect(loaded.S3_ENDPOINT).toBe('http://localhost:9000');
+  });
+
   it('refuses production still carrying the local development secrets', async () => {
     const message = await refuses({
       NODE_ENV: 'production',
@@ -583,10 +702,30 @@ describe('configurations that must not boot', () => {
 
   it('accepts a complete production configuration', async () => {
     const loaded = await loadEnv({ NODE_ENV: 'production', ...PRODUCTION_REQUIRED });
+    expect(loaded.S3_ENDPOINT).toBe('https://example-account-id.r2.cloudflarestorage.com');
 
     expect(loaded.STORAGE_DRIVER).toBe('r2');
     expect(loaded.AUTH_MODE).toBe('cookie');
     expect(loaded.PHONE_OTP_DRIVER).toBe('msg91');
+  });
+
+  it.each([
+    ['development', 'local'],
+    ['development', 'minio'],
+    ['development', 'r2'],
+    ['test', 'local'],
+    ['test', 'minio'],
+    ['test', 'r2'],
+  ])('BUG-006 preserves NODE_ENV=%s with STORAGE_DRIVER=%s', async (nodeEnv, driver) => {
+    const loaded = await loadEnv({
+      ...PRODUCTION_REQUIRED,
+      NODE_ENV: nodeEnv,
+      APP_ENV: 'local',
+      STORAGE_DRIVER: driver,
+    });
+
+    expect(loaded.STORAGE_DRIVER).toBe(driver);
+    expect(loaded.isProduction).toBe(false);
   });
 
   it('refuses a metrics endpoint without a strong scrape token', async () => {

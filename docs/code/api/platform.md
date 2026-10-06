@@ -161,3 +161,7 @@ validation on the way back in.
 ### `export function encodeSeqCursor(seq: bigint): string`
 
 The ledger paginates on its append sequence, not on a timestamp.
+
+### `decodeKeysetOrDateCursor(cursor)`
+
+Saved Cars, customer enquiry history and the dealer inbox emit timestamp/UUID keysets. Their database ordering is createdAt DESC, id DESC, so the next boundary must include both fields to retain millisecond ties. The decoder validates a keyset through the existing UUID/date decoder and rejects extra fields. Date-only cursors issued before BUG-003 remain accepted with id null and the original strict-before-date behavior. Their missing secondary key cannot be recovered; refreshing starts a new traversal with the corrected boundary. Existing date, sequence and strict Admin keyset decoders keep their behavior. A cursor is a position, not authority: ownership and status predicates must still apply to every page.

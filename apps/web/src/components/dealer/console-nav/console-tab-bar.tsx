@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { LinkPendingIndicator } from '@/components/ui/link-pending';
 import { cn } from '@/lib/cn';
 import { isCurrentPath } from '@/lib/nav';
 import type { NavItem } from '@/types';
@@ -31,13 +32,14 @@ export function ConsoleTabBar({ items }: { items: NavItem[] }) {
             href={item.href}
             aria-current={current ? 'true' : undefined}
             className={cn(
-              'flex flex-1 items-center justify-center px-1 text-center text-[12px]',
+              'relative flex flex-1 items-center justify-center px-1 text-center text-[12px]',
               current
                 ? 'font-extrabold text-(--color-ink) shadow-[inset_0_2px_0_var(--color-ink)]'
                 : 'font-semibold ink-muted',
             )}
           >
             {item.short ?? item.label}
+            <LinkPendingIndicator className="absolute top-[6px] right-[6px] size-[14px]" />
           </Link>
         );
       })}

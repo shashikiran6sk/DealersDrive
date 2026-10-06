@@ -9,7 +9,7 @@ import type {
 } from '../../../../src/modules/dealers/dealers.repository.js';
 import { createDealersService } from '../../../../src/modules/dealers/dealers.service.js';
 import type { AuditService } from '../../../../src/platform/audit/audit.service.js';
-import { DomainError, NotFoundError } from '../../../../src/platform/errors.js';
+import { ConflictError, DomainError, NotFoundError } from '../../../../src/platform/errors.js';
 import type { MapsPort } from '../../../../src/platform/maps/maps-link.js';
 import type { StoragePort } from '../../../../src/platform/storage/storage.port.js';
 
@@ -192,6 +192,7 @@ function setup(options: Options = {}) {
       return Promise.resolve(dealer({ ...(options.dealer ?? {}), ...data }));
     },
     documents: () => Promise.resolve(options.documents ?? []),
+    lockStatus: () => Promise.resolve(row?.status ?? null),
     documentById: () => Promise.resolve(options.documentById ?? null),
     upsertDocument: (_dealerId: string, type: string, data: Record<string, unknown>) => {
       upserts.push({ type, data });
@@ -973,7 +974,12 @@ describe('presignDocument', () => {
 });
 
 describe('commitDocument', () => {
-  const stored = { id: 'doc-1', dealerId: 'dealer-1', type: 'GST_CERTIFICATE' };
+  const stored = {
+    id: 'doc-1',
+    dealerId: 'dealer-1',
+    type: 'GST_CERTIFICATE',
+    status: 'UPLOADING',
+  };
 
   it('marks the document uploaded once the object is there', async () => {
     const h = setup({
@@ -1027,6 +1033,68 @@ describe('commitDocument', () => {
       h.service.commitDocument('dealer-1', 'GST_CERTIFICATE', { documentId: 'doc-1' }),
     ).rejects.toThrow(/did not complete/);
     expect(h.upserts).toEqual([]);
+  });
+});
+
+describe('ORIG-BUG-004 — a reviewed document is locked outside DRAFT', () => {
+  const input = {
+    type: 'PAN_CARD' as const,
+    fileName: 'pan.pdf',
+    mimeType: 'application/pdf' as const,
+    bytes: 1024,
+  };
+
+  it.each(['ACTIVE', 'PENDING_APPROVAL', 'SUSPENDED'])(
+    'refuses to presign over a VERIFIED document of a %s dealer and deletes nothing',
+    async (status) => {
+      const h = setup({ dealer: { status }, documentByType: doc({ status: 'VERIFIED' }) });
+
+      await expect(h.service.presignDocument('dealer-1', input)).rejects.toThrow(ConflictError);
+      expect(h.upserts).toEqual([]);
+      expect(h.deletes).toEqual([]);
+    },
+  );
+
+  it.each(['UPLOADED', 'VERIFIED'])(
+    'refuses to delete an %s document of an ACTIVE dealer and deletes nothing',
+    async (status) => {
+      const h = setup({ documentByType: doc({ status }) });
+
+      await expect(h.service.deleteDocument('dealer-1', 'PAN_CARD')).rejects.toThrow(ConflictError);
+      expect(h.deletes).toEqual([]);
+    },
+  );
+
+  it('refuses to commit a VERIFIED document of an ACTIVE dealer', async () => {
+    const h = setup({
+      documentById: { id: 'doc-1', dealerId: 'dealer-1', type: 'PAN_CARD', status: 'VERIFIED' },
+      head: { bytes: 1024, contentType: 'application/pdf' },
+    });
+
+    await expect(
+      h.service.commitDocument('dealer-1', 'PAN_CARD', { documentId: 'doc-1' }),
+    ).rejects.toThrow(ConflictError);
+    expect(h.upserts).toEqual([]);
+  });
+
+  it.each(['REQUIRED', 'REJECTED', 'UPLOADING'])(
+    'lets an ACTIVE dealer fill a %s slot',
+    async (status) => {
+      const h = setup({ documentByType: doc({ status }) });
+
+      await h.service.presignDocument('dealer-1', input);
+
+      expect(h.upserts[0]).toMatchObject({ data: { status: 'UPLOADING' } });
+    },
+  );
+
+  it('lets a DRAFT dealer replace a VERIFIED document, removing the old object after the row moves', async () => {
+    const h = setup({ dealer: { status: 'DRAFT' }, documentByType: doc({ status: 'VERIFIED' }) });
+
+    await h.service.presignDocument('dealer-1', input);
+
+    expect(h.upserts[0]).toMatchObject({ data: { status: 'UPLOADING' } });
+    expect(h.deletes).toHaveLength(1);
   });
 });
 
@@ -1598,9 +1666,44 @@ describe('yardPhoto', () => {
   });
 });
 
+/**
+ * The yard photograph can be changed only while the application is a DRAFT
+ * (ORIG-BUG-005), so these cases run against a DRAFT dealership; the lock
+ * itself is covered below and in `tests/yard-photo-moderation.test.ts`.
+ */
+function draftSetup(options: Options = {}) {
+  return setup({ ...options, dealer: { status: 'DRAFT', ...(options.dealer ?? {}) } });
+}
+
+describe('ORIG-BUG-005 — the yard photograph is locked outside DRAFT', () => {
+  it.each(['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED'])(
+    'refuses to presign, commit or delete for a %s dealer',
+    async (status) => {
+      const h = setup({
+        dealer: { status },
+        media: media(),
+        head: { bytes: 1, contentType: 'image/jpeg' },
+      });
+
+      await expect(
+        h.service.presignYardPhoto('dealer-1', {
+          fileName: 'y.jpg',
+          mimeType: 'image/jpeg',
+          bytes: 1,
+        }),
+      ).rejects.toThrow(ConflictError);
+      await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
+        ConflictError,
+      );
+      await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(ConflictError);
+      expect([h.updates, h.deletes]).toEqual([[], []]);
+    },
+  );
+});
+
 describe('presignYardPhoto', () => {
   it('keys the image under the dealership, beside its documents', async () => {
-    const h = setup();
+    const h = draftSetup();
 
     const presigned = await h.service.presignYardPhoto('dealer-1', {
       fileName: 'yard.jpg',
@@ -1621,7 +1724,7 @@ describe('presignYardPhoto', () => {
 
   /** Presigning displaces nothing — that is what makes an abandoned pick safe. */
   it('leaves the photograph already on the record alone', async () => {
-    const h = setup({ media: media() });
+    const h = draftSetup({ media: media() });
 
     await h.service.presignYardPhoto('dealer-1', {
       fileName: 'new.jpg',
@@ -1637,7 +1740,7 @@ describe('presignYardPhoto', () => {
 
 describe('commitYardPhoto', () => {
   it('refuses an upload that never landed in storage', async () => {
-    const h = setup({ media: media({ id: 'media-2' }), head: null });
+    const h = draftSetup({ media: media({ id: 'media-2' }), head: null });
 
     await expect(
       h.service.commitYardPhoto('dealer-1', { mediaId: 'media-2' }),
@@ -1646,7 +1749,7 @@ describe('commitYardPhoto', () => {
   });
 
   it('refuses a media row belonging to another dealership', async () => {
-    const h = setup({ media: media({ dealerId: 'dealer-2' }) });
+    const h = draftSetup({ media: media({ dealerId: 'dealer-2' }) });
 
     await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
       NotFoundError,
@@ -1654,7 +1757,7 @@ describe('commitYardPhoto', () => {
   });
 
   it('refuses a media row that is not a cover image', async () => {
-    const h = setup({ media: media({ ownerType: 'VEHICLE' }) });
+    const h = draftSetup({ media: media({ ownerType: 'VEHICLE' }) });
 
     await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
       NotFoundError,
@@ -1662,7 +1765,7 @@ describe('commitYardPhoto', () => {
   });
 
   it('adopts the upload onto the dealership', async () => {
-    const h = setup({
+    const h = draftSetup({
       dealer: { coverMediaId: null },
       media: media(),
       head: { bytes: 184_210, contentType: 'image/jpeg' },
@@ -1688,7 +1791,7 @@ describe('commitYardPhoto', () => {
    * line does not change when it lands.
    */
   it('marks the upload servable, because nothing else will', async () => {
-    const h = setup({
+    const h = draftSetup({
       dealer: { coverMediaId: null },
       media: media({ status: 'PENDING' }),
       head: { bytes: 184_210, contentType: 'image/jpeg' },
@@ -1701,7 +1804,7 @@ describe('commitYardPhoto', () => {
 
   /** A commit that never gets past the HEAD promotes nothing. */
   it('leaves an incomplete upload where it is', async () => {
-    const h = setup({ dealer: { coverMediaId: null }, media: media(), head: null });
+    const h = draftSetup({ dealer: { coverMediaId: null }, media: media(), head: null });
 
     await expect(h.service.commitYardPhoto('dealer-1', { mediaId: 'media-1' })).rejects.toThrow(
       DomainError,
@@ -1716,7 +1819,7 @@ describe('commitYardPhoto', () => {
    * and a sweeper reconciles orphans against storage.
    */
   it('discards the photograph it displaces', async () => {
-    const h = setup({
+    const h = draftSetup({
       dealer: { coverMediaId: 'media-old' },
       media: [
         media({ id: 'media-old', storageKey: `${DEALER_ROOT}/yard/media-old` }),
@@ -1738,7 +1841,7 @@ describe('commitYardPhoto', () => {
    * just adopted.
    */
   it('does not discard the photograph it is re-committing', async () => {
-    const h = setup({
+    const h = draftSetup({
       dealer: { coverMediaId: 'media-1' },
       media: media(),
       head: { bytes: 1, contentType: 'image/jpeg' },
@@ -1753,7 +1856,7 @@ describe('commitYardPhoto', () => {
 
 describe('deleteYardPhoto', () => {
   it('clears the record and removes the bytes', async () => {
-    const h = setup({ media: media() });
+    const h = draftSetup({ media: media() });
 
     await h.service.deleteYardPhoto('dealer-1');
 
@@ -1763,7 +1866,7 @@ describe('deleteYardPhoto', () => {
   });
 
   it('404s when there is no photograph to remove', async () => {
-    const h = setup({ dealer: { coverMediaId: null } });
+    const h = draftSetup({ dealer: { coverMediaId: null } });
 
     await expect(h.service.deleteYardPhoto('dealer-1')).rejects.toThrow(NotFoundError);
     expect(h.updates).toEqual([]);
@@ -1771,7 +1874,7 @@ describe('deleteYardPhoto', () => {
 
   /** A dangling cover id still clears; there is simply nothing to delete. */
   it('clears a cover id whose media row has vanished', async () => {
-    const h = setup({ media: null });
+    const h = draftSetup({ media: null });
 
     await h.service.deleteYardPhoto('dealer-1');
 
@@ -1839,6 +1942,21 @@ describe('dashboard', () => {
     const dashboard = await h.service.dashboard('dealer-1');
 
     expect(dashboard.greeting).toMatch(/^Good (morning|afternoon|evening), Kumar$/);
+  });
+
+  /** R93 — a dealership has more than one person in it now; greet the one looking. */
+  it('greets the member who is signed in, not the owner', async () => {
+    const h = setup({
+      dealer: {
+        members: [
+          { userId: 'user-1', role: 'OWNER', user: { fullName: 'Ramesh Kumar', phone: '9' } },
+          { userId: 'user-2', role: 'STAFF', user: { fullName: 'Priya Devi', phone: '8' } },
+        ],
+      },
+    });
+
+    expect((await h.service.dashboard('dealer-1', 'user-2')).greeting).toMatch(/, Devi$/);
+    expect((await h.service.dashboard('dealer-1', 'nobody')).greeting).toMatch(/, Kumar$/);
   });
 
   it('falls back to the brand name when no owner name is on file', async () => {

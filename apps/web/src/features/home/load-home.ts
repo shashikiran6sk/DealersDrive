@@ -2,6 +2,7 @@ import { PublicVehiclesResponse } from '@dealers-drive/contracts';
 
 import { apiGetParsed, qs } from '@/lib/api';
 import { VEHICLES_TAG } from '@/lib/cache-tags';
+import { logger } from '@/lib/logger';
 import { searchHref } from '@/lib/vehicle-search';
 
 import { DISCOVERY_CARD_COUNT, DISCOVERY_SECTIONS, discoveryRowId } from './home.constants';
@@ -9,9 +10,10 @@ import type { DiscoveryRowProps } from './discovery-row/discovery-row.types';
 
 export interface HomeInventory {
   rows: DiscoveryRowProps[];
+  unavailable: boolean;
 }
 
-const EMPTY: HomeInventory = { rows: [] };
+const UNAVAILABLE: HomeInventory = { rows: [], unavailable: true };
 
 export async function loadHomeInventory(): Promise<HomeInventory> {
   try {
@@ -34,9 +36,10 @@ export async function loadHomeInventory(): Promise<HomeInventory> {
           cars: (response?.data ?? []).filter((car) => car.availability === 'AVAILABLE'),
         };
       }),
+      unavailable: false,
     };
   } catch (error) {
-    console.error('[home] inventory unavailable', error);
-    return EMPTY;
+    logger.warn('home.inventory_unavailable', { error });
+    return UNAVAILABLE;
   }
 }
