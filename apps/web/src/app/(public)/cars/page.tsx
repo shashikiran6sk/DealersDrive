@@ -1,6 +1,7 @@
 import { PublicVehiclesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { cache } from 'react';
 
 import { AppliedFilters } from '@/components/search/applied-filters';
 import { CarSearchBox } from '@/components/search/car-search-box';
@@ -13,6 +14,7 @@ import {
   SearchResultsRegion,
 } from '@/components/search/search-navigation';
 import { JsonLd } from '@/components/seo/json-ld';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { EmptyState } from '@/components/ui/primitives';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { apiGetParsed, qs } from '@/lib/api';
@@ -43,14 +45,15 @@ export const dynamic = 'force-dynamic';
 
 const CARS_PATH = '/cars';
 
+const fetchCars = cache((query: string) =>
+  apiGetParsed(PublicVehiclesResponse, `/v1/vehicles${query}`, {
+    revalidate: 60,
+    tags: [VEHICLES_TAG],
+  }),
+);
+
 async function loadCars(params: VehicleSearchParams) {
-  const [listing, locations] = await Promise.all([
-    apiGetParsed(PublicVehiclesResponse, `/v1/vehicles${qs(params)}`, {
-      revalidate: 60,
-      tags: [VEHICLES_TAG],
-    }),
-    getPublicLocations(),
-  ]);
+  const [listing, locations] = await Promise.all([fetchCars(qs(params)), getPublicLocations()]);
   const district = params.district;
   const place = district
     ? (locations.districts.find((entry) => entry.slug === district)?.name ?? district)
@@ -169,9 +172,9 @@ export default async function CarsPage({
                 action={
                   <Link
                     href={searchHref(CARS_PATH, clearFilters(setParam(params, 'q', undefined)))}
-                    className="btn btn-primary"
+                    className="relative btn btn-primary"
                   >
-                    {CARS_TEXT.emptyFilteredAction}
+                    <LinkPendingLabel>{CARS_TEXT.emptyFilteredAction}</LinkPendingLabel>
                   </Link>
                 }
               />
@@ -180,8 +183,8 @@ export default async function CarsPage({
                 title={CARS_TEXT.emptyInTitle(place)}
                 message={CARS_TEXT.emptyInMessage(place)}
                 action={
-                  <Link href={CARS_PATH} className="btn btn-primary">
-                    {CARS_TEXT.emptyInAction}
+                  <Link href={CARS_PATH} className="relative btn btn-primary">
+                    <LinkPendingLabel>{CARS_TEXT.emptyInAction}</LinkPendingLabel>
                   </Link>
                 }
               />
@@ -190,8 +193,8 @@ export default async function CarsPage({
                 title={CARS_TEXT.emptyTitle}
                 message={CARS_TEXT.emptyMessage}
                 action={
-                  <Link href="/dealers" className="btn btn-primary">
-                    {CARS_TEXT.emptyAction}
+                  <Link href="/dealers" className="relative btn btn-primary">
+                    <LinkPendingLabel>{CARS_TEXT.emptyAction}</LinkPendingLabel>
                   </Link>
                 }
               />
@@ -206,9 +209,9 @@ export default async function CarsPage({
                   <Link
                     href={pageHref(listing.page.page - 1)}
                     rel="prev"
-                    className="btn btn-secondary"
+                    className="relative btn btn-secondary"
                   >
-                    {CARS_TEXT.previous}
+                    <LinkPendingLabel>{CARS_TEXT.previous}</LinkPendingLabel>
                   </Link>
                 ) : (
                   <span />
@@ -220,9 +223,9 @@ export default async function CarsPage({
                   <Link
                     href={pageHref(listing.page.page + 1)}
                     rel="next"
-                    className="btn btn-secondary"
+                    className="relative btn btn-secondary"
                   >
-                    {CARS_TEXT.next}
+                    <LinkPendingLabel>{CARS_TEXT.next}</LinkPendingLabel>
                   </Link>
                 ) : (
                   <span />

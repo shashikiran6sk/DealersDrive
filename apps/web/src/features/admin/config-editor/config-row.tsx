@@ -2,12 +2,13 @@
 
 import type { ConfigEntry } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
 import { updateConfigAction } from '@/features/admin/config-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { BOOLEAN_VALUE, CONFIG_EDITOR_TEXT } from './config-editor.constants';
 import { PlaceholderRow } from './placeholder-row';
@@ -15,7 +16,7 @@ import { toInput } from './utils';
 
 export function ConfigRow({ entry }: { entry: ConfigEntry }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [value, setValue] = useState(() => toInput(entry));

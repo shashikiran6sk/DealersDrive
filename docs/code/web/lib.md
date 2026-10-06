@@ -65,10 +65,9 @@ Public pages cache; anything behind a session must not (§18).
 
 ### `headers?: Record<string, string>`
 
-Extra request headers. Used by Server Actions to forward the buyer's IP:
-without it every reveal and every enquiry would arrive from the Next
-server's single address and the per-IP limits protecting dealer phone
-numbers would count one bucket for the whole internet (ARCHITECTURE §14.1).
+Extra request headers for a single call. The buyer's IP is not forwarded
+through this option any more — `request()` does that itself (R107, below), so
+no action can forget it.
 
 ### `async function sessionCookie(): Promise<string | undefined>`
 
@@ -77,6 +76,28 @@ The session token, or undefined outside a request scope.
 `cookies()` throws during static generation — the sitemap and the cached
 public pages are rendered with no request at all — and that is a legitimate
 state, not an error: those pages have no session to forward.
+
+### `async function clientIpHeaders(): Promise<Record<string, string>>`
+
+**R107.** Without it every reveal, enquiry and sign-in would reach the API from
+the web tier's address, and the per-IP limits protecting dealer phone numbers
+would count one bucket for the whole internet (ARCHITECTURE §14.1).
+
+It adds `x-dd-client-ip` (the visitor's address: `x-real-ip`, else the first
+`x-forwarded-for` entry — both set by Vercel's edge, which overwrites any value
+the client sent) and `x-dd-forward-secret` (`CLIENT_IP_FORWARD_SECRET`). The API
+believes the address only when the secret matches — see
+`apps/api/src/middleware/trusted-client-ip.ts`.
+
+It runs only on the uncached path, beside the session cookie, for the same
+reason the cookie does: Next keys its data cache on request headers, so a
+per-visitor header on a cached read would split one shared entry into one per
+visitor. No secret configured, or no address known, sends neither header — the
+secret is never sent on its own.
+
+The secret is read from `process.env` here and nowhere else. It is not part of
+`serverConfig()`, whose result is a plain object a server component may pass
+down as props.
 
 ### `export function apiGet<T>(path: string, options?: RequestOptions): Promise<T>`
 
@@ -254,6 +275,33 @@ the footer, is all of them.
 Called from the admin config action. Without it a corrected social link waits
 out the ten-minute window on a page the operator is looking at while they fix
 it, which reads as the save not having worked.
+
+## `apps/web/src/lib/cached-lookup.ts`
+
+### `export function cachedLookup<T>(keyParts, load, options): Promise<T | null>`
+
+BUG-NEW-010, the residual after #243. Next's fetch cache stores a response
+**only when it answers 200**. A car page or dealer portfolio warmed before the
+API stopped serving it — a suspension, a removal — therefore stayed public
+indefinitely: every background refresh came back 404 and was thrown away. A
+web action revalidating the tag (which #243 added to every Admin console
+decision) clears it, but anything that changes visibility without passing
+through the web — an Admin calling the API directly, and later the
+`listings.expire-sweep` job — never would.
+
+`unstable_cache` stores what the loader _returns_, `null` included, so a
+lookup that maps a 404 to `null` inside it gets a "gone" answer cached like
+any other value: the first refresh after the window replaces the stale page.
+Measured on a production build with a direct-API suspension: the car page went
+from 200 to 404 70 s later (60 s window), where before it stayed 200 for as
+long as anybody watched. The dealer portfolio is bounded by its own 600 s
+window the same way.
+
+The fetch inside keeps its options, but Next treats a fetch inside
+`unstable_cache` as uncached, so the wrapper is the only cache for these two
+reads; tags are passed to it so a tag revalidation still clears them at once.
+Both routes were already rendered per request (`ƒ`), so nothing about how the
+pages are rendered changes — only how their data is cached.
 
 ## `apps/web/src/lib/cn.ts`
 
@@ -769,6 +817,10 @@ Where a signed-in dealer belongs, given what the API says about them.
 
 ## `apps/web/src/lib/session-cookie.ts`
 
+**R103.** A relayed session also writes the `dd_auth` hint as signed in, with the
+session's own expiry, so the very next page paints the account corner without
+asking first.
+
 ### `export async function relaySessionCookie(setCookies: readonly string[]): Promise<boolean>`
 
 **R63** — carries the API's `dd_session` onto the response a Server Action
@@ -961,3 +1013,226 @@ Nothing is scheduled when the value has not actually moved. Without this,
 a parent re-render that happens to pass the same string restarts the
 timer, and a buyer typing steadily while something else re-renders around
 them would never see the request fire at all.
+
+## `apps/web/src/lib/api.ts` — the error model's input side
+
+[`docs/errors.md`](../../errors.md) is the operating note; these are the reasons
+behind the shapes.
+
+### `export class UpstreamUnavailableError extends Error`
+
+The failures that are not an answer: the connection failed (`network`), nothing
+came back in time (`timeout`), or a 2xx body was not JSON (`malformed`). A
+separate type rather than an `ApiError` with a made-up status, because an
+`ApiError` means "the API said this", and every caller that branches on
+`status === 404` must never be able to mistake an outage for that.
+
+### `export function problemFrom(payload, status)`
+
+The status is the response's, always. The body was cast to `ProblemDetails`
+before, so a proxy's `{ "error": "…" }` produced an `ApiError` whose `status` was
+`undefined` and whose `problem` carried whatever the proxy wrote — to the BFF,
+which forwarded it. Now a body is kept only if it has a `code` (the one field
+every API problem has), with the known fields; anything else is replaced by a
+problem synthesised from the status. `type`, `title` and a field error's `code`
+are filled when absent, so a lean problem from the API still reads the same.
+
+### `class Deadline` · `export const API_TIMEOUT_MS = 8_000`
+
+A race on the response rather than an `AbortSignal`: Next skips its request
+de-duplication for any `fetch` that carries a signal, and `generateMetadata` and
+the page fetching one car must stay one request. The loser of the race is left
+to finish in the background. 8 s because the error path renders metadata twice
+(see `docs/errors.md` §7), and 16 s is the most a page should hold a visitor.
+
+### `function reportFailure(method, path, error)`
+
+Logged here, once, for every 5xx, unreachable, timed-out, malformed and
+contract-mismatched call — the one place that sees all of them. A 4xx is an
+answer and is not logged; the API logs its own rejections.
+
+### `if (options.signal?.aborted) throw cause`
+
+A caller's own abort is not a failure of the API, and is neither wrapped nor
+logged.
+
+## `apps/web/src/lib/errors.ts`
+
+### `export function categoryOf(error: unknown): ErrorCategory`
+
+The one place a failure becomes a kind. 502/503/504 and every
+`UpstreamUnavailableError` are `SERVICE_UNAVAILABLE` (try again later); any other
+5xx and anything thrown that is not an API answer is `INTERNAL_ERROR`.
+
+### `export function isMissingResource(error, options)`
+
+The only question a page asks before `notFound()`. Narrow on purpose: a 404 the
+API answered, and a 400 only when the caller says a rejected identifier means
+there is no such thing (a car slug that fails the slug pattern).
+
+### `export function safeMessage(error: unknown): string`
+
+A sentence per category from `errors.constants.ts`. What a BFF route tells the
+browser; never the error's own message.
+
+## `apps/web/src/lib/logger.ts`
+
+### `export const logger`
+
+Production source has no `console` (ESLint `no-console`, `src/**`). One JSON line
+per event — level, time, event, fields — to stderr for errors and stdout
+otherwise, so a log shipper parses it without a pattern. Server-side only: in a
+browser there is no `process.stderr` and it writes nothing, which is right,
+because a buyer's console is nobody's log.
+
+### `export function describeError(error: unknown)`
+
+Name, cause categories, and the fields that identify a failure
+across the two tiers (`status`, `code`, `kind`, `digest`, `traceId`). Nothing
+else is copied off an error, so a request body or a header on some future
+error type is not logged by accident.
+
+## `apps/web/src/lib/bff.ts`
+
+### `export function problemResponse(error: unknown, route: string)`
+
+Every BFF route's `catch`. It replaced nine copies of "forward `error.problem`
+with its status", which sent a 500's body — in development, the API's own
+exception message — to the browser. A 4xx is the API's contract with its
+client and passes through field by field. A 5xx becomes 502 (the upstream
+failed, not this route), a 503 or 504 stays itself, a timeout is 504, an
+unreachable or unreadable API is 502, and a bug in the route is 500 and is
+logged, because nothing else would.
+
+## `apps/web/src/lib/fonts.ts`
+
+### `export const manrope`
+
+Out of the root layout so `app/global-error.tsx`, which replaces the root
+layout and brings its own `<html>`, draws in the same face.
+
+## `apps/web/src/lib/upload.ts` — `export class UploadFailure extends Error`
+
+`failureMessage` used to show any caught `Error`'s message, which in a browser
+includes `TypeError: Failed to fetch`. Only a sentence the upload flow threw
+itself, as an `UploadFailure`, is shown now; everything else is the uploader's
+fallback.
+
+## `apps/web/src/lib/locations.ts` · `public-config.ts` — `cache(…)`
+
+The layout, `generateMetadata` and the page all ask for these; `cache` makes it
+one wait per render if the API is slow, rather than one each.
+
+## `apps/web/src/lib/api.ts` — slow upstream calls (R99)
+
+### `export const API_SLOW_MS = 1_000`
+
+A call that takes a second or more logs `api.slow_request` with the method, the
+path (query string stripped by the logger), the status, `durationMs` and the
+`traceId` — so a slow page in the web log can be found in the API's log, where
+the same id carries `durationMs`, `dbMs` and `dbOps`. Nothing about the request
+body, headers or cookies is logged.
+
+### `const requestId = method === 'GET' ? undefined : crypto.randomUUID()`
+
+Mutations send their own `x-request-id`, which the API adopts as its trace id.
+Reads do not, and that is deliberate: Next keys both its data cache and its
+per-render fetch dedupe on the request headers, so a random header on a `GET`
+would make every cached read a miss. A read's trace id is taken from the API's
+response header instead.
+
+## `apps/web/src/lib/auth-hint.ts`
+
+### `export const AUTH_HINT_COOKIE = 'dd_auth'`
+
+Why the header no longer flashes Login at a signed-in customer (**R103**).
+
+The public pages are static (the home page is ISR), so the server cannot know
+who is signed in while it renders them, and `dd_session` is `httpOnly`, so the
+browser cannot read it either. The header used to draw Login and ask after
+hydration — the "Login, then the avatar two seconds later" in the recording.
+
+`dd_auth` is a readable hint, `1` or `0`: what the last definite answer about
+this browser was. It is not a credential and decides nothing — every check is
+still made against `dd_session` — it only chooses what to draw before the
+answer arrives. It is written by the server on sign-in (`relaySessionCookie`),
+sign-out, and every `/api/account` answer, and by the browser when the console
+renders an account it was handed.
+
+### `export function authHintFrom(cookieHeader: string): AuthHint`
+
+Anything but an exact `1` or `0` is `unknown`, never `out`: the header must
+never treat "do not know" as "signed out".
+
+### `export const AUTH_HINT_SCRIPT`
+
+Inlined at the top of `<body>` by the root layout, before any of the page has
+painted. It copies the hint onto `<html data-auth>`, and two CSS rules
+(`.auth-out-only`, `.auth-in-only`) pick between the Login button and an
+avatar-sized placeholder that the server rendered side by side. So the very first
+paint is right — Login for a signed-out visitor, a quiet 40px circle for a
+signed-in one — with no layout shift when the avatar replaces the circle.
+`suppressHydrationWarning` on `<html>` is for that one attribute.
+
+## `apps/web/src/lib/auth-hint-cookie.ts`
+
+### `export async function writeAuthHint(signedIn: boolean, expires?: Date)`
+
+Server-side writer. `httpOnly: false` is the point of the cookie; `SameSite=Lax`
+and `Secure` in production as for every other cookie.
+
+## `apps/web/src/lib/use-auth-hint.ts`
+
+### `export function useAuthHint(): AuthHint`
+
+`useSyncExternalStore` over `document.cookie`, with `unknown` as the server
+snapshot so hydration always matches the server's both-variants markup.
+`announceAuthHint()` re-reads the cookie after a request that changed it and
+updates `<html data-auth>`; `rememberAuthHint()` writes it from the browser;
+`forgetAuthHint()` (the login page) drops it, so an OAuth sign-in — whose cookie
+the API sets through a rewrite, out of this app's reach — is always followed by a
+real lookup rather than a stale "signed out".
+
+## `apps/web/src/lib/redirect-target.ts`
+
+### `export function redirectTargetOf(error: unknown): RedirectTarget | null`
+
+Reads where a Server Action's `redirect()` was going from the error Next rejects
+the action's promise with (`digest: NEXT_REDIRECT;<push|replace>;<url>;<status>;`).
+It is the one place that depends on that shape, and it is tested.
+
+## `apps/web/src/lib/use-navigation-safe-action.ts`
+
+### `export function useNavigationSafeAction(): [boolean, SafeActionStart]`
+
+Why a slow request could freeze every link in the console (**R102**).
+
+React 19 entangles transitions: while an async transition is pending —
+`startTransition(async () => await someServerAction())`, or a `<form action>` —
+every other transition is given the same lane and cannot commit until it
+settles. A `<Link>` navigation is a transition. So for as long as one mutation
+was in flight, no link anywhere on the page would navigate: the recording's
+"Continue" spinner at 04:13 held the sidebar for 43 seconds until a reload.
+Measured locally with a 12s create: 7.2s to navigate before, 0.4s after.
+
+This hook has `useTransition`'s shape — `[pending, start]` — and runs the work
+outside a transition. Two things a transition used to do for free it does itself:
+
+- **A `redirect()` from the action** rejects the promise with Next's redirect
+  error, which a transition hands to the `RedirectBoundary`. Here it is caught,
+  and the router is pushed (or replaced) to the target — unless the page has
+  changed since the work started, in which case the person has already gone
+  somewhere else and their click wins.
+- **Any other failure** is rethrown during render, so it reaches the nearest
+  error boundary exactly as before.
+
+### `export function useNavigationSafeFormAction(action, initial)`
+
+The same for a `useActionState` form: an `onSubmit` that builds the `FormData`
+with the submit button that was pressed (`intent=back|draft|continue`) and keeps
+the returned state. Pending comes back as a value, not from `useFormStatus`,
+because there is no form action for `useFormStatus` to observe.
+
+## Integration with current main
+
+The homepage preserves main’s interleaved discovery/information bands while showing the inline inventory failure notice. Error components use C131–C135; JsonLd is C130, so main’s current component IDs stay intact. Web diagnostics retain error categories/status and trace/digest correlation; arbitrary error messages, stacks, request bodies and URL query strings are excluded to avoid logging authentication proofs or private fields. Error causes are bounded against cycles.

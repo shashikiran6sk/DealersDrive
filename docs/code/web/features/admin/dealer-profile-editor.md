@@ -13,6 +13,14 @@ The writable view — only rendered once _Edit_ has been pressed.
 
 ## `apps/web/src/features/admin/dealer-profile-editor/dealer-detail-list.tsx`
 
+### `<dd>` — the value cell of a label/value row
+
+ADMIN-MOBILE-DETAIL-001. A Maps link or an email has no break opportunity,
+and in a `justify-between` row a flex item will not shrink below its content
+unless told to, so a long link pushed the review screen 593 px past a 320 px
+phone. The value may now shrink (`min-w-0`) and break anywhere, the label
+keeps its width (`shrink-0`), and the wide rows' values break the same way.
+
 ### `export function DealerDetailList({ values, contactPhoneDisplay }: DealerDetailListProps)`
 
 The read view — a review screen full of live inputs invites edits meant as readings.

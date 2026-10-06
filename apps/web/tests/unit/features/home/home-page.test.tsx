@@ -144,12 +144,23 @@ describe('the homepage', () => {
     expect(screen.getByRole('region', { name: 'SUVs' })).toBeInTheDocument();
   });
 
-  it('still offers the search when the marketplace cannot be reached', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  /**
+   * A section failing is not the page failing: the hero, the search and the
+   * rest of the homepage still render, and the rows' place says what happened
+   * and offers to try again, rather than silently disappearing.
+   */
+  it('still offers the search when the marketplace cannot be reached, and says the rows failed', async () => {
     apiGetParsed.mockRejectedValue(new Error('down'));
     render(await HomePage());
 
     expect(screen.getByRole('search')).toBeInTheDocument();
+    const region = within(screen.getByRole('region', { name: 'Cars on Dealers-Drive now' }));
+    expect(region.getByRole('alert')).toHaveTextContent(
+      'We couldn’t load these vehicles right now',
+    );
+    expect(region.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(region.queryByRole('article')).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('down');
     expect(screen.queryByRole('link', { name: /View all/ })).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: JOURNEY_TEXT.title })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: TRUST_TEXT.title })).toBeInTheDocument();

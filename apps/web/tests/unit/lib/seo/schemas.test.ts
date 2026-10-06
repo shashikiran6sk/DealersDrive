@@ -20,9 +20,9 @@ describe('organizationSchema', () => {
       url: 'https://www.dealers-drive.com/',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.dealers-drive.com/icon.png',
-        width: 512,
-        height: 512,
+        url: 'https://www.dealers-drive.com/brand/dealers-drive-light.png',
+        width: 2048,
+        height: 2048,
       },
       sameAs: undefined,
       contactPoint: undefined,

@@ -176,6 +176,28 @@ r2 — S3-compatible, at Cloudflare. Production.
 `minio` and `r2` are the _same adapter_: only S3_ENDPOINT and the keys
 differ, which is the whole claim this seam has to keep true (§12.1).
 
+When NODE_ENV is production, boot validation requires `r2` and refuses both
+`local` and `minio`, regardless of the APP_ENV deployment label. Development
+and test runtimes retain all three drivers and the existing credential checks.
+
+### `function isPublicHttpsUrl(raw: string): boolean`
+
+BUG-NEW-013. Because `minio` and `r2` are the same adapter, the only thing
+that makes `r2` reach Cloudflare is `S3_ENDPOINT` — and it defaults to the
+local MinIO address. A production task that forgot it, or carried a compose
+value like `http://minio:9000`, booted cleanly and failed only at the first
+upload, with "object storage ready" already in the log. Under `r2` in
+production the endpoint must be HTTPS and a public host: not loopback,
+unspecified, link-local (which includes the cloud metadata address), RFC 1918,
+CGNAT, an IPv6 unique-local or link-local address, a single-label name, or a
+`.localhost`/`.local`/`.internal` name.
+
+It deliberately does not pin `*.r2.cloudflarestorage.com`: a jurisdiction
+endpoint or a future custom S3 domain is still a public HTTPS host, and the
+check is about "this is not a development address", not "this is
+Cloudflare". Outside production nothing changes — a local `r2` or `minio`
+setup may point wherever it likes.
+
 ### `S3_FORCE_PATH_STYLE: z`
 
 MinIO needs path-style addressing (`endpoint/bucket/key`); R2 accepts it
@@ -328,9 +350,11 @@ know until a dealer could not finish signing up.
 
 `ADMIN_ALLOWLIST`, split and lower-cased. Half the admin authorization model — see R42 for the other.
 
-### `console.error(`\nInvalid environment configuration:\n${details}\n`)`
+### `process.stderr.write(`\nInvalid environment configuration:\n${details}…`)`
 
-The logger depends on env, so this one message cannot go through pino.
+The logger depends on env, so this one message cannot go through pino. It is
+written to stderr directly rather than through `console`, which production
+source does not use (`no-console`).
 
 ### `adminAllowlist: value.ADMIN_ALLOWLIST.split(',')`
 

@@ -166,3 +166,12 @@ destroyed by it, and a confirm dialog on an action that loses nothing is how
 people learn to click through the ones that do.
 
 Nothing renders for an APPROVED change — the API sends `null` for one.
+
+## `apps/web/src/features/dealer/profile-form/profile-form.tsx`
+
+### `readOnly = false,`
+
+**R95.** A member who is not the owner sees the dealership's profile with
+nothing to type into and no Save — the page passes `readOnly` when the session
+lacks `dealer:update`. They can still read it: it is their dealership, and the
+address and contact details are what a buyer on the phone asks about.

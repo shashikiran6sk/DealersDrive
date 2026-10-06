@@ -14,7 +14,7 @@ import {
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
-import { revalidatePublicDealer } from '@/lib/cache-tags';
+import { revalidatePublicDealer, revalidatePublicVehicles } from '@/lib/cache-tags';
 
 export interface AdminResult<T = undefined> {
   ok: boolean;
@@ -32,6 +32,7 @@ function fail(error: unknown, fallback: string): AdminResult<never> {
 function refreshAdmin(slug?: string): void {
   revalidatePath('/admin', 'layout');
   revalidatePublicDealer(slug);
+  revalidatePublicVehicles();
 }
 
 export async function approveDealerAction(
@@ -152,6 +153,27 @@ export async function requestDealerChangesAction(
     return { ok: true, data };
   } catch (error) {
     return fail(error, 'We could not send that back to the dealer.');
+  }
+}
+
+export async function closeDealerAction(
+  dealerId: string,
+  input: unknown,
+  slug?: string,
+): Promise<AdminResult<DealerModerationResponse>> {
+  const parsed = ReasonInput.safeParse(input);
+  if (!parsed.success) return { ok: false, message: 'Closing an application needs a reason.' };
+
+  try {
+    const data = await apiSend<DealerModerationResponse>(
+      'POST',
+      `/v1/admin/dealers/${dealerId}/close`,
+      parsed.data,
+    );
+    refreshAdmin(slug);
+    return { ok: true, data };
+  } catch (error) {
+    return fail(error, 'We could not close that application.');
   }
 }
 

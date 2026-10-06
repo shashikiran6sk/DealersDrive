@@ -66,8 +66,24 @@ const config: StorybookConfig = {
         replacement: new URL('../src/mocks/saved-actions.ts', import.meta.url).pathname,
       },
       {
+        find: '@/features/admin/support-actions',
+        replacement: new URL('../src/mocks/admin-support-actions.ts', import.meta.url).pathname,
+      },
+      {
+        find: '@/features/support/support-actions',
+        replacement: new URL('../src/mocks/support-actions.ts', import.meta.url).pathname,
+      },
+      {
         find: '@/features/dealer/listing-lifecycle/actions',
         replacement: new URL('../src/mocks/listing-lifecycle-actions.ts', import.meta.url).pathname,
+      },
+      {
+        find: '@/features/dealer/team-actions',
+        replacement: new URL('../src/mocks/team-actions.ts', import.meta.url).pathname,
+      },
+      {
+        find: '@/features/invitations/actions',
+        replacement: new URL('../src/mocks/invitation-actions.ts', import.meta.url).pathname,
       },
       {
         find: '@/features/dealer/enquiry-actions',

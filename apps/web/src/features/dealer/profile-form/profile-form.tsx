@@ -1,13 +1,14 @@
 'use client';
 
 import { DealerSelfUpdateInput, type DealerProfile } from '@dealers-drive/contracts';
-import { useActionState, useState } from 'react';
+import { useState } from 'react';
 
 import { Field, invalidProps } from '@/components/forms/field';
 import { Input } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
 import { ServiceInput } from '@/components/ui/service-input';
 import { saveDealerProfileAction } from '@/features/dealer/profile-actions';
+import { useNavigationSafeFormAction } from '@/lib/use-navigation-safe-action';
 
 import { LockedField } from './locked-field';
 import { LockedNote } from './locked-note';
@@ -16,19 +17,29 @@ import { EMPTY_FORM_STATE, MIN_YEAR, PROFILE_FORM_TEXT } from './profile-form.co
 import { ReviewPanel } from './review-panel';
 import { SaveRow } from './save-row';
 
-export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
-  const [state, formAction] = useActionState(saveDealerProfileAction, EMPTY_FORM_STATE);
+export function DealerProfileForm({
+  dealer,
+  readOnly = false,
+}: {
+  dealer: DealerProfile;
+  readOnly?: boolean;
+}) {
+  const [state, onSubmit, pending] = useNavigationSafeFormAction(
+    saveDealerProfileAction,
+    EMPTY_FORM_STATE,
+  );
   const errors = state.fieldErrors;
   const [yearError, setYearError] = useState<string>();
   const establishedYearError = yearError ?? errors.establishedYear;
 
   const waiting = dealer.profileChange?.status === 'PENDING' ? dealer.profileChange : null;
+  const locked = readOnly || Boolean(waiting);
   const taglineValue = waiting?.tagline ?? dealer.tagline ?? '';
   const servicesValue =
     waiting && waiting.specialities.length > 0 ? waiting.specialities : dealer.specialities;
 
   return (
-    <form action={formAction} className="flex flex-col gap-[18px]">
+    <form onSubmit={onSubmit} className="flex flex-col gap-[18px]">
       {state.status === 'saved' ? (
         <Banner tone="ok">
           {dealer.profileChange?.status === 'PENDING'
@@ -37,6 +48,7 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         </Banner>
       ) : null}
       {state.message ? <Banner tone="err">{state.message}</Banner> : null}
+      {readOnly ? <LockedNote>{PROFILE_FORM_TEXT.ownerOnly}</LockedNote> : null}
 
       <ReviewPanel change={dealer.profileChange} />
 
@@ -62,6 +74,7 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
               min={MIN_YEAR}
               max={new Date().getFullYear()}
               className="tnum"
+              disabled={readOnly}
               defaultValue={dealer.establishedYear ?? ''}
               onChange={() => setYearError(undefined)}
               onInvalid={(event) => {
@@ -84,14 +97,14 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         >
           <Input
             id="tagline"
-            {...(waiting ? {} : { name: 'tagline' })}
+            {...(locked ? {} : { name: 'tagline' })}
             minLength={10}
             maxLength={200}
             defaultValue={taglineValue}
             placeholder={PROFILE_FORM_TEXT.taglinePlaceholder}
-            required={!waiting}
-            aria-required={waiting ? undefined : 'true'}
-            disabled={Boolean(waiting)}
+            required={!locked}
+            aria-required={locked ? undefined : 'true'}
+            disabled={locked}
             {...invalidProps('tagline', errors.tagline)}
           />
         </Field>
@@ -104,11 +117,11 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         >
           <ServiceInput
             id="specialities"
-            {...(waiting ? {} : { name: 'specialities' })}
+            {...(locked ? {} : { name: 'specialities' })}
             value={servicesValue}
             placeholder={PROFILE_FORM_TEXT.servicesPlaceholder}
-            required={!waiting}
-            disabled={Boolean(waiting)}
+            required={!locked}
+            disabled={locked}
             {...invalidProps('specialities', errors.specialities)}
           />
         </Field>
@@ -162,7 +175,7 @@ export function DealerProfileForm({ dealer }: { dealer: DealerProfile }) {
         </div>
       </section>
 
-      <SaveRow />
+      {readOnly ? null : <SaveRow pending={pending} />}
     </form>
   );
 }

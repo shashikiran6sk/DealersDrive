@@ -35,6 +35,12 @@ export const DEALER_ACTIONS_TEXT = {
   suspend: 'Suspend',
   suspended: 'Dealer suspended and their listings withdrawn.',
 
+  closeLabel: 'Reason for closing',
+  close: 'Close application',
+  closed: 'Application closed. Nothing was deleted.',
+  closeNote:
+    'Closes this application for good without deleting anything — the dealership, its people, its documents and the audit trail are all kept. The dealer is emailed the reason and can no longer sign in to it. Use Reject only for fraud, abuse or an application that is not a dealership.',
+
   rejectOpen: 'Reject application…',
   reject: 'Reject and delete permanently',
   rejected: 'Application rejected and deleted.',

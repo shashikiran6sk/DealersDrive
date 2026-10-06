@@ -1,34 +1,28 @@
 'use server';
 
-import { CustomerSession } from '@dealers-drive/contracts';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-import { apiGetParsed, apiSend, SESSION_COOKIE } from '@/lib/api';
-import { maskIndianMobile } from '@/lib/person';
+import { apiSend, SESSION_COOKIE } from '@/lib/api';
+import { writeAuthHint } from '@/lib/auth-hint-cookie';
 
-import { CUSTOMER_ACCOUNT_PATHS } from './customer-account-actions.constants';
+import { lookupCustomerAccount, type CustomerAccount } from './customer-account';
+import { CUSTOMER_ACCOUNT_PATHS, DEALER_CONSOLE_HREF } from './customer-account-actions.constants';
 
-export interface CustomerAccount {
-  fullName: string;
-  phoneMasked: string;
-}
+export type { AccountWorkspace, CustomerAccount } from './customer-account';
 
 export async function customerAccountAction(): Promise<CustomerAccount | null> {
-  if (!(await cookies()).get(SESSION_COOKIE)?.value) return null;
-  try {
-    const session = await apiGetParsed(CustomerSession, CUSTOMER_ACCOUNT_PATHS.me, {
-      revalidate: false,
-    });
-    return {
-      fullName: session.customer.fullName,
-      phoneMasked: maskIndianMobile(session.customer.phone),
-    };
-  } catch {
-    return null;
-  }
+  const lookup = await lookupCustomerAccount();
+  return lookup.status === 'signed-in' ? lookup.account : null;
+}
+
+export async function enterWorkspaceAction(membershipId: string): Promise<void> {
+  await apiSend<unknown>('PUT', CUSTOMER_ACCOUNT_PATHS.currentWorkspace, { membershipId });
+  redirect(DEALER_CONSOLE_HREF);
 }
 
 export async function customerLogoutAction(): Promise<void> {
   await apiSend<void>('POST', CUSTOMER_ACCOUNT_PATHS.logout).catch(() => undefined);
   (await cookies()).delete(SESSION_COOKIE);
+  await writeAuthHint(false);
 }

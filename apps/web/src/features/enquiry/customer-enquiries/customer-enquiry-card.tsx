@@ -32,12 +32,17 @@ export function CustomerEnquiryCard({ enquiry }: CustomerEnquiryCardProps) {
       <p className="m-0 text-[13px] whitespace-pre-line">
         {enquiry.message ?? <span className="ink-subtle">{CUSTOMER_ENQUIRIES_TEXT.noMessage}</span>}
       </p>
-      <time
-        dateTime={enquiry.createdAt}
-        className="border-t border-(--color-divider) pt-[9px] text-[12px] ink-muted tnum"
-      >
-        {CUSTOMER_ENQUIRIES_TEXT.sentOn(enquiry.createdLabel)}
-      </time>
+      <div className="flex flex-wrap items-center justify-between gap-[8px] border-t border-(--color-divider) pt-[9px] text-[12px]">
+        <time dateTime={enquiry.createdAt} className="ink-muted tnum">
+          {CUSTOMER_ENQUIRIES_TEXT.sentOn(enquiry.createdLabel)}
+        </time>
+        <Link
+          href={CUSTOMER_ENQUIRIES_TEXT.getHelpHref(enquiry.id)}
+          className="font-bold text-(--color-ink)"
+        >
+          {CUSTOMER_ENQUIRIES_TEXT.getHelp}
+        </Link>
+      </div>
     </li>
   );
 }

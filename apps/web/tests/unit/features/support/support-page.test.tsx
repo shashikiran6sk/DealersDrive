@@ -71,3 +71,24 @@ describe('SupportPage', () => {
     expect(within(card('Customer support')).queryByRole('link')).toBeNull();
   });
 });
+
+describe('SupportPage — structured support requests (R90)', () => {
+  it('leads with a support request, keeping email and WhatsApp as other ways to reach us', () => {
+    render(<SupportPage support={SUPPORT} />);
+
+    const callout = screen.getByRole('region', {
+      name: 'Need help with a dealer, a car, an enquiry or your account?',
+    });
+    expect(within(callout).getByRole('link', { name: 'Create support request' })).toHaveAttribute(
+      'href',
+      '/support-requests/new',
+    );
+    expect(within(callout).getByRole('link', { name: 'View my support requests' })).toHaveAttribute(
+      'href',
+      '/support-requests',
+    );
+    expect(screen.getByRole('heading', { name: 'Other ways to reach us' })).toBeInTheDocument();
+    expect(card('Customer support')).toBeInTheDocument();
+    expect(card('Chat on WhatsApp')).toBeInTheDocument();
+  });
+});

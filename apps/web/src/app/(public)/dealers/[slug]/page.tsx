@@ -2,13 +2,19 @@ import { PublicVehiclesResponse, type DealerPublicProfile } from '@dealers-drive
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 
 import { DealerInventory, placeOf } from '@/components/dealers/dealer-inventory';
 import { LocationCard } from '@/components/dealers/location-card';
+import { SectionError } from '@/components/errors/section-error';
 import { JsonLd } from '@/components/seo/json-ld';
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Blueprint, ImageSlot, LogoTile, Plate, Tag } from '@/components/ui/primitives';
-import { ApiError, apiGet, apiGetParsed, qs } from '@/lib/api';
+import { apiGet, apiGetParsed, qs } from '@/lib/api';
+import { cachedLookup } from '@/lib/cached-lookup';
 import { dealerTag, DEALERS_TAG, VEHICLES_TAG } from '@/lib/cache-tags';
+import { isMissingResource, isServerFailure } from '@/lib/errors';
+import { logger } from '@/lib/logger';
 import {
   BREADCRUMB_TEXT,
   breadcrumbSchema,
@@ -18,6 +24,7 @@ import {
   directoryView,
   isIndexableView,
   pageMetadata,
+  seoMetadata,
 } from '@/lib/seo';
 import type { SearchParamsInput } from '@/lib/url';
 import { readVehicleSearch, type VehicleSearchParams } from '@/lib/vehicle-search';
@@ -26,31 +33,44 @@ import { DEALER_PAGE_TEXT } from './dealer-page.constants';
 
 export const revalidate = 600;
 
-async function loadDealer(slug: string): Promise<DealerPublicProfile | null> {
-  try {
-    return await apiGet<DealerPublicProfile>(`/v1/dealers/${encodeURIComponent(slug)}`, {
-      revalidate: 600,
-      tags: [dealerTag(slug), DEALERS_TAG],
-    });
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 404) return null;
-    throw error;
-  }
-}
+const DEALER_CACHE = (slug: string) => ({ revalidate: 600, tags: [dealerTag(slug), DEALERS_TAG] });
 
-async function loadInventory(
-  slug: string,
-  params: VehicleSearchParams,
-): Promise<PublicVehiclesResponse | null> {
+const loadDealer = cache((slug: string): Promise<DealerPublicProfile | null> =>
+  cachedLookup(
+    ['public-dealer', slug],
+    async () => {
+      try {
+        return await apiGet<DealerPublicProfile>(
+          `/v1/dealers/${encodeURIComponent(slug)}`,
+          DEALER_CACHE(slug),
+        );
+      } catch (error) {
+        if (isMissingResource(error)) return null;
+        throw error;
+      }
+    },
+    DEALER_CACHE(slug),
+  ),
+);
+
+type InventoryResult =
+  | { status: 'ready'; inventory: PublicVehiclesResponse }
+  | { status: 'missing' }
+  | { status: 'unavailable' };
+
+async function loadInventory(slug: string, params: VehicleSearchParams): Promise<InventoryResult> {
   try {
-    return await apiGetParsed(
+    const inventory = await apiGetParsed(
       PublicVehiclesResponse,
       `/v1/dealers/${encodeURIComponent(slug)}/vehicles${qs(params)}`,
       { revalidate: 60, tags: [dealerTag(slug), VEHICLES_TAG] },
     );
+    return { status: 'ready', inventory };
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) return null;
-    throw error;
+    if (isMissingResource(error)) return { status: 'missing' };
+    if (!isServerFailure(error)) throw error;
+    logger.warn('dealer.inventory_unavailable', { slug, error });
+    return { status: 'unavailable' };
   }
 }
 
@@ -85,7 +105,8 @@ export async function generateMetadata({
   searchParams?: Promise<SearchParamsInput>;
 }): Promise<Metadata> {
   const [{ slug }, query] = await Promise.all([params, searchParams ?? Promise.resolve({})]);
-  const dealer = await loadDealer(slug);
+  const dealer = await loadDealer(slug).catch(() => undefined);
+  if (dealer === undefined) return seoMetadata({ kind: 'noindex' });
   if (!dealer) return { title: DEALER_PAGE_TEXT.notFoundTitle };
 
   return pageMetadata({
@@ -113,7 +134,7 @@ export default async function DealerPortfolioPage({
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const search = readVehicleSearch(query, 'dealer');
   const [dealer, inventory] = await Promise.all([loadDealer(slug), loadInventory(slug, search)]);
-  if (!dealer || !inventory) notFound();
+  if (!dealer || inventory.status === 'missing') notFound();
 
   return (
     <div>
@@ -130,8 +151,8 @@ export default async function DealerPortfolioPage({
 
       <div className="border-b border-(--color-divider) bg-white">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pt-[22px]">
-          <Link href="/dealers" className="btn btn-ghost mb-[14px]">
-            ← Back to dealers
+          <Link href="/dealers" className="relative btn btn-ghost mb-[14px]">
+            <LinkPendingLabel>← Back to dealers</LinkPendingLabel>
           </Link>
         </div>
 
@@ -206,14 +227,22 @@ export default async function DealerPortfolioPage({
         <LocationCard address={dealer.address} brandName={dealer.brandName} />
       </div>
 
-      <DealerInventory
-        dealerSlug={dealer.slug}
-        brandName={dealer.brandName}
-        inventory={inventory}
-        params={search}
-        location={placeNameOf(dealer)}
-        {...(liveCars(dealer) === undefined ? {} : { liveTotal: liveCars(dealer) })}
-      />
+      {inventory.status === 'ready' ? (
+        <DealerInventory
+          dealerSlug={dealer.slug}
+          brandName={dealer.brandName}
+          inventory={inventory.inventory}
+          params={search}
+          location={placeNameOf(dealer)}
+          {...(liveCars(dealer) === undefined ? {} : { liveTotal: liveCars(dealer) })}
+        />
+      ) : (
+        <SectionError
+          title={DEALER_PAGE_TEXT.inventoryUnavailableTitle}
+          message={DEALER_PAGE_TEXT.inventoryUnavailableMessage}
+          className="mx-auto max-w-[1280px] px-4 pt-[26px] pb-[60px] sm:px-6"
+        />
+      )}
     </div>
   );
 }

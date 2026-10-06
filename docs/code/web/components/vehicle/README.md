@@ -6,3 +6,4 @@ Parent: [web/components](../README.md)
 
 - [vehicle-card](vehicle-card.md)
 - [vehicle-page](vehicle-page.md)
+- [vehicle-page-loading](vehicle-page-loading.md)

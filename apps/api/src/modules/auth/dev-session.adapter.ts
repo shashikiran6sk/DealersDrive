@@ -29,7 +29,9 @@ export function createDevSessionResolver(prisma: PrismaClient): SessionResolver 
     });
 
     const membership = dealer?.members[0];
-    if (!dealer || dealer.status === 'SUSPENDED' || !membership) return null;
+    if (!dealer || dealer.status === 'SUSPENDED' || dealer.status === 'CLOSED' || !membership) {
+      return null;
+    }
 
     return {
       kind: 'DEALER',

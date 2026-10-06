@@ -415,12 +415,41 @@ value at build time and break the Docker path, which sets `GIT_SHA` on the
 runtime image rather than during `next build`. The deploy workflow passes it
 with `vercel deploy --env GIT_SHA=…`.
 
-**Per-IP rate limiting is currently wrong, and known to be.** Every API request
-now originates from Vercel's egress, so the reveal-contact and enquiry limiters
-would count the entire internet as one bucket. `apps/web/src/lib/api.ts` has a
-`headers` option reserved for forwarding the buyer's IP and nothing uses it
-yet. **This must land before F088–F092**, and `app.set('trust proxy', 1)` in
-`apps/api/src/server.ts` needs revisiting for the extra hop.
+**Per-IP rate limits count the visitor, not Vercel (R107).** Every API call
+from the web leaves Vercel's egress, so the limiters would otherwise count the
+entire internet as one bucket. `apps/web/src/lib/api.ts` forwards the visitor's
+address (`x-dd-client-ip`) with a shared secret (`x-dd-forward-secret`) on every
+uncached call, and `apps/api/src/middleware/trusted-client-ip.ts` sets `req.ip`
+from it only when the secret matches. **`CLIENT_IP_FORWARD_SECRET` must be set,
+to the same value of at least 32 characters, on the Vercel project and on the
+API** — while either side lacks it nothing is forwarded or believed, which is
+the old one-bucket behaviour, not an outage. `trust proxy 1` stays right: there
+is one proxy (the reverse proxy on the instance) between the API and whoever
+called it, and for a web-tier call that caller is Vercel. Cached public reads
+are still counted against Vercel's address — they are fetched once for
+everyone, and a per-visitor header would split Next's data cache. The secret is
+read at request time only, so it is set on Vercel as a runtime variable and is
+deliberately absent from `apps/web/turbo.json` (R106).
+
+**The functions run in `bom1`, beside the API (R105).** The API and RDS are in
+ap-south-1. Vercel's default function region is `iad1`, which puts every server
+render, Server Action and API call on an India → US → Mumbai round trip (~200 ms,
+~600 ms with a fresh TLS handshake). `apps/web/vercel.json` pins `regions` to
+`bom1`, Vercel's Mumbai region on AWS ap-south-1; a test keeps it there. Verify a
+deploy with `curl -sI https://www.dealers-drive.com/ | grep -i x-vercel-id` — the
+middle segment is the function region.
+
+**Turbo strips undeclared variables from the web build (R106).** Turbo 2 runs in
+strict env mode: a variable not declared for a task is removed from its
+environment. `APP_ENV`, `API_BASE_URL`, `API_ORIGIN` and `WEB_BASE_URL` were set
+on Vercel and silently stripped — the first production build shipped the "not
+real data" banner, a localhost canonical and no OAuth rewrite, and was patched
+with `--env-mode=loose`. They are declared in `apps/web/turbo.json` now, and a
+test fails if the web app reads a build-time variable that is not declared there
+(or declares one nothing reads). The `--env-mode=loose` flag can be dropped
+from the Vercel project's build command; nothing else in it needs to change.
+`GIT_SHA` / `VERCEL_GIT_COMMIT_SHA` stay undeclared on purpose:
+only `/api/health` reads them, at request time.
 
 **Nothing is deployed automatically today.** Neither target exists yet — no
 Vercel project, no AWS account — so `deploy-dev` in `release.yml` is commented
@@ -495,6 +524,9 @@ than offering one that could not keep its promise.
 ---
 
 ## 7e2. One person, two seats — and why `users.status` is not the switch (R41)
+
+> ⚠️ **Partly superseded by R92.** Suspending a dealership no longer closes seats
+> or revokes sessions; see §7o. The seat table and its veto rule still stand.
 
 `users.status` is an **account**: one flag for the whole person, every door.
 That is the right unit for exactly one thing — an account the platform is
@@ -913,6 +945,87 @@ The browser-side cooldown and the three-attempt cap are courtesies on top of
 that, not controls — they are in a page anybody can edit. If the provider's
 limits prove too loose, the answer is an API-side send endpoint, which is a
 different integration rather than a tightening of this one.
+
+## 7o. One person, one session, many dealerships — membership is the switch (R92–R96)
+
+A dealership used to have exactly one person in it, so "the dealer" and "the
+signed-in user" could be read as the same thing. That stopped being true at
+R92. These are the facts that now hold, and they are easy to get wrong.
+
+**There is one session per person, and it carries no role.** A customer
+sign-in and a dealer sign-in produce the same kind of cookie. The dealer
+resolver reads DEALER and CUSTOMER sessions alike. On **every request** it
+works out, from `dealer_members`, which dealership the person is acting for and
+with what role. `sessions.activeDealerId` is a _preference_ for which
+dealership to open, and nothing more: it is never trusted on its own. A
+preference that has gone stale (the member was removed, or the dealership was
+suspended) falls through to the person's oldest remaining active membership,
+or to no dealer access at all.
+
+**Do not cache the membership, and do not fold it into the session read.**
+It is one indexed read (`dealer_members (userId, status)`). Caching it would
+mean a removed member, or one who was demoted, keeps their old powers until
+the cache expires. That is precisely the window R94's tests close: STAFF are
+refused _reserve_ until they are promoted, and allowed on the very next
+request. Folding it into the session query looks free, but it isn't: Prisma's
+`include` issues a second query anyway, because `relationJoins` is off.
+
+**Roles are a table, not a set of `if`s.** `DEALER_PERMISSIONS` lives in
+`packages/contracts`. The API enforces it, the web hides buttons with it, and
+the OpenAPI document prints it. An action the console offers is narrowed
+through `LIFECYCLE_ACTION_PERMISSION` and `enquiryTransitionPermission`, both of
+which sit beside the table. A role check written anywhere else is a second
+copy of the table.
+
+**Suspension belongs to the dealership.** This revises §7e2. Since R92,
+suspending a dealership closes no seat and revokes no session. Instead:
+
+- the resolver refuses a suspended dealership's membership;
+- the read model drops its listings through `dealer.status = 'ACTIVE'`;
+- the person keeps their customer account, and keeps any other dealership
+  they belong to.
+
+Reinstating the dealership restores everything on the next request. Seats
+(`user_roles`) are still re-opened on reinstatement, for rows R41 closed
+before this change.
+
+**Every team write locks the dealership row first** (`lockDealership`), and
+accepting an invitation locks the invitation and then the dealership. Counts
+and caps (`MAX_WAITING_INVITATIONS`) are evaluated under that lock. A partial
+unique index allows only one PENDING invitation per dealership + number, so
+two simultaneous invites become one row and not a 500.
+
+**Test suites that sign people in each own a phone prefix.** A suite that
+creates customers by phone number collides with any other suite that picks
+the same number, which shows up as a sign-up that unexpectedly finds an
+account. Each suite's `nextNumber()` uses its own five-digit
+prefix (`94388…`, `94399…`, `94411…`, `94422…`; `member()` in
+`marketplace-fixtures.ts` uses `93…`). Before choosing one,
+`grep -rn "944[0-9][0-9]" apps/api/tests`, and take a prefix nobody uses.
+
+**`openapi.test.ts` must stay linear.** It once called `documentedRoutes()`
+inside the loop over mounted routes, which is quadratic, and the suite timed
+out on CI once the router passed ~150 routes. Compute both sides once.
+
+---
+
+## 7p. One slow mutation froze every link on the page (R102)
+
+React 19 entangles transitions. While any async transition is pending —
+`startTransition(async () => await action())`, or a `<form action>` /
+`useActionState` submission — every other transition is put in the same lane
+and cannot commit until it settles. A `<Link>` navigation is a transition. So a
+Server Action that took 40 seconds made every link on the page dead for 40
+seconds; the production recording shows exactly that (the vehicle wizard's
+Continue, then the sidebar ignoring clicks until a reload). Locally, with a 12 s
+create: 7.2 s to navigate before, 0.4 s after.
+
+**Rule:** a mutation that can be slow is run with `useNavigationSafeAction` (same
+`[pending, start]` shape as `useTransition`) or, for a form,
+`useNavigationSafeFormAction` — not inside a transition. They follow a
+`redirect()` themselves, drop it if the person has already navigated elsewhere,
+and rethrow anything else into the error boundary. `useTransition` stays right for
+synchronous work (`startTransition(() => router.push(…))`).
 
 ## 8. Local development
 

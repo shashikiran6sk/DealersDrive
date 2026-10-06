@@ -33,9 +33,20 @@ leave this module.
 
 ## `apps/api/src/modules/media/media.routes.ts`
 
-### `const STORAGE_ROUTES: StorageRoute[] = [putUploads, getPrivate, getMediaImage]`
+### `export function storageRoutesFor(driver: Env['STORAGE_DRIVER']): StorageRoute[]`
 
-The endpoints that stand in for R2 locally.
+The endpoints that stand in for R2 locally — mounted **only for the local
+driver**. Behind minio or r2 the adapter's `presignPut()` and
+`signedReadUrl()` return real S3 presigned URLs, so `PUT /uploads` and
+`GET /private` have no caller there. Mounted anyway, they forwarded any
+request carrying a valid HMAC straight to the bucket through the configured
+`StoragePort`, and `UPLOAD_SIGNING_SECRET` has a committed default: anyone
+could overwrite a live vehicle image, plant objects in another dealership's
+KYC prefix, or read a private document by key (ORIG-BUG-001). The public
+`GET /media/by-media/:mediaId/:width.webp` stays for every driver; it is gated
+by listing and dealer visibility, not by a signature. `createStorageRouter`
+takes the driver as a parameter (defaulting to `env.STORAGE_DRIVER`) so the
+choice is testable without reloading configuration.
 
 `PUT /uploads` terminates the presigned upload: it verifies the HMAC, the
 expiry, the declared content-type and the declared content-length before a
@@ -59,20 +70,63 @@ vehicle media at all.
 
 ### `async serve`
 
-Resolves a delivery request to stored bytes. Content-addressed, immutable.
+Resolves a delivery request to stored bytes. A new upload has a new id, but authorization and readiness remain mutable.
 
 **A vehicle image is public only while its listing is visible — `ACTIVE`, or
 `RESERVED` since R71, because a reserved car's card and page are still shown
-(R45, R71).** The rule is contracts' `isListingPubliclyVisible`, the same one the
+(R45, R71), and its dealership is `ACTIVE`.** The rules are contracts' `isListingPubliclyVisible` and the shared search `PUBLIC_DEALER_STATUS`, the same ones the
 search's visible predicate spells. The media row is read with its
 `vehicle_media` attachment, the vehicle and the listing, and anything else — a
 pending review, changes requested, rejected, sold, withdrawn, or an image
 attached to nothing — is the same 404 as an id that does not exist. A moderator previews unpublished images through a signed read
-URL instead. Other owner types (a yard photograph) are unaffected.
+URL instead.
 
-The response stays `immutable` for a year: once an image has been public its
-bytes cannot be unpublished from a cache anyway, and the gate exists to keep
-images of a car that was never approved from being fetched at all.
+### `async function isPubliclyServable(media: ServableMedia): Promise<boolean>`
+
+**A yard photograph is public only while it is the cover of an `ACTIVE`
+dealership (BUG-NEW-009).** It used to be served whatever happened to its
+dealership: during a suspension the vehicle images went 404 while the yard
+photograph — the image that fronts the portfolio — stayed 200, and a DRAFT or
+pending applicant's photograph was public by id before anyone had approved it.
+The rule is one `count` of dealers whose `coverMediaId` is this row and whose
+status is `PUBLIC_DEALER_STATUS`, so a replaced photograph stops being served
+too. The dealer and the moderator see it through a signed read URL, which is
+unaffected.
+
+**Every other owner type is refused.** Only vehicle images and yard photographs
+are ever delivered here. A logo has no upload path and KYC documents do not
+create media rows, so this changes no current response — it means a future
+owner type is private until a rule for it is written, rather than public
+because nobody thought to write one.
+
+**Widths (BUG-NEW-011).** Any whole number from 1 to 4000 passes `MediaPath`.
+A width the processor wrote (320, 640, 1024, 1600) gets that derivative; any
+other gets the largest one there is, then the original. The reference used to
+say every other width was a 404, which a client could have coded around; it
+now describes the route as it behaves.
+
+The derivative route sets `Cache-Control: no-store` before validation and delivery, including denials. A READY image may become unavailable after suspension or a listing decision; an unchanged URL must consult the current state again. This also prevents a cached denial from outliving reinstatement. Private signed previews retain their existing authority and private/no-store behavior. Requested derivatives, larger fallbacks and original MIME types are unchanged. Previously retained client/CDN bytes cannot be recalled by this header; deployment must account for caches populated under the old year-long policy.
+
+**Revalidate, do not re-download (R108).** `no-store` on a successful response
+meant a browser never kept an image, so every view of every gallery streamed the
+bytes from S3 through the API again — on the t4g.small that serves the whole
+API. A successful response now sends `Cache-Control: no-cache` and a strong
+`ETag`. `no-cache` lets the browser keep the bytes but forbids reusing them
+without asking, so the property above still holds: every reuse is a
+conditional request, and `locate()` runs the same READY and visibility checks
+on it as on a first view. Still public → `304`, and `read()` (the S3 download)
+is skipped. No longer public → `404` with `no-store`. Nothing is ever served
+from a cache without the current state being consulted, and the public listing
+APIs stay the source of truth for what is visible.
+
+The ETag is `sha256(mediaId:key)` rather than a hash of the bytes, so it can be
+known before the download. That is sound because an object's bytes never change
+under its key: every key embeds the media id, a random UUID minted for one
+upload, and a replacement image is a new media row. The `m1-` prefix versions
+the derivation. No `max-age` or `immutable`: a bounded lifetime would let a
+browser show a suspended dealer's car without asking. Private reads
+(`GET /private`, KYC documents, yard previews) are unchanged — `private,
+no-store` — and KYC documents never reach this route at all.
 
 ### `export function toMediaStatus(status: string): 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'`
 

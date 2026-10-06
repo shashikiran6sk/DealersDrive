@@ -1,11 +1,12 @@
 'use client';
 
 import { formatPhone } from '@dealers-drive/contracts';
-import { useEffect, useId, useRef, useState, useTransition } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { checkPhoneAvailabilityAction, verifyPhoneAction } from '@/features/auth/phone-actions';
 import { phoneOtpToken, sendPhoneOtp } from '@/lib/phone-otp';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { Captcha } from './captcha';
 import { PhoneCodePanel } from './phone-code-panel';
@@ -44,7 +45,7 @@ export function PhoneVerification({
     initialStage === 'idle' ? 0 : Date.now() + RESEND_SECONDS * 1000,
   );
   const [remaining, setRemaining] = useState(0);
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
 
   const busy = useRef(false);
 

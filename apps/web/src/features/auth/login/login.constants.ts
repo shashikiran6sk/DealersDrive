@@ -38,6 +38,8 @@ export const DEALER_LOGIN_ERRORS: Readonly<Record<string, string>> = {
   account_link_required:
     'A Dealers-Drive account already uses that email address. Contact support to link Google sign-in to it.',
   account_suspended: 'This account has been suspended. Contact support to restore access.',
+  application_closed:
+    'This dealership application has been closed. Contact support if you think that is a mistake.',
   session_expired: 'Your session has ended. Sign in again to continue.',
 };
 

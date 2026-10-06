@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { revalidations } from '../../../setup.js';
 import {
   approveDealerAction,
+  closeDealerAction,
+  reinstateDealerAction,
   rejectDocumentAction,
   suspendDealerAction,
   updateDealerAction,
@@ -48,18 +50,54 @@ afterEach(() => {
 });
 
 describe('a decision that changes public visibility', () => {
-  it('clears the suspended dealership from the directory and its own page', async () => {
+  it('clears the suspended dealership from the directory, its own page and its car pages', async () => {
     const result = await suspendDealerAction(DEALER, { reason: 'Documents withdrawn.' }, SLUG);
 
     expect(result.ok).toBe(true);
-    expect(revalidations.tags).toEqual(['dealers', `dealer:${SLUG}`]);
+    expect(revalidations.tags).toEqual(['dealers', `dealer:${SLUG}`, 'vehicles']);
     expect(revalidations.paths).toContain('/admin');
+  });
+
+  /**
+   * BUG-NEW-010. A car page is cached under `vehicles` and `vehicle:<slug>`,
+   * never under the dealership's tags, and Next's data cache stores only a 200:
+   * once the API answers 404 for a suspended dealer's car, the background
+   * refresh is discarded and the warmed 200 is served indefinitely. Only a tag
+   * revalidation replaces it, so the decision itself has to issue one.
+   */
+  it.each([
+    ['suspend', () => suspendDealerAction(DEALER, { reason: 'Documents withdrawn.' }, SLUG)],
+    ['reinstate', () => reinstateDealerAction(DEALER, { note: 'Documents restored.' }, SLUG)],
+    ['approve', () => approveDealerAction(DEALER, {}, SLUG)],
+  ])('%s clears every cached car page', async (_name, decide) => {
+    const result = await decide();
+
+    expect(result.ok).toBe(true);
+    expect(revalidations.tags).toContain('vehicles');
+  });
+
+  it('closes an application through the API and refreshes the console (ORIG-GAP-CLOSE)', async () => {
+    const result = await closeDealerAction(DEALER, { reason: 'Duplicate application.' }, SLUG);
+
+    expect(result.ok).toBe(true);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining(`/v1/admin/dealers/${DEALER}/close`),
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(revalidations.paths).toContain('/admin');
+  });
+
+  it('refuses to close without a reason, before calling the API', async () => {
+    const result = await closeDealerAction(DEALER, { reason: '' }, SLUG);
+
+    expect(result).toEqual({ ok: false, message: 'Closing an application needs a reason.' });
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it('puts an approved dealership in front of buyers at once', async () => {
     await approveDealerAction(DEALER, {}, SLUG);
 
-    expect(revalidations.tags).toEqual(['dealers', `dealer:${SLUG}`]);
+    expect(revalidations.tags).toEqual(['dealers', `dealer:${SLUG}`, 'vehicles']);
   });
 
   /**
@@ -93,7 +131,7 @@ describe('a decision that changes public visibility', () => {
   it('still clears the directory when no slug was passed', async () => {
     await approveDealerAction(DEALER, {});
 
-    expect(revalidations.tags).toEqual(['dealers']);
+    expect(revalidations.tags).toEqual(['dealers', 'vehicles']);
   });
 
   it('revalidates nothing when the decision was refused', async () => {

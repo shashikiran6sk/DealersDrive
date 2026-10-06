@@ -12,8 +12,15 @@ export const CUSTOMER_ENQUIRIES_TEXT = {
   browseHref: '/cars',
   more: 'Show more',
   noLongerListed: '· No longer listed',
+  getHelp: 'Get help with this enquiry',
+  getHelpHref: (id: string) => `/support-requests/new?enquiry=${encodeURIComponent(id)}`,
 } as const;
 
 export function loginToSee(): string {
   return `/login?returnTo=${encodeURIComponent(MY_ENQUIRIES_PATH)}`;
 }
+
+export const CUSTOMER_ENQUIRIES_LOADING = {
+  label: 'Loading your enquiries',
+  rows: 3,
+} as const;

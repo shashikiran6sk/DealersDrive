@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 
 import { DEFAULT_ENQUIRY_TAB, ENQUIRIES_TEXT, EnquiryInbox } from '@/features/dealer/enquiries';
 import { apiGetParsed, qs } from '@/lib/api';
+import { currentSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,15 +26,16 @@ export default async function EnquiriesPage({
   const status = parsedStatus.success ? parsedStatus.data : DEFAULT_ENQUIRY_TAB;
   const cursor = one(params, 'cursor');
 
-  const inbox = await apiGetParsed(
-    DealerEnquiriesResponse,
-    `/v1/dealer/enquiries${qs({ status, cursor })}`,
-    { revalidate: false },
-  );
+  const [inbox, session] = await Promise.all([
+    apiGetParsed(DealerEnquiriesResponse, `/v1/dealer/enquiries${qs({ status, cursor })}`, {
+      revalidate: false,
+    }),
+    currentSession(),
+  ]);
 
   return (
     <div className="px-4 py-[22px] md:px-8 md:py-[30px]">
-      <EnquiryInbox inbox={inbox} status={status} />
+      <EnquiryInbox inbox={inbox} status={status} permissions={session?.permissions ?? []} />
     </div>
   );
 }

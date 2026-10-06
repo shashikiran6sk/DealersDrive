@@ -14,6 +14,12 @@ export const vehiclesDocs: ModuleDocs = {
     'field.\n\n' +
     '**Tenant scope.** Every path is looked up as `{ id, dealerId }` with the dealer id taken ' +
     'from the session, so another dealership’s vehicle is a 404, never a 403.\n\n' +
+    '**Write authorization.** After acquiring an existing listing lock, writes recheck ' +
+    'the current membership, role, dealership, account and cookie session inside the transaction. ' +
+    'Revoked access is `401`; a role that lost the required permission is `403`. ' +
+    'An authorization row held by another operation returns `409 AUTHORIZATION_BUSY` without ' +
+    'changing stock; retry the request after that operation completes. Draft preparation ' +
+    'remains available before dealer approval, while lifecycle moves require an ACTIVE dealer.\n\n' +
     'Every response here is `Cache-Control: no-store`.',
   operations: [
     {
@@ -138,7 +144,7 @@ export const vehiclesDocs: ModuleDocs = {
       permission: 'vehicle:delete',
       params: 'IdParam',
       responses: [{ status: 204, description: 'Deleted.' }],
-      errors: [400, 401, 403, 404],
+      errors: [400, 401, 403, 404, 409],
     },
     {
       method: 'post',
@@ -188,7 +194,7 @@ export const vehiclesDocs: ModuleDocs = {
         'row is locked and the new state is written with the old one in the `WHERE`, so two ' +
         'moves racing on one car land one and refuse the other with `409 LISTING_STATE_CHANGED`.',
       audience: 'dealer',
-      permission: 'listing:submit',
+      permission: 'listing:reserve',
       requiresActiveDealer: true,
       params: 'IdParam',
       responses: [
@@ -216,7 +222,7 @@ export const vehiclesDocs: ModuleDocs = {
         'reserved car is closed (`CANCELLED`) by the sale. Anything but an active or reserved car is a ' +
         '`409 LISTING_NOT_SELLABLE`.',
       audience: 'dealer',
-      permission: 'listing:submit',
+      permission: 'listing:sell',
       requiresActiveDealer: true,
       params: 'IdParam',
       responses: [
@@ -242,7 +248,7 @@ export const vehiclesDocs: ModuleDocs = {
         'Both are the dealership’s own record and appear in no public response. Anything but an ' +
         'active car is a `409 LISTING_NOT_WITHDRAWABLE`.',
       audience: 'dealer',
-      permission: 'listing:submit',
+      permission: 'listing:withdraw',
       requiresActiveDealer: true,
       params: 'IdParam',
       requestBody: {
@@ -275,7 +281,7 @@ export const vehiclesDocs: ModuleDocs = {
         'request already waiting on the same listing is a `409 REACTIVATION_ALREADY_PENDING` ' +
         '(one pending request per listing is also a database constraint).',
       audience: 'dealer',
-      permission: 'listing:submit',
+      permission: 'listing:reactivate',
       requiresActiveDealer: true,
       params: 'IdParam',
       requestBody: {

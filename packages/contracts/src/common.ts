@@ -121,6 +121,37 @@ export function formatDate(value: Date | string): string {
   return `${day} ${MONTHS[date.getUTCMonth()] ?? ''} ${date.getUTCFullYear()}`;
 }
 
+/**
+ * India Standard Time is a fixed UTC+05:30 with no daylight saving, so the
+ * offset is applied arithmetically rather than through ICU — the same reason
+ * `MONTHS` above is a table: the output is identical on every runtime.
+ */
+const IST_OFFSET_MINUTES = 330;
+
+/**
+ * `26 Sep 2026, 14:32` — a moment, in India Standard Time (**R89**).
+ *
+ * The admin consoles record *when* a customer asked and a dealer answered,
+ * and in a dispute the time of day matters as much as the date. Everyone who
+ * reads these labels works in IST, so the label is IST; the ISO timestamp
+ * beside it in every response is still UTC.
+ */
+export function formatDateTime(value: Date | string): string {
+  const date = typeof value === 'string' ? new Date(value) : value;
+  const ist = new Date(date.getTime() + IST_OFFSET_MINUTES * 60_000);
+  const hours = String(ist.getUTCHours()).padStart(2, '0');
+  const minutes = String(ist.getUTCMinutes()).padStart(2, '0');
+  return `${formatDate(ist)}, ${hours}:${minutes}`;
+}
+
+/**
+ * The first instant of an IST calendar day, `2026-09-26` → `2026-09-25T18:30Z`.
+ * A date filter in the console means the day the operator sees on the wall.
+ */
+export function istDayStart(day: string): Date {
+  return new Date(`${day}T00:00:00.000+05:30`);
+}
+
 /** `Mar 2027` — the insurance-validity form on the VDP spec table. */
 export function formatMonthYear(value: Date | string): string {
   const date = typeof value === 'string' ? new Date(value) : value;

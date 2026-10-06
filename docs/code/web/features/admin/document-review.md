@@ -47,6 +47,13 @@ a portfolio from the marketplace, and the cached copy has to go with it.
 
 ## `apps/web/src/features/admin/document-review/document-row.tsx`
 
+### `<div className="flex flex-wrap items-center gap-3">`
+
+An uploaded document's row holds its label, View, Verify, Reject file and a
+status tag — wider than a 320 px card on one line, which ran the tag 22 px off
+the screen (ADMIN-MOBILE-DETAIL-001). The controls wrap under the label
+instead.
+
 ### `const decidable = document.status === 'UPLOADED'`
 
 Only a document that has actually been uploaded can be decided on: a

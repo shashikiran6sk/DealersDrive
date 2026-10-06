@@ -2,7 +2,7 @@
 
 import type { AdminAccessEntry } from '@dealers-drive/contracts';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Input, Select } from '@/components/ui/input';
 import { Banner } from '@/components/ui/primitives';
 import { Table } from '@/components/ui/table';
 import { grantAdminAccessAction, revokeAdminAccessAction } from '@/features/admin/access-actions';
+import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
 
 import { AdminAccessRow } from './admin-access-row';
 import {
@@ -26,7 +27,7 @@ export interface AdminAccessPanelProps {
 
 export function AdminAccessPanel({ entries, currentUserId }: AdminAccessPanelProps) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, startTransition] = useNavigationSafeAction();
   const [email, setEmail] = useState('');
   const [adminRole, setAdminRole] = useState<string>(DEFAULT_ADMIN_ROLE);
   const [error, setError] = useState<string | null>(null);

@@ -23,7 +23,15 @@ import { postOnboarding } from './routes/post-onboarding.js';
 import { postPhoneAvailability } from './routes/post-phone-availability.js';
 import { postPhoneVerify } from './routes/post-phone-verify.js';
 import { postSignInPhoneDealer } from './routes/post-sign-in-phone-dealer.js';
-import type { CustomerAuthRoute, PublicAuthRoute, SessionAuthRoute } from './routes/route.js';
+import { getWorkspaces } from './routes/get-workspaces.js';
+import { putWorkspace } from './routes/put-workspace.js';
+import type {
+  CustomerAuthRoute,
+  PublicAuthRoute,
+  SessionAuthRoute,
+  WorkspaceRoute,
+} from './routes/route.js';
+import type { WorkspaceService } from './workspace.service.js';
 
 const PUBLIC_ROUTES: PublicAuthRoute[] = [
   getProviders,
@@ -54,6 +62,14 @@ const CUSTOMER_ROUTES: CustomerAuthRoute[] = [getCustomerMe];
 export function createCustomerAuthRouter(customers: CustomerAuthService): Router {
   const router = Router();
   for (const route of CUSTOMER_ROUTES) route(router, { customers });
+  return router;
+}
+
+const WORKSPACE_ROUTES: WorkspaceRoute[] = [getWorkspaces, putWorkspace];
+
+export function createWorkspacesRouter(workspaces: WorkspaceService): Router {
+  const router = Router();
+  for (const route of WORKSPACE_ROUTES) route(router, { workspaces });
   return router;
 }
 

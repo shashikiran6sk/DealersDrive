@@ -5,7 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 import { Banner } from '@/components/ui/primitives';
-import { failureMessage, fileRejection, postJson, presign, putToStorage } from '@/lib/upload';
+import {
+  failureMessage,
+  fileRejection,
+  postJson,
+  presign,
+  putToStorage,
+  UploadFailure,
+} from '@/lib/upload';
 
 import { YARD_PHOTO_PATH, YARD_PHOTO_RULE, YARD_PHOTO_TEXT } from './yard-photo-uploader.constants';
 
@@ -32,12 +39,12 @@ export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
         bytes: file.size,
       });
       const mediaId = signed.mediaId;
-      if (!mediaId) throw new Error(YARD_PHOTO_TEXT.missingId);
+      if (!mediaId) throw new UploadFailure(YARD_PHOTO_TEXT.missingId);
 
       await putToStorage(signed, file);
 
       const commit = await postJson(YARD_PHOTO_PATH.commit, { mediaId });
-      if (!commit.ok) throw new Error(YARD_PHOTO_TEXT.commitFailed);
+      if (!commit.ok) throw new UploadFailure(YARD_PHOTO_TEXT.commitFailed);
 
       router.refresh();
     } catch (caught) {
@@ -52,7 +59,7 @@ export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
     setBusy('delete');
     try {
       const response = await fetch(YARD_PHOTO_PATH.remove, { method: 'DELETE' });
-      if (!response.ok) throw new Error(YARD_PHOTO_TEXT.removeFailed);
+      if (!response.ok) throw new UploadFailure(YARD_PHOTO_TEXT.removeFailed);
       router.refresh();
     } catch (caught) {
       setError(failureMessage(caught, YARD_PHOTO_TEXT.removeUnknown));

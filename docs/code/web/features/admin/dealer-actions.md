@@ -12,6 +12,15 @@ declaration the note sat above.
 A disabled button with no explanation is indistinguishable from a
 broken one. This is the missing condition, stated.
 
+## `apps/web/src/features/admin/dealer-actions/close-block.tsx`
+
+### `export function CloseBlock`
+
+ORIG-GAP-CLOSE. Offered where the API says (`actions.canClose` — DRAFT or
+PENDING_APPROVAL), above Reject on purpose: closing keeps everything, and the
+note under the button says so and names Reject as the fraud-and-abuse tool. A
+`secondary` button rather than `destructive`, because nothing is destroyed.
+
 ## `apps/web/src/features/admin/dealer-actions/dealer-actions.constants.ts`
 
 ### `export const MIN_REASON = 6`

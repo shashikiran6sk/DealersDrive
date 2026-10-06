@@ -8,7 +8,11 @@ export const storageDocs: ModuleDocs = {
     '`GET /private` answers a signed read URL; `GET /media/…` serves published images. All ' +
     'three are replaced by R2 and the Cloudflare ' +
     'Images origin in every deployed environment, which is why they live outside `/v1` and ' +
-    'take no session.',
+    'take no session.\n\n' +
+    '`PUT /uploads` and `GET /private` are mounted **only when `STORAGE_DRIVER=local`**. Behind ' +
+    'minio or r2 the adapter issues real presigned URLs, so these routes have no caller and ' +
+    'answer 404 — their only authority is an HMAC, and a stand-in that forwarded a request to ' +
+    'the bucket would make that HMAC the bucket\u2019s password.',
   operations: [
     {
       method: 'put',
@@ -130,12 +134,23 @@ export const storageDocs: ModuleDocs = {
       description:
         'Content-addressed image delivery for every kind of image the product stores — a ' +
         'vehicle photograph and a dealership yard photograph are the same bytes behind the ' +
-        'same handler. **A vehicle image is served only while its listing is `ACTIVE` or `RESERVED`** ' +
+        'same handler. **A vehicle image is served only while its listing is `ACTIVE` or `RESERVED` ' +
+        'and its dealership is `ACTIVE`** ' +
         '(**R45**): before approval, after a sale or a removal it is a 404, and a moderator ' +
-        'previews it through a signed read URL instead. A new upload is a new id and therefore a new URL, ' +
-        'so a cache never has to be invalidated — hence ' +
-        '`Cache-Control: public, max-age=31536000, immutable`.\n\n' +
-        'Available widths are 320, 640, 1024 and 1600; anything else is a 404. Unlike the ' +
+        'previews it through a signed read URL instead. **A yard photograph is served only ' +
+        'while it is the cover of an `ACTIVE` dealership** — before approval, during a ' +
+        'suspension or once replaced it is a 404. Any other kind of media is never served ' +
+        'here. Media readiness and public visibility can ' +
+        'change while the id stays the same, so an image is never reused without asking: a ' +
+        'successful response sends `Cache-Control: no-cache` with a strong `ETag`, and every ' +
+        'reuse is a conditional request that runs the same visibility check as a first view. ' +
+        'While the image is still public and unchanged the answer is a `304` with no body; ' +
+        'once it is not, the answer is a `404`. Denials send `Cache-Control: no-store`, so a ' +
+        'denial never outlives a reinstatement (**R108**).\n\n' +
+        'Any whole-number width from 1 to 4000 is accepted. The processor writes 320, 640, 1024 ' +
+        'and 1600: asking for one of those returns it, and any other width returns the largest ' +
+        'derivative there is (the original while none has been written). A width outside 1 to ' +
+        '4000, or one that is not a whole number, is a 404. Unlike the ' +
         'JSON API this route sends `Cross-Origin-Resource-Policy: cross-origin`, because a ' +
         'media origin is a different host from the web app in every environment and the ' +
         'strict default would stop the browser embedding the image.\n\n' +
@@ -150,14 +165,24 @@ export const storageDocs: ModuleDocs = {
           inlineSchema: { type: 'string', format: 'binary' },
           headers: {
             'Cache-Control': {
-              description: 'Immutable for a year.',
-              schema: { type: 'string', example: 'public, max-age=31536000, immutable' },
+              description: 'Keep the bytes, but revalidate before every reuse.',
+              schema: { type: 'string', example: 'no-cache' },
+            },
+            ETag: {
+              description: 'A strong validator for this image at this width.',
+              schema: { type: 'string', example: '"m1-3q2v…"' },
             },
             'Cross-Origin-Resource-Policy': {
               description: 'What a public media origin sends.',
               schema: { type: 'string', example: 'cross-origin' },
             },
           },
+        },
+        {
+          status: 304,
+          description:
+            '`If-None-Match` matched and the image is still public. No body; the image is not ' +
+            'read from storage.',
         },
       ],
       errors: [404],

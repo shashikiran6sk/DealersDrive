@@ -9,7 +9,14 @@ export type Db = PrismaClient;
 export type Tx = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$use' | '$extends'>;
 
 export function createPrisma(): PrismaClient {
-  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
+  const adapter = new PrismaPg({
+    connectionString: env.DATABASE_URL,
+    max: env.DB_POOL_MAX,
+    connectionTimeoutMillis: env.DB_CONNECT_TIMEOUT_MS,
+    statement_timeout: env.DB_STATEMENT_TIMEOUT_MS,
+    idle_in_transaction_session_timeout: env.DB_IDLE_IN_TRANSACTION_TIMEOUT_MS,
+    keepAlive: true,
+  });
   const client = new PrismaClient({
     adapter,
     log: env.isDevelopment ? ['warn', 'error'] : ['error'],

@@ -89,6 +89,13 @@ describe('createEventBus', () => {
     expect(afterTheFailure).toHaveBeenCalledTimes(1);
   });
 
+  it('propagates a required subscriber failure for durable outbox retry', async () => {
+    const bus = createEventBus();
+    const error = new Error('Storage unavailable');
+    bus.on('StorageObjectsDelete', () => Promise.reject(error), { required: true });
+    await expect(bus.publish(event({ type: 'StorageObjectsDelete' }))).rejects.toBe(error);
+  });
+
   it('awaits each subscriber rather than firing them all off unawaited', async () => {
     const bus = createEventBus();
     let finished = false;

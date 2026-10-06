@@ -334,11 +334,7 @@ Three things make the destruction safe to reason about:
 column, not a foreign key, so the record of who rejected what, when
 and why survives the row it refers to. It is written before the
 delete for the same reason.
-· **Storage is emptied before the rows are.** The row is the only thing
-that knows where the bytes are — a KYC scan's key ends in its
-document id. Delete the row first and the scan of somebody's PAN card
-stays in the bucket with nothing left pointing at it, which is a
-retention problem rather than a housekeeping one.
+· **Cleanup is committed with the purge.** The transaction preserves all storage keys in a durable StorageObjectsDelete outbox event. Only after commit does the request attempt deletion; the required cleanup subscriber retries provider failures. Database rollback preserves all uploads.
 · **Only an unapproved application can be rejected.** `canReject` is
 DRAFT or PENDING_APPROVAL, so there is never a listing, a payment or
 a buyer's enquiry hanging off the row being removed. An ACTIVE
@@ -358,7 +354,7 @@ photograph, and a logo if one was ever uploaded — which carry their own
 A key that is already gone — a document row whose upload never
 completed — must not abort the purge and leave the dealership
 half-destroyed. What matters is that the rows are removed; an object
-left behind is reconcilable from the audit row, and a `dealers` row
+left behind is reconcilable from the committed cleanup event, and a `dealers` row
 left behind is a dealership the applicant can still sign into.
 
 ### `await audit.record(tx`
@@ -394,6 +390,28 @@ notification handler reads what it needs.
 ### `await tx.dealer.delete({ where: { id: dealerId } })`
 
 `dealer_documents` and `dealer_members` are `onDelete: Cascade`.
+
+### `async closeDealer(admin: AdminPrincipal, dealerId: string, reason: string): Promise<DealerModerationResponse>`
+
+ORIG-GAP-CLOSE. Before this an application that would never be finished had
+two fates: wait in DRAFT or PENDING_APPROVAL for ever, or be rejected — which
+purges the dealership, its documents and its owner membership. Close is the
+non-destructive third: DRAFT or PENDING_APPROVAL → CLOSED with a mandatory
+reason, and nothing deleted. The dealership row, memberships, KYC rows and
+files, the yard photograph and the audit trail all stay; the reason is in
+`statusReason`, in a `dealer.closed` audit row, and in a dedicated email
+(`DealerApplicationClosed` → `dealer.application.closed`). The rejection email
+is deliberately not reused: "we are not able to verify you" is the wrong thing
+to tell somebody whose duplicate application was tidied away.
+
+It takes the dealer lock first, like every other dealer decision, so it
+serialises with approve, reject, request-changes and the dealer's own submit.
+ACTIVE and SUSPENDED are refused: an approved dealership is suspended, which is
+reversible. Admin only for V1 — there is no dealer Withdraw.
+
+`rejectDealer` refuses a CLOSED dealership (`CLOSED_NOT_REJECTABLE`): the point
+of closing is that the record is kept, and the console never offers Reject on
+it (`canReject` is DRAFT or PENDING only).
 
 ### `async requestChanges`
 
@@ -461,45 +479,27 @@ the union below is narrowed so the old path cannot be walked by accident.
 
 which is why this reads zero rather than being left out of the shape.
 
-### `await setSeatStatus(tx`
+### `if (status === 'ACTIVE' && memberUserIds.length > 0)`
 
-The **dealer seat**, not the account (**R41**).
+**R92 — suspension is a fact about the dealership, and touches no person.**
 
-### `await setSeatStatus(tx`
+R41 moved suspension off `users.status` onto each member's DEALER seat, and
+revoked their DEALER sessions. Both were right while a person could belong to
+one dealership and their dealer session was only a dealer session. Neither is
+true after R92: one person may be a member of several dealerships, and the one
+session they hold is also their customer account. Closing their seat because
+ABC Motors was suspended would lock them out of XYZ Cars; revoking their
+session would sign them out of Saved cars and My enquiries.
 
-This used to write `users.status`, which is the whole person: a
+So suspension writes `dealers.status` and nothing else. The members lose the
+dealership on their very next request, because `findWorkspaceMembership`
+(`auth/membership.ts`) skips a suspended dealership every time a dealer
+principal is built; the public catalogue drops the cars at once, because
+`PUBLIC_VISIBLE_LISTING_WHERE` requires `dealer.status = ACTIVE`.
 
-### `await setSeatStatus(tx`
-
-member who also moderates the platform lost the admin console
-
-### `await setSeatStatus(tx`
-
-because a dealership in Vellore was suspended. The seat is the
-
-### `await setSeatStatus(tx`
-
-right unit — it closes the door this decision is about and leaves
-
-### `await setSeatStatus(tx`
-
-every other one alone.
-
-### `await tx.session.updateMany(`
-
-Scoped to DEALER for the same reason. An admin session held by
-
-### `await tx.session.updateMany(`
-
-one of these people survives; their dealer console does not.
-
-### `await tx.session.updateMany(`
-
-Reinstatement never un-revokes these rows — the person signs in
-
-### `await tx.session.updateMany(`
-
-again, which is how the seat check runs afresh.
+Reinstatement still reopens the members' DEALER seats. Nothing closes one any
+more, but a seat closed by a suspension made before R92 would otherwise stay
+closed after the dealership it was about came back.
 
 ### `...(status === 'SUSPENDED' ? { reason } : {})`
 
@@ -784,3 +784,11 @@ which is why this is a 422 at the door rather than a mystery in a report.
 ### `function compactRupees(paise: number): string`
 
 ₹1.2 Cr rather than ₹12,00,00,000 — a stat tile has one line to work with.
+
+## Authoritative activation prerequisites
+
+Approval locks the dealer first, then its documents in ID order, and re-reads their state after waiting. It requires a submitted PENDING_APPROVAL application, three VERIFIED documents with committed file names and existing stored objects, and the existing submission completeness rules. Completeness reads through the same transaction. ACTIVE, approval timestamp, audit and DealerApproved outbox event commit together; rejected attempts write none of them.
+
+Document verification accepts only UPLOADED files. Review locks the dealer before the document so review, approval and request-changes decisions share the parent-before-child lock order. Suspension requires ACTIVE; reinstatement requires SUSPENDED and an existing approval timestamp. Reinstatement preserves that timestamp.
+
+BUG-NEW-005 serializes destructive rejection with approval on the dealer row, re-reads status and approval history inside the transaction, and commits storage cleanup keys atomically with the purge. It preserves uploads on transaction rollback and retries provider failures after commit. The response retains the actual successful deletion count; the immutable audit records objectsDeleteRequested without claiming an external operation has completed.

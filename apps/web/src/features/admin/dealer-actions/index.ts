@@ -1,4 +1,5 @@
 export { ApproveBlock, type ApproveBlockProps } from './approve-block';
+export { CloseBlock, type CloseBlockProps } from './close-block';
 export { DealerAdminActions } from './dealer-actions';
 export { DEALER_ACTIONS_TEXT, DEALERS_LIST_PATH, MIN_REASON } from './dealer-actions.constants';
 export type { ActionBlockProps, RunAction } from './dealer-actions.types';

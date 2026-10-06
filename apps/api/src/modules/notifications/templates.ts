@@ -8,6 +8,7 @@ export type TemplateName =
   | 'dealer.application.approved'
   | 'dealer.application.rejected'
   | 'dealer.application.changes-requested'
+  | 'dealer.application.closed'
   | 'dealer.account.suspended'
   | 'dealer.account.reinstated'
   | 'admin.profile-change.submitted'
@@ -120,6 +121,20 @@ export function render(template: TemplateName, context: TemplateContext): Render
           'Your application is saved. Open it, make the change, and submit it again — you do not have to start over.',
         ],
         action: { label: 'Open your application', url: CONSOLE },
+      });
+
+    case 'dealer.application.closed':
+      return compose({
+        subject: `Your application has been closed — ${context.dealerName}`,
+        heading: 'Your application has been closed',
+        greeting: context.contactName,
+        paragraphs: [
+          `We have closed the application for ${context.dealerName} on Dealers-Drive. It will not be reviewed further.`,
+        ],
+        quote: context.reason,
+        paragraphsAfter: [
+          'Nothing you sent us has been deleted. If you believe this is a mistake, or you want to pick the application up again, reply to this email and a person will read it.',
+        ],
       });
 
     case 'dealer.account.suspended':

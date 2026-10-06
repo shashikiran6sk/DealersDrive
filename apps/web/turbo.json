@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": ["APP_ENV", "API_BASE_URL", "API_ORIGIN", "WEB_BASE_URL"]
+    }
+  }
+}

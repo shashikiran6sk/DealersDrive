@@ -1,4 +1,5 @@
 import {
+  enquiryTransitionPermission,
   formatRegistration,
   vehicleTitle,
   type CreateEnquiryInput,
@@ -14,11 +15,16 @@ import {
 } from '@dealers-drive/contracts';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
-import type { CustomerPrincipal } from '../auth/auth.facade.js';
+import { authorizeDealerWrite, type CustomerPrincipal } from '../auth/auth.facade.js';
 import type { AuditService } from '../../platform/audit/audit.service.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
-import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
-import { decodeCursor, encodeCursor } from '../../platform/pagination.js';
+import {
+  ConflictError,
+  DomainError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../platform/errors.js';
+import { decodeKeysetOrDateCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import { logger } from '../../platform/telemetry/logger.js';
 import {
   PUBLIC_AVAILABLE_LISTING_WHERE,
@@ -33,6 +39,7 @@ import {
 import {
   ALREADY_OPEN,
   ENQUIRY_NOT_FOUND,
+  ENQUIRY_TRANSITION_FORBIDDEN,
   LISTING_NOT_AVAILABLE,
   LISTING_NOT_FOUND,
   LISTING_RESERVED,
@@ -53,6 +60,8 @@ export const BLOCKING_STATUSES = [
 export interface EnquiryActor {
   dealerId: string;
   userId: string;
+  permissions: readonly string[];
+  sessionId?: string;
 }
 
 const STATUS_AUDIT_ACTIONS: Record<EnquiryStatus, string> = {
@@ -67,14 +76,18 @@ function notFound(): NotFoundError {
 }
 
 function stampsFor(
-  current: { contactedAt: Date | null },
+  current: { contactedAt: Date | null; contactedById: string | null },
   status: EnquiryStatus,
   now: Date,
-): Prisma.EnquiryUpdateInput {
+  actorId: string,
+): Prisma.EnquiryUncheckedUpdateInput {
+  const firstContact = status === 'CONTACTED' && current.contactedAt === null;
   return {
     status,
-    contactedAt: status === 'CONTACTED' ? (current.contactedAt ?? now) : current.contactedAt,
+    contactedAt: firstContact ? now : current.contactedAt,
+    contactedById: firstContact ? actorId : current.contactedById,
     closedAt: status === 'CLOSED' ? now : null,
+    closedById: status === 'CLOSED' ? actorId : null,
   };
 }
 
@@ -103,10 +116,18 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
       customer: CustomerPrincipal,
       query: CustomerEnquiryQuery,
     ): Promise<CustomerEnquiriesResponse> {
+      const cursor = query.cursor ? decodeKeysetOrDateCursor(query.cursor) : null;
       const rows = await prisma.enquiry.findMany({
         where: {
           customerId: customer.userId,
-          ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
+          ...(cursor
+            ? {
+                OR: [
+                  { createdAt: { lt: cursor.at } },
+                  ...(cursor.id ? [{ createdAt: cursor.at, id: { lt: cursor.id } }] : []),
+                ],
+              }
+            : {}),
         },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: query.limit + 1,
@@ -119,17 +140,28 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
 
       return {
         data: page.map(toCustomerEnquiry),
-        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+        page: {
+          nextCursor: hasMore && last ? encodeKeysetCursor(last.createdAt, last.id) : null,
+          hasMore,
+        },
       };
     },
 
     async inbox(dealerId: string, query: DealerEnquiryQuery): Promise<DealerEnquiriesResponse> {
+      const cursor = query.cursor ? decodeKeysetOrDateCursor(query.cursor) : null;
       const [rows, tabs] = await Promise.all([
         prisma.enquiry.findMany({
           where: {
             dealerId,
             ...(query.status ? { status: query.status } : {}),
-            ...(query.cursor ? { createdAt: { lt: decodeCursor(query.cursor) } } : {}),
+            ...(cursor
+              ? {
+                  OR: [
+                    { createdAt: { lt: cursor.at } },
+                    ...(cursor.id ? [{ createdAt: cursor.at, id: { lt: cursor.id } }] : []),
+                  ],
+                }
+              : {}),
           },
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           take: query.limit + 1,
@@ -145,7 +177,10 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
 
       return {
         data: page.map((row) => toDealerEnquiry(row, now)),
-        page: { nextCursor: hasMore && last ? encodeCursor(last.createdAt) : null, hasMore },
+        page: {
+          nextCursor: hasMore && last ? encodeKeysetCursor(last.createdAt, last.id) : null,
+          hasMore,
+        },
         counts: tabs,
       };
     },
@@ -161,10 +196,11 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           WHERE "id" = ${enquiryId}::uuid AND "dealerId" = ${actor.dealerId}::uuid
           FOR UPDATE`;
         if (locked.length === 0) throw notFound();
+        const permissions = await authorizeDealerWrite(tx, actor, 'enquiry:contact');
 
         const current = await tx.enquiry.findUniqueOrThrow({
           where: { id: enquiryId },
-          select: { status: true, contactedAt: true },
+          select: { status: true, contactedAt: true, contactedById: true },
         });
         if (current.status === input.status) {
           return toDealerEnquiry(
@@ -172,9 +208,17 @@ export function createEnquiriesService({ prisma, audit }: EnquiriesDeps) {
           );
         }
 
+        const needed = enquiryTransitionPermission(current.status, input.status);
+        if (!permissions.includes(needed)) {
+          throw new ForbiddenError(ENQUIRY_TRANSITION_FORBIDDEN, {
+            code: 'ENQUIRY_ACTION_FORBIDDEN',
+            extra: { enquiryStatus: current.status, permission: needed },
+          });
+        }
+
         const updated = await tx.enquiry.update({
           where: { id: enquiryId },
-          data: stampsFor(current, input.status, new Date()),
+          data: stampsFor(current, input.status, new Date(), actor.userId),
           select: INBOX_SELECT,
         });
 

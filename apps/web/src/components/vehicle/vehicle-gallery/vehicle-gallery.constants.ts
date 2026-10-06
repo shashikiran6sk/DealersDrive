@@ -19,7 +19,6 @@ export const VEHICLE_GALLERY_TEXT = {
   heroPrevious: 'Previous image',
   heroNext: 'Next image',
   close: 'Close',
-  brand: 'DD',
   railLabel: 'All photos',
   railCell: (index: number, total: number) => `Photo ${index + 1} of ${total}`,
   count: (index: number, total: number) => `${index + 1} / ${total}`,

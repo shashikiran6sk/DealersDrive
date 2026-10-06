@@ -29,13 +29,14 @@ import {
   type YardPhotoDto,
   type YardPhotoPresignInput,
 } from '@dealers-drive/contracts';
-import type { DealerDocType, PrismaClient } from '@prisma/client';
+import type { DealerDocType, DealerStatus, DocStatus, PrismaClient } from '@prisma/client';
 
 import { toMediaStatus } from '../media/media.facade.js';
 import { randomUUID } from 'node:crypto';
 
 import { getContext } from '../../middleware/request-context.js';
 import { withTransaction } from '../../platform/db/tenant-tx.js';
+import type { Tx } from '../../platform/db/prisma.js';
 import { mapKindFor, type MapsPort } from '../../platform/maps/maps-link.js';
 import { enqueueOutbox } from '../../platform/events/bus.js';
 import { ConflictError, DomainError, NotFoundError } from '../../platform/errors.js';
@@ -43,6 +44,12 @@ import type { AuditService } from '../../platform/audit/audit.service.js';
 import type { StoragePort } from '../../platform/storage/storage.port.js';
 import { assertPhoneVerified, type DealerPrincipal } from '../auth/auth.facade.js';
 import { documentKey, yardPhotoKey } from './dealer-storage-keys.js';
+import {
+  ALREADY_SUBMITTED,
+  APPLICATION_CLOSED,
+  DOCUMENT_LOCKED,
+  YARD_PHOTO_LOCKED,
+} from './dealers.messages.js';
 import type { DealersRepository, DealerWithRelations } from './dealers.repository.js';
 import {
   ALREADY_REGISTERED,
@@ -63,6 +70,27 @@ export interface DealersDeps {
 const DOC_TYPES: DealerDocType[] = ['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF'];
 
 const YARD_PHOTO_URL_TTL_SECONDS = 300;
+
+const DOC_EDITABLE_OUTSIDE_DRAFT: readonly DocStatus[] = ['REQUIRED', 'REJECTED', 'UPLOADING'];
+
+function assertDocumentEditable(
+  dealerStatus: DealerStatus | null,
+  document: { status: DocStatus } | null,
+): void {
+  if (dealerStatus === 'DRAFT') return;
+  if (!document || DOC_EDITABLE_OUTSIDE_DRAFT.includes(document.status)) return;
+  throw new ConflictError('DOCUMENT_LOCKED', DOCUMENT_LOCKED);
+}
+
+function assertSubmittable(dealerStatus: DealerStatus | null): void {
+  if (dealerStatus === 'DRAFT') return;
+  if (dealerStatus === 'CLOSED') throw new DomainError('APPLICATION_CLOSED', APPLICATION_CLOSED);
+  throw new DomainError('ALREADY_SUBMITTED', ALREADY_SUBMITTED);
+}
+
+function assertYardPhotoEditable(dealerStatus: DealerStatus | null): void {
+  if (dealerStatus !== 'DRAFT') throw new ConflictError('YARD_PHOTO_LOCKED', YARD_PHOTO_LOCKED);
+}
 
 function sameServices(a: readonly string[], b: readonly string[]): boolean {
   if (a.length !== b.length) return false;
@@ -148,8 +176,8 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     };
   }
 
-  async function requireDealer(dealerId: string): Promise<DealerWithRelations> {
-    const dealer = await repo.findById(dealerId);
+  async function requireDealer(dealerId: string, tx?: Tx): Promise<DealerWithRelations> {
+    const dealer = await repo.findById(dealerId, tx);
     if (!dealer) throw new NotFoundError('That dealership no longer exists.');
     return dealer;
   }
@@ -458,10 +486,10 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       return toProfile(updated);
     },
 
-    async completeness(dealerId: string): Promise<CompletenessResponse> {
-      const dealer = await requireDealer(dealerId);
+    async completeness(dealerId: string, tx?: Tx): Promise<CompletenessResponse> {
+      const dealer = await requireDealer(dealerId, tx);
       const owner = dealer.members.find((member) => member.role === 'OWNER');
-      const documents = await repo.documents(dealerId);
+      const documents = await repo.documents(dealerId, tx);
 
       const accountMissing: string[] = [];
       if (!owner?.user.fullName) accountMissing.push('fullName');
@@ -527,12 +555,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
 
     async submitForVerification(dealerId: string): Promise<DealerSubmitResponse> {
       const dealer = await requireDealer(dealerId);
-      if (dealer.status !== 'DRAFT') {
-        throw new DomainError(
-          'ALREADY_SUBMITTED',
-          'This dealership has already been submitted for verification.',
-        );
-      }
+      assertSubmittable(dealer.status);
 
       const state = await this.completeness(dealerId);
       if (!state.isComplete) {
@@ -550,6 +573,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const submittedAt = new Date();
       const resubmitted = Boolean(dealer.statusReason);
       await withTransaction(prisma, async (tx) => {
+        assertSubmittable(await repo.lockStatus(dealerId, tx));
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
         await enqueueOutbox(tx, {
           type: 'DealerApplied',
@@ -609,16 +633,26 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const documentId = randomUUID();
       const key = documentKey(slug, input.type, documentId);
 
-      const previous = await repo.documentByType(dealerId, input.type);
-      if (previous) await storage.delete(documentKey(slug, input.type, previous.id));
+      const previous = await withTransaction(prisma, async (tx) => {
+        const dealerStatus = await repo.lockStatus(dealerId, tx);
+        const existing = await repo.documentByType(dealerId, input.type, tx);
+        assertDocumentEditable(dealerStatus, existing);
 
-      await repo.upsertDocument(dealerId, input.type, {
-        id: documentId,
-        status: 'UPLOADING',
-        fileName: input.fileName,
-        mediaId: null,
-        rejectionReason: null,
+        await repo.upsertDocument(
+          dealerId,
+          input.type,
+          {
+            id: documentId,
+            status: 'UPLOADING',
+            fileName: input.fileName,
+            mediaId: null,
+            rejectionReason: null,
+          },
+          tx,
+        );
+        return existing;
       });
+      if (previous) await storage.delete(documentKey(slug, input.type, previous.id));
 
       const presigned = await storage.presignPut({
         key,
@@ -636,29 +670,37 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     },
 
     async commitDocument(dealerId: string, type: DealerDocType, input: DocumentCommitInput) {
-      const doc = await repo.documentById(input.documentId);
-      if (!doc || doc.dealerId !== dealerId || doc.type !== type) {
-        throw new NotFoundError(DOCUMENT_NOT_FOUND);
-      }
+      const slug = await requireSlug(dealerId);
+      const object = await storage.head(documentKey(slug, type, input.documentId));
 
-      const object = await storage.head(
-        documentKey(await requireSlug(dealerId), type, input.documentId),
-      );
-      if (!object) {
-        throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
-      }
+      await withTransaction(prisma, async (tx) => {
+        const dealerStatus = await repo.lockStatus(dealerId, tx);
+        const doc = await repo.documentById(input.documentId, tx);
+        if (!doc || doc.dealerId !== dealerId || doc.type !== type) {
+          throw new NotFoundError(DOCUMENT_NOT_FOUND);
+        }
+        assertDocumentEditable(dealerStatus, doc);
+        if (!object) {
+          throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
+        }
 
-      await repo.upsertDocument(dealerId, type, { status: 'UPLOADED', mediaId: null });
+        await repo.upsertDocument(dealerId, type, { status: 'UPLOADED', mediaId: null }, tx);
+      });
       const response = await this.documents(dealerId);
       return response.data.find((row) => row.type === type);
     },
 
     async deleteDocument(dealerId: string, type: DealerDocType): Promise<void> {
       const slug = await requireSlug(dealerId);
-      const existing = await repo.documentByType(dealerId, type);
-      if (!existing) throw new NotFoundError(DOCUMENT_NOT_FOUND);
+      const existing = await withTransaction(prisma, async (tx) => {
+        const dealerStatus = await repo.lockStatus(dealerId, tx);
+        const doc = await repo.documentByType(dealerId, type, tx);
+        if (!doc) throw new NotFoundError(DOCUMENT_NOT_FOUND);
+        assertDocumentEditable(dealerStatus, doc);
 
-      await repo.deleteDocument(dealerId, type);
+        await repo.deleteDocument(dealerId, type, tx);
+        return doc;
+      });
       await storage.delete(documentKey(slug, type, existing.id));
     },
 
@@ -687,6 +729,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       input: YardPhotoPresignInput,
     ): Promise<PresignResponse> {
       const dealer = await requireDealer(dealerId);
+      assertYardPhotoEditable(dealer.status);
 
       const mediaId = randomUUID();
       const key = yardPhotoKey(dealer.slug, mediaId);
@@ -722,7 +765,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
     },
 
     async commitYardPhoto(dealerId: string, input: YardPhotoCommitInput): Promise<YardPhotoDto> {
-      const dealer = await requireDealer(dealerId);
+      await requireDealer(dealerId);
 
       const media = await repo.mediaById(input.mediaId);
       if (!media || media.dealerId !== dealerId || media.ownerType !== 'DEALER_COVER') {
@@ -734,25 +777,37 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
         throw new DomainError('UPLOAD_MISSING', UPLOAD_INCOMPLETE);
       }
 
-      const displaced = dealer.coverMediaId;
-      await repo.markMediaReady(media.id);
-      await repo.update(dealerId, { coverMediaId: media.id });
+      const displaced = await withTransaction(prisma, async (tx) => {
+        assertYardPhotoEditable(await repo.lockStatus(dealerId, tx));
+        const current = await repo.findById(dealerId, tx);
+        await repo.markMediaReady(media.id, tx);
+        await repo.update(dealerId, { coverMediaId: media.id }, tx);
+        return current?.coverMediaId ?? null;
+      });
       if (displaced && displaced !== media.id) await discardMedia(displaced);
 
       return this.yardPhoto(dealerId);
     },
 
     async deleteYardPhoto(dealerId: string): Promise<void> {
-      const dealer = await requireDealer(dealerId);
-      if (!dealer.coverMediaId) throw new NotFoundError('There is no yard photograph to remove.');
-
-      await repo.update(dealerId, { coverMediaId: null });
-      await discardMedia(dealer.coverMediaId);
+      await requireDealer(dealerId);
+      const removed = await withTransaction(prisma, async (tx) => {
+        assertYardPhotoEditable(await repo.lockStatus(dealerId, tx));
+        const current = await repo.findById(dealerId, tx);
+        if (!current?.coverMediaId) {
+          throw new NotFoundError('There is no yard photograph to remove.');
+        }
+        await repo.update(dealerId, { coverMediaId: null }, tx);
+        return current.coverMediaId;
+      });
+      await discardMedia(removed);
     },
 
-    async dashboard(dealerId: string): Promise<DashboardResponse> {
+    async dashboard(dealerId: string, viewerId?: string): Promise<DashboardResponse> {
       const dealer = await requireDealer(dealerId);
-      const owner = dealer.members.find((member) => member.role === 'OWNER');
+      const viewer =
+        dealer.members.find((member) => member.userId === viewerId) ??
+        dealer.members.find((member) => member.role === 'OWNER');
 
       const weekStart = startOfDayUtc(new Date(Date.now() - 6 * 86_400_000));
 
@@ -803,7 +858,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
           ? null
           : Math.round(((weekTotal - previousTotalOrNull) / previousTotalOrNull) * 100);
 
-      const firstName = (owner?.user.fullName ?? dealer.brandName).split(' ').pop() ?? '';
+      const firstName = (viewer?.user.fullName ?? dealer.brandName).split(' ').pop() ?? '';
 
       return {
         greeting: `${greeting()}, ${firstName}`,

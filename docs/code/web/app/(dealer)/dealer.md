@@ -7,6 +7,14 @@ declaration the note sat above.
 
 ## `apps/web/src/app/(dealer)/dealer/layout.tsx`
 
+**R100 — the account is asked for alongside the guard.** The top bar's account
+menu does not depend on the session check or the dealership, so it no longer
+waits for them: a full console load is one API round trip shorter (350–672 ms →
+222–371 ms at 150 ms per call). The guard itself stays sequential — the
+dealership is never requested without a session (that test is unchanged).
+`currentSession` is not wrapped in `cache()`: layout and page already share one
+`/v1/auth/me` per request through Next's fetch memoisation, measured.
+
 ### `export const dynamic = 'force-dynamic'`
 
 DESIGN-SPEC §3.11 — the dealer console shell.

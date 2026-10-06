@@ -21,10 +21,12 @@ export interface DomainEvent<T = unknown> {
 export type DomainEventType =
   | 'DealerApproved'
   | 'DealerRejected'
+  | 'StorageObjectsDelete'
   | 'DealerSuspended'
   | 'DealerReinstated'
   | 'DealerApplied'
   | 'DealerChangesRequested'
+  | 'DealerApplicationClosed'
   | 'DealerProfileChangeSubmitted'
   | 'DealerProfileChangeDecided'
   | 'VehicleCreated'
@@ -48,23 +50,23 @@ export type DomainEventType =
 export type EventHandler = (event: DomainEvent) => Promise<void>;
 
 export interface EventBus {
-  on(type: DomainEventType, handler: EventHandler): void;
+  on(type: DomainEventType, handler: EventHandler, options?: { required?: boolean }): void;
   publish(event: DomainEvent): Promise<void>;
 }
 
 export function createEventBus(): EventBus {
-  const handlers = new Map<DomainEventType, EventHandler[]>();
+  const handlers = new Map<DomainEventType, { handler: EventHandler; required: boolean }[]>();
 
   return {
-    on(type, handler) {
+    on(type, handler, options) {
       const existing = handlers.get(type) ?? [];
-      existing.push(handler);
+      existing.push({ handler, required: options?.required === true });
       handlers.set(type, existing);
     },
 
     async publish(event) {
       const subscribers = handlers.get(event.type) ?? [];
-      for (const handler of subscribers) {
+      for (const { handler, required } of subscribers) {
         try {
           await handler(event);
         } catch (error) {
@@ -72,6 +74,7 @@ export function createEventBus(): EventBus {
             { err: error, eventType: event.type, eventId: event.id },
             'event subscriber failed',
           );
+          if (required) throw error;
         }
       }
     },

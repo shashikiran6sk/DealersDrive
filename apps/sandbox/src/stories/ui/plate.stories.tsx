@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { BrandLogo } from '@/components/brand-logo';
 import { Plate } from '@/components/ui/primitives';
 
 const meta = {
@@ -22,7 +23,7 @@ export const EverySize: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
       <Plate size="year">2019</Plate>
-      <Plate size="logo">DEALERS-DRIVE</Plate>
+      <BrandLogo />
       <Plate size="chip">VERIFIED</Plate>
       <Plate size="marker">PRIMARY</Plate>
     </div>

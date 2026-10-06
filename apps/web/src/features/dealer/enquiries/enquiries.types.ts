@@ -7,14 +7,17 @@ import type {
 export interface EnquiryInboxProps {
   inbox: DealerEnquiriesResponse;
   status: EnquiryStatus;
+  permissions?: readonly string[];
 }
 
 export interface EnquiryCardProps {
   enquiry: DealerEnquiry;
+  permissions?: readonly string[];
 }
 
 export interface EnquiryStatusActionsProps {
   enquiryId: string;
   status: EnquiryStatus;
   customerName: string;
+  permissions?: readonly string[];
 }

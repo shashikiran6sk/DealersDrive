@@ -1,6 +1,7 @@
 import type { AdminListingDetail } from '@dealers-drive/contracts';
 import Link from 'next/link';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { Banner, StatusTag } from '@/components/ui/primitives';
 
 import { CheckRow } from './check-row';
@@ -15,8 +16,8 @@ export function ListingReview({ detail }: { detail: AdminListingDetail }) {
 
   return (
     <div className="mx-auto flex max-w-[1000px] flex-col gap-5 p-5">
-      <Link href="/admin/listings" className="btn btn-ghost self-start">
-        {LISTING_REVIEW_TEXT.back}
+      <Link href="/admin/listings" className="relative btn btn-ghost self-start">
+        <LinkPendingLabel>{LISTING_REVIEW_TEXT.back}</LinkPendingLabel>
       </Link>
 
       <header className="flex flex-wrap items-start gap-3">
@@ -72,9 +73,9 @@ export function ListingReview({ detail }: { detail: AdminListingDetail }) {
             </p>
             <Link
               href={`/admin/dealers/${dealer.id}`}
-              className="btn btn-ghost self-start text-[12px]"
+              className="relative btn btn-ghost self-start text-[12px]"
             >
-              {LISTING_REVIEW_TEXT.openDealer}
+              <LinkPendingLabel>{LISTING_REVIEW_TEXT.openDealer}</LinkPendingLabel>
             </Link>
           </section>
 

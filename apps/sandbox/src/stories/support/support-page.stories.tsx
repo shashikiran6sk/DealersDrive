@@ -1,7 +1,7 @@
 import type { SupportContacts } from '@dealers-drive/contracts';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { SupportCard, SupportPage } from '@/features/support/support-page';
+import { SupportCard, SupportPage, SupportRequestCallout } from '@/features/support/support-page';
 
 const SUPPORT: SupportContacts = {
   customer: { email: 'support@dealers-drive.com', phone: '+914162248890' },
@@ -67,4 +67,8 @@ export const SingleCard: StoryObj<typeof SupportCard> = {
       </SupportCard>
     </div>
   ),
+};
+
+export const SupportRequestCalloutOnly: StoryObj<typeof SupportRequestCallout> = {
+  render: () => <SupportRequestCallout />,
 };

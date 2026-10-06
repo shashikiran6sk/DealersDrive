@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
 
+import { LinkPendingLabel } from '@/components/ui/link-pending';
 import { ErrorState } from '@/components/ui/primitives';
 
 export default function AdminError({
@@ -12,10 +12,6 @@ export default function AdminError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
   return (
     <div className="mx-auto max-w-[720px] px-6 py-20">
       <ErrorState
@@ -26,8 +22,8 @@ export default function AdminError({
             <button type="button" onClick={reset} className="btn btn-primary">
               Try again
             </button>
-            <Link href="/admin" className="btn btn-secondary">
-              Back to the queue
+            <Link href="/admin" className="relative btn btn-secondary">
+              <LinkPendingLabel>Back to the queue</LinkPendingLabel>
             </Link>
           </>
         }

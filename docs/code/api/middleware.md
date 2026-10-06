@@ -275,6 +275,14 @@ Health probes fire every few seconds; they log at debug so dev output stays read
 One line per completed request. traceId is attached by the logger mixin, so
 this line and every line the handler emitted share the same id.
 
+**R99.** The line also carries `dbMs` and `dbOps`: the time and the number of
+Prisma operations the request spent, from the request context the Prisma
+extension fills. `dbMs` is a **sum** of operation durations (pool wait
+included), so a request that runs queries concurrently can show more database
+time than wall time — 19 parallel queries of 40ms read `dbMs ≈ 760` against
+`durationMs ≈ 50`. Read together they separate "the database was slow" from "the
+handler was slow" from "the pool was saturated".
+
 ### `const path = req.path`
 
 Captured now: Express rewrites req.url while routing into a mounted
@@ -288,6 +296,40 @@ router, and 'finish' can fire before it is restored.
 ### `const EXCLUDED_PATHS = new Set(['/internal/metrics'])`
 
 The scrape itself must not recursively alter the metrics it is reading.
+
+## `apps/api/src/middleware/trusted-client-ip.ts`
+
+### `export function createTrustedClientIp(secret: string | undefined): RequestHandler`
+
+**R107.** The web tier calls the API from its own servers, so without this
+every request carries the web tier's address and every per-IP limiter —
+sign-in, OTP, enquiry, the public reads — counts the whole internet as one
+visitor: one busy minute locks everyone out, and an abuser shares a bucket with
+every real buyer.
+
+The web sends the visitor's address in `x-dd-client-ip`, and beside it the
+shared `CLIENT_IP_FORWARD_SECRET` in `x-dd-forward-secret`. The address is
+believed only when the secret matches and the value parses as a single IP
+address; anything else — no secret configured, no secret presented, a wrong
+one, a list — leaves `req.ip` exactly as `trust proxy` resolved it. Anyone on
+the internet can send `x-dd-client-ip`, so the header alone is never trusted;
+`X-Forwarded-For` is not consulted for this either.
+
+It runs **before** `requestContext`, because the context captures `req.ip` once
+and the auth services record that value. Overriding `req.ip` itself (an own
+property shadowing Express's getter) means every existing reader — the
+limiters' default key, `byIp`, the session and sign-in audit columns — sees
+the visitor without a change to any of them.
+
+Both headers are removed from `req.headers` whatever happens, so nothing
+downstream can log or echo the secret. The comparison hashes both sides first
+so `timingSafeEqual` compares equal-length buffers and the secret's length is
+not observable.
+
+The web forwards the address only on requests that are not cached (see
+`apps/web/src/lib/api.ts` in the web `lib` notes).
+A cached public read is fetched by the web tier for everyone, so it is still
+counted against the web tier's own address — which is what it is.
 
 ## `apps/api/src/middleware/validate.ts`
 

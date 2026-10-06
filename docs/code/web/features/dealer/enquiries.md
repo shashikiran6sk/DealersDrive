@@ -45,6 +45,23 @@ On success the Server Action's `revalidatePath` redraws the page, so the card
 moves tab with no client state to keep in step; a refusal shows the API's
 sentence under the buttons.
 
+### `const moves = ENQUIRY_MOVES[status].filter(`
+
+**R95.** The moves a member's role cannot make are not offered: each is checked
+with `enquiryTransitionPermission(from, to)` — the function the API checks with
+— against the session's permissions. STAFF see Mark contacted on a new enquiry
+and nothing else; a group with nothing in it renders nothing, rather than an
+empty row of disabled buttons.
+
+## `apps/web/src/features/dealer/enquiries/enquiry-handled-by.tsx`
+
+### `export function EnquiryHandledBy({ enquiry }: { enquiry: DealerEnquiry })`
+
+"Contacted by Priya · 01 Oct 2026, 16:42" (**R95**). With more than one person
+working an inbox, who already called a buyer is the question that saves a
+second call. The close line shows only while the enquiry is closed — reopening
+clears `closedById` — and nothing renders until somebody has acted.
+
 ## `apps/web/src/features/dealer/enquiry-actions.ts`
 
 ### `export async function setEnquiryStatusAction(enquiryId: string, status: string)`

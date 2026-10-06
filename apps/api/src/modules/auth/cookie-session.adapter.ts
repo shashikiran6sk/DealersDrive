@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 import type { Request } from 'express';
 
 import { isAllowlistedAdmin } from './admin-allowlist.js';
+import { findWorkspaceMembership } from './membership.js';
 import { hasGrantedSeat, isSeatSuspended } from './roles.js';
 import { readSessionToken } from './session.cookie.js';
 import type { SessionService } from './session.service.js';
@@ -19,18 +20,20 @@ export function createCookieSessionResolver(
   sessions: SessionService,
 ): SessionResolver {
   async function signedIn(req: Request): Promise<DealerPrincipal | PendingPrincipal | null> {
-    const session = await sessions.resolve(readSessionToken(req), 'DEALER');
+    const session = await sessions.resolvePerson(readSessionToken(req));
     if (!session || session.user.status !== 'ACTIVE') return null;
 
     if (isSeatSuspended(session.user.roles, 'DEALER')) return null;
 
-    const membership = await prisma.dealerMember.findFirst({
-      where: { userId: session.userId, status: 'ACTIVE' },
-      include: { dealer: true },
-      orderBy: { id: 'asc' },
-    });
+    const { membership, suspended } = await findWorkspaceMembership(
+      prisma,
+      session.userId,
+      session.activeDealerId,
+    );
+    if (suspended) return null;
 
     if (!membership) {
+      if (session.scope !== 'DEALER') return null;
       return {
         kind: 'PENDING',
         userId: session.userId,
@@ -42,10 +45,9 @@ export function createCookieSessionResolver(
       };
     }
 
-    if (membership.dealer.status === 'SUSPENDED') return null;
-
     return {
       kind: 'DEALER',
+      sessionId: session.id,
       userId: session.userId,
       dealerId: membership.dealerId,
       dealerSlug: membership.dealer.slug,

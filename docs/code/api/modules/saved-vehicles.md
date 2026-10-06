@@ -12,6 +12,10 @@ and the listing.
 
 ## `apps/api/src/modules/saved-vehicles/saved-vehicles.service.ts`
 
+### `async list(customer, query)`
+
+Pagination follows the existing descending createdAt/id ordering with a timestamp/UUID cursor. Its OR boundary is createdAt before the cursor, or equal date and smaller id; customerId remains an independent required predicate. A deleted cursor row does not invalidate the position. Date-only cursors keep their old strict-date behavior; new pages emit a keyset, and refreshing receives a complete tie boundary. Saved history remains present when a listing is reserved, sold, withdrawn or its dealer suspended.
+
 ### `async save(customer, slug)`
 
 Idempotent at three levels:
