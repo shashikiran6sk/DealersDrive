@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { LinkPendingLabel } from '@/components/ui/link-pending';
+import type { CustomerAccount } from '@/features/auth/customer-account';
 import {
   customerLogoutAction,
   enterWorkspaceAction,
-  type CustomerAccount,
 } from '@/features/auth/customer-account-actions';
 import { announceAuthHint, rememberAuthHint, useAuthHint } from '@/lib/use-auth-hint';
 import { useNavigationSafeAction } from '@/lib/use-navigation-safe-action';
