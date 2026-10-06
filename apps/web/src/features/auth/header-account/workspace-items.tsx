@@ -3,7 +3,7 @@
 import Link from 'next/link';
 
 import { StatusTag } from '@/components/ui/primitives';
-import type { AccountWorkspace } from '@/features/auth/customer-account-actions';
+import type { AccountWorkspace } from '@/features/auth/customer-account';
 
 import { HEADER_ACCOUNT_TEXT } from './header-account.constants';
 import { MENU_ITEM } from './header-account.styles';

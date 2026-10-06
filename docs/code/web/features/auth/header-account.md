@@ -6,6 +6,13 @@ The signed-in customer in the header (**R67**).
 
 ## `apps/web/src/features/auth/customer-account-actions.ts`
 
+The file is `'use server'`, so it exports async functions and nothing else — not
+even a type. `export type { … } from` is erased by webpack before the check runs,
+so `next build` passes, but Turbopack (`next dev --turbopack`) rejects it and the
+module then has no exports at all, which 500s every page that renders the header.
+`CustomerAccount` and `AccountWorkspace` are imported from `./customer-account`,
+where they are declared.
+
 ### `export async function customerAccountAction(): Promise<CustomerAccount | null>`
 
 The account, for a server component that renders the person's corner itself —

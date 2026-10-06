@@ -1,4 +1,4 @@
-import type { CustomerAccount } from '@/features/auth/customer-account-actions';
+import type { CustomerAccount } from '@/features/auth/customer-account';
 
 import type { AccountLoader } from './account-client';
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { CustomerAccount } from '@/features/auth/customer-account-actions';
+import type { CustomerAccount } from '@/features/auth/customer-account';
 
 import { ACCOUNT_ENDPOINT, ACCOUNT_TIMEOUT_MS } from './header-account.constants';
 

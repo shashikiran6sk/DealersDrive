@@ -9,8 +9,6 @@ import { writeAuthHint } from '@/lib/auth-hint-cookie';
 import { lookupCustomerAccount, type CustomerAccount } from './customer-account';
 import { CUSTOMER_ACCOUNT_PATHS, DEALER_CONSOLE_HREF } from './customer-account-actions.constants';
 
-export type { AccountWorkspace, CustomerAccount } from './customer-account';
-
 export async function customerAccountAction(): Promise<CustomerAccount | null> {
   const lookup = await lookupCustomerAccount();
   return lookup.status === 'signed-in' ? lookup.account : null;
