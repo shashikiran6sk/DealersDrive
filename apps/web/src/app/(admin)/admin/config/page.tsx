@@ -1,8 +1,10 @@
-import type { AdminAccessResponse, ConfigResponse } from '@dealers-drive/contracts';
+import type { ConfigResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
-import { AdminAccessPanel } from '@/features/admin/admin-access';
+import { Banner } from '@/components/ui/primitives';
 import { ConfigRow } from '@/features/admin/config-editor';
+import { CONFIG_PAGE_TEXT } from '@/features/admin/config-editor/config-editor.constants';
 import { apiGet } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -10,10 +12,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Configuration' };
 
 export default async function AdminConfigPage() {
-  const [config, access] = await Promise.all([
-    apiGet<ConfigResponse>('/v1/admin/config', { revalidate: false }),
-    apiGet<AdminAccessResponse>('/v1/admin/access', { revalidate: false }),
-  ]);
+  const config = await apiGet<ConfigResponse>('/v1/admin/config', { revalidate: false });
 
   const inUse = config.data.filter((entry) => entry.readBy !== null);
   const dormant = config.data.filter((entry) => entry.readBy === null);
@@ -28,7 +27,13 @@ export default async function AdminConfigPage() {
         </p>
       </div>
 
-      <AdminAccessPanel entries={access.data} currentUserId={access.currentUserId} />
+      <Banner
+        tone="ok"
+        title={CONFIG_PAGE_TEXT.membersMovedTitle}
+        action={<Link href="/admin/members">{CONFIG_PAGE_TEXT.membersMovedLink}</Link>}
+      >
+        {CONFIG_PAGE_TEXT.membersMovedBody}
+      </Banner>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-[17px]">Platform settings</h2>

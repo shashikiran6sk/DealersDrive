@@ -6,6 +6,10 @@ import { env, type Env } from './config/env.js';
 import { createAuthMiddleware, createCustomerGuard } from './middleware/auth.js';
 import { createRateLimiter, type RateLimiter } from './middleware/rate-limit.js';
 import { createAdminService, type AdminService } from './modules/admin/admin.service.js';
+import {
+  createAdminMembersService,
+  type AdminMembersService,
+} from './modules/admin-members/admin-members.service.js';
 import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
 import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
 import { createConfigService, type ConfigService } from './modules/config/config.service.js';
@@ -122,6 +126,7 @@ export interface Container {
   readonly savedVehicles: SavedVehiclesService;
   readonly support: SupportService;
   readonly adminSupport: AdminSupportService;
+  readonly adminMembers: AdminMembersService;
   readonly customers: CustomerAuthService;
   readonly workspaces: WorkspaceService;
   readonly team: TeamService;
@@ -270,6 +275,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     adminEnquiries: createAdminEnquiriesService({ prisma }),
     support: createSupportService({ prisma, audit }),
     adminSupport: createAdminSupportService({ prisma, audit }),
+    adminMembers: createAdminMembersService({ prisma, audit }),
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };

@@ -52,7 +52,12 @@ export const AdminOverview = z.object({
    * from the session, so the header cannot show one operator while the audit
    * log records another.
    */
-  operator: z.object({ email: z.string(), adminRole: AdminRole }),
+  operator: z.object({
+    email: z.string(),
+    adminRole: AdminRole,
+    roleLabel: z.string(),
+    permissions: z.array(z.string()),
+  }),
 });
 export type AdminOverview = z.infer<typeof AdminOverview>;
 

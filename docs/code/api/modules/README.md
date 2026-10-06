@@ -13,6 +13,7 @@ Parent: [api](../README.md)
 ## Pages
 
 - [admin](admin.md)
+- [admin-members](admin-members.md)
 - [auth](auth.md)
 - [config](config.md)
 - [dealers](dealers.md)

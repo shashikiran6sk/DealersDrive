@@ -1,3 +1,7 @@
+import type { AdminPermission } from '@dealers-drive/contracts';
+
 import type { NavItem } from '@/types';
 
-export type AdminNavItem = NavItem;
+export interface AdminNavItem extends NavItem {
+  permission?: AdminPermission;
+}

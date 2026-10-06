@@ -450,6 +450,8 @@ describe('overview', () => {
     expect((await h.service.overview(admin)).operator).toEqual({
       email: 'ops@dealers-drive.test',
       adminRole: 'SUPER_ADMIN',
+      roleLabel: 'Super admin',
+      permissions: [...admin.permissions],
     });
   });
 

@@ -48,7 +48,12 @@ function overview(overrides: Partial<AdminOverview> = {}): AdminOverview {
       href: '/admin/listings',
     },
     headerBadge: { count: 0, label: '0 awaiting review', tone: 'neutral' },
-    operator: { email: 'ops@dealers-drive.com', adminRole: 'SUPER_ADMIN' },
+    operator: {
+      email: 'ops@dealers-drive.com',
+      adminRole: 'SUPER_ADMIN',
+      roleLabel: 'Super admin',
+      permissions: ['admin:console'],
+    },
     ...overrides,
   };
 }
@@ -154,13 +159,14 @@ describe('the admin nav', () => {
    * **F048.** The first item finally points at a page. **R89** adds Enquiries
    * and **R91** Support Tickets, immediately above Configuration.
    */
-  it('offers the dashboard, listings, dealers, enquiries, support tickets and the settings screen', () => {
+  it('offers the dashboard, listings, dealers, enquiries, support tickets, members and the settings screen', () => {
     expect(LANDED_ADMIN_NAV.map((item) => item.href)).toEqual([
       '/admin',
       '/admin/listings',
       '/admin/dealers',
       '/admin/enquiries',
       '/admin/support',
+      '/admin/members',
       '/admin/config',
     ]);
   });
