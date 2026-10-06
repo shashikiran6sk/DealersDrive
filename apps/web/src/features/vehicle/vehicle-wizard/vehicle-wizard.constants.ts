@@ -89,6 +89,9 @@ export const VEHICLE_WIZARD_TEXT = {
   notSubmitted: 'That vehicle could not be submitted.',
   submitBlocked: 'Fill in the missing details to submit.',
   submitByManager: 'Your changes are saved as a draft. A manager or the owner sends it for review.',
+  submitAfterApproval:
+    'Saved as a draft. It can be submitted for review once the dealership is approved.',
+  viewDealership: 'Back to the dealership',
   submittedTag: 'Pending review',
   submittedTitle: 'Submitted for review',
   submittedBody:

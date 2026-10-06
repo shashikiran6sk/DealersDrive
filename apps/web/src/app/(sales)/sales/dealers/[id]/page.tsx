@@ -1,4 +1,4 @@
-import type { SalesDealerDetail } from '@dealers-drive/contracts';
+import type { SalesDealerDetail, SalesVehiclesResponse } from '@dealers-drive/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -8,6 +8,7 @@ import { DocumentUploader } from '@/features/auth/document-uploader';
 import { YardPhotoUploader } from '@/features/auth/yard-photo-uploader';
 import { AssistedDealerForm } from '@/features/sales/assisted-dealer-form';
 import { EmailVerificationPanel } from '@/features/sales/email-verification-panel';
+import { SALES_VEHICLE_TEXT, SalesVehicleList } from '@/features/sales/sales-vehicle-list';
 import { ASSISTED_FORM_TEXT } from '@/features/sales/assisted-dealer-form/assisted-dealer-form.constants';
 import { updateAssistedDealerAction } from '@/features/sales/sales-actions';
 import { SALES_TEXT } from '@/features/sales/sales.constants';
@@ -23,10 +24,16 @@ export const metadata: Metadata = { title: 'Dealership' };
 export default async function AssistedDealerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let dealer: SalesDealerDetail;
+  let listings: SalesVehiclesResponse;
   try {
-    dealer = await apiGet<SalesDealerDetail>(`/v1/sales/dealers/${encodeURIComponent(id)}`, {
-      revalidate: false,
-    });
+    [dealer, listings] = await Promise.all([
+      apiGet<SalesDealerDetail>(`/v1/sales/dealers/${encodeURIComponent(id)}`, {
+        revalidate: false,
+      }),
+      apiGet<SalesVehiclesResponse>(`/v1/sales/dealers/${encodeURIComponent(id)}/vehicles`, {
+        revalidate: false,
+      }),
+    ]);
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 400)) notFound();
     throw error;
@@ -69,6 +76,11 @@ export default async function AssistedDealerPage({ params }: { params: Promise<{
           {dealer.claimed ? SALES_TEXT.claimedNotice : SALES_TEXT.lockedNotice}
         </p>
       ) : null}
+
+      <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
+        <h2 className="text-[17px]">{SALES_VEHICLE_TEXT.heading}</h2>
+        <SalesVehicleList dealerId={dealer.id} listings={listings} />
+      </section>
 
       <section className="flex flex-col gap-3 rounded-[14px] border border-(--color-divider) bg-white p-4 md:p-6">
         <h2 className="text-[17px]">{SALES_TEXT.emailHeading}</h2>

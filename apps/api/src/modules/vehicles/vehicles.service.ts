@@ -33,6 +33,8 @@ import {
 import { decodeKeysetOrDateCursor, encodeKeysetCursor } from '../../platform/pagination.js';
 import { completenessOf, toDealerVehicle, toInventoryRow } from './vehicles.mapper.js';
 import {
+  ASSISTED_DEALER_INACTIVE,
+  DEALER_NOT_APPROVED,
   DUPLICATE_REGISTRATION,
   REGISTRATION_ALREADY_LISTED,
   VEHICLE_INCOMPLETE,
@@ -45,6 +47,20 @@ import type { VehicleRow, VehicleWrite, VehiclesRepository } from './vehicles.re
 export interface VehicleActor extends DealerWriteActor {
   permissions?: readonly string[];
 }
+
+export interface AssistedVehicleActor {
+  dealerId: string;
+  userId: string;
+  memberId: string;
+}
+
+export const ASSISTED_VEHICLE_PERMISSIONS: readonly string[] = [
+  'vehicle:read',
+  'vehicle:write',
+  'listing:submit',
+];
+
+const CLOSED_DEALER_STATUSES = new Set(['SUSPENDED', 'REJECTED', 'CLOSED']);
 
 export interface VehiclesDeps {
   prisma: PrismaClient;
@@ -106,6 +122,46 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
       });
     }
     return permissions;
+  }
+
+  async function authorizeAssisted(
+    tx: Tx,
+    actor: AssistedVehicleActor,
+    requireApproved: boolean,
+  ): Promise<string[]> {
+    const [dealer] = await tx.$queryRaw<{ status: string; assistedByMemberId: string | null }[]>`
+      SELECT "status", "assistedByMemberId" FROM "dealers"
+      WHERE "id" = ${actor.dealerId}::uuid FOR UPDATE`;
+    if (!dealer || dealer.assistedByMemberId !== actor.memberId) throw notFound();
+    if (CLOSED_DEALER_STATUSES.has(dealer.status)) {
+      throw new ConflictError('ASSISTED_DEALER_INACTIVE', ASSISTED_DEALER_INACTIVE);
+    }
+    if (requireApproved && dealer.status !== 'ACTIVE') {
+      throw new ConflictError('DEALER_NOT_APPROVED', DEALER_NOT_APPROVED);
+    }
+    return [...ASSISTED_VEHICLE_PERMISSIONS];
+  }
+
+  async function requireAssistedVehicle(
+    actor: AssistedVehicleActor,
+    vehicleId: string,
+    tx?: Tx,
+  ): Promise<VehicleRow> {
+    const vehicle = await repo.findOwned(actor.dealerId, vehicleId, tx);
+    if (!vehicle || vehicle.createdByMemberId !== actor.memberId) throw notFound();
+    return vehicle;
+  }
+
+  function incomplete(vehicle: VehicleRow): DomainError | null {
+    const issues = vehicleIssues(completenessOf(vehicle));
+    if (issues.length === 0) return null;
+    return new DomainError('VEHICLE_INCOMPLETE', VEHICLE_INCOMPLETE, {
+      errors: issues.map((issue) => ({
+        field: issue.field,
+        code: 'REQUIRED',
+        message: issue.message,
+      })),
+    });
   }
 
   async function spelled(field: 'make' | 'model', value: string): Promise<string> {
@@ -329,6 +385,146 @@ export function createVehiclesService({ prisma, repo, audit }: VehiclesDeps) {
           const moved = await transition(tx, audit, listing, event, {
             type: 'DEALER',
             id: actor.userId,
+          });
+          return { vehicle: { ...vehicle, claimedAt, listing: moved }, permissions };
+        });
+        return toDealerVehicle(submitted.vehicle, submitted.permissions);
+      } catch (error) {
+        if (errorCode(error) === 'P2002') throw alreadyListed();
+        throw error;
+      }
+    },
+
+    async assistedCreate(
+      actor: AssistedVehicleActor,
+      input: CreateVehicleInput,
+    ): Promise<DealerVehicle> {
+      if (await repo.heldRegistration(actor.dealerId, input.registrationNumber)) {
+        throw duplicate();
+      }
+      try {
+        const created = await withTransaction(prisma, async (tx) => {
+          const permissions = await authorizeAssisted(tx, actor, false);
+          const row = await repo.create(
+            {
+              dealerId: actor.dealerId,
+              registrationNumber: input.registrationNumber,
+              rtoCode: rtoCodeOf(input.registrationNumber),
+              createdBy: null,
+              createdByMemberId: actor.memberId,
+            },
+            tx,
+          );
+          const listing = await createDraftListing(tx, row);
+          await audit.record(tx, {
+            actorType: 'SALES',
+            actorId: actor.userId,
+            dealerId: actor.dealerId,
+            action: 'vehicle.created',
+            entityType: 'Vehicle',
+            entityId: row.id,
+            after: {
+              registrationNumber: row.registrationNumber,
+              listingId: listing.id,
+              assistedByMemberId: actor.memberId,
+            },
+          });
+          return { vehicle: { ...row, listing }, permissions };
+        });
+        return toDealerVehicle(created.vehicle, created.permissions);
+      } catch (error) {
+        if (errorCode(error) === 'P2002') throw duplicate();
+        throw error;
+      }
+    },
+
+    async assistedList(actor: AssistedVehicleActor) {
+      const rows = await repo.createdByMember(actor.dealerId, actor.memberId);
+      return rows.map((row) => toInventoryRow(row, ASSISTED_VEHICLE_PERMISSIONS));
+    },
+
+    async assistedGet(actor: AssistedVehicleActor, vehicleId: string): Promise<DealerVehicle> {
+      return toDealerVehicle(
+        await requireAssistedVehicle(actor, vehicleId),
+        ASSISTED_VEHICLE_PERMISSIONS,
+      );
+    },
+
+    async assistedUpdate(
+      actor: AssistedVehicleActor,
+      vehicleId: string,
+      input: UpdateVehicleInput,
+    ): Promise<DealerVehicle> {
+      const current = await requireAssistedVehicle(actor, vehicleId);
+      if (current.listing && !isListingEditable(current.listing.status)) {
+        throw new ConflictError('VEHICLE_NOT_EDITABLE', VEHICLE_NOT_EDITABLE, {
+          extra: { listingStatus: current.listing.status },
+        });
+      }
+      if (
+        input.registrationNumber !== undefined &&
+        input.registrationNumber !== current.registrationNumber &&
+        (await repo.heldRegistration(actor.dealerId, input.registrationNumber, vehicleId))
+      ) {
+        throw duplicate();
+      }
+
+      const data = await writeOf(input);
+      const fields = Object.keys(data).filter((field) => field !== 'rtoCode');
+      if (fields.length === 0) return toDealerVehicle(current, ASSISTED_VEHICLE_PERMISSIONS);
+
+      try {
+        const updated = await withTransaction(prisma, async (tx) => {
+          const listing = await lockListingForVehicle(tx, vehicleId);
+          if (!listing) throw notFound();
+          const permissions = await authorizeAssisted(tx, actor, false);
+          if (!isListingEditable(listing.status)) {
+            throw new ConflictError('VEHICLE_NOT_EDITABLE', VEHICLE_NOT_EDITABLE, {
+              extra: { listingStatus: listing.status },
+            });
+          }
+          const row = await repo.updateOwned(actor.dealerId, vehicleId, data, tx);
+          if (!row) throw notFound();
+          await audit.record(tx, {
+            actorType: 'SALES',
+            actorId: actor.userId,
+            dealerId: actor.dealerId,
+            action: 'vehicle.updated',
+            entityType: 'Vehicle',
+            entityId: vehicleId,
+            after: { fields, assistedByMemberId: actor.memberId },
+          });
+          return { vehicle: row, permissions };
+        });
+        return toDealerVehicle(updated.vehicle, updated.permissions);
+      } catch (error) {
+        if (errorCode(error) === 'P2002') throw duplicate();
+        throw error;
+      }
+    },
+
+    async assistedSubmit(actor: AssistedVehicleActor, vehicleId: string): Promise<DealerVehicle> {
+      await requireAssistedVehicle(actor, vehicleId);
+      try {
+        const submitted = await withTransaction(prisma, async (tx) => {
+          const listing = await lockListingForVehicle(tx, vehicleId);
+          const vehicle = await requireAssistedVehicle(actor, vehicleId, tx);
+          if (!listing) throw notFound();
+          const permissions = await authorizeAssisted(tx, actor, true);
+
+          const event = listing.status === 'CHANGES_REQUESTED' ? 'resubmit' : 'submit';
+          assertTransition(listing.status, event, 'SALES');
+          const refusal = incomplete(vehicle);
+          if (refusal) throw refusal;
+
+          const claimedAt = vehicle.claimedAt ?? new Date();
+          if (!vehicle.claimedAt) {
+            await repo.updateOwned(actor.dealerId, vehicleId, { claimedAt }, tx);
+          }
+          const moved = await transition(tx, audit, listing, event, {
+            type: 'SALES',
+            id: actor.userId,
+            memberId: actor.memberId,
           });
           return { vehicle: { ...vehicle, claimedAt, listing: moved }, permissions };
         });

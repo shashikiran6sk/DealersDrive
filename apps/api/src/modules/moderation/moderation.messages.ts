@@ -18,6 +18,7 @@ export const HISTORY_LABELS: Record<string, string> = {
 export const ACTOR_LABELS: Record<string, string> = {
   DEALER: 'Dealer',
   ADMIN: 'Dealers-Drive',
+  SALES: 'Dealers-Drive Sales, for the dealer',
   SYSTEM: 'System',
 };
 
@@ -45,3 +46,6 @@ export const BLOCKER_MESSAGES = {
 
 export const REACTIVATION_REGISTRATION_TAKEN =
   'Another dealership has listed this registration since, so this car cannot go back on sale.';
+
+export const SELF_REVIEW_FORBIDDEN =
+  'You prepared or submitted this listing for the dealer, so another reviewer has to decide on it.';

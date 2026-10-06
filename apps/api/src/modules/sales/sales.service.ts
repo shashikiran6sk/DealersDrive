@@ -3,6 +3,7 @@ import {
   formatPhone,
   normaliseLocality,
   type CreateAssistedDealerInput,
+  type CreateVehicleInput,
   type DealerDocType,
   type DocumentCommitInput,
   type DocumentPresignInput,
@@ -13,10 +14,12 @@ import {
   type SalesDealersResponse,
   type SalesPhoneVerifyInput,
   type SalesPhoneVerifyResponse,
+  type SalesVehiclesResponse,
   type StatusTone,
   type UpdateAssistedDealerInput,
   type PhoneOtpWidget,
   type UpdateDealerInput,
+  type UpdateVehicleInput,
   type YardPhotoCommitInput,
   type YardPhotoPresignInput,
 } from '@dealers-drive/contracts';
@@ -33,6 +36,7 @@ import { logger } from '../../platform/telemetry/logger.js';
 import type { AdminPrincipal, PhoneProofService } from '../auth/auth.facade.js';
 import { requestEmailVerification, withinCooldown } from '../dealer-claims/dealer-claims.facade.js';
 import { uniqueDealerSlug, type DealersService } from '../dealers/dealers.facade.js';
+import type { AssistedVehicleActor, VehiclesService } from '../vehicles/vehicles.facade.js';
 import { issueAssistedPhoneTicket, redeemAssistedPhoneTicket } from './assisted-phone-ticket.js';
 import {
   ASSISTED_DEALER_LOCKED,
@@ -52,6 +56,7 @@ export interface SalesDeps {
   otpDriver: PhoneOtpPort['driver'];
   maps: MapsPort;
   dealers: DealersService;
+  vehicles: VehiclesService;
 }
 
 const OPEN_DEALER_STATUSES: readonly DealerStatus[] = [
@@ -104,6 +109,12 @@ function phoneTaken(): ConflictError {
   });
 }
 
+const CLOSED_FOR_LISTINGS: readonly DealerStatus[] = ['SUSPENDED', 'REJECTED', 'CLOSED'];
+
+function assistedActor(principal: AdminPrincipal, dealerId: string): AssistedVehicleActor {
+  return { dealerId, userId: principal.userId, memberId: memberOf(principal) };
+}
+
 function emptyCounts(): ListingCounts {
   return { draft: 0, review: 0, live: 0 };
 }
@@ -116,6 +127,7 @@ export function createSalesService({
   otpDriver,
   maps,
   dealers,
+  vehicles,
 }: SalesDeps) {
   async function assertPhoneFree(db: PrismaClient | Tx, phone: string): Promise<void> {
     const [dealer, member] = await Promise.all([
@@ -689,6 +701,59 @@ export function createSalesService({
         });
       });
       return detail(principal, dealerId);
+    },
+
+    async vehicles(principal: AdminPrincipal, dealerId: string): Promise<SalesVehiclesResponse> {
+      const summary = await requireAssisted(principal, dealerId);
+      const open = !CLOSED_FOR_LISTINGS.includes(summary.status);
+      return {
+        dealerApproved: summary.status === 'ACTIVE',
+        canCreate: open,
+        data: await vehicles.assistedList(assistedActor(principal, dealerId)),
+      };
+    },
+
+    async createVehicle(principal: AdminPrincipal, dealerId: string, input: CreateVehicleInput) {
+      await requireAssisted(principal, dealerId);
+      const created = await vehicles.assistedCreate(assistedActor(principal, dealerId), input);
+      logger.info(
+        { event: 'sales.vehicle.created', adminMemberId: principal.memberId, dealerId },
+        'assisted listing draft created',
+      );
+      return created;
+    },
+
+    async vehicle(principal: AdminPrincipal, dealerId: string, vehicleId: string) {
+      await requireAssisted(principal, dealerId);
+      return vehicles.assistedGet(assistedActor(principal, dealerId), vehicleId);
+    },
+
+    async updateVehicle(
+      principal: AdminPrincipal,
+      dealerId: string,
+      vehicleId: string,
+      input: UpdateVehicleInput,
+    ) {
+      await requireAssisted(principal, dealerId);
+      return vehicles.assistedUpdate(assistedActor(principal, dealerId), vehicleId, input);
+    },
+
+    async submitVehicle(principal: AdminPrincipal, dealerId: string, vehicleId: string) {
+      await requireAssisted(principal, dealerId);
+      const submitted = await vehicles.assistedSubmit(
+        assistedActor(principal, dealerId),
+        vehicleId,
+      );
+      logger.info(
+        {
+          event: 'sales.vehicle.submitted',
+          adminMemberId: principal.memberId,
+          dealerId,
+          vehicleId,
+        },
+        'assisted listing submitted for review',
+      );
+      return submitted;
     },
 
     async submit(principal: AdminPrincipal, dealerId: string) {

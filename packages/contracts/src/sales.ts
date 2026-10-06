@@ -10,6 +10,7 @@ import {
   YardPhotoDto,
 } from './dealer.js';
 import { DealerStatus, StatusTone } from './enums.js';
+import { DealerInventoryRow } from './vehicle.js';
 
 /**
  * ── The Sales workspace (R112) ─────────────────────────────────────────────
@@ -148,3 +149,15 @@ export const SalesDealerDocParam = z
   .object({ id: Uuid, type: z.enum(['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']) })
   .strict();
 export type SalesDealerDocParam = z.infer<typeof SalesDealerDocParam>;
+
+/** One vehicle a representative prepared for one of their dealerships (**R114**). */
+export const SalesVehicleParam = z.object({ id: Uuid, vehicleId: Uuid }).strict();
+export type SalesVehicleParam = z.infer<typeof SalesVehicleParam>;
+
+export const SalesVehiclesResponse = z.object({
+  /** Drafts can be prepared before approval; submission waits for it. */
+  dealerApproved: z.boolean(),
+  canCreate: z.boolean(),
+  data: z.array(DealerInventoryRow),
+});
+export type SalesVehiclesResponse = z.infer<typeof SalesVehiclesResponse>;

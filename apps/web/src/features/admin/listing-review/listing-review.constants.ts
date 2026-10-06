@@ -4,6 +4,10 @@ export const LISTING_REVIEW_TEXT = {
   back: '← Back to listings',
   dealer: 'Dealer',
   openDealer: 'Open dealership',
+  preparedBy: (who: string) => `Prepared by Dealers-Drive Sales: ${who}`,
+  submittedBy: (who: string) => `Submitted by Dealers-Drive Sales: ${who}`,
+  reviewerIsAssistant:
+    'You prepared or submitted this listing for the dealer, so another reviewer has to decide on it.',
   description: 'Description',
   noDescription: 'No description.',
   notEntered: 'Not entered',

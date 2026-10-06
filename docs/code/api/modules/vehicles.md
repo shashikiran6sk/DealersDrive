@@ -191,3 +191,27 @@ stays `WITHDRAWN`.
 ## Transaction authorization after resource waits
 
 All vehicle/listing writes use the auth facade's authorizeDealerWrite inside their existing transaction. Existing-stock writes acquire the listing resource before fresh authority checks, allowing member removal or suspension to commit while a queued request is still waiting. Create has no existing listing resource and checks authority before insert. Authorization row locks remain until commit; a later removal serializes behind an already authorized write. A competing locked authority returns409 AUTHORIZATION_BUSY with no stock/audit/outbox write. Revocation401, role loss403 and non-ACTIVE lifecycle403 retain the route's business rules. DRAFT/PENDING draft create/edit/delete remains permitted for authorized roles. Returned capabilities use the fresh permission set rather than the earlier request snapshot. Empty patches remain read-only and produce no audit.
+
+## `apps/api/src/modules/vehicles/vehicles.service.ts` — R114
+
+### `async function authorizeAssisted(`
+
+The Sales path's equivalent of `authorizeDealerWrite`, which is bound to a
+dealer member and so cannot admit a Sales Representative. It locks the dealer
+row `FOR UPDATE` and requires `assistedByMemberId` to be this member — anything
+else is the same 404 a stranger gets. Drafts may be started while the dealership
+is a draft or pending; submission needs it ACTIVE (`409 DEALER_NOT_APPROVED`),
+which is the same rule the dealer's own submit enforces with
+`requireDealerActive`. A suspended, rejected or closed dealership accepts nothing.
+
+### `async assistedCreate(`
+
+The same registration rules and the same duplicate checks as the dealer's
+`create` — only who is recorded differs: `createdBy` (a dealer member) stays
+NULL and `createdByMemberId` names the representative. The vehicle is the
+dealer's: it is in their inventory and they can edit or submit it themselves.
+
+### `async assistedList(actor: AssistedVehicleActor)`
+
+Only vehicles this member created. The dealer's own inventory is never shown to
+Sales — assisting with onboarding is not a licence to read a business's stock.

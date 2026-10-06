@@ -26,6 +26,7 @@ function listing(status: ListingStatus = 'DRAFT'): Listing {
     decisionReason: null,
     decidedBy: null,
     decidedAt: null,
+    submittedByMemberId: null,
     createdAt: new Date('2026-09-01T00:00:00Z'),
     updatedAt: new Date('2026-09-01T00:00:00Z'),
   };
@@ -56,6 +57,7 @@ function row(overrides: Partial<VehicleRow> = {}): VehicleRow {
     description: null,
     releasedAt: null,
     claimedAt: null,
+    createdByMemberId: null,
     createdBy: null,
     createdAt: new Date('2026-09-01T00:00:00Z'),
     updatedAt: new Date('2026-09-01T00:00:00Z'),
@@ -76,6 +78,7 @@ function setup(
     deleteOwned: vi.fn(async () => true),
     heldRegistration: vi.fn(async () => null),
     listForDealer: vi.fn(),
+    createdByMember: vi.fn(async () => [row()]),
     existingSpelling: vi.fn(async () => null),
     suggestions: vi.fn(async () => ['Creta']),
     inventory: vi.fn(async () => [row()]),

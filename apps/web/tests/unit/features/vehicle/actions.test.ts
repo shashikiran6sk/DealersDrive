@@ -273,3 +273,40 @@ describe('submitVehicleAction', () => {
     );
   });
 });
+
+describe('in the Sales workspace (R114)', () => {
+  const DEALER = '44444444-4444-4444-8444-444444444444';
+
+  it('creates through the Sales route and stays in the Sales workspace', async () => {
+    globalThis.fetch = respond(201, vehicle());
+    await expect(
+      createVehicleAction({}, form({ registrationNumber: 'UP 32 SR 1001', salesDealerId: DEALER })),
+    ).rejects.toThrow(`NEXT_REDIRECT:/sales/dealers/${DEALER}/vehicles/${ID}/edit?step=basics`);
+    expect(calls[0]?.url).toContain(`/v1/sales/dealers/${DEALER}/vehicles`);
+    expect(bodyOf(calls[0])).toEqual({ registrationNumber: 'UP32SR1001' });
+  });
+
+  it('saves and submits through the Sales routes', async () => {
+    globalThis.fetch = respond(200, vehicle());
+    await expect(
+      saveVehicleStepAction(
+        {},
+        form({ vehicleId: ID, step: 'pricing', priceRupees: '5,00,000', salesDealerId: DEALER }),
+      ),
+    ).rejects.toThrow(`/sales/dealers/${DEALER}/vehicles/${ID}/edit?step=review`);
+    expect(calls[0]?.url).toContain(`/v1/sales/dealers/${DEALER}/vehicles/${ID}`);
+
+    await expect(
+      submitVehicleAction({}, form({ vehicleId: ID, salesDealerId: DEALER })),
+    ).rejects.toThrow(`/sales/dealers/${DEALER}/vehicles/${ID}/edit?step=review&submitted=1`);
+    expect(calls[1]?.url).toContain(`/v1/sales/dealers/${DEALER}/vehicles/${ID}/submit`);
+  });
+
+  it('ignores a salesDealerId that is not an id, and stays on the dealer route', async () => {
+    globalThis.fetch = respond(201, vehicle());
+    await expect(
+      createVehicleAction({}, form({ registrationNumber: 'UP 32 SR 1002', salesDealerId: '../x' })),
+    ).rejects.toThrow(`NEXT_REDIRECT:/dealer/vehicles/${ID}/edit?step=basics`);
+    expect(calls[0]?.url).toMatch(/\/v1\/dealer\/vehicles$/);
+  });
+});

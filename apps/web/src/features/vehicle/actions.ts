@@ -3,6 +3,7 @@
 import {
   CreateVehicleInput,
   UpdateVehicleInput,
+  Uuid,
   type DealerVehicle,
 } from '@dealers-drive/contracts';
 import { redirect } from 'next/navigation';
@@ -14,7 +15,7 @@ import {
   STEP_FIELDS,
   VEHICLE_WIZARD_TEXT,
 } from './vehicle-wizard/vehicle-wizard.constants';
-import type { WizardIntent, WizardState } from './vehicle-wizard/vehicle-wizard.types';
+import type { WizardIntent, WizardScope, WizardState } from './vehicle-wizard/vehicle-wizard.types';
 import {
   editPath,
   formField,
@@ -28,6 +29,17 @@ import {
 function text(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === 'string' ? value : '';
+}
+
+function scopeOf(formData: FormData): WizardScope {
+  const parsed = Uuid.safeParse(text(formData, 'salesDealerId'));
+  return parsed.success ? { kind: 'sales', dealerId: parsed.data } : { kind: 'dealer' };
+}
+
+function vehiclesPath(scope: WizardScope): string {
+  return scope.kind === 'sales'
+    ? `/v1/sales/dealers/${encodeURIComponent(scope.dealerId)}/vehicles`
+    : '/v1/dealer/vehicles';
 }
 
 function intentOf(formData: FormData): WizardIntent {
@@ -70,18 +82,19 @@ export async function createVehicleAction(
   _previous: WizardState,
   formData: FormData,
 ): Promise<WizardState> {
+  const scope = scopeOf(formData);
   const values = { registrationNumber: text(formData, 'registrationNumber') };
   const parsed = CreateVehicleInput.safeParse(values);
   if (!parsed.success) return { errors: issueErrors(parsed.error.issues), values };
 
   let created: DealerVehicle;
   try {
-    created = await apiSend<DealerVehicle>('POST', '/v1/dealer/vehicles', parsed.data);
+    created = await apiSend<DealerVehicle>('POST', vehiclesPath(scope), parsed.data);
   } catch (error) {
     return failure(error, values);
   }
 
-  redirect(editPath(created.id, 'basics'));
+  redirect(editPath(created.id, 'basics', '', scope));
 }
 
 function payloadFor(fields: readonly string[], formData: FormData): Record<string, unknown> {
@@ -113,6 +126,7 @@ export async function saveVehicleStepAction(
   }
 
   const intent = intentOf(formData);
+  const scope = scopeOf(formData);
   const fields = STEP_FIELDS[step];
   const values = Object.fromEntries(fields.map((field) => [field, text(formData, field)]));
 
@@ -136,15 +150,15 @@ export async function saveVehicleStepAction(
   try {
     saved = await apiSend<DealerVehicle>(
       'PATCH',
-      `/v1/dealer/vehicles/${encodeURIComponent(vehicleId)}`,
+      `${vehiclesPath(scope)}/${encodeURIComponent(vehicleId)}`,
       parsed.data,
     );
   } catch (error) {
     return failure(error, values);
   }
 
-  if (intent === 'draft') redirect(editPath(saved.id, step, '&saved=1'));
-  if (intent === 'back') redirect(editPath(saved.id, stepBefore(step)));
+  if (intent === 'draft') redirect(editPath(saved.id, step, '&saved=1', scope));
+  if (intent === 'back') redirect(editPath(saved.id, stepBefore(step), '', scope));
 
   const blocking = saved.issues.filter((issue) => stepOfField(issue.field) === step);
   if (blocking.length > 0) {
@@ -153,7 +167,7 @@ export async function saveVehicleStepAction(
     return { errors, values };
   }
 
-  redirect(editPath(saved.id, stepAfter(step)));
+  redirect(editPath(saved.id, stepAfter(step), '', scope));
 }
 
 export async function submitVehicleAction(
@@ -162,11 +176,12 @@ export async function submitVehicleAction(
 ): Promise<WizardState> {
   const vehicleId = text(formData, 'vehicleId');
   if (!vehicleId) return { message: VEHICLE_WIZARD_TEXT.notSaved };
+  const scope = scopeOf(formData);
 
   try {
     await apiSend<DealerVehicle>(
       'POST',
-      `/v1/dealer/vehicles/${encodeURIComponent(vehicleId)}/submit`,
+      `${vehiclesPath(scope)}/${encodeURIComponent(vehicleId)}/submit`,
     );
   } catch (error) {
     if (error instanceof ApiError) {
@@ -178,5 +193,5 @@ export async function submitVehicleAction(
     return { message: VEHICLE_WIZARD_TEXT.unavailable };
   }
 
-  redirect(editPath(vehicleId, 'review', '&submitted=1'));
+  redirect(editPath(vehicleId, 'review', '&submitted=1', scope));
 }

@@ -5,7 +5,7 @@ import type { Tx } from '../db/prisma.js';
 import { logger } from '../telemetry/logger.js';
 
 export interface AuditEntry {
-  actorType: 'DEALER' | 'ADMIN' | 'CUSTOMER' | 'SYSTEM';
+  actorType: 'DEALER' | 'ADMIN' | 'CUSTOMER' | 'SYSTEM' | 'SALES';
   actorId?: string | null;
   dealerId?: string | null;
   action: string;

@@ -71,6 +71,23 @@ export function ListingReview({ detail }: { detail: AdminListingDetail }) {
                 <span className="font-mono"> · {dealer.phoneDisplay}</span>
               ) : null}
             </p>
+            {detail.assisted.createdBy ? (
+              <p className="text-[13px] ink-body">
+                {LISTING_REVIEW_TEXT.preparedBy(
+                  detail.assisted.createdBy.name ?? detail.assisted.createdBy.email,
+                )}
+              </p>
+            ) : null}
+            {detail.assisted.submittedBy ? (
+              <p className="text-[13px] ink-body">
+                {LISTING_REVIEW_TEXT.submittedBy(
+                  detail.assisted.submittedBy.name ?? detail.assisted.submittedBy.email,
+                )}
+              </p>
+            ) : null}
+            {detail.assisted.reviewerIsAssistant ? (
+              <Banner tone="warn">{LISTING_REVIEW_TEXT.reviewerIsAssistant}</Banner>
+            ) : null}
             <Link
               href={`/admin/dealers/${dealer.id}`}
               className="relative btn btn-ghost self-start text-[12px]"

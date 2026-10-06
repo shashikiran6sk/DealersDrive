@@ -101,3 +101,14 @@ STAFF the review step offers no Submit and says who will — the API would refus
 it, and `canSubmit` comes back false for them anyway, but without this the row
 would explain the missing button as "fill in the missing details", which is not
 the reason.
+
+## `apps/web/src/features/vehicle/vehicle-wizard/wizard-scope.ts`
+
+### `export const WizardScopeContext = createContext<WizardScope>(DEALER_SCOPE)`
+
+**R114.** The same wizard serves the dealer and the Sales workspace. The scope
+decides two things only: which API the server actions call (a hidden
+`salesDealerId` field, validated as a UUID — anything else falls back to the
+dealer's own routes, and the API authorizes either way), and where links and
+redirects point. In the Sales scope the dealer's lifecycle panel (reserve, sell,
+withdraw) is not offered, and a submission that waits for approval says so.

@@ -125,6 +125,17 @@ export const ReviewAsStaff: Story = {
 
 export const ReviewIncomplete: Story = { args: { step: 'review', vehicle: DRAFT } };
 
+export const SalesBeforeApproval: Story = {
+  name: 'Sales workspace — before the dealership is approved (R114)',
+  args: {
+    step: 'review',
+    vehicle: COMPLETE,
+    salesDealerId: '44444444-4444-4444-8444-444444444444',
+    cancelHref: '/sales/dealers/44444444-4444-4444-8444-444444444444',
+    mayPublish: false,
+  },
+};
+
 export const UnderReview: Story = {
   args: {
     step: 'basics',

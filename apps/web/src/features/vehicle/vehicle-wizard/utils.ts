@@ -1,7 +1,7 @@
 import type { DealerVehicle } from '@dealers-drive/contracts';
 
 import { WIZARD_STEPS, STEP_FIELDS, FORM_FIELD_OF } from './vehicle-wizard.constants';
-import type { WizardStep } from './vehicle-wizard.types';
+import type { WizardScope, WizardStep } from './vehicle-wizard.types';
 
 export function isWizardStep(value: unknown): value is WizardStep {
   return typeof value === 'string' && WIZARD_STEPS.some((step) => step === value);
@@ -41,8 +41,17 @@ export function paiseToRupeesText(paise: number | null): string {
   return paise === null ? '' : Math.round(paise / 100).toLocaleString('en-IN');
 }
 
-export function editPath(vehicleId: string, step: WizardStep, extra = ''): string {
-  return `/dealer/vehicles/${vehicleId}/edit?step=${step}${extra}`;
+export function editPath(
+  vehicleId: string,
+  step: WizardStep,
+  extra = '',
+  scope: WizardScope = { kind: 'dealer' },
+): string {
+  const base =
+    scope.kind === 'sales'
+      ? `/sales/dealers/${scope.dealerId}/vehicles/${vehicleId}`
+      : `/dealer/vehicles/${vehicleId}`;
+  return `${base}/edit?step=${step}${extra}`;
 }
 
 export function storedValue(vehicle: DealerVehicle | null, field: string): string {

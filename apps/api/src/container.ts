@@ -305,6 +305,7 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
       otpDriver: phoneOtp.driver,
       maps,
       dealers,
+      vehicles,
     }),
     dealerClaims,
     savedVehicles,

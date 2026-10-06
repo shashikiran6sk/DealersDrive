@@ -166,3 +166,20 @@ request is re-read, the same lock order the dealer's moves use):
 A rejection never touches the listing, which is what makes "declined" mean
 "nothing happened": the car stays reserved or withdrawn, and the dealer may ask
 again.
+
+## `apps/api/src/modules/listings/listing.state.ts` — R114
+
+### `export type ListingActorType = 'DEALER' | 'ADMIN' | 'SALES'`
+
+`SALES` is a Dealers-Drive Sales Representative acting **for** an assisted
+dealership. It may `submit` and `resubmit` — the dealer's own moves into review —
+and nothing else: a Sales actor can never approve, reject, request changes,
+reserve, sell, withdraw or relist. It is a separate actor type rather than
+`ADMIN` so the transition table, the audit row and the moderator's history all
+say what actually happened, and so an ADMIN actor still cannot submit.
+
+### `export interface ListingActor`
+
+`memberId` travels with a `SALES` actor so `transition()` can stamp
+`listings.submittedByMemberId` on a submission. A dealer's own submission clears
+it — the column means "who made the latest submission on the dealer's behalf".

@@ -13,3 +13,9 @@ export const VEHICLE_INCOMPLETE =
 
 export const REGISTRATION_ALREADY_LISTED =
   'This registration number is already with Dealers-Drive for another listing. If the car is yours to sell, contact our team.';
+
+export const DEALER_NOT_APPROVED =
+  'This dealership has not been approved yet. Prepare listings as drafts now and submit them once it is.';
+
+export const ASSISTED_DEALER_INACTIVE =
+  'This dealership is not open for listings: it is suspended, rejected or closed.';
