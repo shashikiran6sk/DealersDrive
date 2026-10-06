@@ -13,6 +13,7 @@ import { relaySessionCookie } from '@/lib/session-cookie';
 export interface PhoneVerificationState {
   verified?: boolean;
   accountsLinked?: boolean;
+  phoneTicket?: string;
   phone?: string;
   phoneDisplay?: string;
   error?: string;

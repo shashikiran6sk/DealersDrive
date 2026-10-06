@@ -59,6 +59,11 @@ import {
   UPLOAD_NOT_FOUND,
 } from '../../platform/messages.js';
 
+export interface SubmissionActor {
+  type: 'DEALER' | 'ADMIN';
+  id: string | null;
+}
+
 export interface DealersDeps {
   prisma: PrismaClient;
   repo: DealersRepository;
@@ -122,7 +127,7 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       gstin: dealer.gstin,
       pan: dealer.pan,
       contact: {
-        fullName: owner?.user.fullName ?? null,
+        fullName: owner?.user.fullName ?? dealer.contactName,
         phone: dealer.contactPhone ?? owner?.user.phone ?? '',
         phoneDisplay: formatPhone(dealer.contactPhone ?? owner?.user.phone ?? ''),
         email: owner?.user.email ?? dealer.contactEmail,
@@ -492,8 +497,16 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       const documents = await repo.documents(dealerId, tx);
 
       const accountMissing: string[] = [];
-      if (!owner?.user.fullName) accountMissing.push('fullName');
-      if (!owner?.user.email) accountMissing.push('email');
+      if (owner) {
+        if (!owner.user.fullName) accountMissing.push('fullName');
+        if (!owner.user.email) accountMissing.push('email');
+      } else if (dealer.onboardingSource === 'ASSISTED') {
+        if (!dealer.contactName) accountMissing.push('fullName');
+        if (!dealer.contactEmail) accountMissing.push('email');
+        if (!dealer.contactPhone || !dealer.contactPhoneVerifiedAt) accountMissing.push('phone');
+      } else {
+        accountMissing.push('fullName', 'email');
+      }
 
       const businessMissing: string[] = [];
       if (!dealer.legalName) businessMissing.push('legalName');
@@ -553,7 +566,10 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       };
     },
 
-    async submitForVerification(dealerId: string): Promise<DealerSubmitResponse> {
+    async submitForVerification(
+      dealerId: string,
+      actor: SubmissionActor = { type: 'DEALER', id: null },
+    ): Promise<DealerSubmitResponse> {
       const dealer = await requireDealer(dealerId);
       assertSubmittable(dealer.status);
 
@@ -575,14 +591,33 @@ export function createDealersService({ prisma, repo, storage, maps, audit }: Dea
       await withTransaction(prisma, async (tx) => {
         assertSubmittable(await repo.lockStatus(dealerId, tx));
         await repo.update(dealerId, { status: 'PENDING_APPROVAL', statusReason: null }, tx);
+        await audit.record(tx, {
+          actorType: actor.type,
+          actorId: actor.id,
+          dealerId,
+          action: 'dealer.submitted',
+          entityType: 'Dealer',
+          entityId: dealerId,
+          before: { status: 'DRAFT' },
+          after: {
+            status: 'PENDING_APPROVAL',
+            resubmitted,
+            onboardingSource: dealer.onboardingSource,
+            ...(dealer.assistedByMemberId ? { assistedByMemberId: dealer.assistedByMemberId } : {}),
+          },
+        });
         await enqueueOutbox(tx, {
           type: 'DealerApplied',
           aggregateType: 'Dealer',
           aggregateId: dealerId,
           dealerId,
-          actor: { type: 'DEALER' },
+          actor: { type: actor.type, ...(actor.id ? { id: actor.id } : {}) },
           traceId: getContext()?.traceId ?? 'dealer-submit',
-          payload: { dealerId, resubmitted },
+          payload: {
+            dealerId,
+            resubmitted,
+            assisted: dealer.onboardingSource === 'ASSISTED',
+          },
         });
       });
 

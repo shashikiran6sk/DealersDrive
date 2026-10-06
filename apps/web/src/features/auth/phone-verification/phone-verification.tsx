@@ -31,6 +31,10 @@ export function PhoneVerification({
   onBeforeSend,
   onRefused,
   initialStage = 'idle',
+  verifyAction = verifyPhoneAction,
+  checkAvailability = checkPhoneAvailabilityAction,
+  verifiedTitle,
+  continueLabel,
 }: PhoneVerificationProps) {
   const captchaId = useId();
   const [stage, setStage] = useState<PhoneStage>(initialStage);
@@ -72,8 +76,8 @@ export function PhoneVerification({
     busy.current = true;
     setFailure(null);
     try {
-      if (!resend) {
-        const available = await checkPhoneAvailabilityAction(phone);
+      if (!resend && checkAvailability) {
+        const available = await checkAvailability(phone);
         if (available.error) {
           if (onRefused) onRefused(available.error);
           else setFailure(available.error);
@@ -104,7 +108,7 @@ export function PhoneVerification({
     try {
       const accessToken = await phoneOtpToken(widget, phone, entered);
 
-      const result = await verifyPhoneAction(phone, accessToken);
+      const result = await verifyAction(phone, accessToken);
 
       if (!result.verified) {
         refuse(result.error ?? PHONE_TEXT.wrongCode);
@@ -114,7 +118,7 @@ export function PhoneVerification({
       setStage('idle');
       setCode('');
       setAccountsLinked(result.accountsLinked === true);
-      onVerified(result.phone ?? phone);
+      onVerified(result.phone ?? phone, result);
     } catch (error) {
       refuse(isServiceFailure(error) ? error.message : PHONE_TEXT.wrongCode);
     } finally {
@@ -143,6 +147,8 @@ export function PhoneVerification({
         fullName={fullName}
         accountsLinked={accountsLinked}
         onContinue={onContinue}
+        {...(verifiedTitle ? { title: verifiedTitle } : {})}
+        {...(continueLabel ? { continueLabel } : {})}
       />
     );
   }

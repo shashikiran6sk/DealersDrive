@@ -39,6 +39,17 @@ const BASE: AdminDealerDetail = {
   profileChange: null,
   yardPhotoUrl: null,
   recentLedger: [],
+  onboarding: {
+    source: 'SELF',
+    sourceLabel: 'Self-onboarded',
+    assistedBy: null,
+    phoneVerified: true,
+    phoneLabel: 'Verified',
+    emailVerified: true,
+    emailLabel: 'Verified',
+    claimed: true,
+    reviewerIsAssistant: false,
+  },
   actions: {
     canApprove: false,
     canReject: false,

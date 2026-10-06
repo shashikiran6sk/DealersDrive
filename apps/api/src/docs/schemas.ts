@@ -8,6 +8,11 @@ type ZodSchema = z.ZodType;
 const SCHEMA_REF_PREFIX = '#/components/schemas/';
 
 const INPUT_SCHEMA_NAMES = [
+  'SalesPhoneVerifyInput',
+  'CreateAssistedDealerInput',
+  'UpdateAssistedDealerInput',
+  'SalesDealersQuery',
+  'SalesDealerDocParam',
   'AdminMembersQuery',
   'InviteAdminMemberInput',
   'UpdateAdminMemberInput',

@@ -9,11 +9,17 @@ export const YARD_PHOTO_RULE: FileRule = {
   wrongType: 'Upload a JPEG, PNG or WebP.',
 };
 
-export const YARD_PHOTO_PATH = {
+export interface YardPhotoPaths {
+  presign: string;
+  commit: string;
+  remove: string;
+}
+
+export const YARD_PHOTO_PATH: YardPhotoPaths = {
   presign: '/api/dealer/yard-photo/presign',
   commit: '/api/dealer/yard-photo/commit',
   remove: '/api/dealer/yard-photo',
-} as const;
+};
 
 export const YARD_PHOTO_TEXT = {
   heading: 'Photo of your yard',

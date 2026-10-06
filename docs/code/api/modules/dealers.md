@@ -1621,3 +1621,24 @@ The time of day **in IST**, not in the server's zone.
 The API runs in UTC, and "Good evening" at 21:00 IST is 15:30 UTC — an
 afternoon by the clock the process is keeping. The dealers are in India; the
 greeting is theirs, so it is computed in their zone.
+
+## `apps/api/src/modules/dealers/dealer-slug.ts`
+
+### `export async function uniqueDealerSlug(`
+
+Moved out of `auth.service` (**R112**) because a Sales representative now
+creates dealership rows too, and two copies of the collision suffixing would
+drift. Exported through `dealers.facade.ts`.
+
+## `apps/api/src/modules/dealers/dealers.service.ts`
+
+### `async submitForVerification(`
+
+Takes the submitting actor (**R112**). A dealer submits as `DEALER`; a Sales
+representative submits an assisted dealership as `ADMIN` with their member id.
+The `dealer.submitted` audit row records which, and whether the dealership was
+assisted, so a reviewer can see who put it in the queue.
+
+Completeness for an assisted dealership reads the dealership's own contact
+columns (`contactName`, `contactEmail`, `contactPhoneVerifiedAt`) because there
+is no owner account yet to read them from.

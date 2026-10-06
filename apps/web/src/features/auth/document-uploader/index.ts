@@ -1,6 +1,7 @@
 export { DocumentUploader } from './document-uploader';
 export {
-  DOCUMENT_PATH,
+  DEALER_DOCUMENT_BASE,
+  documentPaths,
   DOCUMENT_RULE,
   DOCUMENT_UPLOADER_TEXT,
   TAG,

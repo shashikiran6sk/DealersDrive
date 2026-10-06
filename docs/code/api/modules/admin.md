@@ -792,3 +792,21 @@ Approval locks the dealer first, then its documents in ID order, and re-reads th
 Document verification accepts only UPLOADED files. Review locks the dealer before the document so review, approval and request-changes decisions share the parent-before-child lock order. Suspension requires ACTIVE; reinstatement requires SUSPENDED and an existing approval timestamp. Reinstatement preserves that timestamp.
 
 BUG-NEW-005 serializes destructive rejection with approval on the dealer row, re-reads status and approval history inside the transaction, and commits storage cleanup keys atomically with the purge. It preserves uploads on transaction rollback and retries provider failures after commit. The response retains the actual successful deletion count; the immutable audit records objectsDeleteRequested without claiming an external operation has completed.
+
+## `apps/api/src/modules/admin/admin.service.ts` — separation of duties (R112)
+
+### `async function assertNotAssistant(tx: Tx, dealerId: string, admin: AdminPrincipal): Promise<void>`
+
+The member who assisted a dealership may not decide on it: approve, reject,
+request changes, close, suspend/reinstate and document review all refuse with
+`403 SELF_REVIEW_FORBIDDEN`. Today a Sales representative cannot reach the
+console at all, so this is defence in depth — but roles change, and a member
+re-roled from Sales to Operations keeps the dealerships they assisted. The
+check is inside the transaction, against the row, not against the button.
+
+### `function provenanceOf(`
+
+What the reviewer is shown about how the dealership arrived: self-onboarded or
+assisted, by whom, whether phone and email are verified, whether the dealer has
+claimed it, and whether the reviewer is the assistant (in which case the action
+flags are all false and the panel says why).

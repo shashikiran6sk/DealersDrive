@@ -215,6 +215,26 @@ export const AdminProfileChange = z.object({
 });
 export type AdminProfileChange = z.infer<typeof AdminProfileChange>;
 
+/**
+ * How the dealership was onboarded, for the reviewer (**R112**). An assisted
+ * dealership names the Sales Representative who did the typing, and says
+ * separately whether the phone was proved by OTP and whether the dealer has
+ * proved the email address yet — a typed address is not a verified one.
+ */
+export const DealerOnboardingProvenance = z.object({
+  source: z.enum(['SELF', 'ASSISTED']),
+  sourceLabel: z.string(),
+  assistedBy: z.object({ name: z.string().nullable(), email: z.string() }).nullable(),
+  phoneVerified: z.boolean(),
+  phoneLabel: z.string(),
+  emailVerified: z.boolean(),
+  emailLabel: z.string(),
+  claimed: z.boolean(),
+  /** True when the signed-in reviewer assisted this dealership, and so may not decide it. */
+  reviewerIsAssistant: z.boolean(),
+});
+export type DealerOnboardingProvenance = z.infer<typeof DealerOnboardingProvenance>;
+
 export const AdminDealerDetail = z.object({
   id: Uuid,
   slug: z.string(),
@@ -240,6 +260,7 @@ export const AdminDealerDetail = z.object({
    * they typed. It sits beside the yard photograph for that reason.
    */
   mapsUrl: z.string().nullable(),
+  onboarding: DealerOnboardingProvenance,
   contactName: z.string().nullable(),
   contactPhone: z.string().nullable(),
   contactPhoneDisplay: z.string().nullable(),

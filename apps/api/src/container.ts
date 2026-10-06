@@ -11,6 +11,7 @@ import {
   type AdminMembersService,
 } from './modules/admin-members/admin-members.service.js';
 import { createAuthService, type AuthService } from './modules/auth/auth.service.js';
+import { createSalesService, type SalesService } from './modules/sales/sales.service.js';
 import { createCookieSessionResolver } from './modules/auth/cookie-session.adapter.js';
 import { createConfigService, type ConfigService } from './modules/config/config.service.js';
 import { createDevSessionResolver } from './modules/auth/dev-session.adapter.js';
@@ -39,6 +40,7 @@ import {
   type CustomerAuthService,
 } from './modules/auth/customer-auth.service.js';
 import { createCustomerResolver } from './modules/auth/customer-session.js';
+import { createPhoneProofService } from './modules/auth/phone-proof.service.js';
 import { createPhoneService, type PhoneService } from './modules/auth/phone.service.js';
 import {
   createPhoneSignInService,
@@ -127,6 +129,7 @@ export interface Container {
   readonly support: SupportService;
   readonly adminSupport: AdminSupportService;
   readonly adminMembers: AdminMembersService;
+  readonly sales: SalesService;
   readonly customers: CustomerAuthService;
   readonly workspaces: WorkspaceService;
   readonly team: TeamService;
@@ -276,6 +279,15 @@ export async function buildContainer(overrides: ContainerOverrides = {}): Promis
     support: createSupportService({ prisma, audit }),
     adminSupport: createAdminSupportService({ prisma, audit }),
     adminMembers: createAdminMembersService({ prisma, audit }),
+    sales: createSalesService({
+      prisma,
+      audit,
+      cache,
+      proof: createPhoneProofService({ otp: phoneOtp, cache }),
+      otpDriver: phoneOtp.driver,
+      maps,
+      dealers,
+    }),
     savedVehicles,
     search: createSearchService({ repo: createSearchRepository(prisma) }),
   };
