@@ -108,10 +108,19 @@ describe('permissionsForRole', () => {
 });
 
 describe('permissionsForAdminRole', () => {
-  it('gives SUPER_ADMIN every admin permission', () => {
+  it('gives SUPER_ADMIN every console permission, and no Sales workspace one', () => {
     expect(permissionsForAdminRole('SUPER_ADMIN').sort()).toEqual(
-      Object.keys(ADMIN_PERMISSIONS).sort(),
+      Object.keys(ADMIN_PERMISSIONS)
+        .filter((permission) => permission.startsWith('admin:'))
+        .sort(),
     );
+  });
+
+  it('gives SALES_REP the Sales workspace and nothing in the console', () => {
+    const sales = permissionsForAdminRole('SALES_REP');
+    expect(sales.length).toBeGreaterThan(0);
+    expect(sales.every((permission) => permission.startsWith('sales:'))).toBe(true);
+    expect(sales).not.toContain('admin:console');
   });
 
   /**
@@ -151,6 +160,7 @@ describe('permissionsForAdminRole', () => {
     expect(permissionsForAdminRole('SUPPORT').sort()).toEqual(
       [
         'admin:audit:read',
+        'admin:console',
         'admin:enquiry:read',
         'admin:metrics:read',
         'admin:payment:read',
@@ -161,7 +171,7 @@ describe('permissionsForAdminRole', () => {
 
   it('gives SUPPORT no write outside the support desk', () => {
     for (const permission of permissionsForAdminRole('SUPPORT')) {
-      expect(permission).toMatch(/:read$|^admin:support:manage$/);
+      expect(permission).toMatch(/:read$|^admin:support:manage$|^admin:console$/);
     }
   });
 
@@ -205,10 +215,10 @@ describe('the tables themselves', () => {
     }
   });
 
-  /** The `admin:` prefix is what keeps the two namespaces from ever colliding. */
-  it('prefixes every admin permission with `admin:`', () => {
+  /** The `admin:`/`sales:` prefixes keep the namespaces from ever colliding. */
+  it('prefixes every internal permission with `admin:` or `sales:`', () => {
     for (const permission of Object.keys(ADMIN_PERMISSIONS)) {
-      expect(permission).toMatch(/^admin:[a-z]+:[a-z]+$/);
+      expect(permission).toMatch(/^(admin:[a-z]+(:[a-z]+)?|sales:[a-z]+(:[a-z]+)?)$/);
     }
   });
 

@@ -50,7 +50,7 @@ interface DealerRow {
 interface UserRow {
   id: string;
   email: string | null;
-  adminRole: 'SUPPORT' | 'MODERATOR' | 'SUPER_ADMIN' | null;
+  adminMember: { id: string; role: 'SUPPORT' | 'MODERATOR' | 'SUPER_ADMIN' } | null;
 }
 
 function dealer(overrides: Partial<DealerRow> = {}): DealerRow {
@@ -70,7 +70,11 @@ function setup(rows: { dealer?: DealerRow | null; user?: UserRow | null } = {}) 
   const findFirst = vi.fn(() =>
     Promise.resolve(
       rows.user === undefined
-        ? { id: 'admin-1', email: ADMIN_EMAIL, adminRole: 'SUPER_ADMIN' as const }
+        ? {
+            id: 'admin-1',
+            email: ADMIN_EMAIL,
+            adminMember: { id: 'member-1', role: 'SUPER_ADMIN' as const },
+          }
         : rows.user,
     ),
   );
@@ -204,21 +208,15 @@ describe('resolveAdmin', () => {
     });
   });
 
-  /** Two conditions, not one: the configured email *and* the stored flag. */
-  it('requires isPlatformAdmin in the query, not just a matching email', async () => {
+  /** Two conditions, not one: the configured email *and* an ACTIVE Admin Member. */
+  it('requires an ACTIVE Admin Member in the query, not just a matching email', async () => {
     const { resolver, findFirst } = setup();
 
     await resolver.resolveAdmin(HOSTILE);
 
     expect(findFirst).toHaveBeenCalledExactlyOnceWith({
-      where: {
-        email: ADMIN_EMAIL,
-        isPlatformAdmin: true,
-        // R41 — the operations seat, which a dealership suspension never
-        // touches. It is asked about here so the dev resolver refuses exactly
-        // what the cookie resolver refuses.
-        roles: { none: { role: 'ADMIN', status: 'SUSPENDED' } },
-      },
+      where: { email: ADMIN_EMAIL, adminMember: { status: 'ACTIVE' } },
+      include: { adminMember: true },
     });
   });
 
@@ -238,7 +236,11 @@ describe('resolveAdmin', () => {
 
   it('gives SUPPORT read permissions but no moderation ones', async () => {
     const { resolver } = setup({
-      user: { id: 'admin-2', email: 'support@dealers-drive.in', adminRole: 'SUPPORT' },
+      user: {
+        id: 'admin-2',
+        email: 'support@dealers-drive.in',
+        adminMember: { id: 'member-2', role: 'SUPPORT' },
+      },
     });
 
     const principal = await resolver.resolveAdmin(HOSTILE);
@@ -255,14 +257,13 @@ describe('resolveAdmin', () => {
   });
 
   /**
-   * A user can be flagged `isPlatformAdmin` without an `adminRole`. That is
-   * not a session — a principal with no role would carry no permissions, and
-   * "authenticated with zero capability" is a confusing 403 rather than a
-   * clear 401.
+   * A user without an Admin Member record is not an operator, whatever else
+   * is true of them — "authenticated with zero capability" is a confusing 403
+   * rather than a clear 401.
    */
-  it('returns null when the user has no adminRole', async () => {
+  it('returns null when the user has no Admin Member record', async () => {
     const { resolver } = setup({
-      user: { id: 'admin-3', email: ADMIN_EMAIL, adminRole: null },
+      user: { id: 'admin-3', email: ADMIN_EMAIL, adminMember: null },
     });
 
     expect(await resolver.resolveAdmin(HOSTILE)).toBeNull();
@@ -270,7 +271,7 @@ describe('resolveAdmin', () => {
 
   it('falls back to the configured email when the row stores none', async () => {
     const { resolver } = setup({
-      user: { id: 'admin-4', email: null, adminRole: 'MODERATOR' },
+      user: { id: 'admin-4', email: null, adminMember: { id: 'member-4', role: 'MODERATOR' } },
     });
 
     expect((await resolver.resolveAdmin(HOSTILE))?.email).toBe(ADMIN_EMAIL);

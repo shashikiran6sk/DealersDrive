@@ -29,12 +29,17 @@ export interface MergeOutcome {
 export type MergeRefusal = 'unavailable' | 'staff' | 'google-on-both' | 'phone-on-both';
 
 type MergeCandidate = Prisma.UserGetPayload<{
-  include: { roles: true; identities: { select: { id: true; provider: true } } };
+  include: {
+    roles: true;
+    identities: { select: { id: true; provider: true } };
+    adminMember: { select: { id: true } };
+  };
 }>;
 
 const MERGE_INCLUDE = {
   roles: true,
   identities: { select: { id: true, provider: true } },
+  adminMember: { select: { id: true } },
 } as const;
 
 export function mergeRefusal(
@@ -52,7 +57,11 @@ export function mergeRefusal(
 }
 
 function isStaff(user: MergeCandidate): boolean {
-  return user.isPlatformAdmin || user.roles.some((seat) => seat.role === 'ADMIN');
+  return (
+    user.isPlatformAdmin ||
+    user.adminMember !== null ||
+    user.roles.some((seat) => seat.role === 'ADMIN')
+  );
 }
 
 export function refusalError(reason: MergeRefusal): ConflictError {

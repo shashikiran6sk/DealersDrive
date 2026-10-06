@@ -60,6 +60,11 @@ async function seedAdmin(): Promise<void> {
       // anyway; seeding it means `AUTH_MODE=dev`, which never signs anybody in,
       // resolves the same row shape production does.
       roles: { create: { role: 'ADMIN' } },
+      // The Admin Member record is what the console actually reads. BOOTSTRAP,
+      // because this address is admitted by ADMIN_ALLOWLIST, not by an invite.
+      adminMember: {
+        create: { role: 'SUPER_ADMIN', status: 'ACTIVE', source: 'BOOTSTRAP', activatedAt: now },
+      },
     },
   });
 }

@@ -59,6 +59,44 @@ Seats are unioned, and where both accounts hold the same seat the stricter
 status wins: a suspended seat on the absorbed account suspends the survivor's.
 A merge must never be a way out of a suspension.
 
+## `apps/api/src/modules/auth/admin-member.ts`
+
+### `export function isAdmitted(`
+
+The console's authorization, in one place. Google proves who signed in; the
+`admin_members` row decides whether that person is an operator at all, in
+which role, and whether that is still true. It is re-read on every request
+(joined into the session lookup, so it costs no extra round trip), which is why
+a role change applies on the next request and a disabled member is refused at
+once.
+
+- `ACTIVE` is the only status that enters. `INVITED` becomes `ACTIVE` on the
+  member's first successful Google sign-in; `DISABLED` never enters, even for an
+  allow-listed address.
+- `BOOTSTRAP` members exist because their address is on `ADMIN_ALLOWLIST`, and
+  are admitted only while it still is — the same rule the allow-list always
+  had. Every sign-in by an allow-listed address restores it to an active Super
+  admin, which is the recovery path if every invited Super admin is lost.
+- `INVITED` members were added by a Super admin and are admitted while ACTIVE.
+
+### `export async function syncLegacyAdminColumns(`
+
+`users.isPlatformAdmin`, `users.adminRole` and the ADMIN `user_roles` seat are
+no longer read for authorization, but they are still written on every member
+change. If the application is rolled back to a build that predates Admin
+Members, those columns give the same answer the new table did — in particular a
+disabled member stays out, because the seat is SUSPENDED and the flag is false.
+
+## `apps/api/src/routes.ts` — the console gate
+
+`/v1/admin/**` is mounted behind `requireAdmin` **and**
+`requirePermission('admin:console')`. `SALES_REP` does not hold
+`admin:console`, so no admin route — present or future, whether or not it
+remembers its own permission check — is reachable by a Sales Representative.
+The refusal is `403 ADMIN_CONSOLE_FORBIDDEN`. `admin-member-rbac.test.ts` walks
+every documented `/v1/admin` operation with a Sales Rep's cookie and expects
+exactly that answer.
+
 ## `apps/api/src/modules/auth/admin-allowlist.ts`
 
 ### `export function isAllowlistedAdmin(email: string | null | undefined): boolean`

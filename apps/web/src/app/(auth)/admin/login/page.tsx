@@ -26,6 +26,8 @@ const ERRORS: Record<string, string> = {
   invalid_callback: 'That sign-in link was incomplete. Please start again.',
   account_suspended: 'This account has been suspended.',
   session_expired: 'Your session has ended. Sign in again.',
+  no_console:
+    'Your role does not include the admin console. Sign in with an operations account, or use your own workspace.',
 };
 
 export default async function AdminLoginPage({

@@ -11,6 +11,7 @@ import { StatusTag } from '@/components/ui/primitives';
 import { SignOutButton } from '@/features/auth/sign-out';
 import { ApiError, apiGet } from '@/lib/api';
 import { seoMetadata } from '@/lib/seo';
+import { isConsoleRefusal } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +77,7 @@ async function requireAdmin(): Promise<AdminOverview> {
     if (error instanceof ApiError && error.status === 401) {
       redirect('/admin/login?error=session_expired');
     }
+    if (isConsoleRefusal(error)) redirect('/admin/login?error=no_console');
     throw error;
   }
 }

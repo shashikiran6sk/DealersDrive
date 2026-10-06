@@ -594,7 +594,11 @@ describe('what a merge carries across', () => {
     const load = (id: string) =>
       h.prisma.user.findUniqueOrThrow({
         where: { id },
-        include: { roles: true, identities: { select: { id: true, provider: true } } },
+        include: {
+          roles: true,
+          identities: { select: { id: true, provider: true } },
+          adminMember: { select: { id: true } },
+        },
       });
     const survivor = await load(customer.userId);
     const absorbed = await load(dealer.userId);
@@ -612,6 +616,7 @@ describe('what a merge carries across', () => {
         roles: [...absorbed.roles, { ...absorbed.roles[0]!, role: 'ADMIN' }],
       }),
     ).toBe('staff');
+    expect(mergeRefusal(survivor, { ...absorbed, adminMember: { id: 'member' } })).toBe('staff');
   });
 });
 

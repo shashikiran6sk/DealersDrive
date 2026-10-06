@@ -122,8 +122,12 @@ describe('roles', () => {
     expect(enums.DealerRole.options).toEqual(['OWNER', 'MANAGER', 'STAFF']);
   });
 
-  it('lists the three admin seats', () => {
-    expect(enums.AdminRole.options).toEqual(['SUPPORT', 'MODERATOR', 'SUPER_ADMIN']);
+  it('lists the four Admin Member roles', () => {
+    expect(enums.AdminRole.options).toEqual(['SUPPORT', 'MODERATOR', 'SUPER_ADMIN', 'SALES_REP']);
+  });
+
+  it('lists the Admin Member lifecycle', () => {
+    expect(enums.AdminMemberStatus.options).toEqual(['INVITED', 'ACTIVE', 'DISABLED']);
   });
 
   it('shares no member between the two, so a role name is unambiguous', () => {

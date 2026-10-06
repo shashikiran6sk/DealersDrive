@@ -51,7 +51,7 @@ export function createSessionService(prisma: PrismaClient) {
           revokedAt: null,
           expiresAt: { gt: new Date() },
         },
-        include: { user: { include: { roles: true } } },
+        include: { user: { include: { roles: true, adminMember: true } } },
       });
     },
 

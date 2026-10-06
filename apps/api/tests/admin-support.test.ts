@@ -111,6 +111,9 @@ beforeAll(async () => {
         isPlatformAdmin: true,
         adminRole: 'SUPPORT',
         roles: { create: { role: 'ADMIN', status: 'ACTIVE', grantedBy: adminId } },
+        adminMember: {
+          create: { role: 'SUPPORT', status: 'ACTIVE', source: 'INVITED', invitedBy: adminId },
+        },
       },
     })
   ).id;

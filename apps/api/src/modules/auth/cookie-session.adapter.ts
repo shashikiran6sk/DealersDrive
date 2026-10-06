@@ -1,13 +1,12 @@
 import type { PrismaClient } from '@prisma/client';
 import type { Request } from 'express';
 
-import { isAllowlistedAdmin } from './admin-allowlist.js';
+import { isAdmitted, permissionsForMember } from './admin-member.js';
 import { findWorkspaceMembership } from './membership.js';
-import { hasGrantedSeat, isSeatSuspended } from './roles.js';
+import { isSeatSuspended } from './roles.js';
 import { readSessionToken } from './session.cookie.js';
 import type { SessionService } from './session.service.js';
 import {
-  permissionsForAdminRole,
   permissionsForRole,
   type AdminPrincipal,
   type DealerPrincipal,
@@ -68,18 +67,18 @@ export function createCookieSessionResolver(
     async resolveAdmin(req): Promise<AdminPrincipal | null> {
       const session = await sessions.resolve(readSessionToken(req), 'ADMIN');
       const user = session?.user;
+      if (!user) return null;
 
-      if (!user?.isPlatformAdmin || !user.adminRole || user.status !== 'ACTIVE') return null;
-      if (isSeatSuspended(user.roles, 'ADMIN')) return null;
-
-      if (!isAllowlistedAdmin(user.email) && !hasGrantedSeat(user.roles, 'ADMIN')) return null;
+      const member = user.adminMember;
+      if (!member || !isAdmitted({ email: user.email, status: user.status, member })) return null;
 
       return {
         kind: 'ADMIN',
         userId: user.id,
+        memberId: member.id,
         email: user.email ?? '',
-        adminRole: user.adminRole,
-        permissions: permissionsForAdminRole(user.adminRole),
+        adminRole: member.role,
+        permissions: permissionsForMember(member.role),
       };
     },
   };

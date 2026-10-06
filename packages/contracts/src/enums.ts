@@ -114,8 +114,17 @@ export type DealerStatus = z.infer<typeof DealerStatus>;
 export const DealerRole = z.enum(['OWNER', 'MANAGER', 'STAFF']);
 export type DealerRole = z.infer<typeof DealerRole>;
 
-export const AdminRole = z.enum(['SUPPORT', 'MODERATOR', 'SUPER_ADMIN']);
+/**
+ * An internal team member's role. `MODERATOR` is the Operations reviewer — the
+ * name predates the Admin Members model and is kept so existing rows and
+ * permissions read unchanged; the console labels it "Operations".
+ */
+export const AdminRole = z.enum(['SUPPORT', 'MODERATOR', 'SUPER_ADMIN', 'SALES_REP']);
 export type AdminRole = z.infer<typeof AdminRole>;
+
+/** Where an Admin Member is in their lifecycle. Only ACTIVE may enter. */
+export const AdminMemberStatus = z.enum(['INVITED', 'ACTIVE', 'DISABLED']);
+export type AdminMemberStatus = z.infer<typeof AdminMemberStatus>;
 
 export const DealerDocType = z.enum(['GST_CERTIFICATE', 'PAN_CARD', 'ADDRESS_PROOF']);
 export type DealerDocType = z.infer<typeof DealerDocType>;

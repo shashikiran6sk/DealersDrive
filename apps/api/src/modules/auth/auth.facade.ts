@@ -21,3 +21,11 @@ export { isAllowlistedAdmin } from './admin-allowlist.js';
 export { assertPhoneVerified } from './verified-phone.js';
 
 export { authorizeDealerWrite, type DealerWriteActor } from './dealer-write-authorization.js';
+
+export {
+  findMemberByUser,
+  isAdmitted,
+  permissionsForMember,
+  revokeAdminSessions,
+  syncLegacyAdminColumns,
+} from './admin-member.js';

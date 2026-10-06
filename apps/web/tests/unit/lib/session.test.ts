@@ -6,6 +6,7 @@ import {
   currentSession,
   destinationFor,
   hasSession,
+  isConsoleRefusal,
 } from '../../../src/lib/session.js';
 
 /**
@@ -92,6 +93,28 @@ describe('currentAdmin', () => {
     globalThis.fetch = respond(503, { status: 503, code: 'NOT_CONFIGURED', title: 'nope' });
 
     await expect(currentAdmin()).rejects.toThrow();
+  });
+
+  /**
+   * A Sales Representative has a live operations session but no console. The
+   * sign-in page must render for them rather than throw — otherwise the page
+   * that explains the refusal is the page that crashes on it.
+   */
+  it('returns null for a member whose role has no console', async () => {
+    globalThis.fetch = respond(403, {
+      status: 403,
+      code: 'ADMIN_CONSOLE_FORBIDDEN',
+      title: 'Forbidden',
+    });
+
+    expect(await currentAdmin()).toBeNull();
+  });
+
+  it('still lets an ordinary 403 through', async () => {
+    globalThis.fetch = respond(403, { status: 403, code: 'FORBIDDEN', title: 'Forbidden' });
+
+    await expect(currentAdmin()).rejects.toThrow();
+    expect(isConsoleRefusal(new Error('plain'))).toBe(false);
   });
 });
 

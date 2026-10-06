@@ -18,11 +18,18 @@ export async function currentSession(): Promise<AuthSession | null> {
   }
 }
 
+export const ADMIN_CONSOLE_FORBIDDEN = 'ADMIN_CONSOLE_FORBIDDEN';
+
+export function isConsoleRefusal(error: unknown): boolean {
+  return error instanceof ApiError && error.code === ADMIN_CONSOLE_FORBIDDEN;
+}
+
 export async function currentAdmin(): Promise<AdminOverview | null> {
   try {
     return await apiGet<AdminOverview>('/v1/admin/metrics/overview', { revalidate: false });
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return null;
+    if (isConsoleRefusal(error)) return null;
     throw error;
   }
 }

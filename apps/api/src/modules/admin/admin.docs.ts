@@ -559,8 +559,11 @@ export const adminDocs: ModuleDocs = {
         'colleague who has never signed in. **They still sign in with Google**, and the ' +
         'address here has to be the one Google knows them by; this is what lets the console ' +
         'admit them when they do.\n\n' +
-        'Granting is also how a withdrawn seat is restored. Audit-logged as ' +
-        '`admin.access.granted`. SUPER_ADMIN only (`admin:access:manage`).',
+        'Writes an **Admin Member** in status `INVITED`; their first Google sign-in makes ' +
+        'it `ACTIVE`. Granting an existing member changes their role (effective on their ' +
+        'next request) and is also how a disabled member is restored. Audit-logged as ' +
+        '`admin_member.invited` or `admin_member.role_changed`. SUPER_ADMIN only ' +
+        '(`admin:access:manage`). `SALES_REP` holds no console permission at all.',
       audience: 'admin',
       permission: 'admin:access:manage',
       requestBody: {
@@ -578,9 +581,10 @@ export const adminDocs: ModuleDocs = {
       tag: DOC_TAGS.admin,
       summary: 'Withdraw a granted admin seat',
       description:
-        'Deletes the grant, clears the platform-admin flag and **revokes their admin ' +
-        'sessions** — the console closes on their next click, not at the next expiry. A ' +
-        'dealer seat the same person holds is untouched.\n\n' +
+        'Marks the Admin Member `DISABLED` and **revokes their admin sessions** — the ' +
+        'console closes on their next click, not at the next expiry. The row is kept for ' +
+        'the audit trail; a dealer seat the same person holds is untouched. Audit-logged ' +
+        'as `admin_member.disabled`.\n\n' +
         'Three refusals, each a door somebody could otherwise not walk back out of: your ' +
         'own seat (**403**, there may be nobody left to let you back in), an allow-listed ' +
         'address (**409** — the environment admits them, so remove it there), and a seat ' +
