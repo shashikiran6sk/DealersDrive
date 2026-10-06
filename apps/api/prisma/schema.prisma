@@ -238,8 +238,9 @@ model AdminMember {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assistedDealers Dealer[]
+  user                   User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assistedDealers        Dealer[]
+  requestedVerifications DealerEmailVerification[]
 
   @@index([status, role])
   @@map("admin_members")
@@ -356,17 +357,18 @@ model Dealer {
   statusReason           String?
   createdAt              DateTime               @default(now())
 
-  assistedBy    AdminMember?                 @relation(fields: [assistedByMemberId], references: [id], onDelete: Restrict)
-  members       DealerMember[]
-  invitations   DealerInvitation[]
-  sessions      Session[]
-  documents     DealerDocument[]
-  profileEdits  DealerProfileChange[]
-  notifications NotificationDelivery[]
-  vehicles      Vehicle[]
-  listings      Listing[]
-  enquiries     Enquiry[]
-  reactivations ListingReactivationRequest[]
+  assistedBy         AdminMember?                 @relation(fields: [assistedByMemberId], references: [id], onDelete: Restrict)
+  members            DealerMember[]
+  invitations        DealerInvitation[]
+  sessions           Session[]
+  documents          DealerDocument[]
+  profileEdits       DealerProfileChange[]
+  notifications      NotificationDelivery[]
+  vehicles           Vehicle[]
+  listings           Listing[]
+  enquiries          Enquiry[]
+  reactivations      ListingReactivationRequest[]
+  emailVerifications DealerEmailVerification[]
   // ledger      CreditTransaction[]    ← returns with F050
   // orders      Order[]                ← returns with F051
   // payments    Payment[]              ← returns with F052
@@ -1402,4 +1404,34 @@ model OutboxEvent {
 
   @@index([publishedAt, id])
   @@map("outbox_events")
+}
+
+/// A link sent to an assisted dealership's `contactEmail` (**R113**). Opening it
+/// and confirming proves the dealer receives mail there; the same link, with an
+/// OTP on the dealership's verified phone, lets the dealer claim ownership.
+///
+/// The raw token is never stored — it is minted inside the email job and only
+/// its SHA-256 lands here, so `tokenHash` is NULL until the email is sent. A
+/// newer request, or a change of address, supersedes every older row.
+model DealerEmailVerification {
+  id                  String    @id @default(uuid()) @db.Uuid
+  dealerId            String    @db.Uuid
+  /// The address the link was sent to, lower-cased. Confirming only counts
+  /// while the dealership's `contactEmail` still equals it.
+  email               String
+  tokenHash           String?   @unique
+  requestedByMemberId String?   @db.Uuid
+  sentAt              DateTime?
+  expiresAt           DateTime?
+  verifiedAt          DateTime?
+  claimedAt           DateTime?
+  claimedByUserId     String?   @db.Uuid
+  supersededAt        DateTime?
+  createdAt           DateTime  @default(now())
+
+  dealer      Dealer       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  requestedBy AdminMember? @relation(fields: [requestedByMemberId], references: [id], onDelete: SetNull)
+
+  @@index([dealerId, createdAt])
+  @@map("dealer_email_verifications")
 }

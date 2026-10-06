@@ -13,3 +13,11 @@ export const ASSISTED_DEALER_LOCKED =
   'This dealership has been submitted or claimed by the dealer, so it can no longer be edited here.';
 
 export const SALES_APPROVED_LABEL = 'Approved';
+
+export const VERIFICATION_COOLDOWN =
+  'A verification email was sent less than a minute ago. Wait a moment before sending another.';
+
+export const VERIFICATION_NOT_EDITABLE =
+  'This dealership has been claimed by its owner, so its email is theirs to manage.';
+
+export const VERIFICATION_NO_EMAIL = 'Add the dealer’s email address before sending a link.';

@@ -130,6 +130,20 @@ export const salesDocs: ModuleDocs = {
     },
     {
       method: 'post',
+      path: '/v1/sales/dealers/:id/email-verification',
+      operationId: 'resendAssistedDealerEmailVerification',
+      tag: DOC_TAGS.sales,
+      summary: 'Send the dealer a new verification link',
+      description:
+        'Supersedes every earlier link and emails a new one to the dealership’s current address (**R113**). A link is also sent automatically when the dealership is created and whenever its email changes. Refused within a minute of the previous one (`409 VERIFICATION_COOLDOWN`) and once the dealer has claimed the dealership (`409 VERIFICATION_NOT_EDITABLE`). The representative never sees the link.',
+      audience: 'admin',
+      permission: 'sales:dealer:edit',
+      params: 'IdParam',
+      responses: [{ status: 200, description: 'Queued.', schema: 'SalesDealerDetail' }],
+      errors: [400, 401, 403, 404, 409],
+    },
+    {
+      method: 'post',
       path: '/v1/sales/dealers/:id/documents/presign',
       operationId: 'presignAssistedDealerDocument',
       tag: DOC_TAGS.sales,

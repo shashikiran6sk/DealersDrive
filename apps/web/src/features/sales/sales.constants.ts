@@ -35,6 +35,7 @@ export const SALES_TEXT = {
     `${String(live)} live · ${String(review)} in review · ${String(draft)} drafts`,
   backToList: '← My Dealerships',
   detailsHeading: 'Details',
+  emailHeading: 'Email verification and claim',
   documentsHeading: 'Documents',
   yardHeading: 'Yard photograph',
   submitHeading: 'Submit for verification',
@@ -43,6 +44,8 @@ export const SALES_TEXT = {
   submitIntro:
     'When every section is complete, submit. An operations reviewer decides — you cannot approve your own submission.',
   lockedNotice: 'This dealership has been submitted, so its details are read-only here.',
+  claimedNotice:
+    'The dealer has claimed this dealership and manages it from their own account, so its details are read-only here.',
   missing: (labels: string) => `Still missing: ${labels}`,
   consentRecorded: (when: string) => `Dealer consent recorded ${when}`,
   statusReason: (reason: string) => `Reviewer note: ${reason}`,

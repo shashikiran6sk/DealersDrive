@@ -377,3 +377,20 @@ client, and it is why transactional email still looks like 2005 HTML.
 ### `function indent(value: string): string`
 
 Two spaces, so a quoted note is visibly not the sentence around it.
+
+## `apps/api/src/modules/notifications/notifications.service.ts` — R113
+
+### `async function sendClaimLink(job: EmailJob): Promise<void>`
+
+The claim email is the one message whose content is minted at send time: the
+link is created by `claimLinks.issueLink`, so no stored row ever holds it. That
+makes "has this been sent?" a question asked **before** minting — pg-boss is
+at-least-once, and a redelivered job that minted again would quietly replace the
+link in the dealer's inbox with one they never received.
+
+### `async function recipientsFor(job: EmailJob)`
+
+An unclaimed assisted dealership is written to at its `contactEmail` only once
+that address is verified. Until then the claim email is the only thing sent
+there — an address a Sales representative typed may be mistyped, or somebody
+else's, and status mail about a dealership is not theirs to read.

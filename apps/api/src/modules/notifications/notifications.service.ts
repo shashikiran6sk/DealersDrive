@@ -7,12 +7,14 @@ import type { MailerPort } from '../../platform/mail/mail.port.js';
 import { PermanentMailError } from '../../platform/mail/resend.adapter.js';
 import { errorCode, isRecord } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
+import type { DealerClaimsService } from '../dealer-claims/dealer-claims.facade.js';
 import { render, type TemplateContext, type TemplateName } from './templates.js';
 
 export interface NotificationsDeps {
   prisma: PrismaClient;
   queue: Queue;
   mailer: MailerPort;
+  claimLinks?: Pick<DealerClaimsService, 'issueLink'>;
 }
 
 export interface EmailJob extends Record<string, unknown> {
@@ -24,7 +26,12 @@ export interface EmailJob extends Record<string, unknown> {
   profileChangeId?: string;
 }
 
-export function createNotificationsService({ prisma, queue, mailer }: NotificationsDeps) {
+export function createNotificationsService({
+  prisma,
+  queue,
+  mailer,
+  claimLinks,
+}: NotificationsDeps) {
   async function enqueue(job: EmailJob): Promise<void> {
     await queue.send('notification.email', job);
     logger.info(
@@ -89,6 +96,17 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         await enqueue(base(event, 'dealer.account.reinstated', 'dealer'));
       });
 
+      bus.on('DealerEmailVerificationRequested', async (event) => {
+        const verificationId = recordOf(event.payload)?.verificationId;
+        if (typeof verificationId !== 'string') return;
+        await enqueue({
+          template: 'dealer.email.verify',
+          audience: 'dealer',
+          dealerId: event.dealerId ?? event.aggregateId,
+          subjectId: verificationId,
+        });
+      });
+
       bus.on('DealerProfileChangeSubmitted', async (event) => {
         const payload = recordOf(event.payload) ?? {};
         await enqueue({
@@ -123,6 +141,11 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
   };
 
   async function handleEmailJob(job: EmailJob): Promise<void> {
+    if (job.template === 'dealer.email.verify') {
+      await sendClaimLink(job);
+      return;
+    }
+
     if (job.template === 'dealer.application.rejected') {
       const snapshot = await rejectedApplicationSnapshot(job.dealerId);
       if (snapshot) {
@@ -175,6 +198,43 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
         dealerSlug: dealer.slug,
       });
     }
+  }
+
+  async function sendClaimLink(job: EmailJob): Promise<void> {
+    if (!claimLinks) {
+      logger.warn({ template: job.template, dealerId: job.dealerId }, 'email skipped — no links');
+      return;
+    }
+    const sent = await prisma.notificationDelivery.findFirst({
+      where: {
+        template: job.template,
+        dedupeKey: { startsWith: `${job.template}:${job.subjectId}:` },
+        status: 'SENT',
+      },
+      select: { id: true },
+    });
+    if (sent) {
+      logger.debug({ subjectId: job.subjectId }, 'verification email already sent — skipping');
+      return;
+    }
+    const link = await claimLinks.issueLink(job.subjectId);
+    if (!link) {
+      logger.info(
+        { template: job.template, dealerId: job.dealerId },
+        'email skipped — verification superseded or claimed',
+      );
+      return;
+    }
+    await sendOne(
+      job,
+      { email: link.email, name: link.name },
+      {
+        dealerName: link.dealerName,
+        contactName: link.name,
+        actionUrl: link.url,
+        expiresAt: link.expiresAt,
+      },
+    );
   }
 
   async function sendOne(
@@ -283,7 +343,12 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
     if (email) return [{ email, name: owner.user.fullName }];
 
     const assisted = await prisma.dealer.findFirst({
-      where: { id: job.dealerId, onboardingSource: 'ASSISTED', contactEmail: { not: null } },
+      where: {
+        id: job.dealerId,
+        onboardingSource: 'ASSISTED',
+        contactEmail: { not: null },
+        contactEmailVerifiedAt: { not: null },
+      },
       select: { contactEmail: true, contactName: true },
     });
     return assisted?.contactEmail

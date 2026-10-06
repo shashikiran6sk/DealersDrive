@@ -16,6 +16,7 @@ export interface PhoneVerificationState {
   phoneTicket?: string;
   phone?: string;
   phoneDisplay?: string;
+  returnTo?: string;
   error?: string;
 }
 

@@ -12,6 +12,7 @@ Parent: [web](../README.md)
 
 - [admin](admin.md)
 - [auth](auth.md)
+- [claim](claim.md)
 - [dealer](dealer.md)
 - [enquiry](enquiry.md)
 - [home](home.md)

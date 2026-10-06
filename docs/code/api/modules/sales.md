@@ -86,3 +86,10 @@ proceeds, so a replayed ticket — or two tabs — produces one dealership.
 The shared `byUser` key reads the signed-in _dealer_ principal and throws for an
 admin one, so the Sales OTP routes key their limit on the admin member instead.
 An OTP is an SMS, so this is a spend control as much as an abuse one.
+
+### `async resendEmailVerification(`
+
+**R113.** A new claim link, superseding the old one. The representative asks for
+it and never sees it — the API answers with the dealership's detail, and the
+link exists only in the dealer's inbox. Refused within a minute of the previous
+request, and once the dealer has claimed the dealership.

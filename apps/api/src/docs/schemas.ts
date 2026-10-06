@@ -13,6 +13,8 @@ const INPUT_SCHEMA_NAMES = [
   'UpdateAssistedDealerInput',
   'SalesDealersQuery',
   'SalesDealerDocParam',
+  'ClaimTokenParam',
+  'ClaimDealerInput',
   'AdminMembersQuery',
   'InviteAdminMemberInput',
   'UpdateAdminMemberInput',

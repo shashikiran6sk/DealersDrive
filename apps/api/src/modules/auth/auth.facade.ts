@@ -21,6 +21,8 @@ export { isAllowlistedAdmin } from './admin-allowlist.js';
 export { assertPhoneVerified } from './verified-phone.js';
 
 export type { PhoneProofService } from './phone-proof.service.js';
+export type { IdentityService } from './identity.service.js';
+export type { SessionService } from './session.service.js';
 
 export { authorizeDealerWrite, type DealerWriteActor } from './dealer-write-authorization.js';
 

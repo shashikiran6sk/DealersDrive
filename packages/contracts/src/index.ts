@@ -22,6 +22,7 @@ export * from './auth.js';
 export * from './admin-access.js';
 export * from './admin-members.js';
 export * from './sales.js';
+export * from './dealer-claims.js';
 export * from './dealer-access.js';
 export * from './team.js';
 export * from './public.js';

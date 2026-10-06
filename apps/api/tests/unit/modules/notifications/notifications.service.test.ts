@@ -5,6 +5,7 @@ import { createEventBus, type DomainEvent } from '../../../../src/platform/event
 import { createInlineQueue } from '../../../../src/platform/jobs/queue.js';
 import type { MailMessage, MailerPort } from '../../../../src/platform/mail/mail.port.js';
 import { PermanentMailError } from '../../../../src/platform/mail/resend.adapter.js';
+import type { ClaimLink } from '../../../../src/modules/dealer-claims/dealer-claims.facade.js';
 import {
   createNotificationsService,
   type EmailJob,
@@ -52,6 +53,7 @@ function fakePrisma(
     owner?: { email: string | null; fullName: string | null } | null;
     dealer?: Record<string, unknown> | null;
     rejectedSnapshot?: Record<string, unknown> | null;
+    dealerQueries?: unknown[];
   } = {},
 ) {
   const rows = new Map<string, Row>();
@@ -87,6 +89,19 @@ function fakePrisma(
       },
       findUnique: ({ where }: { where: { dedupeKey: string } }) =>
         Promise.resolve(rows.get(where.dedupeKey) ?? null),
+      findFirst: ({
+        where,
+      }: {
+        where: { template: string; status: string; dedupeKey: { startsWith: string } };
+      }) =>
+        Promise.resolve(
+          [...rows.values()].find(
+            (row) =>
+              row.template === where.template &&
+              row.status === where.status &&
+              row.dedupeKey.startsWith(where.dedupeKey.startsWith),
+          ) ?? null,
+        ),
       update: ({
         where,
         data,
@@ -107,7 +122,10 @@ function fakePrisma(
       },
     },
     dealer: {
-      findFirst: () => Promise.resolve(null),
+      findFirst: (args: unknown) => {
+        options.dealerQueries?.push(args);
+        return Promise.resolve(null);
+      },
       findUnique: () =>
         Promise.resolve(
           options.dealer === null
@@ -154,10 +172,19 @@ function recordingMailer(
   };
 }
 
-function setup(options: Parameters<typeof fakePrisma>[0] = {}, mailer = recordingMailer()) {
+function setup(
+  options: Parameters<typeof fakePrisma>[0] = {},
+  mailer = recordingMailer(),
+  claimLinks?: { issueLink: (id: string) => Promise<ClaimLink | null> },
+) {
   const { prisma, rows } = fakePrisma(options);
   const queue = createInlineQueue();
-  const service = createNotificationsService({ prisma, queue, mailer });
+  const service = createNotificationsService({
+    prisma,
+    queue,
+    mailer,
+    ...(claimLinks ? { claimLinks } : {}),
+  });
   return { service, prisma, rows, queue, mailer };
 }
 
@@ -485,5 +512,79 @@ describe('recipients', () => {
 
     expect(mailer.sent[0]?.to).toBe('owner@srilakshmimotors.in');
     expect(mailer.sent[0]?.text).toContain('Karthik Raman');
+  });
+});
+
+describe('the claim link (R113)', () => {
+  function links(result: ClaimLink | null = LINK) {
+    const issued: string[] = [];
+    return {
+      issued,
+      issueLink: (id: string) => {
+        issued.push(id);
+        return Promise.resolve(result);
+      },
+    };
+  }
+
+  const LINK: ClaimLink = {
+    email: 'selvi@gmail.com',
+    name: 'Selvi R',
+    dealerName: 'Claimable Motors',
+    url: 'https://dealers-drive.test/claim/abc123',
+    expiresAt: new Date('2026-10-09T10:00:00.000Z'),
+  };
+
+  async function request(claimLinks: ReturnType<typeof links>, mailer = recordingMailer()) {
+    const { service } = setup({}, mailer, claimLinks);
+    const bus = createEventBus();
+    service.subscribe(bus);
+    await service.work();
+    await bus.publish({
+      ...event('DealerEmailVerificationRequested', { verificationId: 'ver-1' }),
+      aggregateType: 'DealerEmailVerification',
+      aggregateId: 'ver-1',
+    });
+    return { service, mailer };
+  }
+
+  it('mints the link at send time and emails it to the verification’s address', async () => {
+    const claimLinks = links();
+    const { mailer } = await request(claimLinks);
+
+    expect(claimLinks.issued).toEqual(['ver-1']);
+    expect(mailer.sent).toHaveLength(1);
+    expect(mailer.sent[0]).toMatchObject({ to: 'selvi@gmail.com', tag: 'dealer.email.verify' });
+    expect(mailer.sent[0]?.text).toContain(LINK.url);
+    expect(mailer.sent[0]?.subject).toContain('Claimable Motors');
+  });
+
+  it('does not mint a second link once the email has been sent', async () => {
+    const claimLinks = links();
+    const { service, mailer } = await request(claimLinks);
+    await service.handleEmailJob({
+      template: 'dealer.email.verify',
+      audience: 'dealer',
+      dealerId: 'dealer-1',
+      subjectId: 'ver-1',
+    });
+
+    expect(claimLinks.issued).toEqual(['ver-1']);
+    expect(mailer.sent).toHaveLength(1);
+  });
+
+  it('sends nothing for a superseded or claimed verification', async () => {
+    const { mailer } = await request(links(null));
+    expect(mailer.sent).toHaveLength(0);
+  });
+
+  it('sends an unclaimed dealership’s mail only to a verified address', async () => {
+    const dealerQueries: unknown[] = [];
+    const { service, mailer } = setup({ owner: null, dealerQueries });
+
+    await service.handleEmailJob(JOB);
+
+    expect(mailer.sent).toHaveLength(0);
+    expect(JSON.stringify(dealerQueries)).toContain('"contactEmailVerifiedAt":{"not":null}');
   });
 });

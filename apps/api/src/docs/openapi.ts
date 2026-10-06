@@ -9,6 +9,7 @@ import { authDocs } from '../modules/auth/auth.docs.js';
 import { adminDocs } from '../modules/admin/admin.docs.js';
 import { adminMembersDocs } from '../modules/admin-members/admin-members.docs.js';
 import { salesDocs } from '../modules/sales/sales.docs.js';
+import { dealerClaimsDocs } from '../modules/dealer-claims/dealer-claims.docs.js';
 import { configDocs } from '../modules/config/config.docs.js';
 import { dealersDocs } from '../modules/dealers/dealers.docs.js';
 import { dealersPublicDocs } from '../modules/dealers/dealers.public.docs.js';
@@ -43,6 +44,7 @@ const MODULES: ModuleDocs[] = [
   adminDocs,
   adminMembersDocs,
   salesDocs,
+  dealerClaimsDocs,
   moderationDocs,
   supportAdminDocs,
   vehicleImagesDocs,
