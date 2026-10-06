@@ -16,6 +16,8 @@ export const PHONE_TEXT = {
   verifiedTitle: 'Mobile number verified',
   verifiedTag: 'Verified',
   yourAccount: 'your account',
+  accountsLinked:
+    'This number already had a Dealers-Drive account, so we joined the two. Your saved cars and enquiries are all here.',
   nextStep: 'Next: your dealership’s details',
   continueToBusiness: 'Continue to business details',
 

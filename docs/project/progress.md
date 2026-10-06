@@ -279,6 +279,7 @@ at a glance, and written up in `feature-map.md` under **REVISIONS**.
 - [x] R106 — The web build sees its variables without loose env mode · `apps/web/turbo.json` declares `APP_ENV`, `API_BASE_URL`, `API_ORIGIN`, `WEB_BASE_URL` for `build`; a test checks every build-time `process.env` read is declared; Vercel's `--env-mode=loose` workaround can go
 - [x] R107 — Per-IP rate limits count the visitor, not the web tier · the web forwards the visitor's address with a shared secret (`CLIENT_IP_FORWARD_SECRET`) on uncached calls; the API sets `req.ip` from it only when the secret matches (timing-safe) and the value is one IP address; otherwise `req.ip` is unchanged; both headers are stripped before anything else runs
 - [x] R108 — Public images are revalidated, not re-downloaded · `/media/by-media/:id/:width.webp` sends `Cache-Control: no-cache` and a strong ETag (`sha256(mediaId:key)`); a matching `If-None-Match` runs the full visibility check and answers 304 without reading S3; denials stay `no-store`; private reads unchanged
+- [x] R109 — One person, whichever door they came in by: a customer's phone links to a new Google dealer identity · revises R59/R61/R62 · ⚠️ new columns `users.mergedIntoId/mergedAt` · with proof of both identities in one request (Google session + OTP, or phone session + Google callback) the Google-only account is folded into the phone holder; saved cars, enquiries, tickets, memberships and seats move; session rotated; refusals unchanged for two different people
 
 ---
 

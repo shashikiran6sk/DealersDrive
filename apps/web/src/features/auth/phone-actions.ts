@@ -8,9 +8,11 @@ import {
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, apiSend } from '@/lib/api';
+import { relaySessionCookie } from '@/lib/session-cookie';
 
 export interface PhoneVerificationState {
   verified?: boolean;
+  accountsLinked?: boolean;
   phone?: string;
   phoneDisplay?: string;
   error?: string;
@@ -29,8 +31,13 @@ export async function verifyPhoneAction(
   }
 
   let result: VerifyPhoneResponse;
+  let setCookies: readonly string[] = [];
   try {
-    result = await apiSend<VerifyPhoneResponse>('POST', '/v1/auth/phone/verify', parsed.data);
+    result = await apiSend<VerifyPhoneResponse>('POST', '/v1/auth/phone/verify', parsed.data, {
+      onSetCookie: (cookies) => {
+        setCookies = cookies;
+      },
+    });
   } catch (error) {
     if (error instanceof ApiError) {
       return { error: error.userMessage('That code could not be verified.') };
@@ -38,9 +45,16 @@ export async function verifyPhoneAction(
     return { error: 'The API is unavailable. Try again shortly.' };
   }
 
+  if (result.accountsLinked) await relaySessionCookie(setCookies);
+
   revalidatePath('/dealer/onboarding');
 
-  return { verified: true, phone: result.phone, phoneDisplay: result.phoneDisplay };
+  return {
+    verified: true,
+    accountsLinked: result.accountsLinked,
+    phone: result.phone,
+    phoneDisplay: result.phoneDisplay,
+  };
 }
 
 export async function checkPhoneAvailabilityAction(phone: string): Promise<{ error?: string }> {

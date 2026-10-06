@@ -5,6 +5,60 @@ Parent: [api](../../README.md)
 The notes below belonged to the files named under each heading. Each heading is the
 declaration the note sat above.
 
+## `apps/api/src/modules/auth/account-merge.ts`
+
+### `export async function mergeAccounts(`
+
+One person can arrive by two doors: a customer proves their phone on the
+Customer tab, and later the same person signs in to the Dealer tab with Google.
+Before this, the second door made a second `users` row and step 1 refused to
+put the phone on it (`PHONE_ALREADY_REGISTERED`), so the person could not
+become a dealer without support moving their number by hand.
+
+A merge happens only when **one request carries proof of both identities**:
+
+- the Google session plus a fresh OTP for the phone (`PHONE_OTP`, from
+  `POST /v1/auth/phone/verify`), or
+- the phone session plus a completed Google round trip (`GOOGLE_OAUTH`, from
+  the link callback).
+
+A typed number is never enough. The OTP is checked by the provider before
+`mergeAccounts` is reached, so a wrong, expired, replayed or mismatched token
+leaves both accounts exactly as they were.
+
+**The phone holder survives.** The phone is the identity customers' history
+hangs on (saved cars, enquiries, support tickets), so the Google-only account
+is the one folded in: its Google identity, memberships, seats, saved cars,
+enquiries and tickets move across, its sessions are revoked, and its row stays
+— `status = DELETED`, `mergedIntoId` set — so audit entries and attributions
+written under its id still resolve. It is never hard-deleted.
+
+**Both rows are locked `FOR UPDATE` in id order** before anything is read, so
+two simultaneous verifications cannot both merge, and the second one finds
+`mergedIntoId` already pointing at the survivor and returns as a no-op.
+
+### `export function mergeRefusal(`
+
+The cases that are refused rather than merged, because they would mean two
+different people rather than one person twice:
+
+- `google-on-both` — the phone holder already has its own Google account.
+- `phone-on-both` — the Google account already holds a different phone, or
+  both accounts sit in the same dealership.
+- `staff` — either account is an operator (`isPlatformAdmin` or an ADMIN
+  seat). Internal identities are never folded automatically.
+- `unavailable` — either account is not ACTIVE, or the holder's phone was
+  never verified.
+
+A refusal is the same `IDENTITY_ALREADY_LINKED` / `PHONE_ALREADY_REGISTERED`
+answer as before, and never names the account that holds the identity.
+
+### `async function moveSeats(`
+
+Seats are unioned, and where both accounts hold the same seat the stricter
+status wins: a suspended seat on the absorbed account suspends the survivor's.
+A merge must never be a way out of a suspension.
+
 ## `apps/api/src/modules/auth/admin-allowlist.ts`
 
 ### `export function isAllowlistedAdmin(email: string | null | undefined): boolean`
@@ -1162,6 +1216,20 @@ hashed because it is a bearer credential and cache keys are not a place to
 keep one.
 
 ## `apps/api/src/modules/auth/phone.service.ts`
+
+### `async function linkToHolder(`
+
+A verified number held by another account is linked rather than refused when
+`mergeRefusal` allows it. The caller's session belonged to the account that has
+just been folded away, so a fresh session is issued for the survivor and the
+route sets it as `dd_session`; the web's `verifyPhoneAction` relays that cookie,
+the same way the sign-in actions do. Rotating rather than re-pointing the old
+session row means a session token issued before the merge never gains the
+merged account's access.
+
+`assertAvailable` answers 204 for a mergeable holder, because the OTP that
+follows is the proof; it still answers 409 for a holder that could not be
+merged, before an SMS is paid for.
 
 ### `export interface PhoneServiceDeps`
 

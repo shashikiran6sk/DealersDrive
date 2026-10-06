@@ -42,6 +42,13 @@ model User {
   totpEnabledAt   DateTime?
   lastLoginAt     DateTime?
   createdAt       DateTime   @default(now())
+  /// Set on an account folded into another after the person proved both
+  /// identities. The row stays, marked DELETED, so history keeps resolving.
+  mergedIntoId    String?    @db.Uuid
+  mergedAt        DateTime?
+
+  mergedInto User?  @relation("UserMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
+  absorbed   User[] @relation("UserMerge")
 
   sessions      Session[]
   memberships   DealerMember[]

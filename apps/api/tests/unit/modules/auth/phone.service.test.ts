@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createPhoneService } from '../../../../src/modules/auth/phone.service.js';
+import type { SessionService } from '../../../../src/modules/auth/session.service.js';
 import { createMemoryCache } from '../../../../src/platform/cache/memory.adapter.js';
 import type { CachePort } from '../../../../src/platform/cache/cache.port.js';
 import type {
@@ -29,13 +30,23 @@ function otpAnswering(verdict: PhoneOtpVerdict): PhoneOtpPort {
 }
 
 function prismaWith(user: { id: string } | null, update: () => unknown = () => ({})): PrismaClient {
+  const tx = {
+    $queryRaw: vi.fn(() => Promise.resolve([])),
+    user: { findMany: vi.fn(() => Promise.resolve([])) },
+  };
   return {
     user: {
       findUnique: vi.fn(() => Promise.resolve(user)),
       update: vi.fn(() => Promise.resolve(update())),
     },
+    $transaction: vi.fn((work: (client: typeof tx) => unknown) => work(tx)),
   } as unknown as PrismaClient;
 }
+
+const LINKING = {
+  audit: { record: vi.fn(), recordDetached: vi.fn() },
+  sessions: {} as unknown as SessionService,
+};
 
 let cache: CachePort;
 
@@ -51,6 +62,7 @@ describe('the widget configuration', () => {
       prisma: prismaWith(null),
       otp: { ...otpAnswering(VERIFIED), driver },
       cache,
+      ...LINKING,
     }).widget();
   }
 
@@ -90,6 +102,7 @@ describe('the widget configuration', () => {
       prisma: prismaWith(null),
       otp: { ...otpAnswering(VERIFIED), driver: 'msg91' },
       cache,
+      ...LINKING,
     }).widget();
 
     expect(configured).toEqual({
@@ -110,7 +123,7 @@ describe('the widget configuration', () => {
 
 describe('asking whether a number is free', () => {
   function service(prisma = prismaWith(null)) {
-    return createPhoneService({ prisma, otp: otpAnswering(VERIFIED), cache });
+    return createPhoneService({ prisma, otp: otpAnswering(VERIFIED), cache, ...LINKING });
   }
 
   it('passes a number nobody holds', async () => {
@@ -150,9 +163,12 @@ describe('asking whether a number is free', () => {
   /** It costs no provider call: the whole point is to run before one. */
   it('does not touch the provider', async () => {
     const otp = otpAnswering(VERIFIED);
-    await createPhoneService({ prisma: prismaWith(null), otp, cache }).assertAvailable(USER, {
-      phone: '9840012345',
-    });
+    await createPhoneService({ prisma: prismaWith(null), otp, cache, ...LINKING }).assertAvailable(
+      USER,
+      {
+        phone: '9840012345',
+      },
+    );
 
     expect(otp.identify).not.toHaveBeenCalled();
   });
@@ -160,7 +176,7 @@ describe('asking whether a number is free', () => {
 
 describe('verifying a number', () => {
   function service(otp: PhoneOtpPort, prisma = prismaWith(null)) {
-    return createPhoneService({ prisma, otp, cache });
+    return createPhoneService({ prisma, otp, cache, ...LINKING });
   }
 
   it('records the number when the provider names it', async () => {
@@ -170,8 +186,10 @@ describe('verifying a number', () => {
       accessToken: 'token',
     });
 
-    expect(result.phone).toBe('+919840012345');
-    expect(result.phoneDisplay).toBe('+91 98400 12345');
+    expect(result.response.phone).toBe('+919840012345');
+    expect(result.response.accountsLinked).toBe(false);
+    expect(result.session).toBeNull();
+    expect(result.response.phoneDisplay).toBe('+91 98400 12345');
     expect(prisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: USER },
@@ -282,6 +300,6 @@ describe('verifying a number', () => {
         phone: '9840012345',
         accessToken: 'token',
       }),
-    ).resolves.toMatchObject({ phone: '+919840012345' });
+    ).resolves.toMatchObject({ response: { phone: '+919840012345' } });
   });
 });

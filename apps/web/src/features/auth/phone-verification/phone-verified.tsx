@@ -8,10 +8,16 @@ import { PHONE_TEXT } from './phone-verification.constants';
 export interface PhoneVerifiedProps {
   display: string;
   fullName: string;
+  accountsLinked?: boolean;
   onContinue: () => void;
 }
 
-export function PhoneVerified({ display, fullName, onContinue }: PhoneVerifiedProps) {
+export function PhoneVerified({
+  display,
+  fullName,
+  accountsLinked = false,
+  onContinue,
+}: PhoneVerifiedProps) {
   return (
     <section
       aria-live="polite"
@@ -26,6 +32,9 @@ export function PhoneVerified({ display, fullName, onContinue }: PhoneVerifiedPr
             <span className="tnum font-medium">{display}</span> has been linked to{' '}
             <span className="font-medium">{fullName.trim() || PHONE_TEXT.yourAccount}</span>.
           </p>
+          {accountsLinked ? (
+            <p className="mt-[6px] text-[13px] ink-body">{PHONE_TEXT.accountsLinked}</p>
+          ) : null}
         </div>
         <StatusTag tone="ok">{PHONE_TEXT.verifiedTag}</StatusTag>
       </div>

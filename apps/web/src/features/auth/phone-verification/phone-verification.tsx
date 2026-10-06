@@ -46,6 +46,7 @@ export function PhoneVerification({
   );
   const [remaining, setRemaining] = useState(0);
   const [pending, startTransition] = useNavigationSafeAction();
+  const [accountsLinked, setAccountsLinked] = useState(false);
 
   const busy = useRef(false);
 
@@ -112,6 +113,7 @@ export function PhoneVerification({
 
       setStage('idle');
       setCode('');
+      setAccountsLinked(result.accountsLinked === true);
       onVerified(result.phone ?? phone);
     } catch (error) {
       refuse(isServiceFailure(error) ? error.message : PHONE_TEXT.wrongCode);
@@ -135,7 +137,14 @@ export function PhoneVerification({
   if (!widget?.enabled) return <PhoneUnavailable reason={widget?.reason ?? undefined} />;
 
   if (verified) {
-    return <PhoneVerified display={display} fullName={fullName} onContinue={onContinue} />;
+    return (
+      <PhoneVerified
+        display={display}
+        fullName={fullName}
+        accountsLinked={accountsLinked}
+        onContinue={onContinue}
+      />
+    );
   }
 
   if (stage === 'idle') {

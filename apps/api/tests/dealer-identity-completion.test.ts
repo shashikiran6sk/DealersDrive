@@ -202,15 +202,35 @@ describe('Google first', () => {
   });
 });
 
-describe('collisions are refused, never merged', () => {
+describe('collisions: one person is merged, two people are refused', () => {
   /**
-   * Phone on User A, Google on User B. A phone-first A linking B's Google
-   * account is sent back to step 1 with a generic error and both accounts are
-   * left exactly as they were.
+   * Phone on User A, Google on User B, where B is nothing but that Google
+   * account. A phone-first A completing B's Google round trip has proved both
+   * identities in one request, so B is folded into A rather than refused.
    */
-  it('refuses to link a Google account another user already signs in with', async () => {
+  it('folds a Google-only account into the phone session that proves it', async () => {
     const claimsOfB = freshGoogle();
     await h.signIn(h.agent());
+
+    const agentA = h.agent();
+    const { phone } = await phoneFirst(agentA);
+    h.google.claims = claimsOfB;
+
+    const linked = await link(agentA);
+    expect(linked.location).not.toContain('error=');
+
+    const a = await h.prisma.user.findUniqueOrThrow({
+      where: { phone: `+91${phone}` },
+      include: { identities: true },
+    });
+    expect(a.identities.map((identity) => identity.providerSubject)).toEqual([claimsOfB.subject]);
+  });
+
+  it('refuses a Google account that belongs to a complete account', async () => {
+    const claimsOfB = freshGoogle();
+    const agentB = h.agent();
+    await h.signIn(agentB);
+    await h.proveNumber(agentB, freeNumber());
 
     const agentA = h.agent();
     const { phone } = await phoneFirst(agentA);
@@ -224,15 +244,9 @@ describe('collisions are refused, never merged', () => {
       include: { identities: true },
     });
     expect(a.identities).toHaveLength(0);
-    const holder = await h.prisma.oAuthIdentity.findUniqueOrThrow({
-      where: {
-        provider_providerSubject: { provider: 'GOOGLE', providerSubject: claimsOfB.subject },
-      },
-    });
-    expect(holder.userId).not.toBe(a.id);
   });
 
-  it('refuses a Google-first account the phone another account proved', async () => {
+  it('folds a Google-first account into the phone-only account whose number it proves', async () => {
     const agentA = h.agent();
     const { phone } = await phoneFirst(agentA);
 
@@ -240,11 +254,11 @@ describe('collisions are refused, never merged', () => {
     const agentB = h.agent();
     await h.signIn(agentB);
 
-    const refused = await agentB
+    const linked = await agentB
       .post('/v1/auth/phone/verify')
       .send({ phone, accessToken: devToken(phone) })
-      .expect(409);
-    expect(refused.body.code).toBe('PHONE_ALREADY_REGISTERED');
+      .expect(200);
+    expect(linked.body.accountsLinked).toBe(true);
   });
 
   it('refuses a second Google account on an account that already has one', async () => {
