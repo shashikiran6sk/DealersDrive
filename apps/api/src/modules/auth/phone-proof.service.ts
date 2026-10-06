@@ -14,7 +14,12 @@ import {
   OTP_WIDGET_NOT_CONFIGURED,
 } from './auth.messages.js';
 
-export const OTP_PURPOSES = ['DEALER_PHONE_LINK', 'DEALER_LOGIN', 'CUSTOMER_LOGIN'] as const;
+export const OTP_PURPOSES = [
+  'DEALER_PHONE_LINK',
+  'DEALER_LOGIN',
+  'CUSTOMER_LOGIN',
+  'ASSISTED_DEALER_PHONE',
+] as const;
 
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];
 
@@ -43,6 +48,7 @@ export const REPLAY_GUARD_FAILS_OPEN: Readonly<Record<OtpPurpose, boolean>> = {
   DEALER_PHONE_LINK: true,
   DEALER_LOGIN: false,
   CUSTOMER_LOGIN: false,
+  ASSISTED_DEALER_PHONE: false,
 };
 
 const TOKEN_FIELD = 'body.accessToken';

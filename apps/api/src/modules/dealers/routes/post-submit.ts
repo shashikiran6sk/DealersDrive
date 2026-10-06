@@ -6,8 +6,8 @@ export const postSubmit: DealersRoute = (router, service) => {
   router.post('/submit', requirePermission('dealer:update'), (req, res, next) => {
     void (async () => {
       try {
-        const { dealerId } = dealerPrincipal(req);
-        res.json(await service.submitForVerification(dealerId));
+        const { dealerId, userId } = dealerPrincipal(req);
+        res.json(await service.submitForVerification(dealerId, { type: 'DEALER', id: userId }));
       } catch (error) {
         next(error);
       }

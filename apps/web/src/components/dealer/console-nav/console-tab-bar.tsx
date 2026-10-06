@@ -10,7 +10,15 @@ import type { NavItem } from '@/types';
 
 import { DEALER_NAV_LABEL, DEALER_ROOT_HREF, FULL_BAR } from './console-nav.constants';
 
-export function ConsoleTabBar({ items }: { items: NavItem[] }) {
+export function ConsoleTabBar({
+  items,
+  label = DEALER_NAV_LABEL,
+  rootHref = DEALER_ROOT_HREF,
+}: {
+  items: NavItem[];
+  label?: string;
+  rootHref?: string;
+}) {
   const pathname = usePathname();
   const tabs = items.filter((item) => item.short !== undefined);
 
@@ -22,10 +30,10 @@ export function ConsoleTabBar({ items }: { items: NavItem[] }) {
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-20 flex h-[60px] border-t border-(--color-divider) bg-white/95 backdrop-blur-md md:hidden"
-      aria-label={DEALER_NAV_LABEL}
+      aria-label={label}
     >
       {bar.map((item) => {
-        const current = isCurrentPath(pathname, item.href, DEALER_ROOT_HREF);
+        const current = isCurrentPath(pathname, item.href, rootHref);
         return (
           <Link
             key={item.href}

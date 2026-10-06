@@ -107,6 +107,7 @@ function fakePrisma(
       },
     },
     dealer: {
+      findFirst: () => Promise.resolve(null),
       findUnique: () =>
         Promise.resolve(
           options.dealer === null

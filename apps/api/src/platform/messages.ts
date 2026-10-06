@@ -14,3 +14,8 @@ export const ADMIN_CONSOLE_REFUSAL = {
   code: 'ADMIN_CONSOLE_FORBIDDEN',
   message: 'Your role does not include the admin console.',
 } as const;
+
+export const SALES_WORKSPACE_REFUSAL = {
+  code: 'SALES_WORKSPACE_FORBIDDEN',
+  message: 'Your role does not include the Sales workspace.',
+} as const;

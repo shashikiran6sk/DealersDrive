@@ -30,11 +30,15 @@ export const TAG: Record<DealerDocumentDto['status'], string> = {
   REJECTED: 'Rejected',
 };
 
-export const DOCUMENT_PATH = {
-  presign: '/api/dealer/documents/presign',
-  commit: (type: string) => `/api/dealer/documents/${type}/commit`,
-  remove: (type: string) => `/api/dealer/documents/${type}`,
-} as const;
+export const DEALER_DOCUMENT_BASE = '/api/dealer/documents';
+
+export function documentPaths(base: string) {
+  return {
+    presign: `${base}/presign`,
+    commit: (type: string) => `${base}/${type}/commit`,
+    remove: (type: string) => `${base}/${type}`,
+  };
+}
 
 export const DOCUMENT_UPLOADER_TEXT = {
   verifiedGlyph: '✓',

@@ -1,6 +1,5 @@
 import {
   adminHomeFor,
-  dealerSlug,
   formatPhone,
   normaliseLocality,
   toE164,
@@ -22,7 +21,7 @@ import {
   UnauthorizedError,
 } from '../../platform/errors.js';
 import { logger } from '../../platform/telemetry/logger.js';
-import type { DealersService } from '../dealers/dealers.facade.js';
+import { uniqueDealerSlug, type DealersService } from '../dealers/dealers.facade.js';
 import { isAllowlistedAdmin } from './admin-allowlist.js';
 import { isAdmitted, syncLegacyAdminColumns } from './admin-member.js';
 import {
@@ -329,7 +328,12 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
 
         const dealer = await tx.dealer.create({
           data: {
-            slug: await uniqueSlug({ legalName: input.legalName, city, district, state }),
+            slug: await uniqueDealerSlug(prisma, {
+              legalName: input.legalName,
+              city,
+              district,
+              state,
+            }),
             brandName: input.legalName,
             legalName: input.legalName,
             status: 'DRAFT',
@@ -620,23 +624,6 @@ export function createAuthService({ prisma, sessions, oauth, dealers, audit, map
           ? adminHomeFor(admin.member.role)
           : transaction.returnTo,
     };
-  }
-
-  async function uniqueSlug(parts: {
-    legalName: string;
-    city?: string | null;
-    district?: string | null;
-    state?: string | null;
-  }): Promise<string> {
-    const base = dealerSlug(parts);
-
-    for (let attempt = 0; attempt < 50; attempt += 1) {
-      const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
-      const taken = await prisma.dealer.findUnique({ where: { slug: candidate } });
-      if (!taken) return candidate;
-    }
-
-    throw new ConflictError('SLUG_UNAVAILABLE', 'Could not derive a unique address for that name.');
   }
 }
 

@@ -280,7 +280,15 @@ export function createNotificationsService({ prisma, queue, mailer }: Notificati
     });
 
     const email = owner?.user.email;
-    return email ? [{ email, name: owner.user.fullName }] : [];
+    if (email) return [{ email, name: owner.user.fullName }];
+
+    const assisted = await prisma.dealer.findFirst({
+      where: { id: job.dealerId, onboardingSource: 'ASSISTED', contactEmail: { not: null } },
+      select: { contactEmail: true, contactName: true },
+    });
+    return assisted?.contactEmail
+      ? [{ email: assisted.contactEmail, name: assisted.contactName }]
+      : [];
   }
 
   async function rejectedApplicationSnapshot(dealerId: string): Promise<{

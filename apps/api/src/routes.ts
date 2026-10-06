@@ -4,7 +4,8 @@ import { env } from './config/env.js';
 import type { Container } from './container.js';
 import { createDocsRouter } from './docs/docs.routes.js';
 import { requirePermission } from './middleware/auth.js';
-import { ADMIN_CONSOLE_REFUSAL } from './platform/messages.js';
+import { ADMIN_CONSOLE_REFUSAL, SALES_WORKSPACE_REFUSAL } from './platform/messages.js';
+import { createSalesRouter } from './modules/sales/sales.routes.js';
 import {
   createCustomerAuthRouter,
   createPublicAuthRouter,
@@ -115,6 +116,12 @@ export function createRoutes(container: Container): Router {
   admin.use(createAdminEnquiriesRouter(container.adminEnquiries));
   admin.use(createAdminSupportRouter(container.adminSupport));
   v1.use('/admin', admin);
+
+  const sales = Router();
+  sales.use(container.guards.requireAdmin);
+  sales.use(requirePermission('sales:workspace', SALES_WORKSPACE_REFUSAL));
+  sales.use(createSalesRouter(container.sales, container.rateLimit));
+  v1.use('/sales', sales);
 
   router.use('/v1', v1);
 

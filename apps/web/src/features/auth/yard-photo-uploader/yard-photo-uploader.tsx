@@ -14,9 +14,20 @@ import {
   UploadFailure,
 } from '@/lib/upload';
 
-import { YARD_PHOTO_PATH, YARD_PHOTO_RULE, YARD_PHOTO_TEXT } from './yard-photo-uploader.constants';
+import {
+  YARD_PHOTO_PATH,
+  YARD_PHOTO_RULE,
+  YARD_PHOTO_TEXT,
+  type YardPhotoPaths,
+} from './yard-photo-uploader.constants';
 
-export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
+export function YardPhotoUploader({
+  photo,
+  paths = YARD_PHOTO_PATH,
+}: {
+  photo: YardPhotoDto;
+  paths?: YardPhotoPaths;
+}) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<'upload' | 'delete' | null>(null);
@@ -33,7 +44,7 @@ export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
 
     setBusy('upload');
     try {
-      const signed = await presign(YARD_PHOTO_PATH.presign, {
+      const signed = await presign(paths.presign, {
         fileName: file.name,
         mimeType: file.type,
         bytes: file.size,
@@ -43,7 +54,7 @@ export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
 
       await putToStorage(signed, file);
 
-      const commit = await postJson(YARD_PHOTO_PATH.commit, { mediaId });
+      const commit = await postJson(paths.commit, { mediaId });
       if (!commit.ok) throw new UploadFailure(YARD_PHOTO_TEXT.commitFailed);
 
       router.refresh();
@@ -58,7 +69,7 @@ export function YardPhotoUploader({ photo }: { photo: YardPhotoDto }) {
     setError(null);
     setBusy('delete');
     try {
-      const response = await fetch(YARD_PHOTO_PATH.remove, { method: 'DELETE' });
+      const response = await fetch(paths.remove, { method: 'DELETE' });
       if (!response.ok) throw new UploadFailure(YARD_PHOTO_TEXT.removeFailed);
       router.refresh();
     } catch (caught) {

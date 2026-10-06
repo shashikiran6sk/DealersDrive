@@ -15,14 +15,22 @@ import {
 } from '@/lib/upload';
 
 import {
-  DOCUMENT_PATH,
+  DEALER_DOCUMENT_BASE,
   DOCUMENT_RULE,
   DOCUMENT_UPLOADER_TEXT,
+  documentPaths,
   TAG,
   TONE,
 } from './document-uploader.constants';
 
-export function DocumentUploader({ document }: { document: DealerDocumentDto }) {
+export function DocumentUploader({
+  document,
+  basePath = DEALER_DOCUMENT_BASE,
+}: {
+  document: DealerDocumentDto;
+  basePath?: string;
+}) {
+  const paths = documentPaths(basePath);
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<'upload' | 'delete' | null>(null);
@@ -41,7 +49,7 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
 
     setBusy('upload');
     try {
-      const signed = await presign(DOCUMENT_PATH.presign, {
+      const signed = await presign(paths.presign, {
         type: document.type,
         fileName: file.name,
         mimeType: file.type,
@@ -52,7 +60,7 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
 
       await putToStorage(signed, file);
 
-      const commit = await postJson(DOCUMENT_PATH.commit(document.type), { documentId });
+      const commit = await postJson(paths.commit(document.type), { documentId });
       if (!commit.ok) throw new UploadFailure(DOCUMENT_UPLOADER_TEXT.commitFailed);
 
       router.refresh();
@@ -67,7 +75,7 @@ export function DocumentUploader({ document }: { document: DealerDocumentDto }) 
     setError(null);
     setBusy('delete');
     try {
-      const response = await fetch(DOCUMENT_PATH.remove(document.type), { method: 'DELETE' });
+      const response = await fetch(paths.remove(document.type), { method: 'DELETE' });
       if (!response.ok) throw new UploadFailure(DOCUMENT_UPLOADER_TEXT.removeFailed);
       router.refresh();
     } catch (caught) {

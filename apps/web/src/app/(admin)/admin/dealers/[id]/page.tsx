@@ -8,6 +8,7 @@ import { LogoTile, StatusTag } from '@/components/ui/primitives';
 import { DealerAdminActions } from '@/features/admin/dealer-actions';
 import { DealerProfileEditor } from '@/features/admin/dealer-profile-editor';
 import { DocumentReview } from '@/features/admin/document-review';
+import { OnboardingProvenance } from '@/features/admin/onboarding-provenance';
 import { ProfileChangeReview } from '@/features/admin/profile-change-review';
 import { ApiError, apiGet } from '@/lib/api';
 import { cn } from '@/lib/cn';
@@ -51,6 +52,8 @@ export default async function AdminDealerPage({ params }: { params: Promise<{ id
           {dealer.statusReason}
         </p>
       ) : null}
+
+      <OnboardingProvenance onboarding={dealer.onboarding} />
 
       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(158px,1fr))]">
         {[

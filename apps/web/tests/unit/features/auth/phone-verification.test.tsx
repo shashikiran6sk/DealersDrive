@@ -142,7 +142,10 @@ describe('PhoneVerification', () => {
         expect.stringMatching(/^dev-otp:919840012345:123456:\d+$/),
       );
     });
-    expect(props.onVerified).toHaveBeenCalledWith('+919840012345');
+    expect(props.onVerified).toHaveBeenCalledWith(
+      '+919840012345',
+      expect.objectContaining({ verified: true }),
+    );
   });
 
   /**

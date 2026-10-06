@@ -21,6 +21,7 @@ import {
   type AdminProfileChange,
   type AdminProfileChangesResponse,
   type ApproveDealerInput,
+  type DealerOnboardingProvenance,
   type ConfigResponse,
   type GrantAdminAccessInput,
   type DealerModerationResponse,
@@ -79,6 +80,59 @@ function allDocumentsVerified(documents: Pick<DealerDocument, 'status' | 'fileNa
     documents.length === REQUIRED_DOCUMENTS &&
     documents.every((doc) => doc.status === 'VERIFIED' && Boolean(doc.fileName))
   );
+}
+
+const SOURCE_LABELS = { SELF: 'Self-onboarded', ASSISTED: 'Assisted by Sales' } as const;
+
+interface AssistedRow {
+  onboardingSource: 'SELF' | 'ASSISTED';
+  assistedBy: { userId: string; user: { fullName: string | null; email: string | null } } | null;
+  contactPhoneVerifiedAt: Date | null;
+  contactEmailVerifiedAt: Date | null;
+}
+
+function assistedBy(dealer: AssistedRow, admin: AdminPrincipal): boolean {
+  return dealer.assistedBy?.userId === admin.userId;
+}
+
+function provenanceOf(
+  dealer: AssistedRow,
+  owner: { phoneVerifiedAt: Date | null; emailVerifiedAt: Date | null } | null,
+  admin: AdminPrincipal,
+): DealerOnboardingProvenance {
+  const assisted = dealer.onboardingSource === 'ASSISTED';
+  const phoneVerified = assisted
+    ? dealer.contactPhoneVerifiedAt !== null
+    : owner?.phoneVerifiedAt != null;
+  const emailVerified = assisted
+    ? dealer.contactEmailVerifiedAt !== null
+    : owner?.emailVerifiedAt != null;
+  return {
+    source: dealer.onboardingSource,
+    sourceLabel: SOURCE_LABELS[dealer.onboardingSource],
+    assistedBy: dealer.assistedBy
+      ? { name: dealer.assistedBy.user.fullName, email: dealer.assistedBy.user.email ?? '' }
+      : null,
+    phoneVerified,
+    phoneLabel: phoneVerified ? 'Verified' : 'Not verified',
+    emailVerified,
+    emailLabel: emailVerified ? 'Verified' : 'Pending verification',
+    claimed: owner !== null,
+    reviewerIsAssistant: assistedBy(dealer, admin),
+  };
+}
+
+async function assertNotAssistant(tx: Tx, dealerId: string, admin: AdminPrincipal): Promise<void> {
+  const row = await tx.dealer.findUnique({
+    where: { id: dealerId },
+    select: { assistedBy: { select: { userId: true } } },
+  });
+  if (row?.assistedBy?.userId === admin.userId) {
+    throw new ForbiddenError(
+      'You assisted with this dealership, so another reviewer has to decide it.',
+      { code: 'SELF_REVIEW_FORBIDDEN' },
+    );
+  }
 }
 
 async function lockDealer(tx: Tx, dealerId: string): Promise<void> {
@@ -320,6 +374,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           documents: { orderBy: { type: 'asc' } },
           members: { include: { user: true }, where: { role: 'OWNER' } },
           profileEdits: { where: { status: 'PENDING' }, take: 1 },
+          assistedBy: { include: { user: { select: { fullName: true, email: true } } } },
         },
       });
       if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
@@ -395,7 +450,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         addressLine: dealer.addressLine,
         pincode: dealer.pincode,
         mapsUrl: dealer.mapsUrl,
-        contactName: owner?.user.fullName ?? null,
+        onboarding: provenanceOf(dealer, owner?.user ?? null, admin),
+        contactName: owner?.user.fullName ?? dealer.contactName ?? null,
         contactPhone: dealer.contactPhone,
         contactPhoneDisplay: dealer.contactPhone ? formatPhone(dealer.contactPhone) : null,
         contactEmail: owner?.user.email ?? dealer.contactEmail,
@@ -426,9 +482,15 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
           balanceAfter: row.balanceAfter,
         })),
         actions: {
-          canApprove: dealer.status === 'PENDING_APPROVAL' && allVerified && application.isComplete,
-          canReject: dealer.status === 'PENDING_APPROVAL' || dealer.status === 'DRAFT',
-          canRequestChanges: dealer.status === 'PENDING_APPROVAL',
+          canApprove:
+            dealer.status === 'PENDING_APPROVAL' &&
+            allVerified &&
+            application.isComplete &&
+            !assistedBy(dealer, admin),
+          canReject:
+            (dealer.status === 'PENDING_APPROVAL' || dealer.status === 'DRAFT') &&
+            !assistedBy(dealer, admin),
+          canRequestChanges: dealer.status === 'PENDING_APPROVAL' && !assistedBy(dealer, admin),
           canClose: dealer.status === 'DRAFT' || dealer.status === 'PENDING_APPROVAL',
           canSuspend: dealer.status === 'ACTIVE',
           canReinstate: dealer.status === 'SUSPENDED',
@@ -447,6 +509,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       return withTransaction(prisma, async (tx) => {
         await lockDealer(tx, dealerId);
+        await assertNotAssistant(tx, dealerId, admin);
         const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
         if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
         if (dealer.status === 'ACTIVE') {
@@ -531,6 +594,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       const purge = await withTransaction(prisma, async (tx) => {
         await lockDealer(tx, dealerId);
+        await assertNotAssistant(tx, dealerId, admin);
         const dealer = await tx.dealer.findUnique({
           where: { id: dealerId },
           include: {
@@ -583,6 +647,8 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
             district: dealer.district,
             state: dealer.state,
             contactEmail: dealer.contactEmail,
+            onboardingSource: dealer.onboardingSource,
+            assistedByMemberId: dealer.assistedByMemberId,
             recipientEmail: owner?.email ?? dealer.contactEmail,
             recipientName: owner?.fullName ?? null,
             documents: dealer.documents.map((doc) => ({ type: doc.type, status: doc.status })),
@@ -637,6 +703,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       return withTransaction(prisma, async (tx) => {
         await lockDealer(tx, dealerId);
+        await assertNotAssistant(tx, dealerId, admin);
         const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
         if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
         if (dealer.status !== 'PENDING_APPROVAL') {
@@ -693,6 +760,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
 
       return withTransaction(prisma, async (tx) => {
         await lockDealer(tx, dealerId);
+        await assertNotAssistant(tx, dealerId, admin);
         const dealer = await tx.dealer.findUnique({ where: { id: dealerId } });
         if (!dealer) throw new NotFoundError(DEALER_NOT_FOUND);
         if (dealer.status !== 'DRAFT' && dealer.status !== 'PENDING_APPROVAL') {
@@ -803,6 +871,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
     ): Promise<DealerModerationResponse> {
       return withTransaction(prisma, async (tx) => {
         await lockDealer(tx, dealerId);
+        await assertNotAssistant(tx, dealerId, admin);
         const dealer = await tx.dealer.findUnique({
           where: { id: dealerId },
           include: {
@@ -918,6 +987,7 @@ export function createAdminService({ prisma, audit, config, storage, dealers }: 
         const candidate = await tx.dealerDocument.findUnique({ where: { id: documentId } });
         if (!candidate) throw new NotFoundError(DOCUMENT_NOT_FOUND);
         await lockDealer(tx, candidate.dealerId);
+        await assertNotAssistant(tx, candidate.dealerId, admin);
         await tx.$queryRaw`
           SELECT "id" FROM "dealer_documents" WHERE "id" = ${documentId}::uuid FOR UPDATE`;
         const doc = await tx.dealerDocument.findUnique({ where: { id: documentId } });
